@@ -90,7 +90,6 @@ type
      Editable    : boolean;
      DEM : integer;
      procedure SetUpDEMHeaderForm(aDEM : integer);
-     //procedure LabelSpecialProjection;
      procedure WriteValues;
      procedure UpdateChoices;
      procedure DisableEdits;
@@ -150,7 +149,7 @@ end;
 procedure TDEMHeaderForm.RadioGroup2Click(Sender: TObject);
 begin
    EditHeadRec.DEMUsed := RadioGroup2.ItemIndex;
-   Memo1.Visible := RadioGroup2.ItemIndex = 2;
+   Memo1.Visible := (RadioGroup2.ItemIndex = 2) or (EditHeadRec.WKTstring <> '');
    UpdateChoices;
 end;
 
@@ -200,12 +199,8 @@ end;
 
 
 procedure TDEMHeaderForm.BitBtn5Click(Sender: TObject);
-//var
-   //TStr : shortstring;
 begin
-   //TStr := ByteArrayToString(EditHeadRec.DMAMapDefinition.h_DatumCode);
    PickDatum('DEM',EditHeadRec.h_DatumCode);
-   //StringToByteArray(TStr,EditHeadRec.DMAMapDefinition.h_DatumCode);
    Label6.Caption := DatumName(EditHeadRec.h_DatumCode);
 end;
 

@@ -99,7 +99,6 @@ implementation
 
 {$R *.dfm}
 
-
 uses
    Nevadia_main,DEMDefs,Make_Tables,DEMCoord,Petmath,Petmar,Petmar_geology,
    BaseMap,
@@ -180,18 +179,17 @@ var
    xDEMg1,yDEMg1 : float32;
    i : integer;
 
-   procedure TraceOnAMap(TheMap : tMapForm);
-   begin
-       if (TheMap.MapDraw.DEMonMap <> 0) then begin
-          DEMGlb[TheMap.MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xDEMg1,yDEMg1);
-          BroadCastPlaneData.xglo := round(xDEMg1 - MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageXSpace);
-          BroadCastPlaneData.xghi := round(xDEMg1 + MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageXSpace);
-          BroadCastPlaneData.yglo := round(yDEMg1 - MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageYSpace);
-          BroadCastPlaneData.yghi := round(yDEMg1 + MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageYSpace);
-          TheMap.ThreadCheckPlane(not SetDipAndStrike,xDEMg1,yDEMg1,Dip,Strike,DipDir);
-       end;
-   end;
-
+      procedure TraceOnAMap(TheMap : tMapForm);
+      begin
+          if (TheMap.MapDraw.DEMonMap <> 0) then begin
+             DEMGlb[TheMap.MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xDEMg1,yDEMg1);
+             BroadCastPlaneData.xglo := round(xDEMg1 - MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageXSpace);
+             BroadCastPlaneData.xghi := round(xDEMg1 + MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageXSpace);
+             BroadCastPlaneData.yglo := round(yDEMg1 - MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageYSpace);
+             BroadCastPlaneData.yghi := round(yDEMg1 + MDDef.ThreePointExtrap / DEMGlb[TheMap.MapDraw.DEMonMap].AverageYSpace);
+             TheMap.ThreadCheckPlane(not SetDipAndStrike,xDEMg1,yDEMg1,Dip,Strike,DipDir);
+          end;
+      end;
 
 begin
    //needed to be called from DEMMapf
@@ -381,5 +379,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordThreePoint} WriteLineToDebugFile('RecordThreePoint active in three_point_problem');  {$EndIf}
+   {$IfDef RecordThreePoint} WriteLineToDebugFile('RecordThreePoint active in three_point_problem'); {$EndIf}
 end.

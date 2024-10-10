@@ -48,8 +48,8 @@ begin
     OldDatum := tMapProjection.Create('reproject las, olddatum');
     Lf := Las_Lidar.tLAS_data.Create(fName);
     if (StartDatum = '') then begin
-       StartProjection := Lf.lasProjectionDefinition.LASProjection;
-       StartDatum := Lf.lasProjectionDefinition.LasProjection.H_DatumCode;
+       StartProjection := Lf.lasProjDef.LASProj;
+       StartDatum := Lf.lasProjDef.LasProj.H_DatumCode;
       {$IfDef RecordReprojectLAS}   WriteLineToDebugFile('LAS file start datum=' + StartDatum ); {$EndIf}
     end;
 
@@ -57,7 +57,7 @@ begin
     NeedReprojection := true;
     if WGSEquivalentDatum(StartDatum) then begin
        NeedDatumShift := true;
-       if (Lf.LasProjectionDefinition.LasProjection.ProjectedCSTypeGeoKey = 26900 + UTMZone) then NeedReprojection := false;
+       if (Lf.lasProjDef.LasProj.ProjectedCSTypeGeoKey = 26900 + UTMZone) then NeedReprojection := false;
     end
     else NeedDatumShift := false;
 
@@ -67,11 +67,11 @@ begin
        WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,'N','LAS RedefineWGS84');
     end;
 
-    NewLasProjection.LasProjection := tMapProjection.Create('reproject las, new');
-    NewLasProjection.LasProjection.ThisIsUTMFile := true;
-    NewLasProjection.LasProjection.ProjectedCSTypeGeoKey := 26900 + UTMZone;
-    NewLasProjection.LasProjection.ProjLinearUnitsGeoKey := 9001;
-    NewLasProjection.LasProjection.VerticalUnitsGeoKey := 9001;
+    NewLasProjection.LasProj := tMapProjection.Create('reproject las, new');
+    NewLasProjection.LasProj.ThisIsUTMFile := true;
+    NewLasProjection.LasProj.ProjectedCSTypeGeoKey := 26900 + UTMZone;
+    NewLasProjection.LasProj.ProjLinearUnitsGeoKey := 9001;
+    NewLasProjection.LasProj.VerticalUnitsGeoKey := 9001;
 
     NewName := ChangeFileExt(fName, '_utm.las');
     NewLas := tCreateLasFile.Create;
@@ -118,7 +118,7 @@ begin
     Lf.Destroy;
     NewLas.Destroy;
     OldDatum.Destroy;
-    NewLasProjection.LasProjection.Destroy;
+    NewLasProjection.LasProj.Destroy;
     AllowNoProjectionLAS := false;
    {$IfDef RecordReprojectLAS} writeLineToDebugFile('ReprojectLasFileToUTM out'); {$EndIf}
 end;

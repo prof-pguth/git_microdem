@@ -4,8 +4,8 @@ object InsertPointForm: TInsertPointForm
   BorderIcons = [biMinimize]
   BorderStyle = bsDialog
   Caption = 'Insert Point '
-  ClientHeight = 194
-  ClientWidth = 278
+  ClientHeight = 220
+  ClientWidth = 288
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -73,8 +73,8 @@ object InsertPointForm: TInsertPointForm
   object RadioGroup1: TRadioGroup
     Left = 8
     Top = 131
-    Width = 256
-    Height = 33
+    Width = 252
+    Height = 48
     Caption = 'Range Units'
     Columns = 5
     Items.Strings = (
@@ -87,8 +87,8 @@ object InsertPointForm: TInsertPointForm
     OnClick = RadioGroup1Click
   end
   object HelpBtn: TBitBtn
-    Left = 187
-    Top = 170
+    Left = 183
+    Top = 185
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -100,8 +100,8 @@ object InsertPointForm: TInsertPointForm
     IsControl = True
   end
   object CancelBtn: TBitBtn
-    Left = 104
-    Top = 171
+    Left = 100
+    Top = 186
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -112,8 +112,8 @@ object InsertPointForm: TInsertPointForm
     IsControl = True
   end
   object OKBtn: TBitBtn
-    Left = 21
-    Top = 170
+    Left = 17
+    Top = 185
     Width = 77
     Height = 27
     Caption = 'OK'

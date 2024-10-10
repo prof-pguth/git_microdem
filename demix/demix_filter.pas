@@ -10,7 +10,7 @@ unit demix_filter;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordFullDEMIX}
+  //{$Define RecordFullDEMIX}
   //{$Define RecordDEMIXLoad}
   //{$Define RecordSSIMprep}
   //{$Define RecordDEMIX}

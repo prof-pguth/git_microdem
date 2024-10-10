@@ -1786,7 +1786,7 @@ begin
    end;
    ShowDefaultCursor;
    fName := Dir + 'html_summary.htm';
-   ExecuteFile(fName, '', '');
+   ExecuteFile(fName);
    DisplayAndPurgeStringList(Links,'Links in file');
    ThisFile.Free;
 end;
@@ -1817,7 +1817,7 @@ begin
       fName := ExtractFilePath(TheFiles.Strings[0]) + 'data_download.htm';
       Links.SaveToFile(fName);
       Links.Free;
-      ExecuteFile(fName, '', '');
+      ExecuteFile(fName);
    end;
    TheFiles.Free;
 end;
@@ -1915,7 +1915,7 @@ begin
    fName := Dir + 'html_summary.htm';
    TheContents.SaveToFile(fName);
    TheContents.Free;
-   ExecuteFile(fName, '', '');
+   ExecuteFile(fName);
    ThisFile.Free;
    TheFiles.Free;
 end;
@@ -3361,11 +3361,9 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
          params,params2 : Shortstring;
          i : integer;
          DefaultFilter : byte;
-         //DeleteOriginalFiles : boolean;
          bf,theFileNames : tStringList;
       begin
          pName := lastools_bindir + 'las2las.exe';
-
          if GetLASToolsFileName(pName) then begin
             Params := '';
             Params2 := '';
@@ -3422,7 +3420,7 @@ procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
                   else begin
                      if (Sender = LASGeotoUTM1) then begin
                         lf := tLAS_data.Create(FName);
-                        if (lf.lasProjectionDefinition.LASProjection.ModelType = LasLatLong) then begin
+                        if (lf.lasProjDef.lasProj.ModelType = LasLatLong) then begin
                            MDDef.DefaultUTMZone := GetUTMZone(0.5 * (lf.LAS_LatLong_Box.xmax - lf.LAS_LatLong_Box.xmin));
                         end;
                         if lf.LAS_LatLong_Box.ymax > 0 then MDDef.DefaultLatHemi := 'N' else MDDef.DefaultLatHemi := 'S';
@@ -4044,7 +4042,7 @@ begin
       if (Sender = Chromelist1) then pName := 'chrome'
       else pName := '"C:\Program Files (x86)\Internet Explorer\iexplore.exe"';
       for i := 0 to pred(FileList.Count) do begin
-         ExecuteFile(pName,FileList.Strings[i],'')
+         ExecuteFile(pName,FileList.Strings[i]);
       end;
       FileList.Free;
    end;

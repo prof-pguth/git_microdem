@@ -8,6 +8,112 @@
 {____________________________________}
 
 
+
+function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
+//opens reference DTMs, for both pixel-is-point and pixel-is-area
+//0 in the array is the reference data, -1 is the 1.5 sec data
+//if this is for U120, U80, or U10 computations, all DEMs are masked to the area in question
+const
+   Ext = '.tif';
+var
+   fName : PathStr;
+   i,MaskDEM : integer;
+
+         procedure TrimDEM(DEM : integer);
+         var
+            Limits : tGridLimits;
+         begin
+            Limits := DEMGlb[DEM].FullDEMGridLimits;
+            DEMGlb[DEM].FilledGridBox(Limits);
+            fname := NextFileNumber(MDtempDir,DEMGlb[DEM].AreaName + '_trim_','.dem');
+            DEMGlb[DEM].WriteNewFormatDEM(Limits,fName);
+            DEMGlb[DEM].DEMFileName := fName;
+            DEMGlb[DEM].ReloadDEM(true);
+            if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
+         end;
+
+         procedure MaskToMatchUnderDEM(DEM : integer);
+         begin
+            if (DEM <> MaskDEM) then begin
+               EditsDone := 0;
+               MaskStripFromSecondGrid(DEM,MaskDEM,msSecondMissing);
+               DEMGlb[DEM].CheckMaxMinElev;
+               {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw; {$EndIf};
+            end;
+         end;
+
+         procedure TryToOpen(fName : PathStr; var DEM : integer);
+         begin
+            if FileExists(fName) then begin
+               DEM := OpenNewDEM(fName,OpenMaps);
+               if ValidDEM(DEM) then begin
+                  {$IfDef TrackSWcorner} DEMGlb[DEM].WriteToDebugSWCornerForComputations('OpenBothPixelIsDEMs'); {$EndIf}
+               end
+               else begin
+                  Result := false;
+               end;
+            end
+            else begin
+               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing file ' + fName); {$EndIf};
+               Result := false;
+            end;
+         end;
+
+var
+   DataDir : PathStr;
+begin
+    {$IfDef ShowOpenBothPixelIsDEMs} OpenMaps := true; {$EndIf};
+    {$If Defined(RecordDEMIXopenGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+    Result := true;
+    ZeroPointAndAreaGrids(PointDEMs,AreaDEMs);
+    TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1SecPointStr + Ext,PointDEMs[0]);
+    if ValidDEM(PointDEMs[0]) and (DEMGlb[PointDEMs[0]].DEMSWcornerLat > 49.999) then begin
+       //with 1 sec open, see if 1.5 sec needed
+       TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1_5SecPointStr + Ext,PointDEMs[-1]);
+    end;
+    for i := 1 to NumPtDEMs do begin
+       if (SRTM_centroid_names[i] = 'COAST') or (SRTM_centroid_names[i] = 'DELTA') then DataDir := DEMIX_Under_ref_dtm
+       else DataDir := TestDir;
+       TryToOpen(DataDir + Prefix + Area + '_' + SRTM_centroid_names[i]  + Ext,PointDEMs[i]);
+    end;
+    if ValidDEM(PointDEMs[-1]) then dmxFirstPoint := -1 else dmxFirstPoint := 0;
+
+    TryToOpen(RefDir + Prefix + Area + '_dtm' + Ref1SecAreaStr + Ext,AreaDEMs[0]);
+    for i := 1 to NumAreaDEMs do begin
+       if (ALOS_centroid_names[i] = 'DILUV') then DataDir := DEMIX_Under_ref_dtm
+       else DataDir := TestDir;
+       TryToOpen(DataDir + Prefix + Area + '_' + ALOS_centroid_names[i]  + Ext,AreaDEMs[i]);
+    end;
+    if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;      //this will not happen yet since we have not used high-lat ALOS
+
+   {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
+
+    if MDDef.DEMIX_mode in [dmU80,dmU10,dmU120] then begin
+       if MDDef.DEMIX_mode in [dmU120] then MaskDEM := PointDEMs[7];
+       if MDDef.DEMIX_mode in [dmU80] then MaskDEM := AreaDEMs[2];
+       if MDDef.DEMIX_mode in [dmU10] then MaskDEM := PointDEMs[8];
+       if (NumFilledDEMIXtilesOnDEM(MaskDEM) = 0) then begin
+          Result := false;
+          {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
+       end;
+       if Result and ValidDEM(MaskDEM) then begin
+          for i := dmxFirstPoint to NumPtDEMs do MaskToMatchUnderDEM(PointDEMs[i]);
+          for i := dmxFirstArea to NumAreaDEMs do MaskToMatchUnderDEM(AreaDEMs[i]);
+          {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
+
+          for i := dmxFirstPoint to NumPtDEMs do TrimDEM(PointDEMs[i]);
+          for i := dmxFirstArea to NumAreaDEMs do TrimDEM(AreaDEMs[i]);
+          {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
+       end;
+    end;
+  	 {$If Defined(RecordDEMIXopenGrids)} WriteLineToDebugFile('OpenBothPixelIsDEMs for ' + Area + '  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+
+    {$IfDef TrackPixelIs} ShowDEMIXgrids('OpenBothPixelIsDEMs', PointDEMs,AreaDEMs); {$EndIf};
+    {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
+end;
+
+
+
 procedure OpenDEMIXAreaMaps;
 var
    Areas : tStringList;
@@ -22,12 +128,9 @@ begin
       for I := 0 to pred(Areas.Count) do begin
          AreaName := Areas.Strings[i];
          OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,true);
-
          LoadLandcoverForDEMIXarea(AreaName);
          //WBT_CreateDEMIX_GeomorphonGrids(true);
-
          //OpenGridsCreatedByExternalProgram(True,'saga',AreaName,'CONIN_',PointGrids,AreaGrids);
-
          {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('Opened ' + Areas.Strings[i] + ' Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + ' OpenMaps=' + IntToStr(NumOpenMaps)); {$EndIf}
       end;
    finally
@@ -38,7 +141,31 @@ begin
 end;
 
 
-procedure OpenCopDEMandLandcoverForArea;
+procedure CompareConvergenceIndex(AreaName : ShortString);
+
+
+      procedure TryToOpen(fName : PathStr; NewName : shortstring);
+      var
+         DEM : integer;
+      begin
+         DEM := OpenNewDEM(fName);
+         if ValidDEM(DEM) then begin
+            DEMglb[DEM].AreaName := NewName;
+            DEMglb[DEM].SelectionMap.Caption := NewName;
+         end;
+      end;
+
+begin
+   GetDEMIXpaths(false);
+   //OpenNewDEM(DEMIX_test_dems + AreaName + '_cop.tif');
+   TryToOpen(wbt_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif', 'wbt_ref_conin_'+ AreaName);
+   TryToOpen(wbt_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'wbt_COP_conin_'+ AreaName);
+   TryToOpen(saga_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif','saga_ref_conin_'+ AreaName);
+   TryToOpen(saga_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'saga_COP_conin_'+ AreaName);
+end;
+
+
+procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
 var
    Areas : tStringList;
    i : integer;
@@ -48,7 +175,8 @@ begin
       SkipMenuUpdating := false;
       Areas := DEMIX_AreasWanted;
       for I := 0 to pred(Areas.Count) do begin
-         LoadCopAndLancoverForDEMIXTile(Areas.Strings[i]);
+         if CopLand then LoadCopAndLancoverForDEMIXTile(Areas.Strings[i])
+         else CompareConvergenceIndex(Areas.Strings[i]);
       end;
    finally
       Areas.Destroy;
@@ -136,109 +264,6 @@ begin
    else begin
       {$IfDef RecordDEMIXload} HighlightLineToDebugFile('Failure, to open ref DEMs'); {$EndIf}
    end;
-end;
-
-
-function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
-//opens reference DTMs, for both pixel-is-point and pixel-is-area
-//0 in the array is the reference data, -1 is the 1.5 sec data
-//if this is for the U120, U80, or U10 computations, all the DEMs are masked to the area in question
-const
-   Ext = '.tif';
-var
-   fName : PathStr;
-   i,MaskDEM : integer;
-
-
-         procedure TryToOpen(fName : PathStr; var DEM : integer);
-         begin
-            if FileExists(fName) then begin
-               DEM := OpenNewDEM(fName,OpenMaps);
-               {$IfDef TrackSWcorner} DEMGlb[DEM].WriteToDebugSWCornerForComputations('OpenBothPixelIsDEMs'); {$EndIf}
-            end
-            else begin
-               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing file ' + fName); {$EndIf};
-               Result := false;
-            end;
-         end;
-
-         procedure TrimDEM(DEM : integer);
-         var
-            Limits : tGridLimits;
-         begin
-            Limits := DEMGlb[DEM].FullDEMGridLimits;
-            DEMGlb[DEM].FilledGridBox(Limits);
-            fname := NextFileNumber(MDtempDir,DEMGlb[DEM].AreaName + '_trim_','.dem');
-            DEMGlb[DEM].WriteNewFormatDEM(Limits,fName);
-            DEMGlb[DEM].DEMFileName := fName;
-            DEMGlb[DEM].ReloadDEM(true);
-            if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
-         end;
-
-         procedure MaskToMatchDiluvium(DEM : integer);
-         begin
-            if (DEM <> MaskDEM) then begin
-               EditsDone := 0;
-               MaskStripFromSecondGrid(DEM,MaskDEM,msSecondMissing);
-               DEMGlb[DEM].CheckMaxMinElev;
-               {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw; {$EndIf};
-            end;
-         end;
-
-var
-   DataDir : PathStr;
-begin
-    {$IfDef ShowOpenBothPixelIsDEMs} OpenMaps := true; {$EndIf};
-    {$If Defined(RecordDEMIXopenGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-    Result := true;
-    ZeroPointAndAreaGrids(PointDEMs,AreaDEMs);
-    TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1SecPointStr + Ext,PointDEMs[0]);
-    if ValidDEM(PointDEMs[0]) and (DEMGlb[PointDEMs[0]].DEMSWcornerLat > 49.999) then begin
-       //with 1 sec open, see if 1.5 sec needed
-       TryToOpen(RefDir + Prefix + area + '_dtm' + Ref1_5SecPointStr + Ext,PointDEMs[-1]);
-    end;
-    for i := 1 to NumPtDEMs do begin
-       if (SRTM_centroid_names[i] = 'COAST') then DataDir := DEMIX_coastal_dtms
-       else if (SRTM_centroid_names[i] = 'DELTA') then DataDir := DEMIX_delta_dtms
-       else DataDir := TestDir;
-       TryToOpen(DataDir + Prefix + Area + '_' + SRTM_centroid_names[i]  + Ext,PointDEMs[i]);
-    end;
-    if ValidDEM(PointDEMs[-1]) then dmxFirstPoint := -1 else dmxFirstPoint := 0;
-
-    TryToOpen(RefDir + Prefix + Area + '_dtm' + Ref1SecAreaStr + Ext,AreaDEMs[0]);
-    for i := 1 to NumAreaDEMs do begin
-       if (ALOS_centroid_names[i] = 'DILUV') then DataDir := DEMIX_diluvium_dtms
-       else DataDir := TestDir;
-       TryToOpen(DataDir + Prefix + Area + '_' + ALOS_centroid_names[i]  + Ext,AreaDEMs[i]);
-    end;
-    if ValidDEM(AreaDEMs[-1]) then dmxFirstArea := -1 else dmxFirstArea := 0;      //this will not happen yet since we have not used high-lat ALOS
-
-   {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
-
-    if MDDef.DEMIX_mode in [dmAddDiluvium,dmAddDelta,dmAddCoastal] then begin
-       if MDDef.DEMIX_mode in [dmAddCoastal] then MaskDEM := PointDEMs[7];
-       if MDDef.DEMIX_mode in [dmAddDiluvium] then MaskDEM := AreaDEMs[2];
-       if MDDef.DEMIX_mode in [dmAddDelta] then begin
-          MaskDEM := PointDEMs[8];
-          if (NumFilledDEMIXtilesOnDEM(MaskDEM) = 0) then begin
-             Result := false;
-             {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
-          end;
-       end;
-       if Result and ValidDEM(MaskDEM) then begin
-          for i := dmxFirstPoint to NumPtDEMs do MaskToMatchDiluvium(PointDEMs[i]);
-          for i := dmxFirstArea to NumAreaDEMs do MaskToMatchDiluvium(AreaDEMs[i]);
-          {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
-
-          for i := dmxFirstPoint to NumPtDEMs do TrimDEM(PointDEMs[i]);
-          for i := dmxFirstArea to NumAreaDEMs do TrimDEM(AreaDEMs[i]);
-          {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
-       end;
-    end;
-  	 {$If Defined(RecordDEMIXopenGrids)} WriteLineToDebugFile('OpenBothPixelIsDEMs for ' + Area + '  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-
-    {$IfDef TrackPixelIs} ShowDEMIXgrids('OpenBothPixelIsDEMs', PointDEMs,AreaDEMs); {$EndIf};
-    {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
 end;
 
 

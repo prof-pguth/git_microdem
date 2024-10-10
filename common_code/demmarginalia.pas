@@ -133,7 +133,7 @@ end;
 
 procedure TDemMarginaliaForm.ElClick(Sender: TObject);
 begin
-   Legend_Placement.LegendOptions(MapOwner,'Elevation legend',MDDef.LegendFont,MDDef.GridLegendLocation,loElevLegend);
+   Legend_Placement.LegendOptions(MapOwner,'Elevation/grid value legend',MDDef.LegendFont,MDDef.GridLegendLocation,loElevLegend);
    CheckBox1.Checked := MDDef.GridLegendLocation.DrawItem;
    MapOwner.MapDraw.DeleteSingleMapLayer(MapOwner.MapDraw.LegendOverlayfName);
    MapOwner.DoFastMapRedraw;

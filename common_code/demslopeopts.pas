@@ -80,19 +80,40 @@ begin
    SlopeOptForm := TSlopeOptForm.Create(Application);
    SlopeOptForm.MapOwner := aMapOwner;
    SlopeOptForm.SetUpForm;
-   if (SlopeOptForm.ShowModal = idCancel) then
-       Result := false
-   else begin
-      Result := true;
-   end;
+   Result := not (SlopeOptForm.ShowModal = idCancel);
    SlopeOptForm.Free;
 end;
 
 
+procedure TSlopeOptForm.SetUpForm;
+begin
+   case MDDef.DefSlopeMap of
+      mtSlopeStandardCats : RadioGroup1.ItemIndex := 0;
+      mtSlopeTrafficCats  : RadioGroup1.ItemIndex := 1;
+      mtSlopeGrayScale    : RadioGroup1.ItemIndex := 2;
+      mtSlopeGrayScaleReversed    : RadioGroup1.ItemIndex := 3;
+      mtSlopeRainbow      : RadioGroup1.ItemIndex := 4;
+      mtSlopePastel       : RadioGroup1.ItemIndex := 5;
+      mtSlopeGoNoGo       : RadioGroup1.ItemIndex := 6;
+   end;
+   Label6.Caption := SlopeMethodName(MDDef.SlopeAlgorithm);
+   Edit1.Text := IntToStr(MDdef.SlopeRegionRadius);
+   Edit2.Text := IntToStr(MDdef.MaxSlopeOnMaps);
+   Button11.Enabled := (MDDef.ProgramOption = ExpertProgram) or MDDef.ShowGeomorphometry;
+   Edit1.Enabled := Button11.Enabled;
+   CheckBox1.Checked := MDDef.QuickMapRedraw;
+   if (MapOwner = nil) then begin
+      CheckBox1.Visible := false;
+      BitBtn1.Visible := false;
+   end;
+end;
+
+
+
 procedure TSlopeOptForm.Button11Click(Sender: TObject);
 begin
-   PickSlopeAspectMethod('',MDdef.SlopeAlg);
-   Label6.Caption := SlopeMethodName(MDdef.SlopeAlg);
+   PickSlopeAspectMethod('',MDDef.SlopeAlgorithm);
+   Label6.Caption := SlopeMethodName(MDDef.SlopeAlgorithm);
 end;
 
 procedure TSlopeOptForm.CheckBox1Click(Sender: TObject);
@@ -142,29 +163,9 @@ begin
 end;
 
 
-procedure TSlopeOptForm.SetUpForm;
-begin
-   case MDDef.DefSlopeMap of
-      mtSlopeStandardCats : RadioGroup1.ItemIndex := 0;
-      mtSlopeTrafficCats  : RadioGroup1.ItemIndex := 1;
-      mtSlopeGrayScale    : RadioGroup1.ItemIndex := 2;
-      mtSlopeGrayScaleReversed    : RadioGroup1.ItemIndex := 3;
-      mtSlopeRainbow      : RadioGroup1.ItemIndex := 4;
-      mtSlopePastel       : RadioGroup1.ItemIndex := 5;
-      mtSlopeGoNoGo       : RadioGroup1.ItemIndex := 6;
-   end;
-   Label6.Caption := SlopeMethodName(MDdef.SlopeAlg);
-   Edit1.Text := IntToStr(MDdef.SlopeRegionRadius);
-   Edit2.Text := IntToStr(MDdef.MaxSlopeOnMaps);
-   Button11.Enabled := (MDDef.ProgramOption = ExpertProgram) or MDDef.ShowGeomorphometry;
-   Edit1.Enabled := Button11.Enabled;
-end;
-
-
 procedure TSlopeOptForm.FormCreate(Sender: TObject);
 begin
    Petmar.PlaceFormAtMousePosition(Self);
-   CheckBox1.Checked := MDDef.QuickMapRedraw;
    {$IfDef ExAdvancedGIS} BitBtn1.Visible := false; {$Endif}
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}
 end;
@@ -187,7 +188,7 @@ begin
      6 : MDDef.DefSlopeMap := mtSlopeGoNoGo;
    end;
 
-   if MapOwner <> Nil then begin
+   if (MapOwner <> Nil) then begin
      SetSlopedefaultColors(MDDef.NumSlopeBands,MapOwner.MapDraw.SlopeCut,MapOwner.MapDraw.SlopeColors);
      DrawPreview;
    end;
@@ -199,7 +200,7 @@ procedure TSlopeOptForm.BitBtn1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
    {$Else}
-   if MDDef.DefSlopeMap = mtSlopeGrayScaleReversed then begin
+   if (MDDef.DefSlopeMap = mtSlopeGrayScaleReversed) then begin
       SetGrayscale(SlopeGray,MapOwner);
    end
    else begin

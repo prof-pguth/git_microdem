@@ -5,8 +5,8 @@ object SlopeOptForm: TSlopeOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Slope Map Options'
-  ClientHeight = 311
-  ClientWidth = 331
+  ClientHeight = 336
+  ClientWidth = 327
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -94,7 +94,7 @@ object SlopeOptForm: TSlopeOptForm
     Top = 88
     Width = 169
     Height = 169
-    Caption = 'Colors'
+    Caption = 'Slope Colors'
     Items.Strings = (
       'Standard Categories'
       'Trafficability Categories'
@@ -108,7 +108,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object BitBtn1: TBitBtn
     Left = 216
-    Top = 88
+    Top = 91
     Width = 89
     Height = 25
     Caption = 'Slope colors'

@@ -53,6 +53,7 @@ type
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
     BitBtn5: TBitBtn;
+    CheckBox11: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
@@ -72,7 +73,7 @@ type
 
 
 procedure FUV_SSIM_work;
-procedure FUV_SSIM_Processing(Mode : Byte; Overwrite : boolean);
+procedure FUV_SSIM_Processing(Mode : Byte; Overwrite,AreasInsteadOfTiles : boolean);
 
 
 implementation
@@ -128,6 +129,7 @@ begin
    CheckBox21.Checked := MDdef.SSIM_ls;
    CheckBox22.Checked := MDDef.DoSSIM;
    CheckBox24.Checked := MDDef.DoFUV;
+   CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
    CheckBox26.Checked := MDdef.SSIM_ProfC;
    CheckBox27.Checked := MDdef.SSIM_PlanC;
    CheckBox28.Checked := MDDef.SSIM_TangC;
@@ -136,7 +138,6 @@ begin
    CheckBox10.Checked := MDDef.SSIM_ConvergeIndex;
 
    CheckBox5.Checked := MDDef.DEMIX_overwrite_enabled;
-   CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
    CheckBox6.Checked := MDDef.DEMIX_all_areas;
    CheckBox1.Checked := true;
    CheckBox9.Checked := MDDef.ProcessLoopsForward;
@@ -155,7 +156,7 @@ begin
 end;
 
 
-procedure FUV_SSIM_Processing(Mode : Byte; Overwrite : boolean);
+procedure FUV_SSIM_Processing(Mode : Byte; Overwrite,AreasInsteadOfTiles : boolean);
 var
    Areas : tStringList;
 begin
@@ -164,7 +165,7 @@ begin
    MDDef.DEMIX_mode := Mode;
    SetParamsForDEMIXmode;
    Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
-   AreaSSIMandFUVComputations(Overwrite,Areas);
+   AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles,Areas);
    Areas.Destroy;
 end;
 
@@ -172,15 +173,19 @@ end;
 procedure Spawn_FUV_SSIMProcessing;
 var
    NewName : PathStr;
-   i : integer;
+   i,j,k : integer;
 begin
-   i := 0;
-   repeat
-      inc(i);
-      NewName := ExtractFilePath(application.exename) + 'md_' + IntToStr(i) + '.exe';
-   until not FileExists(NewName);
-   CopyFile(application.exename,NewName);
-   Petmar.ExecuteFile(NewName,'-fuvssim -mode=' + IntToStr(dmFull),'');
+   j := 3;
+   ReadDefault('Number to spawn',j);
+   for k := 1 to j do begin
+      i := 0;
+      repeat
+         inc(i);
+         NewName := ExtractFilePath(application.exename) + 'md_' + IntToStr(i) + '.exe';
+      until not FileExists(NewName);
+      CopyFile(application.exename,NewName);
+      Petmar.ExecuteFile(NewName,'-fuvssim -mode=' + IntToStr(dmFull),'');
+   end;
 end;
 
 
@@ -188,19 +193,11 @@ procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
 
 
    procedure DoOne(Mode : byte);
-   //var
-      //Areas : tStringList;
    begin
       if (Sender = BitBtn1) then begin
-         FUV_SSIM_Processing(Mode,MDDef.DEMIX_overwrite_enabled);
+         FUV_SSIM_Processing(Mode,MDDef.DEMIX_overwrite_enabled,CheckBox11.Checked);
       end
       else begin
-(*
-         GetDEMIXpaths;
-         DEMIX_initialized := true;
-         SetParamsForDEMIXmode;
-         Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
-*)
          MDDef.DEMIX_mode := Mode;
          if MDDef.DoFUV then MergeCSV(1);   //MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
          if MDDef.DoSSIM then MergeCSV(2); //MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');

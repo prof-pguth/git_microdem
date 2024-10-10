@@ -615,13 +615,13 @@ begin
 
    if (CurDEM <> 0) then begin
       if MDDef.TrendOpenMaps and MDDef.TrendMapDev then begin
-         DEMGlb[DevDEM].SetUpMap(DevDEM,true,mtElevRainbow);
+         DEMGlb[DevDEM].SetUpMap(true,mtElevRainbow);
          DEMGlb[DevDEM].SelectionMap.MapDraw.ScaleMapElevationsToDEM;
          DEMGlb[DevDEM].SelectionMap.DoCompleteMapRedraw;
       end;
 
       if MDDef.TrendOpenMaps and MDDef.TrendSurfMap then begin
-         DEMGlb[TrendDEM].SetUpMap(TrendDEM,true,mtElevRainbow);
+         DEMGlb[TrendDEM].SetUpMap(true,mtElevRainbow);
          DEMGlb[TrendDEM].SelectionMap.MapDraw.ScaleMapElevationsToDEM;
          DEMGlb[TrendDEM].SelectionMap.DoCompleteMapRedraw;
       end;

@@ -293,7 +293,7 @@ begin
    end;
    EndProgress;
    DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.BackToWandering;
-   DEMGlb[RoadNeighGrid].SetUpMap(RoadNeighGrid,true,mtElevSpectrum);
+   DEMGlb[RoadNeighGrid].SetUpMap(true,mtElevSpectrum);
 end;
 
 
@@ -351,7 +351,7 @@ begin
       end;
       EndProgress;
       DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.BackToWandering;
-      DEMGlb[RoadNeighGrid].SetUpMap(RoadNeighGrid,true,mtElevSpectrum);
+      DEMGlb[RoadNeighGrid].SetUpMap(true,mtElevSpectrum);
    end;
 end;
 
@@ -418,7 +418,7 @@ var
    TStr : ShortString;
 begin
    DEMDef_routines.SaveBackupDefaults;
-   MDDef.SlopeAlg := smEightNeighborsUnweighted;
+   MDDef.SlopeAlgorithm := smEvansYoung;
    MDDef.GeomorphMapsFullDEM := true;
    UpdateValues;
 
@@ -486,7 +486,7 @@ begin
 
     if RadioGroup3.ItemIndex in [0,2] then begin
        if MDDef.MaskMapShow in [0,2] then begin
-          DEMGlb[PeakRoofGrid].SetUpMap(PeakRoofGrid,true,mtElevSpectrum);
+          DEMGlb[PeakRoofGrid].SetUpMap(true,mtElevSpectrum);
        end
        else begin
           DEMGlb[PeakRoofGrid].CheckMaxMinElev;
@@ -504,8 +504,8 @@ begin
     Memo1.Lines.Add('');
     if (Sender = Flatroadbtn)  then Memo1.Lines.Add('Max slope: ' + RealToString(MDDef.BuildingMaxSlope,-12,2) + '%')
     else Memo1.Lines.Add('Min slope: ' + RealToString(MDDef.PeakRoofMinSlope,-12,2) + '%');
-    Memo1.Lines.Add('Slope tolearance: ' + RealToString(MDDef.PeakRoofSlopeTol,-12,1) + DegSym);
-    Memo1.Lines.Add('Aspect tolearance: ' + RealToString(MDDef.PeakRoofAspectTol,12,-1) + DegSym);
+    Memo1.Lines.Add('Slope tolearance: ' + RealToString(MDDef.PeakRoofSlopeTol,-12,1) + '°');
+    Memo1.Lines.Add('Aspect tolearance: ' + RealToString(MDDef.PeakRoofAspectTol,12,-1) + '°');
     Memo1.Lines.Add('Nearest neighbors: ' + IntToStr(MDDef.PeakRoofNeighbors));
     Memo1.Lines.Add(TStr + ' in DEM: ' + IntToStr(PeakRoofsOnMap));
     Memo1.Lines.Add('');
@@ -847,7 +847,7 @@ var
 begin
    UpdateValues;
    DEMDef_routines.SaveBackupDefaults;
-   MDDef.SlopeAlg := smSteepestNeighbor;
+   //MDDef.SlopeAlgorithm := smSteepestNeighbor;
 
    if (RadioGroup2.ItemIndex = 2) then begin
       if (SlopeGrid = 0) then SlopeGrid := MakeSingleNewDerivativeMap('S',MapOwner.MapDraw.DEMonMap,0,false);

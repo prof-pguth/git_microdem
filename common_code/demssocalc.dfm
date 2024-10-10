@@ -2,22 +2,23 @@ inherited SSOCalcDlg: TSSOCalcDlg
   Left = 325
   Top = 120
   Caption = 'Topographic Fabric Calculation'
-  ClientHeight = 455
-  ClientWidth = 636
+  ClientHeight = 454
+  ClientWidth = 632
   Position = poDefaultSizeOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnCreate = FormCreate
-  ExplicitWidth = 652
-  ExplicitHeight = 494
+  ExplicitWidth = 648
+  ExplicitHeight = 493
   TextHeight = 15
   inherited Bevel1: TBevel
-    Left = 252
-    Top = 400
-    Width = 224
-    Height = 7
-    ExplicitLeft = 252
-    ExplicitTop = 400
-    ExplicitWidth = 224
-    ExplicitHeight = 7
+    Left = 476
+    Top = 430
+    Width = 129
+    Height = 8
+    ExplicitLeft = 476
+    ExplicitTop = 430
+    ExplicitWidth = 129
+    ExplicitHeight = 8
   end
   inherited OKBtn: TButton
     Left = 151
@@ -231,14 +232,15 @@ inherited SSOCalcDlg: TSSOCalcDlg
         end
         object Edit4: TEdit
           Left = 179
-          Top = 76
+          Top = 82
           Width = 41
           Height = 23
           TabOrder = 5
+          OnChange = Edit4Change
         end
         object BitBtn2: TBitBtn
           Left = 101
-          Top = 270
+          Top = 272
           Width = 119
           Height = 25
           Caption = 'Compute fabric'
@@ -331,7 +333,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
         Left = 0
         Top = 0
         Width = 376
-        Height = 314
+        Height = 319
         Align = alClient
         TabOrder = 0
         object Label8: TLabel
@@ -402,14 +404,14 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 8
           Top = 65
           Width = 62
-          Height = 28
+          Height = 23
           TabOrder = 1
         end
         object Edit7: TEdit
           Left = 8
           Top = 38
           Width = 62
-          Height = 28
+          Height = 23
           TabOrder = 2
           OnChange = Edit7Change
         end
@@ -417,7 +419,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 7
           Top = 92
           Width = 63
-          Height = 28
+          Height = 23
           TabOrder = 3
           OnChange = Edit19Change
         end
@@ -425,7 +427,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 6
           Top = 119
           Width = 64
-          Height = 28
+          Height = 23
           TabOrder = 4
         end
         object CheckBox2: TCheckBox
@@ -450,7 +452,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 8
           Top = 147
           Width = 62
-          Height = 28
+          Height = 23
           TabOrder = 7
         end
         object BitBtn8: TBitBtn
@@ -466,7 +468,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 8
           Top = 171
           Width = 62
-          Height = 28
+          Height = 23
           TabOrder = 9
           Text = 'Edit15'
         end
@@ -474,7 +476,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 8
           Top = 194
           Width = 62
-          Height = 28
+          Height = 23
           TabOrder = 10
           Text = 'Edit16'
         end
@@ -508,7 +510,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
           Left = 225
           Top = 221
           Width = 43
-          Height = 28
+          Height = 23
           TabOrder = 14
         end
       end
@@ -541,7 +543,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
         Left = 189
         Top = 10
         Width = 52
-        Height = 28
+        Height = 23
         TabOrder = 0
         Text = 'Edit10'
         OnChange = Edit10Change
@@ -550,7 +552,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
         Left = 188
         Top = 37
         Width = 53
-        Height = 28
+        Height = 23
         TabOrder = 1
         Text = 'Edit11'
       end
@@ -558,7 +560,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
         Left = 188
         Top = 61
         Width = 53
-        Height = 28
+        Height = 23
         TabOrder = 2
         Text = 'Edit12'
       end

@@ -120,7 +120,6 @@ begin
          fNames.Add(fName);
       end;
       PowerSpectrumByMaximumEntropy(MDDef.MEMPowerDefaults,NS_Slope,NSFFTGraph,DEMGlb[WhichDEM].AreaName + ' N-S',fNames,succ(GridLimits.YGridHigh - GridLimits.YGridLow ),DEMGlb[WhichDEM].AverageYSpace);  //Gallant and others, 1994, Math.Geol.
-      //end;
       Line.Free;
       FNames.Free;
    end;

@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
 
@@ -139,6 +139,7 @@ type
     procedure RadioGroup2Click(Sender: TObject);
     procedure CheckBox8Click(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
+    procedure Edit4Change(Sender: TObject);
   private
     { Private declarations }
      theBaseMap : tMapForm;
@@ -269,6 +270,7 @@ procedure TSSOCalcDlg.CheckNewValues;
 var
    xsize,ysize,xpts,ypts : integer;
 begin
+    {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('TSSOCalcDlg.CheckNewValues in'); {$EndIf}
     CheckEditString(Edit1.Text,MDDef.PointSeparation);
     CheckEditString(Edit2.Text,MDDef.SSOBoxSizeMeters);
     CheckEditString(Edit3.Text,MDDef.GrainLengthMultiple);
@@ -303,6 +305,7 @@ begin
       Label9.Caption := IntToStr(round(MDdef.WavelengthCompDist / DEMGlb[theBaseMap.MapDraw.DEMonMap].AverageSpace)) + ' pts';
       NeedToDraw := true;
    end;
+   {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('TSSOCalcDlg.CheckNewValues out'); {$EndIf}
 end;
 
 procedure TSSOCalcDlg.ComboBox1Change(Sender: TObject);
@@ -480,9 +483,10 @@ var
    fName : PathStr;
 begin
    if NeedToDraw and (TheBaseMap <> Nil) then begin
+      SetColorForProcessing;
       {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tSSOCalcDlg.DrawOverlays in and drawing'); {$EndIf}
       CloseAndNilNumberedDB(ResultsGIS);
-      fName := SpacesToUnderScores(MDTempDir + ptTrim(DEMGLB[theBaseMap.MapDraw.DEMOnMap].AreaName) + '_fabric_'  + MDDef.SSOBoxSizeMeters.ToString + DefaultDBExt);
+      fName := NextFileNumber(MDTempDir,ptTrim(DEMGLB[theBaseMap.MapDraw.DEMOnMap].AreaName) + '_fabric_'  + MDDef.SSOBoxSizeMeters.ToString + '_', DefaultDBExt);
       ResultsGIS := DEMGlb[theBaseMap.MapDraw.DEMonMap].OrientationTable(fName,theBaseMap);
       AddOverlay(theBaseMap,ovoDatabases);
       GISdb[ResultsGIS].dbOpts.dbAutoShow := dbasTerrainFabric;
@@ -494,6 +498,7 @@ begin
       Memo1.Lines.Add('Regions too flat:    ' + SSOfailFlat.ToString);
       Memo1.Lines.Add('Unorganized Regions: ' + SSOfailOrg.ToString);
       Memo1.Lines.Add('');
+      SetColorForWaiting;
       {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tSSOCalcDlg.DrawOverlays out'); {$EndIf}
    end
    else begin
@@ -623,6 +628,11 @@ begin
 end;
 
 procedure TSSOCalcDlg.Edit3Change(Sender: TObject);
+begin
+   CheckNewValues;
+end;
+
+procedure TSSOCalcDlg.Edit4Change(Sender: TObject);
 begin
    CheckNewValues;
 end;

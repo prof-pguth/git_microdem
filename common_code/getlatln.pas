@@ -153,8 +153,7 @@ var
    MenuStr : ShortString;
 begin
     GetLatLongDlg := TGetLatLongDlg.Create(Application);
-    with GetLatLongDlg do
-    begin
+    with GetLatLongDlg do begin
        CheckBox4.Checked := MDDef.SaveDefaultHemis;
        if not (MDDef.OutPutLatLongMethod in [DecDegrees,DecMinutes,DecSeconds]) then MDDef.OutPutLatLongMethod := DecDegrees;
        RadioGroup4.ItemIndex := ord(MDDef.OutPutLatLongMethod);
@@ -195,8 +194,7 @@ begin
              if MDDef.CoordUse = CoordMGRS then CheckBox2Click(Nil);
              if MDDef.CoordUse = coordUTM then CheckBox3Click(Nil);
           end
-          else
-          begin
+          else begin
              Edit1.Enabled := false;
              Edit5.Enabled := false;
              Edit9.Enabled := false;
@@ -209,13 +207,11 @@ begin
           end;
        end
        else begin
-          if MDDef.DefaultLatHemi = 'N' then
-          begin
+          if MDDef.DefaultLatHemi = 'N' then begin
               RadioGroup1.ItemIndex := 0;
               RadioGroup3.ItemIndex := 0;
           end
-          else
-          begin
+          else begin
              RadioGroup1.ItemIndex := 1;
              RadioGroup3.ItemIndex := 1;
           end;
@@ -237,13 +233,12 @@ begin
           {$ifDef Microdem}
           if CoordOption then
           begin
-             if GetLatLongDlg.TabbedNotebook1.PageIndex = 1 then
-             begin
+             if GetLatLongDlg.TabbedNotebook1.PageIndex = 1 then begin
                 if CheckBox3.Checked then MenuStr := Edit11.Text + Edit12.Text + Edit13.Text + Edit14.Text
                 else MenuStr := Edit1.Text;
                 DatumConstants.MGRStoLatLong(MenuStr,Lat,Long);
              end;
-             if GetLatLongDlg.TabbedNotebook1.PageIndex = 2 then  begin
+             if GetLatLongDlg.TabbedNotebook1.PageIndex = 2 then begin
                 if RadioGroup3.ItemIndex = 0 then DatumConstants.LatHemi := 'N' else DatumConstants.LatHemi := 'S';
                 CheckEditString(Edit5.Text,DatumConstants.projUTMZone);
                 CheckEditString(Edit9.Text,xUTM);
@@ -253,9 +248,7 @@ begin
              end;
           end;
           {$EndIf}
-          if OK then OK := (abs(Lat) <= 90) and
-             ((abs(Long) <= 180) and (not MDdef.UseLongsto360)) or
-                ((abs(Long) <= 360) and (MDdef.UseLongsto360)) ;
+          if OK then OK := (abs(Lat) <= 90) and ((abs(Long) <= 180) and (not MDdef.UseLongsto360)) or ((abs(Long) <= 360) and (MDdef.UseLongsto360)) ;
           if not OK then MessageToContinue('Invalid position');
         until OK;
         While Long > 180 do Long := Long - 360;
@@ -282,19 +275,12 @@ begin
 end;
 
 procedure GetLatLongNoDatum(Prompt : ShortString; var Lat,Long : float64);
-//var
-   //DatumConstants : tBaseMap;
 begin
-   //DatumConstants := tBaseMap.Create;
-  // DatumConstants.h_DatumCode := '';
    LatLongInBox(Prompt,WGS84DatumConstants,Lat,Long,false,true);
-   //DatumConstants.Destroy;
 end;
 
 
 procedure GetLatLongInRadiansNoDatum(Prompt : ShortString; var Lat,Long : float64);
-//var
-   //DatumConstants : tBaseMap;
 begin
    {$IfDef RecordGetLatLong}  WriteLineToDebugFile('GetLatLongInRadiansNoDatum, lat= ' + RealToString(Lat,-12,-4) + '  long=' + RealToString(Long,-12,-4)); {$EndIf}
    Lat := Lat / DegToRad;
@@ -324,8 +310,11 @@ end;
 
 procedure TGetLatLongDlg.BitBtn1Click(Sender: TObject);
 begin
-   RadioGroup4.ItemIndex := 0;
-   WriteLatLongToBoxes(DEMMapf.Clipboard_Lat,DEMMapf.Clipboard_Long);
+   if DEMMapf.ClipBoard_Coords then begin
+      RadioGroup4.ItemIndex := 0;
+      WriteLatLongToBoxes(DEMMapf.Clipboard_Lat,DEMMapf.Clipboard_Long);
+   end
+   else MessageToContinue('No coordinates in clipboard');
 end;
 
 procedure TGetLatLongDlg.ChangeInputMethod;
@@ -382,7 +371,7 @@ end;
 
 procedure TGetLatLongDlg.FormCreate(Sender: TObject);
 begin
-   BitBtn1.Visible := DEMMapf.ClipBoard_Coords;
+   //BitBtn1.Visible := DEMMapf.ClipBoard_Coords;
    Petmar.PlaceFormAtMousePosition(Self);
 end;
 

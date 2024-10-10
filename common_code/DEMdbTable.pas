@@ -6318,9 +6318,11 @@ end;
 
 procedure Tdbtablef.AllpointsinboxallopenDBs1Click(Sender: TObject);
 begin
+   SetColorForProcessing;
    ChangeDEMNowDoing(DeleteMultipleRecsAllDBs);
    DBEditting := DBonTable;
    GISdb[DBonTable].theMapOwner.MouseIsDown := false;
+   SetColorForWaiting;
 end;
 
 procedure Tdbtablef.AllpointsinlinewithXYZ1Click(Sender: TObject);
@@ -13255,7 +13257,7 @@ begin
                     LatLongDegreeToString(MyData.GetFieldByNameAsFloat('LAT'),MyData.GetFieldByNameAsFloat('LONG'),MDDef.OutPutLatLongMethod) +
                     '  Range: ' + RealToString(MyData.GetFieldByNameAsFloat('MIN_RNG'),-6,0) + '--' + RealToString(MyData.GetFieldByNameAsFloat('SENSOR_RNG'),-8,0) + ' m' +
                     '  Ht: ' + RealToString(MyData.GetFieldByNameAsFloat('SENSOR_UP'),-6,0) + ' m' +
-                    '  Az: ' + RealToString(MyData.GetFieldByNameAsFloat('LEFT_AZ'),-6,0) + '--' + RealToString(MyData.GetFieldByNameAsFloat('RIGHT_AZ'),-8,0) + DegSym + MessLineBreak;
+                    '  Az: ' + RealToString(MyData.GetFieldByNameAsFloat('LEFT_AZ'),-6,0) + '--' + RealToString(MyData.GetFieldByNameAsFloat('RIGHT_AZ'),-8,0) + '°' + MessLineBreak;
                 GISdb[DBonTable].MyData.Next;
              end;
              MessageToContinue(Answer + MessLineBreak + MessLineBreak + 'Target area: ' + SmartAreaFormat(Area) + MessLineBreak + 'Coverage: ' + RealToString(TotalCoverage,-12,2) + '%',True);
@@ -14293,7 +14295,7 @@ begin
             EndProgress;
             fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + FieldsUsed.Strings[j] + '.dem';
             DEMGlb[NewDEM].WriteNewFormatDEM(fName);
-            DEMGlb[NewDEM].SetUpMap(NewDEM,false,mtElevRainbow);
+            DEMGlb[NewDEM].SetUpMap(false,mtElevRainbow);
          end;
       end;
       ShowStatus;

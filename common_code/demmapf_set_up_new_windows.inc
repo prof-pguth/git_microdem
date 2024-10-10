@@ -276,7 +276,7 @@ var
       end;
 
 
-begin
+begin {CreateDEMSelectionMap}
    {$IfDef NoMapOptions}
    {$Else}
       if not ValidDEM(DEM) then exit;
@@ -285,6 +285,7 @@ begin
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
       {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}
+      {$IfDef RecordNewWKT} WriteLineToDebugFile('CreateDEMSelectionMap in  DEM WKTString=' + IntToStr(length(DEMglb[DEM].DEMHeader.WKTString)));  {$EndIf}
 
       if (DEMGlb[DEM].SelectionMap = nil) then begin
          DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
@@ -294,7 +295,7 @@ begin
          {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
       end;
 
-      DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.InitializeProjectionFromDEMHeader(DEMGlb[DEM].DEMHeader);
+      DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.InitProjFomDEMHeader(DEMGlb[DEM].DEMHeader);
       {$IfDef RecordDEMMapProjection}
          WriteLineToDebugFile('CreateDEMSelectionMap map projection set, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
       {$EndIf}
@@ -316,7 +317,7 @@ begin
          WriteLineToDebugFile('CreateDEMSelectionMap out, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
       {$EndIf}
    {$EndIf}
-end;
+end {CreateDEMSelectionMap};
 
 
 function CreateANewDEMMapWindow(CurDEM : integer; DrawIt : boolean; mt : tMapType; MapCaption : ShortString) : tMapForm;

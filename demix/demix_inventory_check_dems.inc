@@ -8,6 +8,39 @@
 {____________________________________}
 
 
+procedure InventoryAreasAndTilesByCountry(DB : integer);
+var
+   Countries,Findings : tStringList;
+   i : integer;
+   BaseFilter : shortstring;
+   fName : PathStr;
+begin
+   if GISdb[db].MyData.FieldExists('DEMIX_TILE') and GISdb[db].MyData.FieldExists('AREA') and GISdb[db].MyData.FieldExists('COUNTRY') then begin
+      ShowHourglassCursor;
+      GISdb[db].EmpSource.Enabled := false;
+      BaseFilter := GISdb[db].MyData.Filter;
+      Countries := GISdb[db].MyData.ListUniqueEntriesInDB('COUNTRY');
+      Findings := tStringList.Create;
+      Findings.Add('COUNTRY,AREAS,DEMIX_TILES');
+      for i := 0 to pred(Countries.Count) do begin
+         GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'COUNTRY=' + QuotedStr(Countries[i]));
+         Findings.Add(Countries[i] + ',' + IntToStr(GISdb[db].NumUniqueEntriesInDB('AREA')) + ',' + IntToStr(GISdb[db].NumUniqueEntriesInDB('DEMIX_TILE')));
+      end;
+      fName := NextFileNumber(MDTempDir,'country-areas-tiles','.dbf');
+      PetdbUtils.StringList2CSVtoDB(Findings,fName);
+      //GISdb[db].EmpSource.Enabled := true;
+      Countries.Destroy;
+      GISdb[db].ApplyGISFilter(BaseFilter);
+      GISdb[db].ShowStatus;
+   end
+   else begin
+      MessageToContinue('Required fields missing');
+   end;
+end;
+
+
+
+
 procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 var
    TestDEMs : tStringList;
@@ -62,7 +95,7 @@ begin
              PointGrids[6] := -1;
              PointGrids[7] := -1;
              ad := 0;   //we don't want openness difference
-             CreateOpennessMap(False,DEM,250,PointGrids[6],PointGrids[7],ad);
+             CreateOpennessMap(False,DEMGlb[DEM].FullDEMGridLimits,DEM,250,PointGrids[6],PointGrids[7],ad);
              DEMglb[PointGrids[7]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[6]].SaveAsGeotiff(fName);
              CloseAllDEMs;
@@ -85,48 +118,48 @@ var
    fName : PathStr;
 begin
    try
-         GetDEMIXPaths;
-         Areas := DEMIX_AreasWanted;
-         Results := tStringList.Create;
-         Results.Add('AREA,REF_DEM,TEST_DEM,FUV,SSIM,CHANNEL,DIFF_DIST');
+      GetDEMIXPaths;
+      Areas := DEMIX_AreasWanted;
+      Results := tStringList.Create;
+      Results.Add('AREA,REF_DEM,TEST_DEM,FUV,SSIM,CHANNEL,DIFF_DIST');
 
-         SSIMareas := tStringList.Create;
-         FindMatchingFiles(SSIMresultsDir, '*.csv',SSIMareas,1);
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryAllDEMIXdata, csv in ' + SSIMresultsDir + ': ' + IntToStr(SSIMareas.count)); {$EndIf}
-         RemoveFilesThatDoNotHaveString(SSIMareas,'ssim');
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryAllDEMIXdata, with SSIM ' + SSIMresultsDir + ': ' + IntToStr(SSIMareas.count)); {$EndIf}
-         FUVareas := tStringList.Create;
-         FindMatchingFiles(SSIMresultsDir, '*.csv',FUVareas,1);
-         RemoveFilesThatDoNotHaveString(FUVareas,'fuv');
+      SSIMareas := tStringList.Create;
+      FindMatchingFiles(SSIMresultsDir, '*.csv',SSIMareas,1);
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryAllDEMIXdata, csv in ' + SSIMresultsDir + ': ' + IntToStr(SSIMareas.count)); {$EndIf}
+      RemoveFilesThatDoNotHaveString(SSIMareas,'ssim');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryAllDEMIXdata, with SSIM ' + SSIMresultsDir + ': ' + IntToStr(SSIMareas.count)); {$EndIf}
+      FUVareas := tStringList.Create;
+      FindMatchingFiles(SSIMresultsDir, '*.csv',FUVareas,1);
+      RemoveFilesThatDoNotHaveString(FUVareas,'fuv');
 
-         RefDEMs := tStringList.Create;
-         FindMatchingFiles(DEMIX_Ref_1sec, '*.tif',REFDEMs,1);
-         TestDEMs := tStringList.Create;
-         FindMatchingFiles(DEMIX_test_dems, '*.tif',TestDEMs,1);
-         ChannelAreas := tStringList.Create;
-         FindMatchingFiles(ChannelMissesDir, '*.csv',Channelareas,1);
-         DiffDist := tStringList.Create;
-         FindMatchingFiles(Diff_dist_results_dir, '*.csv',DiffDist,1);
+      RefDEMs := tStringList.Create;
+      FindMatchingFiles(DEMIX_Ref_1sec, '*.tif',REFDEMs,1);
+      TestDEMs := tStringList.Create;
+      FindMatchingFiles(DEMIX_test_dems, '*.tif',TestDEMs,1);
+      ChannelAreas := tStringList.Create;
+      FindMatchingFiles(ChannelMissesDir, '*.csv',Channelareas,1);
+      DiffDist := tStringList.Create;
+      FindMatchingFiles(Diff_dist_results_dir, '*.csv',DiffDist,1);
 
-         for j := 0 to pred(Areas.Count) do begin
-            Area := Areas.Strings[j];
-            aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMs,Area)) + ',' +
-                                  IntToStr(NumberOfStringsWithSubstring(TestDEMs,Area)) + ',' +
-                                  IntToStr(NumberOfStringsWithSubstring(FUVareas,Area)) + ',' +
-                                  IntToStr(NumberOfStringsWithSubstring(SSIMareas,Area)) + ',' +
-                                  IntToStr(NumberOfStringsWithSubstring(ChannelAreas,Area)) + ',' +
-                                  IntToStr(NumberOfStringsWithSubstring(DiffDist,Area));
-            Results.Add(aline);
-         end;
-        fName := NextFileNumber(MDTempDir,'DEMIX_data_inventory','.dbf');
-        PetdbUtils.StringList2CSVtoDB(Results,fName);
-        Areas.Destroy;
-        SSIMareas.Destroy;
-        FUVareas.Destroy;
-        RefDEMs.Destroy;
-        TestDEMs.Destroy;
-        ChannelAreas.Destroy;
-        DiffDist.Destroy;
+      for j := 0 to pred(Areas.Count) do begin
+         Area := Areas.Strings[j];
+         aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMs,Area)) + ',' +
+                               IntToStr(NumberOfStringsWithSubstring(TestDEMs,Area)) + ',' +
+                               IntToStr(NumberOfStringsWithSubstring(FUVareas,Area)) + ',' +
+                               IntToStr(NumberOfStringsWithSubstring(SSIMareas,Area)) + ',' +
+                               IntToStr(NumberOfStringsWithSubstring(ChannelAreas,Area)) + ',' +
+                               IntToStr(NumberOfStringsWithSubstring(DiffDist,Area));
+         Results.Add(aline);
+      end;
+     fName := NextFileNumber(MDTempDir,'DEMIX_data_inventory','.dbf');
+     PetdbUtils.StringList2CSVtoDB(Results,fName);
+     Areas.Destroy;
+     SSIMareas.Destroy;
+     FUVareas.Destroy;
+     RefDEMs.Destroy;
+     TestDEMs.Destroy;
+     ChannelAreas.Destroy;
+     DiffDist.Destroy;
    finally
       EndDEMIXProcessing;
    end;
@@ -503,13 +536,22 @@ var
 
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DeleteFilesForATestArea in'); {$EndIf}
-   MDDef.DEMIX_mode := dmClassic;
+   MDDef.DEMIX_mode := dmFull;
    GetDEMIXPaths;
    Areas := DEMIX_AreasWanted;
    for j := 0 to pred(Areas.Count) do begin
       TestArea := UpperCase(Areas.Strings[j]);
       wmdem.SetPanelText(2,'Clear ' + IntToStr(succ(j)) + '/' + IntToStr(Areas.Count) + '  ' +  TestArea,true);
       ShowHourglassCursor;
+
+      if AnswerIsYes('Delete area DEMs and Land cover') then begin
+         ClearOutFolder(DEMIX_area_lc100);
+         ClearOutFolder(DEMIX_Ref_1sec);
+         ClearOutFolder(DEMIX_test_dems);
+         //ClearOutFolder(DEMIX_diluvium_dems);
+         //ClearOutFolder(DEMIX_delta_dems);
+         //ClearOutFolder(DEMIX_coastal_dems);
+      end;
       ClearOutFolder(Diff_dist_results_dir);
       ClearOutFolder(DEMIX_diff_dist);
       ClearOutFolder(DEMIX_diff_maps_dir);
@@ -535,23 +577,8 @@ begin
       ClearOutFolder(ChannelMissesDir);
 
       ClearOutFolder(SSIMresultsDir);
-      //ClearOutFolder(DiluvSSIMresultsDir);
-      //ClearOutFolder(DeltaSSIMresultsDir);
-      //ClearOutFolder(CoastalSSIMresultsDir);
 
       ClearOutFolder(FUVresultsDir);
-      //ClearOutFolder(DiluvFUVresultsDir);
-      //ClearOutFolder(DeltaFUVresultsDir);
-      //ClearOutFolder(CoastalFUVresultsDir);
-
-      (*
-      ClearOutFolder(DEMIX_area_lc100);
-      ClearOutFolder(DEMIX_Ref_1sec);
-      ClearOutFolder(DEMIX_test_dems);
-      ClearOutFolder(DEMIX_diluvium_dems);
-      ClearOutFolder(DEMIX_delta_dems);
-      ClearOutFolder(DEMIX_coastal_dems);
-      *)
    end;
    EndDEMIXProcessing;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DeleteFilesForATestArea out'); {$EndIf}
@@ -581,75 +608,6 @@ begin
    GISdb[db].ClearGISFilter;
    GISdb[db].EmpSource.Enabled := true;
 end;
-
-{$IfDef DEMIX_SAGA_channels}
-
-      procedure InventoryChannelDataByArea;
-      var
-         Areas,Results : tStringList;
-         AreaName : shortstring;
-         i : integer;
-         fName : PathStr;
-         FileList : array[1..7] of tStringList;
-
-            function CountOfFiles(ID : integer; AreaName : shortString) : integer;
-            var
-               j : integer;
-               fName : PathStr;
-            begin
-               Result := 0;
-               for j := 0 to pred(FileList[ID].Count) do begin
-                  fName := UpperCase(FileList[ID].Strings[j]);
-                  if (StrUtils.AnsiContainsText(fName,UpperCase(AreaName) )) then begin
-                     inc(Result);
-                  end;
-               end;
-            end;
-
-            procedure LoadFiles(ID : integer; Dir : PathStr; Ext : shortString);
-            begin
-               FileList[ID] := Nil;
-               FindMatchingFiles(Dir,Ext,FileList[ID]);
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile(Dir + '  ' + Ext + '  files=' + IntToStr(FileList[ID].Count)); {$EndIf}
-            end;
-
-
-      begin
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea in'); {$EndIf}
-         GetDEMIXPaths;
-         Areas := tStringList.Create;
-         Areas.LoadFromFile(AreaListFName);
-
-         Results := tStringList.Create;
-         Results.Add('AREA,REF_NOS,TEST_NOS,REF_SHP,TEST_SHP,REF_GRID,TEST_GRID,MISS_CSV');
-         LoadFiles(1,DEMIX_ref_DEMs_no_sink,'*.tif');
-         LoadFiles(2,DEMIX_test_DEMs_no_sink,'*.tif');
-         LoadFiles(3,DEMIX_ref_DEMs_channels,'*.shp');
-         LoadFiles(4,DEMIX_test_DEMs_channels,'*.shp');
-         LoadFiles(5,DEMIX_ref_DEMs_channel_grids,'*.tif');
-         LoadFiles(6,DEMIX_test_DEMs_channel_grids,'*.tif');
-         LoadFiles(7,ChannelMissesDir,'*.csv');
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea loaded'); {$EndIf}
-
-         for i := 0 to pred(Areas.Count) do begin
-            AreaName := Areas.Strings[i];
-            Results.Add(AreaName + ',' + IntToStr(CountOfFiles(1,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(2,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(3,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(4,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(5,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(6,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(7,AreaName)));
-         end;
-
-         Areas.Destroy;
-         fName := NextFileNumber(MDTempDir,'status_channel_files','.dbf');
-         PetdbUtils.StringList2CSVtoDB(Results,fName);
-         for i := 1 to 7 do FileList[i].Destroy;
-
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
-      end;
-{$EndIf}
 
 
 procedure InventoryDEMIXdifferenceStats;
@@ -681,21 +639,22 @@ end;
 procedure InventoryWbWSaagaMDsavedGridsByArea;
 var
    TestDEMFiles,RefDEMfiles,Results,Areas : tStringList;
-   i,j{,n} : integer;
+   i,j : integer;
    Area,aLine : shortstring;
    fName : PathStr;
 
 
-   function GetTiffFiles(aDir : PathStr; Ref : boolean = false) : tStringList;
+   function GetTiffFiles(aDir : PathStr; Ext : ShortString) : tStringList;
    var
       i : integer;
       fName : PathStr;
    begin
       Result := tStringList.Create;
       Result.sorted := true;
-      FindMatchingFiles(aDir,'*.tif',Result);
+      FindMatchingFiles(aDir,Ext,Result);
       for i := pred(Result.Count) downto 0 do begin
          fName := Result.Strings[i];
+         (*  //5/31/2024, this can probably be removed
          if StrUtils.ANSIcontainsText(fName,'_dsm') then begin
             DeleteFileIfExists(fName);
          end
@@ -704,6 +663,7 @@ var
                DeleteFileIfExists(fName);
             end;
          end;
+         *)
       end;
 
    end;
@@ -713,12 +673,29 @@ begin
    GetDEMIXPaths;
    Areas := tStringList.Create;
    Areas.LoadFromFile(AreaListFName);
-   //n := Areas.Count;
    ShowHourglassCursor;
 
-   TestDEMFiles := GetTiffFiles(wbt_out_test_dir);
-   RefDEMfiles := GetTiffFiles(wbt_out_ref_dir,true);
+   TestDEMFiles := GetTiffFiles(wbt_out_test_dir,'*.shp');
+   RefDEMfiles := GetTiffFiles(wbt_out_ref_dir,'*.shp');
+   Results := tStringList.Create;
+   Results.Add('AREA,VALLEY_REF,RIDGE_REF,VALLEY_TEST,RIDGE_TEST');
+   for j := 0 to pred(Areas.Count) do begin
+      Area := Areas.Strings[j];
+      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'valleys_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'ridges_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'valleys_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'ridges_' + Area));
+      Results.Add(aline);
+  end;
+  fName := NextFileNumber(MDTempDir,'WbW_vector_inventory','.dbf');
+  //Results.SaveToFile('c:\temp\test.csv');
+  PetdbUtils.StringList2CSVtoDB(Results,fName);
+  TestDEMFiles.Free;
+  RefDEMfiles.Free;
+  Results.Free;
 
+   TestDEMFiles := GetTiffFiles(wbt_out_test_dir,'*.tif');
+   RefDEMfiles := GetTiffFiles(wbt_out_ref_dir,'*.tif');
    Results := tStringList.Create;
    Results.Add('AREA,FLOW_REF,HAND_REF,ROTOR_REF,STREAM_REF,SED_TR_REF,WETIN_REF,FLOW_TEST,HAND_TEST,ROTOR_TEST,STREAM_TEST,SED_TR_TEST,WETIN_TEST');
    for j := pred(Areas.Count) downto 0 do begin
@@ -743,14 +720,15 @@ begin
   RefDEMfiles.Free;
   Results.Free;
 
-  TestDEMFiles := GetTiffFiles(saga_out_test_dir);
-  RefDEMfiles := GetTiffFiles(saga_out_ref_dir,true);
-
+  TestDEMFiles := GetTiffFiles(saga_out_test_dir,'*.tif');
+  RefDEMfiles := GetTiffFiles(saga_out_ref_dir,'*.tif');
    Results := tStringList.Create;
-   Results.Add('AREA,CONIN_REF,CONIN_TEST');
+   Results.Add('AREA,IP12_REF,CONIN_REF,IP12_TEST,CONIN_TEST');
    for j := 0 to pred(Areas.Count) do begin
       Area := Areas.Strings[j];
-      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'CONIN_' + Area)) + ',' +
+      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'ip12_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'CONIN_' + Area)) + ',' +
+                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'ip12_' + Area)) + ',' +
                             IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'CONIN_' + Area));
       Results.Add(aline);
   end;
@@ -760,9 +738,9 @@ begin
   RefDEMfiles.Free;
   Results.Free;
 
-  TestDEMFiles := GetTiffFiles(md_out_test_dir);
-  RefDEMfiles := GetTiffFiles(md_out_ref_dir,true);
 
+  TestDEMFiles := GetTiffFiles(md_out_test_dir,'*.tif');
+  RefDEMfiles := GetTiffFiles(md_out_ref_dir,'*.tif');
    Results := tStringList.Create;
    Results.Add('AREA,RRI_REF,ROUGH_REF,SLOPE_REF,OPENU_REF,OPEND_REF,HILL_REF,TPI_REF,RRI_TEST,ROUGH_TEST,SLOPE_TEST,OPENU_TEST,OPEND_TEST,HILL_TEST,TPI_TEST');
    for j := 0 to pred(Areas.Count) do begin
@@ -788,7 +766,6 @@ begin
   TestDEMFiles.Free;
   RefDEMfiles.Free;
   Results.Free;
-
 
   Areas.Free;
   EndDEMIXProcessing;
@@ -864,6 +841,7 @@ begin
    end;
 end;
 
+
 procedure Inventory3DEPtiles;
 //table with the number of tiffs in four categories for the source 3DEP
 //can show if processing is incomplete, or if there are broken or damaged files
@@ -913,6 +891,7 @@ end;
 
 
 procedure InventoryDBwithDSMandDTMbyArea;
+//this should be redone now that the DSMs are in a different directory
 var
    FilesWanted,Areas,Results : tStringList;
    AreaName : shortstring;
@@ -983,8 +962,6 @@ begin
 end;
 
 
-
-
 procedure CheckLowAltitudeDEMs(Dir : PathStr; Name : shortstring);
 var
    FilesWanted,Results : tStringList;
@@ -994,12 +971,10 @@ begin
    GetDEMIXpaths(false);
    FilesWanted := tStringList.Create;
    FindMatchingFiles(Dir,'*.tif',FilesWanted,1);
-   //FilesWanted.Sort;
    DoAllFilesHaveSetEGMandPixelIs(FilesWanted,Results);
    FilesWanted.Free;
    fName := NextFileNumber(MDTempDir,Name + '_area_status_','.dbf');
    db := PetdbUtils.StringList2CSVtoDB(Results,fName);
-   //GISdb[db].MyData
    EndDEMIXProcessing;
 end;
 
@@ -1306,7 +1281,151 @@ begin
 end;
 
 
+procedure PruneMisnamedReferenceDTMs;
+var
+   RefDEMfiles : tStringList;
+   i,j : integer;
+   fName : PathStr;
+
+
+   function GetTiffFiles(aDir : PathStr; Ref : boolean = false) : tStringList;
+   var
+      i : integer;
+      fName : PathStr;
+   begin
+      Result := tStringList.Create;
+      FindMatchingFiles(aDir,'*.tif',Result);
+      for i := pred(Result.Count) downto 0 do begin
+         fName := Result.Strings[i];
+         if StrUtils.ANSIcontainsText(fName,'_dsm') then begin
+         end
+         else begin
+            if Ref and (not StrUtils.ANSIcontainsText(fName,'_dtm')) then begin
+               DeleteFileIfExists(fName);
+            end;
+         end;
+      end;
+   end;
+
+
+begin
+   GetDEMIXPaths;
+   ShowHourglassCursor;
+   RefDEMfiles := GetTiffFiles(DEMIX_Ref_1sec,true);
+   RefDEMfiles.Free;
+   EndDEMIXProcessing;
+end;
+
+
+procedure MoveReferenceDSMs;
+//segregates reference DSMs in their own directory
+var
+   RefDEMfiles : tStringList;
+   i,j : integer;
+   fName : PathStr;
+
+   function GetTiffFiles(aDir : PathStr; Ref : boolean = false) : tStringList;
+   var
+      i : integer;
+      fName : PathStr;
+   begin
+      Result := tStringList.Create;
+      FindMatchingFiles(aDir,'*.tif',Result);
+      for i := pred(Result.Count) downto 0 do begin
+         fName := Result.Strings[i];
+         if StrUtils.ANSIcontainsText(fName,'_dsm') then begin
+            Petmar.MoveFile(fName,DEMIX_Ref_dsm_1sec + ExtractFileName(fName));
+         end;
+      end;
+   end;
+
+
+begin
+   SafeMakeDir(DEMIX_Ref_dsm_1sec);
+   GetDEMIXPaths;
+   ShowHourglassCursor;
+   RefDEMfiles := GetTiffFiles(DEMIX_Ref_1sec,true);
+   RefDEMfiles.Free;
+   EndDEMIXProcessing;
+end;
+
+
+
+
+
+{$IfDef DEMIX_SAGA_channels}
+
+      procedure InventoryChannelDataByArea;
+      var
+         Areas,Results : tStringList;
+         AreaName : shortstring;
+         i : integer;
+         fName : PathStr;
+         FileList : array[1..7] of tStringList;
+
+            function CountOfFiles(ID : integer; AreaName : shortString) : integer;
+            var
+               j : integer;
+               fName : PathStr;
+            begin
+               Result := 0;
+               for j := 0 to pred(FileList[ID].Count) do begin
+                  fName := UpperCase(FileList[ID].Strings[j]);
+                  if (StrUtils.AnsiContainsText(fName,UpperCase(AreaName) )) then begin
+                     inc(Result);
+                  end;
+               end;
+            end;
+
+            procedure LoadFiles(ID : integer; Dir : PathStr; Ext : shortString);
+            begin
+               FileList[ID] := Nil;
+               FindMatchingFiles(Dir,Ext,FileList[ID]);
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile(Dir + '  ' + Ext + '  files=' + IntToStr(FileList[ID].Count)); {$EndIf}
+            end;
+
+
+      begin
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea in'); {$EndIf}
+         GetDEMIXPaths;
+         Areas := tStringList.Create;
+         Areas.LoadFromFile(AreaListFName);
+
+         Results := tStringList.Create;
+         Results.Add('AREA,REF_NOS,TEST_NOS,REF_SHP,TEST_SHP,REF_GRID,TEST_GRID,MISS_CSV');
+         LoadFiles(1,DEMIX_ref_DEMs_no_sink,'*.tif');
+         LoadFiles(2,DEMIX_test_DEMs_no_sink,'*.tif');
+         LoadFiles(3,DEMIX_ref_DEMs_channels,'*.shp');
+         LoadFiles(4,DEMIX_test_DEMs_channels,'*.shp');
+         LoadFiles(5,DEMIX_ref_DEMs_channel_grids,'*.tif');
+         LoadFiles(6,DEMIX_test_DEMs_channel_grids,'*.tif');
+         LoadFiles(7,ChannelMissesDir,'*.csv');
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea loaded'); {$EndIf}
+
+         for i := 0 to pred(Areas.Count) do begin
+            AreaName := Areas.Strings[i];
+            Results.Add(AreaName + ',' + IntToStr(CountOfFiles(1,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(2,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(3,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(4,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(5,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(6,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(7,AreaName)));
+         end;
+
+         Areas.Destroy;
+         fName := NextFileNumber(MDTempDir,'status_channel_files','.dbf');
+         PetdbUtils.StringList2CSVtoDB(Results,fName);
+         for i := 1 to 7 do FileList[i].Destroy;
+
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
+      end;
+{$EndIf}
+
+
+(*
 procedure VerifyAllMapsReadyForSSIM;
+//this was when Python did SSIM
 const
    NCrits = 6;
    Crits : array[1..NCrits] of shortstring = ('ELEV_','RRI_','SLOPE_','HILL_','RUFF_','TPI_');
@@ -1353,77 +1472,8 @@ begin
    DisplayAndPurgeStringList(GoodTiles,'Good tiles=' + IntToStr(GoodTiles.Count));
    DisplayAndPurgeStringList(BadTiles,'Problem tiles=' + IntToStr(BadTiles.Count));
 end;
+*)
 
-
-
-procedure PruneMisnamedReferenceDTMs;
-var
-   RefDEMfiles : tStringList;
-   i,j : integer;
-   fName : PathStr;
-
-
-   function GetTiffFiles(aDir : PathStr; Ref : boolean = false) : tStringList;
-   var
-      i : integer;
-      fName : PathStr;
-   begin
-      Result := tStringList.Create;
-      FindMatchingFiles(aDir,'*.tif',Result);
-      for i := pred(Result.Count) downto 0 do begin
-         fName := Result.Strings[i];
-         if StrUtils.ANSIcontainsText(fName,'_dsm') then begin
-         end
-         else begin
-            if Ref and (not StrUtils.ANSIcontainsText(fName,'_dtm')) then begin
-               DeleteFileIfExists(fName);
-            end;
-         end;
-      end;
-   end;
-
-
-begin
-   GetDEMIXPaths;
-   //n := Areas.Count;
-   ShowHourglassCursor;
-   RefDEMfiles := GetTiffFiles(DEMIX_Ref_1sec,true);
-   RefDEMfiles.Free;
-   EndDEMIXProcessing;
-end;
-
-
-procedure MoveReferenceDSMs;
-//segregates the reference DSMs
-var
-   RefDEMfiles : tStringList;
-   i,j : integer;
-   fName : PathStr;
-
-   function GetTiffFiles(aDir : PathStr; Ref : boolean = false) : tStringList;
-   var
-      i : integer;
-      fName : PathStr;
-   begin
-      Result := tStringList.Create;
-      FindMatchingFiles(aDir,'*.tif',Result);
-      for i := pred(Result.Count) downto 0 do begin
-         fName := Result.Strings[i];
-         if StrUtils.ANSIcontainsText(fName,'_dsm') then begin
-            Petmar.MoveFile(fName,DEMIX_Ref_dsm_1sec + ExtractFileName(fName));
-         end;
-      end;
-   end;
-
-
-begin
-   SafeMakeDir(DEMIX_Ref_dsm_1sec);
-   GetDEMIXPaths;
-   ShowHourglassCursor;
-   RefDEMfiles := GetTiffFiles(DEMIX_Ref_1sec,true);
-   RefDEMfiles.Free;
-   EndDEMIXProcessing;
-end;
 
 
 

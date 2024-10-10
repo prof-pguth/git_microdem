@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet3
+    ActivePage = TabSheet4
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -136,7 +136,6 @@ inherited OptionsForm: TOptionsForm
         ScrollBars = ssVertical
         TabOrder = 0
         OnSelectCell = StringGrid1SelectCell
-        ExplicitTop = -2
         ColWidths = (
           64
           64)
@@ -233,7 +232,7 @@ inherited OptionsForm: TOptionsForm
         Top = 215
         Width = 75
         Height = 25
-        Caption = 'Contour'
+        Caption = 'Contour maps'
         TabOrder = 2
         OnClick = Button9Click
       end
@@ -302,7 +301,7 @@ inherited OptionsForm: TOptionsForm
         Top = 215
         Width = 75
         Height = 25
-        Caption = 'Aspect'
+        Caption = 'Aspect maps'
         TabOrder = 10
         OnClick = BitBtn13Click
       end
@@ -315,7 +314,7 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 11
       end
       object BitBtn16: TBitBtn
-        Left = 169
+        Left = 260
         Top = 215
         Width = 105
         Height = 25
@@ -457,6 +456,15 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Elevation percentile color limits'
         TabOrder = 25
+      end
+      object BitBtn20: TBitBtn
+        Left = 179
+        Top = 215
+        Width = 75
+        Height = 25
+        Caption = 'Slope Maps'
+        TabOrder = 26
+        OnClick = BitBtn20Click
       end
     end
     object TabSheet5: TTabSheet
@@ -1742,22 +1750,13 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 8
         OnClick = BitBtn19Click
       end
-      object BitBtn20: TBitBtn
-        Left = 16
-        Top = 72
-        Width = 75
-        Height = 25
-        Caption = 'Slope'
-        TabOrder = 9
-        OnClick = BitBtn20Click
-      end
       object Button3: TButton
         Left = 264
         Top = 112
         Width = 137
         Height = 25
         Caption = 'Terrain blouw up'
-        TabOrder = 10
+        TabOrder = 9
         OnClick = Button3Click
       end
       object CheckBox149: TCheckBox
@@ -1766,7 +1765,7 @@ inherited OptionsForm: TOptionsForm
         Width = 369
         Height = 17
         Caption = 'Cumulative freq on normal prob axis'
-        TabOrder = 11
+        TabOrder = 10
       end
       object CheckBox150: TCheckBox
         Left = 264
@@ -1774,7 +1773,7 @@ inherited OptionsForm: TOptionsForm
         Width = 243
         Height = 17
         Caption = 'Quantile ranges (not 1 std dev)'
-        TabOrder = 12
+        TabOrder = 11
       end
       object RadioGroup30: TRadioGroup
         Left = 3
@@ -1787,7 +1786,7 @@ inherited OptionsForm: TOptionsForm
           '1'
           '2'
           '4')
-        TabOrder = 13
+        TabOrder = 12
       end
       object CheckBox152: TCheckBox
         Left = 264
@@ -1795,7 +1794,7 @@ inherited OptionsForm: TOptionsForm
         Width = 266
         Height = 17
         Caption = 'Geomorph grids full coverage'
-        TabOrder = 14
+        TabOrder = 13
       end
       object CheckBox155: TCheckBox
         Left = 16
@@ -1803,7 +1802,7 @@ inherited OptionsForm: TOptionsForm
         Width = 177
         Height = 17
         Caption = 'Deliberate histograms'
-        TabOrder = 15
+        TabOrder = 14
       end
       object BitBtn30: TBitBtn
         Left = 264
@@ -1811,7 +1810,7 @@ inherited OptionsForm: TOptionsForm
         Width = 121
         Height = 25
         Caption = 'Least cost path'
-        TabOrder = 16
+        TabOrder = 15
         OnClick = BitBtn30Click
       end
       object GroupBox18: TGroupBox
@@ -1820,7 +1819,7 @@ inherited OptionsForm: TOptionsForm
         Width = 193
         Height = 238
         Caption = 'DEMIX'
-        TabOrder = 17
+        TabOrder = 16
         object DTfilllabel: TLabel
           Left = 10
           Top = 21
@@ -1907,7 +1906,7 @@ inherited OptionsForm: TOptionsForm
         Width = 185
         Height = 105
         Caption = 'DEMIX tolerances'
-        TabOrder = 18
+        TabOrder = 17
         object Label12: TLabel
           Left = 8
           Top = 24
@@ -1960,7 +1959,7 @@ inherited OptionsForm: TOptionsForm
         Width = 153
         Height = 17
         Caption = 'Process loops forward'
-        TabOrder = 19
+        TabOrder = 18
       end
     end
     object TabSheet13: TTabSheet

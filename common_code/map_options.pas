@@ -183,7 +183,7 @@ procedure TTMapOptsForm.BitBtn5Click(Sender: TObject);
 begin
    {$IfDef ExSat}
    {$Else}
-   GetIHSparameters(MDdef.MergeInt,MDdef.MergeHue,MDdef.MergeSat{,MergeUseReflectance});
+      GetIHSparameters(MDdef.MergeInt,MDdef.MergeHue,MDdef.MergeSat{,MergeUseReflectance});
    {$EndIf}
 end;
 

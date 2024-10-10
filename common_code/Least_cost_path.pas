@@ -8,7 +8,6 @@ unit Least_cost_path;
 {___________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
@@ -100,7 +99,6 @@ function LCP_AccumCostfName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
       Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_lcp_accum_cost_surf.dem';
       CleanUpFileName(Result);
    end;
@@ -110,7 +108,6 @@ function LCP_AccumDistancefName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
       Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_lcp_accum_dist.dem';
       CleanUpFileName(Result);
    end;
@@ -120,7 +117,6 @@ function LDP_AccumCostfName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
       Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_ldp_accum_cost_surf.dem';
       CleanUpFileName(Result);
    end;
@@ -130,7 +126,6 @@ function LDP_AccumDistancefName(GISNum : integer) : PathStr;
 begin
    Result := '';
    if GISdb[GISnum].MyData.FieldExists(MDDef.PrecintField) then begin
-      //Result := CleanUpFileName(GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField));
       Result := ExtractFilePath(GISdb[GISnum].dbFullName) + GISdb[GISnum].MyData.GetFieldByNameAsString(MDDef.PrecintField) + '_ldp_accum_dist.dem';
       CleanUpFileName(Result);
    end;
@@ -594,7 +589,7 @@ initialization
 finalization
    {$IfDef RecordSetAccumPathPoints} WriteLineToDebugFile('RecordFullPath active in least_cost_path (big slowdown)'); {$EndIf}
    {$IfDef RecordFullPath} WriteLineToDebugFile('RecordFullPath active in least_cost_path (big slowdown)'); {$EndIf}
-   {$IfDef RecordBasicsAccumPath}   WriteLineToDebugFile('RecordBasicsAccumPath active in least_cost_path (big slowdown)'); {$EndIf}
+   {$IfDef RecordBasicsAccumPath} WriteLineToDebugFile('RecordBasicsAccumPath active in least_cost_path (big slowdown)'); {$EndIf}
 end.
 
 

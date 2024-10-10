@@ -49,7 +49,7 @@ type
   private
     { Private declarations }
      aFont : Petmar_types.tMyFont;
-     theLegendLocation : tLegendLocation;
+     theLegendLocation : tLegendParameters;
      MapForm : tMapForm;
   public
     { Public declarations }
@@ -63,7 +63,7 @@ const
    loNorthArrow = 4;
    loDBlegend = 5;
 
-procedure LegendOptions(inMapForm : tMapForm; WhatFor : string35;var TheFont : Petmar_types.tMyFont; var LegendLocation : tLegendLocation; LegendOption : byte);
+procedure LegendOptions(inMapForm : tMapForm; WhatFor : string35;var TheFont : Petmar_types.tMyFont; var MapLegendParameters : tLegendParameters; LegendOption : byte);
 
 
 implementation
@@ -74,20 +74,19 @@ uses
    Petmar;
 
 
-procedure LegendOptions(inMapForm : tMapForm; WhatFor : string35; var TheFont : Petmar_types.tMyFont; var LegendLocation : tLegendLocation; LegendOption : byte);
+procedure LegendOptions(inMapForm : tMapForm; WhatFor : string35; var TheFont : Petmar_types.tMyFont; var MapLegendParameters : tLegendParameters; LegendOption : byte);
 var
   leg_opts_form: Tleg_opts_form;
 begin
-//LegendOption in [loScaleBar,loMapName,loElevLegend,loTerrainCat,loNorthArrow,loDBLegend];
    leg_opts_form := Tleg_opts_form.Create(Application);
    with leg_opts_form do begin
       Caption := WhatFor;
-      theLegendLocation := LegendLocation;
-      CheckBox1.Checked := LegendLocation.DrawItem;
-      RadioGroup1.Enabled := LegendLocation.DrawItem;
-      RadioGroup1.ItemIndex := pred(LegendLocation.MapPosition);
-      RadioGroup2.ItemIndex := ord(LegendLocation.HorizontalLegend);
-      RadioGroup3.ItemIndex := pred(LegendLocation.LegendSize);
+      theLegendLocation := MapLegendParameters;
+      CheckBox1.Checked := MapLegendParameters.DrawItem;
+      RadioGroup1.Enabled := MapLegendParameters.DrawItem;
+      RadioGroup1.ItemIndex := pred(MapLegendParameters.MapPosition);
+      RadioGroup2.ItemIndex := ord(MapLegendParameters.HorizontalLegend);
+      RadioGroup3.ItemIndex := pred(MapLegendParameters.LegendSize);
 
       RadioGroup2.Visible := LegendOption in [loMapName,loElevLegend,loTerrainCat,loNorthArrow,loDBLegend];
       Label1.Visible := LegendOption in [loMapName,loElevLegend,loTerrainCat,loNorthArrow,loDBLegend];
@@ -104,10 +103,10 @@ begin
       ShowModal;
 
       TheFont := aFont;
-      LegendLocation.DrawItem := CheckBox1.Checked;
-      LegendLocation.MapPosition := succ(RadioGroup1.ItemIndex);
-      LegendLocation.HorizontalLegend := RadioGroup2.ItemIndex = 1;
-      LegendLocation.LegendSize := succ(RadioGroup3.ItemIndex);
+      MapLegendParameters.DrawItem := CheckBox1.Checked;
+      MapLegendParameters.MapPosition := succ(RadioGroup1.ItemIndex);
+      MapLegendParameters.HorizontalLegend := RadioGroup2.ItemIndex = 1;
+      MapLegendParameters.LegendSize := succ(RadioGroup3.ItemIndex);
       CheckEditString(Edit1.Text,MDDef.LegendBarWidth);
       CheckEditString(Edit2.Text,MDDef.LegendTickSize);
    end;

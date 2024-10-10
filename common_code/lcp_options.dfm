@@ -3,8 +3,8 @@ object LCP_form: TLCP_form
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'Least cost path options'
-  ClientHeight = 473
-  ClientWidth = 536
+  ClientHeight = 471
+  ClientWidth = 528
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -244,15 +244,13 @@ object LCP_form: TLCP_form
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 454
-    Width = 536
+    Top = 452
+    Width = 528
     Height = 19
     Panels = <
       item
         Width = 50
       end>
-    ExplicitTop = 455
-    ExplicitWidth = 540
   end
   object GroupBox1: TGroupBox
     Left = 306

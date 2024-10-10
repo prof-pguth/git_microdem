@@ -71,23 +71,23 @@ var
   TissotOpts: TTissotOpts;
 begin
   TissotOpts := TTissotOpts.Create(Application);
-  with TissotOpts do begin
-     MapOwner := InMapOwner;
-     SpeedButton1.Enabled := MapOwner <> Nil;
-     Edit1.Text := RealToString(MDDef.TissotLatGridInc,-8,-2);
-     Edit2.Text := RealToString(MDDef.TissotLongGridInc,-8,-2);
-     Edit3.Text := IntToStr(MDDef.TissotRadius);
-     Edit4.Text := IntToStr(MDDef.TissotPixelSpacing);
-     Petmar.ColorLineWidthBitBtn(BitBtn1,MDDef.TissotColor,MDDef.TissotLineWidth);
-     CheckBox1.Checked := MDDef.SimpleTissotCylindrical;
-     CheckBox2.Checked := MDDef.ShowTissotHK;
-     Edit5.Text := IntToStr(MDDef.TissotHKdecimals);
+  //with TissotOpts do begin
+     TissotOpts.MapOwner := InMapOwner;
+     TissotOpts.SpeedButton1.Enabled := TissotOpts.MapOwner <> Nil;
+     TissotOpts.Edit1.Text := RealToString(MDDef.TissotLatGridInc,-8,-2);
+     TissotOpts.Edit2.Text := RealToString(MDDef.TissotLongGridInc,-8,-2);
+     TissotOpts.Edit3.Text := IntToStr(MDDef.TissotRadius);
+     TissotOpts.Edit4.Text := IntToStr(MDDef.TissotPixelSpacing);
+     Petmar.ColorLineWidthBitBtn(TissotOpts.BitBtn1,MDDef.TissotColor,MDDef.TissotLineWidth);
+     TissotOpts.CheckBox1.Checked := MDDef.SimpleTissotCylindrical;
+     TissotOpts.CheckBox2.Checked := MDDef.ShowTissotHK;
+     TissotOpts.Edit5.Text := IntToStr(MDDef.TissotHKdecimals);
 
-     RadioGroup1.Enabled := GridEnabled;
-     if MDDef.TissotSpaceByPixels then RadioGroup1.ItemIndex := 1 else RadioGroup1.ItemIndex := 0;
-     ShowModal;
-     SpeedButton1Click(nil);
-  end;
+     TissotOpts.RadioGroup1.Enabled := GridEnabled;
+     if MDDef.TissotSpaceByPixels then TissotOpts.RadioGroup1.ItemIndex := 1 else TissotOpts.RadioGroup1.ItemIndex := 0;
+     TissotOpts.ShowModal;
+     TissotOpts.SpeedButton1Click(nil);
+  //end;
 end;
 
 

@@ -1,4 +1,4 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program       }
 { PETMAR Trilobite Breeding Ranch    }
 { Released under the MIT Licences    }
@@ -40,7 +40,7 @@ const
             StringList2CSVtoDB(vat,fName2,true);
             DEMGlb[Neigh].VATFileName := fName2;
             DEMglb[Neigh].CheckMaxMinElev;
-            DEMglb[Neigh].SetUpMap(Neigh,true,mtDEMVATTable);
+            DEMglb[Neigh].SetUpMap(true,mtDEMVATTable);
          end;
 
 
@@ -102,7 +102,7 @@ var
       DeleteFileIfExists(DEMGlb[DEM].VATFileName);
       StringList2CSVtoDB(vat,DEMGlb[DEM].VATFileName,true);
       DEMglb[DEM].CheckMaxMinElev;
-      DEMglb[DEM].SetUpMap(DEM,true,mtDEMVATTable);
+      DEMglb[DEM].SetUpMap(true,mtDEMVATTable);
       {$IfDef RecordDEMIX_VAT}
          WriteLineToDebugFile('RGBBestOfThreeMap FinalizeMap=' + IntToStr(DEMglb[DEM].SelectionMap.MapDraw.MapType) + '  DEM=' + IntToStr(DEM) + '   ' + DEMGlb[DEM].AreaName + '  ' + DEMGlb[DEM].VATFileName);
       {$EndIf}
@@ -247,7 +247,7 @@ begin
    StringList2CSVtoDB(vat,AName,true);
    DEMGlb[Result].VATFileName := AName;
    DEMglb[Result].CheckMaxMinElev;
-   DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+   DEMglb[Result].SetupMap(true,mtDEMVATTable);
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
 end;
 
@@ -341,7 +341,7 @@ begin
       StringList2CSVtoDB(vat,fName2,true);
       DEMGlb[Result].VATFileName := fName2;
       DEMglb[Result].CheckMaxMinElev;
-      if ShowMap then DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+      if ShowMap then DEMglb[Result].SetupMap(true,mtDEMVATTable);
       {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result) + ' ' + fName2);  {$EndIf}
    end
    else begin
@@ -419,7 +419,7 @@ begin
       StringList2CSVtoDB(vat,fName,true);
       DEMGlb[Result].VATFileName := fName;
       DEMglb[Result].CheckMaxMinElev;
-      DEMglb[Result].SetUpMap(Result,true,mtDEMVATTable);
+      DEMglb[Result].SetupMap(true,mtDEMVATTable);
    end;
 end;
 

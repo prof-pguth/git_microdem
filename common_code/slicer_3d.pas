@@ -971,8 +971,8 @@ begin
    PolarGraph.GraphDraw.MaxHorizAxis := 360;
    PolarGraph.GraphDraw.MinVertAxis := -10;
    PolarGraph.GraphDraw.MaxVertAxis := 90;
-   PolarGraph.GraphDraw.HorizLabel := 'Compass azimuth (' + DegSym + ')';
-   PolarGraph.GraphDraw.VertLabel := 'Altitude (' + DegSym + ')';
+   PolarGraph.GraphDraw.HorizLabel := 'Compass azimuth (°)';
+   PolarGraph.GraphDraw.VertLabel := 'Altitude (°)';
    PolarGraph.Caption := 'Lidar horizon at ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
    PolarGraph.GraphDraw.PointCloudPanorama := true;
    PolarGraph.SetUpGraphForm;

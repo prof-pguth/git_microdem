@@ -4,9 +4,8 @@ unit Tersplsh;
 { Part of MICRODEM GIS Program      }
 { PETMAR Trilobite Breeding Ranch   }
 { Released under the MIT Licences   }
-{ Copyright (c) 2023 Peter L. Guth  }
+{ Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
-
 
 
 {$I nevadia_defines.inc}
@@ -14,7 +13,6 @@ unit Tersplsh;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordSplashProblems}
 {$EndIf}
-
 
 interface
 
@@ -60,7 +58,6 @@ uses
 procedure MDStartSplashing;
 begin
    {$IfDef RecordSplashProblems} WriteLineToDebugFile('Start splash screen');  {$EndIf}
-
    if (MDSplashForm = nil) then MDSplashForm := TTerBaseSplashForm.Create(Application);
    MDSplashForm.Show;
    MDSplashForm.Update;
@@ -83,10 +80,10 @@ begin
    Label6.Caption := 'Build ' + BuildString;
    Label1.Caption := ShortEXEName;
    {$IfDef Win32}
-   Panel1.Color := clBlue;
-   Label1.Caption := 'Luddite 32 bit ' + ShortEXEName;
-   Label1.Font.Color := clYellow;
-   Label6.Font.Color := clYellow;
+     Panel1.Color := clBlue;
+     Label1.Caption := 'Luddite 32 bit ' + ShortEXEName;
+     Label1.Font.Color := clYellow;
+     Label6.Font.Color := clYellow;
    {$EndIf}
    CheckFormPlacement(Self);
 end;
@@ -94,10 +91,10 @@ end;
 
 procedure TTerBaseSplashForm.OptionsClick(Sender: TObject);
 begin
-{$IfDef ExSetOptions}
-{$Else}
-   ChangeOptions;
-{$EndIf}
+  {$IfDef ExSetOptions}
+  {$Else}
+     ChangeOptions;
+  {$EndIf}
 end;
 
 procedure TTerBaseSplashForm.FormClose(Sender: TObject; var Action: TCloseAction);

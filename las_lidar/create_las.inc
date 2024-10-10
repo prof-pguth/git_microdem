@@ -199,7 +199,7 @@ end;
 procedure tCreateLasFile.CreateNewLASfile(fName : PathStr; NewLasProjectionDefinition : tlasProjectionDefinition; CopyLASHeader : tLASHeader);
 begin
     CreateNewLASfile(fName,NewlasProjectionDefinition,ord(CopyLASHeader.PointDataFormat));
-    if NewLasProjectionDefinition.LasProjection.ThisIsUTMfile then begin
+    if NewLasProjectionDefinition.LasProj.ThisIsUTMfile then begin
        NewLASHeader.Xoffset := CopyLasHeader.XOffset;
        NewLASHeader.Yoffset := CopyLasHeader.YOffset;
       {$IfDef RecordCreateLASfiles} WriteLineToDebugFile('tCreateLasFile.CreateNewLASfile with copy ' + AllFactorsString(NewLasHeader)); {$EndIf}
@@ -257,13 +257,13 @@ begin
    else if (PtType = 8) then NewLasHeader.PointDataFormat := #8;
    NewLASHeader.PointDataRecLen := LidarPointTypeRecordBaseLength(PtType);
 
-   if (NewLasProjectionDefinition.LASProjection.ModelType = LasLatLong) or NewlasProjectionDefinition.LasProjection.ThisIsUTMFile then begin
+   if (NewLasProjectionDefinition.LASProj.ModelType = LasLatLong) or NewlasProjectionDefinition.LasProj.ThisIsUTMFile then begin
       NewLasHeader.NumVarLenRecs := 1;
       NewLASHeader.ZscaleFac := 0.01;
       NewLASHeader.Xoffset := 0;
       NewLASHeader.Yoffset := 0;
       NewLASHeader.Zoffset := 0;
-      if (NewLasProjectionDefinition.LASProjection.ModelType = LasLatLong) then begin
+      if (NewLasProjectionDefinition.LASProj.ModelType = LasLatLong) then begin
          NewLASHeader.XscaleFac := 0.000001;
          NewLASHeader.YscaleFac := 0.000001;
          NumKeys := 5;
@@ -273,14 +273,14 @@ begin
          FillGeoKey(4, 4096,0,1,5103);     //VerticalCSTypeGeoKey, NAVD88
          FillGeoKey(5, 4099,0,1,9001) ;    //NewLasProjectionDefinition.LasProjection.VerticalUnitsGeoKey);     //VerticalUnitsGeoKey: Linear_Meter
       end
-      else if NewLasProjectionDefinition.LasProjection.ThisIsUTMfile then begin
+      else if NewLasProjectionDefinition.LasProj.ThisIsUTMfile then begin
          NewLASHeader.XscaleFac := 0.01;
          NewLASHeader.YscaleFac := 0.01;
          NumKeys := 4;
          FillGeoKey(1, 1024,0,1,1);        //set projection type as projected
-         FillGeoKey(2, 3072,0,1,NewLasProjectionDefinition.LasProjection.ProjectedCSTypeGeoKey);
-         FillGeoKey(3, 3076,0,1,NewLasProjectionDefinition.LasProjection.ProjLinearUnitsGeoKey);
-         FillGeoKey(4, 4099,0,1,NewLasProjectionDefinition.LasProjection.VerticalUnitsGeoKey);
+         FillGeoKey(2, 3072,0,1,NewLasProjectionDefinition.LasProj.ProjectedCSTypeGeoKey);
+         FillGeoKey(3, 3076,0,1,NewLasProjectionDefinition.LasProj.ProjLinearUnitsGeoKey);
+         FillGeoKey(4, 4099,0,1,NewLasProjectionDefinition.LasProj.VerticalUnitsGeoKey);
       end;
       VarSize := succ(NumKeys) * 8;
 

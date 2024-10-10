@@ -78,6 +78,4 @@ begin
    DisplayHTMLTopic('html\dd_text_rprt.htm');
 end;
 
-
-
 end.

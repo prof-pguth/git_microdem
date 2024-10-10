@@ -358,11 +358,11 @@ end;
 
 procedure TPickGeoStat.BitBtn19Click(Sender: TObject);
 var
-   Method : integer;
+   i : integer;
 begin
    DEMDef_routines.SaveBackupDefaults;   //so we save slope region size
-   for Method:= FirstSlopeMethod to LastSlopeMethod do begin
-      MDdef.SlopeAlg := Method;
+   for i := FirstSlopeMethod to LastSlopeMethod do begin
+      MDdef.SlopeAlgorithm := i;
       CreateSlopeMap(CurDEM);
    end;
    DEMDef_routines.RestoreBackupDefaults;  //to restore slope region size
@@ -418,7 +418,6 @@ begin
    finally
       HeavyDutyProcessing := false;
    end;
-
    {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click out'); {$EndIf}
 end;
 
@@ -443,25 +442,7 @@ end;
 procedure TPickGeoStat.BitBtn22Click(Sender: TObject);
 begin
    if (CurDEM = 0) then GetDEM(CurDEM,true,'single DEM geomorphometry');
-   HeavyDutyProcessing := true;
-   CreateSlopeMap(CurDEM);
-   MakeTRIGrid(CurDEM,nmEastWest,true);
-   MakeTRIGrid(CurDEM,nmNorthSouth,true);
-   MakeTRIGrid(CurDEM,nmEastWest,true);
-   MakeTPIGrid(CurDEM,nmNorthSouth,true);
-   MakeTPIGrid(CurDEM,nmNone,true);
-   MakeTPIGrid(CurDEM,nmEastWest,true);
-
-
-   GDAL_TRI_Riley(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   GDAL_TRI_Wilson(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   GDAL_TPI(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   WBT_TRI(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   SagaTRIMap(True,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   SagaTPIMap(True,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   GRASSTRIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   GRASSTPIMap(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap);
-   HeavyDutyProcessing := false;
+   CompareTRI(CurDEM);
 end;
 
 
@@ -570,9 +551,9 @@ begin
      for Col := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
         if (Col mod 50 = 0) then UpdateProgressBar(Col/ pred(DEMGlb[CurDEM].DEMheader.NumCol));
         for Row := 0 to pred(DEMGlb[1].DEMheader.NumRow) do begin
-           MDdef.SlopeAlg := SlopeMethod1;
+           MDdef.SlopeAlgorithm := SlopeMethod1;
            if DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlpAsp1) then begin
-              MDdef.SlopeAlg := SlopeMethod2;
+              MDdef.SlopeAlgorithm := SlopeMethod2;
               if DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlpAsp2) then begin
                  s1 := (SlpAsp1.SlopePercent-SlpAsp2.SlopePercent);
                  if (RadioGroup1.ItemIndex = 0) then s1 := abs(s1);
@@ -582,7 +563,7 @@ begin
           end {for Row};
      end {for Col};
      EndProgress;
-     DEMGlb[DeltaSlope].SetUpMap(DeltaSlope,true,mtElevRainbow);
+     DEMGlb[DeltaSlope].SetUpMap(true,mtElevRainbow);
      DEMGlb[DeltaSlope].SelectionMap.Closable := false;
    end;
    SlopeCompareOptions.Free;
@@ -626,8 +607,8 @@ end;
 
 procedure TPickGeoStat.Button10Click(Sender: TObject);
 begin
-   PickSlopeAspectMethod('',MDdef.SlopeAlg);
-   Label2.Caption := SlopeMethodName(MDdef.SlopeAlg);
+   PickSlopeAspectMethod('',MDdef.SlopeAlgorithm);
+   Label2.Caption := SlopeMethodName(MDdef.SlopeAlgorithm);
 end;
 
 procedure TPickGeoStat.Button11Click(Sender: TObject);
@@ -801,7 +782,7 @@ begin
    Edit2.Text := RealToString(MDDef.NetDef.MaxContourConcentration,-12,-2);
 
    PageControl1.ActivePage := TabSheet1;
-   Label2.Caption := SlopeMethodName(MDdef.SlopeAlg);
+   Label2.Caption := SlopeMethodName(MDdef.SlopeAlgorithm);
    GroupTitle := '';
    InitialDEMs := tStringList.Create;
    for j := 1 to MaxDEMDataSets do if ValidDEM(j) then InitialDEMs.Add(IntToStr(j));

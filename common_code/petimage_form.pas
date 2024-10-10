@@ -332,7 +332,7 @@ type
      {$Else}
         Overlays : tMyData;
      {$EndIf}
-     OverlayOpaqueBMP,{BaseBMP,}EditBMP : tMyBitmap;
+     OverlayOpaqueBMP,EditBMP : tMyBitmap;
      {$IfDef RegisterPhoto}
         LastLat,LastLong : float64;
      {$EndIf}
@@ -344,14 +344,14 @@ type
      procedure LoadImage(var bitmap : tMyBitmap; PickSize : boolean = false); overload;
      procedure SaveThumbnail(FName : PathStr; ThumbNailHeight : integer);
      procedure ResizeImage(xsize,ysize : integer);
+     procedure NoRedrawOrReload;
+     procedure StartAlphaBlending(fName : PathStr);
      {$IfDef ExImageOverlays}
      {$Else}
         procedure CreateOverlays;
         procedure AddImageOverlay(x,y,width,height : integer; fName : PathStr; Plot : boolean);
         procedure DrawOverlays;
      {$EndIf}
-     procedure NoRedrawOrReload;
-     procedure StartAlphaBlending(fName : PathStr);
   end;
 
 procedure DisplayBitmap(fName : PathStr; TheTitle : shortString = ''; StayAtop : boolean = false; FewChoices : boolean = false); overload;
@@ -362,7 +362,7 @@ procedure PutMyBitmapIntoImage(fname : PathStr; Image : tImage);
 procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
-procedure CombineAllPanelGraphs;
+procedure CombineAllPanelGraphs(Cols : integer = 1);
 
 procedure AddGraphToBigBitmap(ap : integer; {var LeftStart : integer;} GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
 procedure FinishBigMap(var BigBitmap,LegendBMP : tMyBitmap; aName : shortstring = ''; LegendBelow : boolean = true);
@@ -520,7 +520,7 @@ end;
 
 
 
-procedure CombineAllPanelGraphs;
+procedure CombineAllPanelGraphs(Cols : integer = 1);
 var
    i : integer;
    Findings : tStringList;
@@ -532,7 +532,7 @@ begin
       end;
    end;
    if (Findings.Count > 0) then begin
-      MakeBigBitmap(Findings,'','',1);
+      MakeBigBitmap(Findings,'','',Cols);
       {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
    end
    else begin
@@ -555,7 +555,8 @@ begin
    if (TheFiles <> Nil) and (TheFiles.Count > 0) then begin
      AskCols := (Cols < 0);
      if AskCols then begin
-        Cols := MDDef.BigBM_nc;
+        if (TheFiles.Count = 1) then Cols := 1
+        else Cols := MDDef.BigBM_nc;
      end;
      BigBMP := CombineBitmaps(Cols, theFiles, Capt);
      if (BigBMP <> nil) then begin
@@ -2247,7 +2248,7 @@ const
 var
    WhiteBackground : boolean;
 begin
-   ReadDefault('Rotation angle (' + DegSym + ', + = CW)', Angle);
+   ReadDefault('Rotation angle (' + '°' + ', + = CW)', Angle);
    WhiteBackground := AnswerIsYes('White background');
    RotateBitmapByAngle(Angle,WhiteBackground);
 end;
@@ -2258,7 +2259,7 @@ var
    Diagonal : integer;
    Miss : tColor;
 begin
-   wmDEM.StatusBar1.Panels[0].Text := 'Rotate by ' + RealToString(Angle,-12,-2) + DegSym;
+   wmDEM.StatusBar1.Panels[0].Text := 'Rotate by ' + RealToString(Angle,-12,-2) + '°';
    ResizeImage(XBMPSize,YBMPSize);   CopyImageToBitmap(Image1,EditBMP);
    Diagonal := round(sqrt(sqr(EditBMP.Height) + sqr(EditBMP.Width)));
    CreateBitmap(BigBitmap,Diagonal,Diagonal);

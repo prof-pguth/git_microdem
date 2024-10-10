@@ -340,7 +340,7 @@ begin
    GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
    Incr := 10;
    ReadDefault('Sampling interval',Incr);
-   GridCorrelationMatrix(DEMsWanted,incr);
+   GridCorrelationMatrix(DEMsWanted,'Hyperspectral correlation matrix',incr);
 end;
 
 procedure THyperspectralForm.BitBtn16Click(Sender: TObject);

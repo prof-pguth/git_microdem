@@ -446,7 +446,7 @@ begin
       if WantOut then break;
    end;
    EndProgress;
-   DEMGlb[NewGrid].SetUpMap(NewGrid,true,mtElevSpectrum);
+   DEMGlb[NewGrid].SetUpMap(true,mtElevSpectrum);
    Result := NewGrid;
 end;
 

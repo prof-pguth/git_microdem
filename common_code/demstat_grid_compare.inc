@@ -334,11 +334,9 @@ begin
                mt := 8;
                MDDef.ElevPalName := 'CET-D08';
             end;
-            DEMGlb[Result].SetUpMap(Result,true,mt);
+            DEMGlb[Result].SetupMap(true,mt);
             if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
-               {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion call MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
                DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);
-               {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion done MergeAnotherDEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
             end;
             {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
                WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
@@ -382,7 +380,7 @@ begin
           end {for Row};
           UpdateProgressBar(Col/ pred(DEMGlb[Map1].DEMheader.NumCol));
        end {for Col};
-      DEMGlb[DiffMap].SetUpMap(Diffmap,true);
+      DEMGlb[DiffMap].SetUpMap(true);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridMinimum out'); {$EndIf}
 end;
@@ -414,7 +412,7 @@ begin
           UpdateProgressBar(Col/ pred(DEMGlb[RefDEM].DEMheader.NumCol));
        end {for Col};
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
-      DEMGlb[Result].SetUpMap(Result,true);
+      DEMGlb[Result].SetupMap(true);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('PercentDifferentTwoGrids out'); {$EndIf}
 end;
@@ -447,7 +445,7 @@ begin
           UpdateProgressBar(Col/ pred(DEMGlb[Map2Den].DEMheader.NumCol));
        end {for Col};
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
-      DEMGlb[Result].SetUpMap(Result,true,inMapType);
+      DEMGlb[Result].SetupMap(true,inMapType);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridRatio out'); {$EndIf}
 end;
@@ -496,7 +494,7 @@ begin
    end {for Col};
    MessageToContinue('Changed: ' + IntToStr(Change) + ' pixels, ' + RealToString ( 100 * Change / (Change + NoChange), -8,2) + '% of grid');
    if ShowSatProgress then EndProgress;
-   DEMGlb[Result].SetUpMap(Result,true);
+   DEMGlb[Result].SetupMap(true);
 end;
 
 
@@ -535,9 +533,9 @@ begin
 
    Diffs[1] := OpenOneResult( 'Elev_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euMeters);
    Diffs[2] := OpenOneResult( 'Slope_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euPercentSlope);
-   Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euzDegrees);
-   Diffs[4] := OpenOneResult( 'Vector_Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euzDegrees);
-   Diffs[5] := OpenOneResult( 'Vector_Downhill_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euzDegrees);
+   Diffs[3] := OpenOneResult( 'Aspect_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euDegrees);
+   Diffs[4] := OpenOneResult( 'Vector_Normal_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euDegrees);
+   Diffs[5] := OpenOneResult( 'Vector_Downhill_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,euDegrees);
    //Diffs[6] := OpenOneResult( 'Roughness_Diff_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName,zDegrees);
    StartProgress('Diffs');
    for Col := 0 to pred(DEMGlb[DEM1].DEMheader.NumCol) do begin
@@ -584,7 +582,7 @@ begin
    end {for Col};
    EndProgress;
    for i := 1 to NumDiffs do begin
-      DEMGlb[Diffs[i]].SetUpMap(Diffs[i],true,mtElevSpectrum);
+      DEMGlb[Diffs[i]].SetUpMap(true,mtElevSpectrum);
       DEMGlb[Diffs[i]].SelectionMap.MergeAnotherDEMreflectance(DEM2,true);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeElevSlopeAspectDifferenceMap out'); {$EndIf}

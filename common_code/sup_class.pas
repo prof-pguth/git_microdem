@@ -445,7 +445,7 @@ begin
     MetaData.Destroy;
 
     {$IfDef RecordUnsupClass} WriteLineToDebugFile('Call setupmap'); {$EndIf}
-    DEMGlb[ClassDEM].SetUpMap(ClassDEM,true,mtDEMVATTable);
+    DEMGlb[ClassDEM].SetUpMap(true,mtDEMVATTable);
 
     MVClusterClientDataSet.Free;
     wmDEM.SetPanelText(0,'');

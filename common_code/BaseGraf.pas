@@ -37,7 +37,7 @@ unit BaseGraf;
        //{$Define RecordTIN}
        //{$Define RecordDetailedTIN}
        //{$Define RecordFullFit}
-       //{$Define RecordFit}
+       {$Define RecordFit}
    {$ELSE}
 
    {$ENDIF}
@@ -325,6 +325,7 @@ type
     Animate1: TMenuItem;
     Imagewithseparatalayers1: TMenuItem;
     Copytoclipboard3: TMenuItem;
+    FindpeakYvalueineachseries1: TMenuItem;
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure LegendSpeedButtonClick(Sender: TObject);
     procedure Bestfitlinecolor1Click(Sender: TObject);
@@ -416,6 +417,7 @@ type
     procedure Animate1Click(Sender: TObject);
     procedure Imagewithseparatalayers1Click(Sender: TObject);
     procedure Copytoclipboard3Click(Sender: TObject);
+    procedure FindpeakYvalueineachseries1Click(Sender: TObject);
   private
     { Private declarations }
      DataPlotsVisible : array[0..50] of boolean;
@@ -822,7 +824,7 @@ var
   AutoScale,First : boolean;
   v : array[1..2] of float32;
   Bins : array[0..MaxBins] of integer;
-  Results : tstringlist;
+  //Results : tstringlist;
   StackedPercents : boolean;
 
 
@@ -845,6 +847,7 @@ var
          function ProcessSeries(fName : PathStr) : boolean;
          var
             inf : file;
+            v   : array[1..2] of float32;
             i,j,ax,ay : integer;
          begin
             NumVals := GetFileSize(fName) div SizeOf(float32);
@@ -878,11 +881,12 @@ var
                   if HistogramGraphNumbers then v[ay] := Bins[j]
                   else v[ay] := Bins[j] / NumVals * HistogramNumBins;
                   if v[ay] > MaxCount then MaxCount := v[ay];
+                  (*
                   if StackedPercents then begin
                      if First then Results.Add(RealToString(v[ax],-12,-4) + ',' + RealToString(v[ay],-12,-4))
                      else Results.Strings[j] := Results.Strings[j] + ',' + RealToString(v[ay],-12,-4);
                   end;
-
+                  *)
                   if (Bins[j] > 0) then begin
                      BlockWrite(rfile,v,1);
                   end;
@@ -2843,7 +2847,7 @@ var
 begin
    if MarginsGood then exit;
 
-   if HorizLabel = '' then i := 1 else i := 2;
+   if (HorizLabel = '') then i := 1 else i := 2;
    BottomMargin := MarginFreeboard + 1 * Bitmap.Canvas.TextHeight(HorizLabel);
 
    ad := GetAxisDecimals((MaxVertAxis-MinVertAxis) / NumVertCycles);    //inc);
@@ -3546,6 +3550,37 @@ begin
    until (MyData.RecordCount >= 1) or (k > 5);
 end;
 
+procedure TThisBaseGraph.FindpeakYvalueineachseries1Click(Sender: TObject);
+var
+   Results : tStringList;
+   i : integer;
+   fName : PathStr;
+   Max,WhereMax : Float32;
+   infile : file;
+   v : array[1..2] of float32;
+begin
+   Results := tStringList.Create;
+   Results.Add('Series,NAME,MAX_Y,WHERE_Y');
+   for i := 1 to GraphDraw.DataFilesPlotted.Count do begin
+       Max := -9999;
+       fName := GraphDraw.DataFilesPlotted.Strings[pred(i)];
+       assignFile(infile,fName);
+       reset(infile,2*SizeOf(float32));
+       while not EOF(infile) do begin
+          BlockRead(infile,v,1);
+          if v[2] > Max then begin
+             Max := v[2];
+             WhereMax := v[1];
+          end;
+       end;
+       Results.Add(IntToStr(i) + ',' + GraphDraw.LegendList.Strings[pred(i)] + ',' + RealToString(Max,-18,-2) + ',' + RealToString(WhereMax,-18,-8));
+       CloseFile(InFile);
+   end;
+  fName := NextFileNumber(MDTempDir,GraphName + '_series_', '.dbf');
+  StringList2CSVtoDB(Results,fName);
+end;
+
+
 procedure TThisBaseGraph.Image1DblClick(Sender: TObject);
 var
    Comp1,Comp2,Comp3,xis,yis,
@@ -3797,7 +3832,7 @@ begin
       AxisColor := clBlack;
       TopMargin    := 0;
       LeftMargin   := 65;
-      BottomMargin := 45;
+      BottomMargin := 55;
       RightMargin := 0;
       FullLineFraction := 3;
       NormalCartesianY := true;
@@ -3810,7 +3845,6 @@ begin
       HorizLabel     := '';
       VertLabel      := '';
       MinHorizAxis := 0;
-      //MaxHorizAxis := 100;
       MinVertAxis := 0;
       MaxVertAxis := 100;
       MinVertAxis2 := 0;
@@ -4251,8 +4285,8 @@ end;
 procedure TThisBaseGraph.AnimateGraph(Movie : boolean; ShowFirstLayerOnAnimation : boolean = true; MovieName : ShortString = '');
 var
    aMovie : tStringList;
-   Bitmap{,LegBMP} : tMyBitmap;
-   j,Start,SaveLeftMargin,SaveGraphWidth{,x1,y1} : integer;
+   Bitmap : tMyBitmap;
+   j,Start,SaveLeftMargin,SaveGraphWidth : integer;
    fName,fName2 : PathStr;
    SaveVertLabel,SaveHorizLabel : shortstring;
 begin
@@ -4464,7 +4498,7 @@ begin
       Caption := Legend;
    end;
    if (Legend <> '') then RoseLegend := RemoveUnderscores(Legend);
-   CreateBitmap(Bitmap,ClientWidth-2,ClientHeight-Toolbar1.Height-2);
+   CreateBitmap(Bitmap,ClientWidth-2,ClientHeight-Toolbar1.Height+12);
    Bitmap.Canvas.Font := FontDialog1.Font;
    Bitmap.Canvas.Font.Size := 14;
 
@@ -4533,11 +4567,13 @@ begin
          Bitmap.Canvas.TextOut(1,Bitmap.Height - 20,'Filter: ' + GraphFilter);
       end
       else if (BottomLegend <> '') then begin
-         Bitmap.Canvas.TextOut(1,Bitmap.Height - 20,BottomLegend);
+         Bitmap.Canvas.Font.Size := 15;
+         Bitmap.Canvas.TextOut(1,Bitmap.Height - 5 - Bitmap.Canvas.TextHeight(BottomLegend),BottomLegend);
+         Bitmap.Canvas.Font.Size := 10;
       end
       else begin
          if MDDef.DetailRoseLegend then begin
-            Bitmap.Canvas.TextOut(1,Bitmap.Height - 20,'Circle spacing=' + IntToStr(Incr) + '  Bin size=' + RoseBinSize.ToString + DegSym);
+            Bitmap.Canvas.TextOut(1,Bitmap.Height - 20,'Circle spacing=' + IntToStr(Incr) + '  Bin size=' + RoseBinSize.ToString + '°');
          end;
       end;
 
@@ -5557,7 +5593,7 @@ begin
        GraphLabels(Bitmap);
 
        Image1.Picture.Graphic := Bitmap;
-       BitMap.Free;
+       BitMap.destroy;  //Free;
        if (BaseCaption <> '') then with GraphDraw do begin
           Caption := BaseCaption + '   V.E.= ' + RealToString( ( YWindowSize / (MaxVertAxis - MinVertAxis)  / ( XWindowSize / (MaxHorizAxis - MinHorizAxis) * VertCompare)  ),-12,-2) ;
        end;
@@ -5780,7 +5816,7 @@ var
       FitGraph((Sender = Linearfit1),nt,fName, a,b,r,n);
       DrawBestFitLineOnGraph(a,b);
       if (Sender = Nil) then begin
-         {$IfDef Record} WriteLineToDebugFile( RealToString(a,12,4) + realToString(b,12,4) + RealToString(r,12,4)); {$EndIf}
+         {$IfDef RecordFit} WriteLineToDebugFile('a=' + RealToString(a,-12,-4) + ' b=' + realToString(b,-12,-4) + ' r=' + RealToString(r,-12,-4)); {$EndIf}
       end
       else begin
          if (GraphDraw.LegendList <> Nil) then Results.Add(GraphDraw.LegendList.Strings[i]);

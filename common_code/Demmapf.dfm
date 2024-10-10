@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 45
   Top = 303
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1275
+  ClientHeight = 1315
   ClientWidth = 2112
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 2112
-    Height = 1248
+    Height = 1288
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,6 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitHeight = 1268
     object Image1: TImage
       Left = 3
       Top = -247
@@ -207,11 +208,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1203
+      Top = 1243
       Width = 2108
       Height = 41
       Align = alBottom
       TabOrder = 8
+      ExplicitTop = 1223
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -2118,7 +2120,6 @@ object MapForm: TMapForm
       object GetGRASSextensions1: TMenuItem
         Caption = 'Get GRASS extensions'
         GroupIndex = 1
-        OnClick = GetGRASSextensions1Click
       end
       object CreategeoatlasKMZ1: TMenuItem
         Caption = 'Create geo atlas KMZ'
@@ -3545,10 +3546,10 @@ object MapForm: TMapForm
         OnClick = Derivativegrid1Click
       end
       object Topographicgrain1: TMenuItem
-        Caption = 'Topographic grain'
+        Caption = 'Topographic fabric/grain'
         GroupIndex = 1
         object Topographicgrain2: TMenuItem
-          Caption = 'Topographic fabric vector overlay'
+          Caption = 'Fabric vector overlay'
           OnClick = Topographicgrain2Click
         end
         object Grainbyregionsize1: TMenuItem
@@ -3559,7 +3560,15 @@ object MapForm: TMapForm
           Caption = 'Fabric at point'
         end
         object Grainmovie1: TMenuItem
-          Caption = 'Grain movie'
+          Caption = 'Fabric movie'
+        end
+        object SSOdiagramnormalstosurface1: TMenuItem
+          Caption = 'SSO diagram, normals to surface'
+          OnClick = SSOdiagramnormalstosurface1Click
+        end
+        object SSOdiagramdownhilldirections1: TMenuItem
+          Caption = 'SSO diagram, downhill directions'
+          OnClick = SSOdiagramdownhilldirections1Click
         end
       end
       object Intervisibility1: TMenuItem
@@ -3999,10 +4008,6 @@ object MapForm: TMapForm
         object DEMIXevaluatehalfsecondgrids1: TMenuItem
           Caption = 'Evaluate half second grids'
         end
-        object Resampleaveragemultiplespacings1: TMenuItem
-          Caption = 'Resample filter comparison'
-          OnClick = Resampleaveragemultiplespacings1Click
-        end
       end
       object SSIM1: TMenuItem
         Caption = 'SSIM'
@@ -4046,13 +4051,21 @@ object MapForm: TMapForm
           Caption = 'Compare tangential curvature'
           OnClick = Comparetangentialcurvature1Click
         end
-        object SAGAmultliplecurvatures1: TMenuItem
-          Caption = 'SAGA multliple curvatures'
-          OnClick = SAGAmultliplecurvatures1Click
+        object Comparethreecurvatures1: TMenuItem
+          Caption = 'Compare slope and three curvatures'
+          OnClick = Comparethreecurvatures1Click
         end
-        object GRASSpartialderivatives1: TMenuItem
-          Caption = 'GRASS partial derivatives'
-          OnClick = GRASSpartialderivatives1Click
+        object CompareTRI1: TMenuItem
+          Caption = 'Compare TRI'
+          OnClick = CompareTRI1Click
+        end
+        object Comparehillshades1: TMenuItem
+          Caption = 'Compare hillshades'
+          OnClick = Comparehillshades1Click
+        end
+        object Comparepartialderivatives1: TMenuItem
+          Caption = 'Compare partial derivatives'
+          OnClick = Comparepartialderivatives1Click
         end
         object N46: TMenuItem
           Caption = '-'
@@ -4283,29 +4296,39 @@ object MapForm: TMapForm
           Caption = 'SAGA LS factor'
           OnClick = SAGALSfactor1Click
         end
+        object SAGAcurvatures1: TMenuItem
+          Caption = 'SAGA curvatures'
+          object SAGAmultliplecurvatures1: TMenuItem
+            Caption = 'SAGA multliple curvatures'
+            OnClick = SAGAmultliplecurvatures1Click
+          end
+          object SAGAprofilecurvature1: TMenuItem
+            Caption = 'SAGA profile curvature'
+            OnClick = SAGAprofilecurvature1Click
+          end
+          object SAGAplancurvature1: TMenuItem
+            Caption = 'SAGA plan curvature'
+            OnClick = SAGAplancurvature1Click
+          end
+          object SAGAcurvatureclassification1: TMenuItem
+            Caption = 'SAGA curvature classification'
+            OnClick = SAGAcurvatureclassification1Click
+          end
+        end
+        object SAGApointclassifications1: TMenuItem
+          Caption = 'SAGA point classifications'
+          object SAGAIwahashiandPikeclassification1: TMenuItem
+            Caption = 'SAGA Iwahashi and Pike classification'
+            OnClick = SAGAIwahashiandPikeclassification1Click
+          end
+          object SAGAgeomorphons1: TMenuItem
+            Caption = 'SAGA geomorphons'
+            OnClick = SAGAgeomorphons1Click
+          end
+        end
         object SAGAconvergenceindex1: TMenuItem
           Caption = 'SAGA convergence index'
           OnClick = SAGAconvergenceindex1Click
-        end
-        object SAGAprofilecurvature1: TMenuItem
-          Caption = 'SAGA profile curvature'
-          OnClick = SAGAprofilecurvature1Click
-        end
-        object SAGAplancurvature1: TMenuItem
-          Caption = 'SAGA plan curvature'
-          OnClick = SAGAplancurvature1Click
-        end
-        object SAGAcurvatureclassification1: TMenuItem
-          Caption = 'SAGA curvature classification'
-          OnClick = SAGAcurvatureclassification1Click
-        end
-        object SAGAIwahashiandPikeclassification1: TMenuItem
-          Caption = 'SAGA Iwahashi and Pike classification'
-          OnClick = SAGAIwahashiandPikeclassification1Click
-        end
-        object SAGAgeomorphons1: TMenuItem
-          Caption = 'SAGA geomorphons'
-          OnClick = SAGAgeomorphons1Click
         end
         object SAGAtophatvalleyridgedetection1: TMenuItem
           Caption = 'SAGA top hat valley ridge detection'
@@ -4410,10 +4433,6 @@ object MapForm: TMapForm
         Caption = 'Average topographic profile'
         OnClick = Averagetopographicprofile1Click
       end
-      object Rasterizedatabases1: TMenuItem
-        Caption = 'Rasterize databases (channel networks);'
-        OnClick = Rasterizedatabases1Click
-      end
       object Comparechannelnetworks1: TMenuItem
         Caption = 'Compare channel networks'
       end
@@ -4492,12 +4511,27 @@ object MapForm: TMapForm
         Caption = 'Random sampling points'
         OnClick = Randomsamplingpoints1Click
       end
-      object DEMIXtilestatistics1: TMenuItem
-        Caption = 'DEMIX tile statistics'
-      end
-      object Geomorphonalgorithmsensitivity1: TMenuItem
-        Caption = 'Geomorphon algorithm sensitivity'
-        OnClick = Geomorphonalgorithmsensitivity1Click
+      object Algorithmcomparisons1: TMenuItem
+        Caption = 'Algorithm comparisons'
+        object Geomorphonalgorithmsensitivity1: TMenuItem
+          Caption = 'Geomorphon algorithm sensitivity'
+          OnClick = Geomorphonalgorithmsensitivity1Click
+        end
+        object Resampleaveragemultiplespacings1: TMenuItem
+          Caption = 'Resample  compare slope roughness (UTM, Geo)'
+          OnClick = Resampleaveragemultiplespacings1Click
+        end
+        object Compareslopewithwindowsize1: TMenuItem
+          Caption = 'Compare slope with window size'
+          OnClick = Compareslopewithwindowsize1Click
+        end
+        object Diagonalgridspacingcomparison1: TMenuItem
+          Caption = 'Diagonal grid spacing comparison'
+          OnClick = Diagonalgridspacingcomparison1Click
+        end
+        object Filtersoutthe7x7inmeters1: TMenuItem
+          Caption = 'Filters out to 7x7 in meters'
+        end
       end
       object Experimental1: TMenuItem
         Caption = 'Experimental'
@@ -5466,7 +5500,7 @@ object MapForm: TMapForm
         OnClick = DEMIX10Ktile1Click
       end
       object Filtersizes1: TMenuItem
-        Caption = 'Filter sizes'
+        Caption = 'Filter sizes out to 7x7 in meters'
         OnClick = Filtersizes1Click
       end
     end
@@ -5580,6 +5614,10 @@ object MapForm: TMapForm
           Caption = 'Pick date'
           OnClick = oday3Click
         end
+      end
+      object USWeatherForecast1: TMenuItem
+        Caption = 'NOAA weather forecast (US)'
+        OnClick = USWeatherForecast1Click
       end
       object N49: TMenuItem
         Caption = '-'
@@ -6209,6 +6247,10 @@ object MapForm: TMapForm
       object N15: TMenuItem
         Caption = '-'
       end
+      object Partialderivatives1: TMenuItem
+        Caption = 'Partial derivatives'
+        OnClick = Partialderivatives1Click
+      end
       object Slopeerrorestimatorexperimental1: TMenuItem
         Caption = 'Extrapolated Evans-Young method (slope, aspect, uncertainty)'
         OnClick = Slopeerrorestimatorexperimental1Click
@@ -6234,6 +6276,29 @@ object MapForm: TMapForm
       object AspectDifference1: TMenuItem
         Caption = 'Aspect difference'
         OnClick = AspectDifference1Click
+      end
+    end
+    object Curvature2: TMenuItem
+      Caption = 'Curvature'
+      object Profilecurvature2: TMenuItem
+        Caption = 'Profile curvature'
+        OnClick = Profilecurvature2Click
+      end
+      object Plancurvature2: TMenuItem
+        Caption = 'Plan curvature'
+        OnClick = Plancurvature2Click
+      end
+      object angentialcurvature1: TMenuItem
+        Caption = 'Tangential curvature'
+        OnClick = angentialcurvature1Click
+      end
+      object Flowlinecurvaturerotor1: TMenuItem
+        Caption = 'Flow line curvature (rotor)'
+        OnClick = Flowlinecurvaturerotor1Click
+      end
+      object Curvature3: TMenuItem
+        Caption = 'Second order partial derivatives'
+        OnClick = Curvature3Click
       end
     end
     object Curvature1: TMenuItem
@@ -6706,7 +6771,6 @@ object MapForm: TMapForm
     end
     object Hurricanes1: TMenuItem
       Caption = 'Hurricanes'
-      OnClick = Hurricanes1Click
     end
     object UStornadoes1: TMenuItem
       Caption = 'US tornadoes'
@@ -6869,17 +6933,31 @@ object MapForm: TMapForm
       Caption = 'Grass tangential curvature'
       OnClick = Grasstangentialcurvature1Click
     end
+    object N68: TMenuItem
+      Caption = 'GRASS partial derivatives'
+      OnClick = N68Click
+    end
+    object N67: TMenuItem
+      Caption = '-'
+    end
     object GRASSTRI1: TMenuItem
-      Caption = 'GRASS TRI'
+      Caption = 'GRASS TRI (extension)'
       OnClick = GRASSTRI1Click
     end
     object GRASSTPI1: TMenuItem
-      Caption = 'GRASS TPI'
+      Caption = 'GRASS TPI (extension)'
       OnClick = GRASSTPI1Click
     end
     object GRASSvectorruggedness1: TMenuItem
-      Caption = 'GRASS vector ruggedness'
+      Caption = 'GRASS vector ruggedness (extension)'
       OnClick = GRASSvectorruggedness1Click
+    end
+    object N65: TMenuItem
+      Caption = '-'
+    end
+    object N66: TMenuItem
+      Caption = 'Download GRASS extensions'
+      OnClick = N66Click
     end
   end
 end

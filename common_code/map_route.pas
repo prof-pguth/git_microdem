@@ -290,7 +290,6 @@ begin
 end;
 
 
-
 procedure TMapRtForm.FormCreate(Sender: TObject);
 begin
    StartLat := -99;

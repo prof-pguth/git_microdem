@@ -583,7 +583,7 @@ begin
    DEMGlb[LastMask].CheckMaxMinElev;
 
    if MDDef.MaskMapShow in [0,2] then begin
-      if DEMGlb[LastMask].SelectionMap = Nil then DEMGlb[LastMask].SetUpMap(LastMask,false)
+      if DEMGlb[LastMask].SelectionMap = Nil then DEMGlb[LastMask].SetUpMap(false)
       else DEMGlb[LastMask].SelectionMap.DoCompleteMapRedraw;
       {$IfDef SupClassAuxGrids} WriteLineToDebugFile('Map created'); {$EndIf}
    end;

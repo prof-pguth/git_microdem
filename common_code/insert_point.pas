@@ -55,7 +55,6 @@ uses
 procedure TInsertPointForm.FormCreate(Sender: TObject);
 begin
    RadioGroup1.ItemIndex := ord(MDDef.RangeCircleUnit);
-   //DEMDef_Routines.GetRangeFactor(Factor);
    PlaceFormAtMousePosition(self);
 end;
 

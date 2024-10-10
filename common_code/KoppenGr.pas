@@ -19,7 +19,7 @@ interface
 uses
   SysUtils, Windows, Messages, Classes, Graphics, Controls,
   Forms, Dialogs,  Menus, Vcl.ExtCtrls,
-  PETMAR,Petmar_db,Petmar_types;
+  PETMAR,Petmar_db,Petmar_types,DEMMapf;
 
 type
   tClimateData = record
@@ -85,6 +85,9 @@ function ProcessClimateStationData(var ClimateData : tClimateData) : boolean;
 procedure LoadClimateData(var ClimateData : tClimateData);
 function ClassifyClimate(var ClimateData : tClimateData) : boolean;
 
+procedure OpenKoppenGridDB(theMap : tMapForm; OpenTable : boolean = true);
+function GetKoppenClass(Lat,Long : float64) : shortstring;
+
 
 
 const
@@ -107,6 +110,56 @@ implementation
 uses
    Koppen_opts,DEMDefs,DEMDef_routines,PETMath,PetImage, PetImage_form,demdatabase,PetDBUtils,
    Multigrid,DEMCoord;
+
+
+procedure OpenKoppenGridDB(theMap : tMapForm; OpenTable : boolean = true);
+var
+   fName : PathStr;
+begin
+   {$IfDef ExGeography}
+   {$Else}
+      fName := ClimateDir + 'koppen_grid' + DefaultDBExt;
+      FindDriveWithFile(fName);
+      if FileExists(fName) then begin
+         if theMap <> nil then begin
+            KoppenGridDB := theMap.LoadDataBaseFile(fName,OpenTable);
+            CreateKoppenLegend(false);
+         end
+         else begin
+            OpenNumberedGISDataBase(KoppenGridDB,fName,OpenTable);
+         end;
+      end;
+   {$EndIf}
+end;
+
+function GetKoppenClass(Lat,Long : float64) : shortstring;
+var
+   Dist,MinDist : float32;
+   Lat1,Long1 : float64;
+begin
+   Result := '';
+   if not ValidDB(KoppenGridDB) then OpenKoppenGridDB(Nil,False);
+   if ValidDB(KoppenGridDB) then begin
+      GisDB[KoppenGridDB].MyData.first;
+      MinDist := 99999;
+      while not GisDB[KoppenGridDB].MyData.eof do begin
+          if GisDB[KoppenGridDB].GetLatLongToRepresentRecord(Lat1,Long1) then begin
+             Dist := sqr(Lat-Lat1) + sqr(Long-Long1);
+             if Dist < MinDist then begin
+                MinDist := Dist;
+                Result := GisDB[KoppenGridDB].MyData.GetFieldByNameAsString('CLASS');
+                if (MinDist < 0.5) then exit;
+             end;
+          end;
+          GisDB[KoppenGridDB].MyData.Next;
+      end;
+      if sqrt(MinDist) > 1 then begin
+         //point in ocean with no points in DB
+         Result := '';
+      end;
+   end;
+
+end;
 
 
 
@@ -506,7 +559,7 @@ begin
             Result.Canvas.TextOut(Xoff - 4 - Result.Canvas.TextWidth(TStr),TempY(1.0*i)-Result.Canvas.TextHeight(TStr) div 2,TStr);
             dec(i,10);
          end {while};
-         Result.Canvas.TextOut(0,5,DegSym + 'C');
+         Result.Canvas.TextOut(0,5,'°' + 'C');
 
          Pen.Color := clSilver;
          Pen.Width := 2;
@@ -563,7 +616,7 @@ begin
 
          if MDDef.KoppenOpts.ShowTempAndRain then begin
             Result.Canvas.Font.Color := clRed;
-            TStr := 'Mean:'+ RealToString(ClimateData.MeanT,5,1) + DegSym +'C';
+            TStr := 'Mean:'+ RealToString(ClimateData.MeanT,5,1) + '°C';
             Result.Canvas.TextOut(35,25,TStr);
             Result.Canvas.Font.Color := clBlue;
             Result.Canvas.TextOut(35 + 10 +  TextWidth(TStr),25,'Rain ' + RealToString(ClimateData.TotalPrecip,5,1)+ ' cm  ' + WhenRain);

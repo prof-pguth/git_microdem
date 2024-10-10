@@ -936,7 +936,7 @@ with LOSdraw do begin
       VincentyCalculateDistanceBearing(ProfLats[FirstLOSx-StartLOSLeft],ProfLongs[FirstLOSx-StartLOSLeft],ProfLats[LastLOSX-StartLOSLeft],ProfLongs[LastLOSX-StartLOSLeft],Distance,Bearing);
       dz := (z1-z2);
       z1 := abs(dz/Distance);
-      Petmar.MessageToContinue('Slope: ' + RealToString(100*z1,8,2) + '%' + MessLineBreak + RealToString(arcTan(z1)/DegToRad,12,2) + DegSym + MessLineBreak +
+      Petmar.MessageToContinue('Slope: ' + RealToString(100*z1,8,2) + '%' + MessLineBreak + RealToString(arcTan(z1)/DegToRad,12,2) + '°' + MessLineBreak +
                 'elev drop: ' + RealToString(dz,8,2) + ' m' + MessLineBreak + 'over ' + SmartDistanceMetersFormat(Distance),True);
       LOSFormDoing := losNothing;
    end;

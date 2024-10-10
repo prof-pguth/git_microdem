@@ -60,12 +60,12 @@ end;
 
 procedure TMapForm.GDALaspectmapHorn1Click(Sender: TObject);
 begin
-   GDAL_AspectMap_Horn(GeotiffDEMNameOfMap, DEMGlb[MapDraw.DEMonMap].GDAL_ScaleFactorString);
+   GDAL_AspectMap_Horn(true,MapDraw.DEMonMap,'');
 end;
 
 procedure TMapForm.GDALaspectmapZevenbergenThorne1Click(Sender: TObject);
 begin
-   GDAL_AspectMap_ZT(GeotiffDEMNameOfMap, DEMGlb[MapDraw.DEMonMap].GDAL_ScaleFactorString);
+   GDAL_AspectMap_ZT(true,MapDraw.DEMonMap,'');
 end;
 
 procedure TMapForm.GDALbilinearbicubictoUTM1Click(Sender: TObject);
@@ -86,20 +86,20 @@ end;
 
 procedure TMapForm.GDALhillshadeHorn1Click(Sender: TObject);
 begin
-   GDAL_HillshadeMap_Horn(GeotiffDEMNameOfMap, DEMGlb[MapDraw.DEMonMap].GDAL_ScaleFactorString);
+   GDAL_HillshadeMap_Horn(true,MapDraw.DEMonMap);
 end;
 
 
 procedure TMapForm.GDALroughness1Click(Sender: TObject);
 begin
-   GDAL_Roughness(GeotiffDEMNameOfMap);
+   GDAL_Roughness(true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.GDALslopemap1Click(Sender: TObject);
 var
    NewGrid : integer;
 begin
-   NewGrid := GDAL_SlopeMap_ZT(GeotiffDEMNameOfMap, DEMGlb[MapDraw.DEMonMap].GDAL_ScaleFactorString);
+   NewGrid := GDAL_SlopeMap_ZT(true,MapDraw.DEMonMap);
    MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
 end;
 
@@ -108,24 +108,24 @@ procedure TMapForm.GDALslopemapHorn1Click(Sender: TObject);
 var
    NewGrid : integer;
 begin
-   NewGrid := GDAL_SlopeMap_Horn(GeotiffDEMNameOfMap, DEMGlb[MapDraw.DEMonMap].GDAL_ScaleFactorString);
+   NewGrid := GDAL_SlopeMap_Horn(true,MapDraw.DEMonMap);
    MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.GDALTPI1Click(Sender: TObject);
 begin
-   GDAL_TPI(GeotiffDEMNameOfMap);
+   GDAL_TPI(true,MapDraw.DEMonMap);
 end;
 
 
 procedure TMapForm.GDALTRIRileyterrestrial1Click(Sender: TObject);
 begin
-   GDAL_TRI_Riley(GeotiffDEMNameOfMap);
+   GDAL_TRI_Riley(true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.GDALTRIWilsonbathymetric1Click(Sender: TObject);
 begin
-   GDAL_TRI_Wilson(GeotiffDEMNameOfMap);
+   GDAL_TRI_Wilson(true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.GDALupsample1Click(Sender: TObject);

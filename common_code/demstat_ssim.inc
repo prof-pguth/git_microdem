@@ -70,7 +70,6 @@ begin
 end;
 
 
-
 procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
 var
    Min,Max : float32;
@@ -85,23 +84,34 @@ begin
       if (NormDB.FiltRecsInDB = 1) then begin
          Min := NormDB.GetFieldByNameAsFloat('MIN');
          Max := NormDB.GetFieldByNameAsFloat('MAX');
-         WantShowProgress := false;
-         DEMGlb[DEM].ClipToVerticalRange(Min,Max);
-         {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM z range clipped'); {$EndIf};
-         DEMGlb[DEM].AddConstantToGrid(-Min);
-         {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM min set to 0'); {$EndIf};
-         DEMGlb[DEM].MultiplyGridByConstant(1/(Max-Min));
-         {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM range set to 1'); {$EndIf};
-         DEMGlb[DEM].CheckMaxMinElev;
-         WantShowProgress := true;
-         {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM out'); {$EndIf};
+      end
+      else begin
+         Min := DEMGlb[DEM].DEMheader.MinElev;
+         Max := DEMGlb[DEM].DEMheader.MaxElev;
+         Petmar.ReadDefault('SSIM normalization min for ' + What,Min);
+         Petmar.ReadDefault('SSIM normalization max for ' + What,Max);
+         NormDB.Insert;
+         NormDB.SetFieldByNameAsString('CRITERION',What);
+         NormDB.SetFieldByNameAsFloat('MIN',Min);
+         NormDB.SetFieldByNameAsFloat('MAX',Max);
+         NormDB.Post;
       end;
+      WantShowProgress := false;
+      DEMGlb[DEM].ClipToVerticalRange(Min,Max);
+      {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM z range clipped'); {$EndIf};
+      DEMGlb[DEM].AddConstantToGrid(-Min);
+      {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM min set to 0'); {$EndIf};
+      DEMGlb[DEM].MultiplyGridByConstant(1/(Max-Min));
+      {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM range set to 1'); {$EndIf};
+      DEMGlb[DEM].CheckMaxMinElev;
+      WantShowProgress := true;
+      {$IfDef RecordSSIMNormalization} WriteLineToDebugFile('NormalizeDEMforSSIM out'); {$EndIf};
    end;
 end;
 
 
 function ComputeSSIM(DEM1,DEM2 : integer; gl1 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; inline;
-//grid should have been normalized before calling
+//grid should have been normalized before calling, range 0 to 1
 const
   MaxIntensity = 1;
   c1 = 0.01;    //C1 := sqr(0.01 * MaxIntensity);
@@ -128,7 +138,7 @@ end;
 
 function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
 //assumes an elevation grid for the normalization
-//this normalizes the two grids, but then reloads them
+//normalizes the two grids, but then reloads them
 {$IfDef RepeatProblematicComputations}
    label
       Restart;
@@ -175,22 +185,16 @@ begin
          while x <= GridLimits.xgridHigh do begin
             gl1.XGridLow := ThinFactor * x - WindowSize;
             gl1.XGridHigh := ThinFactor * x + WindowSize;
-            //gl2.XGridLow := ThinFactor * x + xoffset - WindowSize;
-            //gl2.XGridHigh := ThinFactor * x + xoffset + WindowSize;
-
             if ShowSatProgress and (x mod 250 = 0) then begin
-               //{$IfDef RecordMakeSSIMMapFull} WriteLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
                UpdateProgressBar(x/DEMglb[DEM1].DEMHeader.NumCol);
             end;
             y := GridLimits.ygridLow;
             while y <= GridLimits.ygridHigh do begin
                 gl1.YGridLow := ThinFactor * y - WindowSize;
                 gl1.YGridHigh := ThinFactor * y + WindowSize;
-                //gl2.YGridLow := ThinFactor * y + yoffset - WindowSize;
-                //gl2.YGridHigh := ThinFactor * y + yoffset + WindowSize;
                 if ComputeSSIM(DEM1,DEM2,gl1,nv[1],nv[2],nv[3],nv[4]) then begin
                    for i := 1 to NumberOfGrids do begin
-                      DEMGlb[ng[i]].SetGridElevation(x,y,nv[i]);
+                      if (not IsNAN(nv[i])) then DEMGlb[ng[i]].SetGridElevation(x,y,nv[i]);
                    end;
                 end;
                 inc(y,1);
@@ -199,9 +203,9 @@ begin
          end;
          for i := 1 to NumberOfGrids do begin
             DEMglb[ng[i]].CheckMaxMinElev;
-            if OpenMap then DEMglb[ng[i]].SetUpMap(ng[i],true,mtElevSpectrum);
+            if OpenMap then DEMglb[ng[i]].SetUpMap(true,mtElevSpectrum);
          end;
-         if not AlreadyNormalized then begin
+         if (not AlreadyNormalized) then begin
             DEMGlb[DEM1].ReloadDEM(true);
             DEMGlb[DEM2].ReloadDEM(true);
             {$IfDef RecordSSIMFull} WriteLineToDebugFile('Reload Grids'); {$EndIf}
@@ -227,7 +231,7 @@ end {function MakeSSIMMap};
 
 
 
-procedure DoSSIMandFUVForAnArea(AreaName : shortstring; Overwrite : boolean);
+procedure DoSSIMandFUVForAnArea(AreaName : shortstring; Overwrite,AreasInsteadOfTiles : boolean);
 var
    DEMIXtileDB,NumRef,i,j : integer;
    ResultsSSIM,ResultsFUV : tStringList;
@@ -243,16 +247,15 @@ var
       SSIM,Luminance,Contrast,Structure : float64;
       RefGridLimits,TestGridLimits : tGridLimits;
    begin
-       if ValidDEM(Ref) and ValidDEM(Test) then begin
-          RefGridLimits := DEMglb[Ref].sfBoundBox2tGridLimits(bb);
-          //TestGridLimits := DEMglb[Test].sfBoundBox2tGridLimits(bb);
-          ComputeSSIM(Ref,Test,RefGridLimits,{TestGridLimits,}SSIM,Luminance,Contrast,Structure);
-          Result := 1-SSIM;
-          if (Result > 1) then Result := 1;
-       end
-       else begin
-          Result := -999;
-       end;
+      if ValidDEM(Ref) and ValidDEM(Test) then begin
+         RefGridLimits := DEMglb[Ref].sfBoundBox2tGridLimits(bb);
+         ComputeSSIM(Ref,Test,RefGridLimits,SSIM,Luminance,Contrast,Structure);
+         Result := 1-SSIM;
+         if (Result > 1) then Result := 1;
+      end
+      else begin
+         Result := -999;
+      end;
    end;
 
     function DoCovarianceForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
@@ -294,9 +297,28 @@ var
                 bb := GISdb[DEMIXtileDB].MyData.GetRecordBoundingBox;
                 TileName := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
                 TileFull := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsFloat('GRID_FULL');
-                Result := TileName  + ',' + AreaName + ',' + RealToString(0.5*(bb.YMin+bb.YMax),-12,4) + ',' +
-                   RealToString(0.5*(bb.xMin+bb.xMax),-12,4) + ',' + RealToString(TileFull,-8,-2) + ',';
+                Result := TileName  + ',' + AreaName + ',' + RealToString(0.5*(bb.YMin+bb.YMax),-12,4) + ',' + RealToString(0.5*(bb.xMin+bb.xMax),-12,4) + ',' + RealToString(TileFull,-8,-2) + ',';
             end;
+
+             procedure FigureSSIMstats(DEM : integer);
+             begin
+                if ValidDEM(DEM) then begin
+                   gl1 := DEMglb[DEM].sfBoundBox2tGridLimits(bb);
+                   DEMglb[DEM].ElevationStatistics(gl1,Mean,Std,NPts);
+                   {$IfDef RecordSSIM}
+                      if IsNAN(1-Mean) then begin
+                         WriteLineToDebugFile('NAN fail for tile ' + TileName);
+                         DEMglb[DEM].ElevationStatistics(gl1,Mean,Std,NPts);
+                      end;
+                   {$EndIf}
+                   aLine := aline + ',' + RealToString(1-Mean,-12,8);
+                end
+                else begin
+                   {$IfDef RecordDEMIX} WriteLineToDebugFile('Fail for tile ' + TileName); {$EndIf}
+                   aLine := aline + ',' + '-999';
+                end;
+             end;
+
 
    begin
        {$IfDef RecordDEMIXFull} WriteLineToDebugFile(AreaName + ' Criterion=' + Criterion); {$EndIf}
@@ -317,9 +339,8 @@ var
           HighlightLineToDebugFile(Criterion + ' has missing data grids for ' + AreaName + '  ' + WhatsMissing);
           exit;
        end;
-       if MDDef.DoFUV {and (Overwrite or (not FileExists(SaveFNameFUV)))} then begin
-          //do correlation coefficients first before normalizing grids for SSIM
-          {$If Defined(RecordFUVstepsFull)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+       if MDDef.DoFUV then begin //do FUV correlation coefficients first before normalizing grids for SSIM
+          {$IfDef RecordDEMIXTimeCriterion}  Stopwatch := TStopwatch.StartNew; {$EndIf}
           GISdb[DEMIXtileDB].MyData.First;
           while not GISdb[DEMIXtileDB].MyData.eof do begin
              Criterion2 := StringReplace(Criterion,'SSIM','FUV',[rfReplaceAll, rfIgnoreCase]);
@@ -339,12 +360,12 @@ var
              GISdb[DEMIXtileDB].MyData.Next;
           end;
           {$IfDef RecordDEMIXFull} WriteLineToDebugFile('FUV done for Criterion=' + Criterion); {$EndIf}
-          {$If Defined(RecordFUVstepsFull)} Elapsed := Stopwatch.Elapsed; WriteLineToDebugFile('FUV ' + Criterion + '   ' + RealToString(Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+          {$IfDef RecordDEMIXTimeCriterion} WriteLineToDebugFile('FUV ' + Criterion + '   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
        end;
 
-       if MDDef.DoSSIM {and (Overwrite or (not FileExists(SaveFNameSSIM))) and (abs(DEMGlb[PointDEMs[0]].ComputeSWCornerY) < 50)} then begin
+       if MDDef.DoSSIM then begin
           //normalize grids for SSIM
-          {$If Defined(RecordFUVsteps)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+          {$IfDef RecordDEMIXTimeCriterion}  Stopwatch := TStopwatch.StartNew; {$EndIf}
           What := BeforeSpecifiedCharacterAnsi(Criterion,'_');
           for i := dmxFirstArea to NumAreaDEMs do NormalizeDEMforSSIM(AreaGrids[i],What);
           for i := dmxFirstPoint to NumPtDEMs do NormalizeDEMforSSIM(PointGrids[i],What);
@@ -352,17 +373,12 @@ var
           wmdem.SetPanelText(2, TileName + ' SSIM grids',true);
 
           for i := 1 to NumAreaDEMs do begin
-             AreaSSIMGrids[i] := MakeSSIMMap(false, true,usingAreaGrids[0],usingAreaGrids[i],1,11);
+             AreaSSIMGrids[i] := MakeSSIMMap(MDDef.OpenMapsFUVSSIM, true,usingAreaGrids[0],usingAreaGrids[i],1,11);
           end;
 
           for i := 1 to NumPtDEMs do begin
-             //ThisRefDEM := RefGridForThisPointGrid(usingPointGrids,PointDEMs[i]);
-             //ThisTestDEM := usingPointGrids[i];
-             //PtSSIMGrids[i] := MakeSSIMMap(false,true,ThisRefDEM,ThisTestDEM,1,11);
-
              UsingRef := RefGridForThisPointGrid(UsingPointGrids,i);
-             //RefGridLimits := DEMglb[UsingRef].sfBoundBox2tGridLimits(bb);
-             PtSSIMGrids[i] := MakeSSIMMap(false,true,UsingRef,usingPointGrids[i],1,11);
+             PtSSIMGrids[i] := MakeSSIMMap(MDDef.OpenMapsFUVSSIM,true,UsingRef,usingPointGrids[i],1,11);
              {$IfDef RecordDEMIXSSIMGrid}
                  if ValidDEM(PtSSIMGrids[i]) then TStr := 'Good PtSSIMGrid=' + IntToStr(PtSSIMGrids[i]) + ' '
                  else TStr := 'Fail PtSSIMGrid ';
@@ -377,33 +393,17 @@ var
              aLine := TileSetUp + Criterion;
              wmdem.SetPanelText(2, TileName + ' SSIM',true);
              for i := 1 to NumAreaDEMs do begin
-                if ValidDEM(AreaSSIMGrids[i]) then begin
-                   gl1 := DEMglb[AreaSSIMGrids[i]].sfBoundBox2tGridLimits(bb);
-                   DEMglb[AreaSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std,NPts);
-                   aLine := aline + ',' + RealToString(1-Mean,-12,8);
-                end
-                else begin
-                   {$IfDef RecordDEMIX} WriteLineToDebugFile('Fail for tile ' + TileName + ' Area DEM=' + DEMglb[usingAreaGrids[i]].AreaName); {$EndIf}
-                   aLine := aline + ',' + '-999';
-                end;
+                FigureSSIMstats(AreaSSIMGrids[i]);
              end;
              for i := 1 to NumPtDEMs do begin
-                if ValidDEM(PtSSIMGrids[i]) then begin
-                   gl1 := DEMglb[PtSSIMGrids[i]].sfBoundBox2tGridLimits(bb);
-                   DEMglb[PtSSIMGrids[i]].ElevationStatistics(gl1,Mean,Std,NPts);
-                   aLine := aline + ',' + RealToString(1-Mean,-12,8);
-                end
-                else begin
-                   {$IfDef RecordDEMIX} WriteLineToDebugFile('SSIM Fail (invalid PtSSIMGrids) ' + TileName + ' Point DEM=' + DEMglb[usingPointGrids[i]].AreaName); {$EndIf}
-                   aLine := aline + ',' + '-999';
-                end;
+                FigureSSIMstats(PtSSIMGrids[i]);
              end;
              ResultsSSIM.Add(aline);
              GISdb[DEMIXtileDB].MyData.Next;
           end;
           for i := 1 to NumPtDEMs do CloseSingleDEM(PtSSIMGrids[i]);
           for i := 1 to NumAreaDEMs do CloseSingleDEM(AreaSSIMGrids[i]);
-          {$If Defined(RecordFUVstepsFull)} WriteLineToDebugFile('SSIM ' + What + ' Do criterion  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+          {$IfDef RecordDEMIXTimeCriterion} WriteLineToDebugFile('SSIM ' + What + ' Do criterion  ' + RealToString(Stopwatch.Elapsed.TotalSeconds/60,-12,-4) + ' min'); {$EndIf}
        end;
        if ClearDerived then ClearDerivedGrids;
        wmdem.SetPanelText(2,'',true);
@@ -413,13 +413,21 @@ var
    Success : boolean;
    TStr,HowDone : shortstring;
    fName2 : PathStr;
+   FullTiles : tStringList;
 begin {procedure DoSSIMandFUVForAnArea}
+    SaveBackupDefaults;
     SaveFNameSSIM := SSIMresultsDir + AreaName + '_ssim_results.csv';
-    if Overwrite and MDDef.DoSSIM and FileExists(SaveFNameSSIM) then File2Trash(SaveFNameSSIM);
     SaveFNameFUV := FUVresultsDir + AreaName + '_fuv_results.csv';
-    if Overwrite and MDDef.DoFUV and FileExists(SaveFNameFUV) then File2Trash(SaveFNameFUV);
+    if Overwrite then begin
+       if MDDef.DoSSIM and FileExists(SaveFNameSSIM) then File2Trash(SaveFNameSSIM);
+       if MDDef.DoFUV and FileExists(SaveFNameFUV) then File2Trash(SaveFNameFUV);
+    end
+    else begin
+       if (MDDef.DoSSIM and (FileExists(SaveFNameSSIM))) then MDDef.DoSSIM := false;
+       if (MDDef.DoFUV and (FileExists(SaveFNameFUV))) then MDDef.DoFUV := false;
+    end;
 
-    if (MDDef.DoSSIM and (not FileExists(SaveFNameSSIM))) or (MDDef.DoFUV and (not FileExists(SaveFNameFUV))) then begin
+    if MDDef.DoSSIM or MDDef.DoFUV then begin
        {$If Defined(TimeGridsForArea)} Stopwatch2 := TStopwatch.StartNew; {$EndIf}
        {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}
        wmdem.SetPanelText(3, 'Load DEMs',true);
@@ -437,8 +445,17 @@ begin {procedure DoSSIMandFUVForAnArea}
           ResultsFUV.Add(aLine);
           ResultsSSIM.Add(aLine);
 
-          DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,false);
-          GISdb[DEMIXtileDB].ApplyGISFilter(FilterForDEMIXtilesToUse);
+          if AreasInsteadOfTiles then begin
+             FullTiles := tStringList.Create;
+             FullTiles.Add('NAME,GRID_FULL,LAT_HI,LONG_HI,LAT_LOW,LONG_LOW');
+             FullTiles.Add('FULL_AREA,100,' + RealToString(DEMGlb[PointDEMs[0]].DEMBoundBoxGeo.YMax,-12,-6) + ',' +  RealToString(DEMGlb[PointDEMs[0]].DEMBoundBoxGeo.xMax,-12,-6) + ',' +
+                                              RealToString(DEMGlb[PointDEMs[0]].DEMBoundBoxGeo.YMin,-12,-6) + ',' +  RealToString(DEMGlb[PointDEMs[0]].DEMBoundBoxGeo.xMin,-12,-6));
+             DEMIXtileDB := StringList2CSVtoDB(FullTiles,MDTempDir + 'outline.dbf',false,false,false);
+          end
+          else begin
+             DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,false);
+             GISdb[DEMIXtileDB].ApplyGISFilter(FilterForDEMIXtilesToUse);
+          end;
           {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile(AreaName + ' num tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
 
           if MDDef.SSIM_ROTOR then begin //created by WbE with Jupyter Notebook
@@ -578,7 +595,7 @@ begin {procedure DoSSIMandFUVForAnArea}
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
 
              //Success := OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'WBT',AreaName,'CONIN_',PointGrids,AreaGrids);
-
+             HeavyDutyProcessing := true;
              Success := SAGACreateDEMIX_ConIn_Grids(MDDef.OpenMapsFUVSSIM,AreaName,'CONIN_');
 
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WBT ConIn ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
@@ -631,11 +648,12 @@ begin {procedure DoSSIMandFUVForAnArea}
        end;
        {$If Defined(TimeGridsForArea)} WriteLineToDebugFile(AreaName + ' completed ' + RealToString(Stopwatch2.Elapsed.TotalSeconds/3600,-12,-4) + ' hours');  {$EndIf}
     end;
+    RestoreBackupDefaults;
 end {procedure DoSSIMandFUVForAnArea};
 
 
 
-procedure AreaSSIMandFUVComputations(Overwrite : boolean; Areas : tStringList = Nil);
+procedure AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles : boolean; Areas : tStringList = Nil);
 var
    Area  : shortstring;
    i     : integer;
@@ -656,18 +674,19 @@ begin
       if MDDef.DoFUV then SafeMakeDir(FUVresultsDir);
       LockStatusBar := true;
       wmdem.SetPanelText(0, 'Started ' + TimeToStr(Now),true);
+      HeavyDutyProcessing := true;
       if MDDef.ProcessLoopsForward then begin
          for i := 0 to pred(Areas.Count) do begin
             Area := Areas.Strings[i];
             wmdem.SetPanelText(1, IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' + Area,true);
-            DoSSIMandFUVForAnArea(Area,Overwrite);
+            DoSSIMandFUVForAnArea(Area,Overwrite,AreasInsteadOfTiles);
          end;
       end
       else begin
          for i := pred(Areas.Count) downto 0 do begin
             Area := Areas.Strings[i];
             wmdem.SetPanelText(1, IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' + Area,true);
-            DoSSIMandFUVForAnArea(Area,Overwrite);
+            DoSSIMandFUVForAnArea(Area,Overwrite,AreasInsteadOfTiles);
          end;
       end;
    finally

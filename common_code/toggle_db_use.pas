@@ -141,31 +141,32 @@ begin
    {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse, FieldShownUser=' + FieldShownUser +  '  FieldToToggle=' + FieldToToggle); {$EndIf}
    if (Table.RecordCount = 0) then begin
       Result := false;
-      exit;
-   end;
-   ToggleDBfieldsForm := TToggleDBfieldsForm.Create(Application);
-   with ToggleDBfieldsForm do begin
-      TheTable := Table;
-      FieldDisplayed := FieldShownUser;
-      ToggleField := FieldToToggle;
-      SecondField := SecondaryField;
-      LimField := LimitField;
-      OldFilter := TheTable.Filter;
-      WasFiltered := (OldFilter <> '');
-      if (LimField <> '') then begin
-         DataThere := Nil;
-         DataThere := TheTable.ListUniqueEntriesInDB(LimField);
-         for i := 0 to pred(DataThere.Count) do ComboBox1.Items.Add(DataThere.Strings[i]);
-         DataThere.Free;
-         ComboBox1.Visible := true;
-      end
-      else ComboBox1.Visible := false;
+   end
+   else begin
+      ToggleDBfieldsForm := TToggleDBfieldsForm.Create(Application);
+      with ToggleDBfieldsForm do begin
+         TheTable := Table;
+         FieldDisplayed := FieldShownUser;
+         ToggleField := FieldToToggle;
+         SecondField := SecondaryField;
+         LimField := LimitField;
+         OldFilter := TheTable.Filter;
+         WasFiltered := (OldFilter <> '');
+         if (LimField <> '') then begin
+            DataThere := Nil;
+            DataThere := TheTable.ListUniqueEntriesInDB(LimField);
+            for i := 0 to pred(DataThere.Count) do ComboBox1.Items.Add(DataThere.Strings[i]);
+            DataThere.Free;
+            ComboBox1.Visible := true;
+         end
+         else ComboBox1.Visible := false;
 
-      UpdateStatus;
-      if (aCaption <> '') then Caption := aCaption;
+         UpdateStatus;
+         if (aCaption <> '') then Caption := aCaption;
 
-      ToggleDBfieldsForm.ShowModal;
-      Result := HappyEnding;
+         ToggleDBfieldsForm.ShowModal;
+         Result := HappyEnding;
+      end;
    end;
    {$IfDef ShowToggle} WriteLineToDebugFile('VerifyRecordsToUse out'); {$EndIf}
 end;

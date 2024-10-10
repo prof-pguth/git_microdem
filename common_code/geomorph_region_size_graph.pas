@@ -70,7 +70,6 @@ uses
    Nevadia_Main;
 
 
-
 function Tregionsizeform.GeomorphParameterVersusRegion(aLat,aLong : float64) : TThisBaseGraph;
 var
    MomentVar : tMomentVar;
@@ -85,8 +84,8 @@ var
       function PerformPointComputations(Col,Row : integer) : boolean;
       var
          Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf,z : float32;
-         PlanCurvature,SlopeCurvature,
-         MaxSlp,crossc,MaxCurve,MinCurve,
+         //PlanCurvature,SlopeCurvature,
+         //MaxSlp,crossc,MaxCurve,MinCurve,
          Upward,Downward,Relief1 : float64;
          SlopeAspectRec : tSlopeAspectRec;
       begin
@@ -163,15 +162,15 @@ begin
    end
    else if Param = rsOpenUp then begin
       TStr1 := 'Upward openness';
-      TStr2 := TStr1 + DegSym;
+      TStr2 := TStr1 + '°';
    end
    else if Param = rsOpenDown then begin
       TStr1 := 'Downward openness';
-      TStr2 := TStr1 + DegSym;
+      TStr2 := TStr1 + '°';
    end
    else if Param = rsOpenDiff then begin
       TStr1 := 'Difference openness';
-      TStr2 := TStr1 + DegSym;
+      TStr2 := TStr1 + '°';
    end
    else if Param = rsSummit then begin
       TStr1 := 'Summit';

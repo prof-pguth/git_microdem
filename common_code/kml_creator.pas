@@ -146,7 +146,7 @@ var
 begin
    if (Lat > -990) then url := 'https://www.google.com/maps?z=16&q=' + RealToString(Lat,-18,-8) + ',' + RealToString(Long,-18,-8) + '&t=h'
    else url := 'https://maps.google.com/maps?tab=wl';
-   ExecuteFile(url, '', '');
+   ExecuteFile(url);
 end;
 
 
@@ -429,7 +429,7 @@ begin
    ApplicationProcessMessages;
    if OpenGENow then begin
       {$IfDef KMLProblems} WriteLineToDebugFile('tKMLCreator.CloseAndSaveFile exec, fName=' + fName); {$EndIf}
-      ExecuteFile(fName, '', '');
+      ExecuteFile(fName);
    end;
 
    {$IfDef KMLProblems} WriteLineToDebugFile('tKMLCreator.CloseAndSaveFile out, fName=' + fName); {$EndIf}

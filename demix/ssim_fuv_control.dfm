@@ -234,7 +234,7 @@ object fuv_ssim_control: Tfuv_ssim_control
     TabOrder = 6
   end
   object BitBtn1: TBitBtn
-    Left = 32
+    Left = 39
     Top = 400
     Width = 105
     Height = 25
@@ -302,5 +302,13 @@ object fuv_ssim_control: Tfuv_ssim_control
     Caption = 'Spawn'
     TabOrder = 14
     OnClick = BitBtn5Click
+  end
+  object CheckBox11: TCheckBox
+    Left = 40
+    Top = 160
+    Width = 185
+    Height = 17
+    Caption = 'Area instead of DEMIX tiles'
+    TabOrder = 15
   end
 end

@@ -19,9 +19,12 @@ unit DEMStat;
    {$IfDef Debug }
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
-      //{$Define RecordSSIM}
+      {$Define RecordSSIM}
       //{$Define RecordSSIMFull}
-      //{$Define RecordDEMIX}
+      {$Define RecordDEMIX}
+      //{$Define RecordDEMIXTimeCriterion}
+      {$Define RecordHistogram}
+      //{$Define RecordGridCorrrelations}
       //{$Define RecordFUVsteps}
       //{$Define TimeGridsForArea}
       //{$Define TimeOpenCreateGrids}
@@ -59,7 +62,6 @@ unit DEMStat;
       //{$Define RecordDetailedTraceCrests}
       //{$Define RecordClustering}
       //{$Define RecordFFT}
-      //{$Define RecordHistogram}
       //{$Define RecordGridScatterGram}
    {$Else}
       //{$Define RecordDEMIX}
@@ -176,7 +178,7 @@ type
    procedure AddaDEM(FirstDEM,AddDEM : integer; Mult : integer = 1);
 
    function MakeChangeMap(Map1,Map2 : integer; GridLimits: tGridLimits) : integer;
-   function GridCorrelationMatrix(DEMsWanted : tDEMbooleanArray; Incr : integer = 1) : DEMStringGrid.TGridForm;
+   function GridCorrelationMatrix(DEMsWanted : tDEMbooleanArray; Title : shortstring; Incr : integer = 1) : DEMStringGrid.TGridForm;
 
    procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
    procedure DirtAndAirShots(DB : integer; Title : shortString);
@@ -200,19 +202,20 @@ type
    procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
 
    procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
-   procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
+   function CreateGridHistograms(DEMSwanted : tDEMbooleanArray; ParamName : shortstring = ''; TailCutoff : float32 = 0.5) : TThisBaseGraph;
 
    procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);
 
 //ssim operations
    function ComputeSSIM(DEM1,DEM2 : integer; gl1 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
-   procedure AreaSSIMandFUVComputations(Overwrite : boolean; Areas : tStringList = nil);
+   procedure AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles : boolean; Areas : tStringList = nil);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);
 
 
 procedure CompareResamplingFiltering(DEM : integer);
+procedure CompareWindowSizes(DEM : integer);
 
 
 const
@@ -300,40 +303,136 @@ var
    {$I demstat_grid_compare.inc}
 {$EndIf}
 
-
-procedure CompareResamplingFiltering(DEM : integer);
+procedure CompareWindowSizes(DEM : integer);
 const
-   Averages : array[1..6] of integer = (5,10,15,20,25,30);
-   GeoSpace : array[1..5] of float32 = (1/9,0.25,1/3,0.5,1);
-   Filters : array[1..5] of integer = (1,3,5,7,10);
+   NumWin = 9;
+   Windows : array[1..NumWin] of integer = (1,2,3,5,10,15,20,25,30);
 var
-   i : integer;
+   i,NewGrid : integer;
    fName : PathStr;
    OpenMap : boolean;
-begin
-   SetColorForProcessing;
-   OpenMap := true;
-   for i := 1 to 5 do begin
-     wmdem.SetPanelText(3,'Mean filter ' + IntToStr(i) + '/5');
-     DEMGlb[DEM].FilterThisDEM(OpenMap,fcMean,Filters[i]);
+   Findings : tStringList;
+   Fixed : int64;
+   Series : shortstring;
+
+   procedure ProcessNewGrid(Radius : integer);
+   var
+      Slope : integer;
+      n : int64;
+      sMean,sStd,rMean,rStd : float32;
+   begin
+      Slope := CreateSlopeMapPercent(false,DEM,fName,Radius);
+      DEMglb[Slope].ElevationStatistics(DEMglb[Slope].FullDEMGridLimits,sMean,sStd,n);
+      Findings.Add(DEMglb[Slope].AreaName + ',' + Series + ',' + RealToString(Radius * DEMglb[Slope].AverageSpace,-8,-2) + ',' + RealToString(sMean,-8,-2) + ',' + RealToString(sStd,-8,-2) );
+      CloseSingleDEM(Slope);
    end;
 
-   for i := 1 to 6 do begin
-      fName := 'utm_' + IntToStr(Averages[i]) + '_m';
+
+begin
+   SetColorForProcessing;
+   OpenMap := false;
+   Findings := tStringList.Create;
+   Findings.Add('NAME,SERIES,AVG_SPACE,AVG_SLOPE,STD_SLOPE');
+
+   DEMGLb[DEM].MarkBelowMissing(1.0,Fixed,false);
+
+   Series := 'UTM';
+   for i := 1 to NumWin do begin
+      fName := 'window_' + IntToStr(Windows[i]) + '_m';
       wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/6');
-      DEMGlb[DEM].ThinThisDEM(OpenMap,fName,Averages[i],true);
+      ProcessNewGrid(Windows[i]);
    end;
-   for i := 1 to 5 do begin
-      fName := MDtempDir + 'arc_sec_' + RealToString(GeoSpace[i],-8,-3) + '_sec.tif';
-      wmdem.SetPanelText(3,'geo ' + IntToStr(i) + '/5');
-      CreateArcSecDEM(false,OpenMap,DEM,PixelIsPoint,GeoSpace[i],GeoSpace[i],fName);
-   end;
+
    wmdem.SetPanelText(3,'');
    SetColorForWaiting;
+
+   fName := NextFileNumber(MDtempDir,'slope_window_sampler_','.dbf');
+   Findings.SaveToFile(fName);
+   StringList2CSVtoDB(Findings,fName);
 end;
 
 
-procedure CreateGridHistograms(DEMSwanted : tDEMbooleanArray; TailCutoff : float32 = 0.5);
+
+
+procedure CompareResamplingFiltering(DEM : integer);
+const
+   NumGeo = 7;
+   NumUTM = 6;
+   NumFilt = 6;
+   Averages : array[1..NumUTM] of integer = (5,10,15,20,25,30);
+   GeoSpace : array[1..NumGeo] of float32 = (1/9,0.25,1/3,0.5,0.67,0.75,1);
+   Filters : array[1..NumFilt] of integer = (1,3,5,10,20,30);
+var
+   i,NewGrid : integer;
+   fName : PathStr;
+   OpenMap : boolean;
+   Findings : tStringList;
+   Fixed : int64;
+   Series : shortstring;
+   Space : float32;
+
+   procedure ProcessNewGrid(NewGrid : integer);
+   var
+      Ruff,Slope : integer;
+      n : int64;
+      sMean,sStd,rMean,rStd : float32;
+   begin
+      Slope := 0;   //so slope grid returned
+      Ruff := CreateSlopeRoughnessSlopeStandardDeviationMap(NewGrid,5,Slope,false);
+      DEMglb[Slope].ElevationStatistics(DEMglb[Slope].FullDEMGridLimits,sMean,sStd,n);
+      DEMglb[Ruff].ElevationStatistics(DEMglb[Ruff].FullDEMGridLimits,rMean,rStd,n);
+      if Series <> 'Filter' then Space := DEMglb[NewGrid].AverageSpace;
+      Findings.Add(DEMglb[NewGrid].AreaName + ',' + Series + ',' + RealToString(Space,-8,-2) + ',' + RealToString(sMean,-8,-2) + ',' + RealToString(sStd,-8,-2) + ',' + RealToString(rMean,-8,-2) + ',' + RealToString(rStd,-8,-2));
+      if (NewGrid <> DEM) then CloseSingleDEM(NewGrid);
+      CloseSingleDEM(Slope);
+      CloseSingleDEM(Ruff);
+   end;
+
+
+begin
+   SetColorForProcessing;
+   OpenMap := false;
+   Findings := tStringList.Create;
+   Findings.Add('NAME,SERIES,AVG_SPACE,AVG_SLOPE,STD_SLOPE,AVG_ROUGH,STD_ROUGH');
+
+   DEMGLb[DEM].MarkBelowMissing(1.0,Fixed,false);
+
+   Series := 'UTM';
+   ProcessNewGrid(DEM);
+   for i := 1 to NumUTM do begin
+      fName := 'utm_' + IntToStr(Averages[i]) + '_m';
+      wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/' + IntToStr(NumUTM));
+      NewGrid := DEMGlb[DEM].ThinThisDEM(OpenMap,fName,Averages[i],true);
+      ProcessNewGrid(NewGrid);
+   end;
+
+   Series := 'Geo';
+   for i := 1 to NumGeo do begin
+      fName := MDtempDir + 'arc_sec_' + RealToString(GeoSpace[i],-8,-3) + '_sec.tif';
+      wmdem.SetPanelText(3,'geo ' + IntToStr(i) + '/' + IntToStr(NumGeo));
+      NewGrid := CreateArcSecDEM(false,OpenMap,DEM,PixelIsPoint,GeoSpace[i],GeoSpace[i],fName);
+      ProcessNewGrid(NewGrid);
+   end;
+
+   Series := 'Filter';
+   for i := 1 to NumFilt do begin
+      wmdem.SetPanelText(3,'Mean filter ' + IntToStr(i) + '/' + IntToStr(NumFilt));
+      NewGrid := DEMGlb[DEM].FilterThisDEM(OpenMap,fcMean,Filters[i]);
+      Space := 0.5 * succ(2 * Filters[i]) * DEMglb[NewGrid].AverageSpace;
+      ProcessNewGrid(NewGrid);
+   end;
+
+
+   wmdem.SetPanelText(3,'');
+   SetColorForWaiting;
+
+   fName := NextFileNumber(MDtempDir,'slope_spacing_sampler_','.dbf');
+   Findings.SaveToFile(fName);
+   StringList2CSVtoDB(Findings,fName);
+end;
+
+
+function CreateGridHistograms(DEMSwanted : tDEMbooleanArray; ParamName : shortstring = ''; TailCutoff : float32 = 0.5) : TThisBaseGraph;
 var
    j : integer;
    Distributions,Legends : tStringList;
@@ -342,6 +441,7 @@ var
    NPts : int64;
    fName : PathStr;
 begin
+   {$IfDef RecordHistogram} WriteLineToDebugFile('CreateGridHistograms in'); {$EndIf}
    if (TailCutoff < 0) then ReadDefault('Tail cutoff (%)',TailCutoff);
    Distributions := tStringList.Create;
    Legends := tStringList.Create;
@@ -352,8 +452,8 @@ begin
          New(Values);
          DEMGlb[j].GetElevationsInLongArray(DEMGlb[j].FullDEMGridLimits,NPts,Values^);
 
-         ThisMax := Values^[round(NPts * (100 - TailCutoff) / 100)];
-         ThisMin := Values^[round(NPts * TailCutoff / 100)];
+         ThisMin := Values^[round(NPts * (100 - TailCutoff) / 100)];
+         ThisMax := Values^[round(NPts * TailCutoff / 100)];
 
          if (ThisMax > Max) then Max := ThisMax;
          if (ThisMin < Min) then Min := ThisMin;
@@ -364,7 +464,9 @@ begin
       end;
    end;
    BinSize := (Max - Min) / 200;
-   CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,'', 'DEM/Grid histograms',200,Min,Max,BinSize);
+   {$IfDef RecordHistogram} WriteLineToDebugFile('Min=' + RealToString(Min,-12,-6) + '  max=' + RealToString(Max,-12,-6) + ' DEMs=' + IntToStr(Distributions.Count)); {$EndIf}
+   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,ParamName, 'DEM/Grid histograms',200,Min,Max,BinSize);
+   {$IfDef RecordHistogram} WriteLineToDebugFile('CreateGridHistograms out'); {$EndIf}
 end;
 
 
@@ -467,7 +569,7 @@ var
       if MDDef.DoElevHist then Graph1 := MakeOneHistogram(ElevMap,MDDef.HistElevBinSize,Names,ElevDistCount,ElevDist,'Elevation (m)',DEMglb[ElevMap].DEMheader.MaxElev);
       if MDDef.DoSlopeHist then Graph2 := MakeOneHistogram(SlopeMap,MDDef.HistSlopeBinSize,Names,SlopeDistCount,SlopeDist,'Slope (%)',100);
       if MDDef.DoRuffHist then Graph3 := MakeOneHistogram(RuffMap,MDDef.HistRuffBinSize,Names,RuffDistCount,RuffDist,'Roughness (%)',100);
-      if MDDef.DoAspectHist then Graph4 := MakeOneHistogram(AspMap,MDDef.HistAspectBinSize,Names,AspDistCount,AspDist,'Aspect (' + DegSym + ')',360);
+      if MDDef.DoAspectHist then Graph4 := MakeOneHistogram(AspMap,MDDef.HistAspectBinSize,Names,AspDistCount,AspDist,'Aspect (°)',360);
    end;
 
 
@@ -616,7 +718,7 @@ begin
            GridLimits.XGridHigh := x + MDDef.LagSearchRadius;
            GridLimits.YGridLow := y - MDDef.LagSearchRadius;
            GridLimits.YGridHigh := y + MDDef.LagSearchRadius;
-           DEMGlb[MainDEM].ComputeMissingData(GridLimits,Missing);
+           DEMGlb[MainDEM].ComputeMissingDataPercentage(GridLimits,Missing);
            if (Missing < 25) then begin
               Lag_and_Shift(0,0,MainDEM,SubDEM,GridLimits,NPts,xLag,YLag,MaxR,NoLagR,zrange,AvgSlope,BestA,BestB);
               DEMGlb[MainDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
@@ -892,8 +994,8 @@ var
              LegendFiles.Add(GridForm.StringGrid1.Cells[RegionsDone,0]);
           end
           else begin
-             GridForm.StringGrid1.Cells[RegionsDone,0] := ShortSlopeMethodName(MDdef.SlopeAlg);
-             LegendFiles.Add(ShortSlopeMethodName(MDdef.SlopeAlg));
+             GridForm.StringGrid1.Cells[RegionsDone,0] := ShortSlopeMethodName(MDDef.SlopeAlgorithm);
+             LegendFiles.Add(ShortSlopeMethodName(MDDef.SlopeAlgorithm));
           end;
        end;
 
@@ -922,7 +1024,7 @@ begin
    end
    else begin
       for Method:= FirstSlopeMethod to LastSlopeMethod do begin
-         MDdef.SlopeAlg := Method;
+         MDDef.SlopeAlgorithm := Method;
          MakeSlopeMap(0);
       end;
    end;
@@ -1182,7 +1284,6 @@ var
                         Table1.CarefullySetFloat('FABRIC_DIR',SSOvars.TheDipDirs[3],0.1);
                     end;
                    {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats end SSO'); {$EndIf}
-
                       (*
                        if MDDef.IncludeWavelength then begin
                            if GetPerpendicularLineEnd(Lat,Long,5000,TheDipDirs[3],Lat1,Long1,Lat2,Long2) then begin
@@ -1207,14 +1308,14 @@ var
                   end;
 
                  if MDDef.IncludeMissingHoles then begin
-                    DEMGlb[WantedDEM].ComputeMissingData(GridLimits,MissingPC);
+                    DEMGlb[WantedDEM].ComputeMissingDataPercentage(GridLimits,MissingPC);
                     Table1.SetFieldByNameAsFloat('MISSING',MissingPC);
                  end;
 
                   if MDDef.IncludeBasinID then begin
                     Table1.SetFieldByNameAsString('BASIN_ID',DEMGlb[WantedDEM].AreaName);
-                    Table1.SetFieldByNameAsFloat('SLP_OV_30',DEMGlb[WantedDEM].Over30PercentSlope);
-                    Table1.SetFieldByNameAsFloat('SLP_OV_50',DEMGlb[WantedDEM].Over50PercentSlope);
+                    //Table1.SetFieldByNameAsFloat('SLP_OV_30',DEMGlb[WantedDEM].Over30PercentSlope);
+                    //Table1.SetFieldByNameAsFloat('SLP_OV_50',DEMGlb[WantedDEM].Over50PercentSlope);
                   end;
                  {$IfDef FullRecordBlockGeostats} WriteLineToDebugFile('ComputeStats finished all'); {$EndIf}
                end
@@ -1402,7 +1503,7 @@ begin
          end;
       end;
       EndProgress;
-      if OpenMap then DEMGlb[Result].SetUpMap(Result,true,DEMGlb[FirstDEM].SelectionMap.MapDraw.MapType);
+      if OpenMap then DEMGlb[Result].SetupMap(true,DEMGlb[FirstDEM].SelectionMap.MapDraw.MapType);
    end;
    {$IfDef RecordMapAlgebra} WriteLineToDebugFile('SumDEMs out'); {$EndIf}
 end;
@@ -1604,7 +1705,7 @@ begin
    DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName );
 
    DEMGlb[Result].CreateVATforDEM(false);
-   DEMGlb[Result].SetUpMap(Result,true,mtDEMVATTable);
+   DEMGlb[Result].SetupMap(true,mtDEMVATTable);
    db := DEMGlb[Result].SelectionMap.LoadDataBaseFile(ChangeFileExt(DEMGlb[Result].DEMFileName,'.vat.dbf'));
    {$IfDef RecordClustering}
       GISdb[db].MyData.First;
@@ -1893,7 +1994,7 @@ begin
                DEMGlb[NewDEM].WriteNewFormatDEM(fName);
                if MDDef.LoadPCBands then begin
                   DEMGlb[NewDEM].AreaName := ExtractFileNameNoExt(fName);
-                  DEMGlb[NewDEM].SetUpMap(NewDEM,false,mtElevGray);
+                  DEMGlb[NewDEM].SetUpMap(false,mtElevGray);
                end
                else CloseSingleDEM(NewDEM);
             end;
@@ -1915,7 +2016,7 @@ var
    NPts : int64;
    z1,z2,XGrid,YGrid : float32;
    Lat,Long : float64;
-   IdenticalGrids : boolean;
+   IdenticalGrids,MatchPt : boolean;
    sum, sp : array[1..2] of float64;
    spc : float64;
 begin
@@ -1941,25 +2042,19 @@ begin
       while (Row <= GridLimitsDEM1.YGridHigh) do begin
          if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
             if IdenticalGrids then begin
-               if DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
-                  Sum[1] := Sum[1] + z1;
-                  Sum[2] := Sum[2] + z2;
-                  sp[1] := sp[1] + z1 * z1;
-                  sp[2] := sp[2] + z2 * z2;
-                  SPc := SPc + z1 * z2;
-                  inc(NPts);
-               end;
+               MatchPt := DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2);
             end
             else begin
                DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-               if DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2) then begin
-                  Sum[1] := Sum[1] + z1;
-                  Sum[2] := Sum[2] + z2;
-                  sp[1] := sp[1] + z1 * z1;
-                  sp[2] := sp[2] + z2 * z2;
-                  SPc := SPc + z1 * z2;
-                  inc(NPts);
-               end;
+               MatchPt := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2);
+            end;
+            if MatchPt then begin
+               Sum[1] := Sum[1] + z1;
+               Sum[2] := Sum[2] + z2;
+               sp[1] := sp[1] + z1 * z1;
+               sp[2] := sp[2] + z2 * z2;
+               SPc := SPc + z1 * z2;
+               inc(NPts);
             end;
          end;
          inc(Row);
@@ -2067,8 +2162,8 @@ var
              Result.GraphDraw.MinVertAxis := MinElevZ;
              Result.GraphDraw.MaxVertAxis := MaxElevZ;
              Result.GraphDraw.LLcornerText := bsString;
-             if (NumDEMs = 1) then TStr := DEMGlb[CurDEM].AreaName + '  ' + TStr;
-             if (not BaseGraf.CreateGraphHidden) then Result.Caption := TStr;
+             //if (NumDEMs = 1) then TStr := DEMGlb[CurDEM].AreaName + '  ' + TStr;
+             //if (not BaseGraf.CreateGraphHidden) then Result.Caption := TStr;
              case Graph of
                ElevFreq  : Result.GraphDraw.MaxHorizAxis := MaxCount;
                ElevRuff : begin
@@ -2077,20 +2172,20 @@ var
                            end;
                ElevSlope : begin
                               Result.GraphDraw.MaxHorizAxis := MaxSlope + 5;
-                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName(MdDef.SlopeAlg)+' (%)';
+                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName(MDDef.SlopeAlgorithm)+' (%)';
                            end;
                ElevSlopeDeg : begin
                               Result.GraphDraw.MaxHorizAxis := arcTan(0.01*MaxSlope) / DegToRad;
-                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName( MDDef.SlopeAlg)+' (°)';
+                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName( MDDef.SlopeAlgorithm)+' (°)';
                            end;
                SlopeFreq : begin
                              Result.GraphDraw.MaxHorizAxis := MaxSlopeCount;
                              Result.GraphDraw.MinVertAxis := 0;
                              Result.GraphDraw.MaxVertAxis := MaxSlopeValue;
-                             Result.GraphDraw.VertLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeAlg) + ' (%)';
+                             Result.GraphDraw.VertLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeAlgorithm) + ' (%)';
                            end;
                CumSlope   : begin
-                               Result.GraphDraw.HorizLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeAlg) + ' (%)';
+                               Result.GraphDraw.HorizLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeAlgorithm) + ' (%)';
                                Result.GraphDraw.VertLabel := 'Cumulative Percentage Less Steep';
                                Result.GraphDraw.VertAxisFunct := NInv;
                                Result.GraphDraw.VertAxisFunctionType := CumulativeNormalAxis;
@@ -2112,11 +2207,9 @@ var
                Result.OpenDataFile(rfile);
                Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM mod 16]);
 
-
                LoadDEMIXnames;
                Result.GraphDraw.FileColors256[CurDEM] := DEMIXColorFromDEMName(DEMGlb[CurDEM].AreaName);
                {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorStringFromPlatformColor(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
-
 
                if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
                   Result.GraphDraw.ShowLine[Result.GraphDraw.DataFilesPlotted.Count] := true;
@@ -2214,6 +2307,7 @@ var
    Dir : tCompassDirection;
 begin {proc ElevationSlopePlot}
    {$IfDef RecordElevationSlopePlot} WriteLineToDebugFile('ElevationSlopePlot in'); {$EndIf}
+   SetColorForProcessing;
    MaxCount := 0;
    MaxSlope := 0;
    MaxRuff := 0;
@@ -2382,6 +2476,7 @@ begin {proc ElevationSlopePlot}
       Dispose(Slopes[CurDEM]);
       Dispose(SlopeHist[CurDEM]);
    end;
+   SetColorForWaiting;
    {$IfDef RecordElevationSlopePlot} WriteLineToDebugFile('ElevationSlopePlot Out'); {$EndIf}
 end;
 
@@ -2456,10 +2551,11 @@ var
    Results,AllResults : tStringList;
    AspName,NetName : PathStr;
    AspSL,NetSL : tstringList;
-   AllDEMs : boolean;
+   AllDEMs,Success : boolean;
    fName : PathStr;
 begin
    {$IfDef RecordSSO} WriteLineToDebugFile('DoAnSSODiagram in, DEM=' + IntToStr(CurDEM)); {$EndIf}
+   SetColorForProcessing;
    SaveBackupDefaults;
    MDDef.NetDef.NetUsed := Schmidt;
    AllDEMs := (CurDEM = 0);
@@ -2473,60 +2569,72 @@ begin
    ng := 0;
    if MDDef.GemorphAspectRose then AspSL := tstringList.Create;
    if MDDef.GemorphSSOPoles then NetSL := tstringList.Create;
+   Success := false;
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if AllDEMs or (i=CurDEM) then begin
          inc(ng);
          if MDDef.GemorphSSOPoles then begin
-            NetName := MDtempDir + 'sso_net_' + IntToStr(ng) + '.bmp';
+            NetName := NextFileNumber(MDtempDir, 'sso_net_' + IntToStr(ng) + '_','.bmp');
             NetSL.Add(NetName);
          end;
          if MDDef.GemorphAspectRose then begin
-            AspName := MDtempDir + 'sso_asp_' + IntToStr(ng) + '.bmp';
+            AspName := NextFileNumber(MDtempDir, 'sso_asp_' + IntToStr(ng) + '_','.bmp');;
             AspSL.Add(AspName);
          end;
-         DEMGlb[i].SSOComputations(DEMGlb[i].FullDEMGridLimits,SSOvars,true,NetName,AspName);
-         if AllDEMs then AllResults.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[i].AverageSpace,-8,-2) + ',' + RealToString(DEMGlb[i].AverageGridTrue,-8,-2) + ',' +
-            RealToString(SSOvars.AvgElev,8,2) + ',' + RealToString(SSOvars.AvgSlope,8,2) + ',' + RealToString(SSOvars.MaxSlope,8,2) + ',' +
-            RealToString(SSOvars.TheDipDirs[3],8,1) + ',' +
-            RealToString(SSOvars.s1s2,8,3) + ',' + RealToString(SSOvars.s2s3,8,3) + ',' + RealToString(SSOvars.Shape,6,3) + ',' + RealToString(SSOvars.Strength,6,3)+ ',' +
-            RealToString(SSOvars.RoughnessFactor,8,4) + ',' + RealToString(SSOvars.AvgAspect,8,2) + ',' +  RealToString(SSOvars.AspectStrength,8,4) );
+         if DEMGlb[i].SSOComputations(DEMGlb[i].FullDEMGridLimits,SSOvars,true,NetName,AspName) then begin
+            Success := true;
+            if AllDEMs then AllResults.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[i].AverageSpace,-8,-2) + ',' + RealToString(DEMGlb[i].AverageGridTrue,-8,-2) + ',' +
+               RealToString(SSOvars.AvgElev,8,2) + ',' + RealToString(SSOvars.AvgSlope,8,2) + ',' + RealToString(SSOvars.MaxSlope,8,2) + ',' +
+               RealToString(SSOvars.TheDipDirs[3],8,1) + ',' +
+               RealToString(SSOvars.s1s2,8,3) + ',' + RealToString(SSOvars.s2s3,8,3) + ',' + RealToString(SSOvars.Shape,6,3) + ',' + RealToString(SSOvars.Strength,6,3)+ ',' +
+               RealToString(SSOvars.RoughnessFactor,8,4) + ',' + RealToString(SSOvars.AvgAspect,8,2) + ',' +  RealToString(SSOvars.AspectStrength,8,4) );
+         end;
       end;
    end;
-   if MDDef.GemorphSSOPoles then begin
-      NetSL.Add(MDtempDir + 'net_legend.bmp');
-      MakeBigBitmap(NetSL,'');
-   end;
-   if MDDef.GemorphAspectRose then MakeBigBitmap(AspSL,'Apect roses');
+   if Success then begin
 
-   if AllDEMs then begin
-      fName := NextFileNumber(MDTempDir,'sso_results_',DefaultDBExt);
-      StringList2CSVtoDB(AllResults,fName,false);
+      if MDDef.GemorphSSOPoles then begin
+         NetSL.Add(MDtempDir + 'net_legend.bmp');
+         MakeBigBitmap(NetSL,'');
+      end;
+      if MDDef.GemorphAspectRose then begin
+         MakeBigBitmap(AspSL,'Apect roses');
+      end;
+
+      if AllDEMs then begin
+         fName := NextFileNumber(MDTempDir,'sso_results_',DefaultDBExt);
+         StringList2CSVtoDB(AllResults,fName,false);
+      end
+      else begin
+         if (SSOVars.NumPts > 0) then begin
+            Results := tStringList.Create;
+            Results.add(DEMGlb[CurDEM].AreaName + '         n=' +  IntToStr(SSOvars.NumPts));
+            Results.add('');
+            Results.add('Avg elev: '+ RealToString(SSOvars.AvgElev,8,2) + ' m  std dev=' + RealToString(SSOvars.StdDevElev,8,2) );
+            Results.add('Avg slope:'+ RealToString(SSOvars.AvgSlope,8,2) + '%   std dev=' + RealToString(SSOvars.StdDevSlope,8,2) );
+            Results.add('Max slope:'+ RealToString(SSOvars.MaxSlope,8,2) + '%');
+            Results.add('Log Ratios:');
+            Results.add('   ln(S1/S2):'+RealToString(SSOvars.s1s2,8,2));
+            Results.add('   ln(S2/S3):'+RealToString(SSOvars.s2s3,8,2));
+            Results.add('Shape Indicator:'+RealToString(SSOvars.Shape,6,2));
+            Results.add('Strength Indicator:'+RealToString(SSOvars.Strength,6,2));
+            Results.add('');
+            Results.add('Eigen vectors:');
+            MenuStr := '';
+            for i := 1 to 3 do begin
+               Results.add('   V' + IntToStr(i) +  RealToString(SSOvars.TheDips[i],10,4) +  '° toward' + RealToString(SSOvars.TheDipDirs[i],8,1) +  '°');
+            end {for i};
+            Results.add('Queen''s aspect ratio:' + RealToString(SSOvars.QueensAspect,8,3));
+            Petmar.DisplayAndPurgeStringList(Results,'SSO results ' + DEMGlb[CurDEM].AreaName);
+         end
+         else MessageToContinue('No results');
+      end;
    end
    else begin
-      if (SSOVars.NumPts > 0) then begin
-         Results := tStringList.Create;
-         Results.add(DEMGlb[CurDEM].AreaName + '         n=' +  IntToStr(SSOvars.NumPts));
-         Results.add('');
-         Results.add('Avg elev: '+ RealToString(SSOvars.AvgElev,8,2) + ' m  std dev=' + RealToString(SSOvars.StdDevElev,8,2) );
-         Results.add('Avg slope:'+ RealToString(SSOvars.AvgSlope,8,2) + '%   std dev=' + RealToString(SSOvars.StdDevSlope,8,2) );
-         Results.add('Max slope:'+ RealToString(SSOvars.MaxSlope,8,2) + '%');
-         Results.add('Log Ratios:');
-         Results.add('   ln(S1/S2):'+RealToString(SSOvars.s1s2,8,2));
-         Results.add('   ln(S2/S3):'+RealToString(SSOvars.s2s3,8,2));
-         Results.add('Shape Indicator:'+RealToString(SSOvars.Shape,6,2));
-         Results.add('Strength Indicator:'+RealToString(SSOvars.Strength,6,2));
-         Results.add('');
-         Results.add('Eigen vectors:');
-         MenuStr := '';
-         for i := 1 to 3 do begin
-            Results.add('   V' + IntToStr(i) +  RealToString(SSOvars.TheDips[i],10,4) +  '° toward' + RealToString(SSOvars.TheDipDirs[i],8,1) +  '°');
-         end {for i};
-         Results.add('Queen''s aspect ratio:' + RealToString(SSOvars.QueensAspect,8,3));
-         Petmar.DisplayAndPurgeStringList(Results,'SSO results ' + DEMGlb[CurDEM].AreaName);
-      end
-      else MessageToContinue('No results');
+      MessageToContinue('No results');
    end;
    RestoreBackupDefaults;
+   SetColorForWaiting;
    {$IfDef RecordSSO} WriteLineToDebugFile('DoAnSSODiagram out'); {$EndIf}
 end;
 
@@ -2669,6 +2777,7 @@ var
    j,Done,ToDo : integer;
 begin
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport in'); {$EndIf}
+   SetColorForProcessing;
    SaveBackupDefaults;
    if MDDef.GraphsOfMoments then begin
       ElevFiles := tStringList.Create;
@@ -2761,25 +2870,12 @@ begin
    end;
    GridForm.SetFormSize;
    RestoreBackupDefaults;
+   SetColorForWaiting;
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport out'); {$EndIf}
 end;
 
 
-procedure AspectDistributionByVATCategory(WhichDEM,AspDEM : Integer; GridLimits : tGridLimits);
-var
-   Col,Row,i,j,TotPts  : integer;
-   ThisGraph,ThisGraph2 : TThisBaseGraph;
-   RoseGraph : array[1..6] of TThisBaseGraph;
-   rfile,rfile2 : file;
-   v : tGraphPoint32;
-   theFiles : tstringlist;
-   MenuStr : shortstring;
-   fName : PathStr;
-   SlopeAspectRec : tSlopeAspectRec;
-   AspectStats : array[1..6] of tAspectStats;
-
-
-   procedure SetUpGraph(var ThisGraph : tThisBaseGraph; VertLabel : shortstring);
+   procedure SetUpGraph(WhichDEM : integer; var ThisGraph : tThisBaseGraph; VertLabel : shortstring);
    var
       i : integer;
    begin
@@ -2801,8 +2897,33 @@ var
       ThisGraph.RedrawDiagram11Click(Nil);
    end;
 
+   function GetSlopeLabel(i : integer) : shortstring;
+   begin
+      case i of
+         1 : Result := '0-' + RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '%';
+         2 : Result := RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '%';
+         3 : Result := RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '%';
+         4 : Result := RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
+         5 : Result := '>' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
+         6 : Result := 'all points';
+      end;
+      Result := ' Slope ' + Result;
+   end;
 
-begin
+
+procedure AspectDistributionByVATCategory(WhichDEM,AspDEM : Integer; GridLimits : tGridLimits);
+var
+   Col,Row,i,j,TotPts  : integer;
+   ThisGraph,ThisGraph2 : TThisBaseGraph;
+   RoseGraph : array[1..6] of TThisBaseGraph;
+   rfile,rfile2 : file;
+   v : tGraphPoint32;
+   theFiles : tstringlist;
+   MenuStr : shortstring;
+   fName : PathStr;
+   SlopeAspectRec : tSlopeAspectRec;
+   AspectStats : array[1..6] of tAspectStats;
+begin {AspectDistributionByVATCategory}
    theFiles := tstringlist.Create;
    for i := 1 to 6 do AspectStats[i].Create(WhichDEM);
    TotPts := 0;
@@ -2825,8 +2946,8 @@ begin
    end;
    EndProgress;
 
-   SetUpGraph(ThisGraph,'Concentration of values');
-   SetUpGraph(ThisGraph2,'Number of values');
+   SetUpGraph(WhichDEM,ThisGraph,'Concentration of values');
+   SetUpGraph(WhichDEM,ThisGraph2,'Number of values');
    for i := 1 to 6 do begin
      ThisGraph.OpenDataFile(rfile);
      ThisGraph2.OpenDataFile(rfile2);
@@ -2840,15 +2961,8 @@ begin
      CloseFile(rfile);
      CloseFile(rfile2);
 
-     case i of
-        1 : MenuStr := '0-' + RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '%';
-        2 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '%';
-        3 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '%';
-        4 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
-        5 : MenuStr := '>' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
-        6 : MenuStr := 'all points';
-     end;
-     MenuStr := ' Slope ' + MenuStr;
+     MenuStr := GetSlopeLabel(i);
+
      ThisGraph.GraphDraw.LegendList.Add(MenuStr);
      ThisGraph2.GraphDraw.LegendList.Add(MenuStr);
      RoseGraph[i] := AspectStats[i].CreateRose(MenuStr);
@@ -2859,13 +2973,10 @@ begin
      RoseGraph[i].Free;
      AspectStats[i].Destroy;
   end;
-
   FinishGraph(ThisGraph);
   FinishGraph(ThisGraph2);
-
-  MakeBigBitmap(theFiles,'Aspect: ' + DEMGlb[WhichDEM].AreaName);
-end;
-
+  MakeBigBitmap(theFiles,'','',3);
+end {AspectDistributionByVATCategory};
 
 
 
@@ -2881,31 +2992,6 @@ var
    fName : PathStr;
    SlopeAspectRec : tSlopeAspectRec;
    AspectStats : array[1..6] of tAspectStats;
-
-
-   procedure SetUpGraph(var ThisGraph : tThisBaseGraph; VertLabel : shortstring);
-   var
-      i : integer;
-   begin
-      ThisGraph := TThisBaseGraph.Create(Application);
-      ThisGraph.SetUpGraphForm;
-      ThisGraph.Caption := 'Aspect distribution ' + DEMGlb[WhichDEM].AreaName;
-      ThisGraph.GraphDraw.HorizLabel := 'Aspect direction';
-      ThisGraph.GraphDraw.VertLabel := VertLabel;
-      ThisGraph.GraphDraw.LegendList := tStringList.Create;
-      for i := 1 to 6 do ThisGraph.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i]);
-   end;
-
-   procedure FinishGraph(var ThisGraph : tThisBaseGraph);
-   begin
-      ThisGraph.AutoScaleAndRedrawDiagram;
-      ThisGraph.GraphDraw.SetShowAllLines(true);
-      ThisGraph.GraphDraw.SetShowAllPoints(false);
-      ThisGraph.GraphDraw.MaxHorizAxis := 360;
-      ThisGraph.RedrawDiagram11Click(Nil);
-   end;
-
-
 begin
    theFiles := tstringlist.Create;
    for i := 1 to 6 do AspectStats[i].Create(WhichDEM);
@@ -2929,8 +3015,8 @@ begin
    end;
    EndProgress;
 
-   SetUpGraph(ThisGraph,'Concentration of values');
-   SetUpGraph(ThisGraph2,'Number of values');
+   SetUpGraph(WhichDEM,ThisGraph,'Concentration of values');
+   SetUpGraph(WhichDEM,ThisGraph2,'Number of values');
    for i := 1 to 6 do begin
      ThisGraph.OpenDataFile(rfile);
      ThisGraph2.OpenDataFile(rfile2);
@@ -2943,16 +3029,7 @@ begin
      end;
      CloseFile(rfile);
      CloseFile(rfile2);
-
-     case i of
-        1 : MenuStr := '0-' + RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '%';
-        2 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[1],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '%';
-        3 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[2],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '%';
-        4 : MenuStr := RealToString(MdDef.GeomorphSlopeCut[3],-8,-2) + '-' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
-        5 : MenuStr := '>' + RealToString(MdDef.GeomorphSlopeCut[4],-8,-2) + '%';
-        6 : MenuStr := 'all points';
-     end;
-     MenuStr := ' Slope ' + MenuStr;
+     MenuStr := GetSlopeLabel(i);
      ThisGraph.GraphDraw.LegendList.Add(MenuStr);
      ThisGraph2.GraphDraw.LegendList.Add(MenuStr);
      RoseGraph[i] := AspectStats[i].CreateRose(MenuStr);
@@ -2967,7 +3044,7 @@ begin
   FinishGraph(ThisGraph);
   FinishGraph(ThisGraph2);
 
-  MakeBigBitmap(theFiles,'Aspect: ' + DEMGlb[WhichDEM].AreaName);
+  MakeBigBitmap(theFiles,'','',3);
 end;
 
 
@@ -2986,7 +3063,7 @@ begin
    TheBitmaps := tStringList.Create;
    i := 0;
    for Method:= FirstSlopeMethod to LastSlopeMethod do begin
-      MDdef.SlopeAlg := Method;
+      MDDef.SlopeAlgorithm := Method;
       New(AspectFreq);
       for j := 0 to 360 do AspectFreq^[j] := 0;
       StartProgress('Aspects');
@@ -3006,7 +3083,7 @@ begin
       RoseGraph.ClientHeight := 400;
       RoseGraph.ClientWidth := 400;
       RoseGraph.RoseColor := WinGraphColors[i];
-      RoseGraph.DrawAspectRose(AspectFreq^,SlopeMethodName(MDdef.SlopeAlg));
+      RoseGraph.DrawAspectRose(AspectFreq^,SlopeMethodName(MDDef.SlopeAlgorithm));
 
       k := 0;
       for j := 0 to 360 do inc(k,AspectFreq^[j]);
@@ -3043,10 +3120,7 @@ begin
 end;
 
 
-function GridCorrelationMatrix(DEMsWanted : tDEMbooleanArray; Incr : integer = 1) : DEMStringGrid.TGridForm;
-{$IfDef ExGeoStats}
-begin
-{$Else}
+function GridCorrelationMatrix(DEMsWanted : tDEMbooleanArray; Title : shortstring; Incr : integer = 1) : DEMStringGrid.TGridForm;
 type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
@@ -3082,7 +3156,8 @@ begin
                   Corrs^[i,j] := 1;
                end
                else begin
-                  CovariancesFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,J,r,covar,Mean1,Mean2,StdDev1,StdDev2);
+                  CovariancesFromTwoGrids(DEMGlb[i].FullDEMGridLimits,i,j,r,covar,Mean1,Mean2,StdDev1,StdDev2);
+                  {$IfDef RecordGridCorrrelations} WriteLineToDebugFile(RealToString(r,7,4) + '  ' + DEMGlb[i].AreaName + '  ' + DEMGlb[j].AreaName); {$EndIf}
                   Corrs^[i,j] := r;
                   Corrs^[j,i] := r;
                end;
@@ -3108,7 +3183,17 @@ begin
    fName := Petmar.NextFileNumber(MDTempDir,'grid_r_matrix_', '.csv');
    Findings.SaveToFile(fName);
    Findings.Free;
-   Result := DEMStringGrid.OpenCorrelationMatrix('Correlation',fName);
+   Result := DEMStringGrid.OpenCorrelationMatrix(Title,fName);
+   for i := 1 to MaxDEMDataSets do begin
+      if ValidDEM(i) and DEMsWanted[i] then begin
+         if DEMGlb[i].DEMHeader.DEMUsed = ArcSecDEM then begin
+            Result.URstring := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing * 3600, -8,-2) + '" DEM';
+         end
+         else begin
+            Result.URstring := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing, -8,-1) + ' m DEM';
+         end;
+      end;
+   end;
    Result.BitBtn6Click(Nil);
 
    Metrics := tStringList.Create;
@@ -3122,7 +3207,6 @@ begin
    end;
    fName := Petmar.NextFileNumber(MDTempDir,'grid_statistics_', '.dbf');
    StringList2CSVtoDB(Metrics,fName);
-{$EndIf}
 end;
 
 
@@ -3427,29 +3511,6 @@ begin
                   Result.AddPointToDataBuffer(rfile,v);
                   inc(NPts);
                end;
-               (*
-               //changed 10/22/2023
-               if IdenticalGrids then begin
-                  if DEMGlb[DEM2].GetElevMeters(Col,Row,v[2]) then begin
-                     Result.AddPointToDataBuffer(rfile,v);
-                     inc(NPts);
-                  end;
-               end
-               else begin
-                  DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                  DEMGlb[DEM2].LatLongDegreetoDEMGrid(Lat,Long,XGrid,YGrid);
-
-                  {$IfDef RecordGridScatterGram}
-                     if (Col mod 100 = 0)  and (Row mod 100 = 0) then begin
-                         WriteLineToDebugFile('Col=' + IntToStr(Col) + '  ' + 'Row=' + IntToStr(Row) + '  ' + LatLongDegreeToString(Lat,Long) + '  xgrid=' + IntToStr(Round(xgrid)) +  '  ygrid=' + IntToStr(Round(ygrid)));
-                     end;
-                  {$EndIf}
-                  if DEMGlb[DEM2].GetElevMeters(XGrid,YGrid,v[2]) then begin
-                     Result.AddPointToDataBuffer(rfile,v);
-                     inc(NPts);
-                  end;
-               end;
-               *)
             end;
             inc(Row,Incr);
          end;

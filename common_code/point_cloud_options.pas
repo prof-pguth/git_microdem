@@ -1253,7 +1253,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                     {$IfDef RecordMakeGrid} WriteLineToDebugFile('Save DEM, ' + fName); {$EndIf}
                     DEMGlb[DEM].WriteNewFormatDEM(fName);
                  end;
-                 DEMGlb[DEM].SetUpMap(DEM,true,MapType);
+                 DEMGlb[DEM].SetUpMap(true,MapType);
                  {$IfDef RecordMakeGrid} WriteLineToDebugFile(DEMGlb[DEM].zRange + ' geo range=' + sfBoundBoxToString( DEMGlb[DEM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
                  if (PCGridMaker <> pcgmBlank) and (DEMGlb[DEM].DEMheader.MaxElev = 0) then begin
                     {$IfDef RecordMakeGrid} WriteLineToDebugFile('Closing, empty DEM=' + IntToStr(DEM) + ' ' + DEMGlb[DEM].AreaName); {$EndIf}
@@ -1749,10 +1749,10 @@ begin
           DEMGlb[Result].AreaName := DEMGlb[Result].AreaName + '_' + RealToString(Percentile,-8,-2) + '_' + TheCloudName;
        end;
        if OpenMap then begin
-          DEMGlb[Result].SetUpMap(Result,true,mtIHSReflect);
+          DEMGlb[Result].SetUpMap(true,mtIHSReflect);
           if (PtDensity <> 0) then begin
              DEMGlb[PtDensity].AreaName := 'Point_density';
-             DEMGlb[PtDensity].SetUpMap(PtDensity,true,mtElevSpectrum);
+             DEMGlb[PtDensity].SetUpMap(true,mtElevSpectrum);
 
             //Outline the Blocks
              Col := DEMLimits.xgridlow;
@@ -2866,11 +2866,13 @@ end;
 procedure Tpt_cloud_opts_fm.LasClick(Sender: TObject);
 var
    cmd : ShortString;
-   fName : PathStr;
+   fName,pname : PathStr;
 begin
    fName := LasFiles[1].LAS_fnames.Strings[0];
-   cmd := ProgramRootDir + 'lastools\bin\lasview.exe ' + fName;
-   ExecuteFile(cmd, '', '');
+   pname := 'lasview.exe';
+   if GetLASToolsFileName(pName) then begin
+      ExecuteFile(pName + ' ' + fName);
+   end;
 end;
 
 procedure Tpt_cloud_opts_fm.LasSubset(MergeLasWhat : tMergeLas; SubsetName,SubsetWhat : shortstring);

@@ -67,8 +67,8 @@ end;
 procedure TSlopeCompareOptions.FormCreate(Sender: TObject);
 begin
    Petmar.CheckFormPlacement(Self);
-   SlopeMethod1 := smEightNeighborsUnweighted;
-   SlopeMethod2 := smFourNeighbors;
+   SlopeMethod1 := smEvansYoung;
+   SlopeMethod2 := smZevenbergenThorne;
    Label1.Caption := SlopeMethodName(SlopeMethod1);
    Label2.Caption := SlopeMethodName(SlopeMethod2);
 end;

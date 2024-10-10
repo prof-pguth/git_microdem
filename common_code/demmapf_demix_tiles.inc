@@ -19,7 +19,7 @@ begin
    SaveBackupDefaults;
    MDDef.DefDEMMap := mtDEMBlank;
    MDDef.LidarGridProjection := ArcSecDEM;
-   MDDef.LasDEMPixelIs := PixelIsPoint;
+   MDDef.LasDEMPixelIs := PixelIsArea;
 
    if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
 

@@ -311,7 +311,7 @@ var
 
 
 begin
-   with Map,MapDraw,DEMGlb[DEMonMap] do begin
+   with Map,MapDraw do begin
        StartProgress('Wires');
        NewHeadRecs := DEMGlb[DEMonMap].DEMheader;
        NewHeadRecs.DEMPrecision := ByteDEM;
@@ -322,9 +322,9 @@ begin
        NumOccupiedVoxels := 0;
        NumOccupiedNeighbors := 0;
        NumOccupiedSecondNeighbors := 0;
-       for x := 0 to pred(DEMheader.NumCol) do begin
-          if (x mod 25 = 0) then UpdateProgressBar(x/DEMheader.NumCol);
-          for y := 0 to pred(DEMheader.NumRow) do begin
+       for x := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumCol) do begin
+          if (x mod 25 = 0) then UpdateProgressBar(x/DEMGlb[DEMonMap].DEMheader.NumCol);
+          for y := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumRow) do begin
               loc := LayersOccupied(x,y);
               if (loc > 0) then DEMGlb[OccupiedLayersDEM].SetGridElevation(x,y, loc);
 
@@ -342,8 +342,8 @@ begin
           end;
        end;
        EndProgress;
-       SetUpMap(NewDEM,true,mtElevSpectrum);
-       SetUpMap(OccupiedLayersDEM,true,mtElevSpectrum);
+       DEMGlb[NewDEM].SetUpMap(true,mtElevSpectrum);
+       DEMGlb[OccupiedLayersDEM].SetUpMap(true,mtElevSpectrum);
 
        if (Memo1 <> Nil) then begin
           Memo1.Lines.Add('Occupied voxel: ' + IntToStr(NumOccupiedVoxels));
@@ -463,7 +463,7 @@ begin
   lf := tLAS_data.Create(pt_cloud_opts_fm.LasFiles[1].LAS_fnames.Strings[0]);
   NewLas := tCreateLasFile.Create;
   NewLas.NewLasHeader := lf.LasHeader;
-  NewLAS.CreateNewLASfile(fName,lf.lasProjectionDefinition,lf.LASHeader);
+  NewLAS.CreateNewLASfile(fName,lf.lasProjDef,lf.LASHeader);
   //NewLas.InitializeOutputBuffer;
   lf.Destroy;
 

@@ -637,7 +637,7 @@ begin
       fName := MainMapData + 'tins\tin-dem.dem';
       {$IfDef RecordTINProblems} WriteLineToDebugFile('writing'); {$EndIf}
       WriteNewFormatDEM(fName);
-      DEMGlb[NewDEM].SetUpMap(NewDEM,true);
+      DEMGlb[NewDEM].SetUpMap(true);
       SelectionMap.Panel1.Visible := false;
       SelectionMap.Panel1.Height := 0;
 

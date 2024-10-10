@@ -52,6 +52,7 @@ type
     LLcornerText,NetTitle : ShortString;
     NetOffset  : integer;
     WorkingBitmap : tMyBitmap;
+    procedure NetOutline(Fill : boolean = false);
     procedure DrawNetGrid;
     procedure EraseOutsideNet;
     procedure ZeroPoleCount;
@@ -309,6 +310,9 @@ end {proc Rotate};
 procedure TNetForm.FormCreate(Sender: TObject);
 begin
    nd := tNetDraw.Create;
+   Width := 500;
+   Height := 500;
+
    if MDDef.CreateNetHidden then begin
       FormStyle := fsNormal;
       Hide;
@@ -1069,19 +1073,19 @@ end {proc ContourPoles};
 
 
 
+procedure TNetDraw.NetOutline(Fill : boolean = false);
+begin
+    WorkingBitmap.Canvas.Pen.Color := clblack;    //NetColor;
+    WorkingBitmap.Canvas.Pen.Width := round(MDDef.NetDef.NetScreenMult*2);
+    if WorkingBitmap.Canvas.Pen.Width > 3 then WorkingBitmap.Canvas.Pen.Width := 3;
+    if (WorkingBitmap.Canvas.Pen.Width < 1) then WorkingBitmap.Canvas.Pen.Width := 1;
+    WorkingBitmap.Canvas.Ellipse(XPlotCoord(XPlotCent-PlotRad),YPlotCoord(YPlotCent-PlotRad),XPlotCoord(XPlotCent+PlotRad),YPlotCoord(YPlotCent+PlotRad));
+end;
+
+
 procedure TNetDraw.DrawNetGrid;
 var
    Dip,Strike,Rad : Integer;
-
-         procedure NetOutline(Fill : boolean = false);
-         begin
-             WorkingBitmap.Canvas.Pen.Color := clblack;    //NetColor;
-             WorkingBitmap.Canvas.Pen.Width := round(MDDef.NetDef.NetScreenMult*2);
-             if WorkingBitmap.Canvas.Pen.Width > 3 then WorkingBitmap.Canvas.Pen.Width := 3;
-             if (WorkingBitmap.Canvas.Pen.Width < 1) then WorkingBitmap.Canvas.Pen.Width := 1;
-             WorkingBitmap.Canvas.Ellipse(XPlotCoord(XPlotCent-PlotRad),YPlotCoord(YPlotCent-PlotRad),XPlotCoord(XPlotCent+PlotRad),YPlotCoord(YPlotCent+PlotRad));
-         end;
-
 begin
     with MDDef.NetDef do begin
        WorkingBitmap.Canvas.Font.Color := NetColor;
@@ -1127,8 +1131,11 @@ begin
 
        if MDDef.NetDef.NorthTick then begin
           {North tick and label}
+          WorkingBitmap.Canvas.Pen.Width := 2;
           WorkingBitmap.Canvas.MoveTo(XPlotCoord(XPlotCent),YPlotCoord(YPlotCent-PlotRad));
           WorkingBitmap.Canvas.LineTo(XPlotCoord(XPlotCent),YPlotCoord(YPlotCent-PlotRad)-10);
+          WorkingBitmap.Canvas.Font.Size := 12;
+          WorkingBitmap.Canvas.Font.Style := [fsBold];
           WorkingBitmap.Canvas.TextOut(NetOffset + round(NetScreenMult*XPlotCent+5),0,'N');
        end;
 

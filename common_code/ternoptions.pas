@@ -10,7 +10,6 @@ unit ternoptions;
 
 {$I nevadia_defines.inc}
 
-
 interface
 
 uses
@@ -30,7 +29,6 @@ type
   public
     { Public declarations }
   end;
-
 
 implementation
 

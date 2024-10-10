@@ -754,7 +754,7 @@ begin
    end {for xg1};
    if (Sender = BitBtn7) then  begin
       DEMGlb[NewDEM].AreaName := 'Class mask ' + DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName;
-      DEMGlb[NewDEM].SetUpMap(NewDEM,false);
+      DEMGlb[NewDEM].SetUpMap(false);
    end
    else begin
       DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.RespondToChangedDEM;

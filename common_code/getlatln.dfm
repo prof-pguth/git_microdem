@@ -4,8 +4,8 @@ object GetLatLongDlg: TGetLatLongDlg
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Dialog'
-  ClientHeight = 250
-  ClientWidth = 370
+  ClientHeight = 246
+  ClientWidth = 354
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack

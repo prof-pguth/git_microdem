@@ -808,8 +808,8 @@ begin
       DEMGlb[GeoidGrid].MultiplyGridByConstant(-1);
 
       NewLas := tCreateLasFile.Create;
-      NewLasProjection.LASProjection := tMapProjection.Create('new las');
-      NewLasProjection.LASProjection.ModelType := LasLatLong;
+      NewLasProjection.LASProj := tMapProjection.Create('new las');
+      NewLasProjection.LASProj.ModelType := LasLatLong;
       outName := Petmar.NextFileNumber(ExtractFilePath(FilesWanted.Strings[i]),'icesat2_export_','.las');
       NewLAS.CreateNewLASfile(outName,NewLasProjection,1);
 

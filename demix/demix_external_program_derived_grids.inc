@@ -19,7 +19,7 @@ begin
        for i := dmxFirstPoint to NumPtDEMs do CloseSingleDEM(PointGrids2[i]);
        for i := dmxFirstArea to NumAreaDEMs do CloseSingleDEM(AreaGrids2[i]);
     end;
-    wmdem.SetPanelText(2, '',true);
+    //wmdem.SetPanelText(2, '',true);
 end;
 
 
@@ -73,8 +73,8 @@ procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitV
 var
    i : integer;
 begin
-   for i := -1 to MaxPossGrids do PointGrids[i] := InitValue;
-   for i := -1 to MaxPossGrids do AreaGrids[i] := InitValue;
+   for i := -1 to MaxDEMIXDEM do PointGrids[i] := InitValue;
+   for i := -1 to MaxDEMIXDEM do AreaGrids[i] := InitValue;
 end;
 
 
@@ -285,7 +285,7 @@ begin
        else begin
           PointGrids[i] := -1;
           PointGrids2[i] := -1;
-          CreateOpennessMap(OpenMaps,PointDEMs[i],250,PointGrids[i],PointGrids2[i],ad);
+          CreateOpennessMap(OpenMaps,DEMGlb[PointDEMs[i]].FullDEMGridLimits,PointDEMs[i],250,PointGrids[i],PointGrids2[i],ad);
           HowDone := ' created ';
           if SaveMaps then begin
              DEMglb[PointGrids2[i]].SaveAsGeotiff(fName2);
@@ -303,7 +303,7 @@ begin
        else begin
           AreaGrids[i] := -1;
           AreaGrids2[i] := -1;
-          CreateOpennessMap(OpenMaps,AreaDEMs[i],250,AreaGrids[i],AreaGrids2[i],ad);
+          CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],250,AreaGrids[i],AreaGrids2[i],ad);
           HowDone := ' created ';
           if SaveMaps then begin
              DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);

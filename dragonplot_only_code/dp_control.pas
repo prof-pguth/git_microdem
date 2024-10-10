@@ -1422,22 +1422,11 @@ end;
 
 procedure TDragonPlotForm.BitBtn11Click(Sender: TObject);
 var
-   //fName : PathStr;
-   //csv : tStringList;
    i : integer;
    bmp : Graphics.tBitmap;
 begin
    {$IfDef RecordKML} WriteLineToDebugFile('****** TDragonPlotForm.BitBtn11Click (Record KML) in'); {$EndIf}
    BitBtn11.Enabled := false;
-
-(*
-   if FirstKML then begin
-      {$IfDef RecordKML} WriteLineToDebugFile('BitBtn11Click first time, open GE'); {$EndIf}
-      ExecuteFile('"C:\Program Files\Google\Google Earth Pro\client\googleearth.exe"', '', '');
-      Delay(1000*DragonPlotDef.KMLdelay);
-   end;
-*)
-
    PetImage.CopyImageToBitmap(DEMPersF.Image1,bmp);
    KMLLogo2FileName := MDTempDir + 'View_of_shot.png';
    bmp.SaveToFile(KMLLogo2FileName);
@@ -1541,7 +1530,7 @@ procedure TDragonPlotForm.OpenGoogleEarth1Click(Sender: TObject);
 begin
    ReadDefault('KML delay (sec)',DragonPlotDef.KMLdelay);
    {$IfDef RecordKML} WriteLineToDebugFile('TDragonPlotForm.OpenGoogleEarth1Click'); {$EndIf}
-   ExecuteFile('"C:\Program Files\Google\Google Earth Pro\client\googleearth.exe"', '', '');
+   ExecuteFile('"C:\Program Files\Google\Google Earth Pro\client\googleearth.exe"');
    Delay(1000*DragonPlotDef.KMLdelay);
 end;
 
@@ -2109,7 +2098,7 @@ end;
 
 procedure TDragonPlotForm.BitBtn19Click(Sender: TObject);
 begin
-   ExecuteFile(DragonPlotDef.LightningWWW, '', '');
+   ExecuteFile(DragonPlotDef.LightningWWW);
 end;
 
 procedure TDragonPlotForm.BitBtn1Click(Sender: TObject);

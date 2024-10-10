@@ -188,7 +188,6 @@ type
     BitBtn18: TBitBtn;
     CheckBox22: TCheckBox;
     BitBtn19: TBitBtn;
-    BitBtn20: TBitBtn;
     RadioGroup19: TRadioGroup;
     CheckBox39: TCheckBox;
     CheckBox41: TCheckBox;
@@ -418,6 +417,7 @@ type
     CheckBox18: TCheckBox;
     CheckBox80: TCheckBox;
     CheckBox161: TCheckBox;
+    BitBtn20: TBitBtn;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
