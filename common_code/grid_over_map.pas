@@ -1435,7 +1435,7 @@ var
             MDDef.DefaultGraphYSize := 300;
             j := 0;
                for i := 2 to LastDEMtoUse do begin
-                  Graph[j] := DEMGlb[i].CreateWholeDEMHistogram;  //(f1,f2);
+                  Graph[j] := CreateWholeDEMHistogram(i);  //(f1,f2);
                   inc(j);
                end;
 

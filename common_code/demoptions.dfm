@@ -6,6 +6,7 @@ inherited OptionsForm: TOptionsForm
   ClientHeight = 563
   ClientWidth = 793
   Position = poDefaultPosOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize

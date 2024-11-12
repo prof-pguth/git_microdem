@@ -375,7 +375,7 @@ var
    Option : shortstring;
 begin
    if ValidLMG(lmgonmap) then begin
-      if RadioGroup3.ItemIndex < 0 then RadioGroup3.ItemIndex := 0;
+      if (RadioGroup3.ItemIndex < 0) then RadioGroup3.ItemIndex := 0;
 
       lmg[lmgonmap].MapOwner.MapDraw.DeleteSingleMapLayer(lmg[lmgonmap].MapOwner.MapDraw.SecondGridfName);
       lmg[lmgonmap].Mapowner.MapDraw.DEM2onMap := 0;
@@ -401,6 +401,7 @@ begin
       RedrawMap;
    end;
 end;
+
 
 procedure TLidarMultipleDisplayForm.RadioGroup4Click(Sender: TObject);
 begin

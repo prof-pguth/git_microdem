@@ -210,8 +210,9 @@ begin
    DefFil := 1;
    if GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then begin
       s11 := tStringList.Create;
-      s11.LoadFromFile(FileNames.Strings[0]);
-      fName := ChangeFileExt(FileNames.Strings[0],'.dbf');
+      fName := FileNames.Strings[0];
+      s11.LoadFromFile(fName);
+      //fName := ChangeFileExt(FileNames.Strings[0],'.dbf');
       for i := 1 to pred(FileNames.Count) do begin
           wmDEM.SetPanelText(0,TimeToStr(now) + '  ' + IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + ExtractFileName(FileNames.Strings[i]));
           slt := tStringList.Create;
@@ -222,8 +223,6 @@ begin
           end;
           slt.Free;
       end;
-   end;
-   if (FileNames.Count > 0) then begin
       fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
       if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then begin
          if (BaseMap = Nil) then StringList2CSVtoDB(s11,fName,true)

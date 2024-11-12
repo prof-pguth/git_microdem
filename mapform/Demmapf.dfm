@@ -51,7 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitHeight = 1348
     object Image1: TImage
       Left = 3
       Top = -247
@@ -213,7 +212,6 @@ object MapForm: TMapForm
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1303
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -4988,6 +4986,11 @@ object MapForm: TMapForm
         GroupIndex = 1
         OnClick = MergemultipleCSVTXTfiles1Click
       end
+      object MergeICESat2photonsATL031: TMenuItem
+        Caption = 'Merge ICESat-2 photons (ATL03)'
+        GroupIndex = 1
+        OnClick = MergeICESat2photonsATL031Click
+      end
     end
     object Hidden1: TMenuItem
       Caption = 'Hidden'
@@ -7016,6 +7019,13 @@ object MapForm: TMapForm
     object CompareGDALslopespacingapproximations1: TMenuItem
       Caption = 'Compare GDAL slope spacing approximations'
       OnClick = CompareGDALslopespacingapproximations1Click
+    end
+    object N71: TMenuItem
+      Caption = '-'
+    end
+    object N72: TMenuItem
+      Caption = 'Options'
+      OnClick = N72Click
     end
   end
 end

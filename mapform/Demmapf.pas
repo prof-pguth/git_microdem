@@ -1599,6 +1599,9 @@ type
     CompareMICRODEMslopealgorithms1: TMenuItem;
     N3DdrapemultiplegridsonthisDEM1: TMenuItem;
     CompareGDALslopespacingapproximations1: TMenuItem;
+    N71: TMenuItem;
+    N72: TMenuItem;
+    MergeICESat2photonsATL031: TMenuItem;
     //procedure HiresintervisibilityDEM1Click(Sender: TObject);
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
@@ -2775,6 +2778,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure CompareMICRODEMslopealgorithms1Click(Sender: TObject);
     procedure N3DdrapemultiplegridsonthisDEM1Click(Sender: TObject);
     procedure CompareGDALslopespacingapproximations1Click(Sender: TObject);
+    procedure N72Click(Sender: TObject);
+    procedure MergeICESat2photonsATL031Click(Sender: TObject);
     //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
@@ -2981,7 +2986,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure ClipDEMtoFullDEMIXTiles(NewName : PathStr = '');
 
     procedure MoveADBRecord(lat,Long : float64);
-    //procedure ChangeSlope;
 
     function MakeNLCDLegend(theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
@@ -3534,6 +3538,7 @@ uses
    DEM_sat_Header,
    ufrmMain,
    aspect_colors,
+   DEMHandw,
    DEMLOSW, DEMLOS_Draw,
    BaseGraf,
    PetImage_form,
@@ -5837,7 +5842,6 @@ var
     DEMsWanted : tDEMbooleanArray;
 begin
     GetMultipleDEMsFromList('Histograms',DEMsWanted);
-    DEMsWanted[MapDraw.DEMonMap] := true;
     CreateGridHistograms(DEMSwanted);
 end;
 
@@ -10440,40 +10444,13 @@ end;
 procedure TMapForm.Scattergrams1Click(Sender: TObject);
 var
    DEMsWanted : tDEMbooleanArray;
-   Findings : tStringList;
-   i,j : integer;
-   fName : PathStr;
-   Graph : array[1..50] of tThisBaseGraph;
-   Bitmap : tMyBitmap;
 begin
     {$IfDef RecordScattergram} WriteLineToDebugFile('TMapForm.Scattergrams1Click in'); {$EndIf}
     GetMultipleDEMsFromList('Histograms',DEMsWanted);
-    SaveBackupDefaults;
-    MDDef.DefaultGraphXSize := 300;
-    MDDef.DefaultGraphYSize := 240;
-
-    Findings := tStringList.Create;
-    j := 0;
-    for i := 1 to MaxDEMDataSets do begin
-       if (i <> MapDraw.DEMonMap) and DEMsWanted[i] and ValidDEM(i) then begin
-          inc(j);
-          Graph[j] := Nil;
-          {$IfDef RecordScattergram} WriteLineToDebugFile('Grids: ' + DEMGlb[MapDraw.DEMonMap].AreaName + ' and  ' +  DEMGlb[i].AreaName); {$EndIf}
-          Graph[j] := GridScatterGram(DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,i,MapDraw.DEMonMap);
-          if (Graph[j] <> nil) then begin
-             Graph[j].GraphDraw.MaxHorizAxis := 100;
-             Graph[j].GraphDraw.MaxVertAxis := 100;
-             Graph[j].RedrawDiagram11Click(Nil);
-             CopyImageToBitmap(Graph[j].Image1,Bitmap);
-             fName := NextFileNumber(MDtempDir,'graph_4_biggie_','.bmp');
-             Bitmap.SaveToFile(fName);
-             Findings.Add(fName);
-          end;
-       end;
-    end;
-    MakeBigBitmap(Findings,'','',6);
-    RestoreBackupDefaults;
+    ScatterGramGrid(DEMsWanted);
 end;
+
+
 
 procedure TMapForm.Scatterplotoftwogrids2Click(Sender: TObject);
 begin
@@ -10663,7 +10640,7 @@ end;
 
 procedure TMapForm.CurrentMapArea2Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMonMap].CreatePartDEMHistogram(MapDraw.MapAreaDEMGridLimits);
+   CreatePartDEMHistogram(MapDraw.DEMonMap,MapDraw.MapAreaDEMGridLimits);
 end;
 
 function TMapForm.CurrentMapImage : tImage;
@@ -14854,75 +14831,18 @@ end;
 
 
 procedure TMapForm.SingleGridArithmetic(How : tSingleGridArithmetic; ShowInvalid : boolean = true);
-label
-   CompletedEarly;
 var
-   x,y,Invalid  : integer;
-   Mult,Add,z : float32;
+   Invalid  : integer;
 begin
-    if (How = sgaMultiplyzvalues1) then begin
-       Mult := 1 / FeetToMeters;
-       ReadDefault('z multiplier',Mult);
-       DEMGlb[MapDraw.DEMonMap].MultiplyGridByConstant(Mult);
-       goto CompletedEarly;
-    end
-    else if (How = sgaDividezvalues1) then begin
-       Mult := 1 / FeetToMeters;
-       ReadDefault('z divisor',Mult);
-       DEMGlb[MapDraw.DEMonMap].MultiplyGridByConstant(1/Mult);
-       goto CompletedEarly;
-    end
-    else if (How = sgaRaiselowerzvalues1) then begin
-       Add := 32;
-       ReadDefault('z add to',Add);
-       DEMGlb[MapDraw.DEMonMap].AddConstantToGrid(Add);
-       goto CompletedEarly;
-    end
-    else if (How = sgaArctangent1) then begin
-       Mult := 2;
-       ReadDefault('z multiplier with arctangent',Mult);
-    end;
-    Invalid := 0;
-    StartProgress('DEM math');
-    for x := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) do begin
-       if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol));
-       for y := 0 to pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumRow) do begin
-          if DEMGlb[MapDraw.DEMonMap].GetElevMetersOnGrid(x,y,z) then begin
-             if (How = sgaRadianstodegrees1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,z/DegToRad);
-             if (How = sgaLogbase10transform1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,log10(z));
-             if (How = sgaAbsolutevalue1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y, abs(z));
-             if (How = sgaRoundtointegers1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y, round(z));
-             if (How = sgaLntransform1) or (How = sgaLogbase10transform1) then begin
-                 if (z > 0) then begin
-                    if (How = sgaLntransform1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,ln(z));
-                    if (How = sgaLogbase10transform1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,log10(z));
-                 end
-                 else begin
-                    Inc(Invalid);
-                    DEMGlb[MapDraw.DEMonMap].SetGridMissing(x,y);
-                 end;
-             end;
-             if (How = sgaTangentRadians1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,Math.Tan(z));
-             if (How = sgaRaiselowerzvalues1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y, Add + z);
-             if (How = sgaTangentdegrees1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,Math.Tan(z*DegToRad));
-             if (How = sgaSlopedegreestopercent1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,100 * Math.Tan(z*DegToRad));
-             if (How = sgaArctangent1) then DEMGlb[MapDraw.DEMonMap].SetGridElevation(x,y,arctan(Mult*z));
-          end
-          else begin
-             DEMGlb[MapDraw.DEMonMap].SetGridMissing(x,y);
-             Inc(Invalid);
-          end;
-       end;
-    end;
-    EndProgress;
+    PerformSingleGridArithmetic(MapDraw.DEMonMap,How,Invalid,ShowInvalid);
     if (Invalid > 0) then begin
        if (Not HeavyDutyProcessing) and ShowInvalid then begin
           MessageToContinue('Invalid points set to missing: ' + IntToStr(Invalid));
        end;
     end;
-   CompletedEarly:;
     RespondToChangedDEM;
 end;
+
 
 procedure TMapForm.Multiplyzvalues1Click(Sender: TObject);
 begin
@@ -15388,7 +15308,7 @@ end;
 
 procedure TMapForm.DEMgridhistogram1Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMonMap].CreateWholeDEMHistogram;
+   CreateWholeDEMHistogram(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Fulldataset1Click(Sender: TObject);
@@ -17175,7 +17095,7 @@ end;
 
 procedure TMapForm.Entiregrid1Click(Sender: TObject);
 begin
-    DEMGlb[MapDraw.DEMonMap].CreateWholeDEMHistogram;
+    CreateWholeDEMHistogram(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Epochs1Click(Sender: TObject);
@@ -17192,7 +17112,6 @@ procedure TMapForm.Equinoxsolstice1Click(Sender: TObject);
 begin
   {$IfDef ExGeography}
   {$Else}
-      //MDDef.SunlightSingleDay := 2;
       SunAndHorizon(Nil,0,RightClickLat,RightClickLong,false,true);
   {$EndIf}
 end;
@@ -19675,6 +19594,11 @@ begin
    RespondToChangedDEM;
 end;
 
+
+procedure TMapForm.MergeICESat2photonsATL031Click(Sender: TObject);
+begin
+   MergeICESat2Photons(Self);
+end;
 
 procedure TMapForm.MergemultipleCSVTXTfiles1Click(Sender: TObject);
 begin
@@ -22727,6 +22651,12 @@ var
    Grids : tPartialGrids;
 begin
    GRASS_partialDerivatives(MapDraw.DEMonMap,Grids);
+end;
+
+procedure TMapForm.N72Click(Sender: TObject);
+begin
+   CompareProgramOptions;
+   CompareProgramsPopupMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
 procedure TMapForm.N7x7region1Click(Sender: TObject);

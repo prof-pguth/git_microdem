@@ -201,6 +201,10 @@ object DemHandForm: TDemHandForm
         Caption = 'Line KML to shapefile'
         OnClick = LineKML1Click
       end
+      object ICESat2photonsATL031: TMenuItem
+        Caption = 'ICESat-2 photons (ATL03)'
+        OnClick = ICESat2photonsATL031Click
+      end
     end
     object Subset1: TMenuItem
       Caption = '&Subset'

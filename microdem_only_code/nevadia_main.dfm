@@ -2004,6 +2004,10 @@ object wmdem: Twmdem
           Caption = 'Arc second rectangular pixel approximation'
           OnClick = Arcsecondrectangularpixels1Click
         end
+        object Howbigisanarcsecond1: TMenuItem
+          Caption = 'How big is an arc second'
+          OnClick = Howbigisanarcsecond1Click
+        end
         object UTMspacingandgridtrueangle1: TMenuItem
           Caption = 'UTM spacing and grid-true angle'
           OnClick = UTMspacingandgridtrueangle1Click
@@ -2033,6 +2037,10 @@ object wmdem: Twmdem
           Caption = 'DEM/grid corner parameters table'
           OnClick = DEMcornerstable1Click
         end
+      end
+      object CompareUTMandgeographicslopes1: TMenuItem
+        Caption = 'Compare UTM and geographic slopes'
+        OnClick = CompareUTMandgeographicslopes1Click
       end
       object MetaData1: TMenuItem
         Caption = 'File metadata'

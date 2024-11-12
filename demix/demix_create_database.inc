@@ -267,7 +267,6 @@ var
    ErrorLog : tStringList;
    ElevFiles,LegendFiles : tStringList;
 
-   {$IfDef ExperimentalCriteria} IceSatFName,GeodeticFName : PathStr; {$EndIf}
    {$IfDef ExperimentalCriteria} {$I experiment_demix_criteria.inc}  {$EndIf}
 
          procedure InitializeStringLists;
@@ -1304,7 +1303,6 @@ begin {procedure RankDEMS}
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load criterion tolerances, ' + MDDef.DEMIX_criterion_fName); {$EndIf}
     TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_fName);
     if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
-       //StartProgress('Rank DEMs');
        j := 0;
        GISdb[DBonTable].MyData.First;
        while not GISdb[DBonTable].MyData.eof do begin
@@ -1322,7 +1320,6 @@ begin {procedure RankDEMS}
           else begin
              //extract scores
              UsedDEMs := 0;
-             //for DEM := 1 to NumDEMIXtestDEM do begin
              for DEM := 1 to MaxDEMIXDEM do begin
                 if GISdb[DBonTable].MyData.FieldExists(AllDEMIXTheDEMs[DEM]) then begin
                    inc(UsedDEMs);
@@ -1447,7 +1444,7 @@ var
    i,j,NPts,db,atile : integer;
    BinSize,Mode : float32;
    Tile,param,Ref,aLine,Area : shortstring;
-   Values : ^Petmath.bfarray32;
+   Values : ^bfarray32;
    MomentVar : tMomentVar;
 begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('ModeOfDifferenceDistributions in'); {$EndIf}

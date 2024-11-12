@@ -324,7 +324,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.GetElevationsInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : bfarray32; IncludeSeaLevel : boolean = true);
+procedure tDEMDataSet.GetElevationsInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : bfarray32; var Min,Max : float32);
 var
    Col,Row,Incr : integer;
    z : float32;
@@ -340,15 +340,18 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
          if GetElevMeters(Col,Row,z) then begin
-            if (IncludeSeaLevel) or (abs(z) > 0.0000001) then begin
+            //if (IncludeSeaLevel) or (abs(z) > 0.0000001) then begin
                Values[NPts] := z;
                inc(NPts);
-            end;
+            //end;
          end;
          inc(Row,Incr);
       end;
       inc(Col,Incr);
    end;
+   Petmath.HeapSort(NPts,Values);
+   Max := Values[pred(NPts)];
+   Min := Values[0];
    {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray out'); {$EndIf}
 end;
 
@@ -416,13 +419,13 @@ procedure tDEMDataSet.GetElevPercentiles(GridLimits: tGridLimits);
 var
    zvs : ^bfarray32;
    NPts,i : int64;
+   Min,Max : float32;
 begin
    if (ZPercens = Nil) then begin
       {$IfDef RecordElevPercentiles} WriteLineToDebugFile('tDEMDataSet.GetElevPercentiles for ' + AreaName); {$EndIf}
       new(ZPercens);
       New(zvs);
-      GetElevationsInLongArray(GridLimits,NPts,zvs^,false);
-      Petmath.HeapSort(NPts,zvs^);
+      GetElevationsInLongArray(GridLimits,NPts,zvs^,Min,Max);
       for I := 1 to 999 do begin
          ZPercens^[i] := zvs^[round(0.001 * Npts * i)];
       end;

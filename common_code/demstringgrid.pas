@@ -519,13 +519,13 @@ begin
        end;
     end;
 
-    if (DoR = gcmMAvD) then  fName := ProgramRootDir + 'red_blue_diverge.dbf'
+    if (DoR = gcmMAvD) then fName := ProgramRootDir + 'red_blue_diverge.dbf'
     else fName := ProgramRootDir + 'correlation_matrix_color.dbf';
     if FileExists(fName) then begin
       Table := tMyData.Create(fName);
 
       if (DoR = gcmR) then begin
-         if MaxVal > MDDef.PerfectR then begin
+         if (MaxVal > MDDef.PerfectR) then begin
             delta := (MDDef.PerfectR-MinVal) / pred(Table.TotRecsInDB);
             Table.Edit;
             Table.SetFieldByNameAsFloat('MAX',MaxVal);
@@ -546,7 +546,7 @@ begin
          end;
       end
       else begin
-         if DoR = gcmMAbD then begin
+         if (DoR = gcmMAbD) then begin
             Perfect := MDDef.PerfectMAbD;
             if (MinVal < Perfect) then begin
                delta := (MaxVal-Perfect) / pred(Table.TotRecsInDB);

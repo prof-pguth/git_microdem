@@ -67,11 +67,8 @@ implementation
 uses
    {$IfDef ExTrackSat}
    {$Else}
-      SGP_Support,
-      SGP_In,
-      SGP_Time,SGP_Math,
-      SGP_Conv,Solar,
-      SGP4SDP4,SGP_Obs,
+      SGP_Support,SGP_In,SGP_Time,SGP_Math,SGP_Conv,SGP4SDP4,SGP_Obs,
+      //   Solar,
    {$EndIf}
    PETMAR,
    PETMath,

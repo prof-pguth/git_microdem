@@ -158,7 +158,6 @@ type
          SatelliteName,
          SceneTitle       : shortstring;
          SceneBaseName    : AnsiString;
-         //CurrentSidName,
          OriginalFileName,
          LandsatDir,
          IndexFileName    : PathStr;
@@ -489,7 +488,6 @@ var
    rfile : file;
    v     : tGraphPoint32;
 begin
-   {$IfDef AllowUSNAdataDownloads} DownloadandUnzipDataFileIfNotPresent('spectral_library'); {$EndIf}
    Result := Nil;
    FilesWanted := tStringList.Create;
    if (fName = '') then begin

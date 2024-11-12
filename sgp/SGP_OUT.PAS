@@ -1,4 +1,6 @@
 Unit SGP_Out;
+
+
 {           Author:  Dr TS Kelso }
 { Original Version:  1992 Aug 24 }
 { Current Revision:  1999 Nov 27 }
@@ -7,7 +9,7 @@ Unit SGP_Out;
 
 {$N+}
 
-{$I nevadia_defines.inc}
+{$I nevadia_defines.inc}    //for modifications to use in MICRODEM
 
 
 INTERFACE
@@ -16,7 +18,9 @@ INTERFACE
 
 IMPLEMENTATION
   Uses
-     SGP_Support,SGP_Init,SGP_Time,Solar;
+     SGP_Support,
+     Solar,
+     SGP_Init,SGP_Time;
 
 const
   day_date  : boolean = true;
@@ -44,28 +48,25 @@ Procedure Output_Time(time : double);
 
 
 
-Procedure Output_ECI(time : double;
-                  pos,vel : vector);
+Procedure Output_ECI(time : double; pos,vel : vector);
   var
     i : byte;
   begin
-  Output_Time(time);
-  for i := 1 to 3 do
-    Write(fout,pos[i]:11:3);
-  for i := 1 to 3 do
-    Write(fout,vel[i]:11:6);
-  if show_vis then begin
-    if eclipsed then Writeln(fout,' ECL')
-    else Writeln(fout,'    ');
-  end
-  else
-    Writeln(fout);
+     Output_Time(time);
+     for i := 1 to 3 do
+       Write(fout,pos[i]:11:3);
+     for i := 1 to 3 do
+       Write(fout,vel[i]:11:6);
+     if show_vis then begin
+       if eclipsed then Writeln(fout,' ECL')
+       else Writeln(fout,'    ');
+     end
+     else
+       Writeln(fout);
   end; {Procedure Output_ECI}
 
 
-Procedure Output_Angle(angle : double;
-                   width,dec : byte;
-                     degrees : boolean);
+Procedure Output_Angle(angle : double; width,dec : byte; degrees : boolean);
   var
     asign       : shortint;
     deg,min,sec : longint;

@@ -1607,6 +1607,15 @@ var
                AParameter('Geomorph','DoDropoff',DoDropoff,false);
                AParameter('Geomorph','DoElevRelief',DoElevRelief,false);
 
+               AParameter('Geomorph','CalcR',CalcR,true);
+               AParameter('Geomorph','CalcMAbD',CalcMAbD,false);
+               AParameter('Geomorph','CalcMAvD',CalcMAvD,false);
+               AParameter('Geomorph','CalcScattergrams',CalcScattergrams,false);
+               AParameter('Geomorph','CalcHistogram',CalcHistograms,false);
+               AParameter('Geomorph','UseCalculatedOutside',UseCalculatedOutside,false);
+               AParameter('Geomorph','CompareShowMaps',CompareShowMaps,false);
+               AParameter('Geomorph','GDAL_SAGA_arcsec',GDAL_SAGA_arcsec,false);
+
                AParameter('Geomorph','DoS1S2',DoS1S2,false);
                AParameter('Geomorph','DoS2S3',DoS2S3,true);
                AParameter('Geomorph','DoFabDir90',DoFabDir90,true);

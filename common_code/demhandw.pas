@@ -53,7 +53,7 @@ uses
   SysUtils, Windows, Classes, Graphics, Forms, Dialogs, Menus, Grids,  StrUtils,
   System.Math,System.UITypes,
   Vcl.ComCtrls, Vcl.Controls, Vcl.StdCtrls,
-  BaseGraf,DEMdefs,Petmar_types,PETMAR;
+  BaseGraf,DEMdefs,Petmar_types,PETMAR,DEMmapf;
 
 type
   TDemHandForm = class(TForm)
@@ -260,6 +260,7 @@ type
     GDALwarptoWGS84UTMandEGM20081: TMenuItem;
     GDALwarpGeotiffviaEPSG1: TMenuItem;
     GDALcompositedatumshift1: TMenuItem;
+    ICESat2photonsATL031: TMenuItem;
     procedure ASCIIremovequotes1Click(Sender: TObject);
     procedure ASCII01Click(Sender: TObject);
     procedure HTMLcleanup1Click(Sender: TObject);
@@ -414,6 +415,7 @@ type
     procedure GDALwarptoWGS84UTMandEGM20081Click(Sender: TObject);
     procedure GDALwarpGeotiffviaEPSG1Click(Sender: TObject);
     procedure GDALcompositedatumshift1Click(Sender: TObject);
+    procedure ICESat2photonsATL031Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -426,6 +428,7 @@ type
 var
    DemHandForm  : TDemHandForm;
 
+procedure MergeICESat2Photons(BaseMap : tMapForm = nil);
 
 
 function MakeGraphFromSOESTtides(fName : PathStr; var Lat,Long : float64; var Year1,Year2 : integer; var StationName : shortString) :  TThisBaseGraph;
@@ -509,7 +512,7 @@ uses
    {$EndIf}
 
    DEMMapDraw,
-   DEMCoord,DEMMapF,
+   DEMCoord,
    DEM_Manager,
    PETMath,PETDBUtils,PetImage,
    GetLatLn,
@@ -524,6 +527,56 @@ uses
    KML_creator,
    Nevadia_Main;
 
+
+procedure MergeICESat2Photons(BaseMap : tMapForm = nil);
+{
+photon_2019-02-01_t534_1731104692136.csv   //file name
+}
+var
+   FileNames : tStringList;
+   i,j : integer;
+   DefFil : byte;
+   fName : PathStr;
+   TStr,TStr2,Date,Track : shortstring;
+   s11,slt : tStringList;
+begin
+   FileNames := tStringList.Create;
+   FileNames.Add(LastDataBase);
+   DefFil := 1;
+   if GetMultipleFiles('CSV photon files to merge','files|photon*.csv' ,FileNames,DefFil) then begin
+      s11 := tStringList.Create;
+      for i := 0 to pred(FileNames.Count) do begin
+          fName := FileNames.Strings[i];
+          wmDEM.SetPanelText(0,TimeToStr(now) + '  ' + IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count));
+          slt := tStringList.Create;
+          slt.LoadFromFile(FileNames.Strings[i]);
+          if (i = 0) then begin
+             s11.Add('BEAM,LAT,LONG,PHOTON_HT,CONFIDENCE,TRACK,DATE');
+             TStr2 := ExtractFileName(fName);
+             Delete(Tstr2,1,7);
+             Date := Copy(TStr2,1,10);
+             Delete(TStr2,1,12);
+             Track := BeforeSpecifiedCharacterANSI(TStr2,'_');
+          end;
+          for j := 1 to pred(slt.Count) do begin
+             TStr := trim(slt.Strings[j]);
+             if (TStr <> '') then begin
+                s11.Add(TStr + ',' + Track + ',' + Date);
+             end;
+          end;
+          slt.Free;
+      end;
+      fName := ExtractFilePath(fname) + 'merge_photons'  + '.dbf';
+      if GetFileNameDefaultExt('Merged Photon CSV files','*.dbf',FName) then begin
+         if (BaseMap = Nil) then StringList2CSVtoDB(s11,fName,true)
+         else BaseMap.StringListToLoadedDatabase(s11,fName);
+      end;
+      LastDataBase := fName;
+      wmDEM.SetPanelText(0,'');
+   end;
+   FileNames.Free;
+   EndProgress;
+end;
 
 
 
@@ -2194,7 +2247,6 @@ begin
         if (i=0) then begin
            readln(Infile,Line1);
            reset(Infile);
-
            FSplit(FName,Dir,BName,Ext);
            assignFile(Outfile,Dir + 'temptemp.tmp');
            rewrite(Outfile);
@@ -3871,6 +3923,11 @@ begin
    IcesatPhotonConvert(Memo1);
 end;
 
+
+procedure TDemHandForm.ICESat2photonsATL031Click(Sender: TObject);
+begin
+   MergeICESat2Photons(Nil);
+end;
 
 procedure TDemHandForm.ICOADSLMRF1Click(Sender: TObject);
 var

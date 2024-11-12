@@ -85,7 +85,7 @@ type
     ZeroPad             : boolean;
     SegExp              : integer;
     function FastFourierTransform : boolean;
-    procedure GetSlope(ShowResults : boolean; var a,b,r : float32);
+    procedure GetSlopeLofOfValues(ShowResults : boolean; var a,b,r : float32);
     function NewOptions : boolean;
     function ComputeAndDraw : boolean;
   end;
@@ -850,11 +850,11 @@ procedure TFFTGraph.SlopeSpeedButtonClick(Sender: TObject);
 var
    a,b,r : float32;
 begin
-   GetSlope(True,a,b,r);
+   GetSlopeLofOfValues(True,a,b,r);
 end;
 
 
-procedure TFFTGraph.GetSlope(ShowResults : boolean; var a,b,r : float32);
+procedure TFFTGraph.GetSlopeLofOfValues(ShowResults : boolean; var a,b,r : float32);
 var
    infile,outfile : file;
    v       : array[1..2] of float32;

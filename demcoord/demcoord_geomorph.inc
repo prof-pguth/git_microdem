@@ -436,9 +436,11 @@ end;
 
 
 procedure tDEMDataSet.ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
+var
+   Min,Max : float32;
 begin
    InitializeMomentVar(MomentVar);
-   GetElevationsInLongArray(GridLimits,MomentVar.NPts,zvs,true);
+   GetElevationsInLongArray(GridLimits,MomentVar.NPts,zvs,Min,Max);
    moment(zvs,MomentVar,MomentStop);
 end;
 
@@ -477,37 +479,6 @@ begin
    Std := MomentVar.std_dev;
 end;
 
-
-function tDEMDataSet.CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
-var
-   Distributions,Legends : tStringList;
-   Values : ^bfarray32;
-   Max,Min,BinSize : float32;
-   NPts : int64;
-   fName : PathStr;
-begin
-   {$IfDef RecordDEMstats} WriteLineToDebugFile('tDEMDataSet.CreatePartDEMHistogramn in'); {$EndIf}
-   Distributions := tStringList.Create;
-   Legends := tStringList.Create;
-   New(Values);
-   GetElevationsInLongArray(GridLimits,NPts,Values^);
-   HeapSort(NPts,Values^);
-   Max := Values^[pred(NPts)];
-   Min := Values^[0];
-   fName := Petmar.NextFileNumber(MDtempDir,AreaName + '_' ,'.z');
-   Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
-   Legends.Add(AreaName);
-   Dispose(Values);
-   BinSize := (Max - Min) / 200;
-   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,ElevUnitsAre(DEMHeader.ElevUnits),AreaName + ' histogram',200,Min,Max,BinSize);
-   {$IfDef RecordDEMstats} WriteLineToDebugFile('tDEMDataSet.CreatePartDEMHistogramn out'); {$EndIf}
-end;
-
-
-function tDEMDataSet.CreateWholeDEMHistogram : TThisBaseGraph;
-begin
-   Result := CreatePartDEMHistogram(FullDEMGridLimits);
-end;
 
 {$EndIf}
 

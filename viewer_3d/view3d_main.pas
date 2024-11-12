@@ -7,6 +7,18 @@ unit view3d_main;
 { Copyright (c) 2024 Peter L. Guth  }
 {___________________________________}
 
+{$I nevadia_defines.inc}
+
+{$IfDef RecordProblems}   //normally only defined for debugging specific problems
+   {$IFDEF DEBUG}
+      {$Define Record3d}
+      {$Define AddLayer}
+      {$Define Start3DView}
+      //{$Define ShortRecord}
+      //{$Define RecordMoves}
+      //{$Define Record3dDetailed}
+   {$EndIf}
+{$EndIf}
 
 
 {------------------------------------------------------------------------------
@@ -31,17 +43,6 @@ Takes two kinds of data; file extension tells program which it is dealing with:
 Added to MICRODEM code base
 Command line parameters removed, April 2024
 ------------------------------------------------------------------------------}
-
-{$I nevadia_defines.inc}
-
-{$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$IFDEF DEBUG}
-      //{$Define Record3d}
-      //{$Define ShortRecord}
-      //{$Define RecordMoves}
-      //{$Define Record3dDetailed}
-   {$EndIf}
-{$EndIf}
 
 
 interface
@@ -112,10 +113,6 @@ type
     CornerButton6: TCornerButton;
     CornerButton5: TCornerButton;
     CornerButton10: TCornerButton;
-    GroupBox4: TGroupBox;
-    Label5: TLabel;
-    Label4: TLabel;
-    Label3: TLabel;
     GroupBox6: TGroupBox;
     TrackBar3: TTrackBar;
     TrackBar2: TTrackBar;
@@ -146,6 +143,7 @@ type
     CornerButton16: TCornerButton;
     Button4: TButton;
     CheckBox6: TCheckBox;
+    Button5: TButton;
     //Sphere1: TSphere;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
@@ -194,14 +192,16 @@ type
     procedure CornerButton15Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure CheckBox6Change(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
   private
+     procedure MakeFramesForMovie(var MovieFiles : tStringList);
   public
      xRange,yRange,zRange,
      ve1,ye1,rMinX,rMaxX,rMinY,rMaxY : double;
      rMinZ,rMaxZ : float32;
      DrapeFile : array[1..MaxClouds] of shortstring;
-     MouseIsDown,{FirstRun,}LinkZScaling,Grayscale,JustSeeOne : boolean;
-     CurCloud,ExtraPoints,PointRepeatFactor : integer;
+     MouseIsDown,LinkZScaling,Grayscale,ViewOnlyOneLayerAtTime : boolean;
+     NumSingle,CurCloud,ExtraPoints,PointRepeatFactor : integer;
      NPtsUsed,NPtsAllocated  : array[1..MaxClouds] of integer;
      Material : array[1..MaxClouds] of TTextureMaterialSource;  // Texture to be used
      VertexBuffer : array[1..MaxClouds] of tVertexBuffer;       // Vertex buffer for points
@@ -219,8 +219,10 @@ type
      procedure Initialize(PointsToAllocate : integer);
      procedure ScaleViewToMapExtent(MapDraw : tMapDraw);
      procedure ArrangePanels;
-     procedure DoMap(aMapDraw : tMapDraw);
+     procedure AddMap(aMapDraw : tMapDraw);
      procedure AddSphere;
+     procedure AddLayer(GridName,TextureName : PathStr);
+     procedure LayersComplete;
   end;
 
 
@@ -234,7 +236,7 @@ var
 function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
 
 function SeismicTo3DView : TView3DForm;
-procedure StartSeismicViewing;
+
 procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5 : PathStr; LinkZScaling : boolean = true);
 
 
@@ -246,11 +248,102 @@ uses
    {$IfDef VCL}
       nevadia_main,
    {$EndIf}
-   Petmar,PetImage,PetMath,Math,DEMDefs,DEMCoord, New_Petmar_Movie,
+   Petmar,PetImage,PetImage_Form,PetMath,Math,DEMDefs,DEMCoord, New_Petmar_Movie,
    BaseMap;
 
 var
   Down : TPointF;
+
+
+function StartFMX3dViewer(ViewSeveral : boolean; LinkZScaling : boolean = true) : TView3DForm;
+begin
+   Result := TView3DForm.Create(Application);
+   Result.LinkZScaling := LinkZScaling;
+   Result.ViewOnlyOneLayerAtTime := ViewSeveral;
+   Result.ShowDataSetsToPickGroupBox2.Visible := ViewSeveral;
+   Result.NumSingle := 0;
+   Result.PointRepeatFactor := 1;
+end;
+
+procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5 : PathStr; LinkZScaling : boolean = true);
+begin
+   {$If Defined(Start3DView)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
+   View3DForm := StartFMX3dViewer(ViewSeveral,LinkZScaling);
+      View3DForm.AddLayer(GridName1,TextureName1);
+      View3DForm.AddLayer(GridName2,TextureName2);
+      View3DForm.AddLayer(GridName3,TextureName3);
+      View3DForm.AddLayer(GridName4,TextureName4);
+      View3DForm.AddLayer(GridName5,TextureName5);
+   View3DForm.LayersComplete;
+   {$If Defined(Start3DView)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
+end;
+
+
+
+function SeismicTo3DView : TView3DForm;
+var
+   Table : tMyData;
+   fName : PathStr;
+
+   procedure SetUpPanel(CheckBox : tCheckBox; var thePlane : tPlane; tms : TTextureMaterialSource);
+   var
+      aName : NameStr;
+      bmp   : tMyBitmap;
+      fName : PathStr;
+   begin
+      if Table.eof then exit;
+      FName := Table.GetFieldByNameAsString('FILENAME');
+      if (fName <> '') then begin
+         fName := ExtractFilePath(Table.FullTableName) + fName;
+         aName := ExtractFileNameNoExt(fName);
+         bmp := PetImage.LoadBitmapFromFile(fName);
+         Result.ComboBox1.Items.Add(aName);
+         CheckBox.Text := aName;
+         ThePlane.Visible := true;
+         ThePlane.Scale.X := 10;
+         ThePlane.Scale.Y := 10;
+         ThePlane.Scale.Z := 10;
+         ThePlane.Width := 15 * bmp.Width/1500;
+         ThePlane.Height := 15 * bmp.Height / 1500;
+         ThePlane.TwoSide := true;
+         tms := TTextureMaterialSource.Create(Result);
+         tms.Texture.LoadFromFile(fName);
+         thePlane.MaterialSource := tms;
+         ThePlane.Position.x := Table.GetFieldByNameAsFLOAT('X');
+         ThePlane.Position.y := Table.GetFieldByNameAsFLOAT('Y');
+         ThePlane.Position.z := Table.GetFieldByNameAsFLOAT('Z');
+         ThePlane.RotationAngle.Y := Table.GetFieldByNameAsFLOAT('Z_ROTATE');
+         bmp.Free;
+      end
+      else begin
+         CheckBox.Visible := false;
+      end;
+      Table.Next;
+   end;
+
+begin
+   {$IfDef VCL} StopSplashing; {$EndIf}
+   fName :=  'C:\mapdata\ca_offshore_v4\fence_102_103_200_202.dbf';
+   if not FileExists(fName) then begin
+      if not GetFileFromDirectory('Fence diagram',DefaultDBExt,fName) then exit;
+   end;
+
+   Result := TView3DForm.Create(Application);
+   Table := tMyData.Create(fName);
+   SetUpPanel(Result.CheckBox2,Result.Plane1,Result.TextureMaterialSource1);     //103
+   SetUpPanel(Result.CheckBox3,Result.Plane2,Result.TextureMaterialSource2);     //202, offshore, far
+   SetUpPanel(Result.CheckBox4,Result.Plane3,Result.TextureMaterialSource3);     //102
+   SetUpPanel(Result.CheckBox5,Result.Plane4,Result.TextureMaterialSource4);     //200, offshore, close
+   Table.Destroy;
+   Result.CheckBox6.Visible := false;
+   Result.ComboBox1.ItemIndex := 0;
+   Result.Camera.Position.Y := -35;
+   Result.Camera.Position.z := -35;
+   Result.ArrangePanels;
+   MDDef.OGLDefs.MoveIncr := 1;
+end;
+
+
 
 
 procedure TView3DForm.AddSphere;
@@ -318,142 +411,70 @@ begin
 end;
 *)
 
-
 end;
 
 
-
-procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5 : PathStr; LinkZScaling : boolean = true);
+procedure TView3DForm.Button5Click(Sender: TObject);
 var
-   NumSingle : integer;
-
-         procedure DoFile(GridName,TextureName : PathStr; CheckBox : tCheckBox);
-         begin
-            if (GridName <> '') then begin
-               {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('OK, fname=' + GridName); {$EndIf}
-               View3DForm.GeneratePoints(GridName,TextureName);
-               {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('Points generated'); {$EndIf}
-               CheckBox.Visible := true;
-               if ViewSeveral then begin
-                  CheckBox.Text := ExtractFileNameNoExt(GridName);
-               end
-               else begin
-                  {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('ListBox1.Items.Add ' + ExtractFileName(GridName)); {$EndIf}
-                  View3DForm.ListBox1.Items.Add(ExtractFileNameNoExt(GridName));
-                  View3DForm.ListBox1.ItemIndex := -1;
-                  inc(NumSingle);
-               end;
-            end
-            else begin
-               CheckBox.Visible := false;
-            end;
-         end;
-
+   //MovieName : PathStr;
+   MovieFiles : tstringlist;
 begin
-   {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
-   View3DForm := TView3DForm.Create(Application);
-   View3DForm.LinkZScaling := LinkZScaling;
-   View3DForm.ShowDataSetsToPickGroupBox2.Visible := ViewSeveral;
-   NumSingle := 0;
-
-   View3DForm.PointRepeatFactor := 1;
-
-   View3DForm.DrapeFile[1] := TextureName1;
-   View3DForm.DrapeFile[2] := TextureName2;
-   View3DForm.DrapeFile[3] := TextureName3;
-   View3DForm.DrapeFile[4] := TextureName4;
-   View3DForm.DrapeFile[5] := TextureName5;
-   DoFile(GridName1,TextureName1,View3DForm.CheckBox2);
-   DoFile(GridName2,TextureName2,View3DForm.CheckBox3);
-   DoFile(GridName3,TextureName3,View3DForm.CheckBox4);
-   DoFile(GridName4,TextureName4,View3DForm.CheckBox5);
-   DoFile(GridName5,TextureName5,View3DForm.CheckBox6);
-   View3DForm.ListBox1.Visible := (NumSingle > 1);
-   View3DForm.Button3.Visible := (NumSingle > 1);
-   {$If Defined(Record3D) or Defined(ShortRecord)} WriteLineToDebugFile('call View3DForm.Show'); {$EndIf}
-   View3DForm.ArrangePanels;
-   //View3DForm.AddSphere;
-   {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
-   {$If Defined(Record3D) or Defined(ShortRecord)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
+   {$IfDef VCL}
+      MakeFramesForMovie(MovieFiles);
+      MakeBigBitmap(MovieFiles,'');
+   {$EndIf}
 end;
 
 
-procedure StartSeismicViewing;
-begin
-   {$IfDef VCL} StopSplashing; {$EndIf}
-   SeismicTo3DView;
-end;
 
+procedure TView3DForm.AddLayer(GridName,TextureName : PathStr);
 
-function SeismicTo3DView  : TView3DForm;
-var
-   Table : tMyData;
-   fName : PathStr;
-
-   procedure SetUpPanel(CheckBox : tCheckBox; var thePlane : tPlane; tms : TTextureMaterialSource);
-   var
-      aName : NameStr;
-      bmp   : tMyBitmap;
-      fName : PathStr;
+   procedure DoCheckBox(CheckBox : tCheckBox);
    begin
-      if Table.eof then exit;
-      FName := Table.GetFieldByNameAsString('FILENAME');
-      if (fName <> '') then begin
-         fName := ExtractFilePath(Table.FullTableName) + fName;
-         aName := ExtractFileNameNoExt(fName);
-         bmp := PetImage.LoadBitmapFromFile(fName);
-         Result.ComboBox1.Items.Add(aName);
-         CheckBox.Text := aName;
-         ThePlane.Visible := true;
-         ThePlane.Scale.X := 10;
-         ThePlane.Scale.Y := 10;
-         ThePlane.Scale.Z := 10;
-         ThePlane.Width := 15 * bmp.Width/1500;
-         ThePlane.Height := 15 * bmp.Height / 1500;
-         ThePlane.TwoSide := true;
-         tms := TTextureMaterialSource.Create(Result);
-         tms.Texture.LoadFromFile(fName);
-         thePlane.MaterialSource := tms;
-         ThePlane.Position.x := Table.GetFieldByNameAsFLOAT('X');
-         ThePlane.Position.y := Table.GetFieldByNameAsFLOAT('Y');
-         ThePlane.Position.z := Table.GetFieldByNameAsFLOAT('Z');
-         ThePlane.RotationAngle.Y := Table.GetFieldByNameAsFLOAT('Z_ROTATE');
-         bmp.Free;
+      CheckBox.Visible := true;
+      CheckBox.Text := ExtractFileNameNoExt(GridName);
+   end;
+
+begin
+   if (GridName <> '') then begin
+      {$If Defined(AddLayer)} writeLineToDebugFile('OK, Grid=' + GridName + '  texture=' + TextureName + ' now CurCloud=' + IntToStr(CurCloud)); {$EndIf}
+      DrapeFile[succ(CurCloud)] := TextureName;
+      GeneratePoints(GridName,TextureName);
+      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('Points generated for CurCloud=' + IntToStr(CurCloud)); {$EndIf}
+      if ViewOnlyOneLayerAtTime then begin
+         case CurCloud of
+            1 : DoCheckBox(CheckBox2);
+            2 : DoCheckBox(CheckBox3);
+            3 : DoCheckBox(CheckBox4);
+            4 : DoCheckBox(CheckBox5);
+            5 : DoCheckBox(CheckBox6);
+         end;
       end
       else begin
-         CheckBox.Visible := false;
+         {$If Defined(AddLayer)} writeLineToDebugFile('ListBox1.Items.Add ' + ExtractFileName(GridName)); {$EndIf}
+         ListBox1.Items.Add(ExtractFileNameNoExt(GridName));
+         ListBox1.ItemIndex := -1;
+         inc(View3DForm.NumSingle);
       end;
-      Table.Next;
    end;
-
-begin
-   Result := TView3DForm.Create(Application);
-   fName :=  'C:\mapdata\ca_offshore_v4\fence_102_103_200_202.dbf';
-   if not FileExists(fName) then begin
-      if not GetFileFromDirectory('Fence diagram',DefaultDBExt,fName) then exit;
-   end;
-
-   Table := tMyData.Create(fName);
-   SetUpPanel(Result.CheckBox2,Result.Plane1,Result.TextureMaterialSource1);     //103
-   SetUpPanel(Result.CheckBox3,Result.Plane2,Result.TextureMaterialSource2);     //202, offshore, far
-   SetUpPanel(Result.CheckBox4,Result.Plane3,Result.TextureMaterialSource3);     //102
-   SetUpPanel(Result.CheckBox5,Result.Plane4,Result.TextureMaterialSource4);     //200, offshore, close
-   Table.Destroy;
-
-   Result.CheckBox6.Visible := false;
-
-   Result.ComboBox1.ItemIndex := 0;
-   Result.Camera.Position.Y := -35;
-   Result.Camera.Position.z := -35;
-   Result.ArrangePanels;
-   MDDef.OGLDefs.MoveIncr := 1;
 end;
+
+
+procedure TView3DForm.LayersComplete;
+begin
+   ListBox1.Visible := (NumSingle > 1);
+   Button3.Visible := (NumSingle > 1);
+   {$If Defined(Start3DView)} WriteLineToDebugFile('call View3DForm.ArrangePanels'); {$EndIf}
+   ArrangePanels;
+   {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
+end;
+
 
 
 
 procedure TView3DForm.CheckBox6Change(Sender: TObject);
 begin
-   if JustSeeOne then begin
+   if ViewOnlyOneLayerAtTime then begin
       CheckBox2.IsChecked := false;
       CheckBox3.IsChecked := false;
       CheckBox4.IsChecked := false;
@@ -463,11 +484,11 @@ begin
 end;
 
 
-procedure TView3DForm.DoMap(aMapDraw : tMapDraw);
+procedure TView3DForm.AddMap(aMapDraw : tMapDraw);
 var
    x,y,Pts : integer;
-   Lat,Long,xu,yu : float64;
-   z,xgrid,ygrid : float32;
+   Lat,Long,xu,yu,xgrid,ygrid : float64;
+   z : float32;
    Good : boolean;
 begin
    if (CurCloud = MaxClouds) then begin
@@ -490,7 +511,7 @@ begin
             Good := DEMGlb[aMapDraw.DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z);
          end
          else begin
-             Good := aMapDraw.ScreenToElev(x,y,z)
+            Good := aMapDraw.ScreenToElev(x,y,z)
          end;
          if Good then begin
             aMapDraw.ScreenToUTM(x,y,xu,yu);
@@ -500,40 +521,50 @@ begin
       end;
    end;
    {$IfDef VCL} EndProgress; {$EndIf}
-
-   if (CurCloud > 1) then begin
-      ShowDataSetsToPickGroupBox2.Visible := true;
-      Button3.Visible := true;
-      CheckBox2.Visible := true;
-      CheckBox3.Visible := CurCloud >= 2;
-      CheckBox4.Visible := CurCloud >= 3;
-      CheckBox5.Visible := CurCloud >= 4;
-      CheckBox6.Visible := CurCloud >= 5;
-      JustSeeOne := true;
-   end;
-   case CurCloud of
-      1 : CheckBox2.Text := aMapDraw.BaseTitle;
-      2 : CheckBox3.Text := aMapDraw.BaseTitle;
-      3 : CheckBox4.Text := aMapDraw.BaseTitle;
-      4 : CheckBox5.Text := aMapDraw.BaseTitle;
-      5 : CheckBox6.Text := aMapDraw.BaseTitle;
+   if ViewOnlyOneLayerAtTime then begin
+      ListBox1.Visible := true;
+      ListBox1.Items.Add(aMapDraw.BaseTitle);
+   end
+   else begin
+      if (CurCloud = 1) then begin
+         CheckBox2.Visible := true;
+         CheckBox2.Text := aMapDraw.BaseTitle;
+      end
+      else begin
+         ShowDataSetsToPickGroupBox2.Visible := true;
+         Button3.Visible := true;
+         CheckBox3.Visible := CurCloud >= 2;
+         CheckBox4.Visible := CurCloud >= 3;
+         CheckBox5.Visible := CurCloud >= 4;
+         CheckBox6.Visible := CurCloud >= 5;
+        //ViewOnlyOneLayerAtTime := true;
+         case CurCloud of
+            2 : CheckBox3.Text := aMapDraw.BaseTitle;
+            3 : CheckBox4.Text := aMapDraw.BaseTitle;
+            4 : CheckBox5.Text := aMapDraw.BaseTitle;
+            5 : CheckBox6.Text := aMapDraw.BaseTitle;
+         end;
+      end;
    end;
 
    ArrangePanels;
    Show;
-   {$IfDef Record3d} WriteLineToDebugFile('TView3DForm DoMap, CurCloud=' + IntToStr(CurCloud) + '  ' + aMapDraw.BaseTitle); {$EndIf}
+   {$If Defined(AddLayer)} WriteLineToDebugFile('TView3DForm.AddMap, CurCloud=' + IntToStr(CurCloud) + '  ' + aMapDraw.BaseTitle + '  pts=' + IntToStr(NPtsUsed[CurCloud] )); {$EndIf}
 end;
 
 
 function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
 begin
    {$IfDef Record3d} WriteLineToDebugFile('MapTo3DView in, ' + MapDraw.BaseTitle); {$EndIf}
+   ShowHourglassCursor;
    Result := TView3DForm.Create(Application);
    Result.ShowDataSetsToPickGroupBox2.Visible := false;
    Result.Button3.Visible := false;
    Result.ExtraPoints := ExtraPoints;
+   Result.ViewOnlyOneLayerAtTime := true;
+
    Result.ScaleViewToMapExtent(MapDraw);
-   Result.DoMap(MapDraw);
+   Result.AddMap(MapDraw);
    {$IfDef Record3d} WriteLineToDebugFile('MapTo3DView out'); {$EndIf}
 end;
 
@@ -598,18 +629,14 @@ begin
    {$EndIf}
 end;
 
-procedure TView3DForm.Button3Click(Sender: TObject);
-var
-   fname,MovieName : PathStr;
-   MovieFiles : tstringlist;
-   i : integer;
 
+procedure TView3DForm.MakeFramesForMovie(var MovieFiles : tStringList);
 
-    procedure SaveFrame;
+    procedure SaveFrame(fName : PathStr = '');
     begin
-         PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,false,true);
-         MovieFiles.Add(ExtractFileName(fName));
-         Delay(500);
+       PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,false,true);
+       MovieFiles.Add(fName);
+       Delay(500);
     end;
 
     procedure DoCheckBox(theBox : tCheckBox; Cloud : integer);
@@ -623,32 +650,65 @@ var
        end;
     end;
 
+var
+   i : integer;
+begin
+   MovieFiles := tStringList.Create;
+   if ViewOnlyOneLayerAtTime then begin
+      for i := 0 to pred(ListBox1.Items.Count) do begin
+         ListBox1.ItemIndex := i;
+         ListBox1Change(Button3);
+         SaveFrame(ListBox1.Items[i] + '.png');
+      end;
+   end
+   else begin
+      CheckBox2.IsChecked := false;
+      CheckBox3.IsChecked := false;
+      CheckBox4.IsChecked := false;
+      CheckBox5.IsChecked := false;
+      CheckBox6.IsChecked := false;
+      DoCheckBox(CheckBox2,1);
+      DoCheckBox(CheckBox3,2);
+      DoCheckBox(CheckBox4,3);
+      DoCheckBox(CheckBox5,4);
+      DoCheckBox(CheckBox6,5);
+      CheckBox2.IsChecked := true;
+      ShowCloud[1] := true;
+   end;
+end;
+
+
+procedure TView3DForm.Button3Click(Sender: TObject);
+var
+   MovieName : PathStr;
+   MovieFiles : tstringlist;
+
+    (*
+    procedure SaveFrame;
+    var
+       fname : PathStr;
+    begin
+       fName := '';
+       PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,false,true);
+       MovieFiles.Add(ExtractFileName(fName));
+       Delay(500);
+    end;
+
+    procedure DoCheckBox(theBox : tCheckBox; Cloud : integer);
+    begin
+       if theBox.Visible then begin
+          theBox.IsChecked := true;
+          ShowCloud[Cloud] := true;
+          SaveFrame;
+          theBox.IsChecked := false;
+          ShowCloud[Cloud] := false;
+       end;
+    end;
+    *)
 
 begin
    {$IfDef VCL}
-      MovieFiles := tStringList.Create;
-
-      if ShowDataSetsToPickGroupBox2.Visible then begin
-         CheckBox2.IsChecked := false;
-         CheckBox3.IsChecked := false;
-         CheckBox4.IsChecked := false;
-         CheckBox5.IsChecked := false;
-         CheckBox6.IsChecked := false;
-         DoCheckBox(CheckBox2,1);
-         DoCheckBox(CheckBox3,2);
-         DoCheckBox(CheckBox4,3);
-         DoCheckBox(CheckBox5,4);
-         DoCheckBox(CheckBox6,5);
-         CheckBox2.IsChecked := true;
-         ShowCloud[1] := true;
-      end
-      else begin
-         for i := 0 to pred(ListBox1.Items.Count) do begin
-            ListBox1.ItemIndex := i;
-            ListBox1Change(Sender);
-            SaveFrame;
-         end;
-      end;
+      MakeFramesForMovie(MovieFiles);
       MovieName := MovieDir + 'oglmovie2.mov';
       MovieFiles.SaveToFile(MovieName);
       MovieFiles.Free;
@@ -656,13 +716,14 @@ begin
    {$EndIf}
 end;
 
+
 procedure TView3DForm.Button4Click(Sender: TObject);
 var
    fname : PathStr;
 begin
    {$IfDef VCL}
       fName := '';
-      PetImage.SaveScreenCapture(round(Layer3D1.Width),fName);
+      PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,true);
    {$EndIf}
 end;
 
@@ -679,6 +740,7 @@ end;
 
 procedure TView3DForm.ListBox1Change(Sender: TObject);
 begin
+   {$If Defined(Record3D)} writeLineToDebugFile('tView3DForm.ListBox1Change, ItemIndex=' + IntToStr(ListBox1.ItemIndex)); {$EndIf}
    ShowCloud[1] := ListBox1.ItemIndex = 0;
    ShowCloud[2] := ListBox1.ItemIndex = 1;
    ShowCloud[3] := ListBox1.ItemIndex = 2;
@@ -689,7 +751,7 @@ end;
 
 procedure TView3DForm.CheckBox2Change(Sender: TObject);
 begin
-   if JustSeeOne then begin
+   if ViewOnlyOneLayerAtTime then begin
       CheckBox3.IsChecked := false;
       CheckBox4.IsChecked := false;
       CheckBox5.IsChecked := false;
@@ -701,7 +763,7 @@ end;
 
 procedure TView3DForm.CheckBox3Change(Sender: TObject);
 begin
-   if JustSeeOne then begin
+   if ViewOnlyOneLayerAtTime then begin
       CheckBox2.IsChecked := false;
       CheckBox4.IsChecked := false;
       CheckBox5.IsChecked := false;
@@ -713,7 +775,7 @@ end;
 
 procedure TView3DForm.CheckBox4Change(Sender: TObject);
 begin
-   if JustSeeOne then begin
+   if ViewOnlyOneLayerAtTime then begin
       CheckBox2.IsChecked := false;
       CheckBox3.IsChecked := false;
       CheckBox5.IsChecked := false;
@@ -725,7 +787,7 @@ end;
 
 procedure TView3DForm.CheckBox5Change(Sender: TObject);
 begin
-   if JustSeeOne then begin
+   if ViewOnlyOneLayerAtTime then begin
       CheckBox2.IsChecked := false;
       CheckBox3.IsChecked := false;
       CheckBox4.IsChecked := false;
@@ -833,9 +895,9 @@ end;
 
 procedure TView3DForm.Timer1Timer(Sender: TObject);
 begin
-   Label3.Text := 'Rot: ' + RealToString(Layout3D1.RotationAngle.X,-6,1) + ' ' + RealToString(Layout3D1.RotationAngle.Z,-6,1) + ' ' + RealToString(Layout3D1.RotationAngle.Y,-6,1);
-   Label4.Text := 'Pos: ' + RealToString(Layout3D1.Position.X,-6,1) + ' ' + RealToString(Layout3D1.Position.Z,-6,1) + ' ' + RealToString(Layout3D1.Position.Y,-6,1);
-   Label5.Text := 'Cam: ' + RealToString(Camera1.Position.Vector.X,-6,1) + ' ' + RealToString(Camera1.Position.Vector.Z,-6,1) + ' ' +  RealToString(Camera1.Position.Vector.Y,-6,1);
+   //Label3.Text := 'Rot: ' + RealToString(Layout3D1.RotationAngle.X,-6,1) + ' ' + RealToString(Layout3D1.RotationAngle.Z,-6,1) + ' ' + RealToString(Layout3D1.RotationAngle.Y,-6,1);
+   //Label4.Text := 'Pos: ' + RealToString(Layout3D1.Position.X,-6,1) + ' ' + RealToString(Layout3D1.Position.Z,-6,1) + ' ' + RealToString(Layout3D1.Position.Y,-6,1);
+   //Label5.Text := 'Cam: ' + RealToString(Camera1.Position.Vector.X,-6,1) + ' ' + RealToString(Camera1.Position.Vector.Z,-6,1) + ' ' +  RealToString(Camera1.Position.Vector.Y,-6,1);
 end;
 
 procedure TView3DForm.TrackBar1Change(Sender: TObject);
@@ -1033,70 +1095,75 @@ var
          i,{j,}x,y,z,pfd2 : integer;
          xf,yf : float64;
       begin
-           {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes in ' + PointsFile); {$EndIf}
-           assignFile(tfile,PointsFile);
-           reset(tFile,sizeOf(tPointXYZI));
-           new(PointXYZColor);
-           BlockRead(tfile,PointXYZColor^,MaxPts,Pts);
+           if FileExists(PointsFile) then begin
+              {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes in ' + PointsFile); {$EndIf}
+              assignFile(tfile,PointsFile);
+              reset(tFile,sizeOf(tPointXYZI));
+              new(PointXYZColor);
+              BlockRead(tfile,PointXYZColor^,MaxPts,Pts);
 
-           if NeedRange then begin
-              //get range of real world coordinates in data set
-              for i := 1 to Pts do begin
-                 CompareValueToExtremes(PointXYZColor^[i].x, rMinX,rMaxX );
-                 CompareValueToExtremes(PointXYZColor^[i].y, rMinY,rMaxY );
-                 CompareValueToExtremes(PointXYZColor^[i].z, rMinZ,rMaxZ );
+              if NeedRange then begin
+                 //get range of real world coordinates in data set
+                 for i := 1 to Pts do begin
+                    CompareValueToExtremes(PointXYZColor^[i].x, rMinX,rMaxX );
+                    CompareValueToExtremes(PointXYZColor^[i].y, rMinY,rMaxY );
+                    CompareValueToExtremes(PointXYZColor^[i].z, rMinZ,rMaxZ );
+                 end;
+                 {$IfDef Record3d}
+                    WriteLineToDebugFile('xRange=' + RealToString(rminX,12,2) + ' to' +  RealToString(rmaxX,12,2) + '  yRange=' + RealToString(rminY,12,2) + ' to' +  RealToString(rmaxY,12,2));
+                    WriteLineToDebugFile('zRange=' + RealToString(rminZ,12,2) + ' to' +  RealToString(rmaxZ,12,2) );
+                 {$EndIf}
               end;
-              {$IfDef Record3d}
-                 WriteLineToDebugFile('xRange=' + RealToString(rminX,12,2) + ' to' +  RealToString(rmaxX,12,2) + '  yRange=' + RealToString(rminY,12,2) + ' to' +  RealToString(rmaxY,12,2));
-                 WriteLineToDebugFile('zRange=' + RealToString(rminZ,12,2) + ' to' +  RealToString(rmaxZ,12,2) );
-              {$EndIf}
-           end;
 
-          Initialize(Pts);
+             Initialize(Pts);
 
-          SetScaling;
+             SetScaling;
 
-          NP := 0;
-          pfd2 := PointRepeatFactor div 2;
-          for i := 1 to Pts do begin
-            if (PointRepeatFactor = 1) then begin
-               //we use coordinates with x and y horizontal, and z vertical
-               P.x := ScaledX(PointXYZColor^[i].x);
-               P.z := ScaledY(PointXYZColor^[i].y);
-               P.y := ScaledZ(PointXYZColor^[i].z);
-               VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
-               if Color2D then begin
-                  RGBtoXYFloat(PointXYZColor^[i].Int,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
-                  VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
+             NP := 0;
+             pfd2 := PointRepeatFactor div 2;
+             for i := 1 to Pts do begin
+               if (PointRepeatFactor = 1) then begin
+                  //we use coordinates with x and y horizontal, and z vertical
+                  P.x := ScaledX(PointXYZColor^[i].x);
+                  P.z := ScaledY(PointXYZColor^[i].y);
+                  P.y := ScaledZ(PointXYZColor^[i].z);
+                  VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
+                  if Color2D then begin
+                     RGBtoXYFloat(PointXYZColor^[i].Int,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
+                     VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
+                  end
+                  else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int/255); // Set texture value from color ramp
+                  IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
+                  NP := NP+1;
                end
-               else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int/255); // Set texture value from color ramp
-               IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
-               NP := NP+1;
-            end
-            else begin
-               //we use coordinates with x and y horizontal, and z vertical
-               for x := -pfd2 to pfd2 do begin
-                  for y := -pfd2 to pfd2 do begin
-                     for z := -pfd2 to pfd2 do begin
-                        P.x := ScaledX(PointXYZColor^[i].x) + x * 0.05;
-                        P.z := ScaledY(PointXYZColor^[i].y) + y * 0.05;
-                        P.y := ScaledZ(PointXYZColor^[i].z) + z * 0.05;
-                        VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
-                        if Color2D then begin
-                           RGBtoXYFloat(PointXYZColor^[i].Int,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
-                           VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
-                        end
-                        else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int/255); // Set texture value from color ramp
-                        IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
-                        NP := NP+1;
+               else begin
+                  //we use coordinates with x and y horizontal, and z vertical
+                  for x := -pfd2 to pfd2 do begin
+                     for y := -pfd2 to pfd2 do begin
+                        for z := -pfd2 to pfd2 do begin
+                           P.x := ScaledX(PointXYZColor^[i].x) + x * 0.05;
+                           P.z := ScaledY(PointXYZColor^[i].y) + y * 0.05;
+                           P.y := ScaledZ(PointXYZColor^[i].z) + z * 0.05;
+                           VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
+                           if Color2D then begin
+                              RGBtoXYFloat(PointXYZColor^[i].Int,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
+                              VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
+                           end
+                           else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int/255); // Set texture value from color ramp
+                           IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
+                           NP := NP+1;
+                        end;
                      end;
                   end;
-               end;
+                end;
              end;
-          end;
-          CloseFile(tFile);
-          Dispose(PointXYZColor);
-          {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes out'); {$EndIf}
+             CloseFile(tFile);
+             Dispose(PointXYZColor);
+             {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes out'); {$EndIf}
+         end
+         else begin
+           {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes missing file ' + PointsFile); {$EndIf}
+         end;
       end;
 
 var
@@ -1118,6 +1185,7 @@ begin
       NeedRange := true;
    end
    else NeedRange := false;
+
    Ext := UpperCase(ExtractFileExt(PointsFile));
    if (Ext = '.XYZB') then LoadPointsWithFullDrapeMap
    else if (Ext = '.XYZIB') then begin
@@ -1129,6 +1197,7 @@ begin
    NPtsUsed[CurCloud] := Pts;
    {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.GeneratePoints out, pts=' + IntToStr(NPtsUsed[CurCloud])); {$EndIf}
 end;
+
 
 {#############################################################################
    Code renders all of the points. Pretty simple!!!
@@ -1271,7 +1340,7 @@ begin
    CheckBox1.IsChecked := false;
    //FirstRun := true;
    MouseIsDown := false;
-   JustSeeOne := false;
+   ViewOnlyOneLayerAtTime := false;
    LinkZScaling := true;
    MDDef.OGLDefs.MoveIncr := 7.5;
 
@@ -1289,11 +1358,11 @@ begin
 
    GroupBox6.Visible := false;
    GroupBox7.Visible := false;
-   GroupBox4.Visible := false;
+   //GroupBox4.Visible := false;
 
-   Label3.Visible := false;
-   Label4.Visible := false;
-   Label5.Visible := false;
+   //Label3.Visible := false;
+   //Label4.Visible := false;
+   //Label5.Visible := false;
    TrackBar1.Visible := false;
    TrackBar2.Visible := false;
    TrackBar3.Visible := false;

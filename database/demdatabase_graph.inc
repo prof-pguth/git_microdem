@@ -749,7 +749,7 @@ var
             if Values^[0] < Min then Min := Values^[0];
             if Values^[pred(NPts)] > Max then Max := Values^[pred(NPts)];
 
-            fName := BaseGraf.SaveSingleValueSeries(Npts,Values^{,0,Npts});
+            fName := BaseGraf.SaveSingleValueSeries(Npts,Values^);
             {$IfDef RecordDBPlot} writeLineToDebugFile('save: ' + fName); {$EndIf}
             FilesList.Add(fName);
             Dispose(Values);

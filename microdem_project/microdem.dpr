@@ -9,6 +9,16 @@
 
 {$I nevadia_defines.inc}
 
+
+
+
+
+
+
+
+
+
+
 uses
   Forms,
   SysUtils,
@@ -25,7 +35,6 @@ uses
   sc_colopts in '..\stratcol\sc_colopts.pas' {StratOptsForm},
   OKCANCL2 in '..\common_code\OKCANCL2.PAS' {OKRightDlg},
   DEMdbTable in '..\common_code\DEMdbTable.pas' {dbtablef},
-  Demmapf in '..\common_code\Demmapf.pas' {MapForm},
   point_cloud_memory in '..\common_code\point_cloud_memory.pas',
   slicer_3d in '..\common_code\slicer_3d.pas' {SlicerForm},
   point_cloud_options in '..\common_code\point_cloud_options.pas' {pt_cloud_opts_fm},
@@ -52,7 +61,6 @@ uses
   demcnvrt in '..\common_code\demcnvrt.pas' {CoordConverter},
   map_algebra in '..\common_code\map_algebra.pas' {MapAlgebraForm},
   getlatln in '..\common_code\getlatln.pas' {GetLatLongDlg},
-  geomorph_point_class in '..\common_code\geomorph_point_class.pas' {PointClassForm},
   Demperop in '..\common_code\Demperop.pas' {PerspOptions},
   hyp_display in '..\common_code\hyp_display.pas' {HyperspectralForm},
   demprintpreview in '..\common_code\demprintpreview.pas' {PrintPreviewForm},
@@ -123,7 +131,6 @@ uses
   toggle_db_use in '..\common_code\toggle_db_use.pas' {ToggleDBfieldsForm},
   lvis_form in '..\common_code\lvis_form.pas' {lvis_form1},
   map_route in '..\common_code\map_route.pas' {MapRtForm},
-  pick_geostats in '..\common_code\pick_geostats.pas' {PickGeoStat},
   dem_tin in '..\common_code\dem_tin.pas',
   sup_class_aux_grids in '..\common_code\sup_class_aux_grids.pas' {SupClassAuxGrids},
   drg_anaglyph in '..\common_code\drg_anaglyph.pas' {DRGAnaglyphForm},
@@ -197,7 +204,6 @@ uses
   demflysense in '..\common_code\demflysense.pas' {FlightControlSensitivity},
   demflycontrols in '..\common_code\demflycontrols.pas' {FlightControlForm},
   OKCANCL1 in '..\common_code\OKCANCL1.PAS' {OKBottomDlg},
-  SOLAR in '..\common_code\SOLAR.PAS',
   contouroptsform in '..\common_code\contouroptsform.pas' {SimpleContourOptions},
   FourOpF in '..\common_code\FourOpF.pas' {FourierOptionsForm},
   dem_fan_compare in '..\common_code\dem_fan_compare.pas' {FanCompareForm},
@@ -214,7 +220,6 @@ uses
   demhandw in '..\common_code\demhandw.pas' {DemHandForm},
   usoutlines in '..\common_code\usoutlines.pas' {USOutlineForm},
   main_gray_game in '..\common_code\main_gray_game.pas' {GrayGameForm},
-  demssocalc in '..\common_code\demssocalc.pas' {SSOCalcDlg},
   make_grid in '..\common_code\make_grid.pas',
   survey_lines in '..\common_code\survey_lines.pas' {GetTracjksForm},
   DEMPersw in '..\common_code\DEMPersw.pas' {ThreeDview},
@@ -225,8 +230,6 @@ uses
   DataBaseCreate in '..\microdem_open_source\DataBaseCreate.pas',
   dem_3d_view in '..\microdem_open_source\dem_3d_view.pas',
   dem_manager in '..\microdem_open_source\dem_manager.pas',
-  demcoord in '..\microdem_open_source\demcoord.pas',
-  DEMDataBase in '..\microdem_open_source\DEMDataBase.pas' {GISdataBaseModule: TDataModule},
   demdef_routines in '..\microdem_open_source\demdef_routines.pas',
   demdefs in '..\microdem_open_source\demdefs.pas',
   petmar in '..\microdem_open_source\petmar.pas',
@@ -240,9 +243,7 @@ uses
   DEMESRIShapeFile in '..\microdem_open_source\DEMESRIShapeFile.pas',
   demlos_draw in '..\microdem_open_source\demlos_draw.pas',
   demmagvar in '..\microdem_open_source\demmagvar.pas',
-  demmapdraw in '..\microdem_open_source\demmapdraw.pas',
   DEMEros in '..\microdem_open_source\DEMEros.pas',
-  geomorph_region_size_graph in '..\common_code\geomorph_region_size_graph.pas' {regionsizeform},
   grayscale_shift in '..\common_code\grayscale_shift.pas' {GrayscaleForm},
   dbf in '..\tdbf_current\dbf.pas',
   dbf_ansistrings in '..\tdbf_current\dbf_ansistrings.pas',
@@ -274,7 +275,6 @@ uses
   new_dem_headerf in '..\common_code\new_dem_headerf.pas' {DEMHeaderForm},
   weapons_fan_thread in '..\microdem_open_source\weapons_fan_thread.pas',
   md_use_tools in '..\microdem_open_source\md_use_tools.pas',
-  DEMStat in '..\common_code\DEMStat.pas',
   monthly_grids in '..\common_code\monthly_grids.pas' {GridTimeSeriesControlForm},
   petmar_db in '..\microdem_open_source\petmar_db.pas',
   petmar_geology in '..\microdem_open_source\petmar_geology.pas',
@@ -328,7 +328,20 @@ uses
   SGP_TIME in '..\sgp\SGP_TIME.PAS',
   SGP4SDP4 in '..\sgp\SGP4SDP4.PAS',
   SGP_Support in '..\sgp\SGP_Support.pas',
-  edit_exif_fields in '..\common_code\edit_exif_fields.pas' {Form1};
+  edit_exif_fields in '..\common_code\edit_exif_fields.pas' {Form1},
+  compare_geo_utm in '..\common_code\compare_geo_utm.pas' {compare_geo_utm_geomorphometry},
+  demmapdraw in '..\mapdraw\demmapdraw.pas',
+  demcoord in '..\demcoord\demcoord.pas',
+  Demmapf in '..\mapform\Demmapf.pas' {MapForm},
+  DEMDataBase in '..\database\DEMDataBase.pas' {GISdataBaseModule: TDataModule},
+  SOLAR in '..\sgp\SOLAR.PAS',
+  demssocalc in '..\geomorph\demssocalc.pas' {SSOCalcDlg},
+  DEMStat in '..\geomorph\DEMStat.pas',
+  compare_algorithms_options in '..\geomorph\compare_algorithms_options.pas' {AlgCompareForm},
+  geomorph_point_class in '..\geomorph\geomorph_point_class.pas' {PointClassForm},
+  geomorph_region_size_graph in '..\geomorph\geomorph_region_size_graph.pas' {regionsizeform},
+  pick_geostats in '..\geomorph\pick_geostats.pas' {PickGeoStat},
+  compare_programs_algorithms in '..\geomorph\compare_programs_algorithms.pas';
 
 {$R *.RES}
 
@@ -354,7 +367,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

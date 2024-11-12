@@ -87,7 +87,7 @@ const
    DEMIX_initialized : boolean = false;
 
    function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
-   procedure EndDEMIXProcessing(db : integer = 0);
+   procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = true);
    procedure LoadDEMIXnames;
 
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
@@ -98,7 +98,9 @@ const
    function FilterForDEMIXtilesToUse : shortstring;
    function FilterForDEMIXtilesToAvoid : shortstring;
 
+//check these to see if still needed
    procedure CompareSeriousCompetitors(DBonTable : integer);
+   procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 
 //service functions and procedures
    function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
@@ -126,7 +128,6 @@ const
    procedure OpenDEMIXDatabaseForAnalysis;
    procedure RecognizeDEMIXVersion(DB : integer);
 
-
    function GetCountryForArea(Area : shortString) : shortstring;
    procedure SummarizeEGM96toEGM2008shifts;
    procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);   //brown dirtball for STM, blue airball for DSM
@@ -137,12 +138,11 @@ procedure CompareRankings(DBonTable : integer);
 procedure DifferentRankingsByCriteria(DBonTable : integer);
 
    procedure WinsAndTies(DBonTable : integer);
-   procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 
 function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
 
 
-   function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
+function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
 function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
 procedure SetParamsForDEMIXmode;
@@ -169,6 +169,7 @@ procedure PickDEMIXMode;
    function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
    procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
 
+procedure DifferentRankingsByTile(DBonTable : integer);
 
 
    {$IfDef AllowEDTM}
@@ -205,26 +206,25 @@ uses
    DEMIX_graphs,Pick_DEMIX_mode,pick_demix_areas;
 
 var
-   //vd_path : PathStr;
    DoHorizontalShift : boolean;
 
    {$I demix_maps.inc}
 
    {$I demix_open_dems.inc}
 
-{$IfDef Old3DEP}
-   {$I old_demix_3dep_routines.inc}
-{$EndIf}
+   {$IfDef Old3DEP}
+      {$I old_demix_3dep_routines.inc}
+   {$EndIf}
 
 
-{$If Defined(AllowEDTM) or Defined(OldDEMIXroutines)}
-   {$I experimental_demix_criteria.inc}
-{$EndIf}
+   {$If Defined(AllowEDTM) or Defined(OldDEMIXroutines)}
+      {$I experimental_demix_criteria.inc}
+   {$EndIf}
 
 
-{$IfDef OpenDEMIXAreaAndCompare}
-   {$I open_demix_area.inc}
-{$EndIf}
+   {$IfDef OpenDEMIXAreaAndCompare}
+      {$I open_demix_area.inc}
+   {$EndIf}
 
 
 procedure PickDEMIXMode;
@@ -295,10 +295,12 @@ begin
          bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
          bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
          {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
-         bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
-         bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
-         bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
-         bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
+         //bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
+         //bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
+         //bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
+         //bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
+         bb := IntersectionTwoGeoBoundBoxes(bb,bb2);
+
          {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
          if (NewName = '') then NewName := DEMGlb[DEM].DEMFileName;
          DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),NewName);
@@ -417,6 +419,48 @@ begin
    EndProgress;
    GISdb[DBonTable].ShowStatus;
 end;
+
+
+procedure DifferentRankingsByTile(DBonTable : integer);
+//this is slow and very brute force, but will not be called often; just take a break
+const
+   Params : array[1..3] of shortstring = ('ELVD*','SLPD*','RUFD*');
+var
+   sl,tiles : tStringList;
+   aline,Tile : shortstring;
+   i,j : integer;
+   fName : PathStr;
+begin
+   if GISdb[DBonTable].MyData.FieldExists('DEM_LOW_SC') then begin
+      GetDEMIXpaths(true,DBonTable);
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].ClearGISFilter;
+      Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
+      sl := tStringList.Create;
+      aline := 'DEMIX_TILE,ELVD,SLPD,RUFD,ALL';
+      sl.Add(aline);
+      for i := 0 to pred(Tiles.Count) do begin
+         Tile := Tiles.Strings[i];
+         wmdem.SetPanelText(1,IntToStr(i) + '/' + IntToStr(Tiles.Count) + ' ' + Tile,true);
+         aline := Tile + ',';
+         for j := 1 to 3 do begin
+            GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile) + ' AND CRITERION=' + QuotedStr(Params[j]));
+            aline := aLine + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEM_LOW_SC')) + ',';
+            GISdb[DBonTable].EmpSource.Enabled := false;
+         end;
+         GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
+         aline := aLine + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEM_LOW_SC'));
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         sl.Add(aline);
+         //MessageToContinue(aline);
+      end;
+      fName := NextFileNumber(MDTempDir,'different_rankings_by_tile','.dbf');
+      StringList2CSVtoDB(sl,fName);
+      EndDEMIXProcessing(dbOnTable);
+   end
+   else MessageToContinue('Missing required field, DEM_LOW_SC');
+end;
+
 
 
 procedure CompareRankings(DBonTable : integer);
@@ -1096,12 +1140,12 @@ begin
 end;
 
 
-procedure EndDEMIXProcessing(db : integer = 0);
+procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = true);
 begin
-   if HeavyDutyProcessing then begin
+   if HeavyDutyProcessing and CleanTempDir then begin
       CleanUpTempDirectory(false);
-      HeavyDutyProcessing := false;
    end;
+   HeavyDutyProcessing := false;
    ReportErrors := true;
    DEMIXProcessing := false;
    ToggleShowProgress(true);

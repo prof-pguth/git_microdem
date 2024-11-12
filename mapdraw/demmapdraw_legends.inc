@@ -227,7 +227,7 @@ begin
    if ((MaxMapElev - MinMapElev) < 0.0001) and (MapType <> mtDEMVATTable) then exit;
 
    if (MapMerge in [mmElevation]) then begin
-      if not DEMMap then ScaleMapElevationsToDEM;
+      if (not DEMMap) then ScaleMapElevationsToDEM;
       for i := 0 to 255 do begin
          Hue := (360.0 - (MDDef.MergeHue/255) * (i / 255 * 360.0));
          if (MapMerge = mmElevation) or (MapType in [mtIHSReflect]) then Values[i] := MinMapElev + i/255 * (MapZRange)
@@ -254,7 +254,7 @@ begin
       Result := MakeVATLegend;
    end;
 
-   if isElevationMap(MapType) or (MapType in [mtIHSReflect]) then begin
+   if isElevationMap(MapType) or (MapType in [mtIHSReflect,mtCurvature,mtDifferenceDiverge]) then begin
       if (MapType = mtElevFromTable) then begin
          if OpenNumberedGISDataBase(LegendGIS,HardLimitColorPaletteFName) then begin
             GISDB[LegendGIS].MyData.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));

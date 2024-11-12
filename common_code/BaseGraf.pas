@@ -22,7 +22,7 @@ unit BaseGraf;
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
 
-       //{$Define RecordHistogram}
+       {$Define RecordHistogram}
        //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
@@ -30,7 +30,7 @@ unit BaseGraf;
        //{$Define RecordGrafAxis}
        //{$Define RecordGraf}
        //{$Define RecordGraphColors}
-       //{$Define RecordGrafDensity}
+       {$Define RecordGrafDensity}
        //{$Define RecordPlotFiles}
        //{$Define Closing}
        //{$Define ReverseFit}
@@ -79,7 +79,7 @@ const
    MaxPointsInBuffer = 64000;
 type
    tGraphPlane = (gpXY,gpXZ,gpYZ);
-   tDensityShow = (dsAll,dsAxis,dsYAxis);
+   tDensityShow = (dsAll,dsXAxis,dsYAxis);
 
    tFloatPoint = array[1..2] of float32;
    tPointDataBuffer = array[1..MaxPointsInBuffer] of tFloatPoint;
@@ -428,7 +428,7 @@ type
      procedure FilterDBatCurrentPoint;
      procedure ShowSatelliteBands(Bitmap : tMyBitmap);
      procedure DrawBoxPlot(Bitmap : tMyBitmap);
-     procedure MultipleHistogramPrep;
+     //procedure MultipleHistogramPrep;
      function PlotDataFile(i : integer) : boolean;
      procedure PlotBarGraphFromDB(Bitmap : tMyBitmap);
      procedure PlotXYColorFromDB(Bitmap : tMyBitmap);
@@ -547,7 +547,6 @@ var
    FittedSlope : float32;
    GraphDoing : tGraphDoing;
    CreateSmallGraph : boolean;
-   //CreateGraphHidden : boolean;
 const
    AddDelauneyZ : boolean = true;
    AddDelauneyImage : boolean = false;
@@ -568,8 +567,6 @@ function NumOpenGraphs : integer;
 
 function SaveSingleValueSeries(NumVals : integer; var zs : bfarray32; fName : PathStr = '') : PathStr;
 
-function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
-    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
 
 procedure CreateQuantileQuantilePlot(var ThisGraph : TThisBaseGraph; NumVals : integer; var values : array of float32; Mean,Std : float32; ParamName,TitleBar : ShortString);
 function CreateCumProbabilityFromFile(fNames : tStringList; ParamName,TitleBar : ShortString) : TThisBaseGraph;
@@ -625,7 +622,7 @@ uses
    {$Else}
       DEM_TIN,
    {$EndIf}
-
+   DEMStat,
    Nevadia_Main, Make_tables;
 
 const
@@ -811,260 +808,6 @@ begin
    GISdb[DataBaseOnGraph].ShowStatus;
    {$IfDef RecordHistogram} WriteLineToDebugFile('SetUpStackedHistogram out, ' + GraphDraw.AxisRange); {$EndIf}
 end;
-
-
-procedure TThisBaseGraph.MultipleHistogramPrep;
-Label
-   CleanUp;
-const
-   MaxBins = 5000;
-var
-  i,NumVals,NegBins : integer;
-  values : ^bfarray32;
-  Value,Range,MaxCount,MinInSeries,MaxInSeries : float32;
-  rFile : file;
-  l2 : shortstring;
-  AutoScale,First : boolean;
-  v : array[1..2] of float32;
-  Bins : array[0..MaxBins] of integer;
-  //Results : tstringlist;
-  StackedPercents : boolean;
-
-
-          procedure LoadSeries(fName : PathStr);
-          var
-             i : integer;
-          begin
-             LoadBFarray32(fName,Values^,NumVals);
-             for i := 0 to pred(NumVals) do begin
-                CompareValueToExtremes(Values[i],MinInSeries,MaxInSeries);
-             end;
-             if AutoScale then begin
-                if (GraphDraw.MinHorizAxis > MinInSeries) then GraphDraw.MinHorizAxis := MinInSeries;
-                if (GraphDraw.MAXHorizAxis < MaxInSeries) then GraphDraw.MAXHorizAxis := MaxInSeries;
-             end;
-             {$IfDef RecordHistogram} WriteLineToDebugFile('Loaded series n=' + IntToStr(NumVals) + '  ' + fName); {$EndIf}
-          end;
-
-
-         function ProcessSeries(fName : PathStr) : boolean;
-         var
-            inf : file;
-            v   : array[1..2] of float32;
-            i,j,ax,ay : integer;
-         begin
-            NumVals := GetFileSize(fName) div SizeOf(float32);
-            AssignFile(inf,fName);
-            reset(inf,sizeOf(float32));
-            BlockRead(inf,values^[0],NumVals);
-            closeFile(inf);
-
-            Result := (NumVals > 1) and ((GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) > 0.00001);
-            if Result then begin
-               for j := 0 to MaxBins do Bins[j] := 0;
-               StartProgress('Histogram');
-               for i := 0 to pred(NumVals) do begin
-                  if (i mod 250 = 0) then UpdateProgressBar(i/NumVals);
-                  Value := Values^[i];
-                  j := round((Value - GraphDraw.MinHorizAxis) / HistogramBinSize);
-                  if (j >= 0) and (j <= HistogramNumBins) then inc(Bins[j]);
-               end;
-               EndProgress;
-               OpenDataFile(rfile);
-               if MDDef.FlipHistogram then begin
-                  ax := 2;
-                  ay := 1;
-               end
-               else begin
-                  ax := 1;
-                  ay := 2;
-               end;
-               for j := 0 to HistogramNumBins do begin
-                  v[ax] := GraphDraw.MinHorizAxis + ( j + 0.5) * HistogramBinSize;
-                  if HistogramGraphNumbers then v[ay] := Bins[j]
-                  else v[ay] := Bins[j] / NumVals * HistogramNumBins;
-                  if v[ay] > MaxCount then MaxCount := v[ay];
-                  (*
-                  if StackedPercents then begin
-                     if First then Results.Add(RealToString(v[ax],-12,-4) + ',' + RealToString(v[ay],-12,-4))
-                     else Results.Strings[j] := Results.Strings[j] + ',' + RealToString(v[ay],-12,-4);
-                  end;
-                  *)
-                  if (Bins[j] > 0) then begin
-                     BlockWrite(rfile,v,1);
-                  end;
-               end;
-               CloseFile(rfile);
-               First := false;
-            end;
-         end;
-
-begin
-      New(Values);
-      MinInSeries := 99e39;
-      MaxInSeries := -99e39;
-      GraphDraw.DataFilesPlotted.Clear;
-      {$IfDef RecordHistogram} WriteLineToDebugFile('Start file list processing'); {$EndIf}
-      for I := 0 to pred(GraphDraw.HistogramFileList.Count) do begin
-         {$IfDef RecordHistogram} WriteLineToDebugFile('Load series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
-         LoadSeries(GraphDraw.HistogramFileList.Strings[i]);
-      end;
-
-      if (HistogramBinSize > 0) then HistogramNumBins := succ(Round((MaxInSeries-MinInSeries) / HistogramBinSize));
-      if (HistogramNumBins > MaxBins) then HistogramNumBins := MaxBins;
-      Range := MaxInSeries-MinInSeries;
-      if (abs(Range) < 0.00001) then begin
-         MessageToContinue('Only one value in data set');
-         Close;
-         goto Cleanup;
-      end;
-
-      if MDDef.NoHistFreqLabels then l2 := ''
-      else begin
-         if HistogramGraphNumbers then l2 := 'Number of values'
-         else l2 := 'Concentration';
-         l2 := l2 + ' (Bin size ' + RealToString(HistogramBinSize,-8,-2) + ')';
-      end;
-
-      //if (Range > 0.001) and (Range < 0.01) then Incr := 0.005;
-      HistogramBinSize := (MaxInSeries-MinInSeries) / HistogramNumBins;
-      if (GraphDraw.MinHorizAxis < 0) and (GraphDraw.MaxHorizAxis > 0) then begin
-         //center a bin on zero, for histrograms of differences
-         NegBins := round(-GraphDraw.MinHorizAxis / HistogramBinSize);
-         GraphDraw.MinHorizAxis := -(NegBins + 0.5) * HistogramBinSize
-      end;
-
-      {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(HistogramNumBins) + '  ' + GraphDraw.AxisRange); {$EndIf}
-      First := true;
-      MaxCount := 0;
-      for I := 0 to pred(GraphDraw.HistogramFileList.Count) do begin
-         if ProcessSeries(GraphDraw.HistogramFileList.Strings[i]) and (i < MaxGraphSeries) then begin
-            {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + IntToStr(i) + ' ' + GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
-            GraphDraw.ShowLine[succ(i)] := true;
-         end;
-      end;
-      GraphDraw.MinVertAxis := 0;
-      GraphDraw.MaxVertAxis := MaxCount;
-CleanUp:;
-   Dispose(Values);
-   ShowDefaultCursor;
-   MDDef.FlipHistogram := false;
-end;
-
-
-function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
-    NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
-Label
-   CleanUp;
-var
-  i : integer;
-  l1,l2 : shortstring;
-  StackedPercents : boolean;
-begin
-   {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms in ' + ParamName + '  ' + TitleBar); {$EndIf}
-   Result := nil;
-   if (FileList.Count > 0) then begin
-      StackedPercents := (FileList.Count > 1);
-      Result := TThisBaseGraph.Create(Application);
-      Result.GraphDraw.HistogramFileList := FileList;
-      Result.GraphDraw.MinHorizAxis := Min;
-      Result.GraphDraw.MaxHorizAxis := Max;
-      Result.GraphDraw.HorizLabel := ParamName;
-      Result.HistogramBinSize := BinSize;
-      Result.HistogramNumBins := NumBins;
-      Result.HistogramGraphNumbers := GraphNumbers;
-      Result.GraphDraw.GraphType := gtMultHist;
-      Result.HistogramChanged := true;
-
-      if (LegendList <> Nil) then begin
-         Result.GraphDraw.LegendList := tStringList.Create;
-         for I := 0 to pred(LegendList.Count) do begin
-            Result.GraphDraw.LegendList.Add(LegendList.Strings[i]);
-            {$IfDef RecordHistogram} WriteLineToDebugFile('Series=' + IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
-         end;
-      end;
-      ShowHourglassCursor;
-      Result.Caption := TitleBar;
-      Result.GraphDraw.SetShowAllPoints(false);
-      Result.GraphDraw.ShowHorizAxis0 := true;
-
-      if MDDef.AskHistogramBins then begin
-         ReadDefault('Minimum value',Result.GraphDraw.MinHorizAxis);
-         ReadDefault('Maximum value',Result.GraphDraw.MaxHorizAxis);
-         ReadDefault('Number of bins',Result.HistogramNumBins);
-         //MinInSeries := Result.GraphDraw.MinHorizAxis;
-         //MaxInSeries := Result.GraphDraw.MaxHorizAxis;
-      end;
-
-      l1 := RemoveUnderscores(ParamName);
-
-      if MDDef.FlipHistogram then begin
-         Result.GraphDraw.HorizLabel := l2;
-         Result.GraphDraw.VertLabel := l1;
-      end
-      else begin
-         Result.GraphDraw.HorizLabel := l1;
-         Result.GraphDraw.VertLabel := l2;
-      end;
-
-      if (TColorList <> Nil) and (TColorList.Count > 0) then begin
-         for i := 1 to TColorList.Count do begin
-            {$IfDef RecordHistogramColors} WriteLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
-            if i in [0..255] then begin
-               Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
-               Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
-            end;
-         end;
-         for i := 1 to TColorList.Count do begin
-            if i <= 15 then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
-         end;
-      end;
-
-      {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}
-
-//10/29/23: the vertical axis is not being set, but crash if Result.AutoScaleAndRedrawDiagram(true,false,false,false);
-
-      Result.AutoScaleAndRedrawDiagram(false,false,false,false);
-
-      (*
-      if false and StackedPercents then begin
-      //2/23/2023, this is disabled because Graph3 is crashing; Graph2 had not been working either; this needs to be looked at
-         {$IfDef RecordHistogram} WriteLineToDebugFile('Start StackedPercents'); {$EndIf}
-         TStr := l1;
-         for I := 0 to pred(FileList.Count) do TStr := TStr + ',' + 'SERIES_' + IntToStr(succ(i));
-         Results.Insert(0,TStr);
-         fName := NextFileNumber(MDTempDir,l1 + '_hist_','.dbf');
-         db := StringList2CSVtoDB(Results,fName);
-         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Start Graph3, db=' + IntToStr(db)); {$EndIf}
-
-         Graph3 := StartStackedHistogram(DB,true);
-         Graph3.GraphDraw.VertLabel := l1 + ' percentages';
-         Graph3.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
-         Graph3.GraphDraw.MarginsGood := true;
-         Graph3.Caption := l1 + ' Category percentages in histogram bins';
-         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage call redraw: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
-         Graph3.RedrawDiagram11Click(Nil);
-         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage done: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
-
-         //Graph2 := StartStackedHistogram(DB,false);
-         //Graph2.GraphDraw.VertLabel := l1 + ' Counts';
-         //Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
-         //Graph2.GraphDraw.MarginsGood := true;
-         //Graph2.Caption := l1 + ' Category percentages in histogram bins';
-         //Graph2.RedrawDiagram11Click(Nil);
-         {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph counts: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
-
-         //Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
-         {$If Defined(RecordHistogram)} WriteLineToDebugFile('Reset Hist: ' +  Result.GraphDraw.AxisRange); {$EndIf}
-         //Result.GraphDraw.MarginsGood := true;
-         //Result.RedrawDiagram11Click(Nil);
-         {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done StackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
-      end;
-      *)
-   end;
-   if (LegendList <> Nil) then FreeAndNil(LegendList);
-end;
-
 
 procedure SetReasonableGraphSize;
 begin
@@ -1346,124 +1089,116 @@ var
    Color : TRGBTriple;
 begin
    {$IfDef RecordGrafDensity} WriteLineToDebugFile('TThisBaseGraph.Pointdensity1Click in, '); {$EndIf}
-   //ShowHourglassCursor;
+   CreateBitmap(Bitmap,succ(GraphDraw.XWindowSize),succ(GraphDraw.YWindowSize));
+   Bitmap.Canvas.Font := FontDialog1.Font;
 
-      CreateBitmap(Bitmap,succ(GraphDraw.XWindowSize),succ(GraphDraw.YWindowSize));
-      Bitmap.Canvas.Font := FontDialog1.Font;
+   DrawGraph(BitMap);
+   New(Counter);
+   for x := 0 to pred(Bitmap.Width) do
+      for y := 0 to pred(Bitmap.Height) do Counter^[x,y] := 0;
 
-      DrawGraph(BitMap);
-      New(Counter);
-      for x := 0 to pred(Bitmap.Width) do
-         for y := 0 to pred(Bitmap.Height) do Counter^[x,y] := 0;
-
-      new(Coords);
-      for i := 1 to GraphDraw.DataFilesPlotted.Count do begin
-         inf := GraphDraw.DataFilesPlotted.Strings[pred(i)];
-         {$IfDef RecordGrafDensity} WriteLineToDebugFile(inf); {$EndIf}
-         TotNum := GetFileSize(inf) div (2*SizeOf(float32));
-         assignFile(tf,inf);
-         reset(tf,2*SizeOf(float32));
-         if ShowGraphProgress then StartProgressAbortOption('Points');
-         NumDone := 0;
-         while not EOF(tf) do begin
-            BlockRead(tf,Coords^,ASize,Numread);
-            inc(NumDone,NumRead);
-            if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
-            for x := 1 to NumRead do begin
-               xf := Coords^[pred(2*x)];
-               yf := Coords^[2*x];
-               if GraphDraw.PtOnGraph(xf,yf) then inc(Counter^[GraphDraw.GraphX(xf),GraphDraw.GraphY(yf)]);
-            end;
+   new(Coords);
+   for i := 1 to GraphDraw.DataFilesPlotted.Count do begin
+      inf := GraphDraw.DataFilesPlotted.Strings[pred(i)];
+      {$IfDef RecordGrafDensity} WriteLineToDebugFile(inf); {$EndIf}
+      TotNum := GetFileSize(inf) div (2*SizeOf(float32));
+      assignFile(tf,inf);
+      reset(tf,2*SizeOf(float32));
+      if ShowGraphProgress then StartProgressAbortOption('Points');
+      NumDone := 0;
+      while not EOF(tf) do begin
+         BlockRead(tf,Coords^,ASize,Numread);
+         inc(NumDone,NumRead);
+         if ShowGraphProgress then UpdateProgressBar(NumDone/TotNum);
+         for x := 1 to NumRead do begin
+            xf := Coords^[pred(2*x)];
+            yf := Coords^[2*x];
+            if GraphDraw.PtOnGraph(xf,yf) then inc(Counter^[GraphDraw.GraphX(xf),GraphDraw.GraphY(yf)]);
          end;
-         EndProgress;
-         closeFile(tf);
       end;
-      Dispose(Coords);
+      EndProgress;
+      closeFile(tf);
+   end;
+   Dispose(Coords);
 
-      {$IfDef RecordGrafDensity} WriteLineToDebugFile('TThisBaseGraph.Pointdensity1Click point 2'); {$EndIf}
+   {$IfDef RecordGrafDensity} WriteLineToDebugFile('TThisBaseGraph.Pointdensity1Click counters set'); {$EndIf}
 
-      for y := 0 to pred(Bitmap.Height) do P0[y] := Bitmap.ScanLine[y];
-      if (DensityShow = dsAxis) then begin
-         for x := 0 to pred(Bitmap.Width) do begin
-            Max := 0;
-            for y := 0 to pred(Bitmap.Height) do begin
-               if Counter^[x,y] > Max then Max := Counter^[x,y];
-            end;
-            {$IfDef RecordGrafDensity} WriteLineToDebugFile('x=' + IntToStr(x) + '     Max=' + IntToStr(Max)); {$EndIf}
-            if Max > 0 then begin
-               for y := 0 to pred(Bitmap.Height) do begin
-                  if Counter^[x,y] > 0 then begin
-                     p0[y][x] := RainbowRGBFunct(100 * Counter^[x,y]/Max,0,100);
-                  end;
-               end;
-            end;
-         end;
-      end
-      else if (DensityShow = dsYAxis) then begin
-         {$IfDef RecordGrafDensity} WriteLineToDebugFile('DensityShow = dsYAxis'); {$EndIf}
+   for y := 0 to pred(Bitmap.Height) do P0[y] := Bitmap.ScanLine[y];
+   if (DensityShow = dsXAxis) then begin
+      {$IfDef RecordGrafDensity} WriteLineToDebugFile('DensityShow = dsXAxis'); {$EndIf}
+      for x := 0 to pred(Bitmap.Width) do begin
+         Max := 0;
          for y := 0 to pred(Bitmap.Height) do begin
-            Max := 0;
-            for x := 0 to pred(Bitmap.Width) do begin
-               if Counter^[x,y] > Max then Max := Counter^[x,y];
-            end;
-            {$IfDef RecordGrafDensity} WriteLineToDebugFile('y=' + IntToStr(y) + '  Max=' + IntToStr(Max)); {$EndIf}
-            if Max > 0 then begin
-               for x := 0 to pred(Bitmap.Width) do begin
-                  if Counter^[x,y] > 0 then begin
-                     p0[y][x] := RainbowRGBFunct(100 * Counter^[x,y]/Max,0,100);
-                  end;
+            if Counter^[x,y] > Max then Max := Counter^[x,y];
+         end;
+         {$IfDef RecordGrafDensityFull} WriteLineToDebugFile('x=' + IntToStr(x) + '     Max=' + IntToStr(Max)); {$EndIf}
+         if Max > 0 then begin
+            for y := 0 to pred(Bitmap.Height) do begin
+               if Counter^[x,y] > 0 then begin
+                  p0[y][x] := RainbowRGBFunct(100 * Counter^[x,y]/Max,0,100);
                end;
             end;
          end;
-      end
-      else begin
-         nsx := 0;
-         while succ(2*nsx) * GraphDraw.XPixelSize < MDDef.GraphDensityXBlock do inc(nsx);
-         nsy := 0;
-         while succ(2*nsy) * GraphDraw.YPixelSize < MDDef.GraphDensityXBlock do inc(nsy);
-         New(Neighborhood);
+      end;
+   end
+   else if (DensityShow = dsYAxis) then begin
+      {$IfDef RecordGrafDensity} WriteLineToDebugFile('DensityShow = dsYAxis'); {$EndIf}
+      for y := 0 to pred(Bitmap.Height) do begin
          Max := 0;
          for x := 0 to pred(Bitmap.Width) do begin
-            for y := 0 to pred(Bitmap.Height) do begin
-               Neighborhood^[x,y] := 0;
-               for i := -nsx to nsx do begin
-                  if (x+i >= 0) and (x+i < pred(Bitmap.Width)) then begin
-                      for j := -nsy to nsy do begin
-                         if (y+j >= 0) and (y+j < pred(Bitmap.Height)) then begin
-                             Neighborhood^[x,y] := Neighborhood^[x,y] + Counter^[x+i,y+j];
-                             if (Neighborhood^[x,y] > Max) then Max := Neighborhood^[x,y];
-                         end;
-                      end;
-                  end;
-               end;
-            end;
+            if Counter^[x,y] > Max then Max := Counter^[x,y];
          end;
-
-         {$IfDef RecordGrafDensity} WriteLineToDebugFile('Max=' + IntToStr(Max)); {$EndIf}
-
-         for y := 0 to pred(Bitmap.Height) do begin
+         {$IfDef RecordGrafDensityFull} WriteLineToDebugFile('y=' + IntToStr(y) + '  Max=' + IntToStr(Max)); {$EndIf}
+         if Max > 0 then begin
             for x := 0 to pred(Bitmap.Width) do begin
-               if Neighborhood^[x,y] > 0 then begin
-                  Color := RainbowRGBFunct(Neighborhood^[x,y],0,Max);
-                  p0[y][x] := Color;
+               if Counter^[x,y] > 0 then begin
+                  p0[y][x] := RainbowRGBFunct(100 * Counter^[x,y]/Max,0,100);
                end;
             end;
          end;
-         Dispose(NeighborHood);
-
-(*
-      if (GraphDraw.LLcornerText <> '') then begin
-         Bitmap.Canvas.Font.Color := clBlack;
-         Bitmap.Canvas.Brush.Color := clWhite;
-         Bitmap.Canvas.Brush.Style := bsClear;
-         Bitmap.Canvas.TextOut(1, Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LLcornerText), RemoveUnderScores(GraphDraw.LLcornerText));
       end;
+   end
+   else begin
+      nsx := 0;
+      nsy := 0;
+(*
+      while succ(2*nsx) * GraphDraw.XPixelSize < MDDef.GraphDensityXBlock do inc(nsx);
+      while succ(2*nsy) * GraphDraw.YPixelSize < MDDef.GraphDensityXBlock do inc(nsy);
 *)
-      GraphLabels(Bitmap);
+      New(Neighborhood);
+      Max := 0;
+      for x := 0 to pred(Bitmap.Width) do begin
+         for y := 0 to pred(Bitmap.Height) do begin
+            Neighborhood^[x,y] := 0;
+            for i := -nsx to nsx do begin
+               if (x+i >= 0) and (x+i < pred(Bitmap.Width)) then begin
+                   for j := -nsy to nsy do begin
+                      if (y+j >= 0) and (y+j < pred(Bitmap.Height)) then begin
+                          Neighborhood^[x,y] := Neighborhood^[x,y] + Counter^[x+i,y+j];
+                          if (Neighborhood^[x,y] > Max) then Max := Neighborhood^[x,y];
+                      end;
+                   end;
+               end;
+            end;
+         end;
+      end;
 
-      Image1.Picture.Graphic := Bitmap;
-      Bitmap.Free;
-      Dispose(Counter);
+      {$IfDef RecordGrafDensity} WriteLineToDebugFile('Max=' + IntToStr(Max)); {$EndIf}
+
+      for y := 0 to pred(Bitmap.Height) do begin
+         for x := 0 to pred(Bitmap.Width) do begin
+            if Neighborhood^[x,y] > 0 then begin
+               Color := RainbowRGBFunct(Neighborhood^[x,y],0,Max);
+               p0[y][x] := Color;
+            end;
+         end;
+      end;
+      Dispose(NeighborHood);
+   GraphLabels(Bitmap);
+
+   Image1.Picture.Graphic := Bitmap;
+   Bitmap.Free;
+   Dispose(Counter);
    end;
    {$IfDef RecordGrafDensity} WriteLineToDebugFile('TThisBaseGraph.Pointdensity1Click out'); {$EndIf}
 end;
@@ -2494,7 +2229,7 @@ var
                 end {while};
 
                if  (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) then begin
-                  //draws horizontal lines across the graph area for the major divisions
+                  //draws horizontal lines across graph area for major divisions
                   x := GraphDraw.Graphx(Percen-inc);
                   for i := GraphDraw.TopMargin to GraphDraw.yWindowSize-GraphDraw.BottomMargin do if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[x,i] := GraphDraw.AxisColor;
                end;
@@ -5462,21 +5197,16 @@ begin
                   CloseFile(tf);
                 end
                 else begin
-                   if (GraphDraw.GraphType = gtMultHist) and HistogramChanged then MultipleHistogramPrep;
+                   if (GraphDraw.GraphType = gtMultHist) and HistogramChanged then MultipleHistogramPrep(Self);
+
                    if (GraphDraw.GraphType = gtBoxPlot) then begin
                       DrawBoxPlot(Bitmap);
-                      //GraphLabels;
-                      //exit;
                    end
                    else if (GraphDraw.GraphType = gtScaledPieCharts) then begin
                       DrawScaledPieCharts(Bitmap);
-                      //GraphLabels;
-                      //exit;
                    end
                    else if (GraphDraw.GraphType = gtScaledColorSymbols) then begin
                       DrawScaledColoredSymbols(Bitmap);
-                      //GraphLabels;
-                      //exit;
                    end;
 
                    if (RangeGraphName <> '') then begin
@@ -5718,6 +5448,7 @@ begin
    {$EndIf}
 
    fit(x^,y^,n,a,B,siga,sigb,r);
+   GraphComputedR := r;
 
    {$IfDef ReverseFit} WriteLineToDebugFile('FitGraph, x,y:  ' + RealToString(a,18,4) +  RealToString(b,18,4) +   RealToString(r,18,4) + '   ' + IntToStr(n)); {$EndIf}
    Dispose(x);
@@ -5907,7 +5638,7 @@ end;
 
 procedure TThisBaseGraph.Xaxis1Click(Sender: TObject);
 begin
-   MakePointDensityGraph(dsAxis);
+   MakePointDensityGraph(dsXAxis);
 end;
 
 procedure TThisBaseGraph.Yaxis1Click(Sender: TObject);

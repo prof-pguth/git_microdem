@@ -506,6 +506,7 @@ procedure GetSpeedDistOptions;
    procedure PitSpireDefaults(var inMapOwner : tMapForm; PC : integer);
    procedure OptimaRegionsDefaults(DEM : integer);
    procedure GetGeomorphBlockOpts(WhatFor : tGeomporphBlock; DEM : integer; GridLimits : tGridLimits);
+   procedure CompareProgramOptions;
 {$EndIf}
 
 
@@ -639,6 +640,7 @@ uses
    USOutlines,
    PETMAR,PETMath,PETGraphColors, Petmar_ini_file,
    DEM_indexes,
+   Geomorph_compare_algorithms,
    Nevadia_Main;
 
 var
@@ -651,6 +653,14 @@ var
    FWT : integer;
 
 
+procedure CompareProgramOptions;
+var
+  AlgCompareForm: TAlgCompareForm;
+begin
+   AlgCompareForm := TAlgCompareForm.Create(Application);
+   AlgCompareForm.ShowModal;
+   AlgCompareForm.Destroy;
+end;
 
 procedure GetSpeedDistOptions;
 var

@@ -405,7 +405,7 @@ type
 
          function MinElevAroundPoint(xgrid,ygrid : int32; var z : float32) : boolean;
          function MaxElevAroundPoint(xgrid,ygrid : int32; var z : float32) : boolean;
-         procedure GetElevationsInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : bfarray32; IncludeSeaLevel : boolean = true);
+         procedure GetElevationsInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : bfarray32; var Min,Max : float32);
 
          procedure MoveToEGM2008(AddLocalVDatum,SubLocalVDatum : integer);
 
@@ -707,8 +707,8 @@ type
                function ContourLineCrossing(x,y : integer; z : float64) : boolean;
                procedure FractalBox(GridLimits: tGridLimits; var FracDim,r : float32; SkipDraw : boolean = false; CloseGraph : boolean = false);
                procedure EntireDEMFractalBox;
-               function CreateWholeDEMHistogram : TThisBaseGraph;
-               function CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
+               //function CreateWholeDEMHistogram : TThisBaseGraph;
+               //function CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
                procedure InitializeNormals(var NumPts : Integer);
                procedure DisposeNormals;
                function FigureEntropy : float64;
@@ -805,6 +805,10 @@ procedure VerticalDatumShiftWithVDATUM(AreaName : shortstring; DEM,db : integer;
 //procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = 1;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
+
+
+procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
+
 
 const
    DEMtooLargeString = 'DEM too large';
@@ -956,6 +960,69 @@ var
       WriteLineToDebugFile(Where + ' ' + AreaName + '  geo box  ' +  sfBoundBoxToString(DEMBoundBoxGeo) + ' proj box  ' +  sfBoundBoxToString(DEMBoundBoxProjected));
    end;
 {$EndIf}
+
+
+procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
+var
+   x,y  : integer;
+   Mult,Add,z : float32;
+begin
+    if (How = sgaMultiplyzvalues1) then begin
+       Mult := 1 / FeetToMeters;
+       ReadDefault('z multiplier',Mult);
+       DEMGlb[DEM].MultiplyGridByConstant(Mult);
+    end
+    else if (How = sgaDividezvalues1) then begin
+       Mult := 1 / FeetToMeters;
+       ReadDefault('z divisor',Mult);
+       DEMGlb[DEM].MultiplyGridByConstant(1/Mult);
+    end
+    else if (How = sgaRaiselowerzvalues1) then begin
+       Add := 32;
+       ReadDefault('z add to',Add);
+       DEMGlb[DEM].AddConstantToGrid(Add);
+    end
+    else begin
+       if (How = sgaArctangent1) then begin
+          Mult := 2;
+          ReadDefault('z multiplier with arctangent',Mult);
+       end;
+       Invalid := 0;
+       StartProgress('DEM math');
+       for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+          if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMGlb[DEM].DEMheader.NumCol));
+          for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
+             if DEMGlb[DEM].GetElevMetersOnGrid(x,y,z) then begin
+                if (How = sgaRadianstodegrees1) then DEMGlb[DEM].SetGridElevation(x,y,z/DegToRad);
+                if (How = sgaLogbase10transform1) then DEMGlb[DEM].SetGridElevation(x,y,log10(z));
+                if (How = sgaAbsolutevalue1) then DEMGlb[DEM].SetGridElevation(x,y, abs(z));
+                if (How = sgaRoundtointegers1) then DEMGlb[DEM].SetGridElevation(x,y, round(z));
+                if (How = sgaLntransform1) or (How = sgaLogbase10transform1) then begin
+                    if (z > 0) then begin
+                       if (How = sgaLntransform1) then DEMGlb[DEM].SetGridElevation(x,y,ln(z));
+                       if (How = sgaLogbase10transform1) then DEMGlb[DEM].SetGridElevation(x,y,log10(z));
+                    end
+                    else begin
+                       Inc(Invalid);
+                       DEMGlb[DEM].SetGridMissing(x,y);
+                    end;
+                end;
+                if (How = sgaTangentRadians1) then DEMGlb[DEM].SetGridElevation(x,y,Math.Tan(z));
+                if (How = sgaRaiselowerzvalues1) then DEMGlb[DEM].SetGridElevation(x,y, Add + z);
+                if (How = sgaTangentdegrees1) then DEMGlb[DEM].SetGridElevation(x,y,Math.Tan(z*DegToRad));
+                if (How = sgaSlopedegreestopercent1) then DEMGlb[DEM].SetGridElevation(x,y,100 * Math.Tan(z*DegToRad));
+                if (How = sgaArctangent1) then DEMGlb[DEM].SetGridElevation(x,y,arctan(Mult*z));
+             end
+             else begin
+                DEMGlb[DEM].SetGridMissing(x,y);
+                Inc(Invalid);
+             end;
+          end;
+       end;
+       EndProgress;
+    end;
+end;
+
 
 
 function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = 1;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;

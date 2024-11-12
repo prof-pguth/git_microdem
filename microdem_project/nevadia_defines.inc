@@ -27,7 +27,6 @@
 {$Define MICRODEM}
 {$Define VCL}
 {$Define RecordProblems}
-{$Define UseGrass}
 //{$Define RecordDEMIX}
 
 {$IfDef MSWindows}
@@ -37,21 +36,20 @@
    {$Define UseTCLientDataSet}
 {$EndIf}
 
-   {$Define RecordTime}
-   {$Define RecordIniMemoryOverwrite}
+{$Define RecordTime}
+{$Define RecordIniMemoryOverwrite}
 
-   {$Define IncludeBILWrite}
-   {$Define AllowGeomorphometry}
-   {$Define AllowDEMGeomorph}
-   {$Define AllowOddballDEMexports}
-   {$Define AllowOddballDEMs}
-   {$Define UseFireDacSQLlite}
+{$Define AllowGeomorphometry}
+{$Define AllowDEMGeomorph}
 
+{$Define UseFireDacSQLlite}
 
+{$Define ExOddballDEMexports}
+{$Define ExBILWrite}
+{$Define ExOddballDEMs}
 {$Define ExDRGimport}
 {$Define ExGeoPDF}
 {$Define ExWMS}
-{$Define ExMrSID}
 {$Define ExLandsatQA}
 {$Define ExWaveLengthHeight}
 {$Define ExDTED}

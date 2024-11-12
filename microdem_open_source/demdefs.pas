@@ -1580,10 +1580,21 @@ type
 
            GeomorphNameModifier : ShortString;
            GrainSampleSeparation : int16;
+
+
+       //comparing algorithms and programs
            PerfectR,
            PerfectMAvD,
            PerfectMAbD : float32;
 
+           CalcR,
+           CalcMAbD,
+           CalcMAvD,
+           CalcHistograms,
+           CalcScattergrams,
+           UseCalculatedOutside,
+           GDAL_SAGA_arcsec,
+           CompareShowMaps : boolean;
 
            RoughnessBox : byte;
 

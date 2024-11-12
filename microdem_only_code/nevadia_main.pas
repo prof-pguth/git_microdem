@@ -629,6 +629,8 @@ type
     AddEXIFtagsworkinprogress1: TMenuItem;
     N57: TMenuItem;
     Criteriaranges1: TMenuItem;
+    CompareUTMandgeographicslopes1: TMenuItem;
+    Howbigisanarcsecond1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1071,6 +1073,8 @@ type
     procedure UTMprojection1Click(Sender: TObject);
     procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
     procedure Criteriaranges1Click(Sender: TObject);
+    procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
+    procedure Howbigisanarcsecond1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1315,6 +1319,7 @@ uses
    Slider_sorter_form,
    NyqGraph,
    gdal_tools,
+   compare_geo_utm,
 
    PetImage_Form,
    TerSplsh,
@@ -1590,7 +1595,7 @@ end;
 procedure Twmdem.DatumshiftCanadianDEMs1Click(Sender: TObject);
 begin
    //DEMIX_vert_datum_code := 6647;
-   ShifDEMsto_UTM_WGS84_EGM2008(True);
+   ShiftDEMsto_UTM_WGS84_EGM2008(True);
 end;
 
 procedure Twmdem.DBFfile1Click(Sender: TObject);
@@ -2130,7 +2135,7 @@ var
          if Action = 'RESAMPAVG' then begin
             if OpenADEM(true) then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := DEMGlb[DEM].ResampleByAveraging(false, false,Outfile);
+               NewDEM := DEMGlb[DEM].ResampleByAveraging(false,Outfile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
             end;
          end;
@@ -2174,7 +2179,7 @@ var
 
       *)
 
-         if Action = 'LCP' then begin
+         if (Action = 'LCP') then begin
             LeastCostPathOptions(1);
          end;
 
@@ -2280,6 +2285,9 @@ begin
 
       PetImage.FullPaletteBitmap;
       AddFreeDiskSpaceToDebugFile;
+
+      //MDDef.PerfectMAbD := 0.05;
+      //MDDef.DefCurveMap := mtCurvature;
 
      {$IfDef ExGDAL}
      {$Else}
@@ -3915,6 +3923,7 @@ end;
 procedure Twmdem.CloseAlldataandwindows1Click(Sender: TObject);
 begin
    DEM_Manager.CloseAllWindowsAndData;
+   Closeallpictureviewwindows1Click(Sender);
    pt_cloud_opts_fm_Close;
    CloseGeoStatAnalysis;
 end;
@@ -4461,8 +4470,7 @@ var
 
       procedure DoPart(FirstDEM,LastDEM : integer);
       var
-         Lat,Long : float64;
-         xg,yg : float32;
+         Lat,Long,xg,yg : float64;
          fName : PathStr;
          i,j,Col,Row : integer;
       begin
@@ -5042,7 +5050,7 @@ procedure Twmdem.Seismicfencediagram1Click(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
    {$Else}
-       StartSeismicViewing;
+       SeismicTo3DView;
        DisplayHTMLTopic('html\fence_diagram.htm');
    {$EndIf}
 end;
@@ -5051,7 +5059,7 @@ procedure Twmdem.Seismicviewing1Click(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
    {$Else}
-      StartSeismicViewing;
+      SeismicTo3DView;
    {$EndIf}
 end;
 
@@ -5660,6 +5668,11 @@ begin
    end;
 end;
 
+procedure Twmdem.Howbigisanarcsecond1Click(Sender: TObject);
+begin
+   HowBigIsAnArcSecond;
+end;
+
 procedure Twmdem.SunViews(Which : integer);
 begin
    {$IfDef ExCartography}
@@ -6096,6 +6109,11 @@ end;
 procedure Twmdem.Compareconvergenceindexfortestarea1Click(Sender: TObject);
 begin
    OpenCopDEMandLandcoverForArea(false);
+end;
+
+procedure Twmdem.CompareUTMandgeographicslopes1Click(Sender: TObject);
+begin
+   CompareGeoUTM;
 end;
 
 procedure Twmdem.CompressDecompress1Click(Sender: TObject);

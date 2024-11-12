@@ -147,7 +147,6 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    procedure EditDEMHeader;
 
    procedure FastRedrawAllMaps;
-   //function CreateNewUTMGrid(DEMName : shortstring; {What : tCreateGrid;} bb : sfBoundBox; {Resolution : tDEMprecision;} Spacing : float64) : integer;
 
    function FileExistsErrorMessage(InName : PathStr) : boolean;
 
