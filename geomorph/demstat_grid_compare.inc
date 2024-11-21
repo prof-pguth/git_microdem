@@ -107,23 +107,22 @@ begin
 end;
 
 
-procedure MissingPointsInGrids(DEM1 : integer = 0; DEM2 : integer = 0);
+procedure MissingPointsInGrids(MapForm : tMapForm; DEM1 : integer = 0; DEM2 : integer = 0);
 var
    Incr,Col,Row : integer;
    Total : int64;
    Lat,Long,XGrid,YGrid : float64;
    z1,z2 : float32;
-   IdenticalGrids : boolean;
    GridLimits : tGridLimits;
    sl : tStringList;
    Name1,Name2 : shortstring;
 begin
    if (DEM1 = 0) and (DEM2 = 0) then GetTwoCompatibleGrids('DEM1, DEM2',false,DEM1,DEM2,false);
-   IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
-
-   if IdenticalGrids then begin
+   if DEMGlb[DEM1].SecondGridIdentical(DEM2) then begin
+      //{$If Defined(RecordProblems) or Defined(RecordDEMMapProj)}
+         WriteLineToDebugFile('MissingPointsInGrids, ' + DEMGlb[DEM1].AreaName + ' ' + DEMGlb[DEM1].DEMMapProj.GetProjName + '   ' + DEMGlb[DEM2].AreaName + ' ' + DEMGlb[DEM2].DEMMapProj.GetProjName);
+      //{$EndIf}
       Name1 := DEMGlb[DEM1].AreaName;
-
       while Length(Name1) > 10 do begin
          GetValidDBfieldname(Name1);
       end;
@@ -155,7 +154,7 @@ begin
          sl.Destroy;
          MessageToContinue('No points missing in just one grid');
       end
-      else DEMGlb[DEM1].SelectionMap.StringListToLoadedDatabase(sl, Petmar.NextFileNumber(MDTempDir, 'Missing_Data_Compare_', DefaultDBExt),true,false,true);
+      else MapForm.StringListToLoadedDatabase(sl, Petmar.NextFileNumber(MDTempDir, 'Missing_Data_Compare_', DefaultDBExt),true,false,true);
    end
    else begin
       MessageToContinue('Requires two idential grids');
@@ -332,12 +331,6 @@ begin
             if MDDef.HighlightDiffMap = 0 then mt := mtElevSpectrum
             else if MDDef.HighlightDiffMap = 1 then mt := mtGGRReflect
             else if MDDef.HighlightDiffMap = 2 then mt := mtDifferenceDiverge;
-(*
-               mt := mtElevGray;
-               MDDef.ElevPalName := 'CET-D08';
-            end
-            else mt := mtDifferenceDiverge;
-*)
             DEMGlb[Result].SetupMap(true,mt);
             if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
                DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);

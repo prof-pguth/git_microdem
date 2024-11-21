@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1395
+  ClientHeight = 1678
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1368
+    Height = 1651
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -207,7 +207,7 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1323
+      Top = 1606
       Width = 3840
       Height = 41
       Align = alBottom
@@ -3802,6 +3802,13 @@ object MapForm: TMapForm
           OnClick = CurrentMapArea2Click
         end
       end
+      object Geomorphomtery1: TMenuItem
+        Caption = 'Geomorphomtery'
+        object Aspectbyslopecategories1: TMenuItem
+          Caption = 'Aspect by slope categories'
+          OnClick = Aspectbyslopecategories1Click
+        end
+      end
       object Geomorphometryanalysis1: TMenuItem
         Caption = 'Geomorphometry analysis'
         OnClick = Geomorphometryanalysis1Click
@@ -3892,6 +3899,7 @@ object MapForm: TMapForm
         end
         object Parametricisotropicsmoothing1: TMenuItem
           Caption = 'Parametric isotropic smoothing'
+          OnClick = Parametricisotropicsmoothing1Click
         end
         object Vectoraverage1: TMenuItem
           Caption = 'Vector average'
@@ -4347,6 +4355,25 @@ object MapForm: TMapForm
           OnClick = N3DdrapemultiplegridsonthisDEM1Click
         end
       end
+      object Twogridcomparisons: TMenuItem
+        Caption = 'Two grid comparisons'
+        object Scatterplotoftwogrids2: TMenuItem
+          Caption = 'Scatter plot of two grids'
+          OnClick = Scatterplotoftwogrids2Click
+        end
+        object Percentages1: TMenuItem
+          Caption = 'Co-occurrence, Percentages'
+          OnClick = Percentages1Click
+        end
+        object Counts1: TMenuItem
+          Caption = 'Co-occurrence, Counts'
+          OnClick = Counts1Click
+        end
+        object Missingdata1: TMenuItem
+          Caption = 'Missing data locations in one grid'
+          OnClick = Missingdata1Click
+        end
+      end
       object IDFeatures1: TMenuItem
         Caption = 'ID Features'
         object Createdatabase2: TMenuItem
@@ -4387,25 +4414,6 @@ object MapForm: TMapForm
         end
         object Creategrid1: TMenuItem
           Caption = 'Create grid'
-        end
-      end
-      object Coccurrenceoftwogrids1: TMenuItem
-        Caption = 'Two grid comparisons'
-        object Scatterplotoftwogrids2: TMenuItem
-          Caption = 'Scatter plot of two grids'
-          OnClick = Scatterplotoftwogrids2Click
-        end
-        object Percentages1: TMenuItem
-          Caption = 'Co-occurrence, Percentages'
-          OnClick = Percentages1Click
-        end
-        object Counts1: TMenuItem
-          Caption = 'Co-occurrence, Counts'
-          OnClick = Counts1Click
-        end
-        object Missingdata1: TMenuItem
-          Caption = 'Missing data locations in one grid'
-          OnClick = Missingdata1Click
         end
       end
       object Gridcorrelations2: TMenuItem
@@ -5592,6 +5600,13 @@ object MapForm: TMapForm
           Caption = 'All'
           OnClick = All3Click
         end
+        object N73: TMenuItem
+          Caption = '-'
+        end
+        object N74: TMenuItem
+          Caption = 'Overlay today'
+          OnClick = N74Click
+        end
       end
       object Annualsunrisesunset1: TMenuItem
         Caption = 'Annual length daylight'
@@ -5606,11 +5621,11 @@ object MapForm: TMapForm
         OnClick = Annualsolarelevation1Click
       end
       object Moonriseset1: TMenuItem
-        Caption = 'Moon rise/set'
+        Caption = 'Moon rise/set (Montenbruck and Pfleger 1991)'
         OnClick = Moonriseset1Click
       end
       object Moonposition1: TMenuItem
-        Caption = 'Moon position'
+        Caption = 'Moon position (USNO web site)'
         object oday2: TMenuItem
           Caption = 'Today'
           OnClick = oday2Click
@@ -5618,6 +5633,13 @@ object MapForm: TMapForm
         object oday3: TMenuItem
           Caption = 'Pick date'
           OnClick = oday3Click
+        end
+        object N75: TMenuItem
+          Caption = '-'
+        end
+        object N76: TMenuItem
+          Caption = 'Overlay today'
+          OnClick = N76Click
         end
       end
       object USWeatherForecast1: TMenuItem
@@ -6300,6 +6322,10 @@ object MapForm: TMapForm
         Caption = 'Flow line curvature (rotor)'
         OnClick = Flowlinecurvaturerotor1Click
       end
+      object Contourtorsion1: TMenuItem
+        Caption = 'Contour torsion'
+        OnClick = Contourtorsion1Click
+      end
       object Curvature3: TMenuItem
         Caption = 'Second order partial derivatives'
         OnClick = Curvature3Click
@@ -6805,9 +6831,6 @@ object MapForm: TMapForm
       Caption = 'Sun above the horizon'
       OnClick = Sunabovethehorizon2Click
     end
-    object Nightlights20161: TMenuItem
-      Caption = 'Night lights 2016'
-    end
   end
   object PopupMenu19: TPopupMenu
     Left = 1040
@@ -6987,6 +7010,10 @@ object MapForm: TMapForm
       Caption = 'Compare tangential curvature'
       OnClick = Comparetangentialcurvature1Click
     end
+    object Comparecontourtorsion1: TMenuItem
+      Caption = 'Compare contour torsion'
+      OnClick = Comparecontourtorsion1Click
+    end
     object N69: TMenuItem
       Caption = '-'
     end
@@ -7013,8 +7040,12 @@ object MapForm: TMapForm
       Caption = '-'
     end
     object CompareMICRODEMslopealgorithms1: TMenuItem
-      Caption = 'Compare MICRODEM slope algorithms'
+      Caption = 'Compare MICRODEM slope algorithms (2 windows)'
       OnClick = CompareMICRODEMslopealgorithms1Click
+    end
+    object Compareworkinggeographicslopealgorithms1: TMenuItem
+      Caption = 'Compare working geographic slope algorithms'
+      OnClick = Compareworkinggeographicslopealgorithms1Click
     end
     object CompareGDALslopespacingapproximations1: TMenuItem
       Caption = 'Compare GDAL slope spacing approximations'

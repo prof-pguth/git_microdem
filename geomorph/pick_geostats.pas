@@ -575,7 +575,7 @@ procedure TPickGeoStat.DifferenClick(Sender: TObject);
 begin
    {$IfDef RecordMoments} WriteLineToDebugFile('TPickGeoStat.DifferenClick, moments'); {$EndIf}
    MDDef.CountHistograms:= false;
-   ElevMomentReport(DEMSWanted,GroupTitle,Memo1,False,GridLimits,CurDEM);
+   ElevMomentReport(DEMSWanted,GroupTitle,false,CurDEM,Memo1);
 end;
 
 procedure TPickGeoStat.BitBtn6Click(Sender: TObject);
@@ -625,7 +625,7 @@ end;
 
 procedure TPickGeoStat.Button13Click(Sender: TObject);
 begin
-   ElevMomentReport(DEMSWanted,'',Memo1,true,GridLimits,CurDEM);
+   ElevMomentReport(DEMSWanted,'',true,CurDEM,Memo1);
 end;
 
 procedure TPickGeoStat.Button14Click(Sender: TObject);
@@ -692,7 +692,7 @@ procedure TPickGeoStat.Button2Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to 4 do ReadDefault('Slope boundary ' + i.ToString,MdDef.GeomorphSlopeCut[i]);
+   for i := 1 to 6 do ReadDefault('Slope boundary ' + i.ToString,MdDef.GeomorphSlopeCut[i]);
 end;
 
 procedure TPickGeoStat.Button5Click(Sender: TObject);
@@ -851,6 +851,4 @@ end;
 initialization
    PickGeostat := Nil;
 finalization
-   {$IfDef RecordGeostats} WriteLineToDebugFile('RecordGeostats active in pick_geostats'); {$EndIf}
-   {$IfDef NoParallelFor} WriteLineToDebugFile('NoParallelFor active in pick_geostats'); {$EndIf}
 end.

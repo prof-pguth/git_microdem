@@ -1071,7 +1071,7 @@ begin
     case RegVars.Registration of
        RegTIN      : Result := 'Delauney TIN registration';
        RegNone     : Result := 'No registration';
-       RegProjection : Result := 'Data projection: ' + ImageMapProjection.GetProjectionName;
+       RegProjection : Result := 'Data projection: ' + ImageMapProjection.GetProjName;
     end;
 end;
 
@@ -2678,7 +2678,7 @@ begin
    end;
   {$IfDef RecordUTM} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + ' UTM zone=' + IntToStr(ImageMapProjection.projUTMzone)); {$EndIf}
 
-   {$If Defined(RecordLoadSat) or Defined(RecordEOBrowser)} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + '  can enhance=' + TrueOrFalse(CanEnhance) + '  ' + ImageMapProjection.GetProjectionName); {$EndIf}
+   {$If Defined(RecordLoadSat) or Defined(RecordEOBrowser)} WriteLineToDebugFile('tSatImage.Create out ' + SceneBaseName + '  can enhance=' + TrueOrFalse(CanEnhance) + '  ' + ImageMapProjection.GetProjName); {$EndIf}
 end;
 
 
@@ -2815,24 +2815,6 @@ initialization
    NumSatImageOpen := 0;
    TreatThisAsSingleTif := false;
 finalization
-   {$IfDef RecordGetSatRow} WriteLineToDebugFile('RecordGetSatRowProblems active in DEMeros, serious performance hit'); {$EndIf}
-   {$IfDef RecordWorldFile} WriteLineToDebugFile('RecordWorldFileProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordHistogram} WriteLineToDebugFile('RecordHistogramProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSat} WriteLineToDebugFile('RecordSatProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSatColor} WriteLineToDebugFile('RecordSatColorProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSatInterpolateColor} WriteLineToDebugFile('RecordSatInterpolateColorProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSatFrame} WriteLineToDebugFile('RecordSatFrameProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordLoadSat} WriteLineToDebugFile('RecordLoadSatProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordTMSat} WriteLineToDebugFile('RecordTMSatProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSatRegistration} WriteLineToDebugFile('RecordSatRegistrationProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordSatTimeSeries} WriteLineToDebugFile('RecordSatTimeSeries active in DEMeros'); {$EndIf}
-   {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDAL active in DEMeros'); {$EndIf}
-   {$IfDef RecordSpectralLibraryGraph} WriteLineToDebugFile('RecordSpectralLibraryGraph active in DEMeros'); {$EndIf}
-   {$IfDef RecordScattergram} WriteLineToDebugFile('RecordSpectralLibraryGraph active in DEMeros'); {$EndIf}
-   {$IfDef RecordLoadClass} WriteLineToDebugFile('RecordLoadClassProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in DEMeros'); {$EndIf}
-   {$IfDef RecordDrawSatOnMap} WriteLineToDebugFile('RecordDrawSatOnMap active in DEMeros'); {$EndIf}
-   {$IfDef RecordKeyDraw} WriteLineToDebugFile('RecordKeyDraw active in DEMEROS'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demeros out'); {$EndIf}
 end {unit}.
 

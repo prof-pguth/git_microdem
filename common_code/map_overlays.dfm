@@ -4,8 +4,8 @@ object MapOverlayForm: TMapOverlayForm
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Map Overlays'
-  ClientHeight = 684
-  ClientWidth = 257
+  ClientHeight = 682
+  ClientWidth = 293
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,9 +17,9 @@ object MapOverlayForm: TMapOverlayForm
   OnCreate = FormCreate
   TextHeight = 13
   object Panel1: TPanel
-    Left = 1
-    Top = 0
-    Width = 254
+    Left = 0
+    Top = -5
+    Width = 261
     Height = 112
     TabOrder = 0
     object SpeedButton1: TSpeedButton
@@ -151,7 +151,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel2: TPanel
     Left = 0
     Top = 113
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 1
     object BitBtn1: TBitBtn
@@ -189,7 +189,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel3: TPanel
     Left = 0
     Top = 147
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 2
     object BitBtn2: TBitBtn
@@ -233,7 +233,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel4: TPanel
     Left = 0
     Top = 181
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 3
     object BitBtn3: TBitBtn
@@ -277,7 +277,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel5: TPanel
     Left = 0
     Top = 215
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 4
     object BitBtn4: TBitBtn
@@ -315,7 +315,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel6: TPanel
     Left = 1
     Top = 249
-    Width = 220
+    Width = 260
     Height = 28
     TabOrder = 5
     object BitBtn5: TBitBtn
@@ -352,12 +352,13 @@ object MapOverlayForm: TMapOverlayForm
   end
   object Panel7: TPanel
     Left = 0
-    Top = 643
-    Width = 257
+    Top = 641
+    Width = 293
     Height = 41
     Align = alBottom
     TabOrder = 6
-    ExplicitTop = 614
+    ExplicitTop = 643
+    ExplicitWidth = 257
     object OKBtn: TBitBtn
       Left = 3
       Top = 6
@@ -425,7 +426,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel8: TPanel
     Left = 0
     Top = 283
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 7
     object BitBtn11: TBitBtn
@@ -463,7 +464,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel10: TPanel
     Left = 0
     Top = 351
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 8
     object BitBtn14: TBitBtn
@@ -501,7 +502,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel11: TPanel
     Left = 0
     Top = 382
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 9
     object BitBtn17: TBitBtn
@@ -539,7 +540,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel13: TPanel
     Left = 0
     Top = 416
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 10
     object BitBtn21: TBitBtn
@@ -577,7 +578,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel14: TPanel
     Left = 1
     Top = 450
-    Width = 220
+    Width = 260
     Height = 28
     TabOrder = 11
     object BitBtn23: TBitBtn
@@ -615,7 +616,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel12: TPanel
     Left = 0
     Top = 518
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 12
     object BitBtn19: TBitBtn
@@ -672,7 +673,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel9: TPanel
     Left = 1
     Top = 484
-    Width = 220
+    Width = 260
     Height = 28
     TabOrder = 13
     object BitBtn12: TBitBtn
@@ -710,7 +711,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel17: TPanel
     Left = 1
     Top = 317
-    Width = 220
+    Width = 260
     Height = 28
     TabOrder = 14
     object BitBtn29: TBitBtn
@@ -757,7 +758,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel18: TPanel
     Left = 0
     Top = 552
-    Width = 220
+    Width = 261
     Height = 28
     TabOrder = 15
     object BitBtn32: TBitBtn
@@ -804,7 +805,7 @@ object MapOverlayForm: TMapOverlayForm
   object Panel19: TPanel
     Left = 2
     Top = 586
-    Width = 220
+    Width = 259
     Height = 28
     TabOrder = 16
     object BitBtn34: TBitBtn

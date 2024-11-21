@@ -173,7 +173,7 @@ function tDEMDataSet.GetElevMetersOnGrid(x,y : integer; var z  : float32) : bool
 begin
    z := ThisDEMMissingValue;
    Result := false;
-   if GridInDataSet(x,y) then begin
+   if GridInDataSetInteger(x,y) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then z := ShortFloatElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = SmallIntDEM) then z := SmallIntElevations^[x]^[y]
       else if (DEMheader.DEMPrecision = WordDEM) then z := WordElevations^[x]^[y]
@@ -285,7 +285,7 @@ end;
 
 function tDEMDataSet.MissingDataInGrid(XGrid,YGrid : integer) :  boolean;
 begin
-   if GridInDataSet(xgrid,ygrid) then begin
+   if GridInDataSetInteger(xgrid,ygrid) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then Result := abs(ShortFloatElevations^[xgrid]^[ygrid] - ThisDEMMissingValue) < 0.001
       else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := SmallIntElevations[xgrid]^[ygrid] = MaxSmallInt
       else if (DEMheader.DEMPrecision = WordDEM) then Result := WordElevations^[xgrid]^[ygrid] = MaxWord
@@ -340,18 +340,18 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
          if GetElevMeters(Col,Row,z) then begin
-            //if (IncludeSeaLevel) or (abs(z) > 0.0000001) then begin
-               Values[NPts] := z;
-               inc(NPts);
-            //end;
+            Values[NPts] := z;
+            inc(NPts);
          end;
          inc(Row,Incr);
       end;
       inc(Col,Incr);
    end;
-   Petmath.HeapSort(NPts,Values);
-   Max := Values[pred(NPts)];
-   Min := Values[0];
+   if (NPts > 0) then begin
+      Petmath.HeapSort(NPts,Values);
+      Max := Values[pred(NPts)];
+      Min := Values[0];
+   end;
    {$IfDef RecordMoments} WriteLineToDebugFile('tDEMDataSet.GetElevationsInLongArray out'); {$EndIf}
 end;
 
@@ -360,7 +360,7 @@ function tDEMDataSet.SetGridElevation(Col,Row : int32; z : float64) : boolean;
 var
    zi : int64;
 begin
-   Result := GridInDataSet(Col,Row);
+   Result := GridInDataSetInteger(Col,Row);
    if Result then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then ShortFloatElevations^[Col]^[Row] := z
       else if (DEMheader.DEMPrecision = ByteDEM) then begin
@@ -398,7 +398,7 @@ end;
 
 procedure tDEMDataSet.SetGridMissing(Col,Row : int32);
 begin
-   if GridInDataSet(Col,Row) then begin
+   if GridInDataSetInteger(Col,Row) then begin
       if (DEMheader.DEMPrecision = FloatingPointDEM) then ShortFloatElevations^[Col]^[Row] := ThisDEMMissingValue
       else if (DEMheader.DEMPrecision = ByteDEM) then ByteElevations^[Col]^[Row] := ThisDEMMissingValue
       else if (DEMheader.DEMPrecision = WordDEM) then WordElevations^[Col]^[Row] := ThisDEMMissingValue

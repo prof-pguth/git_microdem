@@ -484,7 +484,7 @@ var
    Bitmap,Bitmap2 : tMyBitmap;
    Table : tMyData;
    TStr : shortString;
-   i,j : integer;
+   x1,y1,x2,y2,i,j : integer;
    MinVal,MaxVal : float64;
    r,delta,value,Perfect : float64;
    ShowHeader : boolean;
@@ -525,7 +525,7 @@ begin
       Table := tMyData.Create(fName);
 
       if (DoR = gcmR) then begin
-         if (MaxVal > MDDef.PerfectR) then begin
+         if (MaxVal > MDDef.PerfectR) and (MDDef.PerfectR > 0) then begin
             delta := (MDDef.PerfectR-MinVal) / pred(Table.TotRecsInDB);
             Table.Edit;
             Table.SetFieldByNameAsFloat('MAX',MaxVal);
@@ -610,8 +610,15 @@ begin
          TStr := RemoveUnderscores(StringGrid1.Cells[0,j]);
          Bitmap.Canvas.TextOut(LeftOffset - 5 - Bitmap.Canvas.TextWidth(TStr),LeftOffset+5 + pred(j) * BoxSize,TStr);
          r := StrToFloat(StringGrid1.Cells[i,j]);
-         if (i=j) {and (r > 0.9999999)} then begin
-            Bitmap.Canvas.Brush.Color := clWhite;
+         x1 := LeftOffset + pred(i)*BoxSize;
+         y1 := LeftOffset + pred(j)*BoxSize;
+         x2 := LeftOffset + (i)*BoxSize;
+         y2 := LeftOffset + (j)*BoxSize;
+         if (i=j) then begin
+            //Bitmap.Canvas.Brush.Color := clWhite;
+            Bitmap.Canvas.MoveTo(x1,y1);  Bitmap.Canvas.LineTo(x2,y2);
+            Bitmap.Canvas.MoveTo(x1,y2);  Bitmap.Canvas.LineTo(x2,y1);
+            Bitmap.Canvas.Brush.Style := bsClear;
          end
          else begin
             if (Table = Nil) then begin
@@ -626,9 +633,9 @@ begin
                 end;
                 Bitmap.Canvas.Brush.Color := Table.TColorFromTable;
             end;
+            Bitmap.Canvas.Brush.Style := bsSolid;
          end;
-         Bitmap.Canvas.Brush.Style := bsSolid;
-         Bitmap.Canvas.Rectangle(LeftOffset + pred(i)*BoxSize,LeftOffset + pred(j)*BoxSize,LeftOffset + (i)*BoxSize,LeftOffset + (j)*BoxSize );
+         Bitmap.Canvas.Rectangle(x1,y1,x2,y2);
       end;
    end;
    GetImagePartOfBitmap(Bitmap);

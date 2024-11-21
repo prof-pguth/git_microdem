@@ -33,7 +33,7 @@ var
             {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM error, ' + DEMFileName); {$EndIf}
          end;
          TiffImage.Destroy;
-         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM out, DEM=' + DEMMapProj.GetProjectionName); {$EndIf}
+         {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM out, DEM=' + DEMMapProj.GetProjName); {$EndIf}
       end;
    {$EndIf}
 
@@ -247,9 +247,9 @@ var
              WriteNewFormatDEM(DEMFileName);
           end;
           {$IfDef TrackDEMCorners} WriteDEMCornersToDebugFile('Read MD format'); {$EndIf}
-          {$IfDef RecordReadMDDEM} writeLineToDebugFile('Read DEM ' + AreaName + ' ' + DEMmapProj.GetProjectionName); DEMmapProj.ProjectionParamsToDebugFile('Ending read DEM'); {$EndIf}
+          {$IfDef RecordReadMDDEM} writeLineToDebugFile('Read DEM ' + AreaName + ' ' + DEMmapProj.GetProjName); DEMmapProj.ProjectionParamsToDebugFile('Ending read DEM'); {$EndIf}
           {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('Leaving Read DEM Now, Digitize Datum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
-          {$IfDef RecordDEMmapProj} WriteLineToDebugFile('ReadDEM out, ' + DEMmapProj.GetProjectionName); {$EndIf}
+          {$IfDef RecordDEMmapProj} WriteLineToDebugFile('ReadDEM out, ' + DEMmapProj.GetProjName); {$EndIf}
        end
        else begin
           {$IfDef RecordReadMDDEM} WriteLineToDebugFile('NOT acceptable MD DEM, Header=' + TStr); {$EndIf}
@@ -373,7 +373,7 @@ begin {tDEMDataSet.ReadDEMNow}
       {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow after ReadTIFFDEM, dem map proj WKT=' + IntToStr(Length(DEMMapProj.wktString)) + ' dem header WKT=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
 
 
-      {$If Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMmapProj.GetProjectionName); {$EndIf}
+      {$If Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMmapProj.GetProjName); {$EndIf}
       {$If Defined(RecordUKOS)}
          if (DEMmapProj.pName = UK_OS) then begin
             WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + KeyDEMParams(true));
@@ -729,7 +729,7 @@ begin
       fName2 := ChangeFileExt(FileName,'.prj');
       if not FileExists(fName2) then fName2 := ChangeFileExt(FileName,'.wkt');
       if FileExists(fName2) then begin
-         DEMMapProj.InitializeProjectionFromWKTFile(fName2);
+         DEMMapProj.InitProjFromWKTFile(fName2);
       end;
 
       assignFile(InputFile,FileName);
@@ -789,7 +789,7 @@ begin
       else if (abs(xBase) > 180) then begin
          fName2 := Dir + Name + '.prj';
          if FileExists(fName2) then begin
-            DEMMapProj.InitializeProjectionFromWKTfile(fName2);
+            DEMMapProj.InitProjFromWKTfile(fName2);
             DEMMapProj.DefineDatumFromUTMZone(DEMMapProj.h_DatumCode,GetUTMZone(DEMMapProj.Long0 / DegToRad),MDDef.DefaultLatHemi,'read dem 3');
          end
          else if not DEMMapProj.CheckForAllInDirectoryWKT(Dir) then begin
@@ -870,16 +870,16 @@ begin
          WriteLineToDebugFile('LoadNewDEM NewArea over, ' + DEMGlb[WantedDEM].AreaName + ' ' +  DEMGlb[WantedDEM].DEMmapProj.h_DatumCode + ' ' +
            StringFromDatumCode(DEMGlb[WantedDEM].DEMheader.DigitizeDatum));
       {$EndIf}
-      {$IfDef RecordDEMmapProj} WriteLineToDebugFile('After NewArea in LoadNewDEM, DEM proj wktstring=' + DEMGlb[WantedDEM].DEMmapProj.GetProjectionName); {$EndIf}
+      {$IfDef RecordDEMmapProj} WriteLineToDebugFile('After NewArea in LoadNewDEM, DEM proj wktstring=' + DEMGlb[WantedDEM].DEMmapProj.GetProjName); {$EndIf}
 
       Result := true;
       if CreateMap then begin
         {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM start create map' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
         {$IfDef VCL}
-           {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM 2 SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjectionName); {$EndIf}
+           {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM 2 SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjName); {$EndIf}
            CreateDEMSelectionMap(WantedDEM,DrawTheMap,MDDef.DefElevsPercentile,mtDEMBlank);
            {$IfDef RecordZRange} WriteLineToDebugFile('LoadNewDEM Selection map over, '+ DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
-           {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM done SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjectionName); {$EndIf}
+           {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM done SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjName); {$EndIf}
             if MDDef.USOutlinesOnDEMs then begin
                AddOrSubtractOverlay(DEMGlb[WantedDEM].SelectionMap,ovoUSOUtlines,true);
                DEMGlb[WantedDEM].SelectionMap.DoFastMapRedraw;

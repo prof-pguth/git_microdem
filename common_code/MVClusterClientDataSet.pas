@@ -11169,6 +11169,4 @@ end;
 
 initialization
 finalization
-   {$IfDef LogOps} WriteLineToDebugFile('LogOps active in MVClusterClientDataSet'); {$EndIf}
-   {$IfDef LogResults} WriteLineToDebugFile('LogResults active in MVClusterClientDataSet'); {$EndIf}
 end.

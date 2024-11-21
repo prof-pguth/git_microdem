@@ -971,7 +971,7 @@ var
 
          procedure DoWKTfromVariableLengthRecord;
          begin
-            if LasProjDef.LasProj.InitializeProjectionFromWKTstring(ASCIIProjectionData) then begin
+            if LasProjDef.LasProj.InitProjFromWKTstring(ASCIIProjectionData) then begin
                LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
                {$If Defined(RecordWKT)} WriteLineToDebugFile('DoWKTfromVariableLengthRecord geobox=' + sfBoundBoxToString(LAS_LatLong_Box)); {$EndIf}
 
@@ -1109,7 +1109,7 @@ begin
          end;
 
         //10375 is for Whitebox, but it has bigger problems
-        {$IfDef RecordLASprojection} writeLineToDebugFile('Start processing: ' + LasProjDef.LasProj.GetProjectionName + ' ' + LasProjDef.LasProj.KeyDatumParams); {$EndIf}
+        {$IfDef RecordLASprojection} writeLineToDebugFile('Start processing: ' + LasProjDef.LasProj.GetProjName + ' ' + LasProjDef.LasProj.KeyDatumParams); {$EndIf}
          for i := 1 to LasHeader.NumVarLenRecs do begin
             if (VarLenRecHeader[i].RecordID = 34735) then begin
                NumGeotiffKeys := GeoKeys[0,4];
@@ -1150,7 +1150,7 @@ begin
                   end {with};
                end {for j};
             end;
-            {$IfDef RecordLASprojection} writeLineToDebugFile('After loop: ' + lasProjDef.LasProj.GetProjectionName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
+            {$IfDef RecordLASprojection} writeLineToDebugFile('After loop: ' + lasProjDef.LasProj.GetProjName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
             if (VarLenRecHeader[i].RecordID = 34737) or (VarLenRecHeader[i].RecordID = 2112) then begin
                ASCIIProjectionData := '';
                for J := 1 to VarLenRecHeader[i].RecLenAfterHeader do begin
@@ -1166,7 +1166,7 @@ begin
                else DoWKTfromVariableLengthRecord;
                {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)}  writeLineToDebugFile('34737  ASCII projection data=' + ASCIIProjectionData); {$EndIf}
             end;
-            {$IfDef RecordLASprojection} writeLineToDebugFile('End processing: ' + lasProjDef.LasProj.GetProjectionName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
+            {$IfDef RecordLASprojection} writeLineToDebugFile('End processing: ' + lasProjDef.LasProj.GetProjName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
          end;
       end;
 
@@ -1223,7 +1223,7 @@ begin
           {$IfDef RecordCreateEveryFile} WriteLineToDebugFile('No luck on projection'); {$EndIf}
           FileName := ExtractFilePath(LASFileName) + 'all.prj';
           if FileExists(fileName) then begin
-             LasProjDef.LasProj.InitializeProjectionFromWKTfile(fileName);
+             LasProjDef.LasProj.InitProjFromWKTfile(fileName);
           end
           else begin
              if not CheckProjectionFile then exit;
@@ -1243,7 +1243,7 @@ begin
           if (lasProjectionDefinition.LASProjection.ModelType = LasLatLong) then WriteLineToDebugFile('Lat/Long file');
           WriteLineToDebugFile('MeterScaleXFactor =' + RealToString(MeterXscaleFac,-18,-5) +  ' MeterScaleYFactor =' + RealToString(MeterYscaleFac,-18,-5) + ' MeterScaleZFactor =' + RealToString(MeterZscaleFac,-18,-5));
        {$EndIf}
-       {$IfDef RecordLASprojection} writeLineToDebugFile('End create: ' + lasProjDef.LasProj.GetProjectionName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
+       {$IfDef RecordLASprojection} writeLineToDebugFile('End create: ' + lasProjDef.LasProj.GetProjName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
    end
    else begin
       {$IfDef RecordCreateEveryFile} writeLineToDebugFile('tLAS_data.Create abort with missing ' + FileName); {$EndIf}
@@ -1673,7 +1673,7 @@ var
    TStr : tStringList;
 begin
    {$IfDef RecordLASfiles} WriteLineToDebugFile('tLAS_data.GetMetadata in'); {$EndIf}
-   {$IfDef RecordLASprojection} writeLineToDebugFile('tLAS_data.GetMetadata in: ' + lasProjDef.LasProj.GetProjectionName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
+   {$IfDef RecordLASprojection} writeLineToDebugFile('tLAS_data.GetMetadata in: ' + lasProjDef.LasProj.GetProjName + ' ' + lasProjDef.LasProj.KeyDatumParams); {$EndIf}
 
    Result := tStringList.Create;
    Result.Add('LAS header ' + ExtractFileName(LasFileName));
@@ -1749,7 +1749,7 @@ begin
       Result.Add('');
 
       TStr := Nil;
-      TStr := LasProjDef.LasProj.ProjectionParametersList;
+      TStr := LasProjDef.LasProj.ProjParamsList;
       for j := 0 to pred(TStr.Count) do Result.Add(TStr.Strings[j]);
       TStr.Free;
    end;
@@ -1769,21 +1769,6 @@ initialization
     AllowNoProjectionLAS := false;
 finalization
    {$IfDef NoInLine} writeLineToDebugFile('NoInLine active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASfiles} WriteLineToDebugFile('RecordLASfiles active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASheader} WriteLineToDebugFile('RecordLASheader active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASColors} WriteLineToDebugFile('RecordLAScolors active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASHist} WriteLineToDebugFile('RecordLASHist active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASheaderKeys} writeLineToDebugFile('RecordLASheaderKeys active in las_lidar'); {$EndIf}
-   {$IfDef RecordCreateEveryFile} writeLineToDebugFile('RecordCreateEveryFile active in las_lidar'); {$EndIf}
-   {$IfDef RecordMergeLASfiles} writeLineToDebugFile('RecordMergeLASfiles active in las_lidar'); {$EndIf}
-   {$IfDef RecordLAS_subset} writeLineToDebugFile('RecordLAS_subset active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASMemoryAlocations} writeLineToDebugFile('RecordLASMemoryAlocations active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASKML} writeLineToDebugFile('RecordLASKML active in las_lidar'); {$EndIf}
-   {$IfDef RecordCreateLASfiles} writeLineToDebugFile('RecordCreateLASfiles active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASexport} writeLineToDebugFile('RecordLASexport active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASprojection} writeLineToDebugFile('RecordLASprojection active in las_lidar'); {$EndIf}
-   {$IfDef RecordLASplot} writeLineToDebugFile('RecordLASplot active in las_lidar'); {$EndIf}
-   {$IfDef RecordListFilesProcessed} writeLineToDebugFile('RecordListFilesProcessed active in las_lidar'); {$EndIf}
  end.
 
 

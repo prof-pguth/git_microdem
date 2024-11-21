@@ -96,7 +96,7 @@ uses
 
 procedure TContourOptions.Edit1Change(Sender: TObject);
 begin
-   CheckEditString(Edit1.Text, MDdef.DefaultContourInterval);
+   if (MapOwner <> Nil) then CheckEditString(Edit1.Text, MapOwner.MapDraw.MapOverlays.ConInt);
 end;
 
 procedure TContourOptions.ExpressContourOptions;
@@ -183,8 +183,8 @@ procedure TContourOptions.BitBtn8Click(Sender: TObject);
 begin
     QueryColor(BitBtn8,MDdef.ContourColor);
     MDdef.IndexColor := MDdef.ContourColor;
-    MDdef.TopContColor  := MDdef.ContourColor;
-    MDdef.BotContColor  := MDdef.ContourColor;
+    MDdef.TopContColor := MDdef.ContourColor;
+    MDdef.BotContColor := MDdef.ContourColor;
     MDdef.ZeroColor  := MDdef.ContourColor;
     ColorButtons;
 end;

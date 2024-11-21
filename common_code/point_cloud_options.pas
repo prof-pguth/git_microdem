@@ -933,7 +933,7 @@ begin
     else if (MDDef.LidarGridProjection in [ArcSecDEM,WKTDEM]) then begin
        LasData.GetShotCoordinatesLatLong(j,yApp,xApp);
        DEMGlb[DEM].LatLongDegreeToDEMGrid(yApp,xApp,xf,yf);
-       Result := DEMGlb[DEM].GridInDataSet(xf,yf);
+       Result := DEMGlb[DEM].GridInDataSetFloat(xf,yf);
     end;
     xgrid := round(xf);
     ygrid := round(yf);
@@ -1522,7 +1522,7 @@ var
                  xf := Col + xg * (ColHi - Col) div ff;
                  for yg := 0 to ff do begin
                     yf := Row + yg * (RowHi - Row) div ff;
-                    if DEMGlb[Result].GridInDataSet(xf,yf) then begin
+                    if DEMGlb[Result].GridInDataSetInteger(xf,yf) then begin
                        DEMGlb[Result].DEMGridToUTM(xf,yf,xutm,yutm);
                        {$IfDef ShowNewGridsMap} BaseMap.MapDraw.UTMtoScreen(xutm,yutm,xp,yp); ScreenSymbol(BaseMap.Image1.Canvas,xp,yp,FilledBox,3,claRed); {$EndIf}
                        CompareValueToExtremes(yutm,bb.ymin,bb.ymax);
@@ -4242,11 +4242,4 @@ end;
 initialization
    pt_cloud_opts_fm := Nil;
 finalization
-   {$IfDef RecordLASfiles} WriteLineToDebugFile('RecordLASfiles active in point_cloud_options'); {$EndIf}
-   {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('RecordPointCloudViewing active in point_cloud_options'); {$EndIf}
-   {$IfDef RecordPointCloudOptionsForm} WriteLineToDebugFile('RecordPointCloudOptionsForm active in point_cloud_options'); {$EndIf}
-   {$IfDef RecordLASfilesRedraw} WriteLineToDebugFile('RecordLASfilesRedraw active in point_cloud_options'); {$EndIf}
-   {$IfDef RecordMakeGrid} WriteLineToDebugFile('RecordMakeGrid active in point_cloud_options'); {$EndIf}
-   {$IfDef RecordLASOpen} WriteLineToDebugFile('RecordLASOpen active in point_cloud_options'); {$EndIf}
-   {$IfDef OGLexport} WriteLineToDebugFile('OGLexport active in point_cloud_options'); {$EndIf}
 end.

@@ -553,7 +553,7 @@ object ThisBaseGraph: TThisBaseGraph
         end
       end
       object FindpeakYvalueineachseries1: TMenuItem
-        Caption = 'Find peak Y value in each series'
+        Caption = 'Find peak Y value in each series (mode)'
         OnClick = FindpeakYvalueineachseries1Click
       end
       object Monthlyaverage1: TMenuItem
@@ -654,7 +654,6 @@ object ThisBaseGraph: TThisBaseGraph
       end
       object Copytoclipboard3: TMenuItem
         Caption = 'Copy to clipboard'
-        OnClick = Copytoclipboard3Click
       end
     end
     object Grayscalegraph1: TMenuItem

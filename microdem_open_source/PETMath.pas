@@ -13,9 +13,11 @@ unit PETMATH;
 
 {$I nevadia_defines.inc}
 
+
 //{$Def IncludeFriedman}  //this is not currently working.  It is for DEMIX, which uses the Jupyter notebook
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
+   //{$Define ExInlineConversions}
    //{$Define RecordFitProblems}
    //{$Define TrackNegStdDev}
    //{$Define TrackNAN}
@@ -104,9 +106,11 @@ procedure InterpolateProfile(NumPairs : integer; var y,z : Array of float64; Num
 procedure InterpolateProfileGapCheck(NumPairs : integer; var y,z : Array of float32; NumNewPairs : integer; var yn : Array of float32; var zn : Array of float32;  MaxGap : float64);
 
 procedure LongitudeAngleInRange(var Angle : float64); inline;
-function CompassAngleToMathAngle(Angle : float64) : float64; inline;
-function FindCompassAngleInRange(Angle : float64) : float64; inline; overload;
-function FindCompassAngleInRange(Angle : integer) : integer; inline; overload;
+function CompassAngleToMathAngle(Angle : float64) : float64; {$IfDef InlineConversions} inline; {$EndIf}
+
+function FindCompassAngleInRangeFloat64(Angle : float64) : float64; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
+function FindCompassAngleInRangeFloat32(Angle : float32) : float32; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
+function FindCompassAngleInRangeInteger(Angle : integer) : integer; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
 
 function AngularDistance(Angle1,Angle2 : float64) : float64;
 function AngularDiff(Angle1,Angle2 : float64) : float64;
@@ -1143,7 +1147,7 @@ end;
 
 function CompassAngleToMathAngle(Angle : float64) : float64;
 begin
-   Result := FindCompassAngleInRange(360 - (Angle - 90));
+   Result := FindCompassAngleInRangeFloat64(360 - (Angle - 90));
 end;
 
 
@@ -1519,17 +1523,24 @@ begin
 end;
 
 
-function FindCompassAngleInRange(Angle : float64) : float64;  {insures angle in range 0..360  }
+function FindCompassAngleInRangeFloat64(Angle : float64) : float64;  {insures angle in range 0..360  }
 begin
    Result := Angle;
-   while (Result > 360) do Result := Result - 360;
+   while (Result >= 360) do Result := Result - 360;
    while (Result < 0)   do Result := Result + 360;
 end;
 
-function FindCompassAngleInRange(Angle : integer) : integer;  {insures angle in range 0..360  }
+function FindCompassAngleInRangeFloat32(Angle : float32) : float32;  {insures angle in range 0..360  }
 begin
    Result := Angle;
-   while (Result > 360) do Result := Result - 360;
+   while (Result >= 360) do Result := Result - 360;
+   while (Result < 0)   do Result := Result + 360;
+end;
+
+function FindCompassAngleInRangeInteger(Angle : integer) : integer;  {insures angle in range 0..360  }
+begin
+   Result := Angle;
+   while (Result >= 360) do Result := Result - 360;
    while (Result < 0)   do Result := Result + 360;
 end;
 
@@ -2026,40 +2037,43 @@ end;
 
 
 procedure MomentsToStringGrid(StringGrid : tStringGrid; var OnLine,OnColumn : integer; Variable : shortString; MomentVar : tMomentVar; LongVersion : boolean = false);
+var
+   DM : integer;
 begin
+   if (MomentVar.maxz - MomentVar.minz < 0.5) then DM := 2 else DM := 1;
    StringGrid.Cells[0,OnLine] := Variable + ' n';
    StringGrid.Cells[OnColumn,OnLine] := IntToStr(MomentVar.NPts);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' mean';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.mean,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.mean,-18,-4*DM);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' std dev';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.std_dev,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.std_dev,-18,-4*DM);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' skewness';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.skew,-18,-4);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.skew,-18,-4*DM);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' kurtosis';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.curt,-18,-4);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.curt,-18,-4*DM);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' min';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.minz,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.minz,-18,-4*DM);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' max';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.maxz,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.maxz,-18,-4*DM);
    inc(OnLine);
    StringGrid.Cells[0,OnLine] := Variable + ' median';
-   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.median,-18,-2);
+   StringGrid.Cells[OnColumn,OnLine] := RealToString(MomentVar.median,-18,-4*DM);
    inc(OnLine);
    if LongVersion then begin
       StringGrid.Cells[0,OnLine+8] := Variable + ' avg dev';
-      StringGrid.Cells[OnColumn,OnLine+2] := RealToString(MomentVar.avg_dev,-18,-2);
+      StringGrid.Cells[OnColumn,OnLine+2] := RealToString(MomentVar.avg_dev,-18,-4*DM);
       inc(OnLine);
       StringGrid.Cells[0,OnLine+9] := Variable + ' Q1';
-      StringGrid.Cells[OnColumn,OnLine+9] := RealToString(MomentVar.Q1,-18,-2);
+      StringGrid.Cells[OnColumn,OnLine+9] := RealToString(MomentVar.Q1,-18,-4*DM);
       inc(OnLine);
       StringGrid.Cells[0,OnLine+10] := Variable + ' Q3';
-      StringGrid.Cells[OnColumn,OnLine+10] := RealToString(MomentVar.Q3,-18,-2);
+      StringGrid.Cells[OnColumn,OnLine+10] := RealToString(MomentVar.Q3,-18,-4*DM);
       inc(OnLine);
    end;
 end;
@@ -2077,10 +2091,10 @@ end;
 
 function MomentResultsToString(MomentVar : tMomentVar) : shortstring;
 begin
-   Result := ',' + RealToString(MomentVar.MinZ,-18,-4) + ','  + RealToString(MomentVar.PC1,-18,-4) + ','  + RealToString(MomentVar.PC2,-18,-4) + ',' + RealToString(MomentVar.PC5,-18,-4) + ',' +
-       RealToString(MomentVar.Q1,-18,-4) + ',' + RealToString(MomentVar.Median,-18,-4)  + ',' + RealToString(MomentVar.Mean,-18,-4)  + ',' + RealToString(MomentVar.Q3,-18,-4) + ',' +
-       RealToString(MomentVar.PC95,-18,-4)  + ',' + RealToString(MomentVar.PC98,-18,-4) + ',' + RealToString(MomentVar.PC99,-18,-4) + ',' +  RealToString(MomentVar.MaxZ,-18,-4) + ',' +
-       RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.std_dev,-8,2) + ',' + RealToString(MomentVar.skew,-18,-4) + ',' +  RealToString(MomentVar.curt,-18,-4) + ',' +
+   Result := ',' + RealToString(MomentVar.MinZ,-18,-4) + ','  + RealToString(MomentVar.PC1,-18,-6) + ','  + RealToString(MomentVar.PC2,-18,-6) + ',' + RealToString(MomentVar.PC5,-18,-6) + ',' +
+       RealToString(MomentVar.Q1,-18,-6) + ',' + RealToString(MomentVar.Median,-18,-6)  + ',' + RealToString(MomentVar.Mean,-18,-6)  + ',' + RealToString(MomentVar.Q3,-18,-6) + ',' +
+       RealToString(MomentVar.PC95,-18,-6)  + ',' + RealToString(MomentVar.PC98,-18,-6) + ',' + RealToString(MomentVar.PC99,-18,-6) + ',' +  RealToString(MomentVar.MaxZ,-18,-6) + ',' +
+       RealToString(MomentVar.avg_dev,-18,-6) + ',' + RealToString(MomentVar.std_dev,-8,6) + ',' + RealToString(MomentVar.skew,-18,-6) + ',' +  RealToString(MomentVar.curt,-18,-6) + ',' +
        IntToStr(MomentVar.NPts);
 end;
 
@@ -2119,8 +2133,6 @@ end;
 initialization
    {$IfDef MessageStartUpProblems} MessageToContinue('Startup petmath'); {$EndIf}
 finalization
-   {$IfDef RecordMatrixOps} WriteLineToDebugFile('RecordMatrixOps active in petmath'); {$EndIf}
-   {$IfDef RecordFitProblems} WriteLineToDebugFile('RecordFitProblems active in petmath'); {$EndIf}
 end {unit}.
 
 

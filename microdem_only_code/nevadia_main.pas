@@ -28,7 +28,6 @@
       //{$Define TrackFormCreate}
       //{$Define RecordSatLoad}
       //{$Define RecordFileOps}
-      //{$Define RecordGeoPDF}
       //{$Define RecordOpenVectorMap}
       //{$Define RecordShipwrecks}
       //{$Define Record3D}
@@ -631,6 +630,7 @@ type
     Criteriaranges1: TMenuItem;
     CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
+    Createcompositebitmap2: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1075,6 +1075,7 @@ type
     procedure Criteriaranges1Click(Sender: TObject);
     procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
+    procedure Createcompositebitmap2Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1159,7 +1160,7 @@ uses
 {$Else}
    Sun_Position,
    KoppenGr,
-   moon_montenbruk_pfleger,
+   //moon_montenbruk_pfleger,
 {$EndIf}
 
 {$IfDef ExConvert}
@@ -1881,6 +1882,17 @@ begin
       HypImageSpeedButton.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowOpenImagery;
       Openhyperspectralimagery1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowOpenImagery;
    {$EndIf}
+
+   {$IfDef CopALOSCompare}
+   {$Else}
+      N3OpenDEMs1.Visible := false;
+      COPALOScomparetoreference1.Visible := false;
+      COPALOShighlowgeomorphometry1.Visible := false;
+      Creatediffrencemaps1.Visible := false;
+      Pickdatadirectory1.Visible := false;
+      Pixelbypixelmapstatistics1.Visible := false;
+   {$EndIf}
+
 
    {$IfDef ExPointCloud}
       PClouder1.Visible := false;
@@ -2718,7 +2730,9 @@ end;
 
 procedure Twmdem.N3OpenDEMs1Click(Sender: TObject);
 begin
-   OpenHalfSecCopALOS(false);
+   {$IfDef CopALOSCompare}
+      OpenHalfSecCopALOS(false);
+   {$EndIf}
 end;
 
 procedure Twmdem.N41Click(Sender: TObject);
@@ -3408,13 +3422,18 @@ end;
 
 procedure Twmdem.COPALOScomparetoreference1Click(Sender: TObject);
 begin
-   CopAlosCompareReference;
+   {$IfDef CopALOSCompare}
+      CopAlosCompareReference;
+   {$EndIf}
+
 end;
 
 
 procedure Twmdem.COPALOShighlowgeomorphometry1Click(Sender: TObject);
 begin
-   HighLowCopAlosGeomorphometry;
+   {$IfDef CopALOSCompare}
+      HighLowCopAlosGeomorphometry;
+   {$EndIf}
 end;
 
 
@@ -3474,6 +3493,11 @@ begin
    RestoreBigCompositeBitmap('');
 end;
 
+procedure Twmdem.Createcompositebitmap2Click(Sender: TObject);
+begin
+   CreateBigCompositeBitmap;
+end;
+
 procedure Twmdem.CreateDEMsfromlidar1Click(Sender: TObject);
 begin
    CreateDEMsfromLidar;
@@ -3482,7 +3506,9 @@ end;
 
 procedure Twmdem.Creatediffrencemaps1Click(Sender: TObject);
 begin
-   CreateDifferenceMaps;
+   {$IfDef CopALOSCompare}
+      CreateDifferenceMaps;
+   {$EndIf}
 end;
 
 
@@ -4030,12 +4056,16 @@ end;
 
 procedure Twmdem.Pickdatadirectory1Click(Sender: TObject);
 begin
-   OpenHalfSecCopALOS(True);
+   {$IfDef CopALOSCompare}
+      OpenHalfSecCopALOS(True);
+   {$EndIf}
 end;
 
 procedure Twmdem.Pixelbypixelmapstatistics1Click(Sender: TObject);
 begin
-   PixelByPixelCopAlos;
+   {$IfDef CopALOSCompare}
+      PixelByPixelCopAlos;
+   {$EndIf}
 end;
 
 procedure Twmdem.Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
@@ -5233,7 +5263,7 @@ begin
 
    if (Sender = WKTprojection1) then begin
       Petmar.GetExistingFileName('wkt projection','*.prj;*.wkt',MDDef.WKTLidarProj);
-      ConvertForm.This_projection.InitializeProjectionFromWKTfile(MDDef.WKTLidarProj);
+      ConvertForm.This_projection.InitProjFromWKTfile(MDDef.WKTLidarProj);
       ConvertForm.Caption := ExtractFileNameNoExt(MDDef.WKTLidarProj);
    end;
 
@@ -6160,27 +6190,6 @@ initialization
    LockStatusBar := false;
    ClosingEverything := false;
 finalization
-   {$IfDef RecordMGT} WriteLineToDebugFile('RecordMGTProblems active in Wmaindem'); {$EndIf}
-   {$IfDef RecordDBFconvert} WriteLineToDebugFile('RecordDBFconvertProblems active in Wmaindem'); {$EndIf}
-   {$IfDef RecordLabs} WriteLineToDebugFile('RecordLabs active in Wmaindem'); {$EndIf}
-   {$IfDef RecordFormResize} WriteLineToDebugFile('RecordFormResize active in Wmaindem'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in Wmaindem'); {$EndIf}
-   {$IfDef RecordStartup} WriteLineToDebugFile('RecordStartupProblems active in Wmaindem'); {$EndIf}
-   {$IfDef RecordFormActivate} WriteLineToDebugFile('RecordFormActivate active in Wmaindem'); {$EndIf}
-   {$IfDef RecordMenu} WriteLineToDebugFile('RecordMenu active in Wmaindem'); {$EndIf}
-   {$IfDef RecordLag} WriteLineToDebugFile('RecordLagProblems active in Wmaindem'); {$EndIf}
-   {$IfDef RecordFullLag} WriteLineToDebugFile('RecordFullLagProblems active in Wmaindem'); {$EndIf}
-   {$IfDef FullDrainageBasinStats} WriteLineToDebugFile('FullDrainageBasinStats active in Wmaindem'); {$EndIf}
-   {$IfDef DrainageBasinStats} WriteLineToDebugFile('DrainageBasinStats active in Wmaindem'); {$EndIf}
-   {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblem active in WMainDEM'); {$EndIf}
-   {$IfDef RecordButton} WriteLineToDebugFile('RecordButtonProblems active in WMainDEM'); {$EndIf}
-   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('RecordOpenVectorMap active in WMainDEM'); {$EndIf}
-   {$IfDef RecordHelp} WriteLineToDebugFile('RecordHelp active in WMainDEM'); {$EndIf}
-   {$IfDef RecordGeostats} WriteLineToDebugFile('RecordGeostats active in WMainDEM'); {$EndIf}
-   {$IfDef RecordOceanography} WriteLineToDebugFile('RecordOceanography active in WMainDEM'); {$EndIf}
-   {$IfDef Record3D} WriteLineToDebugFile('Record3DProblems active in WMainDEM'); {$EndIf}
-   {$IfDef RecordCartography} WriteLineToDebugFile('RecordCartography active in WMainDEM'); {$EndIf}
-   {$IfDef RecordSatLoad} WriteLineToDebugFile('RecordSatLoad active in WMainDEM'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('WMainDEM finalization complete'); {$EndIf}
 end.
 

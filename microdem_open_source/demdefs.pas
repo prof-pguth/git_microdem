@@ -742,6 +742,7 @@ const
    euHighElevUnits = 67;  //same as last real one;  used only for loops through all the elevation units;
 
 const
+   VertCSUndefined = 0;
    VertCSEGM96 = 5773;
    VertCSEGM2008 = 3855;
    VertCSWGS84 = 4096;
@@ -1558,7 +1559,7 @@ type
            GrainAspects,
            GrainText : boolean;
            GeomorphNewDB,GeomorphAllDEMs : boolean;
-           GeomorphSlopeCut : array[1..4] of float32;
+           GeomorphSlopeCut : array[1..6] of float32;
            DoWavelength,
            FindWavelength,
            PlotCrest,
@@ -1583,6 +1584,18 @@ type
 
 
        //comparing algorithms and programs
+(*
+            SlopePerfectMAbD,
+            SlopePerfectMAvD,
+            SlopePerfectR,
+            SlopeDivergenceRange,
+
+            CurvePerfectMAbD,
+            CurvePerfectMAvD,
+            CurvePerfectR,
+            CurveDivergenceRange,
+*)
+
            PerfectR,
            PerfectMAvD,
            PerfectMAbD : float32;
@@ -1592,7 +1605,10 @@ type
            CalcMAvD,
            CalcHistograms,
            CalcScattergrams,
+           CalcBoxPlots,
+           CalcDiffMaps,
            UseCalculatedOutside,
+           CloseGridsAfterComputing,
            GDAL_SAGA_arcsec,
            CompareShowMaps : boolean;
 
@@ -1618,6 +1634,7 @@ type
            ShowNormalHistogram,
            ShowHistogramText,
            GraphsOfMoments,
+           StringGridWithMoments,
            LongMoments,
            CountHistograms,
            CumFreqNormAxis : boolean;
@@ -2048,6 +2065,7 @@ type
        MinImagePercentile,MaxImagePercentile,
        MinElevPercentile,MaxElevPercentile : float32;
        MaxAnaglyphShift : int16;
+       DivergenceRange : float32;
 
        LVISGabonGraphs : byte;
        ShowMaskScatterPlots,
@@ -2776,6 +2794,7 @@ type
        //SunlightSingleDay : byte;
        VerifyTimeZone,
        SolarPathMap,
+       SolarPathVectors,
        ShowSolstices,
        PromptToSaveNewDEMs,
        DoReqFlyHigh,

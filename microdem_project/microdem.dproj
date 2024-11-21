@@ -166,16 +166,15 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>6</VerInfo_Release>
+        <VerInfo_Release>20</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.6.13;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.20.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>13</VerInfo_Build>
+        <VerInfo_Build>1</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
-        <DCC_MapFile>3</DCC_MapFile>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -210,9 +209,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\OKCANCL2.PAS">
             <Form>OKRightDlg</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\DEMdbTable.pas">
-            <Form>dbtablef</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\point_cloud_memory.pas"/>
         <DCCReference Include="..\common_code\slicer_3d.pas">
@@ -649,7 +645,6 @@
         <DCCReference Include="..\common_code\DEMDips.pas">
             <Form>StructureOptions</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\moon_montenbruk_pfleger.pas"/>
         <DCCReference Include="..\common_code\edit_dip.pas">
             <Form>GetDipStrike</Form>
         </DCCReference>
@@ -925,10 +920,6 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\geomorph\DEMStat.pas"/>
-        <DCCReference Include="..\geomorph\compare_algorithms_options.pas">
-            <Form>AlgCompareForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\geomorph\geomorph_point_class.pas">
             <Form>PointClassForm</Form>
             <FormType>dfm</FormType>
@@ -942,6 +933,14 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\geomorph\compare_programs_algorithms.pas"/>
+        <DCCReference Include="..\geomorph\compare_algorithms_options.pas">
+            <Form>AlgCompareForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\DEMdbTable.pas">
+            <Form>dbtablef</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>

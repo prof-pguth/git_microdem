@@ -177,6 +177,7 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
       procedure SetRedrawMode(Image1 : tImage);  inline;
 
       procedure RestoreBigCompositeBitmap(fName : PathStr);
+      procedure CreateBigCompositeBitmap;
 
       procedure Drehen90Grad(Bitmap : tMyBitmap);
       procedure Drehen180Grad(Bitmap : tMyBitmap);
@@ -720,7 +721,7 @@ begin
          CopyImageToBitmap((WMDEM.MDIChildren[i] as TThisBaseGraph).Image1,Bitmap);
 
          if LegendOnRight then begin
-            bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend((WMDEM.MDIChildren[i] as TThisBaseGraph).GraphDraw.LegendList,false);
+            bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend;
             x := Bitmap.Width + 10;
             Bitmap.Width := x + bmp.Width;
             Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
@@ -757,6 +758,29 @@ begin
       theFiles.LoadFromFile(fName);
       BigBMP := CombineBitmaps(MDDef.BigBM_nc, theFiles, '');
       theFiles.Destroy;
+      ImageForm := TImageDisplayForm.Create(Application);
+      ImageForm.LoadImage(BigBmp,true);
+      ImageForm.BigBM_files := fName;
+      ImageForm.ChangeColumns1.Visible := true;
+   end;
+end;
+
+procedure CreateBigCompositeBitmap;
+var
+   bigbmp : tMyBitmap;
+   ImageForm : TImageDisplayForm;
+   theFiles : tStringList;
+   fName : PathStr;
+   DefaultFilter : byte;
+begin
+   theFiles := tStringList.Create;
+   TheFiles.Add(MDtempDir);
+   DefaultFilter := 1;
+   if GetMultipleFiles('Images to merge',AllowedGraphicsFilters,theFiles,DefaultFilter) then begin
+      BigBMP := CombineBitmaps(MDDef.BigBM_nc, theFiles, '');
+      fName := NextFileNumber(MDTempDir,'composite_image_','.txt');
+      theFiles.SaveToFile(fName);
+      TheFiles.Free;;
       ImageForm := TImageDisplayForm.Create(Application);
       ImageForm.LoadImage(BigBmp,true);
       ImageForm.BigBM_files := fName;
@@ -1387,7 +1411,7 @@ begin
          {$IfDef RecordBitmapProblems} WriteLineToDebugFile('Selected  fname=' + SaveName);    {$EndIf}
       end;
 
-      Ext := ExtractFileExt(SaveName);
+      Ext := UpperCase(ExtractFileExt(SaveName));
       if UserInputName then ImageDir := ExtractFilePath(SaveName);
       If ExtEquals(Ext,'.BMP') then begin
          Bitmap.SaveToFile(SaveName);
@@ -1978,52 +2002,6 @@ initialization
    LastPhotoRoamX := -1;
    LastPhotoRoamY := -1;
 finalization
-   {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('RecordImageOverlayProblems active in PetImage'); {$EndIf}
-   {$IfDef RecordRoamOnMapProblems} WriteLineToDebugFile('RecordRoamOnMapProblems active in PetImage'); {$EndIf}
-   {$IfDef RecordImageResize} WriteLineToDebugFile('RecordImageResize active in PetImage'); {$EndIf}
-   {$IfDef RecordBlendBitmaps} WriteLineToDebugFile('RecordBlendBitmaps active in PetImage'); {$EndIf}
-   {$IfDef RecordJPEG} WriteLineToDebugFile('RecordJPEG active in PetImage'); {$EndIf}
-   {$IfDef RecordIHSmerges} WriteLineToDebugFile('RecordIHSmerges active in PetImage'); {$EndIf}
-   {$IfDef RecordPNG} WriteLineToDebugFile('RecordPNG active in PetImage'); {$EndIf}
-   {$IfDef RecordBitmapProblems} WriteLineToDebugFile('RecordBitmapProblems active in PetImage'); {$EndIf}
-   {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('RecordGetImagePartOfBitmap active in PetImage'); {$EndIf}
-   {$IfDef RecordDipStrike} WriteLineToDebugFile('RecordDipStrike active in PetImage'); {$EndIf}
-   {$IfDef RecordFullPalette} WriteLineToDebugFile('RecordFullPalette active in PetImage'); {$EndIf}
-   {$If Defined(RecordBitmapExt)} WriteLineToDebugFile('close petimage, default ext=' + IntToStr(MDdef.DefaultSaveImageType)); {$EndIf}
-
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

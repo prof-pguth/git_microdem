@@ -248,7 +248,6 @@ var
          procedure ModifyRGBColor(Color : TPlatformColor; r,g,b : integer; a : integer = 255);
 
 
-
       //legends
          function MakeColorScaleBitmap(width,height : integer; ColorScheme : tLegendColors; ColorTable : tColorTableDefinitions) : tMyBitmap;
          function HorizontalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units,LegendTitle : shortstring; LegendSize : integer = 1) : tMyBitmap;
@@ -493,6 +492,8 @@ procedure WriteOpenHandlestoDebugLog(Where : shortString);
 function DoubleQuotedString(str : ANSIString) : ANSIstring;
 function NumberOfStringsWithSubstring(var sl : tStringList; ss : shortstring) : integer;
 
+procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
+
 
 implementation
 
@@ -531,6 +532,20 @@ var
 
 
 {$I petmar_palettes_legends.inc}
+
+procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
+//delete temporary files in the string list, and clear it; optionanlly free the memory
+var
+   i : integer;
+begin
+   if (sl <> Nil) then begin
+      for i := 0 to pred(sl.Count) do
+         if (ExtractFilePath(sl.Strings[i]) = MDTempDir) then DeleteFileIfExists(sl.Strings[i]);
+      sl.Clear;
+      if Free then sl.Free;
+   end;
+end;
+
 
 
 
@@ -4349,22 +4364,6 @@ initialization
    claBrown := ConvertTColorToPlatformColor(clBrown);
 finalization
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar in dbfn=' + DebugFileName); {$EndIf}
-   {$IfDef RecordPrint} WriteLineToDebugFile('RecordPrintProblems active in PETMAR'); {$EndIf}
-   {$IfDef RecordStartup} WriteLineToDebugFile('RecordStartupProblems active in PETMAR'); {$EndIf}
-   {$IfDef MessageStartup} WriteLineToDebugFile('MessageStartupProblems active in PETMAR'); {$EndIf}
-   {$IfDef RecordFindFiles} WriteLineToDebugFile('RecordFindFilesProblems active in PETMAR'); {$EndIf}
-   {$IfDef TempFileClose} WriteLineToDebugFile('TempFileCloseProblems active in PETMAR'); {$EndIf}
-   {$IfDef RecordShellExecute} WriteLineToDebugFile('RecordShellExecute active in PETMAR'); {$EndIf}
-   {$IfDef RecordBitmap} WriteLineToDebugFile('RecordBitmapProblems active in PETMAR'); {$EndIf}
-   {$IfDef RecordFileFilter} WriteLineToDebugFile('RecordFileFilterProblems active in PETMAR'); {$EndIf}
-   {$IfDef RecordFileDelection} WriteLineToDebugFile('RecordFileDelection active in PETMAR'); {$EndIf}
-   {$IfDef RecordLegends} WriteLineToDebugFile('RecordLegends active in PETMAR'); {$EndIf}
-   {$IfDef RecordListPick} WriteLineToDebugFile('RecordListPick active in PETMAR'); {$EndIf}
-   {$IfDef RecordUnzips} WriteLineToDebugFile('RecordUnzips active in PETMAR'); {$EndIf}
-   {$IfDef RecordHelp} WriteLineToDebugFile('Record active in PETMAR'); {$EndIf}
-   {$IfDef RecordWebDownloads} WriteLineToDebugFile('RecordWebDownloads active in PETMAR'); {$EndIf}
-   {$If Defined(RecordDialogs)} WriteLineToDebugFile('RecordDialogs active in PETMAR'); {$EndIf}
-   {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar out dbfn=' + DebugFileName); {$EndIf}
 end {unit}.
 
 

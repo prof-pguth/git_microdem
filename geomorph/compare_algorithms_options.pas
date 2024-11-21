@@ -24,16 +24,15 @@ type
     CheckBox3: TCheckBox;
     OKBtn: TBitBtn;
     HelpBtn: TBitBtn;
-    GroupBox2: TGroupBox;
-    Edit1: TEdit;
-    Edit2: TEdit;
-    Edit3: TEdit;
     CheckBox4: TCheckBox;
     CheckBox5: TCheckBox;
     CheckBox6: TCheckBox;
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
     BitBtn38: TBitBtn;
+    CheckBox9: TCheckBox;
+    CheckBox10: TCheckBox;
+    CheckBox11: TCheckBox;
     procedure OKBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
@@ -70,10 +69,9 @@ begin
    CheckBox6.Checked := MDDef.UseCalculatedOutside;
    CheckBox7.Checked := MDDef.CompareShowMaps;
    CheckBox8.Checked := MDDef.GDAL_SAGA_arcsec;
-
-   Edit1.Text := RealToString(MDDef.PerfectR,-12,-6);
-   Edit2.Text := RealToString(MDDef.PerfectMAbD,-12,-6);
-   Edit3.Text := RealToString(MDDef.PerfectMAvD,-12,-6);
+   CheckBox9.Checked := MDDef.CalcDiffMaps;
+   CheckBox10.Checked := MDDef.CalcBoxPlots;
+   CheckBox11.Checked := MDDef.CloseGridsAfterComputing;
 end;
 
 procedure TAlgCompareForm.CheckSettings;
@@ -86,31 +84,17 @@ begin
    MDDef.UseCalculatedOutside := CheckBox6.Checked;
    MDDef.CompareShowMaps := CheckBox7.Checked;
    MDDef.GDAL_SAGA_arcsec := CheckBox8.Checked;
-
-   CheckEditString(Edit1.Text,MDDef.PerfectR);
-   CheckEditString(Edit2.Text,MDDef.PerfectMAbD);
-   CheckEditString(Edit3.Text,MDDef.PerfectMAvD);
+   MDDef.CalcDiffMaps := CheckBox9.Checked;
+   MDDef.CalcBoxPlots := CheckBox10.Checked;
+   MDDef.CloseGridsAfterComputing := CheckBox11.Checked;
 end;
 
 
 procedure TAlgCompareForm.OKBtnClick(Sender: TObject);
 begin
-(*
-   MDDef.CalcR := CheckBox1.Checked;
-   MDDef.CalcMAbD := CheckBox2.Checked;
-   MDDef.CalcMAvD := CheckBox3.Checked;
-   MDDef.CalcScattergrams := CheckBox4.Checked;
-   MDDef.CalcHistograms := CheckBox5.Checked;
-   MDDef.UseCalculatedOutside := CheckBox6.Checked;
-   MDDef.CompareShowMaps := CheckBox7.Checked;
-   MDDef.GDAL_SAGA_arcsec := CheckBox8.Checked;
-
-   CheckEditString(Edit1.Text,MDDef.PerfectR);
-   CheckEditString(Edit2.Text,MDDef.PerfectMAbD);
-   CheckEditString(Edit3.Text,MDDef.PerfectMAvD);
-*)
    CheckSettings;
    Close;
 end;
+
 
 end.

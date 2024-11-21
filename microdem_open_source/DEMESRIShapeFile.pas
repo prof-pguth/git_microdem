@@ -850,7 +850,7 @@ begin
             CartesianToLatLong(FinalVec,Lat,Long);
             Lat := Lat / DegToRad;
             Long := Long / DegToRad;
-            Long := PetMath.FindCompassAngleInRange(Long);
+            Long := PetMath.FindCompassAngleInRangeFloat64(Long);
             ShapeFileCreator.AddPointToShapeStream(Lat,Long);
          end;
          ShapeFileCreator.RecordName := IntToStr(j);
@@ -1855,7 +1855,7 @@ begin
       inc(OnBlock);
       for i := 1 to RecsRead do begin
          DEMGlb[NZDEM].LatLongDegreeToDEMGridInteger(ShapePoints^[i].y,ShapePoints^[i].x,xg,yg);
-         if DEMGlb[NZDEM].GridInDataSet(xg,yg) then begin
+         if DEMGlb[NZDEM].GridInDataSetInteger(xg,yg) then begin
             NewZ := ShapePoints^[i].z;
             if (LastDEM <> 0) then DEMGlb[LastDEM].SetGridElevation(xg,yg,NewZ);
             if (MaxDEM <> 0) then begin
@@ -2181,7 +2181,7 @@ begin
       LongFieldName := 'LONG';
 
       if (WhatAdd = afBoundingBox) then begin
-         if not MyTable.BoundingBoxPresent then MyTable.AddBoundingBox;
+         if not MyTable.BoundingBoxPresent then MyTable.AddRecordBoundingBox;
       end
       else if (WhatAdd = afXYZ) then begin
          MyTable.InsureFieldPresentAndAdded(ftFloat,'X',12,6);
@@ -2405,24 +2405,6 @@ initialization
    DrawPolygonsAsPolygons := true;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demesrishapefile in'); {$EndIf}
-   {$IfDef RecordShapeFile} writeLineToDebugFile('RecordShapeFileProblems active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordReproject} writeLineToDebugFile('RecordReprojectProblems active in demesrishapefile (degrades performance)'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordCreateShapeFile} WriteLineToDebugFile('RecordCreateShapeFile active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordFindPoint} WriteLineToDebugFile('RecordFindPointProblems active in demesrishapefile'); {$EndIf}
-   {$IfDef TrackShapeDigitization} WriteLineToDebugFile('TrackShapeDigitization active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordShapefilesReprojection} WriteLineToDebugFile('RecordShapefilesReprojection active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordShapeFileWriteFull} WriteLineToDebugFile('RecordShapeFileWriteFullProblems active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordShapeFileWrite} WriteLineToDebugFile('RecordShapeFileWrite active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordMemoryStream} WriteLineToDebugFile('RecordMemoryStreamProblems active in demesrishapefile'); {$EndIf}
-   {$IfDef RecordPointProblem} WriteLineToDebugFile('RecordPointProblem active in demesrishapefile (slowdown)'); {$EndIf}
-   {$IfDef RecordTooManyPoints} WriteLineToDebugFile('RecordTooManyPoints active in demesrishapefile (slowdown)'); {$EndIf}
-   {$IfDef RecordPart} WriteLineToDebugFile('RecordPartProblems in demesrishapefile (slowdown)'); {$EndIf}
-   {$IfDef RecordMergeShapefiles} WriteLineToDebugFile('RecordMergeShapefiles in demesrishapefile'); {$EndIf}
-   {$IfDef RecordShapeFileLine} WriteLineToDebugFile('RecordShapeFileLineProblems in demesrishapefile (major slowdown)'); {$EndIf}
-   {$IfDef RecordLineWidth} WriteLineToDebugFile('RecordLineWidth in demesrishapefile (major slowdown)'); {$EndIf}
-   {$IfDef TimeDBPlot} WriteLineToDebugFile('TimeDBPlot in demesrishapefile'); {$EndIf}
-   {$IfDef RecordLineLength} WriteLineToDebugFile('RecordLineLength in demesrishapefile'); {$EndIf}
 end.
 
 

@@ -1811,18 +1811,6 @@ initialization
    InitializeDEMLosW;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demlosw in');   {$EndIf}
-   {$IfDef RecordLOSProblems} WriteLineToDebugFile('RecordLOSProblems active in DEMLOSW');{$EndIf}
-   {$IfDef RecordAllLOSProblems} WriteLineToDebugFile('RecordAllLOSProblems active in DEMLOSW');{$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosing active in DEMLOSW');{$EndIf}
-   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('RecordLOSAlgorithm active in DEMLOSW');{$EndIf}
-   {$IfDef RecordWaveLenghtHeightProblems} WriteLineToDebugFile('RecordWaveLenghtHeightProblems active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordNearestCrest} WriteLineToDebugFile('RecordNearestCrest active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordThreadCrest} WriteLineToDebugFile('RecordThreadCrest active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordPointClouds} WriteLineToDebugFile('RecordPointClouds active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordMGTProblems} WriteLineToDebugFile('RecordMGTProblems active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordLOSPrettyDrawing} WriteLineToDebugFile('RecordLOSPrettyDrawing active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordSlopeCalc} WriteLineToDebugFile('RecordSlopeCalc active in DEMLOSW'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing demlosw out');   {$EndIf}
 end.
 
 

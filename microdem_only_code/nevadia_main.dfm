@@ -2883,8 +2883,12 @@ object wmdem: Twmdem
       object Importfromcamera1: TMenuItem
         Caption = 'Import from camera'
       end
-      object Createcompositebitmap1: TMenuItem
+      object Createcompositebitmap2: TMenuItem
         Caption = 'Create composite bitmap'
+        OnClick = Createcompositebitmap2Click
+      end
+      object Createcompositebitmap1: TMenuItem
+        Caption = 'Restore composite bitmap'
         OnClick = Createcompositebitmap1Click
       end
       object N18: TMenuItem

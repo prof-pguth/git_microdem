@@ -36,13 +36,16 @@ procedure CompareSlopeMaps(DEM : integer);
 procedure CompareProfileCurvatures(DEM : integer);
 procedure ComparePlanCurvatures(DEM : integer);
 procedure CompareTangentialCurvature(DEM : integer);
-procedure CompareThreeCurvature(DEM : integer);
+procedure CompareSlopeAndThreeCurvature(DEM : integer);
 procedure CompareHillshadeMaps(DEM : integer; OpenMap : boolean = true);
 procedure ComparePartialDerivatives(DEM : integer; OpenMap : boolean = true);
 procedure CompareTRI(DEM : integer; OpenMap : boolean = true);
 procedure CompareAspectMaps(DEM : integer; OpenMap : boolean = true);
+procedure CompareContourTorsion(DEM : integer);
 
 procedure CompareMICRODEMslopes(DEM : integer; OpenMap : boolean = true);
+procedure CompareMICRODEMSlopeMaps(DEM : integer);
+
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
 
 
@@ -52,13 +55,14 @@ uses
    DEMCoord,
    DEM_Manager,DEMOptions,
    PetDBUtils,
-   DEMDef_routines,Petimage,
+   DEMDef_routines,Petimage,PETMAR_DB,
    DEMStat,DEMMapf,
    MD_use_tools,
    gdal_tools,
    DEMStringGrid,
    PetImage_Form,
    BaseMap,
+   BaseGraf,
    DEMIX_control,
    Make_grid;
 
@@ -83,32 +87,54 @@ const
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
 var
    NewMap : integer;
+   TStr : shortstring;
    DistanceNS,DistanceEW,DistanceAVG : float64;
+   DEMList : tDEMBooleanArray;
+   Graph : tThisBaseGraph;
 begin
-   GDAL_testScaleFactor := '';
-   SaveBackupDefaults;
-   MDDef.SlopeAlgorithm := smHorn;
-   NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_2_space');
-(*
-   ExploreSingleGridSpacing := true;
-   SingleSetSpacing := DEMGlb[DEM].AverageSpace;
-   NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_average');
-   SingleSetSpacing := DEMGlb[DEM].AverageXSpace;
-   NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_x_space');
-   SingleSetSpacing := DEMGlb[DEM].AverageYSpace;
-   NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_y_space');
-   ExploreSingleGridSpacing := false;
-*)
+   if DEMglb[DEM].DEMheader.DEMused = ArcSecDEM then begin
+      MetersPerDegree(DEMGlb[DEM].DEMSWcornerLat + 0.5 * DEMGlb[DEM].LatSizeMap,DEMGlb[DEM].DEMSWcornerLong + 0.5 * DEMGlb[DEM].LongSizeMap,DistanceNS,DistanceEW,DistanceAVG);
+      SaveBackupDefaults;
 
-   MetersPerDegree(DEMGlb[DEM].DEMSWcornerLat + 0.5 * DEMGlb[DEM].LatSizeMap,DEMGlb[DEM].DEMSWcornerLong + 0.5 * DEMGlb[DEM].LongSizeMap,DistanceNS,DistanceEW,DistanceAVG);
+      InitializeDEMsWanted(DEMList,false);
+      MDDef.SlopeAlgorithm := smHorn;
+      NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_2_spacing');
+      DEMList[NewMap] := true;
+      GDAL_testScaleFactor := ' -s ' + RealToString(DistanceAVG,-12,2);
+      NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_average.tif');
+      DEMList[NewMap] := true;
+      GDAL_testScaleFactor := ' -s ' + RealToString(DistanceEW,-12,2);
+      NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_x_space.tif');
+      DEMList[NewMap] := true;
+      GDAL_testScaleFactor := ' -s ' + RealToString(DistanceNS,-12,2);
+      NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_y_space.tif');
+      DEMList[NewMap] := true;
+      TStr := DEMglb[DEM].AreaName + '_horn_geo_slope_histograms';
+      Graph := CreateGridHistograms(DEMList,TStr,0);
+      SaveBitmap(Graph.AddLegendBesideGraph,MDTempDir + TStr + '.png');
 
-   NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,'gdal_horn_slope_average');
-   GDAL_testScaleFactor := ' -s ' + RealToString(DistanceEW,-12,2);
-   NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,'gdal_horn_slope_x_space');
-   GDAL_testScaleFactor := ' -s ' + RealToString(DistanceNS,-12,2);
-   NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,'gdal_horn_slope_y_space');
+      InitializeDEMsWanted(DEMList,false);
+      MDDef.SlopeAlgorithm := smZevenbergenThorne;
+      NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_2_spacing');
+      DEMList[NewMap] := true;
+      GDAL_testScaleFactor := ' -s ' + RealToString(DistanceAVG,-12,2);
+      NewMap := GDAL_SlopeMap_ZT(OpenMap,DEM,MDTempDir + 'gdal_zt_slope_average.tif');
+      DEMList[NewMap] := true;
+      GDAL_testScaleFactor := ' -s ' + RealToString(DistanceEW,-12,2);
+      NewMap := GDAL_SlopeMap_ZT(OpenMap,DEM,MDTempDir + 'gdal_zt_slope_x_space.tif');
+      DEMList[NewMap] := true;
+      GDAL_testScaleFactor := ' -s ' + RealToString(DistanceNS,-12,2);
+      NewMap := GDAL_SlopeMap_ZT(OpenMap,DEM,MDTempDir + 'gdal_zt_slope_y_space.tif');
+      DEMList[NewMap] := true;
+      TStr := DEMglb[DEM].AreaName + '_zt_geo_slope_histograms';
+      Graph := CreateGridHistograms(DEMList,TStr,0);
+      SaveBitmap(Graph.AddLegendBesideGraph,MDTempDir + TStr + '.png');
 
-   RestoreBackupDefaults;
+      RestoreBackupDefaults;
+   end
+   else begin
+      MessageToContinue('Not arc second DEM');
+   end;
 end;
 
 
@@ -145,24 +171,54 @@ begin
 end;
 
 
-
 procedure FilterToFullAnalysisWindow(DEM : integer; DEMList : tDEMBooleanArray);
+const
+   fil = 3;
 var
-   i,x,y : integer;
+   i,x,y,OldPts,NumPts,MaskDEM : integer;
+   z : float32;
 begin
+   {$IfDef RecordCompareLSPs} WriteLineToDebugFile('FilterToFullAnalysisWindow using ' + DEMglb[DEM].AreaName + '  pts=' + IntToStr(DEMglb[DEM].ValidElevsInDEM)); {$EndIf}
+      MaskDEM := DEMglb[DEM].CloneAndOpenGridSetMissing(byteDEM,'Full_window_mask',euUndefined);
+
+      NumPts := 0;
+      for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
+         for y := 0 to pred(DEMglb[DEM].DEMHeader.NumRow) do begin
+            if DEMglb[DEM].FullAnalysisWindow(x,y,Fil) then begin
+               inc(NumPts);
+               DEMGlb[MaskDEM].SetGridElevation(x,y,1);
+            end
+            else DEMGlb[MaskDEM].SetGridMissing(x,y);
+         end;
+      end;
+      DEMglb[MaskDEM].CheckMaxMinElev;
+   {$IfDef RecordCompareLSPs}
+      WriteLineToDebugFile('FilterToFullAnalysisWindow using ' + DEMglb[DEM].AreaName + '  pts=' + IntToStr(DEMglb[DEM].ValidElevsInDEM) + ' filled=' + IntToStr(NumPts));
+      WriteLineToDebugFile('Mask DEM=' + IntToStr(DEMglb[MaskDEM].ValidElevsInDEM));
+   {$EndIf}
+
+
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) and DEMList[i] then begin
-         for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
-            for y := 0 to pred(DEMglb[DEM].DEMHeader.NumRow) do begin
-               if not DEMglb[DEM].FullAnalysisWindow(x,y,2) then begin
+         OldPts := DEMglb[i].ValidElevsInDEM;
+         DEMglb[i].SetGridMissingOutsideBox(fil,fil,(DEMglb[i].DEMHeader.NumCol - fil),(DEMglb[DEM].DEMHeader.NumRow - fil)  );
+
+         for x := fil to (DEMglb[DEM].DEMHeader.NumCol-fil) do begin
+            for y := fil to (DEMglb[DEM].DEMHeader.NumRow-fil) do begin
+               if (DEMglb[MaskDEM].MissingDataInGrid(x,y)) then begin
                   DEMglb[i].SetGridMissing(x,y);
                end;
             end;
          end;
          DEMglb[i].CheckMaxMinElev;
+         {$IfDef RecordCompareLSPs}
+            WriteLineToDebugFile('Filtered ' + DEMglb[i].AreaName + ' old pts=' + IntToStr(OldPts) + '  now=' + IntToStr(DEMglb[i].ValidElevsInDEM));
+         {$EndIf}
       end;
    end;
+   CloseSingleDEM(MaskDEM);
 end;
+
 
 procedure StartComparisonProcess(DEM : integer; var DEMList : tDEMBooleanArray);
 var
@@ -179,16 +235,44 @@ procedure EndComparison(DEM : integer; var DEMList : tDEMBooleanArray;  aCaption
 var
    CorrelationMatrix : DEMStringGrid.TGridForm;
    fName : PathStr;
+   TStr : shortstring;
    List : tStringList;
    DEMsOrdered : tDEMIntegerArray;
+   Graph : TThisBaseGraph;
    i,j,NumDEMs : integer;
+   Table : tMyData;
+
+   procedure DEMProjections(What : shortstring);
+   var
+      i : integer;
+   begin
+      HighLightLineToDebugFile(What);
+      for i := 1 to MaxDEMDataSets do begin
+         if DEMlist[i] and ValidDEM(i) then WriteLineToDebugFile(DEMGlb[i].AreaName + ' ' + DEMGlb[i].DEMMapProj.GetProjName);
+      end;
+   end;
+
+
 begin
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile(aCaption + ' EndComparison in'); {$EndIf}
+   {$IfDef RecordCompareLSPs} DEMProjections('Entering EndComparison'); {$EndIf}
    FilterToFullAnalysisWindow(DEM,DEMList);
    ReCaptionMaps(DEMList);
    RestoreBackupDefaults;
+   fName := ProgramRootDir + 'algorithm_comparisons.dbf';
+   Table := tMyData.Create(fName);
+   Table.ApplyFilter('SHORT=' + QuotedStr(aCaption));
+   if Table.FiltRecsInDB = 1 then begin
+      MDDef.PerfectR := Table.GetFieldByNameAsFloat('R');
+      MDDef.PerfectMAbD := Table.GetFieldByNameAsFloat('MABD');
+      MDDef.PerfectMAvD := Table.GetFieldByNameAsFloat('MAVD');
+      MDDef.DivergenceRange := Table.GetFieldByNameAsFloat('DIFF_MAP');
+   end;
+   Table.Destroy;
+   {$IfDef RecordCompareLSPs} DEMProjections('Setup Done'); {$EndIf}
 
-   if aCaption = 'slope' then begin
+
+   if (aCaption = 'slope') and StrUtils.AnsiContainsText(DEMGlb[DEM].AreaName,'ponui')  then begin
       if (DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM) then fName := 'J:\aa_new_zealand\geo_slope.txt'
       else fName := 'J:\aa_new_zealand\utm_slope.txt';
       List := tStringList.Create;
@@ -204,21 +288,37 @@ begin
           end;
       end;
       {$IfDef RecordCompareLSPs} WriteLineToDebugFile(aCaption + ' EndComparison, NumDEMs=' + IntToStr(NumDEMs)); {$EndIf}
-
-      if MDDef.CalcR then CorrelationMatrix := GridCorrelationMatrix(gcmR,NumDEMs,DEMsOrdered,DEMglb[DEM].AreaName + ' ' + aCaption + ' correlation matrix');
-      if MDDef.CalcMAbD then CorrelationMatrix := GridCorrelationMatrix(gcmMAbD,NumDEMs,DEMsOrdered,DEMglb[DEM].AreaName + ' ' + aCaption + ' mean absolute difference matrix');
-      if MDDef.CalcMAvD then CorrelationMatrix := GridCorrelationMatrix(gcmMAvD,NumDEMs,DEMsOrdered,DEMglb[DEM].AreaName + ' ' + aCaption + ' mean average difference matrix');
+      if MDDef.CalcR then CorrelationMatrix := GridCorrelationMatrix(gcmR,NumDEMs,DEMsOrdered,DEMglb[DEM].AreaName + '_' + aCaption + '_correlation_matrix');
+      if MDDef.CalcMAbD then CorrelationMatrix := GridCorrelationMatrix(gcmMAbD,NumDEMs,DEMsOrdered,DEMglb[DEM].AreaName + '_' + aCaption + '_mean_absolute_difference_matrix');
+      if MDDef.CalcMAvD then CorrelationMatrix := GridCorrelationMatrix(gcmMAvD,NumDEMs,DEMsOrdered,DEMglb[DEM].AreaName + '_' + aCaption + '_mean_average_difference_matrix');
    end
    else begin
-      if MDDef.CalcR then CorrelationMatrix := GridCorrelationMatrix(gcmR,DEMList,DEMglb[DEM].AreaName + ' ' + aCaption + ' correlation matrix');
-      if MDDef.CalcMAbD then CorrelationMatrix := GridCorrelationMatrix(gcmMAbD,DEMList,DEMglb[DEM].AreaName + ' ' + aCaption + ' mean absolute difference matrix');
-      if MDDef.CalcMAvD then CorrelationMatrix := GridCorrelationMatrix(gcmMAvD,DEMList,DEMglb[DEM].AreaName + ' ' + aCaption + ' mean average difference matrix');
+      if MDDef.CalcR then CorrelationMatrix := GridCorrelationMatrix(gcmR,DEMList,DEMglb[DEM].AreaName + '_' + aCaption + '_correlation_matrix');
+      if MDDef.CalcMAbD then CorrelationMatrix := GridCorrelationMatrix(gcmMAbD,DEMList,DEMglb[DEM].AreaName + '_' + aCaption + '_mean_absolute_difference_matrix');
+      if MDDef.CalcMAvD then CorrelationMatrix := GridCorrelationMatrix(gcmMAvD,DEMList,DEMglb[DEM].AreaName + '_' + aCaption + '_mean_average_difference_matrix');
    end;
+   {$IfDef RecordCompareLSPs} DEMProjections('Done correlation matrices'); {$EndIf}
 
-   if MDDef.CalcScatterGrams then ScatterGramGrid(DEMList,aCaption);
-   if MDDef.CalcHistoGrams then CreateGridHistograms(DEMList);
+   if MDDef.CalcBoxPlots then JustElevationMoments(DEMlist,aCaption);
+   if MDDef.CalcScatterGrams then ScatterGramGrid(True,DEMList,aCaption,DEMglb[DEM].AreaName + '_' + aCaption + '_scattergrams');
+   if MDDef.CalcDiffMaps then ScatterGramGrid(false,DEMList,aCaption,DEMglb[DEM].AreaName + '_' + aCaption + '_difference_maps');
+   if MDDef.CalcHistoGrams then begin
+      TStr := DEMglb[DEM].AreaName + '_' + aCaption + '_histograms';
+      if aCaption = 'slope' then Graph := CreateGridHistograms(DEMList,TStr,0)
+      else Graph := CreateGridHistograms(DEMList,TStr,0,-MDDef.DivergenceRange,MDDef.DivergenceRange);
+      SaveBitmap(Graph.AddLegendBesideGraph,MDTempDir + TStr + '.png');
+   end;
+   {$IfDef RecordCompareLSPs} DEMProjections('Done all calc graphics'); {$EndIf}
    UpdateMenusForAllMaps;
    EndDEMIXProcessing(0,false);
+   (*
+   if MDDef.CloseGridsAfterComputing then begin
+      for i := 1 to MaxDEMdataSets do begin
+         if DEMList[i] then CloseSingleDEM(i);
+      end;
+   end;
+   *)
+   {$IfDef RecordCompareLSPs} DEMProjections('Leaving EndComparison'); {$EndIf}
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile(aCaption + ' EndComparison in'); {$EndIf}
 end;
 
@@ -251,6 +351,7 @@ begin
 
    Grid := MakeTRIGrid(DEM,nmInterpolate,OpenMap,'md_tri_interpolate');
    DEMlist[Grid] := true;
+
    Grid := MakeTRIGrid(DEM,nmNone,OpenMap,'md_tri_none');
    DEMlist[Grid] := true;
 
@@ -281,7 +382,6 @@ begin
 end;
 
 
-
 procedure MakeMDcurvatures(OpenMap : boolean; DEM,Curvature : integer; var DEMList : tDEMBooleanArray);
 
       procedure MICRODEMCurvature(Algorithm : integer; CD2 : boolean; Name : ShortString);
@@ -294,8 +394,10 @@ procedure MakeMDcurvatures(OpenMap : boolean; DEM,Curvature : integer; var DEMLi
             1 : Grid := CreateProfileCurvature(OpenMap,DEM,1,'md_' + Name + '_prof_curv');
             2 : Grid := CreateTangentialCurvature(OpenMap,DEM,1,'md_' + Name + '_tang_curv');
             3 : Grid := CreatePlanCurvature(OpenMap,DEM,1,'md_' + Name + '_plan_curv');
+            5 : Grid := CreateContourTorsion(OpenMap,DEM,1,'md_' + Name + '_cont_tors');
          end;
          DEMlist[Grid] := true;
+         DEMGlb[Grid].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
       end;
 
 begin
@@ -322,15 +424,13 @@ var
          NewMap := OpenNewDEM(fName,false);
          if ValidDEM(NewMap) then begin
             mt := mtElevRainbow;
+            DEMGlb[NewMap].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
             if (ParamCode = 'slope') then begin
                if (DEMGlb[NewMap].DEMHeader.ElevUnits <> euPercentSlope) then begin
-                  //CreateDEMSelectionMap(NewMap,true,MDDef.DefElevsPercentile,mt);
-                  //DEMGlb[NewMap].SelectionMap.SingleGridArithmetic(sgaSlopedegreestopercent1,false);
                   PerformSingleGridArithmetic(NewMap,sgaSlopedegreestopercent1,Invalid,false);
                end;
                DEMGlb[NewMap].DEMHeader.ElevUnits := euPercentSlope;
                mt := MDDef.DefSlopeMap;
-               //DEMGlb[NewMap].SaveAsGeotiff(DEMGlb[NewMap].DEMFileName);
             end;
             if (ParamCode = 'aspect') and (DEMGlb[NewMap].DEMHeader.ElevUnits <> euAspectDeg) then begin
                DEMGlb[NewMap].DEMHeader.ElevUnits := euAspectDeg;
@@ -342,7 +442,7 @@ var
             end;
             DEMlist[NewMap] := true;
             DEMGlb[NewMap].AreaName := SName  + ParamName;
-            if OpenMap and (DEMGlb[NewMap].SelectionMap <> Nil) then CreateDEMSelectionMap(NewMap,true,MDDef.DefElevsPercentile,mt);
+            if OpenMap and (DEMGlb[NewMap].SelectionMap = Nil) then CreateDEMSelectionMap(NewMap,true,MDDef.DefElevsPercentile,mt);
          end;
       end
       else begin
@@ -378,13 +478,12 @@ var
       if FileExists(fName) then begin
          NewMap := OpenNewDEM(fName,false);
          if ValidDEM(NewMap) then begin
+            DEMGlb[NewMap].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
             DEMlist[NewMap] := true;
             DEMGlb[NewMap].AreaName := Algorithm  + ParamCode;
             if (ParamCode = 'slope') then begin
                mt := MDDef.DefSlopeMap;
                if (DEMGlb[NewMap].DEMHeader.ElevUnits <> euPercentSlope) then begin
-                  //CreateDEMSelectionMap(NewMap,true,MDDef.DefElevsPercentile,mt);
-                  //DEMGlb[NewMap].SelectionMap.SingleGridArithmetic(sgaSlopedegreestopercent1,false);
                   PerformSingleGridArithmetic(NewMap,sgaSlopedegreestopercent1,Invalid,false);
                end;
                DEMGlb[NewMap].DEMHeader.ElevUnits := euPercentSlope;
@@ -398,7 +497,7 @@ var
                mt := mtCurvature;
             end
             else mt := mtElevRainbow;
-            if OpenMap and (DEMGlb[NewMap].SelectionMap <> Nil) then CreateDEMSelectionMap(NewMap,true,MDDef.DefElevsPercentile,mt);
+            if OpenMap and (DEMGlb[NewMap].SelectionMap = Nil) then CreateDEMSelectionMap(NewMap,true,MDDef.DefElevsPercentile,mt);
          end;
       end
       else begin
@@ -440,7 +539,7 @@ begin
 
    if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
       //for i := 1 to 4 do begin
-         Grid := SAGA_Aspect(OpenMap,DEMGlb[DEM].GeotiffDEMName,{SAGA_algorithms[i],}MDtempDir + 'saga_' {+ SAGA_aNames[i]} + '_aspect.tif');
+         Grid := SAGA_Aspect(OpenMap,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'saga_'  + '_aspect.tif');
          if ValidDEM(Grid) then DEMlist[Grid] := true;
       //end;
    end;
@@ -560,6 +659,56 @@ begin
 end {procedure CompareSlopeMaps};
 
 
+
+procedure CompareMICRODEMSlopeMaps(DEM : integer);
+var
+   NewMap : integer;
+   DEMList : tDEMBooleanArray;
+   CorrelationMatrix : DEMStringGrid.TGridForm;
+   OutPath,
+   fName : PathStr;
+
+      procedure MatchAndSave(AreaName : shortstring; SaveIt : boolean = true);
+      var
+         fName : PathStr;
+      begin
+         if ValidDEM(NewMap) then begin
+            DEMlist[NewMap] := true;
+            DEMGlb[NewMap].AreaName := AreaName;
+            MatchAnotherDEMMap(NewMap,DEM);
+            if SaveIt then begin
+               fName := OutPath + DEMGlb[NewMap].AreaName + '.tif';
+               DEMGlb[NewMap].SaveAsGeotiff(fName);
+            end;
+         end;
+      end;
+
+begin
+   if ValidDEM(DEM) then begin
+      OutPath := MDtempDir;
+      StartComparisonProcess(DEM,DEMList);
+      MDDef.SlopeAlgorithm := smEvansYoung;
+      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      MatchAndSave('md_evans_slope');
+      MDDef.SlopeAlgorithm := smHorn;
+      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      MatchAndSave('md_horn_slope');
+      {$IfDef ExUseGrass}
+      {$Else}
+         NewMap := GRASSSlopeMap(DEMGlb[DEM].GeotiffDEMName,MDDef.CompareShowMaps);
+         if ValidDEM(NewMap) then MatchAndSave('grass_horn_slope');
+      {$EndIf}
+      MDDef.SlopeAlgorithm := smZevenbergenThorne;
+      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      MatchAndSave('md_zt_slope');
+      NewMap := WBT_SlopeMap(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName);
+      if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then MatchAndSave('wbt_flor_slope')
+      else MatchAndSave('wbt_evans_slope');
+      EndComparison(DEM,DEMList,'slope');
+   end;
+end {procedure CompareSlopeMaps};
+
+
 procedure CompareProfileCurvatures(DEM : integer);
 var
    DEMList : tDEMBooleanArray;
@@ -599,7 +748,6 @@ begin
    EndComparison(DEM,DEMList,'prof_curv');
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile('CompareProfileCurvatures out'); {$EndIf}
 end;
-
 
 
 procedure ComparePlanCurvatures(DEM : integer);
@@ -648,7 +796,7 @@ begin
 
    MakeMDcurvatures(MDDef.CompareShowMaps,DEM,2,DEMList);
 
-   Grid := GrassTangentialCurvatureMap(DEMGlb[DEM].GeotiffDEMName,MDDef.CompareShowMaps,MDtempDir + 'grass_tang_curve.tif');
+   Grid := GrassTangentialCurvatureMap(DEMGlb[DEM].GeotiffDEMName,MDDef.CompareShowMaps,MDtempDir + 'grass_tang_curv.tif');
    DEMlist[Grid] := true;
    if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
       for i := 2 to 3 do begin  //skip Horn, Flor method, which fail
@@ -656,7 +804,7 @@ begin
          if ValidDEM(Grid) then DEMlist[Grid] := true;
       end;
    end;
-   Grid := WBT_TangentialCurvature(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'wbt_tang_curve.tif');
+   Grid := WBT_TangentialCurvature(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'wbt_tang_curv.tif');
    if ValidDEM(Grid) then DEMlist[Grid] := true;
 
    if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
@@ -671,7 +819,27 @@ begin
 end;
 
 
-procedure CompareThreeCurvature(DEM : integer);
+procedure CompareContourTorsion(DEM : integer);
+var
+   DEMList : tDEMBooleanArray;
+   Fixed : int64;
+   Grid,i : integer;
+   fName : PathStr;
+   CorrelationMatrix : DEMStringGrid.TGridForm;
+begin
+   StartComparisonProcess(DEM,DEMList);
+   MakeMDcurvatures(MDDef.CompareShowMaps,DEM,5,DEMList);
+   if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
+      LoadLSPgrids(MDDef.CompareShowMaps,true,'30m',DEMlist,'tc','cont_tors');
+   end
+   else begin
+      LoadLSPgrids(MDDef.CompareShowMaps,false,'1sec',DEMlist,'tc','cont_tors');
+   end;
+   EndComparison(DEM,DEMList,'cont_tors');
+end;
+
+
+procedure CompareSlopeAndThreeCurvature(DEM : integer);
 begin
    CompareSlopeMaps(DEM);
    CompareProfileCurvatures(DEM);

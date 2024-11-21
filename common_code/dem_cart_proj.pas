@@ -95,7 +95,6 @@ type
    procedure UnCheckAllOthers(Sender: TObject);
   public
     { Public declarations }
-    //LCCregion : tLCCregion;
   end;
 
 procedure NewOrtographicMapForSeasonalTilt(aTitle : shortstring; Tilt : float64);
@@ -120,9 +119,6 @@ begin
    if (SimpleMode <> 0) then begin
       MDDef.OpenMultipleVectorMaps := true;
       MDDef.MapTicks := tixLatLong;
-      {$IfDef AllowUSNAdataDownloads}  GetNaturalEarthData;  {$EndIf}
-
-
       ProcessIniFile(iniInit,'Tissot');
       MDDef.DrawTissotDefault := true;
       ProjectionDemForm.CheckBox17.Checked := false;
@@ -152,18 +148,13 @@ begin
       wmdem.Tile;
    end
    else begin
-      ProjectionDemForm.CheckBox9.Enabled := false;      //Cassini, major issues, p.92 in Snyder
+      ProjectionDemForm.CheckBox9.Enabled := false;     //Cassini, major issues, p.92 in Snyder
       ProjectionDemForm.CheckBox15.Enabled := false;    //Hammer, problems
 
       (*
       ProjectionDemForm.CheckBox11.Enabled := false;    //Mollweide, works, could be improved
       ProjectionDemForm.CheckBox22.Enabled := false;    //Equal earth, works, graticule could be improved
       ProjectionDemForm.CheckBox12.Enabled := false;    //sinusoidal, works, but graticule could be improved
-
-      ProjectionDemForm.CheckBox10.Enabled := false;    //Gnomonic, works
-      ProjectionDemForm.CheckBox27.Enabled := false;    //Web Mercator, works
-      ProjectionDemForm.CheckBox5.Enabled := false;    //EquiDistantCylindrical
-      ProjectionDemForm.CheckBox13.Enabled := false;   //van der Grinten
       *)
       ProjectionDemForm.Show;
    end;
@@ -189,7 +180,7 @@ end;
 
 procedure TProjectionDemForm.UnCheckAllOthers(Sender: TObject);
 begin
-   if not CheckBox20.Checked then begin
+   if (not CheckBox20.Checked) then begin
       if Sender <> CheckBox1 then CheckBox1.Checked := false;
       if Sender <> CheckBox2 then CheckBox2.Checked := false;
       if Sender <> CheckBox3 then CheckBox3.Checked := false;
@@ -248,19 +239,19 @@ var
               VectorMap[LastVectorMap].MapDraw.PrimMapProj.pNameModifier := Petmar_Types.AfterSpecifiedCharacter(TStr,' ');
               VectorMap[LastVectorMap].MapDraw.SetFullMapCoverage;
            end;
-          {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map=' + VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectionName); {$EndIf}
+          {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map=' + VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjName); {$EndIf}
            SetUpDefaultNewProjection(VectorMap[LastVectorMap].MapDraw.PrimMapProj,false);
           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map after set default long cent=' + RadToDegString(VectorMap[LastVectorMap].MapDraw.PrimMapProj.long0)); {$EndIf}
            VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectParameters;
           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map after get parameters long cent=' + RadToDegString(VectorMap[LastVectorMap].MapDraw.PrimMapProj.long0)); {$EndIf}
-           VectorMap[LastVectorMap].MapDraw.BaseTitle := VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectionName;
+           VectorMap[LastVectorMap].MapDraw.BaseTitle := VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjName;
            VectorMap[LastVectorMap].DoCompleteMapRedraw;
 
            if MDDef.DrawTissotDefault then begin
               AddOrSubtractOverlay(VectorMap[LastVectorMap],ovoTissot,true);
               VectorMap[LastVectorMap].DoFastMapRedraw;
            end;
-           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('Created Map=' + VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectionName + '  size, ' + ImageSize(VectorMap[LastVectorMap].Image1) ); {$EndIf}
+           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('Created Map=' + VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjName + '  size, ' + ImageSize(VectorMap[LastVectorMap].Image1) ); {$EndIf}
        end;
 
 begin
@@ -396,5 +387,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordNewVectorMap} WriteLineToDebugFile('RecordNewVectorMap in dem_cart_proj'); {$EndIf}
 end.

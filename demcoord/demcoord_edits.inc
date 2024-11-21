@@ -204,7 +204,7 @@ begin
 (*
        fName := MDDef.WKTLidarProj;
        Projection := tMapProjection.Create;
-       Projection.InitializeProjectionFromWKT(fName);
+       Projection.InitProjFromWKT(fName);
        NewHeader.WKTString := Projection.WKTString;
 
        {$IfDef RecordNewWKT} WriteLineToDebugFile(''); Projection.ProjectionParamsToDebugFile('Projection initialized',true); {$EndIf}
@@ -253,7 +253,7 @@ begin
 
     {$IfDef RecordNewMaps} WriteLineToDebugFile('Variables set DEM size: ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  ' + NewHeader.WKTString); {$EndIf}
     OpenAndZeroNewDEM(false,NewHeader,Result,NewName, InitDEMmissing);
-    {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
+    {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjName); {$EndIf}
 
     if OpenMap then begin
        DEMGlb[Result].SetupMap(false,MDDef.DefDEMMap);
@@ -538,7 +538,7 @@ function tDEMDataSet.FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCa
 const
    MaxSize = 1000;
 var
-   Title         : Shortstring;
+   Title,BoxSizeStr         : Shortstring;
    NewHeadRecs   : tDEMheader;
    FilterLap,Sum : integer;
    Filter   : FilterType;
@@ -552,6 +552,7 @@ begin
    {$IfDef RecordDEMEdits}  WriteLineToDebugFile('tDEMDataSet.FilterThisDEM in'); {$EndIf}
    SaveBackupDefaults;
    //NewDEM := 0;
+   BoxsizeStr := '';
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
    if (FilterCategory = fcFilFile) then begin
@@ -561,11 +562,14 @@ begin
       end;
    end
    else begin
-      if (BoxSize = 0) then begin
-         BoxSize := 2;
-         ReadDefault('Box size (postings each side of grid point)',BoxSize);
+      if FilterCategory <> fcParamIsotrop then begin
+         if (BoxSize = 0) then begin
+            BoxSize := 2;
+            ReadDefault('Box size (postings each side of grid point)',BoxSize);
+         end;
+         while sqr(succ(2*BoxSize)) > MaxSize do dec(Boxsize);
+         BoxSizeStr := '_' + IntToStr(2*Boxsize+1) + 'x' + IntToStr(2*Boxsize+1);
       end;
-      while sqr(succ(2*BoxSize)) > MaxSize do dec(Boxsize);
       if (FilterCategory = fcNumNeigh) then begin
          NewHeadRecs.DEMPrecision := ByteDEM;
       end
@@ -588,9 +592,8 @@ begin
        fcParamIsotrop : Title  := 'Par_Isotrop';
        fcFilFile : Title := ExtractFileNameNoExt(FilterName);
    end;
-   //if (not (FilterCategory in [fcDissimilarNeighbors])) then begin
-      Title := Title + '_' + IntToStr(2*Boxsize+1) + 'x' + IntToStr(2*Boxsize+1);
-   //end;
+
+   Title := Title + BoxsizeStr;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM setup done'); {$EndIf}
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_filter_' + AreaName,InitDEMmissing);
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM OpenZero done'); {$EndIf}
@@ -621,10 +624,10 @@ begin
    RestoreBackupDefaults;
 
    if OpenMap then DEMGlb[Result].SetupMap(true,SelectionMap.MapDraw.MapType);
-   fName := '';
-   if MDdef.PromptToSaveNewDEMs then DEMGlb[Result].WriteNewFormatDEM(fName);
-
-
+   if MDdef.PromptToSaveNewDEMs then begin
+      fName := '';
+      DEMGlb[Result].WriteNewFormatDEM(fName);
+   end;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM out'); {$EndIf}
 end;
 

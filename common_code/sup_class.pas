@@ -339,7 +339,7 @@ begin
       if (y mod 50 = 0) then UpdateProgressBar((y-Limits.YGridLow)/(Limits.YGridHigh-Limits.YGridLow));
       x := Limits.XGridLow;
       while x <= Limits.XGridHigh do begin
-         if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GridInDataSet(x,y) then begin
+         if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GridInDataSetInteger(x,y) then begin
             if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GetElevMeters(x,y,PV) then begin
                MVClusterClientDataSet.Insert;
                for i := 1 to MaxGridsInMG do begin
@@ -392,7 +392,7 @@ begin
 
       x := Limits.XGridLow;
       while (x <= Limits.XGridHigh) do begin
-         if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GridInDataSet(x,y) then begin
+         if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GridInDataSetInteger(x,y) then begin
             if DEMGlb[MultiGridArray[MGUsed].Grids[MultiGridArray[MGUsed].FirstValidGrid]].GetElevMetersOnGrid(x,y,PV) then begin
                 aMin := 99e39;
                 for j := 1 to MVClusterClientDataSet.NClusters do if (MVClusterClientDataSet.ClsCounts[j] > 0) then begin
@@ -867,9 +867,4 @@ end;
 
 initialization
 finalization
-  {$IfDef RecordSatTrainProblems} WriteLineToDebugFile('RecordSatTrainProblems active in sup_class'); {$EndIf}
-  {$IfDef RecordUnsupClass} WriteLineToDebugFile('RecordUnsupClass active in sup_class'); {$EndIf}
-  {$IfDef RecordSupClass} WriteLineToDebugFile('RecordSupClass active in sup_class'); {$EndIf}
-  {$IfDef RecordFullClass} WriteLineToDebugFile('RecordFullClass active in sup_class'); {$EndIf}
-  {$IfDef RecordSatClass} WriteLineToDebugFile('RecordSatClass active in sup_class'); {$EndIf}
 end.

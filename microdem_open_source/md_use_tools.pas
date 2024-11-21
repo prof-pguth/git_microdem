@@ -20,16 +20,15 @@ unit md_use_tools;
       //{$Define RecordSAGARanges}
       //{$Define RecordSAGA_JustResult}
       //{$Define RecordSAGALS}
+      //{$Define RecordSAGAFull}
       //{$Define SAGA_HillValley}
       //{$Define OpenLasTools}
       //{$Define RecordACOLITE}
       //{$Define RecordSubsetOpen}
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
-      //{$Define RecordOGR}
-      //{$Define RecordGeoPDF}
       //{$Define RecordReformat}
-      //{$Define RecordSAGAFull}
+      {$Define RecordMapProj}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -501,8 +500,11 @@ begin
    if FileExists(OutName) then begin
       Result := OpenNewDEM(OutName,false);
       DEMGlb[Result].DEMheader.ElevUnits := eu;
+      if not PossibleElevationUnits(DEMGlb[Result].DEMheader.ElevUnits) then DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
+
       if OpenMap then CreateDEMSelectionMap(Result,true,true,mt);
       {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap map opened'); {$EndIf}
+      {$If Defined(RecordMapProj)} WriteLineToDebugFile('ExecuteGrassAndOpenMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProj.GetProjName); {$EndIf}
    end
    else MessageToContinue('Grass failure, try command in DOS window: ' + BatchName);
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap out'); {$EndIf}
@@ -532,17 +534,14 @@ begin
 
      BatchFile := tStringList.Create;
      BatchFile.Add(ClearGrassDirectory);
-     //if (GrassEXE = 'grass83') then begin
-        BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
-        BatchFile.Add(SetGDALdataStr);
-        BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-        BatchFile.Add(MDDef.GrassEXE + ' -c ' + InName + ' ' + MDTempDir + 'grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
-     //end;
-
+     BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
+     BatchFile.Add(SetGDALdataStr);
+     BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
+     BatchFile.Add(MDDef.GrassEXE + ' -c ' + InName + ' ' + MDTempDir + 'grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
      BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec ' + CommandName  + ' |more');
      BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
 
-     if GetGrassExtensions then begin   //add these to get the extensions; they need to be done with a grass workspace set up
+     if GetGrassExtensions then begin   //add these to get the extensions; they need to be done with a grass workspace set up, so they are here
         BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
         BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.tri |more');
         BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.tpi |more');
@@ -752,12 +751,6 @@ end;
 
 initialization
 finalization
-  {$IfDef RecordGeoPDF} WriteLineToDebugFile('RecordGeoPDF active in md_use_tools'); {$EndIf}
-  {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDAL active in md_use_tools'); {$EndIf}
-  {$IfDef RecordOGR} WriteLineToDebugFile('RecordOGR active in md_use_tools'); {$EndIf}
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('RecordUseOtherPrograms active in md_use_tools'); {$EndIf}
-  {$IfDef RecordReformat} WriteLineToDebugFile('RecordReformat active in md_use_tools'); {$EndIf}
-  {$IfDef RecordSaveProblems} WriteLineToDebugFile('RecordSaveProblems active in md_use_tools'); {$EndIf}
 end.
 
 

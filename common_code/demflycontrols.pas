@@ -87,20 +87,20 @@ uses
 
 procedure TFlightControlForm.SpinButton2DownClick(Sender: TObject);
 var
-   Heading : float64;
+   Heading : float32;
 begin
    CheckEditString(Edit2.Text,Heading);
-   Heading := FindCompassAngleInRange(Heading - MDdef.FlyOptions.DeltaHeading);
+   Heading := FindCompassAngleInRangeFloat32(Heading - MDdef.FlyOptions.DeltaHeading);
    Edit2.Text := RealToString(Heading,-8,0);
 end;
 
 
 procedure TFlightControlForm.SpinButton2UpClick(Sender: TObject);
 var
-   Heading : float64;
+   Heading : float32;
 begin
    CheckEditString(Edit2.Text,Heading);
-   Heading := FindCompassAngleInRange(Heading + MDdef.FlyOptions.DeltaHeading);
+   Heading := FindCompassAngleInRangeFloat32(Heading + MDdef.FlyOptions.DeltaHeading);
    Edit2.Text := RealToString(Heading,-8,0);
 end;
 

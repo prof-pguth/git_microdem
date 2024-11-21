@@ -1265,8 +1265,4 @@ end;
 
 initialization
 finalization
-   {$IfDef NoInLine} WriteLineToDebugFile('NoInLine active in point_cloud_memory'); {$EndIf}
-   {$IfDef RecordPointCloudMemory} WriteLineToDebugFile('RecordPointCloudmemory active in point_cloud_memory'); {$EndIf}
-   {$IfDef RecordPointCloudLimits} WriteLineToDebugFile('RecordPointCloudLimits active in point_cloud_memory'); {$EndIf}
-   {$IfDef RecordMemoryAllocations} WriteLineToDebugFile('RecordMemoryAlocations active in point_cloud_memory'); {$EndIf}
 end.

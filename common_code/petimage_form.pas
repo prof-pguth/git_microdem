@@ -810,8 +810,9 @@ procedure DisplayBitmap(bmp : tMyBitmap; TheTitle : shortString = ''; StayAtop :
 var
    fName2 : PathStr;
 begin
-   fName2 := NextFileNumber(MDTempDir, 'bmp-pet', '.bmp');
-   bmp.SaveToFile(fName2);
+   fName2 := NextFileNumber(MDTempDir,TheTitle + '_', '.png');
+   //bmp.SaveToFile(fName2);
+   SaveBitmap(bmp,fName2);
    BMP.Free;
    DisplayBitmap(fName2,TheTitle, StayAtop, FewChoices);
 end;
@@ -1372,7 +1373,7 @@ end;
 
 procedure TImageDisplayForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose in'); {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose in, ' + Caption); {$EndIf}
    Action := caFree;
    CancelBtnClick(Sender);
    {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose CancelBtnClicked'); {$EndIf}
@@ -2655,17 +2656,6 @@ initialization
    LastPhotoRoamX := -1;
    LastPhotoRoamY := -1;
 finalization
-   {$IfDef RecordImageOverlayProblems} WriteLineToDebugFile('RecordImageOverlayProblems active in PetImage_form'); {$EndIf}
-   {$IfDef RecordImageLoadProblems} WriteLineToDebugFile('RecordImageLoadProblems active in PetImage_form'); {$EndIf}
-   {$IfDef RecordRoamOnMapProblems} WriteLineToDebugFile('RecordRoamOnMapProblems active in PetImage_form'); {$EndIf}
-   {$IfDef RecordImageResize} WriteLineToDebugFile('RecordImageResize active in PetImage_form'); {$EndIf}
-   {$IfDef RecordBlendBitmaps} WriteLineToDebugFile('RecordBlendBitmaps active in PetImage_form'); {$EndIf}
-   {$IfDef RecordJPEG} WriteLineToDebugFile('RecordJPEG active in PetImage_form'); {$EndIf}
-   {$IfDef RecordIHSmerges} WriteLineToDebugFile('RecordIHSmerges active in PetImage_form'); {$EndIf}
-   {$IfDef RecordPNG} WriteLineToDebugFile('RecordPNG active in PetImage_form'); {$EndIf}
-   {$IfDef RecordBitmapProblems} WriteLineToDebugFile('RecordBitmapProblems active in PetImage_form'); {$EndIf}
-   {$IfDef RecordGetImagePartOfBitmap} WriteLineToDebugFile('RecordGetImagePartOfBitmap active in PetImage_form'); {$EndIf}
-   {$IfDef RecordBitmapEdit} WriteLineToDebugFile('RecordBitmapEdit active in PetImage_form'); {$EndIf}
 end.
 
 

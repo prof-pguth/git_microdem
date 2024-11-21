@@ -1194,7 +1194,7 @@ var
 
 begin
    {$If Defined(RecordMapDraw) or Defined(RecordTiming) or Defined(RecordUTMZone) or Defined(RecordElevationScaling) or Defined(RecordPixelSize) or Defined(RecordMapResize) or Defined(RecordSat)}
-       WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in ' + MapSizeString + '  ' + PrimMapProj.GetProjectionName + '  bp=' + bpName);
+       WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in ' + MapSizeString + '  ' + PrimMapProj.GetProjName + '  bp=' + bpName);
    {$EndIf}
    {$IfDef ShowProjectedLimits} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, proj limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxProj,3)); {$EndIf}
    {$IfDef ShowProjectedLimits} if (VectorIndex <> 0) then WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, data grid limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1)); {$EndIf}
@@ -2768,52 +2768,6 @@ procedure tMapDraw.GetMapScaleFactor(var Lat,Long,Maph,Mapk: float64; var Prime 
 
 initialization
 finalization
-   {$IfDef RecordPrinter} WriteLineToDebugFile('RecordPrinterProblems in demmapdraw'); {$EndIf}
-   {$IfDef RecordOffMap} WriteLineToDebugFile('RecordOffMap  in demmapdraw'); {$EndIf}
-   {$IfDef RecordRecordAmbush} WriteLineToDebugFile('RecordAmbushProblems in demmapdraw'); {$EndIf}
-   {$IfDef RecordMapDraw} WriteLineToDebugFile('RecordMapDraw in demmapdraw'); {$EndIf}
-   {$IfDef RecordRoute} WriteLineToDebugFile('RecordRouteProblems in demmapdraw'); {$EndIf}
-   {$IfDef RecordContour} WriteLineToDebugFile('RecordContourProblems in demmapdraw'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosing in demmapdraw'); {$EndIf}
-   {$IfDef RecordFly} WriteLineToDebugFile('RecordFlyProblems in demmapdraw'); {$EndIf}
-   {$IfDef RecordTIGER} WriteLineToDebugFile('RecordTIGERProblems in demmapdraw'); {$EndIf}
-   {$IfDef RecordMapMerge} WriteLineToDebugFile('RecordMapMerge in demmapdraw'); {$EndIf}
-   {$IfDef RecordContourLines} WriteLineToDebugFile('RecordContourLines in demmapdraw'); {$EndIf}
-   {$IfDef RecordFan} WriteLineToDebugFile('RecordFan in demmapdraw'); {$EndIf}
-   {$IfDef RecordElevationScaling} WriteLineToDebugFile('RecordElevationScaling in demmapdraw'); {$EndIf}
-   {$IfDef RecordMagDecDiagram} WriteLineToDebugFile('RecordMagDecDiagram in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordTissot} WriteLineToDebugFile('RecordTissotProblems in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordTargetAreasCoverage} WriteLineToDebugFile('RecordTargetAreasCoverage in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordMapMargin} WriteLineToDebugFile('RecordMapMarginProblems in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordDrawGridLines} WriteLineToDebugFile('RecordDrawGridLines in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordLegend} WriteLineToDebugFile('RecordLegend in DEMMapDraw'); {$EndIf}
-   {$IfDef TimeFigureMultiSensorCoverage} WriteLineToDebugFile('TimeFigureMultiSensorCoverage in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordTerrainCategories} WriteLineToDebugFile('RecordTerrainCategories in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordPLSS} WriteLineToDebugFile('RecordPLSSProblems in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordDBPlots} WriteLineToDebugFile('RecordDBPlots in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordIHSmerges} WriteLineToDebugFile('RecordIHSmerges in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordStretchBitmap} WriteLineToDebugFile('RecordStretchBitmap in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordMapBlow} WriteLineToDebugFile('RecordMapBlow in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordTerrCatOverlays} WriteLineToDebugFile('RecordTerrCatOverlays in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordDrawSecondGrid} WriteLineToDebugFile('RecordDrawSecondGrid in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordMapLimits} WriteLineToDebugFile('RecordMapLimits in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordWMS} WriteLineToDebugFile('RecordWMS in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordDrawLayers} WriteLineToDebugFile('RecordDrawLayers in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('RecordShapeFileGroup in demmapdraw'); {$EndIf}
-   {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('RecordQueryGeoBox in demmapdraw'); {$EndIf}
-   {$IfDef RecordMapIndex} WriteLineToDebugFile('RecordMapIndex in demmapdraw'); {$EndIf}
-   {$IfDef RecordHiResDEM} WriteLineToDebugFile('RecordHiResDEM in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordSat} WriteLineToDebugFile('RecordSatProblems in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordOverlays} WriteLineToDebugFile('RecordOverlays in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('RecordElevColorFromTable in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordSatTraining} WriteLineToDebugFile('RecordSatTraining in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordCarefulPolyLineDraw} WriteLineToDebugFile('RecordCarefulPolyLineDraw in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordGeology} WriteLineToDebugFile('RecordGeology in DEMMapDraw'); {$EndIf}
-   {$IfDef RecordNLCD} WriteLineToDebugFile('RecordNLCD in DEMMapDraw'); {$EndIf}
-   {$IfDef NoParallelFor} WriteLineToDebugFile('NoParallelFor in demmapdraw'); {$EndIf}
-   {$IfDef RecordWorldOutline} WriteLineToDebugFile('RecordWorldOutline in demmapdraw'); {$EndIf}
-   {$If Defined(TimePLSS)} WriteLineToDebugFile('TimePLSS in demmapdraw'); {$EndIf}
-   {$IfDef RecordFullDrawGridLines} WriteLineToDebugFile('TimePLSS in demmapdraw'); {$EndIf}
 end.
 
 

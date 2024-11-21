@@ -210,9 +210,9 @@ begin
        {$IfDef RecordOpenVectorMap} (if ProjName <> '') then WriteLineToDebugFile('After setting, ProjName=' + ProjName); {$EndIf}
 
        Result.MapDraw.PrimMapProj.PName := MapDraw.PrimMapProj.PName;
-       MapDraw.BaseTitle := MapDraw.PrimMapProj.GetProjectionName;
+       MapDraw.BaseTitle := MapDraw.PrimMapProj.GetProjName;
        MapDraw.AdjustProjectionForUTMZone('New vector map',MDDef.PreferPrimaryDatum,MDDef.DefaultUTMZone,MDDef.DefaultLatHemi);
-       {$If Defined(RecordOpenVectorMap)} WriteLineToDebugFile('New vector map: ' + MapDraw.PrimMapProj.GetProjectionName); {$EndIf}
+       {$If Defined(RecordOpenVectorMap)} WriteLineToDebugFile('New vector map: ' + MapDraw.PrimMapProj.GetProjName); {$EndIf}
 
        MapDraw.SetFullMapCoverage;
        MapDraw.ResetMarginalia;
@@ -281,23 +281,23 @@ begin {CreateDEMSelectionMap}
    {$Else}
       if not ValidDEM(DEM) then exit;
 
-      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM) + ' ' + DEMglb[DEM].DEMMapProj.GetProjectionName); {$EndIf}
+      {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + IntToStr(DEM) + ' ' + DEMglb[DEM].DEMMapProj.GetProjName); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap in, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('enter CreateDEMSelectionMap,'); {$EndIf}
-      {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(RecordMapProj)} WriteLineToDebugFile('CreateDEMSelectionMap in, DEM=' + DEMglb[DEM].DEMMapProj.GetProjName); {$EndIf}
       {$IfDef RecordNewWKT} WriteLineToDebugFile('CreateDEMSelectionMap in  DEM WKTString=' + IntToStr(length(DEMglb[DEM].DEMHeader.WKTString)));  {$EndIf}
 
       if (DEMGlb[DEM].SelectionMap = nil) then begin
          DEMGlb[DEM].SelectionMap := TMapForm.Create(Application);
-         {$IfDef RecordDEMMapProjection}
-            WriteLineToDebugFile('CreateDEMSelectionMap selection map created, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+         {$IfDef RecordMapProj}
+            WriteLineToDebugFile('CreateDEMSelectionMap selection map created, DEM=' + DEMglb[DEM].DEMMapProj.GetProjName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjName);
          {$EndIf}
          {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap map created,'); {$EndIf}
       end;
 
       DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.InitProjFomDEMHeader(DEMGlb[DEM].DEMHeader);
-      {$IfDef RecordDEMMapProjection}
-         WriteLineToDebugFile('CreateDEMSelectionMap map projection set, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+      {$IfDef RecordMapProj}
+         WriteLineToDebugFile('CreateDEMSelectionMap map projection set, DEM=' + DEMglb[DEM].DEMMapProj.GetProjName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjName);
       {$EndIf}
 
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('CreateDEMSelectionMap projection set,'); {$EndIf}
@@ -313,8 +313,8 @@ begin {CreateDEMSelectionMap}
       {$If Defined(RecordOpenMap) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('CreateDEMSelectionMap out,' + DEMGlb[DEM].SelectionMap.MapDraw.MapSizeString); {$EndIf}
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('CreateDEMSelectionMap out, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[DEM].TrackHorizontalDatumDebugLog('exit CreateDEMSelectionMap,'); {$EndIf}
-      {$IfDef RecordDEMMapProjection}
-         WriteLineToDebugFile('CreateDEMSelectionMap out, DEM=' + DEMglb[DEM].DEMMapProjection.GetProjectionName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjectionName);
+      {$IfDef RecordMapProj}
+         WriteLineToDebugFile('CreateDEMSelectionMap out, DEM=' + DEMglb[DEM].DEMMapProj.GetProjName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjName);
       {$EndIf}
    {$EndIf}
 end {CreateDEMSelectionMap};
@@ -338,7 +338,7 @@ begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap) or Defined(RecordNumberOpenMaps)}
       WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  ' +  MapDraw.MapSizeString  + ' current maps=' + IntToStr(NumOpenMaps));
    {$EndIf}
-   {$IfDef RecordDEMMapProjection} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].DEMMapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordMapProj} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].DEMMapProj.GetProjName); {$EndIf}
 
    try
       if Selection then begin
@@ -379,8 +379,8 @@ begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow exit ' + MapCaption + '  ' + MapDraw.MapSizeString); {$EndIf}
    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out for ' + DEMGlb[CurDEM].AreaName + ' current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow out'); {$EndIf}
-   {$IfDef RecordDEMMapProjection}
-      WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, DEM=' + DEMGlb[MapDraw.DEMonMap].DEMMapProjection.GetProjectionName + '  Map=' + MapDraw.PrimMapProj.GetProjectionName);
+   {$IfDef RecordMapProj}
+      WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, DEM=' + DEMGlb[MapDraw.DEMonMap].DEMMapProj.GetProjName + '  Map=' + MapDraw.PrimMapProj.GetProjName);
    {$EndIf}
 end;
 
@@ -422,7 +422,7 @@ end;
                         InBounds := false;
                         if (DEMGlb[ThisMap.MapDraw.DEMonMap] <> Nil) and (DEMGlb[ThisMap.MapDraw.DEMonMap].ElevationDEM) then begin
                            DEMGlb[ThisMap.MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-                           InBounds := DEMGlb[ThisMap.MapDraw.DEMonMap].GridInDataSet(xg,yg);
+                           InBounds := DEMGlb[ThisMap.MapDraw.DEMonMap].GridInDataSetFloat(xg,yg);
                         end;
                      until Inbounds or (ThisMap.MapDraw.DEMonMap = MaxDEMDataSets);
                      if (not Inbounds) then begin

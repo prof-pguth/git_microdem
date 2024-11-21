@@ -314,6 +314,7 @@ procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
 procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
 
 function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
+function PossibleElevationUnits(What : byte) : boolean;
 
 
 var
@@ -372,6 +373,13 @@ uses
    DEM_indexes,
    DEMStat,
    DataBaseCreate;
+
+
+function PossibleElevationUnits(What : byte) : boolean;
+begin
+   Result := What in [euMeters,euFeet,euDecimeters,euDeciFeet,euCentimeters,euUndefined,eulnElev,euLogElev,euMM,euKM];
+end;
+
 
 
       function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
@@ -1570,15 +1578,27 @@ var
             AParameter('Geomorph','DoRuffHist',DoRuffHist,true);
             AParameter('Geomorph','DoAspectHist',DoAspectHist,true);
 
+            AParameterShortFloat('Geomorph','HistBinSize',HistBinSize,1);
+            AParameterShortFloat('Geomorph','BicubicSlope',BicubicSlope,1);
             AParameterShortFloat('Geomorph','HistElevBinSize',HistElevBinSize,20);
             AParameterShortFloat('Geomorph','HistSlopeBinSize',HistSlopeBinSize,1);
             AParameterShortFloat('Geomorph','HistRuffSlopeBinSize',HistRuffBinSize, 0.5);
             AParameterShortFloat('Geomorph','HistAspectBinSize',HistAspectBinSize, 2);
+
+(*
             AParameterShortFloat('Geomorph','PerfectMAbD',PerfectMAbD,0.05);
             AParameterShortFloat('Geomorph','PerfectMAvD',PerfectMAvD,0.05);
             AParameterShortFloat('Geomorph','PerfectR',PerfectR, 0.999);
-            AParameterShortFloat('Geomorph','HistBinSize',HistBinSize,1);
-            AParameterShortFloat('Geomorph','BicubicSlope',BicubicSlope,1);
+            AParameterShortFloat('Geomorph','SlopePerfectMAbD',SlopePerfectMAbD,0.05);
+            AParameterShortFloat('Geomorph','SlopePerfectMAvD',SlopePerfectMAvD,0.05);
+            AParameterShortFloat('Geomorph','SlopePerfectR',SlopePerfectR, 0.999);
+            AParameterShortFloat('Geomorph','SlopeDivergenceRange',SlopeDivergenceRange, 2.5);
+            AParameterShortFloat('Geomorph','CurvePerfectMAbD',CurvePerfectMAbD,0.005);
+            AParameterShortFloat('Geomorph','CurvePerfectMAvD',CurvePerfectMAvD,0.0005);
+            AParameterShortFloat('Geomorph','CurvePerfectR',CurvePerfectR, 0.950);
+            AParameterShortFloat('Geomorph','CurveDivergenceRange',CurveDivergenceRange, 0.04);
+*)
+
 
             AParameterShortFloat('Geomorph','ElevHistBinSize',ElevHistBinSize,5);
             AParameterShortFloat('Geomorph','SlopeHistBinSize',SlopeHistBinSize,2.5);
@@ -1611,10 +1631,13 @@ var
                AParameter('Geomorph','CalcMAbD',CalcMAbD,false);
                AParameter('Geomorph','CalcMAvD',CalcMAvD,false);
                AParameter('Geomorph','CalcScattergrams',CalcScattergrams,false);
+               AParameter('Geomorph','CalcBoxPlots',CalcBoxPlots,false);
                AParameter('Geomorph','CalcHistogram',CalcHistograms,false);
+               AParameter('Geomorph','CalcDiffMaps',CalcDiffMaps,false);
                AParameter('Geomorph','UseCalculatedOutside',UseCalculatedOutside,false);
                AParameter('Geomorph','CompareShowMaps',CompareShowMaps,false);
                AParameter('Geomorph','GDAL_SAGA_arcsec',GDAL_SAGA_arcsec,false);
+               AParameter('Geomorph','CloseGridsAfterComputing',CloseGridsAfterComputing,false);
 
                AParameter('Geomorph','DoS1S2',DoS1S2,false);
                AParameter('Geomorph','DoS2S3',DoS2S3,true);
@@ -1651,6 +1674,8 @@ var
             AParameterShortFloat('Geomorph','GeomorphSlopeCut2',GeomorphSlopeCut[2],20);
             AParameterShortFloat('Geomorph','GeomorphSlopeCut3',GeomorphSlopeCut[3],30);
             AParameterShortFloat('Geomorph','GeomorphSlopeCut4',GeomorphSlopeCut[4],40);
+            AParameterShortFloat('Geomorph','GeomorphSlopeCut5',GeomorphSlopeCut[5],60);
+            AParameterShortFloat('Geomorph','GeomorphSlopeCut6',GeomorphSlopeCut[6],80);
             AParameterShortFloat('Geomorph','FabColorMin',FabColorMin,100);
             AParameterShortFloat('Geomorph','FabColorMax',FabColorMax,1000);
             AParameterShortFloat('Geomorph','CurveFlatVal',CurveFlatVal,0.105);
@@ -1689,6 +1714,7 @@ var
             AParameter('Geomorph','PlanCurvMoments',PlanCurvMoments,false);
             AParameter('Geomorph','SlopeCurvMoments',SlopeCurvMoments,false);
             AParameter('Geomorph','GraphsOfMoments',GraphsOfMoments,true);
+            AParameter('Geomorph','StringGridWithMoments',StringGridWithMoments,true);
             AParameter('Geomorph','LongMoments',LongMoments,false);
             AParameter('Geomorph','CountHistograms',CountHistograms,true);
             AParameter('Geomorph','WavelengthCompDist',WavelengthCompDist,10000);
@@ -3358,6 +3384,7 @@ var
          AParameterShortFloat('MapDraw','BlowUpLatSize',BlowUpLatSize,0.05);
          AParameterShortFloat('MapDraw','LatLongCushion',LatLongCushion,0.025);
 
+
          AParameter('MapDraw','HighlightDiffMap',HighlightDiffMap,hdHighlight);
          AParameter('MapDraw','AutoMergeStartDEM',AutoMergeStartDEM,true);
 
@@ -3790,6 +3817,7 @@ begin
       AParameter('Horizon','HorizonVertAngleGraph',HorizonVertAngleGraph,false);
       AParameter('Horizon','ShowMaskedToSat',ShowMaskedToSat,true);
       AParameter('Horizon','SolarPathMap',SolarPathMap,true);
+      AParameter('Horizon','SolarPathVectors',SolarPathVectors,true);
       AParameter('Horizon','ShowSolstices',ShowSolstices,true);
 
       {$IfDef ExKML}
@@ -5363,23 +5391,6 @@ initialization
    AspColorNW := RGBtrip(244,250,0);
    AspColorN := RGBtrip(132,214,0);
 finalization
-   {$IfDef RecordFan} WriteLineToDebugFile('RecordFanProblems in demdef_routines'); {$EndIf}
-   {$IfDef RecordDefaultColors} WriteLineToDebugFile('RecordDefaultColors in demdef_routines'); {$EndIf}
-   {$IfDef MessageStartupUnit} WriteLineToDebugFile('MessageStartupUnitProblems in demdef_routines'); {$EndIf}
-   {$IfDef RecordDefault} WriteLineToDebugFile('RecordDefaultProblems in demdef_routines'); {$EndIf}
-   {$IfDef Options} WriteLineToDebugFile('Options in demdef_routines'); {$EndIf}
-   {$IfDef RecordFanConversions} WriteLineToDebugFile('RecordFanConversions in demdef_routines'); {$EndIf}
-   {$IfDef RecordTerrainCategories} WriteLineToDebugFile('RecordTerrainCategories in demdef_routines'); {$EndIf}
-   {$IfDef RecordPath} WriteLineToDebugFile('RecordPathProblems in demdef_routines'); {$EndIf}
-   {$IfDef RecordFan} WriteLineToDebugFile('RecordFanProblems in demdef_routines'); {$EndIf}
-   {$IfDef RecordGazOps} WriteLineToDebugFile('RecordGazOps in demdef_routines'); {$EndIf}
-   {$IfDef ShowMenuLimits} WriteLineToDebugFile('ShowMenuLimits in demdef_routines'); {$EndIf}
-   {$IfDef RecordUpdate} WriteLineToDebugFile('RecordUpdateProblems in demdef_routines'); {$EndIf}
-   {$IfDef RecordINIfiles} WriteLineToDebugFile('RecordINIfiles in demdef_routines'); {$EndIf}
-   {$IfDef RecordLoadDefault} WriteLineToDebugFile('RecordLoadDefaultProblems in demdef_routines'); {$EndIf}
-   {$IfDef RecordWebDownloads} WriteLineToDebugFile('RecordWebDownloads in demdef_routines'); {$EndIf}
-   {$IfDef RecordParallelLoops} WriteLineToDebugFile('RecordParallelLoops in demdef_routines'); {$EndIf}
-   {$IfDef RecordFont} WriteLineToDebugFile('RecordFont in demdef_routines'); {$EndIf}
 end.
 
 

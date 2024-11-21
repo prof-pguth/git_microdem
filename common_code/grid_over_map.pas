@@ -1648,9 +1648,6 @@ end;
 initialization
    LoadAtlasMap := false;
 finalization
-   {$IfDef TrackAtlas} WriteLineToDebugFile('TrackAtlas active in grid_over_map'); {$EndIf}
-   {$IfDef TrackAtlasSubset} WriteLineToDebugFile('TrackAtlasSubset active in grid_over_map'); {$EndIf}
-   {$IfDef TrackAtlasScattergram} WriteLineToDebugFile('TrackAtlasScattergram active in grid_over_map'); {$EndIf}
 end.
 
 

@@ -2,8 +2,8 @@ object AlgCompareForm: TAlgCompareForm
   Left = 0
   Top = 0
   Caption = 'Algorithm/program comparisons'
-  ClientHeight = 235
-  ClientWidth = 640
+  ClientHeight = 247
+  ClientWidth = 560
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,9 +14,9 @@ object AlgCompareForm: TAlgCompareForm
   TextHeight = 15
   object GroupBox1: TGroupBox
     Left = 24
-    Top = 16
+    Top = 8
     Width = 257
-    Height = 137
+    Height = 184
     Caption = 'Comparisons to make'
     TabOrder = 0
     object CheckBox1: TCheckBox
@@ -59,10 +59,26 @@ object AlgCompareForm: TAlgCompareForm
       Caption = 'Histograms'
       TabOrder = 4
     end
+    object CheckBox9: TCheckBox
+      Left = 16
+      Top = 140
+      Width = 153
+      Height = 17
+      Caption = 'Difference maps'
+      TabOrder = 5
+    end
+    object CheckBox10: TCheckBox
+      Left = 16
+      Top = 163
+      Width = 97
+      Height = 17
+      Caption = 'Box plots'
+      TabOrder = 6
+    end
   end
   object OKBtn: TBitBtn
-    Left = 24
-    Top = 182
+    Left = 22
+    Top = 200
     Width = 52
     Height = 27
     Caption = 'OK'
@@ -93,8 +109,8 @@ object AlgCompareForm: TAlgCompareForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 106
-    Top = 182
+    Left = 104
+    Top = 200
     Width = 58
     Height = 27
     Kind = bkHelp
@@ -104,69 +120,45 @@ object AlgCompareForm: TAlgCompareForm
     TabOrder = 2
     IsControl = True
   end
-  object GroupBox2: TGroupBox
-    Left = 320
-    Top = 32
-    Width = 201
-    Height = 105
-    Caption = 'Difference considered identical'
-    TabOrder = 3
-    object Edit1: TEdit
-      Left = 11
-      Top = 19
-      Width = 121
-      Height = 23
-      TabOrder = 0
-      Text = 'Edit1'
-    end
-    object Edit2: TEdit
-      Left = 11
-      Top = 48
-      Width = 121
-      Height = 23
-      TabOrder = 1
-      Text = 'Edit2'
-    end
-    object Edit3: TEdit
-      Left = 11
-      Top = 77
-      Width = 121
-      Height = 23
-      TabOrder = 2
-      Text = 'Edit3'
-    end
-  end
   object CheckBox6: TCheckBox
-    Left = 304
-    Top = 160
+    Left = 312
+    Top = 24
     Width = 169
     Height = 17
     Caption = 'Use colleague grids'
-    TabOrder = 4
+    TabOrder = 3
   end
   object CheckBox7: TCheckBox
-    Left = 304
-    Top = 184
+    Left = 312
+    Top = 48
     Width = 97
     Height = 17
     Caption = 'Open maps'
-    TabOrder = 5
+    TabOrder = 4
   end
   object CheckBox8: TCheckBox
-    Left = 304
-    Top = 208
+    Left = 312
+    Top = 72
     Width = 217
     Height = 17
     Caption = 'GDAL + SAGA for arc sec DEMs'
-    TabOrder = 6
+    TabOrder = 5
   end
   object BitBtn38: TBitBtn
-    Left = 170
-    Top = 180
+    Left = 168
+    Top = 198
     Width = 113
     Height = 29
     Caption = 'Save defaults'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BitBtn38Click
+  end
+  object CheckBox11: TCheckBox
+    Left = 312
+    Top = 95
+    Width = 193
+    Height = 17
+    Caption = 'Close grids after computations'
+    TabOrder = 7
   end
 end

@@ -471,7 +471,7 @@ function TMapDraw.ProjectedCoordinatesStringFromLatLong(lat,long : float64; Long
              UK_OS,Finn_GK,GeneralTransverseMercator,LamAzEqAreaEllipsoidal,IrishGrid]) then begin
                  mp.ForwardProjectDegrees(Lat,Long,xproj,yproj);
                  Result := 'x=' + RealToString(xproj,-18,1) + '  y=' + RealToString(yproj,-18,1);
-                 if LongForm then Result := mp.GetProjectionName + ' Projected meters ' + Result;
+                 if LongForm then Result := mp.GetProjName + ' Projected meters ' + Result;
           end;
       end;
 

@@ -43,8 +43,16 @@ function HorizonDataBaseFromPoint(DEM : integer; Lat,Long,HorizonLength,ObsAbove
 function HoursSolarIlluminationGraph(DEM : integer; Lat,Long : float64) : TThisBaseGraph;
 function HoursSolarIlluminationGrid(MapForm : tMapForm; JulianDay : integer; fName : shortstring = '') : integer;
 
-function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
+function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer; PlotPath : boolean = true) : tNetForm;
 function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
+
+
+
+{ from Montenbruck, O., and Pfleger, T., 1991, Astronomy on the personal computer: Springer-Verlag, 255 p.}
+
+   procedure MP_MoonRise(stMonth,stDay,stYear,Duration : integer; Lat,Long : float64);
+   function MP_DaysSinceFullMoon(stMonth,stDay,stYear : integer; Lat,Long : float64) : integer;
+
 
 var
    SunGraph : tThisBaseGraph;
@@ -80,6 +88,9 @@ type
    tBlockAngles = array[0..3600] of float64;
 
 
+{$I moon_montenbruk_pfleger.inc}
+
+
 function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer; var HTML : PathStr) : tStringList;
 var
    URL : shortstring;
@@ -103,40 +114,88 @@ end;
 
 
 function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
+
+{
+0                <tr>
+1                    <td><strong>Time</strong></td>
+2                    <td><strong>Altitude</strong></td>
+3                    <td><strong>Azimuth (E&nbsp;of&nbsp;N)</strong></td>
+4                    <td><strong>Fraction Illuminated</strong></td>
+5                </tr>
+
+
+6                       <tr>
+                            <td>00:00</td>
+                            <td>69.4°</td>
+                            <td>134.6°</td>
+                            <td>1.00</td>
+                        </tr>
+}
+
 var
    aLine,fName2,HTML : PathStr;
    webpage,positions : tstringlist;
    FoundIt : boolean;
    Hour : float32;
-   i : integer;
+   i,j : integer;
+
+   procedure CleanUpFile(var WebPage : tStringList);
+   var
+      NewList : tStringList;
+      i : integer;
+      aline : shortstring;
+   begin
+      NewList := tStringList.Create;
+      for i := 0 to pred(WebPage.Count) do begin
+         aLine := trim(WebPage.Strings[i]);
+         if (aline <> '') and (Copy(aline,1,4) = '<td>') {or (Copy(aline,1,4) = '<tr>'))} then begin
+            //ReplaceCharacter(aLine,'°',' ');
+            NewList.Add(aline);
+         end;
+      end;
+      WebPage.Clear;
+      for i := 0 to pred(NewList.Count) do WebPage.Add(Newlist.Strings[i]);
+      //WebPage.SaveToFile(MDTempDir + 'test.txt');
+   end;
+
+var
+   TimeStr,Alt,Az,Illum : shortstring;
 begin
    WebPage := MoonPostionFromUSNO(Lat,Long,iyear,imonth,iday,HTML);
+   CleanUpFile(Webpage);
    positions := tstringlist.create;
    positions.Add('TIME,HOUR,ALTITUDE,AZIMUTH,ILLUMIN_PC');
    FoundIt := false;
-   for I := 0 to pred(webpage.Count) do begin
+   i := 4;
+   while (i < webpage.Count - 5) do begin
       aLine := webpage.Strings[i];
-      if copy(aLine,1,4) = '<pre' then FoundIt := true;
-      if FoundIt and (length(aLine) > 36) then begin
-         if aLine[1] in ['0'..'2'] then begin
-            Hour := StrToFloat(Copy(aLine,1,2)) + StrToFloat(Copy(aLine,4,2)) / 60;
-            Positions.Add(Copy(aLine,1,5) + ',' + RealToString(Hour,6,2)  + ',' + Copy(aLine,12,5) + ',' + Copy(aLine,24,5) + ',' + Copy(aLine,36,4));
-          end;
-      end;
-      if aLine = '</pre>' then FoundIt := false;
+      TimeStr := Copy(aline,5,5);
+      Hour := StrToFloat(Copy(TimeStr,1,2)) + StrToFloat(Copy(TimeStr,4,2)) / 60;
+      Alt := webpage.Strings[i+1];
+      for j := length(Alt) downto 1 do if not (Alt[j] in ['0'..'9','.','-']) then Delete(alt,j,1);
+      Az := webpage.Strings[i+2];
+      for j := length(Az) downto 1 do if not (Az[j] in ['0'..'9','.']) then Delete(az,j,1);
+      Illum := webpage.Strings[i+3];
+      for j := length(Illum) downto 1 do if not (Illum[j] in ['0'..'9','.']) then Delete(Illum,j,1);
+      aLine := TimeStr + ',' + RealToString(Hour,-6,2)  + ',' + Alt + ',' + Az + ',' + Illum;
+      //if (Alt[1] <> '-') then writelineTodebugfile(aline);
+      if (Alt[1] <> '-') then Positions.Add(aLine);
+      inc(i,4);
    end;
    fName2 := Petmar.NextFileNumber(MDTempDir, 'Moon_pos_', '.dbf');
    Result := StringList2CSVtoDB(Positions,fName2);
-   if Result = 0 then begin
+   WebPage.Free;
+   if (Result = 0) then begin
       ExecuteFile(HTML,'','');
    end;
 end;
 
 
-function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer) : tNetForm;
+function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer; PlotPath : boolean = true) : tNetForm;
 var
    Time : shortstring;
    xd,yd,db : integer;
+   Alt,Az : float32;
 begin
    db := MoonPositionDB(Lat,Long,iyear,imonth,iday);
 
@@ -149,19 +208,38 @@ begin
      Result.Caption := 'Moon position ' + Result.nd.LLcornerText;
      Result.nd.NewNet;
 
-     while not GISdb[db].MyData.eof do  begin
-        if GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE') > 0  then
-           Result.nd.PlotPointOnNet(LinePlot,GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),ASymbol(FilledBox,ClARed,3),xd,yd);
-        GISdb[db].MyData.Next;
-     end;
-
-     GISdb[db].MyData.First;
-     while not GISdb[db].MyData.eof do begin
-        Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
-        if copy(Time,4,2) = '00' then begin
-           Result.nd.LabelPointOnNet(GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),round(GISdb[db].MyData.GetFieldByNameAsFloat('HOUR')));
+     if PlotPath then begin
+        while not GISdb[db].MyData.eof do  begin
+           if GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE') > 0  then
+              Result.nd.PlotPointOnNet(LinePlot,GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),ASymbol(FilledBox,ClARed,3),xd,yd);
+           GISdb[db].MyData.Next;
         end;
-        GISdb[db].MyData.Next;
+
+        GISdb[db].MyData.First;
+        while not GISdb[db].MyData.eof do begin
+           Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
+           if copy(Time,4,2) = '00' then begin
+              Result.nd.LabelPointOnNet(GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE'),GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH'),round(GISdb[db].MyData.GetFieldByNameAsFloat('HOUR')));
+           end;
+           GISdb[db].MyData.Next;
+        end;
+     end
+     else begin
+        GISdb[db].MyData.First;
+        while not GISdb[db].MyData.eof do begin
+           Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
+           if copy(Time,4,2) = '00' then begin
+              Alt := GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE');
+              Az := GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH');
+              Result.nd.PlotPointOnNet(LinePlot,Alt,Az,ASymbol(FilledBox,ClARed,3),xd,yd);
+              Result.nd.WorkingBitmap.Canvas.Pen.Color := clRed;
+              Result.nd.WorkingBitmap.Canvas.Pen.Width := 3;
+              Result.nd.WorkingBitmap.Canvas.MoveTo(Result.nd.XPlotCoord(Result.nd.XPlotCent),Result.nd.YPlotCoord(Result.nd.YPlotCent));
+              Result.nd.WorkingBitmap.Canvas.LineTo(xd,yd);
+              Result.nd.LabelPointOnNet(Alt,Az,round(GISdb[db].MyData.GetFieldByNameAsFloat('HOUR')));
+           end;
+           GISdb[db].MyData.Next;
+        end;
      end;
      Result.UpdateDisplay;
    end
@@ -907,7 +985,7 @@ var
    az,alt, hrtime : float64;
    Month,DayMonth,Year,Day,SymSize,NumDay,tz,xd,yd,SunUp,SunMasked,db : integer;
    TStr : ShortString;
-   SunResults,
+   SunResultsTable,
    Results : tStringList;
    BlockAngles : tBlockAngles;
    fName : PathStr;
@@ -920,30 +998,16 @@ var
       begin
          {$IfDef RecordHorizon} WriteLineToDebugFile('Start JDay=' + IntToStr(Day)); {$EndIf}
          Inc(NumDay);
-         hrtime := 0;
-         SunUp := 0;
-         SunMasked := 0;
-         repeat
-            Sun_Position.ComputeSunPosition(latitude,longitude,hrtime,tz,day,az,alt,sunrise,sunset);
-            if (alt > 0) then begin
-               if ValidDEM(DEM) then begin
-                  DEMGlb[DEM].HorizonBlocking(latitude,longitude,Az,MDDef.HorizonLength,2,BlockAngle,BlockLength,BlockLat,BlockLong,saDEMGrid);
-                  if (BlockAngle <  Alt) then begin
-                     TStr := 'above horizon';
-                     inc(SunUp);
-                  end
-                  else begin
-                     TStr := 'masked by topography';
-                     inc(SunMasked);
-                  end;
-                  if (SunResults <> Nil) then SunResults.Add(RealToString(hrtime,-12,3) + ',' + HoursMinutesString(hrtime) + ',' + RealToString(az,13,2) + ',' + RealToString(alt,13,2) + ',' + TStr);
-               end;
-               if MDDef.SolarPathMap then Result.nd.PlotPointOnNet(LinePlot,Alt,Az,ASymbol(FilledBox,Color,SymSize),xd,yd);
-            end;
-            hrtime := hrtime + MDDef.SunlightPrecision / 60;
-         until ((alt < 0) and (hrTime > 12)) or (hrTime > 24);
 
          if MDDef.SolarPathMap then begin
+            hrtime := 0;
+            repeat
+               Sun_Position.ComputeSunPosition(latitude,longitude,hrtime,tz,day,az,alt,sunrise,sunset);
+               if (alt > 0) then begin
+                  Result.nd.PlotPointOnNet(LinePlot,Alt,Az,ASymbol(FilledBox,Color,SymSize),xd,yd);
+               end;
+               hrtime := hrtime + MDDef.SunlightPrecision / 60;
+            until ((alt < 0) and (hrTime > 12)) or (hrTime > 24);
             hr := 0;
             repeat
                Sun_Position.ComputeSunPosition(latitude,longitude, hr,tz,day,az,alt,sunrise,sunset);
@@ -952,6 +1016,47 @@ var
                end;
                hr := hr + 2;
             until (hr > 24);
+
+         end;
+
+         if (SunResultsTable <> Nil) then begin
+            SunMasked := 0;
+            SunUp := 0;
+            hrtime := 0;
+            repeat
+               Sun_Position.ComputeSunPosition(latitude,longitude,hrtime,tz,day,az,alt,sunrise,sunset);
+               if (alt > 0) then begin
+                  if ValidDEM(DEM) then begin
+                     DEMGlb[DEM].HorizonBlocking(latitude,longitude,Az,MDDef.HorizonLength,2,BlockAngle,BlockLength,BlockLat,BlockLong,saDEMGrid);
+                     if (BlockAngle <  Alt) then begin
+                        TStr := 'above horizon';
+                        inc(SunUp);
+                     end
+                     else begin
+                        TStr := 'masked by topography';
+                        inc(SunMasked);
+                     end;
+                     if (SunResultsTable <> Nil) then SunResultsTable.Add(RealToString(hrtime,-12,3) + ',' + HoursMinutesString(hrtime) + ',' + RealToString(az,13,2) + ',' + RealToString(alt,13,2) + ',' + TStr);
+                  end;
+               end;
+               hrtime := hrtime + MDDef.SunlightPrecision / 60;
+            until ((alt < 0) and (hrTime > 12)) or (hrTime > 24);
+         end;
+
+         if MDDef.SolarPathVectors then begin
+            hr := 0;
+            repeat
+               Sun_Position.ComputeSunPosition(latitude,longitude,hr,tz,day,az,alt,sunrise,sunset);
+               if (alt > 0) then begin
+                  Result.nd.PlotPointOnNet(LinePlot,Alt,Az,ASymbol(FilledBox,Color,SymSize),xd,yd);
+                  Result.nd.WorkingBitmap.Canvas.Pen.Color := clRed;
+                  Result.nd.WorkingBitmap.Canvas.Pen.Width := 3;
+                  Result.nd.WorkingBitmap.Canvas.MoveTo(Result.nd.XPlotCoord(Result.nd.XPlotCent),Result.nd.YPlotCoord(Result.nd.YPlotCent));
+                  Result.nd.WorkingBitmap.Canvas.LineTo(xd,yd);
+                  Result.nd.LabelPointOnNet(Alt,Az,hr,MDDef.NetDef.NetScreenMult+2);
+               end;
+               hr := hr + 1;
+            until ((alt < 0) and (hrTime > 12)) or (hr > 24);
          end;
          {$IfDef RecordHorizon} WriteLineToDebugFile('End JDay=' + IntToStr(Day)); {$EndIf}
       end;
@@ -967,7 +1072,7 @@ var
   SaveHemi : tHemisphere;
 begin
    {$IfDef RecordHorizon} WriteLineToDebugFile('SunAndHorizon in'); {$EndIf}
-   SunResults := Nil;
+   SunResultsTable := Nil;
    SaveHemi := MDDef.NetDef.HemiSphereUsed;
    MDDef.NetDef.HemiSphereUsed := Upper;
    MDDef.NetDef.DrawGridCircles := ngPolar;
@@ -1075,12 +1180,6 @@ end;
 
 initialization
 finalization
-    {$IfDef RecordSolarPosition} WriteLineToDebugFile('RecordSolarPosition active in sun_position');{$EndIf}
-    {$IfDef RecordGetSunriseSet} WriteLineToDebugFile('RecordGetSunriseSet active in sun_position');{$EndIf}
-    {$IfDef RecordSunlightMaps} WriteLineToDebugFile('RecordSunlightMaps active in sun_position');{$EndIf}
-    {$IfDef RecordBlockAngleDifference} WriteLineToDebugFile('RecordBlockAngleDifference active in sun_position  (major slowdown)');{$EndIf}
-    {$IfDef RecordFullSunlightMaps} WriteLineToDebugFile('RecordFullSunlightMaps active in sun_position (major slowdown)');{$EndIf}
-    {$IfDef TimeSunlightMap} WriteLineToDebugFile('TimeSunlightMap active in sun_position');{$EndIf}
 end.
 
 

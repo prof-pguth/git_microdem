@@ -903,7 +903,7 @@ end;
         LastDEMLoaded := Result;
         DEMMergeInProgress := false;
       end;
-      {$If Defined(TimeLoadDEM)} if (Result = 0) then WriteLineToDebugFile('OpenNewDEM fail') else WriteLineToDebugFile('OpenNewDEM out  ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProjection.GetProjectionName); {$EndIf}
+      {$If Defined(TimeLoadDEM)} if (Result = 0) then WriteLineToDebugFile('OpenNewDEM fail') else WriteLineToDebugFile('OpenNewDEM out  ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProjection.GetProjName); {$EndIf}
       {$If Defined(TrackHorizontalDatum)}
          WriteLineToDebugFile('exit OpenNewDEM, ' + DEMGlb[Result].AreaName + '  ' +  DEMGlb[Result].DEMMapProjection.h_DatumCode + '  ' +
            StringFromDatumCode(DEMGlb[Result].DEMheader.DigitizeDatum));
@@ -1696,7 +1696,7 @@ var
          Table.SetFieldByNameAsString('DATA_LAYER',theType);
          Table.SetFieldByNameAsString('FILENAME',theName);
          if (MapOwner <> Nil) then begin
-            Table.SetBoundingBox(MapOwner.MapDraw.MapCorners.BoundBoxGeo);
+            Table.SetRecordBoundingBox(MapOwner.MapDraw.MapCorners.BoundBoxGeo);
             Table.SetFieldByNameAsInteger('MAP_TYPE',MapOwner.MapDraw.MapType);
          end;
          Table.Post;
@@ -1769,13 +1769,6 @@ initialization
    InitCompareDEMs;
    ClosingEverything := false;
 finalization
-   {$IfDef RecordClosingData} WriteLineToDebugFile('RecordClosingProblems in DEM_Manager'); {$EndIf}
-   {$IfDef RecordWhatsOpen} WriteLineToDebugFile('RecordWhatsOpenProblems in DEM_Manager'); {$EndIf}
-   {$IfDef RecordCloseDEM} WriteLineToDebugFile('RecordCloseDEM in DEM_Manager'); {$EndIf}
-   {$IfDef RecordProjects} WriteLineToDebugFile('RecordProjects in DEM_Manager'); {$EndIf}
-   {$IfDef TimeLoadDEM} WriteLineToDebugFile('TimeLoadDEM in DEM_Manager'); {$EndIf}
-   {$IfDef TimeSatLoad} WriteLineToDebugFile('TimeSatLoad in DEM_Manager'); {$EndIf}
-   {$IfDef RecordDownload} WriteLineToDebugFile('RecordDownload in DEM_Manager'); {$EndIf}
    {$IfDef RecordClosing} WriteLineToDebugFile('Finalized DEM_Manager'); {$EndIf}
 end.
 

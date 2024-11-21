@@ -1624,14 +1624,6 @@ end;
 
 initialization
 finalization
-   {$IfDef Slicer} WriteLineToDebugFile('SlicerProblems active in slicer_3d'); {$EndIf}
-   {$IfDef SlicerProblemsFull} WriteLineToDebugFile('SlicerProblemsFull active in slicer_3d (major slowdown)'); {$EndIf}
-   {$IfDef SlicerBoxOutline} WriteLineToDebugFile('SlicerBoxOutline active in slicer_3d'); {$EndIf}
-   {$IfDef SlicerRange} WriteLineToDebugFile('SlicerRangeProblems active in slicer_3d'); {$EndIf}
-   {$IfDef SlicerEdits} WriteLineToDebugFile('SlicerEdits active in slicer_3d'); {$EndIf}
-   {$IfDef SliceCenter} WriteLineToDebugFile('SliceCenterProblems active in slicer_3d'); {$EndIf}
-   {$IfDef SlicePlot} WriteLineToDebugFile('SlicePlotProblems active in slicer_3d'); {$EndIf}
-   {$IfDef SlicerOpenGL} WriteLineToDebugFile('SlicerOpenGL active in slicer_3d'); {$EndIf}
 end.
 
 

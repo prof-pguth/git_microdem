@@ -64,9 +64,9 @@ var
                //   standard math convention puts 0 on the x axis and angles increases counterclockwise,
                //   use geographic conventions, where N (0) is on the y axis, and angles increase clockwise
                SlopeAsp.AspectDirGrid := HeadingOfLine(SlopeAsp.dzdx,SlopeAsp.dzdy) + 180;
-               FindCompassAngleInRange(SlopeAsp.AspectDirGrid);
+               FindCompassAngleInRangeFloat32(SlopeAsp.AspectDirGrid);
                SlopeAsp.AspectDir := SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle;
-               FindCompassAngleInRange(SlopeAsp.AspectDir);
+               FindCompassAngleInRangeFloat32(SlopeAsp.AspectDir);
                if IsPit(SlopeAsp) then begin
                   SlopeAsp.Dir := cdPit;
                end

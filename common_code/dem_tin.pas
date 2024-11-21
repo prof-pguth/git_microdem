@@ -616,7 +616,7 @@ begin
                      ScreenSymbol(Bitmap.Canvas,PlotForm2.GraphDraw.GraphX(long),Plotform2.GraphDraw.GraphY(lat),FilledBox,1,
                          PlatformRainBowColorFunct(z,ContourData^.zmin,ContourData^.zmax));
                   {$EndIf}
-                  if GridInDataSet(X,Y) then begin
+                  if GridInDataSetInteger(X,Y) then begin
                      SetGridElevation(x,y,z);
                   end;
                end
@@ -1089,14 +1089,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordTINProblems} WriteLineToDebugFile('RecordTINProblems active in DEM_TIN'); {$EndIf}
-   {$IfDef RecordXYZReadProblems} WriteLineToDebugFile('RecordXYZReadProblems active in DEM_TIN'); {$EndIf}
-   {$IfDef RecordTINRoamProblems} WriteLineToDebugFile('RecordTINRoamProblems active in DEM_TIN'); {$EndIf}
-   {$IfDef RecordImportProblems} WriteLineToDebugFile('RecordImportProblems active in DEM_TIN'); {$EndIf}
-   {$IfDef RecordTINInterpolationProblems} WriteLineToDebugFile('RecordTINInterpolationProblems active in DEM_TIN  (severe degradation)'); {$EndIf}
-   {$IfDef RecordXYZConvertProblems} WriteLineToDebugFile('RecordXYZConvertProblems active in DEM_TIN'); {$EndIf}
-   {$IfDef RecordInterpolateImage} WriteLineToDebugFile('RecordInterpolateImage active in DEM_TIN'); {$EndIf}
-   {$IfDef RecordDetailedTINProblems} WriteLineToDebugFile('RecordDetailedTINProblems active in DEM_TIN (major slowdown)'); {$EndIf}
 end.
 
 

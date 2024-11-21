@@ -640,7 +640,7 @@ uses
    USOutlines,
    PETMAR,PETMath,PETGraphColors, Petmar_ini_file,
    DEM_indexes,
-   Geomorph_compare_algorithms,
+   compare_algorithms_options,
    Nevadia_Main;
 
 var
@@ -655,7 +655,7 @@ var
 
 procedure CompareProgramOptions;
 var
-  AlgCompareForm: TAlgCompareForm;
+  AlgCompareForm : TAlgCompareForm;
 begin
    AlgCompareForm := TAlgCompareForm.Create(Application);
    AlgCompareForm.ShowModal;
@@ -2161,10 +2161,6 @@ initialization
    {$IfDef MessageStartUpUnitProblems} MessageToContinue('Startup demoptions'); {$EndIf}
 finalization
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demoptions in'); {$EndIf}
-   {$IfDef ShowDirectories} WriteLineToDebugFile('ShowDirectories active in demoptions'); {$EndIf}
-   {$IfDef OptionsProblems} WriteLineToDebugFile('OptionsProblems active in DEMOptions'); {$EndIf}
-   {$IfDef ShowLocalOptima} WriteLineToDebugFile('ShowLocalOptima active in DEMOptions'); {$EndIf}
-   {$IfDef ShowDatumOptions} WriteLineToDebugFile('ShowDatumOptions active in DEMOptions'); {$EndIf}
 end.
 
 

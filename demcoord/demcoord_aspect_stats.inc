@@ -52,16 +52,18 @@ procedure tAspectStats.AddPoint(SlopeAspectRec: tSlopeAspectRec);
 var
    AspInt : integer;
 begin
-   if (SlopeAspectRec.AspectDir < 32000) then begin
+   if (SlopeAspectRec.AspectDir < 3600) then begin
       AspX := AspX + CosDeg(SlopeAspectRec.AspectDir);
       AspY := AspY + SinDeg(SlopeAspectRec.AspectDir);
       AspInt := round(SlopeAspectRec.AspectDir);
-      if (AspInt = 360) then AspInt := 0;
-      inc(AspectFreqValsTrue[AspInt]);
-      //AspInt := round(SlopeAspectRec.AspectDirGrid);
-      //if (AspInt = 360) then AspInt := 0;
-      inc(AspectFreqValsGrid[AspInt]);
-      inc(Npts);
+      AspInt := FindCompassAngleInRangeInteger(AspInt);
+      //if (AspInt >= 0) and (AspInt < 360) then begin
+         inc(AspectFreqValsTrue[AspInt]);
+         inc(Npts);
+      //end;
+   end
+   else begin
+       //MessageToContinue('SlopeAspectRec.AspectDir wrong, ' + RealToString(SlopeAspectRec.AspectDir,-12,-2));
    end;
 end;
 

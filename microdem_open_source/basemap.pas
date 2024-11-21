@@ -167,10 +167,9 @@ type
          destructor Destroy; override;
 
          function InitProjFomDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
-         function InitializeProjectionFromWKTfile(fName : PathStr) : boolean;
-         function InitializeProjectionFromWKTstring(TheProjectionString : Ansistring) : boolean;
+         function InitProjFromWKTfile(fName : PathStr) : boolean;
+         function InitProjFromWKTstring(TheProjectionString : Ansistring) : boolean;
          procedure StartUTMProjection(UTMZone : integer);
-
 
          procedure SetDatumConstants;
          procedure SetDatumAndTMConstants;
@@ -212,9 +211,9 @@ type
 
          procedure GetProjectParameters;
 
-         function ProjectionParametersList(Full : boolean = false) : tStringList;
+         function ProjParamsList(Full : boolean = false) : tStringList;
          procedure ProjectionParamsToDebugFile(Why : shortstring; Full : boolean = false);
-         function GetProjectionName : shortstring;
+         function GetProjName : shortstring;
          function KeyDatumParams : shortstring;
          procedure WriteProjectionSummaryToDebugFile(why : shortstring);
 
@@ -237,7 +236,7 @@ type
          {$EndIf}
 
          {$IfDef RecordProblems}
-            procedure WriteProjectionParametersToDebugFile(Title : shortString; Full : boolean = false);
+            procedure WriteProjParamsToDebugFile(Title : shortString; Full : boolean = false);
             function FalseSettingsString : shortstring;
          {$EndIf}
 
@@ -351,7 +350,7 @@ const
 
 procedure tMapProjection.WriteProjectionSummaryToDebugFile(why : shortstring);
 begin
-   WriteLineToDebugFile(Why + ' Pname=' + GetProjectionName + ' ' + KeyDatumParams);
+   WriteLineToDebugFile(Why + ' Pname=' + GetProjName + ' ' + KeyDatumParams);
 end;
 
 
@@ -364,7 +363,7 @@ end;
 
 function tMapProjection.InitProjFomDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 begin
-   {$IfDef RecordProjectionParameters} ProjectionParamsToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, after definition'); {$EndIf}
+   {$IfDef RecordProjectionParameters} ProjectionParamsToDebugFile('tMapProjection.InitProjFromDEMHeader, after definition'); {$EndIf}
    {$IfDef RecordDEMprojection} WriteProjectionSummaryToDebugFile('tMapProjection.InitProjFomDEMHeader in, '); {$EndIf}
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader, DEM wkt=' + IntToStr(Length(DEMHeader.wktString))); {$EndIf}
@@ -379,7 +378,7 @@ begin
    if (DEMheader.wktString <> '') then begin
       {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader DEM wkt=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
       DEMheader.DEMUsed := WKTDEM;
-      InitializeProjectionFromWKTstring(DEMheader.wktString);
+      InitProjFromWKTstring(DEMheader.wktString);
       //Result := DecodeWKTProjectionFromString(DEMheader.wktString);
    end
    else if (DEMheader.DEMUsed = UTMbasedDEM) then begin
@@ -391,7 +390,7 @@ begin
       GetProjectParameters;
    end;
    ProjDebugName := DebugName;
-   {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromDEMHeader, map ' + GetProjectionName); {$EndIf}
+   {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitProjFromDEMHeader, map ' + GetProjName); {$EndIf}
    {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader out, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
 end;
 
@@ -508,14 +507,14 @@ var
    fName : PathStr;
 begin
    fName := thePath + 'all.prj';
-   if FileExists(fName) then Result := InitializeProjectionFromWKTfile(fName)
+   if FileExists(fName) then Result := InitProjFromWKTfile(fName)
    else begin
       fName := thePath + 'all.wkt';
-      if FileExists(fName) then Result := InitializeProjectionFromWKTfile(fName)
+      if FileExists(fName) then Result := InitProjFromWKTfile(fName)
       else begin
          fName := FindSingleWKTinDirectory(thePath);
          if fName = '' then Result := false
-         else Result := InitializeProjectionFromWKTfile(fName);
+         else Result := InitProjFromWKTfile(fName);
       end;
    end;
 end;
@@ -637,7 +636,7 @@ begin
        if (TiffOffset = 15) then PName := PolarStereographicEllipsoidal;
        if (TiffOffset = 17) then PName := EquiDistantCylindrical;     // aka Equirectangular;
        GeoKeys.Code3075 := TiffOffset;
-       Result := GetProjectionName;
+       Result := GetProjName;
     end
     else if (TiffOffset = 16) then begin
        PName := ObliqueStereographic;
@@ -676,7 +675,7 @@ begin
       LatHemi := 'N';
       if (TiffOffset = 2193) then begin
          LatHemi := 'S';
-         InitializeProjectionFromWKTfile(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
+         InitProjFromWKTfile(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
          Result := wktProjName;
       end
       else if (TiffOffset = 27700) then begin
@@ -752,7 +751,7 @@ begin
              {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 Unhandled Code ' + IntToStr(TiffOffset)); {$EndIf}
           end;
       end;
-      if Result = '' then Result := GetProjectionName;
+      if Result = '' then Result := GetProjName;
       if (projUTMZone = -99) then ProjUTMzone := 0;
    end;
    {$If Defined(RecordGeotiffCodes) or Defined(RecordOpenFromTiff3072) or Defined(RecordProjection)} WriteLineToDebugFile('tMapProjection.RecordOpenFromTiff3072 out, Projection=' + Result); {$EndIf}
@@ -840,7 +839,7 @@ begin
 end;
 
 
-function tMapProjection.InitializeProjectionFromWKTfile(fName : PathStr) : boolean;
+function tMapProjection.InitProjFromWKTfile(fName : PathStr) : boolean;
 var
    ProjData : tStringList;
    i : integer;
@@ -851,7 +850,7 @@ begin
       //VectorProjfName := fName;
       ProjData := tStringList.Create;
       ProjData.LoadFromFile(fName);
-      {$IfDef RecordProjectionParameters} WriteLineToDebugFile('InitializeProjectionFromWKT, ' + ProjData.Strings[0]); {$EndIf}
+      {$IfDef RecordProjectionParameters} WriteLineToDebugFile('InitProjFromWKT, ' + ProjData.Strings[0]); {$EndIf}
       wktString := ptTrim(ProjData.Strings[0]);
       if (ProjData.Count > 1) then begin
          wktString := '';
@@ -859,16 +858,16 @@ begin
             wktString := wktString + ptTrim(ProjData.Strings[i]);
       end;
       ProjData.Free;
-      Result := InitializeProjectionFromWKTstring(wktString);
+      Result := InitProjFromWKTstring(wktString);
    end
    else begin
       MessageToContinue('WKT file required: ' + fName);
    end;
-  {$If Defined(RecordWKT) or Defined(LongCent)} ShortProjInfo('tMapProjection.InitializeProjectionFromWKT out'); {$EndIf}
+  {$If Defined(RecordWKT) or Defined(LongCent)} ShortProjInfo('tMapProjection.InitProjFromWKT out'); {$EndIf}
 end;
 
 
-function tMapProjection.InitializeProjectionFromWKTstring(TheProjectionString : ANSIstring) : boolean;
+function tMapProjection.InitProjFromWKTstring(TheProjectionString : ANSIstring) : boolean;
 var
    ftf : float64;
 
@@ -1081,7 +1080,7 @@ end;
 
 procedure SetUpDefaultNewProjection(var inMapProjection : tMapProjection; SetCenter : boolean = true);
 begin
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection in ' + inMapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection in ' + inMapProjection.GetProjName); {$EndIf}
    if SetCenter then inMapProjection.lat0 := 0;
    if SetCenter then inMapProjection.Long0 := 0;
    inMapProjection.False_East := 0;
@@ -1112,7 +1111,7 @@ begin
    end
    else if inMapProjection.PName in [PlateCaree,EquiDistantCylindrical,MillerCylindrical,Mollweide,Cassini,HammerProj,EquiDistantCylindrical,WebMercator,Mercator,MercatorEllipsoid,MillerCylindrical] then begin
    end;
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection out '  + inMapProjection.GetProjectionName); {$EndIf}
+   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection out '  + inMapProjection.GetProjName); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('SetUpDefaultNewProjection Out,  LongCent: ' + RadToDegString(inMapProjection.long0)); {$EndIf}
    {$IfDef DetailedProjParams} inMapProjection.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
 end;
@@ -1232,7 +1231,7 @@ var
    sl : tStringList;
    i : integer;
 begin
-    sl := ProjectionParametersList(Full);
+    sl := ProjParamsList(Full);
     if Full then begin
        WriteLineToDebugFile('');
        WriteLineToDebugFile(Why);
@@ -1247,10 +1246,10 @@ begin
 end;
 
 
-function tMapProjection.ProjectionParametersList(Full : boolean = false) : tStringList;
+function tMapProjection.ProjParamsList(Full : boolean = false) : tStringList;
 begin
    Result := tStringList.Create;
-   Result.Add('Map Projection parameters ' + GetProjectionName);
+   Result.Add('Map Projection parameters ' + GetProjName);
    if not (PName in [PlateCaree]) then begin
       Result.Add(FalseSettingsString + ' a=' + RealToString(a,-18,-2) + ' f=' + RealToString(h_f,-18,-6));
    end;
@@ -1290,11 +1289,11 @@ end;
 
 
 {$IfDef RecordProblems}
-   procedure tMapProjection.WriteProjectionParametersToDebugFile(Title : shortString; Full : boolean = false);
+   procedure tMapProjection.WriteProjParamsToDebugFile(Title : shortString; Full : boolean = false);
    var
       TStr : tStringList;
    begin
-      TStr := ProjectionParametersList(Full);
+      TStr := ProjParamsList(Full);
       WriteLineToDebugFile(Title);
       WriteStringListToDebugFile(Tstr);
       TStr.Free;
@@ -1462,7 +1461,7 @@ begin
 end;
  *)
 
-function tMapProjection.GetProjectionName : shortstring;
+function tMapProjection.GetProjName : shortstring;
 begin
    case PName of
       PlateCaree  : Result := 'Plate caree';
@@ -1531,22 +1530,6 @@ initialization
 finalization
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demdatum in'); {$EndIf}
    WGS84DatumConstants.Destroy;
-
-   {$IfDef RecordMapRoamProblems} WriteLineToDebugFile('RecordMapRoamProblems in demdatum'); {$EndIf}
-   {$IfDef RecordGeotdeticCalc} WriteLineToDebugFile('RecordGeotdeticCalc in demdatum'); {$EndIf}
-   {$IfDef RecordGeotdeticCalcDetailed} WriteLineToDebugFile('RecordGeotdeticCalcDetailed in demdatum'); {$EndIf}
-   {$IfDef RecordDefineDatum} WriteLineToDebugFile('RecordDefineDatum in demdatum'); {$EndIf}
-   {$IfDef RecordCoordUseConversionsProblems} WriteLineToDebugFile('RecordCoordUseConversionsProblems in demdatum (likely slowdown)'); {$EndIf}
-   {$IfDef RecordPickDatum} WriteLineToDebugFile('RecordPickDatum in demdatum'); {$EndIf}
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('RecordProjectionParameters in demdatum'); {$EndIf}
-   {$IfDef RecordProjection} WriteLineToDebugFile('RecordProjectionProblems in basemap'); {$EndIf}
-   {$IfDef RecordVectorMap} WriteLineToDebugFile('RecordVectorMapProblems in basemap'); {$EndIf}
-   {$IfDef RawProject} WriteLineToDebugFile('RawProject in basemap, slowdown'); {$EndIf}
-   {$IfDef RecordGeotiffCodes} WriteLineToDebugFile('RecordGeotiffCodes in basemap, slowdown'); {$EndIf}
-   {$IfDef DetailedProjParams} WriteLineToDebugFile('DetailedProjParams in basemap'); {$EndIf}
-   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems in basemap'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demdatum out'); {$EndIf}
-   {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing DEMDatum'); {$EndIf}
 end.
 
 

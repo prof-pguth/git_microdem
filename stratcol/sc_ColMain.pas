@@ -2777,10 +2777,6 @@ end;
 initialization
    InitialStatColOptions;
 finalization
-   {$IfDef RecordStratColProblems} WriteLineToDebugFile('RecordStratColProblems active in sc_colmain');{$EndIf}
-   {$IfDef RecordStratColDBProblems} WriteLineToDebugFile('RecordStratColDBProblems active in sc_colmain');{$EndIf}
-   {$IfDef RecordScaleBarProblems} WriteLineToDebugFile('RecordScaleBarProblems active in sc_colmain');{$EndIf}
-   {$IfDef RecordStratColUnitProblems} WriteLineToDebugFile('RecordStratColUnitProblems active in sc_colmain');{$EndIf}
 end {unit}.
 
 

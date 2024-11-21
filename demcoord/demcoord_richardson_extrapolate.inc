@@ -113,7 +113,7 @@ begin
             slope_3x3 := 100 * sqrt(sqr(dzdx_3x3) + sqr(dzdy_3x3));
             DEMGlb[Slope3x3Grid].SetGridElevation(x,y,slope_3x3);
             if (slope_3x3 > 0.01) then begin
-               Aspect_3x3 := FindCompassAngleInRange(HeadingOfLine(dzdx_3x3,dzdy_3x3)+180);
+               Aspect_3x3 := FindCompassAngleInRangeFloat32(HeadingOfLine(dzdx_3x3,dzdy_3x3)+180);
                DEMGlb[Aspect_3x3Grid].SetGridElevation(x,y,Aspect_3x3);
             end;
 
@@ -147,7 +147,7 @@ begin
                   {$EndIf}
 
                   if (slope_5x5 > 0.01) then begin
-                     Aspect_5x5 := FindCompassAngleInRange(HeadingOfLine(dzdx_5x5,dzdy_5x5)+180);
+                     Aspect_5x5 := FindCompassAngleInRangeFloat32(HeadingOfLine(dzdx_5x5,dzdy_5x5)+180);
                      DEMGlb[Aspect_5x5Grid].SetGridElevation(x,y,Aspect_5x5);
                   end;
 
@@ -164,7 +164,7 @@ begin
 
                   DEMGlb[Slope4thGrid].SetGridElevation(x,y,slope_4th);
                   if (slope_4th > 0.01) then begin
-                     Aspect4th := FindCompassAngleInRange(HeadingOfLine(dzdx_4th,dzdy_4th)+180);
+                     Aspect4th := FindCompassAngleInRangeFloat32(HeadingOfLine(dzdx_4th,dzdy_4th)+180);
                      DEMGlb[Aspect4thGrid].SetGridElevation(x,y,Aspect4th);
                   end;
 
@@ -176,7 +176,7 @@ begin
 
                         DEMGlb[slope7x7Grid].SetGridElevation(x,y,slope_7x7);
                         if (slope_7x7 > 0.01) then begin
-                           Aspect_7x7 := FindCompassAngleInRange(HeadingOfLine(dzdx_7x7,dzdy_7x7)+180);
+                           Aspect_7x7 := FindCompassAngleInRangeFloat32(HeadingOfLine(dzdx_7x7,dzdy_7x7)+180);
                            DEMGlb[Aspect_7x7Grid].SetGridElevation(x,y,Aspect_7x7);
                         end;
 
@@ -192,7 +192,7 @@ begin
 
                         DEMGlb[Slope6thGrid].SetGridElevation(x,y,slope_6th);
                         if (slope_6th > 0.01) then begin
-                           Aspect6th := FindCompassAngleInRange(HeadingOfLine(dzdx_6th,dzdy_6th)+180);
+                           Aspect6th := FindCompassAngleInRangeFloat32(HeadingOfLine(dzdx_6th,dzdy_6th)+180);
                            DEMGlb[Aspect6thGrid].SetGridElevation(x,y,Aspect6th);
                         end;
                      end;

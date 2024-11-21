@@ -177,7 +177,7 @@ var
                PrimMapProj.lat0 :=  0;
                PrimMapProj.long0 := (-177 + pred(GetUTMZone(uMinLong)) * 6) *  DegToRad;
                PrimMapProj.GetProjectParameters;
-               BaseTitle := PrimMapProj.GetProjectionName;
+               BaseTitle := PrimMapProj.GetProjName;
                PrimMapProj.ForwardProjectDegrees(uMaxLat,uMinLong,MapCorners.BoundBoxProj.XMin,MapCorners.BoundBoxProj.YMax);
                PrimMapProj.ForwardProjectDegrees(uMinLat,uMaxLong,MapCorners.BoundBoxProj.XMax,MapCorners.BoundBoxProj.YMin);
             end;

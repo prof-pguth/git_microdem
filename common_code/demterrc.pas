@@ -173,7 +173,7 @@ begin
       DEMUsed := inDEM;
       CatDoing := inCatDoing;
       TerrainCategory := inTerrainCategory;
-      SymbolOnButton(BitBtn3,MapOwner.DrSymbol);
+      SymbolOnButton(BitBtn3,DrSymbol);
       Label3.Caption := 'Z value: ' + ElevUnitsAre(DEMGlb[DEMUsed].DEMheader.ElevUnits);
       Label8.Visible := DEMGlb[DEMUsed].DEMheader.ElevUnits = euMeters;
       Label9.Visible := Label8.Visible;
@@ -199,13 +199,13 @@ begin
          GroupBox1.Visible := false;
       end;
       BitBtn1.Enabled := (CatDoing in [tcNormal]);
-      BitBtn10.Enabled := (CatDoing = tcElevOnly) or (TerrainCategory.UseElevation and (not TerrainCategory.UseRelief) and (not TerrainCategory.UseSlope) and (not TerrainCategory.UseAspect));
+      BitBtn10.Enabled := (not FullOptions) or (CatDoing = tcElevOnly) or (TerrainCategory.UseElevation and (not TerrainCategory.UseRelief) and (not TerrainCategory.UseSlope) and (not TerrainCategory.UseAspect));
       BitBtn3.Enabled := (CatDoing in [tcElevOnly,tcSlopeOnly]);
       BitBtn4.Enabled := (CatDoing <> tcTwoAspects);
       SizeForm;
       {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory form sized'); {$EndIf}
 
-      BitBtn10.Enabled := (CatDoing = tcElevOnly);
+      //BitBtn10.Enabled := (CatDoing = tcElevOnly);
 
       CheckBox13.Checked := TerrainCategory.UseElevation and (CatDoing <> tcTwoAspects);
       CheckBox14.Checked := TerrainCategory.UseRelief and (CatDoing <> tcTwoAspects);
@@ -421,16 +421,16 @@ end;
 procedure TGetTerrC.Edit1Change(Sender: TObject);
 begin
    CheckEditString(Edit1.Text,TerrainCategory.CatMinElev);
-   Label9.Caption := RealToString(TerrainCategory.CatMinElev / FeetToMeters,-8,-1);
-   Label16.Caption := RealToString(DEMGlb[DEMUsed].PercentileofElevation(TerrainCategory.CatMinElev),-18,-1);
+   Label9.Caption := RealToString(TerrainCategory.CatMinElev / FeetToMeters,-18,-6);
+   Label16.Caption := RealToString(DEMGlb[DEMUsed].PercentileofElevation(TerrainCategory.CatMinElev),-18,-6);
 end;
 
 
 procedure TGetTerrC.Edit2Change(Sender: TObject);
 begin
    CheckEditString(Edit2.Text,TerrainCategory.CatMaxElev);
-   Label10.Caption := RealToString(TerrainCategory.CatMaxElev / FeetToMeters,-8,-1);
-   Label17.Caption := RealToString(DEMGlb[DEMUsed].PercentileOfElevation(TerrainCategory.CatMaxElev),-18,-1);
+   Label10.Caption := RealToString(TerrainCategory.CatMaxElev / FeetToMeters,-18,-6);
+   Label17.Caption := RealToString(DEMGlb[DEMUsed].PercentileOfElevation(TerrainCategory.CatMaxElev),-18,-6);
 end;
 
 
@@ -487,22 +487,22 @@ end;
 
 
 procedure TGetTerrC.BitBtn10Click(Sender: TObject);
-var
-   fName : PathStr;
-   DBlist : tStringList;
+//var
+   //fName : PathStr;
+   //DBlist : tStringList;
 begin
-
-   if (CatDoing = tcElevOnly) then begin
-      DBlist := tStringList.Create;
+   //if (CatDoing = tcElevOnly) then begin
       DefineTerrainCategory;
-      DBlist.Add('LAT,LONG,ELEV');
-      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.HighZ := TerrainCategory.CatMaxElev;
-      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.LowZ := TerrainCategory.CatMinElev;
-      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.PlotExtremeZValues(nil,dblist);
-      fName := Petmar.NextFileNumber(MDTempDir, 'terrain_cat_',DefaultDBExt);
-      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToLoadedDatabase(DBList,fName);
-      EndProgress;
-   end;
+      //DBlist := tStringList.Create;
+      //DBlist.Add('LAT,LONG,ELEV');
+      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.HighZ := TerrainCategory.CatMaxElev;
+      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.LowZ := TerrainCategory.CatMinElev;
+      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.PlotExtremeZValues(nil,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev, dblist);
+      PlotExtremeZValues(MapOwner.MapDraw.DEMonMap,MapOwner,nil,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev);
+      //fName := Petmar.NextFileNumber(MDTempDir, 'terrain_cat_',DefaultDBExt);
+      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToLoadedDatabase(DBList,fName);
+      //EndProgress;
+   //end;
 end;
 
 procedure TGetTerrC.BitBtn1Click(Sender: TObject);
@@ -651,9 +651,9 @@ begin
      DefineTerrainCategory;
 
      if (CatDoing = tcElevOnly) then begin
-        MapOwner.HighZ := TerrainCategory.CatMaxElev;
-        MapOwner.LowZ := TerrainCategory.CatMinElev;
-        MapOwner.PlotExtremeZValues(Memo1);
+        //MapOwner.HighZ := TerrainCategory.CatMaxElev;
+        //MapOwner.LowZ := TerrainCategory.CatMinElev;
+        PlotExtremeZValues(MapOwner.MapDraw.DEMonMap,MapOwner,Memo1,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev);
      end;
 
      if (CatDoing = tcSlopeOnly) then begin
@@ -661,8 +661,8 @@ begin
         MapOwner.FindSlopePoints(Memo1,TerrainCategory.CatMinSlope,CheckBox10.Checked);
         CreateBitmap(Bitmap,300,45);
         Bitmap.Canvas.Brush.Style := bsSolid;
-        Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(MapOwner.DrSymbol.Color);
-        Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(MapOwner.DrSymbol.Color);
+        Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(DrSymbol.Color);
+        Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(DrSymbol.Color);
         Bitmap.Canvas.Rectangle(5,5,25,20);
         Bitmap.Canvas.Brush.Style := bsClear;
         Bitmap.Canvas.Font.Size := 12;
@@ -692,7 +692,7 @@ end;
 
 procedure TGetTerrC.BitBtn3Click(Sender: TObject);
 begin
-   PickSymbol(BitBtn3,MapOwner.DrSymbol,'Points');
+   PickSymbol(BitBtn3,DrSymbol,'Points');
 end;
 
 procedure TGetTerrC.BitBtn4Click(Sender: TObject);

@@ -426,7 +426,7 @@ var
           var
              z2 : float32;
           begin
-             if DEMGlb[AccumCostDEM].GridInDataSet(x,y) then begin
+             if DEMGlb[AccumCostDEM].GridInDataSetInteger(x,y) then begin
                if DEMGlb[AccumCostDEM].GetElevMetersOnGrid(x,y,z2) and (z2 < SetGridPoint) then begin
                   DEMGlb[FinalAccumCostDEM].SetGridElevation(X,Y,z);
                   DEMGlb[FinalDistanceDEM].SetGridElevation(X,Y,Dist);
@@ -486,7 +486,7 @@ begin
    {$IfDef RecordBasicsAccumPath} WritelineToDebugFile('Start point neighborhood for ' + ExtractFileNameNoExt(fName)); {$EndIf}
    for x := StartX-MDDef.StartFree to StartX+MDDef.StartFree do begin
       for y := StartY-MDDef.StartFree to StartY+MDDef.StartFree do
-         if DEMGlb[CostPassageDEM].GridInDataSet(x,y) then begin
+         if DEMGlb[CostPassageDEM].GridInDataSetInteger(x,y) then begin
             if DEMGlb[CostPassageDEM].MissingDataInGrid(x,y) then begin
                DEMGlb[CostPassageDEM].SetGridElevation(x,y,MDDef.BufferCost);
             end;

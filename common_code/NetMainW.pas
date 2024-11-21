@@ -34,10 +34,6 @@ type
       procedure DrawEquatorialGrid;
       procedure DrawVerticalPlane(RadStrike : float32; color : TPlatformColor);
       procedure WhereIsPointOnNet(What : tPoleOrLine; Dip,DipDirect : float32; var xd,yd : integer);
-      function XPlotCoord(xd : integer) : integer; overload;
-      function YPlotCoord(yd : integer) : integer; overload;
-      function XPlotCoord(xd : float64) : integer; overload;
-      function YPlotCoord(yd : float64) : integer; overload;
       procedure AdjustForHemisphere(x,y : float64; var xcoord,ycoord : float64);
    public
     Sum : VectorType;
@@ -52,6 +48,10 @@ type
     LLcornerText,NetTitle : ShortString;
     NetOffset  : integer;
     WorkingBitmap : tMyBitmap;
+      function XPlotCoord(xd : integer) : integer; overload;
+      function YPlotCoord(yd : integer) : integer; overload;
+      function XPlotCoord(xd : float64) : integer; overload;
+      function YPlotCoord(yd : float64) : integer; overload;
     procedure NetOutline(Fill : boolean = false);
     procedure DrawNetGrid;
     procedure EraseOutsideNet;
@@ -215,7 +215,7 @@ begin {proc IntersectionTwoPlanes}
    if (abs(Dip1) < 0.001) or (abs(Dip2) < 0.001) then begin    { one plane is horizontal }
       if (abs(Dip1) < 0.001) then DipDirect := DipDir2 + 90
       else DipDirect := DipDir1 + 90;
-      DipDirect := Petmath.FindCompassAngleInRange(DipDirect);
+      DipDirect := Petmath.FindCompassAngleInRangeFloat32(DipDirect);
       IntDip := 0;
       exit;
    end;
@@ -228,7 +228,7 @@ begin {proc IntersectionTwoPlanes}
          DipDirect := Strike2;
          if AngularDistance(DipDirect,DipDir1) > 90 then DipDirect := DipDirect + 180;
       end;
-      DipDirect := Petmath.FindCompassAngleInRange(DipDirect);
+      DipDirect := Petmath.FindCompassAngleInRangeFloat32(DipDirect);
       DoMath;
       exit;
    end {if};
@@ -302,7 +302,7 @@ begin {proc Rotate}
               if DipDirAxis > DipDirBed then  RotatedDipDir := DipDirAxis + BB - 180
               else                            RotatedDipDir := DipDirAxis - BB + 180;
         end;
-   RotatedDipDir := PetMath.FindCompassAngleInRange(RotatedDipDir);
+   RotatedDipDir := PetMath.FindCompassAngleInRangeFloat64(RotatedDipDir);
 end {proc Rotate};
 
 
@@ -741,8 +741,8 @@ begin
    //yd := NetOffset + round(MDDef.NetDef.NetScreenMult * yc);
 
    tstr := AddDayMonthLeadingZero(HrTime);
-   if hrtime < 12 then xoff := 5
-   else if Hrtime = 2 then xoff := 0
+   if (hrtime < 12) then xoff := 5
+   else if (Hrtime = 2) then xoff := 0
    else xoff := -5 - WorkingBitmap.Canvas.TextWidth(TStr);
 
    ScreenSymbol(WorkingBitmap.Canvas,xd,yd,Sym);

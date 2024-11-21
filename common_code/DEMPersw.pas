@@ -30,7 +30,6 @@ unit dempersw;
    //{$Define RecordSatTimeSeries}
    //{$Define RecordPerspectiveSize}
    //{$Define RecordPerspectiveTime}
-   //{$Define RecordOblique}
    //{$Define RecordFlySequence}
    //{$Define RecordShortFlySequence}
    //{$Define RecordElevAndCompare}         //major slowdow
@@ -65,13 +64,11 @@ uses
 //end inline core DB functions
 
 
-  SysUtils, Windows, Messages, Classes, Graphics, Controls,System.Threading,
-  System.SyncObjs,System.Math,
+  SysUtils, Windows, Messages, Classes, Graphics, Controls,
+  System.Threading,System.SyncObjs,System.Math, System.UITypes,
+  Vcl.ComCtrls,Vcl.ToolWin, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
   Forms, Dialogs,  Menus,
-  System.UITypes,
-  Petmar_types,PETMAR,PETImage,PETMath, DEMMapF,DEMdefs, BaseGraf,DEM_3d_view,
-  Vcl.ComCtrls,
-  Vcl.ToolWin, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons;
+  Petmar_types,PETMAR,PETImage,PETMath,DEMMapF,DEMdefs, BaseGraf,DEM_3d_view;
 
 type
   TThreeDview = class(TForm)
@@ -120,6 +117,7 @@ type
     Moonposition1: TMenuItem;
     Moonposition2: TMenuItem;
     Pickday2: TMenuItem;
+    PopupMenu1: TPopupMenu;
     procedure SpeedButton13Click(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure Alphablendbitmap1Click(Sender: TObject);
@@ -525,50 +523,49 @@ begin {proc DrawPerspective}
    {$EndIf}
 
    StartProgressAbortOption('Perspective ' + PersNumStr);
-
-   if not View3D.PerspectiveDraw(Bitmap,(not LiveFlying)) then begin
-      EndProgress;
-      close;
-      exit;
-   end;
-
-   with View3D do begin
+   if View3D.PerspectiveDraw(Bitmap,(not LiveFlying)) then begin
       if (PositionMap <> Nil) then with PositionMap.Image1.Canvas do begin
          {$IfDef RecordMapDraw} WriteLineToDebugFile('Loading temp map.bmp'); {$EndIf}
          PositionMap.Image1.Picture.LoadFromFile(MDTempDir + 'temp map.bmp');
          if (View3D.TargetXUTM > 1) then begin
-            PositionMap.MapDraw.UTMtoScreen(TargetXUTM,TargetYUTM,i,j);
+            PositionMap.MapDraw.UTMtoScreen(View3D.TargetXUTM,View3D.TargetYUTM,i,j);
             ScreenSymbol(PositionMap.Image1.Canvas,i,j,Box,2,ConvertTColorToPlatformColor(clRed));
          end;
-         PositionMap.OutlinePerspectiveView( View3D.ViewHFOV,ViewerLat,ViewerLong,ViewDepth,ViewAzimuth,pmCopy);
-         if abs(ViewAzimuth - FlightAzimuth) > 0.5 then begin
-            PositionMap.MapDraw.LatLongDegreetoScreen(ViewerLat,ViewerLong,i,j);
+         PositionMap.OutlinePerspectiveView( View3D.ViewHFOV,View3D.ViewerLat,View3D.ViewerLong,View3D.ViewDepth,View3D.ViewAzimuth,pmCopy);
+         if abs(View3D.ViewAzimuth - View3D.FlightAzimuth) > 0.5 then begin
+            PositionMap.MapDraw.LatLongDegreetoScreen(View3D.ViewerLat,View3D.ViewerLong,i,j);
             PositionMap.Image1.Canvas.Pen.Color := clYellow;
             PositionMap.Image1.Canvas.MoveTo(i,j);
-            PositionMap.Image1.Canvas.LineTo(round(i+150*SinDeg(FlightAzimuth)),round(j-150*CosDeg(FlightAzimuth)));
+            PositionMap.Image1.Canvas.LineTo(round(i+150*SinDeg(View3D.FlightAzimuth)),round(j-150*CosDeg(View3D.FlightAzimuth)));
          end;
       end;
       if MDDef.ShowCrossTrackProfiles  and (CrossTrackProfile <> Nil) then begin
-         DEMGlb[View3d.DEMonView].DrawCrossTrackProfile(CrossTrackProfile,ViewerLat,ViewerLong,FlightAzimuth,MDDef.FlyCrossTrackDistance,0.5*DEMGlb[View3D.DEMonView].AverageSpace);
-         with CrossTrackProfile do petmar.ScreenSymbol(Image1.Canvas,GraphDraw.GraphX(0),GraphDraw.GraphY(ObsElev),FilledBox,3,ConvertTColorToPlatformColor(clRed));
+         DEMGlb[View3d.DEMonView].DrawCrossTrackProfile(CrossTrackProfile,View3D.ViewerLat,View3D.ViewerLong,View3D.FlightAzimuth,MDDef.FlyCrossTrackDistance,0.5*DEMGlb[View3D.DEMonView].AverageSpace);
+         with CrossTrackProfile do petmar.ScreenSymbol(Image1.Canvas,GraphDraw.GraphX(0),GraphDraw.GraphY(View3D.ObsElev),FilledBox,3,ConvertTColorToPlatformColor(clRed));
       end;
+
+      Image1.Picture.Graphic := Bitmap;
+      Bitmap.Free;
+      if (View3D.PersOpts.ViewShedFanWithPerspective) then begin
+         if (OwningMap <> Nil) then begin
+            OwningMap.DoFastMapRedraw;
+            DrawFanForPerspective(OwningMap);
+         end
+         else begin
+            DEMGlb[View3D.DEMonView].SelectionMap.DoFastMapRedraw;
+            DrawFanForPerspective(DEMGlb[View3D.DEMonView].SelectionMap);
+         end;
+      end;
+      if not LiveFlying then EndProgress;
+      SpeedButton8.Visible := (View3d <> Nil) and ((View3d.MainInCh = 'P') and (View3D.PersOpts.WhichPerspective = BMPPerspective));
+      Result := true;
+      EndProgress;
+   end
+   else begin
+      EndProgress;
+      close;
    end;
 
-   Image1.Picture.Graphic := Bitmap;
-   Bitmap.Free;
-   if (View3D.PersOpts.ViewShedFanWithPerspective) then begin
-      if (OwningMap <> Nil) then begin
-         OwningMap.DoFastMapRedraw;
-         DrawFanForPerspective(OwningMap);
-      end
-      else begin
-         DEMGlb[View3D.DEMonView].SelectionMap.DoFastMapRedraw;
-         DrawFanForPerspective(DEMGlb[View3D.DEMonView].SelectionMap);
-      end;
-   end;
-   if not LiveFlying then EndProgress;
-   SpeedButton8.Visible := (View3d <> Nil) and ((View3d.MainInCh = 'P') and (View3D.PersOpts.WhichPerspective = BMPPerspective));
-   Result := true;
    {$IfDef RecordTrackObserverElevation}  TrackObserverElevation('TThreeDview.DrawPerspective out'); {$EndIf}
 end {proc DrawPerspective};
 
@@ -649,7 +646,7 @@ var
                     if AnswerIsYes('Off map; reverse course') then begin
                        CheckEditString(Edit2.Text,FlightAzimuth);
                        FlightAzimuth := FlightAzimuth + 180;
-                       FlightAzimuth := FindCompassAngleInRange(FlightAzimuth);
+                       FlightAzimuth := FindCompassAngleInRangeFloat32(FlightAzimuth);
                        Edit2.Text := RealToString(FlightAzimuth,-6,1);
                     end
                     else WantToEndFlying := true;
@@ -681,11 +678,11 @@ var
                FlightControlForm.Label4.Caption := 'View: ' + IntToStr(FlightControlForm.TrackBar1.Position) + '° (relative)';
 
                ViewAzimuth := FlightAzimuth + ViewHeadingRelative;
-               ViewAzimuth := FindCompassAngleInRange(ViewAzimuth);
+               ViewAzimuth := FindCompassAngleInRangeFloat32(ViewAzimuth);
 
                Az2 := FlightAzimuth - ViewHeadingRelative + DEMGlb[DEMonView].SelectionMap.MapDraw.GridTrueAngle;
-               az2 := findCompassAngleInRange(Az2);
-               Az3 := FindCompassAngleInRange(Az2 + DEMGlb[DEMonView].SelectionMap.MapDraw.MapMagDec);
+               Az2 := findCompassAngleInRangeFloat32(Az2);
+               Az3 := FindCompassAngleInRangeFloat32(Az2 + DEMGlb[DEMonView].SelectionMap.MapDraw.MapMagDec);
                FlightControlForm.Label2.Caption := RealToString(Az2,8,1) + '° True    ' + RealToString(Az3,8,1) + '° Mag';
 
                SetAzimuthLimits;
@@ -736,7 +733,7 @@ begin {proc PerspectiveView}
    {$If Defined(RecordPerspectiveProblems) or Defined(RecordTrackObserverElevation)} WriteLineToDebugFileWithTime('TThreeDview.PerspectiveView enter, flydepth=' + IntToStr(MDdef.PerspOpts.FlyDepth) + ' DrapeMapUsing=' + IntToStr(View3D.DrapeMapUsing)); {$EndIf}
    {$IfDef RecordMapDraw} WriteLineToDebugFile('Start PerspectiveView Target coordinates:' + RealToString(View3D.TargetXUTM,10,0) + RealToString(View3D.TargetYUTM,12,0) + View3D.FieldOfView); {$EndIf}
    ViewHeadingRelative := 0;
-   with DEMGlb[View3D.DEMOnView] do begin
+  //with DEMGlb[View3D.DEMOnView] do begin
       Single := (View3D.FlightRouteDB = Nil) or ((View3D.FlightRouteDB.RecordCount in [0,1]) and (not LiveFlying));
       View3D.MainInCh := 'P';
       View3D.ASingleView := Single;
@@ -1020,7 +1017,7 @@ begin {proc PerspectiveView}
          FlyThroughFiles.Free;
          Close;
       end {if single / else};
-   end {with};
+   //end {with};
    ShowSatProgress := true;
    if MDDef.AutoLabelGaz and (View3D.PersSize in [psPerpsective,psPanorama]) then begin
       {$IfDef RecordPerspLabel} WriteLineToDebugFile('off to auto label with gaz'); {$EndIf}
@@ -1303,6 +1300,8 @@ label
 var
    ThisPitch,Elev1,xr,yr : float32;
    FirstPt,Pt : integer;
+   elevs,fxgrids,fygrids,fdists : ^bfarray32;
+
 begin
    if (DEMGlb[View3D.DEMOnView] = nil) or (not ImageDrawn) then exit;
    {$If Defined(RecordLocatePointOnPersp) or Defined(RecordFindLatLong)}
@@ -1315,24 +1314,32 @@ begin
    PLSSMess2 := '';
    Result := false;
 
+   (*
    if (View3D.DrapeMapUsing = 0) then View3D.NumRadialPts := round(View3D.ViewDepth / (0.5*DEMGlb[View3D.DEMonView].AverageSpace))
    else View3D.NumRadialPts := round(View3D.ViewDepth / View3D.RadialPointSpacing[View3D.DrapeMapUsing]);
    if (View3D.NumRadialPts > MaxFArrayPts) then View3D.NumRadialPts := pred(MaxFArrayPts);
+   *)
+   //if (View3D.FindfxGrids = Nil) then begin
+   VincentyPointAtDistanceBearing(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewDepth,Azimuth,View3D.ViewedLat,View3D.ViewedLong);
 
-   if (View3D.FindfxGrids = Nil) then begin
-      VincentyPointAtDistanceBearing(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewDepth,Azimuth,View3D.ViewedLat,View3D.ViewedLong);
-      new(View3D.Findfxgrids);
-      new(View3D.Findfygrids);
-      new(View3D.Findfdists);
-      DEMGlb[View3D.DEMOnView].GetStraightRouteDEMGrid(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewedLat,View3D.ViewedLong,View3D.StraightLineAlgorithm,View3D.NumRadialPts,View3D.Findfxgrids^,View3D.Findfygrids^,View3D.Findfdists^);
-   end;
+   new(fxgrids);
+   new(fygrids);
+   new(fdists);
+   new(elevs);
+   DEMGlb[View3D.DEMonView].GetStraightRouteLatLongWithElevs(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewedLat,View3D.ViewedLong,View3D.NumRadialPts,fxgrids^,fygrids^,fdists^,elevs^);
+
+
+    //  DEMGlb[View3D.DEMOnView].GetStraightRouteDEMGrid(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewedLat,View3D.ViewedLong,View3D.StraightLineAlgorithm,View3D.NumRadialPts,View3D.Findfxgrids^,View3D.Findfygrids^,View3D.Findfdists^);
+
+
+   //end;
    Pitch := TanDeg(Pitch);
    FirstPt := 0;
-   while (View3D.FindfDists^[FirstPt] < View3D.PersOpts.PersFirstProfile) do inc(FirstPt);
+   while (fDists^[FirstPt] < View3D.PersOpts.PersFirstProfile) do inc(FirstPt);
    for Pt := FirstPt to View3D.NumRadialPts do begin
-      DistOut := View3D.FindfDists^[Pt];
-      xr := View3D.FindfXGrids^[Pt];
-      yr := View3D.FindfYGrids^[Pt];
+      DistOut := fDists^[Pt];
+      xr := fXGrids^[Pt];
+      yr := fYGrids^[Pt];
       if DEMGlb[View3D.DEMonView].GetElevMeters(xr,yr,Elev1) then begin
          ThisPitch := ( -(View3D.ObsElev - (Elev1 - DropEarthCurve(DistOut))) / DistOut);
          if (ThisPitch >= Pitch) then begin
@@ -1347,7 +1354,11 @@ begin
       end {if elev1};
    end {for pt};
 FoundIt:;
-   if DeleteRadial then View3D.ClearGrids;
+   Dispose(fxgrids);
+   Dispose(fygrids);
+   Dispose(fdists);
+   Dispose(elevs);
+   //if DeleteRadial then View3D.ClearGrids;
    {$IfDef RecordLocatePointOnPersp} WriteLineToDebugFile('TThreeDview.LocatePointOnPerspective out'); {$EndIf}
 end;
 
@@ -1468,11 +1479,6 @@ begin
          SelectionMap.Image1.Canvas.Pen.Mode := pmNotXor;
          Mess1 := PrimMapProj.h_DatumCode + '   ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + MessLineBreak +
                PrimMapProj.UTMStringFromLatLongDegree(Lat,Long) + MessLineBreak+ '  ' + MessLineBreak;
-         (*
-         MolodenskiyTransformation(Lat,Long,Lat,Long,PrimMapProj,SecMapProjection);
-         Mess1 := Mess1 + SecMapProjection.h_DatumCode + '   ' + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) +  MessLineBreak +
-              SecMapProjection.UTMStringFromLatLongDegree(Lat,Long) + MessLineBreak+ '  ' + MessLineBreak;
-         *)
          MessageToContinue(Mess1 + MessLineBreak + MessZ + MessLineBreak + MessLineBreak + Mess2 + '  ' + Mess3 + MessLineBreak + '  ' + MessLineBreak + Mess4 + ErrorString,true);
          ScreenSymbol(Image1.Canvas,Lastx,Lasty,Splat,3,ConvertTColorToPlatformColor(clRed));
          Image1.Canvas.Pen.Mode := pmCopy;
@@ -1520,8 +1526,7 @@ begin
 end;
 
 
-procedure TThreeDview.Image1MouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+procedure TThreeDview.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
    MouseIsDown := false;
 end;
@@ -1532,11 +1537,13 @@ var
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('TThreeDview.FormClose in');{$EndIf}
    Action := caFree;
+   (*
    if View3D.Findfxgrids <> nil then begin
       Dispose(View3D.Findfxgrids);
       Dispose(View3D.Findfygrids);
       Dispose(View3D.Findfdists);
    end;
+   *)
 
    with View3D do begin
       CloseDrapingMaps;
@@ -1567,7 +1574,10 @@ end;
 
 procedure TThreeDview.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-   if View3D.AsingleView and (Button = mbRight) then Modify1Click(Sender);
+   if (Button = mbRight) then begin
+      PopupMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   end;
+
    if (Button = mbLeft) then begin
       SX := X;  // X start co-ordinate, image panning
       SY := Y;  // Y start co-ordinate, image panning
@@ -1580,7 +1590,7 @@ end;
 
 procedure TThreeDview.SpeedButton20Click(Sender: TObject);
 var
-   y : integer;  //this really is used
+   y : integer;  //this really is used despite what compiler says
 begin
    Image1.Canvas.Pen.Color := clGreen;
    Image1.Canvas.Pen.Width := 1;
@@ -1639,8 +1649,9 @@ begin
    Ratio := View3D.ViewportWidth / View3D.ViewportHeight;
 
    View3D.ViewportWidth := wmDEM.ClientWidth - 80;
-   if round(View3D.ViewportWidth / Ratio) < wmDEM.ClientHeight - 120 then
-      View3D.ViewportHeight := round(View3D.ViewportWidth / Ratio)
+   if round(View3D.ViewportWidth / Ratio) < wmDEM.ClientHeight - 120 then begin
+      View3D.ViewportHeight := round(View3D.ViewportWidth / Ratio);
+   end
    else begin
       View3D.ViewportHeight := wmDEM.ClientHeight - 120;
       View3D.ViewportWidth := round(Ratio * View3D.ViewportHeight);
@@ -1674,11 +1685,10 @@ end;
 
 procedure TThreeDview.Showthedrapemap1Click(Sender: TObject);
 begin
-   with View3D do begin
-      DrapingMaps[DrapeMapUsing].Visible := true;
-      DrapingMaps[DrapeMapUsing].SetFocus;
-   end;
+   View3D.DrapingMaps[View3D.DrapeMapUsing].Visible := true;
+   View3D.DrapingMaps[View3D.DrapeMapUsing].SetFocus;
 end;
+
 
 procedure TThreeDview.Imagescaling1Click(Sender: TObject);
 var
@@ -1776,8 +1786,8 @@ const
    MaxRow = 8;
 var
    Table : tMyData;
-   xi,yi,len,iRow,i,{j,}NumClip : integer;
-   Dist,Heading,BlockDist,Pitch,//z2,
+   xi,yi,len,iRow,i,NumClip : integer;
+   Dist,Heading,BlockDist,Pitch,
    Lat,Long,
    Lat1,Long1,Lat2,Long2 : float64;
    z : float32;
@@ -1980,9 +1990,9 @@ var
    Bitmap : tMyBitmap;
 begin
    StartProgressAbortOption('Locating');
-   View3D.Findfxgrids := Nil;
-   View3D.Findfygrids := Nil;
-   View3D.Findfdists := Nil;
+   //View3D.Findfxgrids := Nil;
+   //View3D.Findfygrids := Nil;
+   //View3D.Findfdists := Nil;
    CopyImageToBitmap(DEMGlb[View3D.DEMonView].SelectionMap.Image1,Bitmap);
    for x := 0 to pred(Image1.Width) do begin
       UpdateProgressBar(x / Image1.Width);
@@ -1998,7 +2008,7 @@ begin
             else break;
           end;
        end;
-       View3D.ClearGrids;
+       //View3D.ClearGrids;
        if WantOut then break;
    end;
    DEMGlb[View3D.DEMonView].SelectionMap.Image1.Picture.Graphic := Bitmap;
@@ -2035,10 +2045,8 @@ procedure TThreeDview.Pickday1Click(Sender: TObject);
 begin
 {$Else}
 var
-   //wYear,wmonth,wDay : word;
    Year,Month,Day : integer;
 begin
-   //year := -99;
    Month := -99;
    GetDate(Year,month,Day);
    ShowSunPath(AnnualJulianDay(Year,Month,Day));
@@ -2063,29 +2071,6 @@ initialization
    MovieList := Nil;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing DEMPERSW in'); {$EndIf}
-   {$IfDef RecordPerspective} WriteLineToDebugFile('RecordPerspectiveProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordInnerLoopPerspective} WriteLineToDebugFile('RecordInnerLoopPerspectiveProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef PerspectiveQuickDebug} WriteLineToDebugFile('PerspectiveQuickDebug active in DEMPERSW---no drawing'); {$EndIf}
-   {$IfDef RecordFlySequence} WriteLineToDebugFile('RecordFlySequenceProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordShortFlySequence} WriteLineToDebugFile('RecordShortFlySequenceProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordPerspLabel} WriteLineToDebugFile('RecordPerspLabelProblems active in DEMPERSW  (might slow down)'); {$EndIf}
-   {$IfDef RecordFindLatLong} WriteLineToDebugFile('RecordFindLatLongProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordPerspectiveHorizon} WriteLineToDebugFile('RecordPerspectiveHorizonProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('RecordSetUpPanoramaView active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordElevAndCompare} WriteLineToDebugFile('RecordElevAndCompare active in DEMPERSW (major slowdown)'); {$EndIf}
-   {$IfDef RecordDrape} WriteLineToDebugFile('RecordDrapeProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordFullDrape} WriteLineToDebugFile('RecordFullDrapeProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordPerspectiveSize} WriteLineToDebugFile('RecordPerspectiveSizeProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordHorizon} WriteLineToDebugFile('RecordHorizon active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordTrackObserverElevation} WriteLineToDebugFile('RecordTrackObserverElevation active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordAzimuthLimits} WriteLineToDebugFile('RecordAzimuthLimits active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordView3dCreate} WriteLineToDebugFile('RecordView3dCreate active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordSatTimeSeries} WritelineToDebugFile('RecordSatTimeSeries active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordPerspLabelShift} WritelineToDebugFile('RecordPerspLabelShiftProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordPerspLabelWrite} WritelineToDebugFile('RecordPerspLabelWriteProblems active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordLocatePointOnPersp} WritelineToDebugFile('RecordLocatePointOnPersp active in DEMPERSW'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing DEMPERSW out'); {$EndIf}
 end.
 
 

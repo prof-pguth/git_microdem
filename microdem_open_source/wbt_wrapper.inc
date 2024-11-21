@@ -35,9 +35,11 @@ begin
    if FileExists(OutName) then begin
       if LoadNewDEM(Result,OutName,false) then begin
          DEMGlb[Result].DEMheader.ElevUnits := TheElevUnits;
+         if not PossibleElevationUnits(DEMGlb[Result].DEMheader.ElevUnits) then DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
          if (theElevUnits = euAspectDeg) then DEMGlb[Result].MarkOutsideRangeMissing(0,360,NPts,true);
          if OpenMap then CreateDEMSelectionMap(Result,true,true,MapType);
          UpdateMenusForAllMaps;
+         {$If Defined(RecordMapProj)} WriteLineToDebugFile('ExecuteWBandOpenMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProj.GetProjName); {$EndIf}
       end;
       {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap map opened'); {$EndIf}
    end

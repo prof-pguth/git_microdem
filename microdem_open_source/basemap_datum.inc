@@ -124,7 +124,7 @@ end;
        if PName = UTMEllipsoidal then TStr := ' UTM zone=' + IntToStr(projUTMZone) + LatHemi
        else TStr := '';
        WriteLineToDebugFile(ProjDebugName +  ' ' + Why + ' ' +
-                       GetProjectionName + ' ' +
+                       GetProjName + ' ' +
                        ' ProjMapScale=' + RealToString(ProjMapScale,-12,-4) +
                        ' ellipse=' + H_datumCode +
                        ' h_f=' + RealToString(h_f,-12,-6) +

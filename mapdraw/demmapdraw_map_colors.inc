@@ -156,7 +156,7 @@ begin
    for j := Limits.YGridLow to Limits.YGridHigh do begin
       for i := Limits.XGridLow to Limits.XGridHigh do begin
          ScreenToDEMGrid(i,j,xr,yr);
-         if DEMGlb[DEMonMap].GridInDataSet(xr,yr) then begin
+         if DEMGlb[DEMonMap].GridInDataSetFloat(xr,yr) then begin
             if RefMap then Color := DEMGlb[DEMonMap].RGBReflectanceColor(MapType,round(xr),round(yr))
             else Color := GetElevColor(xr,yr);
             BMPMemory.SetPixelColor(i,j,Color);
@@ -391,7 +391,7 @@ begin
       for i := 0 to pred(MapXSize) do begin
          if OnScreen(i,j) then  begin
             ScreenToDEMGridInteger(i,j,XG,yg);
-            if DEMGlb[DEMonMap].GridInDataSet(xg,yg) then begin
+            if DEMGlb[DEMonMap].GridInDataSetInteger(xg,yg) then begin
               DEMGlb[DEMonMap].RGBfromLongWord(xg,yg,r,g,b);
               BMPMemory.SetPixelRGB(i,j,r,g,b);
             end;
@@ -652,11 +652,11 @@ var
    r,g,b : byte;
    ColorTable : tMyData;
 
-         procedure ColorsForLegends;
+         procedure ColorsForLegends(Min,Max : float32);
          var
             i : integer;
          begin
-            for i := 0 to 255 do pPal[i] := ElevColorFromZ(MinMapElev + i/255 * (MaxMapElev - MinMapElev));
+            for i := 0 to 255 do pPal[i] := ElevColorFromZ(Min + i/255 * (Max - Min));
          end;
 
 begin
@@ -696,11 +696,15 @@ begin
    end
    else if (MapType in [mtElevDefinedPalette]) then begin
       if not DefineColorTableValues(MDDef.ElevPalName,MinMapElev,MaxMapElev,ZColorTable) then exit;
-      ColorsForLegends;
+      ColorsForLegends(MinMapElev,MaxMapElev);
    end
    else if (MapType in [mtCurvature,mtDifferenceDiverge]) then begin
+      if (MapType in [mtDifferenceDiverge]) then begin
+         MinMapElev := -MDDef.DivergenceRange;
+         MaxMapElev := MDDef.DivergenceRange;
+      end;
       if not DefineColorTableValues('CET-D09',MinMapElev,MaxMapElev,ZColorTable) then exit;
-      ColorsForLegends;
+      ColorsForLegends(MinMapElev,MaxMapElev);
    end
    else if (MapType = mtElevFromTable) then begin
       {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('MapType = mtElevFromTable starting maps w/ ' + ElevationDBaseTable); {$EndIf}
@@ -743,7 +747,7 @@ begin
             for i := 1 to tf do ColorTable.Next;
          end;
          ColorTable.Destroy;
-         ColorsForLegends;
+         ColorsForLegends(MinMapElev,MaxMapElev);
          {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('Complete table'); {$EndIf}
       end;
    end
@@ -775,7 +779,6 @@ begin
          else b := 0;
          pPal[i] := RGBtrip(r,g,b);
       end;
-
    end
    else if (MapType = mtElevContrast) then begin
       {$IfDef VCL}

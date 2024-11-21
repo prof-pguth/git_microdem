@@ -1692,61 +1692,6 @@ begin
    EndProgress;
 end;
 
-(*
-procedure tMultiGridArray.CloudBrighten;
-var
-   x,y,n,Band,CloudDEM : integer;
-   fName : PathStr;
-   Z : float64;
-   Table : tMyData;
-   BandMults : array[1..MaxBands] of float64;
-begin
-   fName := ExtractFilePath(MainName) + 'cloud_mask.dem';
-   if not FileExists(fName) then begin
-       MessageToContinue('Missing ' + fName);
-       exit;
-   end;
-   LoadNewDEM(CloudDEM,fName,false);
-
-   fName := ExtractFilePath(MainName) + 'cloud_shading.dbf';
-   if not FileExists(fName) then begin
-       MessageToContinue('Missing ' + fName);
-       exit;
-   end;
-
-   Table := tMyData.Create(fName);
-   while not Table.eof do begin
-       BandMults[Table.GetFieldByNameAsInteger('BAND')] := Table.GetFieldByNameAsFloat('SHADING');
-       Table.Next;
-   end;
-   Table.Destroy;
-
-   StartProgress('Cloud brighten');
-   for x := 0 to pred(DEMGlb[Grids[1]].DEMheader.NumCol) do begin
-      if (x mod 10 = 0) then UpDateProgressBar(x/DEMGlb[Grids[1]].DEMheader.NumCol);
-      for y := 0 to pred(DEMGlb[Grids[1]].DEMheader.NumRow) do begin
-          if DEMGlb[CloudDEM].GetElevMeters(x,y,z) then begin
-            for Band := 1 to NumGrids do begin
-               if DEMGlb[Grids[Band]].GetElevMeters(x,y,z) then begin
-                  DEMGlb[Grids[Band]].SetGridElevation(x,y,z /BandMults[Band]);
-               end;
-            end;
-          end;
-      end;
-   end;
-
-   StartProgress('Save');
-   BasePath := ExtractFilePath(MainName) + '\cloud_free_grids\';
-   SafeMakeDir(BasePath);
-   for Band := 1 to NumGrids do begin
-      if (Band mod 10 = 0) then UpDateProgressBar(Band/NumGrids);
-      fName := BasePath + 'Band_' + IntToStr(Band) + '.dem';
-      DEMGlb[Grids[Band]].WriteNewFormatDEM(fName);
-   end;
-   EndProgress;
-   CloseSingleDEM(CloudDEM);
-end;
-*)
 
 function tMultiGridArray.OpenNewGrid(theName : ShortString; zUnits : tElevUnit; Precision : tDEMprecision) : integer;
 var
@@ -2158,7 +2103,7 @@ begin
    end;
 
    DEMGlb[Grids[FirstValidGrid]].LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
-   if DEMGlb[Grids[FirstValidGrid]].GridInDataSet(xg,yg) then begin
+   if DEMGlb[Grids[FirstValidGrid]].GridInDataSetInteger(xg,yg) then begin
        MakeGraphFile(xg,yg,-1);
        if Redraw then begin
           PointGraph.Caption := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + '  col=' + IntToStr(xg) + '  row=' + IntToStr(yg);

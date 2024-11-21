@@ -302,7 +302,7 @@
                           DipDirect := Strike - 90;
                         end
                         else DipDirect := Strike + 90;
-                        DipDirect := FindCompassAngleInRange(DipDirect);
+                        DipDirect := FindCompassAngleInRangeFloat32(DipDirect);
                         TheDipDirs[i] := DipDirect;
                      end {for i};
 

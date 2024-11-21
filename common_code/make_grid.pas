@@ -119,6 +119,8 @@ function CreateProfileCurvature(OpenMap : boolean; DEM : integer; Radius : integ
 function CreateTangentialCurvature(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 function CreatePlanCurvature(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 function CreateFlowLineCurvature(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
+function CreateContourTorsion(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
+
 
 procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids; OpenMap : boolean = true);
 
@@ -388,12 +390,26 @@ var
    Curvature : float64;
    SlpAsp : tSlopeAspectRec;
    aName : shortstring;
+
+   function Denominator1(SlpAsp : tSlopeAspectRec) : float64; inline;
+   begin
+      Result := (sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy)) * sqrt(1 + sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy));
+   end;
+
+   function Denominator2(SlpAsp : tSlopeAspectRec) : float64; inline;
+   begin
+      Result := sqrt( Math.Power(sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy), 3) ) ;
+   end;
+
+
+
 begin
    case Which of
       1 : aName := 'profile_curvature_';
       2 : aName := 'tangential_curvature_';
       3 : aName := 'plan_curvature_';
       4 : aName := 'flow_line_curvature_';
+      5 : aName := 'contour_torsion_';
    end;
 
    if (OutName = '') then OutName := aName + DEMGlb[DEM].AreaName;
@@ -406,14 +422,11 @@ begin
          if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,true,Radius) then begin
             with SlpAsp do begin
                case Which of
-                  1 : Curvature := -(dxx * sqr(dzdx) + 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) /
-                       ( (sqr(dzdx) + sqr(dzdy)) * sqrt(1 + sqr(dzdx) + sqr(dzdy))    );
-                  2 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdx) ) /
-                        ( (sqr(dzdx) + sqr(dzdy)) * sqrt(1 + sqr(dzdx) + sqr(dzdy))    );
-                  3 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) /
-                       ( sqrt( Math.Power(sqr(dzdx) + sqr(dzdy), 3)   ) );
-                  4: Curvature := (dzdy * dzdx * (dxx-dyy) - dxy * (sqr(dzdx) - sqr(dzdy) ) ) /
-                        ( sqrt( Math.Power(sqr(dzdx) + sqr(dzdy), 3)   ) );
+                  1 : Curvature := -(dxx * sqr(dzdx) + 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator1(SlpAsp);
+                  2 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdx) ) / Denominator1(SlpAsp);
+                  3 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator2(SlpAsp);
+                  4 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * (sqr(dzdx) - sqr(dzdy) ) ) / Denominator2(SlpAsp);
+                  5 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * sqr(dzdx) * sqr(dzdy) ) / Denominator1(SlpAsp);
                end;
             end;
             DEMGlb[Result].SetGridElevation(x,y,Curvature);
@@ -442,7 +455,6 @@ begin
    Result := CreateCurvatureMap(2,OpenMap,DEM,Radius,Outname);
 end;
 
-
 function CreatePlanCurvature(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 begin
    Result := CreateCurvatureMap(3,OpenMap,DEM,Radius,Outname);
@@ -454,6 +466,10 @@ begin
    Result := CreateCurvatureMap(4,OpenMap,DEM,Radius,Outname);
 end;
 
+function CreateContourTorsion(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
+begin
+   Result := CreateCurvatureMap(5,OpenMap,DEM,Radius,Outname);
+end;
 
 
 function CreateSecondOrderPartialDerivatives(OpenMap : boolean; DEM : integer; Radius : integer = 0) : integer;
@@ -2102,7 +2118,4 @@ end;
 
 initialization
 finalization
-    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateGeomorphMaps active in make_grid'); {$EndIf}
-    {$IfDef RecordPointClass} WriteLineToDebugFile('RecordPointClass active in make_grid'); {$EndIf}
-    {$IfDef NoParallelFor} WriteLineToDebugFile('NoParallelFor active in make_grid'); {$EndIf}
 end.

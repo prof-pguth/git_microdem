@@ -565,7 +565,7 @@ var
    Bitmap : tMyBitmap;
 begin
    {$IfDef RecordThreadCheckPlane} WriteLineToDebugFile('TMapForm.ThreadCheckPlane in  Map=' + Caption); {$EndIf}
-   if MapDraw.ClosingMapNow or (MapDraw.DEMonMap = 0) or (Not DEMGlb[MapDraw.DEMonMap].GridInDataSet(xg1,yg1)) then exit;
+   if MapDraw.ClosingMapNow or (MapDraw.DEMonMap = 0) or (Not DEMGlb[MapDraw.DEMonMap].GridInDataSetFloat(xg1,yg1)) then exit;
    repeat
        if GetOrientation then begin
           GetStrikeAndDip('plane',BroadCastPlaneData.DipAndStrike,Dip,Strike,DipDir);

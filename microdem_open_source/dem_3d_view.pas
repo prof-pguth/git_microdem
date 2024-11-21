@@ -46,7 +46,7 @@ unit dem_3d_view;
 interface
 
 uses
-//needed for inline of the core DB functions
+//needed for inline of core DB functions
    Petmar_db,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
@@ -119,7 +119,8 @@ type
         MinPitch,MaxPitch,MinRange,MaxRange,
         ScaleFac,DefVertExag,ViewWidth,
         xg3,yg3,xg4,yg4,
-        SectLen, DistanceAlongRoute,
+        SectLen,
+        DistanceAlongRoute,
         LeftAzimuth,RightAzimuth,
         ViewVFOV,ViewHFOV,
         ViewerLat,ViewerLong,
@@ -150,12 +151,10 @@ type
         FanLeft,FanRight,FanRange,
         ViewportHeight,ViewportWidth,
         x,y,NumRadialPts : integer;
-        Findfxgrids,Findfygrids,Findfdists : ^bfarray32;
         constructor Create;
         destructor Destroy;
         procedure InitHidden;
         procedure CloseHidden;
-        procedure ClearGrids;
         procedure SetSize(Depress : float64 = 0; SetFOV : boolean = false);
         procedure InitializeViewParameters;
 
@@ -356,7 +355,7 @@ begin {func ViewWithInData}
 
          {$IfDef RecordPerspective}
             WriteLineToDebugFile('View parameters:');
-            WriteLineToDebugFile('  Viewer:     ' + DEMGlb[DEMonView].DEMLocationString(XGridRight,YGridRight) + '  Viewer elev:' + RealToString(ObserverElevation,8,1));
+            WriteLineToDebugFile('  Viewer:     ' + DEMGlb[DEMonView].DEMLocationString(XGridRight,YGridRight) + '  Viewer elev:' + RealToString(ObsElev,8,1));
             WriteLineToDebugFile('  Left rear:  ' + DEMGlb[DEMonView].DEMLocationString(LeftRearGridX,LeftRearGridY) + '  Right Rear: ' + DEMGlb[DEMonView].DEMLocationString(RightRearGridX,RightRearGridY));
          {$EndIf}
 
@@ -584,7 +583,7 @@ var
    xp,yp   : integer;
    Lat,Long : float64;
 begin
-   Valid := DEMGlb[DEMonView].GridInDataSet(xgrid,ygrid);
+   Valid := DEMGlb[DEMonView].GridInDataSetFloat(xgrid,ygrid);
    if Valid then begin
       PointOnView := true;
       if (Which in [DrapeReflectance,QuickDrapeReflectance]) then Result := DEMGlb[DEMonView].RGBReflectanceColor(MDDef.DefRefMap,round(xgrid),round(ygrid))
@@ -666,9 +665,6 @@ begin
       DrapedBMP[2] := Nil;
    {$EndIf}
 
-   Findfxgrids := Nil;
-   Findfygrids := Nil;
-   Findfdists := Nil;
    FlightRouteDB := Nil;
    FlightDBName := '';
    SaveName := 'FLYT';
@@ -676,18 +672,6 @@ begin
    {$IfDef RecordView3dCreate} WriteLineToDebugFile('tView3d.Create out, perswidth=' + IntToStr(PersOpts.PersWidth) + '  persheight=' + IntToStr(PersOpts.PersHeight)); {$EndIf}
 end;
 
-
-procedure tView3D.ClearGrids;
-begin
-   if (Findfxgrids <> Nil) then begin
-      Dispose(Findfxgrids);
-      Dispose(Findfygrids);
-      Dispose(Findfdists);
-      Findfxgrids := Nil;
-      Findfygrids := Nil;
-      Findfdists := Nil;
-   end;
-end;
 
 
 procedure tView3D.SeriesNumberCoord(Prof : integer);
@@ -818,7 +802,7 @@ procedure TView3D.ScreenToAzimuth(x: integer; var Azimuth : float32);
 begin
    if (X > -1) then begin
       Azimuth := LeftAzimuth + (X / pred(ViewPortWidth) * ViewHFOV);
-      Azimuth := FindCompassAngleInRange(Azimuth);
+      Azimuth := FindCompassAngleInRangeFloat32(Azimuth);
    end;
 end;
 
@@ -838,7 +822,7 @@ end;
 
 procedure TView3D.PerspectiveDrawStrip(FirstXStrip,LastXStrip : integer; BMPMemory : tBMPMemory; ShowProgress : boolean);
 var
-   Elev1,
+   Elev1,BlockPitch,
    LastDistOut : float64;
    ThisPitch,
    Azimuth                 : float32;
@@ -846,22 +830,14 @@ var
    i,y,ip,iy,
    Min,FirstPt,Pt,PtInc                    : integer;
    Valid,Quicky                 : boolean;
-   Regelevs,Regfxgrids,Regfygrids,Regfdists,
    elevs,fxgrids,fygrids,fdists : ^bfarray32;
-   VisPoints,RegVisPoints : array[0..MaxOnRay] of boolean;
    RGBtriple : tPlatformColor;
 begin
+   {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('TView3D.PerspectiveDrawStrip in, azimuith=' + RealToString(LeftAzimuth,-8,-1) + ' ' + RealToString(RightAzimuth,-8,-1)); {$EndIf}
    new(fxgrids);
    new(fygrids);
    new(fdists);
    new(elevs);
-   if (RegionalDEM <> 0) then begin
-      new(Regfxgrids);
-      new(Regfygrids);
-      new(Regfdists);
-      new(Regelevs);
-   end;
-
    Quicky := (DrapeDisplay in [QuickDrapeReflectance,DrapeReflectance]) and (not MDdef.AviationDangerColors);
 
    for i := FirstXStrip to LastXStrip do begin
@@ -877,25 +853,24 @@ begin
       {$EndIf}
 
       Min := ViewportHeight;
-      BackCorner(i,Azimuth,LeftRearGridX,LeftRearGridY,ViewedLat,ViewedLong);
-      DEMGlb[DEMonView].GetStraightRoute(false,ViewerLat,ViewerLong,ViewedLat,ViewedLong,StraightLineAlgorithm,NumRadialPts,fxgrids^,fygrids^,fdists^);
-      DEMGlb[DEMonView].GetVisiblePoints(ObsElev,0,-89,89,false,true,NumRadialPts,fxgrids^,fygrids^,fdists^,elevs^,VisPoints);
+      Azimuth := LeftAzimuth + i * (RightAzimuth - LeftAzimuth) / LastXStrip;
+      VincentyPointAtDistanceBearing(ViewerLat,ViewerLong,ViewDepth,Azimuth,ViewedLat,ViewedLong);
 
-      if (RegionalDEM <> 0) then begin
-         DEMGlb[RegionalDEM].GetStraightRoute(false,ViewerLat,ViewerLong,ViewedLat,ViewedLong,StraightLineAlgorithm,NumRadialPts,Regfxgrids^,Regfygrids^,Regfdists^);
-         DEMGlb[RegionalDEM].GetVisiblePoints(ObsElev,0,-89,89,false,true,NumRadialPts,Regfxgrids^,Regfygrids^,Regfdists^,Regelevs^,RegVisPoints);
-      end;
-
+      {$IfDef RecordPerspective} WriteLineToDebugFile(IntToStr(i) + ' az=' + RealToString(Azimuth,-8,-1) + ' ' + LatLongDegreeToString(ViewedLat,ViewedLong) ); {$EndIf}
+      DEMGlb[DEMonView].GetStraightRouteLatLongWithElevs(ViewerLat,ViewerLong,ViewedLat,ViewedLong,NumRadialPts,fxgrids^,fygrids^,fdists^,elevs^);
       FirstPt := 0;
       while (fDists^[FirstPt] < PersOpts.PersFirstProfile) do inc(FirstPt);
       LastDistOut := 50000;
       Pt := FirstPt;
       PtInc := 1;
+      BlockPitch := -99;
 
       while (Pt <= NumRadialPts) do begin
-         if VisPoints[Pt] then begin
-            if (Elevs^[Pt] < 32000) then begin
-               ThisPitch := FindPitch(Elevs^[Pt],fDists^[Pt]);
+         if (Elevs^[Pt] < 32000) then begin
+            ThisPitch := FindPitch(Elevs^[Pt],fDists^[Pt]);
+            if ThisPitch > BlockPitch then begin
+               BlockPitch := ThisPitch;
+
                PitchToScreen(ThisPitch,y);
 
                {$IfDef RecordInnerLoopPerspective}
@@ -955,7 +930,7 @@ begin
                      end;
                   end;
 
-                  if PersOpts.OutLineCrests and (fDists^[Pt] > LastDistOut + PersOpts.CrestSeparator) and (PersOpts.PerpsectiveStereo in [psNone]) then              begin
+                  if PersOpts.OutLineCrests and (fDists^[Pt] > LastDistOut + PersOpts.CrestSeparator) and (PersOpts.PerpsectiveStereo in [psNone]) then begin
                      for iy := 0 to pred(PersOpts.CrestLineWidth) do if (i-iy > 0) then begin
                         BMPMemory.SetPixelColor(i,ip-iy,PersOpts.CrestColor);
                      end;
@@ -964,6 +939,7 @@ begin
                   Min := y;
                end;
             end;
+
          end;
          if PersOpts.PersVaryResolutionAlongRadial then begin
             for ip := 1 to 4 do
@@ -979,13 +955,6 @@ begin
    Dispose(fygrids);
    Dispose(fdists);
    Dispose(elevs);
-
-   if (RegionalDEM <> 0) then begin
-      Dispose(Regfxgrids);
-      Dispose(Regfygrids);
-      Dispose(Regfdists);
-      Dispose(Regelevs);
-   end;
 end;
 
 
@@ -1009,11 +978,9 @@ var
    var
       Az,dAz,j,ElevRange : integer;
    begin
-     {$IfDef RecordPerspLabel} WriteLineToDebugFile('LabelViewport left=' + RealToString(LeftAzimuth,-4,0) + '  right=' + RealToString(RightAzimuth,-4,0)); {$EndIf}
+      {$IfDef RecordPerspLabel} WriteLineToDebugFile('LabelViewport left=' + RealToString(LeftAzimuth,-4,0) + '  right=' + RealToString(RightAzimuth,-4,0)); {$EndIf}
 
-      {$IfDef VCL}
-      LoadMyFontIntoWindowsFont(MDDef.PerspFont,Bitmap.Canvas.Font);
-      {$EndIf}
+      {$IfDef VCL} LoadMyFontIntoWindowsFont(MDDef.PerspFont,Bitmap.Canvas.Font);  {$EndIf}
 
      {vertical angles}
      ElevRange := round(ViewVFOV);
@@ -1275,7 +1242,6 @@ var
                DrapedBmp[i].Free;
                DrapedBMP[i] := Nil;
              end;
-             //FreeAndNil(DrapedBMP);
           end;
           for i := 1 to 2 do if (DrapingMaps[i] <> Nil) then begin
              if not CopyImageToBitmap(DrapingMaps[i].Image1,DrapedBMP[i]) then begin
@@ -1327,10 +1293,9 @@ var
 
 begin
    {$IfDef RecordPerspective}
-      WriteLineToDebugFile('Enter PerspectiveDraw');
-      WriteLineToDebugFile('  Observer: ' +  LatLongDegreeToString(ViewerLat,ViewerLong) + '  Viewed: ' +  LatLongDegreeToString(ViewedLat,ViewedLong) + '  ObsElev=' + RealToString(ObserverElevation ,-8,1));
-      WriteLineToDebugFile('  ViewDepth=' + RealToString(ViewDepth,-8,0));
-      WriteLineToDebugFile('  HFOV=' + RealToString(ViewHFOV,-8,2) + '  VFOV=' + RealToString(ViewVFOV,-8,2));
+      WriteLineToDebugFile('Enter TView3D.PerspectiveDraw');
+      WriteLineToDebugFile('  Observer: ' +  LatLongDegreeToString(ViewerLat,ViewerLong) + '  Viewed: ' +  LatLongDegreeToString(ViewedLat,ViewedLong) + '  ObsElev=' + RealToString(ObsElev,-8,1));
+      WriteLineToDebugFile('  ViewDepth=' + RealToString(ViewDepth,-8,0) + '  HFOV=' + RealToString(ViewHFOV,-8,2) + '  VFOV=' + RealToString(ViewVFOV,-8,2));
       WriteLineToDebugFile('  DrapeMapUsing=' + IntToStr(DrapeMapUsing));
       if ShowProgress then WriteLineToDebugFile('Showing progress');
    {$EndIf}
@@ -1351,10 +1316,9 @@ begin
    tanMinElevAngle := tanDeg(MinPitch);
    tanMaxElevAngle := tanDeg(MaxPitch);
 
-    if (DrapeMapUsing = 0) then NumRadialPts := round(ViewDepth / DEMGlb[DEMonView].AverageSpace)
-    else NumRadialPts := round(ViewDepth / RadialPointSpacing[DrapeMapUsing]);
-    if (NumRadialPts > MaxFArrayPts) then NumRadialPts := pred(MaxFArrayPts);
-
+   if (DrapeMapUsing = 0) then NumRadialPts := round(ViewDepth / DEMGlb[DEMonView].AverageSpace)
+   else NumRadialPts := round(ViewDepth / RadialPointSpacing[DrapeMapUsing]);
+   if (NumRadialPts > MaxFArrayPts) then NumRadialPts := pred(MaxFArrayPts);
 
    if (FlightRouteDB = Nil) or (FlightRouteDB.RecordCount = 1) then begin
       DEMGlb[DEMonView].GetElevFromLatLongDegree(ViewerLat,ViewerLong,ElevObs);
@@ -1377,9 +1341,8 @@ begin
        MaxShift := MDdef.PerspOpts.PerspAnaglyphShift;
     end;
 
-    {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 2'); {$EndIf}
-
     for Runs := 1 to NumRuns do begin
+       {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective, start run=' + IntToStr(Runs)); {$EndIf}
        CreateBitmap(Bitmap, ViewportWidth,ViewportHeight);
 
        FastScreen[Runs] := tBMPMemory.Create(Bitmap);
@@ -1387,8 +1350,7 @@ begin
 
        if (NumRuns = 2) then begin  //this is a stereo view
           Azimuth := SaveViewAzimuth - 90;
-          VincentyPointAtDistanceBearing(SaveViewerLat,SaveViewerLong,0.5*MDdef.PerspOpts.PerspAnaglyphSeperate,Azimuth,
-                ViewerLat,ViewerLong);
+          VincentyPointAtDistanceBearing(SaveViewerLat,SaveViewerLong,0.5*MDdef.PerspOpts.PerspAnaglyphSeperate,Azimuth,ViewerLat,ViewerLong);
 
           if MDDef.ConvergingViews then begin
              VincentyPointAtDistanceBearing(SaveViewerLat,SaveViewerLong,ViewDepth,SaveViewAzimuth,ViewedLat,ViewedLong);
@@ -1396,10 +1358,8 @@ begin
           end;
 
           {$IfDef RecordPerspective}
-             WriteLineToDebugFile('Stereo Run=' + IntToStr(Runs));
-             WriteLineToDebugFile('  Observer location: ' +  LatLongDegreeToString(ViewerLat,ViewerLong));
-             WriteLineToDebugFile('  Viewed location: ' +  LatLongDegreeToString(ViewedLat,ViewedLong));
-             WriteLineToDebugFile('  ViewDepth=' + RealToString(ViewDepth,-8,0) + '  ViewAzimuth=' + RealToString(ViewAzimuth,-8,0));
+             WriteLineToDebugFile('Stereo Run=' + IntToStr(Runs) + '  ViewDepth=' + RealToString(ViewDepth,-8,0) + '  ViewAzimuth=' + RealToString(ViewAzimuth,-8,0));
+             WriteLineToDebugFile('  Observer location: ' +  LatLongDegreeToString(ViewerLat,ViewerLong) + '  Viewed location: ' +  LatLongDegreeToString(ViewedLat,ViewedLong));
           {$EndIf}
 
           {$IfDef VCL}
@@ -1417,21 +1377,8 @@ begin
 
        if (PersOpts.WhichPerspective in [BMPPerspective,ReflectancePerspective]) then begin
           DEMGlb[DEMonView].ReflectanceParams;
-
-          {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective point 12'); {$EndIf}
-          FastScreen[Runs].NumToDo := FastScreen[Runs].BMPWidth;
-          xinc := succ(FastScreen[Runs].BMPWidth div MDdef.MaxThreadsForPC);
-
-          {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('FastScreen[Runs].NumToDo=' + IntToStr(FastScreen[Runs].NumToDo) + '  xinc=' + IntToStr(xinc)); {$EndIf}
-
-          TParallel.For(1, MDdef.MaxThreadsForPC,
-                 procedure (Value: Integer)
-                 begin
-                     x1 := pred(Value) * xinc;
-                     x2 := pred(Value * xinc);
-                     if (x2 >= FastScreen[Runs].BMPWidth) then x2 := pred(FastScreen[Runs].BMPWidth);
-                     PerspectiveDrawStrip(x1,x2,FastScreen[Runs],ShowProgress);
-                end);
+          {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective [BMPPerspective,ReflectancePerspective]'); {$EndIf}
+          PerspectiveDrawStrip(0,pred(FastScreen[Runs].BMPWidth),FastScreen[Runs],ShowProgress);
 
           {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 12.5'); {$EndIf}
 
@@ -1447,30 +1394,30 @@ begin
 
           {$IfDef ExStereo}
           {$Else}
-          if (PersOpts.PerpsectiveStereo in [psStereoPair,psAnaglyphDual]) then begin
-             LeftName := ImageDir + 'left-pers.bmp';
-             RightName := ImageDir + 'right-pers.bmp';
-             if (Runs = 1) then begin
-                Bitmap.SaveToFile(LeftName);
-                Bitmap.Free;
-             end
-             else begin
-                Bitmap.SaveToFile(RightName);
-                if (PersOpts.PerpsectiveStereo in [psStereoPair]) then begin
-                   {$IfDef VCL}
-                   ShowStereoPair(LeftName,RightName);
-                   {$EndIf}
+             if (PersOpts.PerpsectiveStereo in [psStereoPair,psAnaglyphDual]) then begin
+                LeftName := ImageDir + 'left-pers.bmp';
+                RightName := ImageDir + 'right-pers.bmp';
+                if (Runs = 1) then begin
+                   Bitmap.SaveToFile(LeftName);
+                   Bitmap.Free;
                 end
                 else begin
-                   FreeAndNil(Bitmap);
-                   Bitmap := AnaglyphFromTwoBitmaps(LeftName,RightName);
+                   Bitmap.SaveToFile(RightName);
+                   if (PersOpts.PerpsectiveStereo in [psStereoPair]) then begin
+                      {$IfDef VCL}
+                      ShowStereoPair(LeftName,RightName);
+                      {$EndIf}
+                   end
+                   else begin
+                      FreeAndNil(Bitmap);
+                      Bitmap := AnaglyphFromTwoBitmaps(LeftName,RightName);
+                   end;
+                   VincentyPointAtDistanceBearing(SaveViewerLat,SaveViewerLong,ViewDepth,SaveViewAzimuth,ViewedLat,ViewedLong);
+                   ViewerLat := SaveViewerLat;
+                   ViewerLong := SaveViewerLong;
+                   ViewAzimuth := SaveViewAzimuth;
                 end;
-                VincentyPointAtDistanceBearing(SaveViewerLat,SaveViewerLong,ViewDepth,SaveViewAzimuth,ViewedLat,ViewedLong);
-                ViewerLat := SaveViewerLat;
-                ViewerLong := SaveViewerLong;
-                ViewAzimuth := SaveViewAzimuth;
              end;
-          end;
           {$EndIf}
        end
        else begin  //fishnet perspective
@@ -1478,9 +1425,7 @@ begin
          DrawFishnetPerspective;
          {$EndIf}
        end;
-
-
-    {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 15'); {$EndIf}
+       {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 15'); {$EndIf}
     end;
 
     {$IfDef FMX}
@@ -1522,37 +1467,13 @@ end;
 
 
 initialization
-   {$IfDef MessageStartUpUnit}
-   MessageToContinue('Startup dempersw');
-   {$EndIf}
+   {$IfDef MessageStartUpUnit} MessageToContinue('Startup dempersw'); {$EndIf}
    ResizingNow := false;
    NeedErrorString := false;
    GetRadial := false;
    MovieList := Nil;
 finalization
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing DEMPERSW in'); {$EndIf}
-
-   {$IfDef RecordPerspective} WriteLineToDebugFile('RecordPerspectiveProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordInnerLoopPerspective} WriteLineToDebugFile('RecordInnerLoopPerspectiveProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordFlySequence} WriteLineToDebugFile('RecordFlySequenceProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordShortFlySequence} WriteLineToDebugFile('RecordShortFlySequenceProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosingProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordPerspLabel} WriteLineToDebugFile('RecordPerspLabelProblems active in DEM_3d_view  (might slow down)'); {$EndIf}
-   {$IfDef RecordFindLatLong} WriteLineToDebugFile('RecordFindLatLongProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordPerspectiveHorizon} WriteLineToDebugFile('RecordPerspectiveHorizonProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordSetUpPanoramaView} WriteLineToDebugFile('RecordSetUpPanoramaView active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordElevAndCompare} WriteLineToDebugFile('RecordElevAndCompare active in DEM_3d_view (major slowdown)'); {$EndIf}
-   {$IfDef RecordDrape} WriteLineToDebugFile('RecordDrapeProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordFullDrape} WriteLineToDebugFile('RecordFullDrapeProblems active in DEM_3d_view');{$EndIf}
-   {$IfDef RecordPerspectiveSize} WriteLineToDebugFile('RecordPerspectiveSizeProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordHorizon} WriteLineToDebugFile('RecordHorizon active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordTrackObserverElevation} WriteLineToDebugFile('RecordTrackObserverElevation active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordView3dCreate} WriteLineToDebugFile('RecordView3dCreate active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordSatTimeSeries} WritelineToDebugFile('RecordSatTimeSeries active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordPerspLabelShift} WritelineToDebugFile('RecordPerspLabelShiftProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordPerspLabelWrite} WritelineToDebugFile('RecordPerspLabelWriteProblems active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordLocatePointOnPersp} WritelineToDebugFile('RecordLocatePointOnPersp active in DEM_3d_view'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing DEM_3d_view out'); {$EndIf}
+   {$IfDef RecordClosing} WriteLineToDebugFile('Closing dem_3d_view in'); {$EndIf}
 end.
 
 

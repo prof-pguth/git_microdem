@@ -1791,14 +1791,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordSym} WriteLineToDebugFile('RecordSymProblems active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordDataBase} WriteLineToDebugFile('RecordDataBaseProblems active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordDataInsideLoopPlots} WriteLineToDebugFile('RecordDataInsideLoopPlots active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordQuantile} WriteLineToDebugFile('RecordQuantileProblems active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordFormSetup} WriteLineToDebugFile('RecordFormSetup active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordColorPalette} WriteLineToDebugFile('RecordColorPalette active in gis_scaled_symbols'); {$EndIf}
-   {$IfDef RecordQuickFilter} WriteLineToDebugFile('RecordQuickFilter active in gis_scaled_symbols'); {$EndIf}
 end.
 
 

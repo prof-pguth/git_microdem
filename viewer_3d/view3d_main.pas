@@ -1406,8 +1406,6 @@ initialization
    View3dForm := nil;
    Map3d := Nil;
 finalization
-   {$IfDef Record3d} WriteLineToDebugFile('Record3d active in view3d_main'); {$EndIf}
-   {$IfDef Record3dDetailed} WriteLineToDebugFile('Record3dDetailed active in view3d_main'); {$EndIf}
 end.
 
 

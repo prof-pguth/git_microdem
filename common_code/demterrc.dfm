@@ -537,7 +537,7 @@ object GetTerrC: TGetTerrC
     object BitBtn10: TBitBtn
       Left = 182
       Top = 64
-      Width = 75
+      Width = 83
       Height = 25
       Caption = 'Export DB'
       TabOrder = 11

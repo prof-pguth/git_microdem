@@ -26,14 +26,10 @@ unit gdal_tools;
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
-      //{$Define RecordReformatCommand}
       //{$Define RecordGDALOpen}
-      //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
       //{$Define RecordGDAL}
-      //{$Define RecordWBT}
       //{$Define RecordOGR}
-      //{$Define RecordGeoPDF}
       //{$Define RecordReformat}
    {$Else}
    {$EndIf}
@@ -106,8 +102,8 @@ uses
    procedure BatchGDALSRSinfo(Infiles : tStringList);
    procedure GDAL_Convert_JSON(var fName : pathStr);
    procedure GDAL_Fill_Holes(InName : PathStr);
-   function GDAL_upsample_DEM(DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
-   function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
+   function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
+   function GDAL_downsample_DEM_1sec(OpenMap : boolean; DEM : integer; OutName : PathStr) : integer;
    procedure GDAL_dual_UTM(DEM : integer);
 
    procedure GDAL_replace_42112_tag(DEMName : PathStr; ReplaceStr : shortstring = '');
@@ -127,7 +123,6 @@ uses
 
    procedure GDAL_Raster_Calculator(Expression : shortstring);
 
-
    //create grids from DEM
       function GDAL_SlopeMap_ZT(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
       function GDAL_SlopeMap_Horn(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
@@ -138,7 +133,6 @@ uses
       function GDAL_TRI_Riley(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
       function GDAL_Roughness(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
       function GDAL_TPI(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
-
 
    //shapefiles
       procedure GDAL_ConvertGPXToSHP(var fName : pathStr);
@@ -518,6 +512,7 @@ begin
           DEMGlb[Result].DEMheader.ElevUnits := ElevUnits;
           if DEMGlb[Result].ElevationDEM then DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMGlb[InputDEM].DEMheader.VerticalCSTypeGeoKey;
           DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName);
+          if not PossibleElevationUnits(DEMGlb[Result].DEMheader.ElevUnits) then DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
           if OpenMap then CreateDEMSelectionMap(Result,true,true,mt);
        end;
     end
@@ -655,7 +650,7 @@ var
 begin
    if (Outname = '') then OutName := MDTempDir + 'gdal_slope_zt_' + DEMGlb[DEM].AreaName  + '.tif';
    cmd := ' slope ' + DEMGlb[DEM].GeotiffDEMName + ' ' + OutName +  ' -p -alg ZevenbergenThorne';
-   Result := GDAL_DEM_command(true,DEM,cmd, OutName,MDDef.DefSlopeMap,euPercentSlope);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd, OutName,MDDef.DefSlopeMap,euPercentSlope);
 end;
 
 function GDAL_SlopeMap_Horn(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
@@ -665,7 +660,7 @@ var
 begin
    if (Outname = '') then OutName := MDTempDir + 'gdal_slope_horn_' + DEMGlb[DEM].AreaName  + '.tif';
    cmd := ' slope ' + DEMGlb[DEM].GeotiffDEMName + ' ' + OutName +  ' -p ';
-   Result := GDAL_DEM_command(True,DEM,cmd , OutName,MDDef.DefSlopeMap,euPercentSlope);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd , OutName,MDDef.DefSlopeMap,euPercentSlope);
 end;
 
 
@@ -704,7 +699,7 @@ var
 begin
    if (Outname = '') then OutName := MDTempDir + 'gdal_roughness_' + DEMGlb[DEM].AreaName  + '.tif';
    cmd := ' roughness ' + DEMGlb[DEM].GeotiffDEMName + ' ' + OutName;
-   Result := GDAL_DEM_command(true,0,cmd, OutName,mtElevSpectrum,eumeters);
+   Result := GDAL_DEM_command(OpenMap,0,cmd, OutName,mtElevSpectrum,eumeters);
 end;
 
 
@@ -715,7 +710,7 @@ var
 begin
    if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_horn_' + DEMGlb[DEM].AreaName  + '.tif';
    cmd := ' aspect ' + DEMGlb[DEM].GeotiffDEMName + ' ' + OutName;
-   Result := GDAL_DEM_command(True,DEM,cmd, OutName,mtDEMAspect,euAspectDeg);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd, OutName,mtDEMAspect,euAspectDeg);
 end;
 
 
@@ -726,7 +721,7 @@ var
 begin
    if (Outname = '') then OutName := MDTempDir + 'gdal_aspect_zt_' + DEMGlb[DEM].AreaName  + '.tif';
    cmd := ' aspect ' + DEMGlb[DEM].GeotiffDEMName + ' ' + OutName +  ' -alg ZevenbergenThorne';
-   Result := GDAL_DEM_command(True,DEM,cmd,OutName,mtDEMAspect,euAspectDeg);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd,OutName,mtDEMAspect,euAspectDeg);
 end;
 
 
@@ -737,7 +732,7 @@ var
 begin
    if (Outname = '') then OutName := MDTempDir + 'gdal_hillshade_' + DEMGlb[DEM].AreaName  + '.tif';
    cmd := ' hillshade ' + DEMGlb[DEM].GeotiffDEMName + ' ' + OutName +  ' -alg Horn';
-   Result := GDAL_DEM_command(True,DEM,cmd,OutName,mtElevGray,euUndefined);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd,OutName,mtElevGray,euUndefined);
 end;
 
 
@@ -757,7 +752,7 @@ begin
 end;
 
 
-function GDAL_warp_DEM(DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring; TargetEPSG : shortstring = '') : integer;
+function GDAL_warp_DEM(OpenMap : boolean; DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring; TargetEPSG : shortstring = '') : integer;
 var
    cmd : AnsiString;
    SpaceStr : shortString;
@@ -766,11 +761,11 @@ begin
    InName := DEMGlb[DEM].GeotiffDEMName;
    SpaceStr := ' -tr ' + RealToString(xSpace,-12,-8) + ' ' + RealToString(ySpace,-12,-8);
    cmd := GDAL_Warp_Name  + SpaceStr + IntString + InName + ' ' + OutName;
-   Result := GDAL_DEM_command(True,DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
 end;
 
 
-function GDAL_downsample_DEM_1sec(DEM : integer; OutName : PathStr) : integer;
+function GDAL_downsample_DEM_1sec(OpenMap : boolean; DEM : integer; OutName : PathStr) : integer;
 var
    cmd : AnsiString;
    IntString,
@@ -788,12 +783,12 @@ begin
    TargetExtent := ' -te ' + RealToString(LatSW,-12,-8) + ' ' + RealToString(LongSW,-12,-8)  +  ' ' + RealToString(LatNE,-12,-8) + ' ' + RealToString(LongNE,-12,-8);
    InName := DEMGlb[DEM].GeotiffDEMName;
    cmd := GDAL_Warp_Name  + SpaceStr + IntString + TargetExtent + TargetEPSG + ' ' + InName + ' ' + OutName;
-   Result := GDAL_DEM_command(True,DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
+   Result := GDAL_DEM_command(OpenMap,DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
    //gdalwarp -t_srs EPSG:4326 -tr 0.3125 0.25 -r near -te 71.40625 24.875 84.21875 34.375 -te_srs EPSG:4326 -of GTiff foo.tiff bar.tiff
 end;
 
 
-function GDAL_upsample_DEM(DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
+function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
 var
    OutName : PathStr;
    SpaceStr : shortString;
@@ -807,11 +802,11 @@ begin
       if DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM then SpaceStr := RealToString(3600 * Spacing,-8,-2) + '_sec' else SpaceStr := RealToString(Spacing,-8,-2) + '_m';
       if Bilinear then begin
          OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bilinear_' + SpaceStr + '.tif';
-         Result := GDAL_warp_DEM(DEM,OutName,Spacing,Spacing,' -r bilinear ');
+         Result := GDAL_warp_DEM(OpenMap,DEM,OutName,Spacing,Spacing,' -r bilinear ');
       end
       else begin
          OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bicubic_' + SpaceStr + '.tif';
-         Result := GDAL_warp_DEM(DEM,OutName,Spacing,Spacing,' -r cubic ');
+         Result := GDAL_warp_DEM(OpenMap,DEM,OutName,Spacing,Spacing,' -r cubic ');
       end;
    end;
 end;
@@ -836,9 +831,9 @@ begin
       SpaceStr := ' -t_srs EPSG:' + IntToStr(Code) + ' ';  //-tr ' + RealToString(UTMSpacing,-12,-8) + ' ' + RealToString(UTMSpacing,-12,-8);
 
       OutName := MDTempDir + DEMGlb[DEM].AreaName + '_resamp_UTM_cubic.tif';
-      GDAL_warp_DEM(DEM,OutName,UTMSpacing,UTMSpacing,' -r cubic ',SpaceStr);
+      GDAL_warp_DEM(true,DEM,OutName,UTMSpacing,UTMSpacing,' -r cubic ',SpaceStr);
       OutName := MDTempDir + DEMGlb[DEM].AreaName + '_resamp_UTM_linear.tif';
-      GDAL_warp_DEM(DEM,OutName,UTMSpacing,UTMSpacing,' -r bilinear ',SpaceStr);
+      GDAL_warp_DEM(true,DEM,OutName,UTMSpacing,UTMSpacing,' -r bilinear ',SpaceStr);
    end;
 end;
 
@@ -1324,7 +1319,7 @@ end;
                end;
             end;
             cmd := GDAL_translate_name + GDAL_Geotiff_str + fName + ' ' + OutName;
-            {$IfDef RecordReformatCommand} WriteLineToDebugFile('GDALConvertSingeImageToGeotiff, cmd=   ' + cmd); {$EndIf}
+            {$IfDef RecordReformat} WriteLineToDebugFile('GDALConvertSingeImageToGeotiff, cmd=   ' + cmd); {$EndIf}
             WinExecAndWait32(cmd);
             Result := FileExists(outName);
             if Result then fName := OutName
@@ -1833,10 +1828,4 @@ end;
 
 initialization
 finalization
-  {$IfDef RecordGeoPDF} WriteLineToDebugFile('RecordGeoPDF active in gdal_tools'); {$EndIf}
-  {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDAL active in gdal_tools'); {$EndIf}
-  {$IfDef RecordOGR} WriteLineToDebugFile('RecordOGR active in gdal_tools'); {$EndIf}
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('RecordUseOtherPrograms active in gdal_tools'); {$EndIf}
-  {$IfDef RecordReformat} WriteLineToDebugFile('RecordReformat active in gdal_tools'); {$EndIf}
-  {$IfDef RecordSaveProblems} WriteLineToDebugFile('RecordSaveProblems active in gdal_tools'); {$EndIf}
 end.
