@@ -1061,7 +1061,7 @@ begin
       MDDef.SlopeSteepBoundary := 50;
       MDDef.LandTypePointsNeeded := 100;
       MDDef.RoughnessBox := 5;
-      MDDef.AutoMergeStartDEM := true;
+      //MDDef.AutoMergeStartDEM := true;
       MDdef.DefaultMapXSize := 800;
       MDdef.DefaultMapYSize := 800;
       MDDef.TitleLabelFont.Size := 24;
@@ -1572,7 +1572,7 @@ var
             Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
          end;
          Graph.RedrawDiagram11Click(Nil);
-         Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend(Graph.GraphDraw.LegendList,false));
+         Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend);
       end;
 
 

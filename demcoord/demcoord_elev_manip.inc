@@ -64,7 +64,6 @@ begin
 end;
 
 
-
 function tDEMDataSet.InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z : float32) : boolean;
 //var
   // Elev,xgrad,ygrad,crossgrad  : tElevFloatArray;
@@ -434,7 +433,7 @@ begin
 end;
 
 
-function tDEMDataSet.FindPercentileElevation(Percentile : float64) : float64;
+function tDEMDataSet.FindPercentileElev(Percentile : float64) : float64;
 var
    n : integer;
 begin

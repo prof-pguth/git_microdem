@@ -360,12 +360,12 @@ end;
                      Pen.Color := Colors[i];
                      Pen.Width := LegendSize;
                      if Horizontal then begin
-                        MoveTo(5 + Size * LegendSize * (256-i),1);
-                        LineTo(5 + Size * LegendSize * (256-i),LegendSize * MDDef.LegendBarWidth);
+                        MoveTo(5 + Size * LegendSize * (255-i),1);
+                        LineTo(5 + Size * LegendSize * (255-i),LegendSize * MDDef.LegendBarWidth);
                      end
                      else begin
-                        MoveTo(1,5 + Size * LegendSize *(256-i));
-                        LineTo(MDDef.LegendBarWidth,5+Size * LegendSize *(256-i));
+                        MoveTo(1,5 + Size * LegendSize *(255-i));
+                        LineTo(MDDef.LegendBarWidth,5+Size * LegendSize *(255-i));
                      end;
                      if (Min > Values[i]) then Min := Values[i];
                      if (Max < Values[i]) then Max := Values[i];
@@ -381,51 +381,73 @@ end;
                if Min <= 0 then FirstTick := (trunc(Min / Tick)) * Tick
                else FirstTick := succ(trunc((Min-0.0001) / Tick)) * Tick;
 
-               First := true;
-               LastLabel := MaxInt;
-               repeat
-                  i := 0;
-                  while (abs(Values[i] - FirstTick) > abs(Values[succ(i)] - FirstTick)) and (i < 254) do inc(i);
-                  if (i < 256) then begin
-                     TStr := RealToString(FirstTick,-12,-Dec);
-                     Pen.Color := clBlack;
-                     if First then begin
-                        First := false;
-                        if Horizontal then begin
-                           TopText := LegendSize *MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
-                           LastLabel := LegendSize * (256) + 5;
-                           TextOut(LastLabel,TopText,Units);
-                        end
-                        else TStr := TStr + Units;
-                     end;
-                     if Horizontal then begin //draw the ticks
-                        xloc := 5 + LegendSize * (256-i)*Size;
-                        if LastLabel >  (xloc -5 + TextWidth(TStr)) then begin
-                           LastLabel := xloc - TextWidth(TStr) div 2;
-                           if (LastLabel < 0) then LastLabel := 0;
-                           TextOut(LastLabel,TopText,TStr);
-                           {$IfDef RecordLegends} WriteLineToDebugFile('Tick label at: ' + IntToStr(LastLabel) + '--' + IntToStr(j)); {$EndIf}
-                           Pen.Width := 3;
-                        end
-                        else Pen.Width := 1;
-                        MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
-                        LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
-                     end
-                     else begin
-                        yloc := 5+LegendSize *256*Size-Size*i;
-                        MoveTo(15,yloc);
-                        LineTo(25,yloc);
-                        yloc := yloc - TextHeight(TStr) div 2;
-                        if yloc < 1 then yloc := 1;
+               if Horizontal and (abs(Max + Min) < 0.0001) then begin
+                   TopText := LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
+                   xloc := 5 + LegendSize * (255) * Size;
+                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                   TStr := RealToString(Max,-12,-Dec);
+                   TextOut(xloc - TextWidth(TStr),TopText,TStr);
 
-                        if yloc < LastLabel - TextHeight(TStr) then begin
-                           TextOut(28,yloc,TStr);
-                           LastLabel := yloc;
+                   xloc := 5 + LegendSize * (127) * Size;
+                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                   TStr := '0';
+                   TextOut(xloc - TextWidth(TStr) div 2,TopText,TStr);
+
+                   xloc := 5 + LegendSize * (0) * Size;
+                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                   TStr := RealToString(Min,-12,-Dec);
+                   TextOut(xloc,TopText,TStr);
+               end
+               else begin
+                  First := true;
+                  LastLabel := MaxInt;
+                  repeat
+                     i := 0;
+                     while (abs(Values[i] - FirstTick) > abs(Values[succ(i)] - FirstTick)) and (i < 254) do inc(i);
+                     if (i < 256) then begin
+                        TStr := RealToString(FirstTick,-12,-Dec);
+                        Pen.Color := clBlack;
+                        if First then begin
+                           First := false;
+                           if Horizontal then begin
+                              TopText := LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
+                              LastLabel := LegendSize * (256) + 5;
+                              TextOut(LastLabel,TopText,Units);
+                           end
+                           else TStr := TStr + Units;
                         end;
+                        if Horizontal then begin //draw the ticks
+                           xloc := 5 + LegendSize * (256-i)*Size;
+                           if LastLabel >  (xloc -5 + TextWidth(TStr)) then begin
+                              LastLabel := xloc - TextWidth(TStr) div 2;
+                              if (LastLabel < 0) then LastLabel := 0;
+                              TextOut(LastLabel,TopText,TStr);
+                              {$IfDef RecordLegends} WriteLineToDebugFile('Tick label at: ' + IntToStr(LastLabel) + '--' + IntToStr(j)); {$EndIf}
+                              Pen.Width := 3;
+                           end
+                           else Pen.Width := 1;
+                           MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                           LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                        end
+                        else begin
+                           yloc := 5+LegendSize *256*Size-Size*i;
+                           MoveTo(15,yloc);
+                           LineTo(25,yloc);
+                           yloc := yloc - TextHeight(TStr) div 2;
+                           if yloc < 1 then yloc := 1;
+
+                           if yloc < LastLabel - TextHeight(TStr) then begin
+                              TextOut(28,yloc,TStr);
+                              LastLabel := yloc;
+                           end;
+                        end;
+                        FirstTick := FirstTick + Tick;
                      end;
-                     FirstTick := FirstTick + Tick;
-                  end;
-               until (FirstTick > Max) or (i = 255);
+                  until (FirstTick > Max) or (i = 255);
+               end;
             end;
             PutBitmapInBox(Result);
          end;

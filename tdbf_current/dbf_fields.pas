@@ -341,11 +341,7 @@ end;
 procedure TDbfFieldDef.NativeToVCL;
 begin
   case FNativeFieldType of
-// OH 2000-11-15 dBase7 support.
-// Add the new fieldtypes
-    '+' : 
-      if DbfVersion = xBaseVII then
-        FFieldType := ftAutoInc;
+    '+' : FFieldType := ftAutoInc;
     'I' : FFieldType := ftInteger;
     'O' : FFieldType := ftFloat;
     '@', 'T':
@@ -388,7 +384,6 @@ begin
         FFieldType := ftCurrency;
     '0' : FFieldType := ftBytes;	{ Visual FoxPro ``_NullFlags'' }
   else
-    FNativeFieldType := #0;
     FFieldType := ftUnknown;
   end; //case
 end;

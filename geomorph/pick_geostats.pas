@@ -52,7 +52,7 @@ type
     Button7: TButton;
     TabSheet2: TTabSheet;
     BitBtn14: TBitBtn;
-    BitBtn15: TBitBtn;
+    //BitBtn15: TBitBtn;
     Differen: TBitBtn;
     BitBtn8: TBitBtn;
     TabSheet3: TTabSheet;
@@ -105,6 +105,7 @@ type
     BitBtn25: TBitBtn;
     BitBtn26: TBitBtn;
     BitBtn27: TBitBtn;
+    BitBtn29: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BitBtn1Click(Sender: TObject);
     procedure Radiogroup1Click(Sender: TObject);
@@ -121,7 +122,7 @@ type
     procedure BitBtn10Click(Sender: TObject);
     procedure BitBtn11Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
-    procedure BitBtn15Click(Sender: TObject);
+    //procedure BitBtn15Click(Sender: TObject);
     procedure BitBtn16Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
@@ -293,50 +294,6 @@ begin
 end;
 
 
-procedure TPickGeoStat.BitBtn15Click(Sender: TObject);
-
-         (*
-         procedure DoSSODiagramBySlope(CurDEM : integer; GridLimits : tGridLimits);
-         var
-            Results   : tStringList;
-
-                  procedure DoSlopeRange(UseMin,UseMax : float64);
-                  var
-                     SSOvars : tSSOvars;
-                  begin
-                     DEMGlb[CurDEM].SSOComputations(GridLimits,SSOvars,true,'','',UseMin,UseMax);
-                     Results.Add(RealToString(UseMin,6,0) + RealToString(UseMax,6,0) + IntegerToString(SSOvars.NumPts,9) + RealToString(SSOvars.s2s3,10,2) + RealToString(SSOvars.TheDipDirs[3],12,0));
-                  end;
-
-         begin
-            MDDef.NetDef.NetUsed := Schmidt;
-            if (DEMGlb[CurDEM].DEMheader.MaxElev - DEMGlb[CurDEM].DEMheader.MinElev) > 5 then begin
-               Results := tStringList.Create;
-               Results.Add('    Slopes        n         s2s3    Direction');
-               Results.Add('================================================');
-               DoSlopeRange(0,89.90);
-               DoSlopeRange(0,MDDef.GeomorphSlopeCut[1]);
-               DoSlopeRange(MDDef.GeomorphSlopeCut[1],MDDef.GeomorphSlopeCut[2]);
-               DoSlopeRange(MDDef.GeomorphSlopeCut[2],MDDef.GeomorphSlopeCut[3]);
-               DoSlopeRange(MDDef.GeomorphSlopeCut[3],MDDef.GeomorphSlopeCut[4]);
-               DoSlopeRange(MDDef.GeomorphSlopeCut[4],89.90);
-               DisplayAndPurgeStringList(Results,'Organization by slope');
-            end
-            else MessageToContinue(InsuffDEMrelief);
-         end;
-         *)
-
-begin
-(*
-   var  j : integer;
-   if CheckBox2.Checked then begin
-      for j := 1 to MaxDEMDataSets do if ValidDEM(j) then DoSSODiagramBySlope(j,GridLimits);
-   end
-   else begin
-      DoSSODiagramBySlope(CurDEM,GridLimits);
-   end;
-*)
-end;
 
 procedure TPickGeoStat.BitBtn16Click(Sender: TObject);
 begin

@@ -91,16 +91,13 @@ type
 {$I moon_montenbruk_pfleger.inc}
 
 
-function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : integer; var HTML : PathStr) : tStringList;
+function MoonPostionFromUSNO(Lat,Long : float32; iyear,imonth,iday : word; var HTML : PathStr) : tStringList;
 var
    URL : shortstring;
    Month,Day,year : word;
 begin
    if (iyear = -99) then begin
-      DecodeDate(Now,Year,Month,Day);
-      iYear := Year;
-      iMonth := Month;
-      iDay := Day;
+      DecodeDate(Now,iYear,iMonth,iDay);
       GetDate(iMonth,iDay,iyear);
    end;
 
@@ -202,10 +199,9 @@ begin
    if ValidDB(db) then begin
      MDDef.NetDef.HemiSphereUsed := Upper;
      MDDef.NetDef.DrawGridCircles := ngPolar;
-
      Result := TNetForm.Create(Application);
-     Result.nd.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' +  DateToStr(EncodeDate(iYear,iMonth,iDay));
-     Result.Caption := 'Moon position ' + Result.nd.LLcornerText;
+     Result.nd.LLcornerText := 'Moon: ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' +  DateToStr(EncodeDate(iYear,iMonth,iDay));
+     Result.Caption := Result.nd.LLcornerText;
      Result.nd.NewNet;
 
      if PlotPath then begin
@@ -983,7 +979,7 @@ var
    SunRise,SunSet,
    SunAppears,SunDisappears,DurationDayLight,
    az,alt, hrtime : float64;
-   Month,DayMonth,Year,Day,SymSize,NumDay,tz,xd,yd,SunUp,SunMasked,db : integer;
+   Month,DayMonth,Year,Day,SymSize,{NumDay,}tz,xd,yd,SunUp,SunMasked,db : integer;
    TStr : ShortString;
    SunResultsTable,
    Results : tStringList;
@@ -991,14 +987,14 @@ var
    fName : PathStr;
    TheGraph : TThisBaseGraph;
 
+
       procedure ComputeADay(Day : integer; Color : tPlatformColor);
       var
          hr : integer;
          BlockAngle,BlockLength,BlockLat,BlockLong : float64;
       begin
          {$IfDef RecordHorizon} WriteLineToDebugFile('Start JDay=' + IntToStr(Day)); {$EndIf}
-         Inc(NumDay);
-
+         //Inc(NumDay);
          if MDDef.SolarPathMap then begin
             hrtime := 0;
             repeat
@@ -1016,7 +1012,6 @@ var
                end;
                hr := hr + 2;
             until (hr > 24);
-
          end;
 
          if (SunResultsTable <> Nil) then begin
@@ -1063,9 +1058,9 @@ var
 
       procedure DoKeyDaze;
       begin
-         ComputeADay(AnnualJulianDay(2019,3,21),claGreen);
-         ComputeADay(AnnualJulianDay(2019,6,21),claBlue);
-         ComputeADay(AnnualJulianDay(2019,12,21),claLime);
+         ComputeADay(AnnualJulianDay(2024,3,21),claGreen);
+         ComputeADay(AnnualJulianDay(2024,6,21),claBlue);
+         ComputeADay(AnnualJulianDay(2024,12,21),claLime);
       end;
 
 var
@@ -1080,14 +1075,19 @@ begin
    Day := MDDef.SingleJulianDay;
    tz := round(Longitude / 15);
    if MDDef.VerifyTimeZone then ReadDefault('Time zone', tz);
-   NumDay := 0;
+   //NumDay := 0;
 
    ShowHourglassCursor;
    if ValidDEM(DEM) then GetBlockAngles(DEM,0,Latitude,Longitude,BlockAngles);
 
    Result := TNetForm.Create(Application);
-   Result.Caption := 'Sun Positions, equinox/solstice at ' + LatLongDegreeToString(Latitude,Longitude);
-   Result.nd.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
+   Result.Caption := 'Sun Position at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
+
+   if MDDef.SolarPathVectors then begin
+      Result.Caption := Result.Caption + '  ' + JulianDayToCalendarDate(Day);
+      Result.nd.LLcornerText := 'Sun: ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees) + ' ' + JulianDayToCalendarDate(Day);;
+   end
+   else Result.nd.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    Result.nd.NewNet;
 
    SymSize := 2;

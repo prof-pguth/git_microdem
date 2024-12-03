@@ -444,26 +444,27 @@ end;
 
 
 function ElevUnitsAre(Code : byte) : shortstring;
+//these are for legends, and all elevations are converted to m when DEM read into memory
 begin
    case Code of
-      euMeters	   : Result := 	' m'	;
-      euFeet	      : Result := 	' m'	;
-      euTenthMgal   : Result := 	' mgal'	;
-      euMilligal	   : Result := 	' mgal'	;
-      euTenthGamma  : Result := 	' gamma'	;
-      euDecimeters  : Result := 	 ' m'	;
-      euGammas	   : Result := 	' gamma'	;
-      euHundredthMGal	 : Result := 	' mgal'	;
-      euDeciFeet	   : Result := 	' m'	;
-      euCentimeters	: Result := 	' m'	;
-      euHundredthMa	 : Result := 	' Ma'	;
-      euPercentSlope	 : Result := 	'%'	;
-      euUndefined	 : Result := 	''	;
-      euDegrees	 : Result := 	'°'	;
-      eulnElev	 : Result := 	'ln(z)'	;
+      euMeters	   : Result := ' m';
+      euFeet	      : Result :=	' m';
+      euTenthMgal   : Result := ' mgal';
+      euMilligal	   : Result :=	' mgal';
+      euTenthGamma  : Result := ' gamma';
+      euDecimeters  : Result := ' m';
+      euGammas	   : Result := ' gamma';
+      euHundredthMGal	 : Result := ' mgal'	;
+      euDeciFeet	   : Result := ' m';
+      euCentimeters	: Result := ' m';
+      euHundredthMa	 : Result := ' Ma';
+      euPercentSlope	 : Result := 	'%';
+      euUndefined	 : Result := 	' ';
+      euDegrees	 : Result := 	'°';
+      eulnElev	 : Result := 	'ln(z)';
       euLogElev	 : Result := 	'log(z)'	;
-      euPercent	 : Result := 	'%'	;
-      euNLCD2001up	 : Result := 	' NLCD'	;
+      euPercent	 : Result := 	'%';
+      euNLCD2001up	 : Result := 	' NLCD';
       euLandFire	 : Result := 	' LandFire'	;
       euNanotesla	 : Result := 	' nT'	;
       euNLCD1992	 : Result := 	'NLCD 1992'	;
@@ -472,28 +473,28 @@ begin
       euGLC2000	 : Result := 	'GLC2000'	;
       euImagery	 : Result := 	' Imagery'	;
       euMM	 : Result := 	' mm'	;
-      euMetersPerSec	 : Result := 	' m/s'	;
-      euMperM	 : Result := 	' m/m'	;
-      euKM	 : Result := 	' km'	;
-      euCCAP	 : Result := 	' C-CAP'	;
-      euLASclass13	 : Result := 	' LAS13'	;
-      euLASclass14	 : Result := 	' LAS14'	;
-      euRGB	 : Result := 	' RGB'	;
+      euMetersPerSec	 : Result := 	' m/s';
+      euMperM	 : Result := 	' m/m';
+      euKM	 : Result := ' km';
+      euCCAP	 : Result := ' C-CAP'	;
+      euLASclass13	 : Result :=  ' LAS13';
+      euLASclass14	 : Result :=  ' LAS14';
+      euRGB	 : Result := 	' RGB';
       euMonth	 : Result := 	' month'	;
-      euCCI_LC	 : Result := 	 'CCI-LC'	;
+      euCCI_LC	 : Result := 	 'CCI-LC';
       euS2GLC	 : Result := 	'S2GLC'	;
       euNLCD_Change	 : Result := 	'dNLCD'	;
-      euGLCS_LC100	 : Result := 	'GLCS_LC100'	;
+      euGLCS_LC100	 : Result := 	'GLCS_LC100';
       euMeybeck	 : Result := 	'Meybeck'	;
-      euGeomorphon	 : Result := 	'Geomorphon'	;
+      euGeomorphon	 : Result := 	'Geomorphon';
       euIwahashi	 : Result := 	'Iwahashi'	;
       euESRI2020	 : Result := 	'ESRI2020'	;
       euAspectDeg	 : Result := 	'°'	;
       euPennock	 : Result := 	'Pennock'	;
       euPerMeter	 : Result := 	'/m'	;
-      euWorldCover10m	 : Result := 	'WorldCover 10m'	;
-      euNDVI	 : Result := 	'NDVI'	;
-      euNBR	 : Result := 'NBR'	;
+      euWorldCover10m	 : Result := 	'WorldCover 10m';
+      euNDVI	 : Result := 	'NDVI';
+      euNBR	 : Result := 'NBR';
       euDifference : Result := 'diff';
       euElevDiff : Result := 'diff m';
       euLCMAP : Result := 'LCMAP';
@@ -1356,9 +1357,9 @@ var
           AParameter('Persp','PersAzimuth',PersAzimuth,90);
 
           {$IfDef VCL}
-             AParameter('Persp','rgbtSky.rgbtred',rgbtSky.rgbtred,0) ;
-             AParameter('Persp','rgbtSky.rgbtgreen',rgbtSky.rgbtgreen,255) ;
-             AParameter('Persp','rgbtSky.rgbtblue',rgbtSky.rgbtblue,255) ;
+             AParameter('Persp','rgbtSky.rgbtred',rgbtSky.rgbtred,0);
+             AParameter('Persp','rgbtSky.rgbtgreen',rgbtSky.rgbtgreen,255);
+             AParameter('Persp','rgbtSky.rgbtblue',rgbtSky.rgbtblue,255);
           {$EndIf}
 
           {$IfDef FMX}
@@ -1368,7 +1369,7 @@ var
              AParameter('Persp','ObsUpSetting',ObsUpSetting,3);
           {$EndIf}
 
-          AParameter('Persp','NapEarth',NapEarth,true) ;
+          AParameter('Persp','NapEarth',NapEarth,true);
           AParameter('Persp','PanWidth',PanWidth,3000);
           AParameter('Persp','PanHeight',PanHeight,300);
           Aparameter('Persp','NoVE',NoVE,false);
@@ -1406,9 +1407,9 @@ var
          Aparameter('Persp','ShowLocationSensitivity',ShowLocationSensitivity,False);
 
          AParameterShortFloat('Persp','PersHFOV',PersHFOV,40.0);
-         AParameterShortFloat('Persp','PersVFOV',PersVFOV,30.0) ;
-         AParameterShortFloat('Persp','PanHFOV',PanHFOV,400.0) ;
-         AParameterShortFloat('Persp','PanVFOV',PanVFOV,40.0) ;
+         AParameterShortFloat('Persp','PersVFOV',PersVFOV,30.0);
+         AParameterShortFloat('Persp','PanHFOV',PanHFOV,400.0);
+         AParameterShortFloat('Persp','PanVFOV',PanVFOV,40.0);
          AparameterShortFloat('Persp','PerspectiveSkyAngle',PerspectiveSkyAngle,4.0);
          AparameterShortFloat('Persp','PersObsUp',PersObsUp,250.0);
 
@@ -2919,6 +2920,7 @@ var
             AParameterFloat('Micronet','MinColorDepth',MinColorDepth,0);
             AParameter('Micronet','NetScreenMult',NetScreenMult,2);
             AParameter('Micronet','NetColor',NetColor,1);
+            AParameter('Micronet','CountRadius',CountRadius,10);
             AParameter('Micronet','ScreenSymbolSize',ScreenSymbolSize,3);
             AParameter('Micronet','CircleGridIncrement',CircleGridIncrement,15);
             AParameter('Micronet','NetLineWidth',NetLineWidth,1);
@@ -2934,7 +2936,7 @@ var
             if (iniWhat = iniInit) then DrawGridCircles := ngNone;
 
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','NetUsed',ord(NetUsed));
-            if (IniWhat = iniRead) then NetUsed := NetType(IniFile.ReadInteger('Micronet','NetUsed',ord(Schmidt)));
+            if (IniWhat = iniRead) then NetUsed := tNetType(IniFile.ReadInteger('Micronet','NetUsed',ord(Schmidt)));
             if (iniWhat = iniInit) then NetUsed := Schmidt;
 
             if (IniWhat = iniWrite) then IniFile.WriteInteger('Micronet','HemiSphereUsed',ord(HemiSphereUsed));
@@ -2974,10 +2976,10 @@ var
          AParameter('Contour','LabelContours',LabelContours,false);
          AParameter('Contour','ContourLineWidth',ContourLineWidth,1);
          AParameter('Contour','DefaultContourInterval',DefaultContourInterval,50);
-         AParameter('Contour','DefaultContourInterval',DefaultContourInterval,10) ;
-         AParameter('Contour','IndexContWidth ',IndexContWidth,2) ;
-         AColorParameter('Contour','OverlayContColor',OverlayContColor,claDarkGrey) ;
-         AParameterShortFloat('Contour','MaxTriSide',MaxTriSide,0.00005) ;
+         AParameter('Contour','DefaultContourInterval',DefaultContourInterval,10);
+         AParameter('Contour','IndexContWidth ',IndexContWidth,2);
+         AColorParameter('Contour','OverlayContColor',OverlayContColor,claDarkGrey);
+         AParameterShortFloat('Contour','MaxTriSide',MaxTriSide,0.00005);
 
          if (IniWhat = iniWrite) then IniFile.WriteInteger('Contour','ContourColors',ord(ccSpecified));
          if (IniWhat = iniRead) then ContourColors := tContourColors(IniFile.ReadInteger('Contour','ContourColors',ord(ccSpecified)));

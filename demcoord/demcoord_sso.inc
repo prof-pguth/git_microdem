@@ -8,7 +8,33 @@
 {____________________________________}
 
 
-
+procedure tDEMDataSet.InitializeNormals;
+var
+   j,Col,Row     : integer;
+   ns : array[1..3] of float32;
+begin
+   if ValidDEM(Normals[1]) and ValidDEM(Normals[2]) and ValidDEM(Normals[3]) then begin
+      {$If Defined(RecordSSOCalc)or Defined(RecordNormalInit)} WriteLineToDebugFile('tDEMDataSet.InitializeNormals normals already created'); {$EndIf}
+   end
+   else begin
+      {$If Defined(RecordDEMMemoryAllocations) or Defined(ShowDEMSSOCalc)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(VectorType))); {$EndIf}
+      for j := 1 to 3 do begin
+         if not ValidDEM(Normals[j]) then begin
+            Normals[j] := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_normals_' + IntToStr(j),euUndefined);
+         end;
+      end;
+      {$If Defined(RecordDEMMemoryAllocations) or Defined(ShowDEMSSOCalc)} WriteLineToDebugFile('tDEMDataSet.InitializeNormals grids created'); {$EndIf}
+      for Col := 0 to pred(DEMheader.NumCol) do begin
+         for Row := 0 to pred(DEMheader.NumRow) do begin
+            if NormalAtPoint(Col,Row,ns[1],ns[2],ns[3]) then begin
+               for j := 1 to 3 do DEMGlb[Normals[j]].SetGridElevation(Col,Row,ns[j]);
+            end;
+         end;
+      end;
+      {$If Defined(RecordDEMMemoryAllocations) or Defined(ShowDEMSSOCalc)} WriteLineToDebugFile('tDEMDataSet.InitializeNormals normals defined'); {$EndIf}
+   end;
+   //{$If Defined(RecordDEMMemoryAllocations) or Defined(ShowDEMSSOCalc)} WriteLineToDebugFile('allocated tDEMDataSet.InitializeNormals'); {$EndIf}
+end;
 
 
          procedure tDEMDataSet.DoSSOStrip(Limits : tGridLimits; var Results : tStringList);
@@ -162,22 +188,257 @@
          end;
 
 
-         function tDEMDataSet.FeatureSSOComputations(inFeatureDEM,inFeatureID,LoX,LoY,HiX,HiY : integer; var s1s2,s2s3,Trend,RoughnessFactor,DownDip : float64) : boolean;
+function tDEMDataSet.SSOComputations(GridLimits : tGridLimits; var SSOvars : tSSOvars; Plot : boolean; NetName,AspName : PathStr;
+                 FilterGrid : integer = 0; FilterValue : integer = 0; LLText : shortstring = '') : boolean;
+var
+   xd,yd,Col,Row  : integer;
+   MaxZ,MinZ,SumElev,SumSlope,
+   SumSqSlope,SumSqElev : float64;
+   zf : float32;
+   fName : PathStr;
+   Symbol : tFullSymbolDeclaration;
+   SlopeAspectRec : tSlopeAspectRec;
+   AspectStats : tAspectStats;
+   M,S  : ^tTrendMatrix;
+   s2   : VectorType;
+   TStr : shortstring;
+
+         function ComputeEigenVectors: boolean;
          var
-             SSOvars : tSSOvars;
+            i,NRot : integer;
+            Dip,Strike,DipDirect : float32;
          begin
-             {$IfDef ShowDEMSSOCalcFull} WriteLineToDebugFile('tDEMDataSet.FeatureSSOComputations in, Feature=: ' + IntToStr(inFeatureID)); {$EndIf}
-             FilterGrid := inFeatureDEM;
-             FilterGridValue := inFeatureID;
-             Result := SSOComputations(SpecifyDEMGridLimits(LoX,LoY,HiX,HiY),SSOvars,true,'','');
-             Trend := SSOvars.TheDipDirs[3];
-             DownDip := SSOvars.TheDipDirs[1];
-             s1s2 := SSOvars.s1s2;
-             s2s3 := SSOvars.s2s3;
-             RoughnessFactor := SSOvars.RoughnessFactor;
-             FilterGrid := 0;
-             FilterGridValue := 0;
+            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('ComputeEigenVectors in'); {$EndIf}
+            Result := true;
+            Jacobi(M^,3,SSOVars.V,S^,NRot);
+            Eigsrt(SSOVars.V,S^,3);
+            if abs(SSOVars.v[2]) < 0.00001 then SSOVars.v[2] := 0.00001;
+            if abs(SSOVars.v[3]) < 0.000012 then SSOVars.v[3] := 0.000012;
+
+            {Shape/strength statistics after Fisher, Lewis, and Embleton, p.159}
+            if abs(SSOvars.v[3]) < 0.00001 then begin
+               SSOvars.s2s3 := 0;
+               SSOvars.Shape := 0;
+               SSOvars.s1s2 := MaxSmallInt;
+               SSOvars.Strength := MaxSmallInt;
+            end
+            else begin
+               SSOvars.s1s2 := ln(SSOvars.v[1]/ SSOvars.v[2]);
+               SSOvars.s2s3 := ln(SSOvars.v[2]/ SSOvars.v[3]);
+               SSOvars.Shape := ln(SSOvars.v[1]/ SSOvars.v[2])/ln( SSOvars.v[2]/ SSOvars.v[3]);
+               SSOvars.Strength := ln(SSOvars.v[1]/ SSOvars.v[3]);
+            end;
+
+            for i := 1 to 3 do begin //compute eigenvectors
+               S2[1] := s[1,i];
+               S2[2] := s[2,i];
+               S2[3] := s[3,i];
+               CartesianToDipStrike(s2,Dip,Strike);
+               if (Dip < 0) then begin
+                 Dip := abs(Dip);
+                 DipDirect := Strike - 90;
+               end
+               else DipDirect := Strike + 90;
+               DipDirect := FindCompassAngleInRangeFloat32(DipDirect);
+               if DipDirect > 180 then DipDirect := DipDirect - 180;
+               SSOVars.TheDips[i] := Dip;
+               SSOVars.TheDipDirs[i] := DipDirect;
+            end {for i};
+            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('ComputeEigenVectors out'); {$EndIf}
          end;
+
+
+         procedure NormalsInBox(GridLimits: tGridLimits);
+         var
+            Col,Row,j,k : integer;
+            zf : float32;
+            z : array[1..3] of float32;
+         begin
+            {$If Defined(RecordSSOCalc)} WriteLineToDebugFile('tSSOVarAnalysis.NormalsInBox in'); {$EndIf}
+            SSOVars.x1sq := 0;
+            SSOVars.y1sq := 0;
+            SSOVars.z1sq := 0;
+            SSOVars.NumPts := 0;
+            SSOVars.NumMissing := 0;
+            for j := 1 to 3 do
+               for k := 1 to 3 do
+                  M^[j,k] := 0.0;
+
+            for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+               for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+                  if (FilterGrid = 0) or (GetElevMetersFromSecondDEM(false,FilterGrid,Col,Row,zf) and (round(zf) = FilterValue)) then begin
+                     if DEMGlb[Normals[1]].GetElevMetersOnGrid(Col,Row,z[1]) and
+                        DEMGlb[Normals[2]].GetElevMetersOnGrid(Col,Row,z[2]) and
+                        DEMGlb[Normals[3]].GetElevMetersOnGrid(Col,Row,z[3]) then begin
+                        inc(SSOVars.NumPts);
+                        SSOVars.x1sq := SSOVars.x1sq + sqr(z[1]);
+                        SSOVars.y1sq := SSOVars.y1sq + sqr(z[2]);
+                        SSOVars.z1sq := SSOVars.z1sq + sqr(z[3]);
+                        for j := 1 to 3 do
+                           for k := 1 to 3 do
+                              M^[j,k] := M^[j,k] + z[j] * z[k];
+                     end
+                     else inc(SSOVars.NumMissing);
+                  end;
+               end {for Row};
+            end {for Col};
+            {$If Defined(RecordSSOCalc)} WriteLineToDebugFile('tSSOVarAnalysis.NormalsInBox out'); {$EndIf}
+         end;
+
+
+
+begin {tDEMDataSet.SSOComputations}
+   {$IfDef ShowDEMSSOCalc}
+      WriteLineToDebugFile('tDEMDataSet.SSOComputations DEM=' + IntToStr(ThisDEM) + ' ' + GridLimitsToString(GridLimits) + ' plot=' + IntToStr(Ord(MDDef.SSObyPole)));
+      if (FilterGrid <> 0) then WriteLineToDebugFile('Filter grid=' + IntToStr(FilterGrid) + ' value=' + IntToStr(FilterValue));
+   {$EndIf}
+   Result := false;
+   try
+      ClipDEMGridInteger(GridLimits.XGridLow,GridLimits.YGridLow);
+      ClipDEMGridInteger(GridLimits.XGridHigh,GridLimits.YGridHigh);
+      {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations back clipped limits'); {$EndIf}
+
+      New(M);
+      New(s);
+      InitializeNormals;
+      {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations back from InitNormals'); {$EndIf}
+      NormalsInBox(GridLimits);
+      ComputeEigenVectors;
+      Dispose(M);
+      Dispose(s);
+
+      {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('SSO setup done'); {$EndIf}
+
+      AspectStats.Create(ThisDEM);
+
+      if Plot and MDDef.GemorphSSOPoles then begin
+         MDDef.NetDef.NetScreenMult := 2;
+         NetForm := TNetForm.Create(Application);
+         NetForm.Caption := 'SSO Diagram, ' + AreaName;
+         NetForm.nd.ReallyPlot := false;
+      end;
+
+      {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('SSOVarAnalysis done'); {$EndIf}
+
+      SumSlope := 0;
+      SumElev := 0;
+      SumSqSlope := 0;
+      SumSqElev := 0;
+      MinZ := MaxSmallInt;
+      MaxZ := -MaxSmallInt;
+
+      Symbol.DrawingSymbol := Dot;
+      Symbol.Size := 3;
+      Symbol.Color := claRed;
+      Col := GridLimits.XGridLow;
+      while Col <= GridLimits.XGridHigh do begin
+         Row := GridLimits.YGridLow;
+         while Row <= GridLimits.YGridHigh do begin
+            if (FilterGrid = 0) or (GetElevMetersFromSecondDEM(false,FilterGrid,Col,Row,zf) and (round(zf) = FilterValue)) then begin
+               if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+                  if (SlopeAspectRec.SlopeDegree> SSOvars.MaxSlope) then SSOvars.MaxSlope := SlopeAspectRec.SlopeDegree;
+                  PetMath.CompareValueToExtremes(SlopeAspectRec.z,MinZ,MaxZ);
+                  SumSlope := SumSlope + SlopeAspectRec.Slope;
+                  SumSqSlope := SumSqSlope + Sqr(SlopeAspectRec.Slope);
+                  SumElev := SumElev + SlopeAspectRec.z;
+                  SumSqElev := SumSqElev + Sqr(SlopeAspectRec.z);
+                  AspectStats.AddPoint(SlopeAspectRec);
+                  inc(SSOVars.AspPts);
+                  inc(SSOvars.NumPts);
+                  if Plot and MDDef.GemorphSSOPoles then begin
+                     if MDDef.SSObyPole then NetForm.nd.PlotPointOnNet(PolePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd)
+                     else NetForm.nd.PlotPointOnNet(LinePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd);
+                  end;
+               end;
+            end;
+            inc(Row,MDDef.SSOSampleIncr);
+         end {while Row};
+         inc(Col,MDDef.SSOSampleIncr);
+         if WantOut then break;
+      end {while Col};
+      SSOvars.ElevRange := MaxZ - MinZ;
+      {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('Vectors done, npts=' + IntToStr(SSOvars.NumPts)); {$EndIf}
+
+      if (SSOvars.NumPts > 8) then begin
+         SSOvars.StdDevSlope := SumSqSlope * SSOvars.NumPts - SumSlope * SumSlope;
+         if SSOvars.StdDevSlope < 0 then SSOvars.StdDevSlope := 0
+         else SSOvars.StdDevSlope := 100 * (sqrt(SSOvars.StdDevSlope / (1.0 * SSOvars.NumPts * pred(SSOvars.NumPts))));
+         SSOvars.AvgElev := SumElev / SSOvars.NumPts;
+         SSOvars.StdDevElev := (SumSqElev * SSOvars.NumPts - SumElev * SumElev);
+         if SSOvars.StdDevElev < 0 then SSOvars.StdDevElev := 0
+         else SSOvars.StdDevElev := sqrt(SSOvars.StdDevElev / (1.0 * SSOvars.NumPts * pred(SSOvars.NumPts)));
+      end;
+
+      if (SSOVars.AspPts > 1) then begin
+         AspectStats.VectorAverage;
+         SSOVars.AvgAspect := AspectStats.AvgAspectDir;
+         SSOVars.AspectStrength := AspectStats.AvgAspectMag;
+      end
+      else begin
+         SSOVars.AvgAspect := -99;
+         SSOVars.AspectStrength := -99;
+      end;
+
+      if (SSOvars.NumPts >= MDDef.MinPointsForSSO) then begin
+         Result := true;
+         SSOvars.QueensAspect := AspectStats.QueensAspect;
+         SSOvars.AvgSlope := (100*SumSlope/SSOvars.NumPts);
+         SSOvars.RoughnessFactor := 1 - sqrt(sqr(SSOvars.x1sq) + sqr(SSOvars.y1sq) + sqr(SSOvars.z1sq)) / SSOvars.NumPts;   //Mark, 1975; Etzelmuller, 2000;
+
+         if Plot then begin
+            if MDDef.GemorphSSOPoles then begin
+               //NetForm.nd.LLcornerText := LLtext;
+               NetForm.nd.ReallyPlot := true;
+               NetForm.nd.ContourPoles;
+               {$IfDef SaveNetDrawingSteps} fName := NextFileNumber(MDtempDir,'back_home_','.bmp'); Netform.nd.WorkingBitmap.SaveToFile(fName); {$EndIf}
+               Netform.nd.WorkingBitmap.Canvas.Font.Size := 15;
+               Netform.nd.WorkingBitmap.Canvas.Font.Size := 12;
+               Netform.nd.WorkingBitmap.Canvas.TextOut(1,1,'ln(s1/s2)=' + RealToString(SSOVars.s1s2,-5,2));
+               Netform.nd.WorkingBitmap.Canvas.TextOut(1,18,'ln(s2/23)=' + RealToString(SSOVars.s2s3,-5,2) );
+               Netform.nd.WorkingBitmap.Canvas.TextOut(1,35,'Trend:' + RealToString(SSOVars.TheDipDirs[3],6,1) + '°' );
+               Netform.nd.WorkingBitmap.Canvas.Font.Size := 10;
+               Netform.nd.WorkingBitmap.Canvas.TextOut(1,53,'n=' + IntToStr(Netform.nd.NumPlottedPoints));
+               Netform.nd.WorkingBitmap.Canvas.TextOut(1,Netform.nd.MainDiagramSize - Netform.nd.WorkingBitmap.Canvas.TextHeight(LLtext)-5,LLText);
+
+               TStr := HemisphereName[MDDef.NetDef.HemisphereUsed] + ' Hemisphere';
+               Netform.nd.WorkingBitmap.Canvas.TextOut(Netform.nd.MainDiagramSize - Netform.nd.WorkingBitmap.Canvas.TextWidth(Tstr)-5,1,TStr);
+
+               TStr := 'Equal ' + NetEquality[MDDef.NetDef.NetUsed] + ' net';
+               Netform.nd.WorkingBitmap.Canvas.TextOut(Netform.nd.MainDiagramSize - Netform.nd.WorkingBitmap.Canvas.TextWidth(Tstr)-5,18,TStr);
+
+               if MDDef.SSObyPole then TStr := 'Poles' else TStr := 'Dip directions';
+               Netform.nd.WorkingBitmap.Canvas.TextOut(Netform.nd.MainDiagramSize - Netform.nd.WorkingBitmap.Canvas.TextWidth(Tstr)-5,35,TStr);
+
+               Netform.nd.NetOutline;
+               if (NetName <> '') then begin
+                  PetImage.SaveBitmap(Netform.nd.WorkingBitmap,NetName);
+                  NetForm.Close;
+                  NetForm := Nil;
+               end;
+            end
+            else begin
+               NetForm.Close;
+               NetForm := Nil;
+            end;
+
+            if (AspName <> '') then begin
+               RoseGraph := AspectStats.CreateRose;
+               PetImage.SaveImageAsBMP(RoseGraph.Image1,AspName);
+               RoseGraph.Close;
+               RoseGraph := Nil;
+            end {if};
+         end;
+      end
+      else if (not Plot) then begin
+         NetForm.Close;
+         NetForm := Nil;
+      end;
+   finally
+     AspectStats.Destroy;
+   end;
+   {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations out'); {$EndIf}
+end {tDEMDataSet.SSOComputations};
+
 
 
          function tDEMDataSet.SSOByRegionSize(Col,Row : integer; var Maxs2s3,BoxSizeForMax,DirForMax,Relief : float32; var Results : tStringList) : boolean;
@@ -335,157 +596,4 @@
          end;
 
 
-         function tDEMDataSet.SSOComputations(GridLimits : tGridLimits; var SSOvars : tSSOvars; PlotResults : boolean; NetName,AspName : PathStr; UseMinSlope : float64 = 0; UseMaxSlope : float64 = 9999) : boolean;
-         var
-            xd,yd,y,Col,Row  : integer;
-            MaxZ,MinZ,SumElev,SumSlope,
-            SumSqSlope,SumSqElev : float64;
-            zf : float32;
-            Symbol : tFullSymbolDeclaration;
-            TStr : shortString;
-            SlopeAspectRec : tSlopeAspectRec;
-            SSOVarAnalysis : tSSOVarAnalysis;
-            AspectStats : tAspectStats;
-         begin
-            {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations in, ' + GridLimitsToString(GridLimits) + ' plot=' + IntToStr(Ord(MDDef.SSObyPole))); {$EndIf}
-            Result := false;
-            try
-               AspectStats.Create(ThisDEM);
-               SSOVars.AspPts := 0;
-               SSOvars.NumPts := 0;
-               SSOVars.MaxSlope := 0;
-               SumSlope := 0;
-               SumElev := 0;
-               SumSqSlope := 0;
-               SumSqElev := 0;
-               MinZ := MaxSmallInt;
-               MaxZ := -MaxSmallInt;
-
-               if (UseMaxSlope - UseMinSlope) < 90 then TStr := ' slopes ' + round(UseMinSlope).ToString + ' to ' + round(UseMaxSlope).ToString
-               else TStr := '';
-               TStr := AreaName + TStr;
-
-               if PlotResults and MDDef.GemorphSSOPoles then begin
-                  MDDef.NetDef.NetScreenMult := 2;
-                  NetForm := TNetForm.Create(Application);
-                  NetForm.Caption := 'SSO Diagram, ' + TStr;
-                  NetForm.nd.ReallyPlot := false;
-               end;
-               {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('SSO setup done'); {$EndIf}
-
-               SSOVarAnalysis.Create(ThisDEM);
-               SSOVarAnalysis.SSOVars.NumPts := 0;
-               SSOVarAnalysis.NormalsInBox(GridLimits);
-               SSOVarAnalysis.ComputeEigenVectors;
-               SSOVars := SSOVarAnalysis.SSOVars;
-               SSOVarAnalysis.Destroy;
-
-               {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('SSOVarAnalysis done'); {$EndIf}
-
-               Col := GridLimits.XGridLow;
-               while Col <= GridLimits.XGridHigh do begin
-                  Row := GridLimits.YGridLow;
-                  while Row <= GridLimits.YGridHigh do begin
-                     if (FilterGrid = 0) or (GetElevMetersFromSecondDEM(false,FilterGrid,Col,Row,zf) and (round(zf) = FilterGridValue)) then begin
-                        if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
-                           if (SlopeAspectRec.SlopeDegree> SSOvars.MaxSlope) then SSOvars.MaxSlope := SlopeAspectRec.SlopeDegree;
-                           if (SlopeAspectRec.SlopeDegree >= UseMinSlope) and (SlopeAspectRec.SlopeDegree <= UseMaxSlope) then begin
-                              PetMath.CompareValueToExtremes(SlopeAspectRec.z,MinZ,MaxZ);
-                              SumSlope := SumSlope + SlopeAspectRec.Slope;
-                              SumSqSlope := SumSqSlope + Sqr(SlopeAspectRec.Slope);
-                              SumElev := SumElev + SlopeAspectRec.z;
-                              SumSqElev := SumSqElev + Sqr(SlopeAspectRec.z);
-                              AspectStats.AddPoint(SlopeAspectRec);
-                              inc(SSOVars.AspPts);
-                              inc(SSOvars.NumPts);
-                              if PlotResults and MDDef.GemorphSSOPoles then begin
-                                 Symbol.DrawingSymbol := Dot;
-                                 Symbol.Size := 3;
-                                 Symbol.Color := claRed;
-                                 if MDDef.SSObyPole then NetForm.nd.PlotPointOnNet(PolePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd)
-                                 else NetForm.nd.PlotPointOnNet(LinePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd);
-                              end;
-                           end;
-                        end;
-                     end;
-                     inc(Row,MDDef.SSOSampleIncr);
-                  end {while Row};
-                  inc(Col,MDDef.SSOSampleIncr);
-                  if WantOut then break;
-               end {while Col};
-               {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('Vectors done, npts=' + IntToStr(SSOvars.NumPts)); {$EndIf}
-
-               SSOvars.ElevRange := MaxZ - MinZ;
-
-               if (SSOvars.NumPts > 8) then begin
-                  SSOvars.StdDevSlope := SumSqSlope * SSOvars.NumPts - SumSlope * SumSlope;
-                  if SSOvars.StdDevSlope < 0 then SSOvars.StdDevSlope := 0
-                  else SSOvars.StdDevSlope := 100 * (sqrt(SSOvars.StdDevSlope / (1.0 * SSOvars.NumPts * pred(SSOvars.NumPts))));
-                  SSOvars.AvgElev := SumElev / SSOvars.NumPts;
-                  SSOvars.StdDevElev := (SumSqElev * SSOvars.NumPts - SumElev * SumElev);
-                  if SSOvars.StdDevElev < 0 then SSOvars.StdDevElev := 0
-                  else SSOvars.StdDevElev := sqrt(SSOvars.StdDevElev / (1.0 * SSOvars.NumPts * pred(SSOvars.NumPts)));
-               end;
-
-               if (SSOVars.AspPts > 1) then begin
-                  AspectStats.VectorAverage;
-                  SSOVars.AvgAspect := AspectStats.AvgAspectDir;
-                  SSOVars.AspectStrength := AspectStats.AvgAspectMag;
-               end
-               else begin
-                  SSOVars.AvgAspect := -99;
-                  SSOVars.AspectStrength := -99;
-               end;
-
-               if (SSOvars.NumPts >= MDDef.MinPointsForSSO) then begin
-                  Result := true;
-                  SSOvars.QueensAspect := AspectStats.QueensAspect;
-                  SSOvars.AvgSlope := (100*SumSlope/SSOvars.NumPts);
-                  SSOvars.RoughnessFactor := 1 - sqrt(sqr(SSOvars.x1sq) + sqr(SSOvars.y1sq) + sqr(SSOvars.z1sq)) / SSOvars.NumPts;   //Mark, 1975; Etzelmuller, 2000;
-
-                  if PlotResults then begin
-                     if MDDef.GemorphSSOPoles then begin
-                        NetForm.nd.ReallyPlot := true;
-                        NetForm.nd.ContourPoles(false);
-                        Netform.nd.WorkingBitmap.Canvas.Font.Size := 15;
-                        y := Netform.nd.WorkingBitmap.Height-Netform.nd.WorkingBitmap.Canvas.TextHeight(AreaName)-3;
-                        //Netform.nd.WorkingBitmap.Canvas.TextOut(1,y,RemoveUnderScores(AreaName));
-                        Netform.nd.WorkingBitmap.Canvas.Font.Size := 12;
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,1,'ln(s1/s2)=' + RealToString(SSOVars.s1s2,-5,2));
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,18,'ln(s2/23)=' + RealToString(SSOVars.s2s3,-5,2) );
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,35,'Trend:' + RealToString(SSOVars.TheDipDirs[3],6,1) + '°' );
-                        Netform.nd.WorkingBitmap.Canvas.Font.Size := 10;
-                        Netform.nd.WorkingBitmap.Canvas.TextOut(1,53,'n=' + IntToStr(Netform.nd.NumPlottedPoints));
-                        Netform.nd.NetOutline;
-
-                        if (NetName <> '') then begin
-                           PetImage.SaveBitmap(Netform.nd.WorkingBitmap,NetName);
-                           NetForm.Close;
-                           NetForm := Nil;
-                        end;
-                     end
-                     else begin
-                        NetForm.Close;
-                        NetForm := Nil;
-                     end;
-
-                     if MDDef.GemorphAspectRose then begin
-                        RoseGraph := AspectStats.CreateRose;
-                        if (AspName <> '') then begin
-                           PetImage.SaveImageAsBMP(RoseGraph.Image1,AspName);
-                           RoseGraph.Close;
-                           RoseGraph := Nil;
-                        end;
-                     end {if};
-                  end;
-               end
-               else if PlotResults then begin
-                  NetForm.Close;
-                  NetForm := Nil;
-               end;
-            finally
-              AspectStats.Destroy;
-            end;
-            {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SSOComputations out'); {$EndIf}
-         end;
 

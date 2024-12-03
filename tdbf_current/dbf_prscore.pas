@@ -204,6 +204,12 @@ procedure FuncStr_LT(Param: PExpressionRec);
 procedure FuncStr_GT(Param: PExpressionRec);
 procedure FuncStr_LTE(Param: PExpressionRec);
 procedure FuncStr_GTE(Param: PExpressionRec);
+procedure Func_DD_EQ(Param: PExpressionRec);
+procedure Func_DD_NEQ(Param: PExpressionRec);
+procedure Func_DD_LT(Param: PExpressionRec);
+procedure Func_DD_GT(Param: PExpressionRec);
+procedure Func_DD_LTE(Param: PExpressionRec);
+procedure Func_DD_GTE(Param: PExpressionRec);
 procedure Func_FF_EQ(Param: PExpressionRec);
 procedure Func_FF_NEQ(Param: PExpressionRec);
 procedure Func_FF_LT(Param: PExpressionRec);
@@ -505,6 +511,7 @@ end;
 procedure TCustomExpressionParser.RemoveConstants(var ExprRec: PExpressionRec);
 var
   I: Integer;
+  ConstantIsNull: Boolean;
 begin
   if not ResultCanVary(ExprRec) then
   begin
@@ -518,6 +525,7 @@ begin
       try
         // compute result
         EvaluateCurrent;
+        ConstantIsNull := ExprRec^.IsNullPtr^;
 
         // make new record to store constant in
         ExprRec := MakeRec;
@@ -533,7 +541,14 @@ begin
             etLargeInt:ExprWord := TLargeIntConstant.Create(PInt64(FExpResult)^);
 {$endif}
             etString: ExprWord := TStringConstant.Create(string(FExpResult)); // Added string cast
-            etDateTime: ExprWord := TDateTimeConstant.Create(EmptyStr, PDateTime(FExpResult)^);
+            etDateTime:
+            begin
+              if ConstantIsNull then
+                ExprWord := TDateTimeConstant.Create(EmptyStr)
+              else
+                ExprWord := TDateTimeConstant.Create(EmptyStr,
+                  PDateTime(FExpResult)^);
+            end;
           end;
 
           // fill in structure
@@ -541,6 +556,7 @@ begin
           Args[0] := ExprWord.AsPointer;
           FConstantsList.Add(ExprWord);
         end;
+        LinkVariable(ExprRec);
       finally
         DisposeList(FCurrentRec);
         FCurrentRec := nil;
@@ -1282,6 +1298,14 @@ begin
           Inc(I2);
         '0'..'9':
           ReadConstant(AnExpr, false);
+        '{':
+          begin
+            isConstant := True;
+            while (I2 <= Len) and (AnExpr[I2] <> '}') do
+              Inc(I2);
+            if I2 <= Len then
+              Inc(I2);
+          end;
       else
         begin
           Inc(I2);
@@ -1295,6 +1319,9 @@ var
   DecSep: Integer;
   AInteger: Integer;
   Code: Integer;
+  DateValue: TDateTime;
+  IsNull: Boolean;
+  DateValid: Boolean;
 begin
   if W[1] = HexChar then
   begin
@@ -1305,6 +1332,28 @@ begin
   if (W[1] = '''') or (W[1] = '"') then begin
      // StringConstant will handle any escaped quotes
     Result := TStringConstant.Create(W);
+  end
+  else if W[1] = '{' then
+  begin
+    Result := nil;
+    if W[Length(W)] = '}' then
+    begin
+      DateValue := 0;
+      IsNull := True;
+      DateValid := StrToDateCTOD(AnsiString(Copy(W, 2, Length(W) - 2)),
+        DateValue, IsNull);
+      if DateValid then
+      begin
+        if IsNull then
+          Result := TDateTimeConstant.Create(W)
+        else
+          Result := TDateTimeConstant.Create(W, DateValue);
+      end;
+    end
+    else
+      DateValid := False;
+    if not DateValid then
+      StrToDate(W);
   end else begin
     DecSep := Pos(FDecimalSeparator, W);
     if (DecSep > 0) then
@@ -2032,6 +2081,60 @@ begin
   Param^.Res.MemoryPos^^ := AnsiChar(dbfStrComp(Param^.Args[0], Param^.Args[1]) >= 0); // Was Char
 end;
 
+procedure Func_DD_EQ(Param: PExpressionRec);
+begin
+  if Param^.ArgList[0]^.IsNullPtr^ then
+    PBoolean(Param^.Res.MemoryPos^)^ := Param^.ArgList[1]^.IsNullPtr^
+  else
+    PBoolean(Param^.Res.MemoryPos^)^ := (not Param^.ArgList[1]^.IsNullPtr^) and
+      (PDateTime(Param^.Args[0])^ = PDateTime(Param^.Args[1])^);
+end;
+
+procedure Func_DD_NEQ(Param: PExpressionRec);
+begin
+  if Param^.ArgList[0]^.IsNullPtr^ then
+    PBoolean(Param^.Res.MemoryPos^)^ := not Param^.ArgList[1]^.IsNullPtr^
+  else
+    PBoolean(Param^.Res.MemoryPos^)^ := Param^.ArgList[1]^.IsNullPtr^ or
+      (PDateTime(Param^.Args[0])^ <> PDateTime(Param^.Args[1])^);
+end;
+
+procedure Func_DD_LT(Param: PExpressionRec);
+begin
+  if Param^.ArgList[1]^.IsNullPtr^ then
+    PBoolean(Param^.Res.MemoryPos^)^ := False
+  else
+    PBoolean(Param^.Res.MemoryPos^)^ := Param^.ArgList[0]^.IsNullPtr^ or
+      (PDateTime(Param^.Args[0])^ < PDateTime(Param^.Args[1])^);
+end;
+
+procedure Func_DD_GT(Param: PExpressionRec);
+begin
+  if Param^.ArgList[0]^.IsNullPtr^ then
+    PBoolean(Param^.Res.MemoryPos^)^ := False
+  else
+    PBoolean(Param^.Res.MemoryPos^)^ := Param^.ArgList[1]^.IsNullPtr^ or
+      (PDateTime(Param^.Args[0])^ > PDateTime(Param^.Args[1])^);
+end;
+
+procedure Func_DD_LTE(Param: PExpressionRec);
+begin
+  if Param^.ArgList[0]^.IsNullPtr^ then
+    PBoolean(Param^.Res.MemoryPos^)^ := True
+  else
+    PBoolean(Param^.Res.MemoryPos^)^ := (not Param^.ArgList[1]^.IsNullPtr^) and
+      (PDateTime(Param^.Args[0])^ <= PDateTime(Param^.Args[1])^);
+end;
+
+procedure Func_DD_GTE(Param: PExpressionRec);
+begin
+  if Param^.ArgList[1]^.IsNullPtr^ then
+    PBoolean(Param^.Res.MemoryPos^)^ := True
+  else
+    PBoolean(Param^.Res.MemoryPos^)^ := (not Param^.ArgList[0]^.IsNullPtr^) and
+      (PDateTime(Param^.Args[0])^ >= PDateTime(Param^.Args[1])^);
+end;
+
 procedure Func_FF_EQ(Param: PExpressionRec);
 begin
   Param^.Res.MemoryPos^^ := AnsiChar(PDouble(Param^.Args[0])^   =  PDouble(Param^.Args[1])^); // Was Char
@@ -2487,6 +2590,42 @@ begin
     PInteger(Param^.Res.MemoryPos^)^ := Ord(Param^.Args[0]^);
 end;
 
+procedure FuncAt(Param: PExpressionRec);
+var
+  SubStr: AnsiString;
+  Str: AnsiString;
+  FinalPos: Integer;
+  APos: Integer;
+  Occurence: Integer;
+begin
+  if Assigned(Param^.Args[2]) then
+    Occurence := PInteger(Param^.Args[2])^
+  else
+    Occurence := 1;
+  FinalPos := 0;
+  if Occurence > 0 then
+  begin
+    SubStr := Param^.Args[0];
+    Str := Param^.Args[1];
+    APos := -1;
+    while (Occurence > 0) and (APos <> 0) do
+    begin
+      APos := Pos(SubStr, Str);
+      if APos <> 0 then
+      begin
+        if FinalPos <> 0 then
+          Inc(FinalPos, Pred(Length(SubStr)));
+        Inc(FinalPos, APos);
+        Str := Copy(Str, APos + Length(SubStr), MaxInt);
+        Dec(Occurence);
+      end
+      else
+        FinalPos := 0;
+    end;
+  end;
+  PInteger(Param^.Res.MemoryPos^)^ := FinalPos;
+end;
+
 procedure FuncCDOW(Param: PExpressionRec);
 var
   ADate: TDateTime;
@@ -2528,6 +2667,12 @@ begin
     IntValue := PInteger(Param^.Args[0])^;
   if (IntValue >= Low(Byte)) and (IntValue <= High(Byte)) then
     Param^.Res.Append(@IntValue, SizeOf(Byte));
+end;
+
+procedure FuncCTOD(Param: PExpressionRec);
+begin
+  StrToDateCTOD(AnsiString(Param^.Args[0]), PDateTime(Param^.Res.MemoryPos^)^,
+    Param^.IsNull);
 end;
 
 procedure FuncDate(Param: PExpressionRec);
@@ -2870,6 +3015,12 @@ initialization
     Add(TFunction.CreateOper('/', 'LI', etLargeInt, FuncDiv_F_LL, 40));
 {$endif}
 
+    Add(TFunction.CreateOper('=', 'DD', etBoolean, Func_DD_EQ , 80));
+    Add(TFunction.CreateOper('<', 'DD', etBoolean, Func_DD_LT , 80));
+    Add(TFunction.CreateOper('>', 'DD', etBoolean, Func_DD_GT , 80));
+    Add(TFunction.CreateOper('<=','DD', etBoolean, Func_DD_LTE, 80));
+    Add(TFunction.CreateOper('>=','DD', etBoolean, Func_DD_GTE, 80));
+    Add(TFunction.CreateOper('<>','DD', etBoolean, Func_DD_NEQ, 80));
     Add(TFunction.CreateOper('=', 'FF', etBoolean, Func_FF_EQ , 80));
     Add(TFunction.CreateOper('<', 'FF', etBoolean, Func_FF_LT , 80));
     Add(TFunction.CreateOper('>', 'FF', etBoolean, Func_FF_GT , 80));
@@ -2961,10 +3112,13 @@ initialization
     Add(TFunction.Create('ABS',       '',      'L',   1, etFloat,    FuncAbs_F_L,    ''));
 {$endif}
     Add(TFunction.Create('ASC',       '',      'S',   1, etInteger,  FuncAsc,        ''));
+    Add(TFunction.Create('AT',        '',      'SS',  2, etInteger,  FuncAt,         ''));
+    Add(TFunction.Create('AT',        '',      'SSI', 3, etInteger,  FuncAt,         ''));
     Add(TFunction.Create('CDOW',      '',      'D',   1, etString,   FuncCDOW,       ''));
     Add(TFunction.Create('CEILING',   'CEIL',  'F',   1, etInteger,  FuncCeil_I_F,   ''));
     Add(TFunction.Create('CEILING',   'CEIL',  'F',   1, etFloat,    FuncCeil_F_F,   ''));
     Add(TFunction.Create('CHR',       '',      'I',   1, etString,   FuncChr,        ''));
+    Add(TFunction.Create('CTOD',      '',      'S',   1, etDateTime, FuncCTOD,       ''));
     Add(TFunction.Create('DATE',      '',      '',    0, etDateTime, FuncDate,       ''));
     Add(TFunction.Create('DAY',       '',      'D',   1, etInteger,  FuncDay,        ''));
     Add(TFunction.Create('EMPTY',     '',      'D',   1, etBoolean,  FuncEmpty,      ''));

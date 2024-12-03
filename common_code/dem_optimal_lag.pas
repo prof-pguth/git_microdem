@@ -282,49 +282,7 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordLagProblems} WriteLineToDebugFile('RecordLagProblems active in dem_optimal_lag');  {$EndIf}
-   {$IfDef RecordFullLagProblems} WriteLineToDebugFile('RecordFullLagProblems active in dem_optimal_lag'); {$EndIf}
 end.
 
 
-
-
-//removed from  ASTER_Lag_and_Shift
-   if false then begin
-       if (not AutomaticRun) and AnswerIsYes('Lag map') then with MDDef.ShiftDEMControls do begin
-          Results.Add('Create lag map');
-          MDDef.DoLagMap := true;
-          XWhereMaxR := 0;
-          YWhereMaxR := 0;
-          LagLimit := PassSize[1];
-          SampInc := PassThin[1];
-          ReadDefault('Lag limit',LagLimit);
-          ReadDefault('Sampling increment',SampInc);
-          APass(1,LagLimit,SampInc);
-       end;
-
-       with DEMGLB[SubDEM],HeadRecs do begin
-          if MDDef.ShiftDEMControls.DifferenceMaps and (not AutomaticRun) then MakeDifferenceMapOfBoxRegion(MainDEM,SubDEM,GridLimits,true,false,true,'Original differences');
-
-          if AutomaticRun or AnswerIsYes('Horizontally Shift DEM ' + AreaName) then begin
-             hdfSWCornerx := hdfSWCornerx - XWhereMaxR * fLongInterval;
-             hdfSWCornerY := hdfSWCornerY - YWhereMaxR * fLatInterval;
-             AreaName := 'Horiz shift ' + AreaName;
-             DefineDEMVariables(true);
-             if MDDef.ShiftDEMControls.DifferenceMaps and (not AutomaticRun) then MakeDifferenceMapOfBoxRegion(MainDEM,SubDEM,GridLimits,true,false,true,'Horizontal shift differences');
-
-             if AutomaticRun or AnswerIsYes('Vertically Shift DEM ' + AreaName) then begin
-                AreaName := 'Horiz/Vert shift ' + AreaName;
-                for xs := 0 to pred(NumCol) do begin
-                   for ys := 0 to pred(NumRow) do begin
-                      if GetElevMeters(xs,ys,z) then SetGridElevation(xs,ys,z - AverageDiff);
-                   end;
-                end;
-                if MDDef.ShiftDEMControls.DifferenceMaps and (not AutomaticRun) then MakeDifferenceMapOfBoxRegion(MainDEM,SubDEM,GridLimits,true,false,true,'Full shift differences');
-             end;
-             if (not AutomaticRun) then SelectionMap.DoFastMapRedraw;
-          end;
-       end;
-       if (Results <> Nil) then Petmar.DisplayAndPurgeStringList(Results,'Optimal lag');
-   end;
 

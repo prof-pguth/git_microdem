@@ -16,7 +16,7 @@ unit DEMCoord;
 
 
 {$IFDEF DEBUG}
-   //{$Define NoCoordInline}
+   {$Define NoCoordInline}
    //{$Define NoParallelFor}
 {$ELSE}
    //{$Define NoCoordInline}
@@ -36,7 +36,10 @@ unit DEMCoord;
       //{$Define RecordBoundingBox}
       //{$Define RecordReadDEM}
       {$Define RecordDEMIXResample}
-      {$Define RecordMapProj}
+      //{$Define RecordMapProj}
+      {$Define SaveNetDrawingSteps}
+      {$Define ShowDEMSSOCalc}
+      {$Define ShowFullDEMSSOCalc}
       //{$Define RecordMaskFromSecondGrid}
       //{$Define RecordGridIdenticalProblems}
       //{$Define TrackDEMboundingBox}
@@ -59,13 +62,9 @@ unit DEMCoord;
       //{$Define ShortDEMLoad}
       //{$Define RecordSaveAverageResampleDEMformat}
       //{$Define RecordDEMCreation}
-      //{$Define RecordSSO}
-      //{$Define ShowDEMSSOCalc}
-      //{$Define ShowFullDEMSSOCalc}  //big slowdown
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      //{$Define RecordNormalInit}
       //{$Define RecordMinMax}
       //{$Define RecordExtremeZ}
       //{$Define GeotiffCorner}
@@ -112,6 +111,7 @@ unit DEMCoord;
       //{$Define RecordShortDefineDatum}
       //{$Define TrackLastDEMName}
       //{$Define RecordReadMakeSingle}
+      //{$Define ShowFullDEMSSOCalc}        //big slowdown
       //{$Define RecordReadDEMVeryFull}     //real slowdown
       //{$Define RecordAllImport}           //real slowdown
       //{$Define RecordGetVisiblePoints}    //slowdown
@@ -199,21 +199,22 @@ type
 
    function CreateAspectRose(DEM : integer) : tThisBaseGraph;
 
+(*
 type
    tSSOVarAnalysis = object
       protected
       private
       public
          DEM  : Integer;
+         SSOvars : tSSOvars;
          M,S  : ^tTrendMatrix;
          s2   : VectorType;
-         SSOvars : tSSOvars;
          constructor Create(WhichDEM : integer);
          destructor Destroy;
          procedure NormalsInBox(GridLimits : tGridLimits);
          function ComputeEigenVectors : boolean;
    end;
-
+*)
 
 type
    tDEMDataSet = class
@@ -265,19 +266,19 @@ type
          AverageYSpace      : float64;   {average spacing in meters in y direction}
          DiagSpaceByDEMrow,
          XSpaceByDEMrow     : ^tShortFloatCol;
-         VATrelatedGrid,
-         FilterGrid,
-         FilterGridValue,
-         FanBlowUpDEM,
-         DSMGrid            : integer;
          ThisDEMMissingValue : LongWord;
          ElevationMultiple   : float64;
          DEMAlreadyDefined,
          DEMMemoryAlreadyAllocated,
-         HiddenGrid,
+         HiddenGrid,                 {used for vegetation layers}
          UTMValidDEM        : boolean;
          cosAlt,sinAlt,RefPhi,RefAlt,RefWeight : array[1..MaxRefDir] of float64;     //for hillshades
          VatLegendStrings : tStringList;
+         //VATrelatedGrid,
+         //FilterGrid,
+         //FilterGridValue,
+         //FanBlowUpDEM,
+         DSMGrid            : integer;
 
          {$IfDef VCL}
             SelectionMap       : TMapForm;
@@ -330,7 +331,7 @@ type
 
          function PercentileOfPoint(xloc,yloc : integer; GridLimits: tGridLimits) : float64;
          function PercentileOfElevation(z : float64) : float64;
-         function FindPercentileElevation(Percentile : float64) : float64;
+         function FindPercentileElev(Percentile : float64) : float64;
          procedure GetElevPercentiles(GridLimits: tGridLimits);
          procedure CloseElevPercentiles;
 
@@ -355,13 +356,12 @@ type
          function ImmediateNeighborsMissing(XGrid,YGrid : integer) :  integer;
          function ImmediateNeighborsSameCode(XGrid,YGrid : integer) :  integer;
          procedure DeleteMissingDataPoints(CheckMaxMin : boolean = true);
-         //procedure ComputeMissingData(var Missing : float64); overload;
          procedure ComputeMissingDataPercentage(GridLimits : tGridLimits; var Missing : float64); //overload;
 
          function FilledGridBox(var GridLimits : tGridLimits) : boolean;
          function SecondGridIdentical(Map2 : integer) : boolean;
          function SecondGridJustOffset(DEM2 : integer; var xoffset,yoffset : integer; ShowProblems : boolean = false) : boolean;
-         function GetSamplingSize(GridLimits: tGridLimits)  : integer;
+         function GetSamplingSize(GridLimits: tGridLimits) : integer;
 
          function ComputeNumberValidPoints(GridLimits : tGridLimits) : int64;
 
@@ -373,14 +373,12 @@ type
          procedure DEMGridToLatLongDegree(XGrid,YGrid : float64; var Lat,Long : float64);
 
          procedure LatLongDegreetoUTM(Lat,Long : float64; var XUTM,YUTM : float64);
-         //function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float32) : boolean; overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          function LatLongDegreeToDEMGrid(Lat,Long : float64; var XGrid,YGrid : float64) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
 
          function LatLongDegreeToDEMGridInteger(Lat,Long : float64; var XGrid,YGrid : int32) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
 
-         procedure ClipDEMGrid(var x,y : float64);  //overload;
-         //procedure ClipDEMGrid(var x,y : float32);  overload;
-         procedure ClipDEMGridInteger(var x,y : int32);    //overload;
+         procedure ClipDEMGrid(var x,y : float64);
+         procedure ClipDEMGridInteger(var x,y : int32);
 
          function GridInDataSetInteger(XGrid,YGrid : int32) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          function GridInDataSetFloat(XGrid,YGrid : float64) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
@@ -505,7 +503,6 @@ type
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
-         //function OldGetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; Radius : integer = 0) : boolean;
          function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function SlopePercent(XGrid,YGrid : integer; var Slope : float64; Radius : integer = 0) : boolean; inline;
@@ -682,10 +679,10 @@ type
 
             {$IfDef MultipleCurvatureMethods}
                procedure WoodPointClassify(Col,Row : integer; var PointType : tPointType);
-               procedure PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
-               procedure ProfCMoments(GridLimits: tGridLimits; var ProfCMoment : tMomentVar);
                function GetEvansParams(Col,Row,RegionSize : integer; var SlopeDeg,SlopeCurvature, PlanCurvature,crossc,MaxCurve,MinCurve : float64) : boolean;
                function GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean;
+               procedure PlanCMoments(GridLimits: tGridLimits; var PlanCMoment : tMomentVar);
+               procedure ProfCMoments(GridLimits: tGridLimits; var ProfCMoment : tMomentVar);
                procedure GetPlanCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : bfarray32; IncludeSeaLevel : boolean = true);
                procedure GetProfCInLongArray(GridLimits: tGridLimits; var NPts : int64; var Values : bfarray32; IncludeSeaLevel : boolean = true);
             {$EndIf}
@@ -694,8 +691,8 @@ type
             {$IfDef ExGeostats}
             {$Else}
                procedure DirectionalSlopesReport(Lat,Long : float64);
-               function SSOComputations(GridLimits : tGridLimits; var SSOvars : tSSOvars; PlotResults : boolean; NetName,AspName : PathStr; UseMinSlope : float64 = 0; UseMaxSlope : float64 = 9999) : boolean;
-               function FeatureSSOComputations(inFeatureDEM,inFeatureID,LoX,LoY,HiX,HiY : integer; var s1s2,s2s3,Trend,RoughnessFactor,DownDip : float64) : boolean;
+               function SSOComputations(GridLimits : tGridLimits; var SSOvars : tSSOvars; Plot : boolean; NetName,AspName : PathStr;
+                  FilterGrid : integer = 0; FilterValue : integer = 0; LLtext : shortstring = '') : boolean;
                function PointSSOComputations(Col,Row,FullBoxSizeMeters : integer; var SSOvars : tSSOvars; PlotResults,Complete,PlotAspectFreq : boolean) : boolean;  inline;
                function SimplePointSSOComputations(PlotResults : boolean; Col,Row,FullBoxSizeMeters : integer; var s1s2,s2s3,Trend,RoughnessFactor : float64) : boolean;
                function OrientationTable(fName : PathStr; UseMap : tMapForm) : integer;
@@ -708,9 +705,7 @@ type
                function ContourLineCrossing(x,y : integer; z : float64) : boolean;
                procedure FractalBox(GridLimits: tGridLimits; var FracDim,r : float32; SkipDraw : boolean = false; CloseGraph : boolean = false);
                procedure EntireDEMFractalBox;
-               //function CreateWholeDEMHistogram : TThisBaseGraph;
-               //function CreatePartDEMHistogram(GridLimits: tGridLimits) : TThisBaseGraph;
-               procedure InitializeNormals(var NumPts : Integer);
+               procedure InitializeNormals;  //(var NumPts : Integer);
                procedure DisposeNormals;
                function FigureEntropy : float64;
                procedure ComputeVariogram(GridLimits: tGridLimits); //SkipDrawing : boolean);
@@ -1303,9 +1298,13 @@ begin
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
       DEMGlb[Result].AreaName := GridName;
       DEMGlb[Result].DEMMapProj.InitProjFomDEMHeader(DEMHeader,'DEM=' + IntToStr(Result));
-      DEMGlb[Result].DEMMapProj.ProjectionSharedWithDataset := true;
+(*
+      //DEMGlb[Result].DEMMapProj.ProjectionSharedWithDataset := true;
+      HighlightLineToDebugFile('{CloneAndOpenGridSetMissing} removed ProjectionSharedWithDataset');
+*)
+
       {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, ElevUnits=' +
-            ElevUnitsAre(ElevUnits) +  '   ' + DEMMapProj.GetProjName);
+            ElevUnitsAre(ElevUnits) +  '   ' + DEMMapProj.GetProjName + '  ' + GridName);
       {$EndIf}
    end;
 end;
@@ -1759,10 +1758,10 @@ begin
    ElevationMultiple := 1;
    AverageGridTrue := 0;
    DSMGrid := 0;
-   VATrelatedGrid := 0;
-   FanBlowUpDEM := 0;
-   FilterGrid := 0;
-   FilterGridValue := 0;
+   //VATrelatedGrid := 0;
+   //FanBlowUpDEM := 0;
+   //FilterGrid := 0;
+   //FilterGridValue := 0;
    HiddenGrid := false;
    NilAllDEMPointers;
 
@@ -3384,6 +3383,7 @@ begin
                    Result := RGBTrip(0,0,r);
                 end;
              end
+(*
              else if (TintedReflectance = mt6ColorVAToverlay) then begin
                 if DEMglb[VATrelatedGrid].GetElevMeters(Col,Row,ZV) then begin
                    zi := pred(round(zv));
@@ -3394,6 +3394,7 @@ begin
                 end
                 else Result := RGBTrip(r,r,r);
              end
+*)
              else if (TintedReflectance = mt6ColorsReflect) then begin
                // GetReflectanceRGB(TintedReflectance,zv,Red,Green,Blue);
                 zi := round(zv - RefMinElev) * 6 div round(RefMaxElev - RefMinElev);
@@ -4078,124 +4079,6 @@ begin
    {$EndIf}
 end;
 
-
-{ tSSOVarAnalysis }
-
-function tSSOVarAnalysis.ComputeEigenVectors: boolean;
-var
-   i,NRot : integer;
-   Dip,Strike,DipDirect : float32;
-begin
-      if (SSOVars.NumPts / (SSOVars.NumPts + SSOVars.NumPts)  < 0.5) then Result := false
-      else begin
-         Result := true;
-         Jacobi(M^,3,SSOVars.V,s^,NRot);
-         Eigsrt(SSOVars.V,S^,3);
-         if abs(SSOVars.v[2]) < 0.00001 then SSOVars.v[2] := 0.00001;
-         if abs(SSOVars.v[3]) < 0.000012 then SSOVars.v[3] := 0.000012;
-
-         {Shape/strength statistics after Fisher, Lewis, and Embleton, p.159}
-         if abs(SSOvars.v[3]) < 0.00001 then begin
-            SSOvars.s2s3 := 0;
-            SSOvars.Shape := 0;
-            SSOvars.s1s2 := MaxSmallInt;
-            SSOvars.Strength := MaxSmallInt;
-         end
-         else begin
-            SSOvars.s1s2 := ln(SSOvars.v[1]/ SSOvars.v[2]);
-            SSOvars.s2s3 := ln(SSOvars.v[2]/ SSOvars.v[3]);
-            SSOvars.Shape := ln(SSOvars.v[1]/ SSOvars.v[2])/ln( SSOvars.v[2]/ SSOvars.v[3]);
-            SSOvars.Strength := ln(SSOvars.v[1]/ SSOvars.v[3]);
-         end;
-
-         for i := 1 to 3 do begin //compute eigenvectors
-            S2[1] := s[1,i];
-            S2[2] := s[2,i];
-            S2[3] := s[3,i];
-            CartesianToDipStrike(s2,Dip,Strike);
-            if (Dip < 0) then begin
-              Dip := abs(Dip);
-              DipDirect := Strike - 90;
-           end
-           else DipDirect := Strike + 90;
-           DipDirect := FindCompassAngleInRangeFloat32(DipDirect);
-           if DipDirect > 180 then DipDirect := DipDirect - 180;
-           SSOVars.TheDips[i] := Dip;
-           SSOVars.TheDipDirs[i] := DipDirect;
-        end {for i};
-      end;
-end;
-
-
-constructor tSSOVarAnalysis.Create(WhichDEM: integer);
-begin
-   {$If Defined(RecordSSO)} WriteLineToDebugFile(' tSSOVarAnalysis.Create in'); {$EndIf}
-   DEM := WhichDEM;
-   New(M);
-   New(s);
-   DEMGlb[DEM].InitializeNormals(SSOVars.NumPts);
-end;
-
-
-destructor tSSOVarAnalysis.Destroy;
-begin
-   {$If Defined(RecordSSO)} WriteLineToDebugFile(' tSSOVarAnalysis.Destroy in'); {$EndIf}
-   Dispose(M);
-   Dispose(s);
-end;
-
-
-procedure tSSOVarAnalysis.NormalsInBox(GridLimits: tGridLimits);
-var
-   Col,Row,j,k : integer;
-   z : array[1..3] of float32;
-begin
-   SSOVars.x1sq := 0;
-   SSOVars.y1sq := 0;
-   SSOVars.z1sq := 0;
-   SSOVars.NumPts := 0;
-   SSOVars.NumMissing := 0;
-   for j := 1 to 3 do
-      for k := 1 to 3 do
-         M^[j,k] := 0.0;
-
-   DEMGlb[DEM].ClipDEMGridInteger(GridLimits.XGridLow,GridLimits.YGridLow);
-   DEMGlb[DEM].ClipDEMGridInteger(GridLimits.XGridHigh,GridLimits.YGridHigh);
-   Col := GridLimits.XGridLow;
-   while (Col <= GridLimits.XGridHigh) do begin
-      Row := GridLimits.YGridLow;
-      while (Row <= GridLimits.YGridHigh) do begin
-         if DEMGlb[DEMGlb[DEM].Normals[1]].GetElevMetersOnGrid(Col,Row,z[1]) and
-            DEMGlb[DEMGlb[DEM].Normals[2]].GetElevMetersOnGrid(Col,Row,z[2]) and
-            DEMGlb[DEMGlb[DEM].Normals[3]].GetElevMetersOnGrid(Col,Row,z[3]) then begin
-            inc(SSOVars.NumPts);
-            SSOVars.x1sq := SSOVars.x1sq + sqr(z[1]);
-            SSOVars.y1sq := SSOVars.y1sq + sqr(z[2]);
-            SSOVars.z1sq := SSOVars.z1sq + sqr(z[3]);
-            for j := 1 to 3 do
-               for k := 1 to 3 do
-                  M^[j,k] := M^[j,k] + z[j] * z[k];
-         end
-         else inc(SSOVars.NumMissing);
-(*
-         if DEMGlb[DEM].Normals^[Col]^[Row][3] < pred(MaxSmallInt) then begin
-            inc(SSOVars.NumPts);
-
-            SSOVars.x1sq := SSOVars.x1sq + sqr(DEMGlb[DEM].Normals^[Col]^[Row][1]);
-            SSOVars.y1sq := SSOVars.y1sq + sqr(DEMGlb[DEM].Normals^[Col]^[Row][2]);
-            SSOVars.z1sq := SSOVars.z1sq + sqr(DEMGlb[DEM].Normals^[Col]^[Row][3]);
-
-            for j := 1 to 3 do
-               for k := 1 to 3 do
-                  M^[j,k] := M^[j,k] + DEMGlb[DEM].Normals^[Col]^[Row][j] * DEMGlb[DEM].Normals^[Col]^[Row][k];
-         end
-         else inc(SSOVars.NumMissing);
-*)
-         inc(Row);
-      end {while};
-      inc(Col);
-   end {while};
-end;
 
 
 initialization

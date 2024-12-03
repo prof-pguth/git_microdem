@@ -302,8 +302,8 @@ begin
             Stats.Add(NextLine);
          end;
 
-         Title := ElevUnitsAre(DEMGlb[DEM].DEMheader.ElevUnits) + '_' + DEMGlb[DEM].AreaName;
-         fName := Petmar.NextFileNumber(MDTempDir, Title + '_','.dbf');
+         //Title := ElevUnitsAre(DEMGlb[DEM].DEMheader.ElevUnits) + '_' + DEMGlb[DEM].AreaName;
+         fName := Petmar.NextFileNumber(MDTempDir, DEMGlb[DEM].AreaName + '_','.dbf');
          Result := StringList2CSVtoDB(Results,fName);
       end;
    end;

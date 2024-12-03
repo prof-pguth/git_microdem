@@ -364,7 +364,7 @@ procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
 procedure CombineAllPanelGraphs(Cols : integer = 1);
 
-procedure AddGraphToBigBitmap(ap : integer; {var LeftStart : integer;} GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
+procedure AddGraphToBigBitmap(ap : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
 procedure FinishBigMap(var BigBitmap,LegendBMP : tMyBitmap; aName : shortstring = ''; LegendBelow : boolean = true);
 
 
@@ -531,14 +531,8 @@ begin
         Findings.Add( (WMDEM.MDIChildren[i] as TImageDisplayForm).LoadedFileName);
       end;
    end;
-   //if (Findings.Count > 0) then begin
-      MakeBigBitmap(Findings,'','',Cols);
-      {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
-   //nd
-   //else begin
-      //Findings.Free;
-      //{$IfDef RecordBigBitmap}  WriteLineToDebugFile('No graphs found, AllGraphsOneImage out'); {$EndIf}
-   //end;
+   MakeBigBitmap(Findings,'','',Cols);
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
 end;
 
 
@@ -552,20 +546,23 @@ var
 begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := nil;
-   if (TheFiles = Nil) then exit;
-   if (TheFiles.Count > 0) then begin
-     AskCols := (Cols < 0);
-     if AskCols then begin
-        if (TheFiles.Count = 1) then Cols := 1
-        else Cols := MDDef.BigBM_nc;
+   if (TheFiles <> Nil) and (TheFiles.Count > 0) then begin
+     if (TheFiles.Count = 1) then begin
+        Cols := 1;
+        AskCols := false;
+     end
+     else begin
+        AskCols := (Cols < 0);
+        if not AskCols then Cols := MDDef.BigBM_nc;
      end;
-     BigBMP := CombineBitmaps(Cols, theFiles, Capt);
+     BigBMP := CombineBitmaps(Cols, theFiles, '');
      if (BigBMP <> nil) then begin
         if (Capt <> '') then begin
            BigBmp.Canvas.Font.Size := 24;
            BigBmp.Canvas.Font.Style := [fsBold];
+           BigBmp.Height := BigBmp.Height + 15 + BigBmp.Canvas.TextHeight(Capt);
            x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
-           y := BigBmp.Height - 10 - BigBmp.Canvas.TextHeight(Capt);
+           y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(Capt);
            BigBmp.Canvas.TextOut(x,y,Capt);
         end;
         if (Legend <> '') then begin
@@ -582,11 +579,12 @@ begin
             {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
             SaveBitmap(BigBmp,SaveName);
             Result.LoadImage(SaveName,true);
+            fName := ChangeFileExt(SaveName,'.txt');
          end
          else begin
             Result.LoadImage(BigBmp,true);
+            fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files','.txt');
          end;
-         fName := Petmar.NextFileNumber(MDtempDir,'big_bmp_files','.txt');
          theFiles.SaveToFile(fName);
          Result.BigBM_Capt := Capt;
          Result.BigBM_files := fName;

@@ -190,5 +190,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordFanOptions} WriteLineToDebugFile('RecordFanOptions active in demfanParams'); {$EndIf}
 end.

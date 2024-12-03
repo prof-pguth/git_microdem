@@ -29,7 +29,7 @@ unit petdbutils;
       //{$Define RecordGAZ}
       //{$Define RecordShortCSV}
       //{$Define RecordKML}
-      //{$Define RecordGPX}
+      {$Define RecordGPX}
       //{$Define RecordCSVParse}
       //{$Define RecordFullGPX}      //major slowdown, but shows the line that is causing an error
       //{$Define RecordProcessLine}  //major slowdown
@@ -327,52 +327,89 @@ end;
 
 
 procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
+{
+      <trkpt lat="38.991316203" lon="-76.502945870">
+        <ele>-16.000</ele>
+        <time>2024-11-15T16:53:17Z</time>
+        <speed>9.891000</speed>
+      </trkpt>
+}
 var
    FileInMemory,OutList : tStringList;
-   i,GISNum : integer;
+   i,j,GISNum : integer;
    Hours : float64;
-   TimeStr,
-   Str,aline : AnsiString;
+   TimeStr,LatLongStr,ElevStr,Str : AnsiString;
+
+   procedure CheckForLatLongString(Str : AnsiString; var LatLongStr : AnsiString);
+   begin
+       if StrUtils.AnsiContainsText(Str,'<TRKPT') then begin
+          Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true);
+          LatLongStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true) + ',';
+          Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true);
+          LatLongStr := LatLongStr + Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"') + ',';
+       end;
+   end;
+
+   procedure CheckForElevStr(Str : AnsiString; var ElevStr : AnsiString);
+   var
+      j : integer;
+   begin
+       if (Str <> '') and StrUtils.AnsiContainsText(Str,'<ELE>') then begin
+          for j := length(str) downto 1 do
+             if not (str[j] in ['-','.','0'..'9']) then Delete(str,j,1);
+          ElevStr := Str + ',';
+       end;
+   end;
+
+   procedure CheckForTimeStr(Str : AnsiString; var TimeStr : AnsiString);
+   begin
+       if (Str <> '') and StrUtils.AnsiContainsText(Str,'<TIME') then begin
+           Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'>',true,true);
+           TimeStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'<');
+           //TimeStr := Str;
+           //Delete(Str,1,11);
+{
+2024-12-01T15:05:19Z
+}
+           Hours := 1.0 * StrToInt(Copy(TimeStr,12,2)) + StrToInt(Copy(Str,15,2)) / 60 + StrToInt(Copy(TimeStr,18,2)) / 3600;
+           TimeStr := TimeStr + ',' + RealToString(Hours,-12,-6);
+       end;
+   end;
+
 begin
-   if FileExists(inName) then begin
+   if FileExists(inName) and ValidPath(OutName) then begin
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, in for ' + inName); {$EndIf}
       ShowHourglassCursor;
       FileInMemory := tStringList.Create;
       FileInMemory.LoadFromFile(inName);
-
       OutList := tStringList.Create;
       OutList.Add('LAT,LONG,ELEV,DTG,DEC_HOURS');
-      aLine := '';
       TimeStr := '';
-       for I := 0 to pred(FileInMemory.count) do begin
-          Str := UpperCase(ptTrim(UpperCase(FileInMemory.Strings[i])));
+      LatLongStr := '';
+      ElevStr := '';
+      for I := 0 to pred(FileInMemory.count) do begin
+(*
+    <trkpt lat="38.993863296" lon="-76.499601407">
+        <ele>10.400</ele>
+        <time>2024-12-01T15:05:19Z</time>
+        <speed>0.000000</speed>
+    </trkpt>
+*)
+         Str := UpperCase(ptTrim(UpperCase(FileInMemory.Strings[i])));
          {$IfDef RecordFullGPX} WriteLineToDebugFile('line=' + Str); {$EndIf}
-          if StrUtils.AnsiContainsText(Str,'<TRKPT') then begin
-              Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true);
-              aline := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true) + ',';
-              Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"',true,true);
-              aline := aline + Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'"') + ',';
-          end;
-          if (aline <> '') and StrUtils.AnsiContainsText(Str,'<ELE>') then begin
-
-          end;
-          if (aline <> '') and StrUtils.AnsiContainsText(Str,'<TIME') then begin
-              Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'>',true,true);
-              Str := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'<');
-              if (TimeStr = '') then TimeStr := Str;
-              aline := aline + Str;
-              Delete(Str,1,11);
-              Hours := 1.0 * StrToInt(Copy(Str,1,2)) + StrToInt(Copy(Str,4,2)) / 60 + StrToInt(Copy(Str,7,2)) / 3600;
-              aline := aline + ',' + RealToString(Hours,-12,-6);
-              Outlist.Add(aline);
-              aLine := '';
-          end;
+         CheckForLatLongString(Str,LatLongStr);
+         CheckForElevStr(Str,ElevStr);
+         CheckForTimeStr(Str,TimeStr);
+         if StrUtils.AnsiContainsText(Str,'</TRKPT>') then begin
+            if (ElevStr = '') then ElevStr := '-999,';
+            Outlist.Add(LatLongStr + ElevStr + TimeStr);
+            TimeStr := '';
+            LatLongStr := '';
+            ElevStr := '';
+         end;
       end;
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, parsed');  OutList.SaveToFile(MDtempDir + 'gpx_stringlist.txt'); {$EndIf}
-      if ValidPath(OutName) then begin
-         ReplaceCharacter(TimeStr,':','_');
-         OutName := OutName + TimeStr + '.dbf';
-      end;
+      OutName := OutName + ExtractFileNameNoExt(inName) + '.dbf';
 
       GISNum := StringList2CSVtoDB(OutList,OutName);
       {$IfDef RecordGPX} WriteLineToDebugFile('StringListCSVtoTable done'); {$EndIf}
@@ -1962,27 +1999,10 @@ var
 initialization
    {$IfDef MessageStartupUnit} MessageToContinue('Startup petdbutils'); {$EndIf}
    for i := 0 to MaxFieldsInDB do AllVis[i] := true;
-   //TextSaveDir := '';
    OutsideCSVImport := false;
    ForceAllInStringGrid := false;
    WeKnowTheHeader := false;
 finalization
-   {$IfDef RecordDataBaseFilter} WriteLineToDebugFile('RecordDataBaseFilter active in petdbutils'); {$EndIf}
-   {$IfDef RecordDataBaseImage} WriteLineToDebugFile('RecordDataBaseImage active in petdbutils'); {$EndIf}
-   {$IfDef RecordOpenDB} WriteLineToDebugFile('RecordOpenDB active in petdbutils'); {$EndIf}
-   {$IfDef RecordDBF} WriteLineToDebugFile('RecordDBF active in petdbutils'); {$EndIf}
-   {$IfDef RecordFieldPresent} WriteLineToDebugFile('RecordFieldPresent active in petdbutils'); {$EndIf}
-   {$IfDef ListOpenDB} WriteLineToDebugFile('ListOpenDB active in petdbutils'); {$EndIf}
-   {$IfDef RecordStringFromTable} WriteLineToDebugFile('RecordStringFromTable active in petdbutils'); {$EndIf}
-   {$IfDef RecordRange} WriteLineToDebugFile('RecordRange active in petdbutils'); {$EndIf}
-   {$IfDef RecordCSV} WriteLineToDebugFile('RecordCSV active in petdbutils'); {$EndIf}
-   {$IfDef RecordKML} WriteLineToDebugFile('RecordKML active in petdbutils'); {$EndIf}
-   {$IfDef RecordFullCSV} WriteLineToDebugFile('RecordFullCSV active in petdbutils (major slowdown)'); {$EndIf}
-   {$IfDef RecordGAZ} WriteLineToDebugFile('RecordGAZ active in petdbutils'); {$EndIf}
-   {$IfDef RecordGPX} WriteLineToDebugFile('RecordGPX active in petdbutils'); {$EndIf}
-   {$IfDef RecordFullGPX} WriteLineToDebugFile('RecordFullGPX active in petdbutils'); {$EndIf}
-   {$IfDef RecordCSVParse} WriteLineToDebugFile('RecordCSVParse active in petdbutils'); {$EndIf}
-   {$IfDef RecordCSVimport} WriteLineToDebugFile('RecordCSVimport active in petdbutils'); {$EndIf}
 end.
 
 

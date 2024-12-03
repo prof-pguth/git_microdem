@@ -162,8 +162,8 @@ begin
     ReadDefault('Low percentile to set to 0',zLo);
     ReadDefault('Upper percentile to set to 254',zHi);
 
-    zLo := FindPercentileElevation(zLo);
-    zHi := FindPercentileElevation(zHi);
+    zLo := FindPercentileElev(zLo);
+    zHi := FindPercentileElev(zHi);
 
     StartProgress('Check DEM');
     for x := 0 to pred(DEMheader.NumCol) do begin

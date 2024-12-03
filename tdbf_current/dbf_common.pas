@@ -52,6 +52,16 @@ type
   TDbfValueBuffer = pointer;
 {$endif}
 
+{$ifdef FPC_VERSION}
+  TDbfDataEventInfo = Ptrint;
+{$else}
+{$ifdef DELPHI_XE}
+  TDbfDataEventInfo = NativeInt;
+{$else}
+  TDbfDataEventInfo = Longint;
+{$endif}
+{$endif}
+
 {$ifdef SUPPORT_TRECBUF}
 type
   TDbfRecBuf = DB.TRecBuf;
@@ -140,6 +150,7 @@ function IncludeTrailingPathDelimiter(const Path: string): string;
 {$ifdef SUPPORT_FORMATSETTINGS}
 function TwoDigitYearCenturyWindow: word;
 function DecimalSeparator: char;
+function DateSeparator: Char;
 {$endif SUPPORT_FORMATSETTINGS}
 
 //-------------------------------------
@@ -408,6 +419,15 @@ begin
   Result := FormatSettings.DecimalSeparator;
 {$else SUPPORT_FORMATSETTINGS}
   Result := SysUtils.DecimalSeparator{%H-};
+{$endif SUPPORT_FORMATSETTINGS}
+end;
+
+function DateSeparator: Char;
+begin
+{$ifdef SUPPORT_FORMATSETTINGS}
+  Result := FormatSettings.DateSeparator;
+{$else SUPPORT_FORMATSETTINGS}
+  Result := SysUtils.DateSeparator{%H-};
 {$endif SUPPORT_FORMATSETTINGS}
 end;
 

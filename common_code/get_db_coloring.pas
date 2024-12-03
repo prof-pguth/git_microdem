@@ -230,6 +230,4 @@ end;
 initialization
 finalization
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing get db coloring out'); {$EndIf}
-   {$IfDef TrackColoring} WriteLineToDebugFile('TrackCloring active in get db coloring'); {$EndIf}
-   {$IfDef TrackAllColoring} WriteLineToDebugFile('TrackAllCloring active in get db coloring'); {$EndIf}
 end.

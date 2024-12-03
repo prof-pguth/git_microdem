@@ -55,22 +55,27 @@ uses
     VCL.ExtCtrls,VCL.Forms, VCL.Graphics,
     Petmar,Petmar_types,BaseGraf;
 
-const
-   caBest = 1;
-   ca4cat = 2;
-   ca9cat = 3;
 
-//map comparisons
-   procedure CopAlosCompareReference;
-   procedure PixelByPixelCopAlos;
-   procedure COP_ALOS_compare(What : integer);
-   procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
-   procedure CreateDifferenceMaps(DEMIXhalfSecDir : PathStr = '');
 
-   procedure OpenHalfSecCopALOS(OpenDir : boolean; InDir : PathStr = '');
-   procedure CreateHalfSecSlopeRuffMaps(RefDTMHalfSec,ALOSHalfSec,COPHalfSec : integer);
-   procedure BestMapCOPALOSThreeParams;
-   procedure HighLowMapCOPALOSThreeParams;
+{$IfDef CopALOSCompare}
+
+   const
+      caBest = 1;
+      ca4cat = 2;
+      ca9cat = 3;
+
+   //map comparisons
+      procedure CopAlosCompareReference;
+      procedure PixelByPixelCopAlos;
+      procedure COP_ALOS_compare(What : integer);
+      procedure HighLowCopAlosGeomorphometry(fName : PathStr = '');
+      procedure CreateDifferenceMaps(DEMIXhalfSecDir : PathStr = '');
+
+      procedure OpenHalfSecCopALOS(OpenDir : boolean; InDir : PathStr = '');
+      procedure CreateHalfSecSlopeRuffMaps(RefDTMHalfSec,ALOSHalfSec,COPHalfSec : integer);
+      procedure BestMapCOPALOSThreeParams;
+      procedure HighLowMapCOPALOSThreeParams;
+{$EndIf}
 
 
 implementation
@@ -80,6 +85,11 @@ uses
    demix_definitions, DEMIX_control,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,Pick_several_dems,
    DEMCoord,DEMdefs,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath;
+
+
+
+{$IfDef CopALOSCompare}
+
 
 const
    GeomorphNames : array[1..3] of shortstring = ('Elevation','Slope','Roughness');
@@ -245,7 +255,7 @@ begin
    end;
 
    CreateHalfSecSlopeRuffMaps(RefDTMHalfSec,ALOSHalfSec,COPHalfSec);
-   RefAspectMapHalfSec := MakeAspectMap(RefDTMHalfSec);
+   RefAspectMapHalfSec := MakeAspectMap(True,RefDTMHalfSec);
    MDDef.GridLegendLocation.DrawItem := true;
 
    BestMapCOPALOSThreeParams;
@@ -452,8 +462,8 @@ var
       var
          Diff5,Diff95 : float32;
       begin
-          Diff5 := DEMGlb[DEM].FindPercentileElevation(5);
-          Diff95 := DEMGlb[DEM].FindPercentileElevation(95);
+          Diff5 := DEMGlb[DEM].FindPercentileElev(5);
+          Diff95 := DEMGlb[DEM].FindPercentileElev(95);
       end;
 
 begin
@@ -477,10 +487,13 @@ begin
       else begin
          SlopeMap := -1;   //forces creation of slope and roughness maps
          RuffMap := CreateSlopeRoughnessSlopeStandardDeviationMap(HalfSecRefDTM,3,SlopeMap);
-         AspectMap := MakeAspectMap(HalfSecRefDTM);
+         AspectMap := MakeAspectMap(True,HalfSecRefDTM);
       end;
    end;
 end;
+
+
+{$EndIf}
 
 
 end.

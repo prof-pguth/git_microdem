@@ -153,10 +153,8 @@ end;
 
 procedure TDemMarginaliaForm.BitBtn1Click(Sender: TObject);
 begin
-   with MapOwner.MapDraw do begin
-      DeleteSingleMapLayer(BaseMapFName);
-      DeleteSingleMapLayer(LegendOverlayfName);
-   end;
+   MapOwner.MapDraw.DeleteSingleMapLayer(MapOwner.MapDraw.BaseMapFName);
+   MapOwner.MapDraw.DeleteSingleMapLayer(MapOwner.MapDraw.LegendOverlayfName);
    MapOwner.DoFastMapRedraw;
    DrawPreview;
 end;

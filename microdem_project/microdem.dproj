@@ -166,14 +166,14 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>20</VerInfo_Release>
+        <VerInfo_Release>24</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.20.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.24.19;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>19</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -210,12 +210,8 @@
         <DCCReference Include="..\common_code\OKCANCL2.PAS">
             <Form>OKRightDlg</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\point_cloud_memory.pas"/>
         <DCCReference Include="..\common_code\slicer_3d.pas">
             <Form>SlicerForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\point_cloud_options.pas">
-            <Form>pt_cloud_opts_fm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\DEMLOSW.pas">
             <Form>DEMLOSF</Form>
@@ -745,7 +741,6 @@
         <DCCReference Include="..\microdem_open_source\PETMath.pas"/>
         <DCCReference Include="..\microdem_open_source\PETImage.pas"/>
         <DCCReference Include="..\microdem_open_source\geotiff.pas"/>
-        <DCCReference Include="..\microdem_open_source\las_lidar.pas"/>
         <DCCReference Include="..\microdem_open_source\Make_tables.pas"/>
         <DCCReference Include="..\microdem_open_source\PetDBUtils.pas"/>
         <DCCReference Include="..\microdem_open_source\DEMESRIShapeFile.pas"/>
@@ -791,7 +786,6 @@
         <DCCReference Include="..\viewer_3d\view3d_main.pas">
             <Form>View3DForm</Form>
         </DCCReference>
-        <DCCReference Include="..\microdem_open_source\las_files_grouping.pas"/>
         <DCCReference Include="..\common_code\new_dem_headerf.pas">
             <Form>DEMHeaderForm</Form>
         </DCCReference>
@@ -941,6 +935,13 @@
             <Form>dbtablef</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\las_lidar\point_cloud_memory.pas"/>
+        <DCCReference Include="..\las_lidar\point_cloud_options.pas">
+            <Form>pt_cloud_opts_fm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\las_lidar\las_files_grouping.pas"/>
+        <DCCReference Include="..\las_lidar\las_lidar.pas"/>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>

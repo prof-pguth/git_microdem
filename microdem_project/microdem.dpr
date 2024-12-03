@@ -34,10 +34,7 @@ uses
   sc_ColLith in '..\stratcol\sc_ColLith.pas' {patternf},
   sc_colopts in '..\stratcol\sc_colopts.pas' {StratOptsForm},
   OKCANCL2 in '..\common_code\OKCANCL2.PAS' {OKRightDlg},
-  DEMdbTable in '..\common_code\DEMdbTable.pas' {dbtablef},
-  point_cloud_memory in '..\common_code\point_cloud_memory.pas',
   slicer_3d in '..\common_code\slicer_3d.pas' {SlicerForm},
-  point_cloud_options in '..\common_code\point_cloud_options.pas' {pt_cloud_opts_fm},
   DEMLOSW in '..\common_code\DEMLOSW.pas' {DEMLOSF},
   pit_and_spire in '..\common_code\pit_and_spire.pas' {PitSpireForm},
   DEMLOSOp in '..\common_code\DEMLOSOp.pas' {LOSOption},
@@ -192,7 +189,6 @@ uses
   OCEANCAL in '..\common_code\OCEANCAL.PAS',
   demxyzexport in '..\common_code\demxyzexport.pas' {XYZformatform},
   DEMDips in '..\common_code\DEMDips.pas' {StructureOptions},
-  moon_montenbruk_pfleger in '..\common_code\moon_montenbruk_pfleger.pas',
   edit_dip in '..\common_code\edit_dip.pas' {GetDipStrike},
   petbmpsize in '..\common_code\petbmpsize.pas' {NewBMPForm},
   PETCorrl in '..\common_code\PETCorrl.pas' {CorrelationForm},
@@ -237,7 +233,6 @@ uses
   PETMath in '..\microdem_open_source\PETMath.pas',
   PETImage in '..\microdem_open_source\PETImage.pas',
   geotiff in '..\microdem_open_source\geotiff.pas',
-  las_lidar in '..\microdem_open_source\las_lidar.pas',
   Make_tables in '..\microdem_open_source\Make_tables.pas',
   PetDBUtils in '..\microdem_open_source\PetDBUtils.pas',
   DEMESRIShapeFile in '..\microdem_open_source\DEMESRIShapeFile.pas',
@@ -271,7 +266,6 @@ uses
   map_splitter in '..\common_code\map_splitter.pas' {splitter_form},
   color_filter in '..\common_code\color_filter.pas' {ColorFilterForm},
   view3d_main in '..\viewer_3d\view3d_main.pas' {View3DForm},
-  las_files_grouping in '..\microdem_open_source\las_files_grouping.pas',
   new_dem_headerf in '..\common_code\new_dem_headerf.pas' {DEMHeaderForm},
   weapons_fan_thread in '..\microdem_open_source\weapons_fan_thread.pas',
   md_use_tools in '..\microdem_open_source\md_use_tools.pas',
@@ -337,11 +331,16 @@ uses
   SOLAR in '..\sgp\SOLAR.PAS',
   demssocalc in '..\geomorph\demssocalc.pas' {SSOCalcDlg},
   DEMStat in '..\geomorph\DEMStat.pas',
-  compare_algorithms_options in '..\geomorph\compare_algorithms_options.pas' {AlgCompareForm},
   geomorph_point_class in '..\geomorph\geomorph_point_class.pas' {PointClassForm},
   geomorph_region_size_graph in '..\geomorph\geomorph_region_size_graph.pas' {regionsizeform},
   pick_geostats in '..\geomorph\pick_geostats.pas' {PickGeoStat},
-  compare_programs_algorithms in '..\geomorph\compare_programs_algorithms.pas';
+  compare_programs_algorithms in '..\geomorph\compare_programs_algorithms.pas',
+  compare_algorithms_options in '..\geomorph\compare_algorithms_options.pas' {AlgCompareForm},
+  DEMdbTable in '..\database\DEMdbTable.pas' {dbtablef},
+  point_cloud_memory in '..\las_lidar\point_cloud_memory.pas',
+  point_cloud_options in '..\las_lidar\point_cloud_options.pas' {pt_cloud_opts_fm},
+  las_files_grouping in '..\las_lidar\las_files_grouping.pas',
+  las_lidar in '..\las_lidar\las_lidar.pas';
 
 {$R *.RES}
 

@@ -32,8 +32,8 @@ begin
       DEMGlb[MapDraw.DEMonMap].ClipDEMGrid(MapDraw.MapCorners.BoundBoxDataGrid.xmin,MapDraw.MapCorners.BoundBoxDataGrid.ymax);
       DEMGlb[MapDraw.DEMonMap].ClipDEMGrid(MapDraw.MapCorners.BoundBoxDataGrid.xmax,MapDraw.MapCorners.BoundBoxDataGrid.ymin);
       if (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = euNanotesla) or (MapDraw.UsePercentiles) then begin
-         MapDraw.MinMapElev := DEMGlb[MapDraw.DEMonMap].FindPercentileElevation(MDDef.MinElevPercentile);
-         MapDraw.MaxMapElev := DEMGlb[MapDraw.DEMonMap].FindPercentileElevation(MDDef.MaxElevPercentile);
+         MapDraw.MinMapElev := DEMGlb[MapDraw.DEMonMap].FindPercentileElev(MDDef.MinElevPercentile);
+         MapDraw.MaxMapElev := DEMGlb[MapDraw.DEMonMap].FindPercentileElev(MDDef.MaxElevPercentile);
       end
       else begin
          if MDDef.AutoElevationReset then DEMGlb[MapDraw.DEMonMap].BoxAreaExtremeElevations(MapDraw.MapAreaDEMGridLimits,MapDraw.MinMapElev,MapDraw.MaxMapElev,AvgElev);

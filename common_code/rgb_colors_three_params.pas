@@ -239,8 +239,8 @@ begin
          DEM := i;
 
          if MDDef.DefElevsPercentile then begin
-            Min := DEMGlb[DEM].FindPercentileElevation(MDDef.MinPercentile);
-            Max := DEMGlb[DEM].FindPercentileElevation(MDDef.MaxPercentile);
+            Min := DEMGlb[DEM].FindPercentileElev(MDDef.MinPercentile);
+            Max := DEMGlb[DEM].FindPercentileElev(MDDef.MaxPercentile);
          end
          else begin
             Min := DEMGlb[DEM].DEMHeader.MinElev;

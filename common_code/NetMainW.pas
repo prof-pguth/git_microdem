@@ -14,6 +14,7 @@ unit NetMainW;
    //{$Define NetDraw}
    //{$Define TrackVisual}
    //{$Define ContourNet}
+   //{$Define SaveNetDrawingSteps}
 {$EndIf}
 
 
@@ -23,6 +24,11 @@ uses
   Windows, SysUtils, Messages, Classes, Graphics, Controls, Forms, Dialogs,Menus,  // ExtCtrls,
   Math,
   Petmar_types,PETMAR,PETMath,DEMDefs, Vcl.ExtCtrls;
+
+const
+   HemisphereName : array[tHemisphere] of ShortString = ('Upper','Lower');
+   NetName        : array[tNetType] of ShortString    = ('Schmidt','Wulff');
+   NetEquality    : array[tNetType] of shortstring    = ('area','angle');
 
 type {used to keep track of what has been plotted}
    tPoleCount = array[0..200,0..200] of LongInt;
@@ -47,6 +53,7 @@ type
     Closable,ReallyPlot : Boolean;
     LLcornerText,NetTitle : ShortString;
     NetOffset  : integer;
+    MainDiagramSize : integer;
     WorkingBitmap : tMyBitmap;
       function XPlotCoord(xd : integer) : integer; overload;
       function YPlotCoord(yd : integer) : integer; overload;
@@ -151,7 +158,6 @@ uses
 const {used to define number of points in RAM; requires 8 bytes per}
    MaximumDataPoints = 5000;
    BasePlotRad =  99;
-   PCstr = '%/1% area';
 type
    PlaneDataType    = record
       PlaneDip        : byte;
@@ -163,11 +169,8 @@ type
    end {record};
    PlaneDataArray   = array[1..MaximumDataPoints] of PlaneDataType;
 const
-   HemisphereName : array[tHemisphere] of ShortString = ('Upper','Lower');
-   NetName        : array[NetType] of ShortString     = ('Schmidt','Wulff');
-   NetEquality    : array[NetType] of shortstring = ('area','angle');
    InputIs        : PlotTypes = aDipAndStrike;
-   DipAndStrike : string16 = 'N45E 23NW';
+   //DipAndStrike : string16 = 'N45E 23NW';
 var
    LabelSubset    : array[PETMAR_types.tDrawingSymbol] of string35 = ('','','','','','','','','','','','','','','');
    AllPlaneData   : ^PlaneDataArray;
@@ -204,22 +207,18 @@ begin {proc IntersectionTwoPlanes}
       {two planes share same strike}
       DipDirect := Strike1;
       IntDip := 0;
-      exit;
-   end;
-   if (abs(Dip1 - 90) < 0.001) and (abs(Dip2 - 90) < 0.001) then begin  { two planes are vertical }
+   end
+   else if (abs(Dip1 - 90) < 0.001) and (abs(Dip2 - 90) < 0.001) then begin  { two planes are vertical }
       DipDirect := 0;
       IntDip := 90;
-      exit;
-   end {if};
-
-   if (abs(Dip1) < 0.001) or (abs(Dip2) < 0.001) then begin    { one plane is horizontal }
+   end {if}
+   else if (abs(Dip1) < 0.001) or (abs(Dip2) < 0.001) then begin    { one plane is horizontal }
       if (abs(Dip1) < 0.001) then DipDirect := DipDir2 + 90
       else DipDirect := DipDir1 + 90;
       DipDirect := Petmath.FindCompassAngleInRangeFloat32(DipDirect);
       IntDip := 0;
-      exit;
-   end;
-   if (abs(Dip1 - 90) < 0.001) or (abs(Dip2 - 90) < 0.001)then begin  { one planes is vertical }
+   end
+   else if (abs(Dip1 - 90) < 0.001) or (abs(Dip2 - 90) < 0.001)then begin  { one planes is vertical }
       if (abs(Dip1 - 90) < 0.001) then  begin
          DipDirect := Strike1;
          if AngularDistance(DipDirect,DipDir2) > 90 then DipDirect := DipDirect + 180;
@@ -230,13 +229,13 @@ begin {proc IntersectionTwoPlanes}
       end;
       DipDirect := Petmath.FindCompassAngleInRangeFloat32(DipDirect);
       DoMath;
-      exit;
-   end {if};
-
-   DoMath;
-   phi := Math.ArcCos(x / sqrt(sqr(x) + sqr(y)) );
-   if y < 0 then DipDirect := (phi / Petmar_types.DegToRad) + 180
-   else DipDirect := 180 - (phi / Petmar_types.DegToRad);
+   end {if}
+   else begin
+      DoMath;
+      phi := Math.ArcCos(x / sqrt(sqr(x) + sqr(y)) );
+      if y < 0 then DipDirect := (phi / Petmar_types.DegToRad) + 180
+      else DipDirect := 180 - (phi / Petmar_types.DegToRad);
+   end;
 end {proc IntersectionTwoPlanes};
 
 
@@ -424,22 +423,6 @@ begin
       ReadDefault('max concentration',MDDef.NetDef.MaxContourConcentration);
       ReadDefault('min concentration',MDDef.NetDef.MinContourConcentration);
       nd.ContourPoles;
-   end
-   else if MDDef.NetDef.NetContourColors in [ContrastBW] then begin
-       InputArrays := TInputArrays.Create(Application);
-       with InputArrays,StringGrid1 do begin
-          for i := 0 to 8 do begin
-              Cells[0,succ(i)] := IntegerToString(i,-4);
-              Cells[1,succ(i)] := RealToString(nd.ContourBreaks[i],-12,-4);
-          end;
-          Cells[0,0] := 'Category';
-          Cells[1,0] := PCstr;
-          if (InputArrays.ShowModal <> idCancel) then begin
-             for i := 0 to 8 do with InputArrays,StringGrid1 do
-                Val(StringGrid1.Cells[1,succ(i)],nd.ContourBreaks[i],Err);
-             nd.ContourPoles;
-          end;
-       end;
    end;
 end;
 
@@ -791,7 +774,6 @@ begin
 end {proc PlotPointOnNet};
 
 
-
 procedure TNetDraw.EraseOutsideNet;
 var
    i : integer;
@@ -806,91 +788,133 @@ begin
 end;
 
 
+//{$Define RecordPoints}
+//{$Define RecordMakeFilterTime}
+
+type
+   tCenteredCircularFilter =  array[-50..50,-50..50] of byte;
+   tCircularFilter =  array[0..200,0..200] of byte;
+
+
+function MakeCircularFilter(Size : integer; var NPts : integer) : tCircularFilter;
+//radius 100, with a range 0..200
+//this took 0.001 sec to compute
+var
+   x,y,xc,yc : integer;
+begin
+   if (Size <= 100) then begin
+      {$IfDef RecordMakeFilterTime} WriteLineToDebugFile('Start circular filter');  {$EndIf}
+      NPts := 0;
+      xc := 100;
+      yc := 100;
+      for x := 0 to 200 do begin
+         for y := 0 to 200 do begin
+            if (x < (xc - Size)) or (x > (xc + Size))  or (y < (yc - Size)) or (y > (yc + Size)) then begin
+               Result[x,y] := 0;  //outside the corresponding box filter
+            end
+            else if sqrt(sqr(xc-x) + sqr(yc-y)) > Size then begin
+               Result[x,y] := 0;  //in the rounded corners of the corresponding box filter
+            end
+            else begin
+               Result[x,y] := 1;
+               inc(NPts);
+            end;
+         end;
+      end;
+      {$IfDef RecordMakeFilterTime} WriteLineToDebugFile('End circular filter');  {$EndIf}
+   end;
+end;
+
+
+function MakeCenteredCircularFilter(Size : integer; var NPts : integer) : tCenteredCircularFilter;
+//max radius=50, in a structure from -50..50
+var
+   x,y : integer;
+begin
+   if (Size <= 50) then begin
+      NPts := 0;
+      for x := -50 to 50 do begin
+         for y := -50 to 50 do begin
+            if (x < -Size) or (x > Size)  or (y < -Size) or (y > Size) then begin
+               Result[x,y] := 0;  //outside the corresponding box filter
+            end
+            else if sqrt(sqr(x) + sqr(y)) > Size then begin
+               Result[x,y] := 0;  //in the rounded corners of the corresponding box filter
+            end
+            else begin
+               Result[x,y] := 1;
+               inc(NPts);
+            end;
+         end;
+      end;
+      {$IfDef RecordPoints} WriteLineToDebugFile(IntToStr(Size) + ',' + IntToStr(NPts)); {$EndIf}
+   end;
+end;
+
+
+{$Define RecordConcentrations}
+
+
 procedure TNetDraw.ContourPoles(AutoScale : boolean = true);
 {contours distribution of points on the net, stored in PoleCount^}
-const
-   DitherMatrix : array[0..3,0..3] of byte = ( (0,8,2,10),  (12,4,14,6),   (3,11,1,9),   (15,7,13,5));
-   ContrastScales : array[0..8,0..3,0..3] of byte =
-         ( ((0,0,0,0),(0,0,0,0),(0,0,0,0),(0,0,0,0)),     {blank}
-         ((1,0,0,0),(0,0,0,0),(0,0,0,0),(0,0,0,0)),       {dots}
-         ((1,1,0,0),(1,1,0,0),(1,1,0,0),(1,1,0,0)),       {vertical}
-         ((0,0,0,1),(0,0,1,0),(0,1,0,0),(1,0,0,0)),       {diagonal}
-         ((1,1,1,1),(1,1,1,1),(0,0,0,0),(0,0,0,0)),       {horizontal}
-         ((1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1)),       {diagonal}
-         ((1,1,1,1),(1,1,1,1),(1,1,1,1),(1,1,1,1)),       {solid}
-         ((1,0,0,1),(0,1,1,0),(0,1,1,0),(1,0,0,1)),       {x-s}
-         ((0,1,0,0),(1,1,1,0),(0,1,0,0),(0,0,0,0)) );     {cross}
-const
-   Near1 : array[1..30] of byte = (1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,5,5,5,6);
-   Near2 : array[1..30] of byte = (2,3,4,5,6,7,8,9,3,4,5,6,7,8,9,4,5,6,7,8,9,5,6,7,8,9,6,7,8,7);
 var
    i,x,y,xc,yc,NumCats,YStart,
+   CountPoints,NetPoints,
    xo,yo,xs,ys         : integer;
    NetPart            : ^tPoleCount;
-   ContourCounts      : array[0..16] of integer;
    Values : array[0..255] of float64;
    MaxNeighbors       : LongInt;
    Rad2,Alpha,MaxConcentration  : float64;
    NearEdge                : boolean;
    LegBitmap        : tMyBitmap;
+   {$IfDef RecordConcentrations} Concentrations : tStringList; {$EndIf}
+   fName : PathStr;
+   PCStr : shortstring;
    ContourColorArray : tColors256;
+   NetAreaFilter : tCircularFilter;
+   NearPointFilter : tCenteredCircularFilter;
 
 
      procedure WideEGAPlot(x,y : integer; Num : LongInt);
      {plot 4 adjoining pixels, making spot easier to see}
      var
         i,xs,ys,Colr : integer;
-        //Color : tColor;
         Value : float64;
      begin
-        with MDDef.NetDef,WorkingBitmap.Canvas do begin
-           if (NetContourColors in [GrayScale,Spectrum,Terrain,Rainbow]) then begin
-              Value := 100.0 * Num / NumPlottedPoints;
-              if (Value >= MinContourConcentration) {and (Value <= MaxContourConcentration)} then begin
-                 i := ValidByteRange(round((Value - MinContourConcentration) / (MaxContourConcentration- MinContourConcentration) * 255));
-                 Pixels[NetOffset + round(NetScreenMult * x),NetOffset + round(NetScreenMult * y)] := ContourColorArray[i];
-                 Pixels[NetOffset + pred(round(NetScreenMult * x)),NetOffset + round(NetScreenMult * y)] := ContourColorArray[i];
-                 Pixels[NetOffset + round(NetScreenMult * x),NetOffset + pred(round(NetScreenMult * y))] := ContourColorArray[i];
-                 Pixels[NetOffset + pred(round(NetScreenMult * x)),NetOffset + pred(round(NetScreenMult * y))] := ContourColorArray[i];
-              end;
-           end
-           else if (MDDef.NetDef.NetContourColors = GrayDither) then begin
-              Colr := round(Num/MaxNeighbors * 16);
-              for xs := 0 to 3 do
-                 for ys := 0 to 3 do
-                    if Colr > DitherMatrix[xs,ys] then
-                       Pixels[NetOffset + round(NetScreenMult * x + xs-2),NetOffset + round(NetScreenMult * y + ys-2)] := clBlack;
-           end
-           else if (MDDef.NetDef.NetContourColors = ContrastBW) then begin
-              Colr := 0;
-              while (Num > ContourCounts[Colr]) and (Colr < 8) do inc(Colr);
-              if (Colr > 0) then for xs := 0 to 3 do
-                 for ys := 0 to 3 do
-                    if (ContrastScales[Colr,xs,ys] = 1) then
-                       Pixels[NetOffset + round(NetScreenMult * x + xs-2),NetOffset + round(NetScreenMult * y + ys-2)] := clBlack;
+        with MDDef.NetDef do begin
+           Value := 100.0 * Num / NumPlottedPoints;
+           if (Value >= MinContourConcentration) {and (Value <= MaxContourConcentration)} then begin
+              i := ValidByteRange(round((Value - MinContourConcentration) / (MaxContourConcentration - MinContourConcentration) * 255));
+              WorkingBitmap.Canvas.Pixels[NetOffset + round(NetScreenMult * x),NetOffset + round(NetScreenMult * y)] := ContourColorArray[i];
+              WorkingBitmap.Canvas.Pixels[NetOffset + pred(round(NetScreenMult * x)),NetOffset + round(NetScreenMult * y)] := ContourColorArray[i];
+              WorkingBitmap.Canvas.Pixels[NetOffset + round(NetScreenMult * x),NetOffset + pred(round(NetScreenMult * y))] := ContourColorArray[i];
+              WorkingBitmap.Canvas.Pixels[NetOffset + pred(round(NetScreenMult * x)),NetOffset + pred(round(NetScreenMult * y))] := ContourColorArray[i];
            end;
         end;
      end;
 
 
-     procedure UpDateCounters;
-     var
-        AddCount : LongInt;
+     procedure UpDateCounters(x,y,xc,yc : integer);
      begin
-         AddCount := PoleCount^[x,y];
-         if NearEdge and (sqrt(sqr(1.0*(xc-XPlotCent))+sqr(1.0*(yc-YPlotCent))) > PlotRad) then begin
-            {point opposite side of projection}
-             inc(NetPart^[xo+xc-x,yo+yc-y],AddCount);
-         end {if}
-         else begin
-            {point this side of projection}
-            inc(NetPart^[xc,yc], AddCount);
-         end {else if};
+         if (xc in [0..200]) and (yc in [0..200]) then begin
+            if (NetAreaFilter[xc,yc] = 1) then begin
+               {point this side of projection}
+               inc(NetPart^[xc,yc], PoleCount^[x,y]);
+            end
+            else if NearEdge then begin
+               inc(NetPart^[xo+xc-x,yo+yc-y],PoleCount^[x,y]);
+               {point opposite side of projection}
+            end;
+         end;
       end {proc UpDateCounters};
 
 
 begin {proc ContourPoles}
    {$IfDef ContourNet} WriteLineToDebugFile('ContourPoles in'); {$EndIf}
+   {$IfDef RecordConcentrations} for i := 1 to 50 do NearPointFilter := MakeCenteredCircularFilter(i,NetPoints); {$EndIf}
+   NetAreaFilter := MakeCircularFilter(100,NetPoints);
+   NearPointFilter := MakeCenteredCircularFilter(MDDef.NetDef.CountRadius,CountPoints);  //10);
+   PCstr := '%/' + RealToString(100 * CountPoints / NetPoints,-8,-1) + '% area';
    New(NetPart);
    FillChar(NetPart^,SizeOf(NetPart^),0);
 
@@ -901,16 +925,14 @@ begin {proc ContourPoles}
       else if MDDef.NetDef.NetContourColors = Terrain then ContourColorArray[i] := TerrainTColor(i,0,255);
    end;
 
-   StartProgress('Contour');
    for x := 0 to 200 do begin
-      if x mod 10 = 0 then UpdateProgressBar(0.005 * x);
       for y := 0 to 200 do
          if (PoleCount^[x,y] > 0) then begin
             if sqrt(sqr(x-XPlotCent)+sqr(y-YPlotCent)) >= PlotRad-10 then begin
                NearEdge := true;
                Rad2 := 2 * PlotRad - sqrt(sqr(x-XPlotCent)+sqr(y-YPlotCent));
-               if y = YPlotCent then Alpha := Pi / 2  else
-                      Alpha := ArcTan((x-XPlotCent)/(y-YPlotCent));
+               if y = YPlotCent then Alpha := Pi / 2
+               else Alpha := ArcTan((x-XPlotCent)/(y-YPlotCent));
                {xo,yo are projection of point on opposite side of plot}
                xo := abs(round(sin(Alpha) * Rad2));
                if x > XPlotCent then xo := XPlotCent - xo
@@ -920,152 +942,81 @@ begin {proc ContourPoles}
                                 else yo := YPlotCent + yo;
             end
             else NearEdge := false;
-          {now update counters for 305 surrounding points }
-            { point itself }
-            xc := x;            yc := y;            UpdateCounters;
-            { axes }
-            yc := y;
-            for i := 1 to 9 do begin
-               xc := x + i;                     UpdateCounters;
-               xc := x - i;                     UpdateCounters;
-            end {if};
-            xc := x;
-            for i := 1 to 9 do begin
-               yc := y + i;                      UpdateCounters;
-               yc := y - i;                      UpdateCounters;
-            end {if};
-
-            { four diagonals }
-            for i := 1 to 7 do begin
-               xc := x + i;       yc := y + i;      UpdateCounters;
-                 { " }            yc := y - i;      UpdateCounters;
-               xc := x - i;           { " }         UpdateCounters;
-                 { " }            yc := y + i;      UpDateCounters;
-            end {for i};
-            { eight quadrants }
-            for i := 1 to 30 do begin
-               xc := x + Near1[i];    yc := y + Near2[i];     UpDateCounters;
-                    { " }             yc := y - Near2[i];     UpDateCounters;
-               xc := x - Near1[i];          { " }             UpDateCounters;
-                    { " }             yc := y + Near2[i];     UpDateCounters;
-               xc := x + Near2[i];    yc := y + Near1[i];     UpDateCounters;
-                    { " }             yc := y - Near1[i];     UpDateCounters;
-               xc := x - Near2[i];          { " }             UpDateCounters;
-                    { " }             yc := y + Near1[i];     UpDateCounters;
-           end {for i};
+            for xc := -9 to 9 do begin
+               for yc := -9 to 9 do begin
+                  if (NearPointFilter[xc,yc] = 1) then begin
+                     UpdateCounters(x,y,x+xc,y+yc);
+                  end;
+               end;
+            end;
         end {if};
    end {for x};
-   EndProgress;
+   {$IfDef ContourNet} WriteLineToDebugFile('Counters finished'); {$EndIf}
 
+   {$IfDef RecordConcentrations} Concentrations := tStringList.Create; {$EndIf}
    MaxNeighbors := 0;
    NumPlottedPoints := 0;
-   for x := 0 to 200 do
+   for x := 0 to 200 do begin
      for y := 0 to 200 do begin
-        inc(NumPlottedPoints,PoleCount^[x,y]);
-        if NetPart^[x,y] > MaxNeighbors then MaxNeighbors := NetPart^[x,y];
+        if PoleCount^[x,y] > 0 then begin
+           inc(NumPlottedPoints,PoleCount^[x,y]);
+           if NetPart^[x,y] > MaxNeighbors then MaxNeighbors := NetPart^[x,y];
+           {$IfDef RecordConcentrations} Concentrations.Add(IntToStr(PoleCount^[x,y])); {$EndIf}
+        end;
      end {for x};
+   end;
+   {$IfDef RecordConcentrations} Concentrations.SaveToFile('c:\temp\concentrations.csv'); {$EndIf}
+   {$IfDef ContourNet} WriteLineToDebugFile('Max neighbors=' + IntToStr(MaxNeighbors) + ' total plotted=' + IntToStr(NumPlottedPoints)); {$EndIf}
 
    if (NumPlottedPoints > 0) then begin;
       MaxConcentration := (100.0 * MaxNeighbors / NumPlottedPoints);
-      if AutoScale then begin
-         case MDDef.NetDef.NetContourColors of
-            ContrastBW : x := 8;
-            GrayDither : x := 16;
-            else x := 8;
-         end;
-         MDDef.NetDef.MaxContourConcentration := MaxConcentration;
-         for i := 1 to x do ContourBreaks[i] := MDDef.NetDef.MinContourConcentration + (MDDef.NetDef.MaxContourConcentration - MDDef.NetDef.MinContourConcentration) * i / x;
-         for i := succ(x) to 16 do ContourBreaks[i] := -99;
-      end;
+      {$IfDef ContourNet} WriteLineToDebugFile('Max concentration=' + RealToString(MaxConcentration,-12,-4)); {$EndIf}
+      x := 8;
+      MDDef.NetDef.MaxContourConcentration := MaxConcentration;
+      for i := 1 to x do ContourBreaks[i] := MDDef.NetDef.MinContourConcentration + (MDDef.NetDef.MaxContourConcentration - MDDef.NetDef.MinContourConcentration) * i / x;
+      for i := succ(x) to 16 do ContourBreaks[i] := -99;
 
-      ContourCounts[0] := 0;
-      for i := 1 to 16 do begin
-         if (ContourBreaks[i] < 0) then ContourCounts[i] := MaxSmallInt
-         else ContourCounts[i] := round(0.01* ContourBreaks[i] * NumPlottedPoints);
-      end;
-
-      if MDDef.NetDef.NetContourColors in [ContrastBW,GrayDither] then begin
-         if MDDef.NetDef.NetScreenMult = 3 then MDDef.NetDef.NetScreenMult := 4
-         else MDDef.NetDef.NetScreenMult := 2;
-      end
-      else if (MDDef.NetDef.NetScreenMult < 1) then MDDef.NetDef.NetScreenMult := 2;
+      MDDef.NetDef.NetScreenMult := 2;
 
       NewNet;
       WorkingBitMap := tMyBitmap.Create;
-      with MDDef.NetDef do begin
-         WorkingBitmap.Height := 200 * round(NetScreenMult) + 2 * NetOffset;
-         if FormLegend then begin
-            WorkingBitmap.Width := 200 * round(NetScreenMult) + 2 * NetOffset + 400;
-         end
-         else WorkingBitmap.Width := 200 * round(NetScreenMult) + 2 * NetOffset;
-      end;
-      DrawNetGrid;
-      {$IfDef ContourNet} WriteLineToDebugFile('Net created:' + BitmapSizeString(Bitmap)); {$EndIf}
-
-      StartProgress('Contour');
-      if (MDDef.NetDef.NetContourColors in [ContrastBW,GrayDither]) and (MDDef.NetDef.NetScreenMult = 2) then begin
-         for x := 0 to 100 do begin
-            if x mod 5 = 0 then UpdateProgressBar(x / 33);
-            for y := 0 to 100 do begin
-               if NetPart^[2*x,2*y] > 0 then WideEGAPlot(2*x,2*y,NetPart^[2*x,2*y]);
-            end {for y};
-         end;
-      end
-      else begin
-         for x := 0 to 200 do begin
-            if x mod 20 = 0 then UpdateProgressBar(x / 200);
-            for y := 0 to 200 do begin
-               if NetPart^[x,y] > 0 then begin
-                  WideEGAPlot(x,y,NetPart^[x,y]);
-               end;
-            end {for y};
-         end;
-      end;
-      EndProgress;
+      MainDiagramSize := 200 * round(MDDef.NetDef.NetScreenMult) + 2 * NetOffset;
+      WorkingBitmap.Height := MainDiagramSize;
+      WorkingBitmap.Width := MainDiagramSize;
 
       for i := 0 to 255 do Values[i] := MDDef.NetDef.MinContourConcentration + (i/255) * (MDDef.NetDef.MaxContourConcentration - MDDef.NetDef.MinContourConcentration);
-      LegBitmap := VerticalLegendOnBitmap(ContourColorArray,Values,PCstr);
-
-      if MDDef.NetDef.FormLegend then begin
-         if (MDDef.NetDef.NetContourColors in [GrayScale,Spectrum,Terrain,Rainbow]) then begin
-            WorkingBitmap.Canvas.Draw(200 * round(MDDef.NetDef.NetScreenMult) + 2 * NetOffset ,WorkingBitmap.Height - LegBitmap.Height,LegBitmap);
-         end
-         else if (MDDef.NetDef.NetContourColors in [GrayDither,ContrastBW]) then begin
-            if (MDDef.NetDef.NetContourColors in [GrayDither]) then begin
-               NumCats := 16;
-               YStart := 300;
-            end
-            else begin
-               NumCats := 8;
-               YStart := 80;
-            end;
-            for i := 0 to NumCats do begin
-               WorkingBitmap.Canvas.Pen.Width := 1;
-               WorkingBitmap.Canvas.MoveTo(WorkingBitmap.Width-100+40,WorkingBitmap.Height-YStart-i*40);
-               WorkingBitmap.Canvas.LineTo(WorkingBitmap.Width-100+48,WorkingBitmap.Height-YStart-i*40);
-               WorkingBitmap.Canvas.TextOut(WorkingBitmap.Width-100+50,WorkingBitmap.Height-YStart-i*40,RealToString(ContourBreaks[i],-8,-2));
-               for x := 0 to 10 do
-                  for y := 0 to 10 do
-                     for xs := 0 to 3 do
-                        for ys := 0 to 3 do begin
-                           if (MDDef.NetDef.NetContourColors in [GrayDither]) then begin
-                              if (i > DitherMatrix[xs,ys]) then
-                                 WorkingBitmap.Canvas.Pixels[WorkingBitmap.Width-100+x*4+xs,WorkingBitmap.Height-YStart+i*40+y*4+ys] := clBlack;
-                           end
-                           else begin
-                              if (ContrastScales[i,xs,ys] = 1) then
-                                 WorkingBitmap.Canvas.Pixels[WorkingBitmap.Width-100+x*4+xs,WorkingBitmap.Height-YStart-i*40+y*4+ys] := clBlack;
-                           end;
-                        end;
-            end;
-            WorkingBitmap.Canvas.TextOut(WorkingBitmap.Width-100+50,WorkingBitmap.Height-15,PCstr);
-         end;
+      if false then begin
+         LegBitmap := VerticalLegendOnBitmap(ContourColorArray,Values,PCstr);
+         WorkingBitmap.Width := WorkingBitmap.Width + 10 + LegBitmap.Width;
       end
       else begin
-         LegBitmap.SaveToFile(MDtempDir + 'net_legend.bmp');
+         LegBitmap := HorizontalLegendOnBitmap(ContourColorArray,Values,PCstr,'');
+         WorkingBitmap.Height := WorkingBitmap.Height + LegBitmap.Height;
       end;
-      LegBitmap.Free;
 
+      DrawNetGrid;
+
+      {$IfDef ContourNet} WriteLineToDebugFile('Net created:' + BitmapSizeString(WorkingBitmap)); {$EndIf}
+      {$IfDef SaveNetDrawingSteps} fName := NextFileNumber(MDtempDir,'before_contour_drawing_','.bmp'); WorkingBitmap.SaveToFile(fName); {$EndIf}
+      for x := 0 to 200 do begin
+         for y := 0 to 200 do begin
+            if (NetPart^[x,y] > 0) then begin
+               WideEGAPlot(x,y,NetPart^[x,y]);
+            end;
+         end {for y};
+      end;
+      {$IfDef SaveNetDrawingSteps} fName := NextFileNumber(MDtempDir,'after_contour_drawing_','.bmp'); WorkingBitmap.SaveToFile(fName); {$EndIf}
+      {$IfDef ContourNet} WriteLineToDebugFile('Contour drawing done'); {$EndIf}
+
+      if false then begin
+         WorkingBitmap.Canvas.Draw(WorkingBitmap.Width - LegBitmap.Width,WorkingBitmap.Height - LegBitmap.Height - 10,LegBitmap);
+      end
+      else begin
+         WorkingBitmap.Canvas.Draw(WorkingBitmap.Width - LegBitmap.Width,WorkingBitmap.Height - LegBitmap.Height,LegBitmap);
+      end;
+      {$IfDef SaveNetDrawingSteps} fName := NextFileNumber(MDtempDir,'after_legend_','.bmp'); WorkingBitmap.SaveToFile(fName); {$EndIf}
+      LegBitmap.SaveToFile(MDtempDir + 'net_legend.bmp');
+      LegBitmap.Free;
    end;
    Dispose(NetPart);
 end {proc ContourPoles};
@@ -1079,6 +1030,7 @@ begin
     if WorkingBitmap.Canvas.Pen.Width > 3 then WorkingBitmap.Canvas.Pen.Width := 3;
     if (WorkingBitmap.Canvas.Pen.Width < 1) then WorkingBitmap.Canvas.Pen.Width := 1;
     WorkingBitmap.Canvas.Ellipse(XPlotCoord(XPlotCent-PlotRad),YPlotCoord(YPlotCent-PlotRad),XPlotCoord(XPlotCent+PlotRad),YPlotCoord(YPlotCent+PlotRad));
+    //if (LLcornerText <> '') then WorkingBitmap.Canvas.TextOut(1,MainDiagramSize - WorkingBitmap.Canvas.TextHeight(LLcornertext)-5 - WorkingBitmap.Canvas.TextHeight(LLcornerText), LLcornerText);
 end;
 
 
@@ -1121,11 +1073,10 @@ begin
           end {while};
        end {if};
 
-
        if MDDef.NetDef.DrawGridCircles in [ngPolar,ngEquatorial] then NetOutline;
 
        {$IfDef NetDraw}
-       WriteLineToDebugFile('TNetForm.CreateNet, net center x=' + IntToStr(round(NetScreenMult*XPlotCent)) + '   y=' + IntToStr(round(NetScreenMult*YPlotCent)));
+          WriteLineToDebugFile('TNetForm.CreateNet, center x=' + IntToStr(round(NetScreenMult*XPlotCent)) + ' y=' + IntToStr(round(NetScreenMult*YPlotCent)));
        {$EndIf}
 
        if MDDef.NetDef.NorthTick then begin
@@ -1159,7 +1110,7 @@ begin
    if (WorkingBitmap <> Nil) then WorkingBitmap.Destroy;
 
    CreateBitmap(WorkingBitmap,i, i);
-   if (LLcornerText <> '') then WorkingBitmap.Canvas.TextOut(1, WorkingBitmap.Height - WorkingBitmap.Canvas.TextHeight(LLcornerText), LLcornerText);
+   MainDiagramSize := i;
    DrawNetGrid;
    //Image1.Picture.Graphic := Bitmap;
    {$IfDef NetDraw} WriteLineToDebugFile('TNetForm.NewNet,' +  BitmapSizeString(Bitmap)); {$EndIf}

@@ -48,19 +48,9 @@ type
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
     WWWBtn1: TBitBtn;
-    PageControl1: TPageControl;
-    TabSheet1: TTabSheet;
-    StringGrid1: TStringGrid;
-    TabSheet2: TTabSheet;
-    TabSheet3DProf: TTabSheet;
-    Memo1: TMemo;
     ColorBitBtn: TBitBtn;
     BitBtn8: TBitBtn;
     BitBtn4: TBitBtn;
-    TabSheet4: TTabSheet;
-    Memo3: TMemo;
-    TabSheet5: TTabSheet;
-    Image1: TImage;
     BitBtn10: TBitBtn;
     PopupMenu1: TPopupMenu;
     Saveimage1: TMenuItem;
@@ -79,25 +69,14 @@ type
     Climographoptions1: TMenuItem;
     BitBtn6: TBitBtn;
     Focalmechanismoptions1: TMenuItem;
-    TabSheet6: TTabSheet;
-    Memo4: TMemo;
-    Image2: TImage;
     PopupMenu2: TPopupMenu;
     Openprofile1: TMenuItem;
     Copyimagetoclipboard2: TMenuItem;
     Resizeimage1: TMenuItem;
     SpeedButton1: TSpeedButton;
-    TabSheet3: TTabSheet;
-    TabSheet7: TTabSheet;
-    Image3: TImage;
-    Image4: TImage;
-    TabSheet8: TTabSheet;
-    Image5: TImage;
     PopupMenu3: TPopupMenu;
     Copyimagetoclipboard3: TMenuItem;
     Redrawgraph1: TMenuItem;
-    TabSheet9: TTabSheet;
-    Image6: TImage;
     BitBtn9: TBitBtn;
     BitBtn17: TBitBtn;
     BitBtn18: TBitBtn;
@@ -106,6 +85,21 @@ type
     Popoutgraph2: TMenuItem;
     Focalmechanismsize1: TMenuItem;
     Focalmechanismfill1: TMenuItem;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    StringGrid1: TStringGrid;
+    TabSheet2: TTabSheet;
+    Memo1: TMemo;
+    TabSheet3DProf: TTabSheet;
+    Image2: TImage;
+    TabSheet4: TTabSheet;
+    Memo3: TMemo;
+    TabSheet5: TTabSheet;
+    Image1: TImage;
+    TabSheet6: TTabSheet;
+    Memo4: TMemo;
+    TabSheet8: TTabSheet;
+    Image5: TImage;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -427,48 +421,6 @@ begin
       {$Else}
          if (GISDb[DBShown].TheMapOwner = nil) then i := 0
          else i := GISDb[DBShown].TheMapOwner.MapDraw.DEMonMap;
-         TabSheet3.TabVisible := (i <> 0) and (DEMGLB[i].SelectionMap.MapDraw.FeatureGrid <> 0);
-         TabSheet7.TabVisible := TabSheet3.TabVisible;
-         TabSheet9.TabVisible := TabSheet3.TabVisible;
-         if TabSheet3.TabVisible then begin
-            MDDef.CreateNetHidden := true;
-            MDDef.CreateGraphHidden := true;
-            GISDb[DBShown].SSOandaspectdiagrams(s1s2,s2s3,Trend,RoughnessFactor);
-
-            if NetForm <> Nil then begin
-               PetImage.CopyImageToBitmap(NetForm.Image1,bmp,true);
-               NetForm.Close;
-               NetForm := Nil;
-            end;
-
-            if RoseGraph <> Nil then begin
-               PetImage.CopyImageToBitmap(RoseGraph.Image1,bmp2,true);
-               RoseGraph.Close;
-               RoseGraph := Nil;
-            end;
-
-            fLoX := GISDb[DBShown].MyData.GetFieldByNameAsInteger('BOUND_XMIN');
-            fHiX := GISDb[DBShown].MyData.GetFieldByNameAsInteger('BOUND_XMAX');
-            fLoY := GISDb[DBShown].MyData.GetFieldByNameAsInteger('BOUND_YMIN');
-            fHiY := GISDb[DBShown].MyData.GetFieldByNameAsInteger('BOUND_YMAX');
-
-            xDEMg := 0.5 * (fHiX + fLoX);
-            yDEMg := 0.5 * (fHiY + fLoY);
-            DEMGridSize :=  (fHiX - fLoX) div 2;
-            if  (fHiY - fLoY) div 2 > DemGridSize then DemGridSize :=  (fHiY - fLoY) div 2;
-            DEMGLB[i].SelectionMap.CreateZoomWindow(false,2, DEMGridSize, xDEMg,yDEMg,xSATg,ySATg ,false,false);
-            PetImage.CopyImageToBitmap(DEMGLB[i].SelectionMap.ZoomWindow.Image1,bmp3,true);
-            i := bmp.Width;
-            bmp.Width := bmp.Width + bmp2.Width + bmp3.Width + 4;
-            if (Bmp2.Height > bmp.height) then bmp.height := bmp2.Height;
-            if (Bmp3.Height > bmp.height) then bmp.height := bmp3.Height;
-            bmp.Canvas.Draw(i + 2,0,bmp2);
-            bmp.Canvas.Draw(bmp.width - bmp3.Width,0,bmp3);
-            Image3.Picture.Graphic := bmp;
-            Bmp.Free;
-            bmp2.free;
-            bmp3.free;
-         end;
       {$EndIf}
 
       {$IfDef NoDBGrafs}

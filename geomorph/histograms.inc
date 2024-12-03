@@ -10,48 +10,52 @@
 
 
 
-function CreateGridHistograms(DEMSwanted : tDEMbooleanArray; ParamName : shortstring = ''; TailCutoff : float32 = 0.0) : TThisBaseGraph;
+function CreateGridHistograms(DEMSwanted : tDEMbooleanArray; ParamName : shortstring = ''; TailCutoff : float32 = 0.0; Min : float32 = 99; Max : float32 = -99) : TThisBaseGraph;
 var
    j : integer;
    Distributions,Legends : tStringList;
    Values : ^bfarray32;
-   Max,Min,BinSize,ThisMin,ThisMax : float32;
+   BinSize,ThisMin,ThisMax : float32;
    NPts : int64;
    fName : PathStr;
+   CheckRange : boolean;
 begin
    {$IfDef RecordHistogram} WriteLineToDebugFile('CreateGridHistograms in, Tail cutoff=' + RealToString(TailCutoff,-8,-2) + '%'); {$EndIf}
    if (TailCutoff < 0) then ReadDefault('Tail cutoff (%)',TailCutoff);
    Distributions := tStringList.Create;
    Legends := tStringList.Create;
-   Max := -99e39;
-   Min := 99e39;
-   for j := 1 to MaxDEMDataSets do begin
-      if DEMsWanted[j] and ValidDEM(j) then begin
-         New(Values);
-         DEMGlb[j].GetElevationsInLongArray(DEMGlb[j].FullDEMGridLimits,NPts,Values^,ThisMin,ThisMax);
-         ThisMax := Values^[pred(round(NPts * (100 - TailCutoff) / 100))];
-         ThisMin := Values^[round(NPts * TailCutoff / 100)];
-         {$IfDef RecordHistogram}
-            //WriteLineToDebugFile('DEM header, Min=' + RealToString(DEMglb[j].DEMheader.MinElev,-12,-6) + '  max=' + RealToString(DEMglb[j].DEMheader.MaxElev,-12,-6) + ' DEM=' + DEMglb[j].AreaName);
-            WriteLineToDebugFile('Grid, Min=' + RealToString(Values^[0],-12,-6) + '  max=' + RealToString(Values^[pred(Npts)],-12,-6) + ' DEM=' + DEMglb[j].AreaName);
-            WriteLineToDebugFile('Less tails, Min=' + RealToString(ThisMin,-12,-6) + '  max=' + RealToString(ThisMax,-12,-6) + ' DEM=' + DEMglb[j].AreaName);
-            //WriteLineToDebugFile('Percentile, Min=' + RealToString(DEMglb[j].FindPercentileElevation(TailCutoff),-12,-6) + '  max=' + RealToString(DEMglb[j].FindPercentileElevation(100-TailCutoff),-12,-6) + ' DEM=' + DEMglb[j].AreaName);
-         {$EndIf}
-         if (ThisMax > Max) then Max := ThisMax;
-         if (ThisMin < Min) then Min := ThisMin;
-         {$IfDef RecordHistogram}
-            WriteLineToDebugFile('Cumulative, Min=' + RealToString(Min,-12,-6) + '  max=' + RealToString(Max,-12,-6)) ;
-            WriteLineToDebugFile('');
-         {$EndIf}
-         fName := Petmar.NextFileNumber(MDtempDir,DEMGlb[j].AreaName + '_' ,'.z');
-         Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
-         Legends.Add(DEMGlb[j].AreaName);
-         Dispose(Values);
-      end;
+   CheckRange := (Min > Max);
+   if CheckRange then begin
+      Max := -99e39;
+      Min := 99e39;
    end;
+      for j := 1 to MaxDEMDataSets do begin
+         if DEMsWanted[j] and ValidDEM(j) then begin
+            New(Values);
+            DEMGlb[j].GetElevationsInLongArray(DEMGlb[j].FullDEMGridLimits,NPts,Values^,ThisMin,ThisMax);
+            ThisMax := Values^[pred(round(NPts * (100 - TailCutoff) / 100))];
+            ThisMin := Values^[round(NPts * TailCutoff / 100)];
+            {$IfDef RecordHistogram}
+               WriteLineToDebugFile('Grid, Min=' + RealToString(Values^[0],-12,-6) + '  max=' + RealToString(Values^[pred(Npts)],-12,-6) + ' DEM=' + DEMglb[j].AreaName);
+               WriteLineToDebugFile('Less tails, Min=' + RealToString(ThisMin,-12,-6) + '  max=' + RealToString(ThisMax,-12,-6) + ' DEM=' + DEMglb[j].AreaName);
+            {$EndIf}
+            if CheckRange then begin
+               if (ThisMax > Max) then Max := ThisMax;
+               if (ThisMin < Min) then Min := ThisMin;
+            end;
+            {$IfDef RecordHistogram}
+               WriteLineToDebugFile('Cumulative, Min=' + RealToString(Min,-12,-6) + '  max=' + RealToString(Max,-12,-6)) ;
+               WriteLineToDebugFile('');
+            {$EndIf}
+            fName := Petmar.NextFileNumber(MDtempDir,DEMGlb[j].AreaName + '_' ,'.z');
+            Distributions.Add(SaveSingleValueSeries(npts,Values^,fName));
+            Legends.Add(DEMGlb[j].AreaName);
+            Dispose(Values);
+         end;
+      end;
    BinSize := (Max - Min) / 200;
    {$IfDef RecordHistogram} WriteLineToDebugFile('Min=' + RealToString(Min,-12,-6) + '  max=' + RealToString(Max,-12,-6) + ' DEMs=' + IntToStr(Distributions.Count)); {$EndIf}
-   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,ParamName, 'DEM/Grid histograms',200,Min,Max,BinSize);
+   Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,ParamName,'DEM/Grid histograms',200,Min,Max,BinSize);
    {$IfDef RecordHistogram} WriteLineToDebugFile('CreateGridHistograms out'); {$EndIf}
 end;
 
@@ -139,7 +143,7 @@ var
       for Col := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumCol) do begin
          for Row := 0 to pred(DEMGlb[DEMwithVAT].DEMheader.NumRow) do begin
             if DEMGlb[DEMwithVAT].GetElevMetersOnGrid(Col,Row,zf) then begin
-              ThisCode := round(zf);
+               ThisCode := round(zf);
                for I := 1 to succ(NumCodes) do begin
                   if (i = succ(NumCodes)) then ThisCode := 0;
                   
@@ -360,12 +364,12 @@ begin
           Results := tStringList.Create;
           Results.Add(DEMGlb[WhichDEM].AreaName + '  ' + TStr);
           Results.Add('Range: '+ RealToString(DEMGlb[WhichDEM].DEMheader.MinElev,-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].DEMheader.MaxElev,-8,-2));
-          Results.Add('Range (0.1 to 99.9%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElevation(0.1),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElevation(99.9),-8,-2));
-          Results.Add('Range (0.2 to 99.8%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElevation(0.2),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElevation(99.8),-8,-2));
-          Results.Add('Range (0.5 to 99.5%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElevation(0.5),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElevation(99.5),-8,-2));
-          Results.Add('Range (1.0 to 99.0%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElevation(1.0),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElevation(99.0),-8,-2));
-          Results.Add('Range (2.0 to 98.0%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElevation(2.0),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElevation(98.0),-8,-2));
-          Results.Add('Range (5.0 to 95.0%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElevation(5.0),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElevation(95.0),-8,-2));
+          Results.Add('Range (0.1 to 99.9%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElev(0.1),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElev(99.9),-8,-2));
+          Results.Add('Range (0.2 to 99.8%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElev(0.2),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElev(99.8),-8,-2));
+          Results.Add('Range (0.5 to 99.5%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElev(0.5),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElev(99.5),-8,-2));
+          Results.Add('Range (1.0 to 99.0%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElev(1.0),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElev(99.0),-8,-2));
+          Results.Add('Range (2.0 to 98.0%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElev(2.0),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElev(98.0),-8,-2));
+          Results.Add('Range (5.0 to 95.0%): '+ RealToString(DEMGlb[WhichDEM].FindPercentileElev(5.0),-8,-2) + ' to ' +  RealToString(DEMGlb[WhichDEM].FindPercentileElev(95.0),-8,-2));
           PETMAR.DisplayAndPurgeStringList(Results,'Histogram results');
        end;
    end;
@@ -383,37 +387,9 @@ var
   Value,Range,MaxCount,MinInSeries,MaxInSeries : float32;
   l2 : shortstring;
   AutoScale,First : boolean;
-  //v : array[1..2] of float32;
-  //          rFile : file;
   Bins : array[0..MaxBins] of integer;
   StackedPercents : boolean;
 
-
-(*        //removed 11/11/2024
-          procedure LoadSeries(fName : PathStr);
-          var
-             i : integer;
-             MinFile,MaxFile : float32;
-          begin
-             if FileExists(fName) then begin
-                MinFile := 99e39;
-                MaxFile := -99e39;
-                LoadBFarray32(fName,Values^,NumVals);
-                for i := 0 to pred(NumVals) do begin
-                   CompareValueToExtremes(Values[i],MinFile,MaxFile);
-                   CompareValueToExtremes(Values[i],MinInSeries,MaxInSeries);
-                end;
-                if AutoScale then begin
-                   if (Histogram.GraphDraw.MinHorizAxis > MinInSeries) then Histogram.GraphDraw.MinHorizAxis := MinInSeries;
-                   if (Histogram.GraphDraw.MaxHorizAxis < MaxInSeries) then Histogram.GraphDraw.MaxHorizAxis := MaxInSeries;
-                end;
-                {$IfDef RecordHistogram} WriteLineToDebugFile('Load series n=' + IntToStr(NumVals) + ' range=' + RealToString(MinFile,-12,-6) + ' to ' + RealToString(MaxFile,-12,-6) + '  ' + fName); {$EndIf}
-             end
-             else begin
-                {$IfDef RecordHistogram} HighlightLineToDebugFile('File for series missing ' + fName); {$EndIf}
-             end;
-          end;
-*)
 
          function ProcessSeries(fName : PathStr) : boolean;
          var
@@ -474,21 +450,9 @@ var
          end;
 
 begin
-(*    //removed 11/11/2024
-   New(Values);
-   MinInSeries := 99e39;
-   MaxInSeries := -99e39;
-   Histogram.GraphDraw.DataFilesPlotted.Clear;
-   {$IfDef RecordHistogram} WriteLineToDebugFile('Start file list processing'); {$EndIf}
-   for I := 0 to pred(Histogram.GraphDraw.HistogramFileList.Count) do begin
-      LoadSeries(Histogram.GraphDraw.HistogramFileList.Strings[i]);
-   end;
-   {$IfDef RecordHistogram} WriteLineToDebugFile('Load series ' + ' range=' + RealToString(MinInSeries,-12,-6) + ' to ' + RealToString(MaxInSeries,-12,-6) ); {$EndIf}
-*)
 
    MinInSeries := Histogram.GraphDraw.MinHorizAxis;
    MaxInSeries := Histogram.GraphDraw.MaxHorizAxis;
-
 
    if (Histogram.HistogramBinSize > 0) then Histogram.HistogramNumBins := succ(Round((MaxInSeries-MinInSeries) / Histogram.HistogramBinSize));
    if (Histogram.HistogramNumBins > MaxBins) then Histogram.HistogramNumBins := MaxBins;
@@ -506,7 +470,6 @@ begin
       l2 := l2 + ' (Bin size ' + RealToString(Histogram.HistogramBinSize,-8,-2) + ')';
    end;
 
-   //if (Range > 0.001) and (Range < 0.01) then Incr := 0.005;
    Histogram.HistogramBinSize := (MaxInSeries-MinInSeries) / Histogram.HistogramNumBins;
    if (Histogram.GraphDraw.MinHorizAxis < 0) and (Histogram.GraphDraw.MaxHorizAxis > 0) then begin
       //center a bin on zero, for histrograms of differences
@@ -517,16 +480,17 @@ begin
    {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms settings over, NumBins=' + IntToStr(Histogram.HistogramNumBins) + '  ' + Histogram.GraphDraw.AxisRange); {$EndIf}
    First := true;
    MaxCount := 0;
-   for I := 0 to pred(Histogram.GraphDraw.HistogramFileList.Count) do begin
-      if ProcessSeries(Histogram.GraphDraw.HistogramFileList.Strings[i]) and (i < MaxGraphSeries) then begin
-         {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + IntToStr(i) + ' ' + Histogram.GraphDraw.HistogramFileList.Strings[i]); {$EndIf}
+   ClearTemporaryFileGroup(Histogram.GraphDraw.DataFilesPlotted);
+
+   for I := 0 to pred(Histogram.GraphDraw.HistogramDistributionFileList.Count) do begin
+      if ProcessSeries(Histogram.GraphDraw.HistogramDistributionFileList.Strings[i]) and (i < MaxGraphSeries) then begin
+         {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + IntToStr(i) + ' ' + Histogram.GraphDraw.HistogramDistributionFileList.Strings[i]); {$EndIf}
          Histogram.GraphDraw.ShowLine[succ(i)] := true;
       end;
    end;
    Histogram.GraphDraw.MinVertAxis := 0;
    Histogram.GraphDraw.MaxVertAxis := MaxCount;
 CleanUp:;
-   //Dispose(Values);
    ShowDefaultCursor;
    MDDef.FlipHistogram := false;
    Histogram.HistogramChanged := false;
@@ -547,7 +511,7 @@ begin
    if (FileList.Count > 0) then begin
       StackedPercents := (FileList.Count > 1);
       Result := TThisBaseGraph.Create(Application);
-      Result.GraphDraw.HistogramFileList := FileList;
+      Result.GraphDraw.HistogramDistributionFileList := FileList;
       Result.GraphDraw.MinHorizAxis := Min;
       Result.GraphDraw.MaxHorizAxis := Max;
       Result.GraphDraw.HorizLabel := ParamName;

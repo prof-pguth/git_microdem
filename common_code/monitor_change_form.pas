@@ -97,6 +97,7 @@ end;
 procedure TChangeMapForm.Edit1Change(Sender: TObject);
 begin
    CheckEditString(Edit1.Text, MDDef.TopCutLevel);
+   MDDef.DivergenceRange := MDDef.TopCutLevel;
    MDDef.TopCutLevel := abs(MDDef.TopCutLevel);
    MDDef.BottomCutLevel := -MDDef.TopCutLevel;
    Changed := true;
@@ -118,14 +119,14 @@ end;
 procedure TChangeMapForm.Edit4Change(Sender: TObject);
 begin
    CheckEditString(Edit4.Text,MDDef.TopCutLevel);
-   MDDef.TopCutLevel := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElevation(MDDef.TopCutLevel);
+   MDDef.TopCutLevel := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElev(MDDef.TopCutLevel);
    Changed := true;
 end;
 
 procedure TChangeMapForm.Edit5Change(Sender: TObject);
 begin
    CheckEditString(Edit5.Text,MDDef.BottomCutLevel);
-   MDDef.BottomCutLevel := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElevation(MDDef.BottomCutLevel);
+   MDDef.BottomCutLevel := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElev(MDDef.BottomCutLevel);
    Changed := true;
 end;
 
@@ -142,11 +143,9 @@ begin
 end;
 
 procedure TChangeMapForm.BitBtn1Click(Sender: TObject);
-var
-   fName : PathStr;
 begin
-   fName := DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName + '_categories';
-   DifferenceCategoryMap(MapOwner.MapDraw.DEMonMap,fName);
+   BitBtn2Click(Sender);
+   DifferenceCategoryMap(MapOwner.MapDraw.DEMonMap,DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName + '_categories');
 end;
 
 

@@ -142,7 +142,7 @@ begin
       GISdb[theDB].MyData.Next;
    end;
    ThisGraph.AutoScaleAndRedrawDiagram;;
-   bmp := ThisGraph.MakeLegend(ThisGraph.GraphDraw.LegendList,false);
+   bmp := ThisGraph.MakeLegend;
    Image1.Picture.Graphic := bmp;
    bmp.Free;
    GISdb[theDB].dbTablef.ShowStatus;
@@ -151,6 +151,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordPGraphs} WriteLineToDebugFile('RecordPGraphs active in param_graphs'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing param_graphs out'); {$EndIf}
 end.

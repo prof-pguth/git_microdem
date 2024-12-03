@@ -32,22 +32,22 @@ begin
    MStr := ElevUnitsAre(DEMGlb[DEMonMap].DEMHeader.ElevUnits);
    Delete(MStr,1,4);
 
-      Result.Canvas.Pen.Color := clLime;
-      Result.Canvas.Brush.Color := clLime;
-      Result.Canvas.Brush.Style := bsSolid;
-      Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-      Result.Canvas.Brush.Style := bsClear;
-      Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Diff > ' + RealToString(MDDef.TopCutLevel,-8,-2) + MStr;
-      Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
+   Result.Canvas.Pen.Color := clLime;
+   Result.Canvas.Brush.Color := clLime;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+   Result.Canvas.Brush.Style := bsClear;
+   Tstr := RealToString(100-DEMGlb[DEMonMap].PercentileOfElevation(MDDef.TopCutLevel),9,2) + '%   Diff > ' + RealToString(MDDef.TopCutLevel,-8,-1) + MStr;
+   Result.Canvas.TextOut(45,Cat*CatHeight + 4, TStr);
 
-      inc(Cat);
-      Result.Canvas.Pen.Color := clRed;
-      Result.Canvas.Brush.Color := clRed;
-      Result.Canvas.Brush.Style := bsSolid;
-      Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
-      Result.Canvas.Brush.Style := bsClear;
-      TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%  Diff < ' + RealToString(MDDef.BottomCutLevel,-8,-2) + MStr;
-      Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
+   inc(Cat);
+   Result.Canvas.Pen.Color := clRed;
+   Result.Canvas.Brush.Color := clRed;
+   Result.Canvas.Brush.Style := bsSolid;
+   Result.Canvas.Rectangle(5,Cat*CatHeight,40,succ(Cat)*CatHeight);
+   Result.Canvas.Brush.Style := bsClear;
+   TStr := RealToString(DEMGlb[DEMonMap].PercentileOfElevation(MDDef.BottomCutLevel),9,2) + '%  Diff < ' + RealToString(MDDef.BottomCutLevel,-8,-1) + MStr;
+   Result.Canvas.TextOut(45,Cat*CatHeight + 4,TStr);
 
    PutBitmapInBox(Result);
 end;
@@ -139,18 +139,18 @@ begin
       Cat := 1;
       ClearBitmap(Result,clNearWhite);
 
-      Result.Canvas.TextOut(5,1,RemoveUnderscores(BaseTitle));
-      Result.Canvas.TextOut(5,Cat*CatHeight + 4,'    % Area     ' + GISdb[db].dbOpts.LabelField);
+      Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMglb[DEMonMap].AreaName));
+      Result.Canvas.TextOut(5,Cat*CatHeight + 4,'   % Area    Category');
       while not GISdb[db].MyData.eof do begin
          xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField) / fTotal;
          inc(Cat);
          aColor := GISdb[db].MyData.tColorFromTable;
-         Result.Canvas.Pen.Color := aColor;
+         Result.Canvas.Pen.Color := clBlack;
          Result.Canvas.Brush.Color := aColor;
          Result.Canvas.Brush.Style := bsSolid;
          Result.Canvas.Rectangle(5,Cat*CatHeight,40,(succ(Cat)*CatHeight) - 4);
          Result.Canvas.Brush.Style := bsClear;
-         Result.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(xg,10,2) + '  ' + GISdb[db].MyData.GetFieldByNameAsString(GISdb[db].dbOpts.LabelField));
+         Result.Canvas.TextOut(45,Cat*CatHeight + 4, RealToString(xg,7,2) + '  ' + GISdb[db].MyData.GetFieldByNameAsString(GISdb[db].dbOpts.LabelField));
          GISdb[db].MyData.Next;
       end;
       PutBitmapInBox(Result);
@@ -173,26 +173,24 @@ end;
       PlotSym : tDrawingSymbol;
       NameStr : ShortString;
    begin
-      {$IfDef VCL}
-         if (not FileExists(LastGazFile)) then exit;
-         Table := tMyData.Create(LastGazFile);
-         SetUpGazFile(GazColors,NameStr,true);
-         ShowHourglassCursor;
-         CreateBitmap(Bitmap,150,25*GazColors.FiltRecsInDB);
-         yi := 0;
-         while not GazColors.EOF do begin
-            GazColors.DefinePointSymbol(PlotSym,PlotSize,PlotColor);
-            GazColors.DefineFontFromTable(Bitmap.Canvas.Font);
-            Petmar.ScreenSymbol(Bitmap.Canvas,10,yi+5,PlotSym,PlotSize,PlotColor);
-            Bitmap.Canvas.TextOut(25,yi,GazColors.GetFieldByNameAsString('NAME'));
-            inc(yi,25);
-            GazColors.Next
-         end;
-         Table.Destroy;
-         ShowDefaultCursor;
-         PetImage_form.DisplayBitmap(Bitmap,'Gazetteer Legend');
-         Bitmap.Free;
-      {$EndIf}
+      if (not FileExists(LastGazFile)) then exit;
+      Table := tMyData.Create(LastGazFile);
+      SetUpGazFile(GazColors,NameStr,true);
+      ShowHourglassCursor;
+      CreateBitmap(Bitmap,150,25*GazColors.FiltRecsInDB);
+      yi := 0;
+      while not GazColors.EOF do begin
+         GazColors.DefinePointSymbol(PlotSym,PlotSize,PlotColor);
+         GazColors.DefineFontFromTable(Bitmap.Canvas.Font);
+         Petmar.ScreenSymbol(Bitmap.Canvas,10,yi+5,PlotSym,PlotSize,PlotColor);
+         Bitmap.Canvas.TextOut(25,yi,GazColors.GetFieldByNameAsString('NAME'));
+         inc(yi,25);
+         GazColors.Next
+      end;
+      Table.Destroy;
+      ShowDefaultCursor;
+      PetImage_form.DisplayBitmap(Bitmap,'Gazetteer Legend');
+      Bitmap.Free;
    end;
 
 {$EndIf}
@@ -347,7 +345,7 @@ begin
    end
    else if isSlopemap(MapType) or (MapMerge in [mmSlope]) then begin
       {$IfDef RecordMapDraw} WriteLineToDebugFile('Slope legend'); {$EndIf}
-       if MapType in [mtSlopeGrayScale,mtSlopeGrayScaleReversed,mtSlopeRainbow,mtSlopePastel] then begin
+      if MapType in [mtSlopeGrayScale,mtSlopeGrayScaleReversed,mtSlopeRainbow,mtSlopePastel] then begin
           for i := 0 to 254 do begin
              Colors[i] := ConvertPlatformColorToTColor(SlopeColorChoices[i]);
              Values[i] := i/254 * MDDef.MaxSlopeOnMaps;

@@ -115,9 +115,9 @@ type
   private
     FName: string;
     FExprFunc: TExprFunc;
-    FIsNull: Boolean;
     FIsNullPtr: PBoolean;
   protected
+    FIsNull: Boolean;
     FRefCount: Integer;
 
     function GetIsOperator: Boolean; virtual;
@@ -254,7 +254,8 @@ type
   private
     FValue: TDateTime;
   public
-    constructor Create(AName: string; AValue: TDateTime);
+    constructor Create(AName: string; AValue: TDateTime); overload;
+    constructor Create(AName: string); overload;
     function AsPointer: PAnsiChar; override;
     property Value: TDateTime read FValue write FValue;
   end;
@@ -784,6 +785,12 @@ begin
   inherited Create(AName, etDateTime, _DateTimeVariable);
 
   FValue := AValue;
+end;
+
+constructor TDateTimeConstant.Create(AName: string);
+begin
+  Create(AName, 0);
+  FIsNull := True;
 end;
 
 function TDateTimeConstant.AsPointer: PAnsiChar;

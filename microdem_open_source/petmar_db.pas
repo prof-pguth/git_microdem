@@ -236,9 +236,9 @@ type
         procedure CopyRecordToEndOfTable(DeleteRecord : boolean = false);
 
         function InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
-        function AddBoundingBox : boolean;
+        function AddRecordBoundingBox : boolean;
         function GetRecordBoundingBox : sfBoundBox;
-        procedure SetBoundingBox(bbox : sfBoundBox);
+        procedure SetRecordBoundingBox(bbox : sfBoundBox);
         function DeleteField(theField : shortstring) : boolean;
         function TrimField(theField : shortstring; NewLength : integer) : boolean;
 
@@ -2459,7 +2459,7 @@ begin
 end;
 
 
-function tMyData.AddBoundingBox : boolean;
+function tMyData.AddRecordBoundingBox : boolean;
 {$IfDef BDELikeTables}
 var
    fName,OldName : PathStr;
@@ -2493,7 +2493,7 @@ begin
 end;
 
 
-procedure tMyData.SetBoundingBox(bbox : sfBoundBox);
+procedure tMyData.SetRecordBoundingBox(bbox : sfBoundBox);
 begin
    SetFieldByNameAsFloat('LONG_LOW',bbox.XMin);
    SetFieldByNameAsFloat('LONG_HI',bbox.XMax);
@@ -2631,8 +2631,8 @@ end;
 procedure tMyData.ExportToSQLite(fName : PathStr = '');
 var
    {$IfDef UseFireDacSQLlite}
-   CreateDataBase : tCreateDataBase;
-   NewDB : tMyData;
+      CreateDataBase : tCreateDataBase;
+      NewDB : tMyData;
    {$EndIf}
 
    i: integer;
@@ -2680,7 +2680,6 @@ begin
 
     {$IfDef RecordSQLite} WriteLineToDebugFile('tMyData.ExportToSQLite out'); {$EndIf}
 end;
-
 
 
 {$IfDef BDELikeTables}
@@ -2738,39 +2737,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordMYDataCreation} WriteLineToDebugFile('RecordMYDataCreation active in petmar_db'); {$EndIf}
-   {$IfDef RecordMYDataFilter} WriteLineToDebugFile('RecordMyDataFilter active in petmar_db'); {$EndIf}
-   {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_db'); {$EndIf}
-   {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_db'); {$EndIf}
 end.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

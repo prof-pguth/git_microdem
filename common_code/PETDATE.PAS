@@ -37,7 +37,7 @@ type
   end;
 
 var
-  GetDateForm: TGetDateForm;
+  GetDateForm : TGetDateForm;
 
 implementation
 

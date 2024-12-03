@@ -9,7 +9,8 @@ unit dbf_prssupp;
 interface
 
 uses
-  Classes;
+  Classes,
+  dbf_common;
 
 type
 
@@ -64,6 +65,8 @@ const
 function IntToStrWidth(Val: {$ifdef SUPPORT_INT64}Int64{$else}Integer{$endif}; const FieldSize: Integer; const Dest: PAnsiChar; Pad: Boolean; PadChar: AnsiChar): Integer;
 function FloatToStrWidth(const Val: Extended; const FieldSize, FieldPrec: Integer; const Dest: PAnsiChar; Pad: Boolean): Integer;
 
+function StrToDateCTOD(const Str: AnsiString;
+  var DateValue: TDateTime; var IsNull: Boolean): Boolean;
 function StrToIntWidth(var IntValue: {$ifdef SUPPORT_INT64}Int64{$else}Integer{$endif}; Src: Pointer; Size: Integer; Default: Integer): Boolean;
 function StrToInt32Width(var IntValue: Integer; Src: Pointer; Size: Integer; Default: Integer): Boolean;
 function StrToFloatWidth(var FloatValue: Extended; const Src: PAnsiChar; const Size: Integer; Default: Extended): Boolean;
@@ -411,6 +414,61 @@ begin
   if FloatResult.Len = 0 then
     FloatToDbfStrFormat(FloatResult, FloatRec, ffExponent, FieldPrec, Val);
   Result:= NumberPad(FloatResult, Dest, Pad, ' ');
+end;
+
+function StrToDateCTOD(const Str: AnsiString;
+  var DateValue: TDateTime; var IsNull: Boolean): Boolean;
+var
+  Index: Integer;
+  SeparatorCount: Integer;
+  SeparatorChar: AnsiChar;
+  DateStr: AnsiString;
+  DateChar: AnsiChar;
+begin
+  DateValue := 0;
+  IsNull := True;
+  if Str <> '' then
+  begin
+    DateStr := Str;
+    SeparatorCount := 0;
+    SeparatorChar := #0;
+    Index := 1;
+    Result := True;
+    while (Index <= Length(DateStr)) and Result do
+    begin
+      DateChar := DateStr[Index];
+      case DateChar of
+        '0'..'9':;
+        '/', '-', '.':
+        begin
+          if SeparatorCount <> 0 then
+            Result := DateChar = SeparatorChar
+          else
+            SeparatorChar := DateChar;
+          Inc(SeparatorCount);
+          if Result then
+            DateStr[Index] := AnsiChar(DateSeparator)
+        end;
+      else
+        Result := False;
+      end;
+      Inc(Index);
+    end;
+    if Result then
+      Result := SeparatorCount = 2;
+    if Result then
+    begin
+      try
+        DateValue := StrToDate(string(DateStr));
+        IsNull := False;
+      except
+        on EConvertError do
+          Result := False;
+      end;
+    end;
+  end
+  else
+    Result := True;
 end;
 
 function StrToIntWidth(var IntValue: {$ifdef SUPPORT_INT64}Int64{$else}Integer{$endif}; Src: Pointer; Size: Integer; Default: Integer): Boolean;

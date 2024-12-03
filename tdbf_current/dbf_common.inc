@@ -488,8 +488,9 @@
   {$define DELPHI_3}
 {$endif}
 
-{$ifdef VER360} // Delphi 11 Alexandria
+{$ifdef VER360} // Delphi 12
   {$define DELPHI_12}
+  {$define DELPHI_11}
   {$define DELPHI_104}
   {$define DELPHI_103}
   {$define DELPHI_102}
@@ -515,7 +516,6 @@
   {$define DELPHI_4}
   {$define DELPHI_3}
 {$endif}
-
 
 //-------------------------------------------------------
 //--- Conclude supported features from delphi version ---

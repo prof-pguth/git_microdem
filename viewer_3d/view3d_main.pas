@@ -35,7 +35,7 @@ Works with no problems in DX Seattle   Peter Guth 8 Jan 2016
 Add import of random point cloud       Peter Guth 8 Jan 2016
 
 Remove functions, so it only displays GIS data  Peter Guth 17 Jan 2017
-Accepts two command line parameters, so it works with VCL MICRODEM which creates the data files and calls the FMX program
+Accepts two command line parameters, so it works with VCL MICRODEM which creates the data files and calls FMX program
 Takes two kinds of data; file extension tells program which it is dealing with:
     1.  .XYZB: Any map in MICRODEM with an associated DEM, exported with XYZ points, and a drape texture with 2D bitmap (this but not the next could use a mesh, which might not show holes when zooming in)
     2.  .XYXIB: Point cloud, with one 1D bitmap for lidar texture of classification or intensity
@@ -150,7 +150,6 @@ type
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure Layout3D1Render(Sender: TObject; Context: TContext3D);
-    //procedure Button6Click(Sender: TObject);
     procedure CheckBox1Change(Sender: TObject);
     procedure Form3DCreate(Sender: TObject);
     procedure Form3DActivate(Sender: TObject);
@@ -269,11 +268,11 @@ procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridN
 begin
    {$If Defined(Start3DView)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
    View3DForm := StartFMX3dViewer(ViewSeveral,LinkZScaling);
-      View3DForm.AddLayer(GridName1,TextureName1);
-      View3DForm.AddLayer(GridName2,TextureName2);
-      View3DForm.AddLayer(GridName3,TextureName3);
-      View3DForm.AddLayer(GridName4,TextureName4);
-      View3DForm.AddLayer(GridName5,TextureName5);
+   View3DForm.AddLayer(GridName1,TextureName1);
+   View3DForm.AddLayer(GridName2,TextureName2);
+   View3DForm.AddLayer(GridName3,TextureName3);
+   View3DForm.AddLayer(GridName4,TextureName4);
+   View3DForm.AddLayer(GridName5,TextureName5);
    View3DForm.LayersComplete;
    {$If Defined(Start3DView)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
 end;
@@ -342,7 +341,6 @@ begin
    Result.ArrangePanels;
    MDDef.OGLDefs.MoveIncr := 1;
 end;
-
 
 
 
@@ -416,7 +414,6 @@ end;
 
 procedure TView3DForm.Button5Click(Sender: TObject);
 var
-   //MovieName : PathStr;
    MovieFiles : tstringlist;
 begin
    {$IfDef VCL}
@@ -682,30 +679,6 @@ procedure TView3DForm.Button3Click(Sender: TObject);
 var
    MovieName : PathStr;
    MovieFiles : tstringlist;
-
-    (*
-    procedure SaveFrame;
-    var
-       fname : PathStr;
-    begin
-       fName := '';
-       PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,false,true);
-       MovieFiles.Add(ExtractFileName(fName));
-       Delay(500);
-    end;
-
-    procedure DoCheckBox(theBox : tCheckBox; Cloud : integer);
-    begin
-       if theBox.Visible then begin
-          theBox.IsChecked := true;
-          ShowCloud[Cloud] := true;
-          SaveFrame;
-          theBox.IsChecked := false;
-          ShowCloud[Cloud] := false;
-       end;
-    end;
-    *)
-
 begin
    {$IfDef VCL}
       MakeFramesForMovie(MovieFiles);
@@ -866,7 +839,6 @@ begin
       rMinY := MapDraw.MapCorners.BoundBoxUTM.ymin;
       rMaxY := MapDraw.MapCorners.BoundBoxUTM.ymax;
    end;
-
 
    if ValidDEM(MapDraw.DEMonMap) then DEMGlb[MapDraw.DEMonMap].BoxAreaExtremeElevations(MapDraw.MapAreaDEMGridLimits,rMinZ,rMaxZ,AvgElev)
    else begin
@@ -1085,14 +1057,16 @@ var
 
       procedure LoadMapWithColorByCodes(Color2D : boolean);
       //PLG code to read real elevation data set
+      (*
       const
          xs : array[1..5] of integer = (0,-1,1,1,-1);
          ys : array[1..5] of integer = (0,-1,1,1,-1);
          zs : array[1..5] of integer = (0,-1,1,1,-1);
+      *)
       var
          PointXYZColor : ^tPointXYZIArray;
          tfile : File;
-         i,{j,}x,y,z,pfd2 : integer;
+         i,x,y,z,pfd2 : integer;
          xf,yf : float64;
       begin
            if FileExists(PointsFile) then begin
@@ -1305,13 +1279,6 @@ end;
 
 procedure TView3DForm.Form3DActivate(Sender: TObject);
 begin
-(*
-   if FirstRun then begin
-      FirstRun := false;
-      DrapeFile[1] := ParamStr(2);
-      GeneratePoints(ParamStr(1),DrapeFile[1]);
-   end;
-*)
 end;
 
 

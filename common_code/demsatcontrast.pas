@@ -401,7 +401,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordContrast} WriteLineToDebugFile('RecordContrast active in DemSatContrast'); {$EndIf}
-   {$IfDef RecordPickBand} WriteLineToDebugFile('RecordPickBand active in DemSatContrast'); {$EndIf}
 end.
 

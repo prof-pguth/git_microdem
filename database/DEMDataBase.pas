@@ -27,7 +27,7 @@
       //{$Define RecordRedistrict}
       //{$Define RecordDataBaseTiming}
       //{$Define RecordDBPlot}
-      //{$Define RecordFIT}
+      {$Define RecordFIT}
       //{$Define RecordKML}
       //{$Define RecordTiger}
       //{$Define LogModuleCreate}
@@ -131,6 +131,7 @@ uses
 
    System.UITypes,System.Classes,System.Math, System.UIConsts,System.Threading,
    StrUtils,SysUtils,
+   ClipBrd,
    iniFiles,
 
    {$IfDef VCL}
@@ -365,7 +366,6 @@ type
      SymbolizationIsCorrent : boolean;
 
      dbName,
-     //GraphUpperLeftText,
      dbLegendLabel : ShortString;
 
      MonthFieldName,
@@ -689,7 +689,6 @@ type
      {$IfDef ExGeostats}
      {$Else}
         procedure PlotFabric(var Bitmap : tMyBitmap);
-        function SSOandaspectdiagrams(var s1s2,s2s3,Trend,RoughnessFactor : float64) : boolean;
      {$EndIf}
 
      {$IfDef ExSat}
@@ -939,6 +938,7 @@ begin
    Result := MyData.NumUniqueEntriesInDB(fName);
 end;
 
+
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 var
    GridForm : tGridForm;
@@ -954,11 +954,11 @@ begin
 
    NeedRestore := false;
    if (GISDB[DBonTable].dbtablef <> Nil) and GISDB[DBonTable].dbtablef.AnyHiddenColumns then begin
-      If not AnswerIsYes('Sort without hidden fields') then begin
+      //If not AnswerIsYes('Sort without hidden fields') then begin
          GISdb[DBonTable].dbTableF.SaveHiddenColumns;
          GISdb[DBonTable].dbTableF.UnHideColumns;
          NeedRestore := true;
-      end;
+      //end;
    end;
 
    if (GISDB[DBonTable].MyData.GetFieldType(aField) = ftString) then ft := 0 else ft := 2;
@@ -1005,9 +1005,8 @@ end;
 procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
 var
    NewDB : integer;
-   SortedFName{,OutputDir} : PathStr;
+   SortedFName : PathStr;
 begin
-   //OutputDir := ExtractFilePath(GISdb[DBonTable].DBfullName);
    NewDB := SortDataBase(DBOnTable,Ascending,aField);  //,OutputDir);
    SortedFName := GISdb[NewDB].DBfullName;
    CloseAndNilNumberedDB(NewDB);
@@ -2758,7 +2757,7 @@ end;
             begin
                if LineOrAreaShapeFile(ShapeFileType) then begin
                   if (LatLongCornersPresent) and (not AnswerIsYes('Overwrite exiting corners')) then exit;
-                  if (LatLongCornersPresent) or MyData.AddBoundingBox then begin
+                  if (LatLongCornersPresent) or MyData.AddRecordBoundingBox then begin
                      EmpSource.Enabled := false;
                      aShapeFile.AddFields(afBoundingBox,MyData);
                      RespondToChangedDB;
@@ -4957,26 +4956,6 @@ begin
 end;
 
 
-{$IfDef ExGeostats}
-{$Else}
-
-      function tGISdataBaseModule.SSOandaspectdiagrams(var s1s2,s2s3,Trend,RoughnessFactor : float64) : boolean;
-      var
-         fLoX,fHiX,fLoY,fHiY,ID : integer;
-         DownDip : float64;
-      begin
-         fLoX := MyData.GetFieldByNameAsInteger('BOUND_XMIN');
-         fHiX := MyData.GetFieldByNameAsInteger('BOUND_XMAX');
-         fLoY := MyData.GetFieldByNameAsInteger('BOUND_YMIN');
-         fHiY := MyData.GetFieldByNameAsInteger('BOUND_YMAX');
-         ID := MyData.GetFieldByNameAsInteger('ID');
-         Result := DEMGLB[TheMapOwner.MapDraw.DEMonMap].FeatureSSOComputations(DEMGLB[TheMapOwner.MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid,ID,fLoX,fLoY,fHiX,fHiY,s1s2,s2s3,Trend,RoughnessFactor,DownDip);
-      end;
-
-{$EndIf}
-
-
-
 procedure tGISdataBaseModule.FindClosestRecord(Lat,Long : float64; var ClosestRecNo : integer; var MinD : float64);
 label
    AllDone;
@@ -6010,53 +5989,6 @@ initialization
    AutoOverwriteDBF := false;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demdatabase in'); {$EndIf}
-   {$IfDef RecordZoomMap} WriteLineToDebugFile('RecordZoomMap active in demdatabase'); {$EndIf}
-   {$IfDef RecordLineWidth} WriteLineToDebugFile('RecordLineWidth active in demdatabase'); {$EndIf}
-   {$IfDef RecordID} WriteLineToDebugFile('RecordIDProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordSPCS} WriteLineToDebugFile('RecordSPCSProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordDBPlot} WriteLineToDebugFile('RecordDBPlot active in demdatabase'); {$EndIf}
-   {$IfDef RecordDataBasePlotProblemsEveryPoint} WriteLineToDebugFile('RecordDataBasePlotProblemsEveryPoint active in demdatabase'); {$EndIf}
-   {$IfDef RecordTiger} WriteLineToDebugFile('RecordTIGER active in demdatabase'); {$EndIf}
-   {$IfDef RecordCloseDB} WriteLineToDebugFile('RecordCloseDBProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordOpenDataBase} WriteLineToDebugFile('RecordOpenDataBaseProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordPointInArea} WriteLineToDebugFile('RecordPointInAreaProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordBeachBall} WriteLineToDebugFile('RecordBeachBallProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordMaskDEMShapeFile} WriteLineToDebugFile('RecordMaskDEMShapeFile active in demdatabase'); {$EndIf}
-   {$IfDef RecordFilterDataBase} WriteLineToDebugFile('RecordFilterDataBase active in demdatabase'); {$EndIf}
-   {$IfDef RecordLinkTable} WriteLineToDebugFile('RecordLinkTable active in demdatabase'); {$EndIf}
-   {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('RecordShapeFileGroup active in demdatabase'); {$EndIf}
-   {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('RecordQueryGeoBox active in demdatabase'); {$EndIf}
-   {$IfDef RecordValidScreenPosition} WriteLineToDebugFile('RecordValidScreenPosition active in demdatabase'); {$EndIf}
-   {$IfDef RecordDataBaseLabels} WriteLineToDebugFile('RecordDataBaseLabels active in demdatabase'); {$EndIf}
-   {$IfDef RecordDataSaveStatus} WriteLineToDebugFile('RecordDataSaveStatus active in demdatabase'); {$EndIf}
-   {$IfDef RecordGAZ} WriteLineToDebugFile('RecordGAZProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordDipStrike} WriteLineToDebugFile('RecordDipStrike active in demdatabase'); {$EndIf}
-   {$IfDef RecordNetworkends} WriteLineToDebugFile('RecordNetworkends active in demdatabase'); {$EndIf}
-   {$IfDef RecordFan} WriteLineToDebugFile('RecordFanProblems active in demdatabase'); {$EndIf}
-   {$IfDef RecordNetworkNodes} WriteLineToDebugFile('RecordNetworkNodes active in demdatabase'); {$EndIf}
-   {$IfDef RecordDBindexes} WriteLineToDebugFile('RecordDBindexes active in demdatabase'); {$EndIf}
-   {$IfDef RecordMergeDB} WriteLineToDebugFile('RecordMergeDB active in demdatabase'); {$EndIf}
-   {$IfDef ShowOtherDBsWithSameFilter} WriteLineToDebugFile('ShowOtherDBsWithSameFilter active in demdatabase'); {$EndIf}
-   {$IfDef RecordBasinBreakdown} WriteLineToDebugFile('RecordBasinBreakdown active in demdatabase'); {$EndIf}
-   {$IfDef RecordAddField} WriteLineToDebugFile('RecordAddField active in demdatabase'); {$EndIf}
-   {$IfDef RecordEveryDataBaseLabel} WriteLineToDebugFile('RecordEveryDataBaseLabel active in demdatabase'); {$EndIf}
-   {$IfDef RecordGISvectors} WriteLineToDebugFile('RecordGISvectors active in demdatabase'); {$EndIf}
-   {$IfDef RecordCurrentRecord} WriteLineToDebugFile('RecordCurrentRecord active in demdatabase'); {$EndIf}
-   {$IfDef RecordIcons} WriteLineToDebugFile('RecordIcons active in demdatabase'); {$EndIf}
-   {$IfDef RecordDataBaseText} WriteLineToDebugFile('RecordDataBaseText active in demdatabase'); {$EndIf}
-   {$IfDef RecordOpenDataBaseStructure} WriteLineToDebugFile('RecordOpenDataBaseStructure active in demdatabase'); {$EndIf}
-   {$IfDef RecordDataBaseSaveFiles} WriteLineToDebugFile('RecordDataBaseSaveFiles active in demdatabase'); {$EndIf}
-   {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('RecordFullShapeFileGroup active in demdatabase'); {$EndIf}
-   {$IfDef RecordStationTimeSeries} WriteLineToDebugFile('RecordStationTimeSeries active in demdatabase'); {$EndIf}
-   {$IfDef RecordMonthlyFilter} WriteLineToDebugFile('RecordMonthlyFilter active in demdatabase'); {$EndIf}
-   {$IfDef RecordRedistrict} WriteLineToDebugFile('RecordRedistrict active in demdatabase'); {$EndIf}
-   {$IfDef RecordDBPlotDetailed} WriteLineToDebugFile('RecordDBPlotDetailed active in demdatabase'); {$EndIf}
-   {$IfDef RecordDBCount} WriteLineToDebugFile('RecordDBCount active in demdatabase'); {$EndIf}
-   {$IfDef RecordFIT} WriteLineToDebugFile('RecordFIT active in demdatabase'); {$EndIf}
-   {$IfDef RecordFieldStatistics} WriteLineToDebugFile('RecordFieldStatistics active in demdatabase'); {$EndIf}
-
-
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing demdatabase out'); {$EndIf}
 end.
 
 

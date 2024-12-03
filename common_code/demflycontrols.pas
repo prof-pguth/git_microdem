@@ -253,5 +253,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordChangeFlyControls}   WriteLineToDebugFile('RecordChangeFlyControls active in demflycontrols'); {$EndIf}
 end.

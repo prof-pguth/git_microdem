@@ -15,7 +15,6 @@ object DBColorForm: TDBColorForm
   Position = poDefaultSizeOnly
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8

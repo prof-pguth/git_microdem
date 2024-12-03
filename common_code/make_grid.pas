@@ -88,7 +88,7 @@ function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : in
 
 function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
-function MakeAspectMap(OpenMap : boolean; ElevMap : integer) : integer;
+function MakeAspectMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
 
 function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; fName : PathStr = '') : integer;
 
@@ -110,7 +110,7 @@ function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : i
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
-function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = '') : integer;
+function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = ''; OpenMap : boolean = true) : integer;
 
 function MakeDNBRMap(PreNBR,PostNBR : integer) : integer;
 
@@ -137,6 +137,15 @@ function MakeNEneighborGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap
 
 function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
 function CreateUTMDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
+function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; NeighborhoodRadius : integer) : integer;
+
+function GridDiffernces(PercentDifference : boolean = false) : integer;
+procedure GridDifferncesBothInterpolationBasis(PercentDifference : boolean = false);
+function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '';
+       PercentDifference : boolean = false) : integer;
+
+procedure PickAspectDifferenceMap(DEM,Window : integer);
+
 
 
 var
@@ -154,12 +163,245 @@ uses
    MD_use_tools,
    gdal_tools,
    DEMEros,
+   BaseGraf,
+   dem_grid_diffs,
    DEMStringGrid,
    PetImage_Form,
    DEMweapn;
 
 var
    CountInStrips : integer;
+
+procedure PickAspectDifferenceMap(DEM,Window : integer);
+var
+   AspectDEM : integer;
+begin
+   if DEMglb[DEM].DEMheader.ElevUnits = euAspectDeg then AspectDEM := DEM
+   else AspectDEM := MakeAspectMap(true,DEM);
+   if Window in [1,99] then AspectDifferenceMap(AspectDEM,1,DEMGlb[AspectDEM].FullDEMGridLimits);
+   if Window in [2,99] then AspectDifferenceMap(AspectDEM,2,DEMGlb[AspectDEM].FullDEMGridLimits);
+   if Window in [3,99] then AspectDifferenceMap(AspectDEM,3,DEMGlb[AspectDEM].FullDEMGridLimits);
+end;
+
+
+
+function GridDiffernces(PercentDifference : boolean = false) : integer;
+var
+   DEM1,DEM2,GridForResult : integer;
+   aName : shortstring;
+begin
+   {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference in'); {$EndIf}
+   GetTwoCompatibleGrids('Result = DEM1 - DEM2)',true,DEM2,DEM1,false,true);
+   if (DEM1 <> 0) and (DEM2 <> 0) then begin
+      aName := 'Difference_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName;
+      if PercentDifference then aName := 'Percent ' + aName;
+
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile(aName); {$EndIf}
+      SetGridDiffernceProperties(DEM1,DEM2,GridForResult);
+      Result := MakeDifferenceMap(DEM1,DEM2,DEM1,0,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName,PercentDifference);
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
+   end
+   else begin
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference fail, not 2 different DEMs'); {$EndIf}
+   end;
+end;
+
+procedure GridDifferncesBothInterpolationBasis(PercentDifference : boolean = false);
+var
+   DEM1,DEM2,Diff1,Diff2 : integer;
+   aName : shortstring;
+begin
+   {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifferncesBothInterpolationBasis in'); {$EndIf}
+   GetTwoCompatibleGrids('Result = DEM1 - DEM2)',true,DEM2,DEM1,false,true);
+   if (DEM1 <> 0) and (DEM2 <> 0) then begin
+      MDDef.HighlightDiffMap := 2;
+      aName := 'Difference_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName;
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile(aName); {$EndIf}
+      //SetGridDiffernceProperties(DEM1,DEM2,GridForResult);
+
+      aName := 'Difference_' + DEMGlb[DEM2].AreaName + '_minus_' + DEMGlb[DEM1].AreaName + '_projection';
+      if PercentDifference then aName := 'Percent ' + aName;
+      Diff1 := MakeDifferenceMap(DEM1,DEM2,DEM1,0,true,false,false,aName,PercentDifference);
+
+      aName := 'Difference_' + DEMGlb[DEM2].AreaName+ '_projection_minus_' + DEMGlb[DEM1].AreaName;
+      if PercentDifference then aName := 'Percent ' + aName;
+      Diff2 := MakeDifferenceMap(DEM1,DEM2,DEM2,0,true,false,false,aName,PercentDifference);
+      //DEMGlb[GridForResult].MultiplyGridByConstant(-1);
+      //DEMGlb[GridForResult].SelectionMap.DoBaseMapRedraw;
+
+      //MDDef.DivergenceRange := MaxFloat(-DEMglb[Diff1].DEMheader.MinElev,DEMglb[Diff1].DEMheader.MaxElev,-DEMglb[Diff2].DEMheader.MinElev,DEMglb[Diff2].DEMheader.MaxElev);
+      MDDef.DivergenceRange := MaxFloat(-DEMglb[Diff1].FindPercentileElev(5),DEMglb[Diff1].FindPercentileElev(95),-DEMglb[Diff2].FindPercentileElev(5),DEMglb[Diff2].FindPercentileElev(95));
+      DEMGlb[Diff1].SelectionMap.DoBaseMapRedraw;
+      DEMGlb[Diff2].SelectionMap.DoBaseMapRedraw;
+
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifferncesBothInterpolationBasis out'); {$EndIf}
+   end;
+end;
+
+
+
+function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = ''; PercentDifference : boolean = false) : integer;
+var
+   Col,Row,mt,OtherGrid,ThisGrid,xoff,yoff  : integer;
+   z1,z2 : float32;
+   fName : PathStr;
+   ThisGraph : TThisBaseGraph;
+   IdenticalGrids : boolean;
+   TStr : shortstring;
+   rFile : file;
+
+
+         procedure SetPoint(DEM,Col,Row : integer; z1,z2: float32);
+         const
+            DiffTol = 0.1;
+         begin
+            if PercentDifference then begin
+               if (abs(z1-z2) < DiffTol) then DEMGlb[Result].SetGridElevation(Col,Row,0)
+               else DEMGlb[DEM].SetGridElevation(Col,Row,100 * (z1 - z2)/ (0.5 * (z1 + z2) ));
+            end
+            else begin
+               DEMGlb[DEM].SetGridElevation(Col,Row,z1 - z2);
+            end;
+         end;
+
+
+begin
+   if ValidDEM(Map1) and ValidDEM(Map2) then begin
+      try
+         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)}
+            WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion in, ' + DEMGlb[Map1].AreaName + ' ' + DEMGlb[Map1].zRange + ' minus ' + DEMGlb[Map2].AreaName + ' ' + DEMGlb[Map2].zRange);
+         {$EndIf}
+         HeavyDutyProcessing := true;
+         Result := 0;
+         OpenDEMDataStructures(Result);
+
+         if (TheAreaName = '') then begin
+            if PercentDifference then TStr := 'percent_';
+            DEMGlb[Result].AreaName := 'Elev_Diff_' + TStr + DEMGlb[Map2].AreaName + '_minus_' + DEMGlb[Map1].AreaName
+         end
+         else DEMGlb[Result].AreaName := TheAreaName;
+
+         DEMGlb[Result].DEMheader := DEMGlb[GridResultionToUse].DEMheader;
+         DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := 0;  //difference not referred to a datum
+         if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM
+         else DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;
+
+         if DEMGlb[Map1].ElevationDEM and DEMGlb[Map2].ElevationDEM then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
+
+         DEMGlb[Result].DEMstatus := dsUnsaved;
+         if (GridResultionToUse = Map1) then begin
+            ThisGrid := Map1;
+            OtherGrid := Map2;
+         end
+         else begin
+            ThisGrid := Map2;
+            OtherGrid := Map1;
+         end;
+
+         if not DEMGlb[Result].AllocateDEMMemory(InitDEMMissing) then exit;
+
+         if ShowScatterPlot then begin
+            ThisGraph := TThisBaseGraph.Create(Application);
+            ThisGraph.SetUpGraphForm;
+            ThisGraph.Caption := 'Grid comparison';
+            ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
+            ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
+            ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
+         end;
+         IdenticalGrids := DEMGlb[ThisGrid].SecondGridJustOffset(OtherGrid,xoff,yoff);
+
+         StartProgress('Grid Differences');
+         for Col := 0 to pred(DEMGlb[ThisGrid].DEMHeader.NumCol) do begin
+            if (Col mod 25 = 0) then UpdateProgressBar(Col / pred(DEMGlb[ThisGrid].DEMheader.NumCol));
+            for Row := 0 to pred(DEMGlb[ThisGrid].DEMHeader.NumRow) do begin
+               if IdenticalGrids then begin
+                  if DEMGlb[ThisGrid].GetElevMeters(Col,Row,z1) and DEMGlb[OtherGrid].GetElevMeters(Col+xoff,Row+yoff,z2) then begin
+                     SetPoint(Result,Col,Row,z1,z2);
+                     if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+                  end;
+               end
+               else begin
+                  if DEMGlb[ThisGrid].GetElevMetersFromThisAndSecondDEM(OtherGrid,Col,Row,z1,z2) then begin
+                     SetPoint(Result,Col,Row,z1,z2);
+                     if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
+                  end;
+               end;
+            end {for Row};
+         end {for Col};
+         EndProgress;
+         if (GridResultionToUse = Map2) then begin
+            DEMGlb[Result].MultiplyGridByConstant(-1);
+         end;
+         DEMGlb[Result].CheckMaxMinElev;
+         {$If Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapOfBoxRegion did check: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+         {$IfDef RecordFullDEMCompare}
+            WriteLineToDebugFile('');  WriteLineToDebugFile('DEM1: ' + DEMGlb[Map1].FullDEMParams);
+            WriteLineToDebugFile('');  WriteLineToDebugFile('DEM2: ' + DEMGlb[Map2].FullDEMParams);
+            WriteLineToDebugFile('');  WriteLineToDebugFile('Diff: ' + DEMGlb[Result].FullDEMParams);
+            WriteLineToDebugFile('');
+         {$EndIf}
+
+         if ShowMap then begin
+            {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
+               WriteLineToDebugFile('MakeDifferenceMapofBoxRegion call setupmap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
+            {$EndIf}
+            if PercentDifference then mt := mtDifferenceDiverge
+            else if MDDef.HighlightDiffMap = 0 then mt := mtElevSpectrum
+            else if MDDef.HighlightDiffMap = 1 then mt := mtGGRReflect
+            else if MDDef.HighlightDiffMap = 2 then mt := mtDifferenceDiverge;
+            DEMGlb[Result].SetupMap(true,mt);
+            if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
+               DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);
+            end;
+            {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
+               WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
+            {$EndIf}
+         end;
+         DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
+
+         if ShowScatterPlot then begin
+            CloseFile(rfile);
+            ThisGraph.AutoScaleAndRedrawDiagram;
+         end;
+         if ShowHistogram then CreateWholeDEMHistogram(Result);  //SingleDEMHistogram(Result);
+         {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion out, ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange); {$EndIf}
+      finally
+         HeavyDutyProcessing := false;
+         ShowDefaultCursor;
+      end;
+   end
+   else begin
+      {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion called with invalid grid'); {$EndIf}
+   end;
+end;
+
+
+
+function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; NeighborhoodRadius : integer) : integer;
+var
+   x,y,NumPts : integer;
+begin
+   Result := DEMglb[DEM].CloneAndOpenGridSetMissing(byteDEM,'Full_window_mask',euUndefined);
+   NumPts := 0;
+   for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
+      for y := 0 to pred(DEMglb[DEM].DEMHeader.NumRow) do begin
+         if DEMglb[DEM].FullAnalysisWindow(x,y,NeighborhoodRadius) then begin
+            inc(NumPts);
+            DEMGlb[Result].SetGridElevation(x,y,1);
+         end
+         else DEMGlb[Result].SetGridMissing(x,y);
+      end;
+   end;
+   DEMglb[Result].CheckMaxMinElev;
+   DEMglb[Result].DEMHeader.ElevUnits := euIntCode;
+   DEMglb[Result].AreaName := DEMglb[DEM].AreaName + '_full_neighborhood_' + FilterSizeStr(succ(2*NeighborhoodRadius));
+   if OpenMap then DEMglb[Result].SetUpMap(false);
+   {$IfDef RecordCompareLSPs}
+      WriteLineToDebugFile('FilterToFullAnalysisWindow using ' + DEMglb[DEM].AreaName + '  pts=' + IntToStr(DEMglb[DEM].ValidElevsInDEM) + ' filled=' + IntToStr(NumPts));
+      WriteLineToDebugFile('Mask DEM=' + IntToStr(DEMglb[Result].ValidElevsInDEM));
+   {$EndIf}
+end;
+
 
 
 function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
@@ -238,7 +480,7 @@ begin
    end;
    for i := 1 to 5 do DEMglb[Grids[i]].CheckMaxMinElev;
    if ShowSatProgress then EndProgress;
-   if OpenMap then for i := 1 to 5 do DEMglb[Grids[i]].SetUpMap(true);
+   if OpenMap then for i := 1 to 5 do DEMglb[Grids[i]].SetUpMap(false);
 end;
 
 
@@ -306,19 +548,37 @@ begin
 end;
 
 
-function MakeAspectMap(OpenMap : boolean; ElevMap : integer) : integer;
+function MakeAspectMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+var
+   x,y : integer;
+   SlopeAspectRec : tSlopeAspectRec;
 begin
-   {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)} WriteLineToDebugFile('MakeAspectMap in, dem=' + IntToStr(ElevMap)); {$EndIf}
-   SaveBackupDefaults;
-   SetAllSlopes(false);
-   MDDef.DoAspect := true;
-   Result := MakeMomentsGrid(ElevMap,'S',-99,OpenMap);
-   RestoreBackupDefaults;
-   {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)}  WriteLineToDebugFile('MakeAspectMap out, dem=' + IntToStr(ElevMap) + '  aspect map=' + IntToStr(Result)); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('MakeAspectMap in, method=' + IntToStr(MDDef.SlopeAlgorithm)); {$EndIf}
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'aspect_' + DEMGlb[DEM].AreaName,euAspectDeg);
+   if (OutName <> '') then DEMGlb[Result].AreaName := ExtractFileNameNoExt(OutName);
+   StartProgress('Aspect difference');
+   for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+      if (x mod 50 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
+      for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
+         if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlopeAspectRec) then begin
+            if (SlopeAspectRec.Dir <> cdFlat) then begin
+               DEMGlb[Result].SetGridElevation(x,y,SlopeAspectRec.AspectDir);
+            end;
+         end;
+      end;
+   end;
+   DEMglb[Result].CheckMaxMinElev;
+   EndProgress;
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('MakeAspectMap, ' + DEMglb[Result].ZRange); {$EndIf}
+   if OpenMap then begin
+       DEMglb[Result].SetupMap(false,mtDEMAspect);
+       {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('MakeAspectMap out'); {$EndIf}
+   end;
 end;
 
 
-function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = '') : integer;
+function DifferenceCategoryMap(DEMonMap : integer; fName : PathStr = ''; OpenMap : boolean = true) : integer;
+//currently no way to get to 5 cat, which is hard coded not possible
 const
    HighTolerance = 10.51;
    MediumTolerance = 5.51;
@@ -330,7 +590,7 @@ var
    z2,What : float32;
    x,y : integer;
    VAT : tStringList;
-   TStr : shortstring;
+   //TStr : shortstring;
    Hist : array[1..7] of int64;
 begin
    Result := 0;
@@ -338,9 +598,9 @@ begin
       for i := 1 to 7 do Hist[i] := 0;
       if (fName = '') then fName := 'high_low_' + DEMGlb[DEMonMap].AreaName;
       Result := DEMGlb[DEMonMap].CloneAndOpenGridSetMissing(ByteDEM,fName,euIntCode);
-      StartProgressAbortOption('DEM Difference category');
+      //StartProgressAbortOption('DEM Difference category');
       for x := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumCol) do begin
-         UpdateProgressBar(x/DEMGlb[DEMonMap].DEMheader.NumCol);
+         //UpdateProgressBar(x/DEMGlb[DEMonMap].DEMheader.NumCol);
          for y := 0 to pred(DEMGlb[DEMonMap].DEMheader.NumRow) do begin
             if DEMGlb[DEMonMap].GetElevMetersOnGrid(x,y,z2) then begin
                if ThreeCat then begin
@@ -365,13 +625,13 @@ begin
 
       if ThreeCat then begin
          if (Hist[5] > 0) then Vat.add('5,High,' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clGreen));
-         if (Hist[3] > 0) then Vat.add('3,' + TStr + ' ± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
+         if (Hist[3] > 0) then Vat.add('3,Equal ± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
          if (Hist[1] > 0) then Vat.add('1,Low,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clRed));
       end
       else if FiveCat then begin
          if (Hist[1] > 0) then Vat.add('1,High > ' + RealToString(HighTolerance,-5,-1) + ',' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clGreen));
          if (Hist[2] > 0) then Vat.add('2,Medium High,' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
-         if (Hist[3] > 0) then Vat.add('3,± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
+         if (Hist[3] > 0) then Vat.add('3,Equal ± ' + RealToString(SimpleTolerance,-5,1)  + ',' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clWhite));
          if (Hist[4] > 0) then Vat.add('4,Medium Low,' + IntToStr(Hist[4]) + ',Y,' + IntToStr(clMagenta));
          if (Hist[5] > 0) then Vat.add('5,Low < ' + RealToString(-HighTolerance,-6,-1) + ',' + IntToStr(Hist[5]) + ',Y,' + IntToStr(clRed));
       end;
@@ -379,7 +639,7 @@ begin
       StringList2CSVtoDB(vat,fName,true);
       DEMGlb[Result].VATFileName := fName;
       DEMglb[Result].CheckMaxMinElev;
-      DEMglb[Result].SetupMap(true,mtDEMVATTable);
+      if OpenMap then DEMglb[Result].SetupMap(false,mtDEMVATTable);
    end;
 end;
 
@@ -402,7 +662,6 @@ var
    end;
 
 
-
 begin
    case Which of
       1 : aName := 'profile_curvature_';
@@ -410,6 +669,9 @@ begin
       3 : aName := 'plan_curvature_';
       4 : aName := 'flow_line_curvature_';
       5 : aName := 'contour_torsion_';
+      //6 : aName := 'min_curvature_';
+      //7 : aName := 'max_curvature_';
+      //8 : aName := 'cross_curvature_';
    end;
 
    if (OutName = '') then OutName := aName + DEMGlb[DEM].AreaName;
@@ -497,9 +759,9 @@ begin
    DEMglb[pyy].CheckMaxMinElev;
    if ShowSatProgress then EndProgress;
    if OpenMap then begin
-      DEMglb[pxx].SetUpMap(true);
-      DEMglb[pxy].SetUpMap(true);
-      DEMglb[pyy].SetUpMap(true);
+      DEMglb[pxx].SetUpMap(false);
+      DEMglb[pxy].SetUpMap(false);
+      DEMglb[pyy].SetUpMap(false);
    end;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
@@ -525,7 +787,7 @@ begin
    end;
    DEMglb[Result].CheckMaxMinElev;
    if ShowSatProgress then EndProgress;
-   if OpenMap then DEMglb[Result].SetupMap(true,MDDef.DefSlopeMap);
+   if OpenMap then DEMglb[Result].SetupMap(false,MDDef.DefSlopeMap);
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSlopeMapPercent, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
@@ -722,7 +984,7 @@ begin
       end;
    end;
    DEMglb[Result].CheckMaxMinElev;
-   if OpenMap then DEMglb[Result].SetupMap(OpenMap,mtElevSpectrum);
+   if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
    if (not SaveSlopeMap) then CloseSingleDEM(SlopeGrid);
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSpecifiedRoughnessMap out, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
@@ -1291,7 +1553,7 @@ var
        end;
 
 
-begin
+begin {MakeMomentsGrid}
    {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)} WriteLineToDebugFile('MakeMomentsGrid in, dem=' + IntToStr(CurDEM) + '  what=' + what); {$EndIf}
    Result := 0;
    DEMGlb[CurDEM].GetBoxGridSizeDiameter(BoxSizeRadiusMeters,XBoxGridSize,YBoxGridSize,TStr);
@@ -1412,10 +1674,14 @@ begin
     {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Open maps'); {$EndIf}
     for i := 1 to MaxGrids do begin
        if ValidDEM(MomentDEMs[i]) then begin
+          DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
           if OpenMaps then begin
              {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
-             DEMGlb[MomentDEMs[i]].SetUpMap(true,WantMapType,What in ['A','C','F']);
-             DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
+             DEMGlb[MomentDEMs[i]].SetUpMap(false,WantMapType,What in ['A','C','F']);
+(*
+             //DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
+             HighlightLineToDebugFile('{MakeMomentsGrid} removed ProjectionSharedWithDataset');
+*)
              MatchAnotherDEMMap(MomentDEMs[i],CurDEM);
              {$IfDef CreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}
              {$IfDef CreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('New grid',true); {$EndIf}
@@ -1440,7 +1706,7 @@ begin
        end;
     end;
     {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)}  WriteLineToDebugFile('MakeMomentsGrid out, Result=' + IntToStr(Result)); {$EndIf}
-end;
+end {MakeMomentsGrid};
 
 {$EndIf}
 
@@ -1743,7 +2009,7 @@ begin
          if ShowSatProgress then EndProgress;
 
          {$IfDef RecordMakeNewMapProblems} WriteLineToDebugFile('  compute over'); {$EndIf}
-
+         DEMGlb[Result].CheckMaxMinElev;
          if ShowMap then begin
              UsePC := false;
              if (ch in ['R']) then begin
@@ -1755,7 +2021,7 @@ begin
              end
              else mt := MDdef.DefDEMMap;
 
-             DEMGlb[Result].SetupMap(true,mt,UsePC);
+             DEMGlb[Result].SetupMap(false,mt,UsePC);
 
              if DEMGlb[CurDEM].SelectionMap.FullMapSpeedButton.Enabled and MDDef.GeomorphMapsFullDEM then begin
                 DEMGlb[Result].SelectionMap.MapDraw.NoDrawingNow := true;
@@ -1767,10 +2033,6 @@ begin
 
              DEMGlb[Result].SelectionMap.SaveDEM1.Visible := false;
              DEMGlb[Result].SelectionMap.CheckProperTix;
-         end
-         else
-         begin
-            DEMGlb[Result].CheckMaxMinElev;
          end;
 
          ShowSatProgress := true;
@@ -1829,9 +2091,10 @@ begin
    {$EndIf}
 begin
    {$IfDef RecordPointClass} WriteLineToDebugFile('CreateAspectDifferenceMap in'); {$EndIf}
-     Result := DEMGlb[WhichDEM].CloneAndOpenGridSetMissing(ByteDEM,DEMGlb[WhichDem].AreaName + '_aspect_difference_' + IntToStr(succ(2*RegionRadius))+ 'x'+IntToStr(succ(2*RegionRadius)),euDegrees);
+     Result := DEMGlb[WhichDEM].CloneAndOpenGridSetMissing(ByteDEM,'Aspect_difference_' + IntToStr(succ(2*RegionRadius)) + 'x' + IntToStr(succ(2*RegionRadius)) +
+          '_' + DEMGlb[WhichDem].AreaName,euDegrees);
      {$IfDef RecordPointClass} WriteLineToDebugFile('New grid created'); {$EndIf}
-     StartProgressAbortOption('Aspect difference');
+     StartProgress('Aspect difference');
      CountInStrips := 0;
     {$IfDef NoParallelFor}
         AspectDifferenceMapStrip(WhichDEM,Result,RegionRadius,GridLimits);
@@ -1848,8 +2111,8 @@ begin
     EndProgress;
 
      {$IfDef RecordPointClass} WriteLineToDebugFile('New map created'); {$EndIf}
-
-    DEMGlb[Result].SetupMap(true);
+    DEMGlb[Result].CheckMaxMinElev;
+    DEMGlb[Result].SetupMap(false,mtElevSpectrum);
     {$IfDef RecordPointClass} WriteLineToDebugFile('CreateAspectDifferenceMa out'); {$EndIf}
 
 {$EndIf}
@@ -2018,11 +2281,11 @@ begin
    {$IfDef RecordPointClass} WriteLineToDebugFile('New grid created'); {$EndIf}
    if ShowSatProgress then StartProgressAbortOption('I&P class');
    CountInStrips := 0;
-   ConvexityMeanCut := DEMGLB[ConvexGrid].FindPercentileElevation(MDDef.ConvexCut);
-   TextureMeanCut := DEMGLB[RoughGrid].FindPercentileElevation(MDDef.RoughnessCut);
-   SlopeMeanCut := DEMGLB[SlopeGrid].FindPercentileElevation(MDDef.SlopeCut1);
-   SlopeQuarterCut := DEMGLB[SlopeGrid].FindPercentileElevation(MDDef.SlopeCut2);
-   SlopeEigthCut := DEMGLB[SlopeGrid].FindPercentileElevation(MDDef.SlopeCut3);
+   ConvexityMeanCut := DEMGLB[ConvexGrid].FindPercentileElev(MDDef.ConvexCut);
+   TextureMeanCut := DEMGLB[RoughGrid].FindPercentileElev(MDDef.RoughnessCut);
+   SlopeMeanCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut1);
+   SlopeQuarterCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut2);
+   SlopeEigthCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut3);
 
    PartLimits := DEMGlb[SlopeGrid].FullDEMGridLimits;
 

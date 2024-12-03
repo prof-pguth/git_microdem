@@ -319,6 +319,7 @@ begin
       DeleteSingleMapLayer(AllFansCoverageFName);
       PutFanInTable;
 
+      (*
       {$IfDef VCL}
          if (DEMGlb[DEMonMap].FanBlowUpDEM <> 0) then begin
             CopyImageToBitmap(DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1,SummaryBitmap);
@@ -327,6 +328,7 @@ begin
             SummaryBitmap.Free;
          end;
       {$EndIf}
+      *)
    end
    else PutFanInTable;
 

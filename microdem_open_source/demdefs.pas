@@ -953,12 +953,12 @@ const
 
 type //for MICRONET
    tInputDisplay    = (Pole,DipDirDis,GreatCircle,Both);
-   NetType          = (Schmidt,Wulff);
+   tNetType         = (Schmidt,Wulff);
    tPoleOrLine      = (PolePlot,LinePlot);
    tHemisphere      = (Upper,Lower);
    PlotTypes        = (aLineation,aDipDirection,aDipAndStrike,aLatAndLong);
    tNetGrid         = (ngPolar,ngEquatorial,ngAzimuth,ngNone);
-   tNetContourColors = (Spectrum,Rainbow,Terrain,GrayScale,ContrastBW,GrayDither);
+   tNetContourColors = (Spectrum,Rainbow,Terrain,GrayScale{,ContrastBW,GrayDither});
    tBeachBallSize  = (bbsAll,bbsMs,bbsMw);
    tBeachBallColors  = (bbcAll,bbcMs,bbcMw,bbcDepth);
 
@@ -971,7 +971,7 @@ type //for MICRONET
          NorthTick,
          CenterTick,
          ContinuousGrayScale : boolean;
-         NetUsed          : NetType;
+         NetUsed          : tNetType;
          HemiSphereUsed   : tHemisphere;
          InputDisplay     : tInputDisplay;
          NetContourColors : tNetContourColors;
@@ -993,9 +993,10 @@ type //for MICRONET
          NetColor,
          ScreenSymbolSize,
          CircleGridIncrement : int16;
-         NetLineWidth : byte;
-         NetLineColor : tPlatformColor;
+         CountRadius,
+         NetLineWidth,
          GreatCircleLineWidth : byte;
+         NetLineColor : tPlatformColor;
          GreatCircleColor : tPlatformColor;
       end;
    {$EndIf}
@@ -2790,7 +2791,7 @@ type
        ShowSensorMaps : boolean;
 
        ShowColorLegend : boolean;
-       SingleJulianDay : int16;
+       SingleJulianDay : LongInt;
        //SunlightSingleDay : byte;
        VerifyTimeZone,
        SolarPathMap,
@@ -2972,7 +2973,6 @@ type
 var
    MDdef            : tDefaultRecord;
    BackupMDDef      : ^tDefaultRecord;
-   //MrSidEnabled       : boolean;
    LineColors10 : array[0..10] of tPlatformColor;
 
    {$IfDef VCL}

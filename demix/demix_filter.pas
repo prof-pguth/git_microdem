@@ -247,17 +247,7 @@ uses
    DEMmapf, nevadia_main, PetDBUtils,
    DEMIX_Graphs;
 
-//const
-   //SaveDifferenceDistribution : boolean = false;
-
-(*
-const
-   ssimOneArea = 1;
-   ssimAllAreas = 2;
-   ssimDiluvium = 3;
-*)
 var
-   //SSIMOutPath : PathStr;
    LoadRefDEMMaps,LoadTestDEMMaps : boolean;
 
 
@@ -696,7 +686,7 @@ var
    i,UseDSM,UseDTM : integer;
    DiffGrid : tDEMIXindexes;
    DEMSwanted : tDEMbooleanArray;
-   GridLimits: tGridLimits;
+   //GridLimits: tGridLimits;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click in'); {$EndIf}
    MakeGeomorphometricMaps('TPI',DEMSwanted);
@@ -710,8 +700,8 @@ exit;
       if ValidDEM(TestDEMs[i]) then begin
          GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
          DiffGrid[i] := MakeDifferenceMap(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,true,false,false);
-         GridLimits := DEMGlb[TestTPI[i]].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(ComboBox1.Text));
-         DiffGrid[i] := MakeDifferenceMapOfBoxRegion(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,GridLimits,true,false,false);
+         //GridLimits := DEMGlb[TestTPI[i]].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(ComboBox1.Text));
+         DiffGrid[i] := MakeDifferenceMap(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,true,false,false);
          DEMsWanted[DiffGrid[i]] := true;
       end;
    end;

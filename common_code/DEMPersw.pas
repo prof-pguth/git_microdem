@@ -1162,20 +1162,24 @@ end;
    var
       x,y,db : integer;
       az,alt : float64;
-      iYear,iMonth,iDay : integer;
-      //Year,Month,Day : integer;
+      iYear,iMonth,iDay : word;
       Sym : tFullSymbolDeclaration;
       Time : shortstring;
    begin
       Sym.Color := claDarkGrey;
       Sym.Size := 5;
       Sym.DrawingSymbol := FilledCircle;
+      (*
       if Today then begin
          imonth := 0;
       end
       else begin
          iMonth := -99;
       end;
+      *)
+      DecodeDate(Now,iYear,iMonth,iDay);
+      if not Today then GetDate(iMonth,iDay,iYear);
+
       db := MoonPositionDB(View3D.ViewerLat,View3D.ViewerLong, iyear,imonth,iday);
 
       GISdb[db].MyData.First;
@@ -1313,13 +1317,6 @@ begin
    PointMess1 := '';
    PLSSMess2 := '';
    Result := false;
-
-   (*
-   if (View3D.DrapeMapUsing = 0) then View3D.NumRadialPts := round(View3D.ViewDepth / (0.5*DEMGlb[View3D.DEMonView].AverageSpace))
-   else View3D.NumRadialPts := round(View3D.ViewDepth / View3D.RadialPointSpacing[View3D.DrapeMapUsing]);
-   if (View3D.NumRadialPts > MaxFArrayPts) then View3D.NumRadialPts := pred(MaxFArrayPts);
-   *)
-   //if (View3D.FindfxGrids = Nil) then begin
    VincentyPointAtDistanceBearing(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewDepth,Azimuth,View3D.ViewedLat,View3D.ViewedLong);
 
    new(fxgrids);
@@ -1327,12 +1324,6 @@ begin
    new(fdists);
    new(elevs);
    DEMGlb[View3D.DEMonView].GetStraightRouteLatLongWithElevs(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewedLat,View3D.ViewedLong,View3D.NumRadialPts,fxgrids^,fygrids^,fdists^,elevs^);
-
-
-    //  DEMGlb[View3D.DEMOnView].GetStraightRouteDEMGrid(View3D.ViewerLat,View3D.ViewerLong,View3D.ViewedLat,View3D.ViewedLong,View3D.StraightLineAlgorithm,View3D.NumRadialPts,View3D.Findfxgrids^,View3D.Findfygrids^,View3D.Findfdists^);
-
-
-   //end;
    Pitch := TanDeg(Pitch);
    FirstPt := 0;
    while (fDists^[FirstPt] < View3D.PersOpts.PersFirstProfile) do inc(FirstPt);
@@ -1466,13 +1457,13 @@ begin
       NeedErrorString := true;
       if FindLatLong(Lat,Long,Pitch,DistOut,Azimuth,MessZ,Mess2,Mess3,Mess4,(not PersPitchAzimuthDigitize)) then {with Image1.Canvas do} begin
          {$IfDef RegisterPhoto}
-         if PersPitchAzimuthDigitize then begin
-            RegPhotoForm.PostPoint(Lat,Long,DistOut,Azimuth,Pitch);
-            Petmar.ScreenSymbol(Image1.Canvas,LastX,LastY,Cross,5,ConvertTColorToPlatformColor(clRed));
-            Image1.Canvas.Font.Color := clRed;
-            Image1.Canvas.TextOut(LastX+5,LastY+5,IntToStr(RegPhotoForm.PointDoing));
-            exit;
-         end;
+            if PersPitchAzimuthDigitize then begin
+               RegPhotoForm.PostPoint(Lat,Long,DistOut,Azimuth,Pitch);
+               Petmar.ScreenSymbol(Image1.Canvas,LastX,LastY,Cross,5,ConvertTColorToPlatformColor(clRed));
+               Image1.Canvas.Font.Color := clRed;
+               Image1.Canvas.TextOut(LastX+5,LastY+5,IntToStr(RegPhotoForm.PointDoing));
+               exit;
+            end;
          {$EndIf}
          Image1.Canvas.Pen.Mode := pmNotXor;
          ScreenSymbol(Image1.Canvas,LastX,LastY,Splat,3,ConvertTColorToPlatformColor(clRed));
@@ -1537,24 +1528,16 @@ var
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('TThreeDview.FormClose in');{$EndIf}
    Action := caFree;
-   (*
-   if View3D.Findfxgrids <> nil then begin
-      Dispose(View3D.Findfxgrids);
-      Dispose(View3D.Findfygrids);
-      Dispose(View3D.Findfdists);
-   end;
-   *)
-
-   with View3D do begin
-      CloseDrapingMaps;
-      if (FlightRouteDB <> Nil) then begin
+   //with View3D do begin
+      View3d.CloseDrapingMaps;
+      if (View3d.FlightRouteDB <> Nil) then begin
          fName := '';
          if LiveFlying and MDDef.SaveLiveFlying and AnswerIsYes('Save flight route') then begin
-            fName2 := FlightRouteDB.TableName;
+            fName2 := View3d.FlightRouteDB.TableName;
             fName := fName2;
             Petmar.GetFileNameDefaultExt('Saved flight route',DefaultDBMask,fName);
          end;
-         FlightRouteDB.Destroy;
+         View3d.FlightRouteDB.Destroy;
          if (fName <> '') then Petmar.CopyFile(fName2,fName);
       end;
       if (CrossTrackProfile <> Nil) then CrossTrackProfile.Close;
@@ -1566,7 +1549,7 @@ begin
          PositionMap := Nil;
       end;
       View3d.Destroy;
-   end;
+   //end;
    BaseGraf.CreateSmallGraph := false;
    {$IfDef RecordClosing} WriteLineToDebugFile('TThreeDview.FormClose out'); {$EndIf}
 end;
@@ -1698,69 +1681,69 @@ var
    xgl,ygl,xgr,ygr,xg1,yg1,xg2,yg2,dxg1,dyg1,dxg2,dyg2,p,dist : float64;
    Results : tStringList;
 begin
-   with View3D do begin
-      Results := tStringList.Create;
-       if (DrapeMapUsing > 0) and (DrapingMaps[DrapeMapUsing] <> Nil) then begin
-         Results.Add('Spacing along the radial: ' + RealToString(RadialPointSpacing[DrapeMapUsing],-12,1) + ' m');
-         Results.Add('    DEM points per calculation:   ' + RealToString(RadialPointSpacing[DrapeMapUsing]/DEMGlb[DrapingMaps[DrapeMapUsing].MapDraw.DEMonMap].AverageYSpace,-8,2) );
-      end;
+   Results := tStringList.Create;
+    if (View3d.DrapeMapUsing > 0) and (View3d.DrapingMaps[View3d.DrapeMapUsing] <> Nil) then begin
+      Results.Add('Spacing along the radial: ' + RealToString(View3d.RadialPointSpacing[View3d.DrapeMapUsing],-12,1) + ' m');
+      Results.Add(' DEM points per calculation: ' + RealToString(View3d.RadialPointSpacing[View3d.DrapeMapUsing] /
+          DEMGlb[View3d.DrapingMaps[View3d.DrapeMapUsing].MapDraw.DEMonMap].AverageYSpace,-8,2) );
 
       {$IfDef ExSat}
       {$Else}
-      if (DrapeMapUsing > 0) and (DrapingMaps[DrapeMapUsing] <> Nil) and (DrapingMaps[DrapeMapUsing].MapDraw.ValidSatOnMap) then
-          with SatImage[DrapingMaps[DrapeMapUsing].MapDraw.SatOnMap] do
-         Results.Add('    Image points per calculation: ' + RealToString(RadialPointSpacing[DrapeMapUsing]/MetersPerPixel,-8,2) );
+         if (View3d.DrapingMaps[View3d.DrapeMapUsing].MapDraw.ValidSatOnMap) then
+             with SatImage[View3d.DrapingMaps[View3d.DrapeMapUsing].MapDraw.SatOnMap] do
+            Results.Add(' Image points per calculation: ' + RealToString(View3d.RadialPointSpacing[View3d.DrapeMapUsing]/MetersPerPixel,-8,2) );
       {$EndIf}
-
-      Results.Add('');
-      Results.Add('Tangential Spacing:');
-      Results.Add('');
-
-      if (DrapeMapUsing <> 0) and (DrapingMaps[DrapeMapUsing] <> Nil) then begin
-         s1 := '     Image    TimesImage';
-         s2 := '   Pixels   Pixels Shown';
-         s3 := '========================';
-      end;
-      Results.Add('  Profile   Distance   Viewport      DEM      Times DEM' + s1);
-      Results.Add('              (m)        (m)        pixels   Pixels shown' + s2);
-      Results.Add('=========================================================' + s3);
-
-      dxg1 := (LeftRearGridX - XGridRight) / NumPointsOnRay[DrapeMapUsing];
-      dyg1 := (LeftRearGridY - YGridRight) / NumPointsOnRay[DrapeMapUsing];
-      dxg2 := (RightRearGridX - XGridRight) / NumPointsOnRay[DrapeMapUsing];
-      dyg2 := (RightRearGridY - YGridRight) / NumPointsOnRay[DrapeMapUsing];
-
-      p:= PersOpts.PersFirstProfile;
-      while p <= ViewDepth do begin
-         j := round(p/ViewDepth * NumPointsOnRay[DrapeMapUsing]);
-         xg1 := XGridRight + j * dxg1;
-         yg1 := YGridRight + j * dyg1;
-         xg2 := XGridRight + j * dxg2;
-         yg2 := YGridRight + j * dyg2;
-         dist := sqrt(sqr(xg1-xg2) + sqr(yg1-yg2));
-         MenuStr := IntegerToString(j,5) + RealToString(p,12,1) + RealToString(dist*DEMGlb[DEMOnView].AverageSpace,12,1) + RealToString(dist,12,1) +
-             RealToString(ClientWidth/Dist,12,1) ;
-
-         {$IfDef ExSat}
-         {$Else}
-            if (DrapeMapUsing > 0) and (DrapingMaps[DrapeMapUsing] <> Nil) and (DrapingMaps[DrapeMapUsing].MapDraw.ValidSatOnMap) then begin
-               with SatImage[DrapingMaps[DrapeMapUsing].MapDraw.SatOnMap] do begin
-                  DrapingMaps[DrapeMapUsing].DEMGridToImageGrid(xg1,yg1,xgl,ygl);
-                  DrapingMaps[DrapeMapUsing].DEMGridToImageGrid(xg2,yg2,xgr,ygr);
-                  dist := sqrt(sqr(xgr-xgl) + sqr(ygr-ygl));
-                  MenuStr := MenuStr + RealToString(dist,12,1) + RealToString(ClientWidth/Dist,12,1) ;
-               end;
-            end;
-         {$EndIf}
-         Results.Add(MenuStr);
-         if (p < 1000) then p := p + 200
-         else if (p < 5000) then p := p + 500
-         else if (p < 15000) then p := p + 1000
-         else if (p < 50000) then p := p + 5000
-         else p := p + 10000;
-      end;
-      DisplayAndPurgeStringList(Results,'Perspective scaling');
    end;
+
+   Results.Add('');
+   Results.Add('Tangential Spacing:');
+   Results.Add('');
+
+
+   if (View3d.DrapeMapUsing <> 0) and (View3d.DrapingMaps[View3d.DrapeMapUsing] <> Nil) then begin
+      s1 := '     Image    TimesImage';
+      s2 := '   Pixels   Pixels Shown';
+      s3 := '========================';
+   end;
+   Results.Add('  Profile   Distance   Viewport      DEM      Times DEM' + s1);
+   Results.Add('              (m)        (m)        pixels   Pixels shown' + s2);
+   Results.Add('=========================================================' + s3);
+
+   dxg1 := (View3d.LeftRearGridX - View3d.XGridRight) / View3d.NumPointsOnRay[View3d.DrapeMapUsing];
+   dyg1 := (View3d.LeftRearGridY - View3d.YGridRight) / View3d.NumPointsOnRay[View3d.DrapeMapUsing];
+   dxg2 := (View3d.RightRearGridX - View3d.XGridRight) / View3d.NumPointsOnRay[View3d.DrapeMapUsing];
+   dyg2 := (View3d.RightRearGridY - View3d.YGridRight) / View3d.NumPointsOnRay[View3d.DrapeMapUsing];
+
+   p:= View3d.PersOpts.PersFirstProfile;
+   while p <= View3d.ViewDepth do begin
+      j := round(p/View3d.ViewDepth * View3d.NumPointsOnRay[View3d.DrapeMapUsing]);
+      xg1 := View3d.XGridRight + j * dxg1;
+      yg1 := View3d.YGridRight + j * dyg1;
+      xg2 := View3d.XGridRight + j * dxg2;
+      yg2 := View3d.YGridRight + j * dyg2;
+      dist := sqrt(sqr(xg1-xg2) + sqr(yg1-yg2));
+      MenuStr := IntegerToString(j,5) + RealToString(p,12,1) + RealToString(dist*DEMGlb[View3d.DEMOnView].AverageSpace,12,1) + RealToString(dist,12,1) +
+          RealToString(ClientWidth/Dist,12,1) ;
+
+      {$IfDef ExSat}
+      {$Else}
+         if (View3d.DrapeMapUsing > 0) and (View3d.DrapingMaps[View3d.DrapeMapUsing] <> Nil) and (View3d.DrapingMaps[View3d.DrapeMapUsing].MapDraw.ValidSatOnMap) then begin
+            with SatImage[View3d.DrapingMaps[View3d.DrapeMapUsing].MapDraw.SatOnMap] do begin
+               View3d.DrapingMaps[View3d.DrapeMapUsing].DEMGridToImageGrid(xg1,yg1,xgl,ygl);
+               View3d.DrapingMaps[View3d.DrapeMapUsing].DEMGridToImageGrid(xg2,yg2,xgr,ygr);
+               dist := sqrt(sqr(xgr-xgl) + sqr(ygr-ygl));
+               MenuStr := MenuStr + RealToString(dist,12,1) + RealToString(ClientWidth/Dist,12,1) ;
+            end;
+         end;
+      {$EndIf}
+      Results.Add(MenuStr);
+      if (p < 1000) then p := p + 200
+      else if (p < 5000) then p := p + 500
+      else if (p < 15000) then p := p + 1000
+      else if (p < 50000) then p := p + 5000
+      else p := p + 10000;
+   end;
+   DisplayAndPurgeStringList(Results,'Perspective scaling');
 end;
 
 procedure TThreeDview.SpeedButton8Click(Sender: TObject);
@@ -2045,9 +2028,9 @@ procedure TThreeDview.Pickday1Click(Sender: TObject);
 begin
 {$Else}
 var
-   Year,Month,Day : integer;
+   Year,Month,Day : word;
 begin
-   Month := -99;
+   //Month := -99;
    GetDate(Year,month,Day);
    ShowSunPath(AnnualJulianDay(Year,Month,Day));
 {$EndIf}

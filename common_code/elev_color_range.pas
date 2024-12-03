@@ -227,7 +227,7 @@ end;
 procedure TElevationRangeForm.Edit3Change(Sender: TObject);
 begin
    if Edit3.Enabled then CheckEditString(Edit3.Text,MDDef.MaxElevPercentile);
-   MapOwner.MapDraw.MaxMapElev := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElevation(MDDef.MaxElevPercentile);
+   MapOwner.MapDraw.MaxMapElev := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElev(MDDef.MaxElevPercentile);
    if MDdef.QuickMapRedraw then RedrawSpeedButton12Click(Sender)
    else MapOwner.MapDraw.NeedToRedraw := true;
 end;
@@ -235,7 +235,7 @@ end;
 procedure TElevationRangeForm.Edit4Change(Sender: TObject);
 begin
    if (Edit4.Enabled) then  CheckEditString(Edit4.Text,MDDef.MinElevPercentile);
-   MapOwner.MapDraw.MinMapElev := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElevation(MDDef.MinElevPercentile);
+   MapOwner.MapDraw.MinMapElev := DEMGlb[MapOwner.MapDraw.DEMonMap].FindPercentileElev(MDDef.MinElevPercentile);
    MapOwner.MapDraw.NeedToRedraw := true;
 end;
 

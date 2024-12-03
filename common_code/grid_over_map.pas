@@ -622,11 +622,11 @@ begin
 
 
          (*
-         ConvexityMeanCut := DEMGLB[ConvexGrid].FindPercentileElevation(MDDef.ConvexCut);
-         TextureMeanCut := DEMGLB[RoughGrid].FindPercentileElevation(MDDef.RoughnessCut);
-         SlopeMeanCut := DEMGLB[SlopeGrid].FindPercentileElevation(MDDef.SlopeCut1);
-         SlopeQuarterCut := DEMGLB[SlopeGrid].FindPercentileElevation(MDDef.SlopeCut2);
-         SlopeEigthCut := DEMGLB[SlopeGrid].FindPercentileElevation(MDDef.SlopeCut3);
+         ConvexityMeanCut := DEMGLB[ConvexGrid].FindPercentileElev(MDDef.ConvexCut);
+         TextureMeanCut := DEMGLB[RoughGrid].FindPercentileElev(MDDef.RoughnessCut);
+         SlopeMeanCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut1);
+         SlopeQuarterCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut2);
+         SlopeEigthCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut3);
          CloneImageToBitmap(BaseMap.Image1,bmp);
          StartProgress('Classify');
          for y := 0 to pred(bmp.Height) do begin
@@ -1477,12 +1477,12 @@ var
               begin
                  theGraph := TThisBaseGraph.Create(Application);
                  with theGraph,GraphDraw do begin
-                     MinHorizAxis := DEMGlb[xaxisDEM].FindPercentileElevation(MDDef.MinElevPercentile);
-                     MaxHorizAxis := DEMGlb[xaxisDEM].FindPercentileElevation(MDDef.MaxElevPercentile);
+                     MinHorizAxis := DEMGlb[xaxisDEM].FindPercentileElev(MDDef.MinElevPercentile);
+                     MaxHorizAxis := DEMGlb[xaxisDEM].FindPercentileElev(MDDef.MaxElevPercentile);
                      if MDDef.LabelEachGraph then HorizLabel := DEMGlb[xaxisDEM].AreaName;
 
-                     MinVertAxis := DEMGlb[yaxisDEM].FindPercentileElevation(MDDef.MinElevPercentile);
-                     MaxVertAxis := DEMGlb[yaxisDEM].FindPercentileElevation(MDDef.MaxElevPercentile);
+                     MinVertAxis := DEMGlb[yaxisDEM].FindPercentileElev(MDDef.MinElevPercentile);
+                     MaxVertAxis := DEMGlb[yaxisDEM].FindPercentileElev(MDDef.MaxElevPercentile);
                      if MDDef.LabelEachGraph then VertLabel := DEMGlb[yaxisDEM].AreaName;
                      //GraphDraw.DrawLowAxisValues := false;
                      SetUpGraphForm;

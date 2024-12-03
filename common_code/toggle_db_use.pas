@@ -304,6 +304,4 @@ end;
 
 initialization
 finalization
-   {$IfDef ShowToggle} WriteLineToDebugFile('FullShowtoggle active in toggle_db_use'); {$EndIf}
-   {$IfDef FullShowToggle} WriteLineToDebugFile('Showtoggle active in toggle_db_use'); {$EndIf}
 end.

@@ -119,7 +119,7 @@ type
          h_DatumCode  : ShortString;
          h_EllipsCode : ShortString;
          //VectorProjfName : PathStr;
-         ProjectionSharedWithDataset : boolean;
+         //ProjectionSharedWithDataset : boolean;
          wktProjName,
          pNameModifier,
          ProjDebugName : shortstring;
@@ -1174,17 +1174,19 @@ end;
 
 destructor tMapProjection.Destroy;
 begin
+   (*
    if ProjectionSharedWithDataset then begin
       {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy shared projection in, ' + ProjDebugName); {$EndIf}
    end
    else begin
+   *)
       {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy in, ' + ProjDebugName); {$EndIf}
       try
          inherited;
       except
          on Exception do begin end;
       end;
-   end;
+   //end;
    {$If Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Destroy out, ' + ProjDebugName); {$EndIf}
 end;
 
@@ -1194,7 +1196,7 @@ constructor tMapProjection.Create;
 begin
    {$If Defined(RecordProjectionParameters) or Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Create in, ' + DebugName); {$EndIf}
    ProjDebugName := DebugName;
-   ProjectionSharedWithDataset := false;
+   //ProjectionSharedWithDataset := false;
 
    FullWorld := true;
    GeoKeys.NumKeys := 0;

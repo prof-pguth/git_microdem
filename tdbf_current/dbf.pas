@@ -355,11 +355,7 @@ type
     function CompareBookmarks(Bookmark1, Bookmark2: TBookmark): Integer; override;
     procedure CheckDbfFieldDefs(ADbfFieldDefs: TDbfFieldDefs);
 
-    {$ifdef DELPHI_XE}
-    procedure DataEvent(Event: TDataEvent; Info: NativeInt); override;
-    {$else}
-    procedure DataEvent(Event: TDataEvent; Info: {$ifdef FPC_VERSION}Ptrint{$else}Longint{$endif}); override;
-    {$endif}
+    procedure DataEvent(Event: TDataEvent; Info: TDbfDataEventInfo); override;
 
     // my own methods and properties
     // most look like ttable functions but they are not tdataset related
@@ -597,7 +593,8 @@ begin
 //      TDbf(FBlobField.DataSet).SetModified(true);
       // is following better? seems to provide notification for user (from VCL)
       if not (FBlobField.DataSet.State in [dsCalcFields, dsFilter, dsNewValue]) then
-        TDbf(FBlobField.DataSet).DataEvent(deFieldChange, PtrInt(FBlobField));
+        TDbf(FBlobField.DataSet).DataEvent(deFieldChange,
+          TDbfDataEventInfo(FBlobField));
     end;
   end;
   Dec(FRefCount);
@@ -873,7 +870,7 @@ begin
       Dst[0] := #0;
   end;     { end of ***** fkCalculated, fkLookup ***** }
   if not (State in [dsCalcFields, dsFilter, dsNewValue]) then begin
-    DataEvent(deFieldChange, PtrInt(Field));
+    DataEvent(deFieldChange, TDbfDataEventInfo(Field));
   end;
 end;
 
@@ -1084,7 +1081,11 @@ var
 begin
   // check can modify
   if not CanModify then
+{$ifdef DELPHI_3}
     DatabaseError(SDataSetReadOnly, Self);
+{$else}
+    DatabaseError(SDataSetReadOnly);
+{$endif}
   // start editing
   if not(State in [dsEdit, dsInsert]) then
   begin
@@ -1573,15 +1574,22 @@ var
 begin
   if ADbfFieldDefs = nil then exit;
 
+  if ADbfFieldDefs.Count = 0 then
+    raise EDbfError.Create(STRING_INVALID_DBF_FILE);
   for I := 0 to ADbfFieldDefs.Count - 1 do
   begin
     // check dbffielddefs for errors
     TempDef := ADbfFieldDefs.Items[I];
-    if FTableLevel < 7 then begin
-      if not CharInSet(TempDef.NativeFieldType, ['C', 'F', 'N', 'D', 'L', 'M']) then
-        raise EDbfError.CreateFmt(STRING_INVALID_FIELD_TYPE,
-          [FieldTypeStr(TempDef.NativeFieldType), TempDef.FieldName]);
-      end;
+    if (TempDef.FieldType = ftUnknown) or ((FTableLevel < 7) and (not CharInSet(
+      TempDef.NativeFieldType, ['C', 'F', 'N', 'D', 'L', 'M']))) then
+      raise EDbfError.CreateFmt(STRING_INVALID_FIELD_TYPE,
+        [FieldTypeStr(TempDef.NativeFieldType), TempDef.FieldName]);
+    if TempDef.Size = 0 then
+{$ifdef DELPHI_3}
+      DatabaseError(SInvalidFieldSize, Self);
+{$else}
+      DatabaseError(SInvalidFieldSize);
+{$endif}
   end;
 end;
 
@@ -1624,6 +1632,9 @@ begin
           end;
         end;
       end;
+
+      // check field defs for errors
+      CheckDbfFieldDefs(ADbfFieldDefs);
 
       InitDbfFile(pfExclusiveCreate);
       FDbfFile.CopyDateTimeAsString := FInCopyFrom and FCopyDateTimeAsString;
@@ -1763,6 +1774,8 @@ begin
   end;
   // reselect index
   IndexName := oldIndexName;
+  // reset filter, to account for field defs being re-created
+  ParseFilter(Filter);
   // reset cursor position
   First;
 end;
@@ -3365,11 +3378,7 @@ begin
   FieldDefs.Update;
 end;
 
-{$ifdef DELPHI_XE}
-procedure TDbf.DataEvent(Event: TDataEvent; Info: NativeInt);
-{$else}
-procedure TDbf.DataEvent(Event: TDataEvent; Info: {$ifdef FPC_VERSION}Ptrint{$else}Longint{$endif});
-{$endif}
+procedure TDbf.DataEvent(Event: TDataEvent; Info: TDbfDataEventInfo);
 begin
   if ((Event = deDataSetChange) or (Event = deLayoutChange)) and Assigned(FDbfFile) and (not ControlsDisabled) then
     FDbfFile.ResyncSharedFlushBuffer;

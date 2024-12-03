@@ -52,7 +52,7 @@ var
    Ring2 : tSlopeAspectRec;
    Lat,Long : float64;
 
-         procedure GetAspect(var SlopeAsp : tSlopeAspectRec); inline;
+         procedure GetAspect(var SlopeAsp : tSlopeAspectRec); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          begin
             if (abs(SlopeAsp.dzdx) < 0.001) and (abs(SlopeAsp.dzdy) < 0.001) then begin
                SlopeAsp.AspectDir := MaxSmallInt;
@@ -63,10 +63,8 @@ var
                //modified atan2 function
                //   standard math convention puts 0 on the x axis and angles increases counterclockwise,
                //   use geographic conventions, where N (0) is on the y axis, and angles increase clockwise
-               SlopeAsp.AspectDirGrid := HeadingOfLine(SlopeAsp.dzdx,SlopeAsp.dzdy) + 180;
-               FindCompassAngleInRangeFloat32(SlopeAsp.AspectDirGrid);
-               SlopeAsp.AspectDir := SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle;
-               FindCompassAngleInRangeFloat32(SlopeAsp.AspectDir);
+               SlopeAsp.AspectDirGrid := FindCompassAngleInRangeFloat32(HeadingOfLine(SlopeAsp.dzdx,SlopeAsp.dzdy) + 180);   //for UTM and similar grids
+               SlopeAsp.AspectDir := FindCompassAngleInRangeFloat32(SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle);
                if IsPit(SlopeAsp) then begin
                   SlopeAsp.Dir := cdPit;
                end
@@ -75,52 +73,6 @@ var
                end;
             end;
          end;
-
-         (*
-         procedure ComputeSecondOrderPartials(var SlopeAsp : tSlopeAspectRec); inline;
-         var
-            s3,s4,s5,s6 : float64;
-         begin
-
-         //https://github.com/OSGeo/grass/blob/main/raster/r.slope.aspect/main.c#L954
-         //https://grass.osgeo.org/grass84/manuals/r.slope.aspect.html
-         //Horn's formula is used to find the first order derivatives in x and y directions; 2d order not specified.
-                                ____________________________
-                                |c1      |c2      |c3      |
-                                |        |  north |        |
-                                ----------------------------
-                                |c4      |c5      |c6      |
-                                |  west  | ns_med |  east  |
-                                ----------------------------
-                                |c7      |c8      |c9      |
-                                |        |  south |        |
-                                ----------------------------
-
-                dx = ((c1 + c4 + c4 + c7) - (c3 + c6 + c6 + c9)) / H;
-                dy = ((c7 + c8 + c8 + c9) - (c1 + c2 + c2 + c3)) / V;
-
-
-                /* compute second order derivatives */
-                             s3 = c7 - c9 + c3 - c1;
-                             s4 = c1 + c3 + c7 + c9 - c5 * 8.;
-                             s5 = c4 * 4. + c6 * 4. - c8 * 2. - c2 * 2.;
-                             s6 = c8 * 4. + c2 * 4. - c4 * 2. - c6 * 2.;
-
-                             dxx = -(s4 + s5) / ((3. / 32.) * H * H);
-                             dyy = -(s4 + s6) / ((3. / 32.) * V * V);
-                             dxy = -s3 / ((1. / 16.) * H * V);
-
-              with SlopeAsp do begin
-                 s3 := zsw - zse + zne - znw;
-                 s4 := znw + zne + zsw + zse - z * 8.0;
-                 s5 := zw * 4.0 + ze * 4.0 - zs * 2.0 - zn * 2.0;
-                 s6 := zs * 4.0 + zn * 4.0 - zw * 2.0 - ze * 2.0;
-              end;
-              SlopeAsp.dxx := -(s4 + s5) / ( (3.0 / 32.0) * 8 * SlopeAsp.dx * 8 * SlopeAsp.dx);
-              SlopeAsp.dyy := -(s4 + s6) / ( (3.0 / 32.0) * 8 * SlopeAsp.dy * 8 * SlopeAsp.dy);
-              SlopeAsp.dxy := -s3 / ( (1.0 / 16.0) * 8 * SlopeAsp.dx * 8 * SlopeAsp.dy);
-         end;
-         *)
 
 
 begin
@@ -150,9 +102,7 @@ begin
             dzdy := ( znw + (2 * zn) + zne  - zsw - (2 * zs) - zse) / (8 * dy);
          end;
 
-         if NeedSecondOrder then begin
-
-            // second order partial derivatives
+         if NeedSecondOrder then begin // second order partial derivatives needed for curvature
             if (not MDDef.CD2) and SurroundedPointElevs(Col,Row,Ring2.znw,Ring2.zw,Ring2.zsw,Ring2.zn,Ring2.z,Ring2.zs,Ring2.zne,Ring2.ze,Ring2.zse,2) then begin
                //CD1 method, getting the second order partials from a 5x5 window, which will be in the Ring2 elevations
                if (MDDef.SlopeAlgorithm = smZevenbergenThorne) then begin
@@ -167,7 +117,6 @@ begin
                   dxx := (Ring2.znw + 2 * Ring2.zw + Ring2.zsw + Ring2.zne + 2 * Ring2.ze + Ring2.zse - 2 * (Ring2.z + 2 * Ring2.zn + Ring2.zs)) / (8 * sqr(dx));
                   dyy := (Ring2.znw + 2 * Ring2.zn + Ring2.zne + Ring2.zsw + 2 * Ring2.zs + Ring2.zse - 2 * (Ring2.z + 2 * Ring2.ze + Ring2.zw)) / (8 * sqr(dx));
                end;
-               //this changed 11 October 2024
                dxy := (Ring2.zne - Ring2.znw + Ring2.zsw - Ring2.zse) / (4 * dy * dy);
            end
            else begin
@@ -184,12 +133,10 @@ begin
                   dxx := (znw + 2 * zw + zsw + zne + 2 * ze + zse - 2 * (z + 2 * zn + zs)) / (4 * sqr(dx));
                   dyy := (znw + 2 * zn + zne + zsw + 2 * zs + zse - 2 * (z + 2 * ze + zw)) / (4 * sqr(dx));
                end;
-               //this changed 11 October 2024
                dxy := (zne - znw + zsw - zse) / (4 * dx * dy);  //same for all 3 algorithms
             end;
          end;
       end;
-      //ComputeSecondOrderPartials(SlopeAsp);
       SlopeAsp.Slope := sqrt(sqr(SlopeAsp.dzdx) + sqr(SlopeAsp.dzdy));
       SlopeAsp.SlopePercent := 100 * SlopeAsp.Slope;
       SlopeAsp.SlopeDegree := ArcTan(SlopeAsp.Slope) / DegToRad;
@@ -596,29 +543,6 @@ begin
       n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
       n3 := cosDeg(SlopAsp.SlopeDegree);
    end;
-end;
-
-procedure tDEMDataSet.InitializeNormals(var NumPts : Integer);
-var
-   j,Col,Row     : integer;
-   ns : array[1..3] of float32;
-begin
-   if ValidDEM(Normals[1]) then exit;
-
-   {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit) or Defined(RecordSSO)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(VectorType))); {$EndIf}
-   for j := 1 to 3 do begin
-      if not ValidDEM(Normals[j]) then begin
-         Normals[j] := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_normals_' + IntToStr(j),euUndefined);
-      end;
-   end;
-      for Col := 0 to pred(DEMheader.NumCol) do begin
-         for Row := 0 to pred(DEMheader.NumRow) do begin
-            if NormalAtPoint(Col,Row,ns[1],ns[2],ns[3]) then begin
-               for j := 1 to 3 do DEMGlb[Normals[j]].SetGridElevation(Col,Row,ns[j]);
-            end;
-         end;
-      end;
-   {$If Defined(RecordDEMMemoryAllocations) or Defined(RecordNormalInit)or Defined(RecordSSO)} WriteLineToDebugFile('allocated tDEMDataSet.InitializeNormals'); {$EndIf}
 end;
 
 

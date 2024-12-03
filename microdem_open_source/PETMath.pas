@@ -75,6 +75,7 @@ function HeadingOfLine(dx,dy : float64) : float64; inline;
       procedure JulianDay(JDay,Year : integer; var Month,Day : integer);
       function JulDay(Month,Day,Year : Integer) : LongInt;  {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
       procedure CalDat(julian : LongInt; var Month,Day,Year: integer); {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
+      function JulianDayToCalendarDate(julian : LongInt) : shortstring;
 
 
 function Log10(x : float32) : float32;
@@ -1398,6 +1399,15 @@ begin
 end;
 
 
+function JulianDayToCalendarDate(julian : LongInt) : shortstring;
+var
+   Month,Day,Year: integer;
+begin
+   CalDat(julian,Month,Day,Year);
+   Result := IntToStr(Month) + '/' + IntToStr(Day) + '/' + IntToStr(Year);
+end;
+
+
 function AnnualJulianDay(Year,Month,Day : integer) : integer;
 begin
    Result := trunc(EncodeDate(year,month,day)) - TRUNC(EncodeDate(year,1,1)) + 1;
@@ -1534,7 +1544,7 @@ function FindCompassAngleInRangeFloat32(Angle : float32) : float32;  {insures an
 begin
    Result := Angle;
    while (Result >= 360) do Result := Result - 360;
-   while (Result < 0)   do Result := Result + 360;
+   while (Result < 0) do Result := Result + 360;
 end;
 
 function FindCompassAngleInRangeInteger(Angle : integer) : integer;  {insures angle in range 0..360  }

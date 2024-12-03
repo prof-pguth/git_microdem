@@ -43,7 +43,7 @@ procedure CompareTRI(DEM : integer; OpenMap : boolean = true);
 procedure CompareAspectMaps(DEM : integer; OpenMap : boolean = true);
 procedure CompareContourTorsion(DEM : integer);
 
-procedure CompareMICRODEMslopes(DEM : integer; OpenMap : boolean = true);
+procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
 procedure CompareMICRODEMSlopeMaps(DEM : integer);
 
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
@@ -84,9 +84,24 @@ const
    Use5x5 = false;
 
 
+      procedure PairCompareSSOforFeatures(OpenMap : boolean; DEM,DEM1,DEM2 : integer; Name : shortstring);
+      var
+         Diff,DiffCat : integer;
+      begin
+         Diff := MakeDifferenceMap(DEM1,DEM2,DEM1,0,OpenMap,false,false,Name);
+         DiffCat := DifferenceCategoryMap(Diff,Name,OpenMap);
+         MDDef.SSObyPole := true;
+         SSOforVATgrid(DiffCat,0,DEM);
+         MDDef.SSObyPole := false;
+         SSOforVATgrid(DiffCat,0,DEM);
+      end;
+
+
+
+
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
 var
-   NewMap : integer;
+   NewMap1,NewMap2,NewMap3,NewMap4,NewMap : integer;
    TStr : shortstring;
    DistanceNS,DistanceEW,DistanceAVG : float64;
    DEMList : tDEMBooleanArray;
@@ -98,21 +113,40 @@ begin
 
       InitializeDEMsWanted(DEMList,false);
       MDDef.SlopeAlgorithm := smHorn;
-      NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_2_spacing');
-      DEMList[NewMap] := true;
+      NewMap1 := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_2_spacing');
+      DEMList[NewMap1] := true;
       GDAL_testScaleFactor := ' -s ' + RealToString(DistanceAVG,-12,2);
-      NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_average.tif');
-      DEMList[NewMap] := true;
+      NewMap2 := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_average.tif');
+      DEMList[NewMap2] := true;
+
       GDAL_testScaleFactor := ' -s ' + RealToString(DistanceEW,-12,2);
-      NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_x_space.tif');
-      DEMList[NewMap] := true;
+      NewMap3 := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_x_space.tif');
+      DEMList[NewMap3] := true;
       GDAL_testScaleFactor := ' -s ' + RealToString(DistanceNS,-12,2);
-      NewMap := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_y_space.tif');
-      DEMList[NewMap] := true;
+      NewMap4 := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_y_space.tif');
+      DEMList[NewMap4] := true;
+
+(*
+      NewMap := MakeDifferenceMap(NewMap2,NewMap1,NewMap2,0,true,false,false,'GDAL_average_compared_MICRODEM_Horn');
+      DifferenceCategoryMap(NewMap,'GDAL_average_compared_MICRODEM_Horn');
+
+      NewMap := MakeDifferenceMap(NewMap3,NewMap1,NewMap3,0,true,false,false,'GDAL_x_space_compared_MICRODEM_Horn');
+      DifferenceCategoryMap(NewMap,'GDAL_x_space_compared_MICRODEM_Horn');
+
+      NewMap := MakeDifferenceMap(NewMap4,NewMap1,NewMap4,0,true,false,false,'GDAL_y_space_compared_MICRODEM_Horn');
+      DifferenceCategoryMap(NewMap,'GDAL_y_space_compared_MICRODEM_Horn');
+*)
+
+      PairCompareSSOforFeatures(OpenMap,NewMap2,NewMap1,NewMap1,'GDAL_average_compared_MICRODEM_Horn');
+      PairCompareSSOforFeatures(OpenMap,NewMap3,NewMap1,NewMap1,'GDAL_x_space_compared_MICRODEM_Horn');
+      PairCompareSSOforFeatures(OpenMap,NewMap4,NewMap1,NewMap1,'GDAL_y_space_compared_MICRODEM_Horn');
+
       TStr := DEMglb[DEM].AreaName + '_horn_geo_slope_histograms';
       Graph := CreateGridHistograms(DEMList,TStr,0);
       SaveBitmap(Graph.AddLegendBesideGraph,MDTempDir + TStr + '.png');
 
+
+      (*
       InitializeDEMsWanted(DEMList,false);
       MDDef.SlopeAlgorithm := smZevenbergenThorne;
       NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_2_spacing');
@@ -129,6 +163,8 @@ begin
       TStr := DEMglb[DEM].AreaName + '_zt_geo_slope_histograms';
       Graph := CreateGridHistograms(DEMList,TStr,0);
       SaveBitmap(Graph.AddLegendBesideGraph,MDTempDir + TStr + '.png');
+      *)
+
 
       RestoreBackupDefaults;
    end
@@ -138,24 +174,40 @@ begin
 end;
 
 
-procedure CompareMICRODEMslopes(DEM : integer; OpenMap : boolean = true);
-var
-   NewMap : integer;
+
+procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
 
    procedure OpenOneWindowSize(Which : shortstring; FilterSize : integer);
+   var
+      Evans,Horn,ZT,Diff,DiffCat : integer;
+      DEMList : tDEMBooleanArray;
+      TStr : shortstring;
+      Graph : tThisBaseGraph;
    begin
+      InitializeDEMsWanted(DEMList,false);
       MDDef.SlopeAlgorithm := smEvansYoung;
-      NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_evans_slope_' + Which,FilterSize);
+      Evans := CreateSlopeMapPercent(OpenMap,DEM,'md_evans_slope_' + Which,FilterSize);
+      DEMlist[Evans] := true;
       MDDef.SlopeAlgorithm := smHorn;
-      NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_' + Which,FilterSize);
+      Horn := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_' + Which,FilterSize);
+      DEMlist[Horn] := true;
       MDDef.SlopeAlgorithm := smZevenbergenThorne;
-      NewMap := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_' + Which,FilterSize);
+      ZT := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_' + Which,FilterSize);
+      DEMlist[ZT] := true;
+
+      TStr := DEMglb[DEM].AreaName + '_md_slope';
+      Graph := CreateGridHistograms(DEMList,TStr,0);
+      JustElevationMoments(DEMlist,TStr,true,true);
+
+      PairCompareSSOforFeatures(OpenMap,DEM,Evans,Horn,'Slope_Evans_Compared_Horn');
+      PairCompareSSOforFeatures(OpenMap,DEM,Evans,ZT,'Slope_Evans_Compared_ZT');
+      PairCompareSSOforFeatures(OpenMap,DEM,Horn,ZT,'Slope_Horn_Compared_ZT');
    end;
 
 begin
    SaveBackupDefaults;
-   OpenOneWindowSize('3x3',0);
-   OpenOneWindowSize('5x5',2);
+   if How in [3,99] then OpenOneWindowSize('3x3',0);
+   if How in [5,99] then OpenOneWindowSize('5x5',2);
    RestoreBackupDefaults;
 end;
 
@@ -179,24 +231,25 @@ var
    z : float32;
 begin
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile('FilterToFullAnalysisWindow using ' + DEMglb[DEM].AreaName + '  pts=' + IntToStr(DEMglb[DEM].ValidElevsInDEM)); {$EndIf}
-      MaskDEM := DEMglb[DEM].CloneAndOpenGridSetMissing(byteDEM,'Full_window_mask',euUndefined);
-
-      NumPts := 0;
-      for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
-         for y := 0 to pred(DEMglb[DEM].DEMHeader.NumRow) do begin
-            if DEMglb[DEM].FullAnalysisWindow(x,y,Fil) then begin
-               inc(NumPts);
-               DEMGlb[MaskDEM].SetGridElevation(x,y,1);
-            end
-            else DEMGlb[MaskDEM].SetGridMissing(x,y);
-         end;
+(*
+   MaskDEM := DEMglb[DEM].CloneAndOpenGridSetMissing(byteDEM,'Full_window_mask',euUndefined);
+   NumPts := 0;
+   for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
+      for y := 0 to pred(DEMglb[DEM].DEMHeader.NumRow) do begin
+         if DEMglb[DEM].FullAnalysisWindow(x,y,Fil) then begin
+            inc(NumPts);
+            DEMGlb[MaskDEM].SetGridElevation(x,y,1);
+         end
+         else DEMGlb[MaskDEM].SetGridMissing(x,y);
       end;
-      DEMglb[MaskDEM].CheckMaxMinElev;
+   end;
+   DEMglb[MaskDEM].CheckMaxMinElev;
    {$IfDef RecordCompareLSPs}
       WriteLineToDebugFile('FilterToFullAnalysisWindow using ' + DEMglb[DEM].AreaName + '  pts=' + IntToStr(DEMglb[DEM].ValidElevsInDEM) + ' filled=' + IntToStr(NumPts));
       WriteLineToDebugFile('Mask DEM=' + IntToStr(DEMglb[MaskDEM].ValidElevsInDEM));
    {$EndIf}
-
+*)
+   MaskDEM := MakeGridFullNeighborhoods(DEM,false,fil);
 
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) and DEMList[i] then begin
@@ -319,7 +372,7 @@ begin
    end;
    *)
    {$IfDef RecordCompareLSPs} DEMProjections('Leaving EndComparison'); {$EndIf}
-   {$IfDef RecordCompareLSPs} WriteLineToDebugFile(aCaption + ' EndComparison in'); {$EndIf}
+   {$IfDef RecordCompareLSPs} WriteLineToDebugFile(aCaption + ' EndComparison out'); {$EndIf}
 end;
 
 

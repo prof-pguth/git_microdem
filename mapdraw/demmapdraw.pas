@@ -1518,8 +1518,8 @@ begin
             MaxZColorDEM2 := DEMGlb[DEM].DEMheader.MaxElev;
          end
          else begin
-            MinZColorDEM2 := DEMGlb[DEM].FindPercentileElevation(MDDef.MinElevPercentile);
-            MaxZColorDEM2 := DEMGlb[DEM].FindPercentileElevation(MDDef.MaxElevPercentile);
+            MinZColorDEM2 := DEMGlb[DEM].FindPercentileElev(MDDef.MinElevPercentile);
+            MaxZColorDEM2 := DEMGlb[DEM].FindPercentileElev(MDDef.MaxElevPercentile);
          end;
       end
       else begin
@@ -1646,13 +1646,13 @@ begin
       MinMapElev := DEMGlb[DEMonMap].DEMheader.MinElev;
       MaxMapElev := DEMGlb[DEMonMap].DEMheader.MaxElev;
       if UsePercentiles or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euNanotesla]) then begin
-         MinMapElev := DEMGLB[DEMonMap].FindPercentileElevation(MDDef.MinElevPercentile);
-         MaxMapElev := DEMGLB[DEMonMap].FindPercentileElevation(MDDef.MaxElevPercentile);
+         MinMapElev := DEMGLB[DEMonMap].FindPercentileElev(MDDef.MinElevPercentile);
+         MaxMapElev := DEMGLB[DEMonMap].FindPercentileElev(MDDef.MaxElevPercentile);
          {$IfDef RecordElevationScaling} WriteLineToDebugFile('TMapDraw.ScaleMapElevationsToDEM percentiles' + MapZRangeString); {$EndIf}
       end
       else if (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euImagery]) then begin
-         MinMapElev := DEMGLB[DEMonMap].FindPercentileElevation(MDDef.MinImagePercentile);
-         MaxMapElev := DEMGLB[DEMonMap].FindPercentileElevation(MDDef.MaxImagePercentile);
+         MinMapElev := DEMGLB[DEMonMap].FindPercentileElev(MDDef.MinImagePercentile);
+         MaxMapElev := DEMGLB[DEMonMap].FindPercentileElev(MDDef.MaxImagePercentile);
          {$IfDef RecordElevationScaling} WriteLineToDebugFile('TMapDraw.ScaleMapElevationsToDEM imagery percentiles' + MapZRangeString); {$EndIf}
       end
       else begin

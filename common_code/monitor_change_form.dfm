@@ -27,7 +27,6 @@ object ChangeMapForm: TChangeMapForm
     ActivePage = TabSheet2
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 555
     object Single: TTabSheet
       Caption = 'Single cuttoff'
       object Label1: TLabel
@@ -123,8 +122,6 @@ object ChangeMapForm: TChangeMapForm
     Height = 97
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 328
-    ExplicitWidth = 555
     object RedrawSpeedButton12: TSpeedButton
       Left = 254
       Top = 64

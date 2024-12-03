@@ -360,7 +360,14 @@ begin
       SetMapOverlays;
       MapDraw.ResetMarginalia;
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow after ResetMarginalia current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-      MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
+
+
+      (*
+      //MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
+      HighlightLineToDebugFile('{TMapForm.SetUpNewDEMMapWindow} removed ProjectionSharedWithDataset');
+      *)
+
+
       {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow before DrawIt, mt=' + IntToStr(mt)); {$EndIf}
       if DrawIt then begin
          try

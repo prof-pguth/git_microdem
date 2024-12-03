@@ -5,7 +5,7 @@ object NetOptFm: TNetOptFm
   BorderStyle = bsDialog
   Caption = 'Stereo Net Options'
   ClientHeight = 279
-  ClientWidth = 516
+  ClientWidth = 577
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -18,10 +18,17 @@ object NetOptFm: TNetOptFm
   object Bevel1: TBevel
     Left = 8
     Top = 8
-    Width = 489
+    Width = 545
     Height = 224
     Shape = bsFrame
     IsControl = True
+  end
+  object Label1: TLabel
+    Left = 176
+    Top = 200
+    Width = 140
+    Height = 13
+    Caption = 'Contour counting radius '
   end
   object OKBtn: TBitBtn
     Left = 45
@@ -57,7 +64,7 @@ object NetOptFm: TNetOptFm
     TabOrder = 2
   end
   object RadioGroup1: TRadioGroup
-    Left = 247
+    Left = 268
     Top = 88
     Width = 78
     Height = 97
@@ -72,7 +79,7 @@ object NetOptFm: TNetOptFm
     OnClick = RadioGroup1Click
   end
   object RadioGroup2: TRadioGroup
-    Left = 152
+    Left = 173
     Top = 88
     Width = 89
     Height = 97
@@ -95,15 +102,13 @@ object NetOptFm: TNetOptFm
       'Spectrum'
       'Rainbow'
       'Terrain'
-      'Gray Scale'
-      'Contrast B&&W'
-      'Gray Dither')
+      'Gray Scale')
     TabOrder = 5
   end
   object RadioGroup4: TRadioGroup
     Left = 25
     Top = 88
-    Width = 121
+    Width = 142
     Height = 113
     Caption = 'Net size'
     Items.Strings = (
@@ -159,7 +164,7 @@ object NetOptFm: TNetOptFm
     OnClick = RadioGroup6Click
   end
   object BitBtn1: TBitBtn
-    Left = 352
+    Left = 416
     Top = 192
     Width = 75
     Height = 25
@@ -178,5 +183,13 @@ object NetOptFm: TNetOptFm
     Spacing = -1
     TabOrder = 12
     IsControl = True
+  end
+  object Edit1: TEdit
+    Left = 320
+    Top = 200
+    Width = 73
+    Height = 21
+    TabOrder = 13
+    Text = 'Edit1'
   end
 end

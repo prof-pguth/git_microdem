@@ -129,8 +129,6 @@ begin
          AreaName := Areas.Strings[i];
          OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,true);
          LoadLandcoverForDEMIXarea(AreaName);
-         //WBT_CreateDEMIX_GeomorphonGrids(true);
-         //OpenGridsCreatedByExternalProgram(True,'saga',AreaName,'CONIN_',PointGrids,AreaGrids);
          {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('Opened ' + Areas.Strings[i] + ' Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen) + ' OpenMaps=' + IntToStr(NumOpenMaps)); {$EndIf}
       end;
    finally
@@ -157,7 +155,6 @@ procedure CompareConvergenceIndex(AreaName : ShortString);
 
 begin
    GetDEMIXpaths(false);
-   //OpenNewDEM(DEMIX_test_dems + AreaName + '_cop.tif');
    TryToOpen(wbt_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif', 'wbt_ref_conin_'+ AreaName);
    TryToOpen(wbt_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'wbt_COP_conin_'+ AreaName);
    TryToOpen(saga_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif','saga_ref_conin_'+ AreaName);

@@ -23,8 +23,6 @@ object showrecordform: Tshowrecordform
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 494
-    ExplicitWidth = 1155
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -34,7 +32,6 @@ object showrecordform: Tshowrecordform
     ButtonHeight = 21
     Caption = 'ToolBar1'
     TabOrder = 1
-    ExplicitWidth = 1155
     object BitBtn1: TBitBtn
       Left = 0
       Top = 0
@@ -279,8 +276,6 @@ object showrecordform: Tshowrecordform
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 2
-    ExplicitWidth = 1155
-    ExplicitHeight = 465
     object TabSheet1: TTabSheet
       Caption = 'Database'
       object StringGrid1: TStringGrid
@@ -294,8 +289,6 @@ object showrecordform: Tshowrecordform
         DefaultRowHeight = 16
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing, goRowMoving, goColMoving]
         TabOrder = 0
-        ExplicitWidth = 1147
-        ExplicitHeight = 437
         ColWidths = (
           120
           120)
@@ -313,10 +306,12 @@ object showrecordform: Tshowrecordform
       object Memo1: TMemo
         Left = 0
         Top = 0
-        Width = 1183
-        Height = 476
+        Width = 1210
+        Height = 453
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1183
+        ExplicitHeight = 476
       end
     end
     object TabSheet3DProf: TTabSheet
@@ -325,8 +320,8 @@ object showrecordform: Tshowrecordform
       object Image2: TImage
         Left = 0
         Top = 0
-        Width = 1183
-        Height = 476
+        Width = 1210
+        Height = 453
         Align = alClient
         OnMouseDown = Image2MouseDown
         ExplicitLeft = 8
@@ -341,10 +336,12 @@ object showrecordform: Tshowrecordform
       object Memo3: TMemo
         Left = 0
         Top = 0
-        Width = 1183
-        Height = 476
+        Width = 1210
+        Height = 453
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1183
+        ExplicitHeight = 476
       end
     end
     object TabSheet5: TTabSheet
@@ -353,8 +350,8 @@ object showrecordform: Tshowrecordform
       object Image1: TImage
         Left = 0
         Top = 0
-        Width = 1183
-        Height = 476
+        Width = 1210
+        Height = 453
         Align = alClient
         OnMouseDown = Image1MouseDown
         ExplicitLeft = 8
@@ -375,59 +372,19 @@ object showrecordform: Tshowrecordform
         TabOrder = 0
       end
     end
-    object TabSheet3: TTabSheet
-      Caption = 'SSO diagram'
-      ImageIndex = 6
-      object Image3: TImage
-        Left = 0
-        Top = 0
-        Width = 1183
-        Height = 476
-        Align = alClient
-        ExplicitWidth = 105
-        ExplicitHeight = 105
-      end
-    end
-    object TabSheet7: TTabSheet
-      Caption = 'Aspect diagram'
-      ImageIndex = 7
-      object Image4: TImage
-        Left = 0
-        Top = 0
-        Width = 1183
-        Height = 476
-        Align = alClient
-        ExplicitLeft = 8
-        ExplicitWidth = 105
-        ExplicitHeight = 105
-      end
-    end
     object TabSheet8: TTabSheet
       Caption = 'Time series'
       ImageIndex = 8
       object Image5: TImage
         Left = 0
         Top = 0
-        Width = 1183
-        Height = 476
+        Width = 1210
+        Height = 453
         Align = alClient
         OnDblClick = Image5DblClick
         OnMouseDown = Image5MouseDown
         ExplicitLeft = 16
         ExplicitTop = 8
-        ExplicitWidth = 105
-        ExplicitHeight = 105
-      end
-    end
-    object TabSheet9: TTabSheet
-      Caption = 'Blow up map'
-      ImageIndex = 9
-      object Image6: TImage
-        Left = 0
-        Top = 0
-        Width = 1183
-        Height = 476
-        Align = alClient
         ExplicitWidth = 105
         ExplicitHeight = 105
       end

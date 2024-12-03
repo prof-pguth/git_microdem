@@ -379,5 +379,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordThreePoint} WriteLineToDebugFile('RecordThreePoint active in three_point_problem'); {$EndIf}
 end.

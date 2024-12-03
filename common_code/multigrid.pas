@@ -910,7 +910,7 @@ begin
       UpdateProgressBar(i/NumGrids);
       StripLandsatName(DEMGlb[Grids[i]].AreaName, ls, JD,Year,DecYear);
       if ByJD then TStr := IntToStr(Year) else TStr := RealToString(DecYear,-12,-4);
-      if ByPercentile then TStr2 := RealToString(DEMGlb[Grids[i]].FindPercentileElevation(PC),-12,-3)
+      if ByPercentile then TStr2 := RealToString(DEMGlb[Grids[i]].FindPercentileElev(PC),-12,-3)
       else TStr2 := RealToString(DEMGlb[Grids[i]].PercentileOfElevation(PC),-12,-3);
       sl.Add(IntToStr(JD) + ',' +TStr2 + ',' + LS + ',' + TStr);
    end;
@@ -2038,13 +2038,13 @@ begin
       if (i mod 10 = 0) then UpdateProgressBar(i/NumGrids);
       if Bands then TStr := IntToStr(i) else TStr := DEMGlb[Grids[i]].AreaName;
       Results.Add( TStr + ',' +  RealToString(DEMheader.MinElev,-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(0.1),-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(1),-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(50),-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(75),-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(95),-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(99),-18,-4)  + ',' +
-           RealToString(FindPercentileElevation(99.9),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(0.1),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(1),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(50),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(75),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(95),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(99),-18,-4)  + ',' +
+           RealToString(FindPercentileElev(99.9),-18,-4)  + ',' +
            RealToString(DEMheader.MaxElev,-18,-4) );
    end;
    fName := MDTempDir + 'key_percentiles.csv';

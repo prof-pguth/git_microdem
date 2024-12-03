@@ -136,8 +136,8 @@ var
       procedure DisplayString(Findings : String; WindowTitle : shortString; ListenToClear : boolean = false);
       procedure QuickOpenEditWindow(FName : PathStr; WindowCaption : ANSIstring; ListenToClear : boolean = false; AddLineNumbers : boolean = false);
 
-      procedure GetDate(var Month,Day,Year : integer);
-      procedure GetDateAndDuration(var Month,Day,Year,Duration : integer; ShowDuration : boolean = true);
+      procedure GetDate(var Month,Day,Year : word);
+      procedure GetDateAndDuration(var Month,Day,Year,Duration : word; ShowDuration : boolean = true);
 
       procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
       procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  byte); overload;
@@ -1788,18 +1788,18 @@ end;
             end;
          end;
 
-         procedure GetDate(var Month,Day,Year : integer);
+         procedure GetDate(var Month,Day,Year : word);
          var
-            Duration : integer;
+            Duration : word;
          begin
             GetDateAndDuration(Month,Day,Year,Duration,false);
          end;
 
-         procedure GetDateAndDuration(var Month,Day,Year,Duration : integer; ShowDuration : boolean = true);
+         procedure GetDateAndDuration(var Month,Day,Year,Duration : word; ShowDuration : boolean = true);
          var
             iMonth,iDay,iYear : word;
          begin
-            if Month = -99 then begin
+            if Month = 99 then begin
                DecodeDate(Now,iYear,iMonth,iDay);
                Year := iYear;
                Month := iMonth;

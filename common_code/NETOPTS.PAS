@@ -16,6 +16,7 @@ interface
 
 uses
    Windows, Classes, Graphics, Forms, Controls, Buttons, StdCtrls,
+   System.SysUtils,
    NetMainW, Vcl.ExtCtrls;
 
 type
@@ -34,6 +35,8 @@ type
     RadioGroup6: TRadioGroup;
     BitBtn1: TBitBtn;
     CancelBtn: TBitBtn;
+    Label1: TLabel;
+    Edit1: TEdit;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -80,6 +83,7 @@ begin
        CheckBox3.Checked := CenterTick;
        RadioGroup1.ItemIndex := 2;
        ColorLineWidthBitBtn(BitBtn1,MDDef.NetDef.NetLineColor,MDDef.NetDef.NetLineWidth);
+       Edit1.Text := IntToStr(MDDef.NetDef.CountRadius);
 
        if (NetScreenMult > 6) then NetScreenMult := 6;
        if (NetScreenMult < 1) then NetScreenMult := 1;
@@ -115,9 +119,9 @@ begin
    if UpdateNow then begin
       MDDef.NetDef.DrawGridCircles := tNetGrid(RadioGroup2.ItemIndex);
       MDDef.NetDef.NetScreenMult := succ(RadioGroup4.ItemIndex);
-      MDDef.NetDef.NetUsed := NetType(RadioGroup6.ItemIndex);
+      MDDef.NetDef.NetUsed := tNetType(RadioGroup6.ItemIndex);
       MDDef.NetDef.HemisphereUsed := tHemisphere(RadioGroup5.ItemIndex);
-
+      CheckEditString(Edit1.Text,MDDef.NetDef.CountRadius);
       case RadioGroup1.ItemIndex of
           0 : MDDef.NetDef.CircleGridIncrement := 30;
           1 : MDDef.NetDef.CircleGridIncrement := 15;

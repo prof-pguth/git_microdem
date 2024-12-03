@@ -27,6 +27,7 @@ type
   TDbfParser = class(TCustomExpressionParser)
   private
     FDbfFile: Pointer;
+    FDeletedVariable: TVariable;
     FFieldVarList: TStringList;
     FIsExpression: Boolean;       // expression or simple field?
     FFieldType: TExpressionType;
@@ -80,6 +81,11 @@ uses
   dbf,
   dbf_dbffile,
   dbf_str;
+
+procedure FuncDeleted(Param: PExpressionRec);
+begin
+  PBoolean(Param^.Res.MemoryPos^)^ := False;
+end;
 
 procedure FuncRecNo(Param: PExpressionRec);
 begin
@@ -384,6 +390,26 @@ begin
     FFieldVal := lFieldVal <> 0;
 end;
 
+//--TDeletedVariable---------------------------------------------------------
+type
+  TDeletedVariable = class(TBooleanVariable)
+  private
+    FIsDeleted: Boolean;
+  public
+    constructor Create; reintroduce;
+    procedure Refresh(Buffer: PAnsiChar);
+  end;
+
+constructor TDeletedVariable.Create;
+begin
+  inherited Create(EmptyStr, @FIsDeleted, nil, nil);
+end;
+
+procedure TDeletedVariable.Refresh(Buffer: PAnsiChar);
+begin
+  FIsDeleted := Buffer^ = '*';
+end;
+
 //--TRecNoVariable-----------------------------------------------------------
 type
   TRecNoVariable = class(TIntegerVariable)
@@ -422,6 +448,7 @@ begin
   ClearExpressions;
   inherited;
   FreeAndNil(FFieldVarList);
+  FreeAndNil(FDeletedVariable);
   FreeAndNil(FRecNoVariable);
 end;
 
@@ -520,6 +547,8 @@ begin
       FWordsList.AddList(DbfWordsSensNoPartialList, 0, DbfWordsSensNoPartialList.Count - 1);
     end;
   end;
+  FWordsList.Add(TVaryingFunction.Create('DELETED', '', '', 0, etBoolean,
+    FuncDeleted, ''));
   FWordsList.Add(TVaryingFunction.Create('RECNO', '', '', 0, etInteger, FuncRecNo, ''));
   if Length(lExpression) > 0 then
     ParseExpression(lExpression);
@@ -661,6 +690,8 @@ begin
   // prepare all field variables
   for I := 0 to FFieldVarList.Count - 1 do
     TFieldVar(FFieldVarList.Objects[I]).Refresh(Buffer);
+  if Assigned(FDeletedVariable) then
+    TDeletedVariable(FDeletedVariable).Refresh(Buffer);
   if Assigned(FRecNoVariable) then
     TRecNoVariable(FRecNoVariable).Refresh(RecNo);
 
@@ -728,7 +759,34 @@ var
   NewExprRec: PExpressionRec;
   Variable: TVariable;
 begin
-  if @ExprRec.Oper = @FuncRecNo then
+  if @ExprRec.Oper = @FuncDeleted then
+  begin
+    NewExprRec := MakeRec;
+    try
+      if Assigned(FDeletedVariable) then
+        Variable := FDeletedVariable
+      else
+        Variable := TDeletedVariable.Create;
+      try
+        NewExprRec.ExprWord := Variable;
+        NewExprRec.Oper := NewExprRec.ExprWord.ExprFunc;
+        NewExprRec.Args[0] := NewExprRec.ExprWord.AsPointer;
+        NewExprRec.IsNullPtr := @NewExprRec.IsNull;
+        CurrentRec := nil;
+        DisposeList(ExprRec);
+        ExprRec := NewExprRec;
+      except
+        if not Assigned(FDeletedVariable) then
+          FreeAndNil(Variable);
+        raise;
+      end;
+      FDeletedVariable := Variable;
+    except
+      DisposeList(NewExprRec);
+      raise;
+    end;
+  end
+  else if @ExprRec.Oper = @FuncRecNo then
   begin
     NewExprRec := MakeRec;
     try

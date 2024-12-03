@@ -660,8 +660,9 @@ var
 begin
    Result := nil;
    if (TheFiles.Count > 0) then begin
+      if nc <= 1 then nc := 1;
       nr := theFiles.Count div nc;
-      if (nr = 0) or ((theFiles.Count mod nc) > 0) then inc(nr);
+      if nr <= 0 then nr := 1;
       BigWidth := 0;
       BigHeight := 0;
       for n := 0 to pred(theFiles.Count) do begin

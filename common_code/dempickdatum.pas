@@ -128,8 +128,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing dempickdatum in'); {$EndIf}
-   {$IfDef PickDatumProblems} WriteLineToDebugFile('PickDatumProblems active in dempickdatum'); {$EndIf}
 end.
 
 

@@ -102,6 +102,7 @@ type
    function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr): integer;
+
    function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
    function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;

@@ -24,8 +24,9 @@
 
    {$IFDEF DEBUG}
       //{$Define RecordFan}
-      {$Define RecordScattergram}
-      {$Define RecordOutlinePixels}
+      //{$Define RecordScattergram}
+      //{$Define RecordOutlinePixels}
+      {$Define RecordSSOforVATgrid}
       //{$Define RecordTiming}
       //{$Define Record3d}
       //{$Define TrackWKTstring}
@@ -35,16 +36,16 @@
       //{$Define RecordMapClosing}
       //{$Define RecordClosing}
       //{$Define RecordDerivedGrids}
-      {$Define RecordMapProj}
+      //{$Define RecordMapProj}
       //{$Define RecordMatchMaps}
       //{$Define RecordSat}
       //{$Define RecordVAT}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackDEMCorners}
-      {$Define RecordResample}
-      {$Define RecordCarto}
+      //{$Define RecordResample}
+      //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
-      {$Define RecordBigMap}
+      //{$Define RecordBigMap}
       //{$Define RecordBigMapFont}
       //{$Define RecordLegend}
       //{$Define RecordVAT}
@@ -598,7 +599,6 @@ type
     RGBthreeparametermap1: TMenuItem;
     Accumulatedcostsurface1: TMenuItem;
     Leastcostpath1: TMenuItem;
-    //DEMSpeedButton25: TSpeedButton;
     MaskGrid1: TMenuItem;
     ReplacevalueswithreferenceDEM1: TMenuItem;
     Labelboth1: TMenuItem;
@@ -619,7 +619,6 @@ type
     Reregisterimage1: TMenuItem;
     Matchimage1: TMenuItem;
     AnaglyphSpeedButton: TSpeedButton;
-    //FennemanProvinces1: TMenuItem;
     Createbitmapmask1: TMenuItem;
     N7: TMenuItem;
     Latituderange1: TMenuItem;
@@ -662,7 +661,6 @@ type
     Bandratio1: TMenuItem;
     Spectrallibrarygraph1: TMenuItem;
     Createtablefromimage1: TMenuItem;
-    Dif: TMenuItem;
     ModifyMapAreaPopupMenu: TPopupMenu;
     Customimagesize1: TMenuItem;
     ZoomIn2: TMenuItem;
@@ -857,13 +855,10 @@ type
     N32: TMenuItem;
     Allcurvatures1: TMenuItem;
     QuarterDEM1: TMenuItem;
-    //FavoriteDEM11: TMenuItem;
-    //FavoriteDEM21: TMenuItem;
     UTMspecifyzone1: TMenuItem;
     Loadsecondvegeationlayers1: TMenuItem;
     Minimumoftwogrids1: TMenuItem;
     Statistics1: TMenuItem;
-   // OpenGLpointcloud1: TMenuItem;
     LASexport1: TMenuItem;
     LoadLOStopoprofile1: TMenuItem;
     Loadvegetationgrid21: TMenuItem;
@@ -933,7 +928,6 @@ type
     Rastertovector1: TMenuItem;
     Mask2: TMenuItem;
     Verifyelevationrange1: TMenuItem;
-   // GDALresamplethin1: TMenuItem;
     Ransacplane1: TMenuItem;
     Erodedilate1: TMenuItem;
     LinedetectionHoughtransform1: TMenuItem;
@@ -941,7 +935,6 @@ type
     NAN1: TMenuItem;
     LinedetectionHoughtransform2: TMenuItem;
     Numberimmediateneighbors1: TMenuItem;
-    //Neighborhoodvalues1: TMenuItem;
     Singlevalue2: TMenuItem;
     IDFeatures1: TMenuItem;
     Gridmigration1: TMenuItem;
@@ -967,7 +960,6 @@ type
     Radianstodegrees1: TMenuItem;
     Tangentradians1: TMenuItem;
     Tangentdegrees1: TMenuItem;
-    //auDEMtools1: TMenuItem;
     Locationsonly1: TMenuItem;
     Values1: TMenuItem;
     Profiles1: TMenuItem;
@@ -978,9 +970,7 @@ type
     Gridinfile1: TMenuItem;
     N34: TMenuItem;
     SpeedButton3: TSpeedButton;
-    //renchslabdips1: TMenuItem;
     renches1: TMenuItem;
-    //Slabdepths1: TMenuItem;
     Maxmeanmingridsfrompointdata1: TMenuItem;
     SpeedButton8: TSpeedButton;
     NLCD19921: TMenuItem;
@@ -1001,7 +991,6 @@ type
     Lookatpoints1: TMenuItem;
     Ensembleclassification1: TMenuItem;
     Isolatedvalues1: TMenuItem;
-    //Removeifmissingneighbors1: TMenuItem;
     Removetoofewsimilarneighbors1: TMenuItem;
     Sunabovethehorizon2: TMenuItem;
     Magneticnorthlines1: TMenuItem;
@@ -1050,7 +1039,6 @@ type
     Quickclassfication1: TMenuItem;
     Surveytracklines1: TMenuItem;
     Createsurveylines1: TMenuItem;
-    //Algorithms1: TMenuItem;
     Allslopeaspect1: TMenuItem;
     N36: TMenuItem;
     Popuplegends1: TMenuItem;
@@ -1065,8 +1053,6 @@ type
     Openness1: TMenuItem;
     Opennessoptions1: TMenuItem;
     LoadOSMoverlay1: TMenuItem;
-    Featuregeomorphometry2: TMenuItem;
-    Creategrid1: TMenuItem;
     Createdatabase2: TMenuItem;
     Loaddatabase1: TMenuItem;
     BitmapandXYZBfile1: TMenuItem;
@@ -1100,7 +1086,6 @@ type
     Offcurrentmap1: TMenuItem;
     PLSSlocation1: TMenuItem;
     CompareDNconversions1: TMenuItem;
-    //Nightlights20161: TMenuItem;
     IwashishiandPikeclassification1: TMenuItem;
     GDALtranslatesubset1: TMenuItem;
     Orfeotoolbox1: TMenuItem;
@@ -1109,9 +1094,6 @@ type
     Segmentation1: TMenuItem;
     LCCstandardparallels1: TMenuItem;
     Mapprojectionzones1: TMenuItem;
-    //USSPCS1: TMenuItem;
-    //MGRSUSNG6x8zones1: TMenuItem;
-    //UTM100Kzones1: TMenuItem;
     Maximizeforscreen1: TMenuItem;
     N1: TMenuItem;
     Streammodetolerance1: TMenuItem;
@@ -1119,13 +1101,11 @@ type
     GDALwarpsubset1: TMenuItem;
     N12: TMenuItem;
     Bandcorrelation1: TMenuItem;
-    //Falsecolorpansharpen1: TMenuItem;
     RVTgridcreation1: TMenuItem;
     CurrentsubsetGeotiff1: TMenuItem;
     Whiteboxfillholes1: TMenuItem;
     Gaussianpyramiddownsample1: TMenuItem;
     All11scale1: TMenuItem;
-    //OpenGLdrapeonanotherDEM1: TMenuItem;
     Reinterpolatealltosameresolution1: TMenuItem;
     Allsamepixelsizeasthismap1: TMenuItem;
     Allsamedisplay1: TMenuItem;
@@ -1140,7 +1120,6 @@ type
     Quickrotatemap1: TMenuItem;
     Set0tomissingandresave1: TMenuItem;
     Koppenclimograph1: TMenuItem;
-    //Hurricanes1: TMenuItem;
     UStornadoes1: TMenuItem;
     Slopemm1: TMenuItem;
     Annualsunrisesunset2: TMenuItem;
@@ -1209,7 +1188,6 @@ type
     Restorerangecircles1: TMenuItem;
     Annualsolarelevation1: TMenuItem;
     NDBIbuiltup1: TMenuItem;
-    //Definedcategories1: TMenuItem;
     Fixedpalettestats1: TMenuItem;
     N19: TMenuItem;
     N24: TMenuItem;
@@ -1297,7 +1275,6 @@ type
     Mapdirectsolarillumination1: TMenuItem;
     Sunandsatellitevisibilityandblocking1: TMenuItem;
     Geoid1: TMenuItem;
-    //Exportmaplibrary1: TMenuItem;
     Pixelsize1: TMenuItem;
     Cartographu1: TMenuItem;
     EGM1996toEGM20081: TMenuItem;
@@ -1318,7 +1295,6 @@ type
     GDALTRIRileyterrestrial1: TMenuItem;
     GDALTPI1: TMenuItem;
     GDALroughness1: TMenuItem;
-    N49: TMenuItem;
     Moonriseset1: TMenuItem;
     N50: TMenuItem;
     GRASSslopeHorn1: TMenuItem;
@@ -1377,7 +1353,6 @@ type
     Maskothergridstomatchthisone1: TMenuItem;
     GRASSTPI1: TMenuItem;
     StdDevinregion2: TMenuItem;
-    //GetGRASSextensions1: TMenuItem;
     Roundtobyterangepercentiles1: TMenuItem;
     Unitconversions1: TMenuItem;
     Rangeshifts1: TMenuItem;
@@ -1560,7 +1535,6 @@ type
     Diagonalgridspacingcomparison1: TMenuItem;
     Algorithmcomparisons1: TMenuItem;
     SSOdiagramnormalstosurface1: TMenuItem;
-    //Filtersoutthe7x7inmeters1: TMenuItem;
     Comparehillshades1: TMenuItem;
     SSOdiagramdownhilldirections1: TMenuItem;
     Curvature2: TMenuItem;
@@ -1603,15 +1577,34 @@ type
     N72: TMenuItem;
     MergeICESat2photonsATL031: TMenuItem;
     N73: TMenuItem;
-    N74: TMenuItem;
     N75: TMenuItem;
-    N76: TMenuItem;
     Contourtorsion1: TMenuItem;
     Comparecontourtorsion1: TMenuItem;
     Geomorphomtery1: TMenuItem;
     Aspectbyslopecategories1: TMenuItem;
     Compareworkinggeographicslopealgorithms1: TMenuItem;
-    //procedure HiresintervisibilityDEM1Click(Sender: TObject);
+    SSOdiagramnormalsbycategories1: TMenuItem;
+    N77: TMenuItem;
+    Percentagechangedifferencebetweentwogrids1: TMenuItem;
+    N78: TMenuItem;
+    N79: TMenuItem;
+    SelectmultipleDEMsgrids1: TMenuItem;
+    PercentdifferencewitheachDEMasinterpolationbasis1: TMenuItem;
+    SSOcountingradiuscomparison1: TMenuItem;
+    Overlaypickdate1: TMenuItem;
+    Overlaytoday1: TMenuItem;
+    Overlayselectedday1: TMenuItem;
+    Overlaytoday2: TMenuItem;
+    N3x3window1: TMenuItem;
+    N5x5window1: TMenuItem;
+    N7x7window1: TMenuItem;
+    Allthreewindows1: TMenuItem;
+    N3x3window2: TMenuItem;
+    N5x5window2: TMenuItem;
+    Bothwindows1: TMenuItem;
+    N49: TMenuItem;
+    ElevMoments1: TMenuItem;
+    Elevationslopemoments1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -1713,14 +1706,11 @@ type
     procedure Colors2Click(Sender: TObject);
     procedure Erasersize1Click(Sender: TObject);
     procedure GDALinfo1Click(Sender: TObject);
-    //procedure Rasteraftersubsettomatchthismapextent1Click(Sender: TObject);
     procedure GDALtranslatesubset1Click(Sender: TObject);
     procedure ContoursShapefile1Click(Sender: TObject);
     procedure GDALslopemap1Click(Sender: TObject);
     procedure GDALslopemapHorn1Click(Sender: TObject);
     procedure Whiteboxaspectmap1Click(Sender: TObject);
-   // procedure GDALaspectmapZevenbergenThorne1Click(Sender: TObject);
-    //procedure GDALaspectmapHorn1Click(Sender: TObject);
     procedure Whiteboxfillholes2Click(Sender: TObject);
     procedure Gridoutlines1Click(Sender: TObject);
     procedure N1pixel2Click(Sender: TObject);
@@ -1744,8 +1734,6 @@ procedure GDALwarpsubset1Click(Sender: TObject);
 
 procedure CreateMedianDNgrid1Click(Sender: TObject);
 
-
-    //procedure Datumshift1Click(Sender: TObject);
     procedure Grainmovie1Click(Sender: TObject);
     procedure DEMcolormerge1Click(Sender: TObject);
     procedure Closepolyline1Click(Sender: TObject);
@@ -1756,21 +1744,14 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Savemapwithworldfile1Click(Sender: TObject);
     procedure TIGERoptions1Click(Sender: TObject);
     procedure Loadprojection2Click(Sender: TObject);
-    //procedure Saveprojection2Click(Sender: TObject);
-    //procedure Modifyprojection1Click(Sender: TObject);
     procedure Reflectanceoptions1Click(Sender: TObject);
     procedure Slopecategories2Click(Sender: TObject);
     procedure RightClickContourIntervalClick(Sender: TObject);
     procedure Elevationcolors1Click(Sender: TObject);
-    //procedure Grid1Click(Sender: TObject);
     procedure Displayparameter1Click(Sender: TObject);
-    //procedure Loadroute1Click(Sender: TObject);
-    //procedure DEMSpeedButton25Click(Sender: TObject);
     procedure TIGERVectorlegend1Click(Sender: TObject);
-    //procedure Editroute1Click(Sender: TObject);
     procedure Routeobservation1Click(Sender: TObject);
     procedure Replayflightroute1Click(Sender: TObject);
-    //procedure Mapcorners1Click(Sender: TObject);
     procedure Removemerge1Click(Sender: TObject);
     procedure DrawColoredMap1Click(Sender: TObject);
     procedure Area1Click(Sender: TObject);
@@ -1798,12 +1779,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure NoZoom1Click(Sender: TObject);
     procedure ZoomOut2Click(Sender: TObject);
     procedure Plateboundaries1Click(Sender: TObject);
-    //procedure Interpolatesatellitecolors1Click(Sender: TObject);
     procedure N11view1Click(Sender: TObject);
     procedure Mergecolorscene1Click(Sender: TObject);
     procedure Pointsshapefile1Click(Sender: TObject);
     procedure Clearmap1Click(Sender: TObject);
-    //procedure AllTIGER1Click(Sender: TObject);
     procedure Copytoclipboard1Click(Sender: TObject);
     procedure AnnotateSpeedButton1Click(Sender: TObject);
     procedure Militaryicons1Click(Sender: TObject);
@@ -1813,7 +1792,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Earthquakes1Click(Sender: TObject);
     procedure Volcanoes1Click(Sender: TObject);
     procedure SetDEMwithmap1Click(Sender: TObject);
-    //procedure Pointslopealgorithm1Click(Sender: TObject);
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure MapLibSpeedButtonClick(Sender: TObject);
     procedure Keyboard1Click(Sender: TObject);
@@ -1853,7 +1831,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Overlaysvariableopaque1Click(Sender: TObject);
     procedure Geologysymbols1Click(Sender: TObject);
     procedure Usecurrentsubset1Click(Sender: TObject);
-    //procedure Combinecurrentimages1Click(Sender: TObject);
     procedure Geodeticbearing1Click(Sender: TObject);
     procedure UTMgridtruenorthdeclination1Click(Sender: TObject);
     procedure Font1Click(Sender: TObject);
@@ -1886,7 +1863,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Derivativegrid1Click(Sender: TObject);
     procedure Slope3Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
-    //procedure Filtered1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure Slopesin1Click(Sender: TObject);
     procedure Minimumcurvature1Click(Sender: TObject);
@@ -1902,14 +1878,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure BIL1Click(Sender: TObject);
     procedure Gridfloat1Click(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
-    //procedure FennemanProvinces1Click(Sender: TObject);
-    //procedure StatePlaneCoordinateSystem1Click(Sender: TObject);
     procedure Dataheader1Click(Sender: TObject);
     procedure Editpointelevations1Click(Sender: TObject);
     procedure DRGanaglyph1Click(Sender: TObject);
-    //procedure UScounty1Click(Sender: TObject);
     procedure Openimage1Click(Sender: TObject);
-    //procedure Scatterplotoftwogrids2Click(Sender: TObject);
     procedure Downhillvectors1Click(Sender: TObject);
     procedure Terrainblowup1Click(Sender: TObject);
     procedure SpeedButton4Click(Sender: TObject);
@@ -1918,11 +1890,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SpeedButton5Click(Sender: TObject);
     procedure Contributingarea1Click(Sender: TObject);
     procedure Fansensitivity1Click(Sender: TObject);
-    //procedure LabelTIGERroads1Click(Sender: TObject);
-    //procedure LocateTIGERRoad1Click(Sender: TObject);
     procedure Hotspots1Click(Sender: TObject);
     procedure Agedepthcurve1Click(Sender: TObject);
-   // procedure SpeedButton6Click(Sender: TObject);
     procedure Structuralgeologycomputations1Click(Sender: TObject);
     procedure Projectfocalmechanismtosurface1Click(Sender: TObject);
     procedure DEMelevationmap1Click(Sender: TObject);
@@ -1956,7 +1925,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure SpeedButton12Click(Sender: TObject);
     procedure SpeedButton13Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
-    //procedure MrSidSpeedButtonClick(Sender: TObject);
     procedure Legendsmarginalia1Click(Sender: TObject);
     procedure Geographicquadrangle1Click(Sender: TObject);
     procedure RGBthreeparametermap1Click(Sender: TObject);
@@ -1982,7 +1950,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Createbitmapmask1Click(Sender: TObject);
     procedure Latituderange1Click(Sender: TObject);
     procedure Gazetteerlegend1Click(Sender: TObject);
-    //procedure Landcovercategories1Click(Sender: TObject);
     procedure Missingpointsinmatchinggrid1Click(Sender: TObject);
     procedure Outlinecoveragearea1Click(Sender: TObject);
     procedure Areaofsinglecolor1Click(Sender: TObject);
@@ -2020,7 +1987,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Newband1Click(Sender: TObject);
     procedure Spectrallibrarygraph1Click(Sender: TObject);
     procedure Createtablefromimage1Click(Sender: TObject);
-    procedure DifClick(Sender: TObject);
     procedure Maparea1Click(Sender: TObject);
     procedure Modifymaparea1Click(Sender: TObject);
     procedure ZoomIn2Click(Sender: TObject);
@@ -2046,13 +2012,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DBFfile1Click(Sender: TObject);
     procedure Worldfileimages1Click(Sender: TObject);
     procedure Tools1Click(Sender: TObject);
-    //procedure VegetationobstaclegridfromNBCD20001Click(Sender: TObject);
     procedure GeoTIFF1Click(Sender: TObject);
     procedure Forceredrawbasemaplayer1Click(Sender: TObject);
     procedure Mergeallimages1Click(Sender: TObject);
     procedure Batchrequiredantennaheights1Click(Sender: TObject);
     procedure Peakislandarea1Click(Sender: TObject);
-    //procedure LandFiregrid1Click(Sender: TObject);
     procedure RidgesClick(Sender: TObject);
     procedure Maskmap1Click(Sender: TObject);
     procedure Editgazetteersymbology1Click(Sender: TObject);
@@ -2075,7 +2039,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Parametricisotropicsmoothing1Click(Sender: TObject);
     procedure Imagenegative1Click(Sender: TObject);
     procedure LatlongofPLSSposition1Click(Sender: TObject);
-    //procedure Addtoshapefile1Click(Sender: TObject);
     procedure Colorsfromgridcategories1Click(Sender: TObject);
     procedure Normalizeparameter1Click(Sender: TObject);
     procedure ModifyTIGERdisplay1Click(Sender: TObject);
@@ -2089,7 +2052,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Panel1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure Highend1Click(Sender: TObject);
     procedure Lowend1Click(Sender: TObject);
-    //procedure NLCD1992grid1Click(Sender: TObject);
     procedure Singlevalue1Click(Sender: TObject);
     procedure Removemissingpointsinmask1Click(Sender: TObject);
     procedure AquastatClimate1Click(Sender: TObject);
@@ -2146,7 +2108,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure UTM1Click(Sender: TObject);
     procedure LatLong1Click(Sender: TObject);
     procedure Exportcomputations1Click(Sender: TObject);
-    //procedure NLCD2006grid1Click(Sender: TObject);
     procedure Streams1Click(Sender: TObject);
     procedure Allterraincategories1Click(Sender: TObject);
     procedure PortionofDEMwithdata1Click(Sender: TObject);
@@ -2199,7 +2160,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Integercode1Click(Sender: TObject);
     procedure KoppenClimateStations1Click(Sender: TObject);
     procedure Globalmonthlywinds1Click(Sender: TObject);
-    //procedure Recentworldpiracy1Click(Sender: TObject);
     procedure Latitudinalscalebars1Click(Sender: TObject);
     procedure Koppengrid1Click(Sender: TObject);
     procedure Level0countries1Click(Sender: TObject);
@@ -2227,7 +2187,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Filledneighborhood1Click(Sender: TObject);
     procedure CreateMinDNgrid1Click(Sender: TObject);
     procedure Averagereflectanceinregion1Click(Sender: TObject);
-    //procedure Cloudbrightening1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure Missingpoints1Click(Sender: TObject);
     procedure Validpoints1Click(Sender: TObject);
@@ -2239,14 +2198,12 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Pointsfromdatabase1Click(Sender: TObject);
     procedure Roads1Click(Sender: TObject);
     procedure Allvalidtosinglevalue1Click(Sender: TObject);
-    //procedure Classbydistance1Click(Sender: TObject);
     procedure Logbase10transform1Click(Sender: TObject);
     procedure Lntransform1Click(Sender: TObject);
     procedure Immediateneighbordropoff1Click(Sender: TObject);
     procedure Rastertovector1Click(Sender: TObject);
     procedure Mask2Click(Sender: TObject);
     procedure Verifyelevationrange1Click(Sender: TObject);
-    //procedure GDALresamplethin1Click(Sender: TObject);
     procedure Ransacplane1Click(Sender: TObject);
     procedure Erodedilate1Click(Sender: TObject);
     procedure LinedetectionHoughtransform1Click(Sender: TObject);
@@ -2264,7 +2221,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Loadfeaturegrid1Click(Sender: TObject);
     procedure PNG1Click(Sender: TObject);
     procedure JSON1Click(Sender: TObject);
-   // procedure idegaugesandsealevelrise1Click(Sender: TObject);
     procedure Globalmonthlytemperatures1Click(Sender: TObject);
     procedure Globalmonthlyrain1Click(Sender: TObject);
     procedure Western1Click(Sender: TObject);
@@ -2283,8 +2239,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Opengrid2Click(Sender: TObject);
     procedure Gridinfile1Click(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
-    //procedure renchslabdips1Click(Sender: TObject);
-    //procedure Slabdepths1Click(Sender: TObject);
     procedure Maxmeanmingridsfrompointdata1Click(Sender: TObject);
     procedure SpeedButton8Click(Sender: TObject);
     procedure NLCD19921Click(Sender: TObject);
@@ -2301,7 +2255,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Loadsummarymultipleclassifications1Click(Sender: TObject);
     procedure Lookatpoints1Click(Sender: TObject);
     procedure Ensembleclassification1Click(Sender: TObject);
-    //procedure Removeifmissingneighbors1Click(Sender: TObject);
     procedure Removetoofewsimilarneighbors1Click(Sender: TObject);
     procedure Sunabovethehorizon2Click(Sender: TObject);
     procedure Magneticnorthlines1Click(Sender: TObject);
@@ -2311,13 +2264,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Direction01361Click(Sender: TObject);
     procedure ArcGIScodes11281Click(Sender: TObject);
     procedure auDEMcode181Click(Sender: TObject);
-    //procedure Timemaps1Click(Sender: TObject);
     procedure Randomsamplingpoints1Click(Sender: TObject);
     procedure PointcloudtoGoogleEarth1Click(Sender: TObject);
     procedure PointcloudtoOpenGL1Click(Sender: TObject);
     procedure CreatefilterforUTMsquare1Click(Sender: TObject);
     procedure Coastlines1Click(Sender: TObject);
-    //procedure Areahistogram1Click(Sender: TObject);
     procedure ospecifiedlongitude1Click(Sender: TObject);
     procedure Periods1Click(Sender: TObject);
     procedure Epochs1Click(Sender: TObject);
@@ -2345,7 +2296,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Quickclassfication1Click(Sender: TObject);
     procedure Surveytracklines1Click(Sender: TObject);
     procedure Createsurveylines1Click(Sender: TObject);
-    //procedure Copyregistrationfiles1Click(Sender: TObject);
     procedure Algorithms1Click(Sender: TObject);
     procedure Allslopeaspect1Click(Sender: TObject);
     procedure Popuplegends1Click(Sender: TObject);
@@ -2357,7 +2307,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Openness1Click(Sender: TObject);
     procedure Opennessoptions1Click(Sender: TObject);
     procedure LoadOSMoverlay1Click(Sender: TObject);
-    procedure Creategrid1Click(Sender: TObject);
     procedure Createdatabase2Click(Sender: TObject);
     procedure Loaddatabase1Click(Sender: TObject);
     procedure BitmapandXYZBfile1Click(Sender: TObject);
@@ -2381,32 +2330,21 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Endtrack1Click(Sender: TObject);
     procedure ConvertUKOSDEMtoUTM1Click(Sender: TObject);
     procedure oGeographic1Click(Sender: TObject);
-    //procedure Zio1Click(Sender: TObject);
     procedure Offcurrentmap1Click(Sender: TObject);
     procedure PLSSlocation1Click(Sender: TObject);
     procedure CompareDNconversions1Click(Sender: TObject);
-    //procedure Nightlights20161Click(Sender: TObject);
     procedure Concatenateimages1Click(Sender: TObject);
     procedure Kmeansclustering1Click(Sender: TObject);
     procedure Segmentation1Click(Sender: TObject);
     procedure LCCstandardparallels1Click(Sender: TObject);
-    //procedure USSPCS1Click(Sender: TObject);
-    //procedure MGRSUSNG6x8zones1Click(Sender: TObject);
-    //procedure UTM100Kzones1Click(Sender: TObject);
     procedure Maximizeforscreen1Click(Sender: TObject);
     procedure Streammodetolerance1Click(Sender: TObject);
     procedure MergemultipleCSVTXTfiles1Click(Sender: TObject);
-   // procedure GDALwarpsubset1Click(Sender: TObject);
-   // procedure Bandcorrelation1Click(Sender: TObject);
-    //procedure Falsecolorpansharpen1Click(Sender: TObject);
-    //procedure auDEMtools1Click(Sender: TObject);
     procedure RVTgridcreation1Click(Sender: TObject);
-    procedure Aspectdifference1Click(Sender: TObject);
     procedure CurrentsubsetGeotiff1Click(Sender: TObject);
     procedure Whiteboxfillholes1Click(Sender: TObject);
     procedure Gaussianpyramiddownsample1Click(Sender: TObject);
     procedure All11scale1Click(Sender: TObject);
-    //procedure OpenGLdrapeonanotherDEM1Click(Sender: TObject);
     procedure Reinterpolatealltosameresolution1Click(Sender: TObject);
     procedure Allsamepixelsizeasthismap1Click(Sender: TObject);
     procedure Allsamedisplay1Click(Sender: TObject);
@@ -2419,7 +2357,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Quickrotatemap1Click(Sender: TObject);
     procedure Set0tomissingandresave1Click(Sender: TObject);
     procedure Koppenclimograph1Click(Sender: TObject);
-    // Hurricanes1Click(Sender: TObject);
     procedure UStornadoes1Click(Sender: TObject);
     procedure Slopemm1Click(Sender: TObject);
     procedure Annualsunrisesunset2Click(Sender: TObject);
@@ -2484,7 +2421,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Restorerangecircles1Click(Sender: TObject);
     procedure Annualsolarelevation1Click(Sender: TObject);
     procedure NDBIbuiltup1Click(Sender: TObject);
-    //procedure Definedcategories1Click(Sender: TObject);
     procedure Fixedpalettestats1Click(Sender: TObject);
     procedure Allgraphs1Click(Sender: TObject);
     procedure ClimographandETO1Click(Sender: TObject);
@@ -2538,7 +2474,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Sunandsatellitevisibilityandblocking1Click(Sender: TObject);
     procedure Geoid1Click(Sender: TObject);
     procedure Mapdirectsolarillumination1Click(Sender: TObject);
-    //procedure Exportmaplibrary1Click(Sender: TObject);
     procedure Pixelsize1Click(Sender: TObject);
     procedure EGM1996toEGM20081Click(Sender: TObject);
     procedure Horizontalshift1Click(Sender: TObject);
@@ -2601,7 +2536,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Gaussian1Click(Sender: TObject);
     procedure Maskothergridstomatchthisone1Click(Sender: TObject);
     procedure GRASSTPI1Click(Sender: TObject);
-    //procedure GetGRASSextensions1Click(Sender: TObject);
     procedure StdDevinregion2Click(Sender: TObject);
     procedure Roundtobyterangepercentiles1Click(Sender: TObject);
     procedure N3x3region1Click(Sender: TObject);
@@ -2780,22 +2714,39 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Scattergrams1Click(Sender: TObject);
     procedure Differencemaps1Click(Sender: TObject);
     procedure Correlationmatrix1Click(Sender: TObject);
-    //procedure MADmatrix2Click(Sender: TObject);
     procedure MADmatrix1Click(Sender: TObject);
     procedure PixelsinlowresDEMs1Click(Sender: TObject);
     procedure MAvDmatrixaveragedifferences1Click(Sender: TObject);
-    procedure CompareMICRODEMslopealgorithms1Click(Sender: TObject);
     procedure N3DdrapemultiplegridsonthisDEM1Click(Sender: TObject);
     procedure CompareGDALslopespacingapproximations1Click(Sender: TObject);
     procedure N72Click(Sender: TObject);
     procedure MergeICESat2photonsATL031Click(Sender: TObject);
-    procedure N74Click(Sender: TObject);
-    procedure N76Click(Sender: TObject);
+    //procedure N74Click(Sender: TObject);
+    //procedure N76Click(Sender: TObject);
     procedure Contourtorsion1Click(Sender: TObject);
     procedure Comparecontourtorsion1Click(Sender: TObject);
     procedure Aspectbyslopecategories1Click(Sender: TObject);
     procedure Compareworkinggeographicslopealgorithms1Click(Sender: TObject);
-    //procedure RescaleallDEMsforSSIM1Click(Sender: TObject);
+    procedure SSOdiagramnormalsbycategories1Click(Sender: TObject);
+    procedure Percentagechangedifferencebetweentwogrids1Click(Sender: TObject);
+    procedure N79Click(Sender: TObject);
+    procedure SelectmultipleDEMsgrids1Click(Sender: TObject);
+    procedure PercentdifferencewitheachDEMasinterpolationbasis1Click(
+      Sender: TObject);
+    procedure SSOcountingradiuscomparison1Click(Sender: TObject);
+    procedure Overlaypickdate1Click(Sender: TObject);
+    procedure Overlaytoday2Click(Sender: TObject);
+    procedure Overlayselectedday1Click(Sender: TObject);
+    procedure Overlaytoday1Click(Sender: TObject);
+    procedure N3x3window1Click(Sender: TObject);
+    procedure N5x5window1Click(Sender: TObject);
+    procedure N7x7window1Click(Sender: TObject);
+    procedure Allthreewindows1Click(Sender: TObject);
+    procedure N3x3window2Click(Sender: TObject);
+    procedure N5x5window2Click(Sender: TObject);
+    procedure Bothwindows1Click(Sender: TObject);
+    procedure Elevationslopemoments1Click(Sender: TObject);
+    procedure ElevMoments1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3905,11 +3856,6 @@ end;
 procedure TMapForm.CompareGDALslopespacingapproximations1Click(Sender: TObject);
 begin
    CompareGDAL_ScaleFactorsForSlope(MapDraw.DEMonMap);
-end;
-
-procedure TMapForm.CompareMICRODEMslopealgorithms1Click(Sender: TObject);
-begin
-   CompareMICRODEMslopes(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.MAvDmatrixaveragedifferences1Click(Sender: TObject);
@@ -6360,7 +6306,7 @@ begin
    try
       HeavyDutyProcessing := true;
       for i := 1 to MaxDEMDataSets do if DoDEM[i] then begin
-         NewDEM := MakeDifferenceMapOfBoxRegion(MapDraw.DEMonMap,i,MapDraw.DEMonMap,0,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,true,false,false,'Delta ' + DEMGlb[i].AreaName + ' minus ' + DEMGlb[MapDraw.DEMonMap].AreaName);
+         NewDEM := MakeDifferenceMap(MapDraw.DEMonMap,i,MapDraw.DEMonMap,0,true,false,false,'Delta ' + DEMGlb[i].AreaName + '_minus_' + DEMGlb[MapDraw.DEMonMap].AreaName);
          Results.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[NewDEM].SelectionMap.ComputeRMSE,-12,2));
       end;
    finally
@@ -6422,20 +6368,6 @@ end;
 procedure TMapForm.Aspectbyslopecategories1Click(Sender: TObject);
 begin
    AspectDistributionBySlope(MapDraw.DEMonMap,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits);
-end;
-
-procedure TMapForm.Aspectdifference1Click(Sender: TObject);
-{$IfDef ExGeoStats}
-begin
-{$Else}
-var
-   AspectDEM : integer;
-begin
-   AspectDEM := MakeAspectMap(true,MapDraw.DEMonMap);
-   AspectDifferenceMap(AspectDEM,1,DEMGlb[AspectDEM].FullDEMGridLimits);
-   AspectDifferenceMap(AspectDEM,2,DEMGlb[AspectDEM].FullDEMGridLimits);
-   AspectDifferenceMap(AspectDEM,3,DEMGlb[AspectDEM].FullDEMGridLimits);
-{$EndIf}
 end;
 
 
@@ -6862,57 +6794,6 @@ begin
 end;
 
 
-procedure TMapForm.Creategrid1Click(Sender: TObject);
-{$IfDef ExGeostats}
-begin
-{$Else}
-var
-   fLoX,fHiX,fLoY,fHiY, UseDEM,x2,y2,i,ID,NewDEM: integer;
-   z,z2 : float32;
-   WantedField : ShortString;
-begin
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('TMapForm.Creategrid1Click in FeaturesDB=' + FeaturesDB.ToString); {$EndIf}
-   if (FeaturesDB = 0) or (GISdb[FeaturesDB] = Nil) then exit;
-   WantedField := GISdb[FeaturesDB].PickField('Field for grid',NumericFieldTypes);
-   if WantedField = '' then exit;
-
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('  WantedField=' + WantedField); {$EndIf}
-
-   if (DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid = 0) then UseDEM := MapDraw.DEMonMap
-   else UseDEM := DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid;
-
-   NewDEM := DEMGlb[UseDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,WantedField,euUndefined);
-   i := 0;
-   StartProgress('Features');
-   GISdb[FeaturesDB].MyData.First;
-   GISdb[FeaturesDB].EmpSource.Enabled := false;
-   while not GISdb[FeaturesDB].MyData.eof do begin
-      inc(i);
-      if (i mod 25 = 0) then UpdateProgressBar(i/GISdb[FeaturesDB].MyData.FiltRecsInDB);
-      z2 := GISdb[FeaturesDB].MyData.GetFieldByNameAsFloat(WantedField);
-      fLoX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMIN');
-      fHiX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMAX');
-      fLoY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMIN');
-      fHiY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMAX');
-      ID :=GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger(RecNoFName);
-      for x2 := fLoX to fHiX do begin
-        for y2 := fLoY to fHiY do begin
-             if DEMGLB[UseDEM].GetElevMetersOnGrid(x2,y2,z) and (round(z) = ID) then begin
-                DEMGlb[NewDEM].SetGridElevation(x2,y2,z2);
-             end;
-        end;
-      end;
-      GISdb[FeaturesDB].MyData.Next;
-   end;
-   EndProgress;
-   GISdb[FeaturesDB].dbTablef.ShowStatus;
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('Computations done, FeaturesDB=' + FeaturesDB.ToString); {$EndIf}
-   DEMGlb[NewDEM].SetUpMap(true,mtElevSpectrum);
-   {$IfDef RecordCreateGeomorphMaps} WriteLineToDebugFile('TMapForm.Creategrid1Click out FeaturesDB=' + FeaturesDB.ToString); {$EndIf}
-{$EndIf}
-end;
-
-
 procedure TMapForm.Immediateneighbordropoff1Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
@@ -7076,60 +6957,20 @@ begin
    MICRODEM_partialDerivatives(MapDraw.DEMonMap,Grids);
 end;
 
+
 procedure TMapForm.FeatureGeomorphometry1Click(Sender: TObject);
-{$IfDef ExGeostats}
-begin
-{$Else}
 var
-   fLoX,fHiX,fLoY,fHiY, ElevDEM,x2,y2,i,ID : integer;
-   s1s2,s2s3,Trend,RoughnessFactor,DownDip : float64;
-   z,MinZ,MaxZ : float32;
+   FeaturesDB : integer;
 begin
-  if FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName) and ValidDB(FeaturesDB) then begin
-      GetDEM(ElevDEM,false,'elevation DEM');
-      if (ElevDEM <> 0) then begin
-         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'RELIEF',10,2);
-         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'S2S3',8,3);
-         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'TREND',5,1);
-         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'ROUGHNESS',8,3);
-         GISdb[FeaturesDB].AddFieldToDataBase(ftFloat,'DOWN_DIP',5,1);
-         i := 0;
-         StartProgress('Features');
-         while not GISdb[FeaturesDB].MyData.eof do begin
-            inc(i);
-            if (i mod 25 = 0) then UpdateProgressBar(i/GISdb[FeaturesDB].MyData.FiltRecsInDB);
-            fLoX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMIN');
-            fHiX := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_XMAX');
-            fLoY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMIN');
-            fHiY := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('BOUND_YMAX');
-            ID := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger(RecNoFName);
-            MinZ := 99999;
-            MaxZ := -99999;
-            for x2 := fLoX to fHiX do begin
-              for y2 := fLoY to fHiY do begin
-                   if DEMGLB[MapDraw.DEMonMap].GetElevMetersOnGrid(x2,y2,z) and (round(z) = ID) then begin
-                      if DEMGLB[ElevDEM].GetElevMetersOnGrid(x2,y2,z) then PetMath.CompareValueToExtremes(z,MinZ,MaxZ);
-                   end;
-              end;
-            end;
-            z := MaxZ - MinZ;
-            if (z > 0) then begin
-               GISdb[FeaturesDB].MyData.Edit;
-               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('RELIEF',z);
-            end;
-            if DEMGLB[ElevDEM].FeatureSSOComputations(MapDraw.DEMonMap,ID,fLoX,fLoY,fHiX,fHiY, s1s2,s2s3,Trend,RoughnessFactor,DownDip) then begin
-               GISdb[FeaturesDB].MyData.Edit;
-               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('S2S3',s2s3);
-               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('TREND',Trend);
-               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('DOWN_DIP',DownDip);
-               GISdb[FeaturesDB].MyData.SetFieldByNameAsFloat('ROUGHNESS',RoughnessFactor);
-            end;
-            GISdb[FeaturesDB].MyData.Next;
-         end;
-         EndProgress;
-      end;
-  end;
-{$EndIf}
+   {$IfDef RecordSSOforVATgrid} WriteLineToDebugFile('TMapForm.FeatureGeomorphometry1Click in'); {$EndIf}
+   if FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName) then begin
+      {$IfDef RecordSSOforVATgrid} WriteLineToDebugFile('FeatureDEM=' + DEMGlb[MapDraw.DEMonMap].AreaName); {$EndIf}
+      FeaturesDB := LoadDataBaseFile(DEMGlb[MapDraw.DEMonMap].VATFileName);
+      SetColorForProcessing;
+      SSOforVATgrid(MapDraw.DEMonMap,FeaturesDB,0);
+      SetColorForWaiting;
+   end;
+   {$IfDef RecordSSOforVATgrid} WriteLineToDebugFile('TMapForm.FeatureGeomorphometry1Click out'); {$EndIf}
 end;
 
 
@@ -7207,13 +7048,9 @@ procedure TMapForm.Grainbyregionsize2Click(Sender: TObject);
 {$IfDef ExGeoStats}
 begin
 {$Else}
-//var
-   //xDEMg1,yDEMg1 : float64;
 begin
    DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,FabricOptions.xDEMg1,FabricOptions.yDEMg1);
    Grainbyregionsize1Click(Sender);
-   //FabricOptions.xDEMg1 := xdemg1;
-   //FabricOptions.yDEMg1 := ydemg1;
    FigureGrainByRegionSize(round(xDEMg1),round(yDEMg1));
 {$EndIf}
 end;
@@ -7250,10 +7087,9 @@ var
       {$Else}
          WavelengthMean,WavelengthMedian,WavelengthStdDev,HeightMean,HeightMedian,HeightStd,//,Distance,Relief,
       {$EndIf}
-      s1s2,s2s3,Trend,rf{,lat1,long1,lat2,long2} : float64;
+      s1s2,s2s3,Trend,rf : float64;
       z : float32;
       xp,yp : integer;
-      //ProfileData : tMyData;
       Bitmap : tMyBitmap;
 
          {$IfDef ExWaveLengthHeight}
@@ -7548,6 +7384,11 @@ begin
 end;
 
 
+procedure TMapForm.Bothwindows1Click(Sender: TObject);
+begin
+   CompareMICRODEMslopes(MapDraw.DEMonMap,99);
+end;
+
 procedure TMapForm.Variancecovariance1Click(Sender: TObject);
 {$IfDef ExGeoStats}
 begin
@@ -7612,6 +7453,11 @@ begin
    ChangeElevUnits(euPercent);
 end;
 
+procedure TMapForm.Percentagechangedifferencebetweentwogrids1Click(Sender: TObject);
+begin
+   GridDiffernces(true);
+end;
+
 procedure TMapForm.Percentages1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
@@ -7620,6 +7466,11 @@ begin
    {$EndIf}
 end;
 
+
+procedure TMapForm.PercentdifferencewitheachDEMasinterpolationbasis1Click(Sender: TObject);
+begin
+    GridDifferncesBothInterpolationBasis(true);
+end;
 
 procedure TMapForm.Convergenceindex1Click(Sender: TObject);
 begin
@@ -7900,14 +7751,6 @@ var
          else Viewer.AddMap(DEMGlb[i].SelectionMap.MapDraw);
       end;
    end;
-
-(*
-   GetTwoCompatibleGrids('Two OpenGL 3D views',false,DEM1,DEM2, false);
-   if (DEM1 <> 0) and (DEM2 <> 0) then begin
-      Map3d := MapTo3DView(DEMGlb[DEM1].SelectionMap.MapDraw);
-      Map3D.AddMap(DEMGlb[DEM2].SelectionMap.MapDraw);
-   end;
-*)
 end;
 
 
@@ -7926,7 +7769,6 @@ end;
 
 procedure TMapForm.Numberimmediateneighbors1Click(Sender: TObject);
 begin
-   //ThinDEM1Click(Sender);
    DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcNumNeigh);
 end;
 
@@ -8750,6 +8592,7 @@ begin
       FixedPaletteStats1.Visible := (MapDraw.MapType = mtElevFromTable);
       GeologicAges1.Visible := (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits = euHundredthMa);
       Saveallmapsasimage1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and (NumOpenMaps > 1);
+      //Featuregeomorphometry2.Visible := ExpertDEMversion and FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName);
 
       Dataheader2.Visible := ((MapDraw.DEMonMap > 0) or (MapDraw.SatOnMap > 0)) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
@@ -8802,6 +8645,7 @@ begin
       Twogridcomparisons.Visible := (NumDEMDataSetsOpen > 1) and ExpertDEMversion;
       Externaltools1.Visible := ExpertDEMversion;
       Comparegeomorphometryprograms1.Visible := ExpertDEMversion and (NumDEMDataSetsOpen > 0);
+      FeatureGeomorphometry1 .Visible := ExpertDEMversion and FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName);
 
       Singlegridarithmetic1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MapDraw.DEMMap;
       EditPointElevations1.Visible := ExpertDEMVersion;
@@ -8819,8 +8663,7 @@ begin
       LoadLandCover1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram,GeographyProgram]);
 
       LASfile1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
-
-      //Coccurrenceoftwogrids1.Visible := (NumDEMDataSetsOpen > 1);
+      FeatureGeomorphometry1.Enabled := ExpertDEMVersion and FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName);
 
       Topographicgrain1.Visible := MDDef.ShowGeomorphometry and (MapDraw <> Nil) and (MapDraw.VectorIndex = 0) and ValidDEM(MapDraw.DEMonMap);
       ConvertUKOSDEM1.Visible := ExpertDEMVersion and (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum = UK_OS_grid);
@@ -9114,7 +8957,7 @@ begin
          FloatingPoint1.Enabled := not (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision = FloatingPointDEM);
       end;
 
-      ChangeMap2.Visible := (MapDraw.MapType in [mtGGRReflect]) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
+      ChangeMap2.Visible := (MapDraw.MapType in [mtGGRReflect,mtDifferenceDiverge]) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
       DifferenceMap1.Visible := (MapDraw.DEMmap) and (DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits in [euDifference,euElevDiff]) and (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
       Drainage1.Visible := ExpertDEMVersion;
@@ -10889,19 +10732,17 @@ var
    fName : PathStr;
    UseAddress,OK : boolean;
 begin
-
-//http://api.positionstack.com/v1/forward?access_key=168e84e164469bbb5f23d818aee2a8cb&query=40.7638435,-73.9729691
-
-
    if (MDDef.GoogleAPIkey = '') then begin
       MessageToContinue('No free lunch from google. Requires valid API key.  Enter now.');
       GetString('Google API key',MDDef.GoogleAPIkey,false,ReasonableTextChars);
+      if (MDDef.GoogleAPIkey = '') then exit;
    end;
 
    Lat := -99;
    Long := -999;
    if (MapDraw <> Nil) and (not SupplyLatLong) or (not UseAddress) then begin
-      MapDraw.ScreenToLatLongDegree(RightClickX,RightClickY,Lat,Long);
+      Lat := RightClickLat;
+      Long := RightClickLong;;
    end;
 
    UseAddress := (Address <> '');
@@ -11979,6 +11820,7 @@ procedure TMapForm.OpenGLdrapeonanotherDEM1Click(Sender: TObject);
 begin
    if GetSecondDEM(false) then begin
       OGL_speedbuttonClick(Sender);
+      Map3D.AddMap(DEMGlb[MapDraw.DEM2onMap].SelectionMap.MapDraw);
    end;
 end;
 
@@ -12036,8 +11878,8 @@ end;
 
             procedure GetRange(band,ThisDEM : integer);
             begin
-               bmin[Band] := DEMGlb[ThisDEM].FindPercentileElevation(MDDef.MinImagePercentile);
-               bmax[Band] := DEMGlb[ThisDEM].FindPercentileElevation(MDDef.MaxImagePercentile);
+               bmin[Band] := DEMGlb[ThisDEM].FindPercentileElev(MDDef.MinImagePercentile);
+               bmax[Band] := DEMGlb[ThisDEM].FindPercentileElev(MDDef.MaxImagePercentile);
             end;
 
             function GetShade(Band : integer) : integer;
@@ -18100,9 +17942,9 @@ begin
           ReadDefault(LowMissing + PC,zLo);
        until (zHi > zLo);
        if (zHi > 99.99) then zHi := 32767
-       else zHi := DEMGLb[MapDraw.DEMonMap].FindPercentileElevation(zHi);
+       else zHi := DEMGLb[MapDraw.DEMonMap].FindPercentileElev(zHi);
        if (zLo < 0.0001) then zLo := -32767
-       else zLo := DEMGLb[MapDraw.DEMonMap].FindPercentileElevation(zLo);
+       else zLo := DEMGLb[MapDraw.DEMonMap].FindPercentileElev(zLo);
     end
     else if (Sender = EverythingAboveCutoff1) then begin
        ReadDefault('Cutoff (remove this z and above)',zLo);
@@ -18861,9 +18703,9 @@ procedure TMapForm.Moonriseset1Click(Sender: TObject);
 begin
 {$Else}
 var
-   Month,Day,Year,Duration : integer;
+   Month,Day,Year,Duration : word;
 begin
-   Month := -99;
+   Month := 99;
    Duration := 365;
    GetDateAndDuration(Month,Day,Year,Duration);
    MP_MoonRise(Month,Day,Year,Duration,RightClickLat,RightClickLong);
@@ -18933,7 +18775,7 @@ procedure TMapForm.Differencebetweentwogrids2Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
    {$Else}
-      DEMStat.GridDiffernces(true);
+      Make_Grid.GridDiffernces(false);
    {$EndIf}
 end;
 
@@ -18942,7 +18784,6 @@ var
    ng : array[1..5] of integer;
    i,Fixed : int64;
    DEMList : tDEMBooleanArray;
-   //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    HeavyDutyProcessing := true;
    SetColorForProcessing;
@@ -18954,19 +18795,10 @@ begin
    ng[4] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nm30m,true,MDTempDir + 'norm_30m.tif');
    ng[1] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nmInterpolate,true,MDTempDir + '_norm_interpolate.tif');
    for i := 1 to 5 do DEMlist[ng[i]] := true;
-   {CorrelationMatrix :=} GridCorrelationMatrix(gcmR,DEMlist,'Diagonal spacing correlation matrix');
+   GridCorrelationMatrix(gcmR,DEMlist,'Diagonal spacing correlation matrix');
    HeavyDutyProcessing := false;
    SetColorForWaiting;
 end;
-
-procedure TMapForm.DifClick(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      DEMStat.GridDiffernces(false);
-   {$EndIf}
-end;
-
 
 procedure TMapForm.Pointslopebyregionsize1Click(Sender: TObject);
    begin
@@ -19107,6 +18939,34 @@ begin
 {$EndIf}
 end;
 
+
+procedure TMapForm.Overlaytoday1Click(Sender: TObject);
+begin
+   Overlaytoday2Click(Sender);
+end;
+
+procedure TMapForm.Overlaytoday2Click(Sender: TObject);
+var
+   NetPlot : tNetForm;
+   iMonth,iDay,iYear : word;
+begin
+   DecodeDate(Now,iYear,iMonth,iDay);
+   if (Sender = Overlayselectedday1) or (Sender = Overlaypickdate1) then begin
+      GetDate(iMonth,iDay,iYear);
+   end;
+   MDDef.SingleJulianDay := JulDay(iMonth,iDay,iYear);
+   if (Sender = OverlayToday1)  or (Sender = Overlaypickdate1) then begin
+      MDDef.SolarPathVectors := true;
+      MDDef.SolarPathMap := false;
+      NetPlot := SunAndHorizon(Self,0,RightClickLat,RightClickLong,true,false);
+   end
+   else begin
+      NetPlot := MoonPositionStereoNet(RightClickLat,RightClickLong,iYear,iMonth,iDay,false);
+   end;
+   AssignImageToClipBoard(NetPlot.Image1);
+   Pastefromclipboard1Click(Sender);
+
+end;
 
 procedure TMapForm.Abbreviations1Click(Sender: TObject);
 begin
@@ -22363,6 +22223,11 @@ begin
 end;
 
 
+procedure TMapForm.Overlaypickdate1Click(Sender: TObject);
+begin
+   Overlaytoday2Click(Sender);
+end;
+
 procedure TMapForm.Singlecontour1Click(Sender: TObject);
 var
   z : float64;
@@ -22603,6 +22468,16 @@ begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,3);
 end;
 
+procedure TMapForm.N3x3window1Click(Sender: TObject);
+begin
+   PickAspectDifferenceMap(MapDraw.DEMonMap,1);
+end;
+
+procedure TMapForm.N3x3window2Click(Sender: TObject);
+begin
+   CompareMICRODEMslopes(MapDraw.DEMonMap,3);
+end;
+
 procedure TMapForm.ForceAllRedraw1Click(Sender: TObject);
 begin
    ForceRedrawAllMaps;
@@ -22640,6 +22515,16 @@ begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,5);
 end;
 
+
+procedure TMapForm.N5x5window1Click(Sender: TObject);
+begin
+   PickAspectDifferenceMap(MapDraw.DEMonMap,2);
+end;
+
+procedure TMapForm.N5x5window2Click(Sender: TObject);
+begin
+   CompareMICRODEMslopes(MapDraw.DEMonMap,5);
+end;
 
 function TMapForm.CreateMapAndLegendSideBySide : tMyBitmap;
 var
@@ -22688,26 +22573,19 @@ begin
    CompareProgramsPopupMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-procedure TMapForm.N74Click(Sender: TObject);
+
+
+procedure TMapForm.ElevMoments1Click(Sender: TObject);
 var
-   NetPlot : tNetForm;
+   DEMsWanted : tDEMBooleanArray;
 begin
-   MDDef.SolarPathVectors := true;
-   MDDef.SolarPathMap := false;
-   NetPlot := SunAndHorizon(Self,0,RightClickLat,RightClickLong,true,false);
-   AssignImageToClipBoard(NetPlot.Image1);
-   Pastefromclipboard1Click(Sender);
+   GetMultipleDEMsFromList('Elevation/grid value moments',DEMsWanted);
+   JustElevationMoments(DEMSWanted,'Elevation/grid value moments', true,true);
 end;
 
-procedure TMapForm.N76Click(Sender: TObject);
-var
-   NetPlot : tNetForm;
-   iMonth,iDay,iYear : word;
+procedure TMapForm.N79Click(Sender: TObject);
 begin
-   DecodeDate(Now,iYear,iMonth,iDay);
-   NetPlot := MoonPositionStereoNet(RightClickLat,RightClickLong,iYear,iMonth,iDay,false);
-   AssignImageToClipBoard(NetPlot.Image1);
-   Pastefromclipboard1Click(Sender);
+   GridDifferncesBothInterpolationBasis(false);
 end;
 
 procedure TMapForm.N7x7region1Click(Sender: TObject);
@@ -22718,6 +22596,11 @@ end;
 procedure TMapForm.N7x7region2Click(Sender: TObject);
 begin
    CreateRoughnessSlopeStandardDeviationMap(MapDraw.DEMonMap,9);
+end;
+
+procedure TMapForm.N7x7window1Click(Sender: TObject);
+begin
+   PickAspectDifferenceMap(MapDraw.DEMonMap,3);
 end;
 
 procedure TMapForm.NAN1Click(Sender: TObject);
@@ -22736,9 +22619,9 @@ var
    ch1,ch2 : char;
 begin
    for Long := round(MapDraw.MapCorners.BoundBoxGeo.XMin-Buffer) to round(MapDraw.MapCorners.BoundBoxGeo.XMax+Buffer) do begin
-      if Long >= 0 then ch2 := 'e' else ch2 := 'w';
+      if (Long >= 0) then ch2 := 'e' else ch2 := 'w';
       for Lat := round(MapDraw.MapCorners.BoundBoxGeo.YMin-Buffer) to round(MapDraw.MapCorners.BoundBoxGeo.YMax+Buffer) do begin
-         if Lat >= 0 then ch1 := 'n' else ch1 := 's';
+         if (Lat >= 0) then ch1 := 'n' else ch1 := 's';
          cmd := ch1 + IntegerToString(abs(Lat),2) + ch2 + IntegerToString(abs(Long),3);
          ReplaceCharacter(cmd,' ','0');
          if (Sender =  NASADEMtomatchthismap1) then begin
@@ -23059,10 +22942,8 @@ procedure TMapForm.Statistics1Click(Sender: TObject);
 begin
    {$IfDef ExVegDensity}
    {$Else}
-     //with DEMGlb[MapDraw.DEMonMap] do begin
-         if (DEMGlb[MapDraw.DEMonMap].VegDensityLayers[1] <> Nil) then DEMGlb[MapDraw.DEMonMap].VegDensityLayers[1].GetStats;
-         if (DEMGlb[MapDraw.DEMonMap].VegDensityLayers[2] <> Nil) then DEMGlb[MapDraw.DEMonMap].VegDensityLayers[2].GetStats;
-      //end;
+      if (DEMGlb[MapDraw.DEMonMap].VegDensityLayers[1] <> Nil) then DEMGlb[MapDraw.DEMonMap].VegDensityLayers[1].GetStats;
+      if (DEMGlb[MapDraw.DEMonMap].VegDensityLayers[2] <> Nil) then DEMGlb[MapDraw.DEMonMap].VegDensityLayers[2].GetStats;
    {$EndIf}
 end;
 
@@ -23082,7 +22963,6 @@ end;
 
 procedure TMapForm.StdDevinbox1Click(Sender: TObject);
 begin
-   //ThinDEM1Click(Sender);
    DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcSTD);
 end;
 
@@ -23993,13 +23873,13 @@ begin
 end;
 
 
-procedure Export3DDEM(DEMonMap : integer);
+procedure Export3DDEMasOBJ(DEMonMap : integer);
 var
    xm,x,y,NumVert     : integer;
    z1,z2,z3,z4,zc : float32;
    x1,y1,x2,y2,x3,y3,x4,y4,xc,yc : float64;
    ObjList : tStringList;
-   ThisColVertex,LastColVertex : array[0..MaxElevArraySize] of integer;
+   //ThisColVertex,LastColVertex : array[0..MaxElevArraySize] of integer;
    SaveName : PathStr;
 
    procedure AddVertex(x,y,z : float64);
@@ -24008,7 +23888,7 @@ var
    end;
 
 begin
-   {$IfDef RecordSave} WriteLineToDebugFile('Start Export3DDEM'); {$EndIf}
+   {$IfDef RecordSave} WriteLineToDebugFile('Start Export3DDEMasOBJ'); {$EndIf}
    with DEMGlb[DEMonMap] do begin
       x := pred(DEMheader.NumCol) * Pred(DEMheader.NumRow);
       xm := x * 139;
@@ -24031,7 +23911,7 @@ begin
 
       ObjList := tStringList.Create;
       ObjList.Add('# Created with PETMAR Trilobite Breeding Ranch MICRODEM');
-      ObjList.Add('#  DEM: ' + AreaName);
+      ObjList.Add('# DEM: ' + AreaName);
       NumVert := 0;
       if ShowSatProgress then StartProgress('Export');
 
@@ -24050,7 +23930,7 @@ begin
                OBJList.Add('f ' + IntToStr(NumVert+1) + ' ' + IntToStr(NumVert+2) + ' ' + IntToStr(NumVert+3) + ' ' + IntToStr(NumVert+4)  );
                inc(NumVert,4);
             end;
-            LastColvertex := ThisColVertex;
+            //LastColvertex := ThisColVertex;
          end;
       end;
       if ShowSatProgress then EndProgress;
@@ -24058,7 +23938,7 @@ begin
       ObjList.SaveToFile(SaveName);
       ObjList.Free;
    end;
-   {$IfDef RecordSave} WriteLineToDebugFile('Ending Export3DDEM'); {$EndIf}
+   {$IfDef RecordSave} WriteLineToDebugFile('Ending Export3DDEMasOBJ'); {$EndIf}
 end;
 
 procedure TMapForm.O1Click(Sender: TObject);
@@ -24068,14 +23948,13 @@ end;
 
 procedure TMapForm.OBJ1Click(Sender: TObject);
 begin
-   Export3DDEM(MapDraw.DEMonMap);
+   Export3DDEMasOBJ(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Oceancurrents1Click(Sender: TObject);
 begin
   {$IfDef ExGeography}
   {$Else}
-      //if MDDef.MoveGeographyDBMemory then DesiredDBMode := dbmCDS;
       LoadDataBaseFile(GlobalCurrentsFName);
   {$EndIf}
 end;
@@ -24376,6 +24255,14 @@ begin
 end;
 
 
+procedure TMapForm.Elevationslopemoments1Click(Sender: TObject);
+var
+   DEMsWanted : tDEMBooleanArray;
+begin
+   GetMultipleDEMsFromList('Elevation and slope moments',DEMsWanted);
+   ElevationAndSlopeMoments(DEMSWanted,'Moments');
+end;
+
 function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : tMemo; LowZ,HighZ : float32) : integer;
 var
   Col,Row,xp,yp,Bad,Shown : integer;
@@ -24666,6 +24553,11 @@ begin
    {$EndIf}
 end;
 
+
+procedure TMapForm.Allthreewindows1Click(Sender: TObject);
+begin
+   PickAspectDifferenceMap(MapDraw.DEMonMap,99);
+end;
 
 procedure TMapForm.SAGAaspectmap1Click(Sender: TObject);
 begin
@@ -25139,6 +25031,14 @@ begin
 end;
 
 
+procedure TMapForm.SelectmultipleDEMsgrids1Click(Sender: TObject);
+var
+   DEMsWanted : tDEMbooleanArray;
+begin
+   GetMultipleDEMsFromList('Grids for histograms',DEMsWanted);
+   CreateGridHistograms(DEMSwanted);
+end;
+
 procedure TMapForm.Selectmultiplegrids1Click(Sender: TObject);
 var
    i : integer;
@@ -25508,16 +25408,45 @@ begin
    SSIMcheck(False);
 end;
 
+procedure TMapForm.SSOcountingradiuscomparison1Click(Sender: TObject);
+var
+   i,j : integer;
+begin
+   SaveBackupDefaults;
+   MDDef.GemorphAspectRose := false;
+   for j := 1 to 2 do begin
+      MDDef.SSObyPole := (j = 1);
+      for i := 1 to 10 do begin
+         MDDef.NetDef.CountRadius := i;
+         DoAnSSODiagram(MapDraw.DEMonMap,DEMglb[MapDraw.DEMonMap].FullDEMGridLimits);
+      end;
+   end;
+   RestoreBackupDefaults;
+end;
+
 procedure TMapForm.SSOdiagramdownhilldirections1Click(Sender: TObject);
 begin
    MDDef.SSObyPole := false;
    DoAnSSODiagram(MapDraw.DEMonMap,DEMglb[MapDraw.DEMonMap].FullDEMGridLimits);
 end;
 
+procedure TMapForm.SSOdiagramnormalsbycategories1Click(Sender: TObject);
+var
+   DEM,Cat : integer;
+begin
+   GetDEM(DEM,true,'elevation to use');
+   for cat := round(DEMglb[MapDraw.DEMonMap].DEMheader.MinElev) to round(DEMglb[MapDraw.DEMonMap].DEMheader.MaxElev) do begin
+      MDDef.SSObyPole := true;
+      DoAnSSODiagram(DEM,DEMglb[DEM].FullDEMGridLimits);
+   end;
+end;
+
 procedure TMapForm.SSOdiagramnormalstosurface1Click(Sender: TObject);
 begin
+   SaveBackupDefaults;
    MDDef.SSObyPole := true;
    DoAnSSODiagram(MapDraw.DEMonMap,DEMglb[MapDraw.DEMonMap].FullDEMGridLimits);
+   RestoreBackupDefaults;
 end;
 
 
@@ -25527,6 +25456,11 @@ begin
    DoFastMapRedraw;
 end;
 
+
+procedure TMapForm.Overlayselectedday1Click(Sender: TObject);
+begin
+   Overlaytoday2Click(Sender)
+end;
 
 procedure TMapForm.Customimagesize1Click(Sender: TObject);
 begin

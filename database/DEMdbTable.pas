@@ -689,7 +689,7 @@ type
     Pointsinbox1: TMenuItem;
     Specifycode1: TMenuItem;
     N2Dgraph2yaxes1: TMenuItem;
-    Featurestatistics1: TMenuItem;
+    //Featurestatistics1: TMenuItem;
     Recordnumber1: TMenuItem;
     BitBtn3: TBitBtn;
     N29: TMenuItem;
@@ -1544,7 +1544,7 @@ type
     procedure RadiusfromDB1Click(Sender: TObject);
     procedure ValuesfromDB1Click(Sender: TObject);
     procedure N2Dgraph2yaxes1Click(Sender: TObject);
-    procedure Featurestatistics1Click(Sender: TObject);
+    //procedure Featurestatistics1Click(Sender: TObject);
     procedure Beachballscolorandsize1Click(Sender: TObject);
     procedure Recordnumber1Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -3957,8 +3957,8 @@ begin
            N3dGraph1.Visible := false;
            RoseDiagram1.Visible := false;
         end;
-        FeatureStatistics1.Visible := (GISdb[DBonTable].TheMapOwner <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap <> 0) and
-             (DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid <> 0);
+        //FeatureStatistics1.Visible := (GISdb[DBonTable].TheMapOwner <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap <> 0) and
+        //     (DEMGlb[GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap].SelectionMap.MapDraw.FeatureGrid <> 0);
         PlotallXYFiles1.Visible := GISdb[DBonTable].MyData.FieldExists('XY_FILE');
         Redistrict1.Visible := (MDDef.ProgramOption = ExpertProgram) and GISdb[DBonTable].MyData.FieldExists('BLACK1') and GISdb[DBonTable].MyData.FieldExists('WHITE1');
         Elevationsatbenchmarks1.Visible := GISdb[DBonTable].MyData.FieldExists('Z');
@@ -7100,7 +7100,6 @@ begin
              end;
          end;
          GISdb[DBonTable].MyData.Next;
-         //OffImage:;
       end;
       ShowStatus;
    //end;
@@ -8045,40 +8044,6 @@ begin
    MDDef.LabelGazOnMap := Features.Checked;
 end;
 
-procedure Tdbtablef.Featurestatistics1Click(Sender: TObject);
-var
-   s1s2,s2s3,Trend,RoughnessFactor : float64;
-   i,Npts : integer;
-begin
-   {$IfDef ExGeology}
-   {$Else}
-      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'S1S2',8,3);
-      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'S2S3',8,3);
-      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TREND',6,1);
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.First;
-      i := 0;
-      NPts := GISdb[DBonTable].MyData.RecordCount;
-      StartSingleThreadTimer('Features');
-      while not GISdb[DBonTable].MyData.eof do begin
-         inc(i);
-         if (i mod 100 = 0) then begin
-            ThreadTimers.UpdateThreadStats(9, round(100 * i / Npts));
-            GISdb[DBonTable].EmpSource.Enabled := false;
-         end;
-
-         if GISdb[DBonTable].SSOandaspectdiagrams(s1s2,s2s3,Trend,RoughnessFactor) then begin
-            GISdb[DBonTable].MyData.Edit;
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('S1S2',s1s2);
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('S2S3',s2s3);
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TREND',Trend);
-         end;
-         GISdb[DBonTable].MyData.Next;
-      end;
-      EndThreadTimers;
-      ShowStatus;
-   {$EndIf}
-end;
 
 procedure Tdbtablef.FFT1Click(Sender: TObject);
 {$IfDef ExFourier}

@@ -136,7 +136,6 @@ type
     Exitprogram1: TMenuItem;
     Exitprogram2: TMenuItem;
     Opendatasets1: TMenuItem;
-    //Slopealgorithms1: TMenuItem;
     StatusBar1: TStatusBar;
     CircleAround: TMenuItem;
     LiveFlySpeedButton: TSpeedButton;
@@ -521,10 +520,6 @@ type
     Inventorydifferencestats1: TMenuItem;
     MergeDEMIXtilestats1: TMenuItem;
     N48: TMenuItem;
-   // FillholesintestareaDEMs1: TMenuItem;
-    //VectorchannelnetworksSAGA1: TMenuItem;
-    //Createchannelnetworkgrids1: TMenuItem;
-   // Channelnetworkcomparison1: TMenuItem;
     Channelnetworkmisspercentagesbytile1: TMenuItem;
     SSIM2: TMenuItem;
     MergemultipleTXTCSVintoDB1: TMenuItem;
@@ -559,8 +554,6 @@ type
     Partial3DEPsteps1: TMenuItem;
     Overwriteifexists3: TMenuItem;
     Overwriteifexists4: TMenuItem;
-    //OvOverwriteifexists1: TMenuItem;
-    //Skipifexists2: TMenuItem;
     N39: TMenuItem;
     N54: TMenuItem;
     Inventorychanneldatabyarea1: TMenuItem;
@@ -770,9 +763,7 @@ type
     procedure Fullworldimage1Click(Sender: TObject);
     procedure Micronetquiz1Click(Sender: TObject);
     procedure SheepRange1Click(Sender: TObject);
-    //procedure Afar1Click(Sender: TObject);
     procedure Updatehelpfile2Click(Sender: TObject);
-    //procedure TulaFracturezonemagnetics1Click(Sender: TObject);
     procedure Platerotations1Click(Sender: TObject);
     procedure Sedimentationrates1Click(Sender: TObject);
     procedure Triplejunctions1Click(Sender: TObject);
@@ -784,8 +775,6 @@ type
     procedure Statesforblockgrids1Click(Sender: TObject);
     procedure Normalizegrids1Click(Sender: TObject);
     procedure Addnormaliziedstatsforblockgridstotrainingset1Click(Sender: TObject);
-    //procedure Annapolisredistricting1Click(Sender: TObject);
-    //procedure Duckbeachsurveys1Click(Sender: TObject);
     procedure OpenDEMwithoutmap1Click(Sender: TObject);
     procedure Megathrusts1Click(Sender: TObject);
     procedure NewglobalgridGreenwich1Click(Sender: TObject);
@@ -801,7 +790,6 @@ type
     procedure Geoidandsedimentdistribution1Click(Sender: TObject);
     procedure MagMapButtonClick(Sender: TObject);
     procedure SpeedButton3Click(Sender: TObject);
-   // procedure Californiaoffshore1Click(Sender: TObject);
     procedure GulfofMexicoGLORIA1Click(Sender: TObject);
     procedure Atlantis1Click(Sender: TObject);
     procedure DEMsummarytable1Click(Sender: TObject);
@@ -809,10 +797,8 @@ type
     procedure Landsatfullsceneindex1Click(Sender: TObject);
     procedure Satellitepredictions1Click(Sender: TObject);
     procedure Subset81Ssidescan1Click(Sender: TObject);
-    //procedure GISdatasampler1Click(Sender: TObject);
     procedure OpenScannedmap1Click(Sender: TObject);
     procedure Openlandcover1Click(Sender: TObject);
-    //procedure Sealevelrise1Click(Sender: TObject);
     procedure Ages1Click(Sender: TObject);
     procedure Magneticanomaliesgrid1Click(Sender: TObject);
     procedure Sedimentthicknessgrid1Click(Sender: TObject);
@@ -820,12 +806,9 @@ type
     procedure Fontsinstalled1Click(Sender: TObject);
     procedure Unicodeicongenerator1Click(Sender: TObject);
     procedure UKOSgrid2Click(Sender: TObject);
-    //procedure HarpersFerryTerrainAnalysis1Click(Sender: TObject);
     procedure Nyquist1Click(Sender: TObject);
     procedure Onlinehelp1Click(Sender: TObject);
-    //procedure AnnapolisTM8scene1Click(Sender: TObject);
     procedure OpenandmergeDEMdirectories1Click(Sender: TObject);
-    //procedure SanitizedXTF1Click(Sender: TObject);
     procedure SpeedButton6Click(Sender: TObject);
     procedure est1Click(Sender: TObject);
     procedure LatLong1Click(Sender: TObject);
@@ -841,7 +824,6 @@ type
     procedure XML1Click(Sender: TObject);
     procedure OpenGeoPDFimagelayer1Click(Sender: TObject);
     procedure Allindividuallayers1Click(Sender: TObject);
-    //procedure LASlidarpointcloudsamples1Click(Sender: TObject);
     procedure Legislativeredistricting1Click(Sender: TObject);
     procedure Zipatoneeditor1Click(Sender: TObject);
     procedure Superimposedtopoprofiles1Click(Sender: TObject);
@@ -869,7 +851,6 @@ type
     procedure Physicalgeographylabs1Click(Sender: TObject);
     procedure Climatestationsforclimographs1Click(Sender: TObject);
     procedure Classificationmap1Click(Sender: TObject);
-    //procedure Hurricanes1Click(Sender: TObject);
     procedure Dailytemperaturerange1Click(Sender: TObject);
     procedure Gridswithmonthlyprecipitationandtemperature1Click(Sender: TObject);
     procedure Geoid1Click(Sender: TObject);
@@ -901,19 +882,16 @@ type
     procedure Batchchangepartoffilenames1Click(Sender: TObject);
     procedure OpenandmergeGeotiffs1Click(Sender: TObject);
     procedure DragonPlot1Click(Sender: TObject);
-    //procedure Annapolislidar1Click(Sender: TObject);
     procedure OpenSentinen2image1Click(Sender: TObject);
     procedure Openlidarmatchedgrids1Click(Sender: TObject);
     procedure RenameJPRGswithbasenamenumber1Click(Sender: TObject);
     procedure RenameJPEGSwithbaseandcreationtime1Click(Sender: TObject);
     procedure Labs1Click(Sender: TObject);
     procedure CloseallDBs1Click(Sender: TObject);
-    //procedure CloseprogramupdateEXEnewversion7MBdownload1Click(Sender: TObject);
     procedure Spectrallibrary3Click(Sender: TObject);
     procedure RGBcolorlayers1Click(Sender: TObject);
     procedure GDALSRSinfo1Click(Sender: TObject);
     procedure WhiteboxGeotiff1Click(Sender: TObject);
-    //procedure GDALslopesarcsecondDEMs1Click(Sender: TObject);
     procedure Mediansatellitedatacontest1Click(Sender: TObject);
     procedure Makelittletilescontest1Click(Sender: TObject);
     procedure Guam1Click(Sender: TObject);
@@ -931,20 +909,17 @@ type
     procedure netcdf1Click(Sender: TObject);
     procedure ACOLITEallopensatelliteimages1Click(Sender: TObject);
     procedure Fatfingers1Click(Sender: TObject);
-   // procedure Closeprogramgetdebugversionoftheprogram7MB1Click(Sender: TObject);
     procedure Openrecyclebin1Click(Sender: TObject);
     procedure Existingfile1Click(Sender: TObject);
     procedure Existingfile2Click(Sender: TObject);
     procedure Horizontalimageslider1Click(Sender: TObject);
     procedure OpensingleLandsatband1Click(Sender: TObject);
     procedure listgeo1Click(Sender: TObject);
-    //procedure DEMIXmergeandtransposewithmeanmedian1Click(Sender: TObject);
     procedure DEMIXtilesizebylatitude1Click(Sender: TObject);
     procedure Python1Click(Sender: TObject);
     procedure OpenSentinel1radarimagery1Click(Sender: TObject);
     procedure DEMIX1Click(Sender: TObject);
     procedure BatchNDVIClick(Sender: TObject);
-    //procedure Annapolislidar8GB1Click(Sender: TObject);
     procedure HistogramstoCSVfiles1Click(Sender: TObject);
     procedure Bringslicecontroltofront1Click(Sender: TObject);
     procedure Bringpointcloudcontroltofront1Click(Sender: TObject);
@@ -953,7 +928,6 @@ type
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
     procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
-    //procedure LoadDEMIXareareferenceDEMs1Click(Sender: TObject);
     procedure Pickdatadirectory1Click(Sender: TObject);
     procedure N3OpenDEMs1Click(Sender: TObject);
     procedure OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
@@ -963,7 +937,6 @@ type
     procedure VDATUMshiftinUSA1Click(Sender: TObject);
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
-    //procedure Fullprocessingchain1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure N41Click(Sender: TObject);
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
@@ -1016,8 +989,6 @@ type
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
     procedure Overwriteifexists3Click(Sender: TObject);
     procedure Overwriteifexists4Click(Sender: TObject);
-    //procedure OvOverwriteifexists1Click(Sender: TObject);
-    //procedure Skipifexists2Click(Sender: TObject);
     procedure Inventorychanneldatabyarea1Click(Sender: TObject);
     procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
@@ -1061,8 +1032,7 @@ type
     procedure Skipifdone1Click(Sender: TObject);
     procedure DeletereferenceDTMswithoutDTMinfilename1Click(Sender: TObject);
     procedure MovereferenceDSMs1Click(Sender: TObject);
-    procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(
-      Sender: TObject);
+    procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(Sender: TObject);
     procedure Overwrite5Click(Sender: TObject);
     procedure Overwrite6Click(Sender: TObject);
     procedure Mergeridgesandvalleys1Click(Sender: TObject);
@@ -1088,7 +1058,6 @@ type
       procedure HandleThreadTerminate(Sender: TObject);
       procedure SetPanelText(PanelNum : integer; What : shortString; OverrideLock : boolean = false);
       procedure ClearStatusBarPanelText;
-     // procedure StartSealevelrise(BaseMap : tMapForm);
   end;
 
 const
@@ -2466,31 +2435,6 @@ begin
 end;
 *)
 
-      (*
-      procedure Histies;
-      var
-         DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer;
-         Area : shortstring;
-         Dir : PathStr;
-      begin
-         ElevMap := 0;
-         SlopeMap := 0;
-         RuffMap := 0;
-         AspMap := 0;
-         Area := 'canyon_range';
-         Dir := 'H:\aa_half_sec_test\' + Area + '\';
-         DEMwithVAT := OpenNewDEM(Dir + 'cop-alos-dtm4.dem' );
-         ElevMap  := OpenNewDEM(Dir + 'ref_dtm.dem' );
-         SlopeMap  := OpenNewDEM(Dir + 'cop-alos-dtm4.dem' );
-         RuffMap := OpenNewDEM(Dir + 'cop-alos-dtm4.dem');
-         AspMap := OpenNewDEM(Dir + 'cop-alos-dtm4.dem' );
-
-         DEMGlb[ElevMap].VATrelatedGrid := DEMwithVAT;
-         DEMGlb[ElevMap].SelectionMap.MapDraw.MapType := mt6ColorVAToverlay;
-         DEMGlb[ElevMap].SelectionMap.DoBaseMapRedraw;
-         HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap);
-      end;
-      *)
 (*
 var
    BatchFile : tStringList;
@@ -5185,13 +5129,13 @@ begin
       Results.Add(ptTrim(DEMGlb[aDEM].AreaName) + ',' +
                   RealToString(MomentVar.mean,-12,-4) + ',' + RealToString(MomentVar.std_dev,-12,-4) + ',' +
                   RealToString(MomentVar.MinZ,-12,-4) + ',' + RealToString(MomentVar.MaxZ,-12,-2) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(50),-12,-4) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(5),-12,-4) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(10),-12,-4) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(25),-12,-4) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(75),-12,-4) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(90),-12,-4) + ',' +
-                  RealToString(DEMGlb[aDEM].FindPercentileElevation(95),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(50),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(5),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(10),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(25),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(75),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(90),-12,-4) + ',' +
+                  RealToString(DEMGlb[aDEM].FindPercentileElev(95),-12,-4) + ',' +
                   RealToString(MomentVar.Skew,-12,-4) + ',' + RealToString(MomentVar.Curt,-12,-4)  );
       CloseSingleDEM(aDEM);
    end;

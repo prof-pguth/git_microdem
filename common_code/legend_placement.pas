@@ -121,7 +121,7 @@ end;
 
 procedure Tleg_opts_form.BitBtn2Click(Sender: TObject);
 begin
-   MapForm.DoCompleteMapRedraw;
+   //MapForm.DoCompleteMapRedraw;
 end;
 
 procedure Tleg_opts_form.CheckBox1Click(Sender: TObject);

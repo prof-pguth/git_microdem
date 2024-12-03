@@ -182,7 +182,7 @@ object PickGeoStat: TPickGeoStat
         TabOrder = 7
         OnClick = Button14Click
       end
-      object TBitBtn
+      object BitBtn29: TBitBtn
         Left = 180
         Top = 69
         Width = 125
@@ -219,7 +219,6 @@ object PickGeoStat: TPickGeoStat
         Caption = 'SSO distribution by slope'
         Enabled = False
         TabOrder = 1
-        OnClick = BitBtn15Click
       end
       object BitBtn8: TBitBtn
         Left = 0

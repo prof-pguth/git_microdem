@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1678
+  ClientHeight = 1698
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1651
+    Height = 1671
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,6 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitHeight = 1651
     object Image1: TImage
       Left = 3
       Top = -247
@@ -207,11 +208,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1606
+      Top = 1626
       Width = 3840
       Height = 41
       Align = alBottom
       TabOrder = 8
+      ExplicitTop = 1606
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -1475,6 +1477,26 @@ object MapForm: TMapForm
       TabOrder = 0
       Text = 'ComboBox1'
       OnChange = ComboBox1Change
+      Items.Strings = (
+        '250%'
+        '200%'
+        '150%'
+        '100%'
+        '75%'
+        '60%'
+        '50%'
+        '40%'
+        '30%'
+        '25%'
+        '20%'
+        '15%'
+        '12%'
+        '10%'
+        '8%'
+        '6%'
+        '4%'
+        '2%'
+        '1%')
     end
     object ZoomBitBtn: TBitBtn
       Left = 1639
@@ -3548,14 +3570,6 @@ object MapForm: TMapForm
         object Grainmovie1: TMenuItem
           Caption = 'Fabric movie'
         end
-        object SSOdiagramnormalstosurface1: TMenuItem
-          Caption = 'SSO diagram, normals to surface'
-          OnClick = SSOdiagramnormalstosurface1Click
-        end
-        object SSOdiagramdownhilldirections1: TMenuItem
-          Caption = 'SSO diagram, downhill directions'
-          OnClick = SSOdiagramdownhilldirections1Click
-        end
       end
       object Intervisibility1: TMenuItem
         Caption = 'Intervisibility'
@@ -3801,12 +3815,54 @@ object MapForm: TMapForm
           Caption = 'Current Map Area'
           OnClick = CurrentMapArea2Click
         end
+        object SelectmultipleDEMsgrids1: TMenuItem
+          Caption = 'Select multiple DEMs/grids'
+          OnClick = SelectmultipleDEMsgrids1Click
+        end
       end
       object Geomorphomtery1: TMenuItem
         Caption = 'Geomorphomtery'
         object Aspectbyslopecategories1: TMenuItem
           Caption = 'Aspect by slope categories'
           OnClick = Aspectbyslopecategories1Click
+        end
+        object Aspectrosediagram1: TMenuItem
+          Caption = 'Aspect rose diagram'
+          OnClick = Aspectrosediagram1Click
+        end
+        object Geomorphometrybycategories1: TMenuItem
+          Caption = 'Geomorphometry by categories'
+          OnClick = Geomorphometrybycategories1Click
+        end
+        object N77: TMenuItem
+          Caption = '-'
+        end
+        object SSOdiagramnormalstosurface1: TMenuItem
+          Caption = 'SSO diagram, normals to surface'
+          OnClick = SSOdiagramnormalstosurface1Click
+        end
+        object SSOdiagramdownhilldirections1: TMenuItem
+          Caption = 'SSO diagram, downhill directions'
+          OnClick = SSOdiagramdownhilldirections1Click
+        end
+        object SSOdiagramnormalsbycategories1: TMenuItem
+          Caption = 'SSO diagram (normals) by categories'
+          OnClick = SSOdiagramnormalsbycategories1Click
+        end
+        object Featuregeomorphometry1: TMenuItem
+          Caption = 'SSO diagram, features'
+          OnClick = Featuregeomorphometry1Click
+        end
+        object N49: TMenuItem
+          Caption = '-'
+        end
+        object ElevMoments1: TMenuItem
+          Caption = 'Elevation/grid value moments'
+          OnClick = ElevMoments1Click
+        end
+        object Elevationslopemoments1: TMenuItem
+          Caption = 'Elevation and slope moments'
+          OnClick = Elevationslopemoments1Click
         end
       end
       object Geomorphometryanalysis1: TMenuItem
@@ -3820,16 +3876,27 @@ object MapForm: TMapForm
       object Multiplegridarithmetic1: TMenuItem
         Caption = 'Multiple grid arithmetic (map algebra)'
         object Differencebetweentwogrids2: TMenuItem
-          Caption = 'Difference/change between two grids'
+          Caption = 'Absolute difference/change between two grids'
           OnClick = Differencebetweentwogrids2Click
         end
-        object Dif: TMenuItem
-          Caption = 'Difference between two grids (current map area)'
-          OnClick = DifClick
-        end
         object Differencemapsallotheropengrids1: TMenuItem
-          Caption = 'Difference this map to all other open grids'
+          Caption = 'Absolute difference this map to all other open grids'
           OnClick = Differencemapsallotheropengrids1Click
+        end
+        object N79: TMenuItem
+          Caption = 'Absolute difference with each DEM as interpolation basis'
+          OnClick = N79Click
+        end
+        object Percentagechangedifferencebetweentwogrids1: TMenuItem
+          Caption = 'Percentage difference/change between two grids'
+          OnClick = Percentagechangedifferencebetweentwogrids1Click
+        end
+        object PercentdifferencewitheachDEMasinterpolationbasis1: TMenuItem
+          Caption = 'Percent difference with each DEM as interpolation basis'
+          OnClick = PercentdifferencewitheachDEMasinterpolationbasis1Click
+        end
+        object N78: TMenuItem
+          Caption = '-'
         end
         object Addgrids1: TMenuItem
           Caption = 'Add multiple grids'
@@ -4019,17 +4086,9 @@ object MapForm: TMapForm
         Caption = 'Fixed palette stats'
         OnClick = Fixedpalettestats1Click
       end
-      object Geomorphometrybycategories1: TMenuItem
-        Caption = 'Geomorphometry by categories'
-        OnClick = Geomorphometrybycategories1Click
-      end
       object Heatmap1: TMenuItem
         Caption = 'Heat map'
         OnClick = Heatmap1Click
-      end
-      object Aspectrosediagram1: TMenuItem
-        Caption = 'Aspect rose diagram'
-        OnClick = Aspectrosediagram1Click
       end
       object Externaltools1: TMenuItem
         Caption = 'External tools'
@@ -4406,16 +4465,6 @@ object MapForm: TMapForm
           end
         end
       end
-      object Featuregeomorphometry2: TMenuItem
-        Caption = 'Feature geomorphometry'
-        object Featuregeomorphometry1: TMenuItem
-          Caption = 'Compute'
-          OnClick = Featuregeomorphometry1Click
-        end
-        object Creategrid1: TMenuItem
-          Caption = 'Create grid'
-        end
-      end
       object Gridcorrelations2: TMenuItem
         Caption = 'Grid correlations'
         OnClick = Gridcorrelations2Click
@@ -4531,6 +4580,10 @@ object MapForm: TMapForm
         object Diagonalgridspacingcomparison1: TMenuItem
           Caption = 'Diagonal grid spacing comparison'
           OnClick = Diagonalgridspacingcomparison1Click
+        end
+        object SSOcountingradiuscomparison1: TMenuItem
+          Caption = 'SSO counting radius comparison'
+          OnClick = SSOcountingradiuscomparison1Click
         end
       end
       object Experimental1: TMenuItem
@@ -5565,11 +5618,11 @@ object MapForm: TMapForm
         Caption = '-'
       end
       object Allgraphs1: TMenuItem
-        Caption = 'All graphs'
+        Caption = 'All climate graphs'
         OnClick = Allgraphs1Click
       end
       object Multiplegraphs1: TMenuItem
-        Caption = 'Multiple graphs'
+        Caption = 'Multiple climate  graphs'
         object ClimographandETO1: TMenuItem
           Caption = 'Climograph and ETO'
           OnClick = ClimographandETO1Click
@@ -5582,6 +5635,30 @@ object MapForm: TMapForm
           Caption = 'All monthly climate graphs at point'
           OnClick = Monthlygraphatpoint1Click
         end
+      end
+      object Monthlyinsolation1: TMenuItem
+        Caption = 'Monthly insolation'
+        OnClick = Monthlyinsolation1Click
+      end
+      object Monthlytemperatureranges1: TMenuItem
+        Caption = 'Monthly temperature ranges'
+        OnClick = Monthlytemperatureranges1Click
+      end
+      object Evapotranspirationprecipitationwaterbudget1: TMenuItem
+        Caption = 'Evapotranspiration/precipitation water budget'
+        OnClick = Evapotranspirationprecipitationwaterbudget1Click
+      end
+      object Koppenclimographfromclimategrids1: TMenuItem
+        Caption = 'Koppen climograph from climate grids'
+        OnClick = Koppenclimographfromclimategrids1Click
+      end
+      object Monthlywinds1: TMenuItem
+        Caption = 'Monthly winds'
+        OnClick = Monthlywinds1Click
+      end
+      object Koppenclimograph1: TMenuItem
+        Caption = 'Koppen climograph from station records'
+        OnClick = Koppenclimograph1Click
       end
       object N41: TMenuItem
         Caption = '-'
@@ -5603,9 +5680,13 @@ object MapForm: TMapForm
         object N73: TMenuItem
           Caption = '-'
         end
-        object N74: TMenuItem
+        object Overlaytoday1: TMenuItem
           Caption = 'Overlay today'
-          OnClick = N74Click
+          OnClick = Overlaytoday1Click
+        end
+        object Overlaypickdate1: TMenuItem
+          Caption = 'Overlay pick date'
+          OnClick = Overlaypickdate1Click
         end
       end
       object Annualsunrisesunset1: TMenuItem
@@ -5637,33 +5718,18 @@ object MapForm: TMapForm
         object N75: TMenuItem
           Caption = '-'
         end
-        object N76: TMenuItem
+        object Overlaytoday2: TMenuItem
           Caption = 'Overlay today'
-          OnClick = N76Click
+          OnClick = Overlaytoday2Click
+        end
+        object Overlayselectedday1: TMenuItem
+          Caption = 'Overlay selected day'
+          OnClick = Overlayselectedday1Click
         end
       end
       object USWeatherForecast1: TMenuItem
         Caption = 'NOAA weather forecast (US)'
         OnClick = USWeatherForecast1Click
-      end
-      object N49: TMenuItem
-        Caption = '-'
-      end
-      object Monthlyinsolation1: TMenuItem
-        Caption = 'Monthly insolation'
-        OnClick = Monthlyinsolation1Click
-      end
-      object Monthlytemperatureranges1: TMenuItem
-        Caption = 'Monthly temperature ranges'
-        OnClick = Monthlytemperatureranges1Click
-      end
-      object Evapotranspirationprecipitationwaterbudget1: TMenuItem
-        Caption = 'Evapotranspiration/precipitation water budget'
-        OnClick = Evapotranspirationprecipitationwaterbudget1Click
-      end
-      object Koppenclimographfromclimategrids1: TMenuItem
-        Caption = 'Koppen climograph from climate grids'
-        OnClick = Koppenclimographfromclimategrids1Click
       end
       object N19: TMenuItem
         Caption = '-'
@@ -5671,14 +5737,6 @@ object MapForm: TMapForm
       object errainsunblocking1: TMenuItem
         Caption = 'Terrain sun blocking'
         OnClick = errainsunblocking1Click
-      end
-      object Monthlywinds1: TMenuItem
-        Caption = 'Monthly winds'
-        OnClick = Monthlywinds1Click
-      end
-      object Koppenclimograph1: TMenuItem
-        Caption = 'Koppen climograph from station records'
-        OnClick = Koppenclimograph1Click
       end
       object Keylatitudes2: TMenuItem
         Caption = 'Key latitudes'
@@ -6301,7 +6359,22 @@ object MapForm: TMapForm
       end
       object AspectDifference1: TMenuItem
         Caption = 'Aspect difference'
-        OnClick = AspectDifference1Click
+        object N3x3window1: TMenuItem
+          Caption = '3x3 window'
+          OnClick = N3x3window1Click
+        end
+        object N5x5window1: TMenuItem
+          Caption = '5x5 window'
+          OnClick = N5x5window1Click
+        end
+        object N7x7window1: TMenuItem
+          Caption = '7x7 window'
+          OnClick = N7x7window1Click
+        end
+        object Allthreewindows1: TMenuItem
+          Caption = 'All three windows'
+          OnClick = Allthreewindows1Click
+        end
       end
     end
     object Curvature2: TMenuItem
@@ -7040,8 +7113,19 @@ object MapForm: TMapForm
       Caption = '-'
     end
     object CompareMICRODEMslopealgorithms1: TMenuItem
-      Caption = 'Compare MICRODEM slope algorithms (2 windows)'
-      OnClick = CompareMICRODEMslopealgorithms1Click
+      Caption = 'Compare MICRODEM slope algorithms'
+      object N3x3window2: TMenuItem
+        Caption = '3x3 window'
+        OnClick = N3x3window2Click
+      end
+      object N5x5window2: TMenuItem
+        Caption = '5x5 window'
+        OnClick = N5x5window2Click
+      end
+      object Bothwindows1: TMenuItem
+        Caption = 'Both windows'
+        OnClick = Bothwindows1Click
+      end
     end
     object Compareworkinggeographicslopealgorithms1: TMenuItem
       Caption = 'Compare working geographic slope algorithms'
