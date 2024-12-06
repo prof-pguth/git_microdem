@@ -62,14 +62,10 @@ const
    {$EndIf}
    MaxMultiGrid = 8;
 
-{$IfDef Win64}
 const
    MaxPts = 48000000;
-{$Else}
-const
-   MaxPts = 24000000;
-{$EndIf}
-type
+
+   type
    tPointXYZ = record
       x,y,z : double;
    end;
@@ -91,14 +87,13 @@ const
    MaxThreadsAllowed = 24;
 
 
-const   //merging DEM modes
+const  //merging DEM modes
    dmMergeDirectories = 3;
    dmMergeGDAL = 1;
    dmMergeMDnative = 2;
 
 
-//satellite imagery definitions
-const
+const //satellite imagery definitions
    MaxSatCols = 92000;
    MaxBands   = 242;
    MaxClass    = 25;
@@ -738,8 +733,9 @@ const
    euCOPEDM = 65;
    euCOPFLM = 66;
    euTANEDM = 67;
+   euDegreeSlope = 68;
    //euCurvature = 68;
-   euHighElevUnits = 67;  //same as last real one;  used only for loops through all the elevation units;
+   euHighElevUnits = 68;  //same as last real one;  used only for loops through all the elevation units;
 
 const
    VertCSUndefined = 0;

@@ -1022,7 +1022,7 @@ begin
        else if ParameterInString('AntarcticPolarStereographic') or StrUtils.AnsiContainsText(HorizWKT,'StereographicNorthPole') then begin
           PName := PolarStereographicEllipsoidal;
        end
-       else if ParameterInString('ALBERSCONICEQUALAREA') or  ParameterInString('CONUSALBERS')  then begin
+       else if ParameterInString('ALBERSCONICEQUALAREA') or ParameterInString('CONUSALBERS') or ParameterInString('AlbersEqualArea') then begin
           PName := AlbersEqAreaConicalEllipsoid;
        end
        else if ParameterInString('GCSOSGB1936') or ParameterInString('OSGB1936') then begin

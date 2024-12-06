@@ -339,6 +339,7 @@ begin
       WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  ' +  MapDraw.MapSizeString  + ' current maps=' + IntToStr(NumOpenMaps));
    {$EndIf}
    {$IfDef RecordMapProj} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].DEMMapProj.GetProjName); {$EndIf}
+   {$IfDef TrackDEMelevRange} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].AreaName + '  DEM ' + DEMGlb[CurDEM].zRange); {$EndIf}
 
    try
       if Selection then begin
@@ -359,15 +360,10 @@ begin
       if MDDef.NEAutoDEM then AddOverlay(Self,ovoWorldOutlines);
       SetMapOverlays;
       MapDraw.ResetMarginalia;
+      MapDraw.ScaleMapElevationsToDEM;
+      {$IfDef TrackDEMelevRange} WriteLineToDebugFile('Map z range ' + MapDraw.MapZRangeString); {$EndIf}
+
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow after ResetMarginalia current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-
-
-      (*
-      //MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
-      HighlightLineToDebugFile('{TMapForm.SetUpNewDEMMapWindow} removed ProjectionSharedWithDataset');
-      *)
-
-
       {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow before DrawIt, mt=' + IntToStr(mt)); {$EndIf}
       if DrawIt then begin
          try

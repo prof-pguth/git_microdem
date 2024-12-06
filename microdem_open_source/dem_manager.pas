@@ -314,7 +314,7 @@ begin
    ShowHourglassCursor;
    Results := tStringList.Create;
    Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,' +
-      'DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL,VALID_PTS');
+      'DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL,VALID_PTS,LAT_LOW,LONG_LOW,LAT_HIGH,LONG_HIGH');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
       Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].GridCornerModel + ',' +
@@ -329,7 +329,8 @@ begin
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2) + ',' +
           RealToString(Petmath.HeadingOfLine(DEMGlb[i].AverageXSpace,DEMGlb[i].AverageYSpace),-8,-1) + ',' +
-          IntToStr(DEMGlb[i].ComputeNumberValidPoints(DEMGlb[i].FullDEMGridLimits)));
+          IntToStr(DEMGlb[i].ComputeNumberValidPoints(DEMGlb[i].FullDEMGridLimits)) + ',' + RealToString(DEMGlb[i].DEMBoundBoxGeo.Ymin,-12,-3) + ',' +
+          RealToString(DEMGlb[i].DEMBoundBoxGeo.Xmin,-12,-3) + ',' + RealToString(DEMGlb[i].DEMBoundBoxGeo.Ymax,-12,-3) + ',' + RealToString(DEMGlb[i].DEMBoundBoxGeo.Xmax,-12,-3)  );
    end;
    fName := Petmar.NextFileNumber(MDTempDir,'dem_summary_','.dbf');
    StringList2CSVtoDB(Results,fName);

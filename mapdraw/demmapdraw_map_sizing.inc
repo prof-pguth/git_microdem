@@ -355,8 +355,8 @@ begin
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap in'); {$EndIf}
 
       {$If Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap in, UTM=' + IntToStr(DEMGLB[CurDEM].DEMheader.UTMZone) + DEMGLB[CurDEM].DEMheader.LatHemi); {$EndIf}
-      if DEMGLB[CurDEM].ElevationDEM then TStr := 'DEM' else TStr := 'Grid';
-      BaseTitle := RemoveUnderscores(TStr + ': ' + DEMGLB[CurDEM].AreaName);
+      //if DEMGLB[CurDEM].ElevationDEM then TStr := 'DEM' else TStr := 'Grid';
+      BaseTitle := RemoveUnderscores(DEMGLB[CurDEM].AreaName);
       DEMonMap := CurDEM;
       if (mt = mtDEMReflectElevMerge) then begin
          mt := mtGrayReflect;

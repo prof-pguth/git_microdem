@@ -340,7 +340,27 @@ uses
   point_cloud_memory in '..\las_lidar\point_cloud_memory.pas',
   point_cloud_options in '..\las_lidar\point_cloud_options.pas' {pt_cloud_opts_fm},
   las_files_grouping in '..\las_lidar\las_files_grouping.pas',
-  las_lidar in '..\las_lidar\las_lidar.pas';
+  las_lidar in '..\las_lidar\las_lidar.pas',
+  FMXU.Buffers.DX11 in '..\fmxu_point_cloud\FMXU.Buffers.DX11.pas',
+  FMXU.Buffers in '..\fmxu_point_cloud\FMXU.Buffers.pas',
+  FMXU.Buffers.WebGPU in '..\fmxu_point_cloud\FMXU.Buffers.WebGPU.pas',
+  FMXU.Colors in '..\fmxu_point_cloud\FMXU.Colors.pas',
+  FMXU.Context.DX11 in '..\fmxu_point_cloud\FMXU.Context.DX11.pas',
+  FMXU.Context in '..\fmxu_point_cloud\FMXU.Context.pas',
+  FMXU.Context.WebGPU in '..\fmxu_point_cloud\FMXU.Context.WebGPU.pas',
+  FMXU.D3DShaderCompiler in '..\fmxu_point_cloud\FMXU.D3DShaderCompiler.pas',
+  FMXU.DX11.Utils in '..\fmxu_point_cloud\FMXU.DX11.Utils.pas',
+  FMXU.Material.PointColor in '..\fmxu_point_cloud\FMXU.Material.PointColor.pas',
+  FMXU.PointCloud in '..\fmxu_point_cloud\FMXU.PointCloud.pas',
+  FMXU.Scene in '..\fmxu_point_cloud\FMXU.Scene.pas',
+  FMXU.Viewport3D in '..\fmxu_point_cloud\FMXU.Viewport3D.pas',
+  FMXU.WebGPU.Materials in '..\fmxu_point_cloud\FMXU.WebGPU.Materials.pas',
+  FMXU.WebGPU.Utils in '..\fmxu_point_cloud\FMXU.WebGPU.Utils.pas',
+  FPointCloud in '..\fmxu_point_cloud\FPointCloud.pas' {PointCloudForm},
+  FSimpleViewport in '..\fmxu_point_cloud\FSimpleViewport.pas',
+  FSimpleWebGPU in '..\fmxu_point_cloud\FSimpleWebGPU.pas',
+  WebGPU.Interfaces in '..\fmxu_point_cloud\WebGPU.Interfaces.pas',
+  WebGPU in '..\fmxu_point_cloud\WebGPU.pas';
 
 {$R *.RES}
 

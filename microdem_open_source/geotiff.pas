@@ -641,11 +641,6 @@ end;
                    TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
                    TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
                    TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2] div 256;
-                   (*
-                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
-                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
-                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel+2] div 256;
-                   *)
                end;
             end
             else begin
@@ -654,11 +649,6 @@ end;
                    TheRow[x].rgbtRed := Row8Bit^[x*TiffHeader.SamplesPerPixel];
                    TheRow[x].rgbtGreen := Row8Bit^[x*TiffHeader.SamplesPerPixel+1];
                    TheRow[x].rgbtBlue := Row8Bit^[x*TiffHeader.SamplesPerPixel+2];
-                   (*
-                   TheRow[x].rgbtBlue := Row8Bit^[x*TiffHeader.SamplesPerPixel];
-                   TheRow[x].rgbtGreen := Row8Bit^[x*TiffHeader.SamplesPerPixel+1];
-                   TheRow[x].rgbtRed := Row8Bit^[x*TiffHeader.SamplesPerPixel+2];
-                   *)
                 end;
             end;
          end
@@ -830,7 +820,6 @@ end;
 procedure tTIFFImage.GetTiffRow16bit(Band,Row : integer; var Row16bit : tWordRow16Bit);
 var
    x : integer;
-   //TheRow : ^tRow8Bit;
 begin
    SeekFileOffset(Row);
    if (TiffHeader.BitsPerSample in [15,16]) then begin
@@ -846,10 +835,8 @@ begin
       if BigEndian then for x := 0 to pred(TiffHeader.ImageWidth) do Row16bit[x] := swap(Row16bit[x]);
    end
    else begin
-      //New(TheRow);
       GetTiffRow(Band,Row,Row8Bit^);
       for x := 0 to TiffHeader.ImageWidth do Row16Bit[x] := Row8Bit^[x];
-      //Dispose(TheRow);
    end;
 end;
 
@@ -935,8 +922,6 @@ begin
           New(Hist[i]);
           for x := 0 to MaxWord16 do Hist[i]^[x] := 0;
        end;
-
-//GetTiffRow(Band,Row : integer; var TheRow : tRow8Bit);
 
        if (TiffHeader.BitsPerSample in [15,16]) then begin
            for y := 0 to pred(TiffHeader.ImageLength) do begin
@@ -1275,7 +1260,7 @@ begin {tTIFFImage.CreateTiffDEM}
                         if ValidZ(z) then begin
                            z := z * TiffHeader.Factor;
                            WantDEM.SetGridElevation(Col,dRow,z);
-                           Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                           //Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1287,7 +1272,7 @@ begin {tTIFFImage.CreateTiffDEM}
                         if ValidZ(z) then begin
                            z := z * TiffHeader.Factor;
                            WantDEM.SetGridElevation(Col,dRow,z);
-                           Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                           //Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1301,7 +1286,7 @@ begin {tTIFFImage.CreateTiffDEM}
                         else zi := IntRow^[Col];
                         if ValidZ(zi) then begin
                            WantDEM.SetGridElevation(Col,dRow,zi);
-                           Petmath.CompareValueToExtremes(zi,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                           //Petmath.CompareValueToExtremes(zi,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1312,7 +1297,7 @@ begin {tTIFFImage.CreateTiffDEM}
                         if BigEndian then zw := Swap(WordRow^[Col])
                         else zw := WordRow^[Col];
                         if ValidZ(zw) then begin
-                           Petmath.CompareValueToExtremes(zw,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                           //Petmath.CompareValueToExtremes(zw,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                            WantDEM.SetGridElevation(Col,dRow,zw);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
@@ -1326,7 +1311,7 @@ begin {tTIFFImage.CreateTiffDEM}
                      if ValidZ(z) then begin
                         z := z * TiffHeader.Factor;
                         WantDEM.SetGridElevation(Col,dRow,z);
-                        Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                        //Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                      end
                      else WantDEM.SetGridMissing(Col,dRow);;
                   end;
@@ -1336,7 +1321,7 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                      zb := ByteRow^[Col];
                      WantDEM.SetGridElevation(Col,dRow,zb);
-                     Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                     //Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                   end;
                end
                else if (TiffHeader.BitsPerSample in [4]) then begin
@@ -1344,10 +1329,10 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) div 2 do begin
                      zb := ByteRow^[Col] div 16;
                      WantDEM.SetGridElevation(2*Col,dRow,zb);
-                     Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                     //Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                      zb := ByteRow^[Col] mod 16;
                      WantDEM.SetGridElevation(succ(2*Col),dRow,zb);
-                     Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                     //Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                   end;
                end;
             except
@@ -1367,7 +1352,7 @@ begin {tTIFFImage.CreateTiffDEM}
 
          CloseTiffFile;
          if ShowDEMReadingProgress then EndProgress;
-         //WantDEM.CheckMaxMinElev;
+         WantDEM.CheckMaxMinElev;
          {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over '); {$EndIf}
       end;
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
@@ -2600,6 +2585,12 @@ begin
    {$EndIf}
 
    CloseTiffFile;
+   if (not (MapProjection.PName in [PlateCaree,UTMellipsoidal])) and (MapProjection.wktString = '') then begin
+      // must be after CloseTiffFile;
+      MapProjection.wktString := CreateWKTstringForGeotiff(TIFFFileName);
+   end;
+
+
 
    {$IfDef RecordInitializeDEM} WriteLineToDebugFile(' closed tiff file,  ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
 

@@ -1573,7 +1573,7 @@ begin {MakeMomentsGrid}
    end
    else if (What = 'R') then  begin
       ThinFactor := MDDef.ReliefCalcThin;
-      if MDDef.DoRelief1 then NewGrid(MomentDEMs[1], 'Relief' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
+      if MDDef.DoRelief1 then NewGrid(MomentDEMs[1], 'Relief_m' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoAvgElev then NewGrid(MomentDEMs[2], 'Average_Elev' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoElevStd then NewGrid(MomentDEMs[3], 'Std_Dev_Elev' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoREL then NewGrid(MomentDEMs[4], 'REL' + TStr,euUndefined);
@@ -1622,7 +1622,7 @@ begin {MakeMomentsGrid}
           NewGrid(MomentDEMs[1], ShortSlopeMethodName(MDDef.SlopeAlgorithm) +'_Slope_percent',euPercentSlope);
           WantMapType := MDDef.DefSlopeMap;
        end;
-       if MDDef.DoSlopeDeg then NewGrid(MomentDEMs[2],ShortSlopeMethodName(MDDef.SlopeAlgorithm) + '_Slope_degree)',euDegrees);
+       if MDDef.DoSlopeDeg then NewGrid(MomentDEMs[2],ShortSlopeMethodName(MDDef.SlopeAlgorithm) + '_Slope_degree)',euDegreeSlope);
        if MDDef.DoSlopeSin then NewGrid(MomentDEMs[3],ShortSlopeMethodName(MDDef.SlopeAlgorithm) + '_Sin_slope',euUndefined);
        if MDDef.DoSlopeLogTan then NewGrid(MomentDEMs[4],ShortSlopeMethodName(MDDef.SlopeAlgorithm) + '_log_tan_slope',euUndefined);
        if MDDef.DoSlopeSqrtSin then NewGrid(MomentDEMs[5],ShortSlopeMethodName(MDDef.SlopeAlgorithm) + '_sqrt_sin_slope',euUndefined);
@@ -1675,13 +1675,10 @@ begin {MakeMomentsGrid}
     for i := 1 to MaxGrids do begin
        if ValidDEM(MomentDEMs[i]) then begin
           DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
+          {$IfDef CreateGeomorphMaps} WriteLineToDebugFile(DEMglb[MomentDEMs[i]].AreaName + '  ' + DEMglb[MomentDEMs[i]].zRange); {$EndIf}
           if OpenMaps then begin
              {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
              DEMGlb[MomentDEMs[i]].SetUpMap(false,WantMapType,What in ['A','C','F']);
-(*
-             //DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionSharedWithDataset := true;
-             HighlightLineToDebugFile('{MakeMomentsGrid} removed ProjectionSharedWithDataset');
-*)
              MatchAnotherDEMMap(MomentDEMs[i],CurDEM);
              {$IfDef CreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}
              {$IfDef CreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('New grid',true); {$EndIf}

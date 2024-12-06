@@ -37,6 +37,7 @@ type
     Label1: TLabel;
     Edit2: TEdit;
     CheckBox1: TCheckBox;
+    RedrawSpeedButton12: TSpeedButton;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -45,6 +46,7 @@ type
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
+    procedure RedrawSpeedButton12Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -195,6 +197,11 @@ begin
    BitBtn1.Enabled := RadioGroup1.ItemIndex in [0,3];
 end;
 
+
+procedure TSlopeOptForm.RedrawSpeedButton12Click(Sender: TObject);
+begin
+   DrawPreview;
+end;
 
 procedure TSlopeOptForm.BitBtn1Click(Sender: TObject);
 begin

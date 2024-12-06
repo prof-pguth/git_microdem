@@ -313,7 +313,6 @@ type
     N30: TMenuItem;
     OpenandmergeDEMdirectories1: TMenuItem;
     SpeedButton6: TSpeedButton;
-    est1: TMenuItem;
     LatLong1: TMenuItem;
     Edit1: TMenuItem;
     EditDEMHeader1: TMenuItem;
@@ -810,7 +809,7 @@ type
     procedure Onlinehelp1Click(Sender: TObject);
     procedure OpenandmergeDEMdirectories1Click(Sender: TObject);
     procedure SpeedButton6Click(Sender: TObject);
-    procedure est1Click(Sender: TObject);
+    //procedure est1Click(Sender: TObject);
     procedure LatLong1Click(Sender: TObject);
     procedure EditDEMHeader1Click(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
@@ -1046,6 +1045,7 @@ type
     procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
+    procedure est1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1245,11 +1245,7 @@ uses
 
    {$IfDef ExFMX3D}
    {$Else}
-   View3D_Main,
-   {$EndIf}
-
-   {$IfDef IncludeFMX3DMesh}
-   MainForm_3dMeshDrape,
+      View3D_Main,
    {$EndIf}
 
    {$IfDef ExMultiGrid}
@@ -1263,6 +1259,11 @@ uses
    {$Else}
       DEM_cart_proj,
    {$EndIf}
+
+   {$IfDef FMXU_point_cloud}
+      FPointCloud,
+   {$EndIf}
+
 
    {$IfDef ExMake_grid}
    {$Else}
@@ -1692,12 +1693,6 @@ begin
    {$EndIf}
    if (WmDEM = Nil) or (SkipMenuUpdating) or (ProgramClosing) then exit;
    FileMode := 2;
-
-   {$IfDef IncludeFMX3DMesh}
-      est1.Visible := TrilobiteComputer;
-   {$Else}
-      est1.Visible := false;
-   {$EndIf}
 
    {$IfDef ExRedistrict}
       Legislativeredistricting1.Visible := false;
@@ -4721,14 +4716,13 @@ begin
 end;
 
 
+
 procedure Twmdem.est1Click(Sender: TObject);
 begin
-   {$IfDef IncludeFMX3DMesh}
-      MeshForm := TMeshForm.Create(Application);
-      MeshForm.Show;
+   {$IfDef FMXU_point_cloud}
+      Startfmxu_point_cloud_viewer;
    {$EndIf}
 end;
-
 
 procedure Twmdem.Evapospriaitonversustemperature1Click(Sender: TObject);
 begin

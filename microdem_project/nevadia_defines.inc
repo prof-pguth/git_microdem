@@ -12,7 +12,10 @@
 //   3. adapt to different supported operating systems (only Windows has been tested recently)
 
 
-{$O-,W+,V-,J+}
+{$O+}    //code optimizations, were off but turned on Nov 2024
+{$W-}    //stack frames changed from plus, Nov 2024
+{$V-}    //relaxed var strings
+{$J+}    //allows modifying typed constants
 
 
 {$WEAKLINKRTTI ON}
@@ -23,6 +26,9 @@
 //{$Define IncludePython}
 
 //{$Define ExFresnel}
+
+{$Define FMXU_point_cloud}
+
 
 {$Define MICRODEM}
 {$Define VCL}

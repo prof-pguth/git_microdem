@@ -460,6 +460,8 @@ begin
       euHundredthMa	 : Result := ' Ma';
       euPercentSlope	 : Result := 	'%';
       euUndefined	 : Result := 	' ';
+      euAspectDeg,
+      euDegreeSlope,
       euDegrees	 : Result := 	'°';
       eulnElev	 : Result := 	'ln(z)';
       euLogElev	 : Result := 	'log(z)'	;
@@ -489,7 +491,6 @@ begin
       euGeomorphon	 : Result := 	'Geomorphon';
       euIwahashi	 : Result := 	'Iwahashi'	;
       euESRI2020	 : Result := 	'ESRI2020'	;
-      euAspectDeg	 : Result := 	'°'	;
       euPennock	 : Result := 	'Pennock'	;
       euPerMeter	 : Result := 	'/m'	;
       euWorldCover10m	 : Result := 	'WorldCover 10m';

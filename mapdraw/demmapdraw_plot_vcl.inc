@@ -204,7 +204,6 @@
          end;
 
 
-
          procedure TMapDraw.ComputeDatumShifts(Canvas : tCanvas; Lat,Long : float64; var TotalShiftUTM,TotalShiftGeo : float64; Mark : tMarkShift = msNone);
          var
             eastingshiftUTM,northingshiftUTM,

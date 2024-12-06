@@ -1,0 +1,10 @@
+{$EXCESSPRECISION OFF}
+
+{$IFNDEF PUREPASCAL}
+   {$IF Defined(WIN32)}
+      {$DEFINE WIN32_ASM}
+   {$ELSEIF Defined(WIN64)}
+      {$DEFINE WIN64_ASM}
+   {$IFEND}
+{$ENDIF}
+

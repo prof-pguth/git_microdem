@@ -144,7 +144,6 @@ type
     Button4: TButton;
     CheckBox6: TCheckBox;
     Button5: TButton;
-    //Sphere1: TSphere;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
@@ -1057,12 +1056,6 @@ var
 
       procedure LoadMapWithColorByCodes(Color2D : boolean);
       //PLG code to read real elevation data set
-      (*
-      const
-         xs : array[1..5] of integer = (0,-1,1,1,-1);
-         ys : array[1..5] of integer = (0,-1,1,1,-1);
-         zs : array[1..5] of integer = (0,-1,1,1,-1);
-      *)
       var
          PointXYZColor : ^tPointXYZIArray;
          tfile : File;
@@ -1075,6 +1068,7 @@ var
               reset(tFile,sizeOf(tPointXYZI));
               new(PointXYZColor);
               BlockRead(tfile,PointXYZColor^,MaxPts,Pts);
+              CloseFile(tFile);
 
               if NeedRange then begin
                  //get range of real world coordinates in data set
@@ -1131,7 +1125,6 @@ var
                   end;
                 end;
              end;
-             CloseFile(tFile);
              Dispose(PointXYZColor);
              {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes out'); {$EndIf}
          end
@@ -1325,11 +1318,6 @@ begin
 
    GroupBox6.Visible := false;
    GroupBox7.Visible := false;
-   //GroupBox4.Visible := false;
-
-   //Label3.Visible := false;
-   //Label4.Visible := false;
-   //Label5.Visible := false;
    TrackBar1.Visible := false;
    TrackBar2.Visible := false;
    TrackBar3.Visible := false;

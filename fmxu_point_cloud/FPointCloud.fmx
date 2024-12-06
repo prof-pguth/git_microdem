@@ -1,0 +1,161 @@
+object PointCloudForm: TPointCloudForm
+  Left = 0
+  Top = 0
+  Caption = 'Form24'
+  ClientHeight = 480
+  ClientWidth = 719
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnMouseWheel = FormMouseWheel
+  DesignerMasterStyle = 0
+  object TimerFPS: TTimer
+    Interval = 500
+    OnTimer = TimerFPSTimer
+    Left = 72
+    Top = 80
+  end
+  object Panel1: TPanel
+    Align = Top
+    Size.Width = 719.000000000000000000
+    Size.Height = 40.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object CBShape: TComboBox
+      Align = Left
+      Items.Strings = (
+        'Quads'
+        'Points'
+        'Discs'
+        'Gaussian')
+      ItemIndex = 1
+      Margins.Top = 8.000000000000000000
+      Margins.Bottom = 8.000000000000000000
+      Position.X = 95.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 130.000000000000000000
+      Size.Height = 24.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      OnChange = CBShapeChange
+    end
+    object CTBPointSize: TComboTrackBar
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Align = Left
+      TabOrder = 1
+      Cursor = crIBeam
+      Min = 1.000000000000000000
+      Value = 50.000000000000000000
+      KeyboardType = NumberPad
+      Frequency = 0.000000000000000000
+      Position.X = 309.000000000000000000
+      Position.Y = 8.000000000000000000
+      Margins.Top = 8.000000000000000000
+      Margins.Bottom = 8.000000000000000000
+      Size.Width = 100.000000000000000000
+      Size.Height = 24.000000000000000000
+      Size.PlatformDefault = False
+      OnChangeTracking = CTBPointSizeChangeTracking
+    end
+    object Label1: TLabel
+      Align = Left
+      AutoSize = True
+      Margins.Left = 16.000000000000000000
+      Margins.Top = 8.000000000000000000
+      Margins.Right = 16.000000000000000000
+      Margins.Bottom = 8.000000000000000000
+      Position.X = 16.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 63.000000000000000000
+      Size.Height = 24.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Point Shape'
+      TabOrder = 3
+    end
+    object Label2: TLabel
+      Align = Left
+      AutoSize = True
+      Margins.Left = 16.000000000000000000
+      Margins.Top = 8.000000000000000000
+      Margins.Right = 16.000000000000000000
+      Margins.Bottom = 8.000000000000000000
+      Position.X = 241.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 52.000000000000000000
+      Size.Height = 24.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Point Size'
+      ParentShowHint = False
+      ShowHint = False
+      TabOrder = 2
+    end
+    object CheckBox1: TCheckBox
+      IsChecked = True
+      Position.X = 440.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 73.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 6
+      Text = 'Show 1'
+      OnChange = CheckBox1Change
+    end
+    object CheckBox2: TCheckBox
+      Position.X = 513.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 73.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      Text = 'Show 2'
+      OnChange = CheckBox2Change
+    end
+    object CheckBox3: TCheckBox
+      Position.X = 586.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 73.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      Text = 'Show 3'
+      OnChange = CheckBox3Change
+    end
+  end
+  object Viewport3D1: TViewport3D
+    Align = Client
+    Camera = Camera
+    Color = claBlack
+    Multisample = None
+    Size.Width = 719.000000000000000000
+    Size.Height = 440.000000000000000000
+    Size.PlatformDefault = False
+    UsingDesignCamera = False
+    OnMouseDown = FormMouseDown
+    OnMouseMove = FormMouseMove
+    OnMouseUp = FormMouseUp
+    OnPainting = Viewport3D1Painting
+    object DummyTarget: TDummy
+      Width = 1.000000000000000000
+      Height = 1.000000000000000000
+      Depth = 1.000000000000000000
+      object Camera: TCamera
+        AngleOfView = 45.000000000000000000
+        Target = DummyTarget
+        Position.Z = -100.000000000000000000
+        Width = 1.000000000000000000
+        Height = 1.000000000000000000
+        Depth = 1.000000000000000000
+      end
+    end
+  end
+  object OpenDialog: TOpenDialog
+    Filter = 'OBJ files (*.obj)|*.obj|TXT files (*.txt)|*.txt'
+    Left = 504
+    Top = 80
+  end
+end

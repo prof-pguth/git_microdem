@@ -26,7 +26,8 @@
       //{$Define RecordFan}
       //{$Define RecordScattergram}
       //{$Define RecordOutlinePixels}
-      {$Define RecordSSOforVATgrid}
+      //{$Define RecordSSOforVATgrid}
+      //{$Define TrackDEMelevRange}
       //{$Define RecordTiming}
       //{$Define Record3d}
       //{$Define TrackWKTstring}
@@ -221,10 +222,6 @@ uses
    {$Else}
       View3D_Main,
       FMX.Types3D,
-   {$EndIf}
-
-   {$IfDef IncludeFMX3DMesh}
-      MainForm_3dMeshDrape,
    {$EndIf}
 
    {$IfDef ExStereoNet}
@@ -1061,7 +1058,7 @@ type
     Verticalswipecompare1: TMenuItem;
     Twomaps1: TMenuItem;
     CreateDBs1: TMenuItem;
-    TestMD1: TMenuItem;
+    //TestMD1: TMenuItem;
     Clearsecondgrid1: TMenuItem;
     Blankmapcolor1: TMenuItem;
     Pointsbelow1: TMenuItem;
@@ -2312,7 +2309,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure BitmapandXYZBfile1Click(Sender: TObject);
     procedure Quadtickpoints1Click(Sender: TObject);
     procedure Verticalswipecompare1Click(Sender: TObject);
-    procedure TestMD1Click(Sender: TObject);
+    //procedure TestMD1Click(Sender: TObject);
     procedure Clearsecondgrid1Click(Sender: TObject);
     procedure Blankmapcolor1Click(Sender: TObject);
     procedure Pointsabove1Click(Sender: TObject);
@@ -3564,12 +3561,14 @@ var
 {$I demmapf_set_up_new_windows.inc}
 {$I demmapf_resize_map.inc}
 {$I demmapf_demix_tiles.inc}
+{$I demmapf_make_3d_drapes.inc}
 
 
 {$IfDef ExGeology}
 {$Else}
     {$I demmapf_geology.inc}
 {$EndIf}
+
 
 
 procedure ForceRedrawAllMaps;
@@ -3586,7 +3585,6 @@ end;
 procedure MatchAnotherMapThisPixelSize(ThisMap,OtherMap : tMapForm);
 begin
    {$IfDef RecordMatchMaps} WriteLineToDebugFile('MatchAnotherMapThisPixelSize, thisMap=' + ThisMap.Caption + ' other map=' + OtherMap.Caption); {$EndIf}
-
    if (not ThisMap.OtherMapSameSize(OtherMap)) {and (not ThisMap.OtherMapSameCoverage(OtherMap))} then begin
       OtherMap.SetMapPixelSize(ThisMap.MapDraw.ScreenPixelSize);
    end
@@ -3686,12 +3684,8 @@ begin
 
             Bitmap.Canvas.Brush.Style := bsClear;
             if MDDef.MapNameBelowComposite then begin
-               //Bitmap.Canvas.Font.Size := StartFont;
-               //Bitmap.Canvas.Font.Style := [fsBold];
                DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
                if ValidDEM(DEM) then begin
-                  //TStr := RemoveUnderScores(DEMGLB[DEM].AreaName);
-                  //while (Bitmap.Canvas.TextWidth(TStr) > Bitmap.Width - 10) do Bitmap.Canvas.Font.Size := Bitmap.Canvas.Font.Size - 1;
                   Bitmap.Canvas.TextOut(5,LabelStart, DEMGLB[DEM].AreaName);
                end;
             end;
@@ -3702,10 +3696,8 @@ begin
          end;
       end;
    end;
-   //if (Findings.Count > 0) then begin
-      {$IfDef  RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in, maps=' + IntToStr(Findings.Count)); {$EndIf}
-      MakeBigBitmap(Findings,'',FileName,NumCols);
-   //end;
+   {$IfDef  RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in, maps=' + IntToStr(Findings.Count)); {$EndIf}
+   MakeBigBitmap(Findings,'',FileName,NumCols);
    MDDef.ShowRoamOnAllMaps := MouseRoamAllMaps;
    if (MapsToUse <> Nil) then MapsToUse.Destroy;
    {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps out'); {$EndIf}
@@ -6071,22 +6063,10 @@ end;
 
 
 procedure TMapForm.DrapemultiplegridsonthisDEM1Click(Sender: TObject);
-var
-   i : integer;
-   DEMsWanted : tDEMbooleanArray;
-   Viewer : TView3DForm;
- begin
-   {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click in'); {$EndIf}
-   GetMultipleDEMsFromList('Grids to drape on ' + DEMGlb[MapDraw.DEMonMap].AreaName  + '(max ' + IntToStr(pred(MaxClouds)) + ')',DEMsWanted);
-   Viewer := MapTo3DView(DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw);
-   for i := 1 to MaxDEMDataSets do begin
-      if DEMsWanted[i] and ValidDEM(i) and (i <> MapDraw.DEMonMap) then begin
-         DEMGlb[i].SelectionMap.MapDraw.DEM2onMap := MapDraw.DEMonMap;
-         Viewer.AddMap(DEMGlb[i].SelectionMap.MapDraw);
-      end;
-   end;
-   {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click out'); {$EndIf}
+begin
+   DrapeMultipleMapsOnThisDEM(Self);
 end;
+
 
 
 var
@@ -7484,6 +7464,7 @@ procedure TMapForm.Allreliefmeasures1Click(Sender: TObject);
 begin
    {$IfDef ExGeostats}
    {$Else}
+       ReadDefault('Thinning factor',MDDef.ReliefCalcThin);
        MakeMomentsGrid(MapDraw.DEMonMap,'G');
    {$EndIf}
 end;
@@ -7601,14 +7582,6 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.TestMD1Click(Sender: TObject);
-begin
-   {$IfDef RecordDrape} WriteLineToDebugFile('TMapForm.TestMD1Click in'); {$EndIf}
-
-   {$IfDef IncludeFMX3DMesh}
-      LoadMDMeshMap(Self.MapDraw);
-   {$EndIf}
-end;
 
 procedure TMapForm.Lntransform1Click(Sender: TObject);
 begin
@@ -7630,6 +7603,8 @@ procedure TMapForm.Reliefavgelevstdelev1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
+      ReadDefault('Box sample size (m)',MDDef.ReliefBoxSizeMeters);
+      MDDef.ReliefCalcThin := 1;
       MakeMomentsGrid(MapDraw.DEMonMap,'R',MDDef.ReliefBoxSizeMeters);
    {$EndIf}
 end;
@@ -7738,20 +7713,10 @@ begin
 end;
 
 procedure TMapForm.N3DviewwithtwoDEMs1Click(Sender: TObject);
-var
-   i,DEM1,DEM2 : integer;
-   DEMsWanted : tDEMbooleanArray;
-   Viewer : TView3DForm;
- begin
-   GetMultipleDEMsFromList('Grids for 3D view (max ' + IntToStr(MaxClouds) + ')',DEMsWanted);
-   Viewer := nil;
-   for i := 1 to MaxDEMDataSets do begin
-      if DEMsWanted[i] then begin
-         if Viewer = Nil then Viewer := MapTo3DView(DEMGlb[i].SelectionMap.MapDraw)
-         else Viewer.AddMap(DEMGlb[i].SelectionMap.MapDraw);
-      end;
-   end;
+begin
+   Make3DviewSelectedDEMs;
 end;
+
 
 
 procedure TMapForm.NDBIbuiltup1Click(Sender: TObject);
@@ -8569,11 +8534,15 @@ begin
    if MDDef.ShowMapToolbar then Panel1.Height := 27
    else Panel1.Height := 0;
 
-      {$IfDef IncludeFMX3DMesh}
-         TestMD1.Visible := TrilobiteComputer;
-      {$Else}
-         TestMD1.Visible := false;
-      {$EndIf}
+   {$IfDef ExOddballDEMexports}
+      Obj1.Visible := false;
+      USGSASCII1.Visible := false;
+      N16bitBSQ1.Visible := false;
+      ASCIIArcGrid1.Visible := false;
+      PGM1.Visible := false;
+      PGM8bit1.Visible := false;
+      DTED1.Visible := false;
+   {$EndIf}
 
    //these are turned on here, but might be turned off later for small maps where they would not fit on visible toolbar
       ClipboardSpeedButton.Visible := true;
@@ -8754,12 +8723,6 @@ begin
          Landsatmetadata2.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SatOnMap].LandsatNumber <> 0);
          VISandNIRsurfacebands1.Visible := MapDraw.ValidSatOnMap and (SatImage[MapDraw.SatOnMap].LandsatNumber <> 0);
          Sentinel2Metadata2.Visible := MapDraw.ValidSatOnMap and SatImage[MapDraw.SatOnMap].IsSentinel2;
-      {$EndIf}
-
-      {$IfDef ExDTED}
-         DTED1.Visible := false;
-      {$Else}
-         DTED1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
       {$EndIf}
 
       {$IfDef IncludePeakIslandArea}
@@ -11826,29 +11789,10 @@ end;
 
 
 procedure TMapForm.OpenGLwithallmaps1Click(Sender: TObject);
-var
-   Viewer : TView3DForm;
-   Maps : tStringList;
-   i,j,Num : integer;
 begin
-   PickMaps(Maps,'Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
-   if (Maps.Count > 0) then begin
-      MatchThiscoverageareaandsamepixelsize1Click(Sender);
-      Viewer := MapTo3DView(Self.MapDraw);
-      Num := 1;
-      for i := 0 to pred(WMDEM.MDIChildCount) do begin
-         if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
-            for j := 0 to pred(Maps.Count) do begin
-               if (Num < MaxClouds) and (Maps.Strings[j] = (WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
-                  inc(Num);
-                  Viewer.AddMap((WMDEM.MDIChildren[i] as TMapForm).MapDraw);
-               end;
-            end;
-         end;
-      end;
-   end;
-   Maps.Free;
+   Make3DviewMultipleMaps(Self);
 end;
+
 
 
 {$IfDef ExMultiGrid}
@@ -12175,6 +12119,8 @@ var
                    euPercentSlope : Result := ' z=' + RealToString(Elev,6,1) + '%';
                    euPerMeter : Result := ' z=' + RealToString(Elev,12,-6) + ' /m';
                    euPercent : Result := ' z=' + RealToString(Elev,6,2) + '%';
+                   euDegreeSlope,
+                   euAspectDeg,
                    euDegrees : Result := ' z=' + RealToString(Elev,6,2) + '°';
                    eulnElev : Result := 'ln z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(e,Elev),-18,-2);
                    euLogElev : Result := 'log z=' + RealToString(Elev,5,3) + '  z=' + RealToString(Math.Power(10,Elev),-18,-2);
@@ -18884,7 +18830,7 @@ var
 begin
    FileName := '';
    DEMGlb[MapDraw.DEMonMap].SavePartOfDEMWithData(FileName);
-   DoFastMapRedraw;
+   //DoFastMapRedraw;
 end;
 
 procedure TMapForm.PortionwithdataGeotiff1Click(Sender: TObject);
@@ -18893,7 +18839,7 @@ var
 begin
    FileName := '';
    DEMGlb[MapDraw.DEMonMap].SavePartOfDEMWithDataGeotiff(FileName);
-   DoFastMapRedraw;
+   //DoFastMapRedraw;
 end;
 
 
@@ -20252,27 +20198,10 @@ begin
    Level1stateprovince1Click(Sender);
 end;
 
+
 procedure TMapForm.OGL_speedbuttonClick(Sender: TObject);
 begin
-   {$IfDef ExFMX3D}
-   {$Else}
-      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick in'); {$EndIf}
-      MapDraw.MapCorners.BoundBoxUTM := MapDraw.GetBoundBoxUTM;
-      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick got bound box'); {$EndIf}
-      if MDDef.OpenGLCleanOverlays then begin
-         SaveBackupDefaults;
-         NakedMapOptions;
-         DoFastMapRedraw;
-      end;
-      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick call Map3D'); {$EndIf}
-      Map3d := MapTo3DView(Self.MapDraw);
-      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick back Map3D'); {$EndIf}
-      if MDDef.OpenGLCleanOverlays then begin
-         RestoreBackupDefaults;
-         DoFastMapRedraw;
-      end;
-      {$IfDef Record3d} WriteLineToDebugFile('TMapForm.OGL_speedbuttonClick out'); {$EndIf}
-   {$EndIf}
+   CopyMapTo3Dview(Self);
 end;
 
 procedure TMapForm.oInternationalDateLine1Click(Sender: TObject);
@@ -20322,15 +20251,15 @@ begin
    {$IfDef RecordSave} WriteLineToDebugFile('TMapForm.MDDEM1Click'); {$EndIf}
    FileName := '';
    DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(FileName);
-   DoFastMapRedraw;
+   //DoFastMapRedraw;
 end;
 
 procedure TMapForm.DTED1Click(Sender: TObject);
 begin
-   {$IfDef ExDTED}
+   {$IfDef ExOddballDEMexports}
    {$Else}
       DEMGlb[MapDraw.DEMonMap].SaveAsDTED(0,0);
-      DoFastMapRedraw;
+      //DoFastMapRedraw;
    {$EndIf}
 end;
 
@@ -23873,74 +23802,6 @@ begin
 end;
 
 
-procedure Export3DDEMasOBJ(DEMonMap : integer);
-var
-   xm,x,y,NumVert     : integer;
-   z1,z2,z3,z4,zc : float32;
-   x1,y1,x2,y2,x3,y3,x4,y4,xc,yc : float64;
-   ObjList : tStringList;
-   //ThisColVertex,LastColVertex : array[0..MaxElevArraySize] of integer;
-   SaveName : PathStr;
-
-   procedure AddVertex(x,y,z : float64);
-   begin
-      OBJList.Add('v ' + RealToString(x-xc,-18,1) + ' ' + RealToString(y-yc,-18,1) + ' ' + RealToString(z-zc,-18,1));
-   end;
-
-begin
-   {$IfDef RecordSave} WriteLineToDebugFile('Start Export3DDEMasOBJ'); {$EndIf}
-   with DEMGlb[DEMonMap] do begin
-      x := pred(DEMheader.NumCol) * Pred(DEMheader.NumRow);
-      xm := x * 139;
-      if not AnswerIsYes('Export with ' + IntToStr(x) + ' polygons' + MessLineBreak + 'File: ' + SmartMemorySizeBytes(xm) + MessLineBreak + 'Proceed') then exit;
-
-      SaveName := ProgramRootDir;
-      GetFileNameDefaultExt('OBJ file','OBJ file|*.OBJ',SaveName);
-
-      if AnswerIsYes('Center output') then begin
-         x := DEMheader.NumCol div 2;
-         y := DEMheader.NumRow div 2;
-         DEMGridtoUTM(x,y,xc,yc);
-         GetElevMetersOnGrid(x,y,zc);
-      end
-      else begin
-         xc := 0;
-         yc := 0;
-         zc := 0;
-      end;
-
-      ObjList := tStringList.Create;
-      ObjList.Add('# Created with PETMAR Trilobite Breeding Ranch MICRODEM');
-      ObjList.Add('# DEM: ' + AreaName);
-      NumVert := 0;
-      if ShowSatProgress then StartProgress('Export');
-
-      for x := 0 to (DEMheader.NumCol-2) do begin
-         if ShowSatProgress then UpdateProgressBar(x/(DEMheader.NumCol-2));
-         for y := 0 to (DEMheader.NumRow-2) do begin
-            if (x > 0) and GetElevMetersOnGrid(x,y,z1) and GetElevMetersOnGrid(succ(x),y,z2) and GetElevMetersOnGrid(succ(x),succ(y),z3) and  GetElevMetersOnGrid(x,succ(y),z4) then begin
-               DEMGridtoUTM(X,y,x1,y1);
-               DEMGridtoUTM(succ(X),y,x2,y2);
-               DEMGridtoUTM(succ(X),succ(y),x3,y3);
-               DEMGridtoUTM(X,succ(y),x4,y4);
-               AddVertex(x1,y1,z1);
-               AddVertex(x2,y2,z2);
-               AddVertex(x3,y3,z3);
-               AddVertex(x4,y4,z4);
-               OBJList.Add('f ' + IntToStr(NumVert+1) + ' ' + IntToStr(NumVert+2) + ' ' + IntToStr(NumVert+3) + ' ' + IntToStr(NumVert+4)  );
-               inc(NumVert,4);
-            end;
-            //LastColvertex := ThisColVertex;
-         end;
-      end;
-      if ShowSatProgress then EndProgress;
-
-      ObjList.SaveToFile(SaveName);
-      ObjList.Free;
-   end;
-   {$IfDef RecordSave} WriteLineToDebugFile('Ending Export3DDEMasOBJ'); {$EndIf}
-end;
-
 procedure TMapForm.O1Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(FillHolesByOutline);
@@ -23948,7 +23809,10 @@ end;
 
 procedure TMapForm.OBJ1Click(Sender: TObject);
 begin
-   Export3DDEMasOBJ(MapDraw.DEMonMap);
+   {$IfDef ExOddballDEMexports}
+   {$Else}
+      Export3DDEMasOBJ_ASCII(MapDraw.DEMonMap);
+   {$EndIf}
 end;
 
 procedure TMapForm.Oceancurrents1Click(Sender: TObject);
@@ -25040,26 +24904,10 @@ begin
 end;
 
 procedure TMapForm.Selectmultiplegrids1Click(Sender: TObject);
-var
-   i : integer;
-   DEMsWanted : tDEMbooleanArray;
-   Viewer : TView3DForm;
- begin
-   {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click in'); {$EndIf}
-   GetMultipleDEMsFromList('Grids for 3D view (max ' + IntToStr(MaxClouds) + ')',DEMsWanted);
-   Viewer := nil;
-   for i := 1 to MaxDEMDataSets do begin
-      if DEMsWanted[i] and ValidDEM(i) then begin
-         if (Viewer = Nil) then begin
-            Viewer := MapTo3DView(DEMGlb[i].SelectionMap.MapDraw);
-         end
-         else begin
-            Viewer.AddMap(DEMGlb[i].SelectionMap.MapDraw);
-         end;
-      end;
-   end;
-   {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click out'); {$EndIf}
+begin
+   Make3DviewSelectedDEMs;
 end;
+
 
 
 procedure TMapForm.All11scale1Click(Sender: TObject);
@@ -25340,11 +25188,6 @@ begin
    CSV_Export.ExportCSVLatLongGrid(Self);
 end;
 
-(*
-procedure TMapForm.Exportmaplibrary1Click(Sender: TObject);
-begin
-end;
-*)
 
 procedure TMapForm.SRTMwaterbodies2Click(Sender: TObject);
 var

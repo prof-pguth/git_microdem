@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1698
+  ClientHeight = 1678
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1671
+    Height = 1651
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,11 +51,10 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitHeight = 1651
     object Image1: TImage
       Left = 3
       Top = -247
-      Width = 601
+      Width = 182
       Height = 377
       AutoSize = True
       OnDblClick = Image1DblClick
@@ -208,12 +207,11 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1626
+      Top = 1606
       Width = 3840
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1606
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -1518,8 +1516,8 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 159
-    Top = 42
+    Left = 223
+    Top = 50
     object File1: TMenuItem
       Caption = '&File'
       object Open1: TMenuItem
@@ -5090,13 +5088,12 @@ object MapForm: TMapForm
     object TestMD1: TMenuItem
       Caption = 'Test3d'
       GroupIndex = 1
-      OnClick = TestMD1Click
     end
   end
   object SaveDialog1: TSaveDialog
     DefaultExt = 'bmp'
-    Left = 57
-    Top = 41
+    Left = 321
+    Top = 49
   end
   object ColorDialog1: TColorDialog
     CustomColors.Strings = (
@@ -5120,8 +5117,8 @@ object MapForm: TMapForm
     Top = 179
   end
   object PrintDialog1: TPrintDialog
-    Left = 50
-    Top = 102
+    Left = 410
+    Top = 62
   end
   object MapParameterPopupMenu1: TPopupMenu
     Left = 194
@@ -6011,8 +6008,8 @@ object MapForm: TMapForm
     end
   end
   object PopupMenu12: TPopupMenu
-    Left = 650
-    Top = 46
+    Left = 754
+    Top = 54
     object Militaryicons1: TMenuItem
       Bitmap.Data = {
         F6000000424DF600000000000000760000002800000010000000100000000100
@@ -6438,11 +6435,11 @@ object MapForm: TMapForm
     object Relief2: TMenuItem
       Caption = 'Relief'
       object Reliefavgelevstdelev1: TMenuItem
-        Caption = 'Relief, avg elev, std elev, REL'
+        Caption = 'Relief, avg elev, std elev, REL (fast)'
         OnClick = Reliefavgelevstdelev1Click
       end
       object Allreliefmeasures1: TMenuItem
-        Caption = 'Relief, summit, erosion, geophysical'
+        Caption = 'Relief, summit, erosion, geophysical (slow)'
         OnClick = Allreliefmeasures1Click
       end
       object Mask2: TMenuItem

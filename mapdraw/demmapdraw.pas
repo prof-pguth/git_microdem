@@ -77,7 +77,7 @@
       //{$Define RecordPixelSize}
       //{$Define RecordShortDefineDatum}
       //{$Define RecordDBPlots}
-      //{$Define RecordOverlays}
+      {$Define RecordOverlays}
       //{$Define RecordPLSS}
       //{$Define RecordOffMap}
       //{$Define RecordWMS}
@@ -1667,7 +1667,7 @@ begin
           end;
        end;
    end;
-   {$IfDef RecordElevationScaling} WriteLineToDebugFile('TMapDraw.ScaleMapElevationsToDEM out' + MapZRangeString); {$EndIf}
+   {$IfDef RecordElevationScaling} WriteLineToDebugFile('TMapDraw.ScaleMapElevationsToDEM out, map z range is ' + MapZRangeString); {$EndIf}
 end;
 
 

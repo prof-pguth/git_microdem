@@ -1214,7 +1214,7 @@ end;
    begin
        XBoxGridSize := round(BoxSizeMeters / AverageXSpace);
        YBoxGridSize := round(BoxSizeMeters / AverageYSpace);
-       BoxSizeString := ' (' +  IntToStr(BoxSizeMeters) + ' m)' ;
+       BoxSizeString := '_' +  IntToStr(BoxSizeMeters) + '_m' ;
    end;
 {$EndIf}
 

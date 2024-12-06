@@ -321,9 +321,6 @@ end;
 {$EndIf}
 
 
-{$IfDef ExBILWrite}
-{$Else}
-
 procedure WritePRJfile(fName : PathStr; DEMUsed : byte);
 var
    Header : tStringList;
@@ -459,9 +456,6 @@ begin
    CloseFile(fFile);
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('tDEMDataSet.WriteBILFormatDEM out'); {$EndIf}
 end;
-
-{$EndIf}
-
 
 
 
@@ -612,8 +606,6 @@ begin
 end;
 
 
-{$IfDef ExDTED}
-{$Else}
    procedure tDEMDataSet.SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
    const
       MaxRows = MaxElevArraySize*3+12;
@@ -918,7 +910,75 @@ end;
          {$IfDef RecordWriteDEM} WriteLineToDebugFile('Disposed'); {$EndIf}
       end;
    end;
-{$EndIf}
+
+
+procedure Export3DDEMasOBJ_ASCII(DEMonMap : integer);
+var
+   xm,x,y,NumVert     : integer;
+   z1,z2,z3,z4,zc : float32;
+   x1,y1,x2,y2,x3,y3,x4,y4,xc,yc : float64;
+   ObjList : tStringList;
+   //ThisColVertex,LastColVertex : array[0..MaxElevArraySize] of integer;
+   SaveName : PathStr;
+
+   procedure AddVertex(x,y,z : float64);
+   begin
+      OBJList.Add('v ' + RealToString(x-xc,-18,1) + ' ' + RealToString(y-yc,-18,1) + ' ' + RealToString(z-zc,-18,1));
+   end;
+
+begin
+   {$IfDef RecordSave} WriteLineToDebugFile('Start Export3DDEMasOBJ'); {$EndIf}
+   with DEMGlb[DEMonMap] do begin
+      x := pred(DEMheader.NumCol) * Pred(DEMheader.NumRow);
+      xm := x * 139;
+      if not AnswerIsYes('Export with ' + IntToStr(x) + ' polygons' + MessLineBreak + 'File: ' + SmartMemorySizeBytes(xm) + MessLineBreak + 'Proceed') then exit;
+
+      SaveName := ProgramRootDir;
+      GetFileNameDefaultExt('OBJ file','OBJ file|*.OBJ',SaveName);
+
+      if AnswerIsYes('Center output') then begin
+         x := DEMheader.NumCol div 2;
+         y := DEMheader.NumRow div 2;
+         DEMGridtoUTM(x,y,xc,yc);
+         GetElevMetersOnGrid(x,y,zc);
+      end
+      else begin
+         xc := 0;
+         yc := 0;
+         zc := 0;
+      end;
+
+      ObjList := tStringList.Create;
+      ObjList.Add('# Created with PETMAR Trilobite Breeding Ranch MICRODEM');
+      ObjList.Add('# DEM: ' + AreaName);
+      NumVert := 0;
+      if ShowSatProgress then StartProgress('Export');
+
+      for x := 0 to (DEMheader.NumCol-2) do begin
+         if ShowSatProgress then UpdateProgressBar(x/(DEMheader.NumCol-2));
+         for y := 0 to (DEMheader.NumRow-2) do begin
+            if (x > 0) and GetElevMetersOnGrid(x,y,z1) and GetElevMetersOnGrid(succ(x),y,z2) and GetElevMetersOnGrid(succ(x),succ(y),z3) and  GetElevMetersOnGrid(x,succ(y),z4) then begin
+               DEMGridtoUTM(X,y,x1,y1);
+               DEMGridtoUTM(succ(X),y,x2,y2);
+               DEMGridtoUTM(succ(X),succ(y),x3,y3);
+               DEMGridtoUTM(X,succ(y),x4,y4);
+               AddVertex(x1,y1,z1);
+               AddVertex(x2,y2,z2);
+               AddVertex(x3,y3,z3);
+               AddVertex(x4,y4,z4);
+               OBJList.Add('f ' + IntToStr(NumVert+1) + ' ' + IntToStr(NumVert+2) + ' ' + IntToStr(NumVert+3) + ' ' + IntToStr(NumVert+4)  );
+               inc(NumVert,4);
+            end;
+            //LastColvertex := ThisColVertex;
+         end;
+      end;
+      if ShowSatProgress then EndProgress;
+
+      ObjList.SaveToFile(SaveName);
+      ObjList.Free;
+   end;
+   {$IfDef RecordSave} WriteLineToDebugFile('Ending Export3DDEMasOBJ'); {$EndIf}
+end;
 
 
 

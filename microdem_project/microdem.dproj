@@ -168,12 +168,12 @@
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
         <VerInfo_Release>24</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.24.19;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.24.21;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>19</VerInfo_Build>
+        <VerInfo_Build>21</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -942,6 +942,29 @@
         </DCCReference>
         <DCCReference Include="..\las_lidar\las_files_grouping.pas"/>
         <DCCReference Include="..\las_lidar\las_lidar.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Buffers.DX11.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Buffers.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Buffers.WebGPU.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Colors.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Context.DX11.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Context.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Context.WebGPU.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.D3DShaderCompiler.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.DX11.Utils.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Material.PointColor.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.PointCloud.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Scene.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.Viewport3D.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.WebGPU.Materials.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FMXU.WebGPU.Utils.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FPointCloud.pas">
+            <Form>PointCloudForm</Form>
+            <FormType>fmx</FormType>
+        </DCCReference>
+        <DCCReference Include="..\fmxu_point_cloud\FSimpleViewport.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\FSimpleWebGPU.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\WebGPU.Interfaces.pas"/>
+        <DCCReference Include="..\fmxu_point_cloud\WebGPU.pas"/>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>
@@ -1029,6 +1052,7 @@
         <None Include="..\geomorph\demstat_grid_compare.inc"/>
         <None Include="..\geomorph\demstat_ssim.inc"/>
         <None Include="..\geomorph\histograms.inc"/>
+        <None Include="..\mapform\demmapf_make_3d_drapes.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1847,6 +1871,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="..\mapform\demmapf_geostats.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\mapform\demmapf_make_3d_drapes.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

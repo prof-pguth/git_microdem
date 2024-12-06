@@ -45,7 +45,7 @@ unit DEMCoord;
       //{$Define TrackDEMboundingBox}
       //{$Define RecordUKOS}
       //{$Define SavePartDEM}
-      //{$Define RecordMapType}
+      {$Define RecordMapType}
       //{$Define RecordDEMstats}
       //{$Define TimePointParameters}
       //{$Define RecordsfBoundBox2tGridLimits}     //use with care; trashes the debug file
@@ -65,11 +65,11 @@ unit DEMCoord;
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      //{$Define RecordMinMax}
+      {$Define RecordMinMax}
       //{$Define RecordExtremeZ}
       //{$Define GeotiffCorner}
       //{$Define RecordHorizon}
-      //{$Define RecordZRange}
+      {$Define RecordZRange}
       //{$Define RecordDEMMemoryAllocations}
       //{$Define RecordFilter}
       //{$Define RecordReadMDDEM}
@@ -805,6 +805,11 @@ function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName 
 
 procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
 
+{$IfDef ExOddballDEMexports}
+{$Else}
+   procedure Export3DDEMasOBJ_ASCII(DEMonMap : integer);
+{$EndIf}
+
 
 const
    DEMtooLargeString = 'DEM too large';
@@ -908,7 +913,6 @@ var
    {$I demcoord_curvature.inc}
 {$EndIf}
 
-
 {$IfDef ExDEMEdits}
 {$Else}
    {$I demcoord_edits.inc}
@@ -928,7 +932,6 @@ var
 {$Else}
    {$I demcoord_veg.inc}
 {$EndIf}
-
 
 {$If Defined(TrackDEMCorners) or Defined(RecordHalfPixelShift)}
    procedure tDEMDataSet.WriteDEMCornersToDebugFile(Where : shortstring);
@@ -2664,6 +2667,8 @@ begin {tDEMDataSet.DefineDEMVariables}
    if DEMAlreadyDefined then exit;
 
    DEMAlreadyDefined := true;
+
+   {$If Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + '  DEM ' + zRange); {$EndIf}
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)}  WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' in, proj=' + DEMmapProj.GetProjName); {$EndIf}
    {$IfDef RecordProjectionParameters} DEMmapProj.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
    {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in,digitize datum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
@@ -2679,8 +2684,10 @@ begin {tDEMDataSet.DefineDEMVariables}
 
    if not (DEMheader.LatHemi in ['N','S']) then DEMheader.LatHemi := MDDef.DefaultLatHemi;
    SetElevationMultiple;
-   DEMheader.MinElev := DEMheader.StoredMinElev * ElevationMultiple;;
-   DEMheader.MaxElev := DEMheader.StoredMaxElev * ElevationMultiple;
+   if abs(ElevationMultiple - 1) > 0.001 then begin
+      DEMheader.MinElev := DEMheader.StoredMinElev * ElevationMultiple;
+      DEMheader.MaxElev := DEMheader.StoredMaxElev * ElevationMultiple;
+   end;
 
    if DEMheader.DigitizeDatum in [Spherical] then begin
       if (MDdef.MapTicks <> tixNone) then MDdef.MapTicks := tixLatLong;
@@ -2719,6 +2726,7 @@ begin {tDEMDataSet.DefineDEMVariables}
 
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, pname=' + DEMmapProj.GetProjName); {$EndIf}
    {$IfDef TrackSWcorner} WriteDEMCornersToDebugFile('DefineDEMVariables out, ' + AreaName); {$EndIf}
+   {$If Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, ' + AreaName + '  DEM ' + zRange); {$EndIf}
 end;
 
 
@@ -3596,16 +3604,16 @@ procedure tDEMDataSet.SetUpMap(CheckElevs : boolean; inMapType : tMapType = mtDE
 begin
    {$IfDef RecordSetup} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(ord(inMapType)) + '  DEM=' + IntToStr(ThisDEM)); {$EndIf}
    if CheckElevs then CheckMaxMinElev;
-   {$IfDef RecordSetup} WriteLineToDebugFile('Elev range: ' + zRange); {$EndIf}
+   {$If Defined(RecordSetup) or Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.SetUpMap ' + AreaName + '  DEM ' + zRange); {$EndIf}
 
    //reset the DEM definitions, in case this is called due to changes in the DEM without a selection map or changed selection map
    DEMAlreadyDefined := false;
    DefineDEMVariables(True);
 
    {$IfDef VCL}
-      {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + '  DEM=' + IntToStr(ThisDEM)); {$EndIf}
+      {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + ' DEM=' + IntToStr(ThisDEM) + ' DEM ' + zRange); {$EndIf}
       CreateDEMSelectionMap(ThisDEM,true,UsePC,inMapType);
-      {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + '  DEM=' + IntToStr(ThisDEM)); {$EndIf}
+      {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + ' DEM=' + IntToStr(ThisDEM) + ' DEM ' + zRange); {$EndIf}
       SelectionMap.Closable := true;
       SelectionMap.CheckProperTix;
       {$IfDef RecordSetup} WriteLineToDebugFile('tDEMDataSet.SetUpMap, projection=' + SelectionMap.MapDraw.PrimMapProj.GetProjName); {$EndIf}
