@@ -2,8 +2,8 @@ object StratOptsForm: TStratOptsForm
   Left = 350
   Top = 199
   Caption = 'Stratcol Options'
-  ClientHeight = 388
-  ClientWidth = 534
+  ClientHeight = 386
+  ClientWidth = 526
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,7 +12,6 @@ object StratOptsForm: TStratOptsForm
   Font.Style = []
   Position = poDefaultSizeOnly
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object GroupBox2: TGroupBox
     Left = 8

@@ -3,8 +3,8 @@ object patternf: Tpatternf
   Top = 359
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Lithology'
-  ClientHeight = 409
-  ClientWidth = 535
+  ClientHeight = 408
+  ClientWidth = 531
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -15,29 +15,31 @@ object patternf: Tpatternf
   Visible = True
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object LithImage1: TImage
     Left = 0
     Top = 0
-    Width = 535
-    Height = 390
+    Width = 531
+    Height = 389
     Align = alClient
     AutoSize = True
     OnDblClick = LithImage1DblClick
     OnMouseDown = LithImage1MouseDown
     OnMouseMove = LithImage1MouseMove
+    ExplicitWidth = 535
     ExplicitHeight = 363
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 390
-    Width = 535
+    Top = 389
+    Width = 531
     Height = 19
     Panels = <
       item
         Width = 200
       end>
+    ExplicitTop = 390
+    ExplicitWidth = 535
   end
   object MainMenu1: TMainMenu
     Left = 128

@@ -452,7 +452,7 @@ begin
       {$IfDef RecordOpenDEM} WriteLineToDebugFile('Regional DEM=' + LastDEMName); {$EndIf}
 
       if (NumDEMDataSetsOpen = 0) then begin
-         {$IfDef RecordOpenDEM} WriteLineToDebugFile('Close because no DEM');   {$EndIf}
+         {$IfDef RecordOpenDEM} WriteLineToDebugFile('Close because no DEM'); {$EndIf}
          exit;
       end
       else begin
@@ -703,7 +703,7 @@ begin
          AddOrSubtractOverlay(TargetMap,ovoGazetteer,true);
       end
       else begin
-        {$IfDef RecordGazetteer} WriteLineToDebugFile('Problem loading gazetteer ' +  LastGazFile);   {$EndIf}
+        {$IfDef RecordGazetteer} WriteLineToDebugFile('Problem loading gazetteer ' +  LastGazFile); {$EndIf}
       end;
    end;
 end;
