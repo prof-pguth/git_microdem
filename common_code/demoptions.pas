@@ -23,7 +23,7 @@ interface
 uses
    Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
    SysUtils, Windows,Classes, Graphics, Forms, Controls,
-   Buttons,  {OkCancl2,}  Tabnotbk, Dialogs,
+   Buttons, Tabnotbk, Dialogs,
    DEMMapf, DEMDefs,Grids,Petmar_types, OKCANCL2;
 
 type
@@ -418,6 +418,7 @@ type
     CheckBox80: TCheckBox;
     CheckBox161: TCheckBox;
     BitBtn20: TBitBtn;
+    CheckBox167: TCheckBox;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -961,7 +962,7 @@ begin
 
    if MDdef.GraphicalCoordVerify then RadioGroup5.ItemIndex := 0
    else RadioGroup5.ItemIndex := 1;
-   RadioGroup6.ItemIndex := MDdef.DefDEMMap;
+   RadioGroup6.ItemIndex := MDdef.DefElevMap;
 
    RadioGroup7.ItemIndex := ord(MDdef.ProgramOption);
    RadioGroup9.ItemIndex := ord(MDdef.OpennessHt);
@@ -1205,6 +1206,7 @@ begin
    CheckBox157.Checked := MDDef.ShowWinExec;
    CheckBox159.Checked := MDDef.MapLimitDB;
    CheckBox161.Checked := MDDef.ProcessLoopsForward;
+   CheckBox167.Checked := MDDef.New3Dviewer;
    CheckBox181.Checked := MDDef.DEMIXCompositeImage;
 
    CheckBox300.Checked := MDDef.SeaLevelToMissing;
@@ -1423,7 +1425,7 @@ begin
    MDdef.OutPutLatLongMethod := tLatLongMethod(RadioGroup3.ItemIndex);
    MDdef.CheckPoint := tCheckPoint(RadioGroup4.ItemIndex);
    MDdef.GraphicalCoordVerify := RadioGroup5.ItemIndex = 0;
-   MDdef.DefDEMMap := RadioGroup6.ItemIndex;
+   MDdef.DefElevMap := RadioGroup6.ItemIndex;
    MDDef.dnConvert := tdnConvert(RadioGroup8.ItemIndex);
 
    MDdef.OpennessHt := RadioGroup9.ItemIndex;
@@ -1575,6 +1577,7 @@ begin
    MDDef.ShowSieve := CheckBox137.Checked;
 
    MDDef.OpenGLCleanOverlays := CheckBox145.Checked;
+   MDDef.New3Dviewer := CheckBox167.Checked;
 
   // MDDef.TigerToCDS := CheckBox161.Checked;
    MDDef.SeaLevelToMissing := CheckBox300.Checked;

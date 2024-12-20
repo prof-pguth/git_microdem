@@ -141,7 +141,7 @@ begin
    for I := 0 to pred(Clouds.Count) do begin
       {$IfDef LidarGlobalDEMs} WriteLineToDebugFile('Clouds.Strings[i]'); {$EndIf}
        if ValidPath(Clouds.Strings[i]) then begin
-          OvelayPointClouds(Nil,Clouds.Strings[i]);
+          OverlayPointClouds(Nil,Clouds.Strings[i]);
           if (pt_cloud_opts_fm.LasFiles[1].CloudName <> '') then begin
              pt_cloud_opts_fm.AutoSaveDir := 'c:\temp\';
              pt_cloud_opts_fm.DEMrulesFName := DEMstoCreate;

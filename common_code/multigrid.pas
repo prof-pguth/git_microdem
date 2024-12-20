@@ -14,7 +14,7 @@ unit multigrid;
    {$IFDEF DEBUG}
       //{$Define RecordMultiGrids}
       //{$Define RecordHyperion}
-      //{$Define RecordSentinel1}
+      {$Define RecordSentinel1}
       //{$Define RecordMultiGridsDetailed}
       //{$Define RecordCloseMultiGrids}
       //{$Define RecordSatClass}
@@ -234,10 +234,12 @@ uses
 
 procedure OpenSentinel1Radar;
 var
-   ThisOne,i,j,k,x,y : integer;
+   ThisOne,i,j,k,x,y,xg,yg : integer;
    NumPts : int64;
+   z : array[1..3] of float32;
    Paths,Tiffs : tStringList;
    fName,mgName : PathStr;
+   RenameAndDelete : boolean;
    bmp : array[1..3] of tMyBitmap;
    mem : array[1..3] of tBmpMemory;
 
@@ -250,40 +252,59 @@ var
                  DEMGlb[MultiGridArray[ThisOne].Grids[j]].DEMheader.ElevUnits := euImagery;
                  DEMGlb[MultiGridArray[ThisOne].Grids[j]].MarkInRangeMissing(0,0,NumPts);
                  DEMGlb[MultiGridArray[ThisOne].Grids[j]].CheckMaxMinElev;
-                 File2Trash(fName);
-                 fName := ChangeFileExt(fName,'.dem');
-                 {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Resave one=' + fName); {$EndIf}
-                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].WriteNewFormatDEM(fName);
-                 DEMGlb[MultiGridArray[ThisOne].Grids[j]].DEMFileName := fName;
+                 if RenameAndDelete then begin
+                    File2Trash(fName);
+                    fName := ChangeFileExt(fName,'.dem');
+                    {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Resave one=' + fName); {$EndIf}
+                    DEMGlb[MultiGridArray[ThisOne].Grids[j]].WriteNewFormatDEM(fName);
+                    DEMGlb[MultiGridArray[ThisOne].Grids[j]].DEMFileName := fName;
+                 end;
               end;
               {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Create selection map'); {$EndIf}
               CreateDEMSelectionMap(MultiGridArray[ThisOne].Grids[j],true,false,mtElevGray);
               {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Load one out=' + fName); {$EndIf}
           end;
 
+         function GetColor(DEM,x,y : integer; b : byte) : boolean; inline;
+         var
+            z : float32;
+         begin
+            Result := DEMGlb[DEM].GetElevMetersOnGrid(x,y,z);
+            if Result then begin
+               b := round( 255 * (z - DEMGlb[DEM].DEMHeader.MinElev) / (DEMGlb[DEM].DEMHeader.MaxElev - DEMGlb[DEM].DEMHeader.MinElev));
+            end;
+         end;
 
+var
+   b : array[1..3] of byte;
 begin
    {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('OpenSentinel1Radar'); {$EndIf}
    try
       HeavyDutyProcessing := true;
       Paths := tStringList.Create;
       Paths.Add(LastSatDir);
-      if GetMultipleDirectories('Directories with Sentinel-1 images to warp',Paths) then begin
+      if GetMultipleDirectories('Directories with Sentinel-1 images',Paths) then begin
          for I := 0 to pred(Paths.Count) do begin
             fName := Paths.Strings[i];
             {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Path=' + fName); {$EndIf}
-
             Tiffs := Nil;
-            FindMatchingFiles(fName,'*.dem',Tiffs,6);
-            if (Tiffs.Count = 0) then begin
-               {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No DEMs'); {$EndIf}
-               FreeAndNil(Tiffs);
-               FindMatchingFiles(fName,'*.tiff',Tiffs,6);
-               if (Tiffs.Count > 0) then begin
-                  {$If Defined(RecordSentinel1)} WriteLineToDebugFile('No tifs, call ResampleSentinel_1 ' + fName); {$EndIf}
-                  ResampleSentinel_1(fName);
+            RenameAndDelete := false;
+            if StrUtils.AnsiContainsText(UpperCase(fName),'OPERA') then begin
+               FindMatchingFiles(fName,'*.tif',Tiffs,6);
+            end
+            else begin
+               FindMatchingFiles(fName,'*.dem',Tiffs,6);
+               if (Tiffs.Count = 0) then begin
+                  {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No DEMs'); {$EndIf}
                   FreeAndNil(Tiffs);
-                  FindMatchingFiles(fName,'*.tif',Tiffs,6);
+                  FindMatchingFiles(fName,'*.tiff',Tiffs,6);
+                  if (Tiffs.Count > 0) then begin
+                     {$If Defined(RecordSentinel1)} WriteLineToDebugFile('No tifs, call ResampleSentinel_1 ' + fName); {$EndIf}
+                     ResampleSentinel_1(fName);
+                     FreeAndNil(Tiffs);
+                     FindMatchingFiles(fName,'*.tif',Tiffs,6);
+                     RenameAndDelete := true;
+                  end;
                end;
             end;
 
@@ -296,23 +317,55 @@ begin
                     fName := Tiffs.Strings[pred(j)];
                     LoadOne(j,fName);
                   end;
-                  MultiGridArray[ThisOne].Grids[3] := GridRatio(MultiGridArray[ThisOne].Grids[2],MultiGridArray[ThisOne].Grids[1],mtElevGray);
 
-                  if CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1,bmp[3]) and CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[2]].SelectionMap.Image1,bmp[2]) and
-                      CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[1]].SelectionMap.Image1,bmp[1]) then begin
-                         for k := 1 to 3 do Mem[k] := tBMPMemory.Create(bmp[k]);
-                           for y := 1 to pred(pred(Bmp[1].Height)) do begin
-                              for x := 1 to pred(pred(bmp[1].Width)) do begin           //vv/vh for blue
-                                 mem[3].SetRedChannel(x,y,mem[2].RedChannel(x,y));      //vh
-                                 mem[3].SetGreenChannel(x,y,mem[1].GreenChannel(x,y));  //vv
+                  if false then begin
+
+                     MultiGridArray[ThisOne].Grids[3] := GridRatio(MultiGridArray[ThisOne].Grids[2],MultiGridArray[ThisOne].Grids[1],mtDEMBlank);
+                     with DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap,MapDraw do begin
+                        CopyImageToBitmap(Image1,bmp[3]);
+                        Mem[3] := tBMPMemory.Create(bmp[3]);
+                        for y := 0 to pred(MapYSize) do begin
+                           for x := 0 to pred(MapXSize) do begin
+                              if OnScreen(x,y) then begin
+                                 ScreenToDEMGridInteger(x,y,XG,yg);
+                                 if GetColor(MultiGridArray[ThisOne].Grids[3],xg,yg,b[3]) and
+                                    GetColor(MultiGridArray[ThisOne].Grids[2],xg,yg,b[2]) and
+                                    GetColor(MultiGridArray[ThisOne].Grids[1],xg,yg,b[1]) then begin
+//https://gis.stackexchange.com/questions/400726/creating-composite-rgb-images-from-sentinel-1-channels
+//https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel1-monthly-mosaic/rgb_ratio/
+//https://learn.arcgis.com/en/projects/process-sentinel-1-sar-data/#explore-analysis-ready-sar-imagery says red=HH, green=hv, blue=HH-HV (log) or HH/HV (linear)
+                                        mem[3].SetBlueChannel(x,y,b[3]);   // blue=vv/vh
+                                        mem[3].SetRedChannel(x,y,b[2]);    // red=vv
+                                        mem[3].SetGreenChannel(x,y,b[1]);  // green=vh
+                                  end;
                               end;
-                           end;
-                           DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1.Picture.Graphic := bmp[3];
-                          for k := 1 to 3 do begin
-                             Mem[k].Destroy;
-                             BMP[k].Destroy;
-                          end;
+                           end {for i};
+                        end;
+                        DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1.Picture.Graphic := bmp[3];
+                        Mem[3].Destroy;
+                        Bmp[3].Destroy;
+                     end;
+                 end
+                 else begin
+                     MultiGridArray[ThisOne].Grids[3] := GridRatio(MultiGridArray[ThisOne].Grids[2],MultiGridArray[ThisOne].Grids[1],mtElevGray);
+                     if CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1,bmp[3]) and CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[2]].SelectionMap.Image1,bmp[2]) and
+                         CopyImageToBitmap(DEMGlb[MultiGridArray[ThisOne].Grids[1]].SelectionMap.Image1,bmp[1]) then begin
+                            for k := 1 to 3 do Mem[k] := tBMPMemory.Create(bmp[k]);
+                            for y := 1 to pred(pred(Bmp[1].Height)) do begin
+                               for x := 1 to pred(pred(bmp[1].Width)) do begin           //vv/vh for blue
+                                  mem[3].SetRedChannel(x,y,mem[2].RedChannel(x,y));      //vh
+                                  mem[3].SetGreenChannel(x,y,mem[1].GreenChannel(x,y));  //vv
+                               end;
+                            end;
+                            DEMGlb[MultiGridArray[ThisOne].Grids[3]].SelectionMap.Image1.Picture.Graphic := bmp[3];
+                            for k := 1 to 3 do begin
+                               Mem[k].Destroy;
+                               BMP[k].Destroy;
+                            end;
+                     end;
+
                   end;
+
                end
                else begin
                   {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No open multigrid'); {$EndIf}
@@ -327,6 +380,7 @@ begin
       Paths.Destroy;
    finally
       HeavyDutyProcessing := false;
+      ShowDefaultCursor;
    end;
 end;
 

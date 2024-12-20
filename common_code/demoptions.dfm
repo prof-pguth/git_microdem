@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet4
+    ActivePage = TabSheet9
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -1412,7 +1412,7 @@ inherited OptionsForm: TOptionsForm
         Top = 34
         Width = 280
         Height = 247
-        Caption = 'OpenGL'
+        Caption = 'OpenGL 3D viewer'
         TabOrder = 8
         object Label19: TLabel
           Left = 11
@@ -1496,6 +1496,14 @@ inherited OptionsForm: TOptionsForm
           Height = 17
           Caption = 'OpenGL clean overlays'
           TabOrder = 7
+        end
+        object CheckBox167: TCheckBox
+          Left = 16
+          Top = 223
+          Width = 113
+          Height = 17
+          Caption = 'New 3D viewer'
+          TabOrder = 8
         end
       end
       object RadioGroup34: TRadioGroup

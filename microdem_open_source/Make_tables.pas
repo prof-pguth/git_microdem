@@ -72,7 +72,6 @@ procedure CreateUTM_ZTable(fName : PathStr);
 procedure Create_ZTable(fName : PathStr);
 
 procedure CreateTigerRulesDBF(fName : PathStr);
-//procedure CreateDuckFile(fName : PathStr);
 
 procedure MakeDummyRecordTable(fName : PathStr);
 procedure CreatPointCloudProjectTable(fName : PathStr);
@@ -119,7 +118,6 @@ procedure MakeAtlasParametersTable(fName : PathStr);
 
 {$IfDef ExGeology}
 {$Else}
-   //procedure CreateISOGravity(fName : PathStr);
    procedure CreateGeologySymbolFile(fName : PathStr);
    procedure MakeStatColGIS(fName : PathStr);
    procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
@@ -227,16 +225,14 @@ end;
 procedure MakeGMTfile(fName : PathStr; GMTfile : boolean);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
-   //with CreateDataBase do begin
-      if GMTfile then begin
-         CreateDataBase.AddAField('F_TYPE',ftString,9,0);
-         CreateDataBase.AddAField('F_NAME',ftString,48,0);
-      end
-      else begin
-         CreateDataBase.AddAField('NAME',ftString,48,0);
-      end;
-      CreateDataBase.WriteCorrectHeader;
-   //end;
+   if GMTfile then begin
+      CreateDataBase.AddAField('F_TYPE',ftString,9,0);
+      CreateDataBase.AddAField('F_NAME',ftString,48,0);
+   end
+   else begin
+      CreateDataBase.AddAField('NAME',ftString,48,0);
+   end;
+   CreateDataBase.WriteCorrectHeader;
 end;
 
 
@@ -312,31 +308,6 @@ begin
 end;
 
 
-
-(*
-
-
-procedure CreateDuckFile(fName : PathStr);
-begin
-{
-39 058 683  36.18716893 -75.75284425    nan    nan    nan    nan    6.010    nan 20070104 000000   nan
-39 058 683  36.18717126 -75.75284121    nan    nan    nan    nan    6.070    nan 20070104 000000   nan
-}
-      CreateDataBase := tCreateDataBase.Create(fName);
-      with CreateDataBase do begin
-          AddAField('DATE',ftString,8,0);
-          AddAField('LINE',ftInteger,4,0);
-          AddAField('SURVEY_NO',ftInteger,6,0);
-          AddAField('YEAR',ftInteger,4,0);
-          AddAField('MONTH',ftInteger,2,0);
-          AddAField('DAY',ftInteger,2,0);
-          AddAField('LENGTH',ftFloat,8,1);
-          AddAField('NPTS',ftInteger,4,0);
-          WriteCorrectHeader;
-      end;
-end;
-*)
-
 procedure CreateProjectTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
@@ -354,22 +325,22 @@ procedure CreatPointCloudProjectTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
    with CreateDataBase do begin
-   AddLatLongToTable;
-   AddAField('NAME',ftString,24,0);
-   AddAField('USE',ftString,24,0);
-   AddAField('TYPE',ftString,12,0);
-   AddAField('FILENAME',ftString,255,0);
-   AddAField('FILTER',ftString,64,0);
-   AddAField('COLOR',ftInteger,12,0);
-   AddAField('SYM_SIZE',ftInteger,2,0);
-   AddAField('NUM_PTS',ftInteger,12,0);
-   AddAField('MIN_X',ftFloat,18,8);
-   AddAField('MAX_X',ftFloat,18,8);
-   AddAField('MIN_Y',ftFloat,18,8);
-   AddAField('MAX_Y',ftFloat,18,8);
-   AddAField('MIN_Z',ftFloat,18,8);
-   AddAField('MAX_Z',ftFloat,18,8);
-   WriteCorrectHeader;
+      AddLatLongToTable;
+      AddAField('NAME',ftString,24,0);
+      AddAField('USE',ftString,24,0);
+      AddAField('TYPE',ftString,12,0);
+      AddAField('FILENAME',ftString,255,0);
+      AddAField('FILTER',ftString,64,0);
+      AddAField('COLOR',ftInteger,12,0);
+      AddAField('SYM_SIZE',ftInteger,2,0);
+      AddAField('NUM_PTS',ftInteger,12,0);
+      AddAField('MIN_X',ftFloat,18,8);
+      AddAField('MAX_X',ftFloat,18,8);
+      AddAField('MIN_Y',ftFloat,18,8);
+      AddAField('MAX_Y',ftFloat,18,8);
+      AddAField('MIN_Z',ftFloat,18,8);
+      AddAField('MAX_Z',ftFloat,18,8);
+      WriteCorrectHeader;
    end;
 end;
 
@@ -377,14 +348,14 @@ procedure MakeCliwocTable(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
    with CreateDataBase do begin
-   AddLatLongToTable;
-   AddAField('SHIP',ftString,8);
-   AddAField('SPEED_KPH',ftFloat,8,2);
-   AddAField('KNOTS',ftFloat,8,2);
-   AddAField('HEADING',ftFloat,8,2);
-   AddAField('DEC_YEAR',ftFloat,12,6);
-   AddAField('MONTH',ftInteger,2,6);
-   WriteCorrectHeader;
+      AddLatLongToTable;
+      AddAField('SHIP',ftString,8);
+      AddAField('SPEED_KPH',ftFloat,8,2);
+      AddAField('KNOTS',ftFloat,8,2);
+      AddAField('HEADING',ftFloat,8,2);
+      AddAField('DEC_YEAR',ftFloat,12,6);
+      AddAField('MONTH',ftInteger,2,6);
+      WriteCorrectHeader;
    end;
 end;
 
@@ -424,28 +395,28 @@ procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
    with CreateDataBase do begin
-   AddAField('EVENT_ID',ftString,16,0);
-   AddAField('MONTH',ftInteger,2,0);
-   AddAField('DAY',ftInteger,2,0);
-   AddAField('YEAR',ftInteger,4,0);
-   AddAField('TIME',ftString,10,0);
-   AddLatLongToTable;
-   AddAField('DEPTH',ftFloat,6,2);
-   AddAField('MB',ftFloat,6,2);
-   AddAField('MS',ftFloat,6,2);
-   AddAField('MECH',ftString,1,0);
-   AddAField('REGION',ftString,30,0);
-   AddAField('FP1_STRIKE',ftInteger,3,0);
-   AddAField('FP1_DIP',ftInteger,2,0);
-   AddAField('FP2_STRIKE',ftInteger,3,0);
-   AddAField('FP2_DIP',ftInteger,2,0);
-   AddAField('PLUNGE_1',ftInteger,2,0);
-   AddAField('STRIKE_1',ftInteger,3,0);
-   AddAField('PLUNGE_2',ftInteger,2,0);
-   AddAField('STRIKE_2',ftInteger,3,0);
-   AddAField('PLUNGE_3',ftInteger,2,0);
-   AddAField('STRIKE_3',ftInteger,3,0);
-   WriteCorrectHeader;
+      AddAField('EVENT_ID',ftString,16,0);
+      AddAField('MONTH',ftInteger,2,0);
+      AddAField('DAY',ftInteger,2,0);
+      AddAField('YEAR',ftInteger,4,0);
+      AddAField('TIME',ftString,10,0);
+      AddLatLongToTable;
+      AddAField('DEPTH',ftFloat,6,2);
+      AddAField('MB',ftFloat,6,2);
+      AddAField('MS',ftFloat,6,2);
+      AddAField('MECH',ftString,1,0);
+      AddAField('REGION',ftString,30,0);
+      AddAField('FP1_STRIKE',ftInteger,3,0);
+      AddAField('FP1_DIP',ftInteger,2,0);
+      AddAField('FP2_STRIKE',ftInteger,3,0);
+      AddAField('FP2_DIP',ftInteger,2,0);
+      AddAField('PLUNGE_1',ftInteger,2,0);
+      AddAField('STRIKE_1',ftInteger,3,0);
+      AddAField('PLUNGE_2',ftInteger,2,0);
+      AddAField('STRIKE_2',ftInteger,3,0);
+      AddAField('PLUNGE_3',ftInteger,2,0);
+      AddAField('STRIKE_3',ftInteger,3,0);
+      WriteCorrectHeader;
    end;
 end;
 {$EndIf}
@@ -561,13 +532,6 @@ begin
        AddAField('F_STOP',ftFloat,6,2);
        AddAField('SHUTTER',ftString,16);
        AddAField('EV100',ftFloat,5,1);
-
-       //AddAField('HFOV',ftFloat,5,1);
-       //AddAField('ASP_RATIO',ftFloat,5,3);
-       //AddAField('YEAR',ftInteger,4);
-       //AddAField('MONTH',ftInteger,2);
-       //AddAField('DAY',ftInteger,2);
-       //AddAField('TIME',ftString,12);
        AddAField('IMAGE',ftString,255);
        WriteCorrectHeader;
    end;

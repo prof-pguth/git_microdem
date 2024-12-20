@@ -17,7 +17,7 @@ var
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    SaveBackupDefaults;
-   MDDef.DefDEMMap := mtDEMBlank;
+   MDDef.DefElevMap := mtDEMBlank;
    MDDef.LidarGridProjection := ArcSecDEM;
    MDDef.LasDEMPixelIs := PixelIsArea;
 

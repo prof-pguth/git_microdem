@@ -52,21 +52,20 @@ type
   private
     { Private declarations }
     FMouseDownPos : TPoint3D;
-    FPointCloud,
-    FPointCloud2,
-    FPointCloud3 : TPointCloud3D;
+    FPointCloud   : array[1..5] of tPointCloud3D;
     FRenderCount : Integer;
     FRenderTicks : TStopwatch;
     FRunningFPS : Double;
 
     procedure OnApplicationIdle(Sender: TObject; var Done: Boolean);
     procedure AutoCenterAndScale(Cloud : TPointCloud3D);
+    procedure LoadClouds(FileList : tStringList);
   public
     { Public declarations }
   end;
 
 
-procedure Startfmxu_point_cloud_viewer;
+procedure Startfmxu_point_cloud_viewer(FileList : tStringList);
 
 implementation
 
@@ -77,7 +76,7 @@ uses
 
 
 
-procedure Startfmxu_point_cloud_viewer;
+procedure Startfmxu_point_cloud_viewer(FileList : tStringList);
 var
    PointCloudForm : TPointCloudForm;
 begin
@@ -85,6 +84,7 @@ begin
    RegisterDX11ContextU;  //has to be done before the form creation
    {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('DLL registered'); {$EndIf}
    PointCloudForm := TPointCloudForm.Create(Application);
+   PointCloudForm.LoadClouds(FileList);
    PointCloudForm.Show;
    {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('Startfmxu_point_cloud_viewer out'); {$EndIf}
 end;
@@ -98,8 +98,7 @@ begin
    Cloud.UpdatePoints;
 end;
 
-
-procedure TPointCloudForm.FormCreate(Sender: TObject);
+procedure TPointCloudForm.LoadClouds(FileList : tStringList);
 
       procedure LoadFromMICRODEMxyzi(fName : String; var cloud : TPointCloud3D);
       const
@@ -127,8 +126,7 @@ procedure TPointCloudForm.FormCreate(Sender: TObject);
               BlockRead(tfile,Points^,MaxPts,Pts);
               CloseFile(tFile);
               {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('Read, pts=' + IntToStr(Pts)); {$EndIf}
-
-               cloud.Points.Length := Pts;
+              cloud.Points.Length := Pts;
                for var i := 0 to pred(Pts) do begin
                   cloud.Points.Vertices[i] := Point3D(Points^[i].y,Points^[i].x,-Points^[i].z);
                   var c : TAlphaColorRec;
@@ -143,21 +141,25 @@ procedure TPointCloudForm.FormCreate(Sender: TObject);
            {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('LoadFromMICRODEMxyzi out'); {$EndIf}
       end;
 
+var
+   i : integer;
+begin
+   for i := 0 to pred(FileList.Count) do begin
+      LoadFromMICRODEMxyzi(FileList.Strings[i],FPointCloud[succ(i)]);
+   end;
+   AutoCenterAndScale(FPointCloud[1]);
+   CBShape.ItemIndex := Ord(pcsPoint);
+   CTBPointSizeChangeTracking(nil);
+   CBShapeChange(nil);
+end;
 
+
+
+procedure TPointCloudForm.FormCreate(Sender: TObject);
 begin
    {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.FormCreate in'); {$EndIf}
    Application.OnIdle := OnApplicationIdle;
    FRenderTicks.Start;
-
-   //LoadFromMICRODEMxyzi('C:\Users\pguth\Documents\las_2020_anne_arundel_1.xyzib',FPointCloud);
-   LoadFromMICRODEMxyzi('C:\Users\pguth\Documents\Elevation_1.xyzib',FPointCloud);
-   LoadFromMICRODEMxyzi('C:\Users\pguth\Documents\Lidar_intensity_1.xyzib',FPointCloud2);
-   LoadFromMICRODEMxyzi('C:\Users\pguth\Documents\Lidar_classification_1.xyzib',FPointCloud3);
-
-   AutoCenterAndScale(FPointCloud);
-   CBShape.ItemIndex := Ord(pcsPoint);
-   CTBPointSizeChangeTracking(Sender);
-   CBShapeChange(Sender);
    {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.FormCreate out'); {$EndIf}
 end;
 
@@ -191,29 +193,37 @@ end;
 
 procedure TPointCloudForm.CBShapeChange(Sender: TObject);
 begin
-   FPointCloud.PointShape := TPointColorShape(CBShape.ItemIndex);
+   FPointCloud[1].PointShape := TPointColorShape(CBShape.ItemIndex);
 end;
 
 procedure TPointCloudForm.CheckBox1Change(Sender: TObject);
 begin
-   FPointCloud.Visible := CheckBox1.IsChecked;
+   FPointCloud[1].Visible := CheckBox1.IsChecked;
+   CheckBox2.IsChecked := false;
+   CheckBox3.IsChecked := false;
+   //AutoCenterAndScale(FPointCloud[2]);
 end;
 
 procedure TPointCloudForm.CheckBox2Change(Sender: TObject);
 begin
-   FPointCloud2.Visible := CheckBox2.IsChecked;
-   AutoCenterAndScale(FPointCloud2);
+   FPointCloud[2].Visible := CheckBox2.IsChecked;
+   CheckBox1.IsChecked := false;
+   CheckBox3.IsChecked := false;
+   AutoCenterAndScale(FPointCloud[2]);
 end;
 
 procedure TPointCloudForm.CheckBox3Change(Sender: TObject);
 begin
-   FPointCloud3.Visible := CheckBox3.IsChecked;
-   AutoCenterAndScale(FPointCloud3);
+   FPointCloud[3].Visible := CheckBox3.IsChecked;
+   CheckBox2.IsChecked := false;
+   CheckBox1.IsChecked := false;
+
+   AutoCenterAndScale(FPointCloud[3]);
 end;
 
 procedure TPointCloudForm.CTBPointSizeChangeTracking(Sender: TObject);
 begin
-   FPointCloud.PointSize := CTBPointSize.Value / 100;
+   FPointCloud[1].PointSize := CTBPointSize.Value / 100;
 end;
 
 procedure TPointCloudForm.OnApplicationIdle(Sender: TObject; var Done: Boolean);
@@ -240,11 +250,11 @@ begin
       paintFPS := 1 / Viewport3D1.LastPaintSeconds;
    FRunningFPS := FRunningFPS * 0.5  + fps * 0.5;
 
-   Caption := Format(
-      '%.1f ms paint (%.1f FPS) / %.1f actual FPS / %d points',
-      [ Viewport3D1.LastPaintSeconds*1000, paintFPS, FRunningFPS, FPointCloud.Points.Length ]
+   Caption := Format('%.1f ms paint (%.1f FPS) / %.1f actual FPS',
+      [ Viewport3D1.LastPaintSeconds*1000, paintFPS, FRunningFPS, SmartNumberPoints(FPointCloud[1].Points.Length) ]
    );
 end;
+
 
 procedure TPointCloudForm.Viewport3D1Painting(Sender: TObject; Canvas: TCanvas; const ARect: TRectF);
 begin

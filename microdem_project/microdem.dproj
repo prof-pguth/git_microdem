@@ -164,16 +164,16 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>11</VerInfo_MinorVer>
+        <VerInfo_MinorVer>12</VerInfo_MinorVer>
         <VerInfo_MajorVer>2024</VerInfo_MajorVer>
-        <VerInfo_Release>24</VerInfo_Release>
+        <VerInfo_Release>6</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.11.24.21;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2024.12.6.8;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>21</VerInfo_Build>
+        <VerInfo_Build>8</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -183,43 +183,43 @@
         <DCCReference Include="..\microdem_only_code\nevadia_main.pas">
             <Form>wmdem</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_colpated.pas">
+        <DCCReference Include="..\misc\stratcol\sc_colpated.pas">
             <Form>StratcolPatternEditor</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_ColMain.pas">
+        <DCCReference Include="..\misc\stratcol\sc_ColMain.pas">
             <Form>ColMainF</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_COLLABEL.PAS">
+        <DCCReference Include="..\misc\stratcol\sc_COLLABEL.PAS">
             <Form>Collabf</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_COLHEAD.PAS">
+        <DCCReference Include="..\misc\stratcol\sc_COLHEAD.PAS">
             <Form>ColumnHeaderEntry</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_fossil.pas">
+        <DCCReference Include="..\misc\stratcol\sc_fossil.pas">
             <Form>FossilRangeOptions</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_COLENTER.PAS">
+        <DCCReference Include="..\misc\stratcol\sc_COLENTER.PAS">
             <Form>FullUnitEntryDlg</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_ColLith.pas">
+        <DCCReference Include="..\misc\stratcol\sc_ColLith.pas">
             <Form>patternf</Form>
         </DCCReference>
-        <DCCReference Include="..\stratcol\sc_colopts.pas">
+        <DCCReference Include="..\misc\stratcol\sc_colopts.pas">
             <Form>StratOptsForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\OKCANCL2.PAS">
             <Form>OKRightDlg</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\slicer_3d.pas">
+        <DCCReference Include="..\viewer_3d\slicer_3d.pas">
             <Form>SlicerForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\DEMLOSW.pas">
+        <DCCReference Include="..\viewer_3d\DEMLOSW.pas">
             <Form>DEMLOSF</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\pit_and_spire.pas">
             <Form>PitSpireForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\DEMLOSOp.pas">
+        <DCCReference Include="..\viewer_3d\DEMLOSOp.pas">
             <Form>LOSOption</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\DEM_indexes.pas"/>
@@ -273,9 +273,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\getlatln.pas">
             <Form>GetLatLongDlg</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\Demperop.pas">
-            <Form>PerspOptions</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\hyp_display.pas">
             <Form>HyperspectralForm</Form>
@@ -415,7 +412,7 @@
         <DCCReference Include="..\common_code\NetMainW.pas">
             <Form>NetForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\Beach_Ball_Options.pas">
+        <DCCReference Include="..\misc\geology\Beach_Ball_Options.pas">
             <Form>BeachBallForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\demslopeopts.pas">
@@ -486,7 +483,7 @@
         <DCCReference Include="..\common_code\ant_hts_ops.pas">
             <Form>ReqAntOptsForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\dempanorama.pas">
+        <DCCReference Include="..\viewer_3d\dempanorama.pas">
             <Form>PanoramaOps</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\get_sunrise.pas">
@@ -495,7 +492,7 @@
         <DCCReference Include="..\common_code\DEMTigerOps.pas">
             <Form>TigerOverlayOptions</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\ternoptions.pas">
+        <DCCReference Include="..\misc\geology\ternoptions.pas">
             <Form>TernOptForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\DEMVAROP.PAS">
@@ -503,9 +500,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\pc_options.pas">
             <Form>pc_opts_form</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\three_point_problem.pas">
-            <Form>ThreePointer</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\kml_overlay.pas">
             <Form>KML_over_opts</Form>
@@ -638,12 +632,6 @@
         <DCCReference Include="..\common_code\demxyzexport.pas">
             <Form>XYZformatform</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\DEMDips.pas">
-            <Form>StructureOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\edit_dip.pas">
-            <Form>GetDipStrike</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\petbmpsize.pas">
             <Form>NewBMPForm</Form>
         </DCCReference>
@@ -653,16 +641,13 @@
         <DCCReference Include="..\common_code\petlistf.pas">
             <Form>PetList</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\trackstarmain.pas">
-            <Form>SatTractForm</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\ParseExpr.pas"/>
         <DCCReference Include="..\common_code\ParseClass.pas"/>
         <DCCReference Include="..\common_code\oObjects.pas"/>
-        <DCCReference Include="..\common_code\demflysense.pas">
+        <DCCReference Include="..\viewer_3d\demflysense.pas">
             <Form>FlightControlSensitivity</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\demflycontrols.pas">
+        <DCCReference Include="..\viewer_3d\demflycontrols.pas">
             <Form>FlightControlForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\OKCANCL1.PAS">
@@ -718,7 +703,7 @@
         <DCCReference Include="..\common_code\survey_lines.pas">
             <Form>GetTracjksForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\DEMPersw.pas">
+        <DCCReference Include="..\viewer_3d\DEMPersw.pas">
             <Form>ThreeDview</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\demambushparams.pas">
@@ -744,7 +729,6 @@
         <DCCReference Include="..\microdem_open_source\Make_tables.pas"/>
         <DCCReference Include="..\microdem_open_source\PetDBUtils.pas"/>
         <DCCReference Include="..\microdem_open_source\DEMESRIShapeFile.pas"/>
-        <DCCReference Include="..\microdem_open_source\demlos_draw.pas"/>
         <DCCReference Include="..\microdem_open_source\demmagvar.pas"/>
         <DCCReference Include="..\microdem_open_source\DEMEros.pas"/>
         <DCCReference Include="..\common_code\grayscale_shift.pas">
@@ -774,7 +758,7 @@
             <Form>FormUnicode</Form>
         </DCCReference>
         <DCCReference Include="..\UnicodeViewer-Duibhin\UnicodeLibrary.pas"/>
-        <DCCReference Include="..\nyquist\NyqGraph.pas">
+        <DCCReference Include="..\misc\nyquist\NyqGraph.pas">
             <Form>NyquistBaseGraph</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\map_splitter.pas">
@@ -802,8 +786,8 @@
         <DCCReference Include="..\slide_sorter\slider_sorter_form.pas">
             <Form>SlideSorterForm</Form>
         </DCCReference>
-        <DCCReference Include="..\dragonplot_only_code\dragon_plot_init.pas"/>
-        <DCCReference Include="..\dragonplot_only_code\dp_control.pas">
+        <DCCReference Include="..\misc\dragonplot_only_code\dragon_plot_init.pas"/>
+        <DCCReference Include="..\misc\dragonplot_only_code\dp_control.pas">
             <Form>DragonPlotForm</Form>
         </DCCReference>
         <DCCReference Include="..\las_lidar\lidar_multiple_grid_display.pas">
@@ -821,7 +805,7 @@
             <Form>AspectMapColors</Form>
         </DCCReference>
         <DCCReference Include="..\microdem_open_source\gdal_tools.pas"/>
-        <DCCReference Include="..\nyquist\fat_fingers.pas">
+        <DCCReference Include="..\misc\nyquist\fat_fingers.pas">
             <Form>fat_fingers_form</Form>
         </DCCReference>
         <DCCReference Include="..\movie\new_petmar_movie.pas">
@@ -847,7 +831,7 @@
         <DCCReference Include="..\SolarPosSource\U_SolarPos2.pas">
             <Form>SolorPosForm1</Form>
         </DCCReference>
-        <DCCReference Include="..\FireMonkey3DGlobalRotate\ufrmMain.pas">
+        <DCCReference Include="..\misc\FireMonkey3DGlobalRotate\ufrmMain.pas">
             <Form>frmMain</Form>
         </DCCReference>
         <DCCReference Include="..\demix\demix_filter.pas">
@@ -879,16 +863,16 @@
         <DCCReference Include="..\demix\pick_demix_areas.pas">
             <Form>PickAreasForm</Form>
         </DCCReference>
-        <DCCReference Include="..\sgp\SGP_CONV.PAS"/>
-        <DCCReference Include="..\sgp\Sgp_in.pas"/>
-        <DCCReference Include="..\sgp\Sgp_init.pas"/>
-        <DCCReference Include="..\sgp\SGP_INTF.PAS"/>
-        <DCCReference Include="..\sgp\SGP_MATH.PAS"/>
-        <DCCReference Include="..\sgp\SGP_OBS.PAS"/>
-        <DCCReference Include="..\sgp\SGP_OUT.PAS"/>
-        <DCCReference Include="..\sgp\SGP_TIME.PAS"/>
-        <DCCReference Include="..\sgp\SGP4SDP4.PAS"/>
-        <DCCReference Include="..\sgp\SGP_Support.pas"/>
+        <DCCReference Include="..\misc\sgp\SGP_CONV.PAS"/>
+        <DCCReference Include="..\misc\sgp\Sgp_in.pas"/>
+        <DCCReference Include="..\misc\sgp\Sgp_init.pas"/>
+        <DCCReference Include="..\misc\sgp\SGP_INTF.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_MATH.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_OBS.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_OUT.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_TIME.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP4SDP4.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_Support.pas"/>
         <DCCReference Include="..\common_code\edit_exif_fields.pas">
             <Form>Form1</Form>
             <FormType>dfm</FormType>
@@ -908,7 +892,7 @@
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="..\sgp\SOLAR.PAS"/>
+        <DCCReference Include="..\misc\sgp\SOLAR.PAS"/>
         <DCCReference Include="..\geomorph\demssocalc.pas">
             <Form>SSOCalcDlg</Form>
             <FormType>dfm</FormType>
@@ -965,6 +949,27 @@
         <DCCReference Include="..\fmxu_point_cloud\FSimpleWebGPU.pas"/>
         <DCCReference Include="..\fmxu_point_cloud\WebGPU.Interfaces.pas"/>
         <DCCReference Include="..\fmxu_point_cloud\WebGPU.pas"/>
+        <DCCReference Include="..\viewer_3d\Demperop.pas">
+            <Form>PerspOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\misc\sgp\trackstarmain.pas">
+            <Form>SatTractForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\misc\geology\DEMDips.pas">
+            <Form>StructureOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\misc\geology\edit_dip.pas">
+            <Form>GetDipStrike</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\misc\geology\three_point_problem.pas">
+            <Form>ThreePointer</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\viewer_3d\demlos_draw.pas"/>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>

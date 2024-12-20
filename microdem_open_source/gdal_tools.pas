@@ -23,6 +23,7 @@ unit gdal_tools;
       //{$Define RecordGDALOpen}
       //{$Define RecordSubsetOpen}
       //{$Define RecordDEMIX}
+      {$Define RecordWKT}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
@@ -342,7 +343,6 @@ begin
       HeavyDutyProcessing := false;
    end;
 end;
-
 
 
 procedure ResampleSentinel_1(Path : PathStr; Recycle : boolean = false);
@@ -744,13 +744,13 @@ var
    cmd : ANSIString;
    BatchFile: tStringList;
 begin
-   {$IfDef RecordGDAL} WriteLineToDebugFile('BatchGDALSRSinfo in'); {$EndIf}
+   {$If Defined(RecordGDAL) or Defined(RecordWKT)} WriteLineToDebugFile('CreateWKTfileForGeotiff in, ' + fName); {$EndIf}
    StartGDALbatchFile(BatchFile);
    Result := MDTempDir + ExtractFileName(fName) + '.wkt';
    cmd := GDAL_srs_info_name  + ' -o wkt ' + fName + ' >' + Result;
    BatchFile.Add(Cmd);
    EndBatchFile(MDTempDir + 'gdal_srs_info.bat',BatchFile);
-   //repeat  until FileExists(Result);
+   {$If Defined(RecordGDAL) or Defined(RecordWKT)} WriteLineToDebugFile('CreateWKTfileForGeotiff out'); {$EndIf}
 end;
 
 function CreateWKTStringForGeotiff(fName : PathStr) : ANSIstring;
@@ -759,29 +759,21 @@ var
    wktName : PathStr;
    i : integer;
 begin
+   {$If Defined(RecordGDAL) or Defined(RecordWKT)} WriteLineToDebugFile('CreateWKTStringForGeotiff in, ' + fName); {$EndIf}
    wktName := CreateWKTfileForGeotiff(fName);
    sl := tStringList.Create;
    sl.LoadFromFile(wktName);
    Result := '';
    for i := 0 to pred(sl.Count) do Result := Result + sl.strings[i];
-
+   StripBlanks(Result);
    sl.Destroy;
+   {$If Defined(RecordGDAL) or Defined(RecordWKT)} WriteLineToDebugFile('CreateWKTStringForGeotiff out'); {$EndIf}
 end;
 
 procedure GDALGeotiffToWKT(fName : PathStr);
 var
    OutName : PathStr;
-   //cmd : ANSIString;
-   //BatchFile: tStringList;
 begin
-(*
-   {$IfDef RecordGDAL} WriteLineToDebugFile('BatchGDALSRSinfo in'); {$EndIf}
-   StartGDALbatchFile(BatchFile);
-   OutName := MDTempDir + ExtractFileName(fName) + '.wkt';
-   cmd := GDAL_srs_info_name  + ' -o wkt ' + fName + ' >' + OutName;
-   BatchFile.Add(Cmd);
-   EndBatchFile(MDTempDir + 'gdal_srs_info.bat',BatchFile);
-*)
    OutName := CreateWKTfileForGeotiff(fName);
    ShowInNotepadPlusPlus(OutName,ExtractFileName(OutName) + 'SRS WKT');
 end;

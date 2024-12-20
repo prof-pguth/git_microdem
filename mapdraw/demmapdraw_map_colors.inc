@@ -363,7 +363,7 @@ begin
    BMPMemory.NumToDo := MapYSize;
    for j := 0 to pred(MapYSize) do begin
       for i := 0 to pred(MapXSize) do begin
-         if OnScreen(i,j) then  begin
+         if OnScreen(i,j) then begin
             ScreenToDEMGridInteger(i,j,XG,yg);
             if DEMGlb[DEMonMap].GetElevMeters(xg,yg,z) then begin
                zi :=round(z);

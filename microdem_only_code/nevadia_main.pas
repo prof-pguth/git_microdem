@@ -862,7 +862,6 @@ type
     procedure Cylindricalprojections1Click(Sender: TObject);
     procedure Conicprojections1Click(Sender: TObject);
     procedure Viewdebuglog1Click(Sender: TObject);
-    procedure Landsatimage1Click(Sender: TObject);
     procedure Monthlyinsolation1Click(Sender: TObject);
     procedure UTMprojectoiin1Click(Sender: TObject);
     procedure LabSpeedButton7Click(Sender: TObject);
@@ -4718,9 +4717,17 @@ end;
 
 
 procedure Twmdem.est1Click(Sender: TObject);
+var
+   FileList : tStringList;
 begin
    {$IfDef FMXU_point_cloud}
-      Startfmxu_point_cloud_viewer;
+   FileList := tStringList.Create;
+   FileList.Add('C:\Users\pguth\Documents\Elevation_1.xyzib');
+   FileList.Add('C:\Users\pguth\Documents\Lidar_intensity_1.xyzib');
+   FileList.Add('C:\Users\pguth\Documents\Lidar_classification_1.xyzib');
+
+      Startfmxu_point_cloud_viewer(FileList);
+      FileList.Destroy;
    {$EndIf}
 end;
 
@@ -4830,7 +4837,6 @@ end;
 procedure Twmdem.MultProfSpeedButtonClick(Sender: TObject);
 begin
    SimpleProfiles;
-   ChangeDEMNowDoing(MultipleLOS);
 end;
 
 
@@ -5811,14 +5817,9 @@ begin
    {$EndIf}
 end;
 
-procedure Twmdem.Landsatimage1Click(Sender: TObject);
-begin
-   //AnnapolisTM8scene1Click(Sender);
-end;
-
 procedure Twmdem.LASdata1Click(Sender: TObject);
 begin
-   Point_cloud_options.OvelayPointClouds(Nil);
+   Point_cloud_options.OverlayPointClouds(Nil);
    StopSplashing;
 end;
 

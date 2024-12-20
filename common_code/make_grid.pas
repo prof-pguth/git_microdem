@@ -2016,7 +2016,7 @@ begin
                 mt := mtElevSpectrum;
                 UsePC := true;
              end
-             else mt := MDdef.DefDEMMap;
+             else mt := MDdef.DefElevMap;
 
              DEMGlb[Result].SetupMap(false,mt,UsePC);
 

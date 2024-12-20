@@ -219,7 +219,7 @@ type
      procedure ArrangePanels;
      procedure AddMap(aMapDraw : tMapDraw);
      procedure AddSphere;
-     procedure AddLayer(GridName,TextureName : PathStr);
+     procedure AddLayer(GridName{,TextureName} : PathStr);
      procedure LayersComplete;
   end;
 
@@ -235,7 +235,7 @@ function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DFo
 
 function SeismicTo3DView : TView3DForm;
 
-procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5 : PathStr; LinkZScaling : boolean = true);
+procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5{,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5} : PathStr; LinkZScaling : boolean = true);
 
 
 implementation
@@ -246,6 +246,7 @@ uses
    {$IfDef VCL}
       nevadia_main,
    {$EndIf}
+   FPointCloud,
    Petmar,PetImage,PetImage_Form,PetMath,Math,DEMDefs,DEMCoord, New_Petmar_Movie,
    BaseMap;
 
@@ -263,17 +264,32 @@ begin
    Result.PointRepeatFactor := 1;
 end;
 
-procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5 : PathStr; LinkZScaling : boolean = true);
+procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5{,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5} : PathStr; LinkZScaling : boolean = true);
+var
+   FileList : tStringList;
+   i : integer;
 begin
-   {$If Defined(Start3DView)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
-   View3DForm := StartFMX3dViewer(ViewSeveral,LinkZScaling);
-   View3DForm.AddLayer(GridName1,TextureName1);
-   View3DForm.AddLayer(GridName2,TextureName2);
-   View3DForm.AddLayer(GridName3,TextureName3);
-   View3DForm.AddLayer(GridName4,TextureName4);
-   View3DForm.AddLayer(GridName5,TextureName5);
-   View3DForm.LayersComplete;
-   {$If Defined(Start3DView)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
+   if MDDef.New3Dviewer then begin
+      FileList := tStringList.Create;
+      if GridName1 <> '' then FileList.Add(GridName1);
+      if GridName2 <> '' then FileList.Add(GridName2);
+      if GridName3 <> '' then FileList.Add(GridName3);
+      if GridName4 <> '' then FileList.Add(GridName4);
+      if GridName5 <> '' then FileList.Add(GridName5);
+      Startfmxu_point_cloud_viewer(FileList);
+      FileList.Destroy;
+   end
+   else begin
+      {$If Defined(Start3DView)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
+      View3DForm := StartFMX3dViewer(ViewSeveral,LinkZScaling);
+      View3DForm.AddLayer(GridName1{,TextureName1});
+      View3DForm.AddLayer(GridName2{,TextureName2});
+      View3DForm.AddLayer(GridName3{,TextureName3});
+      View3DForm.AddLayer(GridName4{,TextureName4});
+      View3DForm.AddLayer(GridName5{,TextureName5});
+      View3DForm.LayersComplete;
+      {$If Defined(Start3DView)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
+   end;
 end;
 
 
@@ -423,7 +439,7 @@ end;
 
 
 
-procedure TView3DForm.AddLayer(GridName,TextureName : PathStr);
+procedure TView3DForm.AddLayer(GridName{,TextureName} : PathStr);
 
    procedure DoCheckBox(CheckBox : tCheckBox);
    begin
@@ -433,9 +449,9 @@ procedure TView3DForm.AddLayer(GridName,TextureName : PathStr);
 
 begin
    if (GridName <> '') then begin
-      {$If Defined(AddLayer)} writeLineToDebugFile('OK, Grid=' + GridName + '  texture=' + TextureName + ' now CurCloud=' + IntToStr(CurCloud)); {$EndIf}
-      DrapeFile[succ(CurCloud)] := TextureName;
-      GeneratePoints(GridName,TextureName);
+      {$If Defined(AddLayer)} writeLineToDebugFile('OK, Grid=' + GridName + ' now CurCloud=' + IntToStr(CurCloud)); {$EndIf}
+      //DrapeFile[succ(CurCloud)] := TextureName;
+      GeneratePoints(GridName,'');
       {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('Points generated for CurCloud=' + IntToStr(CurCloud)); {$EndIf}
       if ViewOnlyOneLayerAtTime then begin
          case CurCloud of
@@ -464,8 +480,6 @@ begin
    ArrangePanels;
    {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
 end;
-
-
 
 
 procedure TView3DForm.CheckBox6Change(Sender: TObject);

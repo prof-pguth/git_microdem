@@ -4133,6 +4133,10 @@ object MapForm: TMapForm
           Caption = 'Whitebox fill holes'
           OnClick = Whiteboxfillholes2Click
         end
+        object Whiteboxfeaturepreservingsmoothing1: TMenuItem
+          Caption = 'Whitebox feature preserving smoothing'
+          OnClick = Whiteboxfeaturepreservingsmoothing1Click
+        end
         object WhiteboxTRI1: TMenuItem
           Caption = 'Whitebox TRI'
           OnClick = WhiteboxTRI1Click
@@ -7122,6 +7126,13 @@ object MapForm: TMapForm
       object Bothwindows1: TMenuItem
         Caption = 'Both windows'
         OnClick = Bothwindows1Click
+      end
+      object N74: TMenuItem
+        Caption = '-'
+      end
+      object N76: TMenuItem
+        Caption = 'Pre-filtering'
+        OnClick = N76Click
       end
     end
     object Compareworkinggeographicslopealgorithms1: TMenuItem

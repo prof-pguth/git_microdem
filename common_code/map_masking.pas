@@ -282,7 +282,7 @@ begin
       BigMask.Free;
    end;
 
-   MapUsed.MapDraw.MapType := MDDef.DefDEMMap;
+   MapUsed.MapDraw.MapType := MDDef.DefElevMap;
    BitBtn12.Enabled := true;
    if not OKBtn.Enabled then Close;
 end;

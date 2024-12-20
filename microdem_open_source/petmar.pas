@@ -1180,7 +1180,7 @@ end;
             end
             else begin
                PETMARCommonForm.SaveDialog1.InitialDir := Copy(fName,1,pred(Length(fName)));
-               PETMARCommonForm.SaveDialog1.FileName := '';
+               PETMARCommonForm.SaveDialog1.FileName := fName;
             end;
             PETMARCommonForm.SaveDialog1.FilterIndex := df;
 

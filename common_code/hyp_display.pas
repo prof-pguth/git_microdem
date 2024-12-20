@@ -181,7 +181,6 @@ begin
     ScrollBox1.Visible := false;
     Panel1.Visible := false;
     ClientWidth := Panel2.Width;
-    //BitBtn10Click(Nil);
     RedBandNum := 48;  //NIR
     GreenBandNum := 32;
     BlueBandNum := 18;
@@ -334,13 +333,13 @@ end;
 procedure THyperspectralForm.BitBtn15Click(Sender: TObject);
 var
    Incr : integer;
-var
-   DEMsWanted : tDEMBooleanArray;
+//var
+   //DEMsWanted : tDEMBooleanArray;
 begin
-   GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
+   //GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
    Incr := 10;
    ReadDefault('Sampling interval',Incr);
-   GridCorrelationMatrix(gcmR,DEMsWanted,'Hyperspectral correlation matrix',incr);
+   GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Grid correlations'),'Hyperspectral correlation matrix',incr);
 end;
 
 procedure THyperspectralForm.BitBtn16Click(Sender: TObject);
@@ -770,5 +769,4 @@ initialization
    {$IfDef MessageStartUpProblems} MessageToContinue('Startup hyp_display'); {$EndIf}
    HyperDoing := hypRoam;
 finalization
-   {$IfDef RecordColorImage} WriteLineToDebugFile('RecordColorImage active in hyp_display'); {$EndIf}
 end.

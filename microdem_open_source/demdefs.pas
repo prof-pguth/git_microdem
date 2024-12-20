@@ -29,7 +29,7 @@ uses
    Petmar_types,petmar,PetMar_db,Petmath;
 
 const
-   GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding
+   GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding and not free
    PythonEXEname = 'C:\OSGeo4W\apps\Python312\python.exe';
    PythonScriptDir = 'C:\OSGeo4W\apps\Python312\Scripts\';
 
@@ -49,7 +49,7 @@ const
       MaxGridsInMG = 242;
       MaxDataBase = 120;
       MaxSatAllowed = 100;
-   {$Else}  //FMX
+   {$Else}  //FMX, not tested in quite a while
       MaxColsInRAM = 12000;
       MaxElevArraySize = 30000;
       TheMaxPointsMemPtCloud = 16000000; //16,000,000
@@ -234,9 +234,6 @@ type
    tRow8Bit = array[0..pred(MaxSatCols)] of byte;
 
    ClassesType = array[1..MaxClass] of ClassType;
-
-   //tImageRow  = array[0..pred(MaxSatCols)] of byte;
-
    tMergeLas = (mlOnMap,mlOnMask,mlDEMCovered,mlInBox,mlThin,mlTranslate,mlScaleUp,mlRGBFilter);
 
 const
@@ -366,7 +363,6 @@ const  //map display modes, for particular data types and desired look
    mtRGB3Grids = 59;
    mtCurvature = 60;
    mtDifferenceDiverge = 61;
-   //mtDifferenceMap = 57;
 
 type
    tMapType = byte;
@@ -734,7 +730,6 @@ const
    euCOPFLM = 66;
    euTANEDM = 67;
    euDegreeSlope = 68;
-   //euCurvature = 68;
    euHighElevUnits = 68;  //same as last real one;  used only for loops through all the elevation units;
 
 const
@@ -745,9 +740,8 @@ const
    VertCSNAVD88 = 5703;
 
 const
-   //used for the digitizing datum
-   //these go back a long way, and a number are no longer used
-   //because they in the the DEM header, the numbering must be retained
+   //used for the digitizing datum, which go back a long way
+   //a number are no longer used but because they in the the DEM header, the numbering must be retained
    WGS72d = 0;
    WGS84d = 1;
    NAD27d = 2;
@@ -787,18 +781,6 @@ type
       CylindricalEqualArea,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,PlateCaree,LamAzEqAreaEllipsoidal,SphericalStereographic,
       WebMercator,IrishGrid,UndefinedProj,EqualEarth,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal,ObliqueStereoGraphic);
 
-   {$IfDef UsetDMAMapRawDefinition}
-   tDMAMapRawDefinition = packed record
-      h_Adat,
-      h_f          : double;
-      h_XDat,
-      h_YDat,
-      h_ZDat       : int16;
-      h_DatumCode  : array[1..6] of byte;
-      h_EllipsCode : array[1..3] of byte;
-   end;
-   {$EndIf}
-
    tDEMheader = packed record  //for a DEM, version 4, introduced July 2014
       DEMUsed      : byte;
       DEMPrecision : tDEMprecision;
@@ -814,7 +796,6 @@ type
       DEMSWCornerY : float64;
       VerticalCSTypeGeoKey,
       UTMZone  : Int16;     {6 degree UTM Zone number, USGS/MGRS standard: 1 = W177, 60 = E177}
-      {$IfDef UsetDMAMapRawDefinition} DMAMapDefinition : tDMAMapRawDefinition; {$EndIf}
       DigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
       LatHemi    : AnsiChar;  {N or S}
       NumCol,NumRow  : int32;
@@ -1353,7 +1334,8 @@ const
    smEvansYoung = 0;
    smHorn = 1;
    smZevenbergenThorne = 2;
-   LastSlopeMethod = 2;
+   smShary = 3;
+   LastSlopeMethod = 3;
 const
     tixUTM = 0;
     tixLatLong = 1;
@@ -1917,10 +1899,11 @@ type
        DefRefMap,
        DefCurveMap,
        DefSlopeMap,
-       DefDEMMap             : tMapType;
+       DefElevMap             : tMapType;
        AutoMergeStartDEM,
        QuickSlopeSpacings    : boolean;
        MapTicks              : tMapTick;
+       New3Dviewer,
        InvertGrayScale       : boolean;
        HighlightDiffMap,
        MonochromeColor        : byte;
@@ -1948,15 +1931,10 @@ type
       DEMIXsymsize,
       DEMIX_Tile_Full,
       DEMIX_groupWonLost : byte;
-      //DEMIX_full_all,
-      //DEMIX_full_U120,
-      //DEMIX_full_U80,
-      //DEMIX_full_U10 : byte;
       DEMIX_FullDBfName,
       DEMIX_U120DBfName,
       DEMIX_U80DBfName,
       DEMIX_U10DBfName,
-
       DEMIX_base_dir,
       DEMIX_criterion_fName : PathStr;
       DEMIX_default_area,
@@ -1986,7 +1964,6 @@ type
       SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,SSIM_PLANC,SSIM_PROFC,SSIM_TANGC,SSIM_Openness,
       DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
-      //DEMIX_DoCHM,
       DEMIX_DoAirOrDirt,
       DEMIX_DoElevDiff,
       DEMIX_DoSlopeDiff,
@@ -2074,7 +2051,6 @@ type
        MaskMapShow : byte;
        MaskOpacity : byte;
        CurveFlatVal : float32;
-       //UseBigElevationColorTables : boolean;
        MissingDataBlocksLOS : boolean;
        AssumeNegativeValuesMissing : boolean;
        FilterAllTigerRoads : boolean;
@@ -2329,8 +2305,6 @@ type
        FanPickMode : tFanPickMode;
        SaveLiveFlying : boolean;
 
-       //ShowClusterResults,
-       //IncludeClusterStatistics : boolean;
        ClusterConvergenceThreshold : float32;
        LabelEachGraph,
        EntireDEMGeostats,
@@ -2370,7 +2344,6 @@ type
        BuildingMaxNumLower : int16;
        PCDefaultFilter : byte;
 
-       //DeleteTarGZ : boolean;
        DefaultVectorMapProjection : tDefaultVectorMapProject;
        WorldOutlinesOnGlobalDEM,
        WorldOutlinesOnGlobalBlueMarble : boolean;
@@ -3225,6 +3198,7 @@ var
    ProjectDir,
    PhotoDir,
    SaveViewshedDir : PathStr;
+   UsersFavoriteYear,UsersFavoriteMonth,UsersFavoriteDay :word;
   // CopyFilesFromDir,
   // CopyFilesToDir    : PathStr;
 

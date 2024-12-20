@@ -286,7 +286,7 @@ procedure tDEMDataSet.SaveAsGeotiff(SaveName : PathStr = '');
 var
    missing : double;
    WField : word;
-   Offset,NumEnt, ASCIIsize,SF,MissingSize,WidthImage,HeightImage,BytesPer,RowBytes,GeokeyEntries : integer;
+   Offset,NumEnt, ASCIIsize,SF,MissingSize,WidthImage,HeightImage,BytesPer,RowBytes,GeokeyEntries : int32;
    TIFFHeader : tTiffHeader;
    b  : array[1..4] of byte;
    TIFFFile : TBufferedFileStream;
@@ -346,9 +346,7 @@ begin
    if (SaveName = '') then begin
       if (DEMFileName <> '') then SaveName := ChangeFileExt(DEMFileName,'.tif')
       else SaveName := areaName + '.tif';
-      {$IfDef VCL}
-         if not GetFileNameDefaultExt('GEOTIFF name','GEOTIFF|*.tif',SaveName) then exit;
-      {$EndIf}
+      if not GetFileNameDefaultExt('GEOTIFF name','GEOTIFF|*.tif',SaveName) then exit;
    end;
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff in, ' + SaveName); {$EndIf}
    HeavyDutyProcessing := true;
@@ -412,8 +410,8 @@ begin
 
    Offset := TiffHeader.StripOffsets + TiffHeader.StripByteCounts;
 
-   StreamFieldEntry(TIFFFile,277,3,1,1);                            //7     SamplesPerPixel
-   StreamFieldEntry(TIFFFile,278,4,1,HeightImage);                  //8    {RowsPerStrip}
+   StreamFieldEntry(TIFFFile,277,3,1,1);                            //7   SamplesPerPixel
+   StreamFieldEntry(TIFFFile,278,4,1,HeightImage);                  //8   {RowsPerStrip}
    StreamFieldEntry(TIFFFile,279,4,1,TiffHeader.StripByteCounts);   //9
    StreamFieldEntry(TIFFFile,284,3,1,1);                            //10  {PlanarConfiguration}
    StreamFieldEntry(TIFFFile,339,3,1,SF);                           //11

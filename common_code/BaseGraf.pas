@@ -721,37 +721,6 @@ begin
       GraphDraw.MinHorizAxis := x1 - dx;
       GraphDraw.MaxHorizAxis := x2 + dx;
       {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram FirstTime set, ' + GraphDraw.AxisRange); {$EndIf}
-
-(*
-      {$IfDef RecordHistogram} WriteLineToDebugFile('GetStackedHistogram if out to tail, ' + GraphDraw.AxisRange); {$EndIf}
-      for i := 1 to Series do SeriesCount[i] := 0;
-      MaxCount := 0;
-      GISdb[DataBaseOnGraph].Mydata.First;
-      while not GISdb[DataBaseOnGraph].Mydata.eof do begin
-         for i := 1 to Series do begin
-            SeriesCount[i] := SeriesCount[i] + GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i));
-         end;
-         GISdb[DataBaseOnGraph].Mydata.Next;
-      end;
-      for i := 1 to Series do if CumCount[i] > MaxCount then MaxCount := CumCount[i];
-
-      for i := 1 to Series do CumCount[i] := SeriesCount[i];
-      while not GISdb[DataBaseOnGraph].Mydata.bof do begin
-         for i := 1 to Series do begin
-            //CumCount[i] := CumCount[i] - GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i));
-            //if ((CumCount[i] / SeriesCount[i]) < 0.99)  and (SeriesCount[i] > 1000) then goto FoundMax;
-
-
-            //if (GISdb[DataBaseOnGraph].Mydata.GetFieldByNameAsInteger('SERIES_' + IntToStr(i)) / MaxCount) > 0.05 then goto FoundMax;
-
-         end;
-         Max := Max - 2 * dx;
-         GISdb[DataBaseOnGraph].Mydata.Prior;
-      end;
-     FoundMax:;
-      GraphDraw.MinHorizAxis := Min - dx;
-      GraphDraw.MaxHorizAxis := Max;
-*)
       GraphDraw.MinVertAxis := 0;
       if Percentage then begin
          GraphDraw.VertLabel := 'Percentage';

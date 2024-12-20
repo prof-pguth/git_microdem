@@ -93,7 +93,7 @@ begin
 end;
 
 
-procedure ShifDEMsto_UTM_WGS84_EGM2008;
+procedure ShiftDEMsto_UTM_WGS84_EGM2008;
 var
    AreaProjectionInfo : tMyData;
 
@@ -160,14 +160,14 @@ var
    AreaName,TStr : ShortString;
    LocalList : boolean;
    DirName,fName : PathStr;
-begin {ShifDEMsto_UTM_WGS84_EGM2008}
+begin {ShiftDEMsto_UTM_WGS84_EGM2008}
    try
       GetDEMIXPaths;
       LocalList := (DataDirs = nil);
       if LocalList then Get3DEPDataDirs(DataDirs);
       AreaProjectionInfo := tMyData.Create(DEMIX_area_dbName);
       ShowHourglassCursor;
-      {$If Defined(Record3DEPX)} HighlightLineToDebugFile('ShifDEMsto_UTM_WGS84_EGM2008 paths=' + IntToStr(DataDirs.Count)); {$EndIf}
+      {$If Defined(Record3DEPX)} HighlightLineToDebugFile('ShiftDEMsto_UTM_WGS84_EGM2008 paths=' + IntToStr(DataDirs.Count)); {$EndIf}
       for I := 0 to pred(DataDirs.Count) do begin
          DirName := DataDirs.Strings[i];
          AreaName := LastSubDir(ExtractFilePath(DirName));
@@ -206,9 +206,9 @@ begin {ShifDEMsto_UTM_WGS84_EGM2008}
       AreaProjectionInfo.Destroy;
       if LocalList then DataDirs.Free;
       EndDEMIXProcessing;
-      {$If Defined(Record3DEPX)} WriteLineToDebugFile('ShifDEMsto_UTM_WGS84_EGM2008 out'); {$EndIf}
+      {$If Defined(Record3DEPX)} WriteLineToDebugFile('ShiftDEMsto_UTM_WGS84_EGM2008 out'); {$EndIf}
    end;
-end {ShifDEMsto_UTM_WGS84_EGM2008};
+end {ShiftDEMsto_UTM_WGS84_EGM2008};
 
 
 
@@ -479,7 +479,7 @@ var
 begin
    GetDEMIXpaths;
    Get3DEPDataDirs(DataDirs);
-   ShifDEMsto_UTM_WGS84_EGM2008(Overwrite,DataDirs);
+   ShiftDEMsto_UTM_WGS84_EGM2008(Overwrite,DataDirs);
    DEMIX_CreateReferenceDEMsFromSource(Overwrite,DataDirs);
    DEMIX_MergeReferenceDEMs(Overwrite,DataDirs);
 end;
@@ -766,7 +766,6 @@ end;
 
 
 
-
 procedure ResampleForDEMIXOneSecDEMs(OverWrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
 var
    NewDEM : integer;
@@ -782,7 +781,7 @@ begin
    try
       SaveBackupDefaults;
       HeavyDutyProcessing := true;
-      MDDef.DefDEMMap := mtDEMBlank;
+      MDDef.DefElevMap := mtDEMBlank;
       Ext := '.tif';
 
       if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);

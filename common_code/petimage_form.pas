@@ -558,8 +558,10 @@ begin
      BigBMP := CombineBitmaps(Cols, theFiles, '');
      if (BigBMP <> nil) then begin
         if (Capt <> '') then begin
-           BigBmp.Canvas.Font.Size := 24;
+           Capt := RemoveUnderscores(Capt);
            BigBmp.Canvas.Font.Style := [fsBold];
+           BigBmp.Canvas.Font.Size := 24;
+           while (BigBmp.Canvas.TextWidth(Capt) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
            BigBmp.Height := BigBmp.Height + 15 + BigBmp.Canvas.TextHeight(Capt);
            x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
            y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(Capt);

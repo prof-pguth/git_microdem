@@ -57,21 +57,21 @@ begin
 end;
 
 
+function GrayColorFunct(i : integer) : TColor;
+begin
+   Result := RGB(i,i,i);
+end;
 
-         function GrayColorFunct(i : integer) : TColor;
-         begin
-            Result := RGB(i,i,i);
-         end;
+function GrayColorFunct(z,Min,Max : float64) : TColor;
+var
+   zi : integer;
+begin
+   zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
+   Result := RGB(zi,zi,zi);
+end;
 
-         function GrayColorFunct(z,Min,Max : float64) : TColor;
-         var
-            zi : integer;
-         begin
-            zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
-            Result := RGB(zi,zi,zi);
-         end;
 		 
-		 procedure GetTerrainRGBTrip(z,Min,Max : float64; var r,g,b : byte);
+procedure GetTerrainRGBTrip(z,Min,Max : float64; var r,g,b : byte);
 var
    zi : integer;
 

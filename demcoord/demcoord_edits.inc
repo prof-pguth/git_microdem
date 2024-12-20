@@ -256,7 +256,7 @@ begin
     {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjName); {$EndIf}
 
     if OpenMap then begin
-       DEMGlb[Result].SetupMap(false,MDDef.DefDEMMap);
+       DEMGlb[Result].SetupMap(false,MDDef.DefElevMap);
        {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].SelectionMap.MapDraw.PrimMapProj.KeyDatumParams); {$EndIf}
     end;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].FullDEMParams); {$EndIf}

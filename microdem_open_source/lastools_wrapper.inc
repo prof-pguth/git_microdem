@@ -18,7 +18,7 @@
       label
          LetMeOutOfHere;
       var
-         fName,OutName,PName : PathStr;
+         fName,OutName,PName,bName : PathStr;
          lf :  tLAS_data;
          elevparams,
          params,params2 : Shortstring;
@@ -53,10 +53,10 @@
             bf.Add('set PROJ_LIB=C:\OSGeo4W\share\proj');
 
             theFileNames := tStringList.Create;
-            if StartDir = '' then StartDir := LastLidarDirectory;
+            if (StartDir = '') then StartDir := LastLidarDirectory;
             theFileNames.Add(StartDir);
 
-            if GetMultipleFiles('input LAS file','Lidar files|*.las;*.laz|*.laz|LAS files|*.las|LAZ files|*.laz',theFileNames,DefaultFilter) then begin
+            if GetMultipleFiles('input LAS or LAZ files','Lidar files|*.las;*.laz|*.laz|LAS files|*.las|LAZ files|*.laz',theFileNames,DefaultFilter) then begin
                if AnswerIsYes('Are elevations in feet') then elevparams := ' -elevation_feet';
 
                for I := 0 to pred(TheFileNames.Count) do begin
@@ -71,12 +71,11 @@
                      end;
                   end;
 
-                  if (how = lasAssignProjection {Sender = AssignProjection1}) then begin
+                  if (how = lasAssignProjection) then begin
                      OutName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_assigned.las';
                   end
                   else if (How = lasAssignUTM) then begin
                      OutName := (ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_utm.las');
-                     //params := '-meter -utm ' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi;
                      params := '-meter -epsg ' + IntToStr(GetEPSGforUTMZone('WGS84',MDDef.DefaultLatHemi,MDDef.DefaultUTMZone));
                   end
                   else if (How = lasReprojectSpecifiedtoGeo) then begin
@@ -89,25 +88,25 @@
                         if (lf.lasProjDef.lasProj.ModelType = LasLatLong) then begin
                            MDDef.DefaultUTMZone := GetUTMZone(0.5 * (lf.LAS_LatLong_Box.xmax - lf.LAS_LatLong_Box.xmin));
                         end;
-                        if lf.LAS_LatLong_Box.ymax > 0 then MDDef.DefaultLatHemi := 'N' else MDDef.DefaultLatHemi := 'S';
+                        if (lf.LAS_LatLong_Box.ymax > 0) then MDDef.DefaultLatHemi := 'N' else MDDef.DefaultLatHemi := 'S';
                         lf.Destroy;
                      end;
                      params := '-target_meter -proj_epsg ' + IntToStr(GetEPSGforUTMZone('WGS84',MDDef.DefaultLatHemi,MDDef.DefaultUTMZone));
                      OutName := (ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_utm.las');
                   end;
-                  bf.Add('REM ' + IntToStr(i) + '/' + IntToStr(TheFileNames.Count));
-                  bf.Add(pName +  ' -i ' + fName + ' -o ' + OutName + ' ' + params + Params2 + elevparams);
+                  if (not FileExists(Outname)) then begin
+                     bf.Add('REM ' + IntToStr(i) + '/' + IntToStr(TheFileNames.Count));
+                     bf.Add(pName +  ' -i ' + fName + ' -o ' + OutName + ' ' + params + Params2 + elevparams);
+                  end;
               end;
-              EndBatchFile(MDTempDir + 'las2las2.bat',bf,false);
+              bName := NextFileNumber(MDTempDir,'las2las2_','.bat');
+              EndBatchFile(bName,bf,false);
             end;
 
            LetMeOutOfHere:;
             TheFileNames.Free;
          end;
       end;
-
-
-
 
 
 procedure ConvertDEMtoLAZ(Memo1 : tMemo);

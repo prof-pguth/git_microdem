@@ -365,12 +365,10 @@ begin
          NetSL.Add(fName);
       end;
       {$IfDef RecordSSO} WriteLineToDebugFile('SSOforVATgrid, BigBitmap Features=' + IntToStr(NetSL.Count)); {$EndIf}
-      MakeBigBitmap(NetSL,GISdb[FeaturesDB].DBName,'',2);
+      MakeBigBitmap(NetSL,Copy(GISdb[FeaturesDB].DBName,1,length(GISdb[FeaturesDB].DBName)-6),'',2);
       if CloseIt then CloseAndNilNumberedDB(FeaturesDB);
   end;
 end;
-
-
 
 
 
@@ -2841,8 +2839,12 @@ begin
       else RufDist.Free;
 
       if (SlopeDist.Count > 1) then begin
-         StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope_(((','.dbf'));
          if MDDef.GraphsOfMoments then CreateMultipleHistogram(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
+         db := StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope_','.dbf'));
+         DB2 := SortDataBase(db,false,'STD_DEV');
+         CloseAndNilNumberedDB(db);
+         gr := StartBoxPlot(DB2,'','Slope (%)');
+         SaveImageAsBMP(Gr.Image1,NextFileNumber(MDTempDir,aTitle + '_boxplot_','.png'));
       end
       else SlopeDist.Free;
 
@@ -2851,7 +2853,7 @@ begin
          db := StringList2CSVtoDB(ElevDist,NextFileNumber(MDTempDir,aTitle + '_','.dbf'));
          DB2 := SortDataBase(db,false,'STD_DEV');
          CloseAndNilNumberedDB(db);
-         gr := StartBoxPlot(DB2,'',aTitle);
+         gr := StartBoxPlot(DB2,'','Elevation (m)');
          SaveImageAsBMP(Gr.Image1,NextFileNumber(MDTempDir,aTitle + '_boxplot_','.png'));
       end
       else ElevDist.Free;
@@ -2878,6 +2880,7 @@ begin
    if MDDef.StringGridWithMoments then GridForm.SetFormSize;
    RestoreBackupDefaults;
    SetColorForWaiting;
+   ShowDefaultCursor;
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport out'); {$EndIf}
 end;
 

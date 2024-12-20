@@ -274,10 +274,6 @@ type
          UTMValidDEM        : boolean;
          cosAlt,sinAlt,RefPhi,RefAlt,RefWeight : array[1..MaxRefDir] of float64;     //for hillshades
          VatLegendStrings : tStringList;
-         //VATrelatedGrid,
-         //FilterGrid,
-         //FilterGridValue,
-         //FanBlowUpDEM,
          DSMGrid            : integer;
 
          {$IfDef VCL}
@@ -741,7 +737,7 @@ function MaskValidPoint(Col,Row : integer) : boolean;
 function NumDEMDataSetsOpen : integer;
 procedure ZeroDEMHeader(var HeadRecs : tDEMheader; UTM : boolean);
 
-function ValidDEM(DEM : integer) : boolean;
+function ValidDEM(DEM : integer) : boolean; inline;
 
 
 const
@@ -2511,7 +2507,6 @@ var
                      DEMheader.DEMSWCornerX := DEMSWcornerLong;
                      DEMheader.DEMSWCornerY := DEMSWcornerLat;
                   end;
-                  {$IfDef UsetDMAMapRawDefinition} StringToByteArray(MDdef.PreferPrimaryDatum, DEMheader.DMAMapDefinition.h_DatumCode); {$EndIf}
                   DigitizeDatumConstants.Destroy;
                end;
             end;
@@ -3271,7 +3266,7 @@ begin
             //allows multi-directions if i > 1
             Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(SlopeDeg)) + (sinAlt[i] * sinDeg(SlopeDeg * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
 
-            //this is the formula for WhiteBox , HS = tan(s) / [1 - tan(s)2]0.5 x [sin(Alt) / tan(s) - cos(Alt) x sin(Az - a)]
+            //this is the formula for WhiteBox , HS = tan(s) / [1 - tan(s)2]^0.5 x [sin(Alt) / tan(s) - cos(Alt) x sin(Az - a)]
             //this is not quite right, and I have not been able to figure out why
             //Value := tanDeg(slopeDeg) / sqrt(1 - sqr(tanDeg(slopeDeg))) * (sinAlt[i] / tanDeg(slopeDeg)) - cosAlt[i] * sinDeg(RefPhi[i] - SlopeAsp.AspectDir);
              Sum := sum + Value;

@@ -530,7 +530,7 @@ begin
     until OK;
     ShowHourglassCursor;
     OpenAndZeroNewDEM(false,NewHeader,Result,'Global DEM',InitDEMmissing);
-    DEMGlb[Result].SetUpMap(false,MDDef.DefDEMMap);
+    DEMGlb[Result].SetUpMap(false,MDDef.DefElevMap);
 
     ShowDefaultCursor;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGlobalGrid out'); {$EndIf}

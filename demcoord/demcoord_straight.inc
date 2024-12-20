@@ -48,6 +48,29 @@ begin
 end;
 
 
+procedure tDEMDataSet.GetStraightRouteLatLongWithElevs(Lat1,Long1,Lat2,Long2 : float64; var NumPoints : integer; var xgrids,ygrids,dists,elevs : bfarray32);
+var
+   I : integer;
+   xg,yg : float64;
+   Lat,Long,dDistance,FullDistance,Bearing : float64;
+begin
+   {$IfDef RecordLOSAlgorithm} WriteLineToDebugFile('tDEMDataSet.GetStraightRouteLatLongWithElevs enter'); {$EndIf}
+   VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,FullDistance,Bearing);
+   dDistance := FullDistance / NumPoints;
+   //Lats[0] := Lat;
+   //Longs[0] := Long;
+   //GetElevFromLatLongDegree(Lat,Long,Elevs[0]);
+   for i := 0 to NumPoints do begin
+      Dists[i] := dDistance * i;
+      VincentyPointAtDistanceBearing(Lat1,Long1,Dists[i],Bearing,Lat,Long);
+      GetElevFromLatLongDegree(Lat,Long,Elevs[i]);
+      LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
+      xgrids[i] := xg;
+      ygrids[i] := yg;
+   end;
+end;
+
+
 procedure tDEMDataSet.GetStraightRoute(LatLong : boolean; Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var xgrids,ygrids,dists : bfarray32);
 var
    I : integer;
@@ -58,7 +81,6 @@ begin
 
    VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,FullDistance,Bearing);
    dDistance := FullDistance / NumPoints;
-
    for i := 0 to NumPoints do begin
       Dists[i] := dDistance * i;
       VincentyPointAtDistanceBearing(Lat1,Long1,Dists[i],Bearing,Lat,Long);
@@ -74,6 +96,7 @@ begin
    end;
 
 (*
+   dDistance := FullDistance / NumPoints;
    if (StraightAlgorithm = saLatLong) then begin
       dLat := (Lat2-Lat1) / NumPoints;
       dLong := (Long2-Long1) / NumPoints;

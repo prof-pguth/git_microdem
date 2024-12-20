@@ -1212,6 +1212,10 @@ begin
      {$EndIf}
 
       DecodeDate(now,wYear,wmonth,wDay);
+      UsersFavoriteYear := wYear;
+      UsersFavoriteMonth := wMonth;
+      UsersFavoriteDay := wDay;
+
       MDDef.SingleJulianDay := AnnualJulianDay(wYear,wMonth,wDay);
 
      {$IfDef RecordInitialization}
@@ -2796,6 +2800,7 @@ var
          AParameter('Misc','MaxRGBColor',MaxRGBColor,200);
          AParameter('Misc','RangeRGBColor',RangeRGBColor,150);
          AParameter('Misc','DefElevsPercentile',DefElevsPercentile,true);
+         AParameter('Misc','New3Dviewer',New3Dviewer,true);
 
          AParameter('Misc','FinalLinesToKeep',FinalLinesToKeep,10);
          MDDef.InitialLinesToKeep := 7;
@@ -3402,7 +3407,7 @@ var
          if (IniWhat = iniRead) then ShadeOpts := tShadeOpts(IniFile.ReadInteger('MapDraw','ShadeOpts',ord(soNone)));
          if (iniWhat = iniInit) then ShadeOpts := soNone;
 
-         AParameter('MapDrawing','DefDEMMap',DefDEMMap,mtIHSReflect);
+         AParameter('MapDrawing','DefElevMap',DefElevMap,mtIHSReflect);
          AParameter('MapDrawing','DefRefMap',DefRefMap,mtIHSReflect);
          AParameter('MapDrawing','DefSlopeMap',DefSlopeMap,mtSlopeTrafficCats);
          AParameter('MapDrawing','DefCurveMap',DefCurveMap,mtCurvature);
@@ -5072,6 +5077,7 @@ begin
       smZevenbergenThorne      : SlopeMethodName := '4 neighbors (Zevenbergen and Thorne)';
       smHorn  : SlopeMethodName := '8 neighbors (weight) (Horn)';
       smEvansYoung  : SlopeMethodName := '8 neighbors (even) (Evans)';
+      smShary  : SlopeMethodName := '8 neighbors (Shary)';
       {$IfDef IncludeOldSlopeAlgoritms}
          smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
          smONeillAndMark      : SlopeMethodName := '3 neighbors';
@@ -5089,9 +5095,10 @@ end;
 function ShortSlopeMethodName(Method : byte) : shortstring;
 begin
    case Method of
-      smZevenbergenThorne      : Result := 'N4';
-      smHorn  : Result := 'N8S';
-      smEvansYoung  : Result := 'N8E';
+      smZevenbergenThorne  : Result := 'ZT';
+      smHorn  : Result := 'Horn';  //'N8S';
+      smEvansYoung  : Result := 'Evans-Young';  //'N8E';
+      smShary : Result := 'Shary';
       {$IfDef IncludeOldSlopeAlgoritms}
          smSteepestNeighbor   : Result := 'SAN';
          smONeillAndMark      : Result := 'N3';

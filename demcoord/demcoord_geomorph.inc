@@ -93,7 +93,7 @@ begin
             dzdx := (ze - zw) / (2 * dx);
             dzdy := (zn - zs) / (2 * dy);
          end
-         else if (MDDef.SlopeAlgorithm = smEvansYoung) then begin
+         else if (MDDef.SlopeAlgorithm in [smShary,smEvansYoung]) then begin
             dzdx := (+zne+ze+zse-znw-zw-zsw) / (6 * dx);
             dzdy := (+znw+zn+zne-zsw-zs-zse) / (6 * dy);
          end
@@ -132,6 +132,10 @@ begin
                else if (MDDef.SlopeAlgorithm = smHorn) then begin
                   dxx := (znw + 2 * zw + zsw + zne + 2 * ze + zse - 2 * (z + 2 * zn + zs)) / (4 * sqr(dx));
                   dyy := (znw + 2 * zn + zne + zsw + 2 * zs + zse - 2 * (z + 2 * ze + zw)) / (4 * sqr(dx));
+               end
+               else if (MDDef.SlopeAlgorithm = smShary) then begin
+                  dzdx := ( znw + zne + zsw + zse - 2 * (zn + zs) + 3 * (zw + ze) - 6 * z) / (5 * sqr(dx));
+                  dzdy := ( znw + zne + zne + zse - 2 * (zw + ze) + 3 * (zn + zs) - 6 * z) / (5 * sqr(dy));
                end;
                dxy := (zne - znw + zsw - zse) / (4 * dx * dy);  //same for all 3 algorithms
             end;

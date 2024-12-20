@@ -465,7 +465,7 @@ begin
    TheTable.Insert;
    TheTable.SetFieldByNameAsString('FILENAME',FileName);
    TheTable.SetFieldByNameAsString('SERIES',Series);
-   TheTable.SetBoundingBox(bb);
+   TheTable.SetRecordBoundingBox(bb);
    TheTable.Post;
 end;
 
@@ -1129,7 +1129,7 @@ begin
          DEMGlb[Result].CheckMaxMinElev;
          DEMGlb[Result].DefineDEMVariables(True);
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Elev check Merge: ' + DEMGlb[Result].ZRange); {$EndIf}
-         if DisplayIt then CreateDEMSelectionMap(Result,true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);
+         if DisplayIt then CreateDEMSelectionMap(Result,true,MDDef.DefElevsPercentile,MDdef.DefElevMap);
       end
       else begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Failed set up, Result=' + IntToStr(Result)); {$EndIf}

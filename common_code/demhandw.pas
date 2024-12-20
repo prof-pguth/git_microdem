@@ -582,13 +582,16 @@ end;
 
 procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
 begin
-   {$ifDef ExPointClouds}
+   {$IfDef ExPointClouds}
    {$Else}
+      SaveBackupDefaults;
+      MDDef.ShowWinExec := true;
       if (Sender = ToUTM1) then LasToLasTools(lasToUTM);
       if (Sender = AssignbyEPSGandreprojecttoUTM1) then LasToLasTools(lasAssignEPSGreprojectUTM);
       if (Sender = AssignprojectionUTM1) then LasToLasTools(lasAssignUTM);
       if (Sender = LASGeotoUTM1) then LasToLasTools(lasAssignGeo);
       if (Sender = ReprojectSpecifiedtoGeo1) then LasToLasTools(lasReprojectSpecifiedtoGeo);
+      RestoreBackupDefaults;
    {$EndIf}
 end;
 
@@ -3078,7 +3081,7 @@ begin
                  NumAlreadyDone := 0;
                  StartProgressAbortOption('Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count));
                  for i := 0 to pred(FileList.Count) do begin
-                    UpdateProgressBar(succ(i)/FileList.Count);
+                    UpdateProgressBar(i/FileList.Count);
                     wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
                     TStr := FileList.Strings[i];
                     InName := TStr;
@@ -3101,7 +3104,7 @@ begin
                              TStr := TStr + ' failure ***** ' + InName;
                              inc(NumFail);
                           end;
-                          Memo1.Lines.Add(IntToStr(I) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
+                          Memo1.Lines.Add(IntToStr(succ(I)) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
                        end;
                     end;
                     if WantOut then begin
@@ -3184,7 +3187,7 @@ end;
 
 procedure TDemHandForm.ToUTM1Click(Sender: TObject);
 begin
-    LASGeotoUTM1Click(Sender);
+   LASGeotoUTM1Click(Sender);
 end;
 
 
@@ -4249,20 +4252,7 @@ end;
 initialization
    InitializeDEMHandW;
 finalization
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demhandw in',true); {$EndIf}
-   {$IfDef RecordSatProblems} WriteLineToDebugFile('RecordSatProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordImportProblems} WriteLineToDebugFile('RecordImportProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordMergeProblems} WriteLineToDebugFile('RecordMergeProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordHandlingLeak} WriteLineToDebugFile('RecordHandlingProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordReformat} WriteLineToDebugFile('RecordReformat active in demhandw'); {$EndIf}
-   {$IfDef RecordShapeFileContents} WriteLineToDebugFile('RecordShapeFileContents active in demhandw'); {$EndIf}
-   {$IfDef RecordGAZProblems} WriteLineToDebugFile('RecordGAZProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordGMTConvert} WriteLineToDebugFile('RecordGAZProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordTDemHandFormFormClose} WriteLineToDebugFile('RecordTDemHandForm active in demhandw'); {$EndIf}
-   {$IfDef RecordDuckProblems} WriteLineToDebugFile('RecordDuckProblems active in demhandw'); {$EndIf}
-   {$IfDef RecordSOESTtides} WriteLineToDebugFile('RecordSOESTtides active in demhandw'); {$EndIf}
-   {$IfDef RecordGDAL} WriteLineToDebugFile('RecordGDAL active in demhandw'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demhandw out'); {$EndIf}
+   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demhandw in'); {$EndIf}
 end.
 
 

@@ -54,13 +54,10 @@ begin
 end;
 
 procedure Tsunrisepicker.FormCreate(Sender: TObject);
-var
-   wYear,wmonth,wDay : word;
 begin
-   DecodeDate(now,wYear,wmonth,wDay);
-   Edit1.Text := IntToStr(wDay);
-   Edit2.Text := IntToStr(wMonth);
-   Edit3.Text := IntToStr(wYear);
+   Edit1.Text := IntToStr(UsersFavoriteDay);
+   Edit2.Text := IntToStr(UsersFavoriteMonth);
+   Edit3.Text := IntToStr(UsersFavoriteYear);
    Edit4.Text := IntToStr(MDDef.UTCOffset);
 end;
 
@@ -69,5 +66,6 @@ procedure Tsunrisepicker.OKBtnClick(Sender: TObject);
 begin
    Close;
 end;
+
 
 end.

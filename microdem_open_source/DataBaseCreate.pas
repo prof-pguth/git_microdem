@@ -842,19 +842,23 @@ procedure tCreateDataBase.AddCorrectRecordFromStringList(TheData: tStringList);
          end;
          for i := 1 to TheData.Count do begin
             AFieldValue := TheData.Strings[pred(i)];
-            FixFieldValue(FieldsToAdd[i].ft,FieldsToAdd[i].decimals,AFieldValue);
-
-            if UsingNewDBF then begin
-               {$IfDef RecordCreateDBProblemsFull} WriteLineToDebugFile(FieldsToAdd[i].FieldName + ' = ' + FieldTypeStr(FieldsToAdd[i].ft) + '=' + AFieldValue); {$EndIf}
-               NewDBF.SetFieldByNameAsString(FieldsToAdd[i].FieldName,trim(AFieldValue));
+            if UpperCase(AFieldValue) = '+INF' then begin
             end
             else begin
-               while (length(AFieldValue) < FieldsToAdd[i].Length) do begin
-                  if (FieldsToAdd[i].ft = ftString) then AFieldValue := AFieldValue + ' '
-                  else AFieldValue := ' ' + AFieldValue;
+               FixFieldValue(FieldsToAdd[i].ft,FieldsToAdd[i].decimals,AFieldValue);
+
+               if UsingNewDBF then begin
+                  {$IfDef RecordCreateDBProblemsFull} WriteLineToDebugFile(FieldsToAdd[i].FieldName + ' = ' + FieldTypeStr(FieldsToAdd[i].ft) + '=' + AFieldValue); {$EndIf}
+                  NewDBF.SetFieldByNameAsString(FieldsToAdd[i].FieldName,trim(AFieldValue));
+               end
+               else begin
+                  while (length(AFieldValue) < FieldsToAdd[i].Length) do begin
+                     if (FieldsToAdd[i].ft = ftString) then AFieldValue := AFieldValue + ' '
+                     else AFieldValue := ' ' + AFieldValue;
+                  end;
+                  for j := 1 to FieldsToAdd[i].Length do DataRec[StartPos + pred(j)] := ord(AFieldValue[j]);
+                  inc(StartPos,FieldsToAdd[i].Length);
                end;
-               for j := 1 to FieldsToAdd[i].Length do DataRec[StartPos + pred(j)] := ord(AFieldValue[j]);
-               inc(StartPos,FieldsToAdd[i].Length);
             end;
          end;
          if UsingNewDBF then NewDBF.Post
@@ -977,13 +981,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordCreateDBProblems} WriteLineToDebugFile('RecordCreateDBProblems active in databasecreate'); {$EndIf}
-   {$IfDef RecordAddFieldsToDB} WriteLineToDebugFile('RecordAddFieldsToDB active in databasecreate'); {$EndIf}
-   {$IfDef RecordCreateDBProblemsFull} WriteLineToDebugFile('RecordCreateDBProblemsFull active in databasecreate--major slowdown'); {$EndIf}
-   {$IfDef RecordDBFtoClientDataSet} WriteLineToDebugFile('RecordDBFtoClientDataSet active in databasecreate'); {$EndIf}
-   {$IfDef FullRecordDBFtoClientDataSet} WriteLineToDebugFile('FullRecordDBFtoClientDataSet active in databasecreate--major slowdown for big databases'); {$EndIf}
-   {$IfDef RecordTimeDBConversions} WriteLineToDebugFile('RecordTimeDBConversions active in databasecreate'); {$EndIf}
-   {$IfDef RecordMyDataCreation} WriteLineToDebugFile('RecordMyDataCreation active in databasecreate'); {$EndIf}
 end.
 
 

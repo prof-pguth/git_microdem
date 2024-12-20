@@ -655,20 +655,24 @@ var
          euLandFire  : Result :=  'LANDFIRE'   ;
          //euGLCS_LC100  : Result := 'CGLS-LC100';
          euCCAP  : Result :=  'CCAP';
-         euMeybeck  : Result := 'MEYBECK';
          euESRI2020  : Result := 'ESRI2020';
-         euIwahashi  : Result := 'IWAHASHI';
-         euGeomorphon  : Result := 'GEOMORPHON';
-         euPennock  : Result := 'PENNOCK';
          euLCMAP  : Result := 'LCMAP';
          //euSent2SLC  : Result := 'Sent2SLC';
          //euCOP  : Result :=     ;
-         euCOPEDM : Result := 'COP-EDM';
-         euCOPFLM : Result := 'COP-FLM';
          euGLC2000 : Result := 'GLC2000';
          euGLCS_LC100 : Result := 'GLCS-LC100';
          euSent2SLC : Result := 'L2A_scene_class';
-         euTANEDM : Result := 'TAN-EDM';
+
+         //landform classifications
+            euMeybeck  : Result := 'MEYBECK';
+            euIwahashi  : Result := 'IWAHASHI';
+            euGeomorphon  : Result := 'GEOMORPHON';
+            euPennock  : Result := 'PENNOCK';
+
+         //DEM metadata grids
+            euTANEDM : Result := 'TAN-EDM';
+            euCOPEDM : Result := 'COP-EDM';
+            euCOPFLM : Result := 'COP-FLM';
       end;
    end;
 

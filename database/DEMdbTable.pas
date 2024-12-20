@@ -2168,7 +2168,7 @@ var
         EndProgress;
         FreeMem(Points,MemReq);
         {$IfDef RecordOpenGL} WriteLineToDebugFile('Export binary over, n=' + IntToStr(i)); {$EndIf}
-        FMX3dViewer(True,GeometryfName,'','','','', ColorsFName,'','','','',NoVertExag);
+        FMX3dViewer(True,GeometryfName,'','','',''{, ColorsFName,'','','',''},NoVertExag);
         {$IfDef RecordOpenGL} WriteLineToDebugFile('OpenNew3Dform out'); {$EndIf}
      end;
 

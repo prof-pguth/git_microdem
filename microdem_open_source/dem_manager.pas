@@ -130,7 +130,8 @@ procedure GeotiffMetadata(MDVersion : tMDVersion; fName : PathStr);
 function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
 
 {$IfDef VCL}
-   procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray);
+   function GetMultipleDEMsFromList(TheMessage : shortstring) : tDEMbooleanArray;  overload;
+   procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray); overload;
    function GetDEM(var DEMWanted : integer; CanCancel : boolean = false; TheMessage : ShortString = '') : boolean;
    function OpenNewDEM(fName : PathStr = ''; LoadMap : boolean = true; WhatFor : shortstring = '') : integer;
    function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
@@ -358,7 +359,10 @@ procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean
 var
    j : integer;
 begin
-   for j := 1 to MaxDEMDataSets do DEMlist[j] := Setting;
+   for j := 1 to MaxDEMDataSets do begin
+      if ValidDEM(j) then DEMlist[j] := Setting
+      else DEMlist[j] := false;
+   end;
 end;
 
 
@@ -596,7 +600,7 @@ end;
                DEMGlb[CompareDEMIndexes[i]].AreaName := CompareDEMNames[i];
                LikeDTED[i] := (DEMGlb[CompareDEMIndexes[i]].DEMHeader.RasterPixelIsGeoKey1025 = 2) or (DEMGlb[CompareDEMIndexes[i]].AreaName = 'ASTER');
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile(DEMGlb[CompareDEMIndexes[i]].AreaName + ' ' + DEMGlb[CompareDEMIndexes[i]].PixelIsString); {$EndIf}
-               if LoadMap then CreateDEMSelectionMap(CompareDEMIndexes[i],true,MDDef.DefElevsPercentile,MDdef.DefDEMMap);
+               if LoadMap then CreateDEMSelectionMap(CompareDEMIndexes[i],true,MDDef.DefElevsPercentile,MDdef.DefElevMap);
             end
             else begin
                dec(i);
@@ -839,7 +843,14 @@ end;
    end;
 
 
-   procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray);
+   function GetMultipleDEMsFromList(TheMessage : shortstring) : tDEMbooleanArray;  overload;
+   begin
+      GetMultipleDEMsFromList(TheMessage,Result);
+   end;
+
+
+   procedure GetMultipleDEMsFromList(TheMessage : shortstring; var DEMsWanted : tDEMbooleanArray); overload;
+   //this allows the initial settings for the DEMs wanted to be set or not set depending on situation
    var
       fName : PathStr;
       table : tMyData;
@@ -1587,10 +1598,10 @@ begin
                      WantedSat := 0;
                      LoadNewDEM(WantedDem,fName,false,'new DEM','',false);
                      if (WantedDEM = 0) then break;
-                     mt := MDdef.DefDEMMap;
+                     mt := MDdef.DefElevMap;
                      if Table.FieldExists('MAP_TYPE') then begin
                         mt := Table.GetFieldByNameAsInteger('MAP_TYPE');
-                        if mt = 0 then mt := MDdef.DefDEMMap;
+                        if mt = 0 then mt := MDdef.DefElevMap;
                      end;
                      CreateDEMSelectionMap(WantedDEM,true,MDDef.DefElevsPercentile, mt);
                      LoadMapDetails(DEMGlb[WantedDEM].SelectionMap);

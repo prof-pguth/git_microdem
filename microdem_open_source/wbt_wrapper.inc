@@ -426,6 +426,14 @@ begin
   end;
 end;
 
+function WBT_FeaturePreserveSmooth(OpenMap : boolean; InName : PathStr; zUnits : byte; OutName : PathStr = '') : integer;
+var
+   cmd : ansistring;
+begin
+   if (OutName = '') then OutName := MDtempDir + 'wbt_FeaturePreserveSmooth_' + ExtractFileNameNoExt(InName) + '.tif';
+   cmd := WhiteBoxfName + ' -r=FeaturePreservingSmoothing -v -i=' + InName + ' -o=' + OutName;
+   Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,zUnits,MDDef.DefElevMap);
+end;
 
 procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
 var
@@ -437,7 +445,7 @@ begin
      OutName := NextFileNumber(MDTempDir,'wbt_pennock_' + ExtractFileNameNoExt(InName) + '_','.tif');
      bfile := tStringList.Create;
      if SmoothFirst then begin
-        tName := MDtempDir + 'wbt_denoise_' + ExtractFileNameNoExt(InName) + '.tif';
+        tName := MDtempDir + 'wbt_FeaturePreserveSmooth_' + ExtractFileNameNoExt(InName) + '.tif';
         bfile.Add(WhiteBoxfName + ' -r=FeaturePreservingSmoothing -v -i=' + InName + ' -o=' + tName);
         inName := tName;
      end;

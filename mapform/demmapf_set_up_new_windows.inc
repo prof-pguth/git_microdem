@@ -231,7 +231,7 @@ var
          fName2,MPath : PathStr;
       begin
          if (not DEMGlb[DEM].ElevationDEM) then Result := mtElevRainbow
-         else Result := MDdef.DefDEMMap;
+         else Result := MDdef.DefElevMap;
 
          if FileExists(ChangeFileExt(DEMGlb[DEM].DEMFileName,'.vat.dbf')) or FileExists(DEMGlb[DEM].DEMFileName + '.vat.dbf') then begin
             {$IfDef RecordVAT} WriteLineToDebugFile('CreateDEMSelectionMap, create VAT'); {$EndIf}

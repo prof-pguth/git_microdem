@@ -1602,6 +1602,9 @@ type
     N49: TMenuItem;
     ElevMoments1: TMenuItem;
     Elevationslopemoments1: TMenuItem;
+    Whiteboxfeaturepreservingsmoothing1: TMenuItem;
+    N74: TMenuItem;
+    N76: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2744,6 +2747,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Bothwindows1Click(Sender: TObject);
     procedure Elevationslopemoments1Click(Sender: TObject);
     procedure ElevMoments1Click(Sender: TObject);
+    procedure Whiteboxfeaturepreservingsmoothing1Click(Sender: TObject);
+    procedure N76Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -5078,7 +5083,7 @@ begin
       SeekingSecondPerspective         : DEMPersF.View3D.PersSize := psPerpsective;
    end;
    DEMPersF.View3D.SetSize;
-   SetPerspectiveOptions(DEMPersF.View3D,DEMPersF.View3D.PersSize);
+   SetPerspectiveOptions(false,DEMPersF,DEMPersF.View3D,DEMPersF.View3D.PersSize);
    DEMPersF.View3D.SetSize;
 
    if (WhatStarting = LiveFly2) then SetUpFlightControlIfLiveFlying;
@@ -5189,7 +5194,8 @@ var
    Finalx,Finaly : integer;
    Checking      : tCheckPoint;
 begin
-   if (DEMNowDoing in [SeekingSecondLOS,SeekingSecondPerspective,SeekingSecondNewPanorama,MultipleTopoProfileRight,SimpleTopoProfileRight,SeekingSecondAverageProfile,
+   if (DEMNowDoing in [SeekingSecondLOS,SeekingSecondPerspective,SeekingSecondNewPanorama,SeekingSecondAverageProfile,
+            MultipleTopoProfileRight,SimpleTopoProfileRight,
             {$IfDef ExGeology} {$Else} SeekingRightSideMagModels, {$EndIf}
             SeekingSecondCircleFly,SeekingThirdCircleFly,LiveFly2]) and NotSamePoint then begin
       if (DEMNowDoing in [SeekingThirdCircleFly]) then begin
@@ -5216,7 +5222,8 @@ begin
 
       {$IfDef ExViewshed}
       {$Else}
-      if (DEMNowDoing in [SeekingSecondLOS,MultipleTopoProfileRight,{$IfDef ExGeology}{$Else} SeekingRightSideMagModels,{$EndIf} SimpleTopoProfileRight,SeekingSecondAverageProfile]) then begin
+      if (DEMNowDoing in [SeekingSecondLOS,MultipleTopoProfileRight,{$IfDef ExGeology}{$Else} SeekingRightSideMagModels,{$EndIf}
+                  SimpleTopoProfileRight,SeekingSecondAverageProfile]) then begin
          Image1.Canvas.Pen.Mode := pmCopy;
          Image1.Canvas.Pen.Color := clRed;
          Image1.Canvas.MoveTo(MapScreenX1,MapScreenY1);
@@ -5244,7 +5251,7 @@ begin
 
    if DEMNowDoing in [SeekingLOS,SeekingPerspective,SeekingFirstNewPanorama,LiveFly,MultipleLOS,SeekingTopoProfile,SimpleTopoProfileRight,SeekingAverageProfile,
            SeekingFirstCircleFly,FirstPointSelectionAlgorithm] then begin
-      if DEMNowDoing in [{SeekingPerspective,}LiveFly,SeekingFirstCircleFly] then Checking := CheckAll
+      if DEMNowDoing in [LiveFly,SeekingFirstCircleFly] then Checking := CheckAll
       else Checking := CheckReasonable;
       CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xsatg1,ysatg1,Checking);
 
@@ -5800,11 +5807,11 @@ begin
 end;
 
 procedure TMapForm.Comparemultiplegridstothisone2Click(Sender: TObject);
-var
-    DEMsWanted : tDEMbooleanArray;
+//var
+    //DEMsWanted : tDEMbooleanArray;
 begin
-    GetMultipleDEMsFromList('Histograms',DEMsWanted);
-    CreateGridHistograms(DEMSwanted);
+    //GetMultipleDEMsFromList('Histograms',DEMsWanted);
+    CreateGridHistograms(GetMultipleDEMsFromList('Histograms'));
 end;
 
 procedure TMapForm.Comparepartialderivatives1Click(Sender: TObject);
@@ -7561,13 +7568,13 @@ begin
 end;
 
 procedure TMapForm.Gridcorrelations1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMBooleanArray;
+//var
+   //DEMsWanted : tDEMBooleanArray;
 begin
    {$IfDef ExGeostats}
    {$Else}
-      GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
-      GridCorrelationMatrix(gcmR,DEMsWanted,'Grid correlation matrix');
+      //GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
+      GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Grid correlations'),'Grid correlation matrix');
    {$EndIf}
 end;
 
@@ -10285,12 +10292,12 @@ end;
 
 
 procedure TMapForm.Scattergrams1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMbooleanArray;
+//var
+   //DEMsWanted : tDEMbooleanArray;
 begin
     {$IfDef RecordScattergram} WriteLineToDebugFile('TMapForm.Scattergrams1Click in'); {$EndIf}
-    GetMultipleDEMsFromList('Histograms',DEMsWanted);
-    ScatterGramGrid(True,DEMsWanted);
+    //GetMultipleDEMsFromList('Histograms',DEMsWanted);
+    ScatterGramGrid(True,GetMultipleDEMsFromList('Scattergrams'));
 end;
 
 
@@ -11005,7 +11012,7 @@ begin
      DEMNowDoing := Calculating;
      SaveBackupDefaults;
      DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xDEMg2,yDEMg2);
-     MDDef.DefDEMMap := mtElevIHS;
+     MDDef.DefElevMap := mtElevIHS;
      Findings := tStringList.Create;
      for ElevInt := low(tElevInterpolation) to high(tElevInterpolation) do begin
         MDDef.wf.ElevInterpolation := ElevInt;
@@ -12862,7 +12869,7 @@ begin
    SaveBackupDefaults;
    GetCursorPos(Pt);
    if (ZoomWindow = Nil) then begin
-      ZoomWindow := CreateANewDEMMapWindow(MapDraw.DEMonMap,false,MDDef.DefDEMMap,'Zoom map');
+      ZoomWindow := CreateANewDEMMapWindow(MapDraw.DEMonMap,false,MDDef.DefElevMap,'Zoom map');
       ZoomWindow.Left := Mouse.CursorPos.X;
       ZoomWindow.Top := Mouse.CursorPos.Y;
       ZoomWindow.PanButtonsOnMap := ShowPanButtons;
@@ -18171,7 +18178,7 @@ begin
    {$IfDef ExPointCloud}
    {$Else}
       {$If Defined(RecordLAS) or Defined(RecordUTMZone)} WriteLineToDebugFile('TMapForm.LASFile1Click in, Map UTM zone=' + IntToStr(MapDraw.PrimMapProj.projUTMZone)); {$EndIf}
-      if (pt_cloud_opts_fm = Nil) then Point_cloud_options.OvelayPointClouds(Self);
+      if (pt_cloud_opts_fm = Nil) then Point_cloud_options.OverlayPointClouds(Self);
       {$IfDef RecordUTMZone} WriteLineToDebugFile('TMapForm.LASFile1Click out, Map UTM zone=' + IntToStr(MapDraw.PrimMapProj.projUTMZone)); {$EndIf}
    {$EndIf}
 end;
@@ -19628,11 +19635,10 @@ end;
 procedure TMapForm.Correlationmatrix1Click(Sender: TObject);
 var
     DEMsWanted : tDEMbooleanArray;
-    //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
     GetMultipleDEMsFromList('Correlation matrix',DEMsWanted);
     DEMsWanted[MapDraw.DEMonMap] := true;
-    {CorrelationMatrix :=} GridCorrelationMatrix(gcmR,DEMsWanted,'Correlation matrix');
+    GridCorrelationMatrix(gcmR,DEMsWanted,'Correlation matrix');
 end;
 
 procedure TMapForm.Counties1Click(Sender: TObject);
@@ -19814,6 +19820,14 @@ begin
    StreamName := '';
    HANDName := '';
    WBT_ElevAboveStream(true, GeotiffDEMNameOfMap,BreachName,FlowAccumulationName,StreamName,HANDName,Threshhold);
+end;
+
+procedure TMapForm.Whiteboxfeaturepreservingsmoothing1Click(Sender: TObject);
+begin
+   {$IfDef NoExternalPrograms}
+   {$Else}
+      WBT_FeaturePreserveSmooth(true,GeotiffDEMNameOfMap,DEMGlb[MapDraw.DEMonMap].DEMheader.ElevUnits);
+   {$EndIf}
 end;
 
 procedure TMapForm.Whiteboxfillholes1Click(Sender: TObject);
@@ -20954,11 +20968,10 @@ end;
 procedure TMapForm.MADmatrix1Click(Sender: TObject);
 var
    DEMsWanted : tDEMbooleanArray;
-    //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
     GetMultipleDEMsFromList('MAD matrix',DEMsWanted);
     DEMsWanted[MapDraw.DEMonMap] := true;
-    {CorrelationMatrix :=} GridCorrelationMatrix(gcmMAbD,DEMsWanted,'MAD matrix');
+    GridCorrelationMatrix(gcmMAbD,DEMsWanted,'MAD matrix');
 end;
 
 
@@ -21089,7 +21102,7 @@ procedure TMapForm.Pointcloud1Click(Sender: TObject);
 begin
    {$IfDef ExPointCloud}
    {$Else}
-      OvelayPointClouds(Self);
+      OverlayPointClouds(Self);
    {$EndIf}
 end;
 
@@ -21168,7 +21181,7 @@ begin
          LasData := Las_Lidar.tLAS_data.Create(FName);
          LasData.OldExportBinary(Cloud,GeometryFName,ColorsFName);
          LasData.Destroy;
-         FMX3dViewer(True,GeometryfName,'','','','', ColorsFName,'','','','');
+         FMX3dViewer(True,GeometryfName,'','','',''{, ColorsFName,'','','',''});
       end
       else MessageToContinue('No point cloud coverage');
    end;
@@ -21475,7 +21488,7 @@ begin
     {$If Defined(TrackWKTstring)} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap, Result WKT=' + DEMGlb[Result].DEMHeader.WKTString); {$EndIf}
 
     if OpenMap then begin
-       DEMGlb[Result].SetUpMap(false,MDDef.DefDEMMap);
+       DEMGlb[Result].SetUpMap(false,MDDef.DefElevMap);
        {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap out ' + DEMGlb[Result].SelectionMap.MapDraw.PrimMapProj.KeyDatumParams); {$EndIf}
     end;
     BackToWandering;
@@ -22504,12 +22517,15 @@ end;
 
 
 
-procedure TMapForm.ElevMoments1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMBooleanArray;
+procedure TMapForm.N76Click(Sender: TObject);
 begin
-   GetMultipleDEMsFromList('Elevation/grid value moments',DEMsWanted);
-   JustElevationMoments(DEMSWanted,'Elevation/grid value moments', true,true);
+   CompareMICRODEM_filtered_slopes(MapDraw.DEMonMap);
+
+end;
+
+procedure TMapForm.ElevMoments1Click(Sender: TObject);
+begin
+   JustElevationMoments(GetMultipleDEMsFromList('Elevation/grid value moments'),'Elevation/grid_value_moments', true,true);
 end;
 
 procedure TMapForm.N79Click(Sender: TObject);
@@ -24120,11 +24136,8 @@ end;
 
 
 procedure TMapForm.Elevationslopemoments1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMBooleanArray;
 begin
-   GetMultipleDEMsFromList('Elevation and slope moments',DEMsWanted);
-   ElevationAndSlopeMoments(DEMSWanted,'Moments');
+   ElevationAndSlopeMoments(GetMultipleDEMsFromList('Elevation and slope moments'),'Elevation_and_slope_Moments');
 end;
 
 function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : tMemo; LowZ,HighZ : float32) : integer;
@@ -24896,11 +24909,11 @@ end;
 
 
 procedure TMapForm.SelectmultipleDEMsgrids1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMbooleanArray;
+//var
+   //DEMsWanted : tDEMbooleanArray;
 begin
-   GetMultipleDEMsFromList('Grids for histograms',DEMsWanted);
-   CreateGridHistograms(DEMSwanted);
+   //GetMultipleDEMsFromList('Grids for histograms',DEMsWanted);
+   CreateGridHistograms( GetMultipleDEMsFromList('Grids for histograms'));
 end;
 
 procedure TMapForm.Selectmultiplegrids1Click(Sender: TObject);

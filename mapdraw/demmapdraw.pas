@@ -1684,21 +1684,6 @@ begin
    for i := 1 to MaxOverlays do OverLayOrder[i] := ovoUnused;
 end;
 
-(*
-procedure tMapDraw.MapOverlaysToDebugFile(Where : shortstring);
-{$IfDef RecordProblems}
-var
-   I : integer;
-begin
-   WriteLineToDebugFile(Where);
-   for i := MaxOverlays downto 1 do begin
-      if (OverLayOrder[i] <> ovoUnused) then WriteLineToDebugFile('  Map layer: ' + LayerName[OverLayOrder[i]]);
-   end;
-{$Else}
-begin
-{$EndIf}
-end;
-*)
 
    procedure tMapDraw.ZeroTickInt;
    begin

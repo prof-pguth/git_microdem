@@ -16,7 +16,7 @@ unit GeoTiff;
 
 {$I nevadia_defines.inc}
 
- //{$Define InlineGeotiff}    //turn off to debug inline functions
+{$Define InlineGeotiff}    //turn off to debug inline functions
 
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
@@ -27,6 +27,7 @@ unit GeoTiff;
       //{$Define RecordGeotiffFailures}
       //{$Define RecordFullGeotiff}
       //{$Define RecordUTM}
+      {$Define RecordWKT}
       //{$Define RecordProjProgress}
       //{$Define TrackWKTstring}
       //{$Define RecordInitializeDEM}
@@ -101,9 +102,9 @@ type
       PhotometricInterpretation,ExtraSample,
       Threshholding,NumEnt,
       Num,Den,NewSubfileType,VertDatum,
-      StripsPerImage,StripByteCounts,
+      StripsPerImage,
       BitsPerSampleCount,MDZtype : int32;
-      FirstImageOffset,CellWidth,CellLength,
+      FirstImageOffset,CellWidth,CellLength,StripByteCounts,
       RowsPerStrip,TileWidth,TileHeight,Compression,
       ImageWidth,ImageLength,StripOffsets : int64;
       SMin,SMax,Factor : float64;
@@ -152,6 +153,7 @@ type
          RegVars : tRegVars;
          BigTiff,BigEndian,CanEnhance,
          TiffOpen,
+         NeedWKTHailMary,
          TIFFImageColorDefined  : boolean;
          OffsetByteSize : word;
          OffsetArraySize,
@@ -1070,7 +1072,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   WantDEM.DEMMapProj.GeographicTypeGeoKey2048 := MapProjection.GeographicTypeGeoKey2048;
                   WantDEM.DEMMapProj.ProjectedCSTypeGeoKey3072 := MapProjection.ProjectedCSTypeGeoKey3072;
                   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('DefineProjectionParameters, Map wkt=' + IntToStr(Length(MapProjection.wktString))); {$EndIf}
-                  {$If Defined(TrackWKTstring)} WriteLineToDebugFile('DefineProjectionParameters, Map wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
+                  {$If Defined(TrackWKTstring)} WriteLineToDebugFile('DefineProjectionParameters, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
 
                   if (WantDEM.DEMMapProj.PName = UK_OS) then begin
                      //this is likely not to work
@@ -2043,9 +2045,8 @@ var
                             ASCIIStr := TStr;
                          end
                          else begin
-                             TStr := LogASCIIdata({FirstIFD +} TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
+                             TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                              {$IfDef RecordProjProgress} WriteLineToDebugFile('In 34737 ' + TStr); {$EndIf}
-                             //TStr := TStr34737;
                              if StrUtils.AnsiContainsText(UpperCase(TStr),'PCS NAME =') then begin
                                 MapProjection.wktString := tstr;
                                 StripBlanks(MapProjection.wktString);
@@ -2252,6 +2253,7 @@ var
                   3074 : begin
                              TStr := MapProjection.OpenFromTiff3072(TiffOffset);
                              ProjectionDefined :=  TStr <> 'Undefined';
+                             NeedWKTHailMary := not ProjectionDefined;
                              {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Key 3072'); {$EndIf}
                          end;
                   3073 : begin end;
@@ -2477,6 +2479,7 @@ begin
    {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('Projection created: '); {$EndIf}
 
    HeaderLogList := tStringList.Create;
+   NeedWKTHailMary := false;
    BigRow := nil;
    Row16Bit := nil;
    Row8Bit := Nil;
@@ -2585,9 +2588,10 @@ begin
    {$EndIf}
 
    CloseTiffFile;
-   if (not (MapProjection.PName in [PlateCaree,UTMellipsoidal])) and (MapProjection.wktString = '') then begin
+   if ((not (MapProjection.PName in [PlateCaree,UTMellipsoidal])) and (MapProjection.wktString = '')) or NeedWKTHailMary then begin
       // must be after CloseTiffFile;
       MapProjection.wktString := CreateWKTstringForGeotiff(TIFFFileName);
+      MapProjection.InitProjFromWKTstring(MapProjection.wktString);
    end;
 
 

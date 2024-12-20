@@ -364,9 +364,9 @@ begin
    fName := UpperCase(fName);
 //2022-05-03-00_00_2022-05-03-23_59_Sentinel-1_AWS-IW-VVVH_RGB_ratio
 //2022-05-03-00_00_2022-05-03-23_59_Sentinel-2_L2A_Scene_classification_map
-   Result := StrUtils.AnsiContainsText(fName,'_SENTINEL-1_AWS') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L2A_') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L1C_');
+   Result := StrUtils.AnsiContainsText(fName,'_SENTINEL-1_AWS') or StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L2A_') or
+             StrUtils.AnsiContainsText(fName,'_SENTINEL-2_L1C_');
 end;
-
 
 
 function tSatImage.ImageDateString : shortstring;

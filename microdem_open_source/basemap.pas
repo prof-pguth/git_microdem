@@ -133,7 +133,6 @@ type
          VerticalUnitsGeoKey,
          ProjCoordTransGeoKey,
          VerticalCSTypeGeoKey,
-         //EPSGCode3072,
          GeographicTypeGeoKey2048,
          ProjectedCSTypeGeoKey3072 : int16;
 
@@ -844,10 +843,9 @@ var
    ProjData : tStringList;
    i : integer;
 begin
-  {$IfDef RecordWKT} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromWKT in, ' + fName); {$EndIf}
    Result := false;
    if FileExists(fName) then begin
-      //VectorProjfName := fName;
+     {$IfDef RecordWKT} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromWKT in, ' + fName); {$EndIf}
       ProjData := tStringList.Create;
       ProjData.LoadFromFile(fName);
       {$IfDef RecordProjectionParameters} WriteLineToDebugFile('InitProjFromWKT, ' + ProjData.Strings[0]); {$EndIf}
@@ -859,11 +857,11 @@ begin
       end;
       ProjData.Free;
       Result := InitProjFromWKTstring(wktString);
+      {$If Defined(RecordWKT) or Defined(LongCent)} ShortProjInfo('tMapProjection.InitProjFromWKT out'); {$EndIf}
    end
    else begin
       MessageToContinue('WKT file required: ' + fName);
    end;
-  {$If Defined(RecordWKT) or Defined(LongCent)} ShortProjInfo('tMapProjection.InitProjFromWKT out'); {$EndIf}
 end;
 
 
@@ -1019,8 +1017,9 @@ begin
        else if ParameterInString('LAEA') then begin
           PName := LamAzEqAreaEllipsoidal;
        end
-       else if ParameterInString('AntarcticPolarStereographic') or StrUtils.AnsiContainsText(HorizWKT,'StereographicNorthPole') then begin
+       else if ParameterInString('PolarStereographic') or StrUtils.AnsiContainsText(HorizWKT,'StereographicNorthPole') then begin
           PName := PolarStereographicEllipsoidal;
+          Lat0 := Phi1;
        end
        else if ParameterInString('ALBERSCONICEQUALAREA') or ParameterInString('CONUSALBERS') or ParameterInString('AlbersEqualArea') then begin
           PName := AlbersEqAreaConicalEllipsoid;
@@ -1389,7 +1388,7 @@ begin
          {$IfDef DebugConformalConic} WriteLineToDebugFile('tMapProjection.GetProjectParameters  LCC LatCent=' + RealToString(Lat0/DegToRad,-12,-8) + '  LongCent=' + RealToString(Long0/DegToRad,-12,-8)); {$EndIf}
       end
       else if PName in [PolarStereographicEllipsoidal] then begin
-           if Lat0 > 0 then begin
+           if (Lat0 >= 0) then begin
               tc := Math.Tan(QuarterPi - 0.5 * Lat0) / Math.Power( (1 - e * sin(Lat0)) / (1 + e * sin(Lat0)),0.5 * e);
               mc := cos(Lat0) / sqrt(1 - e2 * sqr(sin(Lat0)));
            end

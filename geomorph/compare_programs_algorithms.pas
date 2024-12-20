@@ -45,6 +45,8 @@ procedure CompareContourTorsion(DEM : integer);
 
 procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
 procedure CompareMICRODEMSlopeMaps(DEM : integer);
+procedure CompareMICRODEM_filtered_slopes(DEM : integer; OpenMap : boolean = false);
+
 
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
 
@@ -199,9 +201,9 @@ procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
       Graph := CreateGridHistograms(DEMList,TStr,0);
       JustElevationMoments(DEMlist,TStr,true,true);
 
-      PairCompareSSOforFeatures(OpenMap,DEM,Evans,Horn,'Slope_Evans_Compared_Horn');
-      PairCompareSSOforFeatures(OpenMap,DEM,Evans,ZT,'Slope_Evans_Compared_ZT');
-      PairCompareSSOforFeatures(OpenMap,DEM,Horn,ZT,'Slope_Horn_Compared_ZT');
+      PairCompareSSOforFeatures(OpenMap,DEM,Evans,Horn,DEMglb[DEM].AreaName + '_Slope_Evans_Compared_Horn');
+      PairCompareSSOforFeatures(OpenMap,DEM,Evans,ZT,DEMglb[DEM].AreaName + '_Slope_Evans_Compared_ZT');
+      PairCompareSSOforFeatures(OpenMap,DEM,Horn,ZT,DEMglb[DEM].AreaName + '_Slope_Horn_Compared_ZT');
    end;
 
 begin
@@ -210,6 +212,46 @@ begin
    if How in [5,99] then OpenOneWindowSize('5x5',2);
    RestoreBackupDefaults;
 end;
+
+
+procedure CompareMICRODEM_filtered_slopes(DEM : integer; OpenMap : boolean = false);
+var
+   DEMList : tDEMBooleanArray;
+   TStr : shortstring;
+   Graph : tThisBaseGraph;
+   FeaturePreserve,ParamIso : integer;
+
+   procedure OpenOneFilter(DEM : integer; Which : shortstring; FilterSize : integer);
+   var
+      Evans,Horn,ZT,Diff,DiffCat : integer;
+   begin
+      MDDef.SlopeAlgorithm := smEvansYoung;
+      Evans := CreateSlopeMapPercent(OpenMap,DEM,'md_evans_slope_' + Which,FilterSize);
+      DEMlist[Evans] := true;
+      MDDef.SlopeAlgorithm := smHorn;
+      Horn := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_' + Which,FilterSize);
+      DEMlist[Horn] := true;
+      MDDef.SlopeAlgorithm := smZevenbergenThorne;
+      ZT := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_' + Which,FilterSize);
+      DEMlist[ZT] := true;
+   end;
+
+begin
+   SaveBackupDefaults;
+   FeaturePreserve := WBT_FeaturePreserveSmooth(false, DEMglb[DEM].GeotiffDEMName,euMeters);
+   ParamIso := DEMGlb[DEM].FilterThisDEM(false,fcParamIsotrop);
+   InitializeDEMsWanted(DEMList,false);
+
+   OpenOneFilter(DEM,'no_filter',0);
+   OpenOneFilter(FeaturePreserve,'feature_preserve',0);
+   OpenOneFilter(ParamIso,'parametric_isotropic',0);
+
+   TStr := DEMglb[DEM].AreaName + '_md_slope';
+   Graph := CreateGridHistograms(DEMList,TStr,0);
+   JustElevationMoments(DEMlist,TStr,true,true);
+   RestoreBackupDefaults;
+end;
+
 
 procedure ReCaptionMaps(DEMList : tDEMBooleanArray);
 var
@@ -677,6 +719,10 @@ begin
          NewMap := GDAL_SlopeMap_ZT(MDDef.CompareShowMaps,DEM,'');
          MatchAndSave('gdal_zt_slope');
       end;
+
+      MDDef.SlopeAlgorithm := smShary;
+      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      MatchAndSave('md_shary_slope');
 
       if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
          NewMap := SAGA_Slope_percent(MDDef.CompareShowMaps,'8',DEMGlb[DEM].GeotiffDEMName,OutPath + 'saga_zt_slope.tif');

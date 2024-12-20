@@ -72,8 +72,8 @@ uses
 {$IfDef ExLAStools}
 {$Else}
 
-type
-   tlas2Las = (lasAssignProjection,lasToUTM,lasAssignEPSGreprojectUTM,lasAssignUTM,lasAssignGeo,lasReprojectSpecifiedtoGeo);
+   type
+      tlas2Las = (lasAssignProjection,lasToUTM,lasAssignEPSGreprojectUTM,lasAssignUTM,lasAssignGeo,lasReprojectSpecifiedtoGeo);
 
    procedure LasToLasTools(How : tlas2Las);
    function GetLASToolsFileName(var fName : PathStr) : boolean;
@@ -84,6 +84,7 @@ type
    procedure Lastools_DEMToLAZ(InName,OutName : PathStr; Extra : shortString = '');
    procedure ConvertDEMtoLAZ(Memo1 : tMemo);
 {$EndIf}
+
 
 {$IfDef ExWhiteBox}
 {$Else}
@@ -111,10 +112,11 @@ type
    function WBT_AspectMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
    function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
-   function WBT_breach_depression(DEMName : PathStr; var BreachName : PathStr) : integer;
+   function WBT_Breach_Depression(DEMName : PathStr; var BreachName : PathStr) : integer;
    function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
-   function WBT_extract_streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
+   function WBT_Extract_Streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
    function WBT_ElevAboveStream(OpenMap : boolean; DEMName : PathStr; BreachName,FlowAccumulationName,StreamName,HANDName : PathStr; Threshhold : float32 = 100.0) : integer;
+   function WBT_FeaturePreserveSmooth(OpenMap : boolean; InName : PathStr; zUnits : byte; OutName : PathStr = '') : integer;
 
    procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
    procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
