@@ -850,7 +850,7 @@ begin
             CartesianToLatLong(FinalVec,Lat,Long);
             Lat := Lat / DegToRad;
             Long := Long / DegToRad;
-            Long := PetMath.FindCompassAngleInRangeFloat64(Long);
+            Long := PetMath.CompassAngleInRangeFloat64(Long);
             ShapeFileCreator.AddPointToShapeStream(Lat,Long);
          end;
          ShapeFileCreator.RecordName := IntToStr(j);

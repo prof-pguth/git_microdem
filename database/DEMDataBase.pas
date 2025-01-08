@@ -2921,7 +2921,7 @@ end;
                          DEMGlb[TheMapOwner.MapDraw.DEMonMap].LatLongDegreeToDEMGridInteger(Lat,Long,x,y);
                          if DEMGlb[UseDEM].GetSlopeAndAspect(x,y,SlopeAspectRec) then begin
                             MyData.SetFieldByNameAsFloat('SLOPE_PC',SlopeAspectRec.SlopePercent);
-                            MyData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDir,0.1);
+                            MyData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDirTrue,0.1);
                          end;
                       end;
                       if (AddDEM = adPickNearest) then begin

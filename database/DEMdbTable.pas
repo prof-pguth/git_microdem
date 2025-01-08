@@ -1,11 +1,11 @@
 ﻿unit demdbtable;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -32,7 +32,7 @@
        //{$Define RecordIceSat}
        //{$Define RecordKML}
        //{$Define RecordHTML}
-       //{$Define RecordGeostats}
+       {$Define RecordGeostats}
        //{$Define RecordMapSizing}
        //{$Define RecordExports}
        //{$Define RecordFieldAdds}
@@ -1052,6 +1052,7 @@ type
     Sortandreplacedatabase1: TMenuItem;
     Sortandreplacedatabase2: TMenuItem;
     Descending3: TMenuItem;
+    AddCopDEMaverageslopeinarea1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1863,6 +1864,7 @@ type
     procedure RemoveSCRfields1Click(Sender: TObject);
     procedure Differentrankingsbytile1Click(Sender: TObject);
     procedure Sortandreplacedatabase2Click(Sender: TObject);
+    procedure AddCopDEMaverageslopeinarea1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -1971,6 +1973,7 @@ uses
    DEM_Manager,
    demstringgrid,
    new_field,
+   DEM_NLCD,
 
    {$IfDef NoExternalPrograms}
    {$Else}
@@ -5001,7 +5004,7 @@ begin
    wF := WeaponsTableBasicParametersToFan(GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj,GISdb[DBonTable].MyData);
    if (wf.StartAngle > wf.EndAngle) then Ending := 360 + wf.EndAngle
    else Ending := wf.EndAngle;
-   Azimuth :=  PetMath.FindCompassAngleInRangeFloat64(0.5 * (Ending + wf.StartAngle));
+   Azimuth :=  PetMath.CompassAngleInRangeFloat64(0.5 * (Ending + wf.StartAngle));
    VincentyPointAtDistanceBearing(wf.W_Lat,wf.W_Long,wf.W_Range,Azimuth,Lat2,Long2);
    StartLOS(True,JustWandering,1,wf.W_Lat,wf.W_Long,Lat2,Long2,DEMGlb[1].SelectionMap,true);
 end;
@@ -5181,6 +5184,49 @@ end;
 procedure Tdbtablef.AddCOPALOSpercentprimarydata1Click(Sender: TObject);
 begin
    AddPercentPrimaryData(DBonTable);
+end;
+
+procedure Tdbtablef.AddCopDEMaverageslopeinarea1Click(Sender: TObject);
+
+var
+   bb : sfBoundBox;
+   WantSeries,FieldName : shortstring;
+   WantDEM : integer;
+   GridLimits: tGridLimits;
+   Mean,Std : float32;
+   Forest,Barren,Urban,Water : float32;
+begin
+   {$IfDef RecordGeostats} WriteLineToDebugFile('Tdbtablef.AddCopDEMaverageslopeinarea1Click in'); {$EndIf}
+   //MDDef.SlopeAlgorithm := smEvansYoung;
+   FieldName := 'COP_PDF';
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,FieldName,6,2);
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'BARREN_PC',6,2);
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'FOREST_PC',6,2);
+   GISdb[DBonTable].MyData.First;
+   PickDEMSeries(WantSeries,'DEM average slope');
+   SetColorForProcessing;
+   while not GISdb[DBonTable].MyData.eof do begin
+      bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+      {$IfDef RecordGeostats} WriteLineToDebugFile('bb=' + sfBoundBoxToString(bb)); {$EndIf}
+      WantDEM := LoadMapLibraryBox(true,bb,WantSeries,false);
+      GridLimits := DEMGlb[WantDEM].sfBoundBox2tGridLimits(bb);
+      {$IfDef RecordGeostats} WriteLineToDebugFile('GridLimits=' + GridLimitsToString(GridLimits)); {$EndIf}
+      DEMGlb[WantDEM].GetSlopeMeanStd(GridLimits, Mean,Std);
+      {$IfDef RecordGeostats} WriteLineToDebugFile('Mean=' + RealToString(Mean,-12,-2)); {$EndIf}
+
+      DEM_NLCD.LandCoverPercentages(bb,Forest,Barren,Urban,Water);
+
+      GISdb[DBonTable].MyData.Edit;
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat(FieldName,Mean);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('FOREST_PC',Forest);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('BARREN_PC',Barren);
+      GISdb[DBonTable].MyData.Next;
+      {$IfDef RecordGeostats} WriteLineToDebugFile('DB posted'); {$EndIf}
+      CloseSingleDEM(WantDEM);
+   end;
+   ShowStatus;
+   SetColorForWaiting;
+   {$IfDef RecordGeostats} WriteLineToDebugFile('Tdbtablef.AddCopDEMaverageslopeinarea1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.AddDBsfieldrange1Click(Sender: TObject);
@@ -5742,21 +5788,21 @@ procedure Tdbtablef.Addprojectedcoordinates1Click(Sender: TObject);
 var
    Lat,Long,x,y : float64;
 begin
-      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'X_PROJ',11,1);
-      GISdb[DBonTable].AddFieldToDataBase(ftFloat,'Y_PROJ',12,1);
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.First;
-      ShowHourglassCursor;
-      While not GISdb[DBonTable].MyData.Eof do begin
-         if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
-            GISdb[DBonTable].TheMapOwner.MapDraw.LatLongDegreeToProjectedCoords(Lat,Long,x,y);
-            GISdb[DBonTable].MyData.Edit;
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('X_PROJ',x);
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Y_PROJ',y);
-         end;
-         GISdb[DBonTable].MyData.Next;
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'X_PROJ',11,1);
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'Y_PROJ',12,1);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   ShowHourglassCursor;
+   While not GISdb[DBonTable].MyData.Eof do begin
+      if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
+         GISdb[DBonTable].TheMapOwner.MapDraw.LatLongDegreeToProjectedCoords(Lat,Long,x,y);
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('X_PROJ',x);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Y_PROJ',y);
       end;
-      ShowStatus;
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowStatus;
 end;
 
 procedure Tdbtablef.AddrecordIDfield1Click(Sender: TObject);
@@ -6885,9 +6931,6 @@ begin
       CreateXYZpointshapefile1.Visible :=  XYZFile;
       Earthquakefocalmechanisms1.Visible := FocalMechsPresent;
       DBFfile1.Visible := GISdb[DBonTable].ItsAPointDB or GISdb[DBonTable].NoGeometry;
-      {$IfDef Judomia}
-         KML1.Caption := 'KML export';
-      {$EndIf}
       Otherdatabaseformats1.Visible := MDDef.AdvancedDBops;
       dbfStruct.Visible := MDDef.AdvancedDBops or (MDDef.ProgramOption = RemoteSensingProgram);
       Shapefilemetadata1.Visible := MDDef.AdvancedDBops;
@@ -7527,6 +7570,7 @@ begin
       EvaluateXYProfiles1.Visible := GISdb[DBonTable].MyData.FieldExists('XY_FILE');
       InsertNewRecClipboard.Visible := (LineOrAreaShapeFile(ShapeFileType) and (ClipBoard_Line_Coords <> Nil)) or (ClipBoard_Coords and ItsaPointDB);
       MergeDataBases1.Visible := not LineOrAreaShapeFile(ShapeFileType);
+      AddCopDEMaverageslopeinarea1.Visible := GISdb[DBonTable].MyData.BoundingBoxPresent;
 
 
       Octree1.Visible := MDDef.ShowExperimentalOptions;
@@ -8134,7 +8178,7 @@ begin
           Long := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(WantedFieldName);
           if (Long > 360) or (Long <0) then begin
              GISdb[DBonTable].MyData.Edit;
-             GISdb[DBonTable].MyData.SetFieldByNameAsFloat(WantedFieldName, PetMath.FindCompassAngleInRangeFloat64(Long));
+             GISdb[DBonTable].MyData.SetFieldByNameAsFloat(WantedFieldName, PetMath.CompassAngleInRangeFloat64(Long));
           end;
          GISdb[DBonTable].MyData. Next;
        end;
@@ -14940,7 +14984,7 @@ begin
       HFov := Ending - wf.StartAngle;
       Azimuth := 0.5 + (Ending + wf.StartAngle);
       DEMPersF := Nil;
-      SetUpPanoramaView(DEMPersF,wf.W_Lat,wf.W_Long,wf.W_Up,wf.W_Range, PetMath.FindCompassAngleInRangeFloat64(Azimuth),HFOV,30,0,1,'View from ' + wf.Fan_Name);
+      SetUpPanoramaView(DEMPersF,wf.W_Lat,wf.W_Long,wf.W_Up,wf.W_Range, PetMath.CompassAngleInRangeFloat64(Azimuth),HFOV,30,0,1,'View from ' + wf.Fan_Name);
       DEMPersF.Caption:= 'View from ' + wf.Fan_Name;
       DEMPersF.View3D.MinPitch := wf.DownAngle;
       DEMPersF.View3D.MaxPitch := wf.UpAngle;

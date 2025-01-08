@@ -127,6 +127,10 @@ procedure SetIndexQuadSequence_UInt32(buffer : Pointer; nbQuads : Integer);
    The vertex buffer should hold a sequence of the 4 vertices of each quad }
 function CreateIndexBufferQuadSequence(nbQuads : Integer) : TIndexBuffer;
 
+{: Fill a vertex buffer with integer X,Y grid coordinates
+   buffer size MUST be a multiple of resolutionX, Z is set to zero }
+procedure SetVertexBufferGridXY(buf : TVertexBuffer; resolutionX : Integer);
+
 //: Performs double-precision dot product of an array
 procedure Point3DotProductToDoubleArray(
    const points : TPoint3DArrayInfo;   // points array input
@@ -325,6 +329,29 @@ begin
    end else begin
       Result := TIndexBuffer.Create(nbQuads*6, TIndexFormat.UInt16);
       SetIndexQuadSequence_UInt16(Result.Buffer, nbQuads);
+   end;
+end;
+
+// SetVertexBufferGridXY
+//
+procedure SetVertexBufferGridXY(buf : TVertexBuffer; resolutionX : Integer);
+var
+   ptr : PPoint3D;
+   resolutionY, x, y : Integer;
+   ySingle, zZero : Single;
+begin
+   resolutionY := buf.Length div resolutionX;
+   Assert(resolutionX * resolutionY = buf.Length);
+   ptr := buf.VerticesPtr[0];
+   zZero := 0;
+   for y := 0 to resolutionY-1 do begin
+      ySingle := y;
+      for x := 0 to resolutionX-1 do begin
+         ptr.X := x;
+         ptr.Y := ySingle;
+         ptr.Z := zZero;
+         Inc(ptr);
+      end;
    end;
 end;
 

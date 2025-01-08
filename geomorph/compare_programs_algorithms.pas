@@ -181,7 +181,7 @@ procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
 
    procedure OpenOneWindowSize(Which : shortstring; FilterSize : integer);
    var
-      Evans,Horn,ZT,Diff,DiffCat : integer;
+      Evans,Horn,ZT,LSQ,Diff,DiffCat : integer;
       DEMList : tDEMBooleanArray;
       TStr : shortstring;
       Graph : tThisBaseGraph;
@@ -197,13 +197,19 @@ procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
       ZT := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_' + Which,FilterSize);
       DEMlist[ZT] := true;
 
+      MDDef.SlopeAlgorithm := smLSQ;
+      LSQ := CreateSlopeMapPercent(OpenMap,DEM,'md_lsq_slope_' + Which,FilterSize);
+      DEMlist[LSQ] := true;
+
       TStr := DEMglb[DEM].AreaName + '_md_slope';
       Graph := CreateGridHistograms(DEMList,TStr,0);
       JustElevationMoments(DEMlist,TStr,true,true);
 
+      (*
       PairCompareSSOforFeatures(OpenMap,DEM,Evans,Horn,DEMglb[DEM].AreaName + '_Slope_Evans_Compared_Horn');
       PairCompareSSOforFeatures(OpenMap,DEM,Evans,ZT,DEMglb[DEM].AreaName + '_Slope_Evans_Compared_ZT');
       PairCompareSSOforFeatures(OpenMap,DEM,Horn,ZT,DEMglb[DEM].AreaName + '_Slope_Horn_Compared_ZT');
+      *)
    end;
 
 begin
@@ -502,6 +508,7 @@ begin
    MICRODEMCurvature(smEvansYoung,True,'evans_cd2');
    MICRODEMCurvature(smZevenbergenThorne,False,'zt_cd1');
    MICRODEMCurvature(smZevenbergenThorne,True,'zt_cd2');
+   MICRODEMCurvature(smlsq,True,'lsq');
 end;
 
 
@@ -779,11 +786,14 @@ var
                fName := OutPath + DEMGlb[NewMap].AreaName + '.tif';
                DEMGlb[NewMap].SaveAsGeotiff(fName);
             end;
+            {$IfDef RecordCompareLSPs} WriteLineToDebugFile('MatchAndSave done, ' + AreaName); {$EndIf}
+
          end;
       end;
 
 begin
    if ValidDEM(DEM) then begin
+      {$IfDef RecordCompareLSPs} WriteLineToDebugFile('CompareMICRODEMSlopeMaps in'); {$EndIf}
       OutPath := MDtempDir;
       StartComparisonProcess(DEM,DEMList);
       MDDef.SlopeAlgorithm := smEvansYoung;
@@ -792,6 +802,9 @@ begin
       MDDef.SlopeAlgorithm := smHorn;
       NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_horn_slope');
+      MDDef.SlopeAlgorithm := smLSQ;
+      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      MatchAndSave('md_lsq_slope');
       {$IfDef ExUseGrass}
       {$Else}
          NewMap := GRASSSlopeMap(DEMGlb[DEM].GeotiffDEMName,MDDef.CompareShowMaps);
@@ -804,6 +817,7 @@ begin
       if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then MatchAndSave('wbt_flor_slope')
       else MatchAndSave('wbt_evans_slope');
       EndComparison(DEM,DEMList,'slope');
+      {$IfDef RecordCompareLSPs} WriteLineToDebugFile('CompareMICRODEMSlopeMaps out'); {$EndIf}
    end;
 end {procedure CompareSlopeMaps};
 

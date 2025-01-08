@@ -4,12 +4,12 @@ unit DEMCoord;
 //unit contains object for manipulating a DEM/grid
 //the name is a relic from long ago, but permeates the code and my personal memory
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -35,17 +35,17 @@ unit DEMCoord;
       //{$Define TrackWKTstring}
       //{$Define RecordBoundingBox}
       //{$Define RecordReadDEM}
-      {$Define RecordDEMIXResample}
+      //{$Define RecordDEMIXResample}
       //{$Define RecordMapProj}
-      {$Define SaveNetDrawingSteps}
-      {$Define ShowDEMSSOCalc}
-      {$Define ShowFullDEMSSOCalc}
+      //{$Define SaveNetDrawingSteps}
+      //{$Define ShowDEMSSOCalc}
+      //{$Define ShowFullDEMSSOCalc}
       //{$Define RecordMaskFromSecondGrid}
       //{$Define RecordGridIdenticalProblems}
       //{$Define TrackDEMboundingBox}
       //{$Define RecordUKOS}
       //{$Define SavePartDEM}
-      {$Define RecordMapType}
+      //{$Define RecordMapType}
       //{$Define RecordDEMstats}
       //{$Define TimePointParameters}
       //{$Define RecordsfBoundBox2tGridLimits}     //use with care; trashes the debug file
@@ -65,11 +65,11 @@ unit DEMCoord;
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      {$Define RecordMinMax}
+      //{$Define RecordMinMax}
       //{$Define RecordExtremeZ}
       //{$Define GeotiffCorner}
       //{$Define RecordHorizon}
-      {$Define RecordZRange}
+      //{$Define RecordZRange}
       //{$Define RecordDEMMemoryAllocations}
       //{$Define RecordFilter}
       //{$Define RecordReadMDDEM}
@@ -559,6 +559,7 @@ type
 
          function FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
          procedure RGBFilterDEM(BufferSize : integer; JustDoHoles : boolean);
+         function ParmametricIsotropicSmoothing(Col,Row : integer; var z : float32) : boolean; inline;
 
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
          function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
@@ -2147,7 +2148,7 @@ end;
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
    Result := DEMheader.ElevUnits in [euNLCD2001up,euLandFire,euNLCD1992,euGLOBCOVER,euGLC2000,euCCAP,euCCI_LC,euS2GLC,euNLCD_Change,euGLCS_LC100,euMeybeck,euGeomorphon,euIwahashi,
-      euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover,euCOPEDM,euCOPFLM,euTANEDM];
+      euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover,euCOPEDM,euCOPFLM,euTANEDM,euNeoEDM,euNeoFLM];
 end;
 
 function tDEMDataSet.ElevationDEM : boolean;
@@ -3221,7 +3222,7 @@ begin
    end
    else if (MDDef.MultShadeReliefMode = mhsPick) then begin
       for I := 1 to MDdef.UseRefDirs do begin
-         RefPhi[i] := FindCompassAngleInRangeFloat32(MDdef.RefPhi + pred(i) * 360 / MDdef.UseRefDirs);
+         RefPhi[i] := CompassAngleInRangeFloat32(MDdef.RefPhi + pred(i) * 360 / MDdef.UseRefDirs);
          RefAlt[i] := (90-MDdef.RefTheta);
          RefWeight[i] := 1 / MDdef.UseRefDirs;
       end;
@@ -3264,7 +3265,7 @@ begin
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin
             //allows multi-directions if i > 1
-            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(SlopeDeg)) + (sinAlt[i] * sinDeg(SlopeDeg * cosDeg(RefPhi[i] - SlopeAsp.AspectDir))));
+            Value := RefWeight[i] * ( (cosAlt[i] * cosDeg(SlopeDeg)) + (sinAlt[i] * sinDeg(SlopeDeg * cosDeg(RefPhi[i] - SlopeAsp.AspectDirTrue))));
 
             //this is the formula for WhiteBox , HS = tan(s) / [1 - tan(s)2]^0.5 x [sin(Alt) / tan(s) - cos(Alt) x sin(Az - a)]
             //this is not quite right, and I have not been able to figure out why

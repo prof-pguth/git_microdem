@@ -1,11 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demcoord          }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{ include file for demcoord              }
+{________________________________________}
+
 
 
 function tDEMDataSet.GridPointsIntervisible(xg1,yg1,ObsUp,xg2,yg2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;

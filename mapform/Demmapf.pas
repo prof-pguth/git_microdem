@@ -1,11 +1,12 @@
 ﻿unit Demmapf;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -12209,7 +12210,7 @@ begin
          if (isSlopeMap(MapDraw.Maptype) or (MapDraw.MapType in [mtDEMaspect])) or (DEMNowDoing in [FirstSlopePoint,SecondSlopePoint]) then begin
             DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGridInteger(Lat,Long,XG,YG);
             if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
-               if (MapDraw.MapType = mtDEMaspect) then Panel2String := '  downhill' + RealToString(SlopeAsp.AspectDir,4,0) + '°'
+               if (MapDraw.MapType = mtDEMaspect) then Panel2String := '  downhill' + RealToString(SlopeAsp.AspectDirTrue,4,0) + '°'
                else Panel2String := RealToString(SlopeAsp.SlopePercent,8,0) + '% slope' + ' (' + RealToString(SlopeAsp.SlopeDegree,-4,-1) + '°)  ';
             end;
          end;
@@ -23250,7 +23251,7 @@ begin
             if MDDef.DrainagePointSlope then begin
                if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
                   VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * SlopeAspectRec.Slope);
-                  PlotOrientedLine(Bitmap,x,y,VecLen,SlopeAspectRec.AspectDir,MDdef.DrainageArrowColor,MDdef.DrainageArrowWidth,true);
+                  PlotOrientedLine(Bitmap,x,y,VecLen,SlopeAspectRec.AspectDirTrue,MDdef.DrainageArrowColor,MDdef.DrainageArrowWidth,true);
                   {$IfDef RecordDrainageVectors} WriteLineToDebugFile('Point vector at x=' + IntToStr(x) + '  y=' + IntToStr(y)); {$EndIf}
                end;
             end;
@@ -23260,7 +23261,7 @@ begin
                for i := -MDDef.AspectRegionSize to MDDef.AspectRegionSize do begin
                   for j := -MDDef.AspectRegionSize to MDDef.AspectRegionSize do begin
                      if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(Col+i,Row+j,SlopeAspectRec) then begin
-                        Readings[AspToAverage] := SlopeAspectRec.AspectDir;
+                        Readings[AspToAverage] := SlopeAspectRec.AspectDirTrue;
                         inc(AspToAverage);
                      end;
                   end;

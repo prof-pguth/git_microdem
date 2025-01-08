@@ -10,7 +10,7 @@
 
 {$I nevadia_defines.inc}
 
-//{$Define NoInLine}   {use this to be able to trace calls into these routines}
+//{$Define NoInLine}   {use to trace calls into these routines}
 
 {$Define GetColorInline}
 
@@ -604,15 +604,16 @@ end;
 
 procedure tLAS_data.PlotTileOnMap(Cloud : integer; BaseMapDraw : tMapDraw; var BMPMemory : tBMPMemory; MinAreaZ, MaxAreaZ : float64);
 var
-   I,RecsRead,x,y,pplot : integer;
+   I,RecsRead,x,y : integer;
+   {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} pplot : integer; {$EndIf}
    j : int64;
    NoFilter : boolean;
    ColorRGB : tPlatformColor;
 begin
-   if true or IsLASFileOnMap(BaseMapDraw) then begin
-      {$If Defined(RecordLASplot)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + ' LAS proj=' + sfBoundBoxToString(LAS_Proj_Box,1)); {$EndIf}
+   if {true or} IsLASFileOnMap(BaseMapDraw) then begin
+      {$If Defined(RecordLASplot)} WritelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + ' LAS proj=' + sfBoundBoxToString(LAS_Proj_Box,1)); {$EndIf}
       NoFilter := NoFilterWanted;
-      pplot := 0;
+      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} pplot := 0; {$EndIf}
       if (MDDef.ls.ColorCoding = lasccCloudID) then begin
          ColorRGB := MDDef.CloudMapSymbol[Cloud].Color;
       end;
@@ -641,10 +642,10 @@ begin
          {$IfDef VCL} if ShowSatProgress then ApplicationProcessMessages; {$EndIf}
       end {for i};
       FreeLASRecordMemory;
-      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)}  WritelineToDebugFile('tLAS_data.PlotOnMap out ' + ExtractFileNameNoExt(LasFileName) + '   mode=' + IntToStr(Ord(MDDef.ls.ColorCoding)) + '   pts plot=' + IntToStr(pplot)); {$EndIf}
+      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} WritelineToDebugFile('tLAS_data.PlotOnMap out ' + ExtractFileNameNoExt(LasFileName) + '   mode=' + IntToStr(Ord(MDDef.ls.ColorCoding)) + '   pts plot=' + IntToStr(pplot)); {$EndIf}
    end
    else begin
-      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} writelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName)+ ' not on map'); {$EndIf}
+      {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} WritelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName)+ ' not on map'); {$EndIf}
    end;
 end;
 
@@ -1327,8 +1328,8 @@ procedure tLAS_data.GetShotScreenCoordinatesUTM(BaseMapDraw : tMapDraw; j : inte
 var
    xf,yf : float64;
 begin
-  GetShotCoordinatesUTM(j,xf,yf);
-  BaseMapDraw.UTMToScreen(xf,yf,x,y);
+   GetShotCoordinatesUTM(j,xf,yf);
+   BaseMapDraw.UTMToScreen(xf,yf,x,y);
 end;
 
 
@@ -1344,7 +1345,6 @@ var
    TStr : shortstring;
 begin
    BaseMap.OutlineUTMBox(LAS_UTM_Box,Color,2);
-
    if MDDef.LabelLAStiles then begin
        BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymax,LAS_LatLong_Box.xmin,x1,y1);
        BaseMap.MapDraw.LatLongDegreeToScreen(LAS_LatLong_Box.ymin,LAS_LatLong_Box.xmax,x2,y2);

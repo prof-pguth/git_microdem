@@ -2,12 +2,12 @@
 
 unit PETMATH;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 
@@ -109,9 +109,9 @@ procedure InterpolateProfileGapCheck(NumPairs : integer; var y,z : Array of floa
 procedure LongitudeAngleInRange(var Angle : float64); inline;
 function CompassAngleToMathAngle(Angle : float64) : float64; {$IfDef InlineConversions} inline; {$EndIf}
 
-function FindCompassAngleInRangeFloat64(Angle : float64) : float64; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
-function FindCompassAngleInRangeFloat32(Angle : float32) : float32; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
-function FindCompassAngleInRangeInteger(Angle : integer) : integer; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
+function CompassAngleInRangeFloat64(Angle : float64) : float64; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
+function CompassAngleInRangeFloat32(Angle : float32) : float32; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
+function CompassAngleInRangeInteger(Angle : integer) : integer; {$IfDef ExInlineConversions} {$Else} inline; {$EndIf}
 
 function AngularDistance(Angle1,Angle2 : float64) : float64;
 function AngularDiff(Angle1,Angle2 : float64) : float64;
@@ -1133,6 +1133,7 @@ begin
    Result := Angle + arcTan(a1 / a2);
 end;
 
+
 function ArcTanDeg(val : float64) : float64;
 begin
    Result := ArcTan(val) / DegToRad;
@@ -1148,7 +1149,7 @@ end;
 
 function CompassAngleToMathAngle(Angle : float64) : float64;
 begin
-   Result := FindCompassAngleInRangeFloat64(360 - (Angle - 90));
+   Result := CompassAngleInRangeFloat64(360 - (Angle - 90));
 end;
 
 
@@ -1280,7 +1281,7 @@ begin
       if (dx > 0) then Result := 90 else Result := 270
    else begin
       if (abs(dx) < 0.00001) then
-         if dy < 0 then Result := 180 else Result := 0
+         if (dy < 0) then Result := 180 else Result := 0
       else begin
          Result := ArcTan(dx / dy) / DegToRad;
          if (dx < 0) and (dy < 0) then Result := Result + 180;
@@ -1533,21 +1534,21 @@ begin
 end;
 
 
-function FindCompassAngleInRangeFloat64(Angle : float64) : float64;  {insures angle in range 0..360  }
+function CompassAngleInRangeFloat64(Angle : float64) : float64;  {insures angle in range 0..360  }
 begin
    Result := Angle;
    while (Result >= 360) do Result := Result - 360;
    while (Result < 0)   do Result := Result + 360;
 end;
 
-function FindCompassAngleInRangeFloat32(Angle : float32) : float32;  {insures angle in range 0..360  }
+function CompassAngleInRangeFloat32(Angle : float32) : float32;  {insures angle in range 0..360  }
 begin
    Result := Angle;
    while (Result >= 360) do Result := Result - 360;
    while (Result < 0) do Result := Result + 360;
 end;
 
-function FindCompassAngleInRangeInteger(Angle : integer) : integer;  {insures angle in range 0..360  }
+function CompassAngleInRangeInteger(Angle : integer) : integer;  {insures angle in range 0..360  }
 begin
    Result := Angle;
    while (Result >= 360) do Result := Result - 360;

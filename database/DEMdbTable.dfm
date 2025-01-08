@@ -2845,6 +2845,10 @@ object dbtablef: Tdbtablef
         OnClick = Allopengridselevationdifference1Click
       end
     end
+    object AddCopDEMaverageslopeinarea1: TMenuItem
+      Caption = 'Add CopDEM average slope in area'
+      OnClick = AddCopDEMaverageslopeinarea1Click
+    end
     object Satelliteaddreflectance1: TMenuItem
       Caption = 'Satellite, add reflectance'
       OnClick = Satelliteaddreflectance1Click

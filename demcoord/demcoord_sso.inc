@@ -1,11 +1,12 @@
-﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{   include file for demcoord.pas    }
-{____________________________________}
+﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{ include file for demcoord              }
+{________________________________________}
+
 
 
 procedure tDEMDataSet.InitializeNormals;
@@ -239,7 +240,7 @@ var
                  DipDirect := Strike - 90;
                end
                else DipDirect := Strike + 90;
-               DipDirect := FindCompassAngleInRangeFloat32(DipDirect);
+               DipDirect := CompassAngleInRangeFloat32(DipDirect);
                if DipDirect > 180 then DipDirect := DipDirect - 180;
                SSOVars.TheDips[i] := Dip;
                SSOVars.TheDipDirs[i] := DipDirect;
@@ -346,8 +347,8 @@ begin {tDEMDataSet.SSOComputations}
                   inc(SSOVars.AspPts);
                   inc(SSOvars.NumPts);
                   if Plot and MDDef.GemorphSSOPoles then begin
-                     if MDDef.SSObyPole then NetForm.nd.PlotPointOnNet(PolePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd)
-                     else NetForm.nd.PlotPointOnNet(LinePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDir,Symbol,xd,yd);
+                     if MDDef.SSObyPole then NetForm.nd.PlotPointOnNet(PolePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDirTrue,Symbol,xd,yd)
+                     else NetForm.nd.PlotPointOnNet(LinePlot,SlopeAspectRec.SlopeDegree,SlopeAspectRec.AspectDirTrue,Symbol,xd,yd);
                   end;
                end;
             end;
@@ -461,8 +462,8 @@ end {tDEMDataSet.SSOComputations};
                      if GetSlopeAndAspect(aCol,aRow,SlopAsp) then begin
                         PetMath.CompareValueToExtremes(SlopAsp.z,MinZ,MaxZ);
                         inc(NumPts);
-                        S2[1] := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDir);
-                        S2[2] := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDir);
+                        S2[1] := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDirTrue);
+                        S2[2] := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDirTrue);
                         S2[3] := cosDeg(SlopAsp.SlopeDegree);
                         for j := 1 to 3 do
                            for k := 1 to 3 do
@@ -563,7 +564,7 @@ end {tDEMDataSet.SSOComputations};
                           DipDirect := Strike - 90;
                         end
                         else DipDirect := Strike + 90;
-                        DipDirect := FindCompassAngleInRangeFloat32(DipDirect);
+                        DipDirect := CompassAngleInRangeFloat32(DipDirect);
                         TheDipDirs[i] := DipDirect;
                      end {for i};
 

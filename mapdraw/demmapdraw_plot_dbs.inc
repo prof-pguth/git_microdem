@@ -178,7 +178,7 @@ begin
       i := DBPlotOrder[j];
       if ValidDB(i) then begin
          if (GISdb[i].MyData.FiltRecsInDB > 0) and (not GISdb[i].PLSSfile) then begin
-            if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and ( not GISdb[i].ShowLocalMapOnly))) then begin
+            if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and (not GISdb[i].ShowLocalMapOnly))) then begin
                {$IfDef RecordDBPlots} WriteLineToDebugFile('  Plot db=' + IntToStr(i) + '  ' + GISDB[i].dbName + '   recs=' + IntToStr(GISDB[i].MyData.FiltRecsInDB)); {$EndIf}
                if (DBOverlayfName[i] <> '') then begin
                   Overlay := LoadBitmapFromFile(DBOverlayfName[i]);

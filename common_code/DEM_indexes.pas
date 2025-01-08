@@ -1175,7 +1175,7 @@ var
                    LoadList.Delete(i);
                 end;
              end;
-             if LoadList.Count = 0 then begin
+             if (LoadList.Count = 0) then begin
                 LoadList.Destroy;
                 exit;
              end;
@@ -1204,8 +1204,6 @@ var
    DataInSeries : tStringList;
    IndexSeriesTable : tMyData;
    DataType : ShortString;
-   //i : integer;
-   //fName : PathStr;
 begin
    {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt) + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
    try

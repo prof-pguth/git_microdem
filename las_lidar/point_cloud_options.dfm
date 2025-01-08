@@ -35,7 +35,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitWidth = 523
     object CancelBtn: TBitBtn
       Left = 290
       Top = 6
@@ -123,7 +122,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     ActivePage = TabSheet8
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 523
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -269,7 +267,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Height = 214
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 515
         object Label1: TLabel
           Left = 296
           Top = 16
@@ -1167,7 +1164,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       object Label36: TLabel
         Left = 248
         Top = 192
-        Width = 198
+        Width = 48
         Height = 13
         Caption = 'not saved'
       end
@@ -1695,7 +1692,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Height = 169
     Align = alBottom
     TabOrder = 2
-    ExplicitWidth = 523
     object RadioGroup1: TRadioGroup
       Left = 10
       Top = 2
@@ -1866,6 +1862,10 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     object DTMrangescalesfromgroundpoints1: TMenuItem
       Caption = 'DTM range scales from ground points'
       OnClick = DTMrangescalesfromgroundpoints1Click
+    end
+    object ArcsecondDTMDSMforrangeofscales1: TMenuItem
+      Caption = 'Arc second DTM/DSM for range of scales'
+      OnClick = ArcsecondDTMDSMforrangeofscales1Click
     end
     object DTMfromlowestreturn1: TMenuItem
       Caption = 'DTM from lowest return'

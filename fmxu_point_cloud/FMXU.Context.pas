@@ -262,6 +262,20 @@ begin
    // will eventually be replaced by a lookup table, but unsure of all the values
    // just yet, so what's unknown is protected by asserts
    case kind of
+      TContextShaderVariableKind.Float2 :
+         case vContextShaderSimplifiedArch of
+            TContextShaderArch.GLSL, TContextShaderArch.Metal :
+               Result := 1;
+            TContextShaderArch.DX11 :
+               Result := 8;
+         else
+            if vContextShaderSimplifiedArch = TContextShaderArch_WGSL then
+               Result := 8
+            else begin
+               Result := 0;
+               Assert(False, 'TODO');
+            end;
+         end;
       TContextShaderVariableKind.Matrix :
          case vContextShaderSimplifiedArch of
             TContextShaderArch.GLSL, TContextShaderArch.Metal :
@@ -285,6 +299,20 @@ begin
          else
             if vContextShaderSimplifiedArch = TContextShaderArch_WGSL then
                Result := 16
+            else begin
+               Result := 0;
+               Assert(False, 'TODO');
+            end;
+         end;
+      TContextShaderVariableKind.texture :
+         case vContextShaderSimplifiedArch of
+            TContextShaderArch.GLSL, TContextShaderArch.Metal :
+               Result := 0;
+            TContextShaderArch.DX11 :
+               Result := 0;
+         else
+            if vContextShaderSimplifiedArch = TContextShaderArch_WGSL then
+               Result := 0
             else begin
                Result := 0;
                Assert(False, 'TODO');
@@ -322,7 +350,7 @@ begin
    var nbVariables := Length(variableNames);
    if Length(variableKinds) <> nbVariables then begin
       raise EContext3DException.CreateFmt(
-         'CreateContextShader: mosmatched variable names & kinds arrays (%d elments vs %d)',
+         'CreateContextShader: mismatched variable names & kinds arrays (%d elments vs %d)',
          [ nbVariables, Length(variableKinds) ]);
    end;
 

@@ -1,12 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{  include file for demcoord.pas     }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{ include file for demcoord              }
+{________________________________________}
 
 
 
@@ -419,6 +418,15 @@ begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging out, newDEM=' + IntToStr(Result)); {$EndIf}
 end;
 
+function tDEMDataSet.ParmametricIsotropicSmoothing(Col,Row : integer; var z : float32) : boolean;
+var
+   znw,zw,zsw,zn,zs,zne,ze,zse : float32;
+begin
+    Result := SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse);
+    if Result then z := (zw + zn + ze + zs + 41 * z) / 45;
+end;
+
+
 
 procedure tDEMDataSet.FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
 label
@@ -447,8 +455,8 @@ begin
          for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
             if (Col >= Margin) and (Col <= pred(DEMGlb[NewDEM].DEMheader.NumCol)-Margin) then begin
                if (FilterCategory = fcParamIsotrop) then begin
-                  if SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-                     DEMGlb[NewDEM].SetGridElevation(Col,Row,(zw + zn + ze + zs + 41 * z) / 45);
+                  if ParmametricIsotropicSmoothing(Col,Row,z) then begin
+                     DEMGlb[NewDEM].SetGridElevation(Col,Row,z);
                   end;
                end
                else if (FilterCategory = fcNumNeigh) then begin
@@ -562,7 +570,7 @@ begin
       end;
    end
    else begin
-      if FilterCategory <> fcParamIsotrop then begin
+      if (FilterCategory <> fcParamIsotrop) then begin
          if (BoxSize = 0) then begin
             BoxSize := 2;
             ReadDefault('Box size (postings each side of grid point)',BoxSize);

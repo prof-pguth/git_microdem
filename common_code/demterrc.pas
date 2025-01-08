@@ -534,10 +534,10 @@ var
           SlpMatch,AspMatch : boolean;
        begin
           if Complex then begin
-             AspMatch := (SlopeAspectRec.AspectDir >= MinAspectDir) or (SlopeAspectRec.AspectDir <= MaxAspectDir);
+             AspMatch := (SlopeAspectRec.AspectDirTrue >= MinAspectDir) or (SlopeAspectRec.AspectDirTrue <= MaxAspectDir);
           end
           else begin
-             AspMatch := (SlopeAspectRec.AspectDir >= MinAspectDir) and (SlopeAspectRec.AspectDir <= MaxAspectDir);
+             AspMatch := (SlopeAspectRec.AspectDirTrue >= MinAspectDir) and (SlopeAspectRec.AspectDirTrue <= MaxAspectDir);
           end;
           SlpMatch := (SlopeAspectRec.Slope >= MinSlope) and (SlopeAspectRec.Slope <= MaxSlope);
           Result := SlpMatch and AspMatch;

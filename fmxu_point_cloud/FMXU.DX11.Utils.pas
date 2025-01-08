@@ -22,7 +22,7 @@ interface
 uses
    Winapi.Windows, Winapi.D3D11, Winapi.D3DCommon,
    Winapi.DXGI, Winapi.DxgiFormat, WinApi.DxgiType,
-   System.Math, System.SysUtils, System.UITypes,
+   System.Math, System.SysUtils, System.UITypes, System.Classes,
    FMX.Types3D, FMX.Types,
    FMXU.Context;
 
@@ -34,7 +34,7 @@ type
       protected
          FDevice : ID3D11Device;
          FDeviceContext : ID3D11DeviceContext;
-         FDXGIFactory : IDXGIFactory;
+         FDXGIFactory : IDXGIFactory1;
          FDriverType : D3D_DRIVER_TYPE;
          FFeatureLevel : D3D_FEATURE_LEVEL;
 
@@ -44,12 +44,12 @@ type
          FVertexShaderSource : IContextShaderSource;
 
       public
-         constructor Create(debug : Boolean);
+         constructor Create(debug : Boolean; whichGPU : Integer = -1);
          destructor Destroy; override;
 
          property Device : ID3D11Device read FDevice;
          property DeviceContext : ID3D11DeviceContext read FDeviceContext;
-         property DXGIFactory : IDXGIFactory read FDXGIFactory;
+         property DXGIFactory : IDXGIFactory1 read FDXGIFactory;
          property DriverType : D3D_DRIVER_TYPE read FDriverType;
          property FeatureLevel : D3D_FEATURE_LEVEL read FFeatureLevel;
 
@@ -171,6 +171,8 @@ function StencilFuncToDX11Comp(stencilFunc : TStencilFunc) : D3D11_COMPARISON_FU
 
 function PixelFormatToDXGIFormat(pf : TPixelFormat) : DXGI_FORMAT;
 
+procedure EnumerateDX11Adapters(adapterList : TStrings);
+
 procedure RaiseIfFailed(hr : HResult; const msg : String);
 
 // ------------------------------------------------------------------
@@ -187,6 +189,25 @@ procedure RaiseIfFailed(hr : HResult; const msg : String);
 begin
    if Failed(hr) then
       raise EFMXU_DX11Exception.CreateFmt('Failed (0x%x), %s', [ hr, msg ]);
+end;
+
+// EnumerateDX11Adapters
+//
+procedure EnumerateDX11Adapters(adapterList : TStrings);
+var
+   factory : IDXGIFactory1;
+   adapter : IDXGIAdapter1;
+   adapterDesc : DXGI_ADAPTER_DESC;
+begin
+   if Succeeded(CreateDXGIFactory1(IDXGIFactory1, factory)) then begin
+      var i := 0;
+      while factory.EnumAdapters1(i, adapter) <> DXGI_ERROR_NOT_FOUND do begin
+         if Succeeded(adapter.GetDesc(adapterDesc)) then
+            adapterList.Add(String(adapterDesc.Description));
+         adapter := nil;
+         Inc(i);
+      end;
+   end;
 end;
 
 // VertexElementsToDX11Declaration
@@ -326,10 +347,11 @@ end;
 
 // Create
 //
-constructor TDX11Device.Create(debug : Boolean);
+constructor TDX11Device.Create(debug : Boolean; whichGPU : Integer = -1);
 var
    dxgiDevice : IDXGIDevice;
-   dxgiAdapter : IDXGIAdapter;
+   dxgiAdapter : IDXGIAdapter1;
+   adapterDesc : DXGI_ADAPTER_DESC;
 begin
    inherited Create;
    var flags := D3D11_CREATE_DEVICE_BGRA_SUPPORT;
@@ -346,27 +368,57 @@ begin
    var fpuMask := SetExceptionMask(exAllArithmeticExceptions);
    try
       var requestedDriverType := D3D_DRIVER_TYPE_HARDWARE;
-      if GlobalUseDXSoftware then
+      if GlobalUseDXSoftware then begin
          requestedDriverType := D3D_DRIVER_TYPE_WARP;
+         whichGPU := -1;
+      end;
 
-      var hr := D3D11CreateDevice(
-         nil, requestedDriverType, 0, flags,
-         nil, 0, D3D11_SDK_VERSION, FDevice, FFeatureLevel, FDeviceContext
-      );
-      if Failed(hr) then Exit;
+      if whichGPU >= 0 then begin
 
-      // from this point on, everything should succeed
+         // Create DXGI Factory
+         var hr := CreateDXGIFactory1(IDXGIFactory1, FDXGIFactory);
+         if Failed(hr) then
+            Exit;
 
-      FDriverType := requestedDriverType;
+         // Enumerate adapters, preferring high-performance GPU
+         hr := FDXGIFactory.EnumAdapters1(whichGPU, dxgiAdapter);
+         if Failed(hr) then
+            raise Exception.CreateFmt('Failed to enumerate adapter %d', [ whichGPU ]);
 
-      hr := FDevice.QueryInterface(IDXGIDevice, dxgiDevice);
-      RaiseIfFailed(hr, 'TDX11Device IDXGIDevice');
+         hr := D3D11CreateDevice(
+            dxgiAdapter, D3D_DRIVER_TYPE_UNKNOWN, 0, flags,
+            nil, 0, D3D11_SDK_VERSION, FDevice, FFeatureLevel, FDeviceContext
+         );
+         if Failed(hr) or (FDeviceContext = nil) then begin
+            dxgiAdapter.GetDesc(adapterDesc);
+            raise Exception.CreateFmt('Failed with %x when creating device context for adapter %d (%s)',
+                                      [ hr, whichGPU, String(adapterDesc.Description) ]);
+        end;
 
-      hr := dxgiDevice.GetParent(IDXGIAdapter, dxgiAdapter);
-      RaiseIfFailed(hr, 'TDX11Device IDXGIAdapter');
+        FDriverType := D3D_DRIVER_TYPE_HARDWARE;
 
-      hr := dxgiAdapter.GetParent(IDXGIFactory, FDXGIFactory);
-      RaiseIfFailed(hr, 'TDX11Device IDXGIFactory');
+      end else begin
+
+        var hr := D3D11CreateDevice(
+           nil, requestedDriverType, 0, flags,
+           nil, 0, D3D11_SDK_VERSION, FDevice, FFeatureLevel, FDeviceContext
+        );
+        if Failed(hr) then Exit;
+
+        // from this point on, everything should succeed
+
+        FDriverType := requestedDriverType;
+
+        hr := FDevice.QueryInterface(IDXGIDevice, dxgiDevice);
+        RaiseIfFailed(hr, 'TDX11Device IDXGIDevice');
+
+        hr := dxgiDevice.GetParent(IDXGIAdapter, dxgiAdapter);
+        RaiseIfFailed(hr, 'TDX11Device IDXGIAdapter');
+
+        hr := dxgiAdapter.GetParent(IDXGIFactory1, FDXGIFactory);
+        RaiseIfFailed(hr, 'TDX11Device IDXGIFactory1');
+
+      end;
    finally
       SetExceptionMask(fpuMask);
       FreeLibrary(hD3D11);

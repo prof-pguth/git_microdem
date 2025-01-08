@@ -1516,8 +1516,8 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 223
-    Top = 50
+    Left = 231
+    Top = 58
     object File1: TMenuItem
       Caption = '&File'
       object Open1: TMenuItem

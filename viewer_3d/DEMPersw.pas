@@ -647,7 +647,7 @@ var
                     if AnswerIsYes('Off map; reverse course') then begin
                        CheckEditString(Edit2.Text,FlightAzimuth);
                        FlightAzimuth := FlightAzimuth + 180;
-                       FlightAzimuth := FindCompassAngleInRangeFloat32(FlightAzimuth);
+                       FlightAzimuth := CompassAngleInRangeFloat32(FlightAzimuth);
                        Edit2.Text := RealToString(FlightAzimuth,-6,1);
                     end
                     else WantToEndFlying := true;
@@ -679,11 +679,11 @@ var
                FlightControlForm.Label4.Caption := 'View: ' + IntToStr(FlightControlForm.TrackBar1.Position) + '° (relative)';
 
                ViewAzimuth := FlightAzimuth + ViewHeadingRelative;
-               ViewAzimuth := FindCompassAngleInRangeFloat32(ViewAzimuth);
+               ViewAzimuth := CompassAngleInRangeFloat32(ViewAzimuth);
 
                Az2 := FlightAzimuth - ViewHeadingRelative + DEMGlb[DEMonView].SelectionMap.MapDraw.GridTrueAngle;
-               Az2 := findCompassAngleInRangeFloat32(Az2);
-               Az3 := FindCompassAngleInRangeFloat32(Az2 + DEMGlb[DEMonView].SelectionMap.MapDraw.MapMagDec);
+               Az2 := CompassAngleInRangeFloat32(Az2);
+               Az3 := CompassAngleInRangeFloat32(Az2 + DEMGlb[DEMonView].SelectionMap.MapDraw.MapMagDec);
                FlightControlForm.Label2.Caption := RealToString(Az2,8,1) + '° True    ' + RealToString(Az3,8,1) + '° Mag';
 
                SetAzimuthLimits;

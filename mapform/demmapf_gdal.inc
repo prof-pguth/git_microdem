@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{ include file for demmapf          }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{ include file for demmapf               }
+{________________________________________}
 
 procedure TMapForm.GDALinfo1Click(Sender: TObject);
 {$IfDef ExGDAL}
@@ -119,7 +119,7 @@ end;
 
 procedure TMapForm.GDALupsample1Click(Sender: TObject);
 begin
-   GDAL_upsample_DEM(MapDraw.DEMonMap,true);
+   GDAL_upsample_DEM(True,MapDraw.DEMonMap,true);
 end;
 
 procedure TMapForm.GDALwarpsubset1Click(Sender: TObject);

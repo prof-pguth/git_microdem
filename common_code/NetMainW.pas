@@ -215,7 +215,7 @@ begin {proc IntersectionTwoPlanes}
    else if (abs(Dip1) < 0.001) or (abs(Dip2) < 0.001) then begin    { one plane is horizontal }
       if (abs(Dip1) < 0.001) then DipDirect := DipDir2 + 90
       else DipDirect := DipDir1 + 90;
-      DipDirect := Petmath.FindCompassAngleInRangeFloat32(DipDirect);
+      DipDirect := Petmath.CompassAngleInRangeFloat32(DipDirect);
       IntDip := 0;
    end
    else if (abs(Dip1 - 90) < 0.001) or (abs(Dip2 - 90) < 0.001)then begin  { one planes is vertical }
@@ -227,7 +227,7 @@ begin {proc IntersectionTwoPlanes}
          DipDirect := Strike2;
          if AngularDistance(DipDirect,DipDir1) > 90 then DipDirect := DipDirect + 180;
       end;
-      DipDirect := Petmath.FindCompassAngleInRangeFloat32(DipDirect);
+      DipDirect := Petmath.CompassAngleInRangeFloat32(DipDirect);
       DoMath;
    end {if}
    else begin
@@ -301,7 +301,7 @@ begin {proc Rotate}
               if DipDirAxis > DipDirBed then  RotatedDipDir := DipDirAxis + BB - 180
               else                            RotatedDipDir := DipDirAxis - BB + 180;
         end;
-   RotatedDipDir := PetMath.FindCompassAngleInRangeFloat64(RotatedDipDir);
+   RotatedDipDir := PetMath.CompassAngleInRangeFloat64(RotatedDipDir);
 end {proc Rotate};
 
 

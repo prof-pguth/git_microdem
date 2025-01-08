@@ -411,7 +411,7 @@ begin
             DEMGlb[Diffs[1]].SetGridElevation(Col,Row,z2 - z1);
             if DEMGlb[DEM1].GetSlopeAndAspect(Col,Row,SlopeAspect1) and DEMGlb[DEM2].GetSlopeAndAspect(Col2,Row2,SlopeAspect2) then begin
                DEMGlb[Diffs[2]].SetGridElevation(Col,Row,(SlopeAspect2.SlopePercent - SlopeAspect1.SlopePercent));
-               z1 := SlopeAspect2.AspectDir - SlopeAspect1.AspectDir;
+               z1 := SlopeAspect2.AspectDirTrue - SlopeAspect1.AspectDirTrue;
                if abs(z1) < 999 then begin  //aspect undefined if slope is 0
                   if (z1 > 180) then z1 := z1 - 360
                   else  if (z1 < -180) then z1 := z1 + 360;

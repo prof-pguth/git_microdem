@@ -802,7 +802,7 @@ procedure TView3D.ScreenToAzimuth(x: integer; var Azimuth : float32);
 begin
    if (X > -1) then begin
       Azimuth := LeftAzimuth + (X / pred(ViewPortWidth) * ViewHFOV);
-      Azimuth := FindCompassAngleInRangeFloat32(Azimuth);
+      Azimuth := CompassAngleInRangeFloat32(Azimuth);
    end;
 end;
 

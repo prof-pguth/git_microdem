@@ -1,11 +1,11 @@
 unit make_grid;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -562,7 +562,7 @@ begin
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
          if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlopeAspectRec) then begin
             if (SlopeAspectRec.Dir <> cdFlat) then begin
-               DEMGlb[Result].SetGridElevation(x,y,SlopeAspectRec.AspectDir);
+               DEMGlb[Result].SetGridElevation(x,y,SlopeAspectRec.AspectDirTrue);
             end;
          end;
       end;
@@ -644,24 +644,70 @@ begin
 end;
 
 
+function ComputeCurvature(DEM,CurveType,x,y,Radius : integer; var Curvature : float64) : boolean;  inline;
+var
+   SlpAsp : tSlopeAspectRec;
+
+         function Denominator1(SlpAsp : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := (sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy)) * sqrt(1 + sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy));
+         end;
+
+         function Denominator2(SlpAsp : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := sqrt( Math.Power(sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy), 3) ) ;
+         end;
+
+         function LSQ1(SlpAsp : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := sqr(SlpAsp.d) + sqr(SlpAsp.e);
+         end;
+
+         function LSQ2(SlpAsp : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := 1 + sqr(SlpAsp.d) + sqr(SlpAsp.e);
+         end;
+
+         function LSQ3(SlpAsp : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := Math.Power(LSQ2(SlpAsp),1.5);
+         end;
+
+
+begin
+   Result := DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,true,Radius);
+   if Result then begin
+      with SlpAsp do begin
+         if (MDDef.SlopeAlgorithm = smLSQ) then begin
+            case CurveType of
+               1 : Curvature := -2 * (a * sqr(d) + c * d * e + b * sqr(e)) / (LSQ1(SlpAsp) * LSQ3(SlpAsp)) ;     //Profile
+               2 : Curvature :=  0;  //Tangential, not yet coded
+               3 : Curvature := -2 * (a * sqr(e) - c * d * e + b * sqr(d)) / (LSQ1(SlpAsp) * sqrt(LSQ2(SlpAsp))); //Plan
+               4 : Curvature :=  0;   //flow line, not yet coded
+               5 : Curvature := (2 * d * (a - b) - c * (sqr(d) - sqr(e))) / (LSQ1(SlpAsp) * LSQ2(SlpAsp));    //contour torsion
+            end;
+
+         end
+         else begin
+            case CurveType of
+               1 : Curvature := -(dxx * sqr(dzdx) + 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator1(SlpAsp);    //Profile
+               2 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdx) ) / Denominator1(SlpAsp);    //Tangential
+               3 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator2(SlpAsp);    //Plan
+               4 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * (sqr(dzdx) - sqr(dzdy) ) ) / Denominator2(SlpAsp);    //flow line
+               5 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * sqr(dzdx) * sqr(dzdy) ) / Denominator1(SlpAsp);       //contour torsion
+            end;
+         end;
+      end;
+   end;
+end;
+
+
 function CreateCurvatureMap(Which : integer; OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 var
    x,y : integer;
    Curvature : float64;
    SlpAsp : tSlopeAspectRec;
    aName : shortstring;
-
-   function Denominator1(SlpAsp : tSlopeAspectRec) : float64; inline;
-   begin
-      Result := (sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy)) * sqrt(1 + sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy));
-   end;
-
-   function Denominator2(SlpAsp : tSlopeAspectRec) : float64; inline;
-   begin
-      Result := sqrt( Math.Power(sqr(SlpAsp.dzdx) + sqr(SlpAsp.dzdy), 3) ) ;
-   end;
-
-
 begin
    case Which of
       1 : aName := 'profile_curvature_';
@@ -681,16 +727,7 @@ begin
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
-         if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,true,Radius) then begin
-            with SlpAsp do begin
-               case Which of
-                  1 : Curvature := -(dxx * sqr(dzdx) + 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator1(SlpAsp);
-                  2 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdx) ) / Denominator1(SlpAsp);
-                  3 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator2(SlpAsp);
-                  4 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * (sqr(dzdx) - sqr(dzdy) ) ) / Denominator2(SlpAsp);
-                  5 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * sqr(dzdx) * sqr(dzdy) ) / Denominator1(SlpAsp);
-               end;
-            end;
+         if ComputeCurvature(DEM,Which,x,y,Radius,Curvature) then begin
             DEMGlb[Result].SetGridElevation(x,y,Curvature);
          end;
       end;
@@ -1419,10 +1456,10 @@ begin
                  PostResults(DEMs[11],x,y,GridInc,SlopeAspectRec.dzdy);
                  PostResults(DEMs[12],x,y,GridInc,SlopeAspectRec.dzdx);
 
-                 if (SlopeAspectRec.AspectDir < 365) then begin
-                    PostResults(DEMs[6],x,y,GridInc,round(SlopeAspectRec.AspectDir));
-                    PostResults(DEMs[7],x,y,GridInc,sinDeg(SlopeAspectRec.AspectDir));
-                    PostResults(DEMs[8],x,y,GridInc,cosDeg(SlopeAspectRec.AspectDir));
+                 if (SlopeAspectRec.AspectDirTrue < 365) then begin
+                    PostResults(DEMs[6],x,y,GridInc,round(SlopeAspectRec.AspectDirTrue));
+                    PostResults(DEMs[7],x,y,GridInc,sinDeg(SlopeAspectRec.AspectDirTrue));
+                    PostResults(DEMs[8],x,y,GridInc,cosDeg(SlopeAspectRec.AspectDirTrue));
                  end;
               end;
           end
@@ -1858,9 +1895,9 @@ var
              Angle : float64;
              SlopeAspectRec : tSlopeAspectRec;
           begin
-             Result := DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) and (SlopeAspectRec.AspectDir < 32000);
+             Result := DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) and (SlopeAspectRec.AspectDirTrue < 32000);
              if Result then begin
-                Angle := abs(SlopeAspectRec.AspectDir - Inward);
+                Angle := abs(SlopeAspectRec.AspectDirTrue - Inward);
                 if (Angle > 180) then Angle := Angle - 180;
                 Sum := Sum +  Angle;
              end;

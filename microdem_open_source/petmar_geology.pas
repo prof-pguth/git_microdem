@@ -130,7 +130,7 @@ end {proc VectorToDipStrike};
 procedure StrikeDirection(DipDirect : float32; var StrikeDirect : float32);
 { Strike direction must be 90 degrees counterclockwise from DipDirect }
 begin
-   StrikeDirect := FindCompassAngleInRangeFloat64(DipDirect - 90);
+   StrikeDirect := CompassAngleInRangeFloat64(DipDirect - 90);
 end;
 
 procedure StrikeFromNorth(var Strike : float32);
@@ -148,7 +148,7 @@ var
 begin
    if Dip < 0.01 then Result := 'Horizontal'
    else begin
-      DipDir := FindCompassAngleInRangeFloat64(Strike + 90);
+      DipDir := CompassAngleInRangeFloat64(Strike + 90);
       StrikeIntoString(DipDir,StrikeString);
       if (Dip <= 5) then Str(Dip:3:1,DipValue) else Str(Dip:2:0,DipValue);
       Result := StrikeString + ' ' + DipValue + AzimuthToDirection(DipDir);
@@ -196,7 +196,7 @@ end;
 function DipDirectionRHR(Strike : float32) : float32;
 { Dip direction must be 90 degrees clockwise from Strike Direct }
 begin
-   Result := FindCompassAngleInRangeFloat32(Strike + 90);
+   Result := CompassAngleInRangeFloat32(Strike + 90);
 end;
 
 procedure QuadrantDipDirection(var DipDir : float32; Strike : float32; WrkS : string16);
@@ -207,7 +207,7 @@ begin
    i := round(DipDir) div 45;
    if ((WrkS = 'N')  and (i in [2..5])) or ((WrkS = 'NE') and (i in [3..6])) or ((WrkS = 'E')  and (i in [4..7])) or ((WrkS = 'SE') and (i in [0,5..8])) or
       ((WrkS = 'S')  and (i in [0..1,6..8])) or ((WrkS = 'SW') and (i in [0..2,7..8])) or ((WrkS = 'W')  and (i in [0..3,8])) or ((WrkS = 'NW') and (i in [1..4])) then DipDir := DipDir + 180;
-   DipDir := FindCompassAngleInRangeFloat32(DipDir);
+   DipDir := CompassAngleInRangeFloat32(DipDir);
 end;
 
 
@@ -219,8 +219,8 @@ begin
    PlaneEquationFromThreePoints(x1,y1,z1,x2,y2,z2,x3,y3,z3,Normal[3],Normal[2],Normal[1],Constant);
    VectorToDipStrike32(Normal,DipDir,Dip);
    Slope := ' (' + ptTrim(FloatToStrF(TanDeg(Dip) * 100,ffnumber,6,2)) + '%)';
-   DipDir := FindCompassAngleInRangeFloat32(DipDir);
-   Strike := FindCompassAngleInRangeFloat32(DipDir - 90);
+   DipDir := CompassAngleInRangeFloat32(DipDir);
+   Strike := CompassAngleInRangeFloat32(DipDir - 90);
    DipAndStrike := CreateStrikeAndDipString(Strike,Dip);
    {$IfDef RecordGeology} WriteLineToDebugFile('DipAndStrikeFromThreePoints=' + DipAndStrike + Slope); {$EndIf}
 end {proc DipAndStrikeFromThreePoints};

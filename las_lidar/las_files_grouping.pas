@@ -1,11 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
-
 unit las_files_grouping;
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -1089,17 +1089,14 @@ begin
             {$IfDef RecordLASHist} WriteLineToDebugFile(TStr); {$EndIf}
          end
          else begin
-            {$IfDef RecordLASHist} WriteLineToDebugFile(TStr + ' but LAS files=' + IntToStr(LAS_fnames.Count)); {$EndIf}
+            TStr := TStr + ' but LAS files=' + IntToStr(LAS_fnames.Count);
+            MessageToContinue(TStr);
+            {$IfDef RecordLASHist} WriteLineToDebugFile(TStr); {$EndIf}
          end;
          exit;
       end;
    end;
-(*
-   if FileExists(IndexTableName) then begin
-   end
-   else begin
-   end;
-*)
+
       Tiles := tStringList.Create;
       Tiles.Add('LAT,LONG,TILE,POINTS,DENSITY,LAT_HI,LAT_LOW,LONG_HI,LONG_LOW,MAX_ELEV,MIN_ELEV,ELEV_1,ELEV_99,MAX_TIME,MIN_TIME,' +
                 'MIN_INTEN,MAX_INTEN,INTEN_1,INTEN_99,MIN_RED,MAX_RED,RED_1,RED_99,MIN_GREEN,MAX_GREEN,GREEN_1,GREEN_99,MIN_BLUE,MAX_BLUE,BLUE_1,BLUE_99,MIN_NIR,MAX_NIR,NIR_1,NIR_99,' +

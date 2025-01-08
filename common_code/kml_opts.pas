@@ -351,7 +351,6 @@ var
    i : integer;
 begin {function ConvertToKML}
    {$IfDef KMLProblems} WriteLinetoDebugFile('ConvertToKML enter,  db=' + IntToStr(DBOnTable) + '  ThumbNailDir=' + ThumbNailDir); {$EndIf}
-
    kml_opts_fm := Tkml_opts_fm.Create(Application);
    kml_opts_fm.IconFName := ExtractFilePath(GISdb[DBonTable].dbFullName);
    GISdb[DBonTable].EmpSource.Enabled := false;
@@ -498,6 +497,7 @@ var
       StyleString : AnsiString;
       ColorStr : shortString;
       AllLines : tStringList;
+      bb : sfBoundBox;
      {$IfDef ExGeography}
      {$Else}
         kGraph : KoppenGr.TKoppenGraph;
@@ -569,7 +569,7 @@ var
                    KML.KMLStringList.Add(' <Style id="Line' + IntToStr(DBonTable) + '-' + IntToStr(i) + '">' + '<LineStyle>' + '<color>' + ColorStr + '</color>' + '<width>4</width>' + '</LineStyle>' + '</Style>');
                 end;
              end
-             else if (ComboBox5.Text <> '') or (FileExists(IconFName)) or (GISdb[DBonTable].dbOpts.DBAutoShow =  dbasIconAll) then begin
+             else if (ComboBox5.Text <> '') or (FileExists(IconFName)) or (GISdb[DBonTable].dbOpts.DBAutoShow = dbasIconAll) then begin
                 {$IfDef KMLProblems} WriteLinetoDebugFile('Copy Icons'); {$EndIf}
                 IconScaleFactor := 1.1;
                 CheckEditString(Edit7.Text,IconScaleFactor);
@@ -692,7 +692,17 @@ var
                if (NameField <> '') then TStr := MyData.GetFieldByNameAsString(NameField)
                else TStr := '';
                if SimplePointFile then begin
-                  if ValidLatLongFromTable(Lat,Long) then begin
+                  if GISdb[DBonTable].MyData.BoundingBoxPresent then begin
+                     bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+                     KML.AddPolygonString(TStr,Desc,'');
+                     KML.EncodeLatLongZ(bb.YMax,bb.xMin,0);
+                     KML.EncodeLatLongZ(bb.YMax,bb.xMax,0);
+                     KML.EncodeLatLongZ(bb.YMin,bb.xMax,0);
+                     KML.EncodeLatLongZ(bb.YMin,bb.xMin,0);
+                     KML.EncodeLatLongZ(bb.YMax,bb.xMin,0);
+                     KML.EndPolygonString;
+                  end
+                  else if ValidLatLongFromTable(Lat,Long) then begin
                      Options := '';
                      if (GISdb[DBonTable].dbOpts.DBAutoShow = dbasIconAll) or (FileExists(IconFName)) then begin
                         Options := Options + '<styleUrl>#I' + IntToStr(DBonTable) + '-1' + '</styleUrl>';

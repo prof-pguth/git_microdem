@@ -548,17 +548,17 @@ end;
 
               if (Field1 = 'dd_from_strike') then begin
                  Angle := MyData.GetFieldByNameAsFloat('FP1_STRIKE') + 90;
-                 inc(Bins[round(FindCompassAngleInRangeFloat64(Angle))]);
+                 inc(Bins[round(CompassAngleInRangeFloat64(Angle))]);
                  Angle := MyData.GetFieldByNameAsFloat('FP2_STRIKE') + 90;
-                 inc(Bins[round(FindCompassAngleInRangeFloat64(Angle))]);
+                 inc(Bins[round(CompassAngleInRangeFloat64(Angle))]);
               end
               else begin
                  Angle := MyData.GetFieldByNameAsFloat(Field1);
-                 inc(Bins[round(FindCompassAngleInRangeFloat64(Angle))]);
+                 inc(Bins[round(CompassAngleInRangeFloat64(Angle))]);
 
                  if (Field2 <> '') then begin
                     Angle := MyData.GetFieldByNameAsFloat(Field2);
-                    inc(Bins[round(FindCompassAngleInRangeFloat64(Angle))]);
+                    inc(Bins[round(CompassAngleInRangeFloat64(Angle))]);
                  end;
               end;
               MyData.Next;

@@ -1,11 +1,12 @@
-﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{   include file for demcoord.pas    }
-{____________________________________}
+﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{ include file for demcoord              }
+{________________________________________}
+
 
 
 { tAspectStats }
@@ -52,11 +53,11 @@ procedure tAspectStats.AddPoint(SlopeAspectRec: tSlopeAspectRec);
 var
    AspInt : integer;
 begin
-   if (SlopeAspectRec.AspectDir < 3600) then begin
-      AspX := AspX + CosDeg(SlopeAspectRec.AspectDir);
-      AspY := AspY + SinDeg(SlopeAspectRec.AspectDir);
-      AspInt := round(SlopeAspectRec.AspectDir);
-      AspInt := FindCompassAngleInRangeInteger(AspInt);
+   if (SlopeAspectRec.AspectDirTrue < 3600) then begin
+      AspX := AspX + CosDeg(SlopeAspectRec.AspectDirTrue);
+      AspY := AspY + SinDeg(SlopeAspectRec.AspectDirTrue);
+      AspInt := round(SlopeAspectRec.AspectDirTrue);
+      AspInt := CompassAngleInRangeInteger(AspInt);
       //if (AspInt >= 0) and (AspInt < 360) then begin
          inc(AspectFreqValsTrue[AspInt]);
          inc(Npts);
@@ -82,7 +83,7 @@ begin
          end
          else if DEMGlb[DEM].GetElevMeters(x,y,z) then begin
             if (z >= 0) and (z <= 360) then begin
-               SlopeAspectRec.AspectDir := z;
+               SlopeAspectRec.AspectDirTrue := z;
                AddPoint(SlopeAspectRec);
             end;
          end;

@@ -1,18 +1,18 @@
 unit point_cloud_options;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordMakeGrid}
+      {$Define RecordMakeGrid}
       //{$Define BasicOpens}
       //{$Define RecordMakeBaseMap}
       //{$Define TrackPointCloud}
@@ -336,6 +336,7 @@ type
     BitBtn63: TBitBtn;
     Label36: TLabel;
     BitBtn65: TBitBtn;
+    ArcsecondDTMDSMforrangeofscales1: TMenuItem;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -526,6 +527,7 @@ type
     procedure DTMfromlowestreturn1Click(Sender: TObject);
     procedure RadioGroup8Click(Sender: TObject);
     procedure BitBtn65Click(Sender: TObject);
+    procedure ArcsecondDTMDSMforrangeofscales1Click(Sender: TObject);
   private
     { Private declarations }
     MinAreaZ,MaxAreaZ : float64;
@@ -1053,8 +1055,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 {$IfDef RecordMakeGrid} WriteLineToDebugFile('start pcgmGrndPtDTM'); {$EndIf}
                 NewHeadRecs.DEMPrecision := FloatingPointDEM;
                 NewHeadRecs.ElevUnits := euMeters;
-                if (MDDef.DTMoption in [dtmAll,dtmMean]) then //MissingDataGrid(NewGroundMean,NewGridname('DTM_ground_pts_Mean_'));
-                   OpenAndZeroNewDEM(true,NewHeadRecs,NewGroundMean,NewGridname('DTM_ground_pts_Mean_'),InitDEMvalue,0);
+                if (MDDef.DTMoption in [dtmAll,dtmMean]) then OpenAndZeroNewDEM(true,NewHeadRecs,NewGroundMean,NewGridname('DTM_ground_pts_Mean_'),InitDEMvalue,0);
                 if (MDDef.DTMoption in [dtmAll,dtmMax]) then MissingDataGrid(NewGroundMax,NewGridname('DTM_ground_pts_Max_'));
                 if (MDDef.DTMoption in [dtmAll,dtmMin]) then MissingDataGrid(NewGroundMin,NewGridname('DTM_ground_pts_Min_'));
                 if (MDDef.DTMoption in [dtmAll,dtmNearest]) then begin
@@ -1139,7 +1140,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 OpenAndZeroNewDEM(true,NewHeadRecs,ClassDEM,NewGridname('Classification_'),InitDEMmissing);
                 CheckDEM := ClassDEM;
              end;
-         end;
+         end {procedure CreateNewGrids};
 
 
            procedure OneLasLayer(Layer : integer);
@@ -1165,74 +1166,63 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                                 LASclass := LasData.LASClassification(j);
                                 zShot := Lasdata.ExpandLAS_Z(j);
 
-                                   if (PCGridMaker in [pcgmGrndPtDTM,pcgmCeilFloor,pcgmThreeDEMs]) then begin
-                                        if LasData.GroundReturn(j) then begin
-                                           if ValidDEM(NewGroundDensity) then DEMGlb[NewGroundDensity].IncrementGridValue(xgrid,ygrid);
-                                           if ValidDEM(NewGroundMean) then begin
-                                              //if (not DEMGlb[NewGroundMean].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) then ZGrid := 0;
-                                              DEMGlb[NewGroundMean].SetGridElevation(xgrid,ygrid,zShot+Zgrid);
-                                           end;
-                                           if ValidDEM(NewGroundNearest) then begin
-                                              Dist := sqr(xf-xgrid) + sqr(yf-ygrid);
-                                              if DEMGlb[NewDistance].GetElevMetersOnGrid(xgrid,ygrid,zGrid) and (Dist < zgrid) then begin
-                                                 DEMGlb[NewGroundNearest].SetGridElevation(xgrid,ygrid,zShot);
-                                                 DEMGlb[NewDistance].SetGridElevation(xgrid,ygrid,Dist);
-                                              end;
-                                           end;
-                                           if ValidDEM(NewGroundMax) then begin
-                                              if (not DEMGlb[NewGroundMax].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zShot > zGrid) then DEMGlb[NewGroundMax].SetGridElevation(xgrid,ygrid,zShot);
-                                           end;
-                                           if ValidDEM(NewGroundMin) then begin
-                                              if (not DEMGlb[NewGroundMin].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zShot < zGrid) then DEMGlb[NewGroundMin].SetGridElevation(xgrid,ygrid,zShot);
+                                if (PCGridMaker in [pcgmGrndPtDTM,pcgmCeilFloor,pcgmThreeDEMs]) then begin
+                                     if LasData.GroundReturn(j) then begin
+                                        if ValidDEM(NewGroundDensity) then DEMGlb[NewGroundDensity].IncrementGridValue(xgrid,ygrid);
+                                        if ValidDEM(NewGroundMean) then begin
+                                           DEMGlb[NewGroundMean].SetGridElevation(xgrid,ygrid,zShot+Zgrid);
+                                        end;
+                                        if ValidDEM(NewGroundNearest) then begin
+                                           Dist := sqr(xf-xgrid) + sqr(yf-ygrid);
+                                           if DEMGlb[NewDistance].GetElevMetersOnGrid(xgrid,ygrid,zGrid) and (Dist < zgrid) then begin
+                                              DEMGlb[NewGroundNearest].SetGridElevation(xgrid,ygrid,zShot);
+                                              DEMGlb[NewDistance].SetGridElevation(xgrid,ygrid,Dist);
                                            end;
                                         end;
-                                        (*
-                                        OK := true;
-                                        if (MDDef.LasElevChecks) and ValidDEM(BaseMap.MapDraw.DEMonMap) and DEMGlb[BaseMap.MapDraw.DEMonMap].GetElevMetersOnGrid(xgrid,ygrid,zGrid) then begin
-                                           if (zshot < MDDef.LowValidZinPointCloud) or (zshot > MDDef.MaxValidZinPointCloud) or ((zshot - zGrid) > MDDef.MaxValidHAGinPointCloud) then
-                                              OK := false;
+                                        if ValidDEM(NewGroundMax) then begin
+                                           if (not DEMGlb[NewGroundMax].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zShot > zGrid) then DEMGlb[NewGroundMax].SetGridElevation(xgrid,ygrid,zShot);
                                         end;
-                                        *)
-                                        //if OK then begin
-                                           if ValidDEM(DSMDEM) then begin
-                                              {if (not DEMGlb[DSMDEM].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zshot > zGrid) then} DEMGlb[DSMDEM].SetGridElevation(xgrid,ygrid,zShot);
-                                           end;
-                                           if ValidDEM(NVSDEM) then begin
-                                              {if (not DEMGlb[NVSDEM].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zshot < zGrid) then} DEMGlb[NVSDEM].SetGridElevation(xgrid,ygrid,zShot);
-                                           end;
-                                        //end;
+                                        if ValidDEM(NewGroundMin) then begin
+                                           if (not DEMGlb[NewGroundMin].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zShot < zGrid) then DEMGlb[NewGroundMin].SetGridElevation(xgrid,ygrid,zShot);
+                                        end;
+                                     end;
+                                     if ValidDEM(DSMDEM) then begin
+                                        if (not DEMGlb[DSMDEM].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zshot > zGrid) then DEMGlb[DSMDEM].SetGridElevation(xgrid,ygrid,zShot);
+                                     end;
+                                     if ValidDEM(NVSDEM) then begin
+                                        if (not DEMGlb[NVSDEM].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) or (zshot < zGrid) then DEMGlb[NVSDEM].SetGridElevation(xgrid,ygrid,zShot);
+                                     end;
+                                end
+                                else begin
+                                   if (PCGridMaker in [pcgmMeanStd,pcgmMeanFirst]) then begin
+                                      if (PCGridMaker in [pcgmMeanStd]) or LasData.FirstReturn(j) then begin
+                                         DEMGlb[NewDensity].IncrementGridValue(xgrid,ygrid);
+                                         if (not DEMGlb[MeanReturnHeightDEM].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) then ZGrid := 0;
+                                         DEMGlb[MeanReturnHeightDEM].SetGridElevation(xgrid,ygrid,zShot+Zgrid);
+                                      end;
                                    end
                                    else begin
-                                      if (PCGridMaker in [pcgmMeanStd,pcgmMeanFirst]) then begin
-                                         if (PCGridMaker in [pcgmMeanStd]) or LasData.FirstReturn(j) then begin
-                                            DEMGlb[NewDensity].IncrementGridValue(xgrid,ygrid);
-                                            if (not DEMGlb[MeanReturnHeightDEM].GetElevMetersOnGrid(xgrid,ygrid,zGrid)) then ZGrid := 0;
-                                            DEMGlb[MeanReturnHeightDEM].SetGridElevation(xgrid,ygrid,zShot+Zgrid);
-                                         end;
-                                      end
-                                      else begin
-                                         if (NewDensity <> 0) then DEMGlb[NewDensity].IncrementGridValue(xgrid,ygrid);
-                                         if (NewFirstReturnDEM <> 0) and LasData.FirstReturn(j) then DEMGlb[NewFirstReturnDEM].IncrementGridValue(xgrid,ygrid);
-                                         if (SingleReturnDEM <> 0) and (LasData.ReturnsInPulse(j) = 1) then DEMGlb[SingleReturnDEM].IncrementGridValue(xgrid,ygrid);
-                                         if (OverlapDEM <> 0) and LASData.OverlapPoint(j) then DEMGlb[OverlapDEM].IncrementGridValue(xgrid,ygrid);
-                                         if (SecondReturnDEM <> 0) and (LASData.ReturnNumber(j) = 2) then DEMGlb[SecondReturnDEM].IncrementGridValue(xgrid,ygrid);
-                                         if (AirReturnDEM <> 0) and LasData.AirReturn(j) then DEMGlb[AirReturnDEM].IncrementGridValue(xgrid,ygrid);
+                                      if (NewDensity <> 0) then DEMGlb[NewDensity].IncrementGridValue(xgrid,ygrid);
+                                      if (NewFirstReturnDEM <> 0) and LasData.FirstReturn(j) then DEMGlb[NewFirstReturnDEM].IncrementGridValue(xgrid,ygrid);
+                                      if (SingleReturnDEM <> 0) and (LasData.ReturnsInPulse(j) = 1) then DEMGlb[SingleReturnDEM].IncrementGridValue(xgrid,ygrid);
+                                      if (OverlapDEM <> 0) and LASData.OverlapPoint(j) then DEMGlb[OverlapDEM].IncrementGridValue(xgrid,ygrid);
+                                      if (SecondReturnDEM <> 0) and (LASData.ReturnNumber(j) = 2) then DEMGlb[SecondReturnDEM].IncrementGridValue(xgrid,ygrid);
+                                      if (AirReturnDEM <> 0) and LasData.AirReturn(j) then DEMGlb[AirReturnDEM].IncrementGridValue(xgrid,ygrid);
+                                       if (MinScanAngleDEM <> 0) and (MaxScanAngleDEM <> 0) then begin
+                                        zShot := LasData.GetScanAngle(j);
+                                        if DEMGlb[MinScanAngleDEM].GetElevMeters(xgrid,ygrid,zGrid) and (zshot < zGrid) then DEMGlb[MinScanAngleDEM].SetGridElevation(xgrid,ygrid,zShot);
+                                        if DEMGlb[MaxScanAngleDEM].GetElevMeters(xgrid,ygrid,zGrid) and (zshot > zGrid) then DEMGlb[MaxScanAngleDEM].SetGridElevation(xgrid,ygrid,zShot);
+                                      end;
 
-                                         if (MinScanAngleDEM <> 0) and (MaxScanAngleDEM <> 0) then begin
-                                           zShot := LasData.GetScanAngle(j);
-                                           if DEMGlb[MinScanAngleDEM].GetElevMeters(xgrid,ygrid,zGrid) and (zshot < zGrid) then DEMGlb[MinScanAngleDEM].SetGridElevation(xgrid,ygrid,zShot);
-                                           if DEMGlb[MaxScanAngleDEM].GetElevMeters(xgrid,ygrid,zGrid) and (zshot > zGrid) then DEMGlb[MaxScanAngleDEM].SetGridElevation(xgrid,ygrid,zShot);
+                                      if (PCGridMaker in [pcgmMaxIntensity,pcgmMinIntensity,pcgmAllIntensity]) then begin
+                                         Intensity := LasData.GetShotMeasuredIntensity(j);
+                                         if (not DEMGlb[MaxIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid)) or (Intensity > zGrid) then DEMGlb[MaxIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
+                                         if (MinIntensityDEM <> 0) then if (not DEMGlb[MinIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid) or (Intensity < zGrid)) then DEMGlb[MinIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
+                                         if (MeanIntensityDEM <> 0) then begin
+                                            if (not DEMGlb[MeanIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid)) then zgrid := 0;
+                                            DEMGlb[MeanIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity + zGrid);
                                          end;
-
-                                         if (PCGridMaker in [pcgmMaxIntensity,pcgmMinIntensity,pcgmAllIntensity]) then begin
-                                            Intensity := LasData.GetShotMeasuredIntensity(j);
-                                            if (not DEMGlb[MaxIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid)) or (Intensity > zGrid) then DEMGlb[MaxIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
-                                            if (MinIntensityDEM <> 0) then if (not DEMGlb[MinIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid) or (Intensity < zGrid)) then DEMGlb[MinIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
-                                            if (MeanIntensityDEM <> 0) then begin
-                                               if (not DEMGlb[MeanIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid)) then zgrid := 0;
-                                               DEMGlb[MeanIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity + zGrid);
-                                            end;
-                                         end;
+                                      end;
                                    end;
                                 end{if};
                              end;
@@ -1241,7 +1231,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                   end {for i};
                  FreeAndNil(LasData);
               end {for k};
-           end;
+           end {procedure CreateNewGrids};
 
 
            procedure CheckMap(DEM : integer; FillHoles : boolean = true; MapType : tMapType = mtElevRainbow);
@@ -1801,6 +1791,41 @@ begin
     pt_cloud_opts_fm := nil;
 end;
 
+
+procedure Tpt_cloud_opts_fm.ArcsecondDTMDSMforrangeofscales1Click(Sender: TObject);
+
+
+   procedure DoSpacing(space: float64);
+   var
+      DTM,DSM : integer;
+   begin
+      {$IfDef RecordMakeGrid} WriteLineToDebugFile('Start, spacing=' + RealToString(space,-12,-2)); {$EndIf}
+       MDdef.DefLidarGeoGridSizeY := space;
+       MDDef.MakePCFloor := false;
+       MDDef.MakePCCeiling := true;
+       DSM := MakeGrid(pcgmCeilFloor);
+
+//ADD RESOLUTION TO THE DEM NAME, AND CHECK IF IT SHOULD BE 0.05
+
+       DEMGlb[DSM].SaveAsGeotiff(AutoSaveDir + DEMglb[DSM].AreaName + '.tif');
+       DTM := MakeGrid(pcgmGrndPtDTM);
+       DEMGlb[DTM].SaveAsGeotiff(AutoSaveDir + DEMglb[DTM].AreaName + '.tif');
+   end;
+
+
+begin
+   {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.ArcsecondDTMDSMforrangeofscales1Click in'); {$EndIf}
+   If (AutoSaveDir = '') then GetDosPath('saved grids',AutoSaveDir);
+   MdDef.ForceSquarePixels := true;
+   MDDef.LidarGridProjection := ArcSecDEM;
+   DoSpacing(0.04);
+   DoSpacing(0.1);
+   DoSpacing(0.15);
+   DoSpacing(0.3);
+   DoSpacing(0.5);
+   DoSpacing(1);
+   {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.ArcsecondDTMDSMforrangeofscales1Click out'); {$EndIf}
+end;
 
 procedure Tpt_cloud_opts_fm.BitBtn10Click(Sender: TObject);
 begin
@@ -3038,31 +3063,6 @@ begin
    BaseMap.OutlineGridOutlines(-999,-999);
 end;
 
-(*
-function CreateNewUTMGrid(DEMName : shortstring; bb : sfBoundBox; Spacing : float64) : integer;
-var
-   NewHeader : tDEMheader;
-begin
-   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid in, UTM=' + IntToStr(MDDef.DefaultUTMZone) + MDDef.DefaultLatHemi + '  bb: ' + sfBoundBoxToString(bb,4)); {$EndIf}
-   Result := 0;
-   ZeroDEMHeader(NewHeader, true);
-   NewHeader.DEMxSpacing := Spacing;
-   NewHeader.DEMySpacing := Spacing;
-   NewHeader.DEMSWCornerX := bb.XMin;
-   NewHeader.DEMSWCornerY := bb.YMin;
-   NewHeader.NumCol := round((bb.xmax - bb.xmin) / Spacing);
-   NewHeader.NumRow := round((bb.ymax - bb.ymin) / Spacing);
-
-   OpenAndZeroNewDEM(false,NewHeader,Result,DEMName,InitDEMmissing);
-   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid created, OpenAndZero ' + sfBoundBoxToString(DEMGlb[Result].DEMBoundBoxGeo,4)); {$EndIf}
-   {$IfDef RRecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid ' + DEMGlb[Result].FullDEMParams); {$EndIf}
-
-   CreateDEMSelectionMap(Result,false,MDDef.DefElevsPercentile,mtDEMBlank);
-   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid out, map grid box:' + sfBoundBoxToString(DEMGlb[Result].SelectionMap.MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
-   {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid out, map geo box:' + sfBoundBoxToString(DEMGlb[Result].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,4)); {$EndIf}
-end;
-*)
-
 
 function Tpt_cloud_opts_fm.GetFilesForPointCloud(CloudNum : integer; var BaseDir : PathStr; AutoLoad : boolean = false) : boolean;
 var
@@ -3636,8 +3636,6 @@ begin
    MDDef.MakePCFloor := true;
    MDDef.MakePCCeiling := true;
    MakeGrid(pcgmThreeDEMs);
-   //MakeGrid(pcgmCeilFloor);
-   //MakeGrid(pcgmGrndPtDTM);
 end;
 
 procedure Tpt_cloud_opts_fm.DTMfromgroundclassifiedpoints1Click(Sender: TObject);
@@ -3660,7 +3658,7 @@ var
    NewName : shortstring;
    aTable : Petmar_db.tMyData;
 begin
-   //WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click start');
+   {$IfDef BulkGrids}  WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click start'); {$EndIf}
    fName := ProgramRootDir;
    if Petmar.GetExistingFileName('DTM creation parameters','*.dbf',fName) then begin
       GetDosPath('saved grids',SaveDir);
@@ -3670,23 +3668,21 @@ begin
          NewName := TheCloudName + '_' + aTable.GetFieldByNameAsString('RESOLUTION')  + '_' + aTable.GetFieldByNameAsString('UNITS') + '_' +
               aTable.GetFieldByNameAsString('PIXEL_IS') + '_' + aTable.GetFieldByNameAsString('CALC');
          wmDEM.SetPanelText(0,NewName);
-
-         WriteLineToDebugFile('Start ' + fName);
-
+         {$IfDef BulkGrids} WriteLineToDebugFile('Start ' + fName); {$EndIf}
          if Uppercase(aTable.GetFieldByNameAsString('DEM')) = 'DTM' then NewDEM := MakeGrid(pcgmGrndPtDTM);
          if ValidDEM(NewDEM) then begin
             DEMGlb[NewDEM].AreaName := NewName;
             fName := SaveDir + DEMGlb[NewDEM].AreaName + '.dem';
             DEMGlb[NewDEM].WriteNewFormatDEM(fName);
             DEMGlb[NewDEM].SelectionMap.Caption := fName;
-            WriteLineToDebugFile('Saved: ' + fName);
+            {$IfDef BulkGrids} WriteLineToDebugFile('Saved: ' + fName); {$EndIf}
          end;
          aTable.Next;
       end;
       aTable.Destroy;
    end;
    wmDEM.SetPanelText(0,'');
-   //WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click done');
+   {$IfDef BulkGrids} WriteLineToDebugFile('Tpt_cloud_opts_fm.DTMrangescalesfromgroundpoints1Click done'); {$EndIf}
 end;
 
 

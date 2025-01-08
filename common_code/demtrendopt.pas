@@ -116,6 +116,9 @@ uses
    Nevadia_Main, computations;
 
 
+
+
+
 procedure TTrendPick.OKBtnClick(Sender: TObject);
 begin
    Close;
@@ -262,6 +265,7 @@ end;
 
 { tTrendSurf }
 
+
 procedure tTrendSurf.ComputeTrendSurface;
 {from a program in Davis, 1st ed, p.332}
 const
@@ -403,7 +407,7 @@ var
       end;
 
 
-begin
+begin {procedure tTrendSurf.ComputeTrendSurface}
    {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('ComputeTrendSurfaceFromDEM in'); {$EndIf}
 
    SkipMenuUpdating := true;
@@ -659,7 +663,7 @@ begin
    end;
 
    {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('Trend Surface out'); {$EndIf}
-end;
+end {procedure tTrendSurf.ComputeTrendSurface};
 
 
 constructor tTrendSurf.Create;

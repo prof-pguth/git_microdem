@@ -954,7 +954,7 @@ var
             MDDef.SlopeRegionRadius := BoxSize;
             if DEMGlb[DEM].GetSlopeAndAspect(Col,Row,SlopeAsp) then begin
                Findings.Add(Location + ',' + IntToStr(BoxSize) + ',' + RealToString(BoxSize* DEMGlb[DEM].AverageYSpace,-12,-2) + ',' +
-                     RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDir,-8,2));
+                     RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDirTrue,-8,2));
             end;
          end;
 
@@ -3087,7 +3087,7 @@ begin
          if (Col mod 25 = 0) then UpdateProgressBar((Col-GridLimits.XGridLow)/(GridLimits.XGridHigh-GridLimits.XGridLow));
          for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
              if DEMGlb[WhichDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
-                 if (not MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then inc(AspectFreq^[round(SlopeAspectRec.AspectDir)]);
+                 if (not MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then inc(AspectFreq^[round(SlopeAspectRec.AspectDirTrue)]);
              end;
          end;
       end;

@@ -476,12 +476,13 @@ type
        z,znw,zw,zsw,zn,zs,zne,ze,zse,
        dzdx,dzdy,     //first order partial derivatives
        dxx,dxy,dyy,   //second order partial derivatives
+       a,b,c,d,e,f,   //LSQ surface constants
        dx,dy,dia_space,
        GridTrueAngle,
        Slope,
        SlopePercent,
        SlopeDegree,
-       AspectDir,AspectDirGrid : float32;
+       AspectDirTrue,AspectDirGrid : float32;
        Dir : tCompassDirection;
    end;
 
@@ -730,7 +731,9 @@ const
    euCOPFLM = 66;
    euTANEDM = 67;
    euDegreeSlope = 68;
-   euHighElevUnits = 68;  //same as last real one;  used only for loops through all the elevation units;
+   euNeoEDM = 69;
+   euNeoFLM = 70;
+   euHighElevUnits = 70;  //same as last real one;  used only for loops through all the elevation units;
 
 const
    VertCSUndefined = 0;
@@ -1335,7 +1338,8 @@ const
    smHorn = 1;
    smZevenbergenThorne = 2;
    smShary = 3;
-   LastSlopeMethod = 3;
+   smLSQ = 4;
+   LastSlopeMethod = 4;
 const
     tixUTM = 0;
     tixLatLong = 1;

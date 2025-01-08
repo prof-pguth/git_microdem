@@ -55,7 +55,6 @@ type
       UseStat   : boolean;
       Height    : float64;
    end;
-   //tNLCDarray = array[0..MaxLandCoverCategories] of float64;
    tNLCDCats = array[0..MaxLandCoverCategories] of tCategory;
 
 procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : integer; var Categories : tNLCDCats);
@@ -83,7 +82,7 @@ function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Va
 procedure SimplifyLandCoverGrid(DEM : integer);
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 procedure MarkWaterMissingInThisDEM(DEM : integer);
-
+procedure LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32);
 
 
 implementation
@@ -149,6 +148,46 @@ begin
        CloseSingleDEM(lcGrid);
     end;
 end;
+
+
+
+procedure LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32);
+//hard coded for a particular land cover data set, LC100 from Copernicus
+var
+   slc,Grid,x,y,
+   f,b,u,w,Total : integer;
+   GridLimits : tGridLimits;
+   z : float32;
+begin
+
+   Grid := LoadLC100LandCover('',bb,false);
+   SimplifyLandCoverGrid(Grid);
+   GridLimits := DEMGlb[Grid].sfBoundBox2tGridLimits(bb);
+   f := 0;
+   b := 0;
+   u := 0;
+   w := 0;
+   Total := 0;
+   for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+      for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+         if DEMGlb[Grid].GetElevMetersOnGrid(x,y,z) then begin
+            slc := round(z);
+            if slc = slcForest then inc(f)
+            else if slc = slcBarren then inc(b)
+            else if slc = slcUrban then inc(u)
+            else if slc = slcWater then inc(w);
+            inc(Total);
+         end;
+      end;
+   end;
+   if Total > 0 then begin
+      Forest := 100 * f / Total;
+      Barren := 100 * b / Total;
+      Urban  := 100 * u / Total;
+      Water  := 100 * w / Total;
+   end;
+end;
+
 
 
 procedure SimplifyLandCoverGrid(DEM : integer);
@@ -574,6 +613,7 @@ end;
 
 
 function IsThisLandCover(fName : PathStr;  var LandCover : integer) : boolean;
+//this now covers a lot more than just Land Cover, and might better be considered grid needing a VAT
 begin
    Landcover := 0;
    if (fName <> '') then begin
@@ -596,9 +636,11 @@ begin
       else if StrUtils.AnsiContainsText(fName,'IWAHASHI') then LandCover := euIwahashi
       else if StrUtils.AnsiContainsText(fName,'MEYBECK') then LandCover := euMeybeck
       else if (StrUtils.AnsiContainsText(fName,'COPERNICUS_DSM') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euCOPEDM
-      else if (StrUtils.AnsiContainsText(fName,'TDM1_EDEM_') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euTANEDM
       else if (StrUtils.AnsiContainsText(fName,'COPERNICUS_DSM') and StrUtils.AnsiContainsText(fName,'FLM.TIF')) then LandCover := euCOPFLM
-      //else if StrUtils.AnsiContainsText(fName,'Sentinel-2_L2A_Scene_classification_map') then LandCover := euSent2SLC      //it is a 3 color scene
+      else if (StrUtils.AnsiContainsText(fName,'WORLDDEMNEO') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euNeoEDM
+      else if (StrUtils.AnsiContainsText(fName,'WORLDDEMNEO') and StrUtils.AnsiContainsText(fName,'FLM.TIF')) then LandCover := euNeoFLM
+      else if (StrUtils.AnsiContainsText(fName,'TDM1_EDEM_') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euTANEDM
+      //else if StrUtils.AnsiContainsText(fName,'Sentinel-2_L2A_Scene_classification_map') then LandCover := euSent2SLC      //it is a 3 color scene and not land covers
       else if StrUtils.AnsiContainsText(fName,'LCMAP') then LandCover := euLCMAP;
    end;
    Result := (LandCover <> 0);
@@ -643,6 +685,7 @@ var
    end;
 
    function LandCoverName(LandCover : integer) : shortstring;
+   //this now covers a lot more than just Land Cover, and might better be considered grid needing a VAT
    begin
       case LandCover of
          euNLCD_Change  : Result := 'NLCD-change';
@@ -653,12 +696,9 @@ var
          euS2GLC  : Result := 'S2GLC';
          euWorldCover10m  : Result := 'WorldCover10m';
          euLandFire  : Result :=  'LANDFIRE'   ;
-         //euGLCS_LC100  : Result := 'CGLS-LC100';
          euCCAP  : Result :=  'CCAP';
          euESRI2020  : Result := 'ESRI2020';
          euLCMAP  : Result := 'LCMAP';
-         //euSent2SLC  : Result := 'Sent2SLC';
-         //euCOP  : Result :=     ;
          euGLC2000 : Result := 'GLC2000';
          euGLCS_LC100 : Result := 'GLCS-LC100';
          euSent2SLC : Result := 'L2A_scene_class';
@@ -673,6 +713,8 @@ var
             euTANEDM : Result := 'TAN-EDM';
             euCOPEDM : Result := 'COP-EDM';
             euCOPFLM : Result := 'COP-FLM';
+            euNeoEDM : Result := 'NEO-EDM';
+            euNeoFLM : Result := 'NEO-FLM';
       end;
    end;
 

@@ -284,7 +284,6 @@ var
                ElevMomentsDiffString = 'EDIFF_MIN,EDIFF_Max,EDIFF_Mean,EDIFF_STD,EDIFF_SKEW,EDIFF_KURT,EDIFF_MED,EDIFF_N';
             {$EndIf}
 
-            //TileStatsString = 'AREA,DEMIX_TILE,LAT,LONG,GRID_FULL,AVG_ELEV,AVG_SLOPE,AVG_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC';
             TileStatsString = 'AREA,DEMIX_TILE,LAT,LONG';
          begin
             TileStats := tStringList.Create;
@@ -1608,10 +1607,10 @@ var
                slc : integer;
             begin
                slc := SimplifiedLandCover(LandCoverGrid,Lat,Long,Value);
-               if slc = slcForest then inc(ForestMomentVar.Npts)
-               else if slc = slcBarren then inc(BarrenMomentVar.Npts)
-               else if slc = slcUrban then inc(UrbanMomentVar.Npts)
-               else if slc = slcWater then inc(WaterMomentVar.Npts);
+               if (slc = slcForest) then inc(ForestMomentVar.Npts)
+               else if (slc = slcBarren) then inc(BarrenMomentVar.Npts)
+               else if (slc = slcUrban) then inc(UrbanMomentVar.Npts)
+               else if (slc = slcWater) then inc(WaterMomentVar.Npts);
             end;
 
          procedure GetTileStatistics(RefDEM : integer);
@@ -1989,6 +1988,7 @@ begin
    if GISdb[DBonTable].MyData.FieldExists('EVAL_RANGE') and GISdb[DBonTable].MyData.FieldExists('BEST_EVAL') then begin
       if not AnswerIsYes('Redo') then exit;
    end;
+   SetColorForProcessing;
    GISdb[DBonTable].AddFieldToDataBase(ftFloat,'EVAL_RANGE',12,6);
    GISdb[DBonTable].AddFieldToDataBase(ftFloat,'BEST_EVAL',12,6);
    GISDb[DBonTable].ClearGISFilter;
@@ -2014,6 +2014,8 @@ begin
       GISDb[DBonTable].MyData.Next;
    end;
    GISDb[DBonTable].ShowStatus;
+   wmdem.SetPanelText(3,'');
+   SetColorForWaiting;
 end;
 
 

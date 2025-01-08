@@ -1,12 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
-
-
-{include file for demmapf.pas}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{include file for demmapf.pas            }
+{________________________________________}
 
 
 procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
@@ -47,8 +46,6 @@ begin
    RestoreBackupDefaults;
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
 end;
-
-
 
 
 const

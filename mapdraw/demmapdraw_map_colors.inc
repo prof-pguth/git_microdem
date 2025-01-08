@@ -247,8 +247,8 @@ begin
                   end;
                end
                else if (MapType = mtDEMaspect) or (MapMerge = mmAspect) then begin
-                  if (SlopeAspectRec.AspectDir < pred(MaxSmallInt)) then begin
-                     BMPMemory.SetPixelColor(i,j,AspColor[round(SlopeAspectRec.AspectDir)]);
+                  if (SlopeAspectRec.AspectDirTrue < pred(MaxSmallInt)) then begin
+                     BMPMemory.SetPixelColor(i,j,AspColor[round(SlopeAspectRec.AspectDirTrue)]);
                   end;
                end;
             end;
@@ -266,7 +266,7 @@ end;
 
 procedure TMapDraw.DrawSlopeMap(var Bitmap : tMyBitmap);
 var
-   BMPMemory :  tBMPMemory;
+   BMPMemory : tBMPMemory;
    {$IfDef NoParallelForMaps}
    {$Else}
       Limits : tGridLimitsArray;

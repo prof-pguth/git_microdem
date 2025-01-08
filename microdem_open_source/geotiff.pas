@@ -1047,15 +1047,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
                procedure NLCDOptions;
                begin
-                  {$IfDef ExNLCD}
-                  {$Else}
-                     {$IfDef RecordNLCD} WriteLineToDebugFile('Geotiff DEM with NLCD=' + LandCover); {$EndIf}
-                     WantDEM.DEMheader.ElevUnits := LandCover;
-                     if WantDEM.DEMheader.ElevUnits = euGLC2000 then begin
-                        WantDEM.DEMheader.DEMUsed := ArcSecDEM;
-                        TiffHeader.ModelType := 2;
-                     end;
-                  {$EndIf}
+                  {$IfDef RecordNLCD} WriteLineToDebugFile('Geotiff DEM with NLCD=' + LandCover); {$EndIf}
+                  WantDEM.DEMheader.ElevUnits := LandCover;
+                  if (WantDEM.DEMheader.ElevUnits = euGLC2000) then begin
+                     WantDEM.DEMheader.DEMUsed := ArcSecDEM;
+                     TiffHeader.ModelType := 2;
+                  end;
                end;
 
 
@@ -1192,11 +1189,7 @@ var
    zb : byte;
    z : float32;
 begin {tTIFFImage.CreateTiffDEM}
-   {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM) or Defined(RecordModelType)} WriteLineToDebugFile('tTIFFImage.CreateDEM in, modelType=' + IntToStr(TiffHeader.ModelType)); {$EndIf}
-
-   {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordGeotiffProjection)}
-      WriteLineToDebugFile('Create Geotiff DEM in');
-   {$EndIf}
+   {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM) or Defined(RecordModelType) or Defined(RecordDefineDatum) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('tTIFFImage.CreateDEM in, modelType=' + IntToStr(TiffHeader.ModelType)); {$EndIf}
    {$IfDef RecordInitializeDEM} WriteLineToDebugFile('ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
       if (TiffHeader.SamplesPerPixel > 1) then begin
          MessageToContinue('File has ' + IntToStr(TiffHeader.SamplesPerPixel) + ' bands and is not a DEM; open as an image');
@@ -1215,7 +1208,6 @@ begin {tTIFFImage.CreateTiffDEM}
          if ShowDEMReadingProgress then StartProgress('Read grid: ' + ExtractFileNameNoExt(TIFFFileName));
 
          {$If Defined(TrackZ)} WriteLineToDebugFile('TiffHeader.Factor=' + RealToString(TiffHeader.Factor,-12,-2)); {$EndIf}
-
 
          bs := TiffHeader.BytesPerSample * WantDEM.DEMheader.NumCol;
          if (TiffHeader.BitsPerSample = 64) then New(DoubleRow)

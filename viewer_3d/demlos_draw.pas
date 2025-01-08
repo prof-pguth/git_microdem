@@ -1401,12 +1401,12 @@ begin
 
                  if DEMglb[DEMonView].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAspectRec) then begin
                      if (SlopeAspectRec.SlopePercent > 0.0001) then begin
-                        GISdb[ProfileDB].MyData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDir,0.1);
+                        GISdb[ProfileDB].MyData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDirTrue,0.1);
                      end;
                      if abs(SlopeAspectRec.SlopePercent) < 0.1 then SlopeAspectRec.SlopePercent := 0;
                      GISdb[ProfileDB].MyData.CarefullySetFloat32('SLOPE_3D',SlopeAspectRec.SlopePercent,0.1);
-                     n1 := cosDeg(SlopeAspectRec.SlopeDegree) * sinDeg(SlopeAspectRec.AspectDir);
-                     n2 := cosDeg(SlopeAspectRec.SlopeDegree) * cosDeg(SlopeAspectRec.AspectDir);
+                     n1 := cosDeg(SlopeAspectRec.SlopeDegree) * sinDeg(SlopeAspectRec.AspectDirTrue);
+                     n2 := cosDeg(SlopeAspectRec.SlopeDegree) * cosDeg(SlopeAspectRec.AspectDirTrue);
                      n3 := -sinDeg(SlopeAspectRec.SlopeDegree);
                  end;
 

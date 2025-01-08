@@ -125,7 +125,7 @@ begin
    CheckEditString(Edit4.Text,LineSpacing);
    CheckEditString(Edit5.Text,LinesRight);
    CheckEditString(Edit6.Text,LinesLeft);
-   Heading2 := Petmath.FindCompassAngleInRangeFloat64(Heading+180);
+   Heading2 := Petmath.CompassAngleInRangeFloat64(Heading+180);
 
    VincentyPointAtDistanceBearing(Lat,Long,AlongTrack,Heading,Lat1,Long1);
    VincentyPointAtDistanceBearing(Lat,Long,BackTrack,Heading + 180,Lat2,Long2);
