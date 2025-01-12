@@ -705,10 +705,10 @@ var
          if (SlpAsp.SlopePercent <= MDDef.BuildingMaxSlope) then begin
            z := SlpAsp.z;
            if (RadioGroup2.ItemIndex = 0) then begin
-               Limits.XGridLow := Col-dx;
-               Limits.XGridHigh := Col + dx;
-               Limits.YGridLow := Row - dy;
-               Limits.YGridHigh := Row + dy;
+              Limits.XGridLow := Col-dx;
+              Limits.XGridHigh := Col + dx;
+              Limits.YGridLow := Row - dy;
+              Limits.YGridHigh := Row + dy;
               DEMGlb[MapOwner.MapDraw.DEMonMap].BoxAreaExtremeElevations(Limits,TheMinElev,TheMaxElev,avgz);
               BuildingHeight := z - TheMinElev;
               Result := (BuildingHeight > MDDef.BuildingMinHeight);
@@ -719,14 +719,9 @@ var
                 if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(x,Row,SlpAsp) then begin
                    zb[1] := z - SlpAsp.z;
                    s1 := SlpAsp.SlopePercent;
-                 //if DEMGlb[MapOwner.MapDraw.DEMonMap].GetElevMeters(x,Row,zb[1]) then begin
-                    //s1 := DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(x,Row);
-
-                    //zb[1] := z - zb[1];
-                    if (zb[1] > MDDef.BuildingMinHeight) then begin
+                   if (zb[1] > MDDef.BuildingMinHeight) then begin
                        Rad[1] := (x - Col) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageXSpace;
                        if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(pred(x),Row,SlpAsp) then begin
-                          //s2 := DEMGlb[MapOwner.MapDraw.DEMonMap].SlopePerCent(pred(x),Row);
                           if (SlpAsp.SlopePercent < MDDef.MinRoofEdgeSlope) then exit;
                           goto Found1;
                        end

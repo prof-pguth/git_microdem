@@ -1,11 +1,13 @@
 unit demtrendopt;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -114,9 +116,6 @@ uses
    DEMDataBase,DEM_indexes,
    DEMCoord,BaseMap,DEMStat,
    Nevadia_Main, computations;
-
-
-
 
 
 procedure TTrendPick.OKBtnClick(Sender: TObject);
@@ -360,24 +359,8 @@ var
          if (CurrentOrderTrendSurface > 7) then writeln(ResultsFile,'          + 8th order terms');
          for i := 1 to IORD2 do begin
             write(ResultsFile,B[i]:25:12,'   ',B[i]:15,'    =C',i);
-            case i of
-               1 : writeln(ResultsFile);
-               2 : writeln(ResultsFile,'*x');
-               3 : writeln(ResultsFile,'*y');
-               4 : writeln(ResultsFile,'*x^2');
-               5 : writeln(ResultsFile,'*x*y');
-               6 : writeln(ResultsFile,'*y^2');
-               7 : writeln(ResultsFile,'*x^3');
-               8 : writeln(ResultsFile,'*x^2*y');
-               9 : writeln(ResultsFile,'*x*y^2');
-               10 : writeln(ResultsFile,'*y^3');
-               11 : writeln(ResultsFile,'*x^4');
-               12 : writeln(ResultsFile,'*x^3*y');
-               13 : writeln(ResultsFile,'*x^2*y^2');
-               14 : writeln(ResultsFile,'*x*y^3');
-               15 : writeln(ResultsFile,'*y^4');
-               else writeln(ResultsFile);
-            end;
+            if (i = 1) or (i > MaxCoefs) then writeln(ResultsFile)
+            else writeln(ResultsFile,'*' +  TrendSurMultiples[i]);
          end;
          writeln(ResultsFile);
          writeln(ResultsFile);
@@ -409,9 +392,7 @@ var
 
 begin {procedure tTrendSurf.ComputeTrendSurface}
    {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('ComputeTrendSurfaceFromDEM in'); {$EndIf}
-
    SkipMenuUpdating := true;
-
    if (CurDEM <> 0) then begin
       DEMGlb[CurDEM].ClipDEMGridInteger(GridLimits.XGridLow,GridLimits.YGridLow);
       DEMGlb[CurDEM].ClipDEMGridInteger(GridLimits.XGridHigh,GridLimits.YGridHigh);
@@ -494,7 +475,7 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
    end;
 
    {SOLVE SLE}
-   SLE(A^,B,IORD2,1.0E-08);
+   SolveSLE(A^,B,IORD2,1.0E-08);
 
    {Initialize ERROR MEASURES }
    SY := 0.0;

@@ -1,11 +1,12 @@
 ﻿unit demdef_routines;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+
 
 
 {$I nevadia_defines.inc}
@@ -1508,6 +1509,9 @@ var
             AParameter('Geomorph','TrendHistDev',TrendHistDev,true);
             AParameter('Geomorph','TrendText',TrendText,true);
             AParameter('Geomorph','ValleyRidgeThreshold',ValleyRidgeThreshold,7);
+
+            AParameter('Geomorph','SlopeLSQorder',SlopeLSQorder,2);
+            AParameter('Geomorph','SlopeLSQradius',SlopeLSQradius,1);
 
             AParameter('Geomorph','RoughnessBox',RoughnessBox,5);
 
@@ -3412,12 +3416,6 @@ var
          AParameter('MapDrawing','DefSlopeMap',DefSlopeMap,mtSlopeTrafficCats);
          AParameter('MapDrawing','DefCurveMap',DefCurveMap,mtCurvature);
 
-(*
-         //AParameter('MapDrawing','DefaultMap',DefaultMap,mtDEMReflectance);
-         if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','DefaultMap',ord(DefDEMMap));
-         if (IniWhat = iniRead) then DefDEMMap := tMapType(IniFile.ReadInteger('MapDraw','DefaultMap',ord(DefDEMMap)));
-         if (iniWhat = iniInit) then DefDEMMap := mtIHSReflect;
-*)
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','DefaultRefMap',ord(DefRefMap));
          if (IniWhat = iniRead) then DefRefMap := tMapType(IniFile.ReadInteger('MapDraw','DefRefMap',ord(mtIHSReflect)));
          if (iniWhat = iniInit) then DefRefMap := mtIHSReflect;
@@ -5074,10 +5072,11 @@ end;
 function SlopeMethodName(Method : byte) : shortstring;
 begin
    case Method of
-      smZevenbergenThorne      : SlopeMethodName := '4 neighbors (Zevenbergen and Thorne)';
-      smHorn  : SlopeMethodName := '8 neighbors (weight) (Horn)';
-      smEvansYoung  : SlopeMethodName := '8 neighbors (even) (Evans)';
-      smShary  : SlopeMethodName := '8 neighbors (Shary)';
+      smZevenbergenThorne      : SlopeMethodName := 'Zevenbergen_and_Thorne';
+      smHorn  : SlopeMethodName := 'Horn';
+      smEvansYoung  : SlopeMethodName := 'Evans-Young';
+      smShary  : SlopeMethodName := 'Shary';
+      smLSQ  : SlopeMethodName := 'LSQ_order_'+IntToStr(MDDef.SlopeLSQorder) +'_window_' + FilterSizeStr(succ(2*MDDef.SlopeLSQradius));
       {$IfDef IncludeOldSlopeAlgoritms}
          smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
          smONeillAndMark      : SlopeMethodName := '3 neighbors';
@@ -5099,6 +5098,7 @@ begin
       smHorn  : Result := 'Horn';  //'N8S';
       smEvansYoung  : Result := 'Evans-Young';  //'N8E';
       smShary : Result := 'Shary';
+      smLSQ  : Result := 'LSQ';
       {$IfDef IncludeOldSlopeAlgoritms}
          smSteepestNeighbor   : Result := 'SAN';
          smONeillAndMark      : Result := 'N3';

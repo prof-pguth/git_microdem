@@ -1,11 +1,11 @@
 unit dem_manager;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -315,7 +315,7 @@ begin
    ShowHourglassCursor;
    Results := tStringList.Create;
    Results.Add('DEM,PIXEL_IS,NOM_CORNER,HORIZ_DATM,VERT_DATUM,LAT_CENT,LONG_CENT,MIN_Z,MAX_Z,NW_CornerX,NW_CornerY,SW_POINTX,SW_POINTY,SW_CornerX,SW_CornerY,' +
-      'DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL,VALID_PTS,LAT_LOW,LONG_LOW,LAT_HIGH,LONG_HIGH');
+      'DX,DY,NUM_COL,NUM_ROW,AVG_X_M,AVG_Y_M,AVG_SP_M,DIAGONAL,VALID_PTS,LAT_LOW,LONG_LOW,LAT_HI,LONG_HI');
    for i := 1 to MaxDEMDataSets do if ValidDEM(i) then begin
       if (DEMGlb[i].DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
       Results.Add(DEMGlb[i].AreaName + ',' + PixelIsString(DEMGlb[i].DEMheader.RasterPixelIsGeoKey1025) + ',' + DEMGlb[i].GridCornerModel + ',' +

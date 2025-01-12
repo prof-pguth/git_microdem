@@ -98,9 +98,9 @@ procedure SortStringListNumerically(var SL : tStringList);
 { SOLUTION OF N SIMULTANEOUS EQUATIONS. A IS N X N , B IS COLUMN VECTOR OF N ELEMENTS.
   A CONVERTED TO IDENTITY MATRIX. B CONTAINS SOLUTION. }
 
-procedure SLE(var A : tTrendMatrix; var B : tTrendVector; N : integer;  Zero : float64);
-procedure Jacobi(var a : tTrendMatrix; n : integer; var d : tTrendVector; var v : tTrendMatrix; var nrot : integer);
-procedure Eigsrt(var d : tTrendVector; VAR v : tTrendMatrix; n: integer);
+procedure SolveSLE(var A : tTrendMatrix; var B : tTrendVector; N : integer;  Zero : float64);  {$IfDef ExInlineMatrix} {$Else} inline; {$EndIf}
+procedure Jacobi(var a : tTrendMatrix; n : integer; var d : tTrendVector; var v : tTrendMatrix; var nrot : integer);  {$IfDef ExInlineMatrix} {$Else} inline; {$EndIf}
+procedure Eigsrt(var d : tTrendVector; VAR v : tTrendMatrix; n: integer);  {$IfDef ExInlineMatrix} {$Else} inline; {$EndIf}
 
 procedure InterpolateProfile(NumPairs : integer; var y,z : Array of float64; NumNewPairs : integer; var yn : Array of float64; var zn : Array of float64);
 {call with yn set for the new distances along the profile, and return zn with the new elevations}
@@ -1247,22 +1247,22 @@ begin
 end;
 
 
-{ SOLUTION OF N SIMULTANEOUS EQUATIONS.  A IS N X N , B IS COLUMN VECTOR OF N ELEMENTS. A CONVERTED TO IDENTITY MATRIX. B CONTAINS SOLUTION. }
-
-    procedure SLE(var A : tTrendMatrix; var B : tTrendVector; N : integer;  Zero : float64);
+    procedure SolveSLE(var A : tTrendMatrix; var B : tTrendVector; N : integer;  Zero : float64);
+    // SOLUTION OF N SIMULTANEOUS EQUATIONS.  A IS N X N , B IS COLUMN VECTOR OF N ELEMENTS.
+    // A CONVERTED TO IDENTITY MATRIX. B CONTAINS SOLUTION.
     var
        Divis,Ratio : float64;
        i,j,k : integer;
     begin
        for I := 1 to N do begin
           Divis := A[I,I];
-          IF ABS(Divis) < Zero then exit;
+          if abs(Divis) < Zero then exit;
           for J := 1 to N do A[I,J] := A[I,J] / Divis;
           B[I] := B[I] / Divis;
           for J := 1 to N do begin
-             IF I <> J then  begin
+             IF (I <> J) then begin
                 Ratio := A[J,I];
-                for K := 1 to N do A[J,K] := A[J,K]  - Ratio * A[I,K];
+                for K := 1 to N do A[J,K] := A[J,K] - Ratio * A[I,K];
                 B[J] := B[J] - Ratio*B[I];
              end {if};
           end {for j};

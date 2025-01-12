@@ -422,6 +422,13 @@ const
    LVISGabonCum  = 1;
    LVISGabonBoth = 2;
 
+const
+   MaxCoefs = 15;
+   TrendSurfacePointsRequired : array[1..4] of byte = (3,6,10,15);
+   TrendSurMultiples : array[1..MaxCoefs] of shortstring = ('','x','y','x^2','x*y','y^2','x^3','x^2*y','x*y^2','y^3','x^4','x^3*y','x^2*y^2','x*y^3','y^4');
+
+
+
 type
    tCanEditGIS = (egisNever,egisSometimes,egisAlways);
    tGISSymbolSize = (gisSizeDBfield,gisSizeConstant);
@@ -483,6 +490,7 @@ type
        SlopePercent,
        SlopeDegree,
        AspectDirTrue,AspectDirGrid : float32;
+       Coefs : array[1..MaxCoefs] of float32;  //for up to 4th order trend surface
        Dir : tCompassDirection;
    end;
 
@@ -2281,6 +2289,7 @@ type
        WaveHtValuesNeeded : int16;
        ElevHistBinSize,SlopeHistBinSize,
        ConvexCut,RoughnessCut,SlopeCut1,SlopeCut2,SlopeCut3 : float32;
+       SlopeLSQorder,SlopeLSQradius : byte;
        IwashPikeCats : byte;
        OpennessHt : byte;
        OpennessHowHigh : float32;

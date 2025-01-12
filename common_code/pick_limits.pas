@@ -1,11 +1,11 @@
 unit pick_limits;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -107,7 +107,7 @@ begin
     Label6.Left := 275 - Label6.Width;
     Label7.Caption := IntToStr(Succ(GridLimits.XGridHigh-GridLimits.XGridLow)) + ' cols x ' + IntToStr(Succ(GridLimits.YGridHigh - GridLimits.YGridLow)) + ' rows';
     EditChanges := true;
-
+    BaseMap.OutlineGridLimitsOnMap(GridLimits);
     {$IfDef RecordGetGridLimits} WriteLineToDebugFile('TpicklimitsForm.LabelLimits in,  NW corner: ' + Label5.Caption + 'SE corner: ' + Label6.Caption + '  ' + Label7.Caption); {$EndIf}
 end;
 
@@ -176,7 +176,7 @@ var
 begin
    CheckEditString(Edit2.Text,GridLimits.YGridLow);
    CheckEditString(Edit4.Text,GridLimits.XGridHigh);
-   TheDEM.DEMGridToLatLongDegree(Bottom,Right,Lat,Long);
+   TheDEM.DEMGridToLatLongDegree(GridLimits.XGridHigh,GridLimits.YGridHigh,Lat,Long);
    GetLatLn.GetLatLongDefault(BaseMap.MapDraw.PrimMapProj,'SE corner of map area',Lat,Long);
    TheDEM.LatLongDegreeToDEMGridInteger(Lat,Long,GridLimits.XGridHigh,GridLimits.YGridLow);
    Edit2.Text := IntToStr(Round(GridLimits.YGridLow));

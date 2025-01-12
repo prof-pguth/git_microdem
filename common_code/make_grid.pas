@@ -675,7 +675,7 @@ var
 
 
 begin
-   Result := DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,true,Radius);
+   Result := DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,false,true,Radius);
    if Result then begin
       with SlpAsp do begin
          if (MDDef.SlopeAlgorithm = smLSQ) then begin
@@ -784,7 +784,7 @@ begin
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
-         if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,true,1) then begin
+         if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,false,true,1) then begin
             DEMGlb[pxx].SetGridElevation(x,y,SlpAsp.dxx);
             DEMGlb[pxy].SetGridElevation(x,y,SlpAsp.dxy);
             DEMGlb[pyy].SetGridElevation(x,y,SlpAsp.dyy);

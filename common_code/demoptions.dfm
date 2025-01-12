@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet9
+    ActivePage = TabSheet20
     Align = alClient
     MultiLine = True
     TabOrder = 2

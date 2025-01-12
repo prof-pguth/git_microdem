@@ -147,7 +147,7 @@ object picklimitsForm: TpicklimitsForm
   end
   object BitBtn3: TBitBtn
     Left = 264
-    Top = 231
+    Top = 235
     Width = 75
     Height = 25
     Caption = 'Interior DEM'

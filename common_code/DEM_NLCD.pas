@@ -82,7 +82,7 @@ function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Va
 procedure SimplifyLandCoverGrid(DEM : integer);
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 procedure MarkWaterMissingInThisDEM(DEM : integer);
-procedure LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32);
+function LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32) : boolean;
 
 
 implementation
@@ -151,7 +151,7 @@ end;
 
 
 
-procedure LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32);
+function LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32) : boolean;
 //hard coded for a particular land cover data set, LC100 from Copernicus
 var
    slc,Grid,x,y,
@@ -159,32 +159,38 @@ var
    GridLimits : tGridLimits;
    z : float32;
 begin
-
    Grid := LoadLC100LandCover('',bb,false);
-   SimplifyLandCoverGrid(Grid);
-   GridLimits := DEMGlb[Grid].sfBoundBox2tGridLimits(bb);
-   f := 0;
-   b := 0;
-   u := 0;
-   w := 0;
-   Total := 0;
-   for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-      for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-         if DEMGlb[Grid].GetElevMetersOnGrid(x,y,z) then begin
-            slc := round(z);
-            if slc = slcForest then inc(f)
-            else if slc = slcBarren then inc(b)
-            else if slc = slcUrban then inc(u)
-            else if slc = slcWater then inc(w);
-            inc(Total);
+   Result := ValidDEM(Grid);
+   if Result then begin
+      SimplifyLandCoverGrid(Grid);
+      GridLimits := DEMGlb[Grid].sfBoundBox2tGridLimits(bb);
+      f := 0;
+      b := 0;
+      u := 0;
+      w := 0;
+      Total := 0;
+      for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+         for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+            if DEMGlb[Grid].GetElevMetersOnGrid(x,y,z) then begin
+               slc := round(z);
+               if slc = slcForest then inc(f)
+               else if slc = slcBarren then inc(b)
+               else if slc = slcUrban then inc(u)
+               else if slc = slcWater then inc(w);
+               inc(Total);
+            end;
          end;
       end;
-   end;
-   if Total > 0 then begin
-      Forest := 100 * f / Total;
-      Barren := 100 * b / Total;
-      Urban  := 100 * u / Total;
-      Water  := 100 * w / Total;
+      if (Total = 0) then begin
+         Result := false;
+      end
+      else begin
+         Forest := 100 * f / Total;
+         Barren := 100 * b / Total;
+         Urban  := 100 * u / Total;
+         Water  := 100 * w / Total;
+      end;
+      CloseSingleDEM(Grid);
    end;
 end;
 
@@ -652,38 +658,6 @@ procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : integer; var Categ
 var
    CatTable : tMyData;
 
-   procedure SetCategories(var Categories : tNLCDCats; LandCoverName : shortstring);
-   var
-      i : integer;
-   begin
-      for i := 0 to MaxLandCoverCategories do begin
-         Categories[i].ShortName := '';
-         Categories[i].LongName  := '';
-         Categories[i].Color     := claWhite;
-         Categories[i].UseCat    := false;
-         Categories[i].UseStat   := false;
-      end;
-      CatTable.ApplyFilter( 'SERIES = ' + QuotedStr(LandCoverName));
-      if (CatTable.RecordCount > 0) then begin
-         if AskLimit then VerifyRecordsToUse(CatTable,'LONG_NAME','Fields to mask');
-         {$IfDef RecordNLCDLegend} WriteLineToDebugFile('CatTable.Filter: ' + CatTable.Filter); {$EndIf}
-         repeat
-            i := CatTable.GetFieldByNameAsInteger('CATEGORY');
-            Categories[i].ShortName := CatTable.GetFieldByNameAsString('SHORT_NAME');
-            Categories[i].LongName  := CatTable.GetFieldByNameAsString('LONG_NAME');
-            Categories[i].Color     := CatTable.PlatformColorFromTable;
-            Categories[i].UseCat    := CatTable.GetFieldByNameAsString('USE') = 'Y';
-            Categories[i].UseStat   := CatTable.GetFieldByNameAsString('STAT') = 'Y';
-            if CatTable.GetFieldByNameAsString('HEIGHT') = '' then Categories[i].Height := 0 else Categories[i].Height := CatTable.GetFieldByNameAsFloat('HEIGHT');
-            {$IfDef RecordNLCDLegend} WriteLineToDebugFile(IntToStr(i) + '  ' + LongName +  '  ' + Petmar.ColorString(Color)); {$EndIf}
-            CatTable.Next;
-         until CatTable.eof;
-      end
-      else begin
-          MessageToContinue('Land cover ' + IntToStr(LandCover) + ' missing in ' + LandCoverFName);
-      end;
-   end;
-
    function LandCoverName(LandCover : integer) : shortstring;
    //this now covers a lot more than just Land Cover, and might better be considered grid needing a VAT
    begin
@@ -715,6 +689,42 @@ var
             euCOPFLM : Result := 'COP-FLM';
             euNeoEDM : Result := 'NEO-EDM';
             euNeoFLM : Result := 'NEO-FLM';
+      end;
+   end;
+
+
+   procedure SetCategories(var Categories : tNLCDCats; LandCoverName : shortstring);
+   var
+      i : integer;
+      Tstr : shortstring;
+   begin
+      for i := 0 to MaxLandCoverCategories do begin
+         Categories[i].ShortName := '';
+         Categories[i].LongName  := '';
+         Categories[i].Color     := claWhite;
+         Categories[i].UseCat    := false;
+         Categories[i].UseStat   := false;
+      end;
+      CatTable.ApplyFilter('SERIES = ' + QuotedStr(LandCoverName));
+      if (CatTable.RecordCount > 0) then begin
+         if AskLimit then VerifyRecordsToUse(CatTable,'LONG_NAME','Fields to mask');
+         {$IfDef RecordNLCDLegend} WriteLineToDebugFile('CatTable.Filter: ' + CatTable.Filter); {$EndIf}
+         repeat
+            i := CatTable.GetFieldByNameAsInteger('CATEGORY');
+            Categories[i].ShortName := CatTable.GetFieldByNameAsString('SHORT_NAME');
+            Categories[i].LongName  := CatTable.GetFieldByNameAsString('LONG_NAME');
+            Categories[i].Color     := CatTable.PlatformColorFromTable;
+            Categories[i].UseCat    := CatTable.GetFieldByNameAsString('USE') = 'Y';
+            Categories[i].UseStat   := CatTable.GetFieldByNameAsString('STAT') = 'Y';
+            if CatTable.GetFieldByNameAsString('HEIGHT') = '' then Categories[i].Height := 0 else Categories[i].Height := CatTable.GetFieldByNameAsFloat('HEIGHT');
+            {$IfDef RecordNLCDLegend} WriteLineToDebugFile(IntToStr(i) + '  ' + LongName +  '  ' + Petmar.ColorString(Color)); {$EndIf}
+            CatTable.Next;
+         until CatTable.eof;
+      end
+      else begin
+          TStr := 'Land cover code=' + IntToStr(LandCover) + ' missing in ' + LandCoverFName + ' ' + LandCoverName;
+          MessageToContinue(TStr);
+          {$IfDef RecordProblems} WriteLineToDebugFile(TStr); {$EndIf}
       end;
    end;
 
