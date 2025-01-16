@@ -465,6 +465,7 @@ type
          {$IfDef ExDEMReports}
          {$Else}
             procedure SlopeMethodsReport(xp,yp : integer; Title : shortstring = '');
+            procedure TrendSurfaceEquations(xp,yp : integer; Title : shortstring = '');
             procedure SlopeMethodsReportFromLatLong(lat,Long : float64; Title : shortstring = '');
             procedure PointParameters(xgrid,ygrid : float64);
          {$EndIf}
@@ -499,8 +500,10 @@ type
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
-         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
+         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
+         function QuickEvansSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
+
          function SlopePercent(XGrid,YGrid : integer; var Slope : float64; Radius : integer = 0) : boolean; inline;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
          procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false);
@@ -3257,10 +3260,11 @@ var
    i : integer;
    SlopeAsp : tSlopeAspectRec;
 begin
-   Result := GetSlopeAndAspect(x,y,SlopeAsp);
+   Result := QuickEvansSlopeAndAspect(x,y,SlopeAsp);
    z := 0;
    if Result then begin
       try
+         SlopeAsp.AspectDirTrue := SlopeAsp.AspectDirTrue + 180;    //want the uphill direction
          SlopeDeg := SlopeAsp.SlopeDegree * MDDef.RefVertExag;
          Sum := 0;
          for I := 1 to MDdef.UseRefDirs do begin

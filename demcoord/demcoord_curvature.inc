@@ -83,7 +83,6 @@ begin
 end;
 
 
-
 function tDEMDataSet.GetCurvature(Col,Row : integer; var PlanCurvature,SlopeCurvature : float64) : boolean;
 const
    Tolerance = 0.000000000001;

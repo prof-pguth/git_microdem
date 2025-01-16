@@ -58,10 +58,8 @@ begin
       AspY := AspY + SinDeg(SlopeAspectRec.AspectDirTrue);
       AspInt := round(SlopeAspectRec.AspectDirTrue);
       AspInt := CompassAngleInRangeInteger(AspInt);
-      //if (AspInt >= 0) and (AspInt < 360) then begin
-         inc(AspectFreqValsTrue[AspInt]);
-         inc(Npts);
-      //end;
+      inc(AspectFreqValsTrue[AspInt]);
+      inc(Npts);
    end
    else begin
        //MessageToContinue('SlopeAspectRec.AspectDir wrong, ' + RealToString(SlopeAspectRec.AspectDir,-12,-2));
@@ -101,8 +99,6 @@ begin
    Report := '';
    VectorAverage;
    ULtitle := 'Vector Avg: ' + RealToString(AvgAspectMag,-8,2) + ' ' + RealToString(AvgAspectDir,-8,1) + '°';
-   //DEMGlb[DEM].AreaName + ' ' + Report + ' ' + RealToString(QueensAspect,-8,1);
-   //ULtitle := DEMGlb[DEM].AreaName + ' ' + Report;
    Result.DrawAspectRose(AspectFreqValsTrue,ULtitle,BaseLegend);
 end;
 

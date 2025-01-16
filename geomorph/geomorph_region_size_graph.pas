@@ -84,8 +84,6 @@ var
       function PerformPointComputations(Col,Row : integer) : boolean;
       var
          Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf,z : float32;
-         //PlanCurvature,SlopeCurvature,
-         //MaxSlp,crossc,MaxCurve,MinCurve,
          Upward,Downward,Relief1 : float64;
          SlopeAspectRec : tSlopeAspectRec;
       begin

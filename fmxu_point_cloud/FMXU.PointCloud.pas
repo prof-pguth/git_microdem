@@ -13,7 +13,6 @@
 {    Support for Point Cloud rendering                                 }
 {                                                                      }
 {**********************************************************************}
-
 unit FMXU.PointCloud;
 
 {$i fmxu.inc}
@@ -34,9 +33,9 @@ type
          FPoints : TVertexBuffer;
          FIndices : TIndexBuffer;
          {$ifdef use_gpu_buffers}
-            FQuads : TGPUVertexBuffer;
+         FQuads : TGPUVertexBuffer;
          {$else}
-            FQuads : TVertexBuffer;
+         FQuads : TVertexBuffer;
          {$endif}
          FGPUPoints : TGPUVertexBuffer;
          FGPUIndices : TGPUIndexBuffer;

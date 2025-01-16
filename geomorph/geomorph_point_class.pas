@@ -1,12 +1,11 @@
 unit geomorph_point_class;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -249,7 +248,7 @@ begin
       if RadioGroup6.ItemIndex = 0 then RoughGrid := CreateRoughnessMap2(CurDEM,false,true)
       else RoughGrid := CreateRoughnessMap(CurDEM,false);
    end;
-   if not ValidDEM(ConvexGrid) then ConvexGrid := CreateProfileConvexityMap(CurDEM,false);
+   if not ValidDEM(ConvexGrid) then ConvexGrid := CreateProfileCurvature(false,CurDEM);
    if not ValidDEM(SlopeGrid) then SlopeGrid := CreateSlopeMap(CurDEM,false);
 
    {$IfDef RecordClosePointClass} WriteLineToDebugFile(''); {$EndIf}

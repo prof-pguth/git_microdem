@@ -2,13 +2,12 @@
 
 unit DEMStat;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -3431,11 +3430,11 @@ begin
       else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
       Result.OpenPointFile(rfile,Result.Symbol);
       Incr := 1;
+      while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
       NPts := 0;
       Prog := 0;
       {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram start scatter, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
       StartProgress('Scatter plot');
-      while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
       Col := GridLimits.XGridLow;
       while (Col <= GridLimits.XGridHigh) do begin
          if (Prog mod 10 = 0) then begin
@@ -3460,10 +3459,10 @@ begin
 
       EndProgress;
       if (NPts > 0) then begin
-         if (not Result.Visible) then begin
+         //if (not Result.Visible) then begin
             Result.AutoScaleAndRedrawDiagram;
             Result.AddCorrelationToCorner;
-         end;
+         //end;
       end
       else begin
          Result.Close;

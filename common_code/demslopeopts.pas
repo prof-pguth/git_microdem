@@ -47,6 +47,7 @@ type
     RadioGroup4: TRadioGroup;
     BitBtn1: TBitBtn;
     ClipboardSpeedButton: TSpeedButton;
+    BitBtn2: TBitBtn;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -60,6 +61,7 @@ type
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup4Click(Sender: TObject);
     procedure ClipboardSpeedButtonClick(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -85,6 +87,7 @@ uses
    {$EndIf}
    DEMCoord,Petmar_types,
    DEMMapDraw,
+   Make_Grid,
    Grayscale_shift,
    PETImage;
 
@@ -134,6 +137,15 @@ begin
 end;
 
 
+
+procedure TSlopeOptForm.BitBtn2Click(Sender: TObject);
+var
+   DEM : integer;
+begin
+   DEM := CreateSlopeMapPercent(false,MapOwner.MapDraw.DEMonMap);
+   DEMglb[DEM].AreaName := DEMglb[MapOwner.MapDraw.DEMonMap].AreaName + '_' + SlopeMethodName(MDDef.SlopeAlgorithm);
+   CreateDEMSelectionMap(DEM,true,true,MDDef.DefSlopeMap);
+end;
 
 procedure TSlopeOptForm.Button11Click(Sender: TObject);
 begin

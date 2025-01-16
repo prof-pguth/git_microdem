@@ -697,9 +697,9 @@ end;
 
 // DoCopyToBitmap
 //
-procedure BufferMappedCallback(status: TWGPUBufferMapAsyncStatus; userdata: Pointer); cdecl;
+procedure BufferMappedCallback(status: TWGPUMapAsyncStatus; userdata: Pointer); cdecl;
 begin
-   PWGPUBufferMapAsyncStatus(userdata)^ := status;
+   PWGPUMapAsyncStatus(userdata)^ := status;
 end;
 procedure TFMXUContext3D_WebGPU.DoCopyToBitmap(const aDest : FMX.Graphics.TBitmap; const aRect : TRect);
 begin

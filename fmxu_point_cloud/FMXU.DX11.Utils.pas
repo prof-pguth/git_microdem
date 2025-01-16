@@ -22,7 +22,7 @@ interface
 uses
    Winapi.Windows, Winapi.D3D11, Winapi.D3DCommon,
    Winapi.DXGI, Winapi.DxgiFormat, WinApi.DxgiType,
-   System.Math, System.SysUtils, System.UITypes, System.Classes,
+   System.Math, System.SysUtils, System.UITypes, System.Classes, System.SyncObjs,
    FMX.Types3D, FMX.Types,
    FMXU.Context;
 
@@ -34,6 +34,7 @@ type
       protected
          FDevice : ID3D11Device;
          FDeviceContext : ID3D11DeviceContext;
+         FDeviceContextMapLock : TCriticalSection;
          FDXGIFactory : IDXGIFactory1;
          FDriverType : D3D_DRIVER_TYPE;
          FFeatureLevel : D3D_FEATURE_LEVEL;
@@ -329,6 +330,8 @@ begin
       TPixelFormat.BGR_565 :  Result := DXGI_FORMAT_B5G6R5_UNORM;
       TPixelFormat.BGR5_A1 :  Result := DXGI_FORMAT_B5G5R5A1_UNORM;
       TPixelFormat.LA :       Result := DXGI_FORMAT_R8G8_UNORM;
+      TPixelFormat.L :        Result := DXGI_FORMAT_R8_UNORM;
+      TPixelFormat.L16 :      Result := DXGI_FORMAT_R16_UNORM;
       TPixelFormat.R16F :     Result := DXGI_FORMAT_R16_FLOAT;
       TPixelFormat.RG16F :    Result := DXGI_FORMAT_R16G16_FLOAT;
       TPixelFormat.RGBA16F :  Result := DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -423,12 +426,15 @@ begin
       SetExceptionMask(fpuMask);
       FreeLibrary(hD3D11);
    end;
+
+   FDeviceContextMapLock := TCriticalSection.Create;
 end;
 
 // Destroy
 //
 destructor TDX11Device.Destroy;
 begin
+   FreeAndNil(FDeviceContextMapLock);
    inherited;
 end;
 
@@ -522,8 +528,14 @@ end;
 //
 function TDX11Device.Map(const res : ID3D11Resource; mapType: D3D11_MAP) : TD3D11_MAPPED_SUBRESOURCE;
 begin
-   var hr := DeviceContext.Map(res, 0, mapType, 0, Result);
-   RaiseIfFailed(hr, 'MapBuffer');
+   FDeviceContextMapLock.Enter;
+   try
+      var hr := DeviceContext.Map(res, 0, mapType, 0, Result);
+      RaiseIfFailed(hr, 'MapBuffer');
+   except
+      FDeviceContextMapLock.Leave;
+      raise;
+   end;
 end;
 
 // Unmap
@@ -531,6 +543,7 @@ end;
 procedure TDX11Device.Unmap(const res : ID3D11Resource);
 begin
    DeviceContext.Unmap(res, 0);
+   FDeviceContextMapLock.Leave;
 end;
 
 // CreateVertexShader

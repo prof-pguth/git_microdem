@@ -1,12 +1,11 @@
 unit Graphset;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -122,6 +121,8 @@ type
     procedure XMinEditChange(Sender: TObject);
     procedure Edit16Change(Sender: TObject);
     procedure Edit17Change(Sender: TObject);
+    procedure Edit7Change(Sender: TObject);
+    procedure Edit9Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -136,7 +137,7 @@ implementation
 {$R *.DFM}
 
 uses
-   Petmath,Petmar_types,Petmar_db,Petdbutils,DEMdefs;
+   Petmath,Petmar_types,Petmar_db,Petdbutils,DEMdefs,DEMstat;
 
 
 procedure TGraphSettingsForm.InitializeSettings;
@@ -248,7 +249,6 @@ begin
       XMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinHorizAxis,-18,-6);
       XMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxHorizAxis,-18,-6);
    end;
-
 end;
 
 procedure TGraphSettingsForm.CheckBox7Click(Sender: TObject);
@@ -324,9 +324,9 @@ begin
        CheckEditString(Edit5.Text,MinZ);
        CheckEditString(Edit6.Text,MaxZ);
 
-       CheckEditString(Edit7.Text,OwningGraph.GraphDraw.LeftMargin);
+       //CheckEditString(Edit7.Text,OwningGraph.GraphDraw.LeftMargin);
        CheckEditString(Edit8.Text,OwningGraph.GraphDraw.TopMargin);
-       CheckEditString(Edit9.Text,OwningGraph.GraphDraw.BottomMargin);
+       //CheckEditString(Edit9.Text,OwningGraph.GraphDraw.BottomMargin);
        CheckEditString(Edit11.Text,OwningGraph.GraphDraw.XWindowSize);
        CheckEditString(Edit12.Text,OwningGraph.GraphDraw.YWindowSize);
        {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting window, ' + IntToStr(XWindowSize) + 'x' + IntToStr(YWindowSize)); {$EndIf}
@@ -430,6 +430,10 @@ end;
 procedure TGraphSettingsForm.RedrawSpeedButton12Click(Sender: TObject);
 begin
    CheckSettings;
+   if OwningGraph.HistogramChanged and (OwningGraph.GraphDraw.HistogramDistributionFileList <> Nil) then begin
+      OwningGraph.HistogramChanged := false;
+      MultipleHistogramPrep(OwningGraph);
+   end;
    OwningGraph.RedrawDiagram11Click(Nil);
 end;
 
@@ -482,6 +486,16 @@ begin
 end;
 
 
+
+procedure TGraphSettingsForm.Edit7Change(Sender: TObject);
+begin
+   CheckEditString(Edit7.Text,OwningGraph.GraphDraw.LeftMargin);
+end;
+
+procedure TGraphSettingsForm.Edit9Change(Sender: TObject);
+begin
+   CheckEditString(Edit9.Text,OwningGraph.GraphDraw.BottomMargin);
+end;
 
 end.
 

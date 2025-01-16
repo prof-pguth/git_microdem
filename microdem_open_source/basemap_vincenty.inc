@@ -1,13 +1,12 @@
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{      include file for basemap          }
+{________________________________________}
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
-
-{ include file for basemap}
 
 
 procedure VincentyFullCalculateDistanceBearing(StartLat,StartLong,EndLat,EndLong : float64; EllipsoidConstants : tMapProjection;  var DistanceMeters,Bearing : float64);

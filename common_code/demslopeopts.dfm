@@ -5,7 +5,7 @@ object SlopeOptForm: TSlopeOptForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Slope Map Options'
-  ClientHeight = 295
+  ClientHeight = 330
   ClientWidth = 597
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -51,7 +51,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object RedrawSpeedButton12: TSpeedButton
     Left = 265
-    Top = 252
+    Top = 284
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -68,7 +68,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object ClipboardSpeedButton: TSpeedButton
     Left = 296
-    Top = 252
+    Top = 284
     Width = 25
     Height = 25
     Hint = 'Copy map to clipboard'
@@ -85,7 +85,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object OKBtn: TBitBtn
     Left = 8
-    Top = 252
+    Top = 284
     Width = 77
     Height = 27
     Caption = '&OK'
@@ -98,7 +98,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object CancelBtn: TBitBtn
     Left = 100
-    Top = 252
+    Top = 284
     Width = 77
     Height = 27
     Caption = '&Cancel'
@@ -111,7 +111,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object HelpBtn: TBitBtn
     Left = 183
-    Top = 252
+    Top = 284
     Width = 76
     Height = 27
     Caption = 'Help'
@@ -191,11 +191,11 @@ object SlopeOptForm: TSlopeOptForm
     Left = 384
     Top = 8
     Width = 201
-    Height = 273
-    ActivePage = TabSheet2
+    Height = 289
+    ActivePage = TabSheet1
     TabOrder = 9
     object TabSheet1: TTabSheet
-      Caption = 'Slope colors'
+      Caption = 'Slope '
       object RadioGroup1: TRadioGroup
         Left = 3
         Top = 16
@@ -216,21 +216,30 @@ object SlopeOptForm: TSlopeOptForm
       object BitBtn1: TBitBtn
         Left = 3
         Top = 203
-        Width = 89
+        Width = 126
         Height = 25
         Caption = 'Slope colors'
         TabOrder = 1
         OnClick = BitBtn1Click
       end
+      object BitBtn2: TBitBtn
+        Left = 3
+        Top = 233
+        Width = 126
+        Height = 25
+        Caption = 'Create slope grid'
+        TabOrder = 2
+        OnClick = BitBtn2Click
+      end
     end
     object TabSheet2: TTabSheet
-      Caption = 'Aspect colors'
+      Caption = 'Aspect'
       ImageIndex = 1
       object RadioGroup4: TRadioGroup
         Left = 8
         Top = 8
         Width = 169
-        Height = 225
+        Height = 201
         Caption = 'Aspect color options'
         Items.Strings = (
           '8 cardinal directions'

@@ -26,6 +26,10 @@ procedure MoveControl3DAroundTarget(
    anObject, aTarget : TControl3D;  // object to move and target around which to move
    pitchDelta, turnDelta : Single   // pitch & turn angles in degrees
    );
+procedure AdjustDistanceToTarget(
+   anObject, aTarget : TControl3D;  // object to move and target around which to move
+   distanceScale : Single   // by how much to scale the distance to the target
+   );
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -34,7 +38,6 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
-
 
 //  MoveControl3DAroundTarget
 //
@@ -73,6 +76,26 @@ begin
    if anObject.Parent is TControl3D then
       newPos := TControl3D(anObject.Parent).AbsoluteToLocal3D(newPos);
    anObject.Position.Vector := newPos;
+end;
+
+// AdjustDistanceToTarget
+//
+procedure AdjustDistanceToTarget(
+   anObject, aTarget : TControl3D;  // object to move and target around which to move
+   distanceScale : Single   // by how much to scale the distance to the target
+   );
+var
+  objectAbsolute, targetAbsolute : TPoint3D;
+  originalTarget2Object, scaledTarget2Object, newPos : TPoint3D;
+begin
+  objectAbsolute := TPoint3D(anObject.AbsolutePosition);
+  targetAbsolute := TPoint3D(aTarget.AbsolutePosition);
+  originalTarget2Object := objectAbsolute - targetAbsolute;
+  scaledTarget2Object := originalTarget2Object * distanceScale;
+  newPos := scaledTarget2Object + targetAbsolute;
+  if anObject.Parent is TControl3D then
+     newPos := TControl3D(anObject.Parent).AbsoluteToLocal3D(newPos);
+  anObject.Position.Vector := newPos;
 end;
 
 end.

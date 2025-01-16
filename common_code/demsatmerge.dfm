@@ -5,6 +5,7 @@ inherited IHSMergeForm: TIHSMergeForm
   ClientHeight = 291
   ClientWidth = 354
   Position = poDefaultSizeOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
   ExplicitWidth = 370

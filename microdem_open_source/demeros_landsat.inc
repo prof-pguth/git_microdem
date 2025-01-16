@@ -6,7 +6,7 @@
 { Copyright (c) 1986-2025 Peter L. Guth  }
 {________________________________________}
 {                                        }
-{ include file for demeros               }
+{      include file for demeros          }
 {________________________________________}
 
 

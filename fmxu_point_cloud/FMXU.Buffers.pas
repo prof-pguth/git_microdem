@@ -336,20 +336,25 @@ end;
 //
 procedure SetVertexBufferGridXY(buf : TVertexBuffer; resolutionX : Integer);
 var
+   yTemplate : TPoint3D;
+   bufYZ : Int64;
    ptr : PPoint3D;
    resolutionY, x, y : Integer;
-   ySingle, zZero : Single;
+   xSingle, floatOne : Single;
 begin
    resolutionY := buf.Length div resolutionX;
    Assert(resolutionX * resolutionY = buf.Length);
    ptr := buf.VerticesPtr[0];
-   zZero := 0;
+   yTemplate.Z := 0;
    for y := 0 to resolutionY-1 do begin
-      ySingle := y;
+      yTemplate.Y := y;
+      bufYZ := PInt64(@yTemplate.Y)^;
+      xSingle := 0;
+      floatOne := 1;
       for x := 0 to resolutionX-1 do begin
-         ptr.X := x;
-         ptr.Y := ySingle;
-         ptr.Z := zZero;
+         ptr.X := xSingle;
+         xSingle := xSingle + floatOne;
+         PInt64(@ptr.Y)^ := bufYZ;
          Inc(ptr);
       end;
    end;

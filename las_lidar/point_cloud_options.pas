@@ -4178,10 +4178,10 @@ procedure Tpt_cloud_opts_fm.BitBtn8Click(Sender: TObject);
 var
    Cloud : integer;
    OK,ViewMultiple,ExportDone,AlreadyLoaded,LASDestroy : Boolean;
-   {ColorsFName,}fName : array[1..5] of PathStr;
+   fName : array[1..5] of PathStr;
    i : Integer;
 
-      procedure ExportCloud(Cloud : integer; var fName{,ColorName} : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
+      procedure ExportCloud(Cloud : integer; var fName : PathStr; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
       var
          ColorName : PathStr;
       begin
@@ -4199,7 +4199,6 @@ begin
    LASdestroy := true;
    for i := 1 to MaxClouds do begin
       fName[i] := '';
-      //ColorsFName[i] := '';
    end;
    if (Sender = BitBtn20) or (Sender = BitBtn27) or (Sender = BitBtn8) then begin
       ExportDone := false;
@@ -4208,29 +4207,29 @@ begin
       for Cloud := 1 to MaxClouds do begin
          if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
            if (Sender = BitBtn8) then begin
-              ExportCloud(Cloud,fName[Cloud],{ColorsFName[Cloud],}LasFiles[Cloud].CloudName);
+              ExportCloud(Cloud,fName[Cloud],LasFiles[Cloud].CloudName);
            end
            else begin
                LASdestroy := false;
                if (Sender = BitBtn20) then begin
                   MDdef.ls.ColorCoding := lasccClass;
-                  ExportCloud(Cloud,fName[1],{ColorsFName[1],}'Lidar_classification');
+                  ExportCloud(Cloud,fName[1],'Lidar_classification');
                   MDdef.ls.ColorCoding := lasccIntensity;
-                  ExportCloud(Cloud,fName[2],{ColorsFName[2],}'Lidar_intensity');
+                  ExportCloud(Cloud,fName[2],'Lidar_intensity');
                   MDdef.ls.ColorCoding := lasccElevation;
-                  ExportCloud(Cloud,fName[3],{ColorsFName[3],}'Elevation');
+                  ExportCloud(Cloud,fName[3],'Elevation');
                   if LasFiles[Cloud].HasRGB then begin
                      MDdef.ls.ColorCoding := lasccRGB;
-                     ExportCloud(Cloud,fName[4],{ColorsFName[4],}'RGB');
+                     ExportCloud(Cloud,fName[4],'RGB');
                   end;
                end;
                if (Sender = BitBtn27) then begin
                   MDdef.ls.ColorCoding := lasccClass;
-                  ExportCloud(1,fName[1],{ColorsFName[1],}'Ground',lccGround);
-                  ExportCloud(1,fName[2],{ColorsFName[2],}'Vegetation',lccVeg);
-                  ExportCloud(1,fName[3],{ColorsFName[3],}'Buildings',lccBuilding);
-                  ExportCloud(1,fName[4],{ColorsFName[4],}'Water',lccWater);
-                  ExportCloud(1,fName[5],{ColorsFName[5],}'Unclassified',lccUnclass);
+                  ExportCloud(1,fName[1],'Ground',lccGround);
+                  ExportCloud(1,fName[2],'Vegetation',lccVeg);
+                  ExportCloud(1,fName[3],'Buildings',lccBuilding);
+                  ExportCloud(1,fName[4],'Water',lccWater);
+                  ExportCloud(1,fName[5],'Unclassified',lccUnclass);
                end;
                ExportDone := true;
            end;
@@ -4242,7 +4241,7 @@ begin
          for Cloud := 1 to MaxClouds do begin
             if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
                {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Export=' + IntToStr(Cloud) + '  ' + fName[Cloud]); {$EndIf}
-               ExportCloud(Cloud,fName[Cloud],{ColorsFName[Cloud],}LasFiles[Cloud].CloudName);
+               ExportCloud(Cloud,fName[Cloud],LasFiles[Cloud].CloudName);
                AlreadyLoaded := false;
             end;
          end;
@@ -4257,7 +4256,7 @@ begin
    {$If Defined(RecordPointCloudViewing) or Defined(OGLexport)} WriteLineToDebugFile('done Tpt_cloud_opts_fm.BitBtn8Click (OGL)'); {$EndIf}
    if OK then begin
       wmdem.SetPanelText(0,'Start FMX3dViewer');
-      FMX3dViewer(ViewMultiple,fName[1],fname[2],fname[3],fname[4],fName[5]{,'','','','',''});  //ColorsFName[1],ColorsFName[2],ColorsFName[3],ColorsFName[4],ColorsfName[5]);
+      FMX3dViewer(ViewMultiple,fName[1],fname[2],fname[3],fname[4],fName[5]);
    end
    else MessageToContinue('No points exported');
    wmdem.SetPanelText(0,'');

@@ -1,11 +1,11 @@
 unit view3d_main;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -191,6 +191,12 @@ type
     procedure Button4Click(Sender: TObject);
     procedure CheckBox6Change(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Layout3D1LayerMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure Layout3D1LayerMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Single);
+    procedure Layout3D1LayerMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
   private
      procedure MakeFramesForMovie(var MovieFiles : tStringList);
   public
@@ -482,6 +488,30 @@ begin
 end;
 
 
+procedure TView3DForm.Layout3D1LayerMouseDown(Sender: TObject;  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+   //Down := PointF(X, Y);
+   //MouseIsDown := true;
+end;
+
+procedure TView3DForm.Layout3D1LayerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
+begin
+   (*
+   if MouseIsDown then begin
+      Layout3D1.RotationAngle.X := Layout3D1.RotationAngle.X - ((Y - Down.Y) * 0.1);      //was 0.3
+      Layout3D1.RotationAngle.Y := Layout3D1.RotationAngle.Y + ((X - Down.X) * 0.1);
+      Down := PointF(X, Y);
+   end;
+   *)
+end;
+
+procedure TView3DForm.Layout3D1LayerMouseUp(Sender: TObject;  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+   //Down := PointF(X, Y);
+   //MouseIsDown := false;
+
+end;
+
 procedure TView3DForm.CheckBox6Change(Sender: TObject);
 begin
    if ViewOnlyOneLayerAtTime then begin
@@ -572,7 +602,6 @@ begin
    Result.Button3.Visible := false;
    Result.ExtraPoints := ExtraPoints;
    Result.ViewOnlyOneLayerAtTime := true;
-
    Result.ScaleViewToMapExtent(MapDraw);
    Result.AddMap(MapDraw);
    {$IfDef Record3d} WriteLineToDebugFile('MapTo3DView out'); {$EndIf}
@@ -1346,12 +1375,14 @@ procedure TView3DForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift
 begin
    Down := PointF(X, Y);
    MouseIsDown := true;
+   MouseCapture;
 end;
 
 procedure TView3DForm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
-   Down := PointF(X, Y);
+   //Down := PointF(X, Y);
    MouseIsDown := false;
+   ReleaseCapture;
 end;
 
 

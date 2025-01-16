@@ -181,7 +181,8 @@ begin
    end;
 
    LegBMP := Nil;
-   FinishBigMap(BigBitmap,LegBMP);
+   fName := NextFileNumber(MDtempdir,'cluster_characteristics_','.png');
+   FinishBigMap(BigBitmap,LegBMP,fName);
    GISdb[DBonTable].ApplyGISFilter(OverallBaseFilter);
 end;
 
@@ -445,9 +446,17 @@ end;
             DEM : shortstring;
             j,k,n,Cluster : integer;
             rfile : file;
+            fName : PathStr;
          begin
-            CritList := tStringList.Create;
-            CritList.LoadFromFile(DEMIXSettingsDir + 'sorted_fuv_criteria.txt');
+            fName := DEMIXSettingsDir + 'sorted_fuv_criteria.txt';
+            if FileExists(fName) then begin
+               CritList := tStringList.Create;
+               CritList.LoadFromFile(fName);
+            end
+            else begin
+               MessageToContinue('File missing: ' + fName);
+               exit;
+            end;
             for j := pred(CritList.Count) downto 0 do begin
                if not GISdb[DBonTable].MyData.FieldExists(CritList.Strings[j]) then CritList.Delete(j);
             end;

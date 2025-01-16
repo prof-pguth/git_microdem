@@ -86,7 +86,7 @@ function AspectDifferenceMap(WhichDEM,RegionRadius : integer; GridLimits : tGrid
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 
-function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
+//function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 function MakeAspectMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
 
@@ -680,13 +680,12 @@ begin
       with SlpAsp do begin
          if (MDDef.SlopeAlgorithm = smLSQ) then begin
             case CurveType of
-               1 : Curvature := -2 * (a * sqr(d) + c * d * e + b * sqr(e)) / (LSQ1(SlpAsp) * LSQ3(SlpAsp)) ;     //Profile
-               2 : Curvature :=  0;  //Tangential, not yet coded
+               1 : Curvature := -2 * (a * sqr(d) + c * d * e + b * sqr(e)) / (LSQ1(SlpAsp) * LSQ3(SlpAsp)) ;      //Profile
+               2 : Curvature :=  0;                                                                               //Tangential, not yet coded
                3 : Curvature := -2 * (a * sqr(e) - c * d * e + b * sqr(d)) / (LSQ1(SlpAsp) * sqrt(LSQ2(SlpAsp))); //Plan
-               4 : Curvature :=  0;   //flow line, not yet coded
-               5 : Curvature := (2 * d * (a - b) - c * (sqr(d) - sqr(e))) / (LSQ1(SlpAsp) * LSQ2(SlpAsp));    //contour torsion
+               4 : Curvature :=  0;                                                                               //flow line, not yet coded
+               5 : Curvature := (2 * d * (a - b) - c * (sqr(d) - sqr(e))) / (LSQ1(SlpAsp) * LSQ2(SlpAsp));        //contour torsion
             end;
-
          end
          else begin
             case CurveType of
@@ -1261,22 +1260,6 @@ begin
                       zees[12] := abs(-zE + 2 * z - zW);   //central point, and its two neighbors to W-E
                       Median := Petmath.Median(zees,12);
                       DEMGlb[Result].SetGridElevation(Col,Row,Median);
-                      (*
-
-                      Sum := abs(-z1 + 2 * zNW - z) * FactorDiag +      //zNW=z7,z=z13
-                             abs(-z11 + 2 * zN - z) * FactorNS +        //zN=z12
-                             abs(-z21 + 2 * zNE - z) * FactorDiag +     //zNE=z17
-                             abs(-z23 + 2 * zE - z) * FactorEW +        //zE=z18
-                             abs(-z25 + 2 * zSE - z) * FactorDiag +     //zSE=z19
-                             abs(-z15 + 2 * zS - z) * FactorNS +        //zS=z14
-                             abs(-z5 + 2 * zSW - z) * FactorDiag +      //zSW=z9
-                             abs(-z3 + 2 * zW - z) * FactorEW +         //zW=z8
-                             abs(-zNW + 2 * z - zSE) * FactorDiag +     //zNW=z7,zSE=z19
-                             abs(-zN + 2 * z - zS) * FactorNS +         //zN=z12,zS=z14
-                             abs(-zNE + 2 * z - zSW) * FactorDiag +     //zNE=z17,zSW=z9
-                             abs(-zE + 2 * z - zW) * FactorEW;          //zE=z18,zW=z8
-                      DEMGlb[Result].SetGridElevation(Col,Row,sum/12);
-                      *)
                 end;
              end
              else begin
@@ -1329,9 +1312,6 @@ begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
     Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_' + 'MAD2K' + '_' + DEMGlb[CurDem].AreaName,euMeters);
     GridLimits := TheDesiredLimits(CurDEM);
-    //FactorNS := 1;
-    //FactorEW := 1;
-    //FactorDiag := 1;
 
     {$IfDef RecordProblems}
        DEMGLB[CurDEM].GetBilinearWeights(0.707, 0.707, fSW,fSE,fNE,fNW);
@@ -1357,13 +1337,6 @@ begin
              zees[7] := abs(zW - z); // * FactorEW;
              zees[8] := abs(zSE - z); // * FactorDiag;
              Median := 0.5 * Petmath.Median(zees,8);
-             (*
-             zees[1] := abs(zNW - zSE) * FactorDiag;
-             zees[2] := abs(zN - zS) * FactorNS;
-             zees[3] := abs(zE - zW) * FactorEW;
-             zees[4] := abs(zNE - zSW) * FactorDiag;
-             Median := 0.25* Petmath.Median(zees,4);
-             *)
              DEMGlb[Result].SetGridElevation(Col,Row,Median);
           end;
        end;
@@ -1481,39 +1454,10 @@ begin
                 PostResults(DEMs[4],x,y,GridInc,Relief);
              end;
           end
-          {$IfDef MultipleCurvatureMethods}
-             else if (What = 'A') then  begin
-                if DEMGlb[CurDEM].GetCurvature(x,y,SlopeCurvature,PlanCurvature) then  begin
-                   PostResults(DEMs[1],x,y,Gridinc,SlopeCurvature);
-                   PostResults(DEMs[2],x,y,Gridinc,PlanCurvature);
-                end;
-             end
-             else if (What = 'C') then  begin
-                if DEMGlb[CurDEM].GetEvansParams(x,y,MDDef.WoodRegionRadiusPixels,SlopeDeg,SlopeCurvature,PlanCurvature,CrossC,MaxCurve,MinCurve) then  begin
-                   PostResults(DEMs[1],x,y,Gridinc,SlopeCurvature);
-                   PostResults(DEMs[2],x,y,Gridinc,PlanCurvature);
-                   PostResults(DEMs[3],x,y,Gridinc,CrossC);
-                   PostResults(DEMs[4],x,y,Gridinc,MinCurve);
-                   PostResults(DEMs[5],x,y,GridInc,MaxCurve);
-                end;
-             end
-          {$EndIf}
-          else if (What = 'F') then begin
            // if DEMGlb[CurDEM].SimplePointSSOComputations(false,x,y,MDDef.SSOBoxSizeMeters, s1s2,s2s3,Trend,rf) then begin
            // function tDEMDataSet.SimplePointSSOComputations(PlotResults : boolean; Col,Row,FullBoxSizeMeters : integer; var s1s2,s2s3,Trend,RoughnessFactor : float64) : boolean;
-
-           if DEMGlb[CurDEM].PointSSOComputations(x,y,MDDef.SSOBoxSizeMeters,SSOvars,false,false,false) then begin
-
-(*
-         var
-         begin
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tDEMDataSet.SimplePointSSOComputations in: ' + IntToStr(Col) + ' & ' + IntToStr(Row) + ' rad=' + IntToStr(FullBoxSize)); {$EndIf}
-            Result := PointSSOComputations(Col,Row,FullBoxSizeMeters,SSOvars,PlotResults,false,false);
-            Trend := SSOvars.TheDipDirs[3];
-            s1s2 := SSOvars.s1s2;
-            s2s3 := SSOvars.s2s3;
-            RoughnessFactor := SSOvars.RoughnessFactor;
-*)
+          else if (What = 'F') then begin
+             if DEMGlb[CurDEM].PointSSOComputations(x,y,MDDef.SSOBoxSizeMeters,SSOvars,false,false,false) then begin
                 PostResults(DEMs[1],x,y,GridInc,SSOvars.s2s3);
                 if (DEMs[2] <> 0) then begin
                    zr := SSOvars.TheDipDirs[3];
@@ -1532,15 +1476,6 @@ begin
                 PostResults(DEMs[7],x,y,GridInc,1 - SSOVars.AspectStrength);
             end;
           end
-          (*
-          else if (What = 'O') then begin
-             if DEMGlb[CurDEM].FigureOpenness(x,y,MDDef.OpenBoxSizeMeters,Upward,Downward) then begin
-                PostResults(DEMs[1],x,y,GridInc,Upward);
-                PostResults(DEMs[2],x,y,GridInc,Downward);
-                PostResults(DEMs[3],x,y,GridInc,Upward-Downward);
-             end;
-          end
-          *)
           else if (What = 'R') then begin
              if DEMGlb[CurDem].GetRelief(x,y,MDDef.ReliefBoxSizeMeters,AvgElev,Relief,ElevStdDev,PCLower,TPI) then begin
                 PostResults(DEMs[1],x,y,GridInc,Relief);
@@ -1552,10 +1487,6 @@ begin
           end
           else begin
              if What = 'e' then MomentVar := DEMGlb[CurDEM].ElevationMoments(Limits)
-             {$IfDef MultipleCurvatureMethods}
-                else if What = 'l' then DEMGlb[CurDEM].PlanCMoments(Limits,MomentVar)
-                else if What = 'r' then DEMGlb[CurDEM].ProfCMoments(Limits,MomentVar)
-             {$EndIf}
              else if What = 's' then DEMGlb[CurDEM].SlopeMoments(Limits,MomentVar);
              if (MomentVar.NPts > 3) then  begin
                 PostResults(DEMs[1],x,y,GridInc,MomentVar.mean);
@@ -1616,20 +1547,6 @@ begin {MakeMomentsGrid}
       if MDDef.DoREL then NewGrid(MomentDEMs[4], 'REL' + TStr,euUndefined);
       if MDDef.DoTPI then NewGrid(MomentDEMs[5], 'TPI' + TStr,euUndefined);
    end
-   {$IfDef MultipleCurvatureMethods}
-   else if (What = 'A') then begin
-      TStr := '_curvature--' + CurvatureMethodName[MDDef.CurvatureMethod] +' (' + IntToStr(MDDef.CurvRegionSize) + ')';
-      NewGrid(DEMs[1], '_slope' + TStr,euUndefined);
-      NewGrid(DEMs[2], '_plan' + TStr,euUndefined);
-   end
-   else if (What = 'C') then  begin
-      if MDDef.DoSlopeCurve then NewGrid(MomentDEMs[1], 'Slope_curvature',euUndefined);
-      if MDDef.DoPlanCurve then NewGrid(MomentDEMs[2], 'Plan_curvature',euUndefined);
-      if MDDef.DoCrossCurve then NewGrid(MomentDEMs[3], 'Cross_sectional_curvature',euUndefined);
-      if MDDef.DoMinCurve then NewGrid(MomentDEMs[4], 'Min_curvature',euUndefined);
-      if MDDef.DoMaxCurve then NewGrid(MomentDEMs[5], 'Max_curvature',euUndefined);
-   end
-   {$EndIf}
    else if (What = 'O') then begin
       WantMapType := mtElevGray;
       ThinFactor := MDDef.OpennessCalcThin;
@@ -1678,7 +1595,6 @@ begin {MakeMomentsGrid}
       else if What = 'l' then TStr := 'plan_curv_' + TStr
       else if What = 'r' then TStr := 'prof_curv_'+ TStr;
       TStr := TStr + '_';
-
       if MDDef.DoMean then NewGrid(MomentDEMs[1],'avg' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoSTD then NewGrid(MomentDEMs[2],'stddev' + Tstr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoSkew then NewGrid(MomentDEMs[3],'skew' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
@@ -1748,10 +1664,13 @@ end {MakeMomentsGrid};
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 begin
    case ch of
+(*
       '-' : Result := 'Minimum curvature';
       '+' : Result := 'Maximum curvature';
       '1' : Result := 'Profile convexity';
       '2' : Result := 'Plan convexity';
+      'C' : Result := 'Cross sectional curvature';
+*)
       '3' : Result := 'Relief (' + IntToStr(SampleBoxSize) + ' m)';
       '4' : Result := 'Summit level (m) (' + IntToStr(SampleBoxSize) + ' m)';
       '5' : Result := 'Erosion base level (m) (' + IntToStr(SampleBoxSize) + ' m)';
@@ -1761,7 +1680,6 @@ begin
       '9' : Result := 'Roughness factor';
       'A' : Result := 'Aspect';
       'B' : Result := 'Building';
-      'C' : Result := 'Cross sectional curvature';
       'c' : Result := 'Convergence index';
       'd' : Result := 'Neighborhood drop (' + IntToStr(SampleBoxSize) + ' m)';
       'E' : Result := 'Ln trans';
@@ -1791,10 +1709,13 @@ end;
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 begin
    case ch of
+(*
       '-' : Result := 'MIN_CURVE';
       '+' : Result := 'MAX_CURVE';
       '1' : Result := 'PROF_CONV';
       '2' : Result := 'PLAN_CONV';
+      'C' : Result := 'XS_CURVE';
+*)
       '3' : Result := 'Relief_' + IntToStr(SampleBoxSize);
       '4' : Result := 'SUMMIT_LEV';
       '5' : Result := 'BASE_LEVEL';
@@ -1804,7 +1725,6 @@ begin
       '9' : Result := 'ROUGH_FAC';
       'A' : Result := 'Aspect';
       'B' : Result := 'Building';
-      'C' : Result := 'XS_CURVE';
       'c' : Result := 'CONV_INDX';
       'D' : Result := 'DN_OP_' + IntToStr(SampleBoxSize);
       'd' : Result := 'DROP_' + IntToStr(SampleBoxSize);
@@ -1834,6 +1754,7 @@ begin
 end;
 
 
+(*
 function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 begin
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap in'); {$EndIf}
@@ -1844,7 +1765,7 @@ begin
    RestoreBackupDefaults;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
-
+*)
 
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 begin

@@ -1053,6 +1053,7 @@ type
     Sortandreplacedatabase2: TMenuItem;
     Descending3: TMenuItem;
     AddCopDEMaverageslopeinarea1: TMenuItem;
+    AddDEMIXtileboundingbox1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1865,6 +1866,7 @@ type
     procedure Differentrankingsbytile1Click(Sender: TObject);
     procedure Sortandreplacedatabase2Click(Sender: TObject);
     procedure AddCopDEMaverageslopeinarea1Click(Sender: TObject);
+    procedure AddDEMIXtileboundingbox1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -5193,15 +5195,19 @@ var
    WantSeries,FieldName : shortstring;
    WantDEM : integer;
    GridLimits: tGridLimits;
+   BaseLevel,Summit,ave,Relief,
    Mean,Std : float32;
    Forest,Barren,Urban,Water : float32;
 begin
    {$IfDef RecordGeostats} WriteLineToDebugFile('Tdbtablef.AddCopDEMaverageslopeinarea1Click in'); {$EndIf}
    //MDDef.SlopeAlgorithm := smEvansYoung;
-   FieldName := 'COP_PDF';
+   FieldName := 'COP_SLOPE';
    GISdb[DBonTable].AddFieldToDataBase(ftFloat,FieldName,6,2);
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'Relief',8,2);
    GISdb[DBonTable].AddFieldToDataBase(ftFloat,'BARREN_PC',6,2);
    GISdb[DBonTable].AddFieldToDataBase(ftFloat,'FOREST_PC',6,2);
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'URBAN_PC',6,2);
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'WATER_PC',6,2);
    GISdb[DBonTable].MyData.First;
    PickDEMSeries(WantSeries,'DEM average slope');
    SetColorForProcessing;
@@ -5214,12 +5220,17 @@ begin
       DEMGlb[WantDEM].GetSlopeMeanStd(GridLimits, Mean,Std);
       {$IfDef RecordGeostats} WriteLineToDebugFile('Mean=' + RealToString(Mean,-12,-2)); {$EndIf}
 
-      DEM_NLCD.LandCoverPercentages(bb,Forest,Barren,Urban,Water);
-
+      DEMGlb[WantDEM].BoxAreaExtremeElevations(GridLimits,BaseLevel,Summit,ave);
+      Relief := Summit - Baselevel;
       GISdb[DBonTable].MyData.Edit;
       GISdb[DBonTable].MyData.SetFieldByNameAsFloat(FieldName,Mean);
-      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('FOREST_PC',Forest);
-      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('BARREN_PC',Barren);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('RELIEF',Relief);
+      if DEM_NLCD.LandCoverPercentages(bb,Forest,Barren,Urban,Water) then begin
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('FOREST_PC',Forest);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('BARREN_PC',Barren);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('URBAN_PC',Urban);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('WATER_PC',Water);
+      end;
       GISdb[DBonTable].MyData.Next;
       {$IfDef RecordGeostats} WriteLineToDebugFile('DB posted'); {$EndIf}
       CloseSingleDEM(WantDEM);
@@ -5274,23 +5285,40 @@ begin
     AddGlobalDEMs(dbOnTable);
 end;
 
+procedure Tdbtablef.AddDEMIXtileboundingbox1Click(Sender: TObject);
+begin
+   AddDEMIXtilecentroid1Click(Sender);
+end;
+
 procedure Tdbtablef.AddDEMIXtilecentroid1Click(Sender: TObject);
 var
    WantField,tName : shortstring;
    Lat,Long : float32;
+   bb : sfBoundBox;
 begin
    WantField := GISdb[DBonTable].PickField('DEMIX file names',[ftstring]);
    if (WantField <> '') then begin
       ShowHourglassCursor;
-      GISdb[DBonTable].AddLatLong;
+      if Sender = AddDEMIXtileboundingbox1 then begin
+          GISdb[DBonTable].MyData.AddRecordBoundingBox;
+      end
+      else begin
+         GISdb[DBonTable].AddLatLong;
+      end;
       GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       while not GISdb[DBonTable].MyData.eof do begin
          tName := GISdb[DBonTable].MyData.GetFieldByNameAsString(WantField);
-         DEMIXtileCentroid(tName,Lat,Long);
          GISdb[DBonTable].MyData.Edit;
-         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LAT',0.001 * round(1000 * Lat));
-         GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LONG',0.001 * round(1000 * Long));
+         if Sender = AddDEMIXtileboundingbox1 then begin
+            bb := DEMIXtileBoundingBox(tName);
+            GISdb[DBonTable].MyData.SetRecordBoundingBox(bb);
+         end
+         else begin
+            DEMIXtileCentroid(tName,Lat,Long);
+            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LAT',0.001 * round(1000 * Lat));
+            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LONG',0.001 * round(1000 * Long));
+         end;
          GISdb[DBonTable].MyData.Next;
       end;
       ShowStatus;
@@ -9148,6 +9176,7 @@ begin
    ConvertToKML(DBonTable,'',nil,true);
 end;
 
+
 procedure Tdbtablef.GDALsubsettomatchthisrecord1Click(Sender: TObject);
 const
    Extra = 0.25;
@@ -11004,18 +11033,10 @@ end;
 
 
 procedure Tdbtablef.Deleteunusedfields1Click(Sender: TObject);
-var
-   j : integer;
-   fName : ANSIstring;
 begin
    if ValidDB(DBonTable) then begin
       GISdb[DBonTable].EmpSource.Enabled := false;
-      for j := pred(GISdb[DBonTable].MyData.FieldCount) downto 0 do begin
-         fName := GISdb[DBonTable].MyData.GetFieldName(j);
-         if GISdb[DBonTable].MyData.FieldAllBlanks(fName) or GISdb[DBonTable].MyData.FieldAllZeros(fName) then begin
-            GISdb[DBonTable].MyData.DeleteField(fName);
-         end;
-      end;
+      GISdb[DBonTable].DeleteUnusedFields;
    end;
    ShowStatus;
 end;

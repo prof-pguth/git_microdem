@@ -21,7 +21,7 @@ unit FMXU.Context;
 interface
 
 uses
-   System.Classes, System.SysUtils, System.UIConsts,
+   System.Classes, System.SysUtils, System.UIConsts, System.SyncObjs,
    FMX.Types3D, FMX.Materials,
    FMXU.Buffers, FMXU.Colors;
 
@@ -38,6 +38,7 @@ type
 
    TFMXUContext3D = class (TContext3D)
       private
+         class var vResourceLock : TLightweightMREW;
          class var vResourceList : array of IInterface;
 
       protected
@@ -524,41 +525,56 @@ end;
 //
 class function TFMXUContext3D.AddResource(const aResource : IInterface) : THandle;
 begin
-   // this implementation maps FMX behavior of the handle being an index in the list
-   // should probably be changed to use meaningless handles, but I'm unsure of side-effects yet
-   for var i := 1 to High(vResourceList) do begin
-      if vResourceList[i] = nil then begin
-         vResourceList[i] := aResource;
-         Exit(i);
+   vResourceLock.BeginWrite;
+   try
+      // this implementation maps FMX behavior of the handle being an index in the list
+      // should probably be changed to use meaningless handles, but I'm unsure of side-effects yet
+      for var i := 1 to High(vResourceList) do begin
+         if vResourceList[i] = nil then begin
+            vResourceList[i] := aResource;
+            Exit(i);
+         end;
       end;
-   end;
 
-   Result := Length(vResourceList);
-   if Result = 0 then
-      Result := 1; // handle 0 is invalid, leave a hole
-   SetLength(vResourceList, Result + 1);
-   vResourceList[Result] := aResource;
+      Result := Length(vResourceList);
+      if Result = 0 then
+         Result := 1; // handle 0 is invalid, leave a hole
+      SetLength(vResourceList, Result + 1);
+      vResourceList[Result] := aResource;
+   finally
+      vResourceLock.EndWrite;
+   end;
 end;
 
 // GetResource
 //
 class function TFMXUContext3D.GetResource(aResourceHandle : THandle) : IInterface;
 begin
-   if aResourceHandle > 0 then begin
-      Assert(Cardinal(aResourceHandle) < Cardinal(Length(vResourceList)));
-      Result := vResourceList[aResourceHandle];
-      Assert(Result <> nil);
-   end else Result := nil;
+   vResourceLock.BeginRead;
+   try
+      if aResourceHandle > 0 then begin
+         Assert(Cardinal(aResourceHandle) < Cardinal(Length(vResourceList)));
+         Result := vResourceList[aResourceHandle];
+         Assert(Result <> nil);
+      end else Result := nil;
+   finally
+      vResourceLock.EndRead;
+   end;
 end;
 
 // RemoveResource
 //
 class procedure TFMXUContext3D.RemoveResource(aResourceHandle : THandle);
 begin
-   if (aResourceHandle > 0) and not vContextFinalized then begin
-      Assert(Cardinal(aResourceHandle) < Cardinal(Length(vResourceList)));
-      Assert(vResourceList[aResourceHandle] <> nil);
-      vResourceList[aResourceHandle] := nil;
+   vResourceLock.BeginWrite;
+   try
+      if (aResourceHandle > 0) and not vContextFinalized then begin
+         Assert(Cardinal(aResourceHandle) < Cardinal(Length(vResourceList)));
+         Assert(vResourceList[aResourceHandle] <> nil);
+         vResourceList[aResourceHandle] := nil;
+      end;
+   finally
+      vResourceLock.EndWrite;
    end;
 end;
 

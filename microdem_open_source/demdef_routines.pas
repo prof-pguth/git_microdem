@@ -5065,7 +5065,7 @@ begin
    Result := BaseCurvAlgName[Alg];
    {$IfDef ExFresnel}
    {$Else}
-      if Alg = vcRadioLineOfSight then Result := Result + '  k=' + RealToString(MDdef.RadioK,-6,2);
+      if (Alg = vcRadioLineOfSight) then Result := Result + '  k=' + RealToString(MDdef.RadioK,-6,2);
    {$EndIf}
 end;
 
@@ -5076,7 +5076,7 @@ begin
       smHorn  : SlopeMethodName := 'Horn';
       smEvansYoung  : SlopeMethodName := 'Evans-Young';
       smShary  : SlopeMethodName := 'Shary';
-      smLSQ  : SlopeMethodName := 'LSQ_order_'+IntToStr(MDDef.SlopeLSQorder) +'_window_' + FilterSizeStr(succ(2*MDDef.SlopeLSQradius));
+      smLSQ  : SlopeMethodName := 'LSQ_order_' + IntToStr(MDDef.SlopeLSQorder) +'_' + FilterSizeStr(succ(2*MDDef.SlopeLSQradius));
       {$IfDef IncludeOldSlopeAlgoritms}
          smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
          smONeillAndMark      : SlopeMethodName := '3 neighbors';

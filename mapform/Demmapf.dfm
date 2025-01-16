@@ -5585,6 +5585,10 @@ object MapForm: TMapForm
         Caption = 'Directional slopes'
         OnClick = Directionalslopes1Click
       end
+      object Neighborhoodsurfaceequations1: TMenuItem
+        Caption = 'Slope neighborhood surface equations'
+        OnClick = Neighborhoodsurfaceequations1Click
+      end
       object Pointinterpolationalgorithms2: TMenuItem
         Caption = 'Point interpolation algorithms'
         OnClick = Pointinterpolationalgorithms2Click
@@ -6417,23 +6421,18 @@ object MapForm: TMapForm
       end
       object Profileconvexity1: TMenuItem
         Caption = 'Profile/slope convexity'
-        OnClick = Profileconvexity1Click
       end
       object Planconvexity1: TMenuItem
         Caption = 'Plan convexity'
-        OnClick = Planconvexity1Click
       end
       object Crosssectionalcurvature1: TMenuItem
         Caption = 'Cross sectional curvature'
-        OnClick = Crosssectionalcurvature1Click
       end
       object Minimumcurvature1: TMenuItem
         Caption = 'Minimum curvature'
-        OnClick = Minimumcurvature1Click
       end
       object Maximumcurvature1: TMenuItem
         Caption = 'Maximum curvature'
-        OnClick = Maximumcurvature1Click
       end
     end
     object Relief2: TMenuItem
@@ -6583,11 +6582,9 @@ object MapForm: TMapForm
       end
       object Plancurvature1: TMenuItem
         Caption = 'Plan curvature'
-        OnClick = Plancurvature1Click
       end
       object Profilecurvature1: TMenuItem
         Caption = 'Profile curvature'
-        OnClick = Profilecurvature1Click
       end
     end
     object Pointdensity1: TMenuItem
@@ -7142,6 +7139,14 @@ object MapForm: TMapForm
     object CompareGDALslopespacingapproximations1: TMenuItem
       Caption = 'Compare GDAL slope spacing approximations'
       OnClick = CompareGDALslopespacingapproximations1Click
+    end
+    object CompareLSQslopepolynomialorder1: TMenuItem
+      Caption = 'Compare LSQ slope polynomial order'
+      OnClick = CompareLSQslopepolynomialorder1Click
+    end
+    object CompareLSQslopewindowsize1: TMenuItem
+      Caption = 'Compare LSQ slope window size'
+      OnClick = CompareLSQslopewindowsize1Click
     end
     object N71: TMenuItem
       Caption = '-'

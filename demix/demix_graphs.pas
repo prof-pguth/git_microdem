@@ -1,11 +1,11 @@
 unit demix_graphs;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -149,7 +149,7 @@ begin
             if MDDef.DEMIX_combined_graph then AddGraphToBigBitmap(succ(i),GeomorphFilters.Count,1,gr[i],BigBitmap);
          end;
          if MDDef.DEMIX_combined_graph then begin
-            Legend := gr[0].MakeLegend(gr[0].GraphDraw.LegendList,false);
+            Legend := gr[0].MakeLegend;
             FinishBigMap(BigBitmap,Legend,'',true);
          end;
       finally
@@ -185,7 +185,7 @@ begin
             end;
          end;
          if MDDef.DEMIX_combined_graph then begin
-            Legend := gr[1].MakeLegend(gr[1].GraphDraw.LegendList,false);
+            Legend := gr[1].MakeLegend;
             FinishBigMap(BigBitmap,Legend);
          end;
       finally
@@ -1092,7 +1092,7 @@ begin
          if MDDef.DEMIX_combined_graph then AddGraphToBigBitmap(succ(j),Criteria.Count,1,gr[j],BigBitmap);
       end;
       if MDDef.DEMIX_combined_graph then begin
-         Legend := gr[0].MakeLegend(gr[0].GraphDraw.LegendList,false);
+         Legend := gr[0].MakeLegend;
          FinishBigMap(BigBitmap,Legend);
       end;
       ShowDefaultCursor;
@@ -1117,43 +1117,56 @@ var
          BigGraph : tstringList;
          fName : PathStr;
          aFilter : shortstring;
+
+         procedure MakeGraph(j : integer);
+         var
+            gr : tThisBaseGraph;
+         begin
+            gr := nil;
+            gr := GraphForOneCriterion(DBonTable,DEMs,Numerical,Evaluations,Criteria.Strings[j],theSort,GraphName);
+            if (gr <> Nil) then begin
+               fName := DEMIXmodeName + '_' + Criteria.Strings[j] + '_' + theSort;
+               if MDDef.DEMIX_combined_graph then begin
+                  AddGraphToBigBitmap(succ(j),Criteria.Count,1,gr,BigBitmap);
+                  if (Legend = nil) then Legend := gr.MakeLegend;
+               end;
+               if MovieByTestDEM then begin
+                  gr.AnimateGraph(true,true,fName);
+               end;
+               if MDDef.PanelsByTestDEM then begin
+                  gr.AnimateGraph(false,true,fName);
+               end;
+               if (Criteria.Count > 1) and MDDef.DEMIX_combined_graph then begin
+                  BigGraph.Add(fName);
+               end;
+               gr.Destroy;
+            end;
+         end;
+
+
       begin
          {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('MakeAllGraphs, Criteria=' + IntToStr(Criteria.Count) + ' n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
          if (TheSort = '') or GISdb[DBonTable].MyData.FieldExists(TheSort) then begin
-            if (Criteria.Count > 1) and MDDef.DEMIX_combined_graph then BigGraph := tstringList.Create;
+            if MDDef.DEMIX_combined_graph then begin
+               if (Criteria.Count > 1) then BigGraph := tstringList.Create;
+               Legend := Nil;
+            end;
             for j := 0 to pred(Criteria.Count) do begin
                aFilter := BaseFilter + 'CRITERION=' + QuotedStr(Criteria.Strings[j]);
                GISdb[DBonTable].ApplyGISFilter(aFilter);
                if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-                  gr[j] := nil;
-                  gr[j]  := GraphForOneCriterion(DBonTable,DEMs,Numerical,Evaluations,Criteria.Strings[j],theSort,GraphName);
-                  fName := DEMIXmodeName + '_' + Criteria.Strings[j] + '_' + theSort;
-                  if MDDef.DEMIX_combined_graph then AddGraphToBigBitmap(succ(j),Criteria.Count,1,gr[j],BigBitmap);
-
-
-                  if MovieByTestDEM then begin
-                     gr[j].AnimateGraph(true,true,fName);
-                  end;
-                  if MDDef.PanelsByTestDEM then begin
-                     gr[j].AnimateGraph(false,true,fName);
-                  end;
-                  if (Criteria.Count > 1) and MDDef.DEMIX_combined_graph then begin
-                     BigGraph.Add(fName);
-                  end;
+                  MakeGraph(j);
                end;
             end;
             if MDDef.DEMIX_combined_graph then begin
-               Legend := gr[0].MakeLegend(gr[0].GraphDraw.LegendList,false);
                FinishBigMap(BigBitmap,Legend);
-            end;
-
-            if (Criteria.Count > 1) then begin
-               if MDDef.DEMIX_combined_graph then begin
+               if (Criteria.Count > 1) then begin
                   fName := NextFileNumber(MDTempDir,GraphName,'.png');
                   MakeBigBitmap(BigGraph,'',fName,Criteria.Count);
                end;
                GISdb[DBonTable].ClearGISFilter;
             end;
+
          end
          else begin
             MessageToContinue('Field missing for sort ' + TheSort);
@@ -1184,7 +1197,6 @@ var
          for j := 0 to pred(Criteria.Count) do begin
             Graph := nil;
             Graph := GraphForOneCriterion(DBonTable,DEMs,true,true,Criteria.Strings[j],'');
-
             Graph.GraphDraw.BottomMargin := 100;
             Graph.GraphDraw.LegendList := tStringList.Create;
             GISdb[DBonTable].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criteria.Strings[j]));
@@ -1202,7 +1214,6 @@ var
             end;
             CloseFile(rfile);
             Graph.AutoScaleAndRedrawDiagram;
-
          end;
       end;
 

@@ -45,7 +45,45 @@ begin
 end;
 
 
-function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean;
+function tDEMDataSet.QuickEvansSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean;
+
+         procedure GetAspect(var SlopeAsp : tSlopeAspectRec); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
+         begin
+            if (abs(SlopeAsp.dzdx) < 0.001) and (abs(SlopeAsp.dzdy) < 0.001) then begin
+               //flat pixel where aspect is undefined
+               SlopeAsp.AspectDirTrue := MaxSmallInt;
+               SlopeAsp.AspectDirGrid := MaxSmallInt;
+            end
+            else begin
+               SlopeAsp.AspectDirGrid := CompassAngleInRangeFloat32(Math.ArcTan2(-SlopeAsp.dzdy,-SlopeAsp.dzdx) / DegToRad);
+               SlopeAsp.AspectDirTrue := CompassAngleInRangeFloat32(SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle);
+            end;
+         end;
+var
+   Lat,Long : float64;
+begin
+   Result := false;
+   SlopeAsp.AspectDirTrue := 0;
+   SlopeAsp.Slope := 0;
+   //if (Radius = 0) then Radius := MDDef.SlopeRegionRadius;
+   PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
+   if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1) then begin
+      Result := true;
+      with SlopeAsp do begin
+         // first order partial derivatives
+         dzdx := (+zne+ze+zse-znw-zw-zsw) / (6 * dx);
+         dzdy := (+znw+zn+zne-zsw-zs-zse) / (6 * dy);
+      end;
+      SlopeAsp.Slope := sqrt(sqr(SlopeAsp.dzdx) + sqr(SlopeAsp.dzdy));
+      SlopeAsp.SlopePercent := 100 * SlopeAsp.Slope;
+      SlopeAsp.SlopeDegree := ArcTan(SlopeAsp.Slope) / DegToRad;
+      GetAspect(SlopeAsp);
+   end;
+end {proc GetSlopeAndAspect};
+
+
+
+function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean;
 var
    Ring2 : tSlopeAspectRec;
    Lat,Long : float64;
@@ -53,13 +91,16 @@ var
          procedure GetAspect(var SlopeAsp : tSlopeAspectRec); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          // the tSlopeAspectRec structure includes variables for the aspect computation
          //    inputs
-         //       partial derivates dzdx and dzdy
+         //       partial derivatives dzdx and dzdy
          //       GridTrueAngle, difference between grid and true north, positive or negative, computed once for the DEM
          //    outputs
          //       AspectDirGrid, geographic convention in coordinates of map projection grid north
          //       AspectDirTrue, true north coordinates
          //       Dir, a code for the 8 principal cardinal directions plus pits and flats where aspect is problematical
          // this procedure, and the external functions it calls, are coded inline for faster performance
+         var
+            a0,a1,a2,a3 : float32;
+            TStr : shortstring;
          begin
             if (abs(SlopeAsp.dzdx) < 0.001) and (abs(SlopeAsp.dzdy) < 0.001) then begin
                //flat pixel where aspect is undefined
@@ -68,26 +109,41 @@ var
                SlopeAsp.Dir := cdFlat;
             end
             else begin
-               //atan2 function
-               //   standard math convention puts 0 on the x axis and angles increases counterclockwise
-               //   GIS uses geographic conventions, where N (0) is on the y axis, and angles increase clockwise
-               //   genearlly returns in range -180 to 180
+               //atan2 or ArcTan2 function returns results in all 4 quadrant, instead of 2 for the regular tangent
+               //   atan2 takes two arguments
+               //   standard math convention puts 0 on the x axis (east) and angles increases counterclockwise
+               //   GIS uses geographic conventions, where 0 is on the y axis (north), and angles increase clockwise
+               //   generally returns in range -180 to 180
                //   returns radians, and all our interactions with users want degrees
-               //   check the order in which you atan2 function requests the parameters which varies by program
-               //   Delphi wants atan2(y,x) which is rise/run to return math convention
-               //   flipping to atan2(x,y)  returns geographic convention
+               //   check the order in which you atan2 function requests the arguments which varies by program
+               //   Delphi wants atan2(y,x) which is rise/run to return math convention; some other languages like Excel want atan2(x,y)
+               //   In Delphi flipping to atan2(x,y) returns geographic convention
                //this gets uphill direction, so add 180 for downhill direction
                //insure result in range of 0-360, adding or subtracting 360
                //aspect in terms of the map project grid coordinates
-               SlopeAsp.AspectDirGrid := CompassAngleInRangeFloat32(Math.ArcTan2(SlopeAsp.dzdx,SlopeAsp.dzdy) / DegToRad + 180);
+
+               (*
+               SlopeAsp.AspectDirGrid := Atan2(SlopeAsp.dzdy,SlopeAsp.dzdx);  //order for most programming language.  for Ex or Mathematica or Google Sheets, it will be Atan2(zx, zy).
+               SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid / DegToRad;  //Covert radians to geographer-friendly degrees.
+               SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid - 90;   //Move the circular origin from east to north, the math convention transformed to geographic.
+               SlopeAsp.AspectDirGrid := 360 - SlopeAsp.AspectDirGrid;  //Change from counterclockwise to clockwise, the math convention transformed to geographic.
+               SlopeAsp.AspectDirGrid := CompassAngleInRangeFloat32( (360 - ((Math.ArcTan2(SlopeAsp.dzdy,SlopeAsp.dzdx) / DegToRad) - 90)) - 180);   //move to uphill direction
+
+               a2 := SlopeAsp.AspectDirGrid;
+               SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid - 180;  //Change from the uphill direction to downhill.
+               a1 := SlopeAsp.AspectDirGrid;
+               a0 := CompassAngleInRangeFloat32(HeadingOfLine(SlopeAsp.dzdx,SlopeAsp.dzdy) + 180);
+               *)
+
+               SlopeAsp.AspectDirGrid := CompassAngleInRangeFloat32(Math.ArcTan2(-SlopeAsp.dzdx,-SlopeAsp.dzdy) / DegToRad);
 
                 //to get aspect in true north, add grid true angle
                 //   this is not needed for geographic grids, where grid north and true north coincide
                 //   for grids like UTM, near the equator or away from the edges of the UTM zone, this makes a small difference
                 //   for some cases the difference between grid and true north can be significant
-                //      for extreme UTM locations like Norway
-                //      for conic projections over a large area (e.g. USGS 5 m in Alaske, EU-DEM)
-                //      for projections like the continental Equi7
+                //      extreme UTM locations like Norway
+                //      conic projections over large area (e.g. USGS 5 m in Alaske, EU-DEM)
+                //      projections like continental Equi7
                 //insure result in range of 0-360, adding or subtracting 360
                SlopeAsp.AspectDirTrue := CompassAngleInRangeFloat32(SlopeAsp.AspectDirGrid + SlopeAsp.GridTrueAngle);
 
@@ -101,17 +157,16 @@ var
          end;
 
       procedure ComputeTrendSurfaceForSlopeAspect(var SlopeAsp : tSlopeAspectRec);
-      {from a program in Davis, 1st ed, p.332}
+      {from a program in Davis, 1st ed, p.332; 2d ed does not have code}
       const
          MaxTrendSurfacePoints = 100;
-         CurrentOrderTrendSurface = 2;
       var
-         A    : ^tTrendMatrix;
+         A    : tTrendMatrix;
          B,C  : tTrendVector;
          NumDataPoints : LongInt;
          ResultsFile : System.text;
          NDF1,NDF2,NDF3 : LongInt;
-         IOrd2,I,J,TrendSurfInc,rc       : integer;
+         IOrd2,I,J,TrendSurfInc,rc,Pts,x,y       : integer;
          SST,SSR,SSD,AMSR,AMSD,SY,SYY,SYC,SYYC : extended;
          xutmoffset,yutmoffset,R,F,xutm,yutm  : float64;
          z,zs,zMeters,zg : float32;
@@ -121,12 +176,12 @@ var
          v          : array[1..2] of float32;
 
 
-            procedure AddPointToTrendSurface(xutm,yutm,zmeters : float32);  //inline;
+            procedure AddPointToTrendSurface(xutm,yutm,zmeters : float32; var A : tTrendMatrix; var B,C  : tTrendVector; IOrd2 : integer);  inline;
             var
                j,k,jb,kb : integer;
             begin
                 JB := 1;
-                for J := 1 to CurrentOrderTrendSurface do begin
+                for J := 1 to MDDef.SlopeLSQorder do begin
                    for k := 1 to J do begin
                       inc(JB);
                       KB := JB  - J;
@@ -137,64 +192,78 @@ var
                 end {for j};
                 for j := 1 to IORD2 do begin
                    B[J] := B[J] + C[J] * zMeters;
-                   for K := 1 to IORD2 do A^[J,K] := A^[J,K] + C[J] * C[K];
+                   for K := 1 to IORD2 do A[J,K] := A[J,K] + C[J] * C[K];
                 end {for j};
             end;
 
       begin {ComputeTrendSurfaceForSlopeAspect}
-         {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('ComputeTrendSurfaceFromDEM in'); {$EndIf}
-         New(A);
+         //New(A);
          C[1] := 1.0;
+         for i := 1 to MaxMatrixSize do B[i] := 0;
 
-         IORD2 := succ(CurrentOrderTrendSurface)*(CurrentOrderTrendSurface+2) div 2;
+         IORD2 := succ(MDDef.SlopeLSQorder)*(MDDef.SlopeLSQorder+2) div 2;
          {ZERO SLE MATRIX }
          for I := 1 to IORD2 do begin
             B[I] := 0;
-            for J := 1 to IORD2 do A^[I,J] := 0;
+            for J := 1 to IORD2 do A[I,J] := 0;
          end;
 
-         AddPointToTrendSurface(-SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.znw);
-         AddPointToTrendSurface(-SlopeAsp.dx,0,SlopeAsp.zw);
-         AddPointToTrendSurface(-SlopeAsp.dx,-SlopeAsp.dy,SlopeAsp.zsw);
-         AddPointToTrendSurface(0,SlopeAsp.dy,SlopeAsp.zn);
-         AddPointToTrendSurface(0,0,SlopeAsp.z);
-         AddPointToTrendSurface(0,-SlopeAsp.dy,SlopeAsp.zs);
-         AddPointToTrendSurface(SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.zne);
-         AddPointToTrendSurface(SlopeAsp.dx,0,SlopeAsp.ze);
-         AddPointToTrendSurface(SlopeAsp.dx,-SlopeAsp.dy,SlopeAsp.zse);
+         Pts := 0;
+         for x := -MDDef.SlopeLSQradius to MDDef.SlopeLSQradius do begin
+            for y := -MDDef.SlopeLSQradius to MDDef.SlopeLSQradius do begin
+               if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
+                  AddPointToTrendSurface(x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2);
+                  inc(Pts);
+               end;
+            end;
+         end;
 
-         {SOLVE SLE}
-         SLE(A^,B,IORD2,1.0E-08);
+         if Pts < TrendSurfacePointsRequired[MDDef.SlopeLSQorder] then begin
+            Result := false;
+         end
+         else begin
+            SolveSLE(A,B,IORD2,1.0E-08);
 
-         SlopeAsp.dzdx := B[2];
-         SlopeAsp.dzdy := B[3];
+            SlopeAsp.dzdx := B[2];
+            SlopeAsp.dzdy := B[3];
 
-        //per Ilich and others, 2023; used for curvatures
-         SlopeAsp.a := B[4]; // x^2
-         SlopeAsp.b := B[6]; // y^2
-         SlopeAsp.c := B[5]; // xy
-         SlopeAsp.d := B[2]; // x
-         SlopeAsp.e := B[3]; // y
-         SlopeAsp.f := B[1]; // constant
-         Dispose(A);
-         {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('Trend Surface out'); {$EndIf}
+            for I := 1 to MaxCoefs do SlopeAsp.Coefs[i] := B[i];
+
+            if NeedSecondOrder then begin
+               SlopeAsp.dxx := 2 * B[4];
+               SlopeAsp.dyy := 2 * B[6];
+               SlopeAsp.dxy := B[5];
+
+              //per Ilich and others, 2023; used for curvatures with their equations
+               SlopeAsp.a := B[4]; // x^2
+               SlopeAsp.b := B[6]; // y^2
+               SlopeAsp.c := B[5]; // xy
+               SlopeAsp.d := B[2]; // x
+               SlopeAsp.e := B[3]; // y
+               SlopeAsp.f := B[1]; // constant
+            end;
+
+            //Dispose(A);
+            {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('Trend Surface out'); {$EndIf}
+            Result := true;
+         end;
       end {ComputeTrendSurfaceForSlopeAspect};
 
 
 begin
    Result := false;
-   SlopeAsp.AspectDirTrue := MaxSmallInt;
+   SlopeAsp.AspectDirTrue := 0;
    SlopeAsp.Slope := 0;
    if (Radius = 0) then Radius := MDDef.SlopeRegionRadius;
-
-   if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,Radius) then begin
-      Result := true;
-      PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
-
-      if {false and} (MDDef.SlopeAlgorithm = smLSQ) then begin
-         ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
-      end
-      else begin
+   PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
+   if (MDDef.SlopeAlgorithm = smLSQ) and ( (MDDef.SlopeLSQorder > 2) or (MDDef.SlopeLSQradius > 1)) and (not NeedSecondOrder) then begin
+      //for the simple case, we can skip the LSQ computation and just use the Evans simplification
+      SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1);
+      ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
+   end
+   else begin
+      if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,Radius) then begin
+         Result := true;
          SlopeAsp.dx := SlopeAsp.dx * Radius;
          SlopeAsp.dy := SlopeAsp.dy * Radius;
          with SlopeAsp do begin
@@ -227,7 +296,7 @@ begin
                      dxx := (znw + 2 * zw + zsw + zne + 2 * ze + zse - 2 * (z + 2 * zn + zs)) / (4 * sqr(dx));
                      dyy := (znw + 2 * zn + zne + zsw + 2 * zs + zse - 2 * (z + 2 * ze + zw)) / (4 * sqr(dx));
                   end
-                  else if (MDDef.SlopeAlgorithm in [smShary,smLSQ]) then begin
+                  else if (MDDef.SlopeAlgorithm in [smShary]) then begin
                      dzdx := ( znw + zne + zsw + zse - 2 * (zn + zs) + 3 * (zw + ze) - 6 * z) / (5 * sqr(dx));
                      dzdy := ( znw + zne + zne + zse - 2 * (zw + ze) + 3 * (zn + zs) - 6 * z) / (5 * sqr(dy));
                   end;
@@ -254,10 +323,12 @@ begin
             end;
          end;
       end;
+   end;
+   if Result then begin
       SlopeAsp.Slope := sqrt(sqr(SlopeAsp.dzdx) + sqr(SlopeAsp.dzdy));
       SlopeAsp.SlopePercent := 100 * SlopeAsp.Slope;
       SlopeAsp.SlopeDegree := ArcTan(SlopeAsp.Slope) / DegToRad;
-      GetAspect(SlopeAsp);
+      if NeedAspect then GetAspect(SlopeAsp);
    end;
 end {proc GetSlopeAndAspect};
 
@@ -275,7 +346,7 @@ begin
       Row := GridLimits.YGridLow;
       while (Row <= GridLimits.YGridHigh) do begin
          if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-            if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+            if GetSlopeAndAspect(Col,Row,SlopeAspectRec,false,false) then begin
                Values[Npts] := SlopeAspectRec.SlopePercent;
                inc(NPts);
             end;
@@ -291,7 +362,7 @@ function tDEMDataSet.SlopePercent(XGrid,YGrid : integer; var Slope : float64; Ra
 var
    SlpAsp : tSlopeAspectRec;
 begin
-   Result := GetSlopeAndAspect(xgrid,ygrid,SlpAsp,false,Radius);
+   Result := GetSlopeAndAspect(xgrid,ygrid,SlpAsp,false,false,Radius);
    if Result then Slope := SlpAsp.SlopePercent else Slope := -9999;
 end;
 
@@ -301,7 +372,7 @@ var
    xg,yg  : integer;
 begin
     LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
-    Result := GetSlopeAndAspect(xg,yg,SlopeAspectRec,false);
+    Result := GetSlopeAndAspect(xg,yg,SlopeAspectRec,true,false);
 end;
 
 
@@ -631,7 +702,7 @@ var
 begin
    Result := GetSlopeAndAspect(Col,Row,SlopAsp);
    if Result then begin
-      if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDirTrue := 0;
+      //if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDirTrue := 0;
       n1 := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDirTrue);
       n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDirTrue);
       n3 := cosDeg(SlopAsp.SlopeDegree);
@@ -644,7 +715,7 @@ var
 begin
    Result := GetSlopeAndAspect(Col,Row,SlopAsp);
    if Result then begin
-      if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDirTrue := 0;
+      //if (SlopAsp.SlopeDegree < 0.0001) then SlopAsp.AspectDirTrue := 0;
       SlopAsp.SlopeDegree := 90 - SlopAsp.SlopeDegree;
       n1 := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDirTrue);
       n2 := sinDeg(SlopAsp.SlopeDegree) * cosDeg(SlopAsp.AspectDirTrue);
@@ -1100,171 +1171,6 @@ end;
 
 
 
-{$IfDef ExDEMReports}
-{$Else}
-procedure tDEMDataSet.PointParameters(xgrid,ygrid : float64);
-var
-   Results,Results2 : tStringList;
-   i,Col,Row : integer;
-   {$IfDef MultipleCurvatureMethods} PlanCurv,SlopeCurv : float64; {$EndIf}
-   Upward,Downward : float64;
-   z : float32;
-   SlopeAspectRec : tSlopeAspectRec;
-begin
-   {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters in'); {$EndIf}
-   ShowHourGlassCursor;
-   Col := round(xgrid);
-   Row := round(ygrid);
-   Results := tStringList.Create;
-   Results.Add(DEMLocationString(xgrid,ygrid));
-   Results.Add('');
-   if GetElevMeters(XGrid,YGrid,z) then Results.Add('Elev: ' + RealToString(z,8,2) + ' m');
-
-   if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
-      Results.Add('Slope:' + RealToString(SlopeAspectRec.SlopePercent,7,2) + '%' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°');
-      Results.Add('Aspect: ' + RealToString(SlopeAspectRec.AspectDirTrue,6,1) + '°');
-   end;
-   {$If Defined(TimePointParameters)} WriteLineToDebugFile('slope/aspect done'); {$EndIf}
-
-
-   if RoughnessFromSlopeSTD(Col,Row,3,z) then Results.Add('Roughness 3x3: ' + RealToString(z,8,2) + '%');
-   if RoughnessFromSlopeSTD(Col,Row,5,z) then Results.Add('Roughness 5x5: ' + RealToString(z,8,2) + '%');
-   if RoughnessFromSlopeSTD(Col,Row,7,z) then Results.Add('Roughness 7x7: ' + RealToString(z,8,2) + '%');
-   if RoughnessFromSlopeSTD(Col,Row,9,z) then Results.Add('Roughness 9x9: ' + RealToString(z,8,2) + '%');
-   if RoughnessFromSlopeSTD(Col,Row,11,z) then Results.Add('Roughness 11x11: ' + RealToString(z,6,2) + '%');
-   {$If Defined(TimePointParameters)} WriteLineToDebugFile('roughness done'); {$EndIf}
-
-   {$If Defined(MultipleCurvatureMethods) and Defined(CurvaturePointParameters)}
-      //this one is off by default, since curvature is so messy
-      if GetCurvature(round(xgrid),round(ygrid),PlanCurv,SlopeCurv) then begin
-         Results.Add('Plan curvature: ' + RealToString(PlanCurv,12,6));
-         Results.Add('Slope curvature:' + RealToString(SlopeCurv,12,6));
-      end;
-     {$If Defined(TimePointParameters)} WriteLineToDebugFile('curvature done'); {$EndIf}
-   {$EndIf}
-
-   {$IfDef ExGeostats}
-   {$Else}
-      {$IfDef MultipleCurvatureMethods}
-         //this one is off by default, since curvature is so messy
-         if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
-            Results.Add('');
-            Results.Add('Evans curvature (Region size=' + IntToStr(MDDef.WoodRegionRadiusPixels) + '):');
-            Results.Add('   Plan curvature: ' + RealToString(PlanCurvature,13,6));
-            Results.Add('   Slope curvature:' + RealToString(SlopeCurvature,12,6));
-            Results.Add('   Cross curvature:' + RealToString(CrossC,12,6));
-            Results.Add('   Max curvature: ' + RealToString(MaxCurve,14,6));
-            Results.Add('   Min curvature:' + RealToString(MinCurve,14,6));
-            {$If Defined(TimePointParameters)} WriteLineToDebugFile('Evans done'); {$EndIf}
-         end;
-      {$EndIf}
-
-      Results2 := tStringList.Create;
-      if FigureOpenness(Col,Row,MDDef.OpenGridBoxSize,Upward,Downward,Results2) then begin
-         Results.Add('');
-         Results.Add('Openness parameters (' + IntToStr(MDDef.OpenGridBoxSize) + ' m)');
-         Results.Add('  Upward openness: ' + RealToString(Upward,12,2) + '°');
-         Results.Add('  Downward openness:' + RealToString(Downward,12,2) + '°');
-         Results.Add('');
-         for i := 0 to pred(Results2.Count) do Results.Add('      ' + Results2.Strings[i]);
-         Results.Add('');
-         {$If Defined(TimePointParameters)} WriteLineToDebugFile('Openness done'); {$EndIf}
-      end;
-      Results2.Free;
-
-      {$If Defined(PointSSOPointParameters)}
-         //this one is off by default, since it is so slow for lidar
-         if PointSSOComputations(Col,Row,MDDef.SSOBoxSizeMeters, SSOvars,false,true,false) then  begin
-            Results.Add('SSO parameters (' + IntToStr(MDDef.SSOBoxSizeMeters) + ' m)');
-            Results.Add('  Points in box: ' + IntToStr(SSOvars.NumPts));
-            Results.Add('  Organization ln(s2/s3): ' + RealToString(SSOvars.s2s3,12,2));
-            Results.Add('  Organization direction: ' + RealToString(SSOvars.TheDipDirs[3],6,1) + '°');
-            Results.Add('  Relief: ' + RealToString(SSOvars.ElevRange,12,2) + ' m');
-            Results.Add('  Region average elev: ' + RealToString(SSOvars.AvgElev,12,2) + ' m');
-            Results.Add('  Region elev std dev: ' + RealToString(SSOvars.StdDevElev,12,2));
-            Results.Add('  Region max slope: ' + RealToString(100*SSOvars.MaxSlope,12,2) + '%');
-            Results.Add('  Roughness factor: ' + RealToString(SSOvars.RoughnessFactor,8,3));
-            {$If Defined(TimePointParameters)} WriteLineToDebugFile('SSO done'); {$EndIf}
-         end;
-      {$EndIf}
-   {$EndIf}
-   ModalStringListDisplay(Results,'Point parameters');
-   ShowDefaultCursor;
-   {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters out'); {$EndIf}
-end;
-
-
-procedure tDEMDataSet.SlopeMethodsReportFromLatLong(lat,Long : float64; Title : shortstring = '');
-var
-   Col,Row : integer;
-begin
-   if LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row) then SlopeMethodsReport(Col,Row,Title);
-end;
-
-
-procedure tDEMDataSet.SlopeMethodsReport(xp,yp : integer; Title : shortstring = '');
-{$IfDef ExGeostats}
-begin
-{$Else}
-var
-   Results : tStringList;
-   CurMethod : byte;
-   SlopeAspectRec : tSlopeAspectRec;
-begin
-   SaveBackupDefaults;
-   Results := tStringList.Create;
-   Results.Add(AreaName);
-   if (Title <> '') then Results.Add(Title);
-   Results.Add('Point: ' + DEMLocationString(xp,yp));
-   Results.Add('Classified as: ' + PointTypeName(ClassifyAPoint(xp,yp)));
-   Results.Add('Col=' + IntToStr(xp) + '  & row=' + IntToStr(yp));
-   Results.Add('');
-   Results.Add('Neighborhood elevations (m)');
-   GetSlopeAndAspect(xp,yp,SlopeAspectRec);
-   Results.Add(  RealToString( SlopeAspectRec.znw,13,2) + RealToString( SlopeAspectRec.zn,13,2) + RealToString( SlopeAspectRec.zne,13,2) +  MessLineBreak +
-                 RealToString( SlopeAspectRec.zw,13,2)  + RealToString( SlopeAspectRec.z,13,2)   + RealToString( SlopeAspectRec.ze,13,2)  +  MessLineBreak +
-                 RealToString( SlopeAspectRec.zsw,13,2) + RealToString( SlopeAspectRec.zs,13,2)  + RealToString( SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak );
-   Results.Add('');
-   Results.Add('         Slope             Aspect         Method');
-   for CurMethod := FirstSlopeMethod to LastSlopeMethod do begin
-      MDDef.SlopeAlgorithm := CurMethod;
-      GetSlopeAndAspect(xp,yp,SlopeAspectRec);
-      Results.Add(RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   ' + RealToString(SlopeAspectRec.AspectDirTrue,8,1) + '°    ' + SlopeMethodName(MDDef.SlopeAlgorithm));
-   end;
-   DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
-   RestoreBackupDefaults
-{$EndIf}
-end;
-
-
-procedure tDEMDataSet.DirectionalSlopesReport(Lat,Long : float64);
-var
-   MenuStr : AnsiString;
-   x,y : integer;
-   xgf,ygf : float64;
-   SlopeAspectRec : tSlopeAspectRec;
-begin
-   LatLongDegreeToDEMGrid(Lat,Long,xgf,ygf);
-   x := round(xgf);
-   y := round(ygf);
-
-   GetSlopeAndAspect(x,y,SlopeAspectRec);
-   MenuStr := 'Point: ' + DEMLocationString(x,y) +  MessLineBreak +  MessLineBreak + 'Elevations: ' +  MessLineBreak +
-              RealToString( SlopeAspectRec.znw,13,2) + RealToString( SlopeAspectRec.zn,13,2) + RealToString( SlopeAspectRec.zne,13,2) +  MessLineBreak +
-              RealToString( SlopeAspectRec.zw,13,2)  + RealToString( SlopeAspectRec.z,13,2)   + RealToString( SlopeAspectRec.ze,13,2)  +  MessLineBreak +
-              RealToString( SlopeAspectRec.zsw,13,2) + RealToString( SlopeAspectRec.zs,13,2)  + RealToString( SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak +
-              'Slopes: ' +  MessLineBreak  +
-              RealToString( 100*(SlopeAspectRec.znw-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zn-SlopeAspectRec.z)/AverageYSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zne-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' +  MessLineBreak +
-              RealToString( 100*(SlopeAspectRec.zw-SlopeAspectRec.z)/AverageXSpace,12,2) + '%' + '             ' + RealToString( 100*(SlopeAspectRec.ze-SlopeAspectRec.z)/AverageXSpace,12,2) + '%' +  MessLineBreak +
-              RealToString( 100*(SlopeAspectRec.zsw-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zs-SlopeAspectRec.z)/AverageYSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zse-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%'+  MessLineBreak + '  ' +
-              MessLineBreak +
-              'Point slope:' + MessLineBreak +   RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   aspect ' + RealToString(SlopeAspectRec.AspectDirTrue,8,1) + '°    ' +
-                   SlopeMethodName(MDDef.SlopeAlgorithm);
-   MessageToContinue(MenuStr);
-end;
-
-{$EndIf}
-
 procedure tDEMDataSet.BoxStatsDB(BoxSize : integer = 0);
 const
    MaxSize = 50000;
@@ -1489,6 +1395,242 @@ begin
 end;
 
 
+
+{$IfDef ExDEMReports}
+{$Else}
+
+procedure tDEMDataSet.PointParameters(xgrid,ygrid : float64);
+var
+   Results,Results2 : tStringList;
+   i,Col,Row : integer;
+   {$IfDef MultipleCurvatureMethods} PlanCurv,SlopeCurv : float64; {$EndIf}
+   Upward,Downward : float64;
+   z : float32;
+   SlopeAspectRec : tSlopeAspectRec;
+begin
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters in'); {$EndIf}
+   ShowHourGlassCursor;
+   Col := round(xgrid);
+   Row := round(ygrid);
+   Results := tStringList.Create;
+   Results.Add(DEMLocationString(xgrid,ygrid));
+   Results.Add('');
+   if GetElevMeters(XGrid,YGrid,z) then Results.Add('Elev: ' + RealToString(z,8,2) + ' m');
+
+   if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+      Results.Add('Slope:' + RealToString(SlopeAspectRec.SlopePercent,7,2) + '%' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°');
+      Results.Add('Aspect: ' + RealToString(SlopeAspectRec.AspectDirTrue,6,1) + '°');
+   end;
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('slope/aspect done'); {$EndIf}
+
+
+   if RoughnessFromSlopeSTD(Col,Row,3,z) then Results.Add('Roughness 3x3: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,5,z) then Results.Add('Roughness 5x5: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,7,z) then Results.Add('Roughness 7x7: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,9,z) then Results.Add('Roughness 9x9: ' + RealToString(z,8,2) + '%');
+   if RoughnessFromSlopeSTD(Col,Row,11,z) then Results.Add('Roughness 11x11: ' + RealToString(z,6,2) + '%');
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('roughness done'); {$EndIf}
+
+   {$If Defined(MultipleCurvatureMethods) and Defined(CurvaturePointParameters)}
+      //this one is off by default, since curvature is so messy
+      if GetCurvature(round(xgrid),round(ygrid),PlanCurv,SlopeCurv) then begin
+         Results.Add('Plan curvature: ' + RealToString(PlanCurv,12,6));
+         Results.Add('Slope curvature:' + RealToString(SlopeCurv,12,6));
+      end;
+     {$If Defined(TimePointParameters)} WriteLineToDebugFile('curvature done'); {$EndIf}
+   {$EndIf}
+
+   {$IfDef ExGeostats}
+   {$Else}
+      {$IfDef MultipleCurvatureMethods}
+         //this one is off by default, since curvature is so messy
+         if GetEvansParams(Col,Row,MDDef.WoodRegionRadiusPixels,MaxSlp,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve) then begin
+            Results.Add('');
+            Results.Add('Evans curvature (Region size=' + IntToStr(MDDef.WoodRegionRadiusPixels) + '):');
+            Results.Add('   Plan curvature: ' + RealToString(PlanCurvature,13,6));
+            Results.Add('   Slope curvature:' + RealToString(SlopeCurvature,12,6));
+            Results.Add('   Cross curvature:' + RealToString(CrossC,12,6));
+            Results.Add('   Max curvature: ' + RealToString(MaxCurve,14,6));
+            Results.Add('   Min curvature:' + RealToString(MinCurve,14,6));
+            {$If Defined(TimePointParameters)} WriteLineToDebugFile('Evans done'); {$EndIf}
+         end;
+      {$EndIf}
+
+      Results2 := tStringList.Create;
+      if FigureOpenness(Col,Row,MDDef.OpenGridBoxSize,Upward,Downward,Results2) then begin
+         Results.Add('');
+         Results.Add('Openness parameters (' + IntToStr(MDDef.OpenGridBoxSize) + ' m)');
+         Results.Add('  Upward openness: ' + RealToString(Upward,12,2) + '°');
+         Results.Add('  Downward openness:' + RealToString(Downward,12,2) + '°');
+         Results.Add('');
+         for i := 0 to pred(Results2.Count) do Results.Add('      ' + Results2.Strings[i]);
+         Results.Add('');
+         {$If Defined(TimePointParameters)} WriteLineToDebugFile('Openness done'); {$EndIf}
+      end;
+      Results2.Free;
+
+      {$If Defined(PointSSOPointParameters)}
+         //this one is off by default, since it is so slow for lidar
+         if PointSSOComputations(Col,Row,MDDef.SSOBoxSizeMeters, SSOvars,false,true,false) then  begin
+            Results.Add('SSO parameters (' + IntToStr(MDDef.SSOBoxSizeMeters) + ' m)');
+            Results.Add('  Points in box: ' + IntToStr(SSOvars.NumPts));
+            Results.Add('  Organization ln(s2/s3): ' + RealToString(SSOvars.s2s3,12,2));
+            Results.Add('  Organization direction: ' + RealToString(SSOvars.TheDipDirs[3],6,1) + '°');
+            Results.Add('  Relief: ' + RealToString(SSOvars.ElevRange,12,2) + ' m');
+            Results.Add('  Region average elev: ' + RealToString(SSOvars.AvgElev,12,2) + ' m');
+            Results.Add('  Region elev std dev: ' + RealToString(SSOvars.StdDevElev,12,2));
+            Results.Add('  Region max slope: ' + RealToString(100*SSOvars.MaxSlope,12,2) + '%');
+            Results.Add('  Roughness factor: ' + RealToString(SSOvars.RoughnessFactor,8,3));
+            {$If Defined(TimePointParameters)} WriteLineToDebugFile('SSO done'); {$EndIf}
+         end;
+      {$EndIf}
+   {$EndIf}
+   ModalStringListDisplay(Results,'Point parameters');
+   ShowDefaultCursor;
+   {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters out'); {$EndIf}
+end;
+
+
+procedure tDEMDataSet.SlopeMethodsReportFromLatLong(lat,Long : float64; Title : shortstring = '');
+var
+   Col,Row : integer;
+begin
+   if LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row) then SlopeMethodsReport(Col,Row,Title);
+end;
+
+
+procedure tDEMDataSet.TrendSurfaceEquations(xp,yp : integer; Title : shortstring = '');
+var
+   Results : tStringList;
+   CurMethod,Decs : byte;
+   i,j,k : integer;
+   aLine : shortString;
+   SlopeAspectRec : tSlopeAspectRec;
+begin
+   SaveBackupDefaults;
+   Results := tStringList.Create;
+   Results.Add(AreaName);
+   if (Title <> '') then Results.Add(Title);
+   Results.Add('Point: ' + DEMLocationString(xp,yp));
+   Results.Add('Col=' + IntToStr(xp) + '  & row=' + IntToStr(yp));
+   Results.Add('Classified as: ' + PointTypeName(ClassifyAPoint(xp,yp)));
+   Results.Add('');
+   MDDef.SlopeAlgorithm := smLSQ;
+   for i := 1 to 4 do begin
+      MDDef.SlopeLSQradius := i;
+      for j := 1 to 4 do begin
+         MDDef.SlopeLSQorder := j;
+            if GetSlopeAndAspect(xp,yp,SlopeAspectRec) then begin
+               if (i=1) and (j=1) then begin
+                  Results.Add(  RealToString(SlopeAspectRec.znw,13,2) + RealToString(SlopeAspectRec.zn,13,2) + RealToString(SlopeAspectRec.zne,13,2) +  MessLineBreak +
+                                RealToString(SlopeAspectRec.zw,13,2)  + RealToString(SlopeAspectRec.z,13,2)  + RealToString(SlopeAspectRec.ze,13,2)  +  MessLineBreak +
+                                RealToString(SlopeAspectRec.zsw,13,2) + RealToString(SlopeAspectRec.zs,13,2) + RealToString(SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak );
+                  Results.Add('');
+               end;
+               aLine := SlopeMethodName(MDDef.SlopeAlgorithm) + RealToString(SlopeAspectRec.SlopePercent,7,2) + '%' + RealToString(SlopeAspectRec.AspectDirTrue,6,1) + '°T  ';
+               for k := 1 to 15 do begin
+                  if (abs(SlopeAspectRec.Coefs[k]) > 0.00000001) then begin
+                     case k of
+                         1 : Decs := 2;
+                         2,3 : Decs := 4;
+                         4..6 : Decs := 6;
+                         else Decs := 8;
+                     end;
+                     Aline := Aline + ' ';
+                     if (SlopeAspectRec.Coefs[k] > 0) then Aline := Aline + '+' + RealToString(SlopeAspectRec.Coefs[k],-12,Decs)
+                     else Aline := Aline + RealToString(SlopeAspectRec.Coefs[k],-12,Decs);
+                     if (k > 1) then Aline := Aline + '*' + TrendSurMultiples[k];
+                  end;
+               end;
+               Results.Add(aLine);
+         end;
+      end;
+      Results.Add('');
+   end;
+   DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
+   RestoreBackupDefaults
+end;
+
+procedure tDEMDataSet.SlopeMethodsReport(xp,yp : integer; Title : shortstring = '');
+var
+   Results : tStringList;
+   CurMethod : byte;
+   i,j,k : integer;
+   aLine : shortString;
+   SlopeAspectRec : tSlopeAspectRec;
+
+   procedure DoOneMethod;
+   begin
+      if GetSlopeAndAspect(xp,yp,SlopeAspectRec,true,false) then begin
+         Results.Add(RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   ' +
+            RealToString(SlopeAspectRec.AspectDirTrue,7,1) + '°T   ' + RealToString(SlopeAspectRec.AspectDirGrid,8,1) + '° Grid    '  + SlopeMethodName(MDDef.SlopeAlgorithm))
+      end;
+   end;
+
+begin
+   SaveBackupDefaults;
+   Results := tStringList.Create;
+   Results.Add(AreaName);
+   if (Title <> '') then Results.Add(Title);
+   Results.Add('Point: ' + DEMLocationString(xp,yp));
+   Results.Add('Classified as: ' + PointTypeName(ClassifyAPoint(xp,yp)));
+   Results.Add('Col=' + IntToStr(xp) + '  & row=' + IntToStr(yp));
+   Results.Add('');
+   Results.Add('Neighborhood elevations (m)');
+   GetSlopeAndAspect(xp,yp,SlopeAspectRec);
+   Results.Add(  RealToString( SlopeAspectRec.znw,13,2) + RealToString( SlopeAspectRec.zn,13,2) + RealToString( SlopeAspectRec.zne,13,2) +  MessLineBreak +
+                 RealToString( SlopeAspectRec.zw,13,2)  + RealToString( SlopeAspectRec.z,13,2)   + RealToString( SlopeAspectRec.ze,13,2)  +  MessLineBreak +
+                 RealToString( SlopeAspectRec.zsw,13,2) + RealToString( SlopeAspectRec.zs,13,2)  + RealToString( SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak );
+   Results.Add('');
+   Results.Add('         Slope                 Aspect                    Method');
+   for CurMethod := FirstSlopeMethod to LastSlopeMethod do begin
+      MDDef.SlopeAlgorithm := CurMethod;
+      if (CurMethod = smLSQ) then begin
+         for i := 1 to 4 do begin
+            MDDef.SlopeLSQradius := i;
+            for j := 1 to 4 do begin
+               MDDef.SlopeLSQorder := j;
+               DoOneMethod;
+            end;
+         end;
+      end
+      else begin
+         DoOneMethod;
+      end;
+   end;
+   DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
+   RestoreBackupDefaults
+end;
+
+
+
+procedure tDEMDataSet.DirectionalSlopesReport(Lat,Long : float64);
+var
+   MenuStr : AnsiString;
+   x,y : integer;
+   xgf,ygf : float64;
+   SlopeAspectRec : tSlopeAspectRec;
+begin
+   LatLongDegreeToDEMGrid(Lat,Long,xgf,ygf);
+   x := round(xgf);
+   y := round(ygf);
+
+   GetSlopeAndAspect(x,y,SlopeAspectRec,false,false);
+   MenuStr := 'Point: ' + DEMLocationString(x,y) +  MessLineBreak +  MessLineBreak + 'Elevations: ' +  MessLineBreak +
+              RealToString( SlopeAspectRec.znw,13,2) + RealToString( SlopeAspectRec.zn,13,2) + RealToString( SlopeAspectRec.zne,13,2) +  MessLineBreak +
+              RealToString( SlopeAspectRec.zw,13,2)  + RealToString( SlopeAspectRec.z,13,2)   + RealToString( SlopeAspectRec.ze,13,2)  +  MessLineBreak +
+              RealToString( SlopeAspectRec.zsw,13,2) + RealToString( SlopeAspectRec.zs,13,2)  + RealToString( SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak +
+              'Slopes: ' +  MessLineBreak  +
+              RealToString( 100*(SlopeAspectRec.znw-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zn-SlopeAspectRec.z)/AverageYSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zne-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' +  MessLineBreak +
+              RealToString( 100*(SlopeAspectRec.zw-SlopeAspectRec.z)/AverageXSpace,12,2) + '%' + '             ' + RealToString( 100*(SlopeAspectRec.ze-SlopeAspectRec.z)/AverageXSpace,12,2) + '%' +  MessLineBreak +
+              RealToString( 100*(SlopeAspectRec.zsw-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zs-SlopeAspectRec.z)/AverageYSpace,12,2) + '%' + RealToString( 100*(SlopeAspectRec.zse-SlopeAspectRec.z)/AverageDiaSpace,12,2) + '%'+  MessLineBreak + '  ' +
+              MessLineBreak +
+              'Point slope:' + MessLineBreak +   RealToString(SlopeAspectRec.SlopePercent,8,2) + '%   ' + RealToString(SlopeAspectRec.SlopeDegree,8,2) + '°   aspect ' +
+                   RealToString(SlopeAspectRec.AspectDirTrue,8,1) + '°    ' + SlopeMethodName(MDDef.SlopeAlgorithm);
+   MessageToContinue(MenuStr);
+end;
+
+{$EndIf}
 
 
 

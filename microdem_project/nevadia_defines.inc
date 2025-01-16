@@ -1,9 +1,9 @@
-﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 //this file should be in every unit of the program
 //it accomplishes several things:
@@ -20,7 +20,6 @@
 
 {$WEAKLINKRTTI ON}
 
-
 //{$Define ExDEMIXexperimentalOptions}
 
 //{$Define IncludePython}
@@ -29,11 +28,9 @@
 
 {$Define FMXU_point_cloud}
 
-
 {$Define MICRODEM}
 {$Define VCL}
 {$Define RecordProblems}
-//{$Define RecordDEMIX}
 
 {$IfDef MSWindows}
    {$Define UseTDBF}
@@ -51,8 +48,8 @@
 {$Define UseFireDacSQLlite}
 
 {$Define ExOddballDEMexports}
-{$Define ExBILWrite}
 {$Define ExOddballDEMs}
+{$Define ExBILWrite}
 {$Define ExDRGimport}
 {$Define ExGeoPDF}
 {$Define ExWMS}
@@ -67,6 +64,6 @@
    {$Define ExSieve}
    {$Define ExLabDownloads}
    {$Define ExRedistrict}
-   //{$Define ExTIN}      //this will take some work to get out of the core program
+   //{$Define ExTIN}      //this will take some work to get out of core program
 
 

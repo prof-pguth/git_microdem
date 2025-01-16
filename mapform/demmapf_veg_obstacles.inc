@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch }
-{   file verified 7/30/2014       }
-{                                 }
-{ include file for demmapf        }
-{_________________________________}
 
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{      include file for demmapf          }
+{________________________________________}
 
 type
    tLandCoverSource = (lcsNLCD1992,lcsNLCD2001,lcsShapeFile,lcsNBCD,lcsLandFire);

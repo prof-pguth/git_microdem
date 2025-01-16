@@ -23,10 +23,14 @@ unit FMXU.Viewport3D;
 interface
 
 uses
-   System.Classes, System.Diagnostics, System.Types,
-   FMX.Viewport3D, FMX.Forms, FMX.Forms3D;
+   System.Classes, System.Diagnostics, System.Types, System.UITypes,
+   System.Generics.Collections,
+   FMX.Viewport3D, FMX.Forms, FMX.Forms3D, FMX.Controls3D, FMX.Objects3D,
+   FMX.Types3D;
 
 type
+  TList_of_TControl3D = TList<TControl3D>;
+
    TForm = class (FMX.Forms.TForm)
       private
          FLastPaintSeconds : Single;
@@ -49,10 +53,17 @@ type
          FLastPaintSeconds : Single;
          FOnBeforePaint : TNotifyEvent;
          FOnAfterPaint : TNotifyEvent;
+         FOnCustomPaint : TNotifyEvent;
 
       protected
+         function GetDesignCamera : TCamera;
+         function GetCurrentCamera : TCamera;
+         function GetRenderingList : TList_of_TControl3D;
+
          procedure Paint; override;
          procedure AfterPaint; override;
+
+         property OnCustomPaint : TNotifyEvent read FOnCustomPaint write FOnCustomPaint;
 
       public
          // Number of seconds the last Paint took - hopefully fractions of seconds :)
@@ -60,6 +71,8 @@ type
 
          property OnBeforePaint : TNotifyEvent read FOnBeforePaint write FOnBeforePaint;
          property OnAfterPaint : TNotifyEvent read FOnAfterPaint write FOnAfterPaint;
+
+         procedure MoveCameraAroundTarget(pitchDelta, turnDelta : Single);
    end;
 
    TForm3D = class (FMX.Forms3D.TForm3D)
@@ -87,6 +100,8 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
+uses FMXU.Scene;
+
 // ------------------
 // ------------------ TForm ------------------
 // ------------------
@@ -108,6 +123,20 @@ end;
 // ------------------ TViewport3D ------------------
 // ------------------
 
+type
+  TViewPort3DFields = record
+     FCamera: TCamera;
+     FDesignCamera: TCamera;
+     FDesignCameraZ: TDummy;
+     FDesignCameraX: TDummy;
+     FFill: TAlphaColor;
+     FMultisample: TMultisample;
+     FUsingDesignCamera: Boolean;
+     FDrawing: Boolean;
+     FRenderingList: TList<TControl3D>;
+  end;
+  PViewPort3DFields = ^TViewPort3DFields;
+
 // Paint
 //
 procedure TViewport3D.Paint;
@@ -115,7 +144,9 @@ begin
    var stopWatch := TStopwatch.StartNew;
    if Assigned(FOnBeforePaint) then
       FOnBeforePaint(Self);
-   inherited Paint;
+   if Assigned(FOnCustomPaint) then
+      FOnCustomPaint(Self)
+   else inherited Paint;
    FLastPaintSeconds := stopWatch.ElapsedTicks / stopWatch.Frequency;
 end;
 
@@ -126,6 +157,45 @@ begin
    inherited;
    if Assigned(FOnAfterPaint) then
       FOnAfterPaint(Self);
+end;
+
+// MoveCameraAroundTarget
+//
+procedure TViewport3D.MoveCameraAroundTarget(pitchDelta, turnDelta : Single);
+begin
+   if (Camera <> nil) and (Camera.Target <> nil) then
+      MoveControl3DAroundTarget(Camera, Camera.Target, pitchDelta, turnDelta);
+end;
+
+// GetDesignCamera
+//
+function TViewport3D.GetDesignCamera : TCamera;
+var
+  fieldsPtr : PViewPort3DFields;
+begin
+  fieldsPtr := PViewPort3DFields(@Camera);
+  Result := fieldsPtr.FDesignCamera;
+  Assert(Result.ClassType = TCamera);
+end;
+
+// GetCurrentCamera
+//
+function TViewport3D.GetCurrentCamera: TCamera;
+begin
+  if (Camera = nil) or UsingDesignCamera then
+    Result := GetDesignCamera
+  else Result := Camera;
+end;
+
+// GetRenderingList
+//
+function TViewport3D.GetRenderingList : TList<TControl3D>;
+var
+  fieldsPtr : PViewPort3DFields;
+begin
+  fieldsPtr := PViewPort3DFields(@Camera);
+  Result := fieldsPtr.FRenderingList;
+  Assert(Result.ClassType = TList<TControl3D>);
 end;
 
 // ------------------

@@ -147,6 +147,9 @@ type
          class function MapBuffer(const buffer : ID3D11Buffer; mapType: D3D11_MAP) : TD3D11_MAPPED_SUBRESOURCE;
          class procedure UnmapBuffer(const buffer : ID3D11Buffer);
 
+         function  MapToBits(const aRect : TRect) : TD3D11_MAPPED_SUBRESOURCE;
+         procedure UnmapToBits;
+
          class function Valid : Boolean; override;
          class function PixelFormat : TPixelFormat; override;
          class function MaxTextureSize : Integer; override;
@@ -565,6 +568,33 @@ end;
 // DoCopyToBits
 //
 procedure TFMXUContext3D_DX11.DoCopyToBits(const bits: Pointer; const pitchInBytes : Integer; const aRect: TRect);
+begin
+   var mappedSubres := MapToBits(aRect);
+   try
+      if     (aRect.Left = 0) and (aRect.Top = 0)
+         and (aRect.Width = Width) and (aRect.Height = Height)
+         and (pitchInBytes = Width * 4)
+         and (mappedSubres.RowPitch = Cardinal(pitchInBytes)) then begin
+         // same layout, whole rect, straight copy is possible
+         Move(mappedSubres.pData^, bits^, pitchInBytes * Height)
+      end else begin
+         // layout does not match, copy by rows
+         var pSource := PAlphaColorArray(mappedSubres.pData);  Inc(pSource, aRect.Left);
+         var pDest   := PAlphaColorArray(bits);                Inc(pDest, aRect.Left);
+         var w4 := aRect.Width * 4;
+         var sourcePitchInPixels := mappedSubres.RowPitch div 4;
+         var destPitchInPixels := UInt(pitchInBytes) div 4;
+         for var i : Cardinal := aRect.Top to aRect.Bottom - 1 do
+            Move(pSource[i * sourcePitchInPixels], pDest[i * destPitchInPixels], w4);
+      end;
+   finally
+      UnmapToBits;
+   end;
+end;
+
+// MapToBits
+//
+function TFMXUContext3D_DX11.MapToBits(const aRect : TRect) : TD3D11_MAPPED_SUBRESOURCE;
 
    procedure PrepareBuffer;
    begin
@@ -595,30 +625,17 @@ begin
 
       vDevice.DeviceContext.CopySubresourceRegion(FCopyToBitsTex2D, 0, 0, 0, 0, backBuffer, 0, nil);
 
-      var mappedSubres := vDevice.Map(FCopyToBitsTex2D, D3D11_MAP_READ);
-      try
-         if     (aRect.Left = 0) and (aRect.Top = 0)
-            and (aRect.Width = Width) and (aRect.Height = Height)
-            and (pitchInBytes = Width * 4)
-            and (mappedSubres.RowPitch = Cardinal(pitchInBytes)) then begin
-            // same layout, whole rect, straight copy is possible
-            Move(mappedSubres.pData^, bits^, pitchInBytes * Height)
-         end else begin
-            // layout does not match, copy by rows
-            var pSource := PAlphaColorArray(mappedSubres.pData);  Inc(pSource, aRect.Left);
-            var pDest   := PAlphaColorArray(bits);                Inc(pDest, aRect.Left);
-            var w4 := aRect.Width * 4;
-            var sourcePitchInPixels := mappedSubres.RowPitch div 4;
-            var destPitchInPixels := UInt(pitchInBytes) div 4;
-            for var i : Cardinal := aRect.Top to aRect.Bottom - 1 do
-               Move(pSource[i * sourcePitchInPixels], pDest[i * destPitchInPixels], w4);
-         end;
-      finally
-         vDevice.Unmap(FCopyToBitsTex2D);
-      end;
+      Result := vDevice.Map(FCopyToBitsTex2D, D3D11_MAP_READ);
    finally
       SetExceptionMask(fpuMask);
    end;
+end;
+
+// UnmapToBits
+//
+procedure TFMXUContext3D_DX11.UnmapToBits;
+begin
+   vDevice.Unmap(FCopyToBitsTex2D);
 end;
 
 // DoBeginScene

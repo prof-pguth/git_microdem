@@ -237,17 +237,6 @@ begin
 end;
 
 
-
-procedure SafeAdjustGeoBoundBoxForPixelIsArea(var bb : sfBoundBox);
-const
-   QuarterSec = 1 / (4 * 3600);
-begin
-   bb.XMin := bb.XMin + QuarterSec;
-   bb.XMax := bb.XMax - QuarterSec;
-   bb.YMin := bb.YMin + QuarterSec;
-   bb.YMax := bb.YMax - QuarterSec;
-end;
-
 function IntersectionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
 begin
    Result.XMin := Petmath.MaxFloat(bb1.XMin,bb2.xmin);
@@ -1112,7 +1101,6 @@ begin
 end;
 
 
-
 function FilterDecBasedOnMapSize(MapPixelSize : float64)  : integer;
 begin
    if MapPixelSize < 0 then Result := -6
@@ -1132,6 +1120,18 @@ begin
    Result.yMax := Lat + 0.001;
    Result.yMin := Lat - 0.001;
 end;
+
+
+procedure SafeAdjustGeoBoundBoxForPixelIsArea(var bb : sfBoundBox);
+const
+   QuarterSec = 1 / (4 * 3600);
+begin
+   bb.XMin := bb.XMin + QuarterSec;
+   bb.XMax := bb.XMax - QuarterSec;
+   bb.YMin := bb.YMin + QuarterSec;
+   bb.YMax := bb.YMax - QuarterSec;
+end;
+
 
 
 
@@ -1170,8 +1170,6 @@ function MakeGeoFilterFromBoundingBox(bBox : sfBoundBox) : AnsiString;
 var
    TStr : shortstring;
 begin
-   //Result := MakeCornersGeoFilter(bBox.YMax,bBox.XMin,bBox.YMin,bBox.xMax);
-
    LongitudeAngleInRange(bbox.xmin);
    LongitudeAngleInRange(bbox.xmax);
    if (bbox.xmin < bbox.xmax) then TStr := 'LONG_LOW<=' + RealToString(bbox.xmax,-18,6) + ' AND LONG_HI>=' + RealToString(bbox.xmin,-18,6)

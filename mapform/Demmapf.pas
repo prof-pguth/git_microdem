@@ -454,17 +454,17 @@ type
     Slope1: TMenuItem;
     MenuItem2: TMenuItem;
     Aspect2: TMenuItem;
-    Profileconvexity1: TMenuItem;
-    Planconvexity1: TMenuItem;
-    Crosssectionalcurvature1: TMenuItem;
+    //Profileconvexity1: TMenuItem;
+    //Planconvexity1: TMenuItem;
+    //Crosssectionalcurvature1: TMenuItem;
     MenuItem3: TMenuItem;
     erraincategory1: TMenuItem;
     Lntransformelevs1: TMenuItem;
     Log10transformelevs1: TMenuItem;
     Derivativegrid1: TMenuItem;
     Slopesin1: TMenuItem;
-    Minimumcurvature1: TMenuItem;
-    Maximumcurvature1: TMenuItem;
+    //Minimumcurvature1: TMenuItem;
+    //Maximumcurvature1: TMenuItem;
     Pointmodedigitizing1: TMenuItem;
     Streamdigitizing1: TMenuItem;
     N16bitBSQ1: TMenuItem;
@@ -1606,6 +1606,9 @@ type
     Whiteboxfeaturepreservingsmoothing1: TMenuItem;
     N74: TMenuItem;
     N76: TMenuItem;
+    CompareLSQslopepolynomialorder1: TMenuItem;
+    CompareLSQslopewindowsize1: TMenuItem;
+    Neighborhoodsurfaceequations1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -1858,16 +1861,13 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure erraincategory1Click(Sender: TObject);
     procedure Lntransformelevs1Click(Sender: TObject);
     procedure Log10transformelevs1Click(Sender: TObject);
-    procedure Crosssectionalcurvature1Click(Sender: TObject);
-    procedure Profileconvexity1Click(Sender: TObject);
-    procedure Planconvexity1Click(Sender: TObject);
     procedure Derivativegrid1Click(Sender: TObject);
     procedure Slope3Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure Slopesin1Click(Sender: TObject);
-    procedure Minimumcurvature1Click(Sender: TObject);
-    procedure Maximumcurvature1Click(Sender: TObject);
+    //procedure Minimumcurvature1Click(Sender: TObject);
+    //procedure Maximumcurvature1Click(Sender: TObject);
     procedure Pointmodedigitizing1Click(Sender: TObject);
     procedure Streamdigitizing1Click(Sender: TObject);
     procedure N16bitBSQ1Click(Sender: TObject);
@@ -2069,8 +2069,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Driftmodels1Click(Sender: TObject);
     procedure Elevationmoments1Click(Sender: TObject);
     procedure Slopemoments1Click(Sender: TObject);
-    procedure Plancurvature1Click(Sender: TObject);
-    procedure Profilecurvature1Click(Sender: TObject);
+    //procedure Plancurvature1Click(Sender: TObject);
+    //procedure Profilecurvature1Click(Sender: TObject);
     procedure Allreliefmeasures1Click(Sender: TObject);
     procedure Gridaveragestddev1Click(Sender: TObject);
     procedure Rugosity1Click(Sender: TObject);
@@ -2750,6 +2750,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure ElevMoments1Click(Sender: TObject);
     procedure Whiteboxfeaturepreservingsmoothing1Click(Sender: TObject);
     procedure N76Click(Sender: TObject);
+    procedure CompareLSQslopepolynomialorder1Click(Sender: TObject);
+    procedure CompareLSQslopewindowsize1Click(Sender: TObject);
+    procedure Neighborhoodsurfaceequations1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -2982,7 +2985,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function GeotiffDEMNameOfMap : PathStr;
 
     procedure FindSlopePoints(Memo1 : tMemo; SlopeLimit : float64; IHSMerge : boolean = false);
-    //procedure PlotExtremeZValues(Memo1 : tMemo; LowZ,HighZ : float32; sl : tstringlist = nil);
     procedure CheckProperTix;
     procedure MakeLastPointFirst;
     procedure DoneWithStreamSelection;
@@ -3034,6 +3036,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure OutlinePixelsFromAnotherDEM(DEM : integer; Color : tColor);
     procedure PlotPixelsInPixelFromAnotherDEM(DEM : integer; Lat,Long : float64);
     procedure OutlineGridOutlines(Lat,Long : float64);
+
+    procedure OutlineGridLimitsOnMap(GridLimits : tGridLimits);
 
     {$IfDef ExViewshed}
     {$Else}
@@ -3426,13 +3430,6 @@ uses
    AltMain,
    {$EndIf}
 
-
-   {$IfDef ExWaveRefraction}
-   {$Else}
-      //refraction_model,
-   {$EndIf}
-
-
    {$IfDef ExFresnel}
    {$Else}
       fresnel_block_form,
@@ -3511,7 +3508,6 @@ uses
    Monitor_Change_Form,
    DEM_sat_Header,
    ufrmMain,
-   aspect_colors,
    DEMHandw,
    DEMLOSW, DEMLOS_Draw,
    BaseGraf,
@@ -3562,7 +3558,6 @@ var
    MovieList : tStringList;
 
 {$I demmapf_gdal.inc}
-{$I demmapf_geostats.inc}
 {$I demmapf_veg_obstacles.inc}
 {$I demmapf_set_up_new_windows.inc}
 {$I demmapf_resize_map.inc}
@@ -3572,9 +3567,22 @@ var
 
 {$IfDef ExGeology}
 {$Else}
-    {$I demmapf_geology.inc}
+   {$I demmapf_geology.inc}
 {$EndIf}
 
+
+procedure TMapForm.OutlineGridLimitsOnMap(GridLimits : tGridLimits);
+var
+  x1,y1,x2,y2 : integer;
+begin
+   DoFastMapRedraw;
+   MapDraw.DEMGridToScreen(GridLimits.XGridLow,GridLimits.YGridLow,x1,y1);
+   MapDraw.DEMGridToScreen(GridLimits.XGridHigh,GridLimits.YGridHigh,x2,y2);
+   Image1.Canvas.Pen.Width := 3;
+   Image1.Canvas.Pen.Color := clRed;
+   Image1.Canvas.Brush.Style := bsClear;
+   Image1.Canvas.Rectangle(x1,y1,x2,y2);
+end;
 
 
 procedure ForceRedrawAllMaps;
@@ -5631,13 +5639,6 @@ begin
     ResizeByPercentage(Blowup);
 end;
 
-(*
-
-procedure TMapForm.Comparechannelnetworks1Click(Sender: TObject);
-begin
-   //CompareChannelNetworks;
-end;
-*)
 
 
 procedure TMapForm.Compareaspectmaps1Click(Sender: TObject);
@@ -5807,11 +5808,46 @@ begin
    CompareHillshadeMaps(MapDraw.DEMonMap);
 end;
 
-procedure TMapForm.Comparemultiplegridstothisone2Click(Sender: TObject);
-//var
-    //DEMsWanted : tDEMbooleanArray;
+procedure TMapForm.CompareLSQslopepolynomialorder1Click(Sender: TObject);
+var
+  i,DEM : integer;
 begin
-    //GetMultipleDEMsFromList('Histograms',DEMsWanted);
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   MDDef.SlopeAlgorithm := smLSQ;
+   MDDef.SlopeLSQradius := 2;
+   for i := 1 to 3 do begin
+      MDDef.SlopeLSQorder := i;
+      DEM := CreateSlopeMapPercent(false,MapDraw.DEMonMap);
+      DEMglb[DEM].AreaName := DEMglb[MapDraw.DEMonMap].AreaName + '_' + SlopeMethodName(MDDef.SlopeAlgorithm);
+      CreateDEMSelectionMap(DEM,true,true,MDDef.DefSlopeMap);
+      ResizeByPercentage(100);
+   end;
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+end;
+
+procedure TMapForm.CompareLSQslopewindowsize1Click(Sender: TObject);
+var
+  i,DEM : integer;
+begin
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   MDDef.SlopeAlgorithm := smLSQ;
+   MDDef.SlopeLSQorder := 2;
+   for i := 1 to 4 do begin
+      MDDef.SlopeLSQradius := i;
+      DEM := CreateSlopeMapPercent(false,MapDraw.DEMonMap);
+      DEMglb[DEM].AreaName := DEMglb[MapDraw.DEMonMap].AreaName + '_' + SlopeMethodName(MDDef.SlopeAlgorithm);
+      CreateDEMSelectionMap(DEM,true,true,MDDef.DefSlopeMap);
+      ResizeByPercentage(100);
+   end;
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+end;
+
+procedure TMapForm.Comparemultiplegridstothisone2Click(Sender: TObject);
+begin
     CreateGridHistograms(GetMultipleDEMsFromList('Histograms'));
 end;
 
@@ -6361,7 +6397,8 @@ end;
 
 procedure TMapForm.Aspectoptions1Click(Sender: TObject);
 begin
-   ChangeAspectMap(Self);
+   //ChangeAspectMap(Self);
+   ChangeSlopeMapOptions(Self);
 end;
 
 procedure TMapForm.Aspectrosediagram1Click(Sender: TObject);
@@ -6409,15 +6446,6 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.Crosssectionalcurvature1Click(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      SetAllCurvatures(false);
-      MDDef.DoCrossCurve := true;
-      MakeMomentsGrid(MapDraw.DEMonMap,'C');
-   {$EndIf}
-end;
 
 procedure TMapForm.CSVforVDATUM1Click(Sender: TObject);
 begin
@@ -6436,21 +6464,6 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.Profileconvexity1Click(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-       CreateProfileConvexityMap(MapDraw.DEMonMap);
-   {$EndIf}
-end;
-
-procedure TMapForm.Profilecurvature1Click(Sender: TObject);
-begin
-   {$IfDef ExGeostats}
-   {$Else}
-      MakeMomentsGrid(MapDraw.DEMonMap,'r',MDDef.MomentsBoxSizeMeters);
-   {$EndIf}
-end;
 
 procedure TMapForm.Profilecurvature2Click(Sender: TObject);
 begin
@@ -6465,24 +6478,6 @@ begin
    {$Else}
        NewGrid := WBT_PlanCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
-   {$EndIf}
-end;
-
-procedure TMapForm.Planconvexity1Click(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      SetAllCurvatures(false);
-      MDDef.DoPlanCurve := true;
-      MakeMomentsGrid(MapDraw.DEMonMap,'C');
-   {$EndIf}
-end;
-
-procedure TMapForm.Plancurvature1Click(Sender: TObject);
-begin
-   {$IfDef ExGeostats}
-   {$Else}
-      MakeMomentsGrid(MapDraw.DEMonMap,'l',MDDef.MomentsBoxSizeMeters);
    {$EndIf}
 end;
 
@@ -6549,27 +6544,6 @@ begin
    {$Else}
        NewGrid := WBT_MinimalCurvature(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
-   {$EndIf}
-end;
-
-procedure TMapForm.Minimumcurvature1Click(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      SetAllCurvatures(false);
-      MDDef.DoMinCurve := true;
-      MakeMomentsGrid(MapDraw.DEMonMap,'C');
-   {$EndIf}
-end;
-
-
-procedure TMapForm.Maximumcurvature1Click(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      SetAllCurvatures(false);
-      MDDef.DoMinCurve := true;
-      MakeMomentsGrid(MapDraw.DEMonMap,'C');
    {$EndIf}
 end;
 
@@ -13593,8 +13567,6 @@ begin
       Pointcloudtodatabase1.Visible := (pt_cloud_opts_fm <> nil) and ExpertDEMVersion;
    {$EndIf}
 
-   {$IfDef RecordProblems} WriteLineToDebugFile('SatOnMap=' + IntToStr(MapDraw.SatOnmap) + '   RS options=' + TrueOrFalse(RemoteSensingPopupOptions.Visible)); {$EndIf}
-
    {$IfDef ExWMS}
        WMSOpactiy1.Visible := false;
    {$Else}
@@ -16241,11 +16213,7 @@ end;
 
 procedure TMapForm.SlopeCategories1Click(Sender: TObject);
 begin
-   if ChangeSlopeMapOptions(Self) then begin
-      MapDraw.DeleteSingleMapLayer(MapDraw.BaseMapFName);
-      MapDraw.DeleteSingleMapLayer(MapDraw.LegendOverlayfName);
-      DrawColoredMap1Click(Nil);
-   end;
+   ChangeSlopeMapOptions(Self);
 end;
 
 procedure TMapForm.Duplicatemapwindow1Click(Sender: TObject);
@@ -16971,8 +16939,8 @@ begin
    end;
    if WhatTo in [SeekingSecondNewPanorama] then OldRad := -99;
 
-   if ThisCapt <> '' then SaveCaption := ThisCapt;
-   if SaveCaption  <> '' then NewTitle := SaveCaption
+   if (ThisCapt <> '') then SaveCaption := ThisCapt;
+   if (SaveCaption  <> '') then NewTitle := SaveCaption
    else case DEMNowDoing of
         Calculating,
         VerifyingPoint,
@@ -17034,10 +17002,9 @@ begin
         TerrainBlowup                  : NewTitle := PointFor + 'Terrain Blowup';
         GetPointSymbols                : NewTitle := PointsFor + 'symbol overlay';
         RegionDNs                      : NewTitle := NWCornerStr + ' average reflectance';
-        //OpenMrSid                      : NewTitle := NWCornerStr + 'MrSid blowup';
         NewCoverage,
         CornerEditBox,
-        GraphFilterDB                        : NewTitle := NWCornerStr;
+        GraphFilterDB                  : NewTitle := NWCornerStr;
         NewTrack                       : NewTitle := 'Track';
         StreamDistance                 : NewTitle := 'Route for distance';
         GetRGBValues                   : NewTitle := PointFor + 'RGB values';
@@ -17053,7 +17020,6 @@ begin
         RangeCircles                   : NewTitle := 'Range circles';
         GrainByRegionSize              : NewTitle := PointFor + 'grain by region size';
         GetPointFabric                 : NewTitle := PointFor + 'grain statistics';
-        //DoingDatumShift                : NewTitle := 'Datum shift';
         ShapeTrack,
         ShapePoint                     : NewTitle := 'Digitize point' + ForShapefile;
         ShapeLine,ShapeFirstLine       : NewTitle := 'Digitize line' + ForShapefile;
@@ -17081,7 +17047,6 @@ begin
         DeleteMultipleDBRecs           : NewTitle := OLAF + 'delete records';
         MapTissotIndicatrix            : NewTitle := 'Point for Tissot indicatrix';
         LabelIDDataBase                : NewTitle := 'DB record to label';
-        //USCounty                       : NewTitle := 'US county';
         EditPointElevs                 : NewTitle := 'Edit point elevations';
         FloodFill                      : NewTitle := 'Pt to flood fill';
         DragEdit                       : NewTitle := LPF;
@@ -18593,6 +18558,14 @@ begin
    StringList2CSVtoDB(Results,fName);
 end;
 
+procedure TMapForm.Neighborhoodsurfaceequations1Click(Sender: TObject);
+var
+   xDEMg1,yDEMg1,xSATg1,ySATg1 : float64;
+begin
+   CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
+   DEMGlb[MapDraw.DEMonMap].TrendSurfaceEquations(round(xDEMg1),round(yDEMg1));
+end;
+
 procedure TMapForm.Newband1Click(Sender: TObject);
 begin
    {$IfDef ExSat}
@@ -19968,7 +19941,7 @@ var
    xDEMg1,yDEMg1,xSATg1,ySATg1 : float64;
 begin
    CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
-   DEMGlb[MapDraw.DEMonMap].SlopeMethodsReport(round(xDEMg1), round(yDEMg1));
+   DEMGlb[MapDraw.DEMonMap].SlopeMethodsReport(round(xDEMg1),round(yDEMg1));
 end;
 
 procedure TMapForm.IDSpeedButtonClick(Sender: TObject);
@@ -20895,7 +20868,8 @@ procedure TMapForm.BitmapandXYZBfile1Click(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
    {$Else}
-     Map3D := MapTo3DView(Self.MapDraw);
+       //Map3D := MapTo3DView(Self.MapDraw);
+       CopyMapTo3Dview(Self);
    {$EndIf}
 end;
 

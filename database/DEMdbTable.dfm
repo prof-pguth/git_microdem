@@ -2215,7 +2215,7 @@ object dbtablef: Tdbtablef
         OnClick = Exportlinetopointdatabase1Click
       end
       object RecordtoKML1: TMenuItem
-        Caption = 'Record to KML'
+        Caption = 'Single record to KML'
         OnClick = RecordtoKML1Click
       end
       object Latlongelevofrecordcorners1: TMenuItem
@@ -2535,6 +2535,10 @@ object dbtablef: Tdbtablef
         Caption = 'Add DEMIX tile centroid'
         OnClick = AddDEMIXtilecentroid1Click
       end
+      object AddDEMIXtileboundingbox1: TMenuItem
+        Caption = 'Add DEMIX tile bounding box'
+        OnClick = AddDEMIXtileboundingbox1Click
+      end
       object AddUTMcoordfields1: TMenuItem
         Caption = 'Add UTM'
         OnClick = AddUTMcoordfields1Click
@@ -2846,7 +2850,7 @@ object dbtablef: Tdbtablef
       end
     end
     object AddCopDEMaverageslopeinarea1: TMenuItem
-      Caption = 'Add CopDEM average slope in area'
+      Caption = 'Add CopDEM average slope, relief, land cover  in area'
       OnClick = AddCopDEMaverageslopeinarea1Click
     end
     object Satelliteaddreflectance1: TMenuItem
