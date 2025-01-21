@@ -115,7 +115,7 @@ object dbtablef: Tdbtablef
       OnClick = BitBtn12Click
     end
     object Button4: TButton
-      Left = 387
+      Left = 384
       Top = 1
       Width = 34
       Height = 25
@@ -2153,6 +2153,10 @@ object dbtablef: Tdbtablef
         Caption = 'Load test and reference DEMs for tile'
         OnClick = LoadtestandreferenceDEMs1Click
       end
+      object LoadNeoDEMs1: TMenuItem
+        Caption = 'Load Neo DEMs'
+        OnClick = LoadNeoDEMs1Click
+      end
       object Loadmapsforthisarea1: TMenuItem
         Caption = 'Load maps for this area'
         OnClick = Loadmapsforthisarea1Click
@@ -2550,6 +2554,10 @@ object dbtablef: Tdbtablef
       object AddMGRS1: TMenuItem
         Caption = 'Add MGRS'
         OnClick = AddMGRS1Click
+      end
+      object AddMGRSboundingbox1: TMenuItem
+        Caption = 'Add MGRS bounding box'
+        OnClick = AddMGRSboundingbox1Click
       end
       object AddMercator1: TMenuItem
         Caption = 'Add Mercator'

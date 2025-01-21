@@ -129,6 +129,17 @@ type
          Row16Bit : ^tWordRow16Bit;
          Row8Bit  : ^tRow8Bit;
          BigRow   : ^tWordBigRow;
+         Tag42112 : shortstring;
+         Tag42112Offset,Tag42112Length : int64;
+         OffsetByteSize : word;
+         OffsetArraySize,
+         ImageBytesPerRow,
+         FirstIFD : int64;
+         BigTiff,
+         TiffOpen,
+         NeedWKTHailMary : boolean;
+         OriginalFileName: PathStr;
+         CurrentMissing : float32;
 
          procedure WordToByte(Band : integer; Row16bit : Word; var TheRow : byte); inline;
          function MakeDouble : Double;   {$IfDef InlineGeotiff} inline; {$EndIf}
@@ -151,21 +162,12 @@ type
          TiffHeader    : tTiffHeader;
          MapProjection : tMapProjection;
          RegVars : tRegVars;
-         BigTiff,BigEndian,CanEnhance,
-         TiffOpen,
-         NeedWKTHailMary,
-         TIFFImageColorDefined  : boolean;
-         OffsetByteSize : word;
-         OffsetArraySize,
-         ImageBytesPerRow,
-         FirstIFD : int64;
-         TiffHandle : THandle;
-         OriginalFileName,
          TIFFFileName   : PathStr;
+         TiffHandle : THandle; //public to read in multigrid
+         BigEndian,   //public to read in multigrid
+         CanEnhance,
+         TIFFImageColorDefined  : boolean;   //must be public
          TIFFImageColor : Petmar_types.TRGBLookUp;
-         CurrentMissing : float32;
-         Tag42112 : shortstring;
-         Tag42112Offset,Tag42112Length : int64;
          procedure OpenTiffFile;   //inline;
          procedure CloseTiffFile;  //inline;
 
@@ -718,7 +720,6 @@ end;
 
 function tTIFFImage.MakeWord : Word;
 var
-   //i1,i2 : word;
    v : array[1..2] of byte;
 begin
    FileRead(TiffHandle,v,2);
@@ -781,7 +782,6 @@ procedure tTIFFImage.SeekFileOffset(Row : int64);
 var
    TheOffset,LinesNeeded : int64;
 begin
-//restored from 6/20/23
    OpenTiffFile;
    if (TiffHeader.PhotometricInterpretation = 2) then begin  //color image
       if (TiffHeader.StripOffsets <> 0) then begin
@@ -1000,6 +1000,8 @@ end;
 
 
 function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
+//var
+   //ElevRangeSet : boolean;
 
          function InitializeTiffDEM(WantDEM : tDEMDataSet; ForceType : boolean = false; TypeWanted : tDEMprecision = ByteDEM) : boolean;
          var
@@ -1077,7 +1079,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                      WantDEM.DEMMapProj.InitProjFromWKTfile(ProgramRootDir + 'wkt_proj\osgb_1936.wkt');
                      WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                      WantDEM.DEMheader.DataSpacing := SpaceMeters;
-                     WantDEM.DEMheader.DigitizeDatum := UK_OS_grid;
+                     WantDEM.DEMheader.h_DatumCode := 'UK-OS';
                      {$IfDef RecordUKOS} WriteLineToDebugFile('DefineProjectionParameters Loading WKT, pName=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
                   end
                   else begin
@@ -1100,10 +1102,10 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                      else begin
                         WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                         WantDEM.DEMheader.DataSpacing := SpaceMeters;
-                        WantDEM.DEMheader.DigitizeDatum := ddDefined;
+                        WantDEM.DEMheader.h_DatumCode := 'Rect';
                         {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone)); {$EndIf}
                      end;
-                     if (WantDEM.DEMMapProj.h_DatumCode <> '') then WantDEM.DEMheader.DigitizeDatum := DatumCodeFromString(WantDEM.DEMMapProj.h_DatumCode);
+                     //if (WantDEM.DEMMapProj.h_DatumCode <> '') then WantDEM.DEMheader.aDigitizeDatum := DatumCodeFromString(WantDEM.DEMMapProj.h_DatumCode);
                      WantDEM.DEMMapProj.InitProjFomDEMHeader(WantDEM.DEMHeader);
                      WantDEM.DEMheader.UTMZone := WantDEM.DEMMapProj.projUTMZone;
                      WantDEM.DEMheader.LatHemi := WantDEM.DEMMapProj.LatHemi;
@@ -1196,7 +1198,7 @@ begin {tTIFFImage.CreateTiffDEM}
          Result := false;
          exit;
       end;
-
+      //ElevRangeSet := false;
       Result := InitializeTiffDEM(WantDEM);
       {$If Defined(RecordGeotiffProjection) or Defined(RecordUKOS)} WriteLineToDebugFile('After InitializeTiffDEM back, pname=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
       WantDEM.GeotiffImageDesc := GeotiffImageDesc;
@@ -1346,7 +1348,13 @@ begin {tTIFFImage.CreateTiffDEM}
 
          CloseTiffFile;
          if ShowDEMReadingProgress then EndProgress;
-         WantDEM.CheckMaxMinElev;
+
+         if (TiffHeader.SMax > TiffHeader.SMin) then begin
+            WantDEM.DEMheader.MaxElev := TiffHeader.SMax;
+            WantDEM.DEMheader.MinElev := TiffHeader.SMin;
+            //ElevationRangeSet := true;
+         end
+         else WantDEM.CheckMaxMinElev;
          {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over '); {$EndIf}
       end;
    {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
@@ -1966,14 +1974,14 @@ var
                      end;
                339 : SampleFormat := tSampleFormat(pred(TiffKeys[j].KeyOffset));
                340 : begin
-                        //Seek(TiffFile,TiffKeys[j].KeyOffset);
-                        //SMin := MakeDouble;
-                        //TStr := RealToString(SMin,-12,-4);
+                        FileSeek(TiffHandle,TiffKeys[j].KeyOffset,0);
+                        SMin := MakeDouble;
+                        TStr := RealToString(SMin,-12,-4);
                       end;
                341 : begin
-                        //Seek(TiffFile,TiffKeys[j].KeyOffset);
-                        //SMax := MakeDouble;
-                        //TStr := RealToString(SMax,-12,-4);
+                        FileSeek(TiffHandle,TiffKeys[j].KeyOffset,0);
+                        SMax := MakeDouble;
+                        TStr := RealToString(SMax,-12,-4);
                      end;
               33432 : TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm); {ModelPixelScaleTag}
               33550 : begin {ModelPixelScaleTag}
@@ -2145,8 +2153,8 @@ var
       TiffHeader.RasterPixelIs := 0;
       TiffHeader.VertDatum := 0;
       TiffHeader.TileWidth := 0;
-      TiffHeader.SMax := 9999;
-      TiffHeader.SMin := -9999;
+      TiffHeader.SMax := -9999;
+      TiffHeader.SMin := 9999;
       TiffHeader.MDZtype := 0;
       TiffHeader.OffsetArray := Nil;
       TiffHeader.StripOffsets := 0;

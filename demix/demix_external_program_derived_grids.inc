@@ -13,7 +13,7 @@ procedure ClearDerivedGrids;
 var
    i : integer;
 begin
-    if (not MDDef.OpenMapsFUVSSIM) then begin
+    if (not MDDef.OpenSavedMapsFUVSSIM) then begin
        for i := -1 to NumPtDEMs do CloseSingleDEM(PointGrids[i]);
        for i := -1 to NumAreaDEMs do CloseSingleDEM(AreaGrids[i]);
        for i := dmxFirstPoint to NumPtDEMs do CloseSingleDEM(PointGrids2[i]);
@@ -30,23 +30,33 @@ var
 begin
    //FindPath(Aprogram + ' files for reference DEMs',':\wine_contest\' + aProgram + '_out_ref_areas\',RefAreaDir);
    //FindPath(Aprogram + ' files for test DEMs',':\wine_contest\' + aProgram + '_out_test_areas\',TestAreaDir);
-   RefAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_ref_areas\';
-   TestAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_test_areas\';
-   if isPoint then begin
-       if i = -1 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1.5x1sec_point.tif'
-       else if i = 0 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1sec_point.tif'
-       else begin
-          if StrUtils.AnsiContainsText(AreaName,SRTM_centroid_names[i]) then Result := TestAreaDir + Param + AreaName + '.tif'
-          else Result := TestAreaDir + Param + AreaName + '_' + SRTM_centroid_names[i] + '.tif';
-       end;
+   if DEMIXanalysismode = DEMIXneo then begin
+      if isPoint then begin
+         Result := MDtempDir  + Param + AreaName + '_' + SRTM_centroid_names[i] + '.tif';
+      end
+      else begin
+         Result := MDtempDir  + Param + AreaName + '_' + ALOS_centroid_names[i] + '.tif';
+      end;
    end
    else begin
-       if i = 0 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1sec_area.tif'
-       else  begin
-          //Result := TestAreaDir + Param + AreaName + '_' + ALOS_centroid_names[i] + '.tif';
-          if StrUtils.AnsiContainsText(AreaName,ALOS_centroid_names[i]) then Result := TestAreaDir + Param + AreaName + '.tif'
-          else Result := TestAreaDir + Param + AreaName + '_' + ALOS_centroid_names[i] + '.tif';
-       end;
+      RefAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_ref_areas\';
+      TestAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_test_areas\';
+      if isPoint then begin
+          if i = -1 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1.5x1sec_point.tif'
+          else if i = 0 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1sec_point.tif'
+          else begin
+             if StrUtils.AnsiContainsText(AreaName,SRTM_centroid_names[i]) then Result := TestAreaDir + Param + AreaName + '.tif'
+             else Result := TestAreaDir + Param + AreaName + '_' + SRTM_centroid_names[i] + '.tif';
+          end;
+      end
+      else begin
+          if i = 0 then Result := RefAreaDir + Param + AreaName + '_dtm_ref_1sec_area.tif'
+          else  begin
+             //Result := TestAreaDir + Param + AreaName + '_' + ALOS_centroid_names[i] + '.tif';
+             if StrUtils.AnsiContainsText(AreaName,ALOS_centroid_names[i]) then Result := TestAreaDir + Param + AreaName + '.tif'
+             else Result := TestAreaDir + Param + AreaName + '_' + ALOS_centroid_names[i] + '.tif';
+          end;
+      end;
    end;
 end;
 
@@ -69,7 +79,7 @@ end;
 
 
 
-procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
+procedure InitializePointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
 var
    i : integer;
 begin
@@ -79,16 +89,22 @@ end;
 
 
 procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
-var
-   i : integer;
+
+  procedure OneModel(NumDEM : integer; Grids : tDEM_int_array);
+  var
+     i : integer;
+  begin
+    if (NumDEM > 0) then begin
+       for i := -1 to NumDEM do
+          if ValidDEM(Grids[i]) then
+             WriteLineToDebugFile(IntegerToString(Grids[i],3) + ' ' + DEMglb[Grids[i]].AreaName + ' ' + DEMglb[Grids[i]].GridCornerModelAndPixelIsString + ' ' + DEMglb[Grids[i]].KeyParams(true));
+    end;
+  end;
+
 begin
     HighlightLineToDebugFile(WhatFor);
-    for i := -1 to NumPtDEMs do
-       if ValidDEM(PointGrids[i]) then
-          WriteLineToDebugFile(IntegerToString(PointGrids[i],3) + '  ' + DEMglb[PointGrids[i]].AreaName + '  ' + DEMglb[PointGrids[i]].GridCornerModelAndPixelIsString);
-    for i := -1 to NumAreaDEMs do
-       if ValidDEM(AreaGrids[i]) then
-          WriteLineToDebugFile(IntegerToString(AreaGrids[i],3) + '  ' + DEMglb[AreaGrids[i]].AreaName + '  ' + DEMglb[AreaGrids[i]].GridCornerModelAndPixelIsString);
+    OneModel(NumPtDEMs,PointGrids);
+    OneModel(NumAreaDEMs,AreaGrids);
 end;
 
 
@@ -98,7 +114,7 @@ var
    fName2 : PathStr;
 begin
     Result := false;
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
+    InitializePointAndAreaGrids(PointGrids,AreaGrids);
     {$If Defined(RecordFUVsteps)} Stopwatch := TStopwatch.StartNew; {$EndIf}
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,aProgram,Param,AreaName,true);
@@ -108,12 +124,14 @@ begin
           exit;
        end;
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName2 := ExternalProgramOutPutFile(i,aProgram,Param,AreaName,false);
-       if FileExists(fName2) then LoadNewDEM(AreaGrids[i],fName2,OpenMaps)
-       else begin
-          {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('External program open, Missing file: ' + fName2); {$EndIf}
-          exit;
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName2 := ExternalProgramOutPutFile(i,aProgram,Param,AreaName,false);
+          if FileExists(fName2) then LoadNewDEM(AreaGrids[i],fName2,OpenMaps)
+          else begin
+             {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('External program open, Missing file: ' + fName2); {$EndIf}
+             exit;
+          end;
        end;
     end;
     Result := true;
@@ -122,57 +140,62 @@ begin
 end;
 
 
-procedure CreateDEMIXhillshadeGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+function CreateDEMIXhillshadeGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
 var
    i : integer;
    fName : PathStr;
 begin
-    HowDone := ' opened ';
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
+    {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)} WriteLineToDebugFile('CreateDEMIXhillshadeGrids in, PointDEMs=' + IntToStr(NumPtDEMs) + ' AreaDEMs=' + IntToStr(NumAreaDEMs)); {$EndIf}
+    Result := ' opened ';
+    InitializePointAndAreaGrids(PointGrids,AreaGrids);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'MD','HILL_',AreaName,true);
-       if FileExists(fName) then begin
-          LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM);
+       if SaveMaps and FileExists(fName) then begin
+          LoadNewDEM(PointGrids[i],fName,OpenMaps);
        end
        else begin
           PointGrids[i] := CreateHillshadeMap(OpenMaps,PointDEMs[i]);
-          HowDone := ' created ';
+          Result := ' created ';
           if SaveMaps then DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
        end;
        {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)}
-          WriteLineToDebugFile('Grid=' + IntToStr(PointGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[PointGrids[i]].KeyDEMParams(true));
+          WriteLineToDebugFile('DEM=' + IntToStr(PointDEMs[i]) + ' for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[PointDEMs[i]].KeyParams(true));
+          WriteLineToDebugFile('Grid=' + IntToStr(PointGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[PointGrids[i]].KeyParams(true));
        {$EndIf}
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName := ExternalProgramOutPutFile(i,'MD','HILL_',AreaName,false);
-       if FileExists(fName) then begin
-          LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM);
-       end
-       else begin
-          AreaGrids[i] := CreateHillshadeMap(OpenMaps,AreaDEMs[i]);
-          HowDone := 'created';
-          if SaveMaps then DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName := ExternalProgramOutPutFile(i,'MD','HILL_',AreaName,false);
+          if SaveMaps and FileExists(fName) then begin
+             LoadNewDEM(AreaGrids[i],fName,OpenMaps);
+          end
+          else begin
+             AreaGrids[i] := CreateHillshadeMap(OpenMaps,AreaDEMs[i]);
+             Result := 'created';
+             if SaveMaps then DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+          end;
+          {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)}
+             WriteLineToDebugFile('Grid=' + IntToStr(AreaGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[AreaGrids[i]].KeyParams(true));
+          {$EndIf}
        end;
-       {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)}
-          WriteLineToDebugFile('Grid=' + IntToStr(AreaGrids[i]) + ' Hillshade for ' + DEMGlb[PointDEMs[i]].AreaName + ' ' + DEMGlb[AreaGrids[i]].KeyDEMParams(true));
-       {$EndIf}
     end;
+    {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)} WriteLineToDebugFile('CreateDEMIXhillshadeGrids, out'); {$EndIf}
 end;
 
 
-procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
 var
    i : integer;
    fName,fName2 : PathStr;
 begin
-    ZeroPointAndAreaGrids(PointGrids2,AreaGrids2, 0);
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids, 0);
+    InitializePointAndAreaGrids(PointGrids2,AreaGrids2, 0);
+    InitializePointAndAreaGrids(PointGrids,AreaGrids, 0);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,'MD','SLOPE_',AreaName,true);
        fName := ExternalProgramOutPutFile(i,'MD','ROUGH_',AreaName,true);
        if FileExists(fName) and FileExists(fName2) then begin
-          LoadNewDEM(PointGrids2[i],fName2,MDDef.OpenMapsFUVSSIM);
-          LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM);
+          LoadNewDEM(PointGrids2[i],fName2,OpenMaps);
+          LoadNewDEM(PointGrids[i],fName,OpenMaps);
        end
        else begin
           PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],OpenMaps);
@@ -183,18 +206,20 @@ begin
        end;
     end;
 
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName2 := ExternalProgramOutPutFile(i,'MD','SLOPE_',AreaName,false);
-       fName := ExternalProgramOutPutFile(i,'MD','ROUGH_',AreaName,false);
-       if FileExists(fName) and FileExists(fName2) then begin
-          LoadNewDEM(AreaGrids2[i],fName2,MDDef.OpenMapsFUVSSIM);
-          LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM);
-       end
-       else begin
-          AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],OpenMaps);
-          if SaveMaps then begin
-             DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
-             DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName2 := ExternalProgramOutPutFile(i,'MD','SLOPE_',AreaName,false);
+          fName := ExternalProgramOutPutFile(i,'MD','ROUGH_',AreaName,false);
+          if FileExists(fName) and FileExists(fName2) then begin
+             LoadNewDEM(AreaGrids2[i],fName2,OpenMaps);
+             LoadNewDEM(AreaGrids[i],fName,OpenMaps);
+          end
+          else begin
+             AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],OpenMaps);
+             if SaveMaps then begin
+                DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
+                DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+             end;
           end;
        end;
     end;
@@ -206,108 +231,114 @@ var
    i : integer;
    fName : PathStr;
 begin
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
+    InitializePointAndAreaGrids(PointGrids,AreaGrids);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'MD','RRI_',AreaName,true);
        if FileExists(fName) then begin
-          LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM);
+          LoadNewDEM(PointGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM);
        end
        else begin
-          PointGrids[i] := MakeTRIGrid(PointDEMs[i],nmRRI,MDDef.OpenMapsFUVSSIM);
+          PointGrids[i] := MakeTRIGrid(PointDEMs[i],nmRRI,OpenMaps);
           if SaveMaps then DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
        end;
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName := ExternalProgramOutPutFile(i,'MD','RRI_',AreaName,false);
-       if FileExists(fName) then begin
-          LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM);
-       end
-       else begin
-          AreaGrids[i] := MakeTRIGrid(AreaDEMs[i],nmRRI,MDDef.OpenMapsFUVSSIM);
-          if SaveMaps then DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName := ExternalProgramOutPutFile(i,'MD','RRI_',AreaName,false);
+          if FileExists(fName) then begin
+             LoadNewDEM(AreaGrids[i],fName,OpenMaps);
+          end
+          else begin
+             AreaGrids[i] := MakeTRIGrid(AreaDEMs[i],nmRRI,MDDef.OpenSavedMapsFUVSSIM);
+             if SaveMaps then DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+          end;
        end;
     end;
 end;
 
 
-procedure CreateDEMIXTPIGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+function CreateDEMIXTPIGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
 var
    i : integer;
    fName : PathStr;
 begin
-    HowDone := ' opened ';
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids);
+    Result := ' opened ';
+    InitializePointAndAreaGrids(PointGrids,AreaGrids);
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'MD','TPI_',AreaName,true);
        if FileExists(fName) then begin
-          LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM);
+          LoadNewDEM(PointGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM);
        end
        else begin
-          PointGrids[i] := BoxCarDetrendDEM(MDDef.OpenMapsFUVSSIM,PointDEMs[i],DEMGlb[PointDEMs[i]].FullDEMGridLimits,3);
-          HowDone := ' created ';
+          PointGrids[i] := BoxCarDetrendDEM(MDDef.OpenSavedMapsFUVSSIM,PointDEMs[i],DEMGlb[PointDEMs[i]].FullDEMGridLimits,3);
+          Result := ' created ';
           if SaveMaps then begin
              DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
           end;
        end;
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName := ExternalProgramOutPutFile(i,'MD','TPI_',AreaName,false);
-       if FileExists(fName) then begin
-          LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM);
-       end
-       else begin
-          AreaGrids[i] := BoxCarDetrendDEM(MDDef.OpenMapsFUVSSIM,AreaDEMs[i],DEMGlb[AreaDEMs[i]].FullDEMGridLimits,3);
-          HowDone := ' created ';
-          if SaveMaps then begin
-             DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName := ExternalProgramOutPutFile(i,'MD','TPI_',AreaName,false);
+          if FileExists(fName) then begin
+             LoadNewDEM(AreaGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM);
+          end
+          else begin
+             AreaGrids[i] := BoxCarDetrendDEM(MDDef.OpenSavedMapsFUVSSIM,AreaDEMs[i],DEMGlb[AreaDEMs[i]].FullDEMGridLimits,3);
+             Result := ' created ';
+             if SaveMaps then begin
+                DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+             end;
           end;
        end;
     end;
 end;
 
 
-procedure CreateDEMIXOpennessGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
 var
    i,ad : integer;
    fName,fName2 : PathStr;
 begin
-    HowDone := ' opened ';
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids,-1);
-    ZeroPointAndAreaGrids(PointGrids,AreaGrids,-1);
+    Result := ' opened ';
+    InitializePointAndAreaGrids(PointGrids,AreaGrids,-1);
+    InitializePointAndAreaGrids(PointGrids,AreaGrids,-1);
     ad := 0;
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,'MD','OPEND_',AreaName,true);
        fName := ExternalProgramOutPutFile(i,'MD','OPENU_',AreaName,true);
        if FileExists(fName) and FileExists(fName2) then begin
-          LoadNewDEM(PointGrids2[i],fName2,MDDef.OpenMapsFUVSSIM);
-          LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM);
+          LoadNewDEM(PointGrids2[i],fName2,MDDef.OpenSavedMapsFUVSSIM);
+          LoadNewDEM(PointGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM);
        end
        else begin
           PointGrids[i] := -1;
           PointGrids2[i] := -1;
           CreateOpennessMap(OpenMaps,DEMGlb[PointDEMs[i]].FullDEMGridLimits,PointDEMs[i],250,PointGrids[i],PointGrids2[i],ad);
-          HowDone := ' created ';
+          Result := ' created ';
           if SaveMaps then begin
              DEMglb[PointGrids2[i]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
           end;
        end;
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName2 := ExternalProgramOutPutFile(i,'MD','OPEND_',AreaName,false);
-       fName := ExternalProgramOutPutFile(i,'MD','OPENU_',AreaName,false);
-       if FileExists(fName) and FileExists(fName2) then begin
-          LoadNewDEM(AreaGrids2[i],fName2,MDDef.OpenMapsFUVSSIM);
-          LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM);
-       end
-       else begin
-          AreaGrids[i] := -1;
-          AreaGrids2[i] := -1;
-          CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],250,AreaGrids[i],AreaGrids2[i],ad);
-          HowDone := ' created ';
-          if SaveMaps then begin
-             DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
-             DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName2 := ExternalProgramOutPutFile(i,'MD','OPEND_',AreaName,false);
+          fName := ExternalProgramOutPutFile(i,'MD','OPENU_',AreaName,false);
+          if FileExists(fName) and FileExists(fName2) then begin
+             LoadNewDEM(AreaGrids2[i],fName2,MDDef.OpenSavedMapsFUVSSIM);
+             LoadNewDEM(AreaGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM);
+          end
+          else begin
+             AreaGrids[i] := -1;
+             AreaGrids2[i] := -1;
+             CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],250,AreaGrids[i],AreaGrids2[i],ad);
+             Result := ' created ';
+             if SaveMaps then begin
+                DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
+                DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
+             end;
           end;
        end;
     end;
@@ -324,19 +355,21 @@ begin
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,true);
        {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
-       if FileExists(fName) then LoadNewDEM(PointGrids[i],fName,MDDef.OpenMapsFUVSSIM)
+       if FileExists(fName) then LoadNewDEM(PointGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM)
        else begin
           wmdem.SetPanelText(2,DEMglb[PointDEMs[i]].AreaName,true);
-          PointGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,fName);
+          PointGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,fName);
        end;
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false);
-       {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
-       if FileExists(fName) then LoadNewDEM(AreaGrids[i],fName,MDDef.OpenMapsFUVSSIM)
-       else begin
-          wmdem.SetPanelText(2,DEMglb[AreaDEMs[i]].AreaName,true);
-          AreaGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,fName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          fName := ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false);
+          {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile(fname + '  start'); {$EndIf}
+          if FileExists(fName) then LoadNewDEM(AreaGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM)
+          else begin
+             wmdem.SetPanelText(2,DEMglb[AreaDEMs[i]].AreaName,true);
+             AreaGrids[i] := SAGA_ConvergenceIndex(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,fName);
+          end;
        end;
     end;
     Result := true;
@@ -349,7 +382,7 @@ var
    i : integer;
 begin
     for i := dmxFirstPoint to NumPtDEMs do begin
-       PointGrids[i] := SAGA_LSFactor(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);   //,ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,true));
+       PointGrids[i] := SAGA_LSFactor(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);   //,ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,true));
        if ValidDEM(PointGrids[i]) then begin
           {$IfDef RecordDEMIXLSgrids} WriteLineToDebugFile(DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
        end
@@ -359,15 +392,17 @@ begin
           exit;
        end;
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       AreaGrids[i] := SAGA_LSFactor(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);  //,ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false));
-       if ValidDEM(AreaGrids[i]) then begin
-          {$IfDef RecordDEMIXLSgrids} WriteLineToDebugFile(DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
-       end
-       else begin
-          Result := false;
-          ClearDerivedGrids;
-          exit;
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          AreaGrids[i] := SAGA_LSFactor(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);  //,ExternalProgramOutPutFile(i,'SAGA',aParam,AreaName,false));
+          if ValidDEM(AreaGrids[i]) then begin
+             {$IfDef RecordDEMIXLSgrids} WriteLineToDebugFile(DEMGlb[PointDEMs[i]].AreaName); {$EndIf}
+          end
+          else begin
+             Result := false;
+             ClearDerivedGrids;
+             exit;
+          end;
        end;
     end;
     Result := true;
@@ -386,12 +421,14 @@ begin
       HANDName := '';
       PointGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HANDName);
    end;
-   for i := dmxFirstArea to NumAreaDEMs do begin
-      BreachName := '';
-      FlowAccumulationName  := '';
-      StreamName := '';
-      HANDName := '';
-      AreaGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HandName);
+   if (NumAreaDEMs > 0) then begin
+      for i := dmxFirstArea to NumAreaDEMs do begin
+         BreachName := '';
+         FlowAccumulationName  := '';
+         StreamName := '';
+         HANDName := '';
+         AreaGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HandName);
+      end;
    end;
 end;
 
@@ -409,12 +446,14 @@ begin
       HANDName := '';
       PointGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
     end;
-    for i := dmxFirstArea to NumAreaDEMs do begin
-       BreachName := '';
-       FlowAccumulationName  := '';
-       StreamName := '';
-       HANDName := '';
-       AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
+    if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do begin
+          BreachName := '';
+          FlowAccumulationName  := '';
+          StreamName := '';
+          HANDName := '';
+          AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
+       end;
     end;
     {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Flow accumulation grids created'); {$EndIf}
 end;
@@ -425,7 +464,9 @@ var
    i : integer;
 begin
    for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_Geomorphons(OpenMaps,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-   for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_Geomorphons(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+   if (NumAreaDEMs > 0) then begin
+       for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_Geomorphons(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+   end;
 end;
 
 

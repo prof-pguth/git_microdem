@@ -1,12 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{   include file for demmapdraw     }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
 
@@ -730,7 +729,7 @@
             Bitmap.Canvas.Brush.Color := clWhite;
             Bitmap.Canvas.Rectangle(xd-65,yd,xd+85,yd+250);
 
-            if DEMMap and (DEMGlb[DEMonMap].DEMheader.DigitizeDatum = Spherical) then exit;
+            if DEMMap and (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Sphere') then exit;
 
             GridMagAngle := -GridTrueAngle+MapMagDec;
 

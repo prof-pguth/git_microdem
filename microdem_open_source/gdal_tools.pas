@@ -22,8 +22,9 @@ unit gdal_tools;
    {$IFDEF DEBUG}
       //{$Define RecordGDALOpen}
       //{$Define RecordSubsetOpen}
+      {$Define RecordDatumShift}
       //{$Define RecordDEMIX}
-      {$Define RecordWKT}
+      //{$Define RecordWKT}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
@@ -165,7 +166,7 @@ uses
 
       procedure GDALregister(LatLong : boolean; GISNum : Integer; ImageName : PathStr; LatHemi : AnsiChar);
       procedure ShiftToUTM_WGS84_EGM2008(inName,SaveName : PathStr; s_SRSstring : shortString; UTMzone : integer);
-      procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
+      procedure VerticalDatumShiftWithGDALtoEGM2008(DEM : integer; var SaveName : PathStr);
       procedure MultipleGDALcompositedatumshift;
 
    {$IfDef IncludePython}
@@ -1612,7 +1613,7 @@ var
    t_srsstring : shortstring;
 begin
    if (s_SRSstring <> '') then s_SRSstring := ' -s_srs EPSG:' + s_SRSstring;
-   t_srsstring := ' -t_srs EPSG:' + '326' + AddDayMonthLeadingZero(UTMzone) + '+3855';          //WGS84 + EGM2008
+   t_srsstring := ' -t_srs EPSG:' + '326' + AddDayMonthLeadingZero(UTMzone) + '+3855';   //WGS84 + EGM2008
    CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
 end;
 
@@ -1641,54 +1642,42 @@ begin
 end;
 
 
-procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
-//obviously hard wired for testing and not error trapped
-//slow
+procedure VerticalDatumShiftWithGDALtoEGM2008(DEM : integer; var SaveName : PathStr);
 var
    InName : PathStr;
    UTMzone : shortstring;
    s_SRSstring,t_srsstring : shortstring;
 begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL in'); {$EndIf}
+   {$If Defined(RecordDatumShift)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL in, ' + DEMGlb[DEM].AreaName); {$EndIf}
    if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
       MessageToContinue('DEM already EGM2008');
       exit;
    end;
    if (SaveName = '') then begin
+      SaveName := DEMGlb[DEM].AreaName + '_wgs84_egm2008';
       if not GetFileNameDefaultExt('Vertical shifted DEM','*.tif',SaveName) then begin
          exit;
       end;
    end;
-   InName := DEMGlb[DEM].GeotiffDEMName;
-
-   if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96) then begin
+   if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96) and (DEMGlb[DEM].DEMHeader.DEMUsed = ArcSecDEM) then begin
       //this goes from WGS84 EGM96 to WGS84 EGM2008
-      s_SRSstring := ' -s_srs EPSG:4326+5773';
-      t_srsstring := ' -t_srs EPSG:4326+3855';
+      s_SRSstring := ' -s_srs EPSG:4326+' + IntToStr(VertCSEGM96);
+      t_srsstring := ' -t_srs EPSG:4326+' + IntToStr(VertCSEGM2008);
    end
-   else if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') then begin
+   else if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') and (DEMGlb[DEM].DEMHeader.DEMUsed = UTMBasedDEM) then begin
       //this goes from NAD83 NAVD88 to WGS84 EGM2008
       UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
-      s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+5703';
-      t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+3855';
+      s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+' + IntToStr(VertCSNAVD88);
+      t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+' + IntToStr(VertCSEGM2008);
    end
-   (*
-   else if  (DEMGlb[DEM].DEMMapProjection.h_DatumCode = 'UKOS') then begin
-      //this goes from UK to UTM zone, but did not work
-      s_SRSstring := ' -s_srs EPSG:27700+5701';
-      t_srsstring := ' -t_srs EPSG:32630+3855';
-   end
-   *)
    else begin
-      MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProj.h_DatumCode);
+      MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProj.h_DatumCode + '+' + IntToStr(DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey));
       exit;
    end;
+   InName := DEMGlb[DEM].GeotiffDEMName;
    CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL out'); {$EndIf}
+   {$If Defined(RecordDatumShift)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL out'); {$EndIf}
 end;
-
-
-
 
 
 procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);
@@ -1701,13 +1690,18 @@ var
    cmd : shortstring;
    aName : PathStr;
 begin
-   StartGDALbatchFile(BatchFile);
-   cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' +
-       NoUnitShift + DoubleQuotedString(InName) + ' ' + DoubleQuotedString(SaveName) + s_SRSString + t_srsstring;
-   {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
-   BatchFile.Add(cmd);
-   aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
-   EndBatchFile(aName,BatchFile);
+   if UpperCase(ExtractFileExt(inName)) = '.TIF' then begin
+      StartGDALbatchFile(BatchFile);
+      cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' +
+          NoUnitShift + DoubleQuotedString(InName) + ' ' + DoubleQuotedString(SaveName) + s_SRSString + t_srsstring;
+      {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
+      BatchFile.Add(cmd);
+      aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
+      EndBatchFile(aName,BatchFile);
+   end
+   else begin
+       MessageToContinue('Not a TIF file: ' + InName);
+   end;
 end;
 
 

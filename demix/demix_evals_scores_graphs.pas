@@ -1,18 +1,11 @@
 unit demix_evals_scores_graphs;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -107,6 +100,7 @@ type
     RadioGroup6: TRadioGroup;
     BitBtn7: TBitBtn;
     BitBtn8: TBitBtn;
+    BitBtn38: TBitBtn;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -155,6 +149,7 @@ type
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
     procedure BitBtn8Click(Sender: TObject);
+    procedure BitBtn38Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -184,6 +179,7 @@ uses
    Petmar,Petmar_types,Petmar_db,Petimage_form,PetImage,petdbutils,
    DEMdataBase,
    DEMdefs,
+   DEMdef_routines,
    DEMIX_graphs,
    DEMIX_control,
    DEMIX_definitions;
@@ -513,6 +509,11 @@ begin
    LoadDEMsInMemo;
 end;
 
+
+procedure Teval_scores_graph_form.BitBtn38Click(Sender: TObject);
+begin
+   SaveMDDefaults;
+end;
 
 procedure Teval_scores_graph_form.BitBtn3Click(Sender: TObject);
 begin

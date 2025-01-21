@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{ include file for demstat          }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{                                        }
+{   include file for demstat             }
+{________________________________________}
 
 type
    tIntVector256 = array[0..255] of integer;
@@ -268,7 +268,7 @@ begin
           end {for Row};
           UpdateProgressBar(Col/ pred(DEMGlb[RefDEM].DEMheader.NumCol));
        end {for Col};
-      {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyParams); {$EndIf}
       DEMGlb[Result].SetupMap(true);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('PercentDifferentTwoGrids out'); {$EndIf}
@@ -301,7 +301,7 @@ begin
           end {for Row};
           UpdateProgressBar(Col/ pred(DEMGlb[Map2Den].DEMheader.NumCol));
        end {for Col};
-      {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams); {$EndIf}
+      {$IfDef RecordDEMCompare} WriteLineToDebugFile('Diff DEM: ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyParams); {$EndIf}
       DEMGlb[Result].SetupMap(true,inMapType);
    end;
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridRatio out'); {$EndIf}

@@ -1,18 +1,18 @@
 ﻿unit demmapdraw;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
 
 {$Define InlineCoreMapping}    //turn off to debug inline functions
 
-{$IFDEF DEBUG}
+{$IfDef Debug}
    {$Define NoParallelForMaps} //used to debug only
    //{$Define NoParallelLAS}
    //{$Define NoParallelOpenness}
@@ -77,7 +77,7 @@
       //{$Define RecordPixelSize}
       //{$Define RecordShortDefineDatum}
       //{$Define RecordDBPlots}
-      {$Define RecordOverlays}
+      //{$Define RecordOverlays}
       //{$Define RecordPLSS}
       //{$Define RecordOffMap}
       //{$Define RecordWMS}
@@ -1208,7 +1208,7 @@ begin
       try
          MapDrawValid := true;
          GridTrueAngle := -999;
-         if (VectorIndex <> 0) or ValidSatOnMap or (ValidDEMonMap and (DEMGlb[DEMonMap].DEMheader.DigitizeDatum <> Rectangular)) then begin
+         if (VectorIndex <> 0) or ValidSatOnMap or (ValidDEMonMap and (DEMGlb[DEMonMap].DEMheader.h_DatumCode <> 'Rect')) then begin
              ScreenToLatLongDegree(MapXSize div 2, MapYSize div 2, Lat,Long);
              MapMagDec := 0;
             {$IfDef ExMagVar}
@@ -1263,7 +1263,7 @@ begin
                   end
                   else if isSlopeMap(MapType) or (MapType in [mtDEMaspectSlope,mtDEMAspect,mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) then begin
                      if (not isSlopeMap(MapType)) then {BaseTitle := 'Slope Map (' + SlopeMethodName(MDDef.SlopeAlgorithm) + ')'else} BaseTitle := 'Aspect Map';
-                     BaseTitle := DEMGlb[DEMonMap].AreaName + '_'+ BaseTitle;
+                     BaseTitle := 'Slope_map+' + DEMGlb[DEMonMap].AreaName;
                      DrawSlopeMap(BitMap);
                      {$If Defined(RecordFullMapDraw)} WriteLineToDebugFile('after DrawSlopeMap, bmp=' + MapSizeString); {$EndIf}
                   end
@@ -1629,7 +1629,7 @@ begin
    end
    else if DEMMap then begin
       if ValidDEMonMap then begin
-         if DEMGlb[DEMonMap].DEMheader.DigitizeDatum in [Spherical{,unusedLamAzEqAreaSphere}] then exit;
+         if (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Sphere') then exit;
          Result := true;
       end;
    end

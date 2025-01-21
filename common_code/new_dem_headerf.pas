@@ -55,8 +55,6 @@ type
     Label5: TLabel;
     Label6: TLabel;
     BitBtn5: TBitBtn;
-    Label13: TLabel;
-    ComboBox2: TComboBox;
     RadioGroup2: TRadioGroup;
     RadioGroup1: TRadioGroup;
     RadioGroup4: TRadioGroup;
@@ -67,7 +65,7 @@ type
     procedure BitBtn7Click(Sender: TObject);
     procedure HelpBitBtn8Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
-    procedure ComboBox2Change(Sender: TObject);
+    //procedure ComboBox2Change(Sender: TObject);
     procedure ComboBox4Change(Sender: TObject);
     procedure ComboBox3Change(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
@@ -122,7 +120,7 @@ end;
 
 procedure TDEMHeaderForm.DisableEdits;
 begin
-   ComboBox2.Enabled := false;
+   //ComboBox2.Enabled := false;
    ComboBox3.Enabled := false;
    ComboBox4.Enabled := false;
    RadioGroup1.Enabled := false;
@@ -168,7 +166,7 @@ begin
    //Label6.Caption := DatumName(TStr);
    //ComboBox2.Text := DatumName(TStr);
    Label6.Caption := DatumName(EditHeadRec.h_DatumCode);
-   ComboBox2.Text := DatumName(EditHeadRec.h_DatumCode);
+   //ComboBox2.Text := DatumName(EditHeadRec.h_DatumCode);
    for zu := 0 to euHighElevUnits do begin
       TStr := ElevUnitsAre(zu);
       if (TStr <> '') then ComboBox3.Items.Add(ElevUnitsAre(zu));
@@ -240,18 +238,6 @@ begin
 end;
 
 
-procedure TDEMHeaderForm.ComboBox2Change(Sender: TObject);
-var
-   i : integer;
-begin
-   for i := 0 to pred(ComboBox2.Items.Count) do begin
-      {$IfDef RecordEditProblems} WriteLineToDebugFile(UpperCase(ComboBox2.Text) + '---' + UpperCase(ComboBox2.Items[i])); {$EndIf}
-      if UpperCase(ComboBox2.Text) = UpperCase(ComboBox2.Items[i]) then begin
-         EditHeadRec.DigitizeDatum := tDigitizeDatum(i);
-         //LabelSpecialProjection;
-      end;
-   end;
-end;
 
 procedure TDEMHeaderForm.UpdateChoices;
 begin

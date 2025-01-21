@@ -1,20 +1,21 @@
 unit demix_definitions;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
-// 10/1/2023: DEMIX options under active development.
+// DEMIX options under active development.
 //Some options are hard coded and not error-trapped, and some options may not longer work.  Used with caution
 
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordDEMIX}
+   //{$Define RecordNeoDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
    //{$Define RecordDiluvium}
@@ -27,7 +28,7 @@ unit demix_definitions;
    //{$Define RecordDEMIX_evaluations_graph}
    //{$Define RecordComputeDEMIX_Diff_Dist}
    //{$Define RecordDEMIXLSgrids}
-   {//$Define RecordDEMIXhillshades}
+   //{$Define RecordDEMIXhillshades}
    //{$Define RecordDiluviumFull}
    //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIXStart}
@@ -48,7 +49,6 @@ unit demix_definitions;
    //{$Define RecordUseTile}
 
    //{$Define RecordDEMIXMovies}
-   //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
@@ -133,6 +133,13 @@ type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
    tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
 
+
+const
+   NewFormatDEMIXDB : integer = 0;
+   DEMIXtraditional = 1;
+   DEMIXneo         = 2;
+   DEMIXanalysismode : integer = 1;
+
 var
    DEMIXDEMTypeName : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXshort : array[1..MaxDEMIXDEM] of shortstring;
@@ -148,7 +155,6 @@ const
 
 //this should be rolled into a DEMIX_grid object; for now it is global variables
          const
-            //MaxPossGrids = 10;
             NumPtDEMs : integer = 6;
             NumAreaDEMs : integer = 1;
             PossPt = 8;
@@ -170,18 +176,23 @@ const
             PtSSIMGrids, AreaSSIMGrids : tDEM_int_array;
             dmxFirstPoint,dmxFirstArea : integer;
 
-         procedure ZeroPointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
+         procedure InitializePointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
          function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
          procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
 
          //grids created by MICRODEM
-         procedure CreateDEMIXhillshadeGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
-         procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
-         procedure CreateDEMIXOpennessGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
-         procedure CreateDEMIXTPIGrids(AreaName : shortstring; var HowDone : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+         function CreateDEMIXhillshadeGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
+         procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+         function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
+         function CreateDEMIXTPIGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
          procedure CreateDEMIXRRIgrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
 
-         //grids created by SAGA
+         //links to grids created by other programs
+         function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
+         procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
+         procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
+         procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
+         function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
          function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
 
 const
@@ -192,14 +203,7 @@ const
    yasBestEval = 4;
    yasBarren = 5;
    yasForest = 6;
-   //yasBestEvalByCriterion = 7;
    yasBestEvalColoredBySlope = 8;
-   //yasBestEvalFilteredBySlope = 9;
-   //xawEvaluation = 0;
-   //xawScore = 1;
-   //yawArea = 0;
-   //yawTile = 1;
-   //DEMIX_combined_graph : boolean = false;
    MovieByTestDEM : boolean = false;
 
 var
@@ -261,7 +265,7 @@ var
 //create or edit database
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
-   procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean);
+   procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
    procedure CreateDEMIX_GIS_database_by_transposing(Overwrite : boolean);
    procedure RankDEMS(DBonTable : integer);
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
@@ -291,7 +295,7 @@ var
    procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_GDAL_Ref_DEM_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_Ref_DEM_full_chain(overwrite : boolean);
-   procedure ShifDEMsto_UTM_WGS84_EGM2008(Overwrite : boolean; DataDirs : tStringList = Nil);
+   procedure ShiftDEMsto_UTM_WGS84_EGM2008(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
    procedure CreateLandCoverGrids;
    procedure MoveReferenceDSMs;
@@ -378,12 +382,6 @@ procedure AreasInClusters(DB : integer);
 
 procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');
 
-//links to other programs
-   function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
-   procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
-   procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
-   procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
-   function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
 
 procedure ClearDerivedGrids;
 
@@ -501,7 +499,7 @@ var
 
    begin
        {$IfDef RecordDEMIXFull} WriteLineToDebugFile(AreaName + ' Criterion=' + Criterion); {$EndIf}
-       ZeroPointAndAreaGrids(PtSSIMGrids, AreaSSIMGrids);
+       InitializePointAndAreaGrids(PtSSIMGrids, AreaSSIMGrids);
        {$If Defined(RecordFUVsteps)} Stopwatch := TStopwatch.StartNew; {$EndIf}
        What := BeforeSpecifiedCharacterAnsi(Criterion,'_');
        for i := dmxFirstArea to NumAreaDEMs do CheckNormalization(AreaGrids[i],What);
@@ -517,22 +515,22 @@ var
 
 var
    Success : boolean;
-   TStr,HowDone : shortstring;
-   fName2 : PathStr;
+   TStr    : shortstring;
+   fName2  : PathStr;
    FullTiles : tStringList;
 begin {procedure DoSSIMandFUVForAnArea}
        {$If Defined(TimeGridsForArea)} Stopwatch2 := TStopwatch.StartNew; {$EndIf}
        {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}
        wmdem.SetPanelText(3, 'Load DEMs',true);
        ShowSatProgress :=  false;
-       if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,MDDef.OpenMapsFUVSSIM) then begin
+       if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,MDDef.OpenSavedMapsFUVSSIM) then begin
           {$If Defined(TrackPixelIs) or Defined(RecordDEMIXFull)} ShowDEMIXGrids(AreaName + ' DEMs opened',PointDEMs,AreaDEMs); {$EndIf}
-          ZeroPointAndAreaGrids(PointGrids,AreaGrids);
+          InitializePointAndAreaGrids(PointGrids,AreaGrids);
 
           if MDDef.SSIM_ROTOR then begin //created by WbE with Jupyter Notebook
              wmdem.SetPanelText(3,DEMIXModeName + ' 1 ROTOR',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             Success := OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'WBT',AreaName,'rotor_',PointGrids,AreaGrids);
+             Success := OpenGridsCreatedByExternalProgram(MDDef.OpenSavedMapsFUVSSIM,'WBT',AreaName,'rotor_',PointGrids,AreaGrids);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbW Rotor created ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              if Success then begin
                 DoCriterion('ROTOR_SSIM',PointGrids,AreaGrids);
@@ -546,8 +544,8 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_HAND then begin //created by WbW via Jupyter or via WbtT if not found
              wmdem.SetPanelText(3,DEMIXModeName + ' 2 HAND',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             if not OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'WBT',AreaName,'HAND_',PointGrids,AreaGrids) then begin
-                 WBT_CreateDEMIX_HANDGrids(MDDef.OpenMapsFUVSSIM);
+             if not OpenGridsCreatedByExternalProgram(MDDef.OpenSavedMapsFUVSSIM,'WBT',AreaName,'HAND_',PointGrids,AreaGrids) then begin
+                 WBT_CreateDEMIX_HANDGrids(MDDef.OpenSavedMapsFUVSSIM);
              end;
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbT HAND created ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('HAND_SSIM',PointGrids,AreaGrids);
@@ -556,7 +554,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_hill then begin
              wmdem.SetPanelText(3,DEMIXModeName + ' 3 Hillshade',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXhillshadeGrids(AreaName,HowDone,MDDef.OpenMapsFUVSSIM,true);
+             CreateDEMIXhillshadeGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('Hillshade' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('HILL_SSIM',PointGrids,AreaGrids);
           end;
@@ -564,7 +562,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_Slope or MDDef.SSIM_ruff then begin
              wmdem.SetPanelText(3,DEMIXModeName + ' 4,5 Slope/ruff',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXSlopeRoughnessGrids(AreaName,HowDone,MDDef.OpenMapsFUVSSIM,true);
+             CreateDEMIXSlopeRoughnessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Slope/ruff' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('SLOPE_SSIM',PointGrids2,AreaGrids2,false);
              DoCriterion('RUFF_SSIM',PointGrids,AreaGrids);
@@ -573,7 +571,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_Openness then begin
              wmdem.SetPanelText(3,DEMIXModeName + ' 6,7 Openness',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXOpennessGrids(AreaName,HowDone,MDDef.OpenMapsFUVSSIM,true);
+             CreateDEMIXOpennessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Openness' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('OPEND_SSIM',PointGrids2,AreaGrids2,false);
              DoCriterion('OPENU_SSIM',PointGrids,AreaGrids);
@@ -582,7 +580,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_RRI then begin
              wmdem.SetPanelText(3,DEMIXModeName + ' 8 RRI',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXRRIgrids(AreaName,MDDef.OpenMapsFUVSSIM,true);
+             CreateDEMIXRRIgrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD RRI created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('RRI_SSIM',PointGrids,AreaGrids);
           end;
@@ -590,7 +588,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_LS then begin //created by WbE with Jupyter Notebook
              wmdem.SetPanelText(3,DEMIXModeName + ' 9 LS',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             Success := OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'wbt',AreaName,'sed_trans_',PointGrids,AreaGrids);
+             Success := OpenGridsCreatedByExternalProgram(MDDef.OpenSavedMapsFUVSSIM,'wbt',AreaName,'sed_trans_',PointGrids,AreaGrids);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbW LS ' + TStr + ' ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              if Success then DoCriterion('LS_SSIM',PointGrids,AreaGrids)
              else begin
@@ -602,9 +600,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_flow then begin //created by WbE with Jupyter Notebook
              wmdem.SetPanelText(3,DEMIXModeName + ' 10 FLOW',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             //if not OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'WBT',AreaName,'FLOW_ACCUM_',PointGrids,AreaGrids) then begin
-                WBT_CreateDEMIX_Flow_AccumulationGrids(false,MDDef.OpenMapsFUVSSIM); //will be created with WbT
-             //end;
+             WBT_CreateDEMIX_Flow_AccumulationGrids(false,MDDef.OpenSavedMapsFUVSSIM); //will be created with WbT
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbW Flow created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('ACCUM_SSIM',PointGrids,AreaGrids);
           end;
@@ -612,9 +608,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_flow then begin //created by WbE with Jupyter Notebook
              wmdem.SetPanelText(3,DEMIXModeName + ' 10 LOG FLOW',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             //if not OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'WBT',AreaName,'FLOW_ACCUM_',PointGrids,AreaGrids) then begin
-                WBT_CreateDEMIX_Flow_AccumulationGrids(true,MDDef.OpenMapsFUVSSIM); //will be created with WbT
-             //end;
+             WBT_CreateDEMIX_Flow_AccumulationGrids(true,MDDef.OpenSavedMapsFUVSSIM); //will be created with WbT
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbW LOG Flow created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('LOGFA_SSIM',PointGrids,AreaGrids);
           end;
@@ -622,8 +616,8 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_ProfC then begin //created by WbT
              wmdem.SetPanelText(3,DEMIXModeName + ' 11 PROFC',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_ProfileCurvature(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_ProfileCurvature(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_ProfileCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
+             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_ProfileCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbT PROFC created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('PROFC_SSIM',PointGrids,AreaGrids);
           end;
@@ -631,8 +625,8 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_PlanC then begin //created by WbT
              wmdem.SetPanelText(3,DEMIXModeName + ' 12 PLANC',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_PlanCurvature(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_PlanCurvature(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_PlanCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
+             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_PlanCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbT PLANC created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('PLANC_SSIM',PointGrids,AreaGrids);
           end;
@@ -640,8 +634,8 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_TangC then begin //created by WbT
              wmdem.SetPanelText(3,DEMIXModeName + ' 13 TANGC',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_TangentialCurvature(MDDef.OpenMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_TangentialCurvature(MDDef.OpenMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
+             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_TangentialCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
+             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_TangentialCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbT TANGC created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('TANGC_SSIM',PointGrids,AreaGrids);
           end;
@@ -649,13 +643,13 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_wet then begin //created by WbT
              wmdem.SetPanelText(3,DEMIXModeName + ' 14 WETIN',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             if OpenGridsCreatedByExternalProgram(MDDef.OpenMapsFUVSSIM,'WBT',AreaName,'wetin_',PointGrids,AreaGrids) then begin
-                HowDone := ' opened ';
+             if OpenGridsCreatedByExternalProgram(MDDef.OpenSavedMapsFUVSSIM,'WBT',AreaName,'wetin_',PointGrids,AreaGrids) then begin
+                //HowDone := ' opened ';
              end
              else begin
-                for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_WetnessIndex(MDDef.OpenMapsFUVSSIM,true,DEMGlb[PointDEMs[i]].GeotiffDEMName,WetnessName);
-                for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_WetnessIndex(MDDef.OpenMapsFUVSSIM,true,DEMGlb[AreaDEMs[i]].GeotiffDEMName,WetnessName);
-                HowDone := ' created ';
+                for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_WetnessIndex(MDDef.OpenSavedMapsFUVSSIM,true,DEMGlb[PointDEMs[i]].GeotiffDEMName,WetnessName);
+                for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_WetnessIndex(MDDef.OpenSavedMapsFUVSSIM,true,DEMGlb[AreaDEMs[i]].GeotiffDEMName,WetnessName);
+                //HowDone := ' created ';
              end;
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbT Wet Index' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('WETIN_SSIM',PointGrids,AreaGrids);
@@ -664,7 +658,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_ConvergeIndex then begin //created by SAGA or WbW with Jupyter Notebook
              wmdem.SetPanelText(3,DEMIXModeName + ' 15 CONIN',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             Success := SAGACreateDEMIX_ConIn_Grids(MDDef.OpenMapsFUVSSIM,AreaName,'CONIN_');
+             Success := SAGACreateDEMIX_ConIn_Grids(MDDef.OpenSavedMapsFUVSSIM,AreaName,'CONIN_');
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WBT ConIn ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              if Success then DoCriterion('CONIN_SSIM',PointGrids,AreaGrids)
              else ClearDerivedGrids;
@@ -673,7 +667,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           if MDDef.SSIM_TPI then begin
              wmdem.SetPanelText(3,DEMIXModeName + ' 16 TPI',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXTPIGrids(AreaName,HowDone,MDDef.OpenMapsFUVSSIM,true);
+             CreateDEMIXTPIGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('TPI' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('TPI_SSIM',PointGrids,AreaGrids);
           end;
@@ -684,7 +678,7 @@ begin {procedure DoSSIMandFUVForAnArea}
              DoCriterion('ELEV_SSIM',PointDEMs,AreaDEMs);
           end;
 
-          if (not MDDef.OpenMapsFUVSSIM) then CloseAllDEMs;
+          if (not MDDef.OpenSavedMapsFUVSSIM) then CloseAllDEMs;
           //CloseAndNilNumberedDB(DEMIXtileDB);
           CleanUpTempDirectory;  //lot of files created by SAGA and WBT
        end

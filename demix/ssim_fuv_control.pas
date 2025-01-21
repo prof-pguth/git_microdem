@@ -1,11 +1,11 @@
 unit ssim_fuv_control;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -94,6 +94,41 @@ begin
    //fuv_ssim_control.Destroy;
 end;
 
+
+procedure FUV_SSIM_Processing(Mode : Byte; Overwrite,AreasInsteadOfTiles : boolean);
+var
+   Areas : tStringList;
+begin
+   GetDEMIXpaths;
+   DEMIX_initialized := true;
+   MDDef.DEMIX_mode := Mode;
+   SetParamsForDEMIXmode;
+   Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
+   AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles,Areas);
+   Areas.Destroy;
+end;
+
+
+procedure Spawn_FUV_SSIMProcessing;
+var
+   NewName : PathStr;
+   i,j,k : integer;
+begin
+   j := 3;
+   ReadDefault('Number to spawn',j);
+   for k := 1 to j do begin
+      i := 0;
+      repeat
+         inc(i);
+         NewName := ExtractFilePath(application.exename) + 'md_' + IntToStr(i) + '.exe';
+      until not FileExists(NewName);
+      CopyFile(application.exename,NewName);
+      Petmar.ExecuteFile(NewName,'-fuvssim -mode=' + IntToStr(dmFull),'');
+   end;
+end;
+
+
+
 procedure Tfuv_ssim_control.CheckAll(whichway : boolean);
 begin
    CheckBox12.Checked := WhichWay;
@@ -129,7 +164,7 @@ begin
    CheckBox21.Checked := MDdef.SSIM_ls;
    CheckBox22.Checked := MDDef.DoSSIM;
    CheckBox24.Checked := MDDef.DoFUV;
-   CheckBox25.Checked := MDDef.OpenMapsFUVSSIM;
+   CheckBox25.Checked := MDDef.OpenSavedMapsFUVSSIM;
    CheckBox26.Checked := MDdef.SSIM_ProfC;
    CheckBox27.Checked := MDdef.SSIM_PlanC;
    CheckBox28.Checked := MDDef.SSIM_TangC;
@@ -153,39 +188,6 @@ end;
 procedure Tfuv_ssim_control.HillshadeClick(Sender: TObject);
 begin
    MDDef.SSIM_hill := Hillshade.Checked;
-end;
-
-
-procedure FUV_SSIM_Processing(Mode : Byte; Overwrite,AreasInsteadOfTiles : boolean);
-var
-   Areas : tStringList;
-begin
-   GetDEMIXpaths;
-   DEMIX_initialized := true;
-   MDDef.DEMIX_mode := Mode;
-   SetParamsForDEMIXmode;
-   Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
-   AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles,Areas);
-   Areas.Destroy;
-end;
-
-
-procedure Spawn_FUV_SSIMProcessing;
-var
-   NewName : PathStr;
-   i,j,k : integer;
-begin
-   j := 3;
-   ReadDefault('Number to spawn',j);
-   for k := 1 to j do begin
-      i := 0;
-      repeat
-         inc(i);
-         NewName := ExtractFilePath(application.exename) + 'md_' + IntToStr(i) + '.exe';
-      until not FileExists(NewName);
-      CopyFile(application.exename,NewName);
-      Petmar.ExecuteFile(NewName,'-fuvssim -mode=' + IntToStr(dmFull),'');
-   end;
 end;
 
 
@@ -263,10 +265,10 @@ begin
    MDDef.SSIM_Openness := CheckBox8.Checked;
    MDDef.SSIM_ConvergeIndex := CheckBox10.Checked;
 
-   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
+   MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;
    MDDef.DEMIX_all_areas := CheckBox6.Checked;
-   MDDef.OpenMapsFUVSSIM := CheckBox25.Checked;
+   MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.ShowWinExec := CheckBox157.Checked;
    MDDef.ProcessLoopsForward := CheckBox9.Checked;
 end;

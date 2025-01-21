@@ -1,11 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demdatabase       }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{                                        }
+{   include file for demdatabase         }
+{________________________________________}
 
 
 function MakeFiltersForCluster(DBonTable : integer; IncludeBaseFilter : boolean) : tStringList;
@@ -160,7 +161,7 @@ var
                   AllGraphBitmap.Canvas.Draw((i mod 3) * 500, (i div 3) * 400,bmp);
                   FreeAndNil(Bmp);
                   if (i = pred(FieldsUsed)) then begin
-                     Bmp := Graph.MakeLegend(Graph.GraphDraw.LegendList,false);
+                     Bmp := Graph.MakeLegend;
                   end;
                   Graph.Close;
                end;
@@ -525,100 +526,6 @@ begin {DoKMeansClustering}
    end;
 end {DoKMeansClustering};
 
-
-procedure ComputeVDatumShift(dbOnTable : integer);
-var
-   Lat,Long,Lat2,Long2 : float64;
-   Distance,Bearing : float64;
-   zPresent,FileConvert : boolean;
-   LocalToWGS84,WGS84toEGM2008 : integer;
-   z,z2,AddZ,SubZ : float32;
-begin
-   with GISdb[DBonTable] do begin
-      EmpSource.Enabled := false;
-      AddFieldToDataBase(ftFloat,'VERT_SHIFT',8,2);
-      AddFieldToDataBase(ftFloat,'HORZ_SHIFT',8,2);
-      AddFieldToDataBase(ftFloat,'X_SHIFT',8,3);
-      AddFieldToDataBase(ftFloat,'Y_SHIFT',8,3);
-      AddFieldToDataBase(ftFloat,'HORIZ_AZ',8,1);
-      zPresent := MyData.FieldExists('ELEV') and MyData.FieldExists('ELEV2');
-      FileConvert := FileExists(GeoidWGS84ellipsoidToLocalVDatum) and FileExists(Geoid2008FName);
-      FileConvert := false;
-      if FileConvert then begin
-         LoadDatumShiftGrids(LocalToWGS84,WGS84toEGM2008);
-         AddFieldToDataBase(ftFloat,'GRID_VERT',8,2);
-      end;
-
-      EmpSource.Enabled := false;
-      MyData.First;
-      while not MyData.EOF do begin
-         MyData.Edit;
-         if MyData.ValidLatLongFromTable(Lat,Long) and ValidLat2Long2FromTable(Lat2,Long2) then begin
-            VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,Distance,Bearing);
-            MyData.SetFieldByNameAsFloat('HORZ_SHIFT',Distance);
-            MyData.SetFieldByNameAsFloat('X_SHIFT',Distance*CosDeg(Bearing));
-            MyData.SetFieldByNameAsFloat('Y_SHIFT',Distance*SinDeg(Bearing));
-            MyData.SetFieldByNameAsFloat('HORIZ_AZ',Bearing);
-            if zPresent then begin
-               z := MyData.GetFieldByNameAsFloat('ELEV');
-               z2 := MyData.GetFieldByNameAsFloat('ELEV2');
-               MyData.SetFieldByNameAsFloat('VERT_SHIFT',(z2-z));
-            end;
-            if FileConvert then begin
-               if DEMGlb[WGS84toEGM2008].GetElevFromLatLongDegree(Lat,Long,AddZ) and DEMGlb[LocalToWGS84].GetElevFromLatLongDegree(Lat,Long,SubZ) then begin
-                  MyData.SetFieldByNameAsFloat('GRID_VERT',(-SubZ+AddZ));
-               end;
-            end;
-         end;
-         MyData.Next;
-      end;
-   end;
-   if FileConvert then begin
-      CloseSingleDEM(LocalToWGS84);
-      CloseSingleDEM(WGS84toEGM2008);
-   end;
-end;
-
-
-function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
-var
-   fName2,fName : Pathstr;
-   f1,f2,Merged : tStringList;
-   TStr : ShortString;
-   j : integer;
-begin
-   if (CSVName = '') then GetFileFromDirectory('VDATUM output file','*.csv',CSVName);
-   fName2 := ChangeFileExt(CSVName, '.dbf');
-   if FileExists(fName2) then begin
-      OpenNumberedGISDataBase(Result,fName2);
-   end
-   else begin
-      fName := ExtractFilePath(CSVName) + 'result\' + ExtractFileName(CSVName);  //if VDATUM run on local machine
-      if not FileExists(fName) then begin
-         fName := ExtractFilePath(CSVName) + ExtractFileNameNoExt(CSVName) + '_result' + ExtractFileExt(CSVName);  //VDATUM run on web
-         if not FileExists(fName) then begin
-            TStr := 'VDATUM not run yet for ' + CSVName;
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
-            if ErrorLog <> Nil then ErrorLog.Add(TStr);
-            Result := 0;
-            exit;
-         end;
-      end;
-      f1 := tStringList.Create;
-      f1.LoadFromFile(CSVName);
-      f2 := tStringList.Create;
-      f2.LoadFromFile(fName);
-      Merged := tStringList.Create;
-      Merged.Add('LONG,LAT,ELEV,LONG2,LAT2,ELEV2');
-      for j := 1 to pred(f1.Count) do begin
-         Merged.Add(f1.Strings[j] + ',' + f2.Strings[j]);
-      end;
-      f1.Free;
-      f2.Free;
-      Result := StringList2CSVtoDB(Merged,fName2);
-      ComputeVDatumShift(Result);
-   end;
-end;
 
 
 {$IfDef ExSidescan}

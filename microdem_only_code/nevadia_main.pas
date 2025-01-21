@@ -233,7 +233,7 @@ type
     N11: TMenuItem;
     UTM1: TMenuItem;
     OpenandmergeDEMs1: TMenuItem;
-    ImportCTDfile1: TMenuItem;
+    //ImportCTDfile1: TMenuItem;
     EXIFmetadata1: TMenuItem;
     EXIFimage1: TMenuItem;
     Clustergrids1: TMenuItem;
@@ -476,7 +476,7 @@ type
     Mergesourcedatatiles1: TMenuItem;
     ProcessVDATUMshifts1: TMenuItem;
     Processdifferencestatisticspertile1: TMenuItem;
-    VDATUMshiftinUSA1: TMenuItem;
+    //VDATUMshiftinUSA1: TMenuItem;
     DEMIX2: TMenuItem;
     OpenDEMIXdatabase1: TMenuItem;
     Addversionnumbertoallfilesinapath1: TMenuItem;
@@ -486,7 +486,7 @@ type
     N41: TMenuItem;
     SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
     GDALshiftFor3DEP1: TMenuItem;
-    OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem;
+    //OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem;
     Subsetlarge3DEPareas1: TMenuItem;
     Create3DEP1secrefDEMs1: TMenuItem;
     Merge3DEPreferenceDEMsbyarea1: TMenuItem;
@@ -624,6 +624,7 @@ type
     CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
+    CrossscaleDEMComparison1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -745,7 +746,7 @@ type
     procedure ToolBar1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure UTM1Click(Sender: TObject);
     procedure OpenandmergeDEMs1Click(Sender: TObject);
-    procedure ImportCTDfile1Click(Sender: TObject);
+    //procedure ImportCTDfile1Click(Sender: TObject);
     procedure EXIFmetadata1Click(Sender: TObject);
     procedure EXIFimage1Click(Sender: TObject);
     procedure Clustergrids1Click(Sender: TObject);
@@ -933,13 +934,13 @@ type
     procedure Creatediffrencemaps1Click(Sender: TObject);
     procedure Mergesourcedatatiles1Click(Sender: TObject);
     procedure ProcessVDATUMshifts1Click(Sender: TObject);
-    procedure VDATUMshiftinUSA1Click(Sender: TObject);
+    //procedure VDATUMshiftinUSA1Click(Sender: TObject);
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure N41Click(Sender: TObject);
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
-    procedure OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
+    //procedure OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
     procedure Subsetlarge3DEPareas1Click(Sender: TObject);
     procedure CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
     procedure Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
@@ -1045,7 +1046,7 @@ type
     procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
-    procedure est1Click(Sender: TObject);
+    procedure CrossscaleDEMComparison1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1425,12 +1426,6 @@ begin
 end;
 
 
-procedure Twmdem.VDATUMshiftinUSA1Click(Sender: TObject);
-begin
-   AnalyzeVDatumShift('');
-end;
-
-
 procedure Twmdem.Vectormap1Click(Sender: TObject);
 begin
    {$IfDef RecordMenu} WriteLineToDebugFile('Twmdem.Vectormap1Click'); {$EndIf}
@@ -1565,7 +1560,6 @@ end;
 
 procedure Twmdem.DatumshiftCanadianDEMs1Click(Sender: TObject);
 begin
-   //DEMIX_vert_datum_code := 6647;
    ShiftDEMsto_UTM_WGS84_EGM2008(True);
 end;
 
@@ -1718,7 +1712,6 @@ begin
    ExpertDEMVersion := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (NumDEMDataSetsOpen > 0);
    RemoteSensingLabs1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
    SpeedButton6.Visible := (MDDef.ProgramOption in [ExpertProgram]);
-   //HistoricShipwrecksLabs1.Visible := (MDDef.ProgramOption in [ShipwrecksProgram]) or MDDef.ShowLabs;
 
    SpeedButton2.Visible := MDDef.ShowSHPButton;
    SpeedButton4.Visible := MDDef.ShowDBonly;
@@ -1751,29 +1744,34 @@ begin
    OpenDataSets1.Visible := (MDDef.ProgramOption in [ExpertProgram,DragonPlotProgram,RemoteSensingProgram]);
    ProgramLimits1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
 
-   PerspectiveButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
+   //3D viewing options
+      PerspectiveButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
 
-   CircleAround.Visible := (MDDef.ProgramOption = ExpertProgram) and MDDef.ShowViews;
-   PanoramaSpeedButton.Visible := (MDDef.ProgramOption in [ExpertProgram]) and MDDef.ShowViews;
-   PanoramaSpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
-   FlySpeedButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
-   LiveFlySpeedButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
-   FlyThrough1.Visible := FlySpeedButton.Visible;
-   LOSButton.Visible := (MDDef.ProgramOption in [ExpertProgram]);
+      CircleAround.Visible := (MDDef.ProgramOption = ExpertProgram) and MDDef.ShowViews;
+      PanoramaSpeedButton.Visible := (MDDef.ProgramOption in [ExpertProgram]) and MDDef.ShowViews;
+      PanoramaSpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
+      FlySpeedButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
+      LiveFlySpeedButton.Visible := MDDef.ShowViews and (MDDef.ProgramOption in [ExpertProgram]);
+      FlyThrough1.Visible := FlySpeedButton.Visible;
+      LOSButton.Visible := (MDDef.ProgramOption in [ExpertProgram]);
 
-   LOS1.Visible := LOSButton.Visible;
-   LOS1.Caption := '&LOS';
+      LOS1.Visible := LOSButton.Visible;
+      LOS1.Caption := '&LOS';
 
-   LOSButton.Enabled := (NumDEMDataSetsOpen > 0);
-   SpeedButton3.Enabled := (NumDEMDataSetsOpen > 0);
-   FlySpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
-   PerspectiveButton.Enabled := (NumDEMDataSetsOpen > 0);
+      LOSButton.Enabled := (NumDEMDataSetsOpen > 0);
+      SpeedButton3.Enabled := (NumDEMDataSetsOpen > 0);
+      FlySpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
+      PerspectiveButton.Enabled := (NumDEMDataSetsOpen > 0);
+      Newpanorama1.Visible := (NumDEMDataSetsOpen > 0) and (MDDef.ProgramOption = ExpertProgram);
+      LiveFlySpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
+
+
+
    Horizontalearthcurvature1.Visible := ExpertDEMVersion;
    Clustergrids1.Visible := ExpertDEMVersion;
 
    Superimposedtopoprofiles1.Visible := (NumDEMDataSetsOpen > 1) and (MDDef.ShowDEMcompare) and (MDDef.ProgramOption = ExpertProgram);
 
-   Newpanorama1.Visible := (NumDEMDataSetsOpen > 0) and (MDDef.ProgramOption = ExpertProgram);
    TIGERSpeedButton.Visible := MDDef.TigrDef.ShowTIGERButton and (MDDef.ProgramOption = ExpertProgram);
    OpenTIGERcountymap1.Visible := TIGERSpeedButton.Visible;
    Openshapefilemap1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeographyProgram]);
@@ -1795,7 +1793,6 @@ begin
    NewSATButton.Visible := MDDef.ShowOpenImagery;
    OpenImage1.Visible := MDDef.ShowOpenImagery;
 
-   LiveFlySpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
 
    Physicalgeographylabs1.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs;
    GISlabs1.Visible := MDDef.ShowLabs;
@@ -1813,6 +1810,8 @@ begin
    Batchprocessing1.Visible := (MDDef.ProgramOption = ExpertProgram);
    Edit1.Visible := (MDDef.ProgramOption = ExpertProgram) and (NumDEMDataSetsOpen = 0);
    Photos1.Visible := (MDDef.ProgramOption = ExpertProgram);
+
+   CrossscaleDEMComparison1.Visible := TrilobiteComputer;
 
    {$IfDef ExDP}
       DragonPlot1.Visible := false;
@@ -3481,12 +3480,63 @@ begin
    ComputeCriteriaRanges;
 end;
 
-procedure Twmdem.ImportCTDfile1Click(Sender: TObject);
+procedure Twmdem.CrossscaleDEMComparison1Click(Sender: TObject);
+//this is hard coded during active development
+const
+   Overwrite = true;
+   DoDiffDist = true;
+var
+   fName : PathStr;
+   Areas : tStringList;
 begin
-   {$IfDef ExOceanography}
-   {$Else}
-      OceanCal.ImportCTDfile;
-   {$EndIf}
+   DEMIXanalysismode := DEMIXneo;
+   MDDef.DEMIX_mode := dmFull;
+
+   fName := 'J:\aaa_neo_eval\neo_test_tiles.dbf';
+   OpenNumberedGISDataBase(NewFormatDEMIXDB,fName,true);
+
+   MDDef.SSIM_elev := true;
+   MDDef.SSIM_slope := true;
+   MDDef.SSIM_ruff := true;
+   MDDef.SSIM_rri := true;
+   MDDef.SSIM_hill := true;
+   MDDef.SSIM_tpi := true;
+   MDDef.SSIM_Rotor := false;
+   MDDef.SSIM_Openness := true;
+
+   MDDef.SSIM_ConvergeIndex := false;
+   MDDef.SSIM_flow := false;
+   MDDef.SSIM_LS := false;
+   MDDef.SSIM_Wet := false;
+   MDDef.SSIM_HAND := false;
+   MDDef.SSIM_PLANC := false;
+   MDDef.SSIM_PROFC := false;
+   MDDef.SSIM_TANGC := false;
+
+   MDDef.DoSSIM := false;
+   MDDef.DoFUV := true;
+
+   GetDEMIXpaths;
+   DEMIX_initialized := true;
+
+   SetParamsForDEMIXmode;
+
+   Areas := tStringList.Create;
+   GISdb[NewFormatDEMIXDB].ApplyGISFilter('DTM<>' + QuotedStr(''));
+   Areas := GISdb[NewFormatDEMIXDB].MyData.ListUniqueEntriesInDB('AREA');
+   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Neo Areas with data=' + IntToStr(Areas.Count)); {$EndIf}
+
+   if DoDiffDist then begin
+      //this option is more hard-wired different from the traditional mode
+      ComputeDEMIX_Diff_Dist_tile_stats(Overwrite,Areas);
+      GISdb[NewFormatDEMIXDB].ClearGISFilter;
+   end;
+   if MDDef.DoSSIM or MDDef.DoFUV then begin
+      //this option should be les hard-wired new code
+      AreaSSIMandFUVComputations(Overwrite,false,Areas);
+      GISdb[NewFormatDEMIXDB].ClearGISFilter;
+   end;
+   SetColorForWaiting;
 end;
 
 
@@ -4418,7 +4468,7 @@ var
                OpenDEMDataStructures(ParamDEMs[i]);
                with DEMGlb[ParamDEMs[i]],DEMheader do begin
                   DEMheader.DEMPrecision := FloatingPointDEM;
-                  DigitizeDatum := Spherical;
+                  DEMheader.h_DatumCode := 'Sphere';
                   DEMySpacing := 2.5 /60;
                   DEMxSpacing := 2.5 / 60;
                   DEMSWCornerX := -180 + 0.5 * DEMxSpacing;
@@ -4716,21 +4766,6 @@ begin
 end;
 
 
-
-procedure Twmdem.est1Click(Sender: TObject);
-var
-   FileList : tStringList;
-begin
-   {$IfDef FMXU_point_cloud}
-   FileList := tStringList.Create;
-   FileList.Add('C:\Users\pguth\Documents\Elevation_1.xyzib');
-   FileList.Add('C:\Users\pguth\Documents\Lidar_intensity_1.xyzib');
-   FileList.Add('C:\Users\pguth\Documents\Lidar_classification_1.xyzib');
-
-      Startfmxu_point_cloud_viewer(FileList);
-      FileList.Destroy;
-   {$EndIf}
-end;
 
 procedure Twmdem.Evapospriaitonversustemperature1Click(Sender: TObject);
 begin
@@ -5959,54 +5994,6 @@ begin
    StartDEMIXgraphs(-4);
 end;
 
-procedure MergeDEMs(Mode : integer);
-var
-   UseGDALvrt : boolean;
-   DEMList,NewFiles : tStringList;
-   i, NewDEM : integer;
-   aPath : PathStr;
-begin
-   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Enter MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
-   UseGDALvrt := Mode in [dmMergeGDAL,dmMergeDirectories];
-   DEMList := tStringList.Create;
-   MergeSeriesName := '';
-   if Mode in [dmMergeGDAL, dmMergeMDnative] then begin
-      DEMList.Add(LastDEMName);
-      if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
-         {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
-         if (DEMList.Count = 1) and (UpperCase(ExtractFileExt(DEMList.Strings[0])) <> '.ASC') then begin
-            NewDEM := OpenNewDEM(DEMList.Strings[0]);
-            DEMList.Destroy;
-         end
-         else begin
-            NewDEM := MergeMultipleDEMsHere(DEMList,true,UseGDALvrt);
-         end;
-      end;
-   end
-   else begin
-      aPath := ExtractFilePath(LastDEMname);
-      repeat
-         GetDOSPath('Directory with DEMs to merge',aPath);
-         if (aPath <> '') then begin
-            NewFiles := Nil;
-            FindMatchingFiles(aPath,'*.*',NewFiles,1);
-            for i := 0 to pred(NewFiles.Count) do begin
-               DEMList.Add(NewFiles.Strings[i]);
-            end;
-            {$IfDef RecordMenu} WriteLineToDebugFile('   add ' + IntToStr(NewFiles.Count) + ' from ' + aPath); {$EndIf}
-            NewFiles.Destroy;
-         end;
-      until (aPath = '');
-      if (DEMList.Count > 0) then begin
-         NewDEM := MergeMultipleDEMsHere(DEMList,true,UseGDALvrt);
-      end;
-   end;
-   StopSplashing;
-   WMDEM.SetMenusForVersion;
-   {$IfDef TrackDEMCorners} DEMGlb[NewDEM].WriteDEMCornersToDebugFile('Merge DEMs, mode=' + IntToStr(Mode)); {$EndIf}
-   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Exit MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
-end;
-
 
 procedure Twmdem.OpenandmergeDEMdirectories1Click(Sender: TObject);
 begin
@@ -6024,10 +6011,6 @@ begin
    MergeDEMs(dmMergeMDnative);
 end;
 
-procedure Twmdem.OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
-begin
-   //MergeDEMsForDEMIX;
-end;
 
 procedure Twmdem.OpenandmergeGeotiffs1Click(Sender: TObject);
 {$IfDef ExGDAL}

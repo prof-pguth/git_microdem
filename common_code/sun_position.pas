@@ -497,7 +497,7 @@ begin
    DEMGlb[NewGrid].DEMheader.ElevUnits := euUndefined;
    if fName = '' then fName := 'Hours_direct_illumination_Julian_day_' + IntToStr(JulianDay);
    DEMGlb[NewGrid].AreaName := fName;
-   {$IfDef RecordHorizon} WriteLineToDebugFile('New grid=' + DEMGlb[NewGrid].KeyDEMParams(true)); {$EndIf}
+   {$IfDef RecordHorizon} WriteLineToDebugFile('New grid=' + DEMGlb[NewGrid].KeyParams(true)); {$EndIf}
    StartProgressAbortOption(fName);
    for x := 0 to pred(DEMGlb[NewGrid].DEMheader.NumCol) do begin
       UpdateProgressBar(x/DEMGlb[NewGrid].DEMheader.NumCol);

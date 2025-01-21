@@ -26,7 +26,7 @@ unit dem_indexes;
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
-     //{$Define RecordMergeDetails}
+     {$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
      //{$Define RecordClosing}
@@ -64,6 +64,8 @@ uses
 
 function LoadMapLibraryBox(Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer; //overload;
 function LoadMapLibraryPoint(Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer;
+function MergeMultipleDEMsHere(var DEMList : TStringList; DisplayIt,GDALversion : boolean; MergefDir : PathStr = '') : integer;
+procedure MergeDEMs(Mode : integer);
 
 procedure GetMapLibraryDataLimits(var MinLat,MaxLat,MinLong,MaxLong : float64);
 procedure CreateMapLibrary(Memo1 : tMemo);
@@ -78,7 +80,6 @@ procedure DefineShapeFileGrouping(fName : PathStr);
 procedure SetUpDataBaseForOperations(AllowNoDataMap : boolean = false);
 
 procedure CreateShapeFileGrouping(var fName : PathStr; var TheGroupingIndex : tMyData; Long : boolean; ShapeType : integer = 0);
-function MergeMultipleDEMsHere(var DEMList : TStringList; DisplayIt,GDALversion : boolean; MergefDir : PathStr = '') : integer;
 
 function DataTypeFileName : PathStr;
 function SeriesIndexFileName  : PathStr;
@@ -948,6 +949,56 @@ begin
 end;
 
 
+procedure MergeDEMs(Mode : integer);
+var
+   UseGDALvrt : boolean;
+   DEMList,NewFiles : tStringList;
+   i, NewDEM : integer;
+   aPath : PathStr;
+begin
+   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Enter MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
+   UseGDALvrt := Mode in [dmMergeGDAL,dmMergeDirectories];
+   DEMList := tStringList.Create;
+   MergeSeriesName := '';
+   if Mode in [dmMergeGDAL, dmMergeMDnative] then begin
+      DEMList.Add(LastDEMName);
+      if Petmar.GetMultipleFiles('DEMs to merge',DEMFilterMasks,DEMList,MDDef.DefaultDEMFilter) then begin
+         {$IfDef RecordMenu} WriteStringListToDebugFile(DEMList); {$EndIf}
+         if (DEMList.Count = 1) and (UpperCase(ExtractFileExt(DEMList.Strings[0])) <> '.ASC') then begin
+            NewDEM := OpenNewDEM(DEMList.Strings[0]);
+            DEMList.Destroy;
+         end
+         else begin
+            NewDEM := MergeMultipleDEMsHere(DEMList,true,UseGDALvrt);
+         end;
+      end;
+   end
+   else begin
+      aPath := ExtractFilePath(LastDEMname);
+      repeat
+         GetDOSPath('Directory with DEMs to merge',aPath);
+         if (aPath <> '') then begin
+            NewFiles := Nil;
+            FindMatchingFiles(aPath,'*.*',NewFiles,1);
+            for i := 0 to pred(NewFiles.Count) do begin
+               DEMList.Add(NewFiles.Strings[i]);
+            end;
+            {$IfDef RecordMenu} WriteLineToDebugFile('   add ' + IntToStr(NewFiles.Count) + ' from ' + aPath); {$EndIf}
+            NewFiles.Destroy;
+         end;
+      until (aPath = '');
+      if (DEMList.Count > 0) then begin
+         NewDEM := MergeMultipleDEMsHere(DEMList,true,UseGDALvrt);
+      end;
+   end;
+   StopSplashing;
+   WMDEM.SetMenusForVersion;
+   {$IfDef TrackDEMCorners} DEMGlb[NewDEM].WriteDEMCornersToDebugFile('Merge DEMs, mode=' + IntToStr(Mode)); {$EndIf}
+   {$If Defined(RecordMenu) or Defined(RecordMerge)} WriteLineToDebugFile('Exit MergeDEMs, mode=' + IntToStr(Mode)); {$EndIf}
+end;
+
+
+
 function MergeMultipleDEMsHere(var DEMList : TStringList; DisplayIt,GDALversion : boolean; MergefDir : PathStr = '') : integer;
 var
    FName : ShortString;
@@ -993,6 +1044,7 @@ var
                      UTMDEMs := DEMGlb[CurDEM].DEMHeader.DEMUsed = UTMBasedDEM;
                      SubsequentDEM := true;
                      DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
+                     {$If Defined(RecordMergeDetails)} WriteLineToDebugFile('First DEM, Spacing: ' + RealToString(Xspace,-12,-6) + 'x' + RealToString(Xspace,-12,-6) ); {$EndIf}
                   end
                   else begin
                      if UTMDEMs and (DEMGlb[CurDEM].DEMHeader.UTMZone <> MergeUTMZone) then begin
@@ -1011,6 +1063,7 @@ var
                         NewHeader.NumCol := succ(round((xmax - xmin) / XSpace));
                         NewHeader.NumRow := succ(round((ymax - ymin) / YSpace));
                         DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
+                        {$If Defined(RecordMergeDetails)} WriteLineToDebugFile('Next DEM, grid size= ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) ); {$EndIf}
                      end;
                   end {if};
                   {$IfDef RecordMergeDetails}
@@ -1026,7 +1079,6 @@ var
                   DEMlist.Delete(i);
                end;
             end;
-            //else DEMGlb[CurDEM] := Nil;
          end;
 
          {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in MD DEM Merge'); {$EndIf}

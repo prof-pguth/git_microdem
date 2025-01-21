@@ -1453,7 +1453,7 @@ type
     PerpProfiles1: TMenuItem;
     NearestpeakoneachDEM1: TMenuItem;
     Specifyxyzshifts1: TMenuItem;
-    UsingVDATUMoutput1: TMenuItem;
+    //UsingVDATUMoutput1: TMenuItem;
     UsingVDATUM1: TMenuItem;
     WGS84elllipsoid1: TMenuItem;
     Pickmapsforbigimage1: TMenuItem;
@@ -1609,6 +1609,9 @@ type
     CompareLSQslopepolynomialorder1: TMenuItem;
     CompareLSQslopewindowsize1: TMenuItem;
     Neighborhoodsurfaceequations1: TMenuItem;
+    CreateReferenceDEMtoMatchThis1: TMenuItem;
+    Usingtransformgrids1: TMenuItem;
+    Undefined2: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2621,7 +2624,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure PerpProfiles1Click(Sender: TObject);
     procedure NearestpeakoneachDEM1Click(Sender: TObject);
     procedure Specifyxyzshifts1Click(Sender: TObject);
-    procedure UsingVDATUMoutput1Click(Sender: TObject);
+    //procedure UsingVDATUMoutput1Click(Sender: TObject);
     procedure UsingVDATUM1Click(Sender: TObject);
     procedure WGS84elllipsoid1Click(Sender: TObject);
     procedure Pickmapsforbigimage1Click(Sender: TObject);
@@ -2753,6 +2756,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure CompareLSQslopepolynomialorder1Click(Sender: TObject);
     procedure CompareLSQslopewindowsize1Click(Sender: TObject);
     procedure Neighborhoodsurfaceequations1Click(Sender: TObject);
+    procedure CreateReferenceDEMtoMatchThis1Click(Sender: TObject);
+    procedure Undefined2Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3865,13 +3870,13 @@ begin
 end;
 
 procedure TMapForm.MAvDmatrixaveragedifferences1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMBooleanArray;
+//var
+   //DEMsWanted : tDEMBooleanArray;
 begin
    {$IfDef ExGeostats}
    {$Else}
-      GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
-      GridCorrelationMatrix(gcmMAvD,DEMsWanted,'Grid correlation matrix');
+     // GetMultipleDEMsFromList('MavD matric',DEMsWanted);
+      GridCorrelationMatrix(gcmMAvD,GetMultipleDEMsFromList('MavD matrix'),'MavD matrix');
    {$EndIf}
 end;
 
@@ -5691,7 +5696,7 @@ var
                7 : TStr := IntToStr(DEMGlb[i].DEMHeader.NumRow);
                8 : TStr := RasterPixelIsString(DEMGlb[i].DEMHeader.RasterPixelIsGeoKey1025);
                9 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
-               10 : if DEMGlb[i].DEMHeader.DigitizeDatum in [0..14] then TStr := DigitizeDatumName[DEMGlb[i].DEMHeader.DigitizeDatum] else TStr := '';
+               10 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
                11 : TStr := VertDatumName(DEMGlb[i].DEMHeader.VerticalCSTypeGeoKey);
                12 : TStr := IntToStr(DEMGlb[i].DEMHeader.UTMZone);
                13 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMinElev,-12,-4);
@@ -5705,10 +5710,6 @@ var
                21 : begin
                         TStr := DEMGlb[i].DEMHeader.WKTString;
                         if (length(TStr) > 0) then TStr := IntToStr(length(TStr)) + ' chars'
-                        //then begin
-                          // ReplaceCharacter(TStr,'"',#39);
-                          // TStr := '"' + TStr + '"';
-                        //end;
                     end;
                22 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
                23 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
@@ -6172,7 +6173,7 @@ var
 
          procedure SetUpMap(LogDEM : integer);
          begin
-            {$IfDef RecordReqAnt} WriteLineToDebugFile('Coverage area  ' + DEMGlb[LogDEM].KeyDEMParams); {$EndIf}
+            {$IfDef RecordReqAnt} WriteLineToDebugFile('Coverage area  ' + DEMGlb[LogDEM].KeyParams); {$EndIf}
             DEMGlb[LogDEM].SetUpMap(true,mtElevSpectrum);
             DEMGlb[LogDEM].SelectionMap.SaveDEM1.Visible := false;
          end;
@@ -6493,7 +6494,7 @@ var
 begin
    {$If Defined(RecordDerivedGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
    Grid := CreateHillshadeMap(true, MapDraw.DEMonMap);
-   {$If Defined(RecordDerivedGrids)} WriteLineToDebugFile('Hillsade created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec  '  + DEMglb[grid].KeyDEMParams(true)); {$EndIf}
+   {$If Defined(RecordDerivedGrids)} WriteLineToDebugFile('Hillsade created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec  '  + DEMglb[grid].KeyParams(true)); {$EndIf}
 end;
 
 procedure TMapForm.MenuItem2Click(Sender: TObject);
@@ -8617,7 +8618,7 @@ begin
       FeatureGeomorphometry1.Enabled := ExpertDEMVersion and FileExists(DEMGlb[MapDraw.DEMonMap].VATFileName);
 
       Topographicgrain1.Visible := MDDef.ShowGeomorphometry and (MapDraw <> Nil) and (MapDraw.VectorIndex = 0) and ValidDEM(MapDraw.DEMonMap);
-      ConvertUKOSDEM1.Visible := ExpertDEMVersion and (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DigitizeDatum = UK_OS_grid);
+      ConvertUKOSDEM1.Visible := ExpertDEMVersion and (MapDraw.ValidDEMonMap) and (DEMGlb[MapDraw.DEMonMap].DEMheader.h_DatumCode = 'UK-OS');
       DEMgridhistogram1.Visible := MapDraw.ValidDEMonMap;
 
       {$IfDef ExDrainage}
@@ -8756,11 +8757,7 @@ begin
       Colorsfromgridcategories1.visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision = SmallIntDEM);
       Bytedata0tomissing1.visible := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMPrecision = ByteDEM);
 
-      ID1.Visible := (MapDraw.MapOwner in [moMapDatabase]);
-
-      Database1.Visible := true;
-
-      ID1.Visible := NumOpenDatabaseThisMap(Self) > 0;
+      ID1.Visible := (MapDraw.MapOwner in [moMapDatabase]) and (NumOpenDatabaseThisMap(Self) > 0);
 
       Rivers1.Visible := (RiversGISFileName <> '');
       Highways1.Visible := (HighwayGISFileName <> '');
@@ -10267,11 +10264,8 @@ end;
 
 
 procedure TMapForm.Scattergrams1Click(Sender: TObject);
-//var
-   //DEMsWanted : tDEMbooleanArray;
 begin
     {$IfDef RecordScattergram} WriteLineToDebugFile('TMapForm.Scattergrams1Click in'); {$EndIf}
-    //GetMultipleDEMsFromList('Histograms',DEMsWanted);
     ScatterGramGrid(True,GetMultipleDEMsFromList('Scattergrams'));
 end;
 
@@ -12812,6 +12806,19 @@ begin
    MakeTempGrid(true,true);
 end;
 
+procedure TMapForm.CreateReferenceDEMtoMatchThis1Click(Sender: TObject);
+var
+   HRDref,NewRef : integer;
+   fName : PathStr;
+begin
+   HRDref := OpenNewDEM(fName,false,'HRD source for reference DEM');
+   fName := MDtempDir + 'ref_dem.tif';
+   DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff(fName);
+   NewRef := OpenNewDEM(fName,false,'New reference DEM');
+   DEMGlb[HRDref].ResampleByAveraging(true,fName,NewRef);
+
+end;
+
 procedure TMapForm.Createsurveylines1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
@@ -14824,9 +14831,7 @@ end;
 
 procedure TMapForm.Specifyxyzshifts1Click(Sender: TObject);
 var
-   //fName : PathStr;
    dx,dy,dz : float32;
-   //i,
    NewVD : integer;
 begin
    dx := 0.43;
@@ -15297,7 +15302,7 @@ begin
          else TStr := RealToString(100.0*MapZoomFactor,-8,1) + '% of points on map';
          Result.Add(TStr + MessLineBreak + DashLine);
          if DEMMap then begin
-            Result.Add('DEM=' + DEMGlb[DEMonMap].AreaName + MessLineBreak +  DEMGlb[DEMonMap].KeyDEMParams);
+            Result.Add('DEM=' + DEMGlb[DEMonMap].AreaName + MessLineBreak +  DEMGlb[DEMonMap].KeyParams);
             if (DEMGlb[DEMonMap].DEMheader.DEMUsed = UTMbasedDEM) then TStr := 'UTM grid (zone ' + IntToStr(DEMGlb[DEMonMap].DEMheader.UTMZone) + ')' else TStr := 'True';
             if (DEMGlb[DEMonMap].DEMMapProj = Nil) then TStr := TStr +  ' north at top of map' + MessLineBreak
             else TStr := '';
@@ -15356,7 +15361,7 @@ begin
             Result.Add('UTM Grid declination:' + RealToString(GridTrueAngle,6,1) + '°');
          end;
       {$EndIf}
-      if ValidDEMonMap and (not DEMMap) then Result.Add('Elevations from ' + 'DEM=' + DEMGlb[DEMonMap].AreaName + MessLineBreak + DEMGlb[DEMonMap].KeyDEMParams + MessLineBreak);
+      if ValidDEMonMap and (not DEMMap) then Result.Add('Elevations from ' + 'DEM=' + DEMGlb[DEMonMap].AreaName + MessLineBreak + DEMGlb[DEMonMap].KeyParams + MessLineBreak);
    end;
 end;
 
@@ -17180,6 +17185,11 @@ end;
 procedure TMapForm.Undefined1Click(Sender: TObject);
 begin
    ChangeElevUnits(euUndefined);
+end;
+
+procedure TMapForm.Undefined2Click(Sender: TObject);
+begin
+   DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := 0;
 end;
 
 procedure TMapForm.UndoSpeedButtonClick(Sender: TObject);
@@ -19607,12 +19617,12 @@ begin
 end;
 
 procedure TMapForm.Correlationmatrix1Click(Sender: TObject);
-var
-    DEMsWanted : tDEMbooleanArray;
+//var
+    //DEMsWanted : tDEMbooleanArray;
 begin
-    GetMultipleDEMsFromList('Correlation matrix',DEMsWanted);
-    DEMsWanted[MapDraw.DEMonMap] := true;
-    GridCorrelationMatrix(gcmR,DEMsWanted,'Correlation matrix');
+    //GetMultipleDEMsFromList('Correlation matrix',DEMsWanted);
+    //DEMsWanted[MapDraw.DEMonMap] := true;
+    GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Correlation matrix'),'Correlation matrix');
 end;
 
 procedure TMapForm.Counties1Click(Sender: TObject);
@@ -20065,9 +20075,13 @@ procedure TMapForm.Map2Click(Sender: TObject);
 var
    sl : tStringList;
    t1 : shortstring;
+   TStr : shortstring;
 begin
    sl := MapInformationString;
-   if MapDraw.DEMMap then sl.Insert(0,DEMGlb[MapDraw.DEMonMap].AreaName);
+   if MapDraw.DEMMap then begin
+      TStr := DEMGlb[MapDraw.DEMonMap].AreaName + '  EPSG: ' + DEMGlb[MapDraw.DEMonMap].GetDEMCompositeDatumString;
+      sl.Insert(0,TStr);
+   end;
    if ValidSatImage(MapDraw.SatOnMap) then sl.Insert(0,SatImage[MapDraw.SatonMap].SceneBaseName);
 
    t1 := MapDraw.PrimMapProj.GetProjName;
@@ -20941,12 +20955,12 @@ begin
 end;
 
 procedure TMapForm.MADmatrix1Click(Sender: TObject);
-var
-   DEMsWanted : tDEMbooleanArray;
+//var
+   //DEMsWanted : tDEMbooleanArray;
 begin
-    GetMultipleDEMsFromList('MAD matrix',DEMsWanted);
-    DEMsWanted[MapDraw.DEMonMap] := true;
-    GridCorrelationMatrix(gcmMAbD,DEMsWanted,'MAD matrix');
+    //GetMultipleDEMsFromList('MAD matrix',DEMsWanted);
+    //DEMsWanted[MapDraw.DEMonMap] := true;
+    GridCorrelationMatrix(gcmMAbD,GetMultipleDEMsFromList('MabD matrix'),'MAD matrix');
 end;
 
 
@@ -20954,8 +20968,7 @@ procedure TMapForm.Magneticanomaly1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-   //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
-   LoadDataBaseFile(DBDir + 'wmag' + DefaultDBExt);
+      LoadDataBaseFile(DBDir + 'wmag' + DefaultDBExt);
    {$EndIf}
 end;
 
@@ -20963,8 +20976,7 @@ procedure TMapForm.Magneticanomalypicks1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-   //if MDDef.MoveGeologyDBMemory then DesiredDBMode := dbmCDS;
-   LoadDataBaseFile(GSFML_global_picks);
+      LoadDataBaseFile(GSFML_global_picks);
    {$EndIf}
 end;
 
@@ -21747,26 +21759,9 @@ var
    SaveName : PathStr;
 begin
    SaveName := '';
-   VerticalDatumShiftWithGDAL(MapDraw.DEMonMap,SaveName);
+   VerticalDatumShiftWithGDALtoEGM2008(MapDraw.DEMonMap,SaveName);
 end;
 
-procedure TMapForm.UsingVDATUMoutput1Click(Sender: TObject);
-begin
-   VerticalDatumShiftWithVDATUM('DEM edit',MapDraw.DEMonMap,0,'');
-end;
-
-
-(*
-procedure TMapForm.LoadDataBaseFileWithMissingMessage(fName : PathStr);
-begin
-   if FileExists(fName) then begin
-      LoadDataBaseFile(fName);
-   end
-   else begin
-      MessageToContinue('File missing: ' + fName);
-   end;
-end;
-*)
 
 procedure TMapForm.UStornadoes1Click(Sender: TObject);
 begin
@@ -22037,7 +22032,7 @@ end;
 
 procedure TMapForm.Other1Click(Sender: TObject);
 begin
-    DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := 0;
+   ReadDefault('EPSG for vertical datum',DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey);
 end;
 
 procedure TMapForm.OtherDEM1Click(Sender: TObject);

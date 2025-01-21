@@ -20,7 +20,8 @@ unit make_grid;
       //{$Define DEMIXmaps}
       //{$Define CreateSlopeMap}
       //{$Define TrackMapRange}
-      {$Define CreateGeomorphMaps}
+      //{$Define CreateGeomorphMaps}
+      //{$Define RecordDEMIXhillshades}
       //{$Define RecordTimeGridCreate}
       //{$Define RecordPointClass}
       //{$Define RecordDEMCompare}
@@ -833,6 +834,7 @@ var
    x,y : integer;
    z : float32;
 begin
+   {$If Defined(RecordDEMIXhillshades)} HighLightLineToDebugFile('CreateHillshadeMap for DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName + ' ' + DEMGlb[DEM].KeyParams(true));  {$EndIf}
    if (OutName = '') then OutName := 'hillshade_' + DEMGlb[DEM].AreaName;
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,OutName,euUndefined);
    DEMGlb[DEM].ReflectanceParams;
@@ -849,6 +851,7 @@ begin
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetupMap(false,mtElevGray);
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
+   {$If Defined(RecordDEMIXhillshades)} WriteLineToDebugFile('Created Slope Grid=' + IntToStr(Result) + '  ' + DEMGlb[Result].AreaName + ' ' + DEMGlb[Result].KeyParams(true)); {$EndIf}
 end;
 
 
@@ -1630,7 +1633,7 @@ begin {MakeMomentsGrid}
           DEMGlb[MomentDEMs[i]].CheckMaxMinElev;
           {$IfDef CreateGeomorphMaps} WriteLineToDebugFile(DEMglb[MomentDEMs[i]].AreaName + '  ' + DEMglb[MomentDEMs[i]].zRange); {$EndIf}
           if OpenMaps then begin
-             {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyDEMParams); {$EndIf}
+             {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyParams); {$EndIf}
              DEMGlb[MomentDEMs[i]].SetUpMap(false,WantMapType,What in ['A','C','F']);
              MatchAnotherDEMMap(MomentDEMs[i],CurDEM);
              {$IfDef CreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}

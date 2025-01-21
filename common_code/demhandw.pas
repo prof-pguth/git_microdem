@@ -249,7 +249,6 @@ type
     OGRshapefilestoGKPG1: TMenuItem;
     ASCIIremovelineswithoutsubstring1: TMenuItem;
     VerticaldatumshiftoverwriteDEMgrid1: TMenuItem;
-    XYZshifttoEGM2008withVDATUMresults1: TMenuItem;
     DiluviumDEMreprot1: TMenuItem;
     emplatedownload1: TMenuItem;
     MICRODEMformat1: TMenuItem;
@@ -406,7 +405,6 @@ type
     procedure CSVmergefiles1Click(Sender: TObject);
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
     procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
-    procedure XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
     procedure DiluviumDEMreprot1Click(Sender: TObject);
     procedure emplatedownload1Click(Sender: TObject);
     procedure MICRODEMformat1Click(Sender: TObject);
@@ -967,42 +965,6 @@ begin
 end;
 
 
-procedure TDemHandForm.XYZshifttoEGM2008withVDATUMresults1Click(Sender: TObject);
-var
-   aDEM : integer;
-   FilesWanted : tStringList;
-   fName : PathStr;
-   dx,dy,dz : float32;
-   i : integer;
-begin
-   FilesWanted := tStringList.Create;
-   FilesWanted.Add(LastDEMName);
-   dx := 0.305;
-   dy := -1.43;
-   dz := 0.62;
-   if GetMultipleFiles('DEM/grid to move to EGM2008',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
-      for i := 0 to pred(FilesWanted.Count) do begin
-         fName := FilesWanted.Strings[i];
-         aDEM := OpenNewDEM(fName,false);
-         if (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = 0) or (DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey = VertCSNAVD88) then begin
-            Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum 0 now EGM2008');
-            DEMGlb[aDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
-            DEMGlb[aDEM].DEMHeader.DEMSWCornerX := DEMGlb[aDEM].DEMHeader.DEMSWCornerX + dx;
-            DEMGlb[aDEM].DEMHeader.DEMSWCornerY := DEMGlb[aDEM].DEMHeader.DEMSWCornerY + dy;
-            DEMGlb[aDEM].AddConstantToGrid(dz);
-            fName := ExtractFilePath(fName) + DEMGlb[aDEM].AreaName + '_egm2008.dem';
-            DEMGlb[aDEM].WriteNewFormatDEM(fName);
-         end
-         else begin
-            Memo1.Lines.Add(DEMGlb[aDEM].AreaName + ' was vertical datum ' + IntToStr(DEMGlb[aDEM].DEMheader.VerticalCSTypeGeoKey) + ' unchanged')
-         end;
-         CloseSingleDEM(aDEM);
-      end;
-      FilesWanted.Free;
-   end;
-end;
-
-
 
 procedure TDemHandForm.zshift1Click(Sender: TObject);
 begin
@@ -1491,12 +1453,11 @@ var
    DefaultFilter : byte;
    i : integer;
 begin
-   //if Petmar.GetFileFromDirectory('TIFF file','*.tif',fName) then begin
    fNames := tStringList.Create;
    Petmar.GetMultipleFiles('TIFF files','*.tif',fNames,DefaultFilter);
    if (Fnames.Count > 0) then begin
       for i := 0 to pred(FNames.Count) do begin
-         if i = 0 then begin
+         if (i = 0) then begin
             Petmar.GetString('Source EPSG code: Horiz or Horiz + Vert (blank if correctly defined)',SourceEPSG,false,['0'..'9','+'] );
             PickUTMzone(UTMZone);
          end;

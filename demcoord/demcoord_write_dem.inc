@@ -19,6 +19,18 @@
 {$EndIf}
 
 
+function tDEMDataSet.GetDEMCompositeDatumString : shortstring;
+begin
+   if (DEMheader.DEMUsed = UTMbasedDEM) then begin
+      Result := IntToStr(GetUTMDatumCode(DEMMapProj));
+   end
+   else begin
+      Result := IntToStr(GetGeoDatumCode(DEMMapProj));
+   end;
+   Result := Result + '+' + IntToStr(DEMheader.VerticalCSTypeGeoKey);
+end;
+
+
 procedure tDEMDataSet.CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
 var
    Lat,Long : float64;
@@ -113,7 +125,7 @@ procedure tDEMDataSet.WriteNewFormatDEM(Limits : tGridLimits; var FileName : Pat
                    'precision=' + IntToStr(Ord(tDEMprecision(NewHeadRecs.DEMPrecision))) + #13 +
                    'spaceunit=' +IntToStr(Ord(tSpacingUnit(NewHeadRecs.DataSpacing))) + #13 +
                    'elevunit=' + IntToStr(Ord(tElevUnit(NewHeadRecs.ElevUnits))) + #13 +
-                   'digdatum=' + IntToStr(Ord(tDigitizeDatum(NewHeadRecs.DigitizeDatum))) + #13 +
+                   //'digdatum=' + IntToStr(Ord(tDigitizeDatum(NewHeadRecs.aDigitizeDatum))) + #13 +
                    'hemi=' + NewHeadRecs.LatHemi + #13 +
                    'h_datum=' + NewHeadRecs.h_DatumCode + #13 +
                    'VertCSType=' + IntToStr(NewHeadRecs.VerticalCSTypeGeoKey) + #13 +
@@ -463,9 +475,15 @@ begin
    StreamWordFieldEntry(TIFFFile,1025,0,1,DEMheader.RasterPixelIsGeoKey1025); {1=RasterPixelIsArea, 2=RasterPixelIsPoint}
    StreamWordFieldEntry(TIFFFile,1026,34737,12,0);
 
-   if (DEMMapProj <> Nil) and (DEMMapProj.PName = UK_OS) then StreamWordFieldEntry(TIFFFile,3072,0,1,27700)
-   else if (DEMheader.DEMUsed = UTMbasedDEM) then StreamWordFieldEntry(TIFFFile,3072,0,1,GetUTMDatumCode(DEMMapProj))
-   else StreamWordFieldEntry(TIFFFile,2048,0,1,GetGeoDatumCode(DEMMapProj));
+   if (DEMMapProj <> Nil) and (DEMMapProj.PName = UK_OS) then begin
+      StreamWordFieldEntry(TIFFFile,3072,0,1,27700);
+   end
+   else if (DEMheader.DEMUsed = UTMbasedDEM) then begin
+      StreamWordFieldEntry(TIFFFile,3072,0,1,GetUTMDatumCode(DEMMapProj));
+   end
+   else begin
+      StreamWordFieldEntry(TIFFFile,2048,0,1,GetGeoDatumCode(DEMMapProj));
+   end;
 
    StreamWordFieldEntry(TIFFFile,4096,0,1,DEMheader.VerticalCSTypeGeoKey);
 

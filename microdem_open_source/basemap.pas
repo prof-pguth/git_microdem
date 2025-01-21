@@ -118,8 +118,6 @@ type
          LatHemi      : Ansichar;
          h_DatumCode  : ShortString;
          h_EllipsCode : ShortString;
-         //VectorProjfName : PathStr;
-         //ProjectionSharedWithDataset : boolean;
          wktProjName,
          pNameModifier,
          ProjDebugName : shortstring;
@@ -203,7 +201,7 @@ type
 
          function UTMStringFromLatLongDegree(Lat,Long : float64; IncludeDatum : boolean = true) : shortString;
          function CalculateMGRS(X,Y : float64; UTMLen : byte) : shortstring;
-         function LatLongToMGRS(Lat,Long : float64) : shortstring;
+         function LatLongToMGRS(Lat,Long : float64; theLength : integer = 10) : shortstring;
          function MGRSvalid : boolean;
          function UTMLocationString(XUTM,YUTM : float64) : ShortString;
          function UTMZoneString : shortstring;
@@ -282,20 +280,19 @@ function UTMString(xutm,yutm : float64) : shortstring;
 function DatumName(var DatumCode : ShortString) : ShortString;
 function EllipsoidName(EllipCode : ShortString) : ShortString;
 
-function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
+//function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
 
-function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
+//function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
+
+
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 function HemiFromLat(Lat : float64) : ANSIchar;
 
 procedure MetersPerDegree(Lat,Long : float64; var DistanceNS,DistanceEW,DistanceAVG : float64);
 function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
 
-
 function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
 function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
-
-
 
 {$IfDef VCL}
    procedure PickDatum(WhatFor : shortstring; var DatumCode : ShortString);
@@ -371,7 +368,7 @@ begin
    LatHemi := DEMheader.LatHemi;
    h_DatumCode := DEMHeader.h_DatumCode;
    projUTMZone := DEMheader.UTMZone;
-   if (DEMheader.DigitizeDatum = UK_OS_grid) then PName := UK_OS
+   if (h_DatumCode = 'UK-OS') then PName := UK_OS
    else if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
 
    if (DEMheader.wktString <> '') then begin
@@ -523,9 +520,9 @@ procedure tMapProjection.SetProjectionParameterFromGeotiffKey(Key : integer; Val
 begin
    case Key of
       2057 : a := Value;
-      2058 : begin end; // b, EllipsoidSemiMinorAxisGeoKey, not used
+      2058 : begin end; // b, EllipsoidSemiMinorAxisGeoKey, not currently used
       2059 : h_f := Value;
-      2061 : begin end; // PrimeMeridianLongitudeGeoKey, not used
+      2061 : begin end; // PrimeMeridianLongitudeGeoKey, not currently used
       3075 : ProcessTiff3075(round(value));
       3078 : Phi1 := Value * DegToRad;
       3079 : Phi2 := Value * DegToRad;
@@ -759,15 +756,17 @@ end;
 
 
 function tMapProjection.ProcessTiff4096(TiffOffset : integer) : shortstring;
+//
+//Geotiff 6.3.4.1 Vertical CS Type Codes
 begin
    VerticalCSTypeGeoKey := TiffOffset;
    case TiffOffSet of
-     4096,
      5030,
      5031 : Result := 'VertCS_WGS_84_ellipsoid';
      5032 : Result := 'VertCS_OSU86F_ellipsoid';
      5033 : Result := 'VertCS_OSU91A_ellipsoid';
-     5102,
+     5102 : Result := 'VertCS_North_American_Vertical_Datum_1929';
+     5103,
      5703 : Result := 'VertCS_North_American_Vertical_Datum_1988';
      5714 : Result := 'msl';
      5773 : Result := 'Vert_CS_EGM96';
@@ -1500,25 +1499,6 @@ begin
    end {Case};
    //Result := Result +  '  Datum=' + h_DatumCode;
 end;
-
-(*
-function DigitizeDatumName(DatumUsed : tMapProjDatum) : ShortString;
-begin
-   case DatumUsed of
-      MapProjNAD27 : DigitizeDatumName := 'NAD27';
-      MapProjWGS72 : DigitizeDatumName := 'WGS72';
-      MapProjNAD83 : DigitizeDatumName := 'NAD83';
-      MapProjWGS84 : DigitizeDatumName := 'WGS84';
-      Airy         : DigitizeDatumName := 'Airy';
-      Hayford      : DigitizeDatumName := 'Hayford';
-      MapProjHughesDatum : DigitizeDatumName := 'Hughes';
-      Clark1880 : DigitizeDatumName := 'Clark 1880';
-      MapProjOtherDatum : DigitizeDatumName := 'Other';
-      MapProjETRS89 : DigitizeDatumName := 'ETRS89';
-      else DigitizeDatumName := 'Missing';
-   end {case};
-end;
-*)
 
 initialization
 {$IfDef MessageStartUpUnitProblems} MessageToContinue('demdatum initialization'); {$EndIf}

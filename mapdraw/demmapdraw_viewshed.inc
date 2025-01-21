@@ -1,13 +1,12 @@
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{ include file for demmapdraw       }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
       procedure TMapDraw.FanBitmap(Lat,Long : float64; var Bitmap : tMyBitmap);
@@ -419,7 +418,7 @@ begin
    {$IfDef RecordFan} WriteLineToDebugFile('tMapDraw.InsureAllFansDrawn all fans created'); {$EndIf}
 
    if  (SummaryBitmap <> Nil) then begin
-      {$IfDef FanDrawProblems} WriteLineToDebugFile('SummaryBitmap <> Nil, ' + DEMGlb[DEMonMap].KeyDEMParams(True)); {$EndIf}
+      {$IfDef FanDrawProblems} WriteLineToDebugFile('SummaryBitmap <> Nil, ' + DEMGlb[DEMonMap].KeyParams(True)); {$EndIf}
       ShowHourglassCursor;
       Table.First;
       ShowSatProgress := false;

@@ -263,9 +263,9 @@ end;
 
 
 
-function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = '') : integer;
+function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 var
-   //CountGrid,
+   SearchRadiusX,SearchRadiusY,
    x,y,xi,yi,xn,yn,n,xp,yp : integer;
    Lat,Long,Sum : float64;
    z,z1 : float32;
@@ -275,52 +275,35 @@ var
    LatCh : ANSIchar;
    fName : PathStr;
    bbp : sfBoundBox;
-   (*
-   {$If Defined(RecordCreateNewDEMSWCorner)}
-      procedure RecordSWCorner(What : shortstring);
-      begin
-         if (NewHeadRecs.DEMUsed = ArcSecDEM) then begin
-            WriteLineToDebugFile(What + ' SW corner: ' + LatLongDegreeToString(NewHeadRecs.DEMSWCornerY,NewHeadRecs.DEMSWCornerX, DecSeconds) +
-              '   ' + LatLongDegreeToString(NewHeadRecs.DEMSWCornerY,NewHeadRecs.DEMSWCornerX,LongDegrees));
-         end;
-      end;
-   {$EndIf}
-   *)
 begin
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyDEMParams); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyParams); {$EndIf}
     UTMzone := DEMMapProj.projUTMZone;
     LatCh := DEMMapProj.LatHemi;
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'');
     if (SaveName <> '') then fName := ExtractFileNameNoExt(SaveName);
 
-    if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
-       if (fName = '') then fName := AreaName + '_utm_resample';
-       Result := CreateGridToMatchDEM(fName,ThisDEM,cgUTM,false,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
+    if ValidDEM(DEMalreadyCreated) then begin
+       Result := DEMalreadyCreated;
     end
-    else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
-       if (fName = '') then fName := AreaName + '_geo_resample';
-       Result := CreateGridToMatchDEM(fName,ThisDEM,cgLatLong,false,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,UTMZone,MDDef.LasDEMPixelIs);
+    else begin
+       if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
+          if (fName = '') then fName := AreaName + '_utm_resample';
+          Result := CreateGridToMatchDEM(fName,ThisDEM,cgUTM,false,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
+       end
+       else if (MDDef.LidarGridProjection = ArcSecDEM) then begin
+          if (fName = '') then fName := AreaName + '_geo_resample';
+          Result := CreateGridToMatchDEM(fName,ThisDEM,cgLatLong,false,FloatingPointDEM,MDDef.DefLidarGeoGridSizeX,MDDef.DefLidarGeoGridSizeY,UTMZone,MDDef.LasDEMPixelIs);
+       end;
     end;
+
     {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging grid created'); {$EndIf}
     DEMGlb[Result].SetEntireGridToConstant(0);
     DEMGlb[Result].DEMHeader.WKTstring := '';
 
    if (SaveName = '') then NewAreaName := AreaName
    else NewAreaName := ExtractFileNameNoExt(SaveName);
-
-   (*
-   NewHeadrecs := DEMGlb[Result].DEMHeader;
-   NewHeadRecs.DEMPrecision := LongWordDEM;
-   NewHeadRecs.ElevUnits := euUndefined;
-
-   if not OpenAndZeroNewDEM(true,NewHeadRecs,CountGrid,MDTempDir + NewAreaName + '_resample_density',InitDEMvalue,0) then begin
-      {$If Defined(RecordProblems)} HighLightLineToDebugFile('ResampleByAveraging Fail to open ' + DEMGlb[CountGrid].AreaName); {$EndIf}
-      CloseSingleDEM(Result);
-      CloseSingleDEM(CountGrid);
-      exit;
-   end;
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('ResampleByAveraging count grid, ' + DEMGlb[CountGrid].AreaName + '  ' + DEMGlb[CountGrid].KeyDEMParams); {$EndIf}
-   *)
+   SearchRadiusX := round(DEMGlb[Result].AverageXSpace / AverageXSpace) + 2;
+   SearchRadiusY := round(DEMGlb[Result].AverageYSpace / AverageYSpace) + 2;
 
    StartProgress('Get z values ' + NewAreaName);
    for xn := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
@@ -328,15 +311,12 @@ begin
        for yn := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
           DEMGlb[Result].DEMGridToLatLongDegree(xn,yn,Lat,Long);
           LatLongDegreeToDEMGridInteger(Lat,Long,xp,yp);
-
           Sum := 0;
           N := 0;
-
           if (DEMGlb[Result].DEMHeader.DEMUsed = ArcSecDEM) then bbp := DEMGlb[Result].PixelBoundBoxGeo(xn,yn)
           else bbp := DEMGlb[Result].PixelBoundBoxUTM(xn,yn);
-
-          for x := xp-32 to xp+32 do begin
-             for y := yp-32 to yp+32 do begin
+          for x := xp-SearchRadiusX to xp+SearchRadiusX do begin
+             for y := yp-SearchRadiusY to yp+SearchRadiusY do begin
                 if GetElevMetersOnGrid(x,y,z) and PointInLowResPixel(Result,x,y,Lat,Long,bbp) then begin
                    Sum := Sum + z;
                    inc(n);
@@ -345,78 +325,27 @@ begin
           end;
           if (n > 0) then begin
              DEMGlb[Result].SetGridElevation(xn,yn,Sum/n);
-             //DEMGlb[CountGrid].SetGridElevation(xn,yn,n);
           end
           else begin
              DEMGlb[Result].SetGridMissing(xn,y);
-             //DEMGlb[CountGrid].SetGridMissing(xn,y);
           end;
        end;
    end;
 
-
-(*
-   for x := 0 to pred(DEMHeader.NumCol) do begin
-       UpdateProgressBar(x/DEMHeader.NumCol);
-       for y := 0 to pred(DEMHeader.NumRow) do begin
-          if GetElevMeters(x,y,z) then begin
-             DEMGridToLatLongDegree(x,y,Lat,Long);
-             DEMGlb[Result].LatLongDegreeToDEMGridInteger(Lat,Long,xi,yi);
-             if DEMGlb[Result].GetElevMetersOnGrid(xi,yi,z1) then begin
-                DEMGlb[Result].SetGridElevation(xi,yi,z1+Z);
-                DEMGlb[CountGrid].IncrementGridValue(xi,yi);
-
-                if DEMGlb[Result].DEMHeader.DEMUsed = UTMBasedDEM then begin
-                   if (xi=3) and (yi=3) then begin
-                      SelectionMap.MapDraw.LatLongDegreeToScreen(Lat,Long,Xi,yi);
-                      ScreenSymbol(SelectionMap.Image1.Canvas,xi,yi,MDDef.DefGISSymbol);
-                   end;
-                end
-                else begin
-                   if (xi=5) and (yi=3) then begin
-                      SelectionMap.MapDraw.LatLongDegreeToScreen(Lat,Long,Xi,yi);
-                      ScreenSymbol(SelectionMap.Image1.Canvas,xi,yi,MDDef.DefGISSymbol);
-                   end;
-                end;
-             end;
-          end;
-       end;
-   end;
-
-   StartProgress('Average values ' + NewAreaName);
-   for x := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
-       UpdateProgressBar(x/DEMGlb[Result].DEMHeader.NumCol);
-       for y := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
-          if DEMGlb[CountGrid].GetElevMetersOnGrid(x,y,z) and (z > 0) and DEMGlb[Result].GetElevMetersOnGrid(x,y,z1) then begin
-             DEMGlb[Result].SetGridElevation(x,y,z1/z);
-          end
-          else begin
-             DEMGlb[Result].SetGridMissing(x,y);
-          end;
-       end;
-   end;
-*)
    if (SaveName <> '') then begin
       {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
       DEMGlb[Result].WriteNewFormatDEM(SaveName);
       {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
-   (*
-   if SaveCountGrid then begin
-      DEMGlb[CountGrid].SetUpMap(true,mtElevSpectrum);
-   end
-   else begin
-      CloseSingleDEM(CountGrid);
-   end;
-   *)
    if OpenMap then begin
       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging call SetUpMap'); {$EndIf}
-      DEMGlb[Result].SetupMap(true,SelectionMap.MapDraw.MapType);
+      DEMGlb[Result].SetupMap(true,MDDef.DefElevMap);
       DEMGlb[Result].SelectionMap.Caption := DEMGlb[Result].AreaName;
    end;
    EndProgress;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging out, newDEM=' + IntToStr(Result)); {$EndIf}
 end;
+
 
 function tDEMDataSet.ParmametricIsotropicSmoothing(Col,Row : integer; var z : float32) : boolean;
 var
@@ -425,7 +354,6 @@ begin
     Result := SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse);
     if Result then z := (zw + zn + ze + zs + 41 * z) / 45;
 end;
-
 
 
 procedure tDEMDataSet.FilterStrip(NewDEM, FilterLap : integer; GridLimits : tGridLimits; FilterCategory : tFilterCat; Filter : FilterType);
@@ -697,8 +625,8 @@ var
    Lat,Long,xg,yg : float64;
    z,z2,z3,z4 : float32;
 begin
-   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in, DEM=' + AreaName + '  ' + KeyDEMParams(true)); {$EndIf}
-   {$IfDef RecordDEMEdits} WriteLineToDebugFile(   ' fill from ' + DEMGlb[RefDEM].AreaName + '  ' + DEMGlb[RefDEM].KeyDEMParams(true)); {$EndIf}
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FillHolesSelectedBoxFromReferenceDEM in, DEM=' + AreaName + '  ' + KeyParams(true)); {$EndIf}
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile(   ' fill from ' + DEMGlb[RefDEM].AreaName + '  ' + DEMGlb[RefDEM].KeyParams(true)); {$EndIf}
    if (RefDEM = 0) then exit;
    if ShowSatProgress then StartProgress('Fill grid ' + AreaName);
    Changed := 0;

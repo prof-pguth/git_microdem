@@ -2530,7 +2530,7 @@ var
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
          AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
-         AParameter('DEMIX','OpenMapsFUVSSIM',OpenMapsFUVSSIM,false);
+         AParameter('DEMIX','OpenSavedMapsFUVSSIM',OpenSavedMapsFUVSSIM,false);
          AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
          AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
          AParameter('DEMIX','SSIM_slope',SSIM_slope,true);

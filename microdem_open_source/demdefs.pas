@@ -755,23 +755,23 @@ const
 const
    //used for the digitizing datum, which go back a long way
    //a number are no longer used but because they in the the DEM header, the numbering must be retained
-   WGS72d = 0;
-   WGS84d = 1;
-   NAD27d = 2;
-   NAD83d = 3;
-   Spherical = 4;
+   unusedWGS72d = 0;
+   unusedWGS84d = 1;
+   usedNAD27d = 2;
+   usnusedNAD83d = 3;
+   unusedSpherical = 4;
    //UnusedddLocal = 5;
-   Rectangular = 6;
+   unusedRectangular = 6;
    //unusedLamAzEqAreaSphere = 7;
    //unusedSinusEllip = 8;
    //unusedPRDd = 9;
-   UK_OS_grid = 10;
-   ddDefined = 11;
+   unusedUK_OS_grid = 10;
+   unusedddDefined = 11;
    //unusedMarsD = 12;
    //unusedVenusD = 13;
-   ETRs89d = 14;
+   unusedETRs89d = 14;
 
-   DigitizeDatumName : array[0..14] of ShortString = ('WGS72','WGS84','NAD27','NAD83','Sphere','','Rect','','','','UK OS','Defined','','','ETRS89');
+   unusedDigitizeDatumName : array[0..14] of ShortString = ('','','','','','','','','','','','','','','');
 
    mhsSingleDirection = 0;
    mhsThreeFixed = 1;
@@ -799,6 +799,11 @@ type
       DEMPrecision : tDEMprecision;
       DataSpacing  : tSpacingUnit;
       ElevUnits    : tElevUnit;
+      h_DatumCode : ShortString;
+      NumCol,NumRow  : int32;
+      RasterPixelIsGeoKey1025 : byte;
+      //aDigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
+      LatHemi    : AnsiChar;  {N or S}
       StoredMaxElev,
       StoredMinElev,
       MaxElev,               {max elevation in data set}
@@ -809,12 +814,7 @@ type
       DEMSWCornerY : float64;
       VerticalCSTypeGeoKey,
       UTMZone  : Int16;     {6 degree UTM Zone number, USGS/MGRS standard: 1 = W177, 60 = E177}
-      DigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
-      LatHemi    : AnsiChar;  {N or S}
-      NumCol,NumRow  : int32;
-      RasterPixelIsGeoKey1025 : byte;
       WKTString : ANSIString;
-      h_DatumCode : ShortString;
    end;
 
 {$IfDef AllowV1V2V3DEMHeaders}
@@ -1968,7 +1968,7 @@ type
       MakeCOP_ALOS_Best_Map,
       MakeRGB_Best_Map,
       RGBbestSeparates,
-      OpenMapsFUVSSIM,
+      OpenSavedMapsFUVSSIM,
       DoSSIM,
       DoFUV,
       DEMIX_all_areas,

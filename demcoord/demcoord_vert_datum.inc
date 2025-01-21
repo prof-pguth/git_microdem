@@ -8,49 +8,6 @@
 {________________________________________}
 
 
-procedure VerticalDatumShiftWithVDATUM(AreaName : shortstring; DEM,db : integer; SaveName : PathStr; ErrorLog : tStringList = nil);
-var
-  dx,dy,dz : float32;
-begin
-   if db = 0 then begin
-      db := OpenMultipleDataBases('VDATUM results','',false);
-   end;
-   if ValidDB(db) then begin
-      dx := GISdb[db].MyData.FieldAverage('X_SHIFT');
-      dy := GISdb[db].MyData.FieldAverage('Y_SHIFT');
-      dz := GISdb[db].MyData.FieldAverage('VERT_SHIFT');
-      if (abs(dx) < 0.01) and (abs(dy) < 0.01) and (abs(dz) < 0.01) then begin
-         ErrorLog.Add(AreaName + ' no change in dx, dy, and dz');
-      end
-      else begin
-         if (DEM = 0) then begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load ' + SaveName); {$EndIf}
-            DEM := OpenNewDEM(SaveName,false);
-         end;
-         if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey <> VertCSNAVD88) then begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM not NAVD88; VDATUM invalid'); {$EndIf}
-         end
-         else if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM2008) then begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM already EGM2008=' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
-         end
-         else begin
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEM was ' + IntToStr(DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey)); {$EndIf}
-            DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
-            DEMGlb[DEM].DEMHeader.DEMSWCornerX := DEMGlb[DEM].DEMHeader.DEMSWCornerX + dx;
-            DEMGlb[DEM].DEMHeader.DEMSWCornerY := DEMGlb[DEM].DEMHeader.DEMSWCornerY + dy;
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('For EGM2008 added dz =' + RealToString(dz,-8,-2)); {$EndIf}
-            DEMGlb[DEM].AddConstantToGrid(dz);
-            if (SaveName <> '') then begin
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Writing DEM format ' + SaveName); {$EndIf}
-               DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName);
-               CloseSingleDEM(DEM);
-            end;
-         end;
-      end;
-      CloseAndNilNumberedDB(db);
-   end;
-end;
-
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 var

@@ -64,8 +64,31 @@ var
     function ReadNewMicroDEMFormat(DEMFileName : PathStr) : boolean;
     label
        CleanUp;
+   const
+      //used for the digitizing datum
+      //these go back a long way, and a number are no longer used
+      //because they in the the DEM header, the numbering must be retained
+      WGS72d = 0;
+      WGS84d = 1;
+      NAD27d = 2;
+      NAD83d = 3;
+      Spherical = 4;
+      //UnusedddLocal = 5;
+      Rectangular = 6;
+      //unusedLamAzEqAreaSphere = 7;
+      //unusedSinusEllip = 8;
+      //unusedPRDd = 9;
+      UK_OS_grid = 10;
+      ddDefined = 11;
+      //unusedMarsD = 12;
+      //unusedVenusD = 13;
+      ETRs89d = 14;
+
+      LegacyDigitizeDatumName : array[0..14] of ShortString = ('WGS72','WGS84','NAD27','NAD83','Sphere','','Rect','','','','UK OS','Defined','','','ETRS89');
+
     var
        fFile : file;
+       aDigitizeDatum : byte;
        IntKey : integer;
        KeyValue : float64;
        TStr,NextLine,key  : String;
@@ -107,6 +130,26 @@ var
              for i := 1 to HeaderSize do if (LogRecA[i] <> 0) then TStr := TStr + Chr(LogRecA[i]);
              Magic := Petmar_types.BeforeSpecifiedCharacter(TStr,#13,true,true);
           end;
+
+
+
+         function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
+         var
+            i : integer;
+         begin
+            Result := 99;
+            for i := 0 to 14 do begin
+               if (DatString = LegacyDigitizeDatumName[i]) then Result := i;
+            end;
+         end;
+
+
+         function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
+         begin
+            if Code in [0..14] then Result := LegacyDigitizeDatumName[Code]
+            else Result := 'unknown';
+         end;
+
 
     begin
        {$IfDef RecordReadMDDEM} WriteLineToDebugFile('ReadNewMicroDEMFormat for ' + DEMFileName); {$EndIf}
@@ -150,7 +193,7 @@ var
                    else if key = 'precision' then DEMheader.DEMPrecision := tDEMprecision(StrToInt(NextLine))
                    else if key = 'spaceunit' then DEMheader.DataSpacing := tSpacingUnit(StrToInt(NextLine))
                    else if key = 'elevunit' then DEMheader.ElevUnits := tElevUnit(StrToInt(NextLine))
-                   else if key = 'digdatum' then DEMheader.DigitizeDatum := tDigitizeDatum(StrToInt(NextLine))
+                   else if key = 'digdatum' then aDigitizeDatum := StrToInt(NextLine)
                    else if key = 'hemi' then begin
                       NextLine := UpperCase(NextLine);
                       if NextLine = 'N' then DEMheader.LatHemi := 'N' else DEMheader.LatHemi := 'S';
@@ -176,13 +219,15 @@ var
             {$EndIf}
           end;
 
+          if (DEMHeader.h_DatumCode = '') then DEMHeader.h_DatumCode := StringFromDatumCode(aDigitizeDatum);
+
           {$IfDef RecordReadMDDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Read new DEM call DefineDEMvariables'); {$EndIf}
           DEMMapProj.InitProjFomDEMHeader(DEMHeader);
           DefineDEMVariables(true);
           DEMheader.MaxElev := zInMeters(DEMheader.StoredMaxElev);
           DEMheader.MinElev := zInMeters(DEMheader.StoredMinElev);
 
-          {$IfDef RecordReadMDDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Read new DEM, ' + zRange +  '  '  + KeyDEMParams); {$EndIf}
+          {$IfDef RecordReadMDDEM} if not DEMMergeInProgress then WriteLineToDebugFile('Read new DEM, ' + zRange +  '  '  + KeyParams); {$EndIf}
 
           TStr := UpperCase(ptCopy(AreaName,1,5));
 
@@ -377,7 +422,7 @@ begin {tDEMDataSet.ReadDEMNow}
       {$If Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMmapProj.GetProjName); {$EndIf}
       {$If Defined(RecordUKOS)}
          if (DEMmapProj.pName = UK_OS) then begin
-            WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + KeyDEMParams(true));
+            WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + KeyParams(true));
             DEMmapProj.ShortProjInfo(AreaName +' Tiff Read');
          end;
       {$EndIf}
@@ -551,7 +596,7 @@ begin
    NewHeadRecs.DEMxSpacing := LongSize / pred(xPixels);
    NewHeadRecs.DEMSWCornerX := LongCorner;
    NewHeadRecs.DEMSWCornerY := LatCorner;
-   NewHeadRecs.DigitizeDatum := WGS84d;
+   //NewHeadRecs.aDigitizeDatum := WGS84d;
    NewHeadRecs.h_datumcode := 'WGS84';
    {$IfDef RecordCreateNewDEM}
       WriteLineToDebugFile('xll=' + RealToString(NewHeadRecs.DEMSWCornerX,-18,-8) + ' yll=' + RealToString(NewHeadRecs.DEMSWCornerY,-18,-8) + ' dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-8) + ' dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-8));
@@ -604,7 +649,7 @@ begin
    end
    else begin
       WantedDEM.AreaName := ExtractFileNameNoExt(FileName);
-      WantedDEM.DEMheader.DigitizeDatum := NAD83d;
+      WantedDEM.DEMheader.H_DatumCode := 'NAD83';
       WantedDEM.DEMheader.DEMUsed := UTMBasedDEM;
       WantedDEM.DEMheader.DataSpacing := SpaceMeters;
       WantedDEM.DEMheader.DEMxSpacing := PlansHeader.SpaceX;
@@ -771,30 +816,15 @@ begin
       Zmult := 1;
       if StrUtils.AnsiContainsText(UpperCase(FileName),'_MM_UNITS') then zMult := 0.001;
 
-      DEMheader.DigitizeDatum := WGS84d;
-      (*
-      if UK_OS_projection(FileName) then begin
-         DEMheader.DataSpacing := SpaceMeters;
-         DEMheader.DEMUsed := UTMBasedDEM;
-         DEMheader.DigitizeDatum := UK_OS_grid;
-         DEMheader.UTMZone := 1;
-         CheckUK_OS;
-      end
-      else *)
-      if FileExists(Dir + 'rect.txt') then begin
-        DEMheader.DataSpacing := SpaceMeters;
-        DEMheader.DEMUsed := UTMBasedDEM;
-        DEMheader.DigitizeDatum := Rectangular;
-        DEMheader.UTMZone := 1;
-      end
-      else if (abs(xBase) > 180) then begin
+      DEMheader.h_DatumCode := 'WGS84';
+      if (abs(xBase) > 180) then begin
          fName2 := Dir + Name + '.prj';
          if FileExists(fName2) then begin
             DEMMapProj.InitProjFromWKTfile(fName2);
             DEMMapProj.DefineDatumFromUTMZone(DEMMapProj.h_DatumCode,GetUTMZone(DEMMapProj.Long0 / DegToRad),MDDef.DefaultLatHemi,'read dem 3');
          end
          else if not DEMMapProj.CheckForAllInDirectoryWKT(Dir) then begin
-            DatCode := 'WGS84';
+            //DatCode := 'WGS84';
             Hemi := MDDef.DefaultLatHemi;
             if DEMMergeInProgress and SubsequentDEM then begin
                DEMheader.UTMZone := MDDef.DefaultUTMzone;
@@ -809,7 +839,6 @@ begin
             end;
          end;
          DEMheader.DataSpacing := SpaceMeters;
-         DEMheader.DigitizeDatum := DatumCodeFromString(DatCode);
          DEMheader.DEMUsed := UTMBasedDEM;
       end
       else begin
@@ -902,7 +931,7 @@ begin
 
    {$IfDef TrackLastDEMName} WriteLineToDebugFile('exit LoadNewDEM out, ' + LastDEMName); {$EndIf}
    {$If Defined(RecordShortDefineDatum) or Defined(RecordReadDEM)  or Defined(TimeLoadDEM)}
-      if (WantedDEM <> 0) then WriteLineToDebugFile('Exit LoadNewDEM=' + IntToStr(WantedDEM) + '  ' + DEMGlb[WantedDEM].KeyDEMParams(true));
+      if (WantedDEM <> 0) then WriteLineToDebugFile('Exit LoadNewDEM=' + IntToStr(WantedDEM) + '  ' + DEMGlb[WantedDEM].KeyParams(true));
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
    {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM out ' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
@@ -988,7 +1017,7 @@ begin
 
    if (ImportingDEM <> 0) and FileExists(DEMGlb[ImportingDEM].MetadataFileName) then DEMGlb[ImportingDEM].DEMmetadata.LoadFromFile(DEMGlb[ImportingDEM].MetadataFileName);
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(ShortDEMLoad)}
-      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' + DEMGlb[ImportingDEM].KeyDEMParams(true) + ' ' + DEMGlb[ImportingDEM].DEMHorizontalSpacingSummary);
+      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' + DEMGlb[ImportingDEM].KeyParams(true) + ' ' + DEMGlb[ImportingDEM].DEMHorizontalSpacingSummary);
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)}
       WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' +  DEMGlb[ImportingDEM].DEMmapProj.h_DatumCode + ' ' +

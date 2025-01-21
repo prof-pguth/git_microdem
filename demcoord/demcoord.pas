@@ -305,7 +305,7 @@ type
       //strings describing aspects of the DEM
          function TheShortDEMName : ShortString;
          function SaveStatusString : shortstring;
-         function KeyDEMParams(short : boolean = false) : ShortString;
+         function KeyParams(short : boolean = false) : ShortString;
          function FullDEMParams : AnsiString;
          function SWcornerString : ShortString;
          function PixelIsString : AnsiString;
@@ -482,6 +482,7 @@ type
 
 
          procedure SetRasterPixelIsGeoKey1025(DoHalfPixelShift : boolean);
+         function GetDEMCompositeDatumString : shortstring;
 
          function LatLongDegreePointsIntervisible(Lat1,Long1,ObsUp,Lat2,Long2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
          function GridPointsIntervisible(xg1,yg1,ObsUp,xg2,yg2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
@@ -519,7 +520,7 @@ type
 
          function ReinterpolateLatLongDEM(var SpacingArcSec : float32; fName : PathStr = '') : integer;
          function ReinterpolateUTMDEM(FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = '') : integer;
-         function ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = '') : integer;
+         function ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 
          procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
          procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
@@ -797,8 +798,6 @@ function ValidWorldFile(FileName : PathStr) : boolean;
 
 procedure MaskStripFromSecondGrid(FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
 
-procedure VerticalDatumShiftWithVDATUM(AreaName : shortstring; DEM,db : integer; SaveName : PathStr; ErrorLog : tStringList = nil);
-//procedure VerticalDatumShiftWithGDAL(DEM : integer; var SaveName : PathStr);
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = 1;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
 
@@ -1292,22 +1291,17 @@ function tDEMDataSet.CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gr
 var
    NewHeadRecs : tDEMheader;
 begin
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid in, ElevUnits=' + IntToStr(ElevUnits)); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid in, Original=' + KeyParams(true)); {$EndIf}
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
    NewHeadRecs.ElevUnits := ElevUnits;
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
-      DEMGlb[Result].AreaName := GridName;
+      //DEMGlb[Result].AreaName := GridName;
       DEMGlb[Result].DEMMapProj.InitProjFomDEMHeader(DEMHeader,'DEM=' + IntToStr(Result));
-(*
-      //DEMGlb[Result].DEMMapProj.ProjectionSharedWithDataset := true;
-      HighlightLineToDebugFile('{CloneAndOpenGridSetMissing} removed ProjectionSharedWithDataset');
-*)
-
-      {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, ElevUnits=' +
-            ElevUnitsAre(ElevUnits) +  '   ' + DEMMapProj.GetProjName + '  ' + GridName);
+      {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)}
+        WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, new ' + GridName + '  ' + DEMglb[Result].KeyParams(true));
       {$EndIf}
    end;
 end;
@@ -1525,7 +1519,7 @@ begin
    FillChar(HeadRecs,SizeOf(tDEMheader),0);
    HeadRecs.ElevUnits := euMeters;
    HeadRecs.DEMPrecision := FloatingPointDEM;
-   Headrecs.DigitizeDatum := WGS84d;
+   //Headrecs.aDigitizeDatum := WGS84d;
    HeadRecs.h_DatumCode := MDdef.PreferPrimaryDatum;
    Headrecs.UTMZone := MDdef.DefaultUTMZone;
    Headrecs.LatHemi := MDdef.DefaultLatHemi;
@@ -2491,16 +2485,16 @@ var
                   DigitizeDatumConstants := tMapProjection.Create('digitize datum <> preferred');
                  {$IfDef RecordDefineDatum} WriteLineToDebugFile('initialize datum 5, DEM not on preferred datum'); {$EndIf}
 
-                  if DEMheader.DigitizeDatum in [WGS72d,NAD27d,NAD83d,WGS84d,UK_OS_grid] then begin
-                     TStr := StringFromDatumCode(DEMheader.DigitizeDatum);
-                     DigitizeDatumConstants.DefineDatumFromUTMZone(TStr,DEMheader.UTMZone,DEMHeader.LatHemi,'tDEMDataSet.DefineDEMVariables DigDatum');
+                  //if DEMheader.aDigitizeDatum in [WGS72d,NAD27d,NAD83d,WGS84d,UK_OS_grid] then begin
+                     //TStr := StringFromDatumCode(DEMheader.aDigitizeDatum);
+                     DigitizeDatumConstants.DefineDatumFromUTMZone(DEMHeader.h_DatumCode,DEMheader.UTMZone,DEMHeader.LatHemi,'tDEMDataSet.DefineDEMVariables DigDatum');
                      {$If Defined(RecordRedaDEM) or Defined(RecordDefineDatum)} WriteLineToDebugFile('DEM Datum transformed, Base was ' + LatLongDegreeToString(DEMSWcornerLat,DEMSWcornerLong)); {$EndIf}
                      MolodenskiyTransformation(DEMSWcornerLat,DEMSWcornerLong,DEMSWcornerLat,DEMSWcornerLong,DigitizeDatumConstants,DEMMapProj);
                      {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum)}
                         WriteLineToDebugFile('DEM Datum transformed, from ' + DigitizeDatumConstants.h_DatumCode + ' to ' + MDdef.PreferPrimaryDatum);
                         WriteLineToDebugFile('DEM Datum transformed, Base Now ' + LatLongDegreeToString(DEMSWcornerLat,DEMSWcornerLong));
                      {$EndIf}
-                  end;
+                  //end;
 
                   if (DEMheader.DEMUsed = UTMBasedDEM) then begin
                      DEMMapProj.ForwardProjectDegrees(DEMSWcornerLat,DEMSWcornerLong,XUTM1,YUTM1);
@@ -2518,14 +2512,14 @@ var
 
       begin {proc InitializeDatum}
          {$IfDef RecordDefineDatum} WriteLineToDebugFile('InitializeDatum enter for DEM, proj=' + DEMMapProjection.GetProjName); {$EndIf}
-         if (DEMheader.DigitizeDatum in [Rectangular]) then exit;
+         if (DEMheader.h_DatumCode = 'Rect') then exit;
 
          if (DEMheader.WKTString <> '') then begin
             {$IfDef RecordBoundingBox} WriteLineToDebugFile('initialize datum, wkt=' + DEMheader.WKTString); {$EndIf}
             DEMMapProj.InitProjFromWKTstring(DEMheader.WKTString);
             DEMMapProj.InverseProjectDegrees(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
          end
-         else if (DEMheader.DigitizeDatum in [Spherical]) then begin
+         else if (DEMheader.h_DatumCode = 'Sphere') then begin
             Transform := false;
             if (DEMheader.DEMUsed = UTMBasedDEM) then begin
                UTMToLatLongDegree(DEMheader.DEMSWCornerX,DEMheader.DEMSWCornerY,DEMSWcornerLat,DEMSWcornerLong);
@@ -2629,7 +2623,7 @@ var
          Lat,Long1,Long2,Distance,Bearing,Sum : float64;
          i : integer;
       begin
-         {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('tDEMDataSet.LatLongMapSpacing in, SW corner ' + LatLongDegreeToString(DEMSWcornerLat,DEMSWcornerLong) + ' ' + KeyDEMParams(True)); {$EndIf}
+         {$IfDef RecordLatSpacingValues} WriteLineToDebugFile('tDEMDataSet.LatLongMapSpacing in, SW corner ' + LatLongDegreeToString(DEMSWcornerLat,DEMSWcornerLong) + ' ' + KeyParams(True)); {$EndIf}
          LatSizeMap := pred(DEMheader.NumRow) * DEMheader.DEMySpacing;
          LongSizeMap := pred(DEMheader.NumCol) * DEMheader.DEMxSpacing;
 
@@ -2688,11 +2682,11 @@ begin {tDEMDataSet.DefineDEMVariables}
       DEMheader.MaxElev := DEMheader.StoredMaxElev * ElevationMultiple;
    end;
 
-   if DEMheader.DigitizeDatum in [Spherical] then begin
+   if DEMheader.h_DatumCode = 'Sphere' then begin
       if (MDdef.MapTicks <> tixNone) then MDdef.MapTicks := tixLatLong;
       MDdef.CoordUse := coordLatLong;
    end {if};
-   if (DEMheader.DigitizeDatum = Rectangular) then MDdef.CoordUse := coordUTM;
+   if (DEMheader.h_DatumCode = 'Rect') then MDdef.CoordUse := coordUTM;
 
    {$If Defined(RecordCreateNewDEM) or Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables call init datum, pname=' + DEMmapProj.GetProjName); {$EndIf}
    DEMMapProj.InitProjFomDEMHeader(DEMHeader,AreaName);
@@ -2700,7 +2694,7 @@ begin {tDEMDataSet.DefineDEMVariables}
 
    InitializeDatum(TransformToPreferDatum);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables datum init, pname=' + DEMmapProj.GetProjName); {$EndIf}
-   if (DEMheader.DigitizeDatum <> Rectangular) then  begin
+   if (DEMheader.h_DatumCode <> 'Rect') then  begin
       if (DEMheader.DEMUsed in [ArcSecDEM]) then begin
          {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('ArcSec DEM 1'); {$EndIf}
          LatLongMapSpacing;
@@ -3075,7 +3069,7 @@ begin
          Lat  := CentroidSWCornerY + DEMheader.DEMySpacing * YGrid;
          Long := CentroidSWCornerX + DEMheader.DEMxSpacing * XGrid;
       end
-      else if (DEMheader.DigitizeDatum = Rectangular) then begin
+      else if (DEMheader.h_DatumCode = 'Rect') then begin
          Lat  := 0;
          Long := 0;
       end
@@ -3095,7 +3089,7 @@ begin
       XUTM := XGrid * DEMheader.DEMxSpacing + CentroidSWCornerX;
       YUTM := YGrid * DEMheader.DEMySpacing + CentroidSWCornerY;
    end
-   else if (DEMheader.DigitizeDatum = Rectangular) then begin
+   else if (DEMheader.h_DatumCode = 'Rect') then begin
       XUTM := xgrid;
       YUTM := ygrid;
    end
@@ -3702,7 +3696,8 @@ begin
    DEMGlb[NewDEM].DEMheader.DEMPrecision := FloatingPointDEM;
    DEMGlb[NewDEM].DEMheader.UTMZone := DEMMapProj.projUTMZone;
    DEMGlb[NewDEM].DEMheader.LatHemi := DEMMapProj.LatHemi;
-   DEMGlb[NewDEM].DEMheader.DigitizeDatum := WGS84d;
+   //DEMGlb[NewDEM].DEMheader.aDigitizeDatum := WGS84d;
+   DEMGlb[NewDEM].DEMheader.h_DatumCode := 'WGS84';
    DEMGlb[NewDEM].DefineDEMVariables(true);
    DEMGlb[NewDEM].AllocateDEMMemory(InitDEMmissing);
    {$If Defined(RecordCreateNewDEM) or Defined(RecordResample)} WriteLineToDebugFile('exit tDEMDataSet.SetNewDEM, NewDEM=' + IntToStr(NewDEM)); {$EndIf}
@@ -3742,7 +3737,7 @@ begin
       SpacingArcSec := 1;
       ReadDefault('Spacing for new DEM (sec)',SpacingArcSec);
    end;
-   {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyDEMParams(true)); {$EndIf}
+   {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyParams(true)); {$EndIf}
    Result := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,PixelIsPoint);   //DEMHeader.RasterPixelIsGeoKey1025);
    DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
    DEMGlb[Result].DEMheader.ElevUnits := DEMheader.ElevUnits;
@@ -3751,7 +3746,7 @@ begin
    else begin
       DEMGlb[Result].AreaName := ExtractFileNameNoExt(fName);
       DEMGlb[Result].WriteNewFormatDEM(fName);
-      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
+      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyParams(true)); {$EndIf}
    end;
 end;
 
@@ -3804,7 +3799,7 @@ var
    NumZones : integer;
 begin
    //Result := false;
-   if (DEMheader.DigitizeDatum = Spherical) then begin
+   if (DEMheader.h_DatumCode = 'Sphere') then begin
       NumZones := succ(GetUTMZone(DEMSWcornerLong + LongSizeMap)- GetUTMZone(DEMSWcornerLong));
       if (NumZones > 1) and (not (AnswerIsYes('DEM covers ' + IntToStr(NumZones) + ' UTM zones; proceed'))) then exit;
       DEMMapProj.h_DatumCode := 'WGS84';
@@ -4024,13 +4019,11 @@ begin
    else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := '2-byte int';
 end;
 
-function tDEMDataSet.KeyDEMParams(short : boolean = false) : ShortString;
+function tDEMDataSet.KeyParams(short : boolean = false) : ShortString;
 begin
-   Result := GridPrecisionString;
-   Result := ColsRowsString + '  ' + Result + '  ' + zRange + HorizontalDEMSpacing;
+   Result := ColsRowsString + '  ' + GridPrecisionString + '  ' + zRange + HorizontalDEMSpacing;
    if (not Short) then begin
-      if DEMheader.DigitizeDatum in [0..14] then Result := Result + ' Datum: ' +  DigitizeDatumName[DEMheader.DigitizeDatum] ;
-      Result := Result + ' utm=' + IntToStr(DEMheader.UTMZone) + DEMheader.LatHemi;
+      Result := Result + ' Datum: ' + DEMheader.h_DatumCode + ' utm=' + IntToStr(DEMheader.UTMZone) + DEMheader.LatHemi;
    end;
 end;
 
@@ -4045,7 +4038,7 @@ end;
 
 function tDEMDataSet.FullDEMParams : AnsiString;
 begin
-   Result := 'DEM: ' + AreaName + MessLineBreak + KeyDEMParams(false) + MessLineBreak + SWCornerString + MessLineBreak + PixelIsString;
+   Result := 'DEM: ' + AreaName + MessLineBreak + KeyParams(false) + MessLineBreak + SWCornerString + MessLineBreak + PixelIsString;
 end;
 
 

@@ -78,6 +78,7 @@ type
       hdfSWCornerY   : float64;
       FutureUse : array[1..7] of byte;
    end;
+
    tHeaderRecordv1 = packed record  //for a DEM, set a very long time ago
       NumCol,                  {number of columns in data set}
       NumRow       : int32; {number of rows in data set}
@@ -134,7 +135,7 @@ type
                    DEMheader.ElevUnits := HeaderV2.ElevUnits;
                    DEMheader.UTMZone  := HeaderV2.UTMZone;
                    //DEMheader.DMAMapDefinition := HeaderV2.DMAMapDefinition;
-                   DEMheader.DigitizeDatum  := HeaderV2.DigitizeDatum;
+                   //DEMheader.aDigitizeDatum  := HeaderV2.DigitizeDatum;
                    DEMheader.LatHemi := HeaderV2.LatHemi;
                    DEMheader.DEMPrecision := HeaderV2.DEMPrecision;
                    DEMheader.DEMSWCornerX := HeaderV2.hdfSWCornerx;
@@ -162,7 +163,7 @@ type
                    DEMheader.ElevUnits := OldHeadRecs.ElevUnits;
                    DEMheader.UTMZone   := OldHeadRecs.UTMZone;
                    //DEMheader.DMAMapDefinition := OldHeadRecs.DMAMapDefinition;
-                   DEMheader.DigitizeDatum := OldHeadRecs.DigitizeDatum;
+                   //DEMheader.aDigitizeDatum := OldHeadRecs.DigitizeDatum;
                    DEMheader.LatHemi    := OldHeadRecs.LatHemi;
                    if (OldHeadrecs.oiLatInterval <> 0) and (OldHeadrecs.oiLongInterval <> 0) then begin
                       case OldHeadRecs.DataSpacing of
@@ -211,7 +212,7 @@ type
                    DEMheader.ElevUnits := HeaderV3.ElevUnits;
                    DEMheader.UTMZone  := HeaderV3.UTMZone;
                    //DEMheader.DMAMapDefinition := HeaderV3.DMAMapDefinition;
-                   DEMheader.DigitizeDatum  := HeaderV3.DigitizeDatum;
+                   //DEMheader.aDigitizeDatum  := HeaderV3.DigitizeDatum;
                    DEMheader.LatHemi  := HeaderV3.LatHemi;
                    DEMheader.DEMPrecision := HeaderV3.DEMPrecision;
                    DEMheader.DEMSWCornerX := HeaderV3.hdfSWCornerx;

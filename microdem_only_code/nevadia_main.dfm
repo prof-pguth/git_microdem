@@ -24,7 +24,7 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 20
+  TextHeight = 16
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
@@ -2019,7 +2019,6 @@ object wmdem: Twmdem
         end
         object VDATUMshiftinUSA1: TMenuItem
           Caption = 'VDATUM shift in USA'
-          OnClick = VDATUMshiftinUSA1Click
         end
       end
       object DEMproperties1: TMenuItem
@@ -2347,7 +2346,6 @@ object wmdem: Twmdem
       end
       object ImportCTDfile1: TMenuItem
         Caption = 'Import MEDS CTD file'
-        OnClick = ImportCTDfile1Click
       end
       object Subset81Ssidescan1: TMenuItem
         Caption = 'Subset .81S sidescan'
@@ -2419,6 +2417,11 @@ object wmdem: Twmdem
       GroupIndex = 6
       OnClick = DEMIX2Click
     end
+    object CrossscaleDEMComparison1: TMenuItem
+      Caption = 'Cross scale DEM Comparison'
+      GroupIndex = 6
+      OnClick = CrossscaleDEMComparison1Click
+    end
     object Help1: TMenuItem
       Caption = '&Help'
       GroupIndex = 6
@@ -2475,11 +2478,6 @@ object wmdem: Twmdem
         Caption = '&About'
         OnClick = AboutMICRODEM1Click
       end
-    end
-    object est1: TMenuItem
-      Caption = 'Test'
-      GroupIndex = 6
-      OnClick = est1Click
     end
   end
   object MetadataPopupMenu: TPopupMenu
@@ -2661,7 +2659,6 @@ object wmdem: Twmdem
     object OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem
       Caption = 'Open and merge DEMs with full DEMIX coverage'
       Visible = False
-      OnClick = OpenandmergeDEMswithfullDEMIXcoverage1Click
     end
     object OpenDEMwithoutmap1: TMenuItem
       Caption = 'Open DEM/grid without map'

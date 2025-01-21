@@ -8,6 +8,7 @@
 {include file for demix_definitiions}
 {___________________________________}
 
+
 function GetDEMgridLimitsFromBB(DEM,DEMIXtileDB : integer; var TileName : shortstring; var bb : sfBoundBox) : tGridLimits;
 begin
    TileName := GISdb[DEMIXtileDB].MyData.GetFieldByNameAsString('NAME');
@@ -72,7 +73,6 @@ begin
        {$IfDef RecordDEMIXchannels} WriteLineToDebugFile('ProcessDEMTile fail invalid DEM, ref=' + IntToStr(Ref) + '  test=' + IntToStr(Test)); {$EndIf}
     end;
 end;
-
 
 
 procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
@@ -156,8 +156,8 @@ var
        SavefName := Stream_valley_dir + AreaName + '_ridges_valleys.csv';
        if Overwrite and FileExists(saveFName) then exit;
        {$IfDef RecordDEMIX} WriteLineToDebugFile('Start ' + AreaName); {$EndIf}
-       ZeroPointAndAreaGrids(PointGrids,AreaGrids);
-       ZeroPointAndAreaGrids(PointGrids2,AreaGrids2);
+       InitializePointAndAreaGrids(PointGrids,AreaGrids);
+       InitializePointAndAreaGrids(PointGrids2,AreaGrids2);
        if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,true) then begin  //open the maps becasue we draw on them
           for i := dmxFirstArea to NumAreaDEMs do begin
              if (i <= 0) then VD := wbt_out_ref_dir else VD := wbt_out_test_dir;
@@ -221,14 +221,13 @@ end {DEMIX_CreateGridsFromVectors};
 
 procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
 var
-   DEM,DEMIXtileDB,{NumRef,}i,j : integer;
+   DEM,DEMIXtileDB,i,j : integer;
    Results : tStringList;
    fName,SavefName : PathStr;
    aLine,TileName : shortstring;
    bb : sfBoundBox;
    MissingFiles : boolean;
    GridLimits : tGridLimits;
-
 
 
        procedure DoTolerance(Criterion : shortstring; Buffer : integer);
@@ -241,7 +240,6 @@ var
              aLine := aline + ',' + RealToString(ProcessDEMTile(PointDEMs[dmxFirstPoint],PointDEMs[i],Buffer,GridLimits),-12,6);
           end;
           for i := 1 to NumAreaDEMs do aLine := aline + ',' + RealToString(ProcessDEMTile(AreaDEMs[0],AreaDEMs[i],Buffer,GridLimits),-12,6);
-          //aLine := aline + ',' + IntToStr(NumRef);
           Results.Add(aline);
        end;
 
@@ -291,7 +289,6 @@ begin {procedure CompareChannelNetworks}
           Results.Free;
           if OpenMaps then begin
              wmdem.tile;
-             //MessageToContinue('Look at maps');
           end;
           CloseAllDEMs;
           CloseAllDataBases;
@@ -357,7 +354,6 @@ var
    aLine,TileName : shortstring;
    alines : array[1..4] of shortstring;
    bb : sfBoundBox;
-   //MissingFiles,
    Continue : boolean;
    GridLimits : tGridLimits;
    IP12Table : tMyData;

@@ -1,12 +1,11 @@
 unit demix_control;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 // 10/1/2023: DEMIX options under active development.
 //Some options are hard coded and not error-trapped, and some options may not longer work.  Used with caution
@@ -15,6 +14,7 @@ unit demix_control;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
+   {$Define RecordDEMIXneo}
    //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXopenGrids}
    //{$Define RecordDEMIXversion}
@@ -44,7 +44,6 @@ unit demix_control;
    //{$Define RecordUseTile}
 
    //{$Define RecordDEMIXMovies}
-   //{$Define RecordDEMIXVDatum}
    //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
@@ -141,12 +140,10 @@ procedure DifferentRankingsByCriteria(DBonTable : integer);
 
 function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
 
-
 function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
 function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
 procedure SetParamsForDEMIXmode;
-
 
 procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
 
@@ -179,8 +176,6 @@ procedure DifferentRankingsByTile(DBonTable : integer);
    {$IfDef Old3DEP}
       procedure SubsetLargeUS3DEParea(DEM : integer = 0);
       procedure BatchSubset_3DEP_DEMs;
-      procedure DEMIX_VDatum_shifts;
-      procedure SummarizeVDatumShifts;
    {$EndIf}
 
    {$IfDef OpenDEMIXAreaAndCompare}
@@ -952,7 +947,7 @@ begin
       DEMIX_Under_test_dems := DEMIX_Base_DB_Path + 'coastal_test_dems\';
    end
    else if (MDDef.DEMIX_mode = dmU80) then begin
-      NumPtDEMs := 7;    //adds coatal
+      NumPtDEMs := 7;    //adds coastal
       NumAreaDEMs := 2; //adds dilumium
       AreaListFName := DEMIXSettingsDir + 'areas_diluvium.txt';
       DEMIXModeName := 'U80';
@@ -970,11 +965,20 @@ begin
    NumDEMIXtestDEM := NumPtDEMs + NumAreaDEMs;
 
    DEMListFName := DEMIXSettingsDir + 'dems_' + DEMIXModeName + '.txt';
-   Diff_dist_results_dir := DEMIX_Base_DB_Path + DEMIXModeName + '_diff_dist_results\';
+   if DEMIXanalysismode in [DEMIXtraditional] then begin
+      Diff_dist_results_dir := DEMIX_Base_DB_Path + DEMIXModeName + '_diff_dist_results\';
+      SSIMresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_ssim_results\';
+      FUVresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_fuv_results\';
+   end
+   else if DEMIXanalysismode in [DEMIXneo] then begin
+      Diff_dist_results_dir := 'J:\demix_neo\diff_dists\';
+      SSIMresultsDir := 'J:\demix_neo\ssim\';
+      FUVresultsDir := 'J:\demix_neo\fuv\';
+   end
+   else MessageToContinue('Undefined DEMIXanalysismode ' + IntToStr(DEMIXanalysismode));
+
    ChannelMissesDir := DEMIX_Base_DB_Path + DEMIXModeName + '_channel_misses\';
    GeomorphonsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_geomorphons\';
-   SSIMresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_ssim_results\';
-   FUVresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_fuv_results\';
 
    MDDef.DEMIX_Tile_Full := 25;
    {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIXversion)} WriteLineToDebugFile('SetParamsForDEMIXmode out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIXModeName); {$EndIf}
@@ -1074,7 +1078,6 @@ begin
 
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
    DEMIX_Ref_Half_sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_0.5sec\';
-   //vd_path := DEMIX_Base_DB_Path + 'wine_contest_v2_vdatum\';
    DEMIX_diff_dist  := DEMIX_Base_DB_Path + 'wine_contest_v2_diff_dist\';
    DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
    DEMIX_distrib_graph_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_difference_distrib_graphs\';

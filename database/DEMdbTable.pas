@@ -1054,6 +1054,8 @@ type
     Descending3: TMenuItem;
     AddCopDEMaverageslopeinarea1: TMenuItem;
     AddDEMIXtileboundingbox1: TMenuItem;
+    AddMGRSboundingbox1: TMenuItem;
+    LoadNeoDEMs1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1867,6 +1869,8 @@ type
     procedure Sortandreplacedatabase2Click(Sender: TObject);
     procedure AddCopDEMaverageslopeinarea1Click(Sender: TObject);
     procedure AddDEMIXtileboundingbox1Click(Sender: TObject);
+    procedure AddMGRSboundingbox1Click(Sender: TObject);
+    procedure LoadNeoDEMs1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -5792,6 +5796,11 @@ begin
    AddUTMcoordfields1Click(Sender);
 end;
 
+procedure Tdbtablef.AddMGRSboundingbox1Click(Sender: TObject);
+begin
+   AddUTMcoordfields1Click(Sender);
+end;
+
 procedure Tdbtablef.Addmultiplefields1Click(Sender: TObject);
 begin
    try
@@ -5904,6 +5913,7 @@ var
    Lat,Long,xutm,yutm,xbase,ybase : float64;
    SingleUTMZone,AlsoAddLatLong: boolean;
    i,rc : integer;
+   bb : sfBoundBox;
    PointsHeader : sfPointsWithHeader;
    PointsHeader3D : sfPointsZWithHeader;
 
@@ -5941,6 +5951,12 @@ begin
       AlsoAddLatLong := false;
       if (Sender = AddMGRS1) then begin
          AddFieldToDataBase(ftString,'MGRS',24,0);
+      end
+      else if (Sender = AddMGRSboundingbox1) then begin
+         AddFieldToDataBase(ftString,'MGRS_NW',24,0);
+         AddFieldToDataBase(ftString,'MGRS_NE',24,0);
+         AddFieldToDataBase(ftString,'MGRS_SE',24,0);
+         AddFieldToDataBase(ftString,'MGRS_SW',24,0);
       end
       else if (Sender = AddLatLong1) then begin
          if (aShapeFile = Nil) then exit;
@@ -6012,6 +6028,16 @@ begin
                    GISdb[DBonTable].MyData.SetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName,PointsHeader.x);
                 end;
             end;
+         end
+         else if (Sender = AddMGRSboundingbox1) then begin
+            bb := GISdb[DBonTable].MyData.GetRecordBoundingBox;
+            RedefineWGS84DatumConstants(bb.xmin);
+            GISdb[DBonTable].MyData.SetFieldByNameAsString('MGRS_NW',WGS84DatumConstants.LatLongToMGRS(bb.ymax,bb.xmin,6));
+            GISdb[DBonTable].MyData.SetFieldByNameAsString('MGRS_SW',WGS84DatumConstants.LatLongToMGRS(bb.ymin,bb.xmin,6));
+
+            RedefineWGS84DatumConstants(bb.xmax);
+            GISdb[DBonTable].MyData.SetFieldByNameAsString('MGRS_NE',WGS84DatumConstants.LatLongToMGRS(bb.ymax,bb.xmax,6));
+            GISdb[DBonTable].MyData.SetFieldByNameAsString('MGRS_SE',WGS84DatumConstants.LatLongToMGRS(bb.ymin,bb.xmax,6));
          end
          else if (Sender = ConvertUTMtolatlong1) then begin
             xUTM := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(dbOpts.xField);
@@ -7550,6 +7576,7 @@ begin
          Koppenicons1.Visible := KoppenPresent;
          Dayssincefullmoon1.Enabled := Insertdatefield1.Enabled;
       {$EndIf}
+      AddMGRSboundingbox1.Visible := GISdb[DBonTable].LatLongCornersPresent;
 
       Insertareacolorsymbology1.Visible := (not AreaFillPresent) and AreaShapeFile(ShapeFileType);
       Fillpatternallrecords1.Visible := AreaFillPresent and AreaShapeFile(ShapeFileType);
@@ -8695,7 +8722,7 @@ end;
 
 procedure Tdbtablef.Datumshift2Click(Sender: TObject);
 begin
-   ComputeVDatumShift(dbOnTable);
+   //ComputeVDatumShift(dbOnTable);
 end;
 
 procedure Tdbtablef.DayofweekfromYRMonDay1Click(Sender: TObject);
@@ -12366,7 +12393,7 @@ begin
        bbox.YMin := Lat - Extra;
        bbox.XMax := Long + extra;
    end;
-   WantDEM := LoadMapLibraryBox(true, bbox);  //bbox.YMax,bbox.XMin,bbox.YMin,bbox.YMax);
+   WantDEM := LoadMapLibraryBox(true, bbox);
 end;
 
 procedure Tdbtablef.Loadmapsforthisarea1Click(Sender: TObject);
@@ -12397,6 +12424,20 @@ begin
       ShowStatus;
    end;
 {$EndIf}
+end;
+
+procedure Tdbtablef.LoadNeoDEMs1Click(Sender: TObject);
+var
+   AreaName : shortstring;
+begin
+   AreaName := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
+   OpenBothPixelIsDEMs(AreaName,'','','',true);
+   //CreateDEMIXhillshadeGrids(AreaName,true,false);
+   //CreateDEMIXRRIgrids(AreaName,true,false);
+   //CreateDEMIXRRIgrids(AreaName,true,false);
+   //CreateDEMIXOpennessGrids(AreaName,true,false);
+   CreateDEMIXSlopeRoughnessGrids(AreaName,true,false);
+   ShowDefaultCursor;
 end;
 
 procedure Tdbtablef.LoadtestandreferenceDEMs1Click(Sender: TObject);

@@ -169,13 +169,11 @@ begin
       MenuStr := '     1' + IntegerToString(NumCol,6);
 
       Move(MenuStr[1],Rec1024[853],length(MenuStr));
-      case DigitizeDatum of
-         WGS72d : Rec1024[892] := '2';
-         WGS84d : Rec1024[892] := '3';
-         NAD27d : Rec1024[892] := '1';
-         NAD83d : Rec1024[892] := '4';
-         else Rec1024[892] := '3';
-      end;
+      if DEMHeader.h_DatumCode = 'NAD27' then Rec1024[892] := '1'
+      else if DEMHeader.h_DatumCode = 'WGS72' then Rec1024[892] := '2'
+      else if DEMHeader.h_DatumCode = 'WGS84' then Rec1024[892] := '3'
+      else if DEMHeader.h_DatumCode = 'NAD83' then Rec1024[892] := '4'
+      else Rec1024[892] := '3';
       write(OutFile,Rec1024);
 
       {$IfDef RecordWriteDEM} WriteLineToDebugFile('Write file header: ' + Rec1024); {$EndIf}

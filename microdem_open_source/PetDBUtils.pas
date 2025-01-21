@@ -1134,7 +1134,6 @@ end;
 
 
 
-
 function MakePointGeoFilter(LatFieldName,LongFieldName : string16; HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
 begin
    if (LatFieldName = '') then LatFieldName := 'LAT';

@@ -1,11 +1,11 @@
 ﻿unit demdatabase;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -523,6 +523,8 @@ type
      procedure WriteDisplaySymbology(TheData : tMyData);
      procedure ClearImage;
 
+     procedure DeleteUnusedFields;
+
      procedure PointsForLineAreaDB(AddFirst,AddLast,AddTurns : boolean; DistApart : float64 = -99);
      procedure ExtractPointsFromLineAndAddXYZ;
      function GetFullImageName(var fName : PathStr) : boolean;
@@ -757,8 +759,8 @@ procedure DoKMeansClustering(DBonTable : integer);
 procedure ClusterMapLocation(DBonTable : integer; TheFilters : tStringList = nil);
 procedure MapsByClusterAndDEM(DBonTable : integer);
 
-procedure ComputeVDatumShift(dbOnTable : integer);
-function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
+//procedure ComputeVDatumShift(dbOnTable : integer);
+//function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
 
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
@@ -5146,6 +5148,20 @@ begin
 end;
 
 
+procedure TGISdataBaseModule.DeleteUnusedFields;
+var
+   j : integer;
+   fName : ANSIstring;
+begin
+   for j := pred(MyData.FieldCount) downto 0 do begin
+      fName := MyData.GetFieldName(j);
+      if MyData.FieldAllBlanks(fName) or MyData.FieldAllZeros(fName) then begin
+         MyData.DeleteField(fName);
+      end;
+   end;
+end;
+
+
 function TGISdataBaseModule.InitializeTheTable(WhatDataBase : shortstring; FileWanted : PathStr = '') : boolean;
 label
    Retry;
@@ -5156,6 +5172,7 @@ var
    bName : NameStr;
    Ext : ExtStr;
    WasCSVImport,
+   CheckDeleteUnusedFields,
    Success : boolean;
    sl,FieldsInDB : tStringList;
    glIndexFile : file;
@@ -5187,6 +5204,9 @@ begin
     Ext := UpperCase(ExtractFileExt(FileWanted));
     InitializeDBValues;
     Result := true;
+    CheckDeleteUnusedFields := false;
+
+
 
     {$IfDef ExGDAL}
     {$Else}
@@ -5201,6 +5221,7 @@ begin
                 {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
                 tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
                 CopyFile(FileWanted,tName);
+                CheckDeleteUnusedFields := true;
              end;
              if ExtEquals(Ext,'.fit') then begin
                 {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
@@ -5228,7 +5249,7 @@ begin
                 MDdef.AddSpeed := true;
                 {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
                 GPXtoDBF(tName,FileWanted);
-                {$IfDef RecordFIT} WriteLineToDebugFile('FIT processed ' + FileWanted); {$EndIf}
+                {$IfDef RecordFIT} WriteLineToDebugFile('GPX processed ' + FileWanted); {$EndIf}
                 RestoreBackupDefaults;
              end
              else begin
@@ -5350,6 +5371,9 @@ begin
                        exit;
                      end;
      end;
+
+     if CheckDeleteUnusedFields then Deleteunusedfields;
+
 
      DesiredDBMode := dbmyDefault;
      if ZeroRecordsAllowed then begin

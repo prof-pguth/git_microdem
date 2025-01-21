@@ -149,7 +149,7 @@ begin
          Line := Line + RealToString(Lat,-18,-8) + ',' + RealToString(Long,-18,-8);
          if CheckBox2.Checked then Line := Line + ',' + RealToString(z,-18,-8);
 
-         if (CheckBox3.Checked or CheckBox4.Checked) then {with BaseMap.MapDraw do} begin
+         if (CheckBox3.Checked or CheckBox4.Checked) then begin
             BaseMap.MapDraw.ComputeDatumShifts(BaseMap.Image1.Canvas,Lat,Long,TotalShiftUTM,TotalShiftGeo);
             if CheckBox3.Checked then Line := Line + ',' + RealToString(TotalShiftGeo,-18,-2);
             if CheckBox4.Checked then Line := Line + ',' + RealToString(TotalShiftUTM,-18,-2);

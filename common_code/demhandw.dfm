@@ -376,10 +376,6 @@ object DemHandForm: TDemHandForm
           OnClick = OGRshapefilestoGKPG1Click
         end
       end
-      object XYZshifttoEGM2008withVDATUMresults1: TMenuItem
-        Caption = 'XYZ shift to EGM2008 with VDATUM results'
-        OnClick = XYZshifttoEGM2008withVDATUMresults1Click
-      end
       object VerticaldatumshiftoverwriteDEMgrid1: TMenuItem
         Caption = 'Vertical datum shift, overwrite DEM/grid'
         OnClick = VerticaldatumshiftoverwriteDEMgrid1Click

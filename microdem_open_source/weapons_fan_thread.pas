@@ -593,7 +593,7 @@ var
             FanMetadata.Add('Fan at : ' + LatLongDegreeToString(WeaponsFan.W_Lat,WeaponsFan.W_Long));
             FanMetadata.Add('Created ' + {$IfDef VCL} 'by: ' + EXENameWithBuild + '  ' + {$EndIf} DateToStr(Now) + ' ' + TimeToStr(Now));
             FanMetadata.Add('DEM: ' + DEMGlb[BaseMapDraw.DEMonMap].AreaName);
-            FanMetadata.Add(DEMGlb[BaseMapDraw.DEMonMap].KeyDEMParams(true));
+            FanMetadata.Add(DEMGlb[BaseMapDraw.DEMonMap].KeyParams(true));
             FanMetadata.Add('Sensor height: ' + RealToString(WeaponsFan.W_Up,-12,2));
             FanMetadata.Add('Target height: ' + RealToString(WeaponsFan.W_TargetUp,-12,2));
             FanMetadata.Add('Vertical earth curvature: ' + CurvAlgName(MDdef.CurvAlg));

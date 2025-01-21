@@ -1,11 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demmapdraw        }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
 procedure tMapDraw.DrawLatLine(Canvas : tCanvas; Lat : float64);
@@ -501,7 +501,7 @@ var
 
 
 begin {DrawGridLines}
-   if ( (MDDef.MapTicks = tixNone) and (not MDDef.ShowNativeGrid) ) or (inBitmap = Nil) or (DEMMap and ValidDEMonMap and (DEMGlb[DEMonMap].DEMheader.DigitizeDatum = Rectangular)) then begin
+   if ( (MDDef.MapTicks = tixNone) and (not MDDef.ShowNativeGrid) ) or (inBitmap = Nil) or (DEMMap and ValidDEMonMap and (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Rect')) then begin
       exit;
    end;
 

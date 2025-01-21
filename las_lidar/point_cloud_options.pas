@@ -1626,7 +1626,7 @@ begin
    if CheckBox33.Checked then PtDensity := BaseMap.MakeTempGrid;
    DEMLimits := DEMGlb[Result].FullDEMGridLimits;
 
-   {$IfDef RecordNewGrids} WriteLineToDebugFile('CreateDataBaseOfPixelCloudStats, DEM=' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
+   {$IfDef RecordNewGrids} WriteLineToDebugFile('CreateDataBaseOfPixelCloudStats, DEM=' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyParams(true)); {$EndIf}
 
    {$IfDef RecordNewGrids} WriteLineToDebugFile('UTM limits lidar: ' +  sfBoundBoxToString(LasFiles[1].UTMBBox,1) + '  Zone:' + IntToStr(LasFiles[1].UTMZone)); {$EndIf}
    {$IfDef RecordNewGrids} WriteLineToDebugFile('Geo limits lidar: ' +  sfBoundBoxToString(LasFiles[1].GeoBBox,5)); {$EndIf}

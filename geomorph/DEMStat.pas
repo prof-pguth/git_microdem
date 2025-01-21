@@ -19,6 +19,7 @@ unit DEMStat;
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
       {$Define RecordSSIM}
+      {$Define TrackCovariance}
       //{$Define RecordSSIMFull}
       //{$Define RecordDEMIX}
       //{$Define RecordDEMIXTimeCriterion}
@@ -2045,8 +2046,8 @@ begin
    end;
 
    {$If Defined(RecordCovariance)}
-      WriteLineToDebugFile('DEM1, ' + DEMglb[DEM1].KeyDEMParams(true));
-      WriteLineToDebugFile('DEM2, ' + DEMglb[DEM2].KeyDEMParams(true));
+      WriteLineToDebugFile('DEM1, ' + DEMglb[DEM1].KeyParams(true));
+      WriteLineToDebugFile('DEM2, ' + DEMglb[DEM2].KeyParams(true));
       if IdenticalGrids then  WriteLineToDebugFile('offset, x=' + IntToStr(xoff) + '  y=' + IntToStr(yoff));
       WriteLineToDebugFile('DEM1 grid limits ' + GridLimitsToString(GridLimitsDEM1));
    {$EndIf}
@@ -2121,8 +2122,8 @@ begin
    Sum := 0;
 
    {$If Defined(RecordCovariance)}
-      WriteLineToDebugFile('DEM1, ' + DEMglb[DEM1].KeyDEMParams(true));
-      WriteLineToDebugFile('DEM2, ' + DEMglb[DEM2].KeyDEMParams(true));
+      WriteLineToDebugFile('DEM1, ' + DEMglb[DEM1].KeyParams(true));
+      WriteLineToDebugFile('DEM2, ' + DEMglb[DEM2].KeyParams(true));
       if IdenticalGrids then  WriteLineToDebugFile('offset, x=' + IntToStr(xoff) + '  y=' + IntToStr(yoff));
       WriteLineToDebugFile('DEM1 grid limits ' + GridLimitsToString(GridLimitsDEM1));
    {$EndIf}
@@ -3413,8 +3414,8 @@ begin
    if ValidDEM(DEM1) and ValidDEM(DEM2) then begin
       {$IfDef RecordSingleGridScatterGramFull}
          WriteLineToDebugFile('Two grid scattergram');
-         WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyDEMParams);
-         WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyDEMParams);
+         WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyParams);
+         WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyParams);
          WriteLineToDebugFile('  ll corner :' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornerx,-12,-2) + '   ' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornery,-12,-2) );
          WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits));
       {$EndIf}

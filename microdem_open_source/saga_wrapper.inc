@@ -42,18 +42,19 @@
          {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap opening map ' + OutName); {$EndIf}
          Result := OpenNewDEM(OutName,false);
          if ValidDEM(Result) then begin
-            {$IfDef RecordSAGARanges} WriteLineToDebugFile(DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
+            {$IfDef RecordSAGARanges} WriteLineToDebugFile(DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].KeyParams(true)); {$EndIf}
             DEMGlb[Result].CheckMaxMinElev;
             if (DEMGlb[Result].DEMHeader.DEMUsed = ArcSecDEM) then begin
                if (zUnits in [euPercentSlope,euPerMeter]) then begin
                   DEMGlb[Result].MultiplyGridByConstant(1/DEMGlb[Result].GDAL_ScaleFactor);
                   DEMGlb[Result].CheckMaxMinElev;
-                  {$IfDef RecordSAGARanges} WriteLineToDebugFile('Geo corrections  ' + DEMGlb[Result].KeyDEMParams(true)); {$EndIf}
+                  {$IfDef RecordSAGARanges} WriteLineToDebugFile('Geo corrections  ' + DEMGlb[Result].KeyParams(true)); {$EndIf}
                   DEMGlb[Result].SaveAsGeotiff(OutName);
                end;
             end;
+            DEMGlb[Result].DEMheader.ElevUnits := zUnits;
+            if not PossibleElevationUnits(DEMGlb[Result].DEMheader.ElevUnits) then DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
             if OpenMap then begin
-               DEMGlb[Result].DEMheader.ElevUnits := zUnits;
                CreateDEMSelectionMap(Result,true,true,MapType);
                UpdateMenusForAllMaps;
             end;

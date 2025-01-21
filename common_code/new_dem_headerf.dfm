@@ -50,13 +50,6 @@ object DEMHeaderForm: TDEMHeaderForm
     Caption = 'L'
     Visible = False
   end
-  object Label13: TLabel
-    Left = 240
-    Top = 16
-    Width = 117
-    Height = 13
-    Caption = 'Digitizing Datum for DEM'
-  end
   object Label10: TLabel
     Left = 24
     Top = 448
@@ -372,31 +365,6 @@ object DEMHeaderForm: TDEMHeaderForm
     TabOrder = 10
     OnClick = BitBtn5Click
   end
-  object ComboBox2: TComboBox
-    Left = 256
-    Top = 35
-    Width = 137
-    Height = 21
-    TabOrder = 11
-    Text = ' '
-    OnChange = ComboBox2Change
-    Items.Strings = (
-      'WGS72'
-      'WGS84'
-      'NAD27'
-      'NAD83'
-      'Spherical'
-      'Local'
-      'Rectangular'
-      'Lambert Azimuthal Spherical'
-      'Puerto Rico'
-      'Sinusopidal Ellispoidal'
-      'UK OS'
-      'Defined'
-      'Mars'
-      'Venus'
-      'SPCS')
-  end
   object RadioGroup2: TRadioGroup
     Left = 17
     Top = 8
@@ -407,7 +375,7 @@ object DEMHeaderForm: TDEMHeaderForm
       'UTM based'
       'Lat/long based'
       'WKT projection')
-    TabOrder = 12
+    TabOrder = 11
     OnClick = RadioGroup2Click
   end
   object RadioGroup1: TRadioGroup
@@ -419,7 +387,7 @@ object DEMHeaderForm: TDEMHeaderForm
     Items.Strings = (
       'North'
       'South')
-    TabOrder = 13
+    TabOrder = 12
   end
   object RadioGroup4: TRadioGroup
     Left = 240
@@ -432,7 +400,7 @@ object DEMHeaderForm: TDEMHeaderForm
       'Undefined '
       'Area'
       'Point')
-    TabOrder = 14
+    TabOrder = 13
   end
   object Memo1: TMemo
     Left = 8
@@ -440,7 +408,7 @@ object DEMHeaderForm: TDEMHeaderForm
     Width = 433
     Height = 71
     ScrollBars = ssVertical
-    TabOrder = 15
+    TabOrder = 14
   end
   object Edit10: TEdit
     Left = 104
@@ -448,7 +416,7 @@ object DEMHeaderForm: TDEMHeaderForm
     Width = 81
     Height = 21
     Enabled = False
-    TabOrder = 16
+    TabOrder = 15
     Text = 'Edit10'
   end
 end

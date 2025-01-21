@@ -2682,32 +2682,31 @@ object MapForm: TMapForm
       object Verticaldatumshift1: TMenuItem
         Caption = 'Vertical datum shift'
         GroupIndex = 1
-        object WGS84elllipsoidtoEGM200081: TMenuItem
-          Caption = 'WGS84 elllipsoid to EGM2008'
-          OnClick = WGS84elllipsoidtoEGM200081Click
-        end
-        object EGM2008toWGS84ellipsoid1: TMenuItem
-          Caption = 'EGM2008 to WGS84 ellipsoid'
-          OnClick = EGM2008toWGS84ellipsoid1Click
-        end
-        object EGM1996toEGM20081: TMenuItem
-          Caption = 'EGM96 to EGM2008'
-          OnClick = EGM1996toEGM20081Click
-        end
-        object LocaddatumtoEGM20081: TMenuItem
-          Caption = 'Locad datum to EGM2008'
-          OnClick = LocaddatumtoEGM20081Click
+        object Usingtransformgrids1: TMenuItem
+          Caption = 'Using transform grids'
+          object WGS84elllipsoidtoEGM200081: TMenuItem
+            Caption = 'WGS84 elllipsoid to EGM2008'
+            OnClick = WGS84elllipsoidtoEGM200081Click
+          end
+          object EGM2008toWGS84ellipsoid1: TMenuItem
+            Caption = 'EGM2008 to WGS84 ellipsoid'
+            OnClick = EGM2008toWGS84ellipsoid1Click
+          end
+          object EGM1996toEGM20081: TMenuItem
+            Caption = 'EGM96 to EGM2008 '
+            OnClick = EGM1996toEGM20081Click
+          end
+          object LocaddatumtoEGM20081: TMenuItem
+            Caption = 'Locad datum to EGM2008'
+            OnClick = LocaddatumtoEGM20081Click
+          end
         end
         object Specifyxyzshifts1: TMenuItem
           Caption = 'Specify x,y,z shifts'
           OnClick = Specifyxyzshifts1Click
         end
-        object UsingVDATUMoutput1: TMenuItem
-          Caption = 'Using VDATUM output'
-          OnClick = UsingVDATUMoutput1Click
-        end
         object UsingVDATUM1: TMenuItem
-          Caption = 'Using GDAL'
+          Caption = 'Using GDAL to WGS84 and EGM2008'
           OnClick = UsingVDATUM1Click
         end
       end
@@ -2727,8 +2726,12 @@ object MapForm: TMapForm
           OnClick = WGS84elllipsoid1Click
         end
         object Other1: TMenuItem
-          Caption = 'Other'
+          Caption = 'Other via EPSG'
           OnClick = Other1Click
+        end
+        object Undefined2: TMenuItem
+          Caption = 'Undefined'
+          OnClick = Undefined2Click
         end
       end
       object Horizontalshift1: TMenuItem
@@ -4050,6 +4053,10 @@ object MapForm: TMapForm
           Caption = '1 sec and 30 m resamples by averaging'
           OnClick = N1secand30mresamplesbyaveraging1Click
         end
+        object CreateReferenceDEMtoMatchThis1: TMenuItem
+          Caption = 'Create Reference DEM to Match This'
+          OnClick = CreateReferenceDEMtoMatchThis1Click
+        end
         object DEMIXrangescales1: TMenuItem
           Caption = 'DEMIX range scales'
           OnClick = DEMIXrangescales1Click
@@ -4386,7 +4393,7 @@ object MapForm: TMapForm
         OnClick = Comparegeomorphometryprograms1Click
       end
       object Comparemultiplegridstothisone1: TMenuItem
-        Caption = 'Compare multiple grids to this one'
+        Caption = 'Compare multiple grids'
         object Comparemultiplegridstothisone2: TMenuItem
           Caption = 'Histograms'
           OnClick = Comparemultiplegridstothisone2Click

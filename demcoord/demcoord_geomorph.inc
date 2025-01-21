@@ -29,7 +29,7 @@ begin
             end;
          end;
       end;
-      Result := MomentVar.NPts > 5;
+      Result := (MomentVar.NPts > 5);
       if Result then begin
          moment(sl,MomentVar,msAfterStdDev);
          Roughness := MomentVar.std_dev;
@@ -255,14 +255,17 @@ begin
    SlopeAsp.AspectDirTrue := 0;
    SlopeAsp.Slope := 0;
    if (Radius = 0) then Radius := MDDef.SlopeRegionRadius;
-   PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
    if (MDDef.SlopeAlgorithm = smLSQ) and ( (MDDef.SlopeLSQorder > 2) or (MDDef.SlopeLSQradius > 1)) and (not NeedSecondOrder) then begin
       //for the simple case, we can skip the LSQ computation and just use the Evans simplification
-      SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1);
-      ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
+      if GridInDataSetInteger(Col,Row) then begin
+         PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
+         SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1);
+         ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
+      end;
    end
    else begin
       if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,Radius) then begin
+         PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
          Result := true;
          SlopeAsp.dx := SlopeAsp.dx * Radius;
          SlopeAsp.dy := SlopeAsp.dy * Radius;

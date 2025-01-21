@@ -12,9 +12,10 @@
      begin
        Result := 32600; {WGS84 default}
        if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 32200
-       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 26700
-       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 26900
-       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue(GeotiffDatumDefaultString);
+       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 26900
+       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') or (PrimaryMapDatum.h_DatumCode = 'NAD27') then Result := 26700
+       else if (PrimaryMapDatum.h_DatumCode = 'ETRS89') or (PrimaryMapDatum.h_DatumCode = 'ETR89') then Result := 25800
+       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + PrimaryMapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
        if (PrimaryMapDatum.LatHemi = 'S') then Result := Result + 100;
        Result := Result + PrimaryMapDatum.projUTMZone;
      end;
@@ -26,7 +27,8 @@
        if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 4322
        else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 4267
        else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 4269
-       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue(GeotiffDatumDefaultString);
+       else if (PrimaryMapDatum.h_DatumCode = 'ETRS89')  or (PrimaryMapDatum.h_DatumCode = 'ETR89') then Result := 4258
+       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + PrimaryMapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
      end;
 
 
@@ -69,51 +71,6 @@
     end;
     {$EndIf}
 
-
-
-(*
-function SetDigitizeDatumFromH_datumcode(h_datumCode : integer) : byte;
-var
-   i : integer;
-begin
-   for i := 0 to 14 do begin
-      if DEMMapProjection.h_datumCode = DigitizeDatumName[i] then Result := i;
-   end;
-end;
-*)
-
-function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
-var
-   i : integer;
-begin
-   Result := 99;
-   for i := 0 to 14 do begin
-      if (DatString = DigitizeDatumName[i]) then Result := i;
-   end;
-(*
-   if (DatString = 'NAS-C') then Result := NAD27d
-   else if (DatString = 'NAR-C') then Result := NAD83d
-   else if (DatString = 'WGS72') then Result := WGS72d
-   else if (DatString = 'WGS84') then Result := WGS84d
-   else if (DatString = 'ETR89') then Result := ETRS89d
-   else if (DatString = 'UK-OS') then Result := UK_OS_grid;
-   //else Result := Local;
-*)
-end;
-
-function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
-begin
-   if Code in [0..14] then Result := DigitizeDatumName[Code]
-   else Result := 'unknown';
-   (*
-   if (Code = WGS72d) then Result := 'WGS72'
-   else if (Code = ETRS89d) then Result := 'ETR89'
-   else if (Code = NAD27d) then Result := 'NAS-C'
-   else if (Code in [NAD83d,WGS84d]) then Result := 'WGS84'
-   else if Code = UK_OS_grid then Result := 'UK-OS'
-   else Result := 'Local';
-   *)
-end;
 
 
    procedure tMapProjection.ShortProjInfo(Why : shortstring);
@@ -1445,7 +1402,7 @@ begin
 end;
 
 
-function tMapProjection.LatLongToMGRS(Lat,Long : float64) : shortstring;
+function tMapProjection.LatLongToMGRS(Lat,Long : float64; TheLength : integer = 10) : shortstring;
 var
    XUTM,YUTM : float64;
    tLong     : integer;
@@ -1458,7 +1415,7 @@ begin
    LatLongDegreetoUTM(Lat,Long,XUTM,YUTM);
    if (Lat > 0) then LatHemi := 'N' else LatHemi := 'S';
    DefineDatumFromUTMZone('WGS84',GetUTMZone(long),LatHemi);
-   Result := WGS84DatumConstants.CalculateMGRS(Xutm,Yutm,10);
+   Result := WGS84DatumConstants.CalculateMGRS(Xutm,Yutm,TheLength);
 
    TStr := Copy(Result,1,3);
    if (TStr = '31V') or (TStr = '32V') or (TStr = '31X') or (TStr = '33X') or (TStr = '35X') or (TStr = '37X') then begin
