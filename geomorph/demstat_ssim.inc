@@ -232,6 +232,33 @@ end {function MakeSSIMMap};
 
 
 
+    function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
+    var
+       Mean1,Mean2,StdDev1,StdDev2,r,covar : float64;
+       NPts : int64;
+    begin
+       if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
+          {$IfDef TrackSWcorner} DEMGlb[Grid1].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); DEMGlb[Grid2].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); {$EndIf}
+          if CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2,Npts,r,covar,Mean1,Mean2,StdDev1,StdDev2) then begin
+             Result := 1-sqr(r);
+             {$If Defined(TrackCovariance)} WriteLineToDebugFile('FUV=' + RealToString(Result,10,8) + '  ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
+          end
+          else begin
+             {$If Defined(RecordDEMIXfull)} WriteLineToDebugFile('DoCovarianceForPair computation Fail for tile ' + TileName + ' TileFill=' + RealToString(TileFull,-8,-2) + '%'); {$EndIf}
+             Result := -999;
+             {$IfDef RepeatProblematicComputations}
+                MessageToContinue('Check debugger for computation fail');
+                CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2, r,covar,Mean1,Mean2,StdDev1,StdDev2);
+             {$EndIf}
+          end;
+       end
+       else begin
+          Result := -999;
+          {$If Defined(RecordDEMIXfull)} WriteLineToDebugFile('Invalid grid, DoCovarianceForPair Fail for tile ' + ' ' + DEMglb[Grid1].AreaName + ' ' + DEMglb[Grid2].AreaName); {$EndIf}
+       end;
+    end;
+
+
 procedure DoSSIMandFUVForAnArea(AreaName : shortstring; Overwrite,AreasInsteadOfTiles : boolean);
 var
    DEMIXtileDB,NumRef,i,j : integer;
@@ -258,32 +285,6 @@ var
          Result := -999;
       end;
    end;
-
-    function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
-    var
-       Mean1,Mean2,StdDev1,StdDev2,r,covar : float64;
-       NPts : int64;
-    begin
-       if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
-          {$IfDef TrackSWcorner} DEMGlb[Grid1].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); DEMGlb[Grid2].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); {$EndIf}
-          if CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2,Npts,r,covar,Mean1,Mean2,StdDev1,StdDev2) then begin
-             Result := 1-sqr(r);
-             {$If Defined(TrackCovariance)} WriteLineToDebugFile('FUV=' + RealToString(Result,10,8) + '  ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
-          end
-          else begin
-             {$If Defined(RecordDEMIXfull)} WriteLineToDebugFile('DoCovarianceForPair computation Fail for tile ' + TileName + ' TileFill=' + RealToString(TileFull,-8,-2) + '%'); {$EndIf}
-             Result := -999;
-             {$IfDef RepeatProblematicComputations}
-                MessageToContinue('Check debugger for computation fail');
-                CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2, r,covar,Mean1,Mean2,StdDev1,StdDev2);
-             {$EndIf}
-          end;
-       end
-       else begin
-          Result := -999;
-          {$If Defined(RecordDEMIXfull)} WriteLineToDebugFile('Invalid grid, DoCovarianceForPair Fail for tile ' + TileName + ' ' + DEMglb[Grid1].AreaName + ' ' + DEMglb[Grid2].AreaName); {$EndIf}
-       end;
-    end;
 
 
    procedure DoCriterion(Criterion : ANSIString; usingPointGrids,usingAreaGrids : tDEM_int_array; ClearDerived : boolean = true);
@@ -753,7 +754,7 @@ begin
       end;
    finally
       if LocalAreas then Areas.Free;
-      EndDEMIXProcessing;
+      EndDEMIXProcessing(0,true);
    end;
    {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations out'); {$EndIf}
 end {procedure AreaSSIMandFUVComputations};

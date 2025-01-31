@@ -29,8 +29,6 @@ object LagOptionsForm: TLagOptionsForm
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 283
-    ExplicitHeight = 337
   end
   object Panel1: TPanel
     Left = 0
@@ -39,7 +37,6 @@ object LagOptionsForm: TLagOptionsForm
     Height = 356
     Align = alLeft
     TabOrder = 1
-    ExplicitHeight = 337
     object Label2: TLabel
       Left = 16
       Top = 240

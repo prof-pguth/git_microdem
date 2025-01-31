@@ -1017,7 +1017,7 @@ begin
 
    if (ImportingDEM <> 0) and FileExists(DEMGlb[ImportingDEM].MetadataFileName) then DEMGlb[ImportingDEM].DEMmetadata.LoadFromFile(DEMGlb[ImportingDEM].MetadataFileName);
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM) or Defined(ShortDEMLoad)}
-      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' + DEMGlb[ImportingDEM].KeyParams(true) + ' ' + DEMGlb[ImportingDEM].DEMHorizontalSpacingSummary);
+      WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' + DEMGlb[ImportingDEM].KeyParams(true) );
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)}
       WriteLineToDebugFile('exit ReadDEMNow, ' + DEMGlb[ImportingDEM].AreaName + ' ' +  DEMGlb[ImportingDEM].DEMmapProj.h_DatumCode + ' ' +

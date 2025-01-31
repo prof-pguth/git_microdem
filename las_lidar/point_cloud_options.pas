@@ -73,7 +73,7 @@ uses
 type
    tPCGridMaker = (pcgmAllIntensity,pcgmMaxIntensity,pcgmPointCount,pcgmCeilFloor,pcgmAboveBelow,pcgmClass,pcgmAirNonLastReturn,pcgmGround,pcgmFirstRet,pcgmSecondRet,pcgmThreeKeyDensities,pcgmMeanFirst,
        pcgmSingleRet,pcgmMeanStd,pcgmVegVox,pcgmDensityVox,pcgmScanAngle,pcgmGrndPtDTM,pcgmGroundLowXYZ,pcgmLowXYZ,pcgmClassification,pcgmRGB,pcgmOverlap,
-       pcgmPointSourceID,pcgmUserData,pcgmBlank,pcgmMinIntensity,pcgmThreeDEMs);
+       pcgmPointSourceID,pcgmUserData,pcgmBlank,pcgmMinIntensity,pcgmThreeDEMs,pcgmFirstIntensity,pcgmLastIntensity);
    tWhatProcess = (wpWBClass,wpFusionClass,wpMCCclass,wpLasToolsClass,wpWBSegClass,wpPDALsmrf,wpPDALpmf,wpAllClass,wpWBDenoise);
    tdbpcPointCloud = (dbpcDataBase,dbpcDSM,dbpcMidCloud,dbpcDTM);
 
@@ -222,7 +222,7 @@ type
     CheckBox23: TCheckBox;
     BitBtn33: TBitBtn;
     BitBtn36: TBitBtn;
-    CheckBox25: TCheckBox;
+    //CheckBox25: TCheckBox;
     Las: TBitBtn;
     PopupMenu1: TPopupMenu;
     FusionTIN1: TMenuItem;
@@ -461,7 +461,7 @@ type
     procedure CheckBox23Click(Sender: TObject);
     procedure CheckBox24Click(Sender: TObject);
     procedure BitBtn36Click(Sender: TObject);
-    procedure CheckBox25Click(Sender: TObject);
+    //procedure CheckBox25Click(Sender: TObject);
     procedure LasClick(Sender: TObject);
     procedure FusionTIN1Click(Sender: TObject);
     procedure WBIDW1Click(Sender: TObject);
@@ -957,6 +957,8 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
        BlankDEM,
        ClassDEM,
        DSMDEM,
+       FirstIntensityDEM,
+       LastIntensityDEM,
        MaxIntensityDEM,
        MaxScanAngleDEM,
        MeanIntensityDEM,
@@ -1019,6 +1021,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
              NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
              NewHeadRecs.DEMPrecision := LongWordDEM;
              NewHeadRecs.ElevUnits := euUndefined;
+             NewHeadRecs.VerticalCSTypeGeoKey := 0;
 
              if (PCGridMaker in [pcgmAllIntensity,pcgmClass,pcgmPointCount,pcgmThreeKeyDensities,pcgmMeanStd,pcgmMeanFirst]) then MissingDataGrid(NewDensity,NewGridname('Total_pt_density_'),InitDEMzero);
              if (PCGridMaker = pcgmSecondRet) then MissingDataGrid(SecondReturnDEM,NewGridname('Second_return_density_'),InitDEMzero);
@@ -1110,16 +1113,18 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 NewHeadRecs.DEMPrecision := ByteDEM;
                 MissingDataGrid(NewUserDataDEM,NewGridname('User_data_'));
              end
-             else if (PCGridMaker in [pcgmAllIntensity,pcGMMaxIntensity,pcgmMinIntensity]) then begin
+             else if (PCGridMaker in [pcgmAllIntensity,pcGMMaxIntensity,pcgmMinIntensity,pcgmFirstIntensity,pcgmLastIntensity]) then begin
                 NewHeadRecs.DEMPrecision := WordDEM;
                 NewHeadRecs.ElevUnits := euImagery;
                 if (PCGridMaker in [pcgmAllIntensity,pcGMMaxIntensity]) then MissingDataGrid(MaxIntensityDEM,NewGridname('Lidar_max_intensity_'));
-               if (PCGridMaker in [pcgmAllIntensity,pcgmMinIntensity]) then MissingDataGrid(MaxIntensityDEM,NewGridname('Lidar_min_intensity_'));
-                 if (PCGridMaker in [pcgmAllIntensity]) then begin
-                     OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('Num_ground_returns_'),InitDEMvalue,0);
-                     NewHeadRecs.DEMPrecision := FloatingPointDEM;
-                     OpenAndZeroNewDEM(true,NewHeadRecs,MeanIntensityDEM,NewGridname('Lidar_mean_intensity_'),InitDEMvalue,0);
-                 end;
+                if (PCGridMaker in [pcgmAllIntensity,pcgmMinIntensity]) then MissingDataGrid(MinIntensityDEM,NewGridname('Lidar_min_intensity_'));
+                if (PCGridMaker in [pcgmFirstIntensity,pcgmAllIntensity]) then MissingDataGrid(FirstIntensityDEM,NewGridname('Lidar_first_return_intensity_'));
+                if (PCGridMaker in [pcgmLastIntensity,pcgmAllIntensity]) then MissingDataGrid(LastIntensityDEM,NewGridname('Lidar_last_return_intensity_'));
+                if (PCGridMaker in [pcgmAllIntensity]) then begin
+                   OpenAndZeroNewDEM(true,NewHeadRecs,NewDensity,NewGridname('Num_ground_returns_'),InitDEMvalue,0);
+                   NewHeadRecs.DEMPrecision := FloatingPointDEM;
+                   OpenAndZeroNewDEM(true,NewHeadRecs,MeanIntensityDEM,NewGridname('Lidar_mean_intensity_'),InitDEMvalue,0);
+                end;
              end
              else if (PCGridMaker in [pcgmClass]) then begin
                 NewHeadRecs.DEMPrecision := WordDEM;
@@ -1214,7 +1219,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                                         if DEMGlb[MaxScanAngleDEM].GetElevMeters(xgrid,ygrid,zGrid) and (zshot > zGrid) then DEMGlb[MaxScanAngleDEM].SetGridElevation(xgrid,ygrid,zShot);
                                       end;
 
-                                      if (PCGridMaker in [pcgmMaxIntensity,pcgmMinIntensity,pcgmAllIntensity]) then begin
+                                      if (PCGridMaker in [pcgmMaxIntensity,pcgmMinIntensity,pcgmAllIntensity,pcgmFirstIntensity,pcgmLastIntensity]) then begin
                                          Intensity := LasData.GetShotMeasuredIntensity(j);
                                          if (not DEMGlb[MaxIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid)) or (Intensity > zGrid) then DEMGlb[MaxIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
                                          if (MinIntensityDEM <> 0) then if (not DEMGlb[MinIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid) or (Intensity < zGrid)) then DEMGlb[MinIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
@@ -1222,6 +1227,8 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                                             if (not DEMGlb[MeanIntensityDEM].GetElevMeters(xgrid,ygrid,zGrid)) then zgrid := 0;
                                             DEMGlb[MeanIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity + zGrid);
                                          end;
+                                         if (FirstIntensityDEM <> 0) then DEMGlb[FirstIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
+                                         if (LastIntensityDEM <> 0) then DEMGlb[LastIntensityDEM].SetGridElevation(xgrid,ygrid,Intensity);
                                       end;
                                    end;
                                 end{if};
@@ -1361,6 +1368,8 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
            CheckMap(AirReturnDEM,false);
            CheckMap(BlankDEM,false);
            CheckMap(DSMDEM,true,mtIHSReflect);
+           CheckMap(FirstIntensityDEM,true,mtElevGray);
+           CheckMap(LastIntensityDEM,true,mtElevGray);
            CheckMap(MaxIntensityDEM,true,mtElevGray);
            CheckMap(MinIntensityDEM,true,mtElevGray);
            CheckMap(MaxScanAngleDEM);
@@ -1408,6 +1417,8 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
       ClassDEM := 0;
       DSMDEM := 0;
       MaxIntensityDEM := 0;
+      FirstIntensityDEM := 0;
+      LastIntensityDEM := 0;
       MaxScanAngleDEM := 0;
       MeanIntensityDEM := 0;
       MeanReturnHeightDEM := 0;
@@ -3227,14 +3238,16 @@ begin
              Edit5.Text := realToString(LasFiles[CloudNum].MaxZ,-12,-1);
              Edit6.Text := realToString(LasFiles[CloudNum].MinZ,-12,-1);
 
+             (*
              if MDDef.LASPC99 then begin
                 Edit33.Text := IntToStr(LasFiles[CloudNum].Inten_99);
                 Edit34.Text := IntToStr(LasFiles[CloudNum].Inten_1);
              end
              else begin
+             *)
                 Edit33.Text := IntToStr(LasFiles[CloudNum].Max_Inten);
                 Edit34.Text := IntToStr(LasFiles[CloudNum].Min_Inten);
-             end;
+             //end;
 
              CheckBoxPC1.Checked := InitialCloudDisplay;
              CheckBoxPC1.Visible := true;
@@ -3463,10 +3476,12 @@ begin
    MDdef.AutoDrawMapLAS := CheckBox24.Checked;
 end;
 
+(*
 procedure Tpt_cloud_opts_fm.CheckBox25Click(Sender: TObject);
 begin
    MDDef.LASPC99  := Checkbox25.Checked;
 end;
+*)
 
 procedure Tpt_cloud_opts_fm.CheckBox26Click(Sender: TObject);
 begin
@@ -4066,7 +4081,7 @@ begin
    CheckBox21.Checked := MDDef.LogDosOutput;
    CheckBox22.Checked := MDDef.ls.GroundClassOnly;
    CheckBox24.Checked := MDdef.AutoDrawMapLAS;
-   Checkbox25.Checked := MDDef.LASPC99;
+   //Checkbox25.Checked := MDDef.LASPC99;
    CheckBox27.Checked := MDDef.ls.DiscardHighNoise;
    CheckBox28.Checked := MDDef.ls.AssumeLAS14classes;
    CheckBox29.Checked := MDDef.LatLongSlices;

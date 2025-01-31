@@ -15,7 +15,7 @@ unit demix_control;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    {$Define RecordDEMIXneo}
-   //{$Define RecordDEMIXStart}
+   {$Define RecordDEMIXStart}
    //{$Define RecordDEMIXopenGrids}
    //{$Define RecordDEMIXversion}
    //{$Define RecordDEMIXLoad}
@@ -86,7 +86,7 @@ const
    DEMIX_initialized : boolean = false;
 
    function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
-   procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = true);
+   procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = false);
    procedure LoadDEMIXnames;
 
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
@@ -166,7 +166,12 @@ procedure PickDEMIXMode;
    function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
    procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
 
+
 procedure DifferentRankingsByTile(DBonTable : integer);
+procedure FUVforRangeScales;
+procedure FUVforScales_0_15sec;
+
+function DEMIXMomentStatsString(MomentVar : tMomentVar) : shortstring;
 
 
    {$IfDef AllowEDTM}
@@ -190,6 +195,12 @@ procedure DifferentRankingsByTile(DBonTable : integer);
 var
    ElevDiffHists : boolean;
 
+
+const
+   NumOrderedParams = 8;
+   OrderedParams : array[1..NumOrderedParams] of shortstring= ('ELEV','OPENU','OPEND','HILL','SLOPE','RUFF','TPI','RRI');
+   NumScales = 4;
+   Scales : array[1..NumScales] of shortstring = ('0.15sec','0.25sec','0.5sec','1sec');
 
 implementation
 
@@ -220,6 +231,201 @@ var
    {$IfDef OpenDEMIXAreaAndCompare}
       {$I open_demix_area.inc}
    {$EndIf}
+
+
+
+{$Define RecordRangeScales}
+
+
+function DEMIXMomentStatsString(MomentVar : tMomentVar) : shortstring;
+begin
+   Result := RealToString(MomentVar.MinZ,-8,2) + ',' + RealToString(MomentVar.MaxZ,-8,2) + ',' + RealToString(MomentVar.Mean,-8,2) + ',' +
+       RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.std_dev,-8,2) + ',' + RealToString(MomentVar.median,-8,2) + ',' + RealToString(MomentVar.rmse,-8,2)  + ',' +
+       RealToString(MomentVar.mae,-8,2)  + ',' + RealToString(MomentVar.LE90,-12,-2) + ',' + IntToStr(MomentVar.NPts);
+end;
+
+
+procedure FUVforScales_0_15sec;
+const
+   DEMs : array[1..5] of shortstring = ('NeoDSM','NeoDTM','FABDEM','COP','ALOS');
+var
+   DataDir, fName : PathStr;
+   i,j,ad,Ref,Test,Ref2,Test2,Ref3,Test3 : integer;
+   Area,aLine : shortstring;
+   FUV : float32;
+   Findings : tStringList;
+
+   procedure AddFUV(Ref,Test : integer);
+   begin
+      FUV := GetFUVForPair(DEMglb[Test].FullDEMGridLimits,Test,Ref);
+      aline := aLine + ',' + RealToString(FUV,-12,-6);
+   end;
+
+begin
+   DataDir := 'J:\aaa_neo_eval\oxnard\multiple_0.15sec\';
+   Area := 'oxnard';
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15sece in'); {$EndIf}
+
+   Findings := tStringList.Create;
+   aLine := 'AREA,DEMIX_TILE,DEM';
+   for j := 1 to NumOrderedParams do aline := aline + ',' + OrderedParams[j] + '_FUV';
+   Findings.Add(aLine);
+
+
+   Ref := 0;
+   for i := 1 to 5 do begin
+      {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforScales_0_15sec, start ' + DEMs[i]); {$EndIf}
+      fName := DataDir + 'ref_dtm_0.15sec.tif';
+      if Not ValidDEM(Ref) then Ref := OpenNewDEM(fName,false);
+      fName := DataDir + DEMs[i] + '_0.15sec.tif';
+      Test := OpenNewDEM(fName,false);
+      aline := Area + ', ,' + DEMs[i];
+      for j := 1 to NumOrderedParams do begin
+         {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s, start ' + OrderedParams[j]); {$EndIf}
+          wmDEM.SetPanelText(2,OrderedParams[j],true);
+
+         if OrderedParams[j] = 'ELEV' then begin
+            AddFUV(Ref,Test);
+         end
+         else if OrderedParams[j] = 'OPENU' then begin  //does both openness
+             Ref2 := -1;     //downward
+             Test2 := -1;    //downward
+             Ref3 := -1;     //upwardward
+             Test3 := -1;    //upward
+             ad := 0;        //difference, not to be computed
+             CreateOpennessMap(false,DEMglb[Ref].FullDEMGridLimits,Test,250,Ref2,Ref3,ad);
+             CreateOpennessMap(false,DEMglb[Test].FullDEMGridLimits,Test,250,Test2,Test3,ad);
+             AddFUV(Ref3,Test3);
+             AddFUV(Ref2,Test2);
+         end
+         else if OrderedParams[j] = 'HILL' then begin
+            Ref2 := CreateHillshadeMap(false,Ref);
+            Test2 := CreateHillshadeMap(false,Test);
+            AddFUV(Ref2,Test2);
+         end
+         else if OrderedParams[j] = 'SLOPE' then begin //also does roughness
+             Ref2 := 0;
+             Test2 := 0;
+             Ref3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Ref,5,Ref2,false);
+             Test3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Test,5,Test2,false);
+             AddFUV(Ref2,Test2);
+             AddFUV(Ref3,Test3);
+         end
+         else if OrderedParams[j] = 'TPI' then begin
+            Ref2 := BoxCarDetrendDEM(false,Ref,DEMGlb[Ref].FullDEMGridLimits,3);
+            Test2 := BoxCarDetrendDEM(false,Test,DEMGlb[Test].FullDEMGridLimits,3);
+            AddFUV(Ref2,Test2);
+         end
+         else if OrderedParams[j] = 'RRI' then begin
+             Ref2 := MakeTRIGrid(Ref,nmRRI,false);
+             Test2 := MakeTRIGrid(Test,nmRRI,false);
+             AddFUV(Ref2,Test2);
+         end;
+         CloseSingleDEM(Ref2);
+         CloseSingleDEM(Test2);
+         CloseSingleDEM(Ref3);
+         CloseSingleDEM(Test3);
+      end;
+      Findings.Add(Aline);
+      {$IfDef RecordRangeScales} WriteLineToDebugFile(aLine); {$EndIf}
+      CloseSingleDEM(Test);
+   end;
+   CloseSingleDEM(Ref);
+
+   fName := DataDir + 'FUV_0_15sec.dbf';
+   StringList2CSVtoDB(Findings,fName,true);
+   wmDEM.ClearStatusBarPanelText;
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s out'); {$EndIf}
+end;
+
+
+
+
+procedure FUVforRangeScales;
+var
+   DataDir, fName : PathStr;
+   i,j,ad,Ref,Test,Ref2,Test2,Ref3,Test3 : integer;
+   Area,aLine : shortstring;
+   FUV : float32;
+   Findings : tStringList;
+
+   procedure AddFUV(Ref,Test : integer);
+   begin
+      FUV := GetFUVForPair(DEMglb[Test].FullDEMGridLimits,Test,Ref);
+      aline := aLine + ',' + RealToString(FUV,-12,-6);
+   end;
+
+begin
+   DataDir := 'J:\aaa_neo_eval\oxnard\range_scales\';
+   Area := 'oxnard';
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale in'); {$EndIf}
+
+   Findings := tStringList.Create;
+   aLine := 'AREA,DEMIX_TILE,RESOLUTION';
+   for j := 1 to NumOrderedParams do aline := aline + ',' + OrderedParams[j] + '_FUV';
+   Findings.Add(aLine);
+   for i := 1 to NumScales do begin
+      {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforRangeScale, start ' + Scales[i]); {$EndIf}
+      Ref := OpenNewDEM(DataDir + 'ref_dtm_' + Scales[i] + '.tif',false);
+      Test := OpenNewDEM(DataDir + 'Neodtm_' + Scales[i] + '.tif',false);
+      aline := Area + ', ,' + Scales[i];
+      for j := 1 to NumOrderedParams do begin
+         {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale, start ' + OrderedParams[j]); {$EndIf}
+         if OrderedParams[j] = 'ELEV' then begin
+            AddFUV(Ref,Test);
+         end
+         else if OrderedParams[j] = 'OPENU' then begin  //does both openness
+             Ref2 := -1;     //downward
+             Test2 := -1;    //downward
+             Ref3 := -1;     //upwardward
+             Test3 := -1;    //upward
+             ad := 0;        //difference, not to be computed
+             CreateOpennessMap(false,DEMglb[Ref].FullDEMGridLimits,Test,250,Ref2,Ref3,ad);
+             CreateOpennessMap(false,DEMglb[Test].FullDEMGridLimits,Test,250,Test2,Test3,ad);
+             AddFUV(Ref3,Test3);
+             AddFUV(Ref2,Test2);
+         end
+         else if OrderedParams[j] = 'HILL' then begin
+            Ref2 := CreateHillshadeMap(false,Ref);
+            Test2 := CreateHillshadeMap(false,Test);
+            AddFUV(Ref2,Test2);
+         end
+         else if OrderedParams[j] = 'SLOPE' then begin //also does roughness
+             Ref2 := 0;
+             Test2 := 0;
+             Ref3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Ref,5,Ref2,false);
+             Test3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Test,5,Test2,false);
+             AddFUV(Ref2,Test2);
+             AddFUV(Ref3,Test3);
+         end
+         else if OrderedParams[j] = 'TPI' then begin
+            Ref2 := BoxCarDetrendDEM(false,Ref,DEMGlb[Ref].FullDEMGridLimits,3);
+            Test2 := BoxCarDetrendDEM(false,Test,DEMGlb[Test].FullDEMGridLimits,3);
+            AddFUV(Ref2,Test2);
+         end
+         else if OrderedParams[j] = 'RRI' then begin
+             Ref2 := MakeTRIGrid(Ref,nmRRI,false);
+             Test2 := MakeTRIGrid(Test,nmRRI,false);
+             AddFUV(Ref2,Test2);
+         end;
+         CloseSingleDEM(Ref2);
+         CloseSingleDEM(Test2);
+         CloseSingleDEM(Ref3);
+         CloseSingleDEM(Test3);
+      end;
+      Findings.Add(Aline);
+      {$IfDef RecordRangeScales} WriteLineToDebugFile(aLine); {$EndIf}
+
+      CloseSingleDEM(Ref);
+      CloseSingleDEM(Test);
+
+   end;
+
+   fName := DataDir + 'Range_scales.dbf';
+   StringList2CSVtoDB(Findings,fName,true);
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale out'); {$EndIf}
+end;
+
 
 
 procedure PickDEMIXMode;
@@ -538,8 +744,9 @@ function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
          if (StrUtils.AnsiContainsText(fName,'DILUV')) then fName := 'DILUV';
          if (StrUtils.AnsiContainsText(fName,'TANDEM')) then fName := 'TANDEM';
          if (StrUtils.AnsiContainsText(fName,'DELTA')) then fName := 'DELTA';
+         if (StrUtils.AnsiContainsText(fName,'NEODTM')) then fName := 'NEODTM';
+         if (StrUtils.AnsiContainsText(fName,'NEODSM')) then fName := 'NEODSM';
       end;
-
 
 
 var
@@ -682,48 +889,37 @@ end;
 procedure LoadDEMIXnames;
 var
    table : tMyData;
-   fName,fName2 : PathStr;
+   //fName2,
+   fName : PathStr;
    i : integer;
-   TheDEMs : tStringList;
-   aLine : shortstring;
+   //TheDEMs : tStringList;
+   //aLine : shortstring;
 begin
-   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames in, DEMListFName=' + DEMListFName); {$EndIf}
-   TheDEMs := tStringList.Create;
-   if FileExists(DEMListFName) then begin
-      TheDEMs.LoadFromFile(DEMListFName);
+   {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames in'); {$EndIf}
+   //TheDEMs := tStringList.Create;
+   //if FileExists(DEMListFName) then begin
+     //TheDEMs.LoadFromFile(DEMListFName);
       fName := DEMIXSettingsDir + 'demix_dems.dbf';
       if FileExists(fName) then begin
          Table := tMyData.Create(fName);
-         for I := 1 to TheDEMs.Count do begin
-            Table.ApplyFilter('SHORT_NAME=' + QuotedStr(TheDEMs.Strings[pred(i)]));
-            if (Table.FiltRecsInDB = 1) then begin
-               DEMIXDEMTypeName[i] := Table.GetFieldByNameAsString('DEM_NAME');
-               DEMIXshort[i] := Table.GetFieldByNameAsString('SHORT_NAME');
-               DEMIXDEMcolors[i] := Table.PlatformColorFromTable;
-               UseRetiredDEMs[i] := MDDef.DEMIX_graph_Retired_DEMs or ((DEMIXshort[i] <> 'ASTER') and (DEMIXshort[i] <> 'NASA') and (DEMIXshort[i] <> 'SRTM'));
-            end
-            else begin
-               {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames problem DEM=' + TheDEMs.Strings[pred(i)]); {$EndIf}
+         NumDEMIXtestDEM := 0;
+         while not Table.eof do begin
+            if Table.GetFieldByNameAsString('USE') = 'Y' then begin
+               inc(NumDEMIXtestDEM);
+               //AllDEMIXTheDEMs[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('SHORT_NAME');
+               DEMIXDEMTypeName[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('DEM_NAME');
+               DEMIXshort[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('SHORT_NAME');
+               DEMIXDEMcolors[NumDEMIXtestDEM] := Table.PlatformColorFromTable;
+               NotRetiredDEMs[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('RETIRED') = 'N';
             end;
+            Table.Next;
          end;
-         NumDEMIXtestDEM := TheDEMs.Count;
-
-         {$IfDef RecordDEMIXNames}
-             aLine := IntToStr(NumDEMIXDEM);
-             for I := 1 to NumDEMIXDEM do aline := aline + '  ' + DEMIXshort[i];
-             HighlightLineToDebugFile('LoadDEMIXNames=' + aLine);
-         {$EndIf}
          Table.Destroy;
-         TheDEMs.Destroy;
+         {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames out, NumDEMIXtestDEM=' + IntToStr(NumDEMIXtestDEM)); {$EndIf}
       end
       else begin
         {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames missing=' + fName); {$EndIf}
       end;
-      {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('LoadDEMIXnames out'); {$EndIf}
-   end
-   else begin
-     {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('DEMListFName missing=' + DEMListFName); {$EndIf}
-   end;
 end;
 
 
@@ -884,7 +1080,7 @@ begin
    Result := Nil;
    repeat
       if (Result <> Nil) then Result.Destroy;
-      CreateBitmap(Result,1500,250);
+      CreateBitmap(Result,1500,900);
       LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
       Result.Canvas.Font.Size := StartFontSize;
       Left := 25;
@@ -896,7 +1092,7 @@ begin
       end
       else begin
          for i := 1 to NumDEMIXtestDEM do begin
-            if UseRetiredDEMs[i] then begin
+            if NotRetiredDEMs[i] or MDDef.DEMIX_graph_Retired_DEMs then begin
                AnEntry(DEMIXShort[i]);
             end;
          end;
@@ -964,7 +1160,7 @@ begin
    end;
    NumDEMIXtestDEM := NumPtDEMs + NumAreaDEMs;
 
-   DEMListFName := DEMIXSettingsDir + 'dems_' + DEMIXModeName + '.txt';
+   //DEMListFName := DEMIXSettingsDir + 'dems_' + DEMIXModeName + '.txt';
    if DEMIXanalysismode in [DEMIXtraditional] then begin
       Diff_dist_results_dir := DEMIX_Base_DB_Path + DEMIXModeName + '_diff_dist_results\';
       SSIMresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_ssim_results\';
@@ -1143,7 +1339,7 @@ begin
 end;
 
 
-procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = true);
+procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = false);
 begin
    if HeavyDutyProcessing and CleanTempDir then begin
       CleanUpTempDirectory(false);

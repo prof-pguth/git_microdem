@@ -509,7 +509,8 @@ begin
          fName := ProgramRootDir + 'correlations' + DefaultDBExt;
          GetFileFromDirectory('Correlation color table',DefaultDBMask,fName);
       end;
-   end;
+   end
+   else ShowHeader := true;
 
     MinVal := 99999;
     MaxVal := -9999;
@@ -592,7 +593,6 @@ begin
    Bitmap.Canvas.Font.Name := 'Verdana';
    Bitmap.Canvas.Font.Size := FontSize;
    Bitmap.Canvas.Font.Style := [fsBold];
-   if ShowHeader then Bitmap.Canvas.TextOut(5,5,RemoveUnderscores(Caption));
 
    for j := 1 to pred(StringGrid1.RowCount) do begin
       i := Bitmap.Canvas.TextWidth(StringGrid1.Cells[0,j]) + 15;
@@ -671,14 +671,14 @@ begin
    Bitmap.Canvas.Draw(LeftOffset + 10,BitMap.Height - 10 - Bitmap2.Height,Bitmap2);
    FreeAndNil(Bitmap2);
 
-   if (URstring <> '') then begin
-      Bitmap.Canvas.Font.Size := 24;
-      Bitmap.Canvas.Font.Style := [fsBold];
-      Bitmap.Canvas.TextOut(Bitmap.Width -Bitmap.Canvas.TextWidth(URstring),5,URString);
-   end;
+   Bitmap.Canvas.Font.Size := 18;
+   Bitmap.Canvas.Font.Style := [fsBold];
+   if ShowHeader then Bitmap.Canvas.TextOut(2,2,RemoveUnderscores(Caption));
+
+   Bitmap.Canvas.Font.Size := 24;
+   if (URstring <> '') then Bitmap.Canvas.TextOut(Bitmap.Width - Bitmap.Canvas.TextWidth(URstring),5,URString);
 
    Petimage_form.DisplayBitmap(Bitmap,theTitle);
-   //FreeAndNil(Bitmap);
    ShowDefaultCursor;
    {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click out'); {$EndIf}
 {$EndIf}

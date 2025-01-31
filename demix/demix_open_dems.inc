@@ -36,7 +36,7 @@ var
          begin
             if (DEM <> MaskDEM) then begin
                EditsDone := 0;
-               MaskStripFromSecondGrid(DEM,MaskDEM,msSecondMissing);
+               MaskGridFromSecondGrid(DEM,MaskDEM,msSecondMissing);
                DEMGlb[DEM].CheckMaxMinElev;
                {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw; {$EndIf};
             end;
@@ -112,7 +112,7 @@ begin {function OpenBothPixelIsDEMs}
        {$IfDef TrackPixelIs} ShowDEMIXgrids('OpenBothPixelIsDEMs', PointDEMs,AreaDEMs); {$EndIf};
        {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('Check maps'); {$EndIf};
    end
-   else if DEMIXanalysismode = DEMIXneo then begin
+   else if (DEMIXanalysismode = DEMIXneo) then begin
       {$If Defined(RecordDEMIXneo)} WriteLineToDebugFile('Neo OpenBothPixelIsDEMs in, currently DEMs open=' + IntToStr(NumDEMDataSetsOpen)); {$EndIf};
       GISdb[NewFormatDEMIXDB].ApplyGISfilter('AREA=' + QuotedStr(Area));
       if GISdb[NewFormatDEMIXdb].MyData.FiltRecsInDB = 1 then begin
@@ -124,17 +124,30 @@ begin {function OpenBothPixelIsDEMs}
          else begin
             PointDEMs[0] := OpenNewDEM(fName,OpenMaps);
             DataDir := ExtractFilePath(fName);
+
             fName := GISdb[NewFormatDEMIXdb].MyData.GetFieldByNameAsString('DTM');
             PointDEMs[1] := OpenNewDEM(fName,OpenMaps);
-            DEMglb[PointDEMs[1]].AreaName := 'WDneo';
-            SRTM_centroid_names[1] := 'WDneo';
-            fName := DataDir + 'COP.tif';
+            DEMglb[PointDEMs[1]].AreaName := 'NEODTM';
+            SRTM_centroid_names[1] := 'NEODTM';
+
+            fName := StringReplace(fName, 'DTM', 'DSM',[rfIgnoreCase,rfReplaceAll]);
             PointDEMs[2] := OpenNewDEM(fName,OpenMaps);
-            SRTM_centroid_names[2] := 'Cop';
-            fName := DataDir + 'ALOS.tif';
+            DEMglb[PointDEMs[2]].AreaName := 'NEODSM';
+            SRTM_centroid_names[2] := 'NEODSM';
+
+            fName := DataDir + 'COP.tif';
             PointDEMs[3] := OpenNewDEM(fName,OpenMaps);
-            SRTM_centroid_names[3] := 'ALOS';
-            NumPtDEMs := 3;
+            SRTM_centroid_names[3] := 'COP';
+
+            fName := DataDir + 'ALOS.tif';
+            PointDEMs[4] := OpenNewDEM(fName,OpenMaps);
+            SRTM_centroid_names[4] := 'ALOS';
+
+            fName := DataDir + 'FABDEM.tif';
+            PointDEMs[5] := OpenNewDEM(fName,OpenMaps);
+            SRTM_centroid_names[5] := 'FABDEM';
+
+            NumPtDEMs := 5;
             NumAreaDEMs := 0;
             {$If Defined(RecordDEMIXneo)} ShowDEMIXgrids('OpenBothPixelIsDEMs ' + Area, PointDEMs,AreaDEMs); {$EndIf};
          end;

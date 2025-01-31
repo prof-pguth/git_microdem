@@ -40,8 +40,6 @@ object XYZDisplayForm: TXYZDisplayForm
       item
         Width = 50
       end>
-    ExplicitTop = 349
-    ExplicitWidth = 402
   end
   object Panel1: TPanel
     Left = 0
@@ -50,7 +48,6 @@ object XYZDisplayForm: TXYZDisplayForm
     Height = 35
     Align = alTop
     TabOrder = 2
-    ExplicitWidth = 402
     object Label1: TLabel
       Left = 8
       Top = 8

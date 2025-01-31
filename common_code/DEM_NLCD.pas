@@ -65,6 +65,7 @@ procedure LandCoverBarGraphLegends;
 function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
 function LoadLC100LandCover(fName : PathStr; bb : sfboundbox;OpenMap : boolean) : integer;
+function LoadLC10LandCover(fName : PathStr; bb : sfboundbox;OpenMap : boolean) : integer;
 
 function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
 
@@ -133,14 +134,14 @@ begin
           for j := 1 to MaxDEMDataSets do begin
              if ValidDEM(j) and (j <> lcGrid) then begin
                 EditsDone := 0;
-                MaskStripFromSecondGrid(j,lcGrid, msSecondMissing);
+                MaskGridFromSecondGrid(j,lcGrid, msSecondMissing);
                 DEMGlb[j].CheckMaxMinElev;
              end;
           end;
        end
        else begin
           EditsDone := 0;
-          MaskStripFromSecondGrid(DEM,lcGrid, msSecondMissing);
+          MaskGridFromSecondGrid(DEM,lcGrid, msSecondMissing);
           DEMGlb[DEM].CheckMaxMinElev;
           if (DEMGlb[DEM].SelectionMap <> Nil) then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;
           {$IfDef TrackWaterMasking} MessageToContinue('Water masked');  {$EndIf}
@@ -251,6 +252,31 @@ begin
    Lat := 0.5 * (bb.YMax + bb.YMin);
    Long := 0.5 * (bb.XMax + bb.XMin);
    LandCoverFName := GetLC100_fileName(Lat,Long);
+   {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
+   if FileExists(LandCoverFName) then begin
+      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
+      if ValidDEM(Result) then begin
+         DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
+         if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
+         DEMGlb[Result].SaveAsGeotiff(fName);
+      end
+      else begin
+         {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+      end;
+   end
+   else begin
+      MessageToContinue('Missing land cover file ' + LandCoverFName);
+   end;
+end;
+
+
+function LoadLC10LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
+var
+   Lat,Long : float32;
+begin
+   Lat := 0.5 * (bb.YMax + bb.YMin);
+   Long := 0.5 * (bb.XMax + bb.XMin);
+   LandCoverFName := GetLC10_fileName(Lat,Long);
    {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
    if FileExists(LandCoverFName) then begin
       Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);

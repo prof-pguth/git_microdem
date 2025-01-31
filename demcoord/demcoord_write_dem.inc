@@ -385,7 +385,7 @@ begin
       NumEnt := NumEnt + 1;
    {$EndIf}
 
-   GeoKeyEntries := 6;  //changed from 5 4/9/2023, to record the vertical datum
+   GeoKeyEntries := 6;  //changed from 5 4/9/2023, to record vertical datum
    WidthImage := DEMheader.NumCol;
    HeightImage := DEMheader.NumRow;
    BytesPer := TiffHeader.BitsPerSample div 8;

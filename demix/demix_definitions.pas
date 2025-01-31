@@ -112,7 +112,9 @@ const
    MedianParams : array[1..3] of shortstring = ('ELVD_MED','SLPD_MED','RUFD_MED');
 
    DiffParams : array[1..3] of shortstring = ('ELVD','SLPD','RUFD');
-   ParamSuffixes : array[1..5] of shortstring = ('_AVD','_STD','_RMSE','_MAE','_LE90');
+   ParamSuffixes : array[1..5] of shortstring = ('_AVD','_STD','_MAE','_RMSE','_LE90');
+   ShortParamSuffixes : array[1..5] of shortstring = ('AVD','STD','MAE','RMSE','LE90');
+   LongParamSuffixes : array[1..10] of shortstring = ('MIN','MAX','MEAN','AVD','STD','MED','RMSE','MAE','LE90','N');
 
    NumTileCharacters = 10;
    TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','BARREN_PC','FOREST_PC','RELIEF','URBAN_PC','WATER_PC','MIN_ELEV','MAX_ELEV');
@@ -124,10 +126,17 @@ const
    opByCluster = 1;
    opByDEM = 2;
 
+   TileStatsString = 'AREA,DEMIX_TILE,LAT,LONG';
+   AreaString = ',DEM,REF_TYPE,LAND_TYPE,LANDTYP_PC';
+   SlopeDiffStatsString = ',SLPD_MIN,SLPD_Max,SLPD_Mean,SLPD_AVD,SLPD_STD,SLPD_MED,SLPD_RMSE,SLPD_MAE,SLPD_LE90,SLPD_N';
+   ElevDiffStatsString = ',ELVD_MIN,ELVD_Max,ELVD_Mean,ELVD_AVD,ELVD_STD,ELVD_MED,ELVD_RMSE,ELVD_MAE,ELVD_LE90,ELVD_N';
+   RufDiffStatsString = ',RUFD_MIN,RUFD_Max,RUFD_Mean,RUFD_AVD,RUFD_STD,RUFD_MED,RUFD_RMSE,RUFD_MAE,RUFD_LE90,RUFD_N';
+
+
 const
-   MaxDEMIXDEM = 10;
+   MaxDEMIXDEM = 12;
    NumDEMIXtestDEM : integer = 0;
-   AllDEMIXTheDEMs : array[1..MaxDEMIXDEM] of shortstring = ('COP','ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA','SRTM','NASA','ASTER');
+   //AllDEMIXTheDEMs : array[1..MaxDEMIXDEM] of shortstring = ('COP','ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA','SRTM','NASA','ASTER');
 
 type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
@@ -141,10 +150,10 @@ const
    DEMIXanalysismode : integer = 1;
 
 var
-   DEMIXDEMTypeName : array[1..MaxDEMIXDEM] of shortstring;
-   DEMIXshort : array[1..MaxDEMIXDEM] of shortstring;
+   DEMIXDEMTypeName,
+   DEMIXshort     : array[1..MaxDEMIXDEM] of shortstring;
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
-   UseRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
+   NotRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
    CriteriaFamily : shortstring;
    DEMIXModeName : shortstring;
 
@@ -246,7 +255,7 @@ var
    DEMIX_GIS_dbName,
 
    AreaListFName,
-   DEMListFName,
+   //DEMListFName,
 
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
 
@@ -369,7 +378,9 @@ procedure MaskWaterInReferenceAndTestDEMs;
 procedure TrimReferenceDEMsToDEMIXtiles;
 
 function AreDEMIXscoresInDB(db : integer) : boolean;
-procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
+
 
 procedure CreateCopHeadToHeaddb(db : integer);
 procedure CriteriaInSSIM_FUV_db(db : integer);
@@ -708,7 +719,7 @@ var
 begin
    aFilter := '';
    for i := 1 to MaxDEMIXDEM do begin
-      CheckFieldForFilter(AllDEMIXTheDEMs[i]);
+      CheckFieldForFilter(DEMIXshort[i]);
    end;
 
    if (length(aFilter) = 0) or StrUtils.AnsiContainsText(UpperCase(GISdb[DBonTable].dbName),'TRANSPOSE') then begin
@@ -814,7 +825,8 @@ begin
    end;
 end;
 
-procedure ComputeAverageScoresForSelectedCriteria(db : integer; CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+
+procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
 var
    i,Opinions : integer;
    Criterion : shortstring;
@@ -831,8 +843,8 @@ begin
       Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
       if (CriteriaList.IndexOf(Criterion) <> -1) then begin
          inc(Opinions);
-         for i := 1 to NumDEMIXtestDEM do begin
-            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMIXShort[i] + '_SCR');
+         for i := 1 to DEMs.Count do begin
+            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMs[pred(i)] + '_SCR');
          end;
       end;
       GISdb[DB].MyData.Next;
@@ -840,17 +852,39 @@ begin
    for I := 1 to NumDEMIXtestDEM do Scores[i] := Scores[i] / Opinions;
    LowScore := 999;
    WinnerString := '';
-   for I := 1 to NumDEMIXtestDEM do begin
+   for I := 1 to DEMs.Count do begin
       if Scores[i] < LowScore - 0.001 then begin
          LowScore := Scores[i];
-         WinnerString := DEMIXShort[i];
+         WinnerString := DEMs[i];
          NumTies := 1;
       end
       else if Scores[i] < LowScore + 0.001 then begin
-         WinnerString := WinnerString + ';' + DEMIXShort[i];
+         WinnerString := WinnerString + ';' + DEMs[i];
          inc(NumTies);
       end;
    end;
+end;
+
+
+procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
+var
+   Criterion : shortstring;
+   i,Opinions : integer;
+begin
+   GISdb[DB].EmpSource.Enabled := false;
+   for i := 1 to NumDEMIXtestDEM do Scores[i] := 0;
+   Opinions := 0;
+   while not GISdb[DB].MyData.eof do begin
+      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
+      if (CriteriaList.IndexOf(Criterion) <> -1) then begin
+         inc(Opinions);
+         for i := 1 to DEMs.Count do begin
+            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMs[pred(i)]);
+         end;
+      end;
+      GISdb[DB].MyData.Next;
+   end;
+   for i := 1 to DEMs.Count do Scores[i] := Scores[i] / Opinions;
 end;
 
 

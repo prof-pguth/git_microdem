@@ -15,10 +15,8 @@ procedure TilesInEachElevRangeForTestAreas;
 var
    Results,Areas : tStringList;
    AreaName,aLine : Shortstring;
-   //NumPts : int64;
    fName : PathStr;
    Lat,Long : float64;
-   //Local : boolean;
    i,nt,NewDEM : Integer;
 
          procedure CheckSeries(fName : PathStr);
@@ -147,7 +145,7 @@ begin
                   DEMGlb[NewDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
                   {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('Loaded: ' + DEMGlb[NewDEM].KeyParams(true)); {$EndIf}
                   EditsDone := 0;
-                  MaskStripFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
+                  MaskGridFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
                   nt := DEMIXtilesOnDEM(NewDEM);
                   if (nt.Count = 0) then begin
                      {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('No full DEMIX tiles in ' + AreaName); {$EndIf}
@@ -225,7 +223,7 @@ begin
                   end
                   else begin;
                      EditsDone := 0;
-                     MaskStripFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
+                     MaskGridFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
                      DEMGlb[NewDEM].DEMCenterPoint(Lat,Long);
                      TStr := AreaName + ',' + RealToString(Lat,-12,4) +  ',' + RealToString(Long,-12,4) + ',' + IntToStr(nt.Count);
                      Results.Add(AreaName);
@@ -295,7 +293,7 @@ begin
                   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Removed 10 m points: ' + IntToStr(NumPts)); {$EndIf}
                   {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('Loaded: ' + DEMGlb[NewDEM].KeyParams(true)); {$EndIf}
                   EditsDone := 0;
-                  MaskStripFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
+                  MaskGridFromSecondGrid(NewDEM,RefDEM,msSecondMissing);
                   nt := DEMIXtilesOnDEM(NewDEM);
                   if (nt.Count = 0) then begin
                      {$If Defined(RecordDiluviumFull)} WriteLineToDebugFile('No full DEMIX tiles in ' + AreaName); {$EndIf}
@@ -430,7 +428,7 @@ begin {CreateDEMIXTestDEMsForArea}
                   {$If Defined(TrackPixelIs) or Defined(RecordDEMIXLoad)} WriteLineRoDebugFile('Moved to EGM2008, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
                end;
                EditsDone := 0;
-               MaskStripFromSecondGrid(TestDEMs[Ser],aRefDEM, msSecondMissing);
+               MaskGridFromSecondGrid(TestDEMs[Ser],aRefDEM, msSecondMissing);
                DEMGlb[TestDEMs[Ser]].SavePartOfDEMWithDataGeotiff(SaveName);
                {$If Defined(TrackPixelIs)} WriteLineRoDebugFile('Masked and saved, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
                Result := true;

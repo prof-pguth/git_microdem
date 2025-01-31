@@ -1466,7 +1466,6 @@ type
     N62: TMenuItem;
     Roundtointegers1: TMenuItem;
     PicksingleDEMseriesthisarea1: TMenuItem;
-    DEMIXrangescales1: TMenuItem;
     SSIM1: TMenuItem;
     SAGAChannelNetworkandBasins1: TMenuItem;
     GDALrasterizehapfiels1: TMenuItem;
@@ -1612,6 +1611,11 @@ type
     CreateReferenceDEMtoMatchThis1: TMenuItem;
     Usingtransformgrids1: TMenuItem;
     Undefined2: TMenuItem;
+    MainlandSpain1: TMenuItem;
+    ESAWorldCover10m1: TMenuItem;
+    ESAWorldCover10m2: TMenuItem;
+    Ressamplefor025to1secDTMs1: TMenuItem;
+    UpsampleDEMtomatchthisgrid1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2758,6 +2762,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Neighborhoodsurfaceequations1Click(Sender: TObject);
     procedure CreateReferenceDEMtoMatchThis1Click(Sender: TObject);
     procedure Undefined2Click(Sender: TObject);
+    procedure MainlandSpain1Click(Sender: TObject);
+    procedure ESAWorldCover10m1Click(Sender: TObject);
+    procedure ESAWorldCover10m2Click(Sender: TObject);
+    procedure Ressamplefor025to1secDTMs1Click(Sender: TObject);
+    procedure UpsampleDEMtomatchthisgrid1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3634,7 +3643,7 @@ var
    Findings : tStringlist;
    fName : PathStr;
    Bitmap : tMyBitmap;
-   TStr : shortstring;
+   //TStr : shortstring;
    MouseRoamAllMaps : boolean;
 
    function UseThisMap(MapCaption : shortstring) : boolean;
@@ -3938,10 +3947,10 @@ end;
 
 procedure TMapForm.OutlineGridOutlines;
 var
-   DEM,x,y,xp,yp,n,SymSize,db : integer;
-   bb,bbp : sfBoundBox;
-   Sum,Lat1,Long1 : float64;
-   z : float32;
+   DEM,x,y,xp,yp,n,{SymSize,}db : integer;
+   //bb{,bbp} : sfBoundBox;
+   //Sum{,Lat1,Long1} : float64;
+   //z : float32;
    fName : PathStr;
    DEMsWanted : tDEMbooleanArray;
 begin
@@ -5659,9 +5668,9 @@ end;
 procedure TMapForm.CompareDEMheaders1Click(Sender: TObject);
 const
    NumParams = 23;
-   Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW','PIXEL_IS','H_DATUM','DIG_DATUM',
+   Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW','PIXEL_IS','H_DATUM',
          'VERT_DATUM','UTM_ZONE','STORE_MINZ','STORE_MAXZ','MIN_Z','MAX_Z',
-        'X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072','GeoTIIF_2048');
+        'X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072','GeoTIIF_2048','SPACING_M');
 var
    i,j,Decs : integer;
    DEMsWanted : tDEMbooleanArray;
@@ -5696,27 +5705,23 @@ var
                7 : TStr := IntToStr(DEMGlb[i].DEMHeader.NumRow);
                8 : TStr := RasterPixelIsString(DEMGlb[i].DEMHeader.RasterPixelIsGeoKey1025);
                9 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
-               10 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
-               11 : TStr := VertDatumName(DEMGlb[i].DEMHeader.VerticalCSTypeGeoKey);
-               12 : TStr := IntToStr(DEMGlb[i].DEMHeader.UTMZone);
-               13 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMinElev,-12,-4);
-               14 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMaxElev,-12,-4);
-               15 : TStr := RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-4);
-               16 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
-               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
-               18 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
-               19 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
-               20 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
-               21 : begin
+               10 : TStr := VertDatumName(DEMGlb[i].DEMHeader.VerticalCSTypeGeoKey);
+               11 : TStr := IntToStr(DEMGlb[i].DEMHeader.UTMZone);
+               12 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMinElev,-12,-4);
+               13 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMaxElev,-12,-4);
+               14 : TStr := RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-4);
+               15 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
+               16 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
+               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
+               18 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
+               19 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
+               20 : begin
                         TStr := DEMGlb[i].DEMHeader.WKTString;
                         if (length(TStr) > 0) then TStr := IntToStr(length(TStr)) + ' chars'
                     end;
-               22 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
-               23 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
-         //EPSGCode3072,
-         //ProjectedCSTypeGeoKey3072 : int16;
-
-
+               21 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
+               22 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
+               23 : TStr := DEMGlb[i].HorizontalDEMSpacing(true);
             end;
             aLine := aline + ',' + tStr;
          end;
@@ -6288,7 +6293,7 @@ procedure TMapForm.Differencemaps1Click(Sender: TObject);
 var
    DEMsWanted : tDEMbooleanArray;
    i,j : integer;
-   fName : PathStr;
+   //fName : PathStr;
    DiffMaps : array[1..25] of integer;
    Maps : tStringList;
 begin
@@ -12810,13 +12815,15 @@ procedure TMapForm.CreateReferenceDEMtoMatchThis1Click(Sender: TObject);
 var
    HRDref,NewRef : integer;
    fName : PathStr;
+   TStr : shortstring;
 begin
    HRDref := OpenNewDEM(fName,false,'HRD source for reference DEM');
-   fName := MDtempDir + 'ref_dem.tif';
+   //if DEMGlb[MapDraw.DEMonMap].DEMheader.DEMused = ArcSecDEM then TStr := RealToString(
+   TStr := '';
+   fName := MDtempDir + 'ref_dem_' + Tstr + '.tif';
    DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff(fName);
    NewRef := OpenNewDEM(fName,false,'New reference DEM');
    DEMGlb[HRDref].ResampleByAveraging(true,fName,NewRef);
-
 end;
 
 procedure TMapForm.Createsurveylines1Click(Sender: TObject);
@@ -13584,6 +13591,16 @@ begin
    RightClickPopupMenu3.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
+
+procedure TMapForm.Ressamplefor025to1secDTMs1Click(Sender: TObject);
+var
+   NewName : shortstring;
+begin
+   GetString('NewBaseName',NewName,false,ReasonableTextChars);
+   CreateArcSecDEM(true,true,MapDraw.DEMonMap,PixelIsArea,0.25,0.25,MdTempDir + NewName +'_0.25sec.tif');
+   CreateArcSecDEM(true,true,MapDraw.DEMonMap,PixelIsArea,0.5,0.5,MdTempDir + NewName +'_0.5sec.tif');
+   CreateArcSecDEM(true,true,MapDraw.DEMonMap,PixelIsArea,1,1,MdTempDir + NewName +'_1sec.tif');
+end;
 
 procedure TMapForm.GetPositionData(var Length,Heading : float64; var Tstr2 : ShortString; DontVerify : boolean = false);
 var
@@ -15831,8 +15848,10 @@ end;
 
 procedure TMapForm.WGS84elllipsoid1Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
-   DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'WGS84';
+   DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(VertCSWGS84);
+
+   //DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSWGS84;
+   //DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'WGS84';
 end;
 
 procedure TMapForm.WGS84elllipsoidtoEGM200081Click(Sender: TObject);
@@ -17189,7 +17208,9 @@ end;
 
 procedure TMapForm.Undefined2Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := 0;
+   DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(084);
+
+   //DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := 0;
 end;
 
 procedure TMapForm.UndoSpeedButtonClick(Sender: TObject);
@@ -17222,8 +17243,6 @@ end;
 
 
 procedure TMapForm.Unsupervisedclassification1Click(Sender: TObject);
-//var
-  // i : integer;
 begin
    {$IfDef NoClustering}
    {$Else}
@@ -17241,6 +17260,30 @@ begin
 end;
 
 
+procedure TMapForm.UpsampleDEMtomatchthisgrid1Click(Sender: TObject);
+var
+   ref,NewRef : integer;
+   fName : PathStr;
+   TStr : shortstring;
+   i : integer;
+   FilesWanted : tstringList;
+begin
+   FilesWanted := tstringList.Create;
+   if GetMultipleFiles('DEM/grid to upsample',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+      TStr := '_0.15sec';
+      GetString('add to file name',TStr,false,ValidDOSFileNameChars);
+      for I := 0 to pred(FilesWanted.Count) do begin
+         fName := FilesWanted.Strings[i];
+         ref := OpenNewDEM(fName,true,'DEM to upsample');
+         fName := MDtempDir + 'upsample_' + DEMGlb[ref].AreaName + Tstr + '.tif';
+         DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff(fName);
+         NewRef := OpenNewDEM(fName,false,'');
+         DEMGlb[NewRef].SetEntireGridMissing;
+         DEMGlb[NewRef].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[NewRef].FullDEMGridLimits,ref,hfEverything);
+         CreateDEMSelectionMap(NewRef,true,MDDef.DefElevsPercentile,MDdef.DefElevMap);
+      end;
+   end;
+end;
 
 procedure TMapForm.Mergeallimages1Click(Sender: TObject);
 begin
@@ -18442,7 +18485,7 @@ procedure TMapForm.MaskFromSecondGrid(SecondGrid : integer; HowMask : tMaskGrid;
 var
    fName : PathStr;
 begin
-   {$IfDef RecordEditsDEM} WriteLineToDebugFile('TMapForm.MaskFromSecondGrid, mask mode=' + IntToStr(ord(HowMask))); {$EndIf}
+   {$IfDef RecordEditsDEM} WriteLineToDebugFile('TMapForm.MaskFromSecondGrid, mask mode=' + IntToStr(ord(HowMask)) + 'DEM to mask=' + IntToStr(MapDraw.DEMonMap) + '  mask=' + IntToStr(SecondGrid)); {$EndIf}
    fName := '';
    if (SecondGrid = 0) and (not GetDEM(SecondGrid,true,'masking')) then exit;
    if (SecondGrid < 0) then begin
@@ -18458,7 +18501,7 @@ begin
    EditsDone := 0;
    ParallelRowsDone := 0;
 
-   MaskStripFromSecondGrid(MapDraw.DEMonMap,SecondGrid,HowMask);
+   MaskGridFromSecondGrid(MapDraw.DEMonMap,SecondGrid,HowMask);
 
    EndProgress;
    ThreadsWorking := false;
@@ -18851,6 +18894,11 @@ begin
    ChangeDEMNowDoing(ShowMagneticVariation);
 end;
 
+
+procedure TMapForm.MainlandSpain1Click(Sender: TObject);
+begin
+   DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(5782);
+end;
 
 procedure TMapForm.Tissotindicatrix1Click(Sender: TObject);
 begin
@@ -19617,12 +19665,8 @@ begin
 end;
 
 procedure TMapForm.Correlationmatrix1Click(Sender: TObject);
-//var
-    //DEMsWanted : tDEMbooleanArray;
 begin
-    //GetMultipleDEMsFromList('Correlation matrix',DEMsWanted);
-    //DEMsWanted[MapDraw.DEMonMap] := true;
-    GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Correlation matrix'),'Correlation matrix');
+   GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Correlation matrix'),'Correlation matrix');
 end;
 
 procedure TMapForm.Counties1Click(Sender: TObject);
@@ -21370,8 +21414,8 @@ var
    NewHeader : tDEMheader;
    NewName : shortstring;
    fName : PathStr;
-   Projection : tMapProjection;
-   xmin,xmax,ymin,ymax, x,y : float64;
+   //Projection : tMapProjection;
+   xmin,xmax,ymin,ymax{, x,y} : float64;
 begin
    MapDraw.MapCorners.BoundBoxGeo := MapDraw.GetBoundBoxGeo;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap in, Map geo limits: ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo,4)); {$EndIf}
@@ -22005,6 +22049,16 @@ begin
    NewSatWindow(nsbGDVI);
 end;
 
+procedure TMapForm.ESAWorldCover10m1Click(Sender: TObject);
+begin
+   LoadLC10LandCover('',MapDraw.MapCorners.BoundBoxGeo,true);
+end;
+
+procedure TMapForm.ESAWorldCover10m2Click(Sender: TObject);
+begin
+   LoadLC10LandCover('',MapDraw.MapCorners.BoundBoxGeo,true);
+end;
+
 procedure TMapForm.Evapotranspirationprecipitationwaterbudget1Click(Sender: TObject);
 begin
    MakePOTETgraph(MapDraw.DEMonMap,RightClickLat,RightClickLong);
@@ -22032,7 +22086,8 @@ end;
 
 procedure TMapForm.Other1Click(Sender: TObject);
 begin
-   ReadDefault('EPSG for vertical datum',DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey);
+   DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(0);
+   //ReadDefault('EPSG for vertical datum',DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey);
 end;
 
 procedure TMapForm.OtherDEM1Click(Sender: TObject);
@@ -22550,16 +22605,19 @@ begin
    end;
 end;
 
+
 procedure TMapForm.NAVD881Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSNAVD88;
-   DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'NAD83';
+   DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(VertCSNAVD88);
+   //DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSNAVD88;
+   //DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'NAD83';
 end;
 
 procedure TMapForm.EGM2008Click(Sender: TObject);
 begin
-   DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
-   DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'EGM2008';
+   DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(VertCSEGM2008);
+   //DEMGlb[MapDraw.DEMonMap].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
+   //DEMGlb[MapDraw.DEMonMap].DEMMapProj.h_DatumCode := 'EGM2008';
 end;
 
 procedure TMapForm.NBR1Click(Sender: TObject);
@@ -24112,11 +24170,11 @@ end;
 
 function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : tMemo; LowZ,HighZ : float32) : integer;
 var
-  Col,Row,xp,yp,Bad,Shown : integer;
+  Col,Row{,xp,yp},Bad,Shown : integer;
   Lat,Long   : float64;
   z : float32;
   fName : PathStr;
-  Bitmap : tMyBitmap;
+  //Bitmap : tMyBitmap;
   DBlist : tStringList;
 begin
    if ValidDEM(ExtremeZDEM) then begin

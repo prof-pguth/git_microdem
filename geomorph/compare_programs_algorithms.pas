@@ -103,7 +103,7 @@ const
 
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
 var
-   NewMap1,NewMap2,NewMap3,NewMap4,NewMap : integer;
+   NewMap1,NewMap2,NewMap3,NewMap4 : integer;
    TStr : shortstring;
    DistanceNS,DistanceEW,DistanceAVG : float64;
    DEMList : tDEMBooleanArray;
@@ -229,7 +229,7 @@ var
 
    procedure OpenOneFilter(DEM : integer; Which : shortstring; FilterSize : integer);
    var
-      Evans,Horn,ZT,Diff,DiffCat : integer;
+      Evans,Horn,ZT{,Diff,DiffCat} : integer;
    begin
       MDDef.SlopeAlgorithm := smEvansYoung;
       Evans := CreateSlopeMapPercent(OpenMap,DEM,'md_evans_slope_' + Which,FilterSize);

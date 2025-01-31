@@ -229,6 +229,7 @@ procedure ScatterGramGrid(ScatterGram : boolean; DEMsWanted : tDEMbooleanArray; 
 
 procedure SSOforVATgrid(FeatureDEM,FeaturesDB,ElevDEM : integer);
 
+function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
 
 const
    SSIM_fudge : float64 = 1.0;

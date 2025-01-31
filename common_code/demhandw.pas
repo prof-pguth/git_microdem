@@ -1,11 +1,11 @@
 ﻿unit Demhandw;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -13,7 +13,6 @@
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IfDef Debug}
-      //{$Define RecordGMTConvert}
       //{$Define RecordTDemHandFormFormClose}
       //{$Define RecordDuckProblems}
       //{$Define RecordSOESTtides}
@@ -725,63 +724,59 @@ var
 begin
    {$IfDef RecordSOESTtides} WriteLineToDebugFile('MakeGraphFromSOESTtides in'); {$EndIf}
    MonthlyData := Copy(Uppercase(ExtractFileName(fName)),1,1) = 'M';
-//m files are months
-//deal with last line which all 9999 or spaces
+   Result := TThisBaseGraph.Create(Application);
+   with Result do begin
+     ThisTide := tstringList.Create;
+     ThisTide.LoadFromFile(fName);
+     OpenDataFile(rfile);
+     MenuStr := ThisTide.Strings[0];
 
-      Result := TThisBaseGraph.Create(Application);
+     StationName := trim(Copy(MenuStr,4,14));
+     Lat := 1.0 * strToInt(Copy(MenuStr,22,2)) + 1/60*StrToFloat(Copy(MenuStr,25,4));
+     if Copy(MenuStr,29,1) = 'S' then Lat := -Lat;
+     Long := 1.0 * strToInt(Copy(MenuStr,37,3)) + 1/60*StrToFloat(Copy(MenuStr,41,4));
+     if Copy(MenuStr,45,1) = 'W' then Long := -Long;
 
-      with Result do begin
-        ThisTide := tstringList.Create;
-        ThisTide.LoadFromFile(fName);
-        OpenDataFile(rfile);
-        MenuStr := ThisTide.Strings[0];
-
-        StationName := trim(Copy(MenuStr,4,14));
-        Lat := 1.0 * strToInt(Copy(MenuStr,22,2)) + 1/60*StrToFloat(Copy(MenuStr,25,4));
-        if Copy(MenuStr,29,1) = 'S' then Lat := -Lat;
-        Long := 1.0 * strToInt(Copy(MenuStr,37,3)) + 1/60*StrToFloat(Copy(MenuStr,41,4));
-        if Copy(MenuStr,45,1) = 'W' then Long := -Long;
-
-        Year1 := 9999;
-        Year2 := -9999;
-        GraphDraw.MinVertAxis := 9999;
-        GraphDraw.MaxVertAxis := -9999;
-        GraphDraw.VertLabel := 'Water Level (m)';
-        for i := 1 to pred(ThisTide.Count) do begin
-           MenuStr := ThisTide.Strings[i] + '                                                                       ';
-           Val(copy(MenuStr,12,4),Year,err);
-           if Year <> 9999 then begin
-              Val(copy(MenuStr,16,3),Day,err);
-              if (Year > Year2) then Year2 := Year;
-              if (Year < Year1) then Year1 := Year;
-              NumDays := YearLength(Year);
-              for j := 0 to 11 do begin
-                 if MonthlyData then TStr := trim(copy(MenuStr,16+j*5,5))
-                 else TStr := trim(copy(MenuStr,20+j*5,5));
-                 if (TStr <> '') then begin
-                    Val(TStr,Ht,err);
-                    if (abs(Ht) <> 9999) then begin
-                       Ht := 0.001 * Ht;
-                       if (Ht > GraphDraw.MaxVertAxis) then GraphDraw.MaxVertAxis := Ht;
-                       if (Ht < GraphDraw.MinVertAxis) then GraphDraw.MinVertAxis := Ht;
-                       if MonthlyData then v[1] := Year + (15 + j * 30) / 360
-                       else v[1] := Year + (Day + j) / NumDays;
-                       v[2] := Ht;
-                       BlockWrite(rfile,v,1);
-                    end;
+     Year1 := 9999;
+     Year2 := -9999;
+     GraphDraw.MinVertAxis := 9999;
+     GraphDraw.MaxVertAxis := -9999;
+     GraphDraw.VertLabel := 'Water Level (m)';
+     for i := 1 to pred(ThisTide.Count) do begin
+        MenuStr := ThisTide.Strings[i] + '                                                                       ';
+        Val(copy(MenuStr,12,4),Year,err);
+        if Year <> 9999 then begin
+           Val(copy(MenuStr,16,3),Day,err);
+           if (Year > Year2) then Year2 := Year;
+           if (Year < Year1) then Year1 := Year;
+           NumDays := YearLength(Year);
+           for j := 0 to 11 do begin
+              if MonthlyData then TStr := trim(copy(MenuStr,16+j*5,5))
+              else TStr := trim(copy(MenuStr,20+j*5,5));
+              if (TStr <> '') then begin
+                 Val(TStr,Ht,err);
+                 if (abs(Ht) <> 9999) then begin
+                    Ht := 0.001 * Ht;
+                    if (Ht > GraphDraw.MaxVertAxis) then GraphDraw.MaxVertAxis := Ht;
+                    if (Ht < GraphDraw.MinVertAxis) then GraphDraw.MinVertAxis := Ht;
+                    if MonthlyData then v[1] := Year + (15 + j * 30) / 360
+                    else v[1] := Year + (Day + j) / NumDays;
+                    v[2] := Ht;
+                    BlockWrite(rfile,v,1);
                  end;
               end;
            end;
         end;
-        CloseFile(rFile);
-        ThisTide.Free;
-        GraphDraw.MinHorizAxis := Year1;
-        GraphDraw.MaxHorizAxis := succ(Year2);
-        PadAxis(GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
-        {$IfDef RecordSOESTtides} WriteLineToDebugFile('MakeGraphFromSOESTtides graph redraw'); {$EndIf}
-        GraphDraw.GraphDrawn := true;
-        RedrawDiagram11Click(Nil);
-      end;
+     end;
+     CloseFile(rFile);
+     ThisTide.Free;
+     GraphDraw.MinHorizAxis := Year1;
+     GraphDraw.MaxHorizAxis := succ(Year2);
+     PadAxis(GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
+     {$IfDef RecordSOESTtides} WriteLineToDebugFile('MakeGraphFromSOESTtides graph redraw'); {$EndIf}
+     GraphDraw.GraphDrawn := true;
+     RedrawDiagram11Click(Nil);
+   end;
    {$IfDef RecordSOESTtides} WriteLineToDebugFile('MakeGraphFromSOESTtides out'); {$EndIf}
 end;
 
@@ -2015,7 +2010,6 @@ begin
       AllFile.Free;
    end;
 end;
-
 
 
 procedure TDemHandForm.ASCIIduplicates1Click(Sender: TObject);

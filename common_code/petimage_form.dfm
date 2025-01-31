@@ -861,6 +861,11 @@ object ImageDisplayForm: TImageDisplayForm
       Caption = 'Copy tColor to clipboard'
       OnClick = CopytColortoclipboard1Click
     end
+    object Changenumberofcolumns1: TMenuItem
+      Caption = 'Change number of columns'
+      Visible = False
+      OnClick = Changenumberofcolumns1Click
+    end
   end
   object PopupMenu2: TPopupMenu
     Left = 312

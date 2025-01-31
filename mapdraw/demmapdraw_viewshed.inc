@@ -304,8 +304,8 @@
 
 
 procedure TMapDraw.AddFanToMap(var WeaponsFan : tWeaponsFan);
-var
-   SummaryBitmap : tMyBitmap;
+//var
+   //SummaryBitmap : tMyBitmap;
 
          procedure PutFanInTable;
          begin

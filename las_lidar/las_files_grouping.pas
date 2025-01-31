@@ -34,8 +34,8 @@ unit las_files_grouping;
       //{$Define RecordLASheaderKeys}
       //{$Define RecordLASprojection}
       //{$Define RecordLASColors}
-      {$Define RemoveTiles}
-      {$Define RecordLASHist}
+      //{$Define RemoveTiles}
+      //{$Define RecordLASHist}
       //{$Define RecordLASHistFull}
       //{$Define RecordLAS_subset}
       //{$Define RecordHemisphere}
@@ -579,11 +579,11 @@ end;
 procedure tLas_files.CloudStatistics(TileTable : boolean; CloudStats : tCloudStats; DoText : boolean = true; DoGraph : boolean = true);
 const
    MaxIntensity = MaxWord;
-   LowElev = -100;
-   HighElev = 5000;
+   theLowElev = -100;
+   theHighElev = 5000;
 type
    tIntArray = array[0..MaxIntensity] of integer;
-   tElevArray = array[LowElev..HighElev] of integer;
+   tElevArray = array[theLowElev..theHighElev] of integer;
 var
    WithHeldPoints,OverlapPoints,z1,z99,
    k,RecsRead,z,First,Last,Total,TotalPoints,AirPoints : Integer;
@@ -651,14 +651,14 @@ var
             Tail : integer;
          begin
             PC := 0.01 * PC;
-            Max := HighElev;
+            Max := theHighElev;
             Tail := 0;
             repeat
                Tail := Tail + Hist[Max];
                dec(Max);
             until Tail > PC * TotalPoints;
 
-            Min := LowElev;
+            Min := theLowElev;
             Tail := 0;
             repeat
                Tail := Tail + Hist[Min];
@@ -705,7 +705,7 @@ var
             New(Blues);
             New(Greens);
             New(NIRs);
-            for I := LowElev to HighElev do Elevs[i] := 0;
+            for I := theLowElev to theHighElev do Elevs[i] := 0;
             for i := 0 to MaxLASreturns do Return[i] := 0;
             for i := 0 to MaxLasCat do Coding[i] := 0;
             for i := 0 to 255 do UserDataHist[i] := 0;
@@ -748,14 +748,16 @@ var
                   {$IfDef RecordListFilesProcessed} WriteLineToDebugFile('ReadPointCloudPropertiesFromTable, cloud utm box ' + sfBoundBoxToString(UTMBBox,1)); {$EndIf}
                end;
 
+               (*
                if MDDef.LASPC99 then begin
                   MaxZ := IndexTable.FindFieldMax('ELEV_99');
                   MinZ := IndexTable.FindFieldMin('ELEV_1');
                end
                else begin
+               *)
                   MaxZ := IndexTable.FindFieldMax('MAX_ELEV');
                   MinZ := IndexTable.FindFieldMin('MIN_ELEV');
-               end;
+               //end;
                HasIntensity := IndexTable.FieldHasChar('HAS_INTEN','Y');
                if HasIntensity then begin
                   Inten_99 := round(IndexTable.FindFieldMax('INTEN_99'));
@@ -767,6 +769,7 @@ var
                HasClassification := IndexTable.FieldHasChar('HAS_CLASS','Y');
                HasRGB := IndexTable.FieldHasChar('HAS_RGB','Y');
                if HasRGB then begin
+                  (*
                   if MDDef.LASPC99 then begin
                      Max_Red := round(IndexTable.FindFieldMax('RED_99'));
                      Min_Red := round(IndexTable.FindFieldMax('RED_1'));
@@ -776,24 +779,27 @@ var
                      Min_Blue := round(IndexTable.FindFieldMax('BLUE_1'));
                   end
                   else begin
+                  *)
                      Max_Red := round(IndexTable.FindFieldMax('MAX_RED'));
                      Min_Red := round(IndexTable.FindFieldMax('MIN_RED'));
                      Max_Green := round(IndexTable.FindFieldMax('MAX_GREEN'));
                      Min_Green := round(IndexTable.FindFieldMax('MIN_GREEN'));
                      Max_Blue := round(IndexTable.FindFieldMax('MAX_BLUE'));
                      Min_Blue := round(IndexTable.FindFieldMax('MIN_BLUE'));
-                  end;
+                  //end;
                end;
                HasNIR := IndexTable.FieldHasChar('HAS_NIR','Y');
                if HasNIR then begin
+                  (*
                   if MDDef.LASPC99 then begin
                      Max_NIR := round(IndexTable.FindFieldMax('MAX_99'));
                      Min_NIR := round(IndexTable.FindFieldMax('MIN_1'));
                   end
                   else begin
+                  *)
                      Max_NIR := round(IndexTable.FindFieldMax('MAX_NIR'));
                      Min_NIR := round(IndexTable.FindFieldMax('MIN_NIR'));
-                  end;
+                  //end;
                end;
                HasTime := IndexTable.FieldHasChar('HAS_TIME','Y');
                HasPointID := IndexTable.FieldHasChar('HAS_PTID','Y');
@@ -938,15 +944,34 @@ var
                  procedure TimeForElevations;
                  var
                     i : integer;
+                    TStr : shortstring;
                  begin
-                    First := LowElev;
-                    While Elevs[First] = 0 do inc(First);
-                    Last := HighElev;
-                    While Elevs[Last] = 0 do dec(Last);
-                    Cats.Add('Elev range: ' + IntToStr(First) + ' to ' + IntToStr(Last));
-                    ElevFindPercentileRange(0.01,Elevs,z1,z99);
-                    ElevFindPercentileRange(0.1,Elevs,z1,z99);
-                    ElevFindPercentileRange(1,Elevs,z1,z99);
+                    (*
+                    if (LowElev < theLowElev) or (HighElev > theHighElev) then begin
+                       MessageToContinue('Time for elevation Problem');
+                    end;
+                    *)
+                    First := theLowElev;
+                    While (Elevs[First] = 0) and (First < theHighElev) do inc(First);
+                    Last := theHighElev;
+                    While (Elevs[Last] = 0) and  (Last > theLowElev) do dec(Last);
+                    (*
+                    if First >= Last then begin
+                       exit;
+                    end;
+                    *)
+                    TStr := 'Elev range: ' + IntToStr(First) + ' to ' + IntToStr(Last);
+                    Cats.Add(TStr);
+                    {$IfDef RecordLASHistfull} WriteLineToDebugFile(ExtractFileNameNoExt(LasData.LasFileName) + '  ' + TStr); {$EndIf}
+                    if (Last-First) < 5 then begin
+                       z1 := First;
+                       z99 := last;
+                    end
+                    else begin
+                       ElevFindPercentileRange(0.01,Elevs,z1,z99);
+                       ElevFindPercentileRange(0.1,Elevs,z1,z99);
+                       ElevFindPercentileRange(1,Elevs,z1,z99);
+                    end;
                     Cats.Add('');
 
                     if DoGraph then begin

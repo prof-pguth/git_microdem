@@ -1,12 +1,11 @@
 unit tiger_address;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -121,7 +120,7 @@ begin
              else OnLeft := false;
              if (GISdb[DBonTable].MyData.GetFieldByNameAsString(FromRightFName) <> '') and (GISdb[DBonTable].MyData.GetFieldByNameAsString(ToRightFName) <> '') then begin
                   FromRight := GISdb[DBonTable].MyData.GetFieldByNameAsInteger(FromRightFName);
-                  ToRight   := GISdb[DBonTable].MyData.GetFieldByNameAsInteger(ToRightFName);
+                  ToRight := GISdb[DBonTable].MyData.GetFieldByNameAsInteger(ToRightFName);
                   OnRight := (StreetNum >= FromRight) and (StreetNum <= ToRight);
                   if OnRight then begin
                      Fraction := (StreetNum - FromRight) / (ToRight - FromRight);

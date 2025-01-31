@@ -3755,8 +3755,8 @@ object dbtablef: Tdbtablef
     end
   end
   object DEMIXPopupMenu1: TPopupMenu
-    Left = 624
-    Top = 480
+    Left = 656
+    Top = 472
     object OpenDEMIXgraphs1: TMenuItem
       Caption = 'Open DEMIX graphs'
       OnClick = OpenDEMIXgraphs1Click
@@ -3824,7 +3824,6 @@ object dbtablef: Tdbtablef
     end
     object GraphwinningpercentagebyDEM1: TMenuItem
       Caption = 'Graph winning percentage by DEM'
-      OnClick = GraphwinningpercentagebyDEM1Click
     end
     object N51: TMenuItem
       Caption = '-'
@@ -4083,6 +4082,10 @@ object dbtablef: Tdbtablef
     end
     object N47: TMenuItem
       Caption = '-'
+    end
+    object Graphforatile1: TMenuItem
+      Caption = 'Graph by tile, with all difference distribution statistics'
+      OnClick = Graphforatile1Click
     end
     object Comparerankingswithdifferentcriteria1: TMenuItem
       Caption = 'Compare rankings with different criteria'

@@ -19,7 +19,7 @@
       //{$Define RecordLASprojection}
       //{$Define RecordTilePlotSummary}
       //{$Define RecordLASfiles}
-      //{$Define RecordWKT}
+      {$Define RecordWKT}
       //{$Define RecordVarLenRec}
       //{$Define RecordFirstPulse}
       //{$Define RecordReprojectLAS}
@@ -1003,7 +1003,7 @@ var
 var
    NumRead : integer;
    Hemi : ANSIchar;
-begin
+begin {constructor tLAS_data.Create}
    {$If Defined(RecordCreateEveryFile) or Defined(RecordWKT)} WriteLineToDebugFile('tLAS_data.Create for ' + FileName); {$EndIf}
    if (UpperCase(ExtractFileExt(FileName)) = '.LAZ') then begin
      MessageToContinue('Decompress LAZ file before use');
@@ -1575,6 +1575,7 @@ begin
    if (LidarPointType = 5) then New(LidarPoints5);
    if (LidarPointType in [6..8]) then New(LidarPoints6);
    if (LidarPointType = 7) then New(LidarPoints7);
+   if (LidarPointType = 8) then New(LidarPoints8);
    Seek(LasFile,LasHeader.OffsetToData);
    ReadsRequired := GetHowManyReadsRequired;
    if DataHasExtraBytes then New(BB);
@@ -1584,10 +1585,11 @@ end;
 procedure tLAS_data.ReadPoints(var RecsRead: integer);
 var
    i,j : integer;
+   BytesRead : integer;
 begin
    if DataHasExtraBytes then begin
-       BlockRead(LasFile,bb^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       RecsRead := RecsRead div LasHeader.PointDataRecLen;
+       BlockRead(LasFile,bb^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       RecsRead := BytesRead div LasHeader.PointDataRecLen;
        if (LidarPointType = 0) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints0^[i],BaseLength);
        if (LidarPointType = 1) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints1^[i],BaseLength);
        if (LidarPointType = 2) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints2^[i],BaseLength);
@@ -1599,19 +1601,18 @@ begin
        if (LidarPointType = 8) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints8^[i],BaseLength);
    end
    else begin
-       if (LidarPointType = 0) then BlockRead(LasFile,LidarPoints0^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 1) then BlockRead(LasFile,LidarPoints1^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 2) then BlockRead(LasFile,LidarPoints2^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 3) then BlockRead(LasFile,LidarPoints3^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 4) then BlockRead(LasFile,LidarPoints4^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 5) then BlockRead(LasFile,LidarPoints5^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
+       if (LidarPointType = 0) then BlockRead(LasFile,LidarPoints0^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 1) then BlockRead(LasFile,LidarPoints1^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 2) then BlockRead(LasFile,LidarPoints2^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 3) then BlockRead(LasFile,LidarPoints3^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 4) then BlockRead(LasFile,LidarPoints4^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 5) then BlockRead(LasFile,LidarPoints5^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
 
    //Las 1.4 new types
-       if (LidarPointType = 6) then BlockRead(LasFile,LidarPoints6^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 7) then BlockRead(LasFile,LidarPoints7^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-       if (LidarPointType = 8) then BlockRead(LasFile,LidarPoints8^,MaxLASPtsToRead*LasHeader.PointDataRecLen,RecsRead);
-
-       RecsRead := RecsRead div LasHeader.PointDataRecLen;
+       if (LidarPointType = 6) then BlockRead(LasFile,LidarPoints6^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 7) then BlockRead(LasFile,LidarPoints7^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       if (LidarPointType = 8) then BlockRead(LasFile,LidarPoints8^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
+       RecsRead := BytesRead div LasHeader.PointDataRecLen;
    end;
 
     if (LidarPointType in [1..5,7..8]) then begin

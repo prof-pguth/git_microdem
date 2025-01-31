@@ -199,22 +199,6 @@ type
 
    function CreateAspectRose(DEM : integer) : tThisBaseGraph;
 
-(*
-type
-   tSSOVarAnalysis = object
-      protected
-      private
-      public
-         DEM  : Integer;
-         SSOvars : tSSOvars;
-         M,S  : ^tTrendMatrix;
-         s2   : VectorType;
-         constructor Create(WhichDEM : integer);
-         destructor Destroy;
-         procedure NormalsInBox(GridLimits : tGridLimits);
-         function ComputeEigenVectors : boolean;
-   end;
-*)
 
 type
    tDEMDataSet = class
@@ -310,9 +294,10 @@ type
          function SWcornerString : ShortString;
          function PixelIsString : AnsiString;
          function DEMMapProjectionString : shortstring;
-         function DEMHorizontalSpacingSummary  : ShortString;
          function HorizontalDEMSpacing(short : boolean = false) : ShortString;
          function SimpleHorizontalDEMSpacing(BoxSize : integer) : ShortString;
+         function HorizontalDEMSpacingInMeters : ShortString;
+
          function GridDefinition : ShortString;
          function DEMSizeString : shortstring;
          function ColsRowsString : ShortString;
@@ -480,7 +465,6 @@ type
             procedure DrawCrossTrackProfile(var Graf : tThisBaseGraph; inLat,inLong,Azimuth,Distance,Spacing : float64);
          {$EndIf}
 
-
          procedure SetRasterPixelIsGeoKey1025(DoHalfPixelShift : boolean);
          function GetDEMCompositeDatumString : shortstring;
 
@@ -554,6 +538,8 @@ type
          {$Else}
             procedure SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
          {$EndIf}
+
+         procedure AssignVerticalDatum(NewVertDatumCode : integer);
 
          function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
          function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
@@ -796,7 +782,8 @@ procedure GetDefaultWorldFile(var ReadFileName : PathStr);
 function FindExistingWorldFile(var ReadFileName : PathStr) : boolean;
 function ValidWorldFile(FileName : PathStr) : boolean;
 
-procedure MaskStripFromSecondGrid(FirstGrid,SecondGrid : integer;  HowMask : tMaskGrid);
+procedure MaskGridFromSecondGrid(GridToMask,GridToUseAsMask : integer; HowMask : tMaskGrid);
+
 
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
 function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = 1;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
@@ -958,6 +945,31 @@ var
       WriteLineToDebugFile(Where + ' ' + AreaName + '  geo box  ' +  sfBoundBoxToString(DEMBoundBoxGeo) + ' proj box  ' +  sfBoundBoxToString(DEMBoundBoxProjected));
    end;
 {$EndIf}
+
+procedure tDEMDataSet.AssignVerticalDatum(NewVertDatumCode : integer);
+begin
+   if DEMheader.VerticalCSTypeGeoKey = 0 then begin
+   end
+   else if DEMheader.VerticalCSTypeGeoKey = -1 then begin
+      ReadDefault('EPSG code for new vertical datum',NewVertDatumCode);
+   end
+   else if DEMheader.VerticalCSTypeGeoKey = NewVertDatumCode then begin
+      MessageToContinue('DEM already assigned that vertical datum');
+      exit;
+   end
+   else if NewVertDatumCode = 0 then begin
+      if not AnswerIsYes('DEM was assigned ' + IntToStr(DEMheader.VerticalCSTypeGeoKey) + '; Change now to undefined') then exit;
+   end
+   else if DEMheader.VerticalCSTypeGeoKey <> NewVertDatumCode then begin
+      if Not AnswerIsYes('DEM was assigned ' + IntToStr(DEMheader.VerticalCSTypeGeoKey) + '; Change now to ' + IntToStr(NewVertDatumCode)) then exit;
+   end;
+   DEMheader.VerticalCSTypeGeoKey := NewVertDatumCode;
+   if AnswerIsYes('Save DEM with new vertical datum') then begin
+      WriteNewFormatDEM(DEMFileName);
+   end;
+end;
+
+
 
 
 procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
@@ -1367,40 +1379,40 @@ begin
 end;
 
 
-procedure MaskStripFromSecondGrid(FirstGrid,SecondGrid : integer; HowMask : tMaskGrid);
+procedure MaskGridFromSecondGrid(GridToMask,GridToUseAsMask : integer; HowMask : tMaskGrid);
 var
    Col,Row,xoffset,yoffset,Unchanged,AlreadyMiss : integer;
    z1,z2 : float32;
    SameGrid,Found : boolean;
 begin
-   {$IfDef RecordMaskFromSecondGrid}  WriteLineToDebugFile('Masking ' + DEMGlb[FirstGrid].AreaName + ' with ' +  DEMGlb[SecondGrid].AreaName); {$EndIf}
-   SameGrid := DEMGlb[FirstGrid].SecondGridJustOffset(SecondGrid,xoffset,yoffset);
+   {$IfDef RecordMaskFromSecondGrid}  WriteLineToDebugFile('Masking ' + DEMGlb[GridToMask].AreaName + ' with ' +  DEMGlb[GridToUseAsMask].AreaName); {$EndIf}
+   SameGrid := DEMGlb[GridToMask].SecondGridJustOffset(GridToUseAsMask,xoffset,yoffset);
    Unchanged := 0;
    AlreadyMiss := 0;
-   for Row := 0 to pred(DEMGlb[FirstGrid].DEMHeader.NumRow) do begin
+   for Row := 0 to pred(DEMGlb[GridToMask].DEMHeader.NumRow) do begin
       //TInterlocked.Increment(ParallelRowsDone);
-      if (ParallelRowsDone Mod 250 = 0) then UpdateProgressBar(ParallelRowsDone / DEMGlb[FirstGrid].DEMheader.NumRow);
-      for Col := 0 to pred(DEMGlb[FirstGrid].DEMHeader.NumCol) do begin
-         if DEMGlb[FirstGrid].GetElevMetersOnGrid(Col,Row,z1) then begin
-            if SameGrid then Found := DEMGlb[SecondGrid].GetElevMetersOnGrid(Col+Xoffset,Row+YOffset,z2)
+      if (ParallelRowsDone Mod 250 = 0) then UpdateProgressBar(ParallelRowsDone / DEMGlb[GridToMask].DEMheader.NumRow);
+      for Col := 0 to pred(DEMGlb[GridToMask].DEMHeader.NumCol) do begin
+         if DEMGlb[GridToMask].GetElevMetersOnGrid(Col,Row,z1) then begin
+            if SameGrid then Found := DEMGlb[GridToUseAsMask].GetElevMetersOnGrid(Col+Xoffset,Row+YOffset,z2)
             else begin
-               Found := DEMGlb[FirstGrid].GetElevMetersFromSecondDEMLatLong(SecondGrid,Col,Row,z2);
+               Found := DEMGlb[GridToMask].GetElevMetersFromSecondDEMLatLong(GridToUseAsMask,Col,Row,z2);
             end;
             if Found then begin
                if (HowMask = msSecondValid) then begin
-                  DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                  DEMGlb[GridToMask].SetGridMissing(Col,Row);
                   //TInterlocked.Increment(EditsDone);
                   inc(EditsDone);
                end
                else if (HowMask = msSeaLevel) then begin
                   if abs(z2) < 0.001 then begin
-                     DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                     DEMGlb[GridToMask].SetGridMissing(Col,Row);
                      //TInterlocked.Increment(EditsDone);
                      inc(EditsDone);
                   end;
                end
                else if ((HowMask = msAboveSecond) and (z1 > z2)) or ((HowMask = msBelowSecond) and (z1 < z2)) then begin
-                  DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                  DEMGlb[GridToMask].SetGridMissing(Col,Row);
                   //TInterlocked.Increment(EditsDone);
                   inc(EditsDone);
                end
@@ -1408,7 +1420,7 @@ begin
             end
             else begin
                if (HowMask = msSecondMissing) then begin
-                  DEMGlb[FirstGrid].SetGridMissing(Col,Row);
+                  DEMGlb[GridToMask].SetGridMissing(Col,Row);
                   //TInterlocked.Increment(EditsDone);
                   inc(EditsDone);
                end
@@ -3963,11 +3975,12 @@ begin
    end;
 end;
 
+(*
 function tDEMDataSet.DEMHorizontalSpacingSummary : ShortString;
 begin
    Result := DEMModel + '  (' + ptTrim(DEMDefs.SpacingUnits[DEMheader.DataSpacing]) + ')';
 end;
-
+*)
 
 function tDEMDataSet.GridDefinition : ShortString;
 var
@@ -3988,6 +4001,14 @@ begin
    else Result := RealToString(DEMheader.DEMySpacing,-12,-8) + DEMDefs.SpacingUnits[DEMheader.DataSpacing];
 end;
 
+function tDEMDataSet.HorizontalDEMSpacingInMeters : ShortString;
+begin
+   if (DEMheader.DataSpacing in [SpaceDegrees]) then begin
+      Result := '~' + RealToString(AverageXSpace,-12,2) + 'x' +  RealToString(AverageYSpace,-12,2) + ' m';
+   end
+   else Result := RealToString(DEMheader.DEMySpacing,-12,-8) + 'x' + RealToString(DEMheader.DEMxSpacing,-12,-8) + DEMDefs.SpacingUnits[DEMheader.DataSpacing];
+
+end;
 
 function tDEMDataSet.HorizontalDEMSpacing(short : boolean = false) : ShortString;
 begin
@@ -3995,9 +4016,9 @@ begin
       if (DEMheader.DEMySpacing > 0.25) then Result := RealToString(DEMheader.DEMySpacing,-12,-8) + 'x' + RealToString(DEMheader.DEMxSpacing,-12,-8) +  '°'
       else if (DEMheader.DEMySpacing > 1 / 119) then Result := RealToString(DEMheader.DEMySpacing*60,-12,-4) + 'x' + RealToString(DEMheader.DEMxSpacing*60,-12,-4) +  ''''
       else Result := RealToString(DEMheader.DEMxSpacing*3600,-12,-4) + 'x' + RealToString(DEMheader.DEMySpacing*3600,-12,-4) +  '"';
-      if not short then Result := Result +  ' (about ' + RealToString(AverageXSpace,-12,2) + 'x' +  RealToString(AverageYSpace,-12,2) + ' m)';
+      Result := Result +  ' (' + HorizontalDEMSpacingInMeters + ')';
    end
-   else Result := RealToString(DEMheader.DEMySpacing,-12,-8) + 'x' + RealToString(DEMheader.DEMxSpacing,-12,-8) + DEMDefs.SpacingUnits[DEMheader.DataSpacing];
+   else Result := HorizontalDEMSpacingInMeters;
    if not short then Result := '  Horiz: ' + Result;
 end;
 

@@ -142,7 +142,7 @@ function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; Neighborhoo
 
 function GridDiffernces(PercentDifference : boolean = false) : integer;
 procedure GridDifferncesBothInterpolationBasis(PercentDifference : boolean = false);
-function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '';
+function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '';
        PercentDifference : boolean = false) : integer;
 
 procedure PickAspectDifferenceMap(DEM,Window : integer);
@@ -241,7 +241,7 @@ end;
 
 
 
-function MakeDifferenceMap(Map1,Map2,GridResultionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = ''; PercentDifference : boolean = false) : integer;
+function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = ''; PercentDifference : boolean = false) : integer;
 var
    Col,Row,mt,OtherGrid,ThisGrid,xoff,yoff  : integer;
    z1,z2 : float32;
@@ -282,7 +282,7 @@ begin
          end
          else DEMGlb[Result].AreaName := TheAreaName;
 
-         DEMGlb[Result].DEMheader := DEMGlb[GridResultionToUse].DEMheader;
+         DEMGlb[Result].DEMheader := DEMGlb[GridResoltionToUse].DEMheader;
          DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := 0;  //difference not referred to a datum
          if DEMGlb[Result].DEMheader.DEMPrecision = ByteDEM then DEMGlb[Result].DEMheader.DEMPrecision := SmallIntDEM
          else DEMGlb[Result].DEMheader.DEMPrecision := FloatingPointDEM;
@@ -290,7 +290,7 @@ begin
          if DEMGlb[Map1].ElevationDEM and DEMGlb[Map2].ElevationDEM then DEMGlb[Result].DEMheader.ElevUnits := euElevDiff else DEMGlb[Result].DEMheader.ElevUnits := euDifference;
 
          DEMGlb[Result].DEMstatus := dsUnsaved;
-         if (GridResultionToUse = Map1) then begin
+         if (GridResoltionToUse = Map1) then begin
             ThisGrid := Map1;
             OtherGrid := Map2;
          end
@@ -330,7 +330,7 @@ begin
             end {for Row};
          end {for Col};
          EndProgress;
-         if (GridResultionToUse = Map2) then begin
+         if (GridResoltionToUse = Map2) then begin
             DEMGlb[Result].MultiplyGridByConstant(-1);
          end;
          DEMGlb[Result].CheckMaxMinElev;

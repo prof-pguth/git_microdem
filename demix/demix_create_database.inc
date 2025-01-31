@@ -268,7 +268,7 @@ var
    ErrorLog : tStringList;
    ElevFiles,LegendFiles : tStringList;
 
-   {$IfDef ExperimentalCriteria} {$I experiment_demix_criteria.inc}  {$EndIf}
+   {$IfDef ExperimentalDEMIXcriteria} {$I experiment_demix_criteria.inc}  {$EndIf}
 
 
          procedure OpenDataStructures;
@@ -316,21 +316,14 @@ var
 
 
          procedure InitializeStringLists;
-         const
-            AreaString = ',DEM,REF_TYPE,LAND_TYPE,LANDTYP_PC';
-            SlopeDiffStatsString = ',SLPD_MIN,SLPD_Max,SLPD_Mean,SLPD_AVD,SLPD_STD,SLPD_MED,SLPD_RMSE,SLPD_MAE,SLPD_LE90,SLPD_N';
-            ElevDiffStatsString = ',ELVD_MIN,ELVD_Max,ELVD_Mean,ELVD_AVD,ELVD_STD,ELVD_MED,ELVD_RMSE,ELVD_MAE,ELVD_LE90,ELVD_N';
-            RufDiffStatsString = ',RUFD_MIN,RUFD_Max,RUFD_Mean,RUFD_AVD,RUFD_STD,RUFD_MED,RUFD_RMSE,RUFD_MAE,RUFD_LE90,RUFD_N';
-
-            {$IfDef ExperimentalCriteria}
+         {$IfDef ExperimentalDEMIXcriteria}
+            const
                ElevMomentsString = 'ELEV_MIN,ELEV_Max,ELEV_Mean,ELEV_ADEV,ELEV_STD,ELEV_SKEW,ELEV_KURT,ELEV_MED,N';
                SlopeMomentsString = 'SLP_MIN,SLP_Max,SLP_Mean,SLP_ADEV,SLP_STDV,SLP_SKEW,SLP_KURT,SLP_MED,SLP_N';
 
                SlopeMomentsDiffString = 'SDIFF_MIN,SDIFF_Max,SDIFF_Mean,SDIFF_STD,SDIFF_SKEW,SDIFF_KURT,SDIFF_MED,SDIFF_N';
                ElevMomentsDiffString = 'EDIFF_MIN,EDIFF_Max,EDIFF_Mean,EDIFF_STD,EDIFF_SKEW,EDIFF_KURT,EDIFF_MED,EDIFF_N';
-            {$EndIf}
-
-            TileStatsString = 'AREA,DEMIX_TILE,LAT,LONG';
+         {$EndIf}
          begin
             TileStats := tStringList.Create;
             TileStats.Add(TileStatsString);
@@ -344,7 +337,7 @@ var
             SlopeDiffStats := tStringList.Create;
             SlopeDiffStats.Add(TileStatsString + AreaString + SlopeDiffStatsString);
 
-            {$IfDef ExperimentalCriteria} CreateExperimentalStringLists; {$EndIf}
+            {$IfDef ExperimentalDEMIXcriteria} CreateExperimentalStringLists; {$EndIf}
 
             {$IfDef RecordDEMIXFull} WriteLineToDebugFile('InitializeStringLists out, string lists created'); {$EndIf}
          end;
@@ -395,7 +388,7 @@ var
             ProcessStringList('_elev_diff_stats',ElevDiffStats,true);
             ProcessStringList('_ruff_diff_stats',RufDiffStats,true);
             ProcessStringList('_slope_diff_stats',SlopeDiffStats,true);
-            {$IfDef ExperimentalCriteria} ProcessExperimentalStringLists; {$EndIf}
+            {$IfDef ExperimentalDEMIXcriteria} ProcessExperimentalStringLists; {$EndIf}
          end;
 
 
@@ -429,13 +422,6 @@ var
                      end;
                   end;
 
-                  function MomentStatsString(MomentVar : tMomentVar) : shortstring;
-                  begin
-                     Result := RealToString(MomentVar.MinZ,-8,2) + ',' + RealToString(MomentVar.MaxZ,-8,2) + ',' + RealToString(MomentVar.Mean,-8,2) + ',' +
-                         RealToString(MomentVar.avg_dev,-8,2) + ',' + RealToString(MomentVar.std_dev,-8,2) + ',' + RealToString(MomentVar.median,-8,2) + ',' + RealToString(MomentVar.rmse,-8,2)  + ',' +
-                         RealToString(MomentVar.mae,-8,2)  + ',' + RealToString(MomentVar.LE90,-12,-2) + ',' + IntToStr(MomentVar.NPts);
-                  end;
-
 
                   function MomentDifferenceString(aMomentVar,RefMomentVar : tMomentVar) : shortstring;
                   begin
@@ -458,7 +444,7 @@ var
                                  moment(thezs,theMoments,msAll);
                                  for i := 0 to pred(theMoments.NPts) do thezs[i] := abs(thezs[i]);
                                  theMoments.LE90 := Percentile(90,thezs,theMoments.NPts,false);
-                                 aline := TileHeader + LineHeader(aTestDEM,RefType)  + RealToString(Percent,-12,-2) + ',' + MomentStatsString(theMoments);
+                                 aline := TileHeader + LineHeader(aTestDEM,RefType)  + RealToString(Percent,-12,-2) + ',' + DEMIXMomentStatsString(theMoments);
                                  sl.Add(aLine);
                                  inc(Result);
                                  {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile(aLine); {$EndIf}
@@ -697,7 +683,6 @@ var
             LongCent := 0.5 * (bb.xmax + bb.xmin);
             {$IfDef RecordUseTile} if not Result then WriteLineToDebugFile('Not doing tile=' + DEMIXTile + '  fill=' + IntToStr(round(GridFull))); {$EndIf}
          end;
-
 
 
          procedure OpenDataStructures;
@@ -972,7 +957,7 @@ var
          AreaName : shortstring;
          MergeName : PathStr;
          TransposeNames : tStringList;
-         i : integer;
+         i,TestDEM2 : integer;
       begin {procedure ProcessNewDB}
          {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile('ProcessNewDB in'); {$EndIf}
          HeavyDutyProcessing := true;
@@ -985,6 +970,7 @@ var
              RefDTM := 0;
              fNameTest := GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('DTM');
              if FileExists(fNameTest) then TestDEM := OpenNewDEM(fNameTest,false);
+
              fNameRef := GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('REF_DTM');
              if FileExists(fNameRef) then RefDTM := OpenNewDEM(fNameRef,false);
              if ValidDEM(TestDEM) and ValidDEM(RefDTM) then begin
@@ -996,16 +982,26 @@ var
                   TileHeader := AreaName + ',' + GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('DEMIX_TILE') + ',' +
                          RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',';
 
-                  NewDEMName := 'WD-NEO';
+                  NewDEMName := 'NEODTM';
                   {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile('Do test DEM ' + NewDEMName); {$EndIf}
                   CompareDifferencesToReferenceDEM(TestDEM,RefDTM,'DTM',DEMGlb[TestDEM].FullDEMGridLimits);
 
+                  fNameTest := GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('DTM');
+                  fNameTest := StringReplace(fNameTest, 'DTM', 'DSM',[rfIgnoreCase,rfReplaceAll]);
+
+                  if FileExists(fNameTest) then begin
+                     TestDEM2 := OpenNewDEM(fNameTest,false);
+                     NewDEMName := 'NEODSM';
+                     CompareDifferencesToReferenceDEM(TestDEM2,RefDTM,'DTM',DEMGlb[TestDEM].FullDEMGridLimits);
+                  end;
+
                   InterpolateOneSecDEM('ALOS','AW3D30_GLOBAL');
                   InterpolateOneSecDEM('COP','COP30_HH');
+                  InterpolateOneSecDEM('FABDEM','FABDEM_V1-2');
              end;
              CloseSingleDEM(TestDEM);
+             CloseSingleDEM(TestDEM2);
              CloseSingleDEM(RefDTM);
-             //GISdb[NewFormatDB].MyData.Next;
          end;
          FinalizeStringLists(false);
 
@@ -1408,8 +1404,8 @@ begin {procedure RankDEMS}
     if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
 
     for DEM := 1 to MaxDEMIXDEM do begin
-       if GISdb[DBonTable].MyData.FieldExists(AllDEMIXTheDEMs[DEM]) then begin
-          GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_SCR',6,2);
+       if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
+          GISdb[DBonTable].AddFieldToDataBase(ftFloat,DEMIXshort[DEM] + '_SCR',6,2);
          {$IfDef IncludeCOPwins} GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_WIN',6,2); {$EndIf}
        end;
     end;
@@ -1438,10 +1434,10 @@ begin {procedure RankDEMS}
              //extract scores
              UsedDEMs := 0;
              for DEM := 1 to MaxDEMIXDEM do begin
-                if GISdb[DBonTable].MyData.FieldExists(AllDEMIXTheDEMs[DEM]) then begin
+                if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
                    inc(UsedDEMs);
-                   RankDEMs[UsedDEMs] := AllDEMIXTheDEMs[DEM];
-                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(AllDEMIXTheDEMs[DEM]);                                           //rank dems is not being set
+                   RankDEMs[UsedDEMs] := DEMIXShort[DEM];
+                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);                                           //rank dems is not being set
                    {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
                 end;
              end;
@@ -2120,8 +2116,8 @@ begin
          MaxEval := -99e39;
          MinEval := 99e39;
          for I := 1 to MaxDEMIXDEM do begin
-            if GISdb[DBonTable].MyData.FieldExists(AllDEMIXTheDEMs[i]) then begin
-               Eval := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(AllDEMIXTheDEMs[i]);
+            if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[i]) then begin
+               Eval := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[i]);
                PetMath.CompareValueToExtremes(Eval,MinEval,MaxEval);
             end;
          end;

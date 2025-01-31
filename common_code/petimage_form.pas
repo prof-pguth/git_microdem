@@ -16,6 +16,8 @@ unit petimage_form;
    //{$Define RecordAddGraphToBigBitmap}
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
+   {$Define RecordChangeColumns}
+   {$Define RecordBigBitmap}
    //{$Define RecordBitmapEdit}
    //{$Define RecordBlendBitmaps}
    //{$Define RecordGetImagePartOfBitmap}
@@ -194,6 +196,7 @@ type
     MakeRGBandgrayscaleseparates1: TMenuItem;
     Savesubset1: TMenuItem;
     MakeIHSseparates1: TMenuItem;
+    Changenumberofcolumns1: TMenuItem;
     procedure Overlaynewimagefromclipboard1Click(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure SpeedButton13Click(Sender: TObject);
@@ -304,6 +307,7 @@ type
     procedure MakeRGBandgrayscaleseparates1Click(Sender: TObject);
     procedure Savesubset1Click(Sender: TObject);
     procedure MakeIHSseparates1Click(Sender: TObject);
+    procedure Changenumberofcolumns1Click(Sender: TObject);
   private
     { Private declarations }
      BaseTopBitmap,TopBitmap : tMyBitmap;  //need two, one to modify and the other as the original
@@ -591,6 +595,7 @@ begin
          Result.BigBM_Capt := Capt;
          Result.BigBM_files := fName;
          Result.ChangeColumns1.Visible := true;
+         Result.ChangeNumberOfColumns1.Visible := true;
          if AskCols then Result.Changecolumns1Click(nil)
          else Result.RedrawSpeedButton12Click(Nil);
          BigBMP.Free;
@@ -2314,12 +2319,20 @@ begin
    files := tStringList.Create;
    Files.LoadFromFile(BigBM_files);
    ReadDefault('Number of Columns (images to combine =' + IntToStr(files.Count) + ')',MDDef.BigBM_Nc);
+   {$IfDef RecordChangeColumns} WriteLineToDebugFile('TImageDisplayForm.Changecolumns1Click started'); {$EndIf}
    bmp := CombineBitmaps(MDDef.BigBM_Nc,files,BigBM_Capt);
+   {$IfDef RecordChangeColumns} WriteLineToDebugFile('TImageDisplayForm.Changecolumns1Click bitmaps combined'); {$EndIf}
    fName := NextFileNumber(MDTempDir,'new_cols_','.bmp');
    BMP.saveToFile(fName);
    LoadImage(fName);
+   {$IfDef RecordChangeColumns} WriteLineToDebugFile('TImageDisplayForm.Changecolumns1Click bitmap loaded'); {$EndIf}
    bmp.free;
    Files.Free;
+end;
+
+procedure TImageDisplayForm.Changenumberofcolumns1Click(Sender: TObject);
+begin
+   Changecolumns1Click(Sender);
 end;
 
 procedure TImageDisplayForm.ClipboardSpeedButtonClick(Sender: TObject);

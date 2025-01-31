@@ -488,7 +488,7 @@ object DemixFilterForm: TDemixFilterForm
       object Label1: TLabel
         Left = 8
         Top = 400
-        Width = 63
+        Width = 62
         Height = 15
         Caption = 'Graph x size'
       end

@@ -1,11 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demix_definitions }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{  include file for demix_definitions    }
+{________________________________________}
 
 
 procedure CreateLandCoverGrids;
@@ -70,13 +70,13 @@ begin
             DEMglb[lc].MarkInRangeMissing(199.99,200.01,Fixed2,false);  //200 is the ocean value
             if (Fixed1 > 0) or (Fixed2 > 0) then begin
                for j := dmxFirstPoint to NumPtDEMs do begin
-                  MaskStripFromSecondGrid(PointDEMs[j],lc,msSecondMissing);
+                  MaskGridFromSecondGrid(PointDEMs[j],lc,msSecondMissing);
                   DEMglb[PointDEMs[j]].CheckMaxMinElev;
                   DEMglb[PointDEMs[j]].SaveAsGeotiff(DEMglb[PointDEMs[j]].DEMFileName);
                end;
 
                for j := dmxFirstArea to NumAreaDEMs do begin
-                  MaskStripFromSecondGrid(AreaDEMs[j],lc,msSecondMissing);
+                  MaskGridFromSecondGrid(AreaDEMs[j],lc,msSecondMissing);
                   DEMglb[AreaDEMs[j]].CheckMaxMinElev;
                   DEMglb[AreaDEMs[j]].SaveAsGeotiff(DEMglb[AreaDEMs[j]].DEMFileName);
                end;

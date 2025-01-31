@@ -2,12 +2,12 @@
 
 unit DEMTiger;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -133,7 +133,7 @@ begin
                   inc(Count);
                   GISdb[IndexNum].MyData.SetFieldByNameAsString('ON_HAND',TStr);
                   GISdb[IndexNum].MyData.SetFieldByNameAsString('FILENAME',fName);
-                  if (TStr = 'Y') then GISdb[IndexNum].MyData.SetBoundingBox(bBox);
+                  if (TStr = 'Y') then GISdb[IndexNum].MyData.SetRecordBoundingBox(bBox);
                end;
                break;
             end;
@@ -446,13 +446,8 @@ end;
 
 
 initialization
-   //RoadMaskColor := clBlack;
 finalization
    {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demtiger in'); {$EndIf}
-   {$IfDef RecordTiger} WriteLineToDebugFile('RecordTiger active in DEMTiger'); {$EndIf}
-   {$IfDef RecordTigerIndex} WriteLineToDebugFile('RecordTigerIndex active in DEMTiger'); {$EndIf}
-   {$IfDef RecordTIGERMasking} WriteLineToDebugFile('RecordTIGERMasking active in DEMTiger'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demtiger out'); {$EndIf}
 end.
 
 

@@ -1516,7 +1516,7 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 231
+    Left = 232
     Top = 58
     object File1: TMenuItem
       Caption = '&File'
@@ -2079,6 +2079,11 @@ object MapForm: TMapForm
           Caption = 'LC100 land cover'
           GroupIndex = 1
           OnClick = N62Click
+        end
+        object ESAWorldCover10m1: TMenuItem
+          Caption = 'ESA World Cover 10 m'
+          GroupIndex = 1
+          OnClick = ESAWorldCover10m1Click
         end
       end
       object ViewExifimages1: TMenuItem
@@ -2724,6 +2729,10 @@ object MapForm: TMapForm
         object WGS84elllipsoid1: TMenuItem
           Caption = 'WGS84 elllipsoid'
           OnClick = WGS84elllipsoid1Click
+        end
+        object MainlandSpain1: TMenuItem
+          Caption = 'Mainland Spain'
+          OnClick = MainlandSpain1Click
         end
         object Other1: TMenuItem
           Caption = 'Other via EPSG'
@@ -4024,7 +4033,7 @@ object MapForm: TMapForm
         end
       end
       object Downsampling1: TMenuItem
-        Caption = 'Downsampling'
+        Caption = 'Downsampling/Upsampling'
         object ThinDEM1: TMenuItem
           Caption = 'Thin DEM/grid (decimate)'
           OnClick = ThinDEM1Click
@@ -4054,12 +4063,16 @@ object MapForm: TMapForm
           OnClick = N1secand30mresamplesbyaveraging1Click
         end
         object CreateReferenceDEMtoMatchThis1: TMenuItem
-          Caption = 'Create Reference DEM to Match This'
+          Caption = 'Aggregate HRD to match this grid'
           OnClick = CreateReferenceDEMtoMatchThis1Click
         end
-        object DEMIXrangescales1: TMenuItem
-          Caption = 'DEMIX range scales'
-          OnClick = DEMIXrangescales1Click
+        object UpsampleDEMtomatchthisgrid1: TMenuItem
+          Caption = 'Upsample DEM to match this grid'
+          OnClick = UpsampleDEMtomatchthisgrid1Click
+        end
+        object Ressamplefor025to1secDTMs1: TMenuItem
+          Caption = 'Ressample for 0.25 to 1 sec DTMs'
+          OnClick = Ressamplefor025to1secDTMs1Click
         end
         object DEMIX1secresamplewithGDAL1: TMenuItem
           Caption = 'DEMIX 1 sec resample with GDAL'
@@ -5459,6 +5472,10 @@ object MapForm: TMapForm
       object LC100landcover1: TMenuItem
         Caption = 'LC100 land cover'
         OnClick = LC100landcover1Click
+      end
+      object ESAWorldCover10m2: TMenuItem
+        Caption = 'ESA World Cover 10 m'
+        OnClick = ESAWorldCover10m2Click
       end
       object N54: TMenuItem
         Caption = '-'

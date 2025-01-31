@@ -32,14 +32,14 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object Label3: TLabel
     Left = 208
     Top = 309
-    Width = 63
+    Width = 62
     Height = 15
     Caption = 'Graph x size'
   end
   object Label4: TLabel
     Left = 382
     Top = 477
-    Width = 107
+    Width = 106
     Height = 15
     Caption = 'Complex graph bins'
   end
@@ -59,14 +59,15 @@ object eval_scores_graph_form: Teval_scores_graph_form
   end
   object RadioGroup2: TRadioGroup
     Left = 1320
-    Top = 265
+    Top = 233
     Width = 153
-    Height = 74
-    Caption = 'Average multiple criteria'
-    ItemIndex = 1
+    Height = 106
+    Caption = 'Average multiple criteria '
     Items.Strings = (
-      'Test areas'
-      'DEMIX tiles')
+      'Test areas (avg scores)'
+      'DEMIX tiles'
+      'Test areas (avg evals)'
+      'Test areas (each eval)')
     TabOrder = 0
     OnClick = RadioGroup2Click
   end
@@ -277,7 +278,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     ItemIndex = 0
     Items.Strings = (
       'By test DEM'
-      'By criteriion')
+      'By criterion')
     TabOrder = 21
     OnClick = RadioGroup7Click
   end
@@ -393,8 +394,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
       TabOrder = 0
     end
     object BitBtn36: TBitBtn
-      Left = 131
-      Top = 144
+      Left = 111
+      Top = 146
       Width = 51
       Height = 25
       Caption = 'All in DB'
@@ -590,14 +591,14 @@ object eval_scores_graph_form: Teval_scores_graph_form
     object Label7: TLabel
       Left = 120
       Top = 32
-      Width = 30
+      Width = 29
       Height = 15
       Caption = 'X axis'
     end
     object Label8: TLabel
       Left = 120
       Top = 64
-      Width = 30
+      Width = 29
       Height = 15
       Caption = 'Y axis'
     end
@@ -667,5 +668,14 @@ object eval_scores_graph_form: Teval_scores_graph_form
       TabOrder = 5
       OnClick = RadioGroup6Click
     end
+  end
+  object BitBtn38: TBitBtn
+    Left = 8
+    Top = 629
+    Width = 113
+    Height = 29
+    Caption = 'Save defaults'
+    TabOrder = 40
+    OnClick = BitBtn38Click
   end
 end

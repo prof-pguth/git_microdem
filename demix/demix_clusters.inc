@@ -452,13 +452,13 @@ end;
             if FileExists(fName) then begin
                CritList := tStringList.Create;
                CritList.LoadFromFile(fName);
+               for j := pred(CritList.Count) downto 0 do begin
+                  if not GISdb[DBonTable].MyData.FieldExists(CritList.Strings[j]) then CritList.Delete(j);
+               end;
             end
             else begin
-               MessageToContinue('File missing: ' + fName);
-               exit;
-            end;
-            for j := pred(CritList.Count) downto 0 do begin
-               if not GISdb[DBonTable].MyData.FieldExists(CritList.Strings[j]) then CritList.Delete(j);
+               MessageToContinue('Using unsorted criteria because file missing: ' + fName);
+               CritList := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
             end;
 
             if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin

@@ -177,7 +177,6 @@ function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProj
          procedure SetProjection(WantProjection : tProjectType);
          begin
               Result.MapDraw.PrimMapProj.PName := WantProjection;
-              //Result.MapDraw.PrimMapProj.VectorProjfName := '';
               SetUpDefaultNewProjection(Result.MapDraw.PrimMapProj);
               Result.MapDraw.PrimMapProj.GetProjectParameters;
          end;
@@ -191,13 +190,11 @@ begin
        MapDraw.VectorIndex := i;
        MapDraw.MakeMapGrayscale := MDDef.DefGrayVectMap;
        MapDraw.SubdueBase := MDDef.DefSubdueVectMap;
-       //MapDraw.PrimMapProj := tMapProjection.Create('vect map prim proj');
        if (WantProjection <> undefinedProj) then begin
            SetProjection(WantProjection);
        end
        else if (ProjName = '') then begin
           if (MDdef.DefaultVectorMapProjection = dvmDefined) then begin
-             //MapDraw.PrimMapProj.VectorProjfName := VectorMapName;
           end
           else begin
              case MDdef.DefaultVectorMapProjection of

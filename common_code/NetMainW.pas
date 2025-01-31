@@ -417,8 +417,8 @@ end;
 
 
 procedure TNetForm.Contourinterval1Click(Sender: TObject);
-var
-   i,err : integer;
+//var
+   //i,err : integer;
 begin
    if MDDef.NetDef.NetContourColors in [GrayScale,Spectrum,Terrain,Rainbow] then begin
       ReadDefault('max concentration',MDDef.NetDef.MaxContourConcentration);
@@ -859,9 +859,9 @@ end;
 procedure TNetDraw.ContourPoles(AutoScale : boolean = true);
 {contours distribution of points on the net, stored in PoleCount^}
 var
-   i,x,y,xc,yc,NumCats,YStart,
+   i,x,y,xc,yc,//NumCats,YStart,
    CountPoints,NetPoints,
-   xo,yo,xs,ys         : integer;
+   xo,yo{,xs,ys}         : integer;
    NetPart            : ^tPoleCount;
    Values : array[0..255] of float64;
    MaxNeighbors       : LongInt;
@@ -869,7 +869,7 @@ var
    NearEdge                : boolean;
    LegBitmap        : tMyBitmap;
    {$IfDef RecordConcentrations} Concentrations : tStringList; {$EndIf}
-   fName : PathStr;
+   //fName : PathStr;
    PCStr : shortstring;
    ContourColorArray : tColors256;
    NetAreaFilter : tCircularFilter;
@@ -879,7 +879,7 @@ var
      procedure WideEGAPlot(x,y : integer; Num : LongInt);
      {plot 4 adjoining pixels, making spot easier to see}
      var
-        i,xs,ys,Colr : integer;
+        i{xs,ys,Colr} : integer;
         Value : float64;
      begin
         with MDDef.NetDef do begin

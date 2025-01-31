@@ -315,7 +315,7 @@ var
    IdenticalGrids : boolean;
 begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('MakeChangeMap in'); {$EndIf}
-   GetTwoCompatibleGrids('change in grids',true,Map1,Map2,false);
+   if not (ValidDEM(Map1) and ValidDEM(Map2)) then GetTwoCompatibleGrids('change in grids',true,Map1,Map2,false);
    IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
 
    Result := 0;

@@ -659,10 +659,12 @@ var
    cmd : ANSIstring;
    Filter,ft : shortstring;
    NewExt : ExtStr;
+   SaveDisplay,
    DeCompressing,DeleteFiles : boolean;
 begin
    {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click in'); {$EndIf}
    LazName := LAStools_BinDir + 'laszip64.exe';
+   SaveDisplay := MDDef.ShowWinExec;
    if GetLASToolsFileName(LazName) then begin
        FilesWanted := tStringList.Create;
        DefaultFilter := 1;
@@ -716,6 +718,7 @@ begin
           if (j > 0) then Memo1.Lines.Add('Files skipped that already existed: ' + IntToStr(j));
           if (bfile.Count = 0) then Bfile.Destroy
           else begin
+             MDDef.ShowWinExec := true;
              EndBatchFile(MDtempDir + 'laz_work_' + IntToStr(i) + '.bat',bfile,false);
              {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Tpetcompressform.CompressLASretain1Click Done work'); {$EndIf}
              Memo1.Lines.Add('You can work in MICRODEM while laszip works in the background');
@@ -724,6 +727,7 @@ begin
        end;
        FilesWanted.Free;
        ShowDefaultCursor;
+       MDDef.ShowWinExec := SaveDisplay;
    end;
 {$EndIf}
 end;

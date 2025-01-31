@@ -835,7 +835,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Height = 17
         Caption = 'Scale 1%--99%'
         TabOrder = 12
-        OnClick = CheckBox25Click
       end
       object BitBtn7: TBitBtn
         Left = 8

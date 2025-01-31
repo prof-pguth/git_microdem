@@ -22,7 +22,6 @@ object HyperspectralForm: THyperspectralForm
     Height = 501
     Align = alLeft
     TabOrder = 0
-    ExplicitHeight = 506
     object Label1: TLabel
       Left = 40
       Top = 45
@@ -182,7 +181,6 @@ object HyperspectralForm: THyperspectralForm
     Height = 501
     Align = alLeft
     TabOrder = 1
-    ExplicitHeight = 506
     object Image1: TImage
       Left = 0
       Top = -2

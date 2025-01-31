@@ -1036,7 +1036,7 @@ type
     Averagetilecharacteristicsbycluster1: TMenuItem;
     Winpercentagebycriterion1: TMenuItem;
     Winpercentagesbyarea1: TMenuItem;
-    GraphwinningpercentagebyDEM1: TMenuItem;
+    //GraphwinningpercentagebyDEM1: TMenuItem;
     OpenDEMIXgraphs1: TMenuItem;
     N58: TMenuItem;
     Graphofcriteriaforareaortile1: TMenuItem;
@@ -1056,6 +1056,7 @@ type
     AddDEMIXtileboundingbox1: TMenuItem;
     AddMGRSboundingbox1: TMenuItem;
     LoadNeoDEMs1: TMenuItem;
+    Graphforatile1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1851,7 +1852,7 @@ type
     procedure Averagetilecharacteristicsbycluster1Click(Sender: TObject);
     procedure Winpercentagebycriterion1Click(Sender: TObject);
     procedure Winpercentagesbyarea1Click(Sender: TObject);
-    procedure GraphwinningpercentagebyDEM1Click(Sender: TObject);
+    //procedure GraphwinningpercentagebyDEM1Click(Sender: TObject);
     procedure OpenDEMIXgraphs1Click(Sender: TObject);
     procedure Graphofcriteriaforareaortile1Click(Sender: TObject);
     procedure GraphofPrimaryDataFractionbyClusters1Click(Sender: TObject);
@@ -1871,6 +1872,7 @@ type
     procedure AddDEMIXtileboundingbox1Click(Sender: TObject);
     procedure AddMGRSboundingbox1Click(Sender: TObject);
     procedure LoadNeoDEMs1Click(Sender: TObject);
+    procedure Graphforatile1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2095,6 +2097,7 @@ uses
     demix_definitions,
     DEMIX_Control,
     DEMIX_graphs,
+    DEMIX_neo_test_area,
     DEMIX_evals_scores_graphs,
 
    map_overlays,
@@ -8895,8 +8898,11 @@ end;
 
 
 procedure Tdbtablef.Vertical1Click(Sender: TObject);
+var
+   DEMlist : tStringList;
 begin
-   DisplayBitmap(DEMIXTestDEMLegend(false),'Test DEMs');
+   DEMlist := nil;
+   DisplayBitmap(DEMIXTestDEMLegend(Sender <> Vertical1,DEMlist),'Test DEMs');
 end;
 
 procedure Tdbtablef.Verticaldatumshift1Click(Sender: TObject);
@@ -10560,6 +10566,11 @@ end;
 
 
 
+procedure Tdbtablef.Graphforatile1Click(Sender: TObject);
+begin
+   GraphForDifferenceDistributionByTile(DBonTable);
+end;
+
 procedure Tdbtablef.Graphicallymovepoints1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -10635,11 +10646,6 @@ begin
     DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable);
 end;
 
-procedure Tdbtablef.GraphwinningpercentagebyDEM1Click(Sender: TObject);
-begin
-   MessageToContinue('Disabled; need to add DEM stringlist');
-   //DEMWinningPercentageGraph(DBonTable,'');
-end;
 
 procedure Tdbtablef.Graphwithranges1Click(Sender: TObject);
 var
@@ -12432,11 +12438,7 @@ var
 begin
    AreaName := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
    OpenBothPixelIsDEMs(AreaName,'','','',true);
-   //CreateDEMIXhillshadeGrids(AreaName,true,false);
-   //CreateDEMIXRRIgrids(AreaName,true,false);
-   //CreateDEMIXRRIgrids(AreaName,true,false);
-   //CreateDEMIXOpennessGrids(AreaName,true,false);
-   CreateDEMIXSlopeRoughnessGrids(AreaName,true,false);
+   StartAreaEvals;
    ShowDefaultCursor;
 end;
 
@@ -13612,7 +13614,7 @@ end;
 
 procedure Tdbtablef.estDEMlegend1Click(Sender: TObject);
 begin
-   DisplayBitmap(DEMIXTestDEMLegend,'Test DEMs');
+   Vertical1Click(Sender);
 end;
 
 procedure Tdbtablef.Terrainfabric1Click(Sender: TObject);
