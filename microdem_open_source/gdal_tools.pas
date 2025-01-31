@@ -1664,7 +1664,7 @@ begin
       s_SRSstring := ' -s_srs EPSG:4326+' + IntToStr(VertCSEGM96);
       t_srsstring := ' -t_srs EPSG:4326+' + IntToStr(VertCSEGM2008);
    end
-   else if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') and (DEMGlb[DEM].DEMHeader.DEMUsed = UTMBasedDEM) then begin
+   else if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'WGS84') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'ETRS89') and (DEMGlb[DEM].DEMHeader.DEMUsed = UTMBasedDEM) then begin
       //this goes from NAD83 NAVD88 to WGS84 EGM2008
       UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
       s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+' + IntToStr(VertCSNAVD88);

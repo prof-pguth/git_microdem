@@ -163,6 +163,7 @@ function ValidDEMExt(ext : extstr) : boolean;
 function ValidImageryExt(ext : extstr) : boolean;
 
 function GetLC100_fileName(Lat,Long : float32) : PathStr;
+function GetLC10_fileName(Lat,Long : float32) : PathStr;
 
 const
    EGM96_grid : integer = 0;
@@ -267,31 +268,61 @@ uses
    BaseMap;
 
 
+function TileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
+var
+   LatStr,LongStr : shortstring;
+begin
+   if (Long > 0) then begin
+      Long := TileSize * trunc(Long / TileSize);
+      LongStr := 'E' + RealToString(Long,3,0);
+   end
+   else begin
+      Long := TileSize * trunc((abs(Long) + TileSize) / TileSize);
+      LongStr := 'W' + RealToString(Long,3,0);
+   end;
+   if (Lat >= 0) then begin
+      Lat := TileSize * trunc(Lat / TileSize);
+      LatStr := 'N' + RealToString(Lat,2,0);
+   end
+   else begin
+      Lat := TileSize * trunc((abs(Lat) + TileSize) / TileSize);
+      LatStr := 'S' + RealToString(Lat,2,0);
+   end;
+   if LatFirst then Result := LatStr + LongStr
+   else Result := LongStr + LatStr;
+
+   ReplaceCharacter(Result,' ','0');
+end;
+
+
 function GetLC100_fileName(Lat,Long : float32) : PathStr;
+const
+   TileSize = 20;
 var
    TileName : shortstring;
 begin
-   Lat := Lat + 20;  //because tiles are named for the NW corner
-   if (Long > 0) then begin
-      Long := 20 * trunc(Long / 20);
-      TileName := 'E' + RealToString(Long,3,0);
-   end
-   else begin
-      Long := 20 * trunc((abs(Long) + 20) / 20);
-      TileName := 'W' + RealToString(Long,3,0);
-   end;
-   if (Lat >= 0) then begin
-      Lat := 20 * trunc(Lat / 20);
-      TileName := TileName + 'N' + RealToString(Lat,2,0);
-   end
-   else begin
-      Lat := 20 * trunc((abs(Lat) + 20) / 20);
-      TileName := TileName + 'S' + RealToString(Lat,2,0);
-   end;
-   ReplaceCharacter(TileName,' ','0');
+   Lat := Lat + TileSize;  //because tiles are named for the NW corner
+   TileName := TileBaseName(TileSize,False,Lat,Long);
    Result :=  'J:\landcover\Copernicus_LC100\' + TileName + '_PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
    FindDriveWithFile(Result);
 end;
+
+
+function GetLC10_fileName(Lat,Long : float32) : PathStr;
+const
+   TileSize = 3;
+var
+   TileName : shortstring;
+begin
+
+//"J:\landcover\esa_world_cover_10m\ESA_WorldCover_10m_2021_v200_N30W114_Map\ESA_WorldCover_10m_2021_v200_N30W114_Map.tif"
+
+   //Lat := Lat + 20;  //because tiles are named for the NW corner
+   TileName := TileBaseName(TileSize,True,Lat,Long);
+   Result :=  'J:\landcover\esa_world_cover_10m\ESA_WorldCover_10m_2021_v200_' + TileName + '_Map\ESA_WorldCover_10m_2021_v200_' + TileName + '_Map.tif';
+   FindDriveWithFile(Result);
+end;
+
 
 
 function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;

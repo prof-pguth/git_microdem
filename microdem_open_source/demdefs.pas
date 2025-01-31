@@ -2250,7 +2250,7 @@ type
        OpenGL_VE,
        AutoDrawMapLAS,
        AutoRedrawMapLAS,
-       LASPC99,
+       //LASPC99,
        ColorizeInPlace,
        ShowCloudOutlines : boolean;
        CloudThinFactor,

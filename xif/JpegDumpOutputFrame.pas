@@ -1,6 +1,6 @@
 {**************************************************************************************}
 {                                                                                      }
-{ CCR Exif - Delphi class library for reading and writing image metadata               }
+{ Moified from CCR Exif - Delphi class library for reading and writing image metadata  }
 { Version 1.5.1                                                                        }
 {                                                                                      }
 { The contents of this file are subject to the Mozilla Public License Version 1.1      }
@@ -18,13 +18,12 @@
 {                                                                                      }
 {**************************************************************************************}
 
-
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Modified as Part of MICRODEM GIS Program    }
-{ PETMAR Trilobite Breeding Ranch             }
-{ Released under the MIT Licences             }
-{ Copyright (c) 2024 Peter L. Guth            }
-{_____________________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 unit JpegDumpOutputFrame;

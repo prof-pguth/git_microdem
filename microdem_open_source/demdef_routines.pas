@@ -312,7 +312,7 @@ function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 
 procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
-procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
+procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
 
 function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
 function PossibleElevationUnits(What : byte) : boolean;
@@ -393,7 +393,7 @@ end;
       end;
 
 
- procedure InitLatLongBoundBox(LatLow,LongLow,LatHi,LongHi : float64);
+ procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
  begin
     LatHi := -9999;
     LongHi := -9999;
@@ -423,15 +423,13 @@ end;
 
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 begin
-   if VerticalCSTypeGeoKey = 0 then Result := 'undefined geoid'
-   else begin
-      if VerticalCSTypeGeoKey = VertCSEGM96 then Result := 'EGM96'
-      else if VerticalCSTypeGeoKey = VertCSEGM2008 then Result := 'EGM2008'
-      else if VerticalCSTypeGeoKey = VertCSNAVD88 then Result := 'NAVD88'
-      else if VerticalCSTypeGeoKey = VertCSWGS84 then Result := 'WGS84 ellipsoid'
-      else Result := 'Other';
-      Result := Result + ' (EPSG=' + IntToStr(VerticalCSTypeGeoKey) + ')';
-   end;
+   if (VerticalCSTypeGeoKey = 0) then Result := 'undefined geoid'
+   else if VerticalCSTypeGeoKey = VertCSEGM96 then Result := 'EGM96'
+   else if VerticalCSTypeGeoKey = VertCSEGM2008 then Result := 'EGM2008'
+   else if VerticalCSTypeGeoKey = VertCSNAVD88 then Result := 'NAVD88'
+   else if VerticalCSTypeGeoKey = VertCSWGS84 then Result := 'WGS84 ellipsoid'
+   else Result := 'Other';
+   Result := Result + ' (EPSG=' + IntToStr(VerticalCSTypeGeoKey) + ')';
 end;
 
 
@@ -2084,7 +2082,7 @@ var
          AParameter('PointCloud','ShowCloudOutlines',ShowCloudOutlines,false);
          AParameter('PointCloud','AutoDrawMapLAS', AutoDrawMapLAS,true);
          AParameter('PointCloud','AutoReDrawMapLAS', AutoReDrawMapLAS,true);
-         AParameter('PointCloud','LASPC99', LASPC99,true);
+         //AParameter('PointCloud','LASPC99', LASPC99,true);
          AParameter('PointCloud','AutoShowSlice',AutoShowSlice,false);
          AParameter('PointCloud','SlicerIHSMerge',SlicerIHSMerge,false);
          AParameter('PointCloud','SliceShapeWide',SliceShapeWide,2);

@@ -273,7 +273,7 @@ end;
 procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5{,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5} : PathStr; LinkZScaling : boolean = true);
 var
    FileList : tStringList;
-   i : integer;
+   //i : integer;
 begin
    if MDDef.New3Dviewer then begin
       FileList := tStringList.Create;

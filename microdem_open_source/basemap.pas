@@ -18,8 +18,8 @@ unit basemap;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordWKTFull}
-      //{$Define RecordWKT}
+      {$Define RecordWKTFull}
+      {$Define RecordWKT}
       //{$Define RecordUKOS}
       //{$Define RecordDEMprojection}
       //{$Define TrackWKTstring}

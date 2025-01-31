@@ -268,7 +268,6 @@ uses
   icesat_filter_form in '..\common_code\icesat_filter_form.pas' {Icesat_filter},
   demsatmerge in '..\common_code\demsatmerge.pas' {IHSMergeForm},
   dem_computations in '..\common_code\dem_computations.pas',
-  aspect_colors in '..\common_code\aspect_colors.pas' {AspectMapColors},
   gdal_tools in '..\microdem_open_source\gdal_tools.pas',
   fat_fingers in '..\misc\nyquist\fat_fingers.pas' {fat_fingers_form},
   new_petmar_movie in '..\movie\new_petmar_movie.pas' {FormAnimate},
@@ -353,7 +352,8 @@ uses
   DEMDips in '..\misc\geology\DEMDips.pas' {StructureOptions},
   edit_dip in '..\misc\geology\edit_dip.pas' {GetDipStrike},
   three_point_problem in '..\misc\geology\three_point_problem.pas' {ThreePointer},
-  demlos_draw in '..\viewer_3d\demlos_draw.pas';
+  demlos_draw in '..\viewer_3d\demlos_draw.pas',
+  demix_neo_test_area in '..\demix\demix_neo_test_area.pas' {New_area_evals_form};
 
 {$R *.RES}
 

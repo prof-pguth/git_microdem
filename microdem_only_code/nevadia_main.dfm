@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -3655,6 +3654,17 @@ object wmdem: Twmdem
     object Createlandcovergrids1: TMenuItem
       Caption = 'Create land cover grids'
       OnClick = Createlandcovergrids1Click
+    end
+    object N15: TMenuItem
+      Caption = '-'
+    end
+    object N58: TMenuItem
+      Caption = 'Range scales, 0.15 to 1 sec (single test area, single test DEM)'
+      OnClick = N58Click
+    end
+    object MultipleDEMsonearea015secscale1: TMenuItem
+      Caption = 'Multiple DEMs, one area, 0.15 sec scale'
+      OnClick = MultipleDEMsonearea015secscale1Click
     end
     object N36: TMenuItem
       Caption = '-'

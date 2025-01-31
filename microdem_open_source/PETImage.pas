@@ -17,7 +17,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IfDef Debug}
       //{$Define BMPMemInline}
-      //{$Define RecordBigBitmap}
+      {$Define RecordBigBitmap}
       //{$Define RecordImageOverlayProblems}
       //{$Define RecordImageResize}
       //{$Define RecordBlendBitmaps}
@@ -651,6 +651,8 @@ end;
 
 
 function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
+const
+   BetweenBitmaps = 25;
 var
    bmp : tMyBitmap;
    Left,Right,Top,Bottom,
@@ -658,9 +660,10 @@ var
    LeftPos,
    n,nr : integer;
 begin
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineBitmaps in, bitmaps=' + IntToStr(theFiles.Count) + ' in cols=' + IntToStr(nc)); {$EndIf}
    Result := nil;
    if (TheFiles.Count > 0) then begin
-      if nc <= 1 then nc := 1;
+      if (nc <= 1) then nc := 1;
       nr := theFiles.Count div nc;
       if nr <= 0 then nr := 1;
       BigWidth := 0;
@@ -668,15 +671,16 @@ begin
       for n := 0 to pred(theFiles.Count) do begin
          if FileExists(theFiles.Strings[n]) then begin
             bmp := LoadBitmapFromFile(theFiles.Strings[n]);
-            if (bmp.Width > BigWidth + 10) then BigWidth := bmp.Width + 10;
-            if (bmp.Height > BigHeight + 10) then BigHeight := bmp.Height + 10;
+            if (bmp.Width > BigWidth + BetweenBitmaps) then BigWidth := bmp.Width + BetweenBitmaps;
+            if (bmp.Height > BigHeight + BetweenBitmaps) then BigHeight := bmp.Height + BetweenBitmaps;
             bmp.Free;
          end;
       end;
-      CreateBitmap(Result,nc * BigWidth + 10,nr * BigHeight + 60);
+      CreateBitmap(Result,nc * BigWidth + BetweenBitmaps,nr * BigHeight + 60);
       if (nr = 1) then begin
          LeftPos := 5;
          for n := 0 to pred(theFiles.Count) do begin
+            {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Draw bitmap=' + IntToStr(succ(n))); {$EndIf}
             if FileExists(theFiles.Strings[n]) then begin
                bmp := LoadBitmapFromFile(theFiles.Strings[n]);
                FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
@@ -688,6 +692,7 @@ begin
       end
       else begin
          for n := 0 to pred(theFiles.Count) do begin
+            {$IfDef RecordBigBitmap}  WriteLineToDebugFile('Draw bitmap=' + IntToStr(succ(n))); {$EndIf}
             if FileExists(theFiles.Strings[n]) then begin
                bmp := LoadBitmapFromFile(theFiles.Strings[n]);
                FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);

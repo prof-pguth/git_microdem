@@ -1,4 +1,6 @@
 ﻿unit nevadia_main;
+//name of this main program unit goes back to a time when there were multiple related programs namde for Cambrian fossils
+//over time all but this variant were either merged in, or retired
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program           }
@@ -625,6 +627,9 @@ type
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
     CrossscaleDEMComparison1: TMenuItem;
+    N15: TMenuItem;
+    N58: TMenuItem;
+    MultipleDEMsonearea015secscale1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1047,6 +1052,8 @@ type
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
     procedure CrossscaleDEMComparison1Click(Sender: TObject);
+    procedure N58Click(Sender: TObject);
+    procedure MultipleDEMsonearea015secscale1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1255,7 +1262,6 @@ uses
       Monthly_Grids,
    {$EndIf}
 
-
    {$IfDef ExCartography}
    {$Else}
       DEM_cart_proj,
@@ -1264,7 +1270,6 @@ uses
    {$IfDef FMXU_point_cloud}
       FPointCloud,
    {$EndIf}
-
 
    {$IfDef ExMake_grid}
    {$Else}
@@ -1276,12 +1281,14 @@ uses
    {$EndIf}
 
    {$IfDef ExDEMIX}
+      //might have to disable options in code (add compiler directives) to get this to work
    {$Else}
       demix_definitions,
       DEMIX_Control,
       DEMIX_cop_alos,
       demix_evals_scores_graphs,
       ssim_fuv_control,
+      demix_neo_test_area,
    {$EndIf}
 
    ufrmMain,
@@ -2151,7 +2158,6 @@ var
                {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
             end;
          end;
-
       *)
 
          if (Action = 'LCP') then begin
@@ -2705,6 +2711,11 @@ begin
      end;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries out'); {$EndIf}
+end;
+
+procedure Twmdem.N58Click(Sender: TObject);
+begin
+   FUVforRangeScales;
 end;
 
 procedure Twmdem.Overwrite1Click(Sender: TObject);
@@ -3481,62 +3492,8 @@ begin
 end;
 
 procedure Twmdem.CrossscaleDEMComparison1Click(Sender: TObject);
-//this is hard coded during active development
-const
-   Overwrite = true;
-   DoDiffDist = true;
-var
-   fName : PathStr;
-   Areas : tStringList;
 begin
-   DEMIXanalysismode := DEMIXneo;
-   MDDef.DEMIX_mode := dmFull;
-
-   fName := 'J:\aaa_neo_eval\neo_test_tiles.dbf';
-   OpenNumberedGISDataBase(NewFormatDEMIXDB,fName,true);
-
-   MDDef.SSIM_elev := true;
-   MDDef.SSIM_slope := true;
-   MDDef.SSIM_ruff := true;
-   MDDef.SSIM_rri := true;
-   MDDef.SSIM_hill := true;
-   MDDef.SSIM_tpi := true;
-   MDDef.SSIM_Rotor := false;
-   MDDef.SSIM_Openness := true;
-
-   MDDef.SSIM_ConvergeIndex := false;
-   MDDef.SSIM_flow := false;
-   MDDef.SSIM_LS := false;
-   MDDef.SSIM_Wet := false;
-   MDDef.SSIM_HAND := false;
-   MDDef.SSIM_PLANC := false;
-   MDDef.SSIM_PROFC := false;
-   MDDef.SSIM_TANGC := false;
-
-   MDDef.DoSSIM := false;
-   MDDef.DoFUV := true;
-
-   GetDEMIXpaths;
-   DEMIX_initialized := true;
-
-   SetParamsForDEMIXmode;
-
-   Areas := tStringList.Create;
-   GISdb[NewFormatDEMIXDB].ApplyGISFilter('DTM<>' + QuotedStr(''));
-   Areas := GISdb[NewFormatDEMIXDB].MyData.ListUniqueEntriesInDB('AREA');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Neo Areas with data=' + IntToStr(Areas.Count)); {$EndIf}
-
-   if DoDiffDist then begin
-      //this option is more hard-wired different from the traditional mode
-      ComputeDEMIX_Diff_Dist_tile_stats(Overwrite,Areas);
-      GISdb[NewFormatDEMIXDB].ClearGISFilter;
-   end;
-   if MDDef.DoSSIM or MDDef.DoFUV then begin
-      //this option should be les hard-wired new code
-      AreaSSIMandFUVComputations(Overwrite,false,Areas);
-      GISdb[NewFormatDEMIXDB].ClearGISFilter;
-   end;
-   SetColorForWaiting;
+   CrossScaleDEMComparison;
 end;
 
 
@@ -4864,6 +4821,11 @@ begin
    ChangeDEMNowDoing(MultipleLOS);
 end;
 
+
+procedure Twmdem.MultipleDEMsonearea015secscale1Click(Sender: TObject);
+begin
+   FUVforScales_0_15sec;
+end;
 
 procedure Twmdem.MultipledNBRmaps1Click(Sender: TObject);
 begin
