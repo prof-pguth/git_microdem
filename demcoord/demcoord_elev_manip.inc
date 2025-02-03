@@ -1,11 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{-----------------------------------}
-{include file for demcoord.pas      }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demcoord.pas      }
+{________________________________________}
 
 
 procedure tDEMDataSet.SetGridMissingOutsideBox(Col1,Row1,Col2,Row2 : integer);
@@ -166,6 +166,18 @@ function tDEMDataSet.ZinMeters(z : float64) : float64;
 begin
    if Not MissingData(z) then Result := z * ElevationMultiple;
 end;
+
+
+{$IfDef TrackElevationPointers}
+   function tDEMDataSet.ElevationStructuresAllocated : boolean;
+   begin
+      if (DEMheader.DEMPrecision = FloatingPointDEM) then Result := ShortFloatElevations <> Nil
+      else if (DEMheader.DEMPrecision = SmallIntDEM) then Result := SmallIntElevations <> Nil
+      else if (DEMheader.DEMPrecision = WordDEM) then Result := WordElevations <> Nil
+      else if (DEMheader.DEMPrecision = LongWordDEM) then Result := LongWordElevations <> Nil
+      else if (DEMheader.DEMPrecision = ByteDEM) then Result := ByteElevations <> Nil;
+   end;
+{$EndIf}
 
 
 function tDEMDataSet.GetElevMetersOnGrid(x,y : integer; var z  : float32) : boolean;

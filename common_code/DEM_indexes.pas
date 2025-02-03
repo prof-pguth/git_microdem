@@ -1,12 +1,11 @@
 unit dem_indexes;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -26,7 +25,7 @@ unit dem_indexes;
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
      //{$Define RecordMerge}
-     {$Define RecordMergeDetails}
+     //{$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
      //{$Define RecordClosing}
@@ -1125,7 +1124,7 @@ var
             end {for i};
             LastDEMName := OldDEMName;
             DEMList.Free;
-            if SaveIt then DEMGlb[Result].WriteNewFormatDEM(MergefDir,'merged DEM');
+            if SaveIt then DEMGlb[Result].AskAndWriteNewFormatDEM(MergefDir,'merged DEM');
             {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge)  or Defined(RecordPixelIs)}
                WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(Result) + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString);
             {$EndIf}

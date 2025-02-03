@@ -5,8 +5,8 @@ object NewBMPForm: TNewBMPForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsDialog
   Caption = 'Bitmap Dimensions'
-  ClientHeight = 120
-  ClientWidth = 215
+  ClientHeight = 123
+  ClientWidth = 202
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,14 +35,14 @@ object NewBMPForm: TNewBMPForm
     Left = 79
     Top = 8
     Width = 97
-    Height = 28
+    Height = 24
     TabOrder = 0
   end
   object HeightEdit: TEdit
     Left = 78
     Top = 42
     Width = 97
-    Height = 28
+    Height = 24
     TabOrder = 1
   end
   object BitBtn1: TBitBtn

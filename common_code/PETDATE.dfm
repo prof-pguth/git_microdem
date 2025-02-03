@@ -4,8 +4,8 @@ object GetDateForm: TGetDateForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Starting date and duration'
-  ClientHeight = 228
-  ClientWidth = 237
+  ClientHeight = 222
+  ClientWidth = 219
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -1616,6 +1616,8 @@ type
     ESAWorldCover10m2: TMenuItem;
     Ressamplefor025to1secDTMs1: TMenuItem;
     UpsampleDEMtomatchthisgrid1: TMenuItem;
+    N80: TMenuItem;
+    N81: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2767,6 +2769,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure ESAWorldCover10m2Click(Sender: TObject);
     procedure Ressamplefor025to1secDTMs1Click(Sender: TObject);
     procedure UpsampleDEMtomatchthisgrid1Click(Sender: TObject);
+    procedure N81Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -5629,7 +5632,7 @@ procedure TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Clic in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
    if (DEMGlb[MapDraw.DEMonMap].DEMFileName = '') then begin
-      DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(DEMGlb[MapDraw.DEMonMap].DEMFileName,' save DEM before resampling');
+      DEMGlb[MapDraw.DEMonMap].AskAndWriteNewFormatDEM(DEMGlb[MapDraw.DEMonMap].DEMFileName,' save DEM before resampling');
    end;
    ResampleForUTM_GeoComparison(MapDraw.DEMonMap);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Click out'); {$EndIf}
@@ -22332,7 +22335,7 @@ begin
    if (DEMGlb[MapDraw.DEMonMap].SelectionMap.MapDraw.BasicProjection in [bpUTM,bpLatLong]) then begin
      fName := WriteDEMDir + 'sub-' + DEMGlb[MapDraw.DEMonMap].AreaName;
      GetFileNameDefaultExt('subset DEM','DEM|*.dem',fName);
-     DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(MapDraw.MapAreaDEMGridLimits,fName);
+     DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEMwithLimits(MapDraw.MapAreaDEMGridLimits,fName);
      if AnswerIsYes('Load subset ' + ExtractFilename(fName)) then OpenNewDEM(fName);
    end
    else begin
@@ -22571,6 +22574,22 @@ end;
 procedure TMapForm.N7x7window1Click(Sender: TObject);
 begin
    PickAspectDifferenceMap(MapDraw.DEMonMap,3);
+end;
+
+procedure TMapForm.N81Click(Sender: TObject);
+begin
+   SaveBackupDefaults;
+   MDDef.ShowElevFreq := false;
+   MDDef.ShowSlopeFreq := false;
+   MDDef.ShowElevSlope := true;
+   MDDef.ShowCumSlope := false;
+   MDDef.ShowAspectRose := false;
+   MDDef.ShowElevSlopeDeg := false;
+   MDDef.ShowColorLegend := false;
+   MDDef.ShowSDonElevSlope := false;
+   MDDef.ShowElevRough := false;
+   ElevationSlopePlot(GetMultipleDEMsFromList('DEMs for elevation/slope plot'),MDDef.ElevBinSize,Nil);
+   RestoreBackupDefaults;
 end;
 
 procedure TMapForm.NAN1Click(Sender: TObject);
@@ -24941,7 +24960,7 @@ procedure TMapForm.SelectmultipleDEMsgrids1Click(Sender: TObject);
    //DEMsWanted : tDEMbooleanArray;
 begin
    //GetMultipleDEMsFromList('Grids for histograms',DEMsWanted);
-   CreateGridHistograms( GetMultipleDEMsFromList('Grids for histograms'));
+   CreateGridHistograms(GetMultipleDEMsFromList('Grids for histograms'));
 end;
 
 procedure TMapForm.Selectmultiplegrids1Click(Sender: TObject);

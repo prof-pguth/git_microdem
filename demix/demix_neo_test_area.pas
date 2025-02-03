@@ -9,8 +9,15 @@ unit demix_neo_test_area;
 
 {$I nevadia_defines.inc}
 
+
+
+//{$Define DoOnlyThreeLandTypes}  //faster operation when tracking down errors
+
+
+
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIXneo}
+   //{$Define RecordLoadDEMIX}
 {$EndIf}
 
 
@@ -18,7 +25,7 @@ unit demix_neo_test_area;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,AnsiStrings,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   petmar,petmar_types;
 
@@ -42,7 +49,7 @@ type
 
 
   procedure StartAreaEvals;
-  procedure CrossScaleDEMComparison;
+  procedure CrossScaleDEMComparison(DEMIXNeoMode : integer);
 
 
 var
@@ -53,7 +60,8 @@ implementation
 {$R *.dfm}
 
 uses
-   demix_definitions,demix_control,PetMath,PetdbUtils,
+   demix_definitions,demix_control,demstringgrid,
+   PetMath,PetdbUtils,
    dem_Manager,
    Make_grid,
    nevadia_main,
@@ -62,39 +70,20 @@ uses
    demdefs,demstat,DEMcoord;
 
 
-procedure CrossScaleDEMComparison;
+procedure CrossScaleDEMComparison(DEMIXNeoMode : integer);
 //this is hard coded during active development for the current options
 const
    Overwrite = true;
    DoDiffDist = true;
 var
-   fName,DataDir : PathStr;
+   fName,DataDir,DEMName : PathStr;
    Areas,TheDEMs : tStringList;
    DEMList,SlopeList : tDEMBooleanArray;
    i,aDEM,aSlope,ESA_LC10 : integer;
    Fixed : int64;
+   Findings : tStringList;
 
-   procedure CorrelationsForFilteredLandCover(Analysis : integer; What : shortstring; Code : integer; DesiredList : tDEMBooleanArray);
-   var
-      i : integer;
-   begin
-      {$IfDef RecordDEMIXNeo} WriteLineToDebugFile('Start correlations for ' + What); {$EndIf}
-      DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
-      for i := 1 to MaxDEMDataSets do begin
-         if ValidDEM(i) and DesiredList[i] then begin
-            DEMGlb[i].SelectionMap.MaskFromSecondGrid(ESA_LC10, msSecondMissing);
-         end;
-      end;
-      if Analysis = 1 then GridCorrelationMatrix(gcmR,SlopeList, What + ' Pixels Slope Map');
-      for i := 1 to MaxDEMDataSets do begin
-         if ValidDEM(i) and DesiredList[i] then begin
-            DEMGlb[i].ReloadDEM(true);  //reload grid so next filter can run
-         end;
-      end;
-      DEMGlb[ESA_LC10].ReloadDEM(true);
-   end;
-
-   procedure MakeCorrelationMatrixForAllDEMsAllLandCover;
+   procedure OpenElevationAndSlopeGrids;
    var
       i : integer;
    begin
@@ -111,28 +100,21 @@ var
          DEMGlb[aSlope].WriteNewFormatDEM(fName);
          SlopeList[aSlope] := true;
       end;
-      {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Loadeds DEMs and created slope maps, n=' + IntToStr(TheDEMs.Count)); {$EndIf}
-
-      GridCorrelationMatrix(gcmR,SlopeList,'All Pixels Slope Map');
-
+      {$IfDef RecordLoadDEMIX}
+         WriteDEMListToDebug('Elevation DEMs',DEMlist);
+         WriteDEMListToDebug('Slope grids',SlopeList);
+      {$EndIf}
       ESA_LC10 := LoadLC10LandCover('',DEMGlb[1].DEMBoundBoxGeo,true);
-      CorrelationsForFilteredLandCover(1,'Forest',10,SlopeList);
-      CorrelationsForFilteredLandCover(1,'Shrub',20,SlopeList);
-      CorrelationsForFilteredLandCover(1,'Grassland',30,SlopeList);
-      CorrelationsForFilteredLandCover(1,'Urban',50,SlopeList);
-      CorrelationsForFilteredLandCover(1,'Barren',60,SlopeList);
+      {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Loadeds DEMs and created slope maps, n=' + IntToStr(TheDEMs.Count)); {$EndIf}
    end;
 
 
-
-   procedure MakeGraphDifferentDistributionsAllLandCover;
+   procedure MakeGraphDifferenceDistributionsAllLandCover;
    var
       i : integer;
       MomentVar : tMomentVar;
       zs : ^bfArray32;
       Findings : tstringList;
-
-
 
 
       procedure ComputeDifferenceDistribution(Parameter,LandType : shortstring; Code,Ref,Test : integer);
@@ -159,11 +141,11 @@ var
 
       var
          aLine : shortstring;
-      begin
+      begin {procedure ComputeDifferenceDistribution}
          {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Start landcover for ' + LandType + ' ref=' + IntToStr(Ref) + ' test=' + IntToStr(Test)); {$EndIf}
 
-         wmdem.SetPanelText(2,Parameter);
-         wmdem.SetPanelText(3,LandType);
+         wmdem.SetPanelText(2,Parameter,true);
+         wmdem.SetPanelText(3,LandType,true);
 
          if (Code <> 0) then begin
             DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
@@ -180,7 +162,7 @@ var
             DEMGlb[Ref].ReloadDEM(true);
             DEMGlb[Test].ReloadDEM(true);
          end;
-      end;
+      end {procedure ComputeDifferenceDistribution};
 
 
    var
@@ -188,7 +170,7 @@ var
       RefElev,TestElev,Ref,Test,
       RefSlope,TestSlope,
       TestRuff,RefRuff : integer;
-   begin
+   begin {procedure MakeGraphDifferentDistributionsAllLandCover}
       New(zs);
       DataDir := 'J:\aaa_neo_eval\oxnard\multiple_0.15sec\';
       Findings := tStringList.Create;
@@ -213,8 +195,6 @@ var
       fName := MDTempDir + 'ruffslope_' + DEMGlb[TestElev].AreaName + '.dem';
       DEMGlb[TestRuff].WriteNewFormatDEM(fName);
 
-
-
       for I := 1 to 3 do begin
          {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Start loop for ' + DiffParams[i]); {$EndIf}
          if i = 1 then begin
@@ -232,21 +212,155 @@ var
 
          ComputeDifferenceDistribution(DiffParams[i],'All',0,Ref,Test);
          ComputeDifferenceDistribution(DiffParams[i],'Forest',10,Ref,Test);
-         ComputeDifferenceDistribution(DiffParams[i],'Shrub',20,Ref,Test);
-         ComputeDifferenceDistribution(DiffParams[i],'Grassland',30,Ref,Test);
-         ComputeDifferenceDistribution(DiffParams[i],'Urban',50,Ref,Test);
-         ComputeDifferenceDistribution(DiffParams[i],'Barren',60,Ref,Test);
+         {$IfDef DoOnlyThreeLandTypes}
+         {$Else}
+            ComputeDifferenceDistribution(DiffParams[i],'Shrub',20,Ref,Test);
+            ComputeDifferenceDistribution(DiffParams[i],'Grassland',30,Ref,Test);
+            ComputeDifferenceDistribution(DiffParams[i],'Urban',50,Ref,Test);
+            ComputeDifferenceDistribution(DiffParams[i],'Barren',60,Ref,Test);
+         {$EndIf}
       end;
 
       Dispose(zs);
       fName := NextFileNumber(MDTempDir,'difference_dist_by_landcover_','.dbf');
       StringList2CSVtoDB(Findings,fName);
+   end {procedure MakeGraphDifferentDistributionsAllLandCover};
+
+
+   procedure CorrelationsForFilteredLandCover(What : shortstring; Code : integer; var DesiredList : tDEMBooleanArray);
+   var
+      i,j,DEM1,DEM2 : integer;
+      aLine,Name1 : shortstring;
+      NPts : int64;
+      r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
+   begin
+      {$IfDef RecordDEMIXNeo} WriteLineToDebugFile('CorrelationsForFilteredLandCover Start for ' + What); {$EndIf}
+      wmdem.SetPanelText(3,What,true);
+
+      if (Code <> 0) then begin
+         {$IfDef RecordDEMIXNeo} WriteLineToDebugFile('CorrelationsForFilteredLandCover Masking'); {$EndIf}
+         DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
+         for i := 1 to MaxDEMDataSets do begin
+            if ValidDEM(i) and DesiredList[i] then begin
+               MaskGridFromSecondGrid(i,ESA_LC10, msSecondMissing);
+            end;
+         end;
+      end;
+
+      if (DEMIXNeoMode = 1) then begin
+         GridCorrelationMatrix(gcmR,DEMList, What + ' Pixels Elevation Map');
+         GridCorrelationMatrix(gcmR,SlopeList, What + ' Pixels Slope Map');
+      end;
+
+      if (DEMIXNeoMode = 2) then begin
+         {$IfDef RecordDEMIXneo} WriteLineToDebugFile('DEMIXNeoMode = 2, ' + DEMName + '  ' + What); {$EndIf}
+         for i := 1 to MaxDEMDataSets do begin
+            if ValidDEM(i) and DesiredList[i] then begin
+               //only looking for a single DEM (with DEMname) to compare to all the others
+               aLine := '';
+               Name1 := DEMIXshortenDEMName(DEMglb[i].AreaName);  //it might be slope, so go to base name
+               if (Name1 = DEMname) then begin
+                  aLine := DEMname + ',' + What;
+                  DEM1 := i;
+                  for j := 1 to MaxDEMDataSets do begin
+                     if ValidDEM(j) and DesiredList[j] then begin
+                        DEM2 := j;
+                        {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Analysis 2 compute, ' + IntToStr(DEM1) + ' ' + DEMGlb[DEM1].AreaName + ' ' + IntToStr(DEM2) + ' ' + DEMGlb[DEM2].AreaName); {$EndIf}
+                        if (DEM1 = DEM2) then r := 1.0
+                        else begin
+                           CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2);
+                           if (r < -99) then begin
+                              //so we can put a breakpoint here
+                              {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Analysis 2 problem, ' + IntToStr(DEM1) + ' ' + DEMGlb[DEM1].AreaName + ' ' + IntToStr(DEM2) + ' ' + DEMGlb[DEM2].AreaName); {$EndIf}
+                              CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2);
+                           end
+                        end;
+                        aLine := aLine + ',' + RealToString(r,12,-8);
+                     end;
+                  end;
+                  Findings.Add(aLine);
+                  {$IfDef RecordDEMIXneo} WriteLineToDebugFile(aLine); {$EndIf}
+               end;
+            end;
+         end;
+     end;
+
+      if (Code <> 0) then begin
+         {$IfDef RecordDEMIXNeo} WriteLineToDebugFile('CorrelationsForFilteredLandCover Unmasking'); {$EndIf}
+         for i := 1 to MaxDEMDataSets do begin
+            if ValidDEM(i) and DesiredList[i] then begin
+               DEMGlb[i].ReloadDEM(true);  //reload grid so next filter can run
+            end;
+         end;
+         DEMGlb[ESA_LC10].ReloadDEM(true);
+      end;
+      {$IfDef RecordDEMIXNeo} WriteLineToDebugFile('CorrelationsForFilteredLandCover end for ' + What); {$EndIf}
+   end {procedure CorrelationsForFilteredLandCover};
+
+
+   procedure CycleThroughLandCover(var DesiredList : tDEMBooleanArray);
+   begin
+      CorrelationsForFilteredLandCover('All',0,DesiredList);
+      CorrelationsForFilteredLandCover('Forest',10,DesiredList);
+      {$IfDef DoOnlyThreeLandTypes}
+      {$Else}
+         CorrelationsForFilteredLandCover('Shrub',20,DesiredList);
+         CorrelationsForFilteredLandCover('Grassland',30,DesiredList);
+         CorrelationsForFilteredLandCover('Urban',50,DesiredList);
+         CorrelationsForFilteredLandCover('Barren',60,DesiredList);
+      {$EndIf}
    end;
 
 
+   procedure MakeCorrelationMatrixJustOneDEMAllLandCover;
 
-begin
-   {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Start CrossScaleDEMComparison'); {$EndIf}
+            procedure CorrelateOneDEM(dName : PathStr; var theList : tDEMBooleanArray);
+            begin
+               {$IfDef RecordDEMIXneo} WriteLineToDebugFile('CorrelateOneDEM=' + dName); {$EndIf}
+               DEMName := dName;
+               wmdem.SetPanelText(2,DEMname,true);
+               CycleThroughLandCover(theList);
+            end;
+
+         function DoOneParameter(ItsName : shortstring; var theList : tDEMBooleanArray) : tGridForm;
+         var
+            aLine : shortstring;
+            i : integer;
+         begin
+            {$IfDef RecordDEMIXneo} WriteLineToDebugFile('DoOneParameter=' + ItsName); {$EndIf}
+            Findings := tStringList.Create;
+            aLine := 'DEM/Grid,LandCover';
+            for i := 1 to MaxDEMDataSets do begin
+               if ValidDEM(i) and DEMList[i] then begin
+                  aLine := aLine + ',' + DEMIXShortenDEMName(DEMGlb[i].AreaName);
+               end;
+            end;
+            Findings.Add(aline);
+            CorrelateOneDEM('Native_5m_DSM',theList);
+            CorrelateOneDEM('Native_5m_DTM',theList);
+            fName := MDtempDir + ItsName + '_one_dem_correlation_landcovers.csv';
+            if Findings.Count > 1 then begin
+               Findings.SaveToFile(fName);
+               Result := OpenCorrelationMatrix(ItsName + ' correlations',fName);
+               Result.BitBtn6Click(Nil);
+            end
+            else begin
+               Findings.Destroy;
+               {$IfDef RecordDEMIXneo} HighLightLineToDebugFile('Fail DoOneParameter=' + ItsName); {$EndIf}
+            end;
+         end;
+
+   begin {procedure MakeCorrelationMatrixJustOneDEMAllLandCover}
+      OpenElevationAndSlopeGrids;
+      {$IfDef RecordDEMIXneo} WriteLineToDebugFile('MakeCorrelationMatrixJustOneDEMAllLandCover Load DEMs and slope maps, n=' + IntToStr(TheDEMs.Count)); {$EndIf}
+      DoOneParameter('Elevation',DEMList);
+      DoOneParameter('Slope',SlopeList);
+   end {procedure MakeCorrelationMatrixJustOneDEMAllLandCover};
+
+
+begin {procedure MakeGraphDifferentDistributionsAllLandCover}
+   {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Start CrossScaleDEMComparison, Mode=' + IntToStr(DEMIXNeoMode)); {$EndIf}
+
 
    DEMIXanalysismode := DEMIXneo;
    MDDef.DEMIX_mode := dmFull;
@@ -272,44 +386,51 @@ begin
    MDDef.DoSSIM := false;
    MDDef.DoFUV := true;
 
-   //MakeGraphDifferentDistributionsAllLandCover;
+
+   //MakeCorrelationMatrixForAllDEMsAllLandCover;
 
 
-   MakeCorrelationMatrixForAllDEMsAllLandCover;
+   LockStatusBar := true;
+   SetColorForProcessing;
 
+   if DEMIXNeoMode in [1,2] then MakeCorrelationMatrixJustOneDEMAllLandCover;
+   if DEMIXNeoMode in [3] then MakeGraphDifferenceDistributionsAllLandCover;
 
-(*
+   if DEMIXNeoMode in [4,5] then begin
+       fName := 'J:\aaa_neo_eval\neo_test_tiles.dbf';
+      OpenNumberedGISDataBase(NewFormatDEMIXDB,fName,true);
+      GetDEMIXpaths;
+      DEMIX_initialized := true;
+      SetParamsForDEMIXmode;
 
-   fName := 'J:\aaa_neo_eval\neo_test_tiles.dbf';
-   OpenNumberedGISDataBase(NewFormatDEMIXDB,fName,true);
-   GetDEMIXpaths;
-   DEMIX_initialized := true;
-   SetParamsForDEMIXmode;
+      Areas := tStringList.Create;
+      GISdb[NewFormatDEMIXDB].ApplyGISFilter('DTM<>' + QuotedStr(''));
+      Areas := GISdb[NewFormatDEMIXDB].MyData.ListUniqueEntriesInDB('AREA');
+      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Neo Areas with data=' + IntToStr(Areas.Count)); {$EndIf}
 
-   Areas := tStringList.Create;
-   GISdb[NewFormatDEMIXDB].ApplyGISFilter('DTM<>' + QuotedStr(''));
-   Areas := GISdb[NewFormatDEMIXDB].MyData.ListUniqueEntriesInDB('AREA');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Neo Areas with data=' + IntToStr(Areas.Count)); {$EndIf}
+      if DEMIXNeoMode in [4] then begin
+         //this option is more hard-wired different from the traditional mode
+         HighlightLineToDebugFile('Start Difference distributions');
+         ComputeDEMIX_Diff_Dist_tile_stats(Overwrite,Areas);
+         GISdb[NewFormatDEMIXDB].ClearGISFilter;
+      end;
 
-   if DoDiffDist then begin
-      //this option is more hard-wired different from the traditional mode
-      HighlightLineToDebugFile('Start Difference distributions');
-      ComputeDEMIX_Diff_Dist_tile_stats(Overwrite,Areas);
-      GISdb[NewFormatDEMIXDB].ClearGISFilter;
+      if DEMIXNeoMode in [5] then begin
+         MDDef.DoSSIM := false;
+         MDDef.DoFUV := true;
+         //this option should be les hard-wired new code
+         HighlightLineToDebugFile('Start FUV distributions');
+         AreaSSIMandFUVComputations(Overwrite,false,Areas);
+         GISdb[NewFormatDEMIXDB].ClearGISFilter;
+      end;
+
    end;
 
-   if MDDef.DoSSIM or MDDef.DoFUV then begin
-      //this option should be les hard-wired new code
-      HighlightLineToDebugFile('Start FUV distributions');
-      AreaSSIMandFUVComputations(Overwrite,false,Areas);
-      GISdb[NewFormatDEMIXDB].ClearGISFilter;
-   end;
-*)
+
    SetColorForWaiting;
+   LockStatusBar := false;
    {$IfDef RecordDEMIXneo} WriteLineToDebugFile('End CrossScaleDEMComparison'); {$EndIf}
-end;
-
-
+end {procedure MakeGraphDifferentDistributionsAllLandCover};
 
 
 

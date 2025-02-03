@@ -4,8 +4,8 @@ object TimeFieldsForm: TTimeFieldsForm
   BorderIcons = [biMinimize]
   BorderStyle = bsDialog
   Caption = 'Add KML Time Fields'
-  ClientHeight = 262
-  ClientWidth = 219
+  ClientHeight = 302
+  ClientWidth = 242
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

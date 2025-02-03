@@ -110,6 +110,7 @@ uses
 
 const
    MaxPlotGlb = 2500;
+   DoingDEMIXnow : boolean = false;
 type
    CountType = array[-5..2500] of integer;
    PlotArray = array[1..(MaxPlotGlb+2)] of float64;
@@ -124,7 +125,7 @@ type
       procedure AspectDistributionBySlope(WhichDEM : Integer; GridLimits : tGridLimits);
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
-      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64; NoteFailure : boolean = true) : boolean;    inline;
+      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64; NoteFailure : boolean = true) : boolean;  inline;
       function MeanAbsoluteDeviationFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var MAD : float64; NoteFailure : boolean = true) : boolean;
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
 
@@ -2207,7 +2208,7 @@ var
 
       function GraphPlot(Graph : GraphType) : TThisBaseGraph;
       var
-         Which,x,CurDEM : integer;
+         Which,x,n,CurDEM : integer;
          rfile,rfile2,rfile3 : file;
          v       : tGraphPoint32;
          MenuStr,TStr,bsString : ShortString;
@@ -2266,7 +2267,7 @@ var
             Result.GraphDraw.LegendList := tStringList.Create;
             Result.GraphDraw.SetShowAllLines(true);
             Result.GraphDraw.SetShowAllPoints(false);
-
+            n := 0;
             for CurDEM := 1 to MaxDEMDataSets do if WhichDEMs[CurDEM] and ValidDEM(CurDEM) then begin
                If (Memo <> nil) then begin
                   Memo.Lines.Add(TimeToStr(Now) + '  ' + DEMGlb[CurDEM].AreaName);
@@ -2276,16 +2277,19 @@ var
                Result.OpenDataFile(rfile);
                Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM mod 16]);
 
-               LoadDEMIXnames;
-               Result.GraphDraw.FileColors256[CurDEM] := DEMIXColorFromDEMName(DEMGlb[CurDEM].AreaName);
+               if DoingDEMIXnow then begin
+                  LoadDEMIXnames;
+                  Result.GraphDraw.FileColors256[CurDEM] := DEMIXColorFromDEMName(DEMGlb[CurDEM].AreaName);
                {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorStringFromPlatformColor(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
+               end;
 
                if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
                   Result.GraphDraw.ShowLine[Result.GraphDraw.DataFilesPlotted.Count] := true;
                end;
                if (Graph in [ElevSlope,ElevSlopeDeg]) and (NumDEMs = 1) and (MDdef.ShowSDonElevSlope) and (MDdef.ShowGeomorphometry) then begin
-                  Result.OpenDataFile(Rfile2);
-                  Result.OpenDataFile(Rfile3);
+                  inc(n);
+                  Result.OpenDataFile(Rfile2);   //,WinGraphColors[n]);
+                  Result.OpenDataFile(Rfile3);   //,WinGraphColors[n]);
                   Result.GraphDraw.LineSize256[2] := 1;
                   Result.GraphDraw.LineSize256[3] := 1;
                end;

@@ -26,6 +26,10 @@
 
 //{$Define ExFresnel}
 
+//{$Define TrackElevationPointers}
+{$Define TrackColors}
+
+
 {$Define FMXU_point_cloud}
 
 {$Define MICRODEM}

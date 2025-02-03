@@ -89,6 +89,7 @@ function OpenDBString : shortstring;
 procedure InitializeDEMsWanted(var DEMList : tDEMBooleanArray; Setting : boolean);
 function DEMListForSingleDEM(CurDEM : integer) : tDEMBooleanArray;
 function DEMListForAllOpenDEM: tDEMBooleanArray;
+procedure WriteDEMListToDebug(Title : shortString; FileDEMList : tDEMBooleanArray);
 
 procedure MakeDEMSummaryTable;
 
@@ -156,6 +157,11 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
       procedure AutoOpenOptions;
    {$EndIf}
 
+{$EndIf}
+
+
+{$IfDef TrackElevationPointers}
+   function DEMArrayElevationPointersDefined(Report : shortstring; DEMsWanted : tDEMbooleanArray) : boolean;
 {$EndIf}
 
 
@@ -266,6 +272,27 @@ uses
    DEMDef_routines,
    DEMhandW,
    BaseMap;
+
+
+{$IfDef TrackElevationPointers}
+   function DEMArrayElevationPointersDefined(Report : shortstring; DEMsWanted : tDEMbooleanArray) : boolean;
+   var
+      j : integer;
+   begin
+      Result := true;
+      for j := 1 to MaxDEMDataSets do begin
+         if ValidDEM(j) then begin
+            if not DEMglb[j].ElevationStructuresAllocated then Result := false
+         end;
+      end;
+      if Result then begin
+         WriteLineToDebugFile(Report + ' DEM structure allocated');
+      end
+      else begin
+         HighlightLineToDebugFile(Report + ' DEM structure not allocated');
+      end;
+   end;
+{$EndIf}
 
 
 function TileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
@@ -409,6 +436,21 @@ begin
    InitializeDEMsWanted(Result,false);
    Result[CurDEM] := true;
 end;
+
+
+procedure WriteDEMListToDebug(Title : shortString; FileDEMList : tDEMBooleanArray);
+var
+   j : integer;
+begin
+   HighlightLineToDebugFile(Title);
+   for j := 1 to MaxDEMDataSets do begin
+      if FileDEMlist[j] then begin
+         if ValidDEM(j) then WriteLineToDebugFile(IntegerToString(j,3) + '  ' + DEMglb[j].AreaName)
+         else WriteLineToDebugFile(IntegerToString(j,3) + 'in list but not valid DEM or grid');
+      end;
+   end;
+end;
+
 
 function ValidDEMExt(ext : extstr) : boolean;
 begin
@@ -893,7 +935,6 @@ end;
       MakePickUseTable(fName);
       Table := tMyData.Create(fName);
       for i := 1 to MaxDEMDataSets do begin
-         //DEMsWanted[i] := false;
          if ValidDEM(i) and (not DEMGlb[i].HiddenGrid) then begin
             Table.Insert;
             Table.SetFieldByNameAsString('MENU_OPTS',IntToStr(i) + '-' + DEMGlb[i].AreaName);

@@ -51,6 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitTop = 33
     object Image1: TImage
       Left = 3
       Top = -247
@@ -3873,6 +3874,13 @@ object MapForm: TMapForm
         object Elevationslopemoments1: TMenuItem
           Caption = 'Elevation and slope moments'
           OnClick = Elevationslopemoments1Click
+        end
+        object N80: TMenuItem
+          Caption = '-'
+        end
+        object N81: TMenuItem
+          Caption = 'Elevation/slope plot'
+          OnClick = N81Click
         end
       end
       object Geomorphometryanalysis1: TMenuItem

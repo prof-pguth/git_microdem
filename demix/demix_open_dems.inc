@@ -26,7 +26,7 @@ var
             Limits := DEMGlb[DEM].FullDEMGridLimits;
             DEMGlb[DEM].FilledGridBox(Limits);
             fname := NextFileNumber(MDtempDir,DEMGlb[DEM].AreaName + '_trim_','.dem');
-            DEMGlb[DEM].WriteNewFormatDEM(Limits,fName);
+            DEMGlb[DEM].WriteNewFormatDEMWithLimits(Limits,fName);
             DEMGlb[DEM].DEMFileName := fName;
             DEMGlb[DEM].ReloadDEM(true);
             if OpenMaps then DEMGlb[DEM].SelectionMap.DoBaseMapRedraw;

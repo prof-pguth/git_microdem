@@ -4,8 +4,8 @@ object TerBaseSplashForm: TTerBaseSplashForm
   ActiveControl = Panel1
   BorderIcons = []
   BorderStyle = bsNone
-  ClientHeight = 243
-  ClientWidth = 380
+  ClientHeight = 230
+  ClientWidth = 383
   Color = clBtnFace
   DefaultMonitor = dmPrimary
   Font.Charset = DEFAULT_CHARSET
@@ -22,13 +22,15 @@ object TerBaseSplashForm: TTerBaseSplashForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 380
-    Height = 243
+    Width = 383
+    Height = 230
     Align = alClient
     BevelInner = bvLowered
     Color = clMoneyGreen
     ParentBackground = False
     TabOrder = 0
+    ExplicitWidth = 380
+    ExplicitHeight = 243
     object Label1: TLabel
       Left = 76
       Top = 11

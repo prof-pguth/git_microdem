@@ -2416,10 +2416,49 @@ object wmdem: Twmdem
       GroupIndex = 6
       OnClick = DEMIX2Click
     end
-    object CrossscaleDEMComparison1: TMenuItem
-      Caption = 'Cross scale DEM Comparison'
+    object DEMIXNeo1: TMenuItem
+      Caption = 'DEMIX Neo'
       GroupIndex = 6
-      OnClick = CrossscaleDEMComparison1Click
+      object Singletile1: TMenuItem
+        Caption = 'Single tile'
+        object CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem
+          Caption = 
+            'Correlation matrix single DEM to all others, multiple land cover' +
+            's breakout'
+          OnClick = CorrelationsingleDEMtoreferencealllandcovers1Click
+        end
+        object CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem
+          Caption = 'Correlation matrices among all DEMs for all land cover groups'
+          OnClick = CorrelationmatrixamongallDEMsforALLpixels1Click
+        end
+        object Graphdifferencedistributionsalllandcovers1: TMenuItem
+          Caption = 'Graph difference distributions all land covers'
+          OnClick = Graphdifferencedistributionsalllandcovers1Click
+        end
+        object FUVforrangescales1: TMenuItem
+          Caption = 'FUV for range scales (1 DEM to reference)'
+          OnClick = FUVforrangescales1Click
+        end
+        object FUVfor5DEMstoreference1: TMenuItem
+          Caption = 'FUV for 5 DEMs to reference'
+          OnClick = FUVfor5DEMstoreference1Click
+        end
+        object FUVbyLandcover1DEMtoreference1: TMenuItem
+          Caption = 'FUV by Landcover, 1 DEM to reference'
+          OnClick = FUVbyLandcover1DEMtoreference1Click
+        end
+      end
+      object Multipletiles1: TMenuItem
+        Caption = 'Multiple tiles'
+        object Differencedistributionstatistics1: TMenuItem
+          Caption = 'Difference distribution statistics'
+          OnClick = Differencedistributionstatistics1Click
+        end
+        object FUV2: TMenuItem
+          Caption = 'FUV'
+          OnClick = FUV2Click
+        end
+      end
     end
     object Help1: TMenuItem
       Caption = '&Help'

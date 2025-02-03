@@ -2710,7 +2710,7 @@ begin
             FName := ExtractFilePath(fName) + 'masked\' + ExtractFileName(fname);
             Limits := DEMGlb[OnDEM].FullDEMGridLimits;
             DEMGlb[OnDEM].FilledGridBox(Limits);
-            DEMGlb[OnDEM].WriteNewFormatDEM(Limits,fName);
+            DEMGlb[OnDEM].WriteNewFormatDEMWithLimits(Limits,fName);
             CloseSingleDEM(OnDEM);
          end;
       end;

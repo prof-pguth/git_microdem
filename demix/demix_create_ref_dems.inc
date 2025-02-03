@@ -775,7 +775,7 @@ var
 begin
    {$If Defined(Record3DEPXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
    if (DEMGlb[DEM].DEMFileName = '') then begin
-      DEMGlb[DEM].WriteNewFormatDEM(DEMGlb[DEM].DEMFileName,' save DEM before resampling');
+      DEMGlb[DEM].AskAndWriteNewFormatDEM(DEMGlb[DEM].DEMFileName,' save DEM before resampling');
    end;
    {$If Defined(TrackDEMCorners)} DEMGlb[DEM].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, starting DEM'); {$EndIf}
    try

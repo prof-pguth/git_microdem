@@ -1,12 +1,11 @@
 unit dem_map_scale;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -50,9 +49,9 @@ type
   public
     { Public declarations }
     DPI,WantMapXSize,WantMapYSize : integer;
-    WantLat,WantLong,
+    xmeters,ymeters,scale,
     OldCenterLat,OldCenterLong,
-    xmeters,ymeters,scale : float64;
+    WantLat,WantLong : float64;
     MapDatumConstants : tMapProjection;
     procedure ShowMapSize;
   end;

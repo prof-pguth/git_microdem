@@ -539,9 +539,9 @@ begin
     fName := DEMGlb[BigDEM].DEMFileName;
     if ToUTM then TStr := 'utm' else Tstr := 'geo';
 
-    fName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_' + TStr + ExtractFileExt(fName);
+    //fName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_' + TStr + ExtractFileExt(fName);
     DEMGlb[NewDEM].CheckMaxMinElev;
-    DEMGlb[NewDEM].WriteNewFormatDEM(fName,'New DEM');
+    DEMGlb[NewDEM].WriteNewFormatDEM(ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_' + TStr + ExtractFileExt(fName));
     UKOS.Destroy;
    {$IfDef RecordUKOS} WriteLineToDebugFile('Written and out'); {$EndIf}
 end;

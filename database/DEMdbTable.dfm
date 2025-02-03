@@ -2169,12 +2169,6 @@ object dbtablef: Tdbtablef
         Caption = 'Load CopDEM and Landcover for area'
         OnClick = LoadCopDEMandLandcoverforarea1Click
       end
-      object N52: TMenuItem
-        Caption = '-'
-      end
-      object SSIMR2graphforthistile1: TMenuItem
-        Caption = 'SSIM/FUV graph for this tile'
-      end
     end
     object Insertnewrecordatdistancebearing1: TMenuItem
       Caption = 'Insert new record at distance/bearing'

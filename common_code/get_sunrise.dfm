@@ -4,8 +4,8 @@ object sunrisepicker: Tsunrisepicker
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Sunrise options'
-  ClientHeight = 352
-  ClientWidth = 172
+  ClientHeight = 363
+  ClientWidth = 203
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

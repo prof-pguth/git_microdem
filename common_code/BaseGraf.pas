@@ -9,6 +9,7 @@ unit BaseGraf;
 
 
 
+
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
@@ -25,6 +26,7 @@ unit BaseGraf;
        {$Define RecordMenuMisdirect}
        {$Define RecordClipboard}
        {$Define RecordHistogram}
+       //{$Define TrackColors}
        //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
@@ -541,6 +543,7 @@ type
      procedure WriteDataSeriesASCII(XAxis,ASCII : boolean; var fftfilename : PathStr; var TotalNumberPoints : integer; DefSeries : integer = -1);
      procedure WindowGraphAxes(Bitmap : tMyBitmap);  //; DrawInsideLines : boolean = true);
      procedure AddCorrelationToCorner;
+     {$IfDef TrackColors} procedure GraphColorsRecord(WhereAt : shortstring);  {$EndIf}
   end;
 
 var
@@ -648,6 +651,20 @@ var
    LegendBitmap : tMyBitmap;
    BestFitLineWidth : integer;
    FilterTerms : integer;
+
+
+{$IfDef TrackColors}
+   procedure TThisBaseGraph.GraphColorsRecord(WhereAt : shortstring);
+   var
+      I : Integer;
+      aLine : shortstring;
+   begin
+      aLine := 'GraphColorsRecord  at ' + WhereAt;
+      for I := 1 to 5 do aLine := aLine + '  ' + ColorString(GraphDraw.FileColors256[i]);
+      WritelineToDebugFile(aline);
+   end;
+{$EndIf}
+
 
 
 function TThisBaseGraph.PlotDataFile(i : integer) : boolean;
@@ -1388,8 +1405,7 @@ begin
              ReplaceCharacter(TStr,',',' ');
           end
           else TStr := 'Series ' + IntToStr(i);
-          Words.Add(TStr + ',Y,N,' + IntToStr(GraphDraw.LineSize256[i]) + ',' +
-             IntToStr(ConvertPlatformColorToTColor(GraphDraw.FileColors256[i])) + ',' + GraphDraw.DataFilesPlotted.Strings[pred(i)]);
+          Words.Add(TStr + ',Y,N,' + IntToStr(GraphDraw.LineSize256[i]) + ',' + IntToStr(ConvertPlatformColorToTColor(GraphDraw.FileColors256[i])) + ',' + GraphDraw.DataFilesPlotted.Strings[pred(i)]);
        end;
    //end;
    fName := NextFileNumber(MDTempDir, 'graph_file_list', '.csv');
@@ -2681,6 +2697,7 @@ var
    Coords3 : ^Coord3Array;
 begin
    {$If Defined(RecordScaling)} WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram in ' +  GraphDraw.AxisRange); {$EndIf}
+   {$IfDef TrackColors} GraphColorsRecord('AutoScaleAndRedrawDiagram enter'); {$EndIf}    SetMenus;
    with GraphDraw do begin
       if DoHoriz or DoVert then begin
          if DoHoriz then begin
@@ -2797,6 +2814,7 @@ begin
    {$If Defined(RecordGrafSize) or Defined(RecordScaling)}
       WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram out Client size, ' + FormClientSize(Self) + ' ' + ImageSize(Image1) + '  ' + GraphDraw.AxisRange);
    {$EndIf}
+   {$IfDef TrackColors} GraphColorsRecord('AutoScaleAndRedrawDiagram out'); {$EndIf}    SetMenus;
 end;
 
 
@@ -3720,6 +3738,7 @@ begin
      SetUpGraphForm;
     {$IfDef TrackFormCreate} WriteLineToDebugFile('TThisBaseGraph.FormCreate out, visible=' + TrueOrFalse(Visible)); {$EndIf}
     {$IfDef RecordGraf} WriteLineToDebugFile('TThisBaseGraph.FormCreate out ' + intToStr(ClientWidth) + 'x' + intToStr(ClientHeight)); {$EndIf}
+    {$IfDef TrackColors} GraphColorsRecord('end form create'); {$EndIf}
 end;
 
 
@@ -3785,6 +3804,7 @@ begin
 
    New(PointDataBuffer);
    {$IfDef RecordGraphMemoryAlocations} WriteLineToDebugFile('Allocate PointDataBuffer in tThisBaseGraph.OpenDataFile ' + IntToStr(SizeOf(PointDataBuffer^))); {$EndIf}
+   {$IfDef TrackColors} GraphColorsRecord('After OpenDataFile'); {$EndIf}
    PointsInDataBuffer := 0;
 end;
 
@@ -5092,7 +5112,7 @@ begin
     if RedrawingNow or (NoDrawingGraph) then exit;
     RedrawingNow := true;
     {$If Defined(RecordGraphColors) or Defined(RecordGrafAxes)} writelineToDebugFile('TThisBaseGraph.RedrawDiagram11Click, ' + GraphDraw.AxisRange); {$EndIf}
-    SetMenus;
+    {$IfDef TrackColors} GraphColorsRecord('RedrawDiagram11Click enter'); {$EndIf}    SetMenus;
     try
        ShowHourglassCursor;
        if (RoseData <> Nil) then begin
@@ -5239,6 +5259,7 @@ begin
                      {$IfDef DataFilesPlottedTable} writelineToDebugFile('DataFilesPlottedTable done'); {$EndIf}
                    end
                    else begin
+                       {$IfDef TrackColors} GraphColorsRecord('RedrawDiagram11Click before loop'); {$EndIf}
                        for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do if PlotDataFile(i) then begin
                           PlotDataFilesPlotted(Bitmap,GraphDraw.DataFilesPlotted.Strings[i],succ(i));
                        end;
@@ -5320,7 +5341,7 @@ begin
        GraphDraw.GraphDrawn := true;
        ShowDefaultCursor;
     end;
-end;
+end {procedure TThisBaseGraph.RedrawDiagram11Click};
 
 
 procedure TThisBaseGraph.Pointdensity1Click(Sender: TObject);

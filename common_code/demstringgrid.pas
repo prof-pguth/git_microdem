@@ -21,6 +21,7 @@ unit demstringgrid;
    //{$Define StringGridSortProblems}
    //{$Define StringGridProblems}
    //{$Define StringGridColors}
+   {$Define TrackStringGrid}
    //{$Define CorrleationMatrixProblems}
 {$EndIf}
 
@@ -74,16 +75,17 @@ type
     procedure BitBtn11Click(Sender: TObject);
   private
     { Private declarations }
+    procedure ReadRMatrix;
   public
     { Public declarations }
     R          : array[1..MaxMatrixSize,1..MaxMatrixSize] of float64;
     FieldNames : array[1..MaxMatrixSize] of shortstring;
-    NumVar,NumDec     : integer;
+    NumVar,NumDec,FirstDataColumn  : integer;
     OutputHeader : tStringList;
     AutoSizeCols : boolean;
     DoR : tGridCorrelationMatrix;
     theTitle,URstring,LegUnits : shortString;
-    NeedRs : boolean;
+    ReadRs : boolean;
     procedure HideCorrelationControls(Show : boolean = false);
     procedure ShowSortingControls(Show : boolean = false);
     procedure SetFormSize;
@@ -104,6 +106,18 @@ implementation
 uses
    PetDBUtils,PetImage,BaseGraf, Petimage_form,
    DEMdatabase,nevadia_main;
+
+function OpenCorrelationMatrix(Title : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
+begin
+   {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix in'); {$EndIf}
+   Result := TGridForm.Create(Application);
+   Result.theTitle := Title;
+   Result.Caption := Title;
+   Result.ReadCSVFile(fName);
+   Result.SetFormSize;
+   {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix out'); {$EndIf}
+end;
+
 
 
 procedure Mergesort(Grid:TStringgrid; var Vals: array of integer; sortcol,datatype : integer; ascending : boolean);
@@ -141,8 +155,8 @@ var
 
         {---------- Merge -------------}
         procedure Merge(ALo,AMid,AHi:Integer);
-           var
-              i,j,k,m,n:Integer;
+        var
+           i,j,k,m,n:Integer;
         begin
           i:=0;
           setlength(Avals,Amid-alo+1);
@@ -192,7 +206,7 @@ var
         end;
 
 begin
-  PerformMergeSort(0,high(vals));
+   PerformMergeSort(0,high(vals));
 end;
 
 
@@ -233,19 +247,6 @@ end;
 {------------------------------------------------------------------------------------------------------------------}
 
 
-function OpenCorrelationMatrix(Title : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
-begin
-   {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix in'); {$EndIf}
-   Result := TGridForm.Create(Application);
-   Result.theTitle := Title;
-   Result.Caption := Title;
-   Result.NeedRs := true;
-   Result.ReadCSVFile(fName);
-  //Result.Variety := Variety;
-   Result.SetFormSize;
-   {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix out'); {$EndIf}
-end;
-
 
 procedure TGridForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -266,6 +267,7 @@ procedure TGridForm.FormCreate(Sender: TObject);
 begin
    OutputHeader := Nil;
    AutoSizeCols := false;
+   ReadRs := false;
    ShowSortingControls(false);
    URString := '';
    LegUnits := 'r';
@@ -342,14 +344,21 @@ begin
   {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.ReadCSVFile in'); {$EndIf}
   FileInMemory := tStringList.Create;
   FileInMemory.LoadFromFile(fName);
+  if FileInMemory.Count < 2 then begin
+     MessageToContinue('Check file for valid data, ' + fName);
+     FileInMemory.Destroy;
+     exit;
+  end;
+  FirstDataColumn := 1;
 
   MenuStr := ptTrim(FileInMemory.Strings[0]);
   GetSeparationCharacter(MenuStr,SepChar);
   OnLine := 0;
   for i := 0 to pred(FileInMemory.Count) do begin
      MenuStr := ptTrim(FileInMemory.Strings[i]);
-     for j := pred(Length(MenuStr)) downto 1 do
+     for j := pred(Length(MenuStr)) downto 1 do begin
         if (MenuStr[j] = SepChar) and (MenuStr[succ(j)] = SepChar) then System.Insert(' ',MenuStr,succ(j));
+     end;
      j := 0;
      repeat
          TStr := ptTrim(BeforeSpecifiedCharacterANSI(MenuStr,SepChar,false,true));
@@ -361,22 +370,32 @@ begin
   end;
   NumVar := pred(StringGrid1.ColCount);
   StringGrid1.RowCount := FileInMemory.Count;
+  FileInMemory.Free;
+  FirstDataColumn := 1;
+  While not IsNumeric(StringGrid1.Cells[FirstDataColumn,1]) do inc(FirstDataColumn);
+  {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.ReadCSVFile out'); {$EndIf}
+end;
 
-   if NeedRs then begin
+
+procedure TGridForm.ReadRMatrix;
+var
+  i,j : integer;
+  TStr : shortstring;
+begin
+   if not ReadRs then begin
       {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.ReadCSVFile find R'); {$EndIf}
-        for i := 1 to pred(StringGrid1.ColCount) do begin
+        for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
            FieldNames[i] := ptTrim(StringGrid1.Cells[i,0]);
            for j := 1 to pred(StringGrid1.RowCount) do begin
               TStr := StringGrid1.Cells[i,j];
-              if (TStr <> '') and (UpperCase(TStr) <> 'NAN') and (i <= MaxMatrixSize) and (j <= MaxMatrixSize) then begin
+              if (TStr <> '') and (UpperCase(TStr) <> 'NAN') and (i <= MaxMatrixSize) and (j <= MaxMatrixSize) and IsNumeric(TStr) then begin
                  r[i,j] := StrToFloat(TStr);
               end;
            end;
         end;
-      BitBtn10Click(Nil);
+        ReadRs := true;
+      //BitBtn10Click(Nil);
    end;
-   FileInMemory.Free;
-   {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.ReadCSVFile out'); {$EndIf}
 end;
 
 procedure TGridForm.HideCorrelationControls(Show : boolean = false);
@@ -388,7 +407,7 @@ begin
    Edit1.Visible := Show;
    Edit2.Visible := Show;
    Label1.Visible := Show;
-   NeedRs := false;
+   //NeedRs := false;
 end;
 
 
@@ -479,17 +498,18 @@ const
    LegendSize : integer = 250;
    BoxSize  : integer = 0;
    FontSize : integer = 0;
+   ShowHeader : boolean = true;
    fName : PathStr = '';
 var
    Bitmap,Bitmap2 : tMyBitmap;
    Table : tMyData;
-   TStr : shortString;
+   TStr,aLabel1,aLabel2,LeftLabel : shortString;
    x1,y1,x2,y2,i,j : integer;
    MinVal,MaxVal : float64;
    r,delta,value,Perfect : float64;
-   ShowHeader : boolean;
 begin
    {$IfDef StringGridColors} WriteLineToDebugFile('TGridForm.BitBtn6Click in'); {$EndIf}
+   ReadRMatrix;
    if (BoxSize = 0) then begin
       if (StringGrid1.ColCount > 100) then begin
          BoxSize := 10;
@@ -501,7 +521,7 @@ begin
       end;
    end;
 
-   if (Sender <> nil) then begin
+   if false and (Sender <> nil) then begin
       ReadDefault('Box size',BoxSize);
       ReadDefault('Font size',FontSize);
       ShowHeader := AnswerIsYes('Show caption');
@@ -509,14 +529,16 @@ begin
          fName := ProgramRootDir + 'correlations' + DefaultDBExt;
          GetFileFromDirectory('Correlation color table',DefaultDBMask,fName);
       end;
-   end
-   else ShowHeader := true;
+   end;
 
     MinVal := 99999;
     MaxVal := -9999;
-    for i := 1 to pred(StringGrid1.ColCount) do begin
+    for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
        for j := 1 to pred(StringGrid1.RowCount) do  begin
-          if (j <> i) then Petmath.CompareValueToExtremes(StrToFloat(StringGrid1.Cells[i,j]),MinVal,MaxVal);
+          if StringGrid1.Cells[0,j] <> StringGrid1.Cells[i,0] then begin
+             //Avoid autocorrelations
+             Petmath.CompareValueToExtremes(StrToFloat(StringGrid1.Cells[i,j]),MinVal,MaxVal);
+          end;
        end;
     end;
 
@@ -595,26 +617,35 @@ begin
    Bitmap.Canvas.Font.Style := [fsBold];
 
    for j := 1 to pred(StringGrid1.RowCount) do begin
-      i := Bitmap.Canvas.TextWidth(StringGrid1.Cells[0,j]) + 15;
+      if FirstDataColumn = 1 then LeftLabel := StringGrid1.Cells[0,j]
+      else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
+
+      i := Bitmap.Canvas.TextWidth(LeftLabel) + 15;
       if I > LeftOffset then LeftOffset := i;
    end;
    LegendSize := 65 + Bitmap.Canvas.TextWidth(' 1.0000 > ' + LegUnits + ' > -1.0000');
 
    {$IfDef StringGridProblems} WriteLineToDebugFile('start columns'); {$EndIf}
-   for i := 1 to pred(StringGrid1.ColCount) do  begin
+   for i := FirstDataColumn to pred(StringGrid1.ColCount) do  begin
       {$IfDef StringGridProblems}    WriteLineToDebugFile('i=' + IntToStr(i)); {$EndIf}
       Bitmap.Canvas.Brush.Style := bsClear;
       Petmar.TextOutVertical(Bitmap.Canvas,LeftOffset+pred(i)*BoxSize,LeftOffset-5,RemoveUnderscores(StringGrid1.Cells[i,0]));
       for j := 1 to pred(StringGrid1.RowCount) do  begin
          Bitmap.Canvas.Brush.Style := bsClear;
-         TStr := RemoveUnderscores(StringGrid1.Cells[0,j]);
-         Bitmap.Canvas.TextOut(LeftOffset - 5 - Bitmap.Canvas.TextWidth(TStr),LeftOffset+5 + pred(j) * BoxSize,TStr);
+         //TStr := RemoveUnderscores(StringGrid1.Cells[0,j]);
+         if FirstDataColumn = 1 then LeftLabel := StringGrid1.Cells[0,j]
+         else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
+         LeftLabel := RemoveUnderscores(LeftLabel);
+         Bitmap.Canvas.TextOut(LeftOffset - 5 - Bitmap.Canvas.TextWidth(LeftLabel),LeftOffset+5 + pred(j) * BoxSize,LeftLabel);
          r := StrToFloat(StringGrid1.Cells[i,j]);
          x1 := LeftOffset + pred(i)*BoxSize;
          y1 := LeftOffset + pred(j)*BoxSize;
          x2 := LeftOffset + (i)*BoxSize;
          y2 := LeftOffset + (j)*BoxSize;
-         if (i=j) then begin
+         //if (i=j) then begin
+         aLabel1 := StringGrid1.Cells[0,1];
+         aLabel2 := StringGrid1.Cells[i,0];
+         if StringGrid1.Cells[0,j] = StringGrid1.Cells[i,0] then begin
             //Bitmap.Canvas.Brush.Color := clWhite;
             Bitmap.Canvas.MoveTo(x1,y1);  Bitmap.Canvas.LineTo(x2,y2);
             Bitmap.Canvas.MoveTo(x1,y2);  Bitmap.Canvas.LineTo(x2,y1);

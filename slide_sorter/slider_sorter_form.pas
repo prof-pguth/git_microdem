@@ -1,11 +1,11 @@
 unit slider_sorter_form;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 {$I nevadia_defines.inc}
@@ -684,7 +684,7 @@ end;
 
 procedure TSlideSorterForm.MenuItem6Click(Sender: TObject);
 begin
-   {$IfDef LogSlideSorter}   WriteLineToDebugFile('Call editor, fname=' + fName[CurThumbnail]);   {$EndIf}
+   {$IfDef LogSlideSorter}   WriteLineToDebugFile('Call editor, fname=' + fName[CurThumbnail]); {$EndIf}
 
    Petimage_form.DisplayBitmap(fName[CurThumbnail],'',true);
 end;
@@ -714,5 +714,5 @@ end;
 
 initialization
 finalization
-   {$IfDef LogSlideSorter}   WriteLineToDebugFile('LogSlideSorter active in slider_sorter_form');   {$EndIf}
+   {$IfDef LogSlideSorter}   WriteLineToDebugFile('LogSlideSorter active in slider_sorter_form'); {$EndIf}
 end.

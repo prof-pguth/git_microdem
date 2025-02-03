@@ -219,7 +219,7 @@ var
 begin
   {$IfDef RecordVAT} WriteLineToDebugFile('tDEMDataSet.CreateVATforDEM, in ' + DEMFileName); {$EndIf}
    if (DEMFileName = '') then begin
-      WriteNewFormatDEM(DEMFileName,' save DEM before vat creation');
+      AskAndWriteNewFormatDEM(DEMFileName,' save DEM before vat creation');
    end;
   fName := DEMFileName + '.vat.dbf';
   if not FileExists(fName) then fName := ChangeFileExt(DEMFileName,'.vat.dbf');

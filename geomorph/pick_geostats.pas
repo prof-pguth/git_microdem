@@ -652,7 +652,8 @@ end;
 
 procedure TPickGeoStat.Button5Click(Sender: TObject);
 begin
-   ElevationSlopePlot(DEMListToProcess,MDDef.ElevBinSize,Memo1);
+   Button15Click(Sender);
+   AspectDistributionBySlope(CurDEM,DEMGlb[CurDEM].FullDEMGridLimits);
 end;
 
 procedure TPickGeoStat.Button6Click(Sender: TObject);

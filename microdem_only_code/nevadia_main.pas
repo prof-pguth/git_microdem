@@ -626,10 +626,20 @@ type
     CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
-    CrossscaleDEMComparison1: TMenuItem;
+    DEMIXNeo1: TMenuItem;
     N15: TMenuItem;
     N58: TMenuItem;
     MultipleDEMsonearea015secscale1: TMenuItem;
+    CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem;
+    CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem;
+    Singletile1: TMenuItem;
+    Graphdifferencedistributionsalllandcovers1: TMenuItem;
+    Multipletiles1: TMenuItem;
+    Differencedistributionstatistics1: TMenuItem;
+    FUV2: TMenuItem;
+    FUVforrangescales1: TMenuItem;
+    FUVfor5DEMstoreference1: TMenuItem;
+    FUVbyLandcover1DEMtoreference1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1051,9 +1061,17 @@ type
     procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
-    procedure CrossscaleDEMComparison1Click(Sender: TObject);
     procedure N58Click(Sender: TObject);
     procedure MultipleDEMsonearea015secscale1Click(Sender: TObject);
+    procedure CorrelationsingleDEMtoreferencealllandcovers1Click(
+      Sender: TObject);
+    procedure CorrelationmatrixamongallDEMsforALLpixels1Click(Sender: TObject);
+    procedure Graphdifferencedistributionsalllandcovers1Click(Sender: TObject);
+    procedure Differencedistributionstatistics1Click(Sender: TObject);
+    procedure FUV2Click(Sender: TObject);
+    procedure FUVforrangescales1Click(Sender: TObject);
+    procedure FUVfor5DEMstoreference1Click(Sender: TObject);
+    procedure FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1715,6 +1733,7 @@ begin
    Toolbar1.Visible := MDDef.ShowMainToolbar and (MDDef.ProgramOption <> DragonPlotProgram);
    Introductorytutorials1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
    Help1.Visible := (MDDef.ProgramOption <> DragonPlotProgram) or TrilobiteComputer;
+   DEMIXNeo1.Visible := TrilobiteComputer;
 
    ExpertDEMVersion := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (NumDEMDataSetsOpen > 0);
    RemoteSensingLabs1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
@@ -1818,7 +1837,7 @@ begin
    Edit1.Visible := (MDDef.ProgramOption = ExpertProgram) and (NumDEMDataSetsOpen = 0);
    Photos1.Visible := (MDDef.ProgramOption = ExpertProgram);
 
-   CrossscaleDEMComparison1.Visible := TrilobiteComputer;
+   DEMIXNeo1.Visible := TrilobiteComputer;
 
    {$IfDef ExDP}
       DragonPlot1.Visible := false;
@@ -2715,7 +2734,7 @@ end;
 
 procedure Twmdem.N58Click(Sender: TObject);
 begin
-   FUVforRangeScales;
+   FUVforRangeScales(false)
 end;
 
 procedure Twmdem.Overwrite1Click(Sender: TObject);
@@ -2892,6 +2911,11 @@ begin
    {$IfDef SQLiteDefaultDBs}
       MDDef.ForceOverwriteDB := false;
    {$EndIf}
+end;
+
+procedure Twmdem.Graphdifferencedistributionsalllandcovers1Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(3);
 end;
 
 procedure Twmdem.Graphevaluationandscores1Click(Sender: TObject);
@@ -3424,6 +3448,7 @@ begin
    MoveReferenceDSMs;
 end;
 
+
 procedure Twmdem.Correlationmatrix1Click(Sender: TObject);
 var
    fName : PathStr;
@@ -3436,6 +3461,16 @@ begin
    if GetFileFromDirectory(TStr + ' matrix','*.csv',fName) then OpenCorrelationMatrix(TStr,fName);
 end;
 
+
+procedure Twmdem.CorrelationmatrixamongallDEMsforALLpixels1Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(1);
+end;
+
+procedure Twmdem.CorrelationsingleDEMtoreferencealllandcovers1Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(2);
+end;
 
 procedure Twmdem.Createcompositebitmap1Click(Sender: TObject);
 begin
@@ -3490,12 +3525,6 @@ procedure Twmdem.Criteriaranges1Click(Sender: TObject);
 begin
    ComputeCriteriaRanges;
 end;
-
-procedure Twmdem.CrossscaleDEMComparison1Click(Sender: TObject);
-begin
-   CrossScaleDEMComparison;
-end;
-
 
 procedure Twmdem.InOutButtonClick(Sender: TObject);
 begin
@@ -4837,6 +4866,31 @@ begin
    SimpleProfiles;
 end;
 
+
+procedure Twmdem.Differencedistributionstatistics1Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(4);
+end;
+
+procedure Twmdem.FUV2Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(5);
+end;
+
+procedure Twmdem.FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
+begin
+   FUVforRangeScales(true);
+end;
+
+procedure Twmdem.FUVfor5DEMstoreference1Click(Sender: TObject);
+begin
+   FUVforScales_0_15sec;
+end;
+
+procedure Twmdem.FUVforrangescales1Click(Sender: TObject);
+begin
+   FUVforRangeScales(false);
+end;
 
 procedure Twmdem.Differencetwobitmaps1Click(Sender: TObject);
 begin

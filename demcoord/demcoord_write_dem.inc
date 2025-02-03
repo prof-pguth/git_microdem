@@ -62,7 +62,7 @@ var
    NewDEM : integer;
 begin
    tName := MDTempDir + 'sub-' + AreaName + '.dem';
-   WriteNewFormatDEM(DEMGridLimits,tName);
+   WriteNewFormatDEMwithLimits(DEMGridLimits,tName);
    LoadNewDEM(NewDEM,tName,false);
    DEMGlb[NewDEM].SaveAsGeotiff(fName);
    CloseSingleDEM(NewDEM);
@@ -71,7 +71,7 @@ end;
 
 procedure tDEMDataSet.SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
 begin
-   WriteNewFormatDEM(Limits,FileName);
+   WriteNewFormatDEMwithLimits(Limits,FileName);
 end;
 
 procedure tDEMDataSet.SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
@@ -94,18 +94,38 @@ begin
    {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SavePartOfDEMWithData full ' + GridLimitsToString(Limits)); {$EndIf}
    FilledGridBox(Limits);
    {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' with data ' + GridLimitsToString(Limits)); {$EndIf}
-   WriteNewFormatDEM(Limits,FileName);
+   WriteNewFormatDEMwithLimits(Limits,FileName);
 end;
 
 
-procedure tDEMDataSet.WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');
+procedure tDEMDataSet.AskAndWriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');
+begin
+   {$IfDef VCL}
+      if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
+         if (FileName = '') or (not ValidPath(FileName)) then begin
+            FileName := AreaName;
+            StripInvalidPathNameChars(Filename);
+            FileName := DEMDefs.WriteDEMDir + FileName;
+         end;
+         if (WhatFor <> '') then WhatFor := ' for ' + WhatFor;
+         if not GetFileNameDefaultExt('New DEM' + WhatFor,'DEM|*.dem',FileName) then exit;
+         DEMDefs.WriteDEMDir := ExtractFilePath(FileName);
+      end;
+   {$EndIf}
+
+   DEMFileName := FileName;
+   WriteNewFormatDEMwithLimits(FullDEMGridLimits,FileName);
+end;
+
+procedure tDEMDataSet.WriteNewFormatDEM(FileName : PathStr);
 begin
    DEMFileName := FileName;
-   WriteNewFormatDEM(FullDEMGridLimits,FileName,WhatFor);
+   WriteNewFormatDEMwithLimits(FullDEMGridLimits,FileName);
 end;
 
 
-procedure tDEMDataSet.WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');
+
+procedure tDEMDataSet.WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName : PathStr);
 
       function HeaderToString(NewHeadRecs : tDEMheader) : ANSIstring;
       var
@@ -168,18 +188,6 @@ begin
        CheckVAT;
        exit;
     end;
-   {$IfDef VCL}
-      if (FileName = '') or (not FileExtEquals(FileName,'.DEM')) then begin
-         if (FileName = '') or (not ValidPath(FileName)) then begin
-            FileName := AreaName;
-            StripInvalidPathNameChars(Filename);
-            FileName := DEMDefs.WriteDEMDir + FileName;
-         end;
-         if (WhatFor <> '') then WhatFor := ' for ' + WhatFor;
-         if not GetFileNameDefaultExt('New DEM' + WhatFor,'DEM|*.dem',FileName) then exit;
-         DEMDefs.WriteDEMDir := ExtractFilePath(FileName);
-      end;
-   {$EndIf}
 
    try
       ShowHourglassCursor;

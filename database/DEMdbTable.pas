@@ -982,7 +982,6 @@ type
     LoadtestandreferenceDEMs1: TMenuItem;
     BitBtn13: TBitBtn;
     N51: TMenuItem;
-    N52: TMenuItem;
     Createnewtables1: TMenuItem;
     Modifythistable1: TMenuItem;
     Filterthistable1: TMenuItem;
@@ -10570,6 +10569,7 @@ procedure Tdbtablef.Graphforatile1Click(Sender: TObject);
 begin
    GraphForDifferenceDistributionByTile(DBonTable);
 end;
+
 
 procedure Tdbtablef.Graphicallymovepoints1Click(Sender: TObject);
 var

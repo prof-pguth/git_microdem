@@ -3,8 +3,8 @@ object pc_opts_form: Tpc_opts_form
   Top = 0
   BorderIcons = []
   Caption = 'Principal components options'
-  ClientHeight = 276
-  ClientWidth = 251
+  ClientHeight = 269
+  ClientWidth = 247
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -2,12 +2,12 @@
 
 unit petmar_db;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 
 //The primary database format is dBase DBF, for ESRI shapefiles
@@ -2738,5 +2738,6 @@ end;
 initialization
 finalization
 end.
+
 
 

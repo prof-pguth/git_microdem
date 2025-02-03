@@ -70,11 +70,11 @@ type
    tPartialGrids = array[1..5] of integer;
 
 //new, faster (hopefully)
-   function CreateHillshadeMap(OpenMap : boolean; DEM : integer; Outname : PathStr = '') : integer;
-   function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; OutName : PathStr = ''; Radius : integer = 0) : integer;
+   function CreateHillshadeMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
+   function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0) : integer;
    procedure CreateOpennessMap(OpenMap : boolean; GridLimits : tGridLimits; DEM,BoxSizeMeters : integer; var Upward,DownWard,Difference : integer);
 
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -89,16 +89,16 @@ function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : in
 
 //function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
-function MakeAspectMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 
-function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; fName : PathStr = '') : integer;
+function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
 
 procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 
-function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-function MakeTPIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
+function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; SaveName : PathStr = '') : integer;
+function MakeTPIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; SaveName : PathStr = '') : integer;
 function MakeSpecifiedTPIGrid(CurDEM : integer; GridLimits : tGridLimits; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
-function MakeMAD2KGrid(CurDEM : integer; OpenMap : boolean = true) : integer;
+function MakeMAD2KGrid(CurDEM : integer; OpenMap : boolean = true; SaveName : PathStr = '') : integer;
 
 function CreateSpecifiedRoughnessMap(DEM : integer; GridLimits : tGridLimits;OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
 
@@ -486,7 +486,7 @@ end;
 
 
 
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2) : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
 var
    x,y,xr,yr,n : integer;
    Sum,zt,z : float32;
@@ -518,6 +518,7 @@ begin
       end;
       DEMGlb[Result].CheckMaxMinElev;
       if OpenMap then DEMGlb[Result].SetupMap(false,mtElevSpectrum);
+      if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
    end;
 end;
 
@@ -549,14 +550,18 @@ begin
 end;
 
 
-function MakeAspectMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 var
    x,y : integer;
    SlopeAspectRec : tSlopeAspectRec;
+   TStr : shortstring;
 begin
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('MakeAspectMap in, method=' + IntToStr(MDDef.SlopeAlgorithm)); {$EndIf}
-   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'aspect_' + DEMGlb[DEM].AreaName,euAspectDeg);
-   if (OutName <> '') then DEMGlb[Result].AreaName := ExtractFileNameNoExt(OutName);
+    if (SaveName = '') then TStr := 'aspect_' + DEMGlb[DEM].AreaName
+    else TStr := ExtractFileNameNoExt(SaveName);
+
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,TStr,euAspectDeg);
+   if (SaveName <> '') then TStr := ExtractFileNameNoExt(SaveName);
    StartProgress('Aspect difference');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if (x mod 50 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -575,6 +580,7 @@ begin
        DEMglb[Result].SetupMap(false,mtDEMAspect);
        {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('MakeAspectMap out'); {$EndIf}
    end;
+   if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
 end;
 
 
@@ -805,14 +811,16 @@ end;
 
 
 
-function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; OutName : PathStr = ''; Radius : integer = 0) : integer;
+function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0) : integer;
 var
    x,y : integer;
    Slope : float64;
+   TStr : shortstring;
 begin
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSlopeMapPercent, method=' + IntToStr(MDDef.SlopeAlgorithm)); {$EndIf}
-   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'slope_' + DEMGlb[DEM].AreaName,euPercentSlope);
-   if (OutName <> '') then DEMGlb[Result].AreaName := ExtractFileNameNoExt(OutName);
+   if (SaveName = '') then TStr := 'slope_' + DEMGlb[DEM].AreaName
+   else TStr := ExtractFileNameNoExt(SaveName);
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,TStr,euPercentSlope);
    if ShowSatProgress then StartProgressAbortOption('Slope');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -824,19 +832,22 @@ begin
    end;
    DEMglb[Result].CheckMaxMinElev;
    if ShowSatProgress then EndProgress;
+   if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
    if OpenMap then DEMglb[Result].SetupMap(false,MDDef.DefSlopeMap);
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSlopeMapPercent, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 
-function CreateHillshadeMap(OpenMap : boolean; DEM : integer; Outname : PathStr = '') : integer;
+function CreateHillshadeMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 var
    x,y : integer;
    z : float32;
+   TStr : shortstring;
 begin
    {$If Defined(RecordDEMIXhillshades)} HighLightLineToDebugFile('CreateHillshadeMap for DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName + ' ' + DEMGlb[DEM].KeyParams(true));  {$EndIf}
-   if (OutName = '') then OutName := 'hillshade_' + DEMGlb[DEM].AreaName;
-   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,OutName,euUndefined);
+   if (SaveName = '') then TStr := 'hillshade_' + DEMGlb[DEM].AreaName
+   else TStr := ExtractFileNameNoExt(SaveName);
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,SaveName,euUndefined);
    DEMGlb[DEM].ReflectanceParams;
    if ShowSatProgress then StartProgress('Hillshade');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
@@ -850,6 +861,8 @@ begin
    if ShowSatProgress then EndProgress;
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetupMap(false,mtElevGray);
+   if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
+
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
    {$If Defined(RecordDEMIXhillshades)} WriteLineToDebugFile('Created Slope Grid=' + IntToStr(Result) + '  ' + DEMGlb[Result].AreaName + ' ' + DEMGlb[Result].KeyParams(true)); {$EndIf}
 end;
@@ -902,16 +915,18 @@ begin
 end;
 
 
-function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; fName : PathStr = '') : integer;
+function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
 var
    x,y,i,j,Radius,NPts : integer;
    sl : array[1..500] of float32;
    MomentVar : tMomentVar;
    s,s2,svar,Mean,std_dev : float64;
    z : float32;
+   TStr : shortstring;
 begin
-   if (fName = '') then fName := 'md_elev_std_' + FilterSizeStr(BoxSize) + '_' + DEMGlb[DEM].AreaName;
-   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,fName,DEMGlb[DEM].DEMheader.ElevUnits);
+   if (SaveName = '') then Tstr := 'md_elev_std_' + FilterSizeStr(BoxSize) + '_' + DEMGlb[DEM].AreaName
+   else TStr := ExtractFileNameNoExt(SaveName);
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,TStr,DEMGlb[DEM].DEMheader.ElevUnits);
    Radius := BoxSize div 2;
    if ShowSatProgress then StartProgressAbortOption('std dev grid');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
@@ -945,6 +960,7 @@ begin
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
    if ShowSatProgress then EndProgress;
+   if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
@@ -1084,9 +1100,13 @@ begin
 end;
 
 
-function MakeTPIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true) : integer;
+function MakeTPIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; SaveName : PathStr = '') : integer;
 begin
    Result := MakeSpecifiedTPIGrid(CurDEM,TheDesiredLimits(CurDEM),Normalize,OpenMap);
+   if (SaveName <> '') then begin
+      DEMGlb[Result].WriteNewFormatDEM(SaveName);
+      DEMglb[Result].AreaName := ExtractFileNameNoExt(SaveName);
+   end;
 end;
 
 
@@ -1187,7 +1207,7 @@ begin
 end;
 
 
-function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+function MakeTRIGrid(CurDEM : integer; Normalize : tNormalMethod; OpenMap : boolean = true; SaveName : PathStr = '') : integer;
 var
    Col,Row : integer;
    GridLimits : tGridLimits;
@@ -1206,9 +1226,12 @@ begin
 
     if (Normalize = nmRRI) then TStr := 'RRI'
     else TStr := 'TRI_' + NormStr;
-    if (OutName = '') then OutName := 'MD_' + TStr + '_' + DEMGlb[CurDem].AreaName;
+    //if (SaveName = '') then SaveName := 'MD_' + TStr + '_' + DEMGlb[CurDem].AreaName;
 
-    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, OutName,euMeters);
+    if (SaveName = '') then TStr := 'MD_' + TStr + '_' + DEMGlb[CurDem].AreaName
+    else TStr := ExtractFileNameNoExt(SaveName);
+
+    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, SaveName,euMeters);
 
     GridLimits := TheDesiredLimits(CurDEM);
     FactorNS := 1;
@@ -1295,6 +1318,7 @@ begin
     end;
     if ShowSatProgress then EndProgress;
     DEMGlb[Result].CheckMaxMinElev;
+    if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
     if OpenMap then begin
        DEMGlb[Result].SetupMap(false,mtElevSpectrum);
     end;
@@ -1302,18 +1326,21 @@ begin
 end;
 
 
-function MakeMAD2KGrid(CurDEM : integer; OpenMap : boolean = true) : integer;
+function MakeMAD2KGrid(CurDEM : integer; OpenMap : boolean = true; SaveName : PathStr = '') : integer;
 var
    Col,Row : integer;
    GridLimits : tGridLimits;
    fSW,fSE,fNE,fNW : float32;
-   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25,{FactorEW,FactorDiag,FactorNS,}Median : float32;
+   znw,zw,zsw,zn,z,zs,zne,ze,zse,z1,z11,z21,z3,z23,z5,z15,z25,Median : float32;
    sum : float64;
    TStr,NormStr : shortstring;
    zees : array[1..8] of float32;
 begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
-    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'MD_' + 'MAD2K' + '_' + DEMGlb[CurDem].AreaName,euMeters);
+    if (SaveName = '') then TStr := 'MD_' + 'MAD2K' + '_' + DEMGlb[CurDem].AreaName
+    else TStr := ExtractFileNameNoExt(SaveName);
+
+    Result := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, TStr,euMeters);
     GridLimits := TheDesiredLimits(CurDEM);
 
     {$IfDef RecordProblems}
@@ -1346,6 +1373,8 @@ begin
     end;
     if ShowSatProgress then EndProgress;
     DEMGlb[Result].CheckMaxMinElev;
+    if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
+
     if OpenMap then begin
        DEMGlb[Result].SetupMap(false,mtElevSpectrum);
     end;

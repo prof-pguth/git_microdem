@@ -40,7 +40,7 @@ unit DEMCoord;
       //{$Define SaveNetDrawingSteps}
       //{$Define ShowDEMSSOCalc}
       //{$Define ShowFullDEMSSOCalc}
-      //{$Define RecordMaskFromSecondGrid}
+      {$Define RecordMaskFromSecondGrid}
       //{$Define RecordGridIdenticalProblems}
       //{$Define TrackDEMboundingBox}
       //{$Define RecordUKOS}
@@ -277,7 +277,7 @@ type
 
          constructor Create(WhichDEM : integer);
          destructor Destroy(CloseMap : boolean = true);
-         procedure FreeDEMPointers;
+         procedure FreeDEMPointers(FreeMapProjection : boolean = true);
 
          function LandCoverGrid : boolean;
          function ElevationDEM : boolean;   inline;
@@ -506,8 +506,9 @@ type
          function ReinterpolateUTMDEM(FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = '') : integer;
          function ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 
-         procedure WriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');  overload;
-         procedure WriteNewFormatDEM(Limits : tGridLimits; var FileName : PathStr; WhatFor : shortstring = '');  overload;
+         procedure AskAndWriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');
+         procedure WriteNewFormatDEM(FileName : PathStr);
+         procedure WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName : PathStr);  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
          procedure CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
@@ -699,6 +700,11 @@ type
                procedure VariogramGamma(GridLimits: tGridLimits; var EastWest,NorthSouth,NESW,NWSE : float32);
             {$EndIf}
         {$EndIf}
+        {$IfDef TrackElevationPointers}
+           function ElevationStructuresAllocated : boolean;
+        {$EndIf}
+
+
    end;
 
    //procedure MaxSlopeComputations(var SlopeAsp : tSlopeAspectRec; var sl : tFourFloats; var AspDir : tAspectDir);
@@ -1390,7 +1396,6 @@ begin
    Unchanged := 0;
    AlreadyMiss := 0;
    for Row := 0 to pred(DEMGlb[GridToMask].DEMHeader.NumRow) do begin
-      //TInterlocked.Increment(ParallelRowsDone);
       if (ParallelRowsDone Mod 250 = 0) then UpdateProgressBar(ParallelRowsDone / DEMGlb[GridToMask].DEMheader.NumRow);
       for Col := 0 to pred(DEMGlb[GridToMask].DEMHeader.NumCol) do begin
          if DEMGlb[GridToMask].GetElevMetersOnGrid(Col,Row,z1) then begin
@@ -1401,19 +1406,16 @@ begin
             if Found then begin
                if (HowMask = msSecondValid) then begin
                   DEMGlb[GridToMask].SetGridMissing(Col,Row);
-                  //TInterlocked.Increment(EditsDone);
                   inc(EditsDone);
                end
                else if (HowMask = msSeaLevel) then begin
                   if abs(z2) < 0.001 then begin
                      DEMGlb[GridToMask].SetGridMissing(Col,Row);
-                     //TInterlocked.Increment(EditsDone);
-                     inc(EditsDone);
+                      inc(EditsDone);
                   end;
                end
                else if ((HowMask = msAboveSecond) and (z1 > z2)) or ((HowMask = msBelowSecond) and (z1 < z2)) then begin
                   DEMGlb[GridToMask].SetGridMissing(Col,Row);
-                  //TInterlocked.Increment(EditsDone);
                   inc(EditsDone);
                end
                else inc(Unchanged);
@@ -1421,7 +1423,6 @@ begin
             else begin
                if (HowMask = msSecondMissing) then begin
                   DEMGlb[GridToMask].SetGridMissing(Col,Row);
-                  //TInterlocked.Increment(EditsDone);
                   inc(EditsDone);
                end
                else inc(Unchanged);
@@ -1599,7 +1600,9 @@ end;
 
 function tDEMDataSet.ReloadDEM(TransformtoNewDatum : boolean) : boolean;
 begin
-   DEMAlreadyDefined := false;
+//revised 2 Feb 2025
+   //DEMAlreadyDefined := false;
+   FreeDEMpointers(false);
    Result := ReadDEMNow(DEMFileName,TransformtoNewDatum);
 end;
 
@@ -1831,7 +1834,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.FreeDEMPointers;
+procedure tDEMDataSet.FreeDEMPointers(FreeMapProjection : boolean = true);
 //separate so DEM can be reloaded
 
       procedure FreeDEMMemory;
@@ -1912,7 +1915,7 @@ begin
    end;
    {$If Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy Step 2, DEM=' + AreaName); {$EndIf}
 
-   if (DEMMapProj <> nil) then FreeAndNil(DEMMapProj);
+   if FreeMapProjection and (DEMMapProj <> nil) then FreeAndNil(DEMMapProj);
 
    {$If Defined(RecordDEMClose)} if (not DEMMergeInProgress) then WriteLineToDebugFile('tDEMDataSet.Destroy Step 4, DEM=' + AreaName); {$EndIf}
    FreeAndNil(VatLegendStrings);
