@@ -168,12 +168,12 @@
         <VerInfo_MajorVer>2025</VerInfo_MajorVer>
         <VerInfo_Release>2</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.2.2.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.2.2.11;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>11</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -971,6 +971,10 @@
             <Form>New_area_evals_form</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\set_options\correlation_matrix_options.pas">
+            <Form>CorrelationMatrixOptionsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>
@@ -1059,6 +1063,7 @@
         <None Include="..\geomorph\demstat_ssim.inc"/>
         <None Include="..\geomorph\histograms.inc"/>
         <None Include="..\mapform\demmapf_make_3d_drapes.inc"/>
+        <None Include="..\microdem_open_source\petdbutils_import.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1989,6 +1994,12 @@
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\demmapdraw_viewshed.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\microdem_open_source\lastools_wrapper.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\microdem_open_source\petdbutils_import.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

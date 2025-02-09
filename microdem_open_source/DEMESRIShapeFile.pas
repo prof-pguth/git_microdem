@@ -1,13 +1,11 @@
 unit demESRIshapefile;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -290,7 +288,6 @@ function AreaShapeFile(ShapeType : int32) : boolean;   inline;
 function ShapeFile3D(ShapeType : int32) : boolean; inline;
 function LineOrAreaShapeFile(ShapeType : int32) : boolean;  inline;
 
-procedure LineKMLtoStringList(fName : PathStr);
 function IsItAShapefile(fName : PathStr) : boolean;
 procedure PrepOSMFiles(OSMPath : PathStr = '');
 
@@ -996,64 +993,6 @@ begin
 end;
 {$EndIf}
 
-
-procedure LineKMLtoStringList(fName : PathStr);
-var
-   FileInMemory : tStringList;
-   i,j,k : integer;
-   Str, aLine : ANSIString;
-   ZStr,NameStr,LatStr,LongStr : shortstring;
-   Stop,  Adding : boolean;
-   //Table : tMyData;
-   ShapeFileCreator : tShapeFileCreation;
-begin
-   ShowHourglassCursor;
-   FileInMemory := tStringList.Create;
-   FileInMemory.LoadFromFile(fName);
-   fName := ChangeFileExt(fName,DefaultDBExt);
-   //Make_Tables.MakeBasicBoundingBoxTable(fName);
-   //Table := tMyData.Create(FName);
-   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,3);
-   Adding := false;
-   i := 0;
-   while I <= pred(FileInMemory.count) do begin
-       Str := UpperCase(ptTrim(UpperCase(FileInMemory.Strings[i])));
-        if copy(str,1,10) = '<PLACEMARK' then begin
-           Delete(Str,1,10);
-           Adding := true;
-        end;
-        if Adding then begin
-           if Copy(Str,1,6) = '<NAME>' then begin
-              Delete(Str,1,6);
-              NameStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,'<');
-           end;
-           if (Copy(Str,1,13)) = '<COORDINATES>' then begin
-              repeat
-                  inc(i);
-                  Str := UpperCase(ptTrim(UpperCase(FileInMemory.Strings[i])));
-                  Stop := (Copy(Str,1,14)) = '</COORDINATES>';
-                  if not stop then repeat
-                     LongStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,',',true,true);
-                     LatStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,',',true,true);
-                     ZStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Str,' ',true,true);
-                     ShapeFileCreator.AddPointToShapeStream(StrToFloat(LatStr),StrToFloat(LongStr));
-                  until length(Str) = 0;
-              until stop;
-           end;
-           if str = '</PLACEMARK>' then begin
-              Adding := false;
-              //Table.Insert;
-              ShapeFileCreator.RecordName := NameStr;
-              ShapeFileCreator.ProcessRecordForShapeFile;
-              //Table.SetFieldByNameAsString('NAME',NameStr);
-              //Table.Post;
-           end;
-        end;
-        inc(i);
-      end;
-    ShapeFileCreator.CloseShapeFiles;
-    FileInMemory.Destroy;
-end;
 
 
 {$IfDef MSWindows}

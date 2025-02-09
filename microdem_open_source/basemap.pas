@@ -280,19 +280,15 @@ function UTMString(xutm,yutm : float64) : shortstring;
 function DatumName(var DatumCode : ShortString) : ShortString;
 function EllipsoidName(EllipCode : ShortString) : ShortString;
 
-//function DatumCodeFromString(DatString : ShortString) : tDigitizeDatum;
-
-//function StringFromDatumCode(Code : tDigitizeDatum) : ShortString;
-
+function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
+function GetEPSGforUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
+function GetEPSGforGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
 
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 function HemiFromLat(Lat : float64) : ANSIchar;
 
 procedure MetersPerDegree(Lat,Long : float64; var DistanceNS,DistanceEW,DistanceAVG : float64);
 function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
-
-function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
-function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
 
 {$IfDef VCL}
    procedure PickDatum(WhatFor : shortstring; var DatumCode : ShortString);

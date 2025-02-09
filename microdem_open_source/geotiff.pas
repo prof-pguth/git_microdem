@@ -1,11 +1,11 @@
 unit GeoTiff;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { References:                                                     }
@@ -589,11 +589,11 @@ begin
       WriteWordFieldEntry(TIFFFile,1026,34737,29,0);
 
        if MapDraw.IsThisMapUTM  then begin
-          ProjDatCode := GetUTMDatumCode(MapDraw.PrimMapProj);
+          ProjDatCode := GetEPSGforUTMDatumCode(MapDraw.PrimMapProj);
           WriteWordFieldEntry(TIFFFile,3072,0,1,ProjDatCode);
        end
        else begin
-          ProjDatCode := GetGeoDatumCode(MapDraw.PrimMapProj);
+          ProjDatCode := GetEPSGforGeoDatumCode(MapDraw.PrimMapProj);
           WriteWordFieldEntry(TIFFFile,2048,0,1,ProjDatCode);
        end;
 
@@ -2003,12 +2003,23 @@ var
               34264 : begin {ModelTransformationTag, JPL Carto Group}
                            FileSeek(TiffHandle,TiffKeys[j].KeyOffset,0);
                            for I := 1 to TiffKeys[j].LengthIm do JPLModelTransformation[i] := MakeDouble;
+                           TiffHeader.ScaleX := JPLModelTransformation[1];
+                           TiffHeader.ScaleY := JPLModelTransformation[6];
+                           TiffHeader.ScaleZ := 0;
+                           TiffHeader.ScaleX := JPLModelTransformation[4];
+                           TiffHeader.ScaleY := JPLModelTransformation[8] + TiffHeader.ScaleY * ImageLength;
+                           TiffHeader.Scalez := 0;
+
+
+                           (*
                            RegVars.PR_DeltaX := JPLModelTransformation[1];
                            RegVars.pr_DeltaY := -JPLModelTransformation[6];
                            RegVars.UpLeftX := JPLModelTransformation[4];
                            RegVars.UpLeftY := JPLModelTransformation[8];
                            ProjectionDefined := true;
                            MapProjection.StartUTMProjection(MapProjection.projUTMZone);
+                           *)
+
                       end;
               34453 : begin
                          TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);

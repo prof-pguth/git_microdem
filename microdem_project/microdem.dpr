@@ -352,7 +352,8 @@ uses
   edit_dip in '..\misc\geology\edit_dip.pas' {GetDipStrike},
   three_point_problem in '..\misc\geology\three_point_problem.pas' {ThreePointer},
   demlos_draw in '..\viewer_3d\demlos_draw.pas',
-  demix_neo_test_area in '..\demix\demix_neo_test_area.pas' {New_area_evals_form};
+  demix_neo_test_area in '..\demix\demix_neo_test_area.pas' {New_area_evals_form},
+  correlation_matrix_options in '..\set_options\correlation_matrix_options.pas' {CorrelationMatrixOptionsForm};
 
 {$R *.RES}
 

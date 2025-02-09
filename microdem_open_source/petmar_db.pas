@@ -268,8 +268,6 @@ type
         {$EndIf}
    end;
 
-
-
 {$A-}
 type
    //http://ulisse.elettra.trieste.it/services/doc/dbase/DBFstruct.htm
@@ -342,7 +340,6 @@ begin
    ID := GISdb[DB].MyData.GetFieldIndex(fName);
    Result := (ID in [0..100]) and (VisCols[ID]);
 end;
-
 
 
 function ftIsNumeric(ft : tFieldType) : boolean;

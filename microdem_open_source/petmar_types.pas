@@ -2,13 +2,12 @@
 
 unit petmar_types;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -1146,12 +1145,6 @@ initialization
    {$IfDef VCL} VCLinit; {$EndIf}
 finalization
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar_types in dbfn=' + DebugFileName); {$EndIf}
-   {$IfDef RecordMakeDir} WriteLineToDebugFile('RecordMakeDir active in petmar_types'); {$EndIf}
-   {$IfDef RecordMYDataCreation} WriteLineToDebugFile('RecordMYDataCreation active in petmar_types'); {$EndIf}
-   {$IfDef RecordMYDataFilter} WriteLineToDebugFile('RecordMyDataFilter active in petmar_types'); {$EndIf}
-   {$IfDef RecordSQLite} WriteLineToDebugFile('RecordSQLite active in petmar_types'); {$EndIf}
-   {$IfDef TrackCDStiming} WriteLineToDebugFile('TrackCDStiming active in petmar_types'); {$EndIf}
-   {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar_types out dbfn=' + DebugFileName); {$EndIf}
 end.
 
 

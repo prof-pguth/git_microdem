@@ -2084,12 +2084,8 @@ object wmdem: Twmdem
         Visible = False
       end
       object Correlationmatrix1: TMenuItem
-        Caption = 'Correlation matrix'
+        Caption = 'Correlation/distance matrix'
         OnClick = Correlationmatrix1Click
-      end
-      object Distancematrix1: TMenuItem
-        Caption = 'Distance matrix'
-        OnClick = Distancematrix1Click
       end
       object Leastcostpath1: TMenuItem
         Caption = 'Least cost path'
@@ -2419,6 +2415,10 @@ object wmdem: Twmdem
     object DEMIXNeo1: TMenuItem
       Caption = 'DEMIX Neo'
       GroupIndex = 6
+      object Areaevaluations1: TMenuItem
+        Caption = 'Area evaluations'
+        OnClick = Areaevaluations1Click
+      end
       object Singletile1: TMenuItem
         Caption = 'Single tile'
         object CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem
@@ -2427,9 +2427,17 @@ object wmdem: Twmdem
             's breakout'
           OnClick = CorrelationsingleDEMtoreferencealllandcovers1Click
         end
+        object CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1: TMenuItem
+          Caption = 'Correlation matrix single DEM to all others, ALL landcover only'
+          OnClick = CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click
+        end
         object CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem
           Caption = 'Correlation matrices among all DEMs for all land cover groups'
           OnClick = CorrelationmatrixamongallDEMsforALLpixels1Click
+        end
+        object CorrelationmatricesamongallDEMsjustALLlandcover1: TMenuItem
+          Caption = 'Correlation matrices among all DEMs just ALL landcover'
+          OnClick = CorrelationmatricesamongallDEMsjustALLlandcover1Click
         end
         object Graphdifferencedistributionsalllandcovers1: TMenuItem
           Caption = 'Graph difference distributions all land covers'

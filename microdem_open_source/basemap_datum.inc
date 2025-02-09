@@ -8,7 +8,17 @@
 {________________________________________}
 
 
-     function GetUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
+      function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
+      begin
+         if (HDatum = 'ETR89') then Result := 25800
+         else if (HDatum = 'NAD83') then Result := 26900
+         else if (HDatum = 'WGS84') then Result := 32600;
+         Result := Result + UTMZone;
+         if LatHemi = 'S' then Result := Result  + 100;
+      end;
+
+
+     function GetEPSGforUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
      begin
        Result := 32600; {WGS84 default}
        if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 32200
@@ -21,7 +31,7 @@
      end;
 
 
-     function GetGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     function GetEPSGforGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
      begin
        Result := 4326; {WGS84 default}
        if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 4322

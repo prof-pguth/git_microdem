@@ -141,8 +141,8 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
 
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
-   procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
-   procedure PickMapsFromDEMsWanted(var Maps : tStringList; DEMSwanted : tDEMbooleanArray);
+   function PickMaps(aCaption : ShortString) : tStringList;
+   function PickMapsFromDEMsWanted(DEMSwanted : tDEMbooleanArray) : tStringList;
 
    function EditHeaderRecord(DEM : integer; AllowChangeType : boolean) : boolean;
    procedure ViewHeaderRecord(DEM : integer);
@@ -1407,23 +1407,23 @@ end;
       end;
 
 
-      procedure PickMaps(var Maps : tStringList; aCaption : ShortString);
+      function PickMaps(aCaption : ShortString) : tStringList;
       var
          i : integer;
       begin
-         Maps := tStringList.Create;
+         Result := tStringList.Create;
          for i := 0 to pred(WMDEM.MDIChildCount) do
-            if (WMDEM.MDIChildren[i] is tMapForm) then Maps.Add(WMDEM.MDIChildren[i].Caption);
-         PickSomeFromStringList(Maps, aCaption);
+            if (WMDEM.MDIChildren[i] is tMapForm) then Result.Add(WMDEM.MDIChildren[i].Caption);
+         PickSomeFromStringList(Result, aCaption);
       end;
 
-      procedure PickMapsFromDEMsWanted(var Maps : tStringList; DEMSwanted : tDEMbooleanArray);
+      function PickMapsFromDEMsWanted(DEMSwanted : tDEMbooleanArray) : tStringList;
       var
          i : integer;
       begin
-         Maps := tStringList.Create;
+         Result := tStringList.Create;
          for i := 1 to MaxDEMDataSets do
-            if DEMsWanted[i] then Maps.Add(DEMGlb[i].SelectionMap.Caption);
+            if DEMsWanted[i] then Result.Add(DEMGlb[i].SelectionMap.Caption);
       end;
 
 
@@ -1619,7 +1619,7 @@ begin
       if MDDef.CleanKMLDirOnClosing then CleanOutDirectory(MainMapData + 'kml\');
       if IncudeDirs then begin
          {$IfDef RecordCleanUpTempDir} WriteLineToDebugFile('CleanUpTempDirectory, call CleanOutDirectory'); {$EndIf}
-         //CleanOutDirectory(MDTempDir);
+         CleanOutDirectory(MDTempDir);
       end;
    end;
    ShowDefaultCursor;

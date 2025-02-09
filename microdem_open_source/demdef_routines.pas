@@ -98,50 +98,53 @@ type
 var
    GlobalDRGMap : boolean;
 
-function IsThisATIGERshapefile(fName : PathStr) : boolean;
-function CheckIfTigerOrOSM(fName : PathStr) : boolean;
 
-{$IfDef ExOSM}
-{$Else}
+procedure InitializeMICRODEM;
+
+//operations on file names
+   function IsThisATIGERshapefile(fName : PathStr) : boolean;
+   function CheckIfTigerOrOSM(fName : PathStr) : boolean;
    function IsThisAnOSMshapefile(fName : PathStr) : boolean;
-{$EndIf}
 
-function CurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
-function DirectionName(Dir : DEMDefs.tCompassDirection) : shortstring;
-function SlopeMethodName(Method : byte) : shortstring;
-function ShortSlopeMethodName(Method : byte) : shortstring;
 
-function PointTypeName(PointType : tPointType) : ShortString;
-function PointTypeColor(PointType : tPointType) : tColor;
-function IntervisiblityAlgorithmName(iva :  tIntervisibilityAlgorithm) : ShortString;
-function LOSAlgorithmDescription(iva :  tIntervisibilityAlgorithm) : ShortString;
+//functions to return names or descriptions
+   function CurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
+   function DirectionName(Dir : DEMDefs.tCompassDirection) : shortstring;
+   function SlopeMethodName(Method : byte) : shortstring;
+   function ShortSlopeMethodName(Method : byte) : shortstring;
+   function SpeedString(MetersPerSec : float64) : ShortString;
+
+   function PointTypeName(PointType : tPointType) : ShortString;
+   function PointTypeColor(PointType : tPointType) : tColor;
+   function IntervisiblityAlgorithmName(iva :  tIntervisibilityAlgorithm) : ShortString;
+   function LOSAlgorithmDescription(iva :  tIntervisibilityAlgorithm) : ShortString;
 
 function StringToTerrainCategory(str : ShortString) : tTerrainCatDefinition;
 function TerrainCategoryToString(tc : tTerrainCatDefinition) : ShortString;
-function SpeedString(MetersPerSec : float64) : ShortString;
 
-function IsReflectanceMap(MapType : tMapType) : boolean;
-function IsSlopeMap(MapType : tMapType) : boolean;
-function IsElevationMap(MapType : tMapType) : boolean;
-function IsOtherGridMap(MapType : tMapType) : boolean;
+//boolean functions to determine the map type
+   function IsReflectanceMap(MapType : tMapType) : boolean;
+   function IsSlopeMap(MapType : tMapType) : boolean;
+   function IsElevationMap(MapType : tMapType) : boolean;
+   function IsOtherGridMap(MapType : tMapType) : boolean;
 
-function IsSatelliteMap(MapType : tMapType) : boolean;
-function IsSatelliteColorImage(MapType : tMapType) : boolean;
+   function IsSatelliteMap(MapType : tMapType) : boolean;
+   function IsSatelliteColorImage(MapType : tMapType) : boolean;
 
 procedure SetReflectanceDefaults;
 procedure SetContourDefaults;
 procedure SetSlopedefaultColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 procedure SetDEMIXSlopeColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 
-procedure SetDefaults(SetDirectories : boolean = false);
-procedure SetExpertOptions(Expert : boolean);
 
-procedure SetStructuralGeologyDefaults;
-procedure SetPhysicalGeographyDefaults;
-procedure SetRemoteSensingDefaults;
+//defaults and program settings
+   procedure SetDefaults(SetDirectories : boolean = false);
+   procedure SetExpertOptions(Expert : boolean);
+   procedure SetStructuralGeologyDefaults;
+   procedure SetPhysicalGeographyDefaults;
+   procedure SetRemoteSensingDefaults;
+   procedure HideAllOceanOptions;
 
-procedure HideAllOceanOptions;
-procedure SetDefaultMapSizeToScreen;
 
 procedure SaveBackupDefaults;
 procedure RestoreBackupDefaults;
@@ -173,6 +176,10 @@ procedure SetLOSDefaults;
    procedure SetPLSSDefaults;
 {$EndIf}
 
+
+procedure SetDefaultMapSizeToScreen;
+
+
 procedure SetGazDefaults;
 procedure SetGeologyOptions(Allow : boolean);
 procedure SetFlatProfile;
@@ -182,9 +189,9 @@ procedure SetDefaultDirectories;
 procedure SetBaseDirectory;
 procedure MakeRequiredDirectories;
 procedure SetRootDirectoryFiles;
+procedure SetOptionsForMapWithNoMarginalia;
 
 procedure GetRangeFactor(var Factor : float64);
-procedure SetOptionsForMapWithNoMarginalia;
 procedure GetMapDataDirectory;
 procedure ReadCoordsLatLongFromStreamProfileResults(Coords : tStringList; i : integer; var Lat,Long : float64);
 
@@ -196,23 +203,24 @@ procedure ToggleShowProgress(ShowIt : boolean);
 procedure InitializeVegColors;
 function RidgeAlgorithmName : string;
 function ClassBoxName : string;
-
-procedure InitializeMICRODEM;
-function PointInBoundingBox(Lat,Long : float64; BBox : sfBoundBox) : boolean;  inline;
-function AtLeastPartOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
-function AllOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
-procedure InitializeBoundBox(var bb : sfBoundBox);
-
 function ExpandIconFileName(var fName : PathStr) : boolean;
 
-function StandardLatLongString(Lat,Long : float64) : shortstring;
-function GridLimitsToString(Limits : tGridLimits) : shortstring;
-function GridLimistsSizeToString(Limits : tGridLimits) : shortstring;
 
-function sfBoundBoxToString(Limits : sfBoundBox; Decs : integer = 4) : shortstring;
-function sfBoundBoxSizeToString(Limits : sfBoundBox; Decs : integer = 2) : shortstring;
-function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
 
+//bounding box inclusion
+   function PointInBoundingBox(Lat,Long : float64; BBox : sfBoundBox) : boolean;  inline;
+   function AtLeastPartOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
+   function AllOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
+   procedure InitializeBoundBox(var bb : sfBoundBox);
+
+//strings from bounding box and grid limits
+   function StandardLatLongString(Lat,Long : float64) : shortstring;
+   function GridLimitsToString(Limits : tGridLimits) : shortstring;
+   function GridLimistsSizeToString(Limits : tGridLimits) : shortstring;
+
+   function sfBoundBoxToString(Limits : sfBoundBox; Decs : integer = 4) : shortstring;
+   function sfBoundBoxSizeToString(Limits : sfBoundBox; Decs : integer = 2) : shortstring;
+   function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
 
 {$IfDef ExDRGimport}
 {$Else}
@@ -250,7 +258,6 @@ function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
    procedure CheckRequiredFiles;
 {$EndIf}
 
-
 {$IfDef VCL}
    procedure RecolorFan(var Bitmap : tMyBitmap; Color : tPlatformColor);
    procedure BackupProgramEXE(sname : shortstring = '');
@@ -258,7 +265,6 @@ function sfBoundBoxSizeMinutesToString(Limits : sfBoundBox) : shortstring;
    procedure PickForNotePadPlusPlus(DefFilt : byte);
    function EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true) : integer;
 {$EndIf}
-
 
 {$IfDef AllowGeomorphometry}
    function BoxGridSize : shortString;
@@ -314,7 +320,7 @@ function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
 procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
 procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
 
-function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
+//function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
 function PossibleElevationUnits(What : byte) : boolean;
 
 
@@ -381,16 +387,6 @@ begin
    Result := What in [euMeters,euFeet,euDecimeters,euDeciFeet,euCentimeters,euUndefined,eulnElev,euLogElev,euMM,euKM];
 end;
 
-
-
-      function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
-      begin
-         if (HDatum = 'ETR89') then Result := 25800
-         else if (HDatum = 'NAD83') then Result := 26900
-         else if (HDatum = 'WGS84') then Result := 32600;
-         Result := Result + UTMZone;
-         if LatHemi = 'S' then Result := Result  + 100;
-      end;
 
 
  procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
@@ -1155,10 +1151,7 @@ begin
         InitializeDebugLog;
      {$EndIf}
 
-     {$IfDef ExGIS}
-     {$Else}
-        InitializeDEMdbs;
-     {$EndIf}
+     InitializeDEMdbs;
 
      {$IfDef RecordInitialization} WriteLineToDebugFile('InitializeMICRODEM Call InitilializeDEMCoord'); {$EndIf}
      InitilializeDEMCoord;
@@ -3886,6 +3879,11 @@ begin
       AParameter('MissData','AssumeMinus999999Missing',AssumeMinus999999Missing,false);
       AParameter('MissData','AssumeNegativeValuesMissing',AssumeNegativeValuesMissing,false);
 
+
+      AParameter('Stats','CR_MatrixEqualization',CR_MatrixEqualization,true);
+      AParameter('Stats','CR_MDDef.CR_ColorPalette',CR_ColorPalette,1);
+      AParameter('Stats','CR_Decimals ',CR_Decimals,6);
+
     {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 7'); {$EndIf}
 
       {$IfDef ExMultiGrid}
@@ -3963,6 +3961,7 @@ begin
       AParameter('Slope','CD2',CD2,True);
       AParameter('Slope','SlopeAlgorithm',SlopeAlgorithm,smEvansYoung);
       AParameter('Slope','SlopeRegionRadius',SlopeRegionRadius,1);
+      AParameter('Slope','NeedFullSlopeWindows',NeedFullSlopeWindows,true);
       AParameter('Slope','AspectRegionSize',AspectRegionSize,5);
       AParameter('Slope','NumSlopeBands',NumSlopeBands,5);
 
@@ -4908,7 +4907,7 @@ end;
 procedure SetGeologyOptions(Allow : boolean);
 begin
    {$IfDef VCL}
-      (*  //these must now be deliberately enabled, since they have not been tested in a log time and are not used much
+      (*  //these must now be deliberately enabled, since they have not been tested in a long time and are not used much
       MDdef.ShowStratCol := Allow;
       MDdef.ShowTernary := Allow;
       MDdef.ShowStereoNet := Allow;

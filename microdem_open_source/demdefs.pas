@@ -2695,8 +2695,13 @@ type
        CD2 : boolean;
        AspectRegionSize,
        SlopeRegionRadius : int32;
+       NeedFullSlopeWindows : boolean;
 
        DeleteAuxTiffFiles : boolean;
+
+       CR_MatrixEqualization : boolean;
+       CR_ColorPalette : integer;
+       CR_Decimals : integer;
 
        DefaultGraphFont,
        ContourLabelFont,

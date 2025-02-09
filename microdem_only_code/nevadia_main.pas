@@ -240,7 +240,6 @@ type
     EXIFimage1: TMenuItem;
     Clustergrids1: TMenuItem;
     Copyfile1: TMenuItem;
-    Distancematrix1: TMenuItem;
     XYZshapefile1: TMenuItem;
     N81Sfileviewer1: TMenuItem;
     CopyDBFstoXML1: TMenuItem;
@@ -640,6 +639,9 @@ type
     FUVforrangescales1: TMenuItem;
     FUVfor5DEMstoreference1: TMenuItem;
     FUVbyLandcover1DEMtoreference1: TMenuItem;
+    CorrelationmatricesamongallDEMsjustALLlandcover1: TMenuItem;
+    CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1: TMenuItem;
+    Areaevaluations1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -766,7 +768,6 @@ type
     procedure EXIFimage1Click(Sender: TObject);
     procedure Clustergrids1Click(Sender: TObject);
     procedure Copyfile1Click(Sender: TObject);
-    procedure Distancematrix1Click(Sender: TObject);
     procedure XYZshapefile1Click(Sender: TObject);
     procedure N81Sfileviewer1Click(Sender: TObject);
     procedure CopyDBFstoXML1Click(Sender: TObject);
@@ -1072,6 +1073,11 @@ type
     procedure FUVforrangescales1Click(Sender: TObject);
     procedure FUVfor5DEMstoreference1Click(Sender: TObject);
     procedure FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
+    procedure CorrelationmatricesamongallDEMsjustALLlandcover1Click(
+      Sender: TObject);
+    procedure CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(
+      Sender: TObject);
+    procedure Areaevaluations1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2151,6 +2157,17 @@ var
             end;
          end;
 
+         if Action = 'ASPECTMAP' then begin
+            if OpenADEM then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               NewDEM := MakeAspectMap(false,DEM);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
+               DEMGlb[NewDEM].SaveAsGeotiff(outfile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
+            end;
+         end;
+
+
          {$IfDef AllowGeomorphometry}
             if Action = 'TERR_FABRIC' then begin
                if OpenADEM then begin
@@ -2190,34 +2207,36 @@ var
       end;
 
 
-
-      procedure SetProgramOptions(TStr : ShortString);
+      function SetProgramOptions(TStr : ShortString) : boolean;
       begin
+         Result := true;
          if (TStr = '-EXPERT')  then begin
             MDdef.ProgramOption := ExpertProgram;
-         end;
-         if (TStr = '-GEOLOGY') or (TStr = '-BRUNTON') then begin
+         end
+         else if (TStr = '-GEOLOGY') or (TStr = '-BRUNTON') then begin
             MDdef.ProgramOption := GeologyProgram;
             SetStructuralGeologyDefaults;
-         end;
-
-         if (TStr = '-MINIMIZE') then begin
+         end
+         else if (TStr = '-MINIMIZE') then begin
             WindowState := wsMinimized;
-         end;
-         if (TStr = '-NOAUTOOPEN') then begin
+         end
+         else if (TStr = '-NOAUTOOPEN') then begin
             MDdef.AutoOpen := aoNothing;
-         end;
-         if (TStr = '-RESET') then begin
+         end
+         else if (TStr = '-RESET') then begin
             ProcessIniFile(iniInit);
-         end;
-         if (TStr = '-NODEBUG') then begin
+         end
+         else if (TStr = '-NODEBUG') then begin
             MDdef.MDRecordDebugLog := false;
-         end;
-         if (TStr = '-DEBUG') then begin
+         end
+         else if (TStr = '-DEBUG') then begin
             MDdef.MDRecordDebugLog := true;
-         end;
-         if (TStr = '-RESET') then begin
+         end
+         else if (TStr = '-RESET') then begin
             ProcessIniFile(iniInit);
+         end
+         else begin
+            Result := false;
          end;
       end;
 
@@ -2289,40 +2308,35 @@ begin
       //MDDef.PerfectMAbD := 0.05;
       //MDDef.DefCurveMap := mtCurvature;
 
-     {$IfDef ExGDAL}
-     {$Else}
-        {$IfDef MSWindows}
-            GetGDALFileNames;
-        {$EndIf}
-     {$EndIf}
-
-     if not ValidPath(MapLibDir) then PickMapIndexLocation;
+      GetGDALFileNames;
+      if not ValidPath(MapLibDir) then PickMapIndexLocation;
 
     {$IfDef NoCommandLineParameters}
     {$Else}
        if (ParamCount <> 0) then begin
-           TStr := UpperCase(ptTrim(ParamStr(1)));
-           if (ParamCount = 1) and (TStr[1] = '?') then begin
-              ProcessCommandLine(TStr);
-           end
-           else begin
-               for i := 1 to ParamCount do begin
-                  TStr := UpperCase(ptTrim(ParamStr(i)));
-                  {$IfDef RecordProblems} WriteLineToDebugFile('Command line parameter ' + IntToStr(i) + '=' + TStr); {$EndIf}
-                  if TStr = '-FUVSSIM' then begin
-                     Self.Width := 750;
-                     Self.Height := 450;
-                     Self.Top := 100;
-                     Self.Left := 100;
-                     FUV_SSIM_Processing(dmFull,false,false);
-                     Halt;
-                     exit;
-                  end
-                  else begin
-                     SetProgramOptions(TStr);
-                  end;
-               end;
-           end;
+          TStr := UpperCase(ptTrim(ParamStr(1)));
+          if not SetProgramOptions(TStr) then begin
+              if (ParamCount = 1) and (TStr[1] = '?') then begin
+                 ProcessCommandLine(TStr);
+              end
+              else begin
+                  TStr := '?' + TStr;
+                  for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(2)));
+                  ProcessCommandLine(TStr);
+              end;
+                  (*
+                     {$IfDef RecordProblems} WriteLineToDebugFile('Command line parameter ' + IntToStr(i) + '=' + TStr); {$EndIf}
+                     if TStr = '-FUVSSIM' then begin
+                        Self.Width := 750;
+                        Self.Height := 450;
+                        Self.Top := 100;
+                        Self.Left := 100;
+                        FUV_SSIM_Processing(dmFull,false,false);
+                        Halt;
+                        exit;
+                     end;
+                  *)
+          end;
        end;
     {$EndIf}
 
@@ -2376,90 +2390,6 @@ end;
 
 procedure Twmdem.SeeIfThereAreDebugThingsToDo;
 //allows immediate execution of code for debugging
-
-(*
-procedure bicubic_interpolation;
-//written by ChatGPT, 14 May 2023
-
-const
-  N = 4;
-
-type
-  real = float32;
-  matrix = array[0..N-1, 0..N-1] of real;
-
-var
-  x: matrix;
-  y: matrix;
-  f: matrix;
-  a: matrix;
-  b: matrix;
-  c: matrix;
-  d: matrix;
-  px, py: real;
-  i, j: integer;
-
-
-    //   interpolate(px,      x[1,1], x[2,2],     a[1,1],    a[1,2],     a[2,1],    a[2,2],   b[1,1],   b[1,2],    c[1,1],    c[1,2],     d[1,1], d[1,2]);
-
-function interpolate(x: real; x1: real; x2: real; f00: real; f01: real; f10: real; f11: real; f20: real; f21: real; f30: real; f31: real): real;
-var
-  m0, m1, m2, m3, a0, a1, a2, a3: real;
-begin
-  m0 := f01;
-  m1 := (f11 - f01) / (x2 - x1);
-  m2 := (f10 - f00) / (x2 - x1);
-  m3 := (f21 - f11 - f10 + f00) / ((x2 - x1) * (x2 - x1) * (x2 - x1));
-
-  a0 := f00;
-  a1 := m0;
-  a2 := 3 * (f21 - f11) / ((x2 - x1) * (x2 - x1)) - 2 * m0 / (x2 - x1) - m1 / (x2 - x1);
-  a3 := (2 * (f11 - f21) + m0 + m1 * (x2 - x1)) / ((x2 - x1) * (x2 - x1) * (x2 - x1));
-
-  interpolate := a0 + a1 * (x - x1) + a2 * sqr(x - x1) + a3 * sqr(x - x1) * (x - x2);
-end;
-
-begin
-  // initialize x and y values
-  for i := 0 to N-1 do begin
-      for j := 0 to N-1 do  begin
-          x[i,j] := i;
-          y[i,j] := j;
-        end;
-    end;
-
-  // initialize f values
-  for i := 0 to N-1 do  begin
-      for j := 0 to N-1 do begin
-          f[i,j] := sin(i) + cos(j);
-        end;
-    end;
-
-  // calculate coefficients
-  for i := 1 to N-2 do begin
-      for j := 1 to N-2 do begin
-          a[i,j] := f[i,j];
-          b[i,j] := (f[i+1,j] - f[i-1,j]) / 2;
-          c[i,j] := (f[i-1,j] - 2*f[i,j] + f[i+1,j]) / 2;
-          d[i,j] := (f[i,j+1] - f[i,j-1]) / 2;
-        end;
-    end;
-
-  // perform interpolation
-  px := 1.5; // x-coordinate to interpolate
-  py := 1.5; // y-coordinate to interpolate
-
-   interpolate(px, x[1,1], x[2,2], a[1,1], a[1,2], a[2,1], a[2,2], b[1,1], b[1,2], c[1,1], c[1,2], d[1,1], d[1,2]);
-
-end;
-*)
-
-(*
-var
-   BatchFile : tStringList;
-   aName : PathStr;
-   cmd : shortstring;
-*)
 begin
    if TrilobiteComputer then begin
    end;
@@ -2489,14 +2419,6 @@ begin
      Application.MainFormOnTaskbar := false;
      Application.Icon.LoadFromFile(fName);
   end;
-(*
-  if StrUtils.AnsiContainsText(Application.ExeName,'1') then Self.Color := clGradientInactiveCaption;
-  if StrUtils.AnsiContainsText(Application.ExeName,'2') then Self.Color := clGradientActiveCaption;
-  if StrUtils.AnsiContainsText(Application.ExeName,'3') then Self.Color := clMoneyGreen;
-  if StrUtils.AnsiContainsText(Application.ExeName,'4') then Self.Color := cl3DLight;
-  if StrUtils.AnsiContainsText(Application.ExeName,'5') then Self.Color := clInfoBk;
-  if StrUtils.AnsiContainsText(Application.ExeName,'6') then Self.Color := clYellow;
-*)
   ProgramClosing := false;
   AskForDebugUpdateNow := false;
   AskForNewUpdateNow := false;
@@ -2519,13 +2441,11 @@ begin
       if (GetScreenColorDepth < 24) then MessageToContinue('Problems likely w/ < 24 bit color');
    end;
 
-   {$IfDef IncludeGeologyLabs}
-   {$Else}
-   {$EndIf}
    {$IfDef AllowProgramWebUpdates}
    {$Else}
        Updatehelpfile1.Visible := false;
    {$EndIf}
+
    {$IfDef Include2021datafusion}
    {$Else}
        Mediansatellitedatacontest1.Visible := false;
@@ -2663,6 +2583,11 @@ begin
    MakeDTEDTable;
 end;
 
+
+procedure Twmdem.Areaevaluations1Click(Sender: TObject);
+begin
+   StartAreaEvals;
+end;
 
 procedure Twmdem.BatchNDVIClick(Sender: TObject);
 begin
@@ -3449,22 +3374,30 @@ begin
 end;
 
 
+procedure Twmdem.CorrelationmatricesamongallDEMsjustALLlandcover1Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(7);
+end;
+
 procedure Twmdem.Correlationmatrix1Click(Sender: TObject);
 var
    fName : PathStr;
-   TStr : ShortString;
+   //TStr : ShortString;
 begin
    StopSplashing;
    fName := '';
-   if (Sender = Correlationmatrix1) then TStr := 'Correlation'
-   else TStr := 'Distance';
-   if GetFileFromDirectory(TStr + ' matrix','*.csv',fName) then OpenCorrelationMatrix(TStr,fName);
+   if GetFileFromDirectory('Correlation/distance matrix','*.csv',fName) then OpenCorrelationMatrix(ExtractFileNameNoExt(fName),fName);
 end;
 
 
 procedure Twmdem.CorrelationmatrixamongallDEMsforALLpixels1Click(Sender: TObject);
 begin
    CrossScaleDEMComparison(1);
+end;
+
+procedure Twmdem.CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(Sender: TObject);
+begin
+   CrossScaleDEMComparison(7);
 end;
 
 procedure Twmdem.CorrelationsingleDEMtoreferencealllandcovers1Click(Sender: TObject);
@@ -4928,12 +4861,6 @@ end;
 procedure Twmdem.Discussionforum1Click(Sender: TObject);
 begin
    ExecuteFile('http://forums.delphiforums.com/microdem/start/', '', '');
-end;
-
-
-procedure Twmdem.Distancematrix1Click(Sender: TObject);
-begin
-   Correlationmatrix1Click(Sender);
 end;
 
 
