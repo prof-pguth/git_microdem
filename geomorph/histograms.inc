@@ -1,12 +1,13 @@
-﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{   include file for demstat        }
-{___________________________________}
+﻿
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{   include file for demstat             }
+{________________________________________}
 
 
 
@@ -399,6 +400,8 @@ var
             i,j,ax,ay : integer;
          begin
             if FileExists(fName) then begin
+               {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + fName); {$EndIf}
+
                New(Values);
                NumVals := GetFileSize(fName) div SizeOf(float32);
                AssignFile(inf,fName);
@@ -409,14 +412,14 @@ var
                Result := (NumVals > 1) and ((Histogram.GraphDraw.MaxHorizAxis - Histogram.GraphDraw.MinHorizAxis) > 0.00001);
                if Result then begin
                   for j := 0 to MaxBins do Bins[j] := 0;
-                  StartProgress('Histogram');
+                  //StartProgress('Histogram');
                   for i := 0 to pred(NumVals) do begin
-                     if (i mod 250 = 0) then UpdateProgressBar(i/NumVals);
+                     //if (i mod 250 = 0) then UpdateProgressBar(i/NumVals);
                      Value := Values^[i];
                      j := round((Value - Histogram.GraphDraw.MinHorizAxis) / Histogram.HistogramBinSize);
                      if (j >= 0) and (j <= Histogram.HistogramNumBins) then inc(Bins[j]);
                   end;
-                  EndProgress;
+                  //EndProgress;
                   Histogram.OpenDataFile(rfile);
                   if MDDef.FlipHistogram then begin
                      ax := 2;
@@ -443,13 +446,20 @@ var
                   end;
                   CloseFile(rfile);
                   First := false;
+               end
+               else begin
+                  Result := false;
+                  {$IfDef RecordHistogram} WriteLineToDebugFile('Process series failed' + fName); {$EndIf}
                end;
                Dispose(Values);
             end
-            else Result := false;
+            else begin
+               {$IfDef RecordHistogram} WriteLineToDebugFile('Process series file missing' + fName); {$EndIf}
+            end;
          end;
 
-begin
+begin {MultipleHistogramPrep}
+   {$IfDef RecordHistogram} WriteLineToDebugFile('MultipleHistogramPrep'); {$EndIf}
 
    MinInSeries := Histogram.GraphDraw.MinHorizAxis;
    MaxInSeries := Histogram.GraphDraw.MaxHorizAxis;
@@ -494,7 +504,8 @@ CleanUp:;
    ShowDefaultCursor;
    MDDef.FlipHistogram := false;
    Histogram.HistogramChanged := false;
-end;
+end {MultipleHistogramPrep};
+
 
 
 function CreateMultipleHistogram(GraphNumbers : boolean; FileList,LegendList : tStringList; ParamName,TitleBar : ShortString;
@@ -537,10 +548,8 @@ begin
          ReadDefault('Minimum value',Result.GraphDraw.MinHorizAxis);
          ReadDefault('Maximum value',Result.GraphDraw.MaxHorizAxis);
          ReadDefault('Number of bins',Result.HistogramNumBins);
-      end
-      else begin
-         Result.GraphDraw.MinHorizAxis := Min;
-         Result.GraphDraw.MaxHorizAxis := Max;
+         //Result.GraphDraw.MinHorizAxis := Min;
+         //Result.GraphDraw.MaxHorizAxis := Max;
       end;
 
       l1 := RemoveUnderscores(ParamName);

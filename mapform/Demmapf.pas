@@ -47,7 +47,7 @@
       //{$Define RecordResample}
       //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
-      //{$Define RecordBigMap}
+      {$Define RecordBigMap}
       //{$Define RecordBigMapFont}
       //{$Define RecordLegend}
       //{$Define RecordVAT}
@@ -3646,7 +3646,6 @@ var
    Findings : tStringlist;
    fName : PathStr;
    Bitmap : tMyBitmap;
-   //TStr : shortstring;
    MouseRoamAllMaps : boolean;
 
    function UseThisMap(MapCaption : shortstring) : boolean;
@@ -3693,12 +3692,15 @@ begin
       end;
    end
    else BottomMargin := 25;
-   {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps font picked'); {$EndIf}
+   {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps MDDef.MapNameBelowComposite done'); {$EndIf}
 
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
          if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
+            {$IfDef RecordBigMap} WriteLineToDebugFile('Start map '  +  (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
+
             (WMDEM.MDIChildren[i] as TMapForm).DoFastMapRedraw;
+            {$IfDef RecordBigMap} WriteLineToDebugFile('Fast Redraw over '  +  (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
             CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,Bitmap);
             Bitmap.Canvas.Brush.Style := bsClear;
             Bitmap.Canvas.Pen.Width := 2;
@@ -3727,7 +3729,7 @@ begin
          end;
       end;
    end;
-   {$IfDef  RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in, maps=' + IntToStr(Findings.Count)); {$EndIf}
+   {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in, maps=' + IntToStr(Findings.Count)); {$EndIf}
    MakeBigBitmap(Findings,'',FileName,NumCols);
    MDDef.ShowRoamOnAllMaps := MouseRoamAllMaps;
    if (MapsToUse <> Nil) then MapsToUse.Destroy;
@@ -16290,11 +16292,10 @@ begin
 end;
 
 procedure TMapForm.Pickmapsforbigimage1Click(Sender: TObject);
-var
-   Maps : tStringList;
+//var
+   //Maps : tStringList;
 begin
-   PickMaps(Maps,'Maps for to combine on big figure');
-   Bigimagewithallmaps(3,'',Maps);
+   Bigimagewithallmaps(3,'',PickMaps('Maps for to combine on big figure'));
    //Maps.Free;
 end;
 
@@ -23762,9 +23763,8 @@ var
    Maps : tStringList;
    i,j : integer;
 begin
-   PickMaps(Maps,'Maps for shading from this map');
+   Maps := PickMaps('Maps for shading from this map');
    if (Maps.Count > 0) then begin
-      //MatchThiscoverageareaandsamepixelsize1Click(Sender);
       for i := 0 to pred(WMDEM.MDIChildCount) do begin
          if WMDEM.MDIChildren[i] is tMapForm and (WmDEM.MDIChildren[i].Handle <> Handle) then begin
             for j := 0 to pred(Maps.Count) do begin
@@ -23780,11 +23780,8 @@ end;
 
 procedure TMapForm.Filledneighborhood1Click(Sender: TObject);
 begin
-   //ThinDEM1Click(Sender);
-         //if (Sender = Filledneighborhood1) then begin
-            ReadDefault('Min neighbors required to retain',MDDef.ExpandNeighborsRequired);
-            DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcNeighbors);
-         //end;
+   ReadDefault('Min neighbors required to retain',MDDef.ExpandNeighborsRequired);
+   DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcNeighbors);
 end;
 
 procedure TMapForm.RespondToChangedDEM;

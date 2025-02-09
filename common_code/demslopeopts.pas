@@ -48,6 +48,7 @@ type
     BitBtn1: TBitBtn;
     ClipboardSpeedButton: TSpeedButton;
     BitBtn2: TBitBtn;
+    CheckBox2: TCheckBox;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -62,6 +63,7 @@ type
     procedure RadioGroup4Click(Sender: TObject);
     procedure ClipboardSpeedButtonClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
+    procedure CheckBox2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -126,6 +128,7 @@ begin
    Button11.Enabled := (MDDef.ProgramOption = ExpertProgram) or MDDef.ShowGeomorphometry;
    Edit1.Enabled := Button11.Enabled;
    CheckBox1.Checked := MDDef.QuickMapRedraw;
+   CheckBox1.Checked := MDDef.NeedFullSlopeWindows;
    RadioGroup2.ItemIndex := pred(MDDef.SlopeLSQorder);
    RadioGroup3.ItemIndex := pred(MDDef.SlopeLSQradius);
    if (MapOwner = nil) then begin
@@ -159,6 +162,11 @@ end;
 procedure TSlopeOptForm.CheckBox1Click(Sender: TObject);
 begin
     MDdef.QuickMapRedraw := CheckBox1.Checked;
+end;
+
+procedure TSlopeOptForm.CheckBox2Click(Sender: TObject);
+begin
+   MDDef.NeedFullSlopeWindows := CheckBox2.Checked;
 end;
 
 procedure TSlopeOptForm.ClipboardSpeedButtonClick(Sender: TObject);

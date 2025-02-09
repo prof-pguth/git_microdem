@@ -1,12 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{ include file for demmapdraw       }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
 procedure TMapDraw.LabelDataBases(var Bitmap : tMyBitmap);
@@ -166,34 +165,38 @@ begin
 end;
 
 
-
 procedure TMapDraw.PlotDataBases(var Bitmap : tMyBitmap);
 var
    i,j : integer;
    Overlay : tMyBitmap;
 begin
    if ClosingIsHappening or (not MapDrawValid) or ClosingMapNow then exit;
-   {$IfDef RecordDBPlots} WriteLineToDebugFile('TMapDraw.PlotDataBases in, on map ' + BaseTitle); {$EndIf}
+   {$If Defined(RecordDBPlots) or Defined(RecordDBPlotsFull)} WriteLineToDebugFile('TMapDraw.PlotDataBases in, on map ' + BaseTitle); {$EndIf}
    if (NumOpenDB > 0) then for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];
-      if ValidDB(i) then begin
-         if (GISdb[i].MyData.FiltRecsInDB > 0) and (not GISdb[i].PLSSfile) then begin
-            if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and (not GISdb[i].ShowLocalMapOnly))) then begin
-               {$IfDef RecordDBPlots} WriteLineToDebugFile('  Plot db=' + IntToStr(i) + '  ' + GISDB[i].dbName + '   recs=' + IntToStr(GISDB[i].MyData.FiltRecsInDB)); {$EndIf}
-               if (DBOverlayfName[i] <> '') then begin
-                  Overlay := LoadBitmapFromFile(DBOverlayfName[i]);
-                  {$IfDef RecordDBPlots} WriteLineToDebugFile('Loaded=' + DBOverlayfName[i]); {$EndIf}
-               end
-               else begin
-                  CreateBitmap(Overlay,Bitmap.Width,Bitmap.Height);
-                  PlotDataBase(i,Overlay);
-                  DBOverlayfName[i] := NextFileNumber(MDTempDir, 'db_overlay', OverlayFExt);
-                  PetImage.SaveBitmap(Overlay,DBOverlayfName[i]);
-                  {$IfDef RecordDBPlots} WriteLineToDebugFile('Create & save=' + DBOverlayfName[i]); {$EndIf}
+      {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('check db=' + IntToStr(j) + '  drawing order=' + IntoStr(j); {$EndIf}
+      if ValidDB(i) and (GISdb[i].theMapOwner <> nil) then begin
+         {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('valid db=' + IntToStr(i) + '  ' + GISdb[i].dbName); {$EndIf}
+         if (GISdb[i].MyData.FiltRecsInDB > 0) then begin
+            {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('filtered records=' + IntToStr(GISdb[i].MyData.FiltRecsInDB)); {$EndIf}
+            if (not GISdb[i].PLSSfile) then begin
+               if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and (not GISdb[i].ShowLocalMapOnly))) then begin
+                  {$IfDef Defined(RecordDBPlots) or RecordDBPlotsFull} WriteLineToDebugFile('  Plot db=' + IntToStr(i) + '  ' + GISDB[i].dbName + '   recs=' + IntToStr(GISDB[i].MyData.FiltRecsInDB)); {$EndIf}
+                  if (DBOverlayfName[i] <> '') then begin
+                     Overlay := LoadBitmapFromFile(DBOverlayfName[i]);
+                     {$IfDef RecordDBPlots} WriteLineToDebugFile('Loaded=' + DBOverlayfName[i]); {$EndIf}
+                  end
+                  else begin
+                     CreateBitmap(Overlay,Bitmap.Width,Bitmap.Height);
+                     PlotDataBase(i,Overlay);
+                     DBOverlayfName[i] := NextFileNumber(MDTempDir, 'db_overlay', OverlayFExt);
+                     PetImage.SaveBitmap(Overlay,DBOverlayfName[i]);
+                     {$IfDef RecordDBPlots} WriteLineToDebugFile('Create & save=' + DBOverlayfName[i]); {$EndIf}
+                  end;
+                  DrawOverlayNoDelete(Bitmap,Overlay,GISdb[i].dbOpts.Opacity);
                end;
-               DrawOverlayNoDelete(Bitmap,Overlay,GISdb[i].dbOpts.Opacity);
+               if (GISdb[i].dbTablef <> Nil) and (GISdb[i].dbTablef.BaseMapBitmap <> Nil) then FreeAndNil(GISdb[i].dbTablef.BaseMapBitmap);
             end;
-            if (GISdb[i].dbTablef <> Nil) and (GISdb[i].dbTablef.BaseMapBitmap <> Nil) then FreeAndNil(GISdb[i].dbTablef.BaseMapBitmap);
          end;
       end;
    end;

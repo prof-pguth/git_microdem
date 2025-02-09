@@ -2,14 +2,15 @@ inherited ImportParamsDialog: TImportParamsDialog
   Left = 496
   Top = 193
   Caption = 'ASCII XYZ Import Parameters'
-  ClientHeight = 355
-  ClientWidth = 541
+  ClientHeight = 348
+  ClientWidth = 552
   Position = poDefaultSizeOnly
   Visible = True
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
-  ExplicitWidth = 553
-  ExplicitHeight = 393
+  ExplicitWidth = 568
+  ExplicitHeight = 387
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 7
@@ -36,14 +37,14 @@ inherited ImportParamsDialog: TImportParamsDialog
   object Label3: TLabel [3]
     Left = 336
     Top = 224
-    Width = 53
+    Width = 54
     Height = 15
     Caption = 'UTM zone'
   end
   object Label4: TLabel [4]
     Left = 376
     Top = 160
-    Width = 57
+    Width = 58
     Height = 15
     Caption = 'Thin factor'
   end

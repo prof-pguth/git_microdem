@@ -495,6 +495,7 @@ type
 
          function RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
 
+
          function FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;  inline;
          procedure OpennessOneDirection(Col,Row,RegionSizeMeters,dx,dy : integer; Spacing : float64; Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
 
@@ -506,19 +507,22 @@ type
          function ReinterpolateUTMDEM(FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = '') : integer;
          function ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 
+    //write/save DEM
          procedure AskAndWriteNewFormatDEM(var FileName : PathStr; WhatFor : shortstring = '');
          procedure WriteNewFormatDEM(FileName : PathStr);
          procedure WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName : PathStr);  overload;
          procedure SavePartOfDEMWithData(var FileName : PathStr);
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
          procedure CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
+         procedure SaveAsGeotiff(SaveName : PathStr = '');
+         procedure SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
+         procedure SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
 
-         {$IfDef ExGeotiffWrite}
-         {$Else}
-            procedure SaveAsGeotiff(SaveName : PathStr = '');
-            procedure SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
-            procedure SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
-         {$EndIf}
+         function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
+         function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
+         function RectangleSubsetDEM(GridLimits : tGridLimits; OpenMaps : boolean) : integer; overload;
+         function RectangleSubsetDEMInMemory(GridLimits : tGridLimits) : tDEMDataSet;
+         procedure CutOutGeoBox(bb : sfBoundBox);
 
          {$IfDef ExOddballDEMexports}
          {$Else}
@@ -553,12 +557,7 @@ type
          function ParmametricIsotropicSmoothing(Col,Row : integer; var z : float32) : boolean; inline;
 
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
-         function ResaveNewResolution(FilterCategory : tFilterCat) : integer;
 
-         function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
-         function RectangleSubsetDEM(GridLimits : tGridLimits; OpenMaps : boolean) : integer; overload;
-         function RectangleSubsetDEMInMemory(GridLimits : tGridLimits) : tDEMDataSet;
-         procedure CutOutGeoBox(bb : sfBoundBox);
 
          procedure TrackElevationRange(Where : shortstring);
 
@@ -613,7 +612,6 @@ type
          {$If Defined(TrackDEMboundingBox)}
             procedure TrackDEMBoundingBox(Where : shortstring);
          {$EndIf}
-
 
          {$IfDef ExVegDensity}
          {$Else}
@@ -693,7 +691,7 @@ type
                function ContourLineCrossing(x,y : integer; z : float64) : boolean;
                procedure FractalBox(GridLimits: tGridLimits; var FracDim,r : float32; SkipDraw : boolean = false; CloseGraph : boolean = false);
                procedure EntireDEMFractalBox;
-               procedure InitializeNormals;  //(var NumPts : Integer);
+               procedure InitializeNormals;
                procedure DisposeNormals;
                function FigureEntropy : float64;
                procedure ComputeVariogram(GridLimits: tGridLimits); //SkipDrawing : boolean);
@@ -703,11 +701,7 @@ type
         {$IfDef TrackElevationPointers}
            function ElevationStructuresAllocated : boolean;
         {$EndIf}
-
-
    end;
-
-   //procedure MaxSlopeComputations(var SlopeAsp : tSlopeAspectRec; var sl : tFourFloats; var AspDir : tAspectDir);
 
 
 type
@@ -836,7 +830,13 @@ var
 implementation
 
 uses
-   {$IfDef VCL}  Nevadia_Main, {$EndIf}
+   {$IfDef VCL}
+      Nevadia_Main,
+      GetLatLn,
+      DEMLOS_draw,
+      DEMXYZExport,
+      Pick_Limits,
+   {$EndIf}
 
    {$IfDef ExIndexes}
    {$Else}
@@ -851,14 +851,6 @@ uses
    {$IfDef  ExGeotiff}
    {$Else}
      GeoTiff,
-   {$EndIf}
-
-   {$IfDef VCL}
-      DEMMapDraw,
-      GetLatLn,
-      DEMLOS_draw,
-      DEMXYZExport,
-      Pick_Limits,
    {$EndIf}
 
    {$IfDef ExGDAL}

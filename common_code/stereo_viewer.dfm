@@ -2,8 +2,8 @@ object StereoViewerForm: TStereoViewerForm
   Left = 182
   Top = 356
   Caption = 'Stereo Viewer'
-  ClientHeight = 642
-  ClientWidth = 1078
+  ClientHeight = 622
+  ClientWidth = 1031
   Color = cl3DLight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

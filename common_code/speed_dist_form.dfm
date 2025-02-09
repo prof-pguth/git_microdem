@@ -3,8 +3,8 @@ object SpeedDistanceForm: TSpeedDistanceForm
   Top = 0
   BorderIcons = []
   Caption = 'Speed/heading options'
-  ClientHeight = 203
-  ClientWidth = 188
+  ClientHeight = 213
+  ClientWidth = 201
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

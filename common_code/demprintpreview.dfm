@@ -4,8 +4,8 @@ object PrintPreviewForm: TPrintPreviewForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Map Print Preview'
-  ClientHeight = 389
-  ClientWidth = 537
+  ClientHeight = 398
+  ClientWidth = 507
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

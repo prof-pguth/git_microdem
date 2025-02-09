@@ -2,8 +2,8 @@ object PickMagProfVars: TPickMagProfVars
   Left = 634
   Top = 347
   Caption = 'Magnetic anomaly variables'
-  ClientHeight = 201
-  ClientWidth = 459
+  ClientHeight = 199
+  ClientWidth = 443
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

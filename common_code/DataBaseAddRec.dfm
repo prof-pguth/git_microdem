@@ -3,8 +3,8 @@ object DbaddRecForm: TDbaddRecForm
   Top = 313
   BorderIcons = []
   Caption = 'Add record to data base'
-  ClientHeight = 139
-  ClientWidth = 444
+  ClientHeight = 153
+  ClientWidth = 529
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,11 +16,11 @@ object DbaddRecForm: TDbaddRecForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 444
+    Width = 529
     Height = 41
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 468
+    ExplicitWidth = 444
     object Button1: TButton
       Left = 9
       Top = 10
@@ -65,8 +65,8 @@ object DbaddRecForm: TDbaddRecForm
   object DBGrid1: TDBGrid
     Left = 0
     Top = 41
-    Width = 444
-    Height = 98
+    Width = 529
+    Height = 112
     Align = alClient
     DataSource = DataSource1
     TabOrder = 1

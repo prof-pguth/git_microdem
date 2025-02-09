@@ -2,19 +2,18 @@ object DilateErodeForm: TDilateErodeForm
   Left = 0
   Top = 0
   Caption = 'Image erode/dilate'
-  ClientHeight = 211
-  ClientWidth = 426
+  ClientHeight = 188
+  ClientWidth = 394
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  PixelsPerInch = 96
   TextHeight = 13
   object RedrawSpeedButton12: TSpeedButton
-    Left = 193
-    Top = 8
+    Left = 255
+    Top = 111
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -98,7 +97,7 @@ object DilateErodeForm: TDilateErodeForm
   end
   object DilateButton: TBitBtn
     Left = 8
-    Top = 56
+    Top = 48
     Width = 137
     Height = 25
     Caption = 'Dilate image'
@@ -107,7 +106,7 @@ object DilateErodeForm: TDilateErodeForm
   end
   object ErodeButton: TBitBtn
     Left = 8
-    Top = 96
+    Top = 88
     Width = 137
     Height = 25
     Caption = 'Erode image'

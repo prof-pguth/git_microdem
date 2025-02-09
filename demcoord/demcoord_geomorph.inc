@@ -197,7 +197,13 @@ var
             end;
 
       begin {ComputeTrendSurfaceForSlopeAspect}
-         //New(A);
+
+            //z = b[1] + b[2]*x + b[3]*y +
+            //    b[4]*x^2 + b[5]*x*y + b[6]*y^2 +
+            //    b[7]*x^3 + b[8]*x^2*y + b[9]*x*y^2 + b[10]*y^3 +
+            //    b[11]*x^4 + b[12]*x^3*y + b[13]*x^2*y^2 + b[14]*x*y^3 + b[15]*y^4
+
+         Result := false;
          C[1] := 1.0;
          for i := 1 to MaxMatrixSize do B[i] := 0;
 
@@ -214,16 +220,20 @@ var
                if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
                   AddPointToTrendSurface(x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2);
                   inc(Pts);
+               end
+               else begin
+                  if MDDef.NeedFullSlopeWindows then exit;
                end;
             end;
          end;
 
-         if Pts < TrendSurfacePointsRequired[MDDef.SlopeLSQorder] then begin
-            Result := false;
+         if (Pts < TrendSurfacePointsRequired[MDDef.SlopeLSQorder]) then begin
+            exit;
          end
          else begin
             SolveSLE(A,B,IORD2,1.0E-08);
 
+            //this is true for all orders; 1 and 2 resturn the same results, 3 and 4 the same resuls, but differ from 1 and 2
             SlopeAsp.dzdx := B[2];
             SlopeAsp.dzdy := B[3];
 
@@ -243,7 +253,6 @@ var
                SlopeAsp.f := B[1]; // constant
             end;
 
-            //Dispose(A);
             {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('Trend Surface out'); {$EndIf}
             Result := true;
          end;
@@ -255,12 +264,13 @@ begin
    SlopeAsp.AspectDirTrue := 0;
    SlopeAsp.Slope := 0;
    if (Radius = 0) then Radius := MDDef.SlopeRegionRadius;
-   if (MDDef.SlopeAlgorithm = smLSQ) and ( (MDDef.SlopeLSQorder > 2) or (MDDef.SlopeLSQradius > 1)) and (not NeedSecondOrder) then begin
+   if (MDDef.SlopeAlgorithm = smLSQ) and ( (MDDef.SlopeLSQorder > 2) or (MDDef.SlopeLSQradius > 1)) then begin
       //for the simple case, we can skip the LSQ computation and just use the Evans simplification
       if GridInDataSetInteger(Col,Row) then begin
-         PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
-         SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1);
-         ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
+         if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1) then begin
+            PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
+            ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
+         end;
       end;
    end
    else begin

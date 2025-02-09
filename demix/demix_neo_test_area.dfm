@@ -16,14 +16,15 @@ object New_area_evals_form: TNew_area_evals_form
     Left = 24
     Top = 40
     Width = 185
-    Height = 121
+    Height = 169
     Caption = 'Land surface parameter'
     ItemIndex = 0
     Items.Strings = (
       'Elevation'
       'Slope'
       'Hillshade'
-      'RRI')
+      'RRI'
+      'Openness')
     TabOrder = 0
     OnClick = RadioGroup1Click
   end

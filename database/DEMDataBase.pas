@@ -171,7 +171,7 @@ var
 
 const
    NotAllowedDBtype = 'Not allowed for this type of database';
-   DBMaskString = 'Any database|*.dbf;*.csv;*.kml;*.db;*.adb;*.shz;*.fit|' +
+   DBMaskString = 'Any database|*.dbf;*.csv;*.kml;*.db;*.adb;*.shz;*.fit;*.tcx|' +
                   'Shapefile|*.shp;*.shz|' +
                   'dBase|*.dbf|' +
                   'CSV file|*.CSV;*.txt|' +
@@ -183,6 +183,7 @@ const
                   'xyz file|*.xyz|' +
                   'GPX|*.gpx|' +
                   'Garmin FIT|*.fit|' +
+                  'FITBIT txc|*.tcx|' +
                   'All files|*.*';
 
 const
@@ -1167,7 +1168,7 @@ var
 begin
    Ext := UpperCase(ExtractFileExt(fName));
    Result := (Ext = '.DBF') or (Ext = '.CSV') or (Ext = '.KML') or (Ext = '.DB') or (Ext = '.SDB') or (Ext = '.SHZ') or (Ext = '.FIT') or (Ext = '.SHP')
-          or (Ext = '.TXT') or (Ext = '.XML') or (Ext = '.KML') or (Ext = '.CDS') or (Ext = '.XYZ') or (Ext = '.GPX');
+          or (Ext = '.TXT') or (Ext = '.XML') or (Ext = '.CDS') or (Ext = '.XYZ') or (Ext = '.GPX');
 end;
 
 
@@ -1504,7 +1505,7 @@ var
   fv : float32;
   rc : integer;
 begin
-   NPts := 0;
+    NPts := 0;
    {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('GetPointArrayForDBField start'); {$EndIf}
    {$IfDef VCL} if WantShowProgress then StartProgress('Get ' + FieldName); {$EndIf}
    EmpSource.Enabled := false;
@@ -5171,6 +5172,7 @@ var
    Dir : DirStr;
    bName : NameStr;
    Ext : ExtStr;
+   ID : shortstring;
    WasCSVImport,
    CheckDeleteUnusedFields,
    Success : boolean;
@@ -5206,63 +5208,65 @@ begin
     Result := true;
     CheckDeleteUnusedFields := false;
 
-
-
-    {$IfDef ExGDAL}
-    {$Else}
-       if ExtEquals(Ext,'.gpx') or ExtEquals(Ext,'.fit')  then begin
-          try
-             HeavyDutyProcessing := true;
-             WMdem.Color := clInactiveCaption;
-             BasePath := 'c:\mapdata\tracks\';
-             SafeMakeDir(BasePath);
-             MDdef.Add3DDist := false;
-             if ExtEquals(Ext,'.gpx') then begin
-                {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
-                tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-                CopyFile(FileWanted,tName);
-                CheckDeleteUnusedFields := true;
+    if ExtEquals(Ext,'.gpx') or ExtEquals(Ext,'.fit') or ExtEquals(Ext,'.tcx') then begin
+       try
+          SaveBackupDefaults;
+          MDDef.UseMeters := false;
+          MDdef.AddSpeed := true;
+          MDdef.Add3DDist := false;
+          HeavyDutyProcessing := true;
+          WMdem.Color := clInactiveCaption;
+          BasePath := 'c:\mapdata\tracks\';
+          SafeMakeDir(BasePath);
+          if ExtEquals(Ext,'.TCX') then begin
+             sl := FitBitTCXtoStringList(FileWanted,ID);
+             FileWanted := BasePath + ID + '.dbf';
+             i := StringList2CSVtoDB(sl,FileWanted);
+             if MDDef.AddFitNav then begin
+                GISDB[i].AddNavFields;
+                {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
              end;
-             if ExtEquals(Ext,'.fit') then begin
-                {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
-                tName := BasePath + ExtractFileName(FileWanted);
-                MoveFile(FileWanted,tName);
-                FileWanted := tName;
-                {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
-                tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-                if GPSBabel_fit2gpx(FileWanted,tName) then begin
-                   if GetFileSize(tName) < 500 then begin
-                      {$IfDef RecordFIT} WriteLineToDebugFile('FIT only ' + SmartMemorySizeBytes(GetFileSize(tName))); {$EndIf}
-                      if not AnswerIsYes('File very small, probably has no locations (indoor activity?). Try import anyway') then begin
-                         Result := false;
-                         exit;
-                      end;
-                   end;
-                end
-                else exit;
-             end;
-             if FileExists(tName) then begin
-                {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
-                FileWanted := BasePath;
-                SaveBackupDefaults;
-                MDDef.UseMeters := false;
-                MDdef.AddSpeed := true;
-                {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
-                GPXtoDBF(tName,FileWanted);
-                {$IfDef RecordFIT} WriteLineToDebugFile('GPX processed ' + FileWanted); {$EndIf}
-                RestoreBackupDefaults;
+             CloseAndNilNumberedDB(i);
+          end
+          else if ExtEquals(Ext,'.gpx') then begin
+             {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
+             tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+             CopyFile(FileWanted,tName);
+             CheckDeleteUnusedFields := true;
+          end
+          else if ExtEquals(Ext,'.fit') then begin
+             {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
+             tName := BasePath + ExtractFileName(FileWanted);
+             MoveFile(FileWanted,tName);
+             FileWanted := tName;
+             {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
+             tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+             if GPSBabel_fit2gpx(FileWanted,tName) then begin
+                 {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
+                 if GetFileSize(tName) < 500 then begin
+                    Result := false;
+                    exit;
+                end;
              end
-             else begin
-                {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
-                Result := false;
-                exit;
-             end;
-          finally
-             HeavyDutyProcessing := false;
-             WMdem.Color := clScrollBar;
+             else exit;
           end;
+          if FileExists(tName) then begin
+             FileWanted := BasePath;
+             {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
+             GPXtoDBF(tName,FileWanted);
+             {$IfDef RecordFIT} WriteLineToDebugFile('GPX processed ' + FileWanted); {$EndIf}
+          end
+          else begin
+             {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
+             Result := false;
+             exit;
+          end;
+       finally
+          RestoreBackupDefaults;
+          HeavyDutyProcessing := false;
+          WMdem.Color := clScrollBar;
        end;
-    {$EndIf}
+    end;
 
     {$IfDef VCL}
        if ExtEquals(Ext,'.shz') then begin
@@ -5288,13 +5292,14 @@ begin
     WasCSVImport := false;
     if ExtEquals(Ext, '.CSV') or ExtEquals(Ext, '.TXT') or ExtEquals(Ext, '.XYZ') or ExtEquals(Ext, '.KML') or ExtEquals(Ext, '.ASC') then begin
        {$IfDef VCL}
-          {$IfDef RecordDataBase} WriteLineToDebugFile('Picked CSV ' + Filewanted); {$EndIf}
+          {$IfDef RecordDataBase} WriteLineToDebugFile('Picked CSV or similar' + Filewanted); {$EndIf}
           if ExtEquals(Ext,'.KML') then begin
              sl := PointKMLtoStringList(FileWanted);
              FileWanted := ChangeFileExt(FileWanted,'.csv');
              sl.SaveToFile(FileWanted);
              sl.Free;
           end;
+
           NewFile := Dir + bName + DefaultDBExt;
           if AutoOverwriteDBF or (not FileExists(NewFile)) or AnswerIsYes(NewFile + ' already exists; overwrite') then begin
              CSVFileImportToDB(FileWanted);

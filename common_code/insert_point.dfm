@@ -4,8 +4,8 @@ object InsertPointForm: TInsertPointForm
   BorderIcons = [biMinimize]
   BorderStyle = bsDialog
   Caption = 'Insert Point '
-  ClientHeight = 220
-  ClientWidth = 288
+  ClientHeight = 221
+  ClientWidth = 274
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

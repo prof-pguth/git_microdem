@@ -258,7 +258,14 @@ end;
 
 procedure FUVforScales_0_15sec;
 const
-   DEMs : array[1..5] of shortstring = ('NeoDSM','NeoDTM','FABDEM','COP','ALOS');
+   NumDEMs = 7;
+   DEMs : array[1..NumDEMs] of shortstring = ('ref_dtm','NeoDTM','FABDEM','COP','ALOS','Point_Cloud_DTM','Point_Cloud_NVS');
+   Resolution = '_0.15sec.tif';
+   (*
+   NumDEMs = 5;
+   DEMs : array[1..NumDEMs] of shortstring = ('ref_dtm','NeoDTM','FABDEM','COP','ALOS');
+   Resolution = '_1sec.tif';
+   *)
 var
    DataDir, fName : PathStr;
    i,j,ad,Ref,Test,Ref2,Test2,Ref3,Test3 : integer;
@@ -274,6 +281,9 @@ var
 
 begin
    DataDir := 'J:\aaa_neo_eval\oxnard\multiple_0.15sec\';
+
+   //DataDir := 'J:\aaa_neo_eval\oxnard\1_sec_tests\';
+
    Area := 'oxnard';
    {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15sece in'); {$EndIf}
 
@@ -284,12 +294,16 @@ begin
 
 
    Ref := 0;
-   for i := 1 to 5 do begin
+   for i := 2 to NumDEMs do begin
       {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforScales_0_15sec, start ' + DEMs[i]); {$EndIf}
-      fName := DataDir + 'ref_dtm_0.15sec.tif';
+
+
+      fName := DataDir + DEMs[1] + Resolution;
       if Not ValidDEM(Ref) then Ref := OpenNewDEM(fName,false);
-      fName := DataDir + DEMs[i] + '_0.15sec.tif';
+      fName := DataDir + DEMs[i] + Resolution;
       Test := OpenNewDEM(fName,false);
+
+
       aline := Area + ', ,' + DEMs[i];
       for j := 1 to NumOrderedParams do begin
          {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s, start ' + OrderedParams[j]); {$EndIf}
@@ -343,7 +357,7 @@ begin
    end;
    CloseSingleDEM(Ref);
 
-   fName := DataDir + 'FUV_0_15sec.dbf';
+   fName := DataDir + 'FUV' + Resolution + '.dbf';
    StringList2CSVtoDB(Findings,fName,true);
    wmDEM.ClearStatusBarPanelText;
    {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s out'); {$EndIf}
@@ -532,6 +546,9 @@ begin {procedure FUVforRangeScales}
       fName := DataDir + 'FUV_Range_scales.dbf';
    end;
    {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale Done, Findings.Count=' + IntToStr(Findings.Count)); {$EndIf}
+
+   MessageToContinue('Track down why dbOnTable is not getting set');
+
 
    db := StringList2CSVtoDB(Findings,fName,true);
    GraphForDifferenceDistributionByTile(db);

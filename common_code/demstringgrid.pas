@@ -9,7 +9,7 @@ unit demstringgrid;
 
 
 {-----------------------------------------------------------------------------------------------------------------}
-{originally based on, but now heavily revised:                                                                    }
+{originally based on, but now very heavily revised:                                                               }
 {Copyright  © 2002-2005, Gary Darby, www.DelphiForFun.org                                                         }
 {Program may be used or modified for any non-commercial purpose so long as this original notice remains in place. }
 {All other rights are reserved                                                                                    }
@@ -79,13 +79,13 @@ type
   public
     { Public declarations }
     R          : array[1..MaxMatrixSize,1..MaxMatrixSize] of float64;
+    DoR : tGridCorrelationMatrix;
+    ReadRs : boolean;
     FieldNames : array[1..MaxMatrixSize] of shortstring;
     NumVar,NumDec,FirstDataColumn  : integer;
     OutputHeader : tStringList;
     AutoSizeCols : boolean;
-    DoR : tGridCorrelationMatrix;
-    theTitle,URstring,LegUnits : shortString;
-    ReadRs : boolean;
+    theTitle,URstring,LegUnits,ULstring : shortString;
     procedure HideCorrelationControls(Show : boolean = false);
     procedure ShowSortingControls(Show : boolean = false);
     procedure SetFormSize;
@@ -97,6 +97,7 @@ type
 function OpenCorrelationMatrix(Title : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
 
 procedure SortGrid(Grid : TStringGrid; const SortCol : integer; const datatype : integer; const ascending : boolean);
+procedure DrawCorrelationDiagram(DisplayGrid : tGridForm);
 
 
 implementation
@@ -105,13 +106,286 @@ implementation
 
 uses
    PetDBUtils,PetImage,BaseGraf, Petimage_form,
+   Correlation_Matrix_options,
    DEMdatabase,nevadia_main;
+
+
+
+procedure DrawCorrelationDiagram(DisplayGrid : tGridForm);
+{$IfDef ExGeostats}
+begin
+{$Else}
+const
+   LeftOffset : integer = 0;
+   LegendSize : integer = 250;
+   BoxSize  : integer = 0;
+   FontSize : integer = 0;
+   ShowHeader : boolean = true;
+var
+   fName : PathStr;
+   Bitmap,Bitmap2 : tMyBitmap;
+   Table : tMyData;
+   TStr,aLabel1,aLabel2,LeftLabel : shortString;
+   x1,y1,x2,y2,i,j,NPts,Bin : integer;
+   MinVal,MaxVal,NumPerCat,ThisR,delta,value,Perfect : float64;
+   SortedRs : array[1..500] of float64;
+begin
+with DisplayGrid do begin
+   {$IfDef StringGridColors} WriteLineToDebugFile('TGridForm.BitBtn6Click in'); {$EndIf}
+   ReadRMatrix;
+   if (BoxSize = 0) then begin
+      if (StringGrid1.ColCount > 100) then begin
+         BoxSize := 10;
+         FontSize := 8;
+      end
+      else begin
+         BoxSize := 25;
+         FontSize := 14;
+      end;
+   end;
+
+(* if false and (Sender <> nil) then begin
+  ReadDefault('Box size',BoxSize);
+      ReadDefault('Font size',FontSize);
+      ShowHeader := AnswerIsYes('Show caption');
+   end;
+   *)
+    Npts := 0;
+    MinVal := 99999;
+    MaxVal := -9999;
+    for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
+       for j := 1 to pred(StringGrid1.RowCount) do  begin
+          if StringGrid1.Cells[0,j] <> StringGrid1.Cells[i,0] then begin
+             //Avoid autocorrelations
+             Value := StrToFloat(StringGrid1.Cells[i,j]);
+             Petmath.CompareValueToExtremes(Value,MinVal,MaxVal);
+             if MDDef.CR_MatrixEqualization then begin
+                inc(NPts);
+                SortedRs[Npts] := Value;
+             end;
+          end;
+       end;
+    end;
+    if MDDef.CR_MatrixEqualization then HeapSort(NPts,SortedRs);
+
+    if (DoR = gcmMAvD) then fName := ProgramRootDir + 'red_blue_diverge.dbf'
+    else fName := ProgramRootDir + 'correlation_matrix_color.dbf';
+    if FileExists(fName) then begin
+      Table := tMyData.Create(fName);
+      while not Table.eof do begin
+         Table.Edit;
+         Table.SetFieldByNameAsInteger('RED',Table.GetFieldByNameAsInteger('RED_' + IntToStr(MDDef.CR_ColorPalette)));
+         Table.SetFieldByNameAsInteger('GREEN',Table.GetFieldByNameAsInteger('GREEN_' + IntToStr(MDDef.CR_ColorPalette)));
+         Table.SetFieldByNameAsInteger('BLUE',Table.GetFieldByNameAsInteger('BLUE_' + IntToStr(MDDef.CR_ColorPalette)));
+         Table.Next;
+      end;
+
+      Table.First;
+      if (DoR = gcmR) then begin
+         if MDDef.CR_MatrixEqualization then begin
+            NumPerCat := Npts / Table.FiltRecsInDB;
+
+            //Bin := Table.FiltRecsInDB;
+            Bin := 1;
+            while Not Table.eof do begin
+               i := Npts - round(pred(Bin) * NumPerCat);
+               j := Npts - round(Bin * NumPerCat);
+               if j < 1 then j := 1;
+
+               WriteLineToDebugFile(IntToStr(i) + '  ' +  IntToStr(j) + '   '+ IntToStr(NPts));
+
+               MaxVal := SortedRs[i];
+               MinVal := SortedRs[j];
+
+               WriteLineToDebugFile(IntToStr(Bin) + RealToString(MinVal,12,8) + RealToString(MaxVal,12,8));
+               //if i < 1 then i := 1;
+
+               //MinVal := SortedRs[i];   Np
+               inc(Bin);
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MAX',MaxVal);
+               Table.SetFieldByNameAsFloat('MIN',MinVal);
+               Table.Next;
+               //MaxVal := MinVal;
+            end;
+         end
+         else begin
+
+            if (MaxVal > MDDef.PerfectR) and (MDDef.PerfectR > 0) then begin
+               delta := (MDDef.PerfectR-MinVal) / pred(Table.TotRecsInDB);
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MAX',MaxVal);
+               Table.SetFieldByNameAsFloat('MIN',MDDef.PerfectR);
+               Table.Next;
+               Value := MDDef.PerfectR;
+            end
+            else begin
+               delta := (MaxVal-MinVal) / Table.TotRecsInDB;
+               Value := MaxVal;
+            end;
+            while not Table.eof do begin
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MAX',value);
+               Value := Value - delta;
+               Table.SetFieldByNameAsFloat('MIN',value);
+               Table.Next;
+            end;
+         end;
+      end
+      else begin
+         if (DoR = gcmMAbD) then begin
+            Perfect := MDDef.PerfectMAbD;
+            if (MinVal < Perfect) then begin
+               delta := (MaxVal-Perfect) / pred(Table.TotRecsInDB);
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MIN',MinVal);
+               Table.SetFieldByNameAsFloat('MAX',Perfect);
+               Table.Next;
+               Value := Perfect;
+            end
+            else begin
+               delta := (MaxVal-MinVal) / Table.TotRecsInDB;
+               Value := MinVal;
+            end;
+            while not Table.eof do begin
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MIN',value);
+               Value := Value + delta;
+               Table.SetFieldByNameAsFloat('MAX',value);
+               Table.Next;
+            end;
+         end
+         else begin
+            delta := (MaxVal-MinVal) / Table.TotRecsInDB;
+            Value := MaxVal;
+            while not Table.eof do begin
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MAX',value);
+               Value := Value - delta;
+               Table.SetFieldByNameAsFloat('MIN',value);
+               Table.Next;
+            end;
+         end;
+      end;
+    end
+    else begin
+       Table := Nil;
+      {$IfDef CorrleationMatrixProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click, range of correlations ' + RealToString(MinVal,-8,-4) + ' to ' + RealToString(MaxVal,-8,-4)); {$EndIf}
+    end;
+
+   ShowHourglassCursor;
+   CreateBitmap(Bitmap,2000,2000);
+   Bitmap.Canvas.Font.Name := 'Verdana';
+   Bitmap.Canvas.Font.Size := FontSize;
+   Bitmap.Canvas.Font.Style := [fsBold];
+
+   for j := 1 to pred(StringGrid1.RowCount) do begin
+      if FirstDataColumn = 1 then LeftLabel := StringGrid1.Cells[0,j]
+      else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
+
+      i := Bitmap.Canvas.TextWidth(LeftLabel) + 15;
+      if I > LeftOffset then LeftOffset := i;
+   end;
+   LegendSize := 65 + Bitmap.Canvas.TextWidth(' 1.0000 > ' + LegUnits + ' > -1.0000');
+
+   {$IfDef StringGridProblems} WriteLineToDebugFile('start columns'); {$EndIf}
+   for i := FirstDataColumn to pred(StringGrid1.ColCount) do  begin
+      {$IfDef StringGridProblems}    WriteLineToDebugFile('i=' + IntToStr(i)); {$EndIf}
+      Bitmap.Canvas.Brush.Style := bsClear;
+      Petmar.TextOutVertical(Bitmap.Canvas,LeftOffset+pred(i)*BoxSize,LeftOffset-5,RemoveUnderscores(StringGrid1.Cells[i,0]));
+      for j := 1 to pred(StringGrid1.RowCount) do  begin
+         Bitmap.Canvas.Brush.Style := bsClear;
+         if (FirstDataColumn = 1) then LeftLabel := StringGrid1.Cells[0,j]
+         else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
+         LeftLabel := RemoveUnderscores(LeftLabel);
+         Bitmap.Canvas.TextOut(LeftOffset - 5 - Bitmap.Canvas.TextWidth(LeftLabel),LeftOffset+5 + pred(j) * BoxSize,LeftLabel);
+         ThisR := StrToFloat(StringGrid1.Cells[i,j]);
+         x1 := LeftOffset + pred(i)*BoxSize;
+         y1 := LeftOffset + pred(j)*BoxSize;
+         x2 := LeftOffset + (i)*BoxSize;
+         y2 := LeftOffset + (j)*BoxSize;
+         aLabel1 := StringGrid1.Cells[0,1];
+         aLabel2 := StringGrid1.Cells[i,0];
+         if (StringGrid1.Cells[0,j] = StringGrid1.Cells[i,0]) then begin
+            Bitmap.Canvas.MoveTo(x1,y1);  Bitmap.Canvas.LineTo(x2,y2);
+            Bitmap.Canvas.MoveTo(x1,y2);  Bitmap.Canvas.LineTo(x2,y1);
+            Bitmap.Canvas.Brush.Style := bsClear;
+         end
+         else begin
+            if (Table = Nil) then begin
+               Bitmap.Canvas.Brush.Color := Petmar.TerrainTColor(ThisR,MinVal,MaxVal);
+               {$IfDef StringGridColors} WriteLineToDebugFile('i=' + IntToStr(i) + ' j=' + IntToStr(j) + ' r=' + RealToString(r,-8,3) + ' ' + ColorString(Bitmap.Canvas.Brush.Color)); {$EndIf}
+            end
+            else begin
+                Table.First;
+                while (ThisR < Table.GetFieldByNameAsFloat('MIN')) or (ThisR > Table.GetFieldByNameAsFloat('MAX')) do begin
+                   Table.Next;
+                   if Table.eof then break;
+                end;
+
+                Bitmap.Canvas.Brush.Color := Table.TColorFromTable;
+            end;
+            Bitmap.Canvas.Brush.Style := bsSolid;
+         end;
+         Bitmap.Canvas.Rectangle(x1,y1,x2,y2);
+      end;
+   end;
+   GetImagePartOfBitmap(Bitmap);
+
+   {$IfDef StringGridProblems} WriteLineToDebugFile('if (Table = Nil) check'); {$EndIf}
+
+   if (Table = Nil) then begin
+       Bitmap2 := DefaultVerticalLegendOnBitmap(MinVal,MaxVal,'','',LegTerrain);
+   end
+   else begin
+       Table.First;
+       j := 1;
+       CreateBitmap(Bitmap2,1250,1200);
+       Bitmap2.Canvas.Font.Name := 'Verdana';
+       Bitmap2.Canvas.Font.Size := FontSize;
+       Bitmap2.Canvas.Font.Style := [fsBold];
+
+       while not Table.eof do begin
+          Bitmap2.Canvas.Brush.Color := Table.TColorFromTable;
+          Bitmap2.Canvas.Brush.Style := bsSolid;
+          Bitmap2.Canvas.Rectangle(pred(StringGrid1.ColCount)*BoxSize +10,4+(j)*BoxSize+30, pred(StringGrid1.ColCount)*BoxSize +40, succ(j)*BoxSize +30);
+          Bitmap2.Canvas.Brush.Style := bsClear;
+          TStr := RealToString(Table.GetFieldByNameAsFloat('MAX'),-8,MDDef.CR_Decimals) + ' > ' + LegUnits + ' > ' +  RealToString(Table.GetFieldByNameAsFloat('MIN'),-8,MDDef.CR_Decimals);
+          Bitmap2.Canvas.TextOut(pred(StringGrid1.ColCount)*BoxSize + 50,(j)*BoxSize+30,TStr);
+          Table.Next;
+          inc(j);
+       end;
+       Table.Destroy;
+       GetImagePartOfBitmap(Bitmap2);
+   end;
+   LeftOffset := Bitmap.Width;
+   Bitmap.Width := Bitmap.Width  + 10 + Bitmap2.Width;
+   Bitmap.Canvas.Draw(LeftOffset + 10,BitMap.Height - 10 - Bitmap2.Height,Bitmap2);
+   FreeAndNil(Bitmap2);
+
+   Bitmap.Canvas.Font.Size := 18;
+   Bitmap.Canvas.Font.Style := [fsBold];
+   if ShowHeader then Bitmap.Canvas.TextOut(2,2,RemoveUnderscores(ULstring));
+
+   Bitmap.Canvas.Font.Size := 24;
+   if (URstring <> '') then Bitmap.Canvas.TextOut(Bitmap.Width - Bitmap.Canvas.TextWidth(URstring),5,URString);
+
+   Petimage_form.DisplayBitmap(Bitmap,theTitle);
+   ShowDefaultCursor;
+   {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click out'); {$EndIf}
+end;
+{$EndIf}
+end;
+
+
+
 
 function OpenCorrelationMatrix(Title : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
 begin
    {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix in'); {$EndIf}
    Result := TGridForm.Create(Application);
    Result.theTitle := Title;
+   Result.ULstring := Title;
    Result.Caption := Title;
    Result.ReadCSVFile(fName);
    Result.SetFormSize;
@@ -490,229 +764,9 @@ end;
 
 
 procedure TGridForm.BitBtn6Click(Sender: TObject);
-{$IfDef ExGeostats}
 begin
-{$Else}
-const
-   LeftOffset : integer = 0;
-   LegendSize : integer = 250;
-   BoxSize  : integer = 0;
-   FontSize : integer = 0;
-   ShowHeader : boolean = true;
-   fName : PathStr = '';
-var
-   Bitmap,Bitmap2 : tMyBitmap;
-   Table : tMyData;
-   TStr,aLabel1,aLabel2,LeftLabel : shortString;
-   x1,y1,x2,y2,i,j : integer;
-   MinVal,MaxVal : float64;
-   r,delta,value,Perfect : float64;
-begin
-   {$IfDef StringGridColors} WriteLineToDebugFile('TGridForm.BitBtn6Click in'); {$EndIf}
-   ReadRMatrix;
-   if (BoxSize = 0) then begin
-      if (StringGrid1.ColCount > 100) then begin
-         BoxSize := 10;
-         FontSize := 8;
-      end
-      else begin
-         BoxSize := 25;
-         FontSize := 14;
-      end;
-   end;
-
-   if false and (Sender <> nil) then begin
-      ReadDefault('Box size',BoxSize);
-      ReadDefault('Font size',FontSize);
-      ShowHeader := AnswerIsYes('Show caption');
-      if (fName = '') then begin
-         fName := ProgramRootDir + 'correlations' + DefaultDBExt;
-         GetFileFromDirectory('Correlation color table',DefaultDBMask,fName);
-      end;
-   end;
-
-    MinVal := 99999;
-    MaxVal := -9999;
-    for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
-       for j := 1 to pred(StringGrid1.RowCount) do  begin
-          if StringGrid1.Cells[0,j] <> StringGrid1.Cells[i,0] then begin
-             //Avoid autocorrelations
-             Petmath.CompareValueToExtremes(StrToFloat(StringGrid1.Cells[i,j]),MinVal,MaxVal);
-          end;
-       end;
-    end;
-
-    if (DoR = gcmMAvD) then fName := ProgramRootDir + 'red_blue_diverge.dbf'
-    else fName := ProgramRootDir + 'correlation_matrix_color.dbf';
-    if FileExists(fName) then begin
-      Table := tMyData.Create(fName);
-
-      if (DoR = gcmR) then begin
-         if (MaxVal > MDDef.PerfectR) and (MDDef.PerfectR > 0) then begin
-            delta := (MDDef.PerfectR-MinVal) / pred(Table.TotRecsInDB);
-            Table.Edit;
-            Table.SetFieldByNameAsFloat('MAX',MaxVal);
-            Table.SetFieldByNameAsFloat('MIN',MDDef.PerfectR);
-            Table.Next;
-            Value := MDDef.PerfectR;
-         end
-         else begin
-            delta := (MaxVal-MinVal) / Table.TotRecsInDB;
-            Value := MaxVal;
-         end;
-         while not Table.eof do begin
-            Table.Edit;
-            Table.SetFieldByNameAsFloat('MAX',value);
-            Value := Value - delta;
-            Table.SetFieldByNameAsFloat('MIN',value);
-            Table.Next;
-         end;
-      end
-      else begin
-         if (DoR = gcmMAbD) then begin
-            Perfect := MDDef.PerfectMAbD;
-            if (MinVal < Perfect) then begin
-               delta := (MaxVal-Perfect) / pred(Table.TotRecsInDB);
-               Table.Edit;
-               Table.SetFieldByNameAsFloat('MIN',MinVal);
-               Table.SetFieldByNameAsFloat('MAX',Perfect);
-               Table.Next;
-               Value := Perfect;
-            end
-            else begin
-               delta := (MaxVal-MinVal) / Table.TotRecsInDB;
-               Value := MinVal;
-            end;
-            while not Table.eof do begin
-               Table.Edit;
-               Table.SetFieldByNameAsFloat('MIN',value);
-               Value := Value + delta;
-               Table.SetFieldByNameAsFloat('MAX',value);
-               Table.Next;
-            end;
-         end
-         else begin
-            delta := (MaxVal-MinVal) / Table.TotRecsInDB;
-            Value := MaxVal;
-            while not Table.eof do begin
-               Table.Edit;
-               Table.SetFieldByNameAsFloat('MAX',value);
-               Value := Value - delta;
-               Table.SetFieldByNameAsFloat('MIN',value);
-               Table.Next;
-            end;
-         end;
-      end;
-
-    end
-    else begin
-       Table := Nil;
-      {$IfDef CorrleationMatrixProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click, range of correlations ' + RealToString(MinVal,-8,-4) + ' to ' + RealToString(MaxVal,-8,-4)); {$EndIf}
-    end;
-
-   ShowHourglassCursor;
-   CreateBitmap(Bitmap,2000,2000);
-   Bitmap.Canvas.Font.Name := 'Verdana';
-   Bitmap.Canvas.Font.Size := FontSize;
-   Bitmap.Canvas.Font.Style := [fsBold];
-
-   for j := 1 to pred(StringGrid1.RowCount) do begin
-      if FirstDataColumn = 1 then LeftLabel := StringGrid1.Cells[0,j]
-      else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
-
-      i := Bitmap.Canvas.TextWidth(LeftLabel) + 15;
-      if I > LeftOffset then LeftOffset := i;
-   end;
-   LegendSize := 65 + Bitmap.Canvas.TextWidth(' 1.0000 > ' + LegUnits + ' > -1.0000');
-
-   {$IfDef StringGridProblems} WriteLineToDebugFile('start columns'); {$EndIf}
-   for i := FirstDataColumn to pred(StringGrid1.ColCount) do  begin
-      {$IfDef StringGridProblems}    WriteLineToDebugFile('i=' + IntToStr(i)); {$EndIf}
-      Bitmap.Canvas.Brush.Style := bsClear;
-      Petmar.TextOutVertical(Bitmap.Canvas,LeftOffset+pred(i)*BoxSize,LeftOffset-5,RemoveUnderscores(StringGrid1.Cells[i,0]));
-      for j := 1 to pred(StringGrid1.RowCount) do  begin
-         Bitmap.Canvas.Brush.Style := bsClear;
-         //TStr := RemoveUnderscores(StringGrid1.Cells[0,j]);
-         if FirstDataColumn = 1 then LeftLabel := StringGrid1.Cells[0,j]
-         else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
-         LeftLabel := RemoveUnderscores(LeftLabel);
-         Bitmap.Canvas.TextOut(LeftOffset - 5 - Bitmap.Canvas.TextWidth(LeftLabel),LeftOffset+5 + pred(j) * BoxSize,LeftLabel);
-         r := StrToFloat(StringGrid1.Cells[i,j]);
-         x1 := LeftOffset + pred(i)*BoxSize;
-         y1 := LeftOffset + pred(j)*BoxSize;
-         x2 := LeftOffset + (i)*BoxSize;
-         y2 := LeftOffset + (j)*BoxSize;
-         //if (i=j) then begin
-         aLabel1 := StringGrid1.Cells[0,1];
-         aLabel2 := StringGrid1.Cells[i,0];
-         if StringGrid1.Cells[0,j] = StringGrid1.Cells[i,0] then begin
-            //Bitmap.Canvas.Brush.Color := clWhite;
-            Bitmap.Canvas.MoveTo(x1,y1);  Bitmap.Canvas.LineTo(x2,y2);
-            Bitmap.Canvas.MoveTo(x1,y2);  Bitmap.Canvas.LineTo(x2,y1);
-            Bitmap.Canvas.Brush.Style := bsClear;
-         end
-         else begin
-            if (Table = Nil) then begin
-               Bitmap.Canvas.Brush.Color := Petmar.TerrainTColor(r,MinVal,MaxVal);
-               {$IfDef StringGridColors} WriteLineToDebugFile('i=' + IntToStr(i) + ' j=' + IntToStr(j) + ' r=' + RealToString(r,-8,3) + ' ' + ColorString(Bitmap.Canvas.Brush.Color)); {$EndIf}
-            end
-            else begin
-                Table.First;
-                while (r < Table.GetFieldByNameAsFloat('MIN')) or (r > Table.GetFieldByNameAsFloat('MAX')) do begin
-                   Table.Next;
-                   if Table.eof then break;
-                end;
-                Bitmap.Canvas.Brush.Color := Table.TColorFromTable;
-            end;
-            Bitmap.Canvas.Brush.Style := bsSolid;
-         end;
-         Bitmap.Canvas.Rectangle(x1,y1,x2,y2);
-      end;
-   end;
-   GetImagePartOfBitmap(Bitmap);
-
-   {$IfDef StringGridProblems} WriteLineToDebugFile('if (Table = Nil) check'); {$EndIf}
-
-   if (Table = Nil) then begin
-       Bitmap2 := DefaultVerticalLegendOnBitmap(MinVal,MaxVal,'','',LegTerrain);
-   end
-   else begin
-       Table.First;
-       j := 1;
-       CreateBitmap(Bitmap2,1250,1200);
-       Bitmap2.Canvas.Font.Name := 'Verdana';
-       Bitmap2.Canvas.Font.Size := FontSize;
-       Bitmap2.Canvas.Font.Style := [fsBold];
-
-       while not Table.eof do begin
-          Bitmap2.Canvas.Brush.Color := Table.TColorFromTable;
-          Bitmap2.Canvas.Brush.Style := bsSolid;
-          Bitmap2.Canvas.Rectangle(pred(StringGrid1.ColCount)*BoxSize +10,4+(j)*BoxSize+30, pred(StringGrid1.ColCount)*BoxSize +40, succ(j)*BoxSize +30);
-          Bitmap2.Canvas.Brush.Style := bsClear;
-          TStr := RealToString(Table.GetFieldByNameAsFloat('MAX'),6,4) + ' > ' + LegUnits + ' > ' +  RealToString(Table.GetFieldByNameAsFloat('MIN'),6,4);
-          Bitmap2.Canvas.TextOut(pred(StringGrid1.ColCount)*BoxSize + 50,(j)*BoxSize+30,TStr);
-          Table.Next;
-          inc(j);
-       end;
-       Table.Destroy;
-       GetImagePartOfBitmap(Bitmap2);
-   end;
-   LeftOffset := Bitmap.Width;
-   Bitmap.Width := Bitmap.Width  + 10 + Bitmap2.Width;
-   Bitmap.Canvas.Draw(LeftOffset + 10,BitMap.Height - 10 - Bitmap2.Height,Bitmap2);
-   FreeAndNil(Bitmap2);
-
-   Bitmap.Canvas.Font.Size := 18;
-   Bitmap.Canvas.Font.Style := [fsBold];
-   if ShowHeader then Bitmap.Canvas.TextOut(2,2,RemoveUnderscores(Caption));
-
-   Bitmap.Canvas.Font.Size := 24;
-   if (URstring <> '') then Bitmap.Canvas.TextOut(Bitmap.Width - Bitmap.Canvas.TextWidth(URstring),5,URString);
-
-   Petimage_form.DisplayBitmap(Bitmap,theTitle);
-   ShowDefaultCursor;
-   {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.BitBtn6Click out'); {$EndIf}
-{$EndIf}
+   //DrawCorrelationDiagram(StringGrid1);
+   InteractiveCorrelativeMatrix(self);
 end;
 
 
@@ -728,10 +782,11 @@ begin
    Graph.SetUpGraphForm;
    Graph.OpenXYZFile(rfile);
    Graph.GraphDraw.RainBowColors := true;
-   for i := 1 to pred(StringGrid1.ColCount) do begin
+   for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
       for j := 1 to pred(StringGrid1.RowCount) do begin
          r := StrToFloat(StringGrid1.Cells[i,j]);
-         if (i=j) and (r > 0.9999999) then begin
+         //if (i=j) and (r > 0.9999999) then begin
+         if (StringGrid1.Cells[0,j] = StringGrid1.Cells[i,0]) then begin
          end
          else begin
              v[1] := i;

@@ -37,7 +37,7 @@
        //{$Define RecordExports}
        //{$Define RecordFieldAdds}
        //{$Define RecordStatus}
-       //{$Define RecordGraph}
+       {$Define RecordGraph}
        //{$Define RecordClustering}
        //{$Define RecordGeoCoding}
        //{$Define RecordMultigrid}
@@ -199,8 +199,6 @@ type
     Elevationsatbenchmarks1: TMenuItem;
     Stationtimeseries1: TMenuItem;
     Histogram2: TMenuItem;
-    N2series1: TMenuItem;
-    N3series1: TMenuItem;
     Stratigraphiccolumn1: TMenuItem;
     Animatefield1: TMenuItem;
     dbfStruct: TMenuItem;
@@ -1178,8 +1176,6 @@ type
     procedure Proportionalsquares1Click(Sender: TObject);
     procedure Distancefrompoint1Click(Sender: TObject);
     procedure Stationtimeseries1Click(Sender: TObject);
-    procedure N3series1Click(Sender: TObject);
-    procedure N2series1Click(Sender: TObject);
     procedure Stratigraphiccolumn1Click(Sender: TObject);
     procedure Animatefield1Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
@@ -3676,9 +3672,10 @@ end;
 
 procedure Tdbtablef.BitBtn24Click(Sender: TObject);
 begin
-   Areasinclusters1.Visible := GISdb[DBonTable].MyData.FieldExists('AREA') and GISdb[DBonTable].MyData.FieldExists('CLUSTER');
-
-   DEMIX1Click(Sender);
+   if ValidDB(DBonTable) then begin
+      Areasinclusters1.Visible := GISdb[DBonTable].MyData.FieldExists('AREA') and GISdb[DBonTable].MyData.FieldExists('CLUSTER');
+      DEMIX1Click(Sender);
+   end;
 end;
 
 procedure Tdbtablef.BitBtn28Click(Sender: TObject);
@@ -6810,47 +6807,83 @@ begin
 var
   WantXField : shortstring;
   i : integer;
-  MaxY,MaxX : float64;
+  DataFiles,LegendFiles,
+  sl : tStringList;
+  z: float32;
+  MaxY,MaxX,Min,Max  : float64;
   Hists : array[1..MaxDataBase] of TThisBaseGraph;
+  Npts : int64;
+  zs : ^bfarray32;
+  fName : PathStr;
 begin
-   with GISdb[DBonTable] do begin
-      WantXField := PickField('Field for histogram',[ftFloat,ftInteger,ftSmallInt]);
-      if (WantXField <> '') then begin
-         if (Sender = AllDBsmultiplegraphs1) then begin
-            MDDef.NoHistFreqLabels := true;
-            CreateSmallGraph := true;
-            MaxY := -9999;
-            MaxX := -9999;
+   if (Sender = AllDBsmultiplegraphs1) then begin
+      with GISdb[DBonTable] do begin
+         WantXField := PickField('Field for histogram',[ftFloat,ftInteger,ftSmallInt]);
+         if (WantXField <> '') then begin
+            if (Sender = AllDBsmultiplegraphs1) then begin
+               MDDef.NoHistFreqLabels := true;
+               CreateSmallGraph := true;
+               MaxY := -9999;
+               MaxX := -9999;
 
-            for i := 1 to MaxDataBase do begin
-               if (GISdb[i] <> nil) then begin
-                  Hists[i] := GISdb[i].OldCreateHistogramFromDataBase(true,WantXField,'','',false);
-                  if (Hists[i].GraphDraw.MaxVertAxis > MaxY) then MaxY := Hists[i].GraphDraw.MaxVertAxis;
-                  if (Hists[i].GraphDraw.MaxHorizAxis > MaxX) then MaxX := Hists[i].GraphDraw.MaxHorizAxis;
-               end
-               else Hists[i] := Nil;
-            end;
+               for i := 1 to MaxDataBase do begin
+                  if (GISdb[i] <> nil) then begin
+                     Hists[i] := GISdb[i].OldCreateHistogramFromDataBase(true,WantXField,'','',false);
+                     if (Hists[i].GraphDraw.MaxVertAxis > MaxY) then MaxY := Hists[i].GraphDraw.MaxVertAxis;
+                     if (Hists[i].GraphDraw.MaxHorizAxis > MaxX) then MaxX := Hists[i].GraphDraw.MaxHorizAxis;
+                  end
+                  else Hists[i] := Nil;
+               end;
 
-            MDDef.NoHistFreqLabels := false;
-            CreateSmallGraph := false;
-            if AnswerIsYes('Rescale') then begin
-              ReadDefault('MaxX',MaxX);
-              ReadDefault('MaxY',MaxY);
-              for i := 1 to MaxDataBase do begin
-                 if (Hists[i] <> Nil) then begin
-                    Hists[i].GraphDraw.MaxHorizAxis := MaxX;
-                    Hists[i].GraphDraw.MaxVertAxis := MaxY;
-                    Hists[i].GraphDraw.BottomMargin := 50;
-                    Hists[i].GraphDraw.LeftMargin := 60;
-                    Hists[i].RedrawDiagram11Click(Nil);
+               MDDef.NoHistFreqLabels := false;
+               CreateSmallGraph := false;
+               if AnswerIsYes('Rescale') then begin
+                 ReadDefault('MaxX',MaxX);
+                 ReadDefault('MaxY',MaxY);
+                 for i := 1 to MaxDataBase do begin
+                    if (Hists[i] <> Nil) then begin
+                       Hists[i].GraphDraw.MaxHorizAxis := MaxX;
+                       Hists[i].GraphDraw.MaxVertAxis := MaxY;
+                       Hists[i].GraphDraw.BottomMargin := 50;
+                       Hists[i].GraphDraw.LeftMargin := 60;
+                       Hists[i].RedrawDiagram11Click(Nil);
+                    end;
                  end;
-              end;
-            end;
-         end
-         else OldCreateHistogramFromDatabase(true,WantXField,'','',(Sender = AllDBs1));
+               end;
+            end
+            else OldCreateHistogramFromDatabase(true,WantXField,'','',(Sender = AllDBs1));
+         end;
       end;
+   end
+   else begin
+      DataFiles := tStringList.Create;
+      LegendFiles := tStringList.Create;
+      sl := GISdb[DBonTable].GetMultipleNumericFields('Histogram');
+      New(zs);
+      Min := 99e39;
+      Max := -99e30;
+      for I := 0 to pred(sl.Count) do begin
+         LegendFiles.Add(sl.strings[i]);
+         //Npts := 0;
+         //GISdb[DBonTable].MyData.First;
+         GISdb[DBonTable].GetPointArrayForDBField(sl.strings[i],zs^,NPts);
+         {$IfDef RecordGraph} WriteLineToDebugFile(sl.strings[i]  + ' NPts=' + IntToStr(NPts)); {$EndIf};
+         Petmath.HeapSort(Npts,zs^);
+         if zs^[0] < Min then Min := zs^[0];
+         if zs^[pred(NPts)] > Max then Max := zs^[pred(NPts)];
+
+         fName := BaseGraf.SaveSingleValueSeries(Npts,zs^);
+         DataFiles.Add(fName);
+         {$IfDef RecordGraph} WriteLineToDebugFile(sl.strings[i] + '  ' + RealToString(Min,-12,-4) + ' to ' + RealToString(Max,-12,-4) + ' Saved to ' + fName); {$EndIf};
+      end;
+      Dispose(zs);
+
+      CreateMultipleHistogram(MDDef.CountHistograms,DataFiles,LegendFiles,'Histograms','Histograms',100,Min,Max,-1);
+
+      sl.Destroy;
    end;
 {$EndIf}
+
 end;
 
 
@@ -6916,17 +6949,6 @@ begin
 end;
 
 
-procedure Tdbtablef.N3series1Click(Sender: TObject);
-begin
-   {$IfDef NoDBGrafs}
-   {$Else}
-      GISdb[DBonTable].PickNumericFields(dbgtUnspecified,3,'First histogram','Second Histogram','Third histogram');
-      GISdb[DBonTable].OldCreateHistogramFromDataBase(true,GISdb[DBonTable].dbOpts.XField,GISdb[DBonTable].dbOpts.YField,GISdb[DBonTable].dbOpts.ZField,false);
-   {$EndIf}
-end;
-
-
-
 procedure Tdbtablef.N45Click(Sender: TObject);
 begin
    {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2filecleanup1Click'); {$EndIf}
@@ -6949,19 +6971,9 @@ end;
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIXwineContestCriterionGraph(dg7Params,DBonTable);
-{$EndIf}
-end;
-
-
-procedure Tdbtablef.N2series1Click(Sender: TObject);
-begin
-   {$IfDef NoDBGrafs}
+   {$IfDef ExDEMIXexperimentalOptions}
    {$Else}
-      GISdb[DBonTable].PickNumericFields(dbgtUnspecified,2,'First histogram','Second Histogram','Third histogram');
-      GISdb[DBonTable].OldCreateHistogramFromDataBase(true,GISdb[DBonTable].dbOpts.XField,GISdb[DBonTable].dbOpts.YField,'',false);
+      DEMIXwineContestCriterionGraph(dg7Params,DBonTable);
    {$EndIf}
 end;
 

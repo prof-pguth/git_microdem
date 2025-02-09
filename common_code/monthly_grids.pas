@@ -9,7 +9,6 @@ unit monthly_grids;
 {________________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems

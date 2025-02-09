@@ -73,6 +73,8 @@ type
    function CreateHillshadeMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
    function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0) : integer;
    procedure CreateOpennessMap(OpenMap : boolean; GridLimits : tGridLimits; DEM,BoxSizeMeters : integer; var Upward,DownWard,Difference : integer);
+   function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
+
 
 function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
 
@@ -87,9 +89,7 @@ function AspectDifferenceMap(WhichDEM,RegionRadius : integer; GridLimits : tGrid
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 
-//function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
-function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 
 function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
 
@@ -173,6 +173,7 @@ uses
 var
    CountInStrips : integer;
 
+
 procedure PickAspectDifferenceMap(DEM,Window : integer);
 var
    AspectDEM : integer;
@@ -183,7 +184,6 @@ begin
    if Window in [2,99] then AspectDifferenceMap(AspectDEM,2,DEMGlb[AspectDEM].FullDEMGridLimits);
    if Window in [3,99] then AspectDifferenceMap(AspectDEM,3,DEMGlb[AspectDEM].FullDEMGridLimits);
 end;
-
 
 
 function GridDiffernces(PercentDifference : boolean = false) : integer;
@@ -1785,19 +1785,6 @@ begin
    end;
 end;
 
-
-(*
-function CreateProfileConvexityMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
-begin
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap in'); {$EndIf}
-   SaveBackupDefaults;
-   SetAllCurvatures(false);
-   MDDef.DoSlopeCurve := true;
-   Result := MakeMomentsGrid(WhichDEM,'C',-99,OpenMap);
-   RestoreBackupDefaults;
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateProfileConvexityMap, InGrid=' + IntToStr(WhichDEM) + '  NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
-end;
-*)
 
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 begin

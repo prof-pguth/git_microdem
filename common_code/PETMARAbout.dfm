@@ -4,8 +4,8 @@ object PetmarAboutBox: TPetmarAboutBox
   ActiveControl = OKButton
   BorderStyle = bsDialog
   Caption = 'About'
-  ClientHeight = 236
-  ClientWidth = 444
+  ClientHeight = 235
+  ClientWidth = 467
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -79,7 +79,7 @@ object PetmarAboutBox: TPetmarAboutBox
       Top = 163
       Width = 169
       Height = 16
-      Caption = 'Code copyright 1984-2023'
+      Caption = 'Code copyright 1984-2025'
     end
     object ProgramIcon: TImage
       Left = 336

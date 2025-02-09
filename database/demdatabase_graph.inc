@@ -1,13 +1,14 @@
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{ include file for demdatabase      }
-{___________________________________}
+
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{ include file for demdatabase           }
+{________________________________________}
 
 
 function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
@@ -670,7 +671,7 @@ var
       var
          fName : PathStr;
       begin
-         fName := BaseGraf.SaveSingleValueSeries(Npts,Values^{,0,Npts});
+         fName := BaseGraf.SaveSingleValueSeries(Npts,Values^);
          {$IfDef RecordDBPlot} writeLineToDebugFile('save: ' + fName); {$EndIf}
          FilesList.Add(fName);
          Dispose(Values);

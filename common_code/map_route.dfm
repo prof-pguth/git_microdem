@@ -2,8 +2,8 @@ object MapRtForm: TMapRtForm
   Left = 0
   Top = 0
   Caption = 'Route calculator'
-  ClientHeight = 234
-  ClientWidth = 493
+  ClientHeight = 259
+  ClientWidth = 498
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

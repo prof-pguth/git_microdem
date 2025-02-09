@@ -3,8 +3,8 @@ object kml_opts_fm: Tkml_opts_fm
   Top = 0
   BorderIcons = []
   Caption = 'KML database export options'
-  ClientHeight = 396
-  ClientWidth = 539
+  ClientHeight = 388
+  ClientWidth = 541
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

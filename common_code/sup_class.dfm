@@ -2,8 +2,8 @@ object supclasform: Tsupclasform
   Left = 0
   Top = 0
   Caption = 'Supervised classification'
-  ClientHeight = 323
-  ClientWidth = 517
+  ClientHeight = 329
+  ClientWidth = 548
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -24,11 +24,13 @@ object supclasform: Tsupclasform
   end
   object Panel1: TPanel
     Left = 0
-    Top = 74
-    Width = 517
+    Top = 80
+    Width = 548
     Height = 249
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 74
+    ExplicitWidth = 517
     object Label1: TLabel
       Left = 8
       Top = 96
@@ -193,10 +195,11 @@ object supclasform: Tsupclasform
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 517
+    Width = 548
     Height = 76
     Align = alTop
     TabOrder = 2
+    ExplicitWidth = 517
     object Label3: TLabel
       Left = 280
       Top = 13

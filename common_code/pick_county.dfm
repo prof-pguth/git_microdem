@@ -36,7 +36,6 @@ object pickcounty: Tpickcounty
     ButtonHeight = 21
     Caption = 'ToolBar1'
     TabOrder = 0
-    ExplicitWidth = 533
     DesignSize = (
       521
       41)
@@ -100,8 +99,6 @@ object pickcounty: Tpickcounty
     Height = 34
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 327
-    ExplicitWidth = 533
     object CheckBox1: TCheckBox
       Left = 11
       Top = 2

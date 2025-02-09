@@ -188,8 +188,8 @@ type
    procedure AddaDEM(FirstDEM,AddDEM : integer; Mult : integer = 1);
 
    function MakeChangeMap(Map1,Map2 : integer; GridLimits: tGridLimits) : integer;
-   function GridCorrelationMatrix(Which : tGridCorrelationMatrix; DEMsWanted : tDEMbooleanArray; Title : shortstring; Incr : integer = 1) : DEMStringGrid.TGridForm;  overload;
-   function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer; DEMsOrdered : tDEMIntegerArray; Title : shortstring; Incr : integer = 1) : DEMStringGrid.TGridForm; overload;
+   function GridCorrelationMatrix(Which : tGridCorrelationMatrix; DEMsWanted : tDEMbooleanArray; Title : shortstring; Incr : integer = 1; SaveName : PathStr = '') : DEMStringGrid.TGridForm;  overload;
+   function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer; DEMsOrdered : tDEMIntegerArray; Title : shortstring; Incr : integer = 1; SaveName : PathStr = '') : DEMStringGrid.TGridForm; overload;
 
    procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
    procedure DirtAndAirShots(DB : integer; Title : shortString);
@@ -3126,7 +3126,7 @@ begin
 end;
 
 
-function GridCorrelationMatrix(Which : tGridCorrelationMatrix; DEMsWanted : tDEMbooleanArray; Title : shortstring; Incr : integer = 1) : DEMStringGrid.TGridForm;
+function GridCorrelationMatrix(Which : tGridCorrelationMatrix; DEMsWanted : tDEMbooleanArray; Title : shortstring; Incr : integer = 1; SaveName : PathStr = '') : DEMStringGrid.TGridForm;
 var
    i,NumDEMs : integer;
    DEMsOrdered : tDEMIntegerArray;
@@ -3143,7 +3143,7 @@ end;
 
 
 
-function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer; DEMsOrdered : tDEMIntegerArray; Title : shortstring; Incr : integer = 1) : DEMStringGrid.TGridForm;
+function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer; DEMsOrdered : tDEMIntegerArray; Title : shortstring; Incr : integer = 1; SaveName : PathStr = '') : DEMStringGrid.TGridForm;
 type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
@@ -3152,7 +3152,6 @@ var
   NPts : int64;
   Findings : tStringList;
   MenuStr : ansistring;
-  fName : PathStr;
   Corrs : ^tCorrs;
   Metrics : tStringList;
   a,b,rf : float32;
@@ -3227,10 +3226,10 @@ begin
 
    EndProgress;
    Dispose(Corrs);
-   fName := Petmar.NextFileNumber(MDTempDir,'grid_r_matrix_', '.csv');
-   Findings.SaveToFile(fName);
+   if SaveName = '' then SaveName := Petmar.NextFileNumber(MDTempDir,'grid_r_matrix_', '.csv');
+   Findings.SaveToFile(SaveName);
    Findings.Free;
-   Result := DEMStringGrid.OpenCorrelationMatrix(Title,fName);
+   Result := DEMStringGrid.OpenCorrelationMatrix(Title,SaveName);
    Result.DoR := Which;
 
    if (Which = gcmMAbD) then Result.LegUnits := 'MAbD'
@@ -3245,7 +3244,7 @@ begin
          end;
       end;
    end;
-   wmDEM.SetPanelText(1,'Matix',true);
+   wmDEM.SetPanelText(1,'Matrix',true);
    Result.BitBtn6Click(Nil);
 
    Metrics := tStringList.Create;
@@ -3257,8 +3256,8 @@ begin
                                 RealToString(DEMGlb[DEMsOrdered[i]].DEMHeader.MaxElev,-12,-6) + ',' + RealToString(Std,-12,-6) + ',' + IntToStr(NPts));
       end;
    end;
-   fName := Petmar.NextFileNumber(MDTempDir,'grid_statistics_', '.dbf');
-   StringList2CSVtoDB(Metrics,fName);
+   SaveName := Petmar.NextFileNumber(MDTempDir,'grid_statistics_', '.dbf');
+   StringList2CSVtoDB(Metrics,SaveName);
    wmDEM.ClearStatusBarPanelText;
 end;
 

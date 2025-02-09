@@ -150,7 +150,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object CheckBox1: TCheckBox
     Left = 8
-    Top = 207
+    Top = 239
     Width = 161
     Height = 17
     Caption = 'Immediate redraws'
@@ -254,5 +254,14 @@ object SlopeOptForm: TSlopeOptForm
         OnClick = RadioGroup4Click
       end
     end
+  end
+  object CheckBox2: TCheckBox
+    Left = 8
+    Top = 216
+    Width = 212
+    Height = 17
+    Caption = 'Full filled window required'
+    TabOrder = 10
+    OnClick = CheckBox2Click
   end
 end

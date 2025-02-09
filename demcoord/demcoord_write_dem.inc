@@ -22,10 +22,10 @@
 function tDEMDataSet.GetDEMCompositeDatumString : shortstring;
 begin
    if (DEMheader.DEMUsed = UTMbasedDEM) then begin
-      Result := IntToStr(GetUTMDatumCode(DEMMapProj));
+      Result := IntToStr(GetEPSGforUTMDatumCode(DEMMapProj));
    end
    else begin
-      Result := IntToStr(GetGeoDatumCode(DEMMapProj));
+      Result := IntToStr(GetEPSGforGeoDatumCode(DEMMapProj));
    end;
    Result := Result + '+' + IntToStr(DEMheader.VerticalCSTypeGeoKey);
 end;
@@ -487,10 +487,10 @@ begin
       StreamWordFieldEntry(TIFFFile,3072,0,1,27700);
    end
    else if (DEMheader.DEMUsed = UTMbasedDEM) then begin
-      StreamWordFieldEntry(TIFFFile,3072,0,1,GetUTMDatumCode(DEMMapProj));
+      StreamWordFieldEntry(TIFFFile,3072,0,1,GetEPSGforUTMDatumCode(DEMMapProj));
    end
    else begin
-      StreamWordFieldEntry(TIFFFile,2048,0,1,GetGeoDatumCode(DEMMapProj));
+      StreamWordFieldEntry(TIFFFile,2048,0,1,GetEPSGforGeoDatumCode(DEMMapProj));
    end;
 
    StreamWordFieldEntry(TIFFFile,4096,0,1,DEMheader.VerticalCSTypeGeoKey);

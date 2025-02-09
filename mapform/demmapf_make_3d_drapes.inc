@@ -56,7 +56,7 @@ var
    Maps : tStringList;
    i,j,Num : integer;
 begin
-   PickMaps(Maps,'Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
+   Maps := PickMaps('Maps for 3D view (max ' + IntToStr(MaxClouds) + ')');
    if (Maps.Count > 0) then begin
       MapForm.MatchThiscoverageareaandsamepixelsize1Click(Nil);
       Viewer := MapTo3DView(MapForm.MapDraw);

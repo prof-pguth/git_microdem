@@ -2,8 +2,8 @@ object GrayGameForm: TGrayGameForm
   Left = 221
   Top = 179
   Caption = 'The Grayscale Game'
-  ClientHeight = 525
-  ClientWidth = 558
+  ClientHeight = 481
+  ClientWidth = 492
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,14 +15,14 @@ object GrayGameForm: TGrayGameForm
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 558
-    Height = 525
+    Width = 492
+    Height = 481
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
     OnEnter = PageControl1Enter
-    ExplicitWidth = 560
-    ExplicitHeight = 518
+    ExplicitWidth = 558
+    ExplicitHeight = 525
     object TabSheet1: TTabSheet
       Caption = 'Grayscale game'
       object Label1: TLabel

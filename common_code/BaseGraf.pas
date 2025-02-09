@@ -8,8 +8,6 @@ unit BaseGraf;
 {________________________________________}
 
 
-
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
@@ -23,9 +21,10 @@ unit BaseGraf;
        //{$Define RecordGrafSize}
        //{$Define RecordGrafAxes}
        //{$Define RecordFormResize}
-       {$Define RecordMenuMisdirect}
-       {$Define RecordClipboard}
-       {$Define RecordHistogram}
+       //{$Define TrackColors}
+       //{$Define RecordMenuMisdirect}
+       //{$Define RecordClipboard}
+       //{$Define RecordHistogram}
        //{$Define TrackColors}
        //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
@@ -34,7 +33,7 @@ unit BaseGraf;
        //{$Define RecordGrafAxis}
        //{$Define RecordGraf}
        //{$Define RecordGraphColors}
-       {$Define RecordGrafDensity}
+       //{$Define RecordGrafDensity}
        //{$Define RecordPlotFiles}
        //{$Define Closing}
        //{$Define ReverseFit}

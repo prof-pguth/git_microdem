@@ -4,7 +4,7 @@ object PLSSConvertForm: TPLSSConvertForm
   BorderIcons = [biSystemMenu]
   Caption = 'PLSS Coordinate Converter'
   ClientHeight = 269
-  ClientWidth = 566
+  ClientWidth = 550
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,13 +18,12 @@ object PLSSConvertForm: TPLSSConvertForm
   object Memo1: TMemo
     Left = 0
     Top = 93
-    Width = 566
+    Width = 550
     Height = 176
     Align = alBottom
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitTop = 92
-    ExplicitWidth = 562
+    ExplicitWidth = 566
   end
   object BitBtn1: TBitBtn
     Left = 8

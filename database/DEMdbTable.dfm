@@ -923,16 +923,8 @@ object dbtablef: Tdbtablef
     object Histogram2: TMenuItem
       Caption = 'Histogram'
       object Histogram1: TMenuItem
-        Caption = '1 series'
+        Caption = 'One or more fields'
         OnClick = Histogram1Click
-      end
-      object N2series1: TMenuItem
-        Caption = '2 series'
-        OnClick = N2series1Click
-      end
-      object N3series1: TMenuItem
-        Caption = '3 series'
-        OnClick = N3series1Click
       end
       object Stackedpercentages1: TMenuItem
         Caption = 'Stacked percentages'
