@@ -82,6 +82,12 @@ begin
 end {proc GetSlopeAndAspect};
 
 
+var
+   aMethod : shortstring;
+const
+   SavePoints : boolean = false;
+   AllPointsInWindow : boolean = true;
+   SkipCenterPoint : boolean = false;
 
 function tDEMDataSet.GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean;
 var
@@ -170,11 +176,12 @@ var
          SST,SSR,SSD,AMSR,AMSD,SY,SYY,SYC,SYYC : extended;
          xutmoffset,yutmoffset,R,F,xutm,yutm  : float64;
          z,zs,zMeters,zg : float32;
+         csv : tStringList;
          FName      : PathStr;
          ThisGraph  : tThisBaseGraph;
          rfile      : file;
          v          : array[1..2] of float32;
-
+         xstring,ystring,zstring : shortstring;
 
             procedure AddPointToTrendSurface(xutm,yutm,zmeters : float32; var A : tTrendMatrix; var B,C  : tTrendVector; IOrd2 : integer);  inline;
             var
@@ -214,17 +221,67 @@ var
             for J := 1 to IORD2 do A[I,J] := 0;
          end;
 
+         if SavePoints then begin
+            xstring := 'x = [';
+            ystring := 'y = [';
+            zstring := 'z = [';
+         end;
+
          Pts := 0;
-         for x := -MDDef.SlopeLSQradius to MDDef.SlopeLSQradius do begin
-            for y := -MDDef.SlopeLSQradius to MDDef.SlopeLSQradius do begin
-               if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
-                  AddPointToTrendSurface(x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2);
-                  inc(Pts);
-               end
-               else begin
-                  if MDDef.NeedFullSlopeWindows then exit;
+         if AllPointsInWindow then begin
+            for x := -MDDef.SlopeLSQradius to MDDef.SlopeLSQradius do begin
+               for y := -MDDef.SlopeLSQradius to MDDef.SlopeLSQradius do begin
+                  if (x=0) and (y=0) and SkipCenterPoint then begin
+
+                  end
+                  else begin
+                     if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
+                        AddPointToTrendSurface(x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2);
+                        if SavePoints then begin
+                           xstring := xstring + RealToString(x * SlopeAsp.dx,-12,-2) + ',';
+                           ystring := ystring + RealToString(y * SlopeAsp.dy,-12,-2) + ',';
+                           zstring := zstring + RealToString(z,-12,-2) + ',';
+                        end;
+                        inc(Pts);
+                     end
+                     else begin
+                        if MDDef.NeedFullSlopeWindows then exit;
+                     end;
+                  end;
                end;
             end;
+         end
+         else begin
+            if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,MDDef.SlopeLSQradius) then begin
+               AddPointToTrendSurface(-MDDef.SlopeLSQradius * SlopeAsp.dx,MDDef.SlopeLSQradius*SlopeAsp.dy,SlopeAsp.znw,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(0,MDDef.SlopeLSQradius*SlopeAsp.dy,SlopeAsp.zn,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(MDDef.SlopeLSQradius * SlopeAsp.dx,MDDef.SlopeLSQradius*SlopeAsp.dy,SlopeAsp.zne,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(MDDef.SlopeLSQradius * SlopeAsp.dx,0,SlopeAsp.ze,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(MDDef.SlopeLSQradius * SlopeAsp.dx,-MDDef.SlopeLSQradius*SlopeAsp.dy,SlopeAsp.zse,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(0,-MDDef.SlopeLSQradius*SlopeAsp.dy,SlopeAsp.zs,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(-MDDef.SlopeLSQradius * SlopeAsp.dx,-MDDef.SlopeLSQradius*SlopeAsp.dy,SlopeAsp.zsw,A,B,C,Iord2);
+               inc(Pts);
+               AddPointToTrendSurface(-MDDef.SlopeLSQradius * SlopeAsp.dx,0,SlopeAsp.zw,A,B,C,Iord2);
+               inc(Pts);
+            end
+            else exit;
+         end;
+
+         if SavePoints then begin
+            csv := tStringList.Create;
+            xstring[length(xstring)] := ']';
+            ystring[length(ystring)] := ']';
+            zstring[length(zstring)] := ']';
+            csv.add(xstring);
+            csv.add(ystring);
+            csv.add(zstring);
+            csv.SaveToFile('c:\temp\' + aMethod + '_xyz.csv');
          end;
 
          if (Pts < TrendSurfacePointsRequired[MDDef.SlopeLSQorder]) then begin
@@ -264,7 +321,7 @@ begin
    SlopeAsp.AspectDirTrue := 0;
    SlopeAsp.Slope := 0;
    if (Radius = 0) then Radius := MDDef.SlopeRegionRadius;
-   if (MDDef.SlopeAlgorithm = smLSQ) and ( (MDDef.SlopeLSQorder > 2) or (MDDef.SlopeLSQradius > 1)) then begin
+   if (MDDef.SlopeAlgorithm = smLSQ) and (not (MDDef.EvansApproximationAllowed) or (MDDef.SlopeLSQorder > 2) or (MDDef.SlopeLSQradius > 1)) then begin
       //for the simple case, we can skip the LSQ computation and just use the Evans simplification
       if GridInDataSetInteger(Col,Row) then begin
          if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1) then begin
@@ -491,7 +548,6 @@ begin
    end
    else Result := false;
 end;
-
 
 
 procedure tDEMDataSet.BothOpennessMoments(GridLimits: tGridLimits; var UpOpenMoment,DownOpenMoment : tMomentVar);
@@ -1512,57 +1568,159 @@ begin
 end;
 
 
+procedure tDEMDataSet.AddSlopeAtPoint(var Results : tStringList; xp,yp : integer);
+var
+   k,Decs : integer;
+   SlopeAspectRec : tSlopeAspectRec;
+   aLine : shortstring;
+begin
+   if GetSlopeAndAspect(xp,yp,SlopeAspectRec) then begin
+      aLine := aMethod + RealToString(SlopeAspectRec.SlopePercent,7,2) + '%' + RealToString(SlopeAspectRec.AspectDirTrue,6,1) + '°T  ';
+      for k := 1 to 15 do begin
+         if (abs(SlopeAspectRec.Coefs[k]) > 0.00000001) then begin
+            case k of
+                1 : Decs := 2;
+                2,3 : Decs := 4;
+                4..6 : Decs := 6;
+                else Decs := 8;
+            end;
+            Aline := Aline + ' ';
+            if (SlopeAspectRec.Coefs[k] > 0) then Aline := Aline + '+' + RealToString(SlopeAspectRec.Coefs[k],-12,Decs)
+            else Aline := Aline + RealToString(SlopeAspectRec.Coefs[k],-12,Decs);
+            if (k > 1) then Aline := Aline + '*' + TrendSurMultiples[k];
+         end;
+      end;
+      Results.Add(aLine);
+   end;
+end;
+
+
+procedure tDEMDataSet.StartSlopeReport(var Results : tStringList; xp,yp : integer; Title : shortstring = '');
+var
+   SlopeAspectRec : tSlopeAspectRec;
+begin
+      Results := tStringList.Create;
+      Results.Add(AreaName);
+      if (Title <> '') then Results.Add(Title);
+      Results.Add('Point: ' + DEMLocationString(xp,yp));
+      Results.Add('Col=' + IntToStr(xp) + '  & row=' + IntToStr(yp));
+      Results.Add('Classified as: ' + PointTypeName(ClassifyAPoint(xp,yp)));
+      Results.Add('');
+      if GetSlopeAndAspect(xp,yp,SlopeAspectRec) then begin
+         Results.Add(  RealToString(SlopeAspectRec.znw,13,2) + RealToString(SlopeAspectRec.zn,13,2) + RealToString(SlopeAspectRec.zne,13,2) +  MessLineBreak +
+                       RealToString(SlopeAspectRec.zw,13,2)  + RealToString(SlopeAspectRec.z,13,2)  + RealToString(SlopeAspectRec.ze,13,2)  +  MessLineBreak +
+                       RealToString(SlopeAspectRec.zsw,13,2) + RealToString(SlopeAspectRec.zs,13,2) + RealToString(SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak );
+         Results.Add('');
+      end;
+end;
+
 procedure tDEMDataSet.TrendSurfaceEquations(xp,yp : integer; Title : shortstring = '');
 var
    Results : tStringList;
-   CurMethod,Decs : byte;
+   CurMethod : byte;
    i,j,k : integer;
-   aLine : shortString;
    SlopeAspectRec : tSlopeAspectRec;
 begin
-   SaveBackupDefaults;
-   Results := tStringList.Create;
-   Results.Add(AreaName);
-   if (Title <> '') then Results.Add(Title);
-   Results.Add('Point: ' + DEMLocationString(xp,yp));
-   Results.Add('Col=' + IntToStr(xp) + '  & row=' + IntToStr(yp));
-   Results.Add('Classified as: ' + PointTypeName(ClassifyAPoint(xp,yp)));
-   Results.Add('');
-   MDDef.SlopeAlgorithm := smLSQ;
-   for i := 1 to 4 do begin
-      MDDef.SlopeLSQradius := i;
-      for j := 1 to 4 do begin
-         MDDef.SlopeLSQorder := j;
+   try
+      SaveBackupDefaults;
+      MDDef.EvansApproximationAllowed := false;
+      SavePoints := true;
+      StartSlopeReport(Results,xp,yp,Title);
+      MDDef.SlopeAlgorithm := smLSQ;
+      for i := 1 to 4 do begin
+         MDDef.SlopeLSQradius := i;
+         for j := 1 to 4 do begin
+            MDDef.SlopeLSQorder := j;
             if GetSlopeAndAspect(xp,yp,SlopeAspectRec) then begin
-               if (i=1) and (j=1) then begin
-                  Results.Add(  RealToString(SlopeAspectRec.znw,13,2) + RealToString(SlopeAspectRec.zn,13,2) + RealToString(SlopeAspectRec.zne,13,2) +  MessLineBreak +
-                                RealToString(SlopeAspectRec.zw,13,2)  + RealToString(SlopeAspectRec.z,13,2)  + RealToString(SlopeAspectRec.ze,13,2)  +  MessLineBreak +
-                                RealToString(SlopeAspectRec.zsw,13,2) + RealToString(SlopeAspectRec.zs,13,2) + RealToString(SlopeAspectRec.zse,13,2) +  MessLineBreak + '  ' + MessLineBreak );
-                  Results.Add('');
-               end;
-               aLine := SlopeMethodName(MDDef.SlopeAlgorithm) + RealToString(SlopeAspectRec.SlopePercent,7,2) + '%' + RealToString(SlopeAspectRec.AspectDirTrue,6,1) + '°T  ';
-               for k := 1 to 15 do begin
-                  if (abs(SlopeAspectRec.Coefs[k]) > 0.00000001) then begin
-                     case k of
-                         1 : Decs := 2;
-                         2,3 : Decs := 4;
-                         4..6 : Decs := 6;
-                         else Decs := 8;
-                     end;
-                     Aline := Aline + ' ';
-                     if (SlopeAspectRec.Coefs[k] > 0) then Aline := Aline + '+' + RealToString(SlopeAspectRec.Coefs[k],-12,Decs)
-                     else Aline := Aline + RealToString(SlopeAspectRec.Coefs[k],-12,Decs);
-                     if (k > 1) then Aline := Aline + '*' + TrendSurMultiples[k];
-                  end;
-               end;
-               Results.Add(aLine);
+               aMethod := SlopeMethodName(MDDef.SlopeAlgorithm);
+               AddSlopeAtPoint(Results,xp,yp);
+            end;
          end;
+         Results.Add('');
       end;
-      Results.Add('');
+      DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
+   finally
+      RestoreBackupDefaults;
+      SavePoints := false;
    end;
-   DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
-   RestoreBackupDefaults
 end;
+
+
+procedure tDEMDataSet.TrendSurfaceEquationsFillOrCorners(xp,yp : integer; Title : shortstring = '');
+const
+   Fill : array[1..2] of shortstring = (' Full   ',' Corners');
+var
+   Results : tStringList;
+   CurMethod : byte;
+   i,j,m : integer;
+begin
+   try
+      SaveBackupDefaults;
+      MDDef.EvansApproximationAllowed := false;
+      SavePoints := true;
+      StartSlopeReport(Results,xp,yp,Title);
+      MDDef.SlopeAlgorithm := smLSQ;
+      for i := 1 to 4 do begin
+         MDDef.SlopeLSQradius := i;
+         for j := 1 to 2 do begin
+            MDDef.SlopeLSQorder := j;
+            for m := 1 to 2 do begin
+               if (i=1) and (m=2) then begin
+               end
+               else begin
+                  AllPointsInWindow := (m = 1);
+                  aMethod := SlopeMethodName(MDDef.SlopeAlgorithm) + Fill[m];
+                  AddSlopeAtPoint(Results,xp,yp);
+               end;
+            end;
+         end;
+         Results.Add('');
+      end;
+      DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
+   finally
+      RestoreBackupDefaults;
+      SavePoints := false;
+      AllPointsInWindow := true;
+   end;
+end;
+
+
+
+procedure tDEMDataSet.TrendSurfaceEquationsUseCenterPoint(xp,yp : integer; Title : shortstring = '');
+const
+   Fill : array[1..2] of shortstring = (' Use center ',' Skip center');
+var
+   Results : tStringList;
+   CurMethod : byte;
+   i,j,m : integer;
+begin
+   try
+      SaveBackupDefaults;
+      MDDef.EvansApproximationAllowed := false;
+      SavePoints := true;
+      StartSlopeReport(Results,xp,yp,Title);
+      MDDef.SlopeAlgorithm := smLSQ;
+      for i := 1 to 4 do begin
+         MDDef.SlopeLSQradius := i;
+         for j := 1 to 2 do begin
+            MDDef.SlopeLSQorder := j;
+            for m := 1 to 2 do begin
+               SkipCenterPoint := (m = 2);
+               aMethod := SlopeMethodName(MDDef.SlopeAlgorithm) + Fill[m];
+               AddSlopeAtPoint(Results,xp,yp);
+            end;
+         end;
+         Results.Add('');
+      end;
+      DisplayAndPurgeStringList(Results,'Point Slope Algorithms');
+   finally
+      RestoreBackupDefaults;
+      SavePoints := false;
+      AllPointsInWindow := true;
+      SkipCenterPoint := false;
+   end;
+end;
+
 
 procedure tDEMDataSet.SlopeMethodsReport(xp,yp : integer; Title : shortstring = '');
 var

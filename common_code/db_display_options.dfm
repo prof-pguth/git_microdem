@@ -4,7 +4,7 @@ object db_display_opts: Tdb_display_opts
   BorderIcons = [biSystemMenu]
   Caption = 'Database display options'
   ClientHeight = 542
-  ClientWidth = 373
+  ClientWidth = 380
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,10 +18,11 @@ object db_display_opts: Tdb_display_opts
   object BottomPanel: TPanel
     Left = 0
     Top = 501
-    Width = 373
+    Width = 380
     Height = 41
     Align = alBottom
     TabOrder = 0
+    ExplicitWidth = 373
     object SpeedButton16: TSpeedButton
       Left = 285
       Top = 8

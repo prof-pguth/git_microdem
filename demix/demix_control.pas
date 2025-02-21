@@ -258,9 +258,11 @@ end;
 
 procedure FUVforScales_0_15sec;
 const
-   NumDEMs = 7;
-   DEMs : array[1..NumDEMs] of shortstring = ('ref_dtm','NeoDTM','FABDEM','COP','ALOS','Point_Cloud_DTM','Point_Cloud_NVS');
-   Resolution = '_0.15sec.tif';
+   NumDEMs = 9;
+   DEMs : array[1..NumDEMs] of shortstring = ('ref_dtm','Neo_DTM','NEO_DSM','FABDEM','COP','ALOS','Point_Cloud_DTM','Point_Cloud_NVS','Point_Cloud_DSM');
+   NumAreas = 8;
+   theAreas : array[1..NumAreas] of shortstring = ('Oxnard','Silver_Peak','SW_Yellowstone','Redwoods','Jarbridge','Sheridan','Madrid','Donostia');
+   //Resolution = '_0.15sec.tif';
    (*
    NumDEMs = 5;
    DEMs : array[1..NumDEMs] of shortstring = ('ref_dtm','NeoDTM','FABDEM','COP','ALOS');
@@ -271,7 +273,8 @@ var
    i,j,ad,Ref,Test,Ref2,Test2,Ref3,Test3 : integer;
    Area,aLine : shortstring;
    FUV : float32;
-   Findings : tStringList;
+   Findings,DEMfiles : tStringList;
+   DEMNames : array[1..NumDEMs] of PathStr;
 
    procedure AddFUV(Ref,Test : integer);
    begin
@@ -280,87 +283,102 @@ var
    end;
 
 begin
-   DataDir := 'J:\aaa_neo_eval\oxnard\multiple_0.15sec\';
+   DataDir := 'J:\aaa_neo_eval\oxnard\';
+   GetDOSPath('with DEMs',DataDir);
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15sec in, ' + DataDir); {$EndIf}
+   SetColorForProcessing;
+   DEMFiles := Nil;
+   FindMatchingFiles(DataDir,'*.tif',DEMfiles);
 
+   for i := 1 to NumDEMs do begin
+      DEMnames[i] := '';
+      for j := 0 to  pred(DEMfiles.Count) do begin
+          if (StrUtils.AnsiContainsText(Uppercase(DEMfiles.Strings[j]),UpperCase(DEMs[i]))) then begin
+             DEMnames[i] := DEMfiles.Strings[j];
+             {$IfDef RecordRangeScales} WriteLineToDebugFile(IntToStr(i) + '  ' + DEMnames[i]); {$EndIf}
+          end;
+      end;
+   end;
    //DataDir := 'J:\aaa_neo_eval\oxnard\1_sec_tests\';
-
-   Area := 'oxnard';
-   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15sece in'); {$EndIf}
+   if not FileExists(DEMnames[1]) then begin
+      MessageToContinue('No Reference DEM in ' + DataDir);
+      exit;
+   end;
+   for i := 1 to NumAreas do if (StrUtils.AnsiContainsText(Uppercase(DEMfiles.Strings[1]),UpperCase(theAreas[i]))) then Area := theAreas[i];
+   DEMFiles.Destroy;
 
    Findings := tStringList.Create;
    aLine := 'AREA,DEMIX_TILE,DEM';
    for j := 1 to NumOrderedParams do aline := aline + ',' + OrderedParams[j] + '_FUV';
    Findings.Add(aLine);
 
+   Ref := OpenNewDEM(DEMnames[1],false);
+   if ValidDEM(ref) then begin
+      for i := 2 to NumDEMs do begin
+         if FileExists(DEMnames[i]) then begin
+            {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforScales_0_15sec, start ' + DEMs[i]); {$EndIf}
+            wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(NumDEMs) + ' ' +   DEMs[i],true);
+            Test := OpenNewDEM(DEMnames[i],false);
+            aline := Area + ', ,' + DEMs[i];
+            for j := 1 to NumOrderedParams do begin
+               {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s, start ' + OrderedParams[j]); {$EndIf}
+                wmDEM.SetPanelText(2,OrderedParams[j],true);
 
-   Ref := 0;
-   for i := 2 to NumDEMs do begin
-      {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforScales_0_15sec, start ' + DEMs[i]); {$EndIf}
-
-
-      fName := DataDir + DEMs[1] + Resolution;
-      if Not ValidDEM(Ref) then Ref := OpenNewDEM(fName,false);
-      fName := DataDir + DEMs[i] + Resolution;
-      Test := OpenNewDEM(fName,false);
-
-
-      aline := Area + ', ,' + DEMs[i];
-      for j := 1 to NumOrderedParams do begin
-         {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s, start ' + OrderedParams[j]); {$EndIf}
-          wmDEM.SetPanelText(2,OrderedParams[j],true);
-
-         if OrderedParams[j] = 'ELEV' then begin
-            AddFUV(Ref,Test);
-         end
-         else if OrderedParams[j] = 'OPENU' then begin  //does both openness
-             Ref2 := -1;     //downward
-             Test2 := -1;    //downward
-             Ref3 := -1;     //upwardward
-             Test3 := -1;    //upward
-             ad := 0;        //difference, not to be computed
-             CreateOpennessMap(false,DEMglb[Ref].FullDEMGridLimits,Test,250,Ref2,Ref3,ad);
-             CreateOpennessMap(false,DEMglb[Test].FullDEMGridLimits,Test,250,Test2,Test3,ad);
-             AddFUV(Ref3,Test3);
-             AddFUV(Ref2,Test2);
-         end
-         else if OrderedParams[j] = 'HILL' then begin
-            Ref2 := CreateHillshadeMap(false,Ref);
-            Test2 := CreateHillshadeMap(false,Test);
-            AddFUV(Ref2,Test2);
-         end
-         else if OrderedParams[j] = 'SLOPE' then begin //also does roughness
-             Ref2 := 0;
-             Test2 := 0;
-             Ref3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Ref,5,Ref2,false);
-             Test3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Test,5,Test2,false);
-             AddFUV(Ref2,Test2);
-             AddFUV(Ref3,Test3);
-         end
-         else if OrderedParams[j] = 'TPI' then begin
-            Ref2 := BoxCarDetrendDEM(false,Ref,DEMGlb[Ref].FullDEMGridLimits,3);
-            Test2 := BoxCarDetrendDEM(false,Test,DEMGlb[Test].FullDEMGridLimits,3);
-            AddFUV(Ref2,Test2);
-         end
-         else if OrderedParams[j] = 'RRI' then begin
-             Ref2 := MakeTRIGrid(Ref,nmRRI,false);
-             Test2 := MakeTRIGrid(Test,nmRRI,false);
-             AddFUV(Ref2,Test2);
+               if OrderedParams[j] = 'ELEV' then begin
+                  AddFUV(Ref,Test);
+               end
+               else if OrderedParams[j] = 'OPENU' then begin  //does both openness
+                   Ref2 := -1;     //downward
+                   Test2 := -1;    //downward
+                   Ref3 := -1;     //upwardward
+                   Test3 := -1;    //upward
+                   ad := 0;        //difference, not to be computed
+                   CreateOpennessMap(false,DEMglb[Ref].FullDEMGridLimits,Test,250,Ref2,Ref3,ad);
+                   CreateOpennessMap(false,DEMglb[Test].FullDEMGridLimits,Test,250,Test2,Test3,ad);
+                   AddFUV(Ref3,Test3);
+                   AddFUV(Ref2,Test2);
+               end
+               else if OrderedParams[j] = 'HILL' then begin
+                  Ref2 := CreateHillshadeMap(false,Ref);
+                  Test2 := CreateHillshadeMap(false,Test);
+                  AddFUV(Ref2,Test2);
+               end
+               else if OrderedParams[j] = 'SLOPE' then begin //also does roughness
+                   Ref2 := 0;
+                   Test2 := 0;
+                   Ref3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Ref,5,Ref2,false);
+                   Test3 := CreateSlopeRoughnessSlopeStandardDeviationMap(Test,5,Test2,false);
+                   AddFUV(Ref2,Test2);
+                   AddFUV(Ref3,Test3);
+               end
+               else if OrderedParams[j] = 'TPI' then begin
+                  Ref2 := BoxCarDetrendDEM(false,Ref,DEMGlb[Ref].FullDEMGridLimits,3);
+                  Test2 := BoxCarDetrendDEM(false,Test,DEMGlb[Test].FullDEMGridLimits,3);
+                  AddFUV(Ref2,Test2);
+               end
+               else if OrderedParams[j] = 'RRI' then begin
+                   Ref2 := MakeTRIGrid(Ref,nmRRI,false);
+                   Test2 := MakeTRIGrid(Test,nmRRI,false);
+                   AddFUV(Ref2,Test2);
+               end;
+               CloseSingleDEM(Ref2);
+               CloseSingleDEM(Test2);
+               CloseSingleDEM(Ref3);
+               CloseSingleDEM(Test3);
+            end;
+            Findings.Add(Aline);
+            {$IfDef RecordRangeScales} WriteLineToDebugFile(aLine); {$EndIf}
+            CloseSingleDEM(Test);
          end;
-         CloseSingleDEM(Ref2);
-         CloseSingleDEM(Test2);
-         CloseSingleDEM(Ref3);
-         CloseSingleDEM(Test3);
       end;
-      Findings.Add(Aline);
-      {$IfDef RecordRangeScales} WriteLineToDebugFile(aLine); {$EndIf}
-      CloseSingleDEM(Test);
+      CloseSingleDEM(Ref);
+      fName := DataDir + 'FUV' + '.dbf';
+      StringList2CSVtoDB(Findings,fName,true);
+      wmDEM.ClearStatusBarPanelText;
+      SetColorForWaiting;
+      {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s out'); {$EndIf}
    end;
-   CloseSingleDEM(Ref);
 
-   fName := DataDir + 'FUV' + Resolution + '.dbf';
-   StringList2CSVtoDB(Findings,fName,true);
-   wmDEM.ClearStatusBarPanelText;
-   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforScales_0_15s out'); {$EndIf}
 end;
 
 

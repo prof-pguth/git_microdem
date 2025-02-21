@@ -257,8 +257,6 @@ end;
 
 
 
-{$IfDef ExGeotiffWrite}
-{$Else}
 
    {$Define WriteSminSmax}
    {$Define WriteMissing}
@@ -637,7 +635,6 @@ begin
 end;
 
 
-{$EndIf}
 
 
 

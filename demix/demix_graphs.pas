@@ -192,7 +192,7 @@ var
          Result.GraphDraw.MinHorizAxis := -0.05;
          Result.GraphDraw.MaxHorizAxis := 1.05;
          Result.GraphDraw.MinVertAxis := 0.5;
-         Result.GraphDraw.MaxVertAxis := 8.5;
+         Result.GraphDraw.MaxVertAxis := NumOrderedParams + 0.5;
          Result.GraphDraw.HorizLabel := 'FUV';
          FinishGraph(Result);
      end;
@@ -386,7 +386,7 @@ var
          Result.GraphDraw.MinVertAxis := -0.05;
          Result.GraphDraw.MaxVertAxis := 1.05;
          Result.GraphDraw.MinHorizAxis := 0.5;
-         Result.GraphDraw.MaxHorizAxis := 8.5;
+         Result.GraphDraw.MaxHorizAxis := NumOrderedParams + 0.5;
          FinishGraph(Result);
      end;
 

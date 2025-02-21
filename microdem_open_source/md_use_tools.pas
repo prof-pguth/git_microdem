@@ -29,7 +29,8 @@ unit md_use_tools;
       //{$Define RecordUseOtherPrograms}
       //{$Define RecordSaveProblems}
       //{$Define RecordReformat}
-      {$Define RecordMapProj}
+      //{$Define RecordMapProj}
+      {$Define RecordWBT_DEM}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -111,15 +112,14 @@ uses
    function WBT_DrainageBasins(InName : PathStr) : integer;
    function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
    function WBT_AspectMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-   function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
+   function WBT_BNearNeighCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
    function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
    function WBT_Breach_Depression(DEMName : PathStr; var BreachName : PathStr) : integer;
    function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
    function WBT_Extract_Streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
    function WBT_ElevAboveStream(OpenMap : boolean; DEMName : PathStr; BreachName,FlowAccumulationName,StreamName,HANDName : PathStr; Threshhold : float32 = 100.0) : integer;
    function WBT_FeaturePreserveSmooth(OpenMap : boolean; InName : PathStr; zUnits : byte; OutName : PathStr = '') : integer;
-
-   procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
+   function WBT_IDWCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
    procedure WBT_PennockLandformClass(InName : PathStr; SmoothFirst : boolean);
    procedure WBT_GridFillMissingData(InName : PathStr; TheElevUnits : tElevUnit; OutName : PathStr = '');
    procedure WBT_GeotiffMetadata(InName : PathStr);
@@ -212,6 +212,7 @@ uses
    gdal_tools,
    las_lidar,
    geotiff,
+   dem_indexes,
    nevadia_main;
 
 const

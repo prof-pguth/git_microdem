@@ -316,27 +316,73 @@ begin
 end;
 
 
-function WBT_BNearNeighCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64) : integer;
+
+//  J:\gis_software\WBT_2.4.0\whitebox_tools.exe -r=LidarNearestNeighbourGridding -v --compress_rasters=false  -i=c:\temp\test.las -o=c:\temp\testout.tif --returns=last --resolution=1.0 --radius=5.0
+
+//J:\gis_software\WBT_2.4.0\whitebox_tools.exe -r=LidarNearestNeighbourGridding -v --compress_rasters=false --wd=J:\aaa_neo_eval\silver_peak_range\silver_peak_lidar --resolution=1.0 --radius=5.0 --exclude_cls='0,1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18'
+
+
+function WBT_MakeDTM(Tool : shortstring; OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
 var
    cmd : ansistring;
+   FilesWanted : tStringList;
+   i,NewDEM : integer;
+   fName : PathStr;
 begin
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBNearNeighCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     cmd := WhiteBoxfName + WBNoCompress + '-r=LidarNearestNeighbourGridding -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euMeters,mtElevSpectrum);
+  if WhiteBoxPresent then begin
+      SetColorForProcessing;
+      MDDef.ShowWinExec := true;
+     //cmd := WhiteBoxfName + WBNoCompress + '-r=LidarNearestNeighbourGridding -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
+     //Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euMeters,mtElevSpectrum);
+
+     cmd := WhiteBoxfName + ' -r=' + Tool + ' ' + WBNoCompress + ' -v --wd=' + InDirectory + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1) +
+         ' --exclude_cls=0,1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18';
+     {$IfDef RecordWBT_DEM} WriteLineToDebugFile('cmd=' + cmd); {$EndIf}
+     if (OutName = '') then WinExecAndWait32(cmd,false,MDDef.LogDOScommands)
+     else begin
+        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+        MDDef.ShowWinExec := false;
+        FilesWanted := tStringList.Create;
+        FindMatchingFiles(InDirectory,'*.tif',FilesWanted,0);
+        if (AssignProjection <> '') then begin
+            {$IfDef RecordWBT_DEM} WriteLineToDebugFile('assign projection'); {$EndIf}
+            for i := 0 to pred(FIlesWanted.Count) do begin
+               wmdem.SetPanelText(2,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
+               fName := FilesWanted.Strings[i];
+               GDALAssignProjectionViaWKTorEPSG(fName,'EPSG:' + AssignProjection);
+            end;
+        end;
+        {$IfDef RecordWBT_DEM} WriteLineToDebugFile('call merge'); {$EndIf}
+        NewDEM := MergeMultipleDEMsHere(FilesWanted,true,false);
+        DEMGlb[NewDEM].WriteNewFormatDEM(OutName);
+     end;
   end;
+  SetColorForWaiting;
+  wmdem.SetPanelText(2,'');
+  MDDef.ShowWinExec := false;
+  {$IfDef RecordWBT_DEM} WriteLineToDebugFile('WBT_MakeDTM out'); {$EndIf}
 end;
 
 
-procedure WBT_IDWCreate(OpenMap : boolean; InName,OutName : PathStr; GridSize : float64);
-var
-   cmd : ansistring;
+function WBT_BNearNeighCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
 begin
+  {$IfDef RecordWBT_DEM} WriteLineToDebugFile('WBT_BNearNeighCreate in'); {$EndIf}
+   Result := WBT_MakeDTM('LidarNearestNeighbourGridding',OpenMap,InDirectory,OutName,GridSize,AssignProjection)
+end;
+
+function WBT_IDWCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
+//   cmd : ansistring;
+begin
+  {$IfDef RecordWBT_DEM} WriteLineToDebugFile('WBT_IDWCreate in'); {$EndIf}
+  Result := WBT_MakeDTM('LidarIdwInterpolation ',OpenMap,InDirectory,OutName,GridSize,AssignProjection)
+(*
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBIDWCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      cmd := WhiteBoxfName  + WBNoCompress + '-r=LidarIdwInterpolation -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
      ExecuteWBandOpenMap(Openmap,cmd,OutName,euMeters,mtElevSpectrum);
   end;
+*)
 end;
 
 

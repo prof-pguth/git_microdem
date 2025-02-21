@@ -4070,7 +4070,7 @@ object MapForm: TMapForm
           OnClick = N1secand30mresamplesbyaveraging1Click
         end
         object CreateReferenceDEMtoMatchThis1: TMenuItem
-          Caption = 'Aggregate HRD to match this grid'
+          Caption = 'Aggregate HRDEMs to match this grid'
           OnClick = CreateReferenceDEMtoMatchThis1Click
         end
         object UpsampleDEMtomatchthisgrid1: TMenuItem
@@ -4411,6 +4411,13 @@ object MapForm: TMapForm
       object Comparegeomorphometryprograms1: TMenuItem
         Caption = 'Compare geomorphometry programs'
         OnClick = Comparegeomorphometryprograms1Click
+      end
+      object DerivativegridformultipleDEMs1: TMenuItem
+        Caption = 'Derivative grid for multiple DEMs'
+        object Slopes2: TMenuItem
+          Caption = 'Slopes'
+          OnClick = Slopes2Click
+        end
       end
       object Comparemultiplegridstothisone1: TMenuItem
         Caption = 'Compare multiple grids'
@@ -4986,11 +4993,11 @@ object MapForm: TMapForm
         OnClick = Dataheader2Click
       end
       object CompareDEMheaders1: TMenuItem
-        Caption = 'Compare DEM headers'
+        Caption = 'Compare DEM headers (columns)'
         OnClick = CompareDEMheaders1Click
       end
       object SummaryallopenDEMsGrids1: TMenuItem
-        Caption = 'Summary all open DEMs/Grids'
+        Caption = 'Summary open DEMs/Grids (rows)'
         OnClick = SummaryallopenDEMsGrids1Click
       end
     end
@@ -5619,6 +5626,14 @@ object MapForm: TMapForm
       object Neighborhoodsurfaceequations1: TMenuItem
         Caption = 'Slope neighborhood surface equations'
         OnClick = Neighborhoodsurfaceequations1Click
+      end
+      object Slopewindowfullversuscorners1: TMenuItem
+        Caption = 'Slope window full versus corners'
+        OnClick = Slopewindowfullversuscorners1Click
+      end
+      object Slopewindowusecentralpoint1: TMenuItem
+        Caption = 'Slope window use central point'
+        OnClick = Slopewindowusecentralpoint1Click
       end
       object Pointinterpolationalgorithms2: TMenuItem
         Caption = 'Point interpolation algorithms'

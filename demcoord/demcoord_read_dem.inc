@@ -16,8 +16,6 @@ var
    Error : boolean;
 
 
-   {$IfDef ExGeotiff}
-   {$Else}
       function ReadTIFFDEM(var DEMFileName : PathStr) : boolean;
       var
          TiffImage : tTiffImage;
@@ -36,10 +34,7 @@ var
          TiffImage.Destroy;
          {$If Defined(RecordReadDEM) or Defined(RecordGeotiff)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow ReadTIFFDEM out, DEM=' + DEMMapProj.GetProjName); {$EndIf}
       end;
-   {$EndIf}
 
-   {$If Defined(ExGDAL) or Defined(ExGeotiff)}
-   {$Else}
       function TryGDAL(var DEMFileName : PathStr) : boolean;
       begin
          DEMFileName := GDAL_Translate_2_geotiff(DEMFileName);
@@ -48,7 +43,6 @@ var
          end
          else Result := false;
       end;
-   {$EndIf}
 
    {$IfDef ExOddballDEMs}
    {$Else}

@@ -400,13 +400,20 @@ begin
       fName := FilesWanted.Strings[i];
       if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(now) + ' ' + IntToStr(succ(i)) + '/' + IntToStr(FilesWanted.Count) + ' ' + ExtractFileName(fName))
       else wmDEM.SetPanelText(2,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
-      UnzipSingleFile(fName);
+      try
+         UnzipSingleFile(fName);
+         if DeleteThem then File2Trash(fName);
+      except
+         on E: Exception do WriteLineToDebugFile('Problem unzipping ' + fName);
+      end;
+
      {$IfDef VCL}
        TInterlocked.Increment(NumDone);
        UpDateProgressBar(NumDone /FilesWanted.Count);
      {$EndIf}
    end;
 
+   (*
    if DeleteThem then begin
       {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Recylce zips'); {$EndIf}
       for i := 0 to pred(FilesWanted.Count) do begin
@@ -416,6 +423,7 @@ begin
       Memo1.Lines.Add('Zips moved to recycle bin');
       {$IfDef RecordCompressionProblems} WriteLinetoDebugFile('Recyle OK'); {$EndIf}
    end;
+   *)
    Memo1.Lines.Add(AFC);
    FilesWanted.Free;
    wmDEM.SetPanelText(2,'');

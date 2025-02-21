@@ -71,7 +71,7 @@ type
 
 //new, faster (hopefully)
    function CreateHillshadeMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
-   function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0) : integer;
+   function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0; Degrees : boolean = false) : integer;
    procedure CreateOpennessMap(OpenMap : boolean; GridLimits : tGridLimits; DEM,BoxSizeMeters : integer; var Upward,DownWard,Difference : integer);
    function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 
@@ -121,7 +121,7 @@ function CreateTangentialCurvature(OpenMap : boolean; DEM : integer; Radius : in
 function CreatePlanCurvature(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 function CreateFlowLineCurvature(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 function CreateContourTorsion(OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
-
+function CreateCurvatureMap(Which : integer; OpenMap : boolean; DEM : integer; Radius : integer = 1; Outname : PathStr = '') : integer;
 
 procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids; OpenMap : boolean = true);
 
@@ -685,6 +685,7 @@ begin
    Result := DEMGlb[DEM].GetSlopeAndAspect(x,y,SlpAsp,false,true,Radius);
    if Result then begin
       with SlpAsp do begin
+(*
          if (MDDef.SlopeAlgorithm = smLSQ) then begin
             case CurveType of
                1 : Curvature := -2 * (a * sqr(d) + c * d * e + b * sqr(e)) / (LSQ1(SlpAsp) * LSQ3(SlpAsp)) ;      //Profile
@@ -695,14 +696,14 @@ begin
             end;
          end
          else begin
-            case CurveType of
+*)            case CurveType of
                1 : Curvature := -(dxx * sqr(dzdx) + 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator1(SlpAsp);    //Profile
                2 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdx) ) / Denominator1(SlpAsp);    //Tangential
                3 : Curvature := -(dxx * sqr(dzdy) - 2 * dxy * dzdx * dzdy + dyy * sqr(dzdy) ) / Denominator2(SlpAsp);    //Plan
                4 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * (sqr(dzdx) - sqr(dzdy) ) ) / Denominator2(SlpAsp);    //flow line
                5 : Curvature := (dzdx * dzdy * (dxx - dyy) - dxy * sqr(dzdx) * sqr(dzdy) ) / Denominator1(SlpAsp);       //contour torsion
             end;
-         end;
+         //end;
       end;
    end;
 end;
@@ -715,6 +716,8 @@ var
    SlpAsp : tSlopeAspectRec;
    aName : shortstring;
 begin
+   MDDef.SlopeAlgorithm := smLSQ;
+   if (MDDef.SlopeLSQorder = 1) then MDDef.SlopeLSQorder := 2;
    case Which of
       1 : aName := 'profile_curvature_';
       2 : aName := 'tangential_curvature_';
@@ -811,7 +814,7 @@ end;
 
 
 
-function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0) : integer;
+function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Radius : integer = 0; Degrees : boolean = false) : integer;
 var
    x,y : integer;
    Slope : float64;
@@ -826,6 +829,7 @@ begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
          if DEMGlb[DEM].SlopePercent(x,y,Slope,Radius) then begin
+            if Degrees then Slope := Slope / DegToRad;
             DEMGlb[Result].SetGridElevation(x,y,Slope);
          end;
       end;
@@ -849,7 +853,7 @@ begin
    else TStr := ExtractFileNameNoExt(SaveName);
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,SaveName,euUndefined);
    DEMGlb[DEM].ReflectanceParams;
-   if ShowSatProgress then StartProgress('Hillshade');
+   if ShowSatProgress then StartProgress('Hillshade ' + DEMglb[DEM].AreaName);
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
@@ -886,7 +890,7 @@ begin
    if (Downward <> 0) then Downward := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Downward_Openness_' + IntToStr(BoxSizeMeters) + '_m_' + DEMGlb[DEM].AreaName,euDegrees);
    if (Difference <> 0) then Difference := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Difference_Openness_' + IntToStr(BoxSizeMeters) + '_m_' + DEMGlb[DEM].AreaName,euDegrees);
 
-   if ShowSatProgress then StartProgressAbortOption('Openness');
+   if ShowSatProgress then StartProgressAbortOption('Openness ' + DEMglb[DEM].AreaName);
    for x := GridLimits.XgridLow to GridLimits.XGridHigh do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/GridLimits.XGridHigh);
       for y := GridLimits.YgridLow to GridLimits.YGridHigh  do begin
@@ -1542,7 +1546,7 @@ var
    TStr : ShortString;
    WantMapType : tMapType;
    fName,pName : PathStr;
-   {$If Defined(NoParallelFor) or Defined(NoParallelMoments)} {$Else} PartLimits : tGridLimits;  {$EndIf}
+   {$If Defined(NoParallelFor) or Defined(NoParallelMoments)} {$Else} PartLimits : tGridLimitsArray; {$EndIf}
 
        procedure NewGrid(var DEM : integer; Gridname : shortstring; ElevUnits : tElevUnit);
        begin
@@ -1687,7 +1691,7 @@ begin {MakeMomentsGrid}
           DEMGlb[MomentDEMs[i]].WriteNewFormatDEM(fName);
        end;
     end;
-    {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)}  WriteLineToDebugFile('MakeMomentsGrid out, Result=' + IntToStr(Result)); {$EndIf}
+    {$If Defined(CreateGeomorphMaps) or Defined(CreateAspectMap)} WriteLineToDebugFile('MakeMomentsGrid out, Result=' + IntToStr(Result)); {$EndIf}
 end {MakeMomentsGrid};
 
 {$EndIf}
@@ -1696,13 +1700,6 @@ end {MakeMomentsGrid};
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 begin
    case ch of
-(*
-      '-' : Result := 'Minimum curvature';
-      '+' : Result := 'Maximum curvature';
-      '1' : Result := 'Profile convexity';
-      '2' : Result := 'Plan convexity';
-      'C' : Result := 'Cross sectional curvature';
-*)
       '3' : Result := 'Relief (' + IntToStr(SampleBoxSize) + ' m)';
       '4' : Result := 'Summit level (m) (' + IntToStr(SampleBoxSize) + ' m)';
       '5' : Result := 'Erosion base level (m) (' + IntToStr(SampleBoxSize) + ' m)';
@@ -1741,13 +1738,6 @@ end;
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 begin
    case ch of
-(*
-      '-' : Result := 'MIN_CURVE';
-      '+' : Result := 'MAX_CURVE';
-      '1' : Result := 'PROF_CONV';
-      '2' : Result := 'PLAN_CONV';
-      'C' : Result := 'XS_CURVE';
-*)
       '3' : Result := 'Relief_' + IntToStr(SampleBoxSize);
       '4' : Result := 'SUMMIT_LEV';
       '5' : Result := 'BASE_LEVEL';

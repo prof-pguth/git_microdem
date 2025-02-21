@@ -18,6 +18,17 @@
       end;
 
 
+
+     function GetEPSGforVerticalDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     begin
+        if PrimaryMapDatum.V_DatumCode = 'NAVD88' then Result := VertCSNAVD88
+        else if PrimaryMapDatum.V_DatumCode = 'EGM96' then Result := VertCSEGM96
+        else if PrimaryMapDatum.V_DatumCode = 'EGM2008' then Result := VertCSEGM2008
+        else if PrimaryMapDatum.V_DatumCode = 'WGS84 ellipsoid' then Result := VertCSWGS84
+        else Result := 0;
+     end;
+
+
      function GetEPSGforUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
      begin
        Result := 32600; {WGS84 default}
@@ -39,6 +50,15 @@
        else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 4269
        else if (PrimaryMapDatum.h_DatumCode = 'ETRS89')  or (PrimaryMapDatum.h_DatumCode = 'ETR89') then Result := 4258
        else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + PrimaryMapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
+     end;
+
+     function GetCombinedEPSG(PrimaryMapDatum : tMapProjection) : shortstring;
+     begin
+        Result := '';
+        if PrimaryMapDatum.PName = UTMEllipsoidal then Result := IntToStr(GetEPSGforUTMDatumCode(PrimaryMapDatum) )
+        else if PrimaryMapDatum.PName = PlateCaree then Result := IntToStr(GetEPSGforGeoDatumCode(PrimaryMapDatum) )
+        else exit;
+        if PrimaryMapDatum.V_DatumCode <> '' then Result := Result + '+' + IntToStr(GetEPSGforVerticalDatumCode(PrimaryMapDatum));
      end;
 
 

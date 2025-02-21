@@ -316,6 +316,8 @@ function PixelIsString(Code : integer) : shortstring;
 
 function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
+function VertDatumCode(VerticalDatum : shortstring) : integer;
+
 
 procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
 procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
@@ -426,6 +428,15 @@ begin
    else if VerticalCSTypeGeoKey = VertCSWGS84 then Result := 'WGS84 ellipsoid'
    else Result := 'Other';
    Result := Result + ' (EPSG=' + IntToStr(VerticalCSTypeGeoKey) + ')';
+end;
+
+function VertDatumCode(VerticalDatum : shortstring) : integer;
+begin
+   if (VerticalDatum = 'NAVD88') then result := VertCSNAVD88
+   else if (VerticalDatum = 'WGS84 ellipsoid') then result := VertCSWGS84
+   else if (VerticalDatum = 'EGM96') then result := VertCSEGM96
+   else if (VerticalDatum = 'EGM2008') then result := VertCSEGM2008
+   else result := 0;
 end;
 
 
@@ -1503,6 +1514,7 @@ var
 
             AParameter('Geomorph','SlopeLSQorder',SlopeLSQorder,2);
             AParameter('Geomorph','SlopeLSQradius',SlopeLSQradius,1);
+            AParameter('Geomorph','EvansApproximationAllowed',EvansApproximationAllowed,true);
 
             AParameter('Geomorph','RoughnessBox',RoughnessBox,5);
 
@@ -3961,6 +3973,7 @@ begin
       AParameter('Slope','CD2',CD2,True);
       AParameter('Slope','SlopeAlgorithm',SlopeAlgorithm,smEvansYoung);
       AParameter('Slope','SlopeRegionRadius',SlopeRegionRadius,1);
+      AParameter('Slope','CurvatureRegionRadius',CurvatureRegionRadius,2);
       AParameter('Slope','NeedFullSlopeWindows',NeedFullSlopeWindows,true);
       AParameter('Slope','AspectRegionSize',AspectRegionSize,5);
       AParameter('Slope','NumSlopeBands',NumSlopeBands,5);

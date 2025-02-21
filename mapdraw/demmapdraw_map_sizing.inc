@@ -346,8 +346,6 @@ end;
 
 
 procedure TMapDraw.DefineNewDEMMap(CurDEM : integer; mt : tMapType);
-//var
-   //TStr : ANSIString;
 begin
    if ValidDEM(CurDEM) then begin
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + ' current maps=' + IntToStr(NumOpenMaps)); {$EndIf}

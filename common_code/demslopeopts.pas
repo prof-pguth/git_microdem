@@ -287,8 +287,6 @@ end;
 
 procedure TSlopeOptForm.BitBtn1Click(Sender: TObject);
 begin
-   {$IfDef ExAdvancedGIS}
-   {$Else}
    if (MDDef.DefSlopeMap = mtSlopeGrayScaleReversed) then begin
       SetGrayscale(SlopeGray,MapOwner);
    end
@@ -296,9 +294,7 @@ begin
       EditSlopeCategories(MapOwner.MapDraw.SlopeCut,MapOwner.MapDraw.SlopeColors);
       DrawPreview;
    end;
-   {$EndIf}
 end;
-
 
 
 

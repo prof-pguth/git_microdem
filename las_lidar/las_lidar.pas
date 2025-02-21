@@ -19,7 +19,7 @@
       //{$Define RecordLASprojection}
       //{$Define RecordTilePlotSummary}
       //{$Define RecordLASfiles}
-      {$Define RecordWKT}
+      //{$Define RecordWKT}
       //{$Define RecordVarLenRec}
       //{$Define RecordFirstPulse}
       //{$Define RecordReprojectLAS}
@@ -993,7 +993,7 @@ var
                if (LAS_LatLong_Box.ymin > 0) or StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD') then LasProjDef.LasProj.LatHemi := 'N'
                else LasProjDef.LasProj.LatHemi := 'S';
 
-               if StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD83') then LasProjDef.LasProj.h_datumcode := 'NAD83';
+               //if StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD83') then LasProjDef.LasProj.h_datumcode := 'NAD83';
 
                Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
             end;

@@ -1084,7 +1084,7 @@ type
     { Private declarations }
   public
     { Public declarations }
-      ProgramClosing,NoAutoOpen,AskForDebugUpdateNow,AskForNewUpdateNow : boolean;
+      ProgramClosing,NoAutoOpen{,AskForNewUpdateNow,AskForDebugUpdateNow} : boolean;
       procedure SetMenusForVersion;
       procedure FormPlacementInCorner(TheForm : Forms.tForm; FormPosition : byte = lpSEMap);
       procedure HandleThreadTerminate(Sender: TObject);
@@ -1100,7 +1100,6 @@ var
    LockStatusBar,
    ClosingEverything,
    SkipMenuUpdating,FirstRun : boolean;
-
 
 function OpenGazFile(fName : PathStr = '') : integer;
 procedure InsureFormOnScreenCurrentLocation(Form4 : tForm; x,y : integer);
@@ -2050,10 +2049,11 @@ var
       //CommandLine comes in capitalized
       var
          Key,Value : AnsiString;
-         DEM,NewDEM : integer;
+         DEM,NewDEM,WhichCurvature : integer;
          FileList : tStringList;
+         SlopeDegree : boolean;
          Action,xval,yval : shortstring;
-         infile,outfile,upfile,downfile : PathStr;
+         infile,outfile,upfile,downfile,difffile : PathStr;
 
                function OpenADEM(OpenMap : boolean = false) : boolean;
                begin
@@ -2069,11 +2069,18 @@ var
          yval := '';
          upfile := '';
          downfile := '';
+         difffile := '';
+         WhichCurvature := 0;
+         SlopeDegree := false;
+         MDDef.SlopeAlgorithm := smLSQ;
+         MDDef.SlopeLSQorder := 2;
+         MDDef.SlopeRegionRadius := 1;
+         MDDef.CurvatureRegionRadius := 2;
+         MDDef.NeedFullSlopeWindows := true;
 
-         Delete(CommandLine,1,1);      //the question mark
+         while (CommandLine[1] = '?') do Delete(CommandLine,1,1);      //the question mark
          ReplaceCharacter(CommandLine,'+','&');
          CommandLine := CommandLine + '&';
-
          while length(CommandLine) > 1 do begin
             Value := Petmar_Types.BeforeSpecifiedCharacterANSI(CommandLine,'&',true,true);
             Key := Petmar_Types.BeforeSpecifiedCharacterANSI(Value,'=',true,true);
@@ -2083,6 +2090,7 @@ var
             if Key = 'OUT' then outfile := Value;
             if Key = 'UPNAME' then upfile := Value;
             if Key = 'DOWNNAME' then downfile := Value;
+            if Key = 'DIFFNAME' then difffile := Value;
             if Key = 'PTSEP' then MDDef.PointSeparation := StrToInt(Value);
             if Key = 'ROAD_FILE' then MDDef.LCPRoadfName := Value;
             if Key = 'START_PTS' then MDDef.LCPstartFName := Value;
@@ -2091,11 +2099,29 @@ var
             if Key = 'X' then xval := Value;
             if Key = 'Y' then yval := Value;
             if Key = 'RAD' then MDDef.OpenBoxSizeMeters := StrToInt(Value);
+            if Key = 'SLOPE_RAD' then MDDef.SlopeRegionRadius := StrToInt(Value);
+            if Key = 'SLOPE_UNIT' then SlopeDegree := Value = 'DEGREE';
+            if Key = 'CURVE_RAD' then MDDef.CurvatureRegionRadius := StrToInt(Value);
+            if Key = 'POLY_ORDER' then MDDef.SlopeLSQorder := StrToInt(Value);
+            if Key = 'SLOPE_FULL' then MDDef.NeedFullSlopeWindows := (Value = 'YES');
+            if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
             if Key = 'FILELIST' then begin
                FileList := tStringList.Create;
                FileList.LoadFromFile(Value)
             end;
-
+            if Key = 'CURVE_MODE' then begin
+               if (Value = 'PROFILE') then WhichCurvature := 1;
+               if (Value = 'TANGENTIAL') then WhichCurvature := 2;
+               if (Value = 'PLAN') then WhichCurvature := 3;
+               if (Value = 'FLOWLINE') then WhichCurvature := 4;
+               if (Value = 'CONTOUR') then WhichCurvature := 5;
+            end;
+            if Key = 'SLOPE_ALG' then begin
+                if Value = 'LSQ' then MDDef.SlopeAlgorithm := smLSQ;
+                if Value = 'EVANS' then MDDef.SlopeAlgorithm := smEvansYoung;
+                if Value = 'ZQ' then MDDef.SlopeAlgorithm := smZevenbergenThorne;
+                if Value = 'HORN' then MDDef.SlopeAlgorithm := smHorn;
+            end;
             if Key = 'PROJ' then begin
                 if Value = 'UTM' then MDDef.LidarGridProjection := 0;
                 if Value = 'GEO' then MDDef.LidarGridProjection := 1;
@@ -2118,46 +2144,29 @@ var
                 if Value = 'AREA' then MDDef.LasDEMPixelIs := 1;
                 if Value = 'POINT' then MDDef.LasDEMPixelIs := 2;
             end;
-
-            {$IfDef AllowGeomorphometry}
-               if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
-            {$EndIf}
          end;
-         {$IfDef RecordCommandLine} WriteLineToDebugFile('action=' + Action); {$EndIf}
+         {$IfDef RecordCommandLine} WriteLineToDebugFile('command line parsed, action=' + Action); {$EndIf}
 
-         if Action = 'DEM2JSON' then begin
-            if OpenADEM then begin
-               DEMGlb[DEM].SaveAsGeoJSON;
-            end;
-         end;
 
-         {$IfDef ExPointCloud}
-         {$Else}
-            if Action = 'LAS2JSON' then begin
-               QuietActions := true;
-               LAS2GeoJSON(infile);
-            end;
-         {$EndIf}
-
-         if Action = 'RESAMPAVG' then begin
-            if OpenADEM(true) then begin
-               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := DEMGlb[DEM].ResampleByAveraging(false,Outfile);
-               {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
-            end;
-         end;
-
-         if Action = 'SLOPEMAP' then begin
+         if Action = 'SLOPE_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := CreateSlopeMap(DEM,false);
+               NewDEM := CreateSlopeMapPercent(false,DEM,outfile,0,SlopeDegree);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
-               DEMGlb[NewDEM].SaveAsGeotiff(outfile);
-               {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
             end;
          end;
 
-         if Action = 'ASPECTMAP' then begin
+         if Action = 'CURVE_MAP' then begin
+            if OpenADEM then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               NewDEM := CreateCurvatureMap(WhichCurvature,false,DEM,MDDef.CurvatureRegionRadius,OutFile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('curvature map created'); {$EndIf}
+               //DEMGlb[NewDEM].SaveAsGeotiff(outfile);
+               //{$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
+            end;
+         end;
+
+         if Action = 'ASPECT_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
                NewDEM := MakeAspectMap(false,DEM);
@@ -2167,37 +2176,52 @@ var
             end;
          end;
 
-
-         {$IfDef AllowGeomorphometry}
-            if Action = 'TERR_FABRIC' then begin
-               if OpenADEM then begin
-                  DEMGlb[DEM].OrientationTable(OutFile,Nil);
-               end;
+         if Action = 'OPENNESS_MAP' then begin
+            if OpenADEM then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               MDDef.DoUpOpen := (UpFile <> '');
+               MDDef.DoDownOpen := (DownFile <> '');
+               MDDef.DoDiffOpen := (DiffFile <> '');
+               MakeMomentsGrid(DEM,'O',MDDef.OpenBoxSizeMeters,false);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
+               if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
+               if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
+               if (DiffFile <> '') then DEMGlb[MomentDEMs[DiffOpenDEM]].SaveAsGeotiff(DiffFile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
             end;
-         {$EndIf}
+         end;
+
+         if Action = 'TERR_FABRIC' then begin
+            if OpenADEM then begin
+               DEMGlb[DEM].OrientationTable(OutFile,Nil);
+            end;
+         end;
+
+         if Action = 'RESAMP_AVG' then begin
+            if OpenADEM(true) then begin
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
+               NewDEM := DEMGlb[DEM].ResampleByAveraging(false,Outfile);
+               {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
+            end;
+         end;
 
          if Action = 'DEMIX-CREATE-REF' then begin
             BatchResampleForDEMIX(FileList);
          end;
 
-      (*
-         if Action = 'OPENMAP' then begin
-            if OpenADEM then begin
-               {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               MDDef.DoUpOpen := (UpFile <> '');
-               MDDef.DoDownOpen := (DownFile <> '');
-               MDDef.DoDiffOpen := false;
-               MakeMomentsGrid(DEM,'O',MDDef.OpenBoxSizeMeters,false);
-               {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
-               if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
-               if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
-               {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
-            end;
-         end;
-      *)
-
          if (Action = 'LCP') then begin
             LeastCostPathOptions(1);
+         end;
+
+         if Action = 'DEM2JSON' then begin
+            if OpenADEM then begin
+               DEMGlb[DEM].SaveAsGeoJSON;
+            end;
+         end;
+
+         if Action = 'LAS2JSON' then begin
+            QuietActions := true;
+            LAS2GeoJSON(infile);
          end;
 
          DEM_Manager.CloseAllWindowsAndData;
@@ -2220,7 +2244,7 @@ var
          else if (TStr = '-MINIMIZE') then begin
             WindowState := wsMinimized;
          end
-         else if (TStr = '-NOAUTOOPEN') then begin
+         else if (TStr = '-NOAUTOOPEN') or (TStr = '-AONOTHING') then begin
             MDdef.AutoOpen := aoNothing;
          end
          else if (TStr = '-RESET') then begin
@@ -2321,7 +2345,7 @@ begin
               end
               else begin
                   TStr := '?' + TStr;
-                  for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(2)));
+                  for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(i)));
                   ProcessCommandLine(TStr);
               end;
                   (*
@@ -2339,6 +2363,8 @@ begin
           end;
        end;
     {$EndIf}
+
+    TerSplsh.MDStartSplashing;
 
     {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate after command line, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
     {$IfDef RecordDirs}  RecordDirs('after command line'); {$EndIf}
@@ -2405,32 +2431,33 @@ end;
 
 
 procedure Twmdem.FormCreate(Sender: TObject);
-var
-   TStr  : ShortString;
-   i : integer;
-   fName : PathStr;
-   BatchMode : boolean;
+//var
+   //TStr  : ShortString;
+   //i : integer;
+   //fName : PathStr;
+   //BatchMode : boolean;
 begin
   {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('start wmdem FormCreate'); {$EndIf}
   ClientWidth := 4000;
   ClientHeight := 2400;
+  ProgramClosing := false;
+  NoAutoOpen := false;
+  Self.Visible := false;
+
+(*
   fName := ChangeFileExt(application.exename,'.ico');
   if FileExists(fName) then begin
      Application.MainFormOnTaskbar := false;
      Application.Icon.LoadFromFile(fName);
   end;
-  ProgramClosing := false;
-  AskForDebugUpdateNow := false;
-  AskForNewUpdateNow := false;
-  NoAutoOpen := false;
-  BatchMode := false;
-  Self.Visible := false;
-
+  //AskForDebugUpdateNow := false;
+  //AskForNewUpdateNow := false;
+  //BatchMode := false;
    {$IfDef NoCommandLineParameters}
    {$Else}
       for i := 1 to ParamCount do begin
          TStr := UpperCase(ptTrim(ParamStr(i)));
-         if (TStr = '-GRID') or (TStr = '-MINIMIZE') or (TStr = '-TCP') then BatchMode := true;
+         //if (TStr = '-GRID') or (TStr = '-MINIMIZE') or (TStr = '-TCP') then BatchMode := true;
          if (TStr = '-AONOTHING') then NoAutoOpen := true;
       end;
    {$EndIf}
@@ -2438,9 +2465,7 @@ begin
    if (not BatchMode) then begin
       TerSplsh.MDStartSplashing;
       {$If Defined(TrackFormCreate)} MessageToContinue('FormCreate start splashing'); {$EndIf}
-      if (GetScreenColorDepth < 24) then MessageToContinue('Problems likely w/ < 24 bit color');
    end;
-
    {$IfDef AllowProgramWebUpdates}
    {$Else}
        Updatehelpfile1.Visible := false;
@@ -2452,9 +2477,9 @@ begin
        Makelittletilescontest1.Visible := false;
        Postprocesscontest1.Visible := false;
    {$EndIf}
+*)
 
-   {$If Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
-   {$IfDef RecordFormResize} WriteLineToDebugFile('Twmdem.FormCreate out, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
+   {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
 end;
 
 
@@ -2604,7 +2629,6 @@ end;
 
 procedure Twmdem.Bringslicecontroltofront1Click(Sender: TObject);
 begin
-   //if (SlicerForm.SliceGraph[1].GISGraph <> nil) then SlicerForm.SliceGraph[1].BringToFront;
    SlicerForm.BringToFront;
    SlicerForm.Left := Self.Left + 10;
    SlicerForm.Top := Self.Top + 10;

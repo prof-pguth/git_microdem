@@ -87,6 +87,8 @@ type
       private
       public
          LAS_fnames : tStringList;
+         VersionMajor,
+         VersionMinor : ANSIchar;
          MinTime,MaxTime : double;
          MinZ,MaxZ,
          MinPointDensity,
@@ -100,6 +102,9 @@ type
          LasExportThinFactor,
          UTMZone : integer;
          LatHemi : ANSIchar;
+         EPSGcode,
+         H_DatumCode,
+         V_DatumCode : shortstring;
          TotalCloudPts : int64;
          UTMfiles,
          ShowLASProgress,
@@ -111,6 +116,7 @@ type
          HasUserData,
          HasScanAngle,
          HasReturnNumbers : boolean;
+         //CloudBaseDir,
          CloudDir,
          CloudName : PathStr;
          UTMBBox,
@@ -1535,6 +1541,10 @@ begin
             if (MaxZ < lf.LasHeader.MaxZ) then MaxZ := lf.LasHeader.MaxZ;
             UTMZone := lf.UTMZone;
             LatHemi := lf.lasProjDef.LASProj.LatHemi;
+            H_DatumCode := lf.lasProjDef.LASProj.H_DatumCode;
+            V_DatumCode := lf.lasProjDef.LASProj.V_DatumCode;
+            VersionMajor := lf.LASheader.VersionMajor;
+            VersionMinor := lf.LASHeader.VersionMinor;
          end;
          {$IfDef RecordListFilesProcessed}
             WriteLineToDebugFile('On map: ' + fName + ' geo limits ' + sfBoundBoxToString(lf.LAS_LatLong_Box,6) + ' utm limits ' + sfBoundBoxToString(lf.LAS_UTM_Box,1) +

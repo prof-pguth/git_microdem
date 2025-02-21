@@ -331,7 +331,7 @@ begin
           end;
        end;
    end;
-
+   DEMGlb[Result].CheckMaxMinElev;
    if (SaveName <> '') then begin
       {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
       DEMGlb[Result].WriteNewFormatDEM(SaveName);

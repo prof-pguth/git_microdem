@@ -24,7 +24,7 @@ unit dem_indexes;
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
-     //{$Define RecordMerge}
+     {$Define RecordMerge}
      //{$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}
@@ -1074,16 +1074,19 @@ var
                   CloseSingleDEM(CurDEM);
                end
                else begin
-                  {$IfDef RecordProblemsMerge} HighlightLineToDebugFile('DEM merge missing file  ' + fName); {$EndIf}
+                  {$IfDef RecordMerge} HighlightLineToDebugFile('DEM did not load, ' + fName); {$EndIf}
                   DEMlist.Delete(i);
                end;
+            end
+            else begin
+               {$IfDef RecordMerge} WriteLineToDebugFile('Merge file missing, ' + fName); {$EndIf}
             end;
          end;
 
-         {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in MD DEM Merge'); {$EndIf}
+         {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in MD DEM Merge, file count now=' + IntToStr(DEMlist.Count)); {$EndIf}
          NewHeader.ElevUnits := euMeters;
          if OpenAndZeroNewDEM(false,NewHeader,Result,'Merge',InitDEMmissing) then begin
-            {$IfDef RecordMergeDetails} WriteLineToDebugFile('New DEM ' + IntToStr(Result) + ' opened'); {$EndIf}
+            {$If Defined(RecordMerge) or Defined(RecordMergeDetails)} WriteLineToDebugFile('New DEM ' + IntToStr(Result) + ' opened'); {$EndIf}
             if (MergeSeriesName = '') then DEMGlb[Result].AreaName := 'merge_from_' + LastSubDir(ExtractFilePath(DEMList.Strings[0]))
             else DEMGlb[Result].AreaName := MergeSeriesName;
             {$If Defined(TrackPixelIs)} WriteLineToDebugFile('merge is ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString); {$EndIf}
@@ -1122,9 +1125,13 @@ var
                   end;
                end;
             end {for i};
+            {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('merge over'); {$EndIf}
             LastDEMName := OldDEMName;
             DEMList.Free;
-            if SaveIt then DEMGlb[Result].AskAndWriteNewFormatDEM(MergefDir,'merged DEM');
+            if SaveIt then begin
+               {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('call AskAndWriteNewFormatDEM'); {$EndIf}
+               DEMGlb[Result].AskAndWriteNewFormatDEM(MergefDir,'merged DEM');
+            end;
             {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge)  or Defined(RecordPixelIs)}
                WriteLineToDebugFile('MD merge done, DEM=' + IntToStr(Result) + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString);
             {$EndIf}
@@ -1133,7 +1140,7 @@ var
 
 
 begin
-   {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM'); {$EndIf}
+   {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM, file count=' + IntToStr(DEMList.Count)); {$EndIf}
    SkipMenuUpdating := true;
    DEMMergeInProgress := true;
    try

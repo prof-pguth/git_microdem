@@ -492,7 +492,7 @@ type
        SlopePercent,
        SlopeDegree,
        AspectDirTrue,AspectDirGrid : float32;
-       Coefs : array[1..MaxCoefs] of float32;  //for up to 4th order trend surface
+       Coefs : array[1..MaxCoefs] of float32;  //for up to 4th order trend surface, to write out equations
        Dir : tCompassDirection;
    end;
 
@@ -2292,6 +2292,7 @@ type
        ElevHistBinSize,SlopeHistBinSize,
        ConvexCut,RoughnessCut,SlopeCut1,SlopeCut2,SlopeCut3 : float32;
        SlopeLSQorder,SlopeLSQradius : byte;
+       EvansApproximationAllowed : boolean;
        IwashPikeCats : byte;
        OpennessHt : byte;
        OpennessHowHigh : float32;
@@ -2694,6 +2695,7 @@ type
        SlopeAlgorithm     : byte;
        CD2 : boolean;
        AspectRegionSize,
+       CurvatureRegionRadius,
        SlopeRegionRadius : int32;
        NeedFullSlopeWindows : boolean;
 

@@ -27,7 +27,7 @@ unit GeoTiff;
       //{$Define RecordGeotiffFailures}
       //{$Define RecordFullGeotiff}
       //{$Define RecordUTM}
-      {$Define RecordWKT}
+      //{$Define RecordWKT}
       //{$Define RecordProjProgress}
       //{$Define TrackWKTstring}
       //{$Define RecordInitializeDEM}
@@ -2652,7 +2652,7 @@ begin
 
    {$IfDef RecordDefineDatum}
       MapProjection.ShortProjInfo('Point 2, utm=');
-      MapProjection.WriteProjectionParametersToDebugFile('Projection');
+      MapProjection.WriteProjParamsToDebugFile('Projection');
       WriteLineToDebugFile('Geotiff done OK, datum=' + MapProjection.H_datumCode);
    {$EndIf}
 

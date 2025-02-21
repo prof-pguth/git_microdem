@@ -119,9 +119,10 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Top = 0
     Width = 581
     Height = 242
-    ActivePage = TabSheet8
+    ActivePage = TabSheet6
     Align = alClient
     TabOrder = 1
+    OnChange = PageControl1Change
     object General: TTabSheet
       Caption = 'General'
       object Label6: TLabel
@@ -921,7 +922,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         OnClick = RadioGroup4Click
       end
       object BitBtn1: TBitBtn
-        Left = 6
+        Left = 3
         Top = 96
         Width = 129
         Height = 25
@@ -1167,6 +1168,20 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Height = 13
         Caption = 'not saved'
       end
+      object Label37: TLabel
+        Left = 432
+        Top = 88
+        Width = 57
+        Height = 13
+        Caption = 'Horiz datum'
+      end
+      object Label38: TLabel
+        Left = 432
+        Top = 115
+        Width = 53
+        Height = 13
+        Caption = 'Vert datum'
+      end
       object RadioGroup5: TRadioGroup
         Left = 3
         Top = 154
@@ -1315,6 +1330,22 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
         Caption = 'Auto save dir'
         TabOrder = 15
         OnClick = BitBtn65Click
+      end
+      object Edit35: TEdit
+        Left = 500
+        Top = 85
+        Width = 57
+        Height = 21
+        TabOrder = 16
+        Text = 'Edit35'
+      end
+      object Edit36: TEdit
+        Left = 500
+        Top = 112
+        Width = 57
+        Height = 21
+        TabOrder = 17
+        Text = 'Edit36'
       end
     end
     object Filters: TTabSheet
@@ -1847,16 +1878,27 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       OnClick = Ceilingfloor1Click
     end
     object Ceiling1: TMenuItem
-      Caption = 'DSM'
+      Caption = 'DSM (highest first return)'
       OnClick = Ceiling1Click
     end
     object Floor1: TMenuItem
-      Caption = 'NVS'
+      Caption = 'NVS (lowest last return)'
       OnClick = Floor1Click
+    end
+    object Meanfirstreturns1: TMenuItem
+      Caption = 'Mean first/last returns (DSM/NVS)'
+      OnClick = Meanfirstreturns1Click
     end
     object DTMfromgroundclassifiedpoints1: TMenuItem
       Caption = 'DTM from ground classified points'
       OnClick = DTMfromgroundclassifiedpoints1Click
+    end
+    object Meanstandarddeviation1: TMenuItem
+      Caption = 'Mean all returns'
+      OnClick = Meanstandarddeviation1Click
+    end
+    object N5: TMenuItem
+      Caption = '-'
     end
     object DTMrangescalesfromgroundpoints1: TMenuItem
       Caption = 'DTM range scales from ground points'
@@ -1866,30 +1908,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       Caption = 'Arc second DTM/DSM for range of scales'
       OnClick = ArcsecondDTMDSMforrangeofscales1Click
     end
-    object DTMfromlowestreturn1: TMenuItem
-      Caption = 'DTM from lowest return'
-      OnClick = DTMfromlowestreturn1Click
-    end
-    object Meanstandarddeviation1: TMenuItem
-      Caption = 'Mean all returns'
-      OnClick = Meanstandarddeviation1Click
-    end
-    object Meanfirstreturns1: TMenuItem
-      Caption = 'Mean first returns'
-      OnClick = Meanfirstreturns1Click
-    end
-    object DistanceabovebelowDEM1: TMenuItem
-      Caption = 'Distance above/below DEM'
-      OnClick = DistanceabovebelowDEM1Click
-    end
-    object Lowpointsxyz1: TMenuItem
-      Caption = 'Low ground points x-y-z'
-      OnClick = Lowpointsxyz1Click
-    end
-    object Lowpointxyz1: TMenuItem
-      Caption = 'Low point x-y-z'
-      OnClick = Lowpointxyz1Click
-    end
   end
   object PopupMenu3: TPopupMenu
     Left = 27
@@ -1898,13 +1916,21 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       Caption = 'All returns'
       OnClick = Pointcount1Click
     end
-    object GroundoverDTM1: TMenuItem
-      Caption = 'Ground classified returns'
-      OnClick = GroundoverDTM1Click
+    object Singlereturns1: TMenuItem
+      Caption = 'Single returns'
+      OnClick = Singlereturns1Click
     end
     object Firstreturns1: TMenuItem
       Caption = 'First returns'
       OnClick = Firstreturns1Click
+    end
+    object Secondreturns1: TMenuItem
+      Caption = 'Second returns'
+      OnClick = Secondreturns1Click
+    end
+    object GroundoverDTM1: TMenuItem
+      Caption = 'Ground classified returns'
+      OnClick = GroundoverDTM1Click
     end
     object N3: TMenuItem
       Caption = '-'
@@ -1915,14 +1941,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     end
     object N4: TMenuItem
       Caption = '-'
-    end
-    object Secondreturns1: TMenuItem
-      Caption = 'Second returns'
-      OnClick = Secondreturns1Click
-    end
-    object Singlereturns1: TMenuItem
-      Caption = 'Single returns'
-      OnClick = Singlereturns1Click
     end
     object Nonlastreturns1: TMenuItem
       Caption = 'Non last returns (air)'
@@ -2003,10 +2021,6 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       Caption = 'MICRODEM DTM'
       OnClick = MICRODEM1Click
     end
-    object FusionTIN1: TMenuItem
-      Caption = 'Fusion TIN DTM'
-      OnClick = FusionTIN1Click
-    end
     object WBIDW1: TMenuItem
       Caption = 'WB IDW DTM'
       OnClick = WBIDW1Click
@@ -2016,8 +2030,12 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
       OnClick = WBnearestneighbor1Click
     end
     object blast2dem1: TMenuItem
-      Caption = 'blast2dem DTM'
+      Caption = 'blast2dem DTM (check license)'
       OnClick = blast2dem1Click
+    end
+    object FusionTIN1: TMenuItem
+      Caption = 'Fusion TIN DTM'
+      OnClick = FusionTIN1Click
     end
   end
 end

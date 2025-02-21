@@ -1349,10 +1349,22 @@ procedure TDemHandForm.GDALassignprojectionviaEPSG1Click(Sender: TObject);
 var
    fName : PathStr;
    ProjEPSG : shortstring;
+   fNames : tStringList;
+   DefaultFilter : byte;
+   i : integer;
 begin
-   if Petmar.GetFileFromDirectory('TIFF file','*.tif',fName) then begin
+   fNames := tStringList.Create;
+   Petmar.GetMultipleFiles('TIFF files to assign projection','*.tif',fNames,DefaultFilter);
+   if (Fnames.Count > 0) then begin
       Petmar.GetString('EPSG code: Horiz or Horiz + Vert',ProjEPSG,false,['0'..'9','+'] );
-      GDALAssignProjectionViaWKTorEPSG(fName,'EPSG:' + ProjEPSG);
+      SetColorForProcessing;
+      for i := 0 to pred(FNames.Count) do begin
+         wmdem.SetPanelText(2,IntToStr(i) + '/' + IntToStr(FNames.Count));
+         fName := fNames.Strings[i];
+         GDALAssignProjectionViaWKTorEPSG(fName,'EPSG:' + ProjEPSG);
+      end;
+      SetColorForWaiting;
+      wmdem.SetPanelText(2,'');
    end;
 end;
 
@@ -1446,20 +1458,20 @@ var
    fName,NewName : PathStr;
    fNames : tStringList;
    DefaultFilter : byte;
-   i : integer;
+   i,DEM : integer;
 begin
    fNames := tStringList.Create;
    Petmar.GetMultipleFiles('TIFF files','*.tif',fNames,DefaultFilter);
    if (Fnames.Count > 0) then begin
+      SetColorForProcessing;
       for i := 0 to pred(FNames.Count) do begin
-         if (i = 0) then begin
-            Petmar.GetString('Source EPSG code: Horiz or Horiz + Vert (blank if correctly defined)',SourceEPSG,false,['0'..'9','+'] );
-            PickUTMzone(UTMZone);
-         end;
          fName := FNames[i];
          NewName := ChangeFileExt(fName,'_utm_egm2008.tif');
-         ShiftToUTM_WGS84_EGM2008(fName,NewName,SourceEPSG,UTMzone);
+         DEM := OpenNewDEM(fName,false);
+         VerticalDatumShiftWithGDALtoEGM2008(DEM,NewName);
+         CloseSingleDEM(DEM);
       end;
+      SetColorForWaiting;
    end;
    FNames.Destroy;
 end;
@@ -2932,13 +2944,14 @@ begin
       FilesWanted := tStringList.Create;
       FilesWanted.Add(MainMapData);
       DefaultFilter := 1;
-      if GetMultipleFiles('Vector Files','All formats|*.gpx;*.dbf;*.osm;*.gpkg;*.geojson;*.json|DXF|*.dxf|GPX|*.gpx|OSM|*.osm|GeoJSON|*.geojson;*.json',FilesWanted,DefaultFilter) then begin
+      if GetMultipleFiles('Vector Files','All formats|*.gpx;*.dbf;*.osm;*.gpkg;*.geojson;*.json;*.parquet|DXF|*.dxf|GPX|*.gpx|OSM|*.osm|GeoJSON|*.geojson;*.json|parquet|*.parquet',FilesWanted,DefaultFilter) then begin
          for I := 0 to pred(FilesWanted.Count) do begin
             fName := FilesWanted.Strings[i];
+            CleanUpFileName(fName);
             Ext := UpperCase(ExtractFileExt(fName));
             {$IfDef RecordReformat} WriteLineToDebugFile(fName); {$EndIf}
             if (Ext = '.GPX') then GDAL_ConvertGPXToSHP(fName)
-            else if (Ext = '.JSON') or   (Ext = '.GEOJSON') then begin
+            else if (Ext = '.JSON') or (Ext = '.GEOJSON') then begin
                GDAL_Convert_JSON(fName);
             end
             else GeneralConvertToWGS84Shapefile(fName);

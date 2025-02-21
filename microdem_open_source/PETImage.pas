@@ -314,10 +314,7 @@ uses
       BaseGraf,
    {$EndIf}
 
-   {$IfDef ExGeoTiff}
-   {$Else}
-      Geotiff,
-   {$EndIf}
+    Geotiff,
 
    {$IfDef VCL}
       Nevadia_Main,

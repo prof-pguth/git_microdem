@@ -33,8 +33,7 @@ object DEMeditForm: TDEMeditForm
     OnDblClick = StringGrid1DblClick
     OnGetEditText = StringGrid1GetEditText
     OnMouseMove = StringGrid1MouseMove
-    ExplicitWidth = 594
-    ExplicitHeight = 250
+    ExplicitHeight = 223
     ColWidths = (
       64
       64
@@ -97,8 +96,7 @@ object DEMeditForm: TDEMeditForm
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 250
-    ExplicitWidth = 594
+    ExplicitTop = 223
     object Label1: TLabel
       Left = 33
       Top = 16

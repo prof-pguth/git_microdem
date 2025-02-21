@@ -18,8 +18,8 @@ unit basemap;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordWKTFull}
-      {$Define RecordWKT}
+      //{$Define RecordWKTFull}
+      //{$Define RecordWKT}
       //{$Define RecordUKOS}
       //{$Define RecordDEMprojection}
       //{$Define TrackWKTstring}
@@ -116,8 +116,9 @@ type
          PName   : tProjectType;
          projUTMZone  : int16;
          LatHemi      : Ansichar;
-         h_DatumCode  : ShortString;
-         h_EllipsCode : ShortString;
+         h_DatumCode,
+         v_DatumCode,
+         h_EllipsCode,
          wktProjName,
          pNameModifier,
          ProjDebugName : shortstring;
@@ -283,6 +284,7 @@ function EllipsoidName(EllipCode : ShortString) : ShortString;
 function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
 function GetEPSGforUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
 function GetEPSGforGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
+function GetEPSGforVerticalDatumCode(PrimaryMapDatum : tMapProjection) : word;
 
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 function HemiFromLat(Lat : float64) : ANSIchar;
@@ -363,6 +365,7 @@ begin
    Result := true;
    LatHemi := DEMheader.LatHemi;
    h_DatumCode := DEMHeader.h_DatumCode;
+   V_DatumCode := VertDatumName(DEMHeader.VerticalCSTypeGeoKey);
    projUTMZone := DEMheader.UTMZone;
    if (h_DatumCode = 'UK-OS') then PName := UK_OS
    else if (DEMheader.DEMUsed = ArcSecDEM) then PName := PlateCaree;
@@ -1024,7 +1027,6 @@ begin
        end
        else if ParameterInString('54008') then begin
           PName := Mollweide;
-          {$IfDef RecordWKT} WriteLineToDebugFile('Found Mollweide'); {$EndIf}
        end
        else if ParameterInString('54009') then begin
           PName := SinusEllipsoidal;
@@ -1049,11 +1051,10 @@ begin
        end;
 
       TheProjectionString := VertWKT;
-      if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
-          if ParameterInString('UNIT["FOOT",') then VertFootFactor := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
-          else VertFootFactor := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']');
-      end
+      if ParameterInString('UNIT["FOOT",') then VertFootFactor := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
+      else if  ParameterInString('USSURVEYFOOT') then VertFootFactor := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']')
       else VertFootFactor := 1;
+      if ParameterInString('NAVD88') then V_datumCode := 'NAVD88';
 
       {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}
       GetProjectParameters;
@@ -1197,6 +1198,7 @@ begin
    GeoKeys.Code3075 := 0;
    ProjUTMZone := -99;
    H_datumCode := '';
+   V_datumCode := '';
    ProjMapScale := 1;
    wktString := '';
    PName := UndefinedProj;

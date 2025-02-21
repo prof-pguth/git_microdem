@@ -15,7 +15,7 @@ unit petmar_types;
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$IFDEF DEBUG}
+   {$IfDef DEBUG}
       //{$Define RecordMakeDir}
       //{$Define RecordFieldPresentProblems}
       //{$Define RecordMyDataCreation}
@@ -929,7 +929,7 @@ end;
       TheDebugLog := tStringList.Create;
       TheDebugLog.Add(TimeToStr(Now,aFormat) + ' Opened Debug log: ' + DebugFileName);
       TheDebugLog.Add('Log from ' + DateToStr(Date));
-      {$IFDEF DEBUG}
+      {$IfDef DEBUG}
          TStr := ' debug version';
       {$ELSE}
          TStr := ' release version';

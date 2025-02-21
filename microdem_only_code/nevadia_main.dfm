@@ -29,6 +29,7 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -2416,7 +2417,7 @@ object wmdem: Twmdem
       Caption = 'DEMIX Neo'
       GroupIndex = 6
       object Areaevaluations1: TMenuItem
-        Caption = 'Area evaluations'
+        Caption = 'Area interactive evaluations (under development)'
         OnClick = Areaevaluations1Click
       end
       object Singletile1: TMenuItem
@@ -2448,7 +2449,7 @@ object wmdem: Twmdem
           OnClick = FUVforrangescales1Click
         end
         object FUVfor5DEMstoreference1: TMenuItem
-          Caption = 'FUV for 5 DEMs to reference'
+          Caption = 'FUV for multiple test DEMs to reference'
           OnClick = FUVfor5DEMstoreference1Click
         end
         object FUVbyLandcover1DEMtoreference1: TMenuItem

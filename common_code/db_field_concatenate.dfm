@@ -3,7 +3,7 @@ object db_concatenate: Tdb_concatenate
   Top = 0
   Caption = 'Concatenate fields'
   ClientHeight = 93
-  ClientWidth = 851
+  ClientWidth = 860
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

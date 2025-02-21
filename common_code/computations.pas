@@ -1,12 +1,11 @@
 unit computations;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 {$I nevadia_defines.inc}
 
@@ -65,7 +64,7 @@ implementation
 uses
    {$IfDef ExGeography}
    {$Else}
-      sun_position, moon_montenbruk_pfleger,
+      sun_position, //moon_montenbruk_pfleger,
    {$EndIf}
    GetLatLn,Petmar,DEMDefs, BaseMap,demmagvar;
 
@@ -148,7 +147,7 @@ begin
       if (RadioGroup1.ItemIndex = 4) then begin
          DecodeDate(DateTimePicker1.Date,Year, Month, Day);
          CheckEditString(Edit5.Text,Duration);
-         moon_montenbruk_pfleger.MoonRise(Month,Day,Year,Duration,Lat1,Long1);
+         MP_MoonRise(Month,Day,Year,Duration,Lat1,Long1);
       end;
    {$EndIf}
    Memo1.Lines.Add(' ');

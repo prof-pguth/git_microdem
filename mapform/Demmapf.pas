@@ -1618,6 +1618,10 @@ type
     UpsampleDEMtomatchthisgrid1: TMenuItem;
     N80: TMenuItem;
     N81: TMenuItem;
+    DerivativegridformultipleDEMs1: TMenuItem;
+    Slopes2: TMenuItem;
+    Slopewindowfullversuscorners1: TMenuItem;
+    Slopewindowusecentralpoint1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2770,6 +2774,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Ressamplefor025to1secDTMs1Click(Sender: TObject);
     procedure UpsampleDEMtomatchthisgrid1Click(Sender: TObject);
     procedure N81Click(Sender: TObject);
+    procedure Slopes2Click(Sender: TObject);
+    procedure Slopewindowfullversuscorners1Click(Sender: TObject);
+    procedure Slopewindowusecentralpoint1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -5672,9 +5679,9 @@ end;
 
 procedure TMapForm.CompareDEMheaders1Click(Sender: TObject);
 const
-   NumParams = 23;
+   NumParams = 21;
    Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW','PIXEL_IS','H_DATUM',
-         'VERT_DATUM','UTM_ZONE','STORE_MINZ','STORE_MAXZ','MIN_Z','MAX_Z',
+         'VERT_DATUM','UTM_ZONE','MIN_Z','MAX_Z',
         'X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072','GeoTIIF_2048','SPACING_M');
 var
    i,j,Decs : integer;
@@ -5697,7 +5704,7 @@ var
       aline := Params[j];
       for i := 1 to MaxDEMDataSets do begin
          if DEMsWanted[i] and ValidDEM(i) then begin
-            if DEMGlb[i].DEMHeader.DEMUsed = UTMbasedDEM then Decs := -2 else Decs := -6;
+            if (DEMGlb[i].DEMHeader.DEMUsed = UTMbasedDEM) then Decs := -2 else Decs := -6;
             TStr := '';
             case j of
                0 : TStr := DEMGlb[i].AreaName;
@@ -5712,21 +5719,21 @@ var
                9 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
                10 : TStr := VertDatumName(DEMGlb[i].DEMHeader.VerticalCSTypeGeoKey);
                11 : TStr := IntToStr(DEMGlb[i].DEMHeader.UTMZone);
-               12 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMinElev,-12,-4);
-               13 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMaxElev,-12,-4);
-               14 : TStr := RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-4);
-               15 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
-               16 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
-               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
-               18 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
-               19 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
-               20 : begin
+               //12 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMinElev,-12,-4);
+               //13 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMaxElev,-12,-4);
+               12 : TStr := RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-4);
+               13 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
+               14 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
+               15 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
+               16 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
+               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
+               18 : begin
                         TStr := DEMGlb[i].DEMHeader.WKTString;
                         if (length(TStr) > 0) then TStr := IntToStr(length(TStr)) + ' chars'
                     end;
-               21 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
-               22 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
-               23 : TStr := DEMGlb[i].HorizontalDEMSpacing(true);
+               19 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
+               20 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
+               21 : TStr := DEMGlb[i].HorizontalDEMSpacing(true);
             end;
             aLine := aline + ',' + tStr;
          end;
@@ -6517,6 +6524,17 @@ begin
    {$EndIf}
 end;
 
+procedure TMapForm.Slopes2Click(Sender: TObject);
+var
+   WhichDEMs : tDEMBooleanArray;
+   Which : integer;
+begin
+   WhichDEMs := GetMultipleDEMsFromList('DEMs for slope maps');
+   for Which := 1 to MaxDEMDataSets do if WhichDEMs[Which] and ValidDEM(Which) then begin
+       CreateSlopeMapPercent(true,Which);
+   end;
+end;
+
 procedure TMapForm.SlopeSin1Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
@@ -6535,6 +6553,22 @@ begin
       MDDef.DoSlopeSqrtSin := true;
       MakeMomentsGrid(MapDraw.DEMonMap,'S');
    {$EndIf}
+end;
+
+procedure TMapForm.Slopewindowfullversuscorners1Click(Sender: TObject);
+var
+   xDEMg1,yDEMg1,xSATg1,ySATg1 : float64;
+begin
+   CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
+   DEMGlb[MapDraw.DEMonMap].TrendSurfaceEquationsFillOrCorners(round(xDEMg1),round(ydemg1));
+end;
+
+procedure TMapForm.Slopewindowusecentralpoint1Click(Sender: TObject);
+var
+   xDEMg1,yDEMg1,xSATg1,ySATg1 : float64;
+begin
+   CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
+   DEMGlb[MapDraw.DEMonMap].TrendSurfaceEquationsUseCenterPoint(round(xDEMg1),round(ydemg1));
 end;
 
 procedure TMapForm.Slopplntangent1Click(Sender: TObject);
@@ -8670,6 +8704,11 @@ begin
           COPALOScategories1.Visible := false;
       {$EndIf}
 
+      {$IfDef RichardsonExtrapolate}
+         Slopeerrorestimateexperimental1.Visible := true;
+      {$Else}
+         Slopeerrorestimateexperimental1.Visible := false;
+      {$EndIf}
 
       {$IfDef ExSat}
          NLCD1.Visible := false;
@@ -12818,17 +12857,34 @@ end;
 
 procedure TMapForm.CreateReferenceDEMtoMatchThis1Click(Sender: TObject);
 var
-   HRDref,NewRef : integer;
+   HRDref,NewMatch : integer;
    fName : PathStr;
-   TStr : shortstring;
+   i,NPts : int64;
+   FilesWanted : tStringList;
 begin
-   HRDref := OpenNewDEM(fName,false,'HRD source for reference DEM');
-   //if DEMGlb[MapDraw.DEMonMap].DEMheader.DEMused = ArcSecDEM then TStr := RealToString(
-   TStr := '';
-   fName := MDtempDir + 'ref_dem_' + Tstr + '.tif';
-   DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff(fName);
-   NewRef := OpenNewDEM(fName,false,'New reference DEM');
-   DEMGlb[HRDref].ResampleByAveraging(true,fName,NewRef);
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(LastDEMName);
+   if GetMultipleFiles('DEM/grid to match reference DEM',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
+     SetColorForProcessing;
+     for i := 0 to pred(FilesWanted.Count) do begin
+        wmDEM.SetPanelText(3,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
+        fName := FilesWanted.Strings[i];
+
+         HRDref := OpenNewDEM(fName,false,'HRD source DEM');
+         //save the DEM on map so we will use its geometry
+         fName := ExtractFilePath(fName) + DEMGlb[HRDref].AreaName + '_match_ref_dem' + '.tif';
+         DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff(fName);
+         //open new DEM and mark it entirely missing
+         NewMatch := OpenNewDEM(fName,false,'New match to reference DEM');
+         DEMglb[NewMatch].MarkAboveMissing(-9999,NPts,false);
+         //mean aggregate the new DEM
+         DEMGlb[HRDref].ResampleByAveraging(true,fName,NewMatch);
+         //DEMGlb[NewMatch].SaveAsGeotiff(fName);
+         CloseSingleDEM(HRDref);
+     end;
+     SetColorForWaiting;
+     wmDEM.SetPanelText(3,'');
+   end;
 end;
 
 procedure TMapForm.Createsurveylines1Click(Sender: TObject);
@@ -17412,7 +17468,7 @@ end;
 
 procedure TMapForm.Slopecategories2Click(Sender: TObject);
 begin
-   SlopeCategories1Click(Sender);
+   ChangeSlopeMapOptions(Self);
 end;
 
 
@@ -17424,7 +17480,7 @@ end;
 
 procedure TMapForm.Slopeerrorestimateexperimental1Click(Sender: TObject);
 begin
-   if ValidDEM(MapDraw.DEMonMap) then DEMGlb[MapDraw.DEMonMap].RichardsonExtrapolationSlopeMaps;
+   {$IfDef RichardsonExtrapolate} f ValidDEM(MapDraw.DEMonMap) then DEMGlb[MapDraw.DEMonMap].RichardsonExtrapolationSlopeMaps; {$EndIf}
 end;
 
 
@@ -21816,13 +21872,12 @@ begin
    {$IfDef ExGeography}
    {$Else}
       LoadDataBaseFile(ClimateDir + 'tornado_2017\torn.dbf');
-  {$EndIf}
+   {$EndIf}
 end;
 
 procedure TMapForm.USWeatherForecast1Click(Sender: TObject);
 begin
    ExecuteFile('https://forecast.weather.gov/MapClick.php?lat=' + RealToString(RightClickLat,-12,3) + '&lon=' + RealToString(RightClickLong,-12,3) );
-   //    + '&unit=0&lg=english&FcstType=graphical');   this goes to the hourly graph
 end;
 
 procedure TMapForm.Viewshedalgorithms1Click(Sender: TObject);

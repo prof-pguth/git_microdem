@@ -368,7 +368,7 @@ object DemHandForm: TDemHandForm
           OnClick = OGRDBFtoSQLite1Click
         end
         object OGRDXFtoshapefile1: TMenuItem
-          Caption = 'OGR DXF/GPX/OSM/GKPG/GeoJSON to shapefile'
+          Caption = 'OGR DXF/GPX/OSM/GKPG/GeoJSON/Parquet to shapefile'
           OnClick = OGRDXFtoshapefile1Click
         end
         object OGRshapefilestoGKPG1: TMenuItem

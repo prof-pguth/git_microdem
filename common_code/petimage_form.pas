@@ -540,7 +540,6 @@ begin
 end;
 
 
-
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
 var
    bigbmp,LegBMP : tMyBitmap;
@@ -552,6 +551,7 @@ begin
    Result := nil;
    if (TheFiles <> Nil) and (TheFiles.Count > 0) then begin
      if (TheFiles.Count = 1) then begin
+        if (Legend = '') then exit;
         Cols := 1;
         AskCols := false;
      end

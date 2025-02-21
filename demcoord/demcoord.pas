@@ -451,6 +451,11 @@ type
          {$Else}
             procedure SlopeMethodsReport(xp,yp : integer; Title : shortstring = '');
             procedure TrendSurfaceEquations(xp,yp : integer; Title : shortstring = '');
+            procedure TrendSurfaceEquationsFillOrCorners(xp,yp : integer; Title : shortstring = '');
+            procedure TrendSurfaceEquationsUseCenterPoint(xp,yp : integer; Title : shortstring = '');
+            procedure AddSlopeAtPoint(var  Results : tStringList; xp,yp : integer);
+            procedure StartSlopeReport(var Results : tStringList; xp,yp : integer; Title : shortstring = '');
+
             procedure SlopeMethodsReportFromLatLong(lat,Long : float64; Title : shortstring = '');
             procedure PointParameters(xgrid,ygrid : float64);
          {$EndIf}
@@ -491,7 +496,7 @@ type
 
          function SlopePercent(XGrid,YGrid : integer; var Slope : float64; Radius : integer = 0) : boolean; inline;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
-         procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false);
+         {$IfDef RichardsonExtrapolate} procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false); {$EndIf}
 
          function RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
 
@@ -848,10 +853,7 @@ uses
       DEMStat,
    {$EndIf}
 
-   {$IfDef  ExGeotiff}
-   {$Else}
-     GeoTiff,
-   {$EndIf}
+   GeoTiff,
 
    {$IfDef ExGDAL}
    {$Else}
@@ -891,7 +893,9 @@ var
 {$I demcoord_aspect_stats.inc}
 {$I demcoord_sso.inc}
 
-{$I demcoord_richardson_extrapolate.inc}
+{$IfDef RichardsonExtrapolate}
+   {$I demcoord_richardson_extrapolate.inc}
+{$EndIf}
 
 {$IfDef MultipleCurvatureMethods}
    {$I demcoord_curvature.inc}
@@ -966,8 +970,6 @@ begin
       WriteNewFormatDEM(DEMFileName);
    end;
 end;
-
-
 
 
 procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
@@ -2873,10 +2875,7 @@ begin
       Result := FileName;
       Ext := UpperCase(ExtractFileExt(FileName));
       if ExtEquals(Ext, '.TIF') then begin
-         {$IfDef ExGeotiffWrite}
-         {$Else}
-            NewDEM.SaveAsGeotiff(FileName);
-         {$EndIf}
+         NewDEM.SaveAsGeotiff(FileName);
       end
       {$IfDef ExOddballDEMexports}
       {$Else}

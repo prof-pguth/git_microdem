@@ -3,8 +3,8 @@ object Mask_mult_form: TMask_mult_form
   Top = 0
   BorderIcons = []
   Caption = 'Mask grid by specified values'
-  ClientHeight = 278
-  ClientWidth = 469
+  ClientHeight = 293
+  ClientWidth = 494
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

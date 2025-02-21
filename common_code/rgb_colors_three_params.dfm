@@ -84,7 +84,7 @@ object RGB_form: TRGB_form
     end
     object BitBtn1: TBitBtn
       Left = 8
-      Top = 91
+      Top = 99
       Width = 75
       Height = 25
       Caption = 'Plot'
@@ -93,7 +93,7 @@ object RGB_form: TRGB_form
     end
     object BitBtn2: TBitBtn
       Left = 89
-      Top = 91
+      Top = 96
       Width = 118
       Height = 25
       Caption = 'Color range'

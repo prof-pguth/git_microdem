@@ -3189,23 +3189,27 @@ begin
                end
                else begin
                   {$IfDef RecordGridCorrrelationsFull} WriteLineToDebugFile(TStr); {$EndIf}
-                  MDDef.CreateGraphHidden := true;
-                  Graph := GridScatterGram(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j]);
-                  Graph.Linearfit1Click(nil);
-                  {$IfDef RecordGridCorrrelations} WriteLineToDebugFile(TStr + ' From scattergraph, r='  + RealToString(Graph.GraphComputedR,9,4) ); {$EndIf}
                   if (Which = gcmR) then begin
-                     Corrs^[i,j] := Graph.GraphComputedR;
-                     Corrs^[j,i] := Graph.GraphComputedR;
-                  end
-                  else if (Which = gcmMAbD) then begin
-                     Corrs^[i,j] := Graph.GraphComputedMAbD;
-                     Corrs^[j,i] := Graph.GraphComputedMAbD;
+                     if CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j],NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2) then begin
+                        Corrs^[i,j] := r;
+                        Corrs^[j,i] := r;
+                     end;
                   end
                   else begin
-                     Corrs^[i,j] := Graph.GraphComputedMAvD;
-                     Corrs^[j,i] := -Graph.GraphComputedMAvD;
+                     MDDef.CreateGraphHidden := true;
+                     Graph := GridScatterGram(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j]);
+                     Graph.Linearfit1Click(nil);
+                     {$IfDef RecordGridCorrrelations} WriteLineToDebugFile(TStr + ' From scattergraph, r='  + RealToString(Graph.GraphComputedR,9,4) ); {$EndIf}
+                     if (Which = gcmMAbD) then begin
+                        Corrs^[i,j] := Graph.GraphComputedMAbD;
+                        Corrs^[j,i] := Graph.GraphComputedMAbD;
+                     end
+                     else begin
+                        Corrs^[i,j] := Graph.GraphComputedMAvD;
+                        Corrs^[j,i] := -Graph.GraphComputedMAvD;
+                     end;
+                     Graph.Destroy;
                   end;
-                  Graph.Destroy;
                end;
             end;
          end;

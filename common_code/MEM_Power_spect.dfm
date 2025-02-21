@@ -2,7 +2,7 @@ object MemForm: TMemForm
   Left = 797
   Top = 202
   Caption = 'MEM Power spectrum options'
-  ClientHeight = 214
+  ClientHeight = 192
   ClientWidth = 229
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

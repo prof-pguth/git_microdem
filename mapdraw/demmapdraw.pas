@@ -713,10 +713,7 @@ uses
       DEMElevOps,
    {$EndIf}
 
-   {$IfDef ExGeotiff}
-   {$Else}
-      GEOTIFF,
-   {$EndIf}
+   GEOTIFF,
 
    {$IfDef ExNLCD}
    {$Else}

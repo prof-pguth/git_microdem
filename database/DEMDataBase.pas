@@ -5224,6 +5224,8 @@ begin
              i := StringList2CSVtoDB(sl,FileWanted);
              if MDDef.AddFitNav then begin
                 GISDB[i].AddNavFields;
+                GISDB[i].ApplyGISFilter('DIST_KM<0.0004');
+                GISDB[i].DeleteAllSelectedRecords;
                 {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
              end;
              CloseAndNilNumberedDB(i);

@@ -30,8 +30,6 @@ object petcompressform: Tpetcompressform
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 840
-    ExplicitHeight = 341
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -45,8 +43,6 @@ object petcompressform: Tpetcompressform
       item
         Width = 250
       end>
-    ExplicitTop = 341
-    ExplicitWidth = 840
   end
   object MainMenu1: TMainMenu
     Left = 24
@@ -61,7 +57,7 @@ object petcompressform: Tpetcompressform
     object Uncompress1: TMenuItem
       Caption = 'Uncompress'
       object UncompressZIPfile1: TMenuItem
-        Caption = 'ZIP file (unzip to this diretory, e.g. for Sentinel-2)'
+        Caption = 'ZIP file (unzip to this diretory, e.g. Sentinel-2,AW3D30)'
         OnClick = UncompressZIPfile1Click
       end
       object ZIPfileseachtoitsowndirectory1: TMenuItem
