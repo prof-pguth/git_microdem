@@ -188,7 +188,7 @@ var
 
       function MultiSelectSingleColumnStringList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false; MultiPick : boolean = false) : boolean;
       function GetMultipleFromList(InMessage : ANSIstring; var PickedNum : integer; var InList : TStringList; CanCancel : boolean = false) : boolean;
-      function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;    overload;
+      function GetFromList(InMessage : ANSIstring; var PickedNum : integer; InList : TStringList; CanCancel : boolean = false) : boolean;  overload;
       function GetFromList(InMessage : ANSIstring; InList : TStringList; CanCancel : boolean = false) : ShortString; overload;
 
       procedure GetString(Prompt : ShortString; var Input : ShortString; ForceCaps : boolean; ValidChars : characters);

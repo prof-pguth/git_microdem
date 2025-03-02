@@ -113,7 +113,7 @@ uses
 
 
 
-procedure ChangeReflectanceOptions(aMapOwner : tMapForm);   // : boolean;
+procedure ChangeReflectanceOptions(aMapOwner : tMapForm);
 var
    RefOptFm : TRefOptFm;
 begin

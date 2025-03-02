@@ -99,7 +99,7 @@ var
              end
              else begin
                 if Param in [rsSlopeMoment] then begin
-                   Result := DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec);
+                   Result := DEMGlb[CurDEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec);
                    z := SlopeAspectRec.SlopePercent;
                 end
                 {$IfDef MultipleCurvatureMethods}

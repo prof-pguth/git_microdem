@@ -240,6 +240,7 @@ begin
    DEMIX_control.NumHighLowNeighborsMaps(CurDEM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify,n1,n2);
 end;
 
+
 procedure TPointClassForm.BitBtn1Click(Sender: TObject);
 begin
    {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm.BitBtn1Click in (I&P grid)'); {$EndIf}
@@ -248,7 +249,7 @@ begin
       if RadioGroup6.ItemIndex = 0 then RoughGrid := CreateRoughnessMap2(CurDEM,false,true)
       else RoughGrid := CreateRoughnessMap(CurDEM,false);
    end;
-   if not ValidDEM(ConvexGrid) then ConvexGrid := CreateProfileCurvature(false,CurDEM);
+   if not ValidDEM(ConvexGrid) then ConvexGrid := CreateCurvatureMap(1,false,CurDEM);
    if not ValidDEM(SlopeGrid) then SlopeGrid := CreateSlopeMap(CurDEM,false);
 
    {$IfDef RecordClosePointClass} WriteLineToDebugFile(''); {$EndIf}

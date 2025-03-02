@@ -166,14 +166,14 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>2</VerInfo_MinorVer>
         <VerInfo_MajorVer>2025</VerInfo_MajorVer>
-        <VerInfo_Release>2</VerInfo_Release>
+        <VerInfo_Release>25</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.2.2.20;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.2.25.9;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>20</VerInfo_Build>
+        <VerInfo_Build>9</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -349,9 +349,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\GeologicTimeScale.pas"/>
         <DCCReference Include="..\common_code\gps_strings.pas"/>
-        <DCCReference Include="..\common_code\drainage_opts.pas">
-            <Form>drain_opt_form</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\get_angle.pas">
             <Form>get_angle_form</Form>
         </DCCReference>
@@ -584,9 +581,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demfabricregion.pas">
             <Form>FabricOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demslopecompare.pas">
-            <Form>SlopeCompareOptions</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\demslped.pas">
             <Form>SlopeCategoryEditor</Form>
@@ -975,6 +969,10 @@
             <Form>CorrelationMatrixOptionsForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\common_code\drainage_opts.pas">
+            <Form>drain_opt_form</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>
@@ -1021,7 +1019,6 @@
         <None Include="..\mapdraw\demmapdraw_tissot.inc"/>
         <None Include="..\mapdraw\demmapdraw_viewshed.inc"/>
         <None Include="..\demcoord\demcoord_aspect_stats.inc"/>
-        <None Include="..\demcoord\demcoord_curvature.inc"/>
         <None Include="..\demcoord\demcoord_edits.inc"/>
         <None Include="..\demcoord\demcoord_elev_manip.inc"/>
         <None Include="..\demcoord\demcoord_geomorph.inc"/>
@@ -1029,9 +1026,7 @@
         <None Include="..\demcoord\demcoord_old_slope_algorithm.inc"/>
         <None Include="..\demcoord\demcoord_point_class.inc"/>
         <None Include="..\demcoord\demcoord_read_dem.inc"/>
-        <None Include="..\demcoord\demcoord_read_dted.inc"/>
         <None Include="..\demcoord\demcoord_read_odd_dems.inc"/>
-        <None Include="..\demcoord\demcoord_richardson_extrapolate.inc"/>
         <None Include="..\demcoord\demcoord_ssim.inc"/>
         <None Include="..\demcoord\demcoord_sso.inc"/>
         <None Include="..\demcoord\demcoord_straight.inc"/>
@@ -1064,6 +1059,7 @@
         <None Include="..\geomorph\histograms.inc"/>
         <None Include="..\mapform\demmapf_make_3d_drapes.inc"/>
         <None Include="..\microdem_open_source\petdbutils_import.inc"/>
+        <None Include="..\demcoord\demcoord_reports.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1559,12 +1555,6 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\demcoord\demcoord_curvature.inc" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\demcoord\demcoord_edits.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
@@ -1607,19 +1597,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\demcoord\demcoord_read_dted.inc" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\demcoord\demcoord_read_odd_dems.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\demcoord\demcoord_richardson_extrapolate.inc" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="..\demcoord\demcoord_reports.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

@@ -749,7 +749,7 @@ begin
          DEMDefs.VasaProjectFName := ThisProject;
          ShowHourglassCursor;
          ExportBinary;
-         FMX3dViewer(True,GeometryFName,'','','',''{,ColorsFName,'','','',''});
+         FMX3dViewer(True,GeometryFName,'','','','');
          ShowDefaultCursor;
       {$EndIf}
       {$IfDef SlicerOpenGL} WriteLinetoDebugFile('TSlicerForm.BitBtn2Click (OpenGL) out'); {$EndIf}

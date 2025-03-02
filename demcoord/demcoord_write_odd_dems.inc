@@ -274,6 +274,7 @@ begin
    end;
 end;
 
+
 procedure tDEMDataSet.SavePGM(Bit16 : boolean);
 var
    SaveName : PathStr;
@@ -455,7 +456,6 @@ begin
    CloseFile(fFile);
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('tDEMDataSet.WriteBILFormatDEM out'); {$EndIf}
 end;
-
 
 
 function tDEMDataSet.VRMLFile(GridPts : integer; xu1,yu1,GridSize : float64; TextureName : shortString; WalkAboutFile : tStringList = Nil; NumTextures : integer = 1; TextureInVRML : boolean = true) : tStringList;
@@ -917,7 +917,6 @@ var
    z1,z2,z3,z4,zc : float32;
    x1,y1,x2,y2,x3,y3,x4,y4,xc,yc : float64;
    ObjList : tStringList;
-   //ThisColVertex,LastColVertex : array[0..MaxElevArraySize] of integer;
    SaveName : PathStr;
 
    procedure AddVertex(x,y,z : float64);

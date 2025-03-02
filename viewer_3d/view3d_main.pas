@@ -270,10 +270,9 @@ begin
    Result.PointRepeatFactor := 1;
 end;
 
-procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5{,TextureName1,TextureName2,TextureName3,TextureName4,TextureName5} : PathStr; LinkZScaling : boolean = true);
+procedure FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5 : PathStr; LinkZScaling : boolean = true);
 var
    FileList : tStringList;
-   //i : integer;
 begin
    if MDDef.New3Dviewer then begin
       FileList := tStringList.Create;
@@ -288,11 +287,11 @@ begin
    else begin
       {$If Defined(Start3DView)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
       View3DForm := StartFMX3dViewer(ViewSeveral,LinkZScaling);
-      View3DForm.AddLayer(GridName1{,TextureName1});
-      View3DForm.AddLayer(GridName2{,TextureName2});
-      View3DForm.AddLayer(GridName3{,TextureName3});
-      View3DForm.AddLayer(GridName4{,TextureName4});
-      View3DForm.AddLayer(GridName5{,TextureName5});
+      View3DForm.AddLayer(GridName1);
+      View3DForm.AddLayer(GridName2);
+      View3DForm.AddLayer(GridName3);
+      View3DForm.AddLayer(GridName4);
+      View3DForm.AddLayer(GridName5);
       View3DForm.LayersComplete;
       {$If Defined(Start3DView)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
    end;
@@ -1198,7 +1197,7 @@ begin
 
    Ext := UpperCase(ExtractFileExt(PointsFile));
    if (Ext = '.XYZB') then LoadPointsWithFullDrapeMap
-   else if (Ext = '.XYZIB') then begin
+   else if (Ext = '.XYZIB') or (Ext = '.XYZI') then begin
       LoadMapWithColorByCodes(DrapeFile = FullPaletteBitmap);
    end
    else begin

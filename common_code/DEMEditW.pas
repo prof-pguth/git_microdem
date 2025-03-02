@@ -329,7 +329,7 @@ var
 begin
    if Slopealgorithms1.Checked then
       if DEMGlb[EditDEM].SurroundedPointElevs(LastCol,LastRow,znw,zw,zsw,zn,z,zs,zne,ze,zse) then
-         DEMGlb[EditDEM].SlopeMethodsReport(LastCol,LastRow);
+         SlopeMethodsReport(EditDEM,LastCol,LastRow);
 {$EndIf}
 end;
 

@@ -538,7 +538,7 @@ var
                                  Difference := z-zref;
                                  inc(MomentVar.NPts);
                                  zs^[MomentVar.NPts] := Difference;
-                                 if DoLandTypes and DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
+                                 if DoLandTypes and DEMGlb[RefDEM].GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAsp) then begin
                                     LandTypeDiff(Difference);
                                     LandCover(LandCoverGrid,Lat,long,Difference);
                                  end;
@@ -571,13 +571,13 @@ var
                      ZeroMomentVar;
                      for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
                         for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
-                           if DEMGlb[aTestDEM].GetSlopeAndAspect(col,row,SlopeAspectTest) then begin
+                           if DEMGlb[aTestDEM].GetSlopeAndAspect(MDDef.SlopeCompute,col,row,SlopeAspectTest) then begin
                               DEMGlb[aTestDEM].DEMGridToLatLongDegree(col,row,lat,long);
                               if DEMGlb[RefDEM].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAsp) then begin
                                  Difference := SlopeAspectTest.SlopePercent - SlopeAsp.SlopePercent;
                                  inc(MomentVar.NPts);
                                  zs^[MomentVar.NPts] := Difference;
-                                 if DoLandTypes and DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
+                                 if DoLandTypes and DEMGlb[RefDEM].GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAsp) then begin
                                     LandTypeDiff(Difference);
                                     LandCover(LandCoverGrid,Lat,Long,Difference);
                                  end;
@@ -615,7 +615,7 @@ var
                                  Difference := Ruff1 - Ruff2;
                                  inc(MomentVar.NPts);
                                  zs^[MomentVar.NPts] := Difference;
-                                 if DoLandTypes and DEMGlb[RefDEM].GetSlopeAndAspect(xg,yg,SlopeAsp) then begin
+                                 if DoLandTypes and DEMGlb[RefDEM].GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAsp) then begin
                                     LandTypeDiff(Difference);
                                     LandCover(LandCoverGrid,Lat,long,Difference);
                                  end;

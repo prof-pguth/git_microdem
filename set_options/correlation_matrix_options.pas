@@ -31,12 +31,15 @@ type
     RadioGroup3: TRadioGroup;
     Label1: TLabel;
     Edit1: TEdit;
+    Edit2: TEdit;
+    Label2: TLabel;
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
+    procedure Edit2Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -70,6 +73,11 @@ end;
 procedure TCorrelationMatrixOptionsForm.Edit1Change(Sender: TObject);
 begin
    DisplayGrid.ULstring := Edit1.Text;
+end;
+
+procedure TCorrelationMatrixOptionsForm.Edit2Change(Sender: TObject);
+begin
+   CheckEditString(Edit2.Text,MDDef.PerfectR);
 end;
 
 procedure TCorrelationMatrixOptionsForm.FormCreate(Sender: TObject);

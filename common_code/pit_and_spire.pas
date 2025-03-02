@@ -418,7 +418,7 @@ var
    TStr : ShortString;
 begin
    DEMDef_routines.SaveBackupDefaults;
-   MDDef.SlopeAlgorithm := smEvansYoung;
+   MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
    MDDef.GeomorphMapsFullDEM := true;
    UpdateValues;
 
@@ -701,7 +701,7 @@ var
       SlpAsp : tSlopeAspectRec;
    begin
       Result := false;
-      if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(Col,Row,SlpAsp) then begin
+      if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlpAsp) then begin
          if (SlpAsp.SlopePercent <= MDDef.BuildingMaxSlope) then begin
            z := SlpAsp.z;
            if (RadioGroup2.ItemIndex = 0) then begin
@@ -716,12 +716,12 @@ var
            else begin
               //go east
               for x := Col + 1 to Col + dx do begin
-                if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(x,Row,SlpAsp) then begin
+                if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,x,Row,SlpAsp) then begin
                    zb[1] := z - SlpAsp.z;
                    s1 := SlpAsp.SlopePercent;
                    if (zb[1] > MDDef.BuildingMinHeight) then begin
                        Rad[1] := (x - Col) * DEMGlb[MapOwner.MapDraw.DEMonMap].AverageXSpace;
-                       if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(pred(x),Row,SlpAsp) then begin
+                       if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,pred(x),Row,SlpAsp) then begin
                           if (SlpAsp.SlopePercent < MDDef.MinRoofEdgeSlope) then exit;
                           goto Found1;
                        end

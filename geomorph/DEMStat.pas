@@ -125,8 +125,8 @@ type
       procedure AspectDistributionBySlope(WhichDEM : Integer; GridLimits : tGridLimits);
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
-      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64; NoteFailure : boolean = true) : boolean;  inline;
-      function MeanAbsoluteDeviationFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var MAD : float64; NoteFailure : boolean = true) : boolean;
+      function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;  inline;
+      //function MeanAbsoluteDeviationFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var MAD : float64; NoteFailure : boolean = true) : boolean;
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
@@ -229,6 +229,9 @@ procedure CompareWindowSizesForSlopeMap(DEM : integer);
 procedure ScatterGramGrid(ScatterGram : boolean; DEMsWanted : tDEMbooleanArray; RemoveName : shortstring = ''; fName : PathStr = '');
 
 procedure SSOforVATgrid(FeatureDEM,FeaturesDB,ElevDEM : integer);
+procedure CompareLSQ(DoSlopes : boolean; DEM : integer);
+procedure CompareLSQEdgeEffects(DEM : integer);
+
 
 function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
 
@@ -517,45 +520,138 @@ begin {procedure ScatterGramGrid}
 end {procedure ScatterGramGrid};
 
 
+procedure CompareLSQ(DoSlopes : boolean; DEM : integer);
+
+         function Duplicate(HowCompute : tSlopeCurveCompute) : boolean;
+         begin
+            Result := ((HowCompute.LSQorder = 1) and (HowCompute.WindowRadius = 1)) or
+                      ((HowCompute.LSQorder = 2) and (HowCompute.WindowRadius = 1) and (not HowCompute.RequireFullWindow)) or
+                      ((HowCompute.LSQorder in [3,4]) and (HowCompute.WindowRadius = 1)) or
+                      ((HowCompute.LSQorder in [3,4]) and (not HowCompute.RequireFullWindow)) or
+                      ((HowCompute.LSQorder = 4) and (HowCompute.WindowRadius = 2));
+
+
+         end;
+
+
+var
+  i,j,k,Grid,TheCurvature : integer;
+begin
+
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   MDDef.CurveCompute.AlgorithmName := smLSQ;
+
+   if DoSlopes then begin
+      for i := 1 to 4 do begin
+         MDDef.SlopeCompute.LSQorder := i;
+         for j := 1 to 4 do begin
+            MDDef.SlopeCompute.WindowRadius := j;
+            for k := 1 to 2 do begin
+               MDDef.SlopeCompute.UseAllPts := (k=1);
+               if not Duplicate(MDDef.SlopeCompute) then begin
+                  Grid := CreateSlopeMapPercent(true,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+               end;
+            end;
+         end;
+      end;
+   end
+   else begin
+      TheCurvature := PickCurvature;
+      for i := 1 to 4 do begin
+         MDDef.CurveCompute.LSQorder := i;
+         for j := 1 to 4 do begin
+            MDDef.CurveCompute.WindowRadius := j;
+            for k := 1 to 2 do begin
+               MDDef.CurveCompute.UseAllPts := (k=1);
+               if not Duplicate(MDDef.CurveCompute) then begin
+                  Grid := CreateCurvatureMap(TheCurvature,true,DEM,SlopeMethodName(MDDef.CurveCompute) );
+               end;
+            end;
+         end;
+      end;
+   end;
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+end;
+
+
+procedure CompareLSQEdgeEffects(DEM : integer);
+
+    procedure CompareOneOrder(Order,Window : integer);
+    const
+       OpenMap = false;
+    var
+      Grid1,Grid2,Diff : integer;
+    begin
+         MDDef.SlopeCompute.LSQorder := Order;
+         MDDef.SlopeCompute.WindowRadius := Window;
+         TestEdgeEffect := true;
+         Grid2 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+         TestEdgeEffect := false;
+         Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+         Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,true,SlopeMethodName(MDDef.SlopeCompute));
+         DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
+
+         CloseSingleDEM(Grid1);
+         CloseSingleDEM(Grid2);
+    end;
+
+begin
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   MDDef.EvansApproximationAllowed := false;
+   MDDef.SlopeCompute.AlgorithmName := smLSQ;
+   CompareOneOrder(2,1);
+   CompareOneOrder(3,2);
+   CompareOneOrder(4,2);
+
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+end;
+
+
+
 procedure CompareWindowSizesForSlopeMap(DEM : integer);
 const
    NumWin = 9;
    Windows : array[1..NumWin] of integer = (1,2,3,5,10,15,20,25,30);
 var
-   i,NewGrid : integer;
+   i{,NewGrid} : integer;
    fName : PathStr;
-   OpenMap : boolean;
+   //OpenMap : boolean;
    Findings : tStringList;
    Fixed : int64;
-   Series : shortstring;
+   //Series : shortstring;
 
-
-   procedure ProcessNewGrid(Radius : integer);
-   var
-      Slope : integer;
-      n : int64;
-      sMean,sStd,rMean,rStd : float32;
-   begin
-      Slope := CreateSlopeMapPercent(false,DEM,fName,Radius);
-      DEMglb[Slope].ElevationStatistics(DEMglb[Slope].FullDEMGridLimits,sMean,sStd,n);
-      Findings.Add(DEMglb[Slope].AreaName + ',' + Series + ',' + RealToString(Radius * DEMglb[Slope].AverageSpace,-8,-2) + ',' + RealToString(sMean,-8,-2) + ',' + RealToString(sStd,-8,-2) );
-      CloseSingleDEM(Slope);
-   end;
+      procedure ProcessNewGrid;
+      var
+         Slope : integer;
+         n : int64;
+         sMean,sStd,rMean,rStd : float32;
+      begin
+         Slope := CreateSlopeMapPercent(false,DEM,fName);
+         DEMglb[Slope].ElevationStatistics(DEMglb[Slope].FullDEMGridLimits,sMean,sStd,n);
+         Findings.Add(DEMglb[Slope].AreaName + ',UTM,' + RealToString(MDDef.SlopeCompute.WindowRadius * DEMglb[Slope].AverageSpace,-8,-2) + ',' + RealToString(sMean,-8,-2) + ',' + RealToString(sStd,-8,-2) );
+         CloseSingleDEM(Slope);
+      end;
 
 
 begin
    SetColorForProcessing;
-   OpenMap := false;
+   SaveBackupDefaults;
+   //OpenMap := false;
    Findings := tStringList.Create;
    Findings.Add('NAME,SERIES,AVG_SPACE,AVG_SLOPE,STD_SLOPE');
 
    DEMGLb[DEM].MarkBelowMissing(1.0,Fixed,false);
 
-   Series := 'UTM';
+   //Series := 'UTM';
    for i := 1 to NumWin do begin
       fName := 'window_' + IntToStr(Windows[i]) + '_m';
       wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/' + IntToStr(NumWin));
-      ProcessNewGrid(Windows[i]);
+      MDDef.SlopeCompute.WindowRadius := Windows[i];
+      ProcessNewGrid;
    end;
 
    wmdem.SetPanelText(3,'');
@@ -564,6 +660,7 @@ begin
    fName := NextFileNumber(MDtempDir,'slope_window_sampler_','.dbf');
    Findings.SaveToFile(fName);
    StringList2CSVtoDB(Findings,fName);
+   RestoreBackupDefaults;
 end;
 
 
@@ -921,7 +1018,7 @@ end;
 procedure AllAspects;
  var
     rg : tThisBaseGraph;
-    fName : PathStr;
+    //fName : PathStr;
     BMPlist : tStringList;
     DEM : integer;
  begin
@@ -953,8 +1050,8 @@ var
          var
             SlopeAsp : tSlopeAspectRec;
          begin
-            MDDef.SlopeRegionRadius := BoxSize;
-            if DEMGlb[DEM].GetSlopeAndAspect(Col,Row,SlopeAsp) then begin
+            MDDef.SlopeCompute.WindowRadius := BoxSize;
+            if DEMGlb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
                Findings.Add(Location + ',' + IntToStr(BoxSize) + ',' + RealToString(BoxSize* DEMGlb[DEM].AverageYSpace,-12,-2) + ',' +
                      RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDirTrue,-8,2));
             end;
@@ -999,7 +1096,7 @@ var
           Row : integer;
        begin
           inc(RegionsDone);
-          MDDef.SlopeRegionRadius := BoxSize;
+          MDdef.SlopeCompute.WindowRadius := BoxSize;
           New(zvs);
           DEMGlb[CurDEM].SlopeMomentsWithArray(DEMGlb[CurDEM].FullDEMGridLimits, MomentVar,zvs^);
           ElevFiles.Add(SaveSingleValueSeries(MomentVar.npts,zvs^));
@@ -1012,8 +1109,8 @@ var
              LegendFiles.Add(GridForm.StringGrid1.Cells[RegionsDone,0]);
           end
           else begin
-             GridForm.StringGrid1.Cells[RegionsDone,0] := ShortSlopeMethodName(MDDef.SlopeAlgorithm);
-             LegendFiles.Add(ShortSlopeMethodName(MDDef.SlopeAlgorithm));
+             GridForm.StringGrid1.Cells[RegionsDone,0] := ShortSlopeMethodName(MDDef.SlopeCompute);
+             LegendFiles.Add(ShortSlopeMethodName(MDDef.SlopeCompute));
           end;
        end;
 
@@ -1042,7 +1139,7 @@ begin
    end
    else begin
       for Method:= FirstSlopeMethod to LastSlopeMethod do begin
-         MDDef.SlopeAlgorithm := Method;
+         MDDef.SlopeCompute.AlgorithmName := Method;
          MakeSlopeMap(0);
       end;
    end;
@@ -1490,10 +1587,10 @@ function SumDEMs(FirstDEM : integer; Merge : tDEMbooleanArray; NewName : shortst
 label
    MissingData;
 var
-   i,j,Col,Row : integer;
+   i,{j,}Col,Row : integer;
    Lat,Long : float64;
    z,z2 : float32;
-   IdenticalGrids : boolean;
+   //IdenticalGrids : boolean;
 begin
    {$IfDef RecordMapAlgebra} WriteLineToDebugFile('SumDEMs in'); {$EndIf}
    if OpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,InitDEMmissing) then begin
@@ -1821,7 +1918,7 @@ var
    EigenVectors,Correlations,VarCoVar   : tTrendMatrix;
    EigenValues   : tTrendVector;
    NPts : int64;
-   Value,Lat,Long,Mean1,Mean2,StdDev1,StdDev2    : float64;
+   Value,Lat,Long,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff    : float64;
    z : float32;
    FName,fName2,MGPath : PathStr;
    NewTable : tMyData;
@@ -1859,7 +1956,7 @@ begin
             VarTitle[i] := DEMGlb[MG.Grids[i]].AreaName;
             for j := 1 to MG.NumGrids do begin
                if (MG.Grids[j] <> 0) then begin
-                  CovariancesFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Npts,Correlations[i,j],VarCoVar[i,j],Mean1,Mean2,StdDev1,StdDev2);
+                  CovariancesFromTwoGrids(DEMGlb[MG.Grids[i]].FullDEMGridLimits,MG.Grids[i],MG.Grids[j],Npts,Correlations[i,j],VarCoVar[i,j],Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
                end;
             end;
          end;
@@ -2029,7 +2126,7 @@ end;
 
 
 
-function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64; NoteFailure : boolean = true) : boolean;
+function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;
 var
    Col,Row,xoff,yoff,i : integer;
    z1,z2 : float32;
@@ -2046,6 +2143,8 @@ begin
       sum[i] := 0;
       sp[i] := 0;
    end;
+   MeanDiff := 0;
+   MeanAbsDiff := 0;
 
    {$If Defined(RecordCovariance)}
       WriteLineToDebugFile('DEM1, ' + DEMglb[DEM1].KeyParams(true));
@@ -2073,6 +2172,8 @@ begin
                sp[2] := sp[2] + z2 * z2;
                SPc := SPc + z1 * z2;
                inc(NPts);
+               MeanDiff := MeanDiff + (z1 - z2);
+               MeanAbsDiff := MeanAbsDiff + abs(z1 - z2);
             end;
          end;
          inc(Row);
@@ -2087,6 +2188,8 @@ begin
       StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
       Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
       r := Covar / StdDev1 / StdDev2;
+      MeanDiff := MeanDiff / NPts;
+      MeanAbsDiff := MeanAbsDiff / Npts;
 
       if IsNAN(r) then begin
          {$If Defined(RecordCovarianceFail)} HighLightLineToDebugFile('CovariancesFromTwoGrids is Nan'); {$EndIf}
@@ -2109,7 +2212,7 @@ begin
    end;
 end;
 
-
+(*
 function MeanAbsoluteDeviationFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var MAD : float64; NoteFailure : boolean = true) : boolean;
 var
    Col,Row,xoff,yoff,i : integer;
@@ -2163,7 +2266,7 @@ begin
       {$EndIf}
    end;
 end;
-
+*)
 
 
 {$IfDef ExGeoStats}
@@ -2244,20 +2347,20 @@ var
                            end;
                ElevSlope : begin
                               Result.GraphDraw.MaxHorizAxis := MaxSlope + 5;
-                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName(MDDef.SlopeAlgorithm)+' (%)';
+                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName(MDDef.SlopeCompute)+' (%)';
                            end;
                ElevSlopeDeg : begin
                               Result.GraphDraw.MaxHorizAxis := arcTan(0.01*MaxSlope) / DegToRad;
-                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName( MDDef.SlopeAlgorithm)+' (°)';
+                              Result.GraphDraw.HorizLabel := 'Avg Slope ' + SlopeMethodName( MDDef.SlopeCompute)+' (°)';
                            end;
                SlopeFreq : begin
                              Result.GraphDraw.MaxHorizAxis := MaxSlopeCount;
                              Result.GraphDraw.MinVertAxis := 0;
                              Result.GraphDraw.MaxVertAxis := MaxSlopeValue;
-                             Result.GraphDraw.VertLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeAlgorithm) + ' (%)';
+                             Result.GraphDraw.VertLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeCompute) + ' (%)';
                            end;
                CumSlope   : begin
-                               Result.GraphDraw.HorizLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeAlgorithm) + ' (%)';
+                               Result.GraphDraw.HorizLabel := 'Slope ' + SlopeMethodName(MDDef.SlopeCompute) + ' (%)';
                                Result.GraphDraw.VertLabel := 'Cumulative Percentage Less Steep';
                                Result.GraphDraw.VertAxisFunct := NInv;
                                Result.GraphDraw.VertAxisFunctionType := CumulativeNormalAxis;
@@ -2452,7 +2555,7 @@ begin {proc ElevationSlopePlot}
          {$IfDef RecordElevationSlopePlotAll} WriteLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
          j := 1;
          while j <= (DEMGlb[CurDEM].DEMheader.NumRow - 2) do begin
-            if DEMGlb[CurDEM].GetSlopeAndAspect(x,j,SlopeAspectRec) and DEMGlb[CurDEM].RoughnessFromSlopeSTD(x,j,MDDef.RoughnessBox,Ruff1) then begin
+            if DEMGlb[CurDEM].GetSlopeAndAspect(MDDef.SlopeCompute,x,j,SlopeAspectRec) and DEMGlb[CurDEM].RoughnessFromSlopeSTD(x,j,MDDef.RoughnessBox,Ruff1) then begin
                if (MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then begin
                   AspectStats.AddPoint(SlopeAspectRec);
                end;
@@ -2619,7 +2722,8 @@ var
    SSOvars : tSSOvars;
    i,ng       : Integer;
    MenuStr : ShortString;
-   Results,AllResults : tStringList;
+   //Results,
+   AllResults : tStringList;
    AspName,NetName : PathStr;
    AspSL,NetSL : tstringList;
    Success : boolean;
@@ -2709,7 +2813,7 @@ procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; 
 var
    {$IfDef AllowCurvatureStatistics} PlanCurvFiles,ProfCurvFiles, {$EndIf}
    LegendFiles,ElevFiles,SlopeFiles,RoughFiles : tStringList;
-   DEMsDone,OnLine,LinesPer : integer;
+   DEMsDone,OnLine{,LinesPer} : integer;
    GridForm : TGridForm;
    MaxSlope,MinElev,MaxElev,MaxRough : float64;
    ElevDist,SlopeDist,RufDist : tStringList;
@@ -2719,11 +2823,12 @@ var
       label
          Done;
       var
-         Col,Row,Incr,RuffGrid  : integer;
-         Ruff1 : float32;
-         Slope : float64;
+         //Col,Row,
+         Incr{,RuffGrid}  : integer;
+        // Ruff1 : float32;
+         //Slope : float64;
          MomentVar : tMomentVar;
-         zvs,zvs2 : ^bfarray32;
+         zvs{,zvs2} : ^bfarray32;
 
                function MomentResults : shortstring;
                begin
@@ -2933,7 +3038,7 @@ begin {AspectDistributionByVATCategory}
    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
       if (Row mod 25 = 0) then UpdateProgressBar((Row-GridLimits.YGridLow)/(GridLimits.YGridHigh-GridLimits.YGridLow));
       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-          if DEMGlb[WhichDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+          if DEMGlb[WhichDEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
              if (MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then begin
                 if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[1] then AspectStats[1].AddPoint(SlopeAspectRec)
                 else if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[2] then AspectStats[2].AddPoint(SlopeAspectRec)
@@ -3019,7 +3124,7 @@ begin
    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
       if (Row mod 25 = 0) then UpdateProgressBar((Row-GridLimits.YGridLow)/(GridLimits.YGridHigh-GridLimits.YGridLow));
       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-          if DEMGlb[WhichDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+          if DEMGlb[WhichDEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
              if (MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then begin
                 if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[1] then AspectStats[1].AddPoint(SlopeAspectRec)
                 else if SlopeAspectRec.SlopePercent < MdDef.GeomorphSlopeCut[2] then AspectStats[2].AddPoint(SlopeAspectRec)
@@ -3084,14 +3189,14 @@ begin
    TheBitmaps := tStringList.Create;
    i := 0;
    for Method:= FirstSlopeMethod to LastSlopeMethod do begin
-      MDDef.SlopeAlgorithm := Method;
+      MDDef.SlopeCompute.AlgorithmName := Method;
       New(AspectFreq);
       for j := 0 to 360 do AspectFreq^[j] := 0;
       StartProgress('Aspects');
       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
          if (Col mod 25 = 0) then UpdateProgressBar((Col-GridLimits.XGridLow)/(GridLimits.XGridHigh-GridLimits.XGridLow));
          for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-             if DEMGlb[WhichDEM].GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+             if DEMGlb[WhichDEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
                  if (not MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then inc(AspectFreq^[round(SlopeAspectRec.AspectDirTrue)]);
              end;
          end;
@@ -3104,7 +3209,7 @@ begin
       RoseGraph.ClientHeight := 400;
       RoseGraph.ClientWidth := 400;
       RoseGraph.RoseColor := WinGraphColors[i];
-      RoseGraph.DrawAspectRose(AspectFreq^,SlopeMethodName(MDDef.SlopeAlgorithm));
+      RoseGraph.DrawAspectRose(AspectFreq^,SlopeMethodName(MDDef.SlopeCompute));
 
       k := 0;
       for j := 0 to 360 do inc(k,AspectFreq^[j]);
@@ -3147,14 +3252,14 @@ function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer;
 type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
-  r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
+  r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64;
   i,n,j : Integer;
   NPts : int64;
   Findings : tStringList;
   MenuStr : ansistring;
   Corrs : ^tCorrs;
   Metrics : tStringList;
-  a,b,rf : float32;
+  //a,b,rf : float32;
   Mean,Std : float32;
   TStr : shortstring;
   Graph : tThisBaseGraph;
@@ -3189,8 +3294,23 @@ begin
                end
                else begin
                   {$IfDef RecordGridCorrrelationsFull} WriteLineToDebugFile(TStr); {$EndIf}
+                  if CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j],NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff) then begin
+                     if (Which = gcmR) then begin
+                        Corrs^[i,j] := r;
+                        Corrs^[j,i] := r;
+                     end
+                     else if (Which = gcmMAbD) then begin
+                        Corrs^[i,j] := MeanAbsDiff;
+                        Corrs^[j,i] := MeanAbsDiff;
+                     end
+                     else begin
+                        Corrs^[i,j] := MeanDiff;
+                        Corrs^[j,i] := -MeanDiff;
+                     end;
+
+(*
                   if (Which = gcmR) then begin
-                     if CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j],NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2) then begin
+                     if CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j],NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff) then begin
                         Corrs^[i,j] := r;
                         Corrs^[j,i] := r;
                      end;
@@ -3209,6 +3329,7 @@ begin
                         Corrs^[j,i] := -Graph.GraphComputedMAvD;
                      end;
                      Graph.Destroy;
+*)
                   end;
                end;
             end;
@@ -3406,7 +3527,7 @@ end {proc SemiVariogram};
 
 function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
 var
-   Incr,Col,Row,NPts,Prog : integer;
+   Incr,Col,Row,NPts{,Prog} : integer;
    Lat,Long : float64;
    XGrid,YGrid : float32;
    rFile : file;
@@ -3441,16 +3562,16 @@ begin
       Incr := 1;
       while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
       NPts := 0;
-      Prog := 0;
+      //Prog := 0;
       {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram start scatter, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
       StartProgress('Scatter plot');
       Col := GridLimits.XGridLow;
       while (Col <= GridLimits.XGridHigh) do begin
-         if (Prog mod 10 = 0) then begin
+         if (Col mod 10 = 0) then begin
             UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
             {$IfDef RecordSingleGridScatterGramFull} WriteLineToDebugFile('Col=' + IntToStr(Col)); {$EndIf}
          end;
-         Inc(Prog);
+         //Inc(Prog);
          Row := GridLimits.YGridLow;
          while (Row <= GridLimits.YGridHigh) do begin
             if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
@@ -3468,10 +3589,8 @@ begin
 
       EndProgress;
       if (NPts > 0) then begin
-         //if (not Result.Visible) then begin
-            Result.AutoScaleAndRedrawDiagram;
-            Result.AddCorrelationToCorner;
-         //end;
+         Result.AutoScaleAndRedrawDiagram;
+         Result.AddCorrelationToCorner;
       end
       else begin
          Result.Close;

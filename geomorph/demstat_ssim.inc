@@ -118,11 +118,11 @@ const
   c2 = 0.03;    //C2 := sqr(0.03 * MaxIntensity);
   c3 = 0.015;   //C3 := c2 / 2;
 var
-  r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
+  r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64;
   NPts : int64;
 begin
    {$IfDef RecordSSIMFullTooMuch} WriteLineToDebugFile('ComputeSSIM '  + DEMGlb[DEM1].AreaName + ',' + DEMGlb[DEM2].AreaName); {$EndIf}
-   Result := CovariancesFromTwoGrids(gl1,DEM1,DEM2,NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2,false);  //do not record failures, there could be a huge number if grid has voids
+   Result := CovariancesFromTwoGrids(gl1,DEM1,DEM2,NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff,false);  //do not record failures, there could be a huge number if grid has voids
    if Result then begin
       {$IfDef RecordSSIMFullTooMuch} WriteLineToDebugFile('Covariance done, covar=' + RealToString(Covar,-12,2)); {$EndIf}
       Luminance := (2 * Mean1 * Mean2 + C1*SSIM_fudge) / (Sqr(Mean1) + Sqr(Mean2) + C1*SSIM_fudge);
@@ -234,12 +234,12 @@ end {function MakeSSIMMap};
 
     function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
     var
-       Mean1,Mean2,StdDev1,StdDev2,r,covar : float64;
+       Mean1,Mean2,StdDev1,StdDev2,r,covar,MeanDiff,MeanAbsDiff : float64;
        NPts : int64;
     begin
        if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
           {$IfDef TrackSWcorner} DEMGlb[Grid1].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); DEMGlb[Grid2].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); {$EndIf}
-          if CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2,Npts,r,covar,Mean1,Mean2,StdDev1,StdDev2) then begin
+          if CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2,Npts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff) then begin
              Result := 1-sqr(r);
              {$If Defined(TrackCovariance)} WriteLineToDebugFile('FUV=' + RealToString(Result,10,8) + '  ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
           end

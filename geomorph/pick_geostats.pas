@@ -197,7 +197,7 @@ uses
    Moment_Opts,
    Slope_Graph_opts,
    DEM_hist_opts,
-   demslopecompare,
+   //demslopecompare,
    gdal_tools,
    Netopts,
    MD_use_tools,
@@ -317,7 +317,7 @@ var
 begin
    DEMDef_routines.SaveBackupDefaults;   //so we save slope region size
    for i := FirstSlopeMethod to LastSlopeMethod do begin
-      MDdef.SlopeAlgorithm := i;
+      MDDef.SlopeCompute.AlgorithmName := i;
       CreateSlopeMap(CurDEM);
    end;
    DEMDef_routines.RestoreBackupDefaults;  //to restore slope region size
@@ -488,7 +488,8 @@ end;
 
 
 procedure TPickGeoStat.BitBtn5Click(Sender: TObject);
-var
+begin
+(*
    Col,Row,DeltaSlope : integer;
    s1 : float64;
    SlopeCompareOptions    : TSlopeCompareOptions;
@@ -506,10 +507,10 @@ begin
      for Col := 0 to pred(DEMGlb[1].DEMheader.NumCol) do begin
         if (Col mod 50 = 0) then UpdateProgressBar(Col/ pred(DEMGlb[CurDEM].DEMheader.NumCol));
         for Row := 0 to pred(DEMGlb[1].DEMheader.NumRow) do begin
-           MDdef.SlopeAlgorithm := SlopeMethod1;
-           if DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlpAsp1) then begin
-              MDdef.SlopeAlgorithm := SlopeMethod2;
-              if DEMGlb[CurDEM].GetSlopeAndAspect(Col,Row,SlpAsp2) then begin
+           MDDef.SlopeCompute.AlgorithmName := SlopeMethod1;
+           if DEMGlb[CurDEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlpAsp1) then begin
+              MDDef.SlopeCompute.AlgorithmName := SlopeMethod2;
+              if DEMGlb[CurDEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlpAsp2) then begin
                  s1 := (SlpAsp1.SlopePercent-SlpAsp2.SlopePercent);
                  if (RadioGroup1.ItemIndex = 0) then s1 := abs(s1);
                  DEMGlb[DeltaSlope].SetGridElevation(Col,Row,s1);
@@ -523,8 +524,7 @@ begin
    end;
    SlopeCompareOptions.Free;
    RestoreBackupDefaults;
-end;
-
+*)end;
 
 procedure TPickGeoStat.DifferenClick(Sender: TObject);
 begin
@@ -562,8 +562,8 @@ end;
 
 procedure TPickGeoStat.Button10Click(Sender: TObject);
 begin
-   PickSlopeAspectMethod('',MDdef.SlopeAlgorithm);
-   Label2.Caption := SlopeMethodName(MDdef.SlopeAlgorithm);
+   PickSlopeAspectMethod('',MDDef.SlopeCompute.AlgorithmName);
+   Label2.Caption := SlopeMethodName(MDDef.SlopeCompute);
 end;
 
 procedure TPickGeoStat.Button11Click(Sender: TObject);
@@ -738,7 +738,7 @@ begin
    Edit2.Text := RealToString(MDDef.NetDef.MaxContourConcentration,-12,-2);
 
    PageControl1.ActivePage := TabSheet1;
-   Label2.Caption := SlopeMethodName(MDdef.SlopeAlgorithm);
+   Label2.Caption := SlopeMethodName(MDDef.SlopeCompute);
    GroupTitle := '';
    InitialDEMs := tStringList.Create;
    for j := 1 to MaxDEMDataSets do if ValidDEM(j) then InitialDEMs.Add(IntToStr(j));

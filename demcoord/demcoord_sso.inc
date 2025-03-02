@@ -336,7 +336,7 @@ begin {tDEMDataSet.SSOComputations}
          Row := GridLimits.YGridLow;
          while Row <= GridLimits.YGridHigh do begin
             if (FilterGrid = 0) or (GetElevMetersFromSecondDEM(false,FilterGrid,Col,Row,zf) and (round(zf) = FilterValue)) then begin
-               if GetSlopeAndAspect(Col,Row,SlopeAspectRec) then begin
+               if GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
                   if (SlopeAspectRec.SlopeDegree> SSOvars.MaxSlope) then SSOvars.MaxSlope := SlopeAspectRec.SlopeDegree;
                   PetMath.CompareValueToExtremes(SlopeAspectRec.z,MinZ,MaxZ);
                   SumSlope := SumSlope + SlopeAspectRec.Slope;
@@ -459,7 +459,7 @@ end {tDEMDataSet.SSOComputations};
                      s2 : VectorType;
                      SlopAsp : tSlopeAspectRec;
                   begin
-                     if GetSlopeAndAspect(aCol,aRow,SlopAsp) then begin
+                     if GetSlopeAndAspect(MDDef.SlopeCompute,aCol,aRow,SlopAsp) then begin
                         PetMath.CompareValueToExtremes(SlopAsp.z,MinZ,MaxZ);
                         inc(NumPts);
                         S2[1] := sinDeg(SlopAsp.SlopeDegree) * sinDeg(SlopAsp.AspectDirTrue);

@@ -137,7 +137,6 @@ type
    tWordRow = array[0..DEMDefs.MaxColsInRAM] of word;
    tByteRow = array[0..DEMDefs.MaxColsInRAM] of byte;
 type
-   //tDEMBooleans = array[1..MaxDEMDataSets] of boolean;
    tvdShift = (vdWGS84toEGM2008,vdEGM2008toWGS84,vdEGM96toEGM2008);
 
 
@@ -156,6 +155,7 @@ type
       tRiverNetwork = array[1..MaxRiverBasinNodes] of tRiverNode;
       pRiverNetwork = ^tRiverNetwork;
 {$EndIf}
+
 
 {$IfDef ExPointCloud}
 {$Else}
@@ -429,7 +429,35 @@ const
    TrendSurfacePointsRequired : array[1..4] of byte = (3,6,10,15);
    TrendSurMultiples : array[1..MaxCoefs] of shortstring = ('','x','y','x^2','x*y','y^2','x^3','x^2*y','x*y^2','y^3','x^4','x^3*y','x^2*y^2','x*y^3','y^4');
 
+type
+   tSlopeAspectRec = record
+       z,znw,zw,zsw,zn,zs,zne,ze,zse,
+       dzdx,dzdy,     //first order partial derivatives
+       dxx,dxy,dyy,   //second order partial derivatives
+       dxxx,dyyy,dxxy,dxyy,    //third order partial derivatives
+       {$IfDef IlichEquations} a,b,c,d,e,f, {$EndIf}  //LSQ surface constants
+       dx,dy,dia_space,
+       GridTrueAngle,
+       Slope,
+       SlopePercent,
+       SlopeDegree,
+       AspectDirTrue,AspectDirGrid : float32;
+       B : tTrendVector;   //array[1..MaxCoefs] of float32;  //for up to 4th order trend surface, to write out equations
+       Dir : tCompassDirection;
+   end;
 
+   tSlopeCurveCompute = record
+       AlgorithmName,
+       WindowRadius,
+       LSQorder            : byte;
+       RequireFullWindow,
+       UseAllPts           : boolean;
+   end;
+
+const
+   NumCurvatures = 10;
+   CurvatureNames : array[1..NumCurvatures] of shortstring = ('profile_curvature_','tangential_curvature_','plan_curvature_','flow_line_curvature_', 'contour_torsion_',
+                                                              'max_curvature_','min_curvature_','Gaussian_curvature_', 'mean_curvature_','Casorati_curvature_');
 
 type
    tCanEditGIS = (egisNever,egisSometimes,egisAlways);
@@ -481,21 +509,6 @@ type
       end;
   {$EndIf}
 
-   tSlopeAspectRec = record
-       z,znw,zw,zsw,zn,zs,zne,ze,zse,
-       dzdx,dzdy,     //first order partial derivatives
-       dxx,dxy,dyy,   //second order partial derivatives
-       a,b,c,d,e,f,   //LSQ surface constants
-       dx,dy,dia_space,
-       GridTrueAngle,
-       Slope,
-       SlopePercent,
-       SlopeDegree,
-       AspectDirTrue,AspectDirGrid : float32;
-       Coefs : array[1..MaxCoefs] of float32;  //for up to 4th order trend surface, to write out equations
-       Dir : tCompassDirection;
-   end;
-
 
    tLocalOptimaOpts = record
       ColInc,
@@ -540,7 +553,7 @@ type
         FirstZigDistance,LaterZigDistance,
         FirstBearingPoint,SecondBearingPoint,
         FirstSlopePoint,SecondSlopePoint,
-        SeekingCenterMeshGrid,
+        //SeekingCenterMeshGrid,
         SeekingFlyThroughRoute,
         SeekingPerspective,SeekingSecondPerspective,
 
@@ -771,7 +784,7 @@ const
    //unusedVenusD = 13;
    unusedETRs89d = 14;
 
-   unusedDigitizeDatumName : array[0..14] of ShortString = ('','','','','','','','','','','','','','','');
+   //unusedDigitizeDatumName : array[0..14] of ShortString = ('','','','','','','','','','','','','','','');
 
    mhsSingleDirection = 0;
    mhsThreeFixed = 1;
@@ -1532,7 +1545,7 @@ type
 
        {$IfDef ExDrainage}
        {$Else}
-           DrainageSlopeAlgorithm : byte;
+           //DrainageSlopeAlgorithm : tSlopeCurveCompute;
            DrainageArrowLength,
            DrainageArrowWidth,
            DrainageVectAvgArrowLength,
@@ -1540,8 +1553,10 @@ type
            DrainageArrowSeparation : byte;
            DrainageArrowColor : tPlatformColor;
            DrainageVectAvgArrowColor : tPlatformColor;
+           DrainageMethod,
            DrainageSeedRadius : byte;
-           DrainagePointSlope,DrainageVectorAverage : boolean;
+           //DrainagePointSlope,
+           DrainageVectorAverage : boolean;
        {$EndIf}
 
        {$IfDef AllowGeomorphometry}
@@ -2291,7 +2306,7 @@ type
        WaveHtValuesNeeded : int16;
        ElevHistBinSize,SlopeHistBinSize,
        ConvexCut,RoughnessCut,SlopeCut1,SlopeCut2,SlopeCut3 : float32;
-       SlopeLSQorder,SlopeLSQradius : byte;
+       //SlopeLSQorder,SlopeLSQradius : byte;
        EvansApproximationAllowed : boolean;
        IwashPikeCats : byte;
        OpennessHt : byte;
@@ -2692,11 +2707,12 @@ type
 
        OpenMultipleVectorMaps : boolean;
 
-       SlopeAlgorithm     : byte;
+       SlopeCompute,
+       CurveCompute : tSlopeCurveCompute;
        CD2 : boolean;
-       AspectRegionSize,
-       CurvatureRegionRadius,
-       SlopeRegionRadius : int32;
+       AspectRegionSize : int32;
+       //CurvatureRegionRadius,
+       //SlopeRegionRadius : int32;
        NeedFullSlopeWindows : boolean;
 
        DeleteAuxTiffFiles : boolean;

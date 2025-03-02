@@ -14913,7 +14913,7 @@ var
    Lat,Long : float64;
 begin
    if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
-      DEMGlb[GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap].SlopeMethodsReportFromLatLong(lat,Long);
+      SlopeMethodsReportFromLatLong(GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap,lat,Long);
    end;
 end;
 

@@ -4,7 +4,7 @@
 {https://www.delphitools.info/2024/09/01/exploring-3d-point-clouds-for-fmx/}
 {https://github.com/EricGrange}
 
-{$Define Record fmxu_pointcloud}
+{$Define Recordfmxu_pointcloud}
 
 unit FPointCloud;
 
@@ -72,7 +72,7 @@ implementation
 {$R *.fmx}
 
 uses
-   Petmar,Petmar_types;
+   Petmar,Petmar_types,DEMDefs;
 
 
 
@@ -80,13 +80,13 @@ procedure Startfmxu_point_cloud_viewer(FileList : tStringList);
 var
    PointCloudForm : TPointCloudForm;
 begin
-   {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('Startfmxu_point_cloud_viewer in'); {$EndIf}
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('Startfmxu_point_cloud_viewer in'); {$EndIf}
    RegisterDX11ContextU;  //has to be done before the form creation
-   {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('DLL registered'); {$EndIf}
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('DLL registered'); {$EndIf}
    PointCloudForm := TPointCloudForm.Create(Application);
    PointCloudForm.LoadClouds(FileList);
    PointCloudForm.Show;
-   {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('Startfmxu_point_cloud_viewer out'); {$EndIf}
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('Startfmxu_point_cloud_viewer out'); {$EndIf}
 end;
 
 
@@ -94,6 +94,7 @@ procedure TPointCloudForm.AutoCenterAndScale(Cloud : TPointCloud3D);
 begin
    var bary := BufferBarycenter(Cloud.Points);
    var factor := 20 / BufferAverageDistance(Cloud.Points, bary);
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.AutoCenterAndScale, factor=' + RealToString(factor,-12,-4)); {$EndIf}
    BufferOffsetAndScale(Cloud.Points, -bary, factor);
    Cloud.UpdatePoints;
 end;
@@ -101,20 +102,12 @@ end;
 procedure TPointCloudForm.LoadClouds(FileList : tStringList);
 
       procedure LoadFromMICRODEMxyzi(fName : String; var cloud : TPointCloud3D);
-      const
-         MaxPts = 48000000;
-      type
-         tPointXYZI = record
-             x,y,z : double;
-             int,int2,int3 : byte;
-         end;
-         tPointXYZIArray = array[0..MaxPts] of tPointXYZI;
       var
          Points : ^tPointXYZIArray;
          tfile : File;
          Pts : integer;
       begin
-           {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('LoadFromMICRODEMxyzi in ' + fName); {$EndIf}
+           {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('LoadFromMICRODEMxyzi in ' + fName); {$EndIf}
            if FileExists(fName) then begin
               Cloud := TPointCloud3D.Create(Self);
               Cloud.Parent := Viewport3D1;
@@ -125,25 +118,29 @@ procedure TPointCloudForm.LoadClouds(FileList : tStringList);
               new(Points);
               BlockRead(tfile,Points^,MaxPts,Pts);
               CloseFile(tFile);
-              {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('Read, pts=' + IntToStr(Pts)); {$EndIf}
+              {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('Read, pts=' + IntToStr(Pts)); {$EndIf}
               cloud.Points.Length := Pts;
-               for var i := 0 to pred(Pts) do begin
-                  cloud.Points.Vertices[i] := Point3D(Points^[i].y,Points^[i].x,-Points^[i].z);
+              for var i := 1 to Pts do begin
+                  cloud.Points.Vertices[pred(i)] := Point3D(Points^[i].y,Points^[i].x,-Points^[i].z);
                   var c : TAlphaColorRec;
                   c.R := Points^[i].int;
                   c.G := Points^[i].int2;
                   c.B := Points^[i].int3;
                   c.A := 1;
-                  cloud.Points.Color0[i] := c.Color;
-               end;
+                  cloud.Points.Color0[pred(i)] := c.Color;
+              end;
               Dispose(Points);
+              {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('LoadFromMICRODEMxyzi out, Pt=' + IntToStr(Pts)); {$EndIf}
+           end
+           else begin
+              {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('LoadFromMICRODEMxyzi fail for ' + fName); {$EndIf}
            end;
-           {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('LoadFromMICRODEMxyzi out'); {$EndIf}
       end;
 
 var
    i : integer;
 begin
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.LoadClouds in'); {$EndIf}
    for i := 0 to pred(FileList.Count) do begin
       LoadFromMICRODEMxyzi(FileList.Strings[i],FPointCloud[succ(i)]);
    end;
@@ -151,16 +148,17 @@ begin
    CBShape.ItemIndex := Ord(pcsPoint);
    CTBPointSizeChangeTracking(nil);
    CBShapeChange(nil);
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.LoadClouds out'); {$EndIf}
 end;
 
 
 
 procedure TPointCloudForm.FormCreate(Sender: TObject);
 begin
-   {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.FormCreate in'); {$EndIf}
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.FormCreate in'); {$EndIf}
    Application.OnIdle := OnApplicationIdle;
    FRenderTicks.Start;
-   {$IfDef Record fmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.FormCreate out'); {$EndIf}
+   {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.FormCreate out'); {$EndIf}
 end;
 
 procedure TPointCloudForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
@@ -251,8 +249,7 @@ begin
    FRunningFPS := FRunningFPS * 0.5  + fps * 0.5;
 
    Caption := Format('%.1f ms paint (%.1f FPS) / %.1f actual FPS',
-      [ Viewport3D1.LastPaintSeconds*1000, paintFPS, FRunningFPS, SmartNumberPoints(FPointCloud[1].Points.Length) ]
-   );
+      [ Viewport3D1.LastPaintSeconds*1000, paintFPS, FRunningFPS, SmartNumberPoints(FPointCloud[1].Points.Length) ]  );
 end;
 
 

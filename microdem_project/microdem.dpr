@@ -79,7 +79,6 @@ uses
   plss_converter in '..\common_code\plss_converter.pas' {PLSSConvertForm},
   GeologicTimeScale in '..\common_code\GeologicTimeScale.pas',
   gps_strings in '..\common_code\gps_strings.pas',
-  drainage_opts in '..\common_code\drainage_opts.pas' {drain_opt_form},
   get_angle in '..\common_code\get_angle.pas' {get_angle_form},
   PETDATE in '..\common_code\PETDATE.PAS' {GetDateForm},
   message_continue in '..\common_code\message_continue.pas' {mess_cont_form},
@@ -161,7 +160,6 @@ uses
   tissot in '..\common_code\tissot.pas' {TissotOpts},
   demcurvature in '..\common_code\demcurvature.pas' {CurvatureForm},
   demfabricregion in '..\common_code\demfabricregion.pas' {FabricOptions},
-  demslopecompare in '..\common_code\demslopecompare.pas' {SlopeCompareOptions},
   demslped in '..\common_code\demslped.pas' {SlopeCategoryEditor},
   dem_digit_opts in '..\common_code\dem_digit_opts.pas' {DEMDigitOptions},
   dem_grid_diffs in '..\common_code\dem_grid_diffs.pas' {GridDiffForm},
@@ -353,7 +351,8 @@ uses
   three_point_problem in '..\misc\geology\three_point_problem.pas' {ThreePointer},
   demlos_draw in '..\viewer_3d\demlos_draw.pas',
   demix_neo_test_area in '..\demix\demix_neo_test_area.pas' {New_area_evals_form},
-  correlation_matrix_options in '..\set_options\correlation_matrix_options.pas' {CorrelationMatrixOptionsForm};
+  correlation_matrix_options in '..\set_options\correlation_matrix_options.pas' {CorrelationMatrixOptionsForm},
+  drainage_opts in '..\common_code\drainage_opts.pas' {drain_opt_form};
 
 {$R *.RES}
 

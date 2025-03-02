@@ -32,8 +32,6 @@ type
     Image1: TImage;
     Button11: TButton;
     Label6: TLabel;
-    Edit1: TEdit;
-    Label25: TLabel;
     Label1: TLabel;
     Edit2: TEdit;
     CheckBox1: TCheckBox;
@@ -49,12 +47,13 @@ type
     ClipboardSpeedButton: TSpeedButton;
     BitBtn2: TBitBtn;
     CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
-    procedure Edit1Change(Sender: TObject);
+    //procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
@@ -122,15 +121,15 @@ begin
       mtSlopePastel       : RadioGroup1.ItemIndex := 5;
       mtSlopeGoNoGo       : RadioGroup1.ItemIndex := 6;
    end;
-   Label6.Caption := SlopeMethodName(MDDef.SlopeAlgorithm);
-   Edit1.Text := IntToStr(MDdef.SlopeRegionRadius);
+   Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
+   //Edit1.Text := IntToStr(MDdef.SlopeCompute.WindowRadius);
    Edit2.Text := IntToStr(MDdef.MaxSlopeOnMaps);
    Button11.Enabled := (MDDef.ProgramOption = ExpertProgram) or MDDef.ShowGeomorphometry;
-   Edit1.Enabled := Button11.Enabled;
+   //Edit1.Enabled := Button11.Enabled;
    CheckBox1.Checked := MDDef.QuickMapRedraw;
    CheckBox1.Checked := MDDef.NeedFullSlopeWindows;
-   RadioGroup2.ItemIndex := pred(MDDef.SlopeLSQorder);
-   RadioGroup3.ItemIndex := pred(MDDef.SlopeLSQradius);
+   RadioGroup2.ItemIndex := pred(MDDef.SlopeCompute.LSQorder);
+   RadioGroup3.ItemIndex := pred(MDDef.SlopeCompute.WindowRadius);
    if (MapOwner = nil) then begin
       CheckBox1.Visible := false;
       BitBtn1.Visible := false;
@@ -146,16 +145,16 @@ var
    DEM : integer;
 begin
    DEM := CreateSlopeMapPercent(false,MapOwner.MapDraw.DEMonMap);
-   DEMglb[DEM].AreaName := DEMglb[MapOwner.MapDraw.DEMonMap].AreaName + '_' + SlopeMethodName(MDDef.SlopeAlgorithm);
+   DEMglb[DEM].AreaName := DEMglb[MapOwner.MapDraw.DEMonMap].AreaName + '_' + SlopeMethodName(MDDef.SlopeCompute);
    CreateDEMSelectionMap(DEM,true,true,MDDef.DefSlopeMap);
 end;
 
 procedure TSlopeOptForm.Button11Click(Sender: TObject);
 begin
-   PickSlopeAspectMethod('',MDDef.SlopeAlgorithm);
-   Label6.Caption := SlopeMethodName(MDDef.SlopeAlgorithm);
-   RadioGroup2.Enabled := MDDef.SlopeAlgorithm = smLSQ;
-   RadioGroup3.Enabled := MDDef.SlopeAlgorithm = smLSQ;
+   PickSlopeAspectMethod('',MDDef.SlopeCompute.AlgorithmName);
+   Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
+   RadioGroup2.Enabled := MDDef.SlopeCompute.AlgorithmName = smLSQ;
+   RadioGroup3.Enabled := MDDef.SlopeCompute.AlgorithmName = smLSQ;
    DrawPreview;
 end;
 
@@ -190,7 +189,7 @@ begin
        for yp := 0 to 99 do begin
           p0 := Bitmap.ScanLine[yp];
           for xp := 0 to 99 do begin
-             if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(xc+xp,yc-yp,SlopeAspectRec,false,false) then begin
+             if DEMGlb[MapOwner.MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,xc+xp,yc-yp,SlopeAspectRec,false,false) then begin
                 SlopeVal := round(SlopeAspectRec.SlopePercent);
                 if (SlopeVal > 100) then SlopeVal := 100;
                 p0[xp] := SlopeColorChoices[SlopeVal];
@@ -202,18 +201,13 @@ begin
        if MDdef.QuickMapRedraw then begin
           {$If Defined(RecordDrawMap)} MapStopwatch := TStopwatch.StartNew; {$EndIf}
           MapOwner.DoBaseMapRedraw;
-          {$If Defined(RecordDrawMap)} WriteLineToDebugFile('Draw ' + SlopeMethodName(MDDef.SlopeAlgorithm)  + '  ' + RealToString(MapStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+          {$If Defined(RecordDrawMap)} WriteLineToDebugFile('Draw ' + SlopeMethodName(MDDef.SlopeCompute)  + '  ' + RealToString(MapStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
        end;
        NeedRedraw := false;
    end;
 end;
 
 
-procedure TSlopeOptForm.Edit1Change(Sender: TObject);
-begin
-   CheckEditString(Edit1.Text,MDdef.SlopeRegionRadius);
-   NeedRedraw := true;
-end;
 
 
 procedure TSlopeOptForm.Edit2Change(Sender: TObject);
@@ -259,18 +253,20 @@ end;
 
 procedure TSlopeOptForm.RadioGroup2Click(Sender: TObject);
 begin
-    MDDef.SlopeLSQorder := succ(RadioGroup2.ItemIndex);
+    MDDef.SlopeCompute.LSQorder := succ(RadioGroup2.ItemIndex);
     //if user wants 3rd or 4th order, it has to be 5x5 window
-    if (MDDef.SlopeLSQorder in [3,4]) and (MDDef.SlopeLSQradius < 2) then RadioGroup3.ItemIndex := 1
+    if (MDDef.SlopeCompute.LSQorder in [3,4]) and (MDDef.SlopeCompute.WindowRadius < 2) then RadioGroup3.ItemIndex := 1
     else DrawPreview;
+    Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
 end;
 
 procedure TSlopeOptForm.RadioGroup3Click(Sender: TObject);
 begin
-   MDDef.SlopeLSQradius := succ(RadioGroup3.ItemIndex);
+   MDDef.SlopeCompute.WindowRadius := succ(RadioGroup3.ItemIndex);
    //if user wants the 3x3 window, it has to be a 2d order
-   if  (MDDef.SlopeLSQradius in [1]) and (MDDef.SlopeLSQorder in [3,4]) then RadioGroup2.ItemIndex := 0
+   if  (MDDef.SlopeCompute.WindowRadius in [1]) and (MDDef.SlopeCompute.LSQorder in [3,4]) then RadioGroup2.ItemIndex := 0
    else DrawPreview;
+   Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
 end;
 
 procedure TSlopeOptForm.RadioGroup4Click(Sender: TObject);

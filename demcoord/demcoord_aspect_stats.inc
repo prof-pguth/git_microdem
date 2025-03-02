@@ -76,7 +76,7 @@ begin
    for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
       for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
          if DEMGlb[DEM].ElevationDEM then begin
-            if DEMGlb[DEM].GetSlopeAndAspect(x,y,SlopeAspectRec) then
+            if DEMGlb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,x,y,SlopeAspectRec) then
                AddPoint(SlopeAspectRec);
          end
          else if DEMGlb[DEM].GetElevMeters(x,y,z) then begin

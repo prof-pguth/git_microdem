@@ -1,6 +1,5 @@
 unit demtrendopt;
 
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
@@ -104,6 +103,7 @@ procedure ComputeTrendSurface(CurDB : integer; CurDEM : integer; GridLimits : tG
 procedure GetTrendOptions(CurDB : integer; CurDEM : integer; GridLimits : tGridLimits; theMapOwner : tMapForm);
 procedure RawComputeTrendSurface(CurDB : integer; CurDEM : integer; GridLimits : tGridLimits; theMapOwner : tMapForm);
 
+function CalculateTrendSurface(CurrentOrderTrendSurface : integer; B : tTrendVector; x,y : float64) : float64;  inline;
 
 implementation
 
@@ -265,6 +265,29 @@ end;
 { tTrendSurf }
 
 
+    function CalculateTrendSurface(CurrentOrderTrendSurface : integer; B : tTrendVector; x,y : float64) : float64;
+    var
+       k,l,jb,kb,IORD2 : integer;
+       C : tTrendVector;
+    begin
+       JB := 1;
+       C[1] := 1;
+       IORD2 := succ(CurrentOrderTrendSurface)*(CurrentOrderTrendSurface+2) div 2;
+       for K := 1 to CurrentOrderTrendSurface do begin
+          for L := 1 to K do begin
+             inc(JB);
+             KB := JB - K;
+             C[JB] := C[KB] * X;
+          end {for L};
+          inc(JB);
+          C[JB] := C[KB] * y;
+       end {for k};
+       Result := 0.0;
+       for k := 1 to IORD2 do Result := Result + B[K] * C[K];
+     end;
+
+
+
 procedure tTrendSurf.ComputeTrendSurface;
 {from a program in Davis, 1st ed, p.332}
 const
@@ -291,6 +314,7 @@ var
       begin
          {$IfDef RecordAllTrendSurfaceProblems} WriteLineToDebugFile('x=' + RealToString(xutm,-18,2) +  '  y=' + RealToString(yutm,-18,2) + '  x=' + RealToString(zMeters,-18,2) ); {$EndIf}
           JB := 1;
+          C[1] := 1;
           for J := 1 to CurrentOrderTrendSurface do begin
              for k := 1 to J do begin
                 inc(JB);
@@ -307,25 +331,6 @@ var
       end;
 
 
-    function CalculateTrendSurface(x,y : float64) : float64;  //inline;
-    var
-       k,l,jb,kb : integer;
-    begin
-       JB := 1;
-       for K := 1 to CurrentOrderTrendSurface do begin
-          for L := 1 to K do begin
-             inc(JB);
-             KB := JB - K;
-             C[JB] := C[KB] * X;
-          end {for L};
-          inc(JB);
-          C[JB] := C[KB] * y;
-       end {for k};
-       Result := 0.0;
-       for k := 1 to IORD2 do Result := Result + B[K] * C[K];
-     end;
-
-
       procedure AddToOutputFile;
       var
          i : integer;
@@ -335,9 +340,9 @@ var
          writeln(ResultsFile);
          writeln(ResultsFile,'Order ', CurrentOrderTrendSurface,' Trend surface');
          if (CurrentOrderTrendSurface = 1) then begin
-            DipAndStrikeFromThreePoints(1000,1000,CalculateTrendSurface(1000,1000),
-                                        10000,1000,CalculateTrendSurface(10000,1000),
-                                        1000,10000,CalculateTrendSurface(1000,10000),
+            DipAndStrikeFromThreePoints(1000,1000,CalculateTrendSurface(CurrentOrderTrendSurface,B,1000,1000),
+                                        10000,1000,CalculateTrendSurface(CurrentOrderTrendSurface,B,10000,1000),
+                                        1000,10000,CalculateTrendSurface(CurrentOrderTrendSurface,B,1000,10000),
                                         DipAndStrike,SlopeStr,Dip,Strike,DipDir);
             writeln(ResultsFile);
             writeln(ResultsFile,'Orientation of plane: ' + DipAndStrike + '   ' + SlopeStr);
@@ -484,7 +489,7 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
    SYYC := 0.0;
    NumDataPoints := 0;
 
-   if (MDDef.TrendSurfMap or MDDef.TrendMapDev) and (CurDEM <> 0) then begin
+   if (MDDef.TrendSurfMap or MDDef.TrendMapDev) and ValidDEM(CurDEM) then begin
       StartProgress('Calculate trend surface ' + IntToStr(CurrentOrderTrendSurface));
       {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('Calc est val and dev for each obs');  {$EndIf}
       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
@@ -495,7 +500,7 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
          for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
             DEMGlb[CurDEM].DEMGridToUTM(Col,Row,xutm,yutm);
 
-            z := CalculateTrendSurface(xutm-xutmoffset,yutm-yutmoffset);
+            z := CalculateTrendSurface(CurrentOrderTrendSurface,B,xutm-xutmoffset,yutm-yutmoffset);
 
             {$IfDef RecordAllTrendSurfaceProblems} WriteLineToDebugFile('x=' + RealToString(xutm,-18,2) +  '  y=' + RealToString(yutm,-18,2) + '  x=' + RealToString(z,-18,2) ); {$EndIf}
             if abs(z) > 32000 then z := MaxSmallInt;
@@ -546,7 +551,7 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
          zMeters := GISdb[CurDB].MyData.GetFieldByNameAsFloat(GISdb[CurDB].dbOpts.ZField);
          xutm := GISdb[CurDB].MyData.GetFieldByNameAsFloat(GISdb[CurDB].dbOpts.XField);
          yutm := GISdb[CurDB].MyData.GetFieldByNameAsFloat(GISdb[CurDB].dbOpts.YField);
-         z := CalculateTrendSurface(xutm-xutmoffset,yutm-yutmoffset);
+         z := CalculateTrendSurface(CurrentOrderTrendSurface,B,xutm-xutmoffset,yutm-yutmoffset);
          GISdb[CurDB].MyData.Edit;
          GISdb[CurDB].MyData.SetFieldByNameAsFloat('PLANE_DEV',z-zMeters);
          GISdb[CurDB].MyData.SetFieldByNameAsFloat('TREND_Z',z);
@@ -581,9 +586,9 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
      Dispose(A);
 
      if (CurrentOrderTrendSurface = 1) then begin
-         DipAndStrikeFromThreePoints(1000,1000,CalculateTrendSurface(1000,1000),
-                                     10000,1000,CalculateTrendSurface(10000,1000),
-                                     1000,10000,CalculateTrendSurface(1000,10000),
+         DipAndStrikeFromThreePoints(1000,1000,CalculateTrendSurface(CurrentOrderTrendSurface,B,1000,1000),
+                                     10000,1000,CalculateTrendSurface(CurrentOrderTrendSurface,B,10000,1000),
+                                     1000,10000,CalculateTrendSurface(CurrentOrderTrendSurface,B,1000,10000),
                                      DipAndStrike,SlopeStr,Dip,Strike,DipDir);
      end;
 

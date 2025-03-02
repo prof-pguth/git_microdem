@@ -144,12 +144,6 @@ with DisplayGrid do begin
       end;
    end;
 
-(* if false and (Sender <> nil) then begin
-  ReadDefault('Box size',BoxSize);
-      ReadDefault('Font size',FontSize);
-      ShowHeader := AnswerIsYes('Show caption');
-   end;
-   *)
     Npts := 0;
     MinVal := 99999;
     MaxVal := -9999;
@@ -159,7 +153,7 @@ with DisplayGrid do begin
              //Avoid autocorrelations
              Value := StrToFloat(StringGrid1.Cells[i,j]);
              Petmath.CompareValueToExtremes(Value,MinVal,MaxVal);
-             if MDDef.CR_MatrixEqualization then begin
+             if MDDef.CR_MatrixEqualization {and (Value < MDDef.PerfectR)} then begin
                 inc(NPts);
                 SortedRs[Npts] := Value;
              end;
@@ -172,7 +166,7 @@ with DisplayGrid do begin
     else fName := ProgramRootDir + 'correlation_matrix_color.dbf';
     if FileExists(fName) then begin
       Table := tMyData.Create(fName);
-      while not Table.eof do begin
+      if (DoR <> gcmMAvD) then while not Table.eof do begin
          Table.Edit;
          Table.SetFieldByNameAsInteger('RED',Table.GetFieldByNameAsInteger('RED_' + IntToStr(MDDef.CR_ColorPalette)));
          Table.SetFieldByNameAsInteger('GREEN',Table.GetFieldByNameAsInteger('GREEN_' + IntToStr(MDDef.CR_ColorPalette)));
@@ -183,34 +177,38 @@ with DisplayGrid do begin
       Table.First;
       if (DoR = gcmR) then begin
          if MDDef.CR_MatrixEqualization then begin
-            NumPerCat := Npts / Table.FiltRecsInDB;
-
-            //Bin := Table.FiltRecsInDB;
             Bin := 1;
+            (*
+            if (MaxVal > MDDef.PerfectR) and (MDDef.PerfectR > 0) then begin
+               Table.Edit;
+               Table.SetFieldByNameAsFloat('MAX',MaxVal);
+               Table.SetFieldByNameAsFloat('MIN',MDDef.PerfectR);
+               Table.Next;
+               Value := MDDef.PerfectR;
+               Bin := 2;
+            end;
+            *)
+
+            NumPerCat := Npts / Table.FiltRecsInDB;
             while Not Table.eof do begin
                i := Npts - round(pred(Bin) * NumPerCat);
                j := Npts - round(Bin * NumPerCat);
-               if j < 1 then j := 1;
+               if (j < 1) then j := 1;
 
-               WriteLineToDebugFile(IntToStr(i) + '  ' +  IntToStr(j) + '   '+ IntToStr(NPts));
+               //WriteLineToDebugFile(IntToStr(i) + '  ' +  IntToStr(j) + '   '+ IntToStr(NPts));
 
                MaxVal := SortedRs[i];
                MinVal := SortedRs[j];
 
-               WriteLineToDebugFile(IntToStr(Bin) + RealToString(MinVal,12,8) + RealToString(MaxVal,12,8));
-               //if i < 1 then i := 1;
-
-               //MinVal := SortedRs[i];   Np
+               //WriteLineToDebugFile(IntToStr(Bin) + RealToString(MinVal,12,8) + RealToString(MaxVal,12,8));
                inc(Bin);
                Table.Edit;
                Table.SetFieldByNameAsFloat('MAX',MaxVal);
                Table.SetFieldByNameAsFloat('MIN',MinVal);
                Table.Next;
-               //MaxVal := MinVal;
             end;
          end
          else begin
-
             if (MaxVal > MDDef.PerfectR) and (MDDef.PerfectR > 0) then begin
                delta := (MDDef.PerfectR-MinVal) / pred(Table.TotRecsInDB);
                Table.Edit;

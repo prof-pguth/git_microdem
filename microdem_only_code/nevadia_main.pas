@@ -1333,7 +1333,7 @@ uses
 
    lcp_options,
    ScreenUnicode,
-   DEMSlopeCompare,
+   //DEMSlopeCompare,
    PetDBUtils,
    Make_tables,
    DEMDef_routines,
@@ -2072,11 +2072,11 @@ var
          difffile := '';
          WhichCurvature := 0;
          SlopeDegree := false;
-         MDDef.SlopeAlgorithm := smLSQ;
-         MDDef.SlopeLSQorder := 2;
-         MDDef.SlopeRegionRadius := 1;
-         MDDef.CurvatureRegionRadius := 2;
-         MDDef.NeedFullSlopeWindows := true;
+         MDDef.SlopeCompute.AlgorithmName := smLSQ;
+         MDDef.SlopeCompute.LSQorder := 2;
+         MDDef.SlopeCompute.WindowRadius := 1;
+         MDDef.CurveCompute.WindowRadius := 2;
+         MDDef.SlopeCompute.RequireFullWindow := true;
 
          while (CommandLine[1] = '?') do Delete(CommandLine,1,1);      //the question mark
          ReplaceCharacter(CommandLine,'+','&');
@@ -2099,11 +2099,11 @@ var
             if Key = 'X' then xval := Value;
             if Key = 'Y' then yval := Value;
             if Key = 'RAD' then MDDef.OpenBoxSizeMeters := StrToInt(Value);
-            if Key = 'SLOPE_RAD' then MDDef.SlopeRegionRadius := StrToInt(Value);
+            if Key = 'SLOPE_RAD' then MDDef.SlopeCompute.WindowRadius := StrToInt(Value);
             if Key = 'SLOPE_UNIT' then SlopeDegree := Value = 'DEGREE';
-            if Key = 'CURVE_RAD' then MDDef.CurvatureRegionRadius := StrToInt(Value);
-            if Key = 'POLY_ORDER' then MDDef.SlopeLSQorder := StrToInt(Value);
-            if Key = 'SLOPE_FULL' then MDDef.NeedFullSlopeWindows := (Value = 'YES');
+            if Key = 'CURVE_RAD' then MDDef.CurveCompute.WindowRadius := StrToInt(Value);
+            if Key = 'POLY_ORDER' then MDDef.SlopeCompute.LSQorder := StrToInt(Value);
+            if Key = 'SLOPE_FULL' then MDDef.SlopeCompute.RequireFullWindow := (Value = 'YES');
             if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
             if Key = 'FILELIST' then begin
                FileList := tStringList.Create;
@@ -2115,12 +2115,17 @@ var
                if (Value = 'PLAN') then WhichCurvature := 3;
                if (Value = 'FLOWLINE') then WhichCurvature := 4;
                if (Value = 'CONTOUR') then WhichCurvature := 5;
+               if (Value = 'MAX') then WhichCurvature := 6;
+               if (Value = 'MIN') then WhichCurvature := 7;
+               if (Value = 'GAUSSIAN') then WhichCurvature := 8;
+               if (Value = 'MEAN') then WhichCurvature := 9;
+               if (Value = 'CASORATI') then WhichCurvature := 10;
             end;
             if Key = 'SLOPE_ALG' then begin
-                if Value = 'LSQ' then MDDef.SlopeAlgorithm := smLSQ;
-                if Value = 'EVANS' then MDDef.SlopeAlgorithm := smEvansYoung;
-                if Value = 'ZQ' then MDDef.SlopeAlgorithm := smZevenbergenThorne;
-                if Value = 'HORN' then MDDef.SlopeAlgorithm := smHorn;
+                if Value = 'LSQ' then MDDef.SlopeCompute.AlgorithmName := smLSQ;
+                if Value = 'EVANS' then MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
+                if Value = 'ZQ' then MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
+                if Value = 'HORN' then MDDef.SlopeCompute.AlgorithmName := smHorn;
             end;
             if Key = 'PROJ' then begin
                 if Value = 'UTM' then MDDef.LidarGridProjection := 0;
@@ -2151,7 +2156,7 @@ var
          if Action = 'SLOPE_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := CreateSlopeMapPercent(false,DEM,outfile,0,SlopeDegree);
+               NewDEM := CreateSlopeMapPercent(false,DEM,outfile,SlopeDegree);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
             end;
          end;
@@ -2159,7 +2164,7 @@ var
          if Action = 'CURVE_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := CreateCurvatureMap(WhichCurvature,false,DEM,MDDef.CurvatureRegionRadius,OutFile);
+               NewDEM := CreateCurvatureMap(WhichCurvature,false,DEM,OutFile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('curvature map created'); {$EndIf}
                //DEMGlb[NewDEM].SaveAsGeotiff(outfile);
                //{$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}

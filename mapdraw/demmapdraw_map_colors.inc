@@ -1,11 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demmapdraw        }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
 procedure TMapDraw.TerrainShadows(Bitmap : tMyBitmap);
@@ -212,9 +212,12 @@ var
    SlopeAspectRec : tSlopeAspectRec;
    SlopeRange,z : float32;
    Color : tColor;
+   NeedAspect : boolean;
 begin
    GrayRange := MDDef.SlopeMaxGray - MDDef.SlopeMinGray;
    SlopeRange := MDDef.MaxSlopeForGray-MDDef.MinSlopeForGray;
+   NeedAspect := (MapType in [mtDEMaspectSlope,mtDEMaspect]) or (MapMerge in [mmSlope,mmAspect]);
+
    for j := Limits.YGridLow to Limits.YGridHigh do begin
       for i := 0 to pred(MapXSize) do begin
          if OnScreen(i,j) then begin
@@ -222,7 +225,7 @@ begin
             if (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) or (MapType = mtFlowDir360)  then begin
                if DEMGlb[DEMonMap].GetElevMeters(xg,yg,z) then BMPMemory.SetPixelColor(i,j,AspColor[round(z)]);
             end
-            else if DEMGlb[DEMonMap].GetSlopeAndAspect(xg,yg,SlopeAspectRec) then begin
+            else if DEMGlb[DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAspectRec,NeedAspect,false) then begin
                if (MapType in [mtDEMaspectSlope]) then begin
                   Color := Rgb(161,161,161);
                   if (SlopeAspectRec.SlopePercent > 5) then begin
@@ -994,7 +997,7 @@ begin
       end;
    end;
 
-   if (MaxMapElev - MinMapElev) < 0.001 then begin
+   if (MaxMapElev - MinMapElev) < 0.000001 then begin
       Result := RGBTrip(0,0,125);
    end
    else if DEMGlb[DEMonMap].ElevationDEM and (MapType in [mtElevRainbow,mtElevSpectrum]) and ( (abs(zj) < 0.0001) and MDdef.WaterCheck) or (MDdef.LakeCheck and DEMGlb[DEMonMap].LakePoint(round(x),round(Y)) ) then begin

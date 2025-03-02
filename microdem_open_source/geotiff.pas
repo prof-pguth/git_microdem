@@ -1000,8 +1000,6 @@ end;
 
 
 function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
-//var
-   //ElevRangeSet : boolean;
 
          function InitializeTiffDEM(WantDEM : tDEMDataSet; ForceType : boolean = false; TypeWanted : tDEMprecision = ByteDEM) : boolean;
          var
@@ -1127,7 +1125,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             WantDEM.DEMheader.NumRow := TiffHeader.ImageLength;
             WantDEM.DEMHeader.RasterPixelIsGeoKey1025 := TiffHeader.RasterPixelIs;
             WantDEM.DEMheader.VerticalCSTypeGeoKey := TiffHeader.VertDatum;
-            WantDEM.DEMheader.ElevUnits := tElevUnit(TiffHeader.MDZtype);
+            WantDEM.DEMheader.ElevUnits := TiffHeader.MDZtype; //tElevUnit(TiffHeader.MDZtype);
 
             {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
             {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM early WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
@@ -1268,7 +1266,6 @@ begin {tTIFFImage.CreateTiffDEM}
                         if ValidZ(z) then begin
                            z := z * TiffHeader.Factor;
                            WantDEM.SetGridElevation(Col,dRow,z);
-                           //Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1282,7 +1279,6 @@ begin {tTIFFImage.CreateTiffDEM}
                         else zi := IntRow^[Col];
                         if ValidZ(zi) then begin
                            WantDEM.SetGridElevation(Col,dRow,zi);
-                           //Petmath.CompareValueToExtremes(zi,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1293,7 +1289,6 @@ begin {tTIFFImage.CreateTiffDEM}
                         if BigEndian then zw := Swap(WordRow^[Col])
                         else zw := WordRow^[Col];
                         if ValidZ(zw) then begin
-                           //Petmath.CompareValueToExtremes(zw,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                            WantDEM.SetGridElevation(Col,dRow,zw);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
@@ -1307,7 +1302,6 @@ begin {tTIFFImage.CreateTiffDEM}
                      if ValidZ(z) then begin
                         z := z * TiffHeader.Factor;
                         WantDEM.SetGridElevation(Col,dRow,z);
-                        //Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                      end
                      else WantDEM.SetGridMissing(Col,dRow);;
                   end;
@@ -1317,7 +1311,6 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                      zb := ByteRow^[Col];
                      WantDEM.SetGridElevation(Col,dRow,zb);
-                     //Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                   end;
                end
                else if (TiffHeader.BitsPerSample in [4]) then begin
@@ -1325,10 +1318,8 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) div 2 do begin
                      zb := ByteRow^[Col] div 16;
                      WantDEM.SetGridElevation(2*Col,dRow,zb);
-                     //Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                      zb := ByteRow^[Col] mod 16;
                      WantDEM.SetGridElevation(succ(2*Col),dRow,zb);
-                     //Petmath.CompareValueToExtremes(zb,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
                   end;
                end;
             except
@@ -1352,7 +1343,6 @@ begin {tTIFFImage.CreateTiffDEM}
          if (TiffHeader.SMax > TiffHeader.SMin) then begin
             WantDEM.DEMheader.MaxElev := TiffHeader.SMax;
             WantDEM.DEMheader.MinElev := TiffHeader.SMin;
-            //ElevationRangeSet := true;
          end
          else WantDEM.CheckMaxMinElev;
          {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over '); {$EndIf}
@@ -2098,6 +2088,8 @@ var
                          TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                          {$If Defined(TrackZ)} WriteLineToDebugFile('Key 42112 ' + TStr); {$EndIf}
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'FOOT') then FootDEM := true;
+                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'EGM2008') then TiffHeader.VertDatum := VertCSEGM2008;
+                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'CENTIMETERS') then TiffHeader.MDZtype := euCentimeters;
                          Tag42112 := TStr;
                          Tag42112Offset := TiffKeys[j].KeyOffset;
                          Tag42112Length := TiffKeys[j].LengthIm;

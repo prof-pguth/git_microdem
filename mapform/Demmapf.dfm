@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1678
+  ClientHeight = 1718
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1651
+    Height = 1691
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,6 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitLeft = 8
+    ExplicitTop = 75
     object Image1: TImage
       Left = 3
       Top = -247
@@ -207,11 +209,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1606
+      Top = 1646
       Width = 3840
       Height = 41
       Align = alBottom
       TabOrder = 8
+      ExplicitTop = 1606
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -4409,7 +4412,7 @@ object MapForm: TMapForm
         end
       end
       object Comparegeomorphometryprograms1: TMenuItem
-        Caption = 'Compare geomorphometry programs'
+        Caption = 'Compare geomorphometry programs/algorithms'
         OnClick = Comparegeomorphometryprograms1Click
       end
       object DerivativegridformultipleDEMs1: TMenuItem
@@ -5234,7 +5237,7 @@ object MapForm: TMapForm
     end
   end
   object RightClickPopupMenu3: TPopupMenu
-    Left = 186
+    Left = 202
     Top = 182
     object Displayparameter1: TMenuItem
       Caption = 'Display parameter'
@@ -5287,7 +5290,7 @@ object MapForm: TMapForm
       OnClick = Gridmaskcolor1Click
     end
     object Slopecategories2: TMenuItem
-      Caption = 'Slope categories'
+      Caption = 'Slope categories/algorithm'
       OnClick = Slopecategories2Click
     end
     object Contourinterval2: TMenuItem
@@ -5627,9 +5630,17 @@ object MapForm: TMapForm
         Caption = 'Slope neighborhood surface equations'
         OnClick = Neighborhoodsurfaceequations1Click
       end
-      object Slopewindowfullversuscorners1: TMenuItem
-        Caption = 'Slope window full versus corners'
-        OnClick = Slopewindowfullversuscorners1Click
+      object Slopeneighborhoodpartialderivatives1: TMenuItem
+        Caption = 'Slope neighborhood partial derivatives'
+        OnClick = Slopeneighborhoodpartialderivatives1Click
+      end
+      object Localtrendsurfaces1: TMenuItem
+        Caption = 'Local trend surfaces'
+        OnClick = Localtrendsurfaces1Click
+      end
+      object Slopemissingedgeeffectmissingdata1: TMenuItem
+        Caption = 'Slope edge effect missing data'
+        OnClick = Slopemissingedgeeffectmissingdata1Click
       end
       object Slopewindowusecentralpoint1: TMenuItem
         Caption = 'Slope window use central point'
@@ -6450,6 +6461,44 @@ object MapForm: TMapForm
         Caption = 'Contour torsion'
         OnClick = Contourtorsion1Click
       end
+      object Maximumcurvature2: TMenuItem
+        Caption = 'Maximum curvature'
+        OnClick = Maximumcurvature2Click
+      end
+      object Meancurvature1: TMenuItem
+        Caption = 'Mean curvature'
+        OnClick = Meancurvature1Click
+      end
+      object Minimumcurvature2: TMenuItem
+        Caption = 'Minimum curvature'
+        OnClick = Minimumcurvature2Click
+      end
+      object Gaussiancurvature1: TMenuItem
+        Caption = 'Gaussian curvature'
+        OnClick = Gaussiancurvature1Click
+      end
+      object Caasoraticurvature1: TMenuItem
+        Caption = 'Caasorati curvature'
+        OnClick = Caasoraticurvature1Click
+      end
+      object N83: TMenuItem
+        Caption = '-'
+      end
+      object kncc1: TMenuItem
+        Caption = 'kncc'
+        OnClick = kncc1Click
+      end
+      object kncs1: TMenuItem
+        Caption = 'kncs'
+        OnClick = kncs1Click
+      end
+      object knss1: TMenuItem
+        Caption = 'knss'
+        OnClick = knss1Click
+      end
+      object N82: TMenuItem
+        Caption = '-'
+      end
       object Curvature3: TMenuItem
         Caption = 'Second order partial derivatives'
         OnClick = Curvature3Click
@@ -7186,13 +7235,21 @@ object MapForm: TMapForm
       Caption = 'Compare GDAL slope spacing approximations'
       OnClick = CompareGDALslopespacingapproximations1Click
     end
-    object CompareLSQslopepolynomialorder1: TMenuItem
-      Caption = 'Compare LSQ slope polynomial order'
-      OnClick = CompareLSQslopepolynomialorder1Click
-    end
     object CompareLSQslopewindowsize1: TMenuItem
-      Caption = 'Compare LSQ slope window size'
+      Caption = 'Compare LSQ slope polynomial order/window size'
       OnClick = CompareLSQslopewindowsize1Click
+    end
+    object CompareLSQcurvaturepolynomialorder1: TMenuItem
+      Caption = 'Compare LSQ curvature polynomial order/window'
+      OnClick = CompareLSQcurvaturepolynomialorder1Click
+    end
+    object CompareLSQedgeeffects1: TMenuItem
+      Caption = 'Compare LSQ edge effects on map'
+      OnClick = CompareLSQedgeeffects1Click
+    end
+    object Compareslopeaspectalgorithmsonmap1: TMenuItem
+      Caption = 'Compare slope/aspect algorithms on map'
+      OnClick = Compareslopeaspectalgorithmsonmap1Click
     end
     object N71: TMenuItem
       Caption = '-'

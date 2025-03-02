@@ -35,13 +35,6 @@ object SlopeOptForm: TSlopeOptForm
     Height = 13
     Caption = 'Label6'
   end
-  object Label25: TLabel
-    Left = 10
-    Top = 157
-    Width = 142
-    Height = 13
-    Caption = 'Slope region size (pixels)'
-  end
   object Label1: TLabel
     Left = 8
     Top = 180
@@ -132,20 +125,12 @@ object SlopeOptForm: TSlopeOptForm
     TabOrder = 3
     OnClick = Button11Click
   end
-  object Edit1: TEdit
-    Left = 167
-    Top = 153
-    Width = 81
-    Height = 21
-    TabOrder = 4
-    OnChange = Edit1Change
-  end
   object Edit2: TEdit
     Left = 167
     Top = 180
     Width = 80
     Height = 21
-    TabOrder = 5
+    TabOrder = 4
     OnChange = Edit2Change
   end
   object CheckBox1: TCheckBox
@@ -154,7 +139,7 @@ object SlopeOptForm: TSlopeOptForm
     Width = 161
     Height = 17
     Caption = 'Immediate redraws'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = CheckBox1Click
   end
   object RadioGroup2: TRadioGroup
@@ -169,7 +154,7 @@ object SlopeOptForm: TSlopeOptForm
       '2'
       '3'
       '4')
-    TabOrder = 7
+    TabOrder = 6
     OnClick = RadioGroup2Click
   end
   object RadioGroup3: TRadioGroup
@@ -184,7 +169,7 @@ object SlopeOptForm: TSlopeOptForm
       '5x5'
       '7x7'
       '9x9')
-    TabOrder = 8
+    TabOrder = 7
     OnClick = RadioGroup3Click
   end
   object PageControl1: TPageControl
@@ -193,7 +178,7 @@ object SlopeOptForm: TSlopeOptForm
     Width = 201
     Height = 289
     ActivePage = TabSheet1
-    TabOrder = 9
+    TabOrder = 8
     object TabSheet1: TTabSheet
       Caption = 'Slope '
       object RadioGroup1: TRadioGroup
@@ -258,10 +243,18 @@ object SlopeOptForm: TSlopeOptForm
   object CheckBox2: TCheckBox
     Left = 8
     Top = 216
-    Width = 212
+    Width = 239
     Height = 17
-    Caption = 'Full filled window required'
-    TabOrder = 10
+    Caption = 'No missing data in window allowed'
+    TabOrder = 9
     OnClick = CheckBox2Click
+  end
+  object CheckBox3: TCheckBox
+    Left = 8
+    Top = 261
+    Width = 169
+    Height = 17
+    Caption = 'Use all points in window'
+    TabOrder = 10
   end
 end

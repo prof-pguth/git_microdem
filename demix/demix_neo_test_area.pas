@@ -248,7 +248,7 @@ var
       i,j,DEM1,DEM2 : integer;
       aLine,Name1 : shortstring;
       NPts : int64;
-      r,covar,Mean1,Mean2,StdDev1,StdDev2 : float64;
+      r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64;
    begin
       {$IfDef RecordDEMIXNeo} WriteLineToDebugFile('CorrelationsForFilteredLandCover Start for ' + What); {$EndIf}
       wmdem.SetPanelText(3,What,true);
@@ -284,11 +284,11 @@ var
                         {$IfDef RecordDEMIXneoFull} WriteLineToDebugFile('Analysis 2 compute, ' + IntToStr(DEM1) + ' ' + DEMGlb[DEM1].AreaName + ' ' + IntToStr(DEM2) + ' ' + DEMGlb[DEM2].AreaName); {$EndIf}
                         if (DEM1 = DEM2) then r := 1.0
                         else begin
-                           CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2);
+                           CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
                            if (r < -99) then begin
                               //so we can put a breakpoint here
                               {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Analysis 2 problem, ' + IntToStr(DEM1) + ' ' + DEMGlb[DEM1].AreaName + ' ' + IntToStr(DEM2) + ' ' + DEMGlb[DEM2].AreaName); {$EndIf}
-                              CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2);
+                              CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
                            end
                         end;
                         aLine := aLine + ',' + RealToString(r,12,-8);

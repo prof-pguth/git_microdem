@@ -409,7 +409,7 @@ begin
          end;
          if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) and DEMGlb[DEM2].GetElevMeters(Col2,Row2,z2) then begin
             DEMGlb[Diffs[1]].SetGridElevation(Col,Row,z2 - z1);
-            if DEMGlb[DEM1].GetSlopeAndAspect(Col,Row,SlopeAspect1) and DEMGlb[DEM2].GetSlopeAndAspect(Col2,Row2,SlopeAspect2) then begin
+            if DEMGlb[DEM1].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspect1) and DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col2,Row2,SlopeAspect2) then begin
                DEMGlb[Diffs[2]].SetGridElevation(Col,Row,(SlopeAspect2.SlopePercent - SlopeAspect1.SlopePercent));
                z1 := SlopeAspect2.AspectDirTrue - SlopeAspect1.AspectDirTrue;
                if abs(z1) < 999 then begin  //aspect undefined if slope is 0

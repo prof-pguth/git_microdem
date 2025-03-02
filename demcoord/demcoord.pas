@@ -14,17 +14,16 @@ unit DEMCoord;
 
 {$I nevadia_defines.inc}
 
-
 {$IFDEF DEBUG}
-   {$Define NoCoordInline}
-   //{$Define NoParallelFor}
-{$ELSE}
    //{$Define NoCoordInline}
    //{$Define NoParallelFor}
+{$ELSE}
 {$ENDIF}
 
 
-{$Define AllowV1V2V3DEMHeaders}
+{$Define AllowV1V2V3DEMHeaders}    //antique MICRODEM headers
+
+//{$Define TrendSurfacePointClouds} not working, but would create a 3D diagram with the different LSQ trend surfaces, 1 March 2025
 
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
@@ -41,6 +40,8 @@ unit DEMCoord;
       //{$Define ShowDEMSSOCalc}
       //{$Define ShowFullDEMSSOCalc}
       {$Define RecordMaskFromSecondGrid}
+      {$Define RecordLSQ}
+
       //{$Define RecordGridIdenticalProblems}
       //{$Define TrackDEMboundingBox}
       //{$Define RecordUKOS}
@@ -449,14 +450,6 @@ type
 
          {$IfDef ExDEMReports}
          {$Else}
-            procedure SlopeMethodsReport(xp,yp : integer; Title : shortstring = '');
-            procedure TrendSurfaceEquations(xp,yp : integer; Title : shortstring = '');
-            procedure TrendSurfaceEquationsFillOrCorners(xp,yp : integer; Title : shortstring = '');
-            procedure TrendSurfaceEquationsUseCenterPoint(xp,yp : integer; Title : shortstring = '');
-            procedure AddSlopeAtPoint(var  Results : tStringList; xp,yp : integer);
-            procedure StartSlopeReport(var Results : tStringList; xp,yp : integer; Title : shortstring = '');
-
-            procedure SlopeMethodsReportFromLatLong(lat,Long : float64; Title : shortstring = '');
             procedure PointParameters(xgrid,ygrid : float64);
          {$EndIf}
 
@@ -490,11 +483,11 @@ type
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
-         function GetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false; Radius : integer = 0) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
+         function GetSlopeAndAspect(HowCompute : tSlopeCurveCompute; Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function QuickEvansSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
 
-         function SlopePercent(XGrid,YGrid : integer; var Slope : float64; Radius : integer = 0) : boolean; inline;
+         function SlopePercent(XGrid,YGrid : integer; var Slope : float64) : boolean; inline;
          function SlopePercentFromLatLong(Lat,Long : float64) : float64;
          {$IfDef RichardsonExtrapolate} procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false); {$EndIf}
 
@@ -542,11 +535,12 @@ type
                procedure WriteGridFloatFormatDEM(var FileName : PathStr);
                procedure WriteBILFormatDEM(var FileName : PathStr);
             {$EndIf}
-         {$EndIf}
 
-         {$IfDef ExDTED}
-         {$Else}
-            procedure SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
+            {$IfDef ExDTED}
+            {$Else}
+               procedure SaveAsDTED(OutLatInterval,OutLongInterval : integer; OutName : PathStr = ''; ShowProgress : boolean = false);
+            {$EndIf}
+
          {$EndIf}
 
          procedure AssignVerticalDatum(NewVertDatumCode : integer);
@@ -681,7 +675,6 @@ type
 
             {$IfDef ExGeostats}
             {$Else}
-               procedure DirectionalSlopesReport(Lat,Long : float64);
                function SSOComputations(GridLimits : tGridLimits; var SSOvars : tSSOvars; Plot : boolean; NetName,AspName : PathStr;
                   FilterGrid : integer = 0; FilterValue : integer = 0; LLtext : shortstring = '') : boolean;
                function PointSSOComputations(Col,Row,FullBoxSizeMeters : integer; var SSOvars : tSSOvars; PlotResults,Complete,PlotAspectFreq : boolean) : boolean;  inline;
@@ -738,30 +731,25 @@ function ValidDEM(DEM : integer) : boolean; inline;
 
 const
    ReadDEMStr = 'Read DEM';
-   DEMFilterMasks = 'Any likely DEM|*.DEM*;*.GZ;*.tif;*.tiff;*.bil;*.flt;*.img;*.asc|' +
+   DEMFilterMasks = 'Any likely DEM|*.DEM*;*.tif;*.tiff;*.bil;*.flt;*.img;*.asc|' +
           'DEM file|*.dem|' +
           'GeoTIFF|*.tif;*.tiff|' +
-          'GeoTIFF DEM.TIF|*dem.tif|' +
+          //'GeoTIFF DEM.TIF|*dem.tif|' +
           'ESRI grid|w001001.adf|' +
           'ASCII Arc Grid|*.asc|' +
           'IMG file grid|*.img|' +
-          'NED binary or gridfloat|*.BIL;*.DEMFLOAT;*.FLT|' +
           'SRTM Heightfield|*.hgts;*.hgt|' +
-          'NGDC GRD98|*.G03|' +
-          'NOS EEZ Bathymetry|*.PRU|' +
           'OS 5 or 20 km tile|*.ntf|' +
-          'Surfer grid|*.grd|' +
+          //'NED binary or gridfloat|*.BIL;*.DEMFLOAT;*.FLT|' +
+          //'NGDC GRD98|*.G03|' +
+          //'NOS EEZ Bathymetry|*.PRU|' +
+          //'Surfer grid|*.grd|' +
           //'VTP BT|*.bt|' +
           {$IfDef ExDTED}
           {$Else}
              'DTED|*.dt*|' +
           {$EndIf}
           'All files|*.*|';
-
-{$IfDef ExDTED}
-{$Else}
-   function GetNIMADTEDHeader(var InputFile : file) : tStringList;
-{$EndIf}
 
 function LoadNewDEM(var WantedDem : integer; var FullFileName : PathStr; CreateMap : boolean = true; DEMMessage : shortstring = 'New DEM';  MapTitleBar : shortstring = ''; DrawTheMap : boolean = true; ChangeDefaultName : boolean = true) : boolean;
 
@@ -795,6 +783,28 @@ function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName 
 
 
 procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
+
+
+
+
+//reports, in demcoord_reports.inc
+   procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = '');
+   procedure TrendSurfacePartialDerivatives(DEM,xp,yp : integer; Title : shortstring = '');
+   procedure TrendSurfaceEquations(DEM,xp,yp : integer; Title : shortstring = '');
+   procedure LocalTrendSurface(DEM,xp,yp : integer; Title : shortstring = '');
+   procedure TrendSurfaceEquationsUseCenterPoint(DEM,xp,yp : integer; Title : shortstring = '');
+   procedure AddSlopeAtPoint(var  Results : tStringList; DEM,xp,yp : integer);
+   procedure StartSlopeReport(var Results : tStringList; DEM,xp,yp : integer; Title : shortstring = '');
+   procedure SlopeMethodsReport(DEM,xp,yp : integer; Title : shortstring = '');
+   procedure SlopeMethodsReportFromLatLong(DEM : integer; lat,Long : float64; Title : shortstring = '');
+   procedure DirectionalSlopesReport(DEM : integer; Lat,Long : float64);
+
+
+
+{$IfDef ExDTED}
+{$Else}
+   function GetNIMADTEDHeader(var InputFile : file) : tStringList;
+{$EndIf}
 
 {$IfDef ExOddballDEMexports}
 {$Else}
@@ -830,6 +840,10 @@ var
       RoseGraph : TThisBaseGraph;
    {$EndIf}
 
+const
+   {$IfDef OptionSaveSlopeComputePoints} SaveSlopeComputationPoints : boolean = false; {$EndIf} //saves definitions to verify slope least squares with Python
+   SkipCenterPoint : boolean = false;
+   TestEdgeEffect : boolean = false;
 
 
 implementation
@@ -878,6 +892,9 @@ uses
    las_lidar,
    Compress_form,
    gdal_tools,
+   DEMtrendOpt,
+   fPointCloud,
+   View3D_main,
    PetImage;
 
 var
@@ -892,13 +909,10 @@ var
 {$I demcoord_vert_datum.inc}
 {$I demcoord_aspect_stats.inc}
 {$I demcoord_sso.inc}
+{$I demcoord_reports.inc}
 
-{$IfDef RichardsonExtrapolate}
-   {$I demcoord_richardson_extrapolate.inc}
-{$EndIf}
-
-{$IfDef MultipleCurvatureMethods}
-   {$I demcoord_curvature.inc}
+{$IfDef VCL}
+   {$I demcoord_graphics.inc}
 {$EndIf}
 
 {$IfDef ExDEMEdits}
@@ -912,14 +926,19 @@ var
    {$I demcoord_geomorph.inc}
 {$EndIf}
 
-{$IfDef VCL}
-   {$I demcoord_graphics.inc}
-{$EndIf}
-
 {$IfDef ExVegDensity}
 {$Else}
    {$I demcoord_veg.inc}
 {$EndIf}
+
+{$IfDef RichardsonExtrapolate}
+   {$I demcoord_richardson_extrapolate.inc}
+{$EndIf}
+
+{$IfDef MultipleCurvatureMethods}
+   {$I demcoord_curvature.inc}
+{$EndIf}
+
 
 {$If Defined(TrackDEMCorners) or Defined(RecordHalfPixelShift)}
    procedure tDEMDataSet.WriteDEMCornersToDebugFile(Where : shortstring);
@@ -2055,11 +2074,11 @@ function tDEMDataSet.GetSlopeAspectFromSecondDEM(Dem2,Col,Row : integer; var Slo
 var
    Lat,Long,Colf,Rowf : float64;
 begin
-   if SecondGridIdentical(DEM2) then Result := DEMGlb[DEM2].GetSlopeAndAspect(Col,Row,SlopeAspectRec)
+   if SecondGridIdentical(DEM2) then Result := DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec)
    else begin
       DEMGridToLatLongDegree(Col,Row,Lat,Long);
       DEMGlb[DEM2].LatLongDegreeToDEMGrid(Lat,Long,Colf,Rowf);
-      Result := DEMGlb[DEM2].GetSlopeAndAspect(round(Colf),round(Rowf), SlopeAspectRec);
+      Result := DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,round(Colf),round(Rowf), SlopeAspectRec);
    end;
 end;
 
@@ -3540,12 +3559,14 @@ var
    i          : integer;
 begin
    {$IfDef VCL}
+(*
       StringList := TStringList.Create;
       for s1 := FirstSlopeMethod to LastSlopeMethod do StringList.Add(SlopeMethodName(s1));
-      i := MDdef.SlopeAlgorithm;
+      i := MDDef.SlopeCompute.AlgorithmName;
       MultiSelectSingleColumnStringList('Desired slope method ' + aMessage,i,StringList);
       SlopeMethod := i;
       StringList.Free;
+*)
    {$EndIf}
 end;
 
@@ -3969,13 +3990,6 @@ begin
    end;
 end;
 
-(*
-function tDEMDataSet.DEMHorizontalSpacingSummary : ShortString;
-begin
-   Result := DEMModel + '  (' + ptTrim(DEMDefs.SpacingUnits[DEMheader.DataSpacing]) + ')';
-end;
-*)
-
 function tDEMDataSet.GridDefinition : ShortString;
 var
    Decs : integer;
@@ -4063,13 +4077,6 @@ begin
    if (y < 0) then y := 0 else if (y > pred(DEMheader.NumRow)) then y := pred(DEMheader.NumRow);
 end;
 
-(*
-procedure tDEMDataSet.ClipDEMGrid(var x,y : float32);
-begin
-   if (x < 0) then x := 0 else if (x > pred(DEMheader.NumCol)) then x := pred(DEMheader.NumCol);
-   if (y < 0) then y := 0 else if (y > pred(DEMheader.NumRow)) then y := pred(DEMheader.NumRow);
-end;
-*)
 
 procedure tDEMDataSet.ClipDEMGridInteger(var x,y : integer);
 begin

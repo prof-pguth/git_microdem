@@ -581,7 +581,7 @@ var
              p0 := Result.ScanLine[j];
              for i := 0 to pred(Result.Width) do begin
                 MapDraw.ScreenToDEMGridInteger(i,j,XG1,YG1);
-                if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(round(xg1),round(yg1),SlopeAspectRec) then begin
+                if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,round(xg1),round(yg1),SlopeAspectRec) then begin
                    inc(TotCount);
                    if GoodPoint(Complex, MDDef.FPMinAsp1,MDDef.FPMaxAsp1,MinSlope,MaxSlope,FP1Count,FP1MatchSlope,FP1MatchAspect) then begin
                       p0[i] := MDDef.ColorFP1;

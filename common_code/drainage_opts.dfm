@@ -4,8 +4,8 @@ object drain_opt_form: Tdrain_opt_form
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Drainage flow path options'
-  ClientHeight = 428
-  ClientWidth = 292
+  ClientHeight = 455
+  ClientWidth = 310
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,22 +18,15 @@ object drain_opt_form: Tdrain_opt_form
   OnCreate = FormCreate
   TextHeight = 13
   object Label2: TLabel
-    Left = 94
-    Top = 85
+    Left = 79
+    Top = 383
     Width = 129
     Height = 13
     Caption = 'Vector spacing (map pixels)'
   end
-  object Label3: TLabel
-    Left = 125
-    Top = 13
-    Width = 32
-    Height = 13
-    Caption = 'Label3'
-  end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 22
-    Top = 408
+    Left = 14
+    Top = 422
     Width = 25
     Height = 25
     Hint = 'Force redraw'
@@ -48,39 +41,30 @@ object drain_opt_form: Tdrain_opt_form
       FCCFFFCCCCCCCCCFFCCFFFFFFFFFFFFFFCCFFFFFFFFFFFFFFFFF}
     OnClick = RedrawSpeedButton12Click
   end
-  object BitBtn1: TBitBtn
-    Left = 18
-    Top = 8
-    Width = 97
-    Height = 25
-    Caption = 'Slope algorithm'
-    TabOrder = 0
-    OnClick = BitBtn1Click
-  end
   object Edit2: TEdit
-    Left = 19
-    Top = 82
+    Left = 8
+    Top = 383
     Width = 65
     Height = 21
-    TabOrder = 1
+    TabOrder = 0
     OnChange = Edit2Change
   end
   object HelpBtn: TBitBtn
-    Left = 183
-    Top = 406
+    Left = 175
+    Top = 420
     Width = 77
     Height = 27
     Kind = bkHelp
     Margin = 2
     NumGlyphs = 2
     Spacing = -1
-    TabOrder = 2
+    TabOrder = 1
     OnClick = HelpBtnClick
     IsControl = True
   end
   object OKBtn: TBitBtn
-    Left = 94
-    Top = 406
+    Left = 86
+    Top = 420
     Width = 77
     Height = 27
     Caption = 'OK'
@@ -106,48 +90,32 @@ object drain_opt_form: Tdrain_opt_form
     ModalResult = 1
     NumGlyphs = 2
     Spacing = -1
-    TabOrder = 3
+    TabOrder = 2
     OnClick = OKBtnClick
     IsControl = True
   end
-  object CheckBox1: TCheckBox
-    Left = 24
-    Top = 39
-    Width = 97
-    Height = 17
-    Caption = 'Show point slope'
-    TabOrder = 4
-    OnClick = CheckBox1Click
-  end
   object CheckBox2: TCheckBox
-    Left = 24
-    Top = 62
+    Left = 8
+    Top = 208
     Width = 177
     Height = 17
     Caption = 'Show regionvector average'
-    TabOrder = 5
+    TabOrder = 3
     OnClick = CheckBox2Click
   end
   object GroupBox1: TGroupBox
     Left = 8
-    Top = 109
-    Width = 281
-    Height = 113
+    Top = 127
+    Width = 260
+    Height = 82
     Caption = 'Single point computation'
-    TabOrder = 6
+    TabOrder = 4
     object Label1: TLabel
-      Left = 89
-      Top = 84
+      Left = 95
+      Top = 55
       Width = 68
       Height = 13
       Caption = 'Vector lengths'
-    end
-    object Label4: TLabel
-      Left = 89
-      Top = 55
-      Width = 161
-      Height = 13
-      Caption = 'Slope region size (DEM grid posts)'
     end
     object BitBtn2: TBitBtn
       Left = 18
@@ -159,21 +127,12 @@ object drain_opt_form: Tdrain_opt_form
       OnClick = BitBtn2Click
     end
     object Edit1: TEdit
-      Left = 18
-      Top = 84
+      Left = 24
+      Top = 55
       Width = 65
       Height = 21
       TabOrder = 1
       OnChange = Edit1Change
-    end
-    object Edit3: TEdit
-      Left = 20
-      Top = 57
-      Width = 63
-      Height = 21
-      TabOrder = 2
-      Text = 'Edit3'
-      OnChange = Edit3Change
     end
   end
   object GroupBox2: TGroupBox
@@ -182,24 +141,24 @@ object drain_opt_form: Tdrain_opt_form
     Width = 281
     Height = 146
     Caption = 'Vector average computation'
-    TabOrder = 7
+    TabOrder = 5
     object Label5: TLabel
-      Left = 72
-      Top = 76
+      Left = 78
+      Top = 55
       Width = 188
       Height = 13
       Caption = 'Avg aspect region size (DEM grid posts)'
     end
     object Label6: TLabel
-      Left = 72
-      Top = 116
+      Left = 78
+      Top = 95
       Width = 68
       Height = 13
       Caption = 'Vector lengths'
     end
     object BitBtn3: TBitBtn
-      Left = 20
-      Top = 32
+      Left = 16
+      Top = 24
       Width = 161
       Height = 25
       Caption = 'Vector averages'
@@ -207,22 +166,34 @@ object drain_opt_form: Tdrain_opt_form
       OnClick = BitBtn3Click
     end
     object Edit4: TEdit
-      Left = 3
-      Top = 76
+      Left = 9
+      Top = 55
       Width = 63
       Height = 21
       TabOrder = 1
-      Text = 'Edit3'
       OnChange = Edit4Change
     end
     object Edit5: TEdit
-      Left = 3
-      Top = 114
+      Left = 9
+      Top = 93
       Width = 63
       Height = 21
       TabOrder = 2
-      Text = 'Edit3'
       OnChange = Edit5Change
     end
+  end
+  object RadioGroup1: TRadioGroup
+    Left = 19
+    Top = 8
+    Width = 185
+    Height = 113
+    Caption = 'Drainage directions'
+    Items.Strings = (
+      'LSQ 3x3 2d order polynomial'
+      'LSQ 5x5 3d order polynomial'
+      'Both LSQ polynomials'
+      'None')
+    TabOrder = 6
+    OnClick = RadioGroup1Click
   end
 end

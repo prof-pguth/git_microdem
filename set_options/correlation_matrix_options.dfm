@@ -37,6 +37,13 @@ object CorrelationMatrixOptionsForm: TCorrelationMatrixOptionsForm
     Height = 15
     Caption = 'UL string'
   end
+  object Label2: TLabel
+    Left = 32
+    Top = 296
+    Width = 58
+    Height = 15
+    Caption = 'Perfect R'
+  end
   object RadioGroup1: TRadioGroup
     Left = 40
     Top = 40
@@ -88,5 +95,14 @@ object CorrelationMatrixOptionsForm: TCorrelationMatrixOptionsForm
     TabOrder = 3
     Text = 'Edit1'
     OnChange = Edit1Change
+  end
+  object Edit2: TEdit
+    Left = 96
+    Top = 288
+    Width = 121
+    Height = 23
+    TabOrder = 4
+    Text = '0.9999'
+    OnChange = Edit2Change
   end
 end

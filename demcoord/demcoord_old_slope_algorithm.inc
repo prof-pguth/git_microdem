@@ -26,7 +26,7 @@ const
 *)
 
 
-function tDEMDataSet.OldGetSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec; Radius : integer = 0) : boolean;
+function tDEMDataSet.OldGetSlopeAndAspect(MDDef.SlopeCompute,Col,Row : integer; var SlopeAsp : tSlopeAspectRec; Radius : integer = 0) : boolean;
 var
    sl     : tFourFloats;
    AspDir : tAspectDir;

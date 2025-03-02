@@ -104,7 +104,7 @@ object PickGeoStat: TPickGeoStat
     Top = 0
     Width = 339
     Height = 304
-    ActivePage = TabSheet1
+    ActivePage = TabSheet6
     Align = alClient
     MultiLine = True
     TabOrder = 1

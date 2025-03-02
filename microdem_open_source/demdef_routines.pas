@@ -101,6 +101,9 @@ var
 
 procedure InitializeMICRODEM;
 
+function PickCurvature : integer;
+
+
 //operations on file names
    function IsThisATIGERshapefile(fName : PathStr) : boolean;
    function CheckIfTigerOrOSM(fName : PathStr) : boolean;
@@ -110,8 +113,8 @@ procedure InitializeMICRODEM;
 //functions to return names or descriptions
    function CurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
    function DirectionName(Dir : DEMDefs.tCompassDirection) : shortstring;
-   function SlopeMethodName(Method : byte) : shortstring;
-   function ShortSlopeMethodName(Method : byte) : shortstring;
+   function SlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
+   function ShortSlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
    function SpeedString(MetersPerSec : float64) : ShortString;
 
    function PointTypeName(PointType : tPointType) : ShortString;
@@ -1512,8 +1515,6 @@ var
             AParameter('Geomorph','TrendText',TrendText,true);
             AParameter('Geomorph','ValleyRidgeThreshold',ValleyRidgeThreshold,7);
 
-            AParameter('Geomorph','SlopeLSQorder',SlopeLSQorder,2);
-            AParameter('Geomorph','SlopeLSQradius',SlopeLSQradius,1);
             AParameter('Geomorph','EvansApproximationAllowed',EvansApproximationAllowed,true);
 
             AParameter('Geomorph','RoughnessBox',RoughnessBox,5);
@@ -1816,14 +1817,15 @@ var
       {$IfDef ExDrainage}
       {$Else}
          with MDINIfile,MDDef do begin
-            AParameter('Drain','DrainageSlopeAlgorithm',DrainageSlopeAlgorithm,smEvansYoung);
+            //AParameter('Drain','DrainageSlopeAlgorithm',DrainageSlopeAlgorithm,smEvansYoung);
             AParameter('Drain','DrainageArrowSeparation',DrainageArrowSeparation,12);
             AParameter('Drain','DrainageArrowWidth',DrainageArrowWidth,2);
             AParameter('Drain','DrainageArrowLength',DrainageArrowLength,10);
             AParameter('Drain','DrainageArrowWidth',DrainageVectAvgArrowWidth,2);
             AParameter('Drain','DrainageArrowLength',DrainageVectAvgArrowLength,5);
             AParameter('Drain','DrainageSeedRadius',DrainageSeedRadius,1);
-            AParameter('Drain','DrainagePointSlope',DrainagePointSlope,true);
+            AParameter('Drain','DrainageMethod',DrainageMethod,2);
+            //AParameter('Drain','DrainagePointSlope',DrainagePointSlope,true);
             AParameter('Drain','DrainageVectorAverage',DrainageVectorAverage,false);
             AColorParameter('Drain','DrainageArrowColor',DrainageArrowColor,claBlue);
             AColorParameter('Drain','DrainageArrowColor',DrainageVectAvgArrowColor,claCyan);
@@ -3971,10 +3973,16 @@ begin
       {$EndIf}
 
       AParameter('Slope','CD2',CD2,True);
-      AParameter('Slope','SlopeAlgorithm',SlopeAlgorithm,smEvansYoung);
-      AParameter('Slope','SlopeRegionRadius',SlopeRegionRadius,1);
-      AParameter('Slope','CurvatureRegionRadius',CurvatureRegionRadius,2);
-      AParameter('Slope','NeedFullSlopeWindows',NeedFullSlopeWindows,true);
+      AParameter('Slope','SlopeAlgorithm',SlopeCompute.AlgorithmName,smEvansYoung);
+      AParameter('Slope','SlopeRadius',SlopeCompute.WindowRadius,1);
+      AParameter('Slope','CurveRadius',CurveCompute.WindowRadius,2);
+      AParameter('Slope','SlopeFullWindow',SlopeCompute.RequireFullWindow,true);
+      AParameter('Slope','CurveFullWindow',CurveCompute.RequireFullWindow,true);
+      AParameter('Slope','SlopeAllPts',SlopeCompute.UseAllPts,true);
+      AParameter('Slope','CurveAllPts',CurveCompute.UseAllPts,true);
+      AParameter('Slope','SlopeLSQ',SlopeCompute.LSQorder,1);
+      AParameter('Slope','CurveLSQ',CurveCompute.LSQorder,2);
+
       AParameter('Slope','AspectRegionSize',AspectRegionSize,5);
       AParameter('Slope','NumSlopeBands',NumSlopeBands,5);
 
@@ -5079,14 +5087,35 @@ begin
    {$EndIf}
 end;
 
-function SlopeMethodName(Method : byte) : shortstring;
+
+function PickCurvature : integer;
+var
+   sl : tStringList;
+  i: Integer;
 begin
-   case Method of
-      smZevenbergenThorne      : SlopeMethodName := 'Zevenbergen_and_Thorne';
-      smHorn  : SlopeMethodName := 'Horn';
-      smEvansYoung  : SlopeMethodName := 'Evans-Young';
-      smShary  : SlopeMethodName := 'Shary';
-      smLSQ  : SlopeMethodName := 'LSQ_order_' + IntToStr(MDDef.SlopeLSQorder) +'_' + FilterSizeStr(succ(2*MDDef.SlopeLSQradius));
+   sl := tStringList.Create;
+   for i := 1 to NumCurvatures do begin
+      sl.Add(IntegerToString(i,2) + '  ' + CurvatureNames[i]);
+   end;
+   if not GetFromList('Curvature LSP',Result,sl,true) then Result := 0;
+   sl.Destroy;
+end;
+
+function SlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
+var
+   TStr,FiltStr : shortstring;
+begin
+   if (Method.AlgorithmName = smLSQ) then begin
+      if Method.UseAllPts then TStr := '_all' else TStr := 'edge';
+      if TestEdgeEffect then TStr := TStr + '_hole' else TStr := TStr + '_full';
+   end;
+   FiltStr := '_' + FilterSizeStr(succ(2*Method.WindowRadius));
+   case Method.AlgorithmName of
+      smZevenbergenThorne      : SlopeMethodName := 'Zevenbergen_and_Thorne'  + FiltStr;
+      smHorn  : SlopeMethodName := 'Horn' + FiltStr;
+      smShary  : SlopeMethodName := 'Shary' + FiltStr;
+      smEvansYoung  : SlopeMethodName := 'Evans-Young' + FiltStr;
+      smLSQ  : SlopeMethodName := 'LSQ_order_' + IntToStr(Method.LSQorder) + FiltStr + '_' + TStr;
       {$IfDef IncludeOldSlopeAlgoritms}
          smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
          smONeillAndMark      : SlopeMethodName := '3 neighbors';
@@ -5101,9 +5130,9 @@ begin
 end;
 
 
-function ShortSlopeMethodName(Method : byte) : shortstring;
+function ShortSlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
 begin
-   case Method of
+   case Method.AlgorithmName of
       smZevenbergenThorne  : Result := 'ZT';
       smHorn  : Result := 'Horn';  //'N8S';
       smEvansYoung  : Result := 'Evans-Young';  //'N8E';

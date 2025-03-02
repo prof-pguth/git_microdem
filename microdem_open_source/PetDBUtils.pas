@@ -323,7 +323,6 @@ begin
 end;
 
 
-
 function ProgressIncrement(FiltRecsInDB : integer) : integer;
 begin
    if FiltRecsInDB < 10 then Result := 1
