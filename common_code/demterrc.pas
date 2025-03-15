@@ -487,22 +487,9 @@ end;
 
 
 procedure TGetTerrC.BitBtn10Click(Sender: TObject);
-//var
-   //fName : PathStr;
-   //DBlist : tStringList;
 begin
-   //if (CatDoing = tcElevOnly) then begin
-      DefineTerrainCategory;
-      //DBlist := tStringList.Create;
-      //DBlist.Add('LAT,LONG,ELEV');
-      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.HighZ := TerrainCategory.CatMaxElev;
-      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.LowZ := TerrainCategory.CatMinElev;
-      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.PlotExtremeZValues(nil,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev, dblist);
-      PlotExtremeZValues(MapOwner.MapDraw.DEMonMap,MapOwner,nil,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev);
-      //fName := Petmar.NextFileNumber(MDTempDir, 'terrain_cat_',DefaultDBExt);
-      //DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToLoadedDatabase(DBList,fName);
-      //EndProgress;
-   //end;
+   DefineTerrainCategory;
+   PlotExtremeZValues(MapOwner.MapDraw.DEMonMap,MapOwner,nil,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev);
 end;
 
 procedure TGetTerrC.BitBtn1Click(Sender: TObject);
@@ -651,8 +638,6 @@ begin
      DefineTerrainCategory;
 
      if (CatDoing = tcElevOnly) then begin
-        //MapOwner.HighZ := TerrainCategory.CatMaxElev;
-        //MapOwner.LowZ := TerrainCategory.CatMinElev;
         PlotExtremeZValues(MapOwner.MapDraw.DEMonMap,MapOwner,Memo1,TerrainCategory.CatMinElev,TerrainCategory.CatMaxElev);
      end;
 

@@ -21,10 +21,23 @@ unit compare_programs_algorithms;
 interface
 
  uses
-   SysUtils, Windows, Classes, Graphics, Controls,JPEG,DBCtrls,Math,dbClient,
-   System.Threading,System.SyncObjs,System.Diagnostics,System.TimeSpan,
+//needed for inline of core DB functions
+   Petmar_db,
+   Data.DB,
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end DB declarations
+   SysUtils, Windows, Classes, Graphics, Controls,JPEG,DBCtrls,Math,
    StrUtils,
-   db,
    System.Types,
 
    Nevadia_main,
@@ -57,7 +70,7 @@ uses
    DEMCoord,
    DEM_Manager,DEMOptions,
    PetDBUtils,
-   DEMDef_routines,Petimage,PETMAR_DB,
+   DEMDef_routines,Petimage,
    DEMStat,DEMMapf,
    MD_use_tools,
    gdal_tools,
@@ -181,10 +194,10 @@ procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
 
    procedure OpenOneWindowSize(Which : shortstring; FilterSize : integer);
    var
-      Evans,Horn,ZT,LSQ,Diff,DiffCat : integer;
+      Evans,Horn,ZT,LSQ{,Diff,DiffCat} : integer;
       DEMList : tDEMBooleanArray;
       TStr : shortstring;
-      Graph : tThisBaseGraph;
+      //Graph : tThisBaseGraph;
    begin
       InitializeDEMsWanted(DEMList,false);
       MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
@@ -203,7 +216,7 @@ procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
       DEMlist[LSQ] := true;
 
       TStr := DEMglb[DEM].AreaName + '_md_slope';
-      Graph := CreateGridHistograms(DEMList,TStr,0);
+      CreateGridHistograms(DEMList,TStr,0);
       JustElevationMoments(DEMlist,TStr,true,true);
 
       (*
@@ -277,8 +290,8 @@ procedure FilterToFullAnalysisWindow(DEM : integer; DEMList : tDEMBooleanArray);
 const
    fil = 3;
 var
-   i,x,y,OldPts,NumPts,MaskDEM : integer;
-   z : float32;
+   i,x,y,OldPts,{NumPts,}MaskDEM : integer;
+   //z : float32;
 begin
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile('FilterToFullAnalysisWindow using ' + DEMglb[DEM].AreaName + '  pts=' + IntToStr(DEMglb[DEM].ValidElevsInDEM)); {$EndIf}
 (*
@@ -430,8 +443,8 @@ procedure CompareTRI(DEM : integer; OpenMap : boolean = true);
 var
    DEMList : tDEMBooleanArray;
    Grid : integer;
-   Fixed : int64;
-   CorrelationMatrix : DEMStringGrid.TGridForm;
+   //Fixed : int64;
+   //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    StartComparisonProcess(DEM,DEMList);
 
@@ -516,7 +529,7 @@ end;
 
 procedure LoadLSPgrids(OpenMap,UTMGrid : boolean; Res : shortstring; var DEMlist : tDEMBooleanArray; ParamCode,ParamName : shortstring);
 var
-   fName : PathStr;
+   //fName : PathStr;
    NewMap : integer;
 
    procedure LoadOne(fName : PathStr; sName : shortstring);
@@ -624,10 +637,10 @@ end;
 procedure CompareAspectMaps(DEM : integer; OpenMap : boolean = true);
 var
    DEMList : tDEMBooleanArray;
-   Fixed,i : int64;
-   fName : PathStr;
+   Fixed : int64;
+   //fName : PathStr;
    Grid : integer;
-   CorrelationMatrix : DEMStringGrid.TGridForm;
+  //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    StartComparisonProcess(DEM,DEMList);
    SaveBackupDefaults;
@@ -671,9 +684,9 @@ procedure CompareSlopeMaps(DEM : integer);
 var
    NewMap : integer;
    DEMList : tDEMBooleanArray;
-   CorrelationMatrix : DEMStringGrid.TGridForm;
-   OutPath,
-   fName : PathStr;
+   //CorrelationMatrix : DEMStringGrid.TGridForm;
+   OutPath: PathStr;
+   // PathStr;
 
       procedure MatchAndSave(AreaName : shortstring; SaveIt : boolean = true);
       var
@@ -773,9 +786,9 @@ procedure CompareMICRODEMSlopeMaps(DEM : integer);
 var
    NewMap : integer;
    DEMList : tDEMBooleanArray;
-   CorrelationMatrix : DEMStringGrid.TGridForm;
-   OutPath,
-   fName : PathStr;
+   //CorrelationMatrix : DEMStringGrid.TGridForm;
+   OutPath : PathStr;
+   //fName : PathStr;
 
       procedure MatchAndSave(AreaName : shortstring; SaveIt : boolean = true);
       var
@@ -828,10 +841,11 @@ end {procedure CompareSlopeMaps};
 procedure CompareProfileCurvatures(DEM : integer);
 var
    DEMList : tDEMBooleanArray;
-   Fixed,i : int64;
-   fName : PathStr;
+   //Fixed,
+   i : int64;
+   //fName : PathStr;
    Grid : integer;
-   CorrelationMatrix : DEMStringGrid.TGridForm;
+   //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile('CompareProfileCurvatures in'); {$EndIf}
 
@@ -869,10 +883,11 @@ end;
 procedure ComparePlanCurvatures(DEM : integer);
 var
    DEMList : tDEMBooleanArray;
-   Fixed,i : int64;
-   fName : PathStr;
+   //Fixed,
+   i : int64;
+ //fName : PathStr;
    Grid : integer;
-   CorrelationMatrix : DEMStringGrid.TGridForm;
+   //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    StartComparisonProcess(DEM,DEMList);
 
@@ -903,9 +918,9 @@ end;
 procedure CompareTangentialCurvature(DEM : integer);
 var
    DEMList : tDEMBooleanArray;
-   Fixed : int64;
+   //Fixed : int64;
    Grid,i : integer;
-   fName : PathStr;
+   //fName : PathStr;
    //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    StartComparisonProcess(DEM,DEMList);
@@ -940,7 +955,7 @@ var
    DEMList : tDEMBooleanArray;
    //Fixed : int64;
    //Grid,
-   i : integer;
+   //i : integer;
    //fName : PathStr;
    //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin

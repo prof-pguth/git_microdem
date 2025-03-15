@@ -132,6 +132,7 @@ begin
    {$EndIf}
 end;
 
+
 function GetKoppenClass(Lat,Long : float64) : shortstring;
 var
    Dist,MinDist : float32;
@@ -158,9 +159,7 @@ begin
          Result := '';
       end;
    end;
-
 end;
-
 
 
 procedure LoadClimateData(var ClimateData : tClimateData);
@@ -193,7 +192,6 @@ begin
 end;
 
 
-
     function CheckDryClimate(var ClimateData : tClimateData) : boolean;
     var
        HumidLine,SteppeLine : float64;
@@ -203,9 +201,7 @@ end;
           MeanT := 0;
           for i := 1 to 12 do MeanT := MeanT + Temps[i];
           MeanT := DegCtoF( MeanT / 12);
-
           HumidLine  := 0.44 * (MeanT - TConst) * 2.54;
-
           if (HumidLine < TotalPrecip) then begin
              CheckDryClimate := false;
           end
@@ -439,7 +435,6 @@ begin
       end;
    end;
    PutBitmapInBox(Result);
-   //PetImage.GetImagePartOfBitmap(Result);
 end;
 
 
@@ -472,7 +467,6 @@ end;
 var
    XOff,YBottom,YDown : integer;
    MonthWidth : integer;
-
 
 
     function TKoppenGraph.TempY(T : float32) : integer;

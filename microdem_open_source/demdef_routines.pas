@@ -113,7 +113,7 @@ function PickCurvature : integer;
 //functions to return names or descriptions
    function CurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
    function DirectionName(Dir : DEMDefs.tCompassDirection) : shortstring;
-   function SlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
+   function SlopeMethodName(Method : tSlopeCurveCompute; Short : boolean = false) : shortstring;
    function ShortSlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
    function SpeedString(MetersPerSec : float64) : ShortString;
 
@@ -325,13 +325,12 @@ function VertDatumCode(VerticalDatum : shortstring) : integer;
 procedure MaskAllDEMsWithGeoBoundingBox(bb : sfboundBox);
 procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
 
-//function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
 function PossibleElevationUnits(What : byte) : boolean;
 
 
 var
    VegDenstColors : array[0..255] of tPlatformColor;
-
+   DrainageSlopeNumber1,DrainageSlopeNumber2 : tSlopeCurveCompute;
 
 
 implementation
@@ -1814,21 +1813,22 @@ var
          end;
       {$EndIf}
 
-      {$IfDef ExDrainage}
+      {$IfDef ExDrainage} //also used to compare slopes
       {$Else}
          with MDINIfile,MDDef do begin
             //AParameter('Drain','DrainageSlopeAlgorithm',DrainageSlopeAlgorithm,smEvansYoung);
+            AParameter('Drain','DrainageMethod',DrainageMethod,2);
             AParameter('Drain','DrainageArrowSeparation',DrainageArrowSeparation,12);
             AParameter('Drain','DrainageArrowWidth',DrainageArrowWidth,2);
             AParameter('Drain','DrainageArrowLength',DrainageArrowLength,10);
-            AParameter('Drain','DrainageArrowWidth',DrainageVectAvgArrowWidth,2);
-            AParameter('Drain','DrainageArrowLength',DrainageVectAvgArrowLength,5);
-            AParameter('Drain','DrainageSeedRadius',DrainageSeedRadius,1);
-            AParameter('Drain','DrainageMethod',DrainageMethod,2);
+            //AParameter('Drain','DrainageArrowLength',DrainageVectAvgArrowLength,5);
+            AColorParameter('Drain','DrainageArrowColor1',DrainageArrowColor1,claBlue);
+            AColorParameter('Drain','DrainageArrowColor2',DrainageArrowColor2,claLime);
+            //AParameter('Drain','DrainageSeedRadius',DrainageSeedRadius,1);
             //AParameter('Drain','DrainagePointSlope',DrainagePointSlope,true);
             AParameter('Drain','DrainageVectorAverage',DrainageVectorAverage,false);
-            AColorParameter('Drain','DrainageArrowColor',DrainageArrowColor,claBlue);
-            AColorParameter('Drain','DrainageArrowColor',DrainageVectAvgArrowColor,claCyan);
+            //AParameter('Drain','DrainageArrowWidth',DrainageVectAvgArrowWidth,2);
+            AColorParameter('Drain','DrainageVectAvgArrowColor',DrainageVectAvgArrowColor,claCyan);
             AParameterShortFloat('Drain','ReservoirTop',ReservoirTop,2.5);
             AParameterShortFloat('Drain','ReservoirLowestLevel',ReservoirLowestLevel,0.5);
             AParameterShortFloat('Drain','FloodStep',FloodStep,0.1);
@@ -2984,12 +2984,12 @@ var
          AColorParameter('Contour','BotContColor',BotContColor,claYellow);
          AColorParameter('Contour','OverlayContColor',OverlayContColor,claMaroon);
          AParameter('Contour','DelaunayLineThick',DelaunayLineThick,1);
-         AParameter('Contour','ContourLineThick',ContourLineThick,1);
+         //AParameter('Contour','ContourLineThick',ContourLineThick,2);
          AColorParameter('Contour','DelaunayLineColor',DelaunayLineColor,claMaroon);
          AColorParameter('Contour','ContourLineColor',ContourLineColor,claLime);
          AParameter('Contour','ShowDelauneyTriangles',ShowDelauneyTriangles,false);
          AParameter('Contour','LabelContours',LabelContours,false);
-         AParameter('Contour','ContourLineWidth',ContourLineWidth,1);
+         AParameter('Contour','ContourLineWidth',ContourLineWidth,2);
          AParameter('Contour','DefaultContourInterval',DefaultContourInterval,50);
          AParameter('Contour','DefaultContourInterval',DefaultContourInterval,10);
          AParameter('Contour','IndexContWidth ',IndexContWidth,2);
@@ -3401,10 +3401,11 @@ var
          AParameterShortFloat('MapDraw','BlowUpLatSize',BlowUpLatSize,0.05);
          AParameterShortFloat('MapDraw','LatLongCushion',LatLongCushion,0.025);
 
+         AParameter('MapDraw','GridLabelXoff',GridLabelXoff,5);
+         AParameter('MapDraw','GridLabelYoff',GridLabelYoff,5);
 
          AParameter('MapDraw','HighlightDiffMap',HighlightDiffMap,hdHighlight);
          AParameter('MapDraw','AutoMergeStartDEM',AutoMergeStartDEM,true);
-
 
          //AParameter('MapDrawing','StereoMode',StereoMode,smAnaglyph);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapDraw','StereoMode',ord(StereoMode));
@@ -3521,7 +3522,7 @@ var
          AParameter('MapGrid','UTMGridMaxPixelSize',UTMGridMaxPixelSize,1000);
          AParameter('MapGrid','ShowPrimaryGrid',ShowPrimaryGrid,true);
          AParameter('MapGrid','ShowSecondaryGrid',ShowSecondaryGrid,false);
-         AParameter('MapGrid','GridLabelDecimals',GridLabelDecimals,0);
+         AParameter('MapGrid','GridLabelDecimals',GridLabelDecimals,1);
          AParameter('MapGrid','ShowNativeGrid',ShowNativeGrid,false);
          AParameter('MapGrid','LabelNativeGrid',LabelNativeGrid,false);
 
@@ -4055,6 +4056,7 @@ begin
          AColorParameter('Maps','InsideMapGridColor',InsideMapGridColor,claNearWhite);
          //these are the fonts whose settings are stored, with the initial settings if they have not been changed
          InitializeMyFont('ContourLabelFont',ContourLabelFont,'TimesNewRoman',12,claBlack);
+         InitializeMyFont('GridPointLabelFont',GridPointLabelFont,'Arial',12,claBlack);
          InitializeMyFont('DefGisLabelFont1',DefGisLabelFont1,'Courier New',8,claBlack);
          InitializeMyFont('DefGisLabelFont2',DefGisLabelFont2,'Courier New',8,claBlack);
          InitializeMyFont('DefGISLegendFont',DefGISLegendFont,'Arial New',12,claBlack);
@@ -5101,12 +5103,13 @@ begin
    sl.Destroy;
 end;
 
-function SlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
+
+function SlopeMethodName(Method : tSlopeCurveCompute; Short : boolean = false) : shortstring;
 var
    TStr,FiltStr : shortstring;
 begin
-   if (Method.AlgorithmName = smLSQ) then begin
-      if Method.UseAllPts then TStr := '_all' else TStr := 'edge';
+   if (not Short) and (Method.AlgorithmName = smLSQ) then begin
+      if Method.UseAllPts then TStr := '__all' else TStr := '_edge';
       if TestEdgeEffect then TStr := TStr + '_hole' else TStr := TStr + '_full';
    end;
    FiltStr := '_' + FilterSizeStr(succ(2*Method.WindowRadius));
@@ -5115,7 +5118,7 @@ begin
       smHorn  : SlopeMethodName := 'Horn' + FiltStr;
       smShary  : SlopeMethodName := 'Shary' + FiltStr;
       smEvansYoung  : SlopeMethodName := 'Evans-Young' + FiltStr;
-      smLSQ  : SlopeMethodName := 'LSQ_order_' + IntToStr(Method.LSQorder) + FiltStr + '_' + TStr;
+      smLSQ  : SlopeMethodName := 'LSQ_order_' + IntToStr(Method.LSQorder) + FiltStr + TStr;
       {$IfDef IncludeOldSlopeAlgoritms}
          smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
          smONeillAndMark      : SlopeMethodName := '3 neighbors';
@@ -5439,6 +5442,18 @@ initialization
    AspColorW := RGBtrip(255,171,71);
    AspColorNW := RGBtrip(244,250,0);
    AspColorN := RGBtrip(132,214,0);
+   DrainageSlopeNumber1.AlgorithmName := smLSQ;
+   DrainageSlopeNumber1.WindowRadius := 1;
+   DrainageSlopeNumber1.LSQorder := 2;
+   DrainageSlopeNumber1.UseAllPts := true;
+   DrainageSlopeNumber1.RequireFullWindow := true;
+
+   DrainageSlopeNumber2.AlgorithmName := smLSQ;
+   DrainageSlopeNumber2.WindowRadius := 2;
+   DrainageSlopeNumber2.LSQorder := 3;
+   DrainageSlopeNumber2.UseAllPts := true;
+   DrainageSlopeNumber2.RequireFullWindow := true;
+
 finalization
 end.
 

@@ -1034,7 +1034,6 @@ begin
       {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.PlotScaledSymbolsButtonClick in, dbAutoShow=' + IntToStr(GISdb[theDB].dbOpts.dbAutoShow) + ' DbOpts.dbColorMode=' + IntToStr(GISdb[theDB].DbOpts.dbColorMode)); {$EndIf}
       GISdb[theDB].RedrawLayerOnMap;
       GISdb[theDB].ColorButtonForSymbol(GISdb[theDB].dbTableF.BitBtn1);
-
       {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.PlotScaledSymbolsButtonClick out'); {$EndIf}
       NowIdle := true;
    end;
@@ -1108,7 +1107,7 @@ begin
       if (GISdb[theDB].theGraphOwner <> Nil) then CopyImageToBitmap(GISdb[theDB].TheGraphOwner.Image1,GISdb[theDB].dbTablef.GraphOwnerBitmap);
   {$EndIf}
   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Tdbtablef.Quickfiltering1Click' + ' ComboBox8.Items.Count=' + IntToStr(ComboBox10.Items.Count) + ' qf2ComboBox9.Items.Count=' + IntToStr(qf2ComboBox9.Items.Count)); {$EndIf}
-   CheckThemPanels;
+  CheckThemPanels;
 end;
 
 
@@ -1209,7 +1208,6 @@ procedure Tgis_scaled_form.CheckBox17Click(Sender: TObject);
 begin
    Panel12.Visible := CheckBox17.Checked;
    CheckThemPanels;
-   //StartQuickFilter(false);
 end;
 
 
@@ -1361,7 +1359,6 @@ end;
 
 procedure Tgis_scaled_form.ChangeDisplayOptions;
 begin
-   //GISdb[theDB].NeedToDefineColorTable := true;
    GISdb[theDB].EmpSource.Enabled := false;
    FillInLegendPanel;
    GISdb[theDB].EmpSource.Enabled := true;
@@ -1391,9 +1388,7 @@ var
 begin
    {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.ShowFieldRanges in (change color symbolization)'); {$EndIf}
    if (NumbersComboBox2.Text = '') then exit;
-
    if ResetRange or (abs(GISdb[theDB].dbOpts.ColorMax - GISdb[theDB].dbOpts.ColorMin) < 0.01)  then GISdb[theDB].FieldRange(NumbersComboBox2.Text,GISdb[theDB].dbOpts.ColorMin,GISdb[theDB].dbOpts.ColorMax,GISdb[theDB].MyData.Filtered);
-
    tStr := RealToString(GISdb[theDB].dbOpts.ColorMin,-12,-2) + ' to ' + RealToString(GISdb[theDB].dbOpts.ColorMax,-12,-2);
    Label3.Caption := 'Color: ' + TStr;
    Label5.Caption := 'Field: ' + TStr;
@@ -1473,7 +1468,6 @@ begin
       Image1.Picture.Graphic := Bitmap;
       Bitmap.Free;
    end;
-   //else CreateBitmap(Bitmap,Image1.Width,Image1.Height);
 
    if Panel9.Visible then begin
       BitBtn5.Caption := '';
@@ -1630,7 +1624,6 @@ begin
 end;
 
 
-
 procedure Tgis_scaled_form.FormCreate(Sender: TObject);
 begin
    HistGraph := Nil;
@@ -1712,8 +1705,6 @@ var
       end;
 
       function MakeTimeFilter(aDB : integer) : boolean;
-      //var
-         //NewTimeFilter : shortstring;
       begin
          {$IfDef RecordSym} WriteLineToDebugFile('MakeTimeFilter'); {$EndIf}
          if GISdb[aDB].MyData.FieldExists('JAN_U_MS') then begin
@@ -1724,7 +1715,6 @@ var
             GISdb[aDB].dbOpts.MagField := ComboBox6.Text;
             GISdb[aDB].dbOpts.DirField := ComboBox7.Text;
          end;
-         //GISdb[aDB].MakeNewMonthlyFilterAndRedraw(Month);
       end;
 
 
@@ -1784,7 +1774,6 @@ begin
       GISdb[LabelDB].theMapOwner.Image1.Canvas.TextOut(5,5, TStr);
    end;
    ShowDefaultCursor;
-
    {$IfDef RecordSym} WriteLineToDebugFile('Tgis_scaled_form.RadioGroup8Click out'); {$EndIf}
 end;
 

@@ -1229,7 +1229,7 @@ var
              for i := pred(LoadList.Count) downto 0 do begin
                 fName := LoadList.Strings[i];
                 if not FileExists(fName) then begin
-                   MessageToContinue('File missing: ' + fName);
+                   MessageToContinue('File missing from library: ' + fName);
                    LoadList.Delete(i);
                 end;
              end;
@@ -1239,21 +1239,21 @@ var
              end;
 
              if (LoadList.Count = 1) then begin
-                if (LoadList.Count) = 1 then begin
-                   fName := LoadList.Strings[0];
-                   {$IfDef RecordIndex} WriteLineToDebugFile('load single DEM=' + ExtractFileName(fName)); {$EndIf}
-                   LoadNewDEM(Result,fName,DisplayIt);
-                end;
+                fName := LoadList.Strings[0];
+                {$IfDef RecordIndex} WriteLineToDebugFile('load single DEM=' + ExtractFileName(fName)); {$EndIf}
+                LoadNewDEM(Result,fName,DisplayIt);
                 LoadList.Destroy;
              end
              else begin
                 {$IfDef RecordIndex} WriteLineToDebugFile('call MergeDEMs, count=' + IntToStr(LoadList.Count)); {$EndIf}
                 Result := MergeMultipleDEMsHere(LoadList,DisplayIt,false);  //May 2023, set to use old MICRODEM merge
-                DEMGlb[Result].DEMFileName := NextFileNumber(MDTempDir, MergeSeriesName + '_','.dem');
+                DEMGlb[Result].DEMFileName := NextFileNumber(MDTempDir, MergedName + '_','.dem');
                 DEMGlb[Result].WriteNewFormatDEM(DEMGlb[Result].DEMFileName);
              end;
-             //Loadone := true;
-             if ValidDEM(Result) then DEMGlb[Result].AreaName := MergedName;
+             if ValidDEM(Result) then begin
+                DEMGlb[Result].AreaName := MergedName;
+                if DisplayIt then DEMGlb[Result].SelectionMap.MapDraw.BaseTitle := MergedName;
+             end;
              {$If Defined(TrackPixelIs)} WriteLineToDebugFile('Loaded ' + DEMGlb[WantDEM].AreaName + '  ' + DEMGlb[WantDEM].GridCornerModelAndPixelIsString); {$EndIf}
              {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(WantDEM)); {$EndIf}
          end;
@@ -1267,7 +1267,6 @@ begin
    try
       LoadingFromMapLibrary := true;
       ShowHourglassCursor;
-      //LoadOne := false;
       Result := 0;
       MDDef.MissingToSeaLevel := false;
       OpenIndexedSeriesTable(IndexSeriesTable);
@@ -1276,9 +1275,8 @@ begin
 
       while not IndexSeriesTable.Eof do begin
          MergeSeriesName := IndexSeriesTable.GetFieldByNameAsString('SERIES');
-         MergedName := '';
-         if IndexSeriesTable.FieldExists('SHORT_NAME') then MergedName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME');
-         if (MergedName = '') then MergedName := MergeSeriesName;
+         if IndexSeriesTable.FieldExists('SHORT_NAME') then MergedName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME')
+         else MergedName := MergeSeriesName;
          {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
          DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,bb);
          {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Files found: ' + IntToStr(DataInSeries.Count)); {$EndIf}
@@ -1297,40 +1295,6 @@ begin
    {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Out LoadMapLibraryBox; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
 end;
 
-(*
-
-procedure CopyMapLibraryBox(bb : sfBoundBox);
-var
-   DataInSeries : tStringList;
-   IndexSeriesTable : tMyData;
-   i : integer;
-   OutPath,ThisOutPath : PathStr;
-begin
-   {$IfDef RecordIndex} WriteLineToDebugFile('Enter CopyMapLibraryBox ' + sfBoundBoxToString(bb)); {$EndIf}
-   ShowHourglassCursor;
-   OutPath := MainMapData;
-   GetDOSPath('copy map library data',OutPath);
-   OpenIndexedSeriesTable(IndexSeriesTable);
-   IndexSeriesTable.ApplyFilter('(USE = ' + QuotedStr('Y') + ')');
-
-   while not IndexSeriesTable.Eof do begin
-      DataInSeries := GetListOfDataInBoxInSeries(IndexSeriesTable.GetFieldByNameAsString('SERIES'),bb);
-      {$IfDef RecordIndex} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName + '  DEMs=' + IntToStr(DataInSeries.Count)); {$EndIf}
-      if (DataInSeries <> Nil) and (DataInSeries.Count > 0) then begin
-         ThisOutPath := OutPath + IndexSeriesTable.GetFieldByNameAsString('SERIES') + '\';
-         SafeMakeDir(ThisOutPath);
-         for i := 0 to pred(DataInSeries.Count) do begin
-            CopyFile(DataInSeries.Strings[i],ThisOutPath + ExtractFileName(DataInSeries.Strings[i]));
-         end;
-      end;
-      DataInSeries.Destroy;
-      IndexSeriesTable.Next;
-   end;
-   IndexSeriesTable.Destroy;
-   ShowDefaultCursor;
-   {$IfDef RecordIndex} WriteLineToDebugFile('Out CopyMapLibraryBox'); {$EndIf}
-end;
-*)
 
 procedure CreateLandsatIndex(Browse : boolean);
 var

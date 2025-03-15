@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1718
+  ClientHeight = 1738
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1691
+    Height = 1711
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitLeft = 8
-    ExplicitTop = 75
+    ExplicitHeight = 1691
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,12 +208,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1646
+      Top = 1666
       Width = 3840
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1606
+      ExplicitTop = 1646
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -4432,6 +4431,10 @@ object MapForm: TMapForm
           Caption = 'Scattergrams'
           OnClick = Scattergrams1Click
         end
+        object Elevationslopeplots1: TMenuItem
+          Caption = 'Elevation slope plots'
+          OnClick = Elevationslopeplots1Click
+        end
         object Differencemaps1: TMenuItem
           Caption = 'Difference maps'
           OnClick = Differencemaps1Click
@@ -5468,20 +5471,20 @@ object MapForm: TMapForm
         Caption = '-'
       end
       object PickseriesandloadDEMsfromlibrary1: TMenuItem
-        Caption = 'Pick series and load DEMs from library'
+        Caption = 'Pick multiple series and load DEMs from library'
         OnClick = PickseriesandloadDEMsfromlibrary1Click
       end
+      object PicksingleDEMseriesthisarea1: TMenuItem
+        Caption = 'Pick single DEM seriesnad load DEMs from library'
+        OnClick = PicksingleDEMseriesthisarea1Click
+      end
       object DEMsfrommaplibrary1: TMenuItem
-        Caption = 'DEMs from map library, this point'
+        Caption = 'Active DEMs from map library, this point'
         OnClick = DEMsfrommaplibrary1Click
       end
       object DEMsfrommaplibrarymaparea1: TMenuItem
-        Caption = 'DEMs from map library, map area'
+        Caption = 'Active DEMs from map library, map area'
         OnClick = DEMsfrommaplibrarymaparea1Click
-      end
-      object PicksingleDEMseriesthisarea1: TMenuItem
-        Caption = 'Pick single DEM series, this area'
-        OnClick = PicksingleDEMseriesthisarea1Click
       end
       object LC100landcover2: TMenuItem
         Caption = '-'
@@ -6360,29 +6363,6 @@ object MapForm: TMapForm
       object N48: TMenuItem
         Caption = '-'
       end
-      object Roughnessstddevofslope1: TMenuItem
-        Caption = 'Roughness (std dev of slope)'
-        object N3x3region1: TMenuItem
-          Caption = '3x3 region'
-          OnClick = N3x3region1Click
-        end
-        object N5x5region1: TMenuItem
-          Caption = '5x5 region'
-          OnClick = N5x5region1Click
-        end
-        object N7x7region1: TMenuItem
-          Caption = '7x7 region'
-          OnClick = N7x7region1Click
-        end
-        object N7x7region2: TMenuItem
-          Caption = '9x9 region'
-          OnClick = N7x7region2Click
-        end
-      end
-      object RoughnessfromSSO1: TMenuItem
-        Caption = 'Roughness (from SSO)'
-        OnClick = RoughnessfromSSO1Click
-      end
       object N56: TMenuItem
         Caption = '-'
       end
@@ -6549,12 +6529,39 @@ object MapForm: TMapForm
         OnClick = Immediateneighbordropoff1Click
       end
     end
-    object Convergenceindex1: TMenuItem
-      Caption = 'Convergence index'
-      OnClick = Convergenceindex1Click
-    end
     object opographicruggednessindex1: TMenuItem
-      Caption = 'Topographic ruggedness '
+      Caption = 'Topographic ruggedness/roughness '
+      object Roughnessstddevofslope1: TMenuItem
+        Caption = 'Roughness (std dev of slope)'
+        object N3x3region1: TMenuItem
+          Caption = '3x3 region'
+          OnClick = N3x3region1Click
+        end
+        object N5x5region1: TMenuItem
+          Caption = '5x5 region'
+          OnClick = N5x5region1Click
+        end
+        object N7x7region1: TMenuItem
+          Caption = '7x7 region'
+          OnClick = N7x7region1Click
+        end
+        object N7x7region2: TMenuItem
+          Caption = '9x9 region'
+          OnClick = N7x7region2Click
+        end
+      end
+      object RoughnessfromSSO1: TMenuItem
+        Caption = 'Roughness (from SSO)'
+        OnClick = RoughnessfromSSO1Click
+      end
+      object Roughnessmapaveragevector1: TMenuItem
+        Caption = 'Roughness map (average vector)'
+        OnClick = Roughnessmapaveragevector1Click
+      end
+      object VRM1: TMenuItem
+        Caption = 'VRM'
+        OnClick = VRM1Click
+      end
       object RICK1: TMenuItem
         Caption = 'RRI (radial roughness index)'
         OnClick = RICK1Click
@@ -6579,6 +6586,10 @@ object MapForm: TMapForm
         Caption = 'Rugosity'
         OnClick = Rugosity1Click
       end
+      object AdjustedStdDevElevRoughness1: TMenuItem
+        Caption = 'Adjusted Std Dev Elev Roughness'
+        OnClick = AdjustedStdDevElevRoughness1Click
+      end
       object Experimental2: TMenuItem
         Caption = 'Experimental'
         object Normalizenorthsouth1: TMenuItem
@@ -6598,6 +6609,10 @@ object MapForm: TMapForm
           OnClick = Alolthreenormalizations1Click
         end
       end
+    end
+    object Convergenceindex1: TMenuItem
+      Caption = 'Convergence index'
+      OnClick = Convergenceindex1Click
     end
     object Terrainorganizationmaps1: TMenuItem
       Caption = 'Terrain organization maps'
@@ -7246,6 +7261,10 @@ object MapForm: TMapForm
     object CompareLSQedgeeffects1: TMenuItem
       Caption = 'Compare LSQ edge effects on map'
       OnClick = CompareLSQedgeeffects1Click
+    end
+    object Compare3LSQslopemaps1: TMenuItem
+      Caption = 'Compare 3 LSQ slope maps'
+      OnClick = Compare3LSQslopemaps1Click
     end
     object Compareslopeaspectalgorithmsonmap1: TMenuItem
       Caption = 'Compare slope/aspect algorithms on map'

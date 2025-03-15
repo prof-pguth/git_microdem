@@ -9,9 +9,6 @@
 {________________________________________}
 
 
-//type
-   //tlas2Las = (lasAssignProjection,lasToUTM,lasAssignEPSGreprojectUTM,lasAssignUTM,lasAssignGeo,lasReprojectSpecifiedtoGeo);
-
       procedure LasToLasTools(How : tlas2Las);
       const
          StartDir : PathStr = '';
@@ -31,10 +28,10 @@
             Params := '';
             Params2 := '';
             elevparams := '';
-            if (how = lasAssignProjection {Sender = AssignProjection1}) or (How = lasAssignEPSGreprojectUTM) then begin
+            if (how = lasAssignProjection) or (How = lasAssignEPSGreprojectUTM) then begin
                params2 := ' -epsg 26985';
                GetString('Assign input EPSG code',params2,false,ReasonableTextChars);
-               if (how = lasAssignProjection) {Sender = AssignProjection1} then begin
+               if (how = lasAssignProjection)  then begin
                   //params := ' -sp83 OH_N -feet -elevation_feet  -target_meter -target_utm auto';
                   //params := ' -sp83 MD -meter -elevation_meter  -target_meter -target_utm auto';
                   params := '-target_epsg 26985';
@@ -132,7 +129,6 @@ begin
    end;
    FilesWanted.Free;
 end;
-
 
 
 function GetLASToolsFileName(var fName : PathStr) : boolean;

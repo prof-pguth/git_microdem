@@ -134,7 +134,7 @@ procedure HowBigIsAnArcSecond;
 
                function DoPixelSize(Lat : float64) : shortString;
                var
-                  Bearing,dx,dy,sdx,sdy : float64;
+                  Bearing,dx,dy{,sdx,sdy} : float64;
                begin
                   VincentyCalculateDistanceBearing(Lat + 0.5 /3600,Long,Lat-0.5 /3600,Long,dx,Bearing);
                   VincentyCalculateDistanceBearing(Lat,Long+0.5 /3600,Lat,Long - 0.5 /3600,dy,Bearing);

@@ -363,7 +363,7 @@ var
    DEM1,DEM2,i : integer;
    Diffs : array[1..NumDiffs] of integer;
    n11,n12,n13,n21,n22,n23,
-   dp,mag1,mag2,
+   dp,  //,mag1,mag2,
    z1,z2 : float32;
    Lat,Long,fc,fr : float64;
    IdenticalGrids : boolean;

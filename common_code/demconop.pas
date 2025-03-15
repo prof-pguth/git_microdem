@@ -82,7 +82,7 @@ type
 
 
 var
-  ContourOptions: TContourOptions;
+  ContourOptions : TContourOptions;
 
 
 implementation

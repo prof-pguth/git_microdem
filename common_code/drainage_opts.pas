@@ -36,9 +36,9 @@ type
     BitBtn3: TBitBtn;
     Label5: TLabel;
     Edit4: TEdit;
-    Edit5: TEdit;
-    Label6: TLabel;
     RadioGroup1: TRadioGroup;
+    BitBtn1: TBitBtn;
+    BitBtn4: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
@@ -48,12 +48,9 @@ type
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
-    procedure Edit3Change(Sender: TObject);
     procedure Edit4Change(Sender: TObject);
-    procedure CheckBox1Click(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
-    procedure Edit5Change(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
   private
     { Private declarations }
@@ -68,11 +65,10 @@ implementation
 
 {$R *.dfm}
 
-
 uses
    DEMDefs,Demdef_routines,
    DemCoord,
-   Petmar;
+   Petmar,Petmar_types, PETImage;
 
 procedure SetDrainageDelineationOptions;
 var
@@ -84,42 +80,34 @@ begin
    MapOwner.MapDraw.RedrawDrainageVectors := true;
 end;
 
+
 procedure Tdrain_opt_form.FormCreate(Sender: TObject);
 begin
     MapOwner := nil;
-    //Label3.Caption := SlopeMethodName(MDdef.DrainageSlopeAlgorithm);
     Edit1.Text := IntToStr(MDDef.DrainageArrowSeparation);
     Edit2.Text := IntToStr(MDDef.DrainageArrowLength);
-    //Edit3.Text := IntToStr(MDDef.SlopeCompute.WindowRadius);
     Edit4.Text := IntToStr(MDDef.AspectRegionSize);
-    Edit5.Text := IntToStr(MDDef.DrainageVectAvgArrowLength);
-    //CheckBox1.Checked := MDDef.DrainagePointSlope;
     CheckBox2.Checked := MDDef.DrainageVectorAverage;
-    Petmar.ColorLineWidthBitBtn(BitBtn2,MDDef.DrainageArrowColor,MDDef.DrainageArrowWidth);
-    Petmar.ColorLineWidthBitBtn(BitBtn3,MDDef.DrainageVectAvgArrowColor,MDDef.DrainageVectAvgArrowWidth);
+    Petmar.ColorLineWidthBitBtn(BitBtn2,MDDef.DrainageArrowColor1,MDDef.DrainageArrowWidth);
+    Petmar.ColorLineWidthBitBtn(BitBtn1,MDDef.DrainageArrowColor2,MDDef.DrainageArrowWidth);
     RadioGroup1.ItemIndex := MDDef.DrainageMethod;
 end;
 
 
 procedure Tdrain_opt_form.BitBtn2Click(Sender: TObject);
 begin
-   Petmar.PickLineSizeAndColor('drainage vectors',BitBtn2,MDDef.DrainageArrowColor,MDDef.DrainageArrowWidth);
+   Petmar.PickLineSizeAndColor('drainage vectors 2d order',BitBtn2,MDDef.DrainageArrowColor1,MDDef.DrainageArrowWidth);
 end;
 
 procedure Tdrain_opt_form.BitBtn3Click(Sender: TObject);
 begin
-   Petmar.PickLineSizeAndColor('drainage vectors',BitBtn3,MDDef.DrainageVectAvgArrowColor,MDDef.DrainageVectAvgArrowWidth);
-end;
-
-procedure Tdrain_opt_form.CheckBox1Click(Sender: TObject);
-begin
-    //MDDef.DrainagePointSlope := CheckBox1.Checked;
+   Petmar.PickLineSizeAndColor('drainage vectors',BitBtn3,MDDef.DrainageVectAvgArrowColor,MDDef.DrainageArrowWidth);
 end;
 
 procedure Tdrain_opt_form.CheckBox2Click(Sender: TObject);
 begin
-    MDDef.DrainageVectorAverage := CheckBox2.Checked;
-    RedrawSpeedButton12Click(Sender);
+   MDDef.DrainageVectorAverage := CheckBox2.Checked;
+   RedrawSpeedButton12Click(Sender);
 end;
 
 procedure Tdrain_opt_form.Edit1Change(Sender: TObject);
@@ -132,26 +120,14 @@ begin
    Petmar.CheckEditString(Edit2.Text,MDDef.DrainageArrowSeparation);
 end;
 
-procedure Tdrain_opt_form.Edit3Change(Sender: TObject);
-begin
-   //CheckEditString(Edit3.Text,MDDef.SlopeCompute.WindowRadius);
-end;
-
 procedure Tdrain_opt_form.Edit4Change(Sender: TObject);
 begin
    CheckEditString(Edit4.Text,MDDef.AspectRegionSize);
 end;
 
-procedure Tdrain_opt_form.Edit5Change(Sender: TObject);
-begin
-   CheckEditString(Edit5.Text,MDDef.DrainageVectAvgArrowLength);
-end;
-
-
 procedure Tdrain_opt_form.BitBtn1Click(Sender: TObject);
 begin
-   //DemCoord.PickSlopeAspectMethod('',MDdef.DrainageSlopeAlgorithm);
-   //Label3.Caption := SlopeMethodName(MDdef.DrainageSlopeAlgorithm);
+   Petmar.PickLineSizeAndColor('drainage vectors 3d order',BitBtn1,MDDef.DrainageArrowColor1,MDDef.DrainageArrowWidth);
 end;
 
 procedure Tdrain_opt_form.OKBtnClick(Sender: TObject);

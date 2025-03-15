@@ -114,8 +114,8 @@ begin
          if ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
             for Long := FirstLong to LastLong do begin
                {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
-               LongLow := Long;
-               LongHi := Long + xminutes;
+               //LongLow := Long;
+               //LongHi := Long + xminutes;
                xch := 0;
                for i := 0 to pred(xtiles) do  begin
                   LongLow := Long + i * xminutes;

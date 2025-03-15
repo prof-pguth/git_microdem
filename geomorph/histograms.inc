@@ -387,9 +387,10 @@ var
   i,NumVals,NegBins : integer;
   Value,Range,MaxCount,MinInSeries,MaxInSeries : float32;
   l2 : shortstring;
-  AutoScale,First : boolean;
+  //AutoScale,
+  First : boolean;
   Bins : array[0..MaxBins] of integer;
-  StackedPercents : boolean;
+  //StackedPercents : boolean;
 
 
          function ProcessSeries(fName : PathStr) : boolean;

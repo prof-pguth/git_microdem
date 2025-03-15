@@ -160,7 +160,6 @@ begin
         if TryToOpenOnePLSS(MapOwner,3,PLSSFile[3]) then
            if TryToOpenOnePLSS(MapOwner,4,PLSSFile[4]) then
               TryToOpenOnePLSS(MapOwner,5,PLSSFile[5]);
-      //MapOwner.DoCompleteMapRedraw;
    end;
   {$If Defined(RecordPLSS) or Defined(PLSSOpening)} WriteLineToDebugFile('TryToOpenPLSS complete'); {$EndIf}
 end;

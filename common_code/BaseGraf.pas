@@ -2359,7 +2359,7 @@ var
       end;
 
 var
-   x1,y1,i,y : integer;
+   x1,y1,i{,y} : integer;
    yf : float32;
    TStr : shortstring;
    LegBMP : tMyBitmap;
@@ -4943,7 +4943,7 @@ end;
 procedure TThisBaseGraph.PlotXYColorFromDB(Bitmap : tMyBitmap);
 var
    Table : tMyData;
-   x,y : float32;
+   //x,y : float32;
    xp,yp,Color : array[1..25] of integer;
    i,j,k: integer;
    Lines : tStringList;
@@ -5099,9 +5099,9 @@ end;
 
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
-   BitMap,bmp : tMyBitmap;
+   BitMap{,bmp} : tMyBitmap;
    LastXi,LastYi,LastYi2,
-   xi,yi,yi2,i,err,NumRead,tw,ts: integer;
+   xi,yi,yi2,i,err,NumRead{,tw,ts} : integer;
    x      : float32;
    MenuStr : ShortString;
    aTable : tMyData;

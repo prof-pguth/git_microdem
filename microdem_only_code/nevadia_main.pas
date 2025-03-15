@@ -2156,7 +2156,7 @@ var
          if Action = 'SLOPE_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := CreateSlopeMapPercent(false,DEM,outfile,SlopeDegree);
+               {NewDEM :=} CreateSlopeMapPercent(false,DEM,outfile,SlopeDegree);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
             end;
          end;
@@ -2164,7 +2164,7 @@ var
          if Action = 'CURVE_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := CreateCurvatureMap(WhichCurvature,false,DEM,OutFile);
+               {NewDEM :=} CreateCurvatureMap(WhichCurvature,false,DEM,OutFile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('curvature map created'); {$EndIf}
                //DEMGlb[NewDEM].SaveAsGeotiff(outfile);
                //{$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
@@ -2205,7 +2205,7 @@ var
          if Action = 'RESAMP_AVG' then begin
             if OpenADEM(true) then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := DEMGlb[DEM].ResampleByAveraging(false,Outfile);
+               {NewDEM :=} DEMGlb[DEM].ResampleByAveraging(false,Outfile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
             end;
          end;

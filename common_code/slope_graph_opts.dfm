@@ -3,7 +3,7 @@ object slopegraphopts: Tslopegraphopts
   Top = 205
   BorderIcons = []
   Caption = 'Elevation/Slope Graph options'
-  ClientHeight = 269
+  ClientHeight = 287
   ClientWidth = 356
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -94,8 +94,8 @@ object slopegraphopts: Tslopegraphopts
     TabOrder = 8
   end
   object HelpBtn: TBitBtn
-    Left = 126
-    Top = 234
+    Left = 118
+    Top = 252
     Width = 83
     Height = 27
     Kind = bkHelp
@@ -107,8 +107,8 @@ object slopegraphopts: Tslopegraphopts
     IsControl = True
   end
   object OKBtn: TBitBtn
-    Left = 32
-    Top = 234
+    Left = 24
+    Top = 252
     Width = 73
     Height = 27
     Kind = bkOK

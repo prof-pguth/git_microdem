@@ -218,7 +218,7 @@ type
     Label16: TLabel;
     Edit20: TEdit;
     Label22: TLabel;
-    Edit24: TEdit;
+    //Edit24: TEdit;
     Button3: TButton;
     Label23: TLabel;
     TabSheet20: TTabSheet;
@@ -1020,7 +1020,7 @@ begin
    Edit21.Text := RealToString(MDDef.BlowUpLatSize,-12,-8);
    Edit22.Text := RealToString(MDDef.BlowUpLongSize,-12,-8);
    Edit23.Text := IntToStr(MDdef.MaxThreadsForPC);
-   Edit24.Text := IntToStr(MDDef.GridLabelDecimals);
+   //Edit24.Text := IntToStr(MDDef.GridLabelDecimals);
    Edit26.Text := RealToString(MDDef.OpennessHowHigh,-12,-2);
    Edit28.Text := RealToString(MDDef.VegGridRandomizationDistance,-12,2);
    Edit29.Text := IntToStr(MDDef.DbMinIntFieldSize);
@@ -1660,7 +1660,7 @@ begin
    CheckEditString(Edit21.Text,MDDef.BlowUpLatSize);
    CheckEditString(Edit22.Text,MDDef.BlowUpLongSize);
    CheckEditString(Edit23.Text,MDdef.MaxThreadsForPC);
-   CheckEditString(Edit24.Text,MDDef.GridLabelDecimals);
+   //CheckEditString(Edit24.Text,MDDef.GridLabelDecimals);
    CheckEditString(Edit26.Text,MDDef.OpennessHowHigh);
    CheckEditString(Edit28.Text,MDDef.VegGridRandomizationDistance);
    CheckEditString(Edit29.Text,MDDef.DbMinIntFieldSize);

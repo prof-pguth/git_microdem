@@ -570,6 +570,7 @@ end;
 
 procedure TMapOverlayForm.BitBtn3Click(Sender: TObject);
 begin
+   TheMapForm.OverlayUp(ovoContours);
    TheMapForm.Contourinterval1Click(Nil);
 end;
 

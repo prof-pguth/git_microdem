@@ -551,31 +551,34 @@ end {DrawGridLines};
             z : float32;
             Col,Row,xp,yp : integer;
             TStr : ShortString;
+
+            procedure Point(Col,Row : float32);
+            begin
+                 if DEMGlb[DEMonMap].GetElevMeters(Col,Row,z) then begin
+                    DEMGridToScreen(Col,Row,xp,yp);
+                    ScreenSymbol(Bitmap.Canvas,xp,yp,DEMGridSym,DEMGridSymSize,DEMGridSymColor);
+                    Bitmap.Canvas.Brush.Style := bsClear;
+                    if DEMGridLabel then begin
+                       TStr := RealToString(z,-18,MDDef.GridLabelDecimals);
+                       xp := xp - Bitmap.Canvas.TextWidth(TStr) div 2;
+                       Bitmap.Canvas.TextOut(xp+MDDef.GridLabelXoff,yp+MDDef.GridLabelYoff,TStr);
+                    end;
+                 end;
+            end;
+
          begin
             if ValidDEMonMap then begin
+               LoadMyFontIntoWindowsFont(MDDef.GridPointLabelFont,Bitmap.Canvas.Font);
                Bitmap.Canvas.Font.Name := 'Verdana';
-               Bitmap.Canvas.Font.Style := [fsBold];
-               //if ShowSatProgress then StartProgressAbortOption('Grid');
                for Col := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
-                  //if (Col mod 50 = 0) and ShowSatProgress then UpdateProgressBar(Col/DEMGlb[DEMonMap].DEMheader.NumCol);
                   for Row := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
-                     if DEMGlb[DEMonMap].GetElevMeters(Col,Row,z) then begin
-                        DEMGridToScreen(Col,Row,xp,yp);
-                        ScreenSymbol(Bitmap.Canvas,xp,yp,DEMGridSym,DEMGridSymSize,DEMGridSymColor);
-                        Bitmap.Canvas.Brush.Style := bsClear;
-                        if DEMGridLabel then begin
-                           TStr := RealToString(z,-18,MDDef.GridLabelDecimals);
-                           if Length(TStr) > 4 then Bitmap.Canvas.Font.Size := 8
-                           else Bitmap.Canvas.Font.Size := 10;
-                           xp := xp - Bitmap.Canvas.TextWidth(TStr) div 2;
-                           Bitmap.Canvas.TextOut(xp+3,yp+3,TStr);
-                        end;
-                     end;
+                     Bitmap.Canvas.Font.Style := [fsBold];
+                     Point(Col,Row);
+                     Bitmap.Canvas.Font.Style := [fsItalic];
+                     Point(Col + 0.5, Row + 0.5);
                   end;
-                  //if WantOut then break;
                end;
             end;
-            //EndProgress;
          end;
 		 
 
@@ -598,8 +601,8 @@ end {DrawGridLines};
          begin
            {$IfDef RecordDrawGridLines}
               WriteLineToDebugFile('x1=' + IntToStr(x1) +  '  y1=' + IntToStr(y1) + '  x2=' + IntToStr(x2) + '  y2=' + IntToStr(y2));
-              UseDatum.UTMtoLatLongDegree(x1,y1,Lat,Long); WriteLineToDebugFile('   ' + LatLongDegreeToString(lat,Long));
-              UseDatum.UTMtoLatLongDegree(x2,y2,Lat,Long); WriteLineToDebugFile('   ' + LatLongDegreeToString(lat,Long));
+              UseDatum.UTMtoLatLongDegree(x1,y1,Lat,Long); WriteLineToDebugFile(' ' + LatLongDegreeToString(lat,Long));
+              UseDatum.UTMtoLatLongDegree(x2,y2,Lat,Long); WriteLineToDebugFile(' ' + LatLongDegreeToString(lat,Long));
            {$EndIf}
             dx := (x2 - x1) / inc;
             dy := (y2 - y1) / inc;

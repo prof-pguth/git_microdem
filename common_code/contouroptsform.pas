@@ -60,7 +60,7 @@ end;
 
 procedure TSimpleContourOptions.BitBtn2Click(Sender: TObject);
 begin
-    Petmar.PickLineSizeAndColor('Contour lines',BitBtn2,MDDef.ContourLineColor,MDDef.ContourLineThick);
+    Petmar.PickLineSizeAndColor('Contour lines',BitBtn2,MDDef.ContourLineColor,MDDef.ContourLineWidth);
 end;
 
 procedure TSimpleContourOptions.BitBtn3Click(Sender: TObject);
@@ -71,7 +71,7 @@ end;
 
 procedure TSimpleContourOptions.FormCreate(Sender: TObject);
 begin
-   ColorLineWidthBitBtn(BitBtn2,MDDef.ContourLineColor,MDDef.ContourLineThick);
+   ColorLineWidthBitBtn(BitBtn2,MDDef.ContourLineColor,MDDef.ContourLineWidth);
    ColorLineWidthBitBtn(BitBtn3,MDDef.DelaunayLineColor,MDDef.DelaunayLineThick);
    Edit2.Text := RealToString(MDDef.MaxTriSide,-12,-6);
    Petmar.PlaceFormAtMousePosition(Self);

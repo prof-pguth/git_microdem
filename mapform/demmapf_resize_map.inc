@@ -61,7 +61,7 @@ begin
       end;
 
       if MapDraw.ResizeMapByPercentage(Percent) then begin
-         FormResize(Nil);
+         //FormResize(Nil);
          DoCompleteMapRedraw;
       end;
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('TMapForm.ResizeByPercentage  PC=' + IntToStr(Percent) + '  ' + MapDraw.MapSizeString); {$EndIf}
@@ -119,7 +119,7 @@ begin
     MapDraw.MapAspectCheck;
 
     {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, call form resize'); {$EndIf}
-    FormResize(Nil);
+    //FormResize(Nil);
     {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, call DoCompleteMapRedraw'); {$EndIf}
     if Redraw then DoCompleteMapRedraw;
     FullMapSpeedButton.Enabled := true;
@@ -134,7 +134,7 @@ begin
    Speedbutton22.Enabled := true;
    N11view1.Enabled := true;
    MapDraw.MapAspectCheck;
-   FormResize(Nil);
+   //FormResize(Nil);
    DoCompleteMapRedraw;
 end;
 
@@ -149,7 +149,7 @@ begin
       hzFullZoom : Result := MapDraw.RecenterMap(Lat,Long,-99);
    end;
    if Result then begin
-      FormResize(Nil);
+      //FormResize(Nil);
       DoCompleteMapRedraw;
    end;
    {$IfDef ReordMapResize} WriteLineToDebugFile('TMapForm.CenterMapOnLatLong out'); {$EndIf}

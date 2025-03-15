@@ -357,8 +357,6 @@ object MapOverlayForm: TMapOverlayForm
     Height = 41
     Align = alBottom
     TabOrder = 6
-    ExplicitTop = 641
-    ExplicitWidth = 293
     object OKBtn: TBitBtn
       Left = 3
       Top = 6

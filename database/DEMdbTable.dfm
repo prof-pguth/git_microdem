@@ -3152,15 +3152,12 @@ object dbtablef: Tdbtablef
         Caption = 'Oceanography'
         object Sigmatee1: TMenuItem
           Caption = 'Sigma tee'
-          OnClick = Sigmatee1Click
         end
         object Sigmatheta1: TMenuItem
           Caption = 'Sigma theta'
-          OnClick = Sigmatheta1Click
         end
         object Soundvelocity1: TMenuItem
           Caption = 'Sound velocity'
-          OnClick = Soundvelocity1Click
         end
       end
     end

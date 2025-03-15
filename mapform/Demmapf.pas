@@ -58,7 +58,7 @@
       //{$Define RecordPickRoute}
       //{$Define RecordFocalPlanes}
       //{$Define RecordRangeCircle}
-      //{$Define RecordMapResize}
+      {$Define RecordMapResize}
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordGeomorphometry}
       //{$Define RecordGeography}
@@ -82,7 +82,7 @@
       //{$Define Slicer}
       //{$Define RecordHeatMap}
       //{$Define RecordDrainageVectors}
-      //{$Define RecordSetup}
+      {$Define RecordSetup}
       //{$Define RecordZoomWindow}
       //{$Define RecordDoubleClick}
       //{$Define RecordLoadClass}
@@ -118,7 +118,7 @@
       //{$Define RecordSatContrast}
       //{$Define RecordGetFabricAtPoint}
       //{$Define RecordFullGetFabricAtPoint}  //slowdown
-      //{$Define RecordFormResize}
+      {$Define RecordFormResize}
       //{$Define RecordDefineDatum}
       //{$Define RecordUTMZone}
       //{$Define HiresintervisibilityDEM}
@@ -1636,6 +1636,11 @@ type
     Localtrendsurfaces1: TMenuItem;
     CompareLSQedgeeffects1: TMenuItem;
     Slopemissingedgeeffectmissingdata1: TMenuItem;
+    Compare3LSQslopemaps1: TMenuItem;
+    VRM1: TMenuItem;
+    Roughnessmapaveragevector1: TMenuItem;
+    AdjustedStdDevElevRoughness1: TMenuItem;
+    Elevationslopeplots1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2803,6 +2808,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Localtrendsurfaces1Click(Sender: TObject);
     procedure CompareLSQedgeeffects1Click(Sender: TObject);
     procedure Slopemissingedgeeffectmissingdata1Click(Sender: TObject);
+    procedure Compare3LSQslopemaps1Click(Sender: TObject);
+    procedure VRM1Click(Sender: TObject);
+    procedure Roughnessmapaveragevector1Click(Sender: TObject);
+    procedure AdjustedStdDevElevRoughness1Click(Sender: TObject);
+    procedure Elevationslopeplots1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3701,7 +3711,6 @@ begin
    ForceRedrawAllMaps;
    Findings := tStringList.Create;
    if MDDef.MapNameBelowComposite then begin
-      BottomMargin := 55;
       StartFont := 34;
       for i := pred(WMDEM.MDIChildCount) downto 0 do begin
          if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
@@ -3719,6 +3728,7 @@ begin
                   Until (Len < Bitmap.Width - 10);
                   StartFont := Bitmap.Canvas.Font.Size;
                end;
+               BottomMargin := 10 + Bitmap.Canvas.TextHeight(RemoveUnderScores(DEMGLB[DEM].AreaName));
                Bitmap.Free;
             end;
          end;
@@ -3731,13 +3741,13 @@ begin
       if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
          if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
             {$IfDef RecordBigMap} WriteLineToDebugFile('Start map '  +  (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
-
             (WMDEM.MDIChildren[i] as TMapForm).DoFastMapRedraw;
             {$IfDef RecordBigMap} WriteLineToDebugFile('Fast Redraw over '  +  (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
             CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,Bitmap);
             Bitmap.Canvas.Brush.Style := bsClear;
             Bitmap.Canvas.Pen.Width := 2;
             Bitmap.Canvas.Pen.Color := clBlack;
+            Bitmap.Canvas.Font.Size := StartFont;
             Bitmap.Canvas.Rectangle(0,0,pred(Bitmap.Width),pred(Bitmap.Height));
             LabelStart := Bitmap.Height + 5;
             Bitmap.Height := Bitmap.Height + BottomMargin;
@@ -3752,7 +3762,7 @@ begin
             if MDDef.MapNameBelowComposite then begin
                DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
                if ValidDEM(DEM) then begin
-                  Bitmap.Canvas.TextOut(5,LabelStart, DEMGLB[DEM].AreaName);
+                  Bitmap.Canvas.TextOut(5,LabelStart, RemoveUnderscores(DEMGLB[DEM].AreaName));
                end;
             end;
             fName := NextFileNumber(MDtempDir,(WMDEM.MDIChildren[i] as TMapForm).Caption + '_','.bmp');
@@ -3926,7 +3936,8 @@ end;
 
 procedure TMapForm.N3DdrapemultiplegridsonthisDEM1Click(Sender: TObject);
 begin
-   DrapemultiplegridsonthisDEM1Click(Sender);
+   //DrapemultiplegridsonthisDEM1Click(Sender);
+   DrapeMultipleMapsOnThisDEM(Self);
 end;
 
 
@@ -4474,6 +4485,14 @@ end;
 procedure tMapForm.DoCompleteMapRedraw;
 begin
    if MapRedrawsAllowed then begin
+
+
+
+      FormResize(Nil);
+
+
+
+
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in'); {$EndIf}
       MapDraw.DeleteMapSavedLayers;
@@ -5689,6 +5708,11 @@ begin
 end;
 
 
+
+procedure TMapForm.Compare3LSQslopemaps1Click(Sender: TObject);
+begin
+   CompareThreeLSQ(MapDraw.DEMonMap);
+end;
 
 procedure TMapForm.Compareaspectmaps1Click(Sender: TObject);
 begin
@@ -7488,7 +7512,7 @@ end;
 
 procedure TMapForm.PercentdifferencewitheachDEMasinterpolationbasis1Click(Sender: TObject);
 begin
-    GridDifferncesBothInterpolationBasis(true);
+   GridDifferncesBothInterpolationBasis(true);
 end;
 
 procedure TMapForm.Convergenceindex1Click(Sender: TObject);
@@ -7887,7 +7911,14 @@ end;
 
 procedure TMapForm.RoughnessfromSSO1Click(Sender: TObject);
 begin
+   ReadDefault('Box size (meters)',MDDef.SSOBoxSizeMeters);
    CreateRoughnessMap(MapDraw.DEMonMap);
+end;
+
+procedure TMapForm.Roughnessmapaveragevector1Click(Sender: TObject);
+begin
+   ReadDefault('Box size (meters)',MDDef.SSOBoxSizeMeters);
+   CreateRoughnessMapAvgVector(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Roundtobylerange1Click(Sender: TObject);
@@ -7996,7 +8027,7 @@ procedure TMapForm.Optimumindexfactor1Click(Sender: TObject);
 begin
    {$IfDef ExSat}
    {$Else}
-   SatImage[MapDraw.SATonMap].OptimumIndexFactor;
+      SatImage[MapDraw.SATonMap].OptimumIndexFactor;
    {$EndIf}
 end;
 
@@ -11961,7 +11992,7 @@ end;
       var
         //Results : tStringList;
         x1,y1{,x2,y2} : float64;
-        Decs : integer;
+        //Decs : integer;
       begin
          WriteLineToDebugFile('');
          WriteLineToDebugFile(Caption);
@@ -15149,44 +15180,41 @@ procedure TMapForm.FormResize(Sender: TObject);
         WantedHeight := MapDraw.MapYSize + ToolAndPanelHeights + GetSystemMetrics(SM_CXVSCROLL);  //ScrollBox1.HorzScrollBar.Size;
      end;
 
+
 begin
    if SizingWindow or (MapDraw = Nil) or MapDraw.ClosingMapNow then exit;
    SizingWindow := true;
    if (Sender = Nil) then begin
       SetClientHeight;
+      {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize in and set client height, ' + MapDraw.MapSizeString); {$EndIf}
+   end
+   else begin
+      {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize in, ' + MapDraw.MapSizeString); {$EndIf}
    end;
-   {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize in, ' + MapDraw.MapSizeString); {$EndIf}
-
-   (*
-   if (ClientWidth > WantedWidth) then ClientWidth := WantedWidth;
-   if (ClientHeight > WantedHeight) then ClientHeight := WantedHeight;
-   *)
 
    if (MapDraw.MapOwner = moPointVerificationMap) then begin
       NoScrollBars;
    end
    else begin
       if (WantedWidth < 8 * wmdem.ClientWidth div 10) and (WantedHeight < 8 * wmdem.ClientHeight div 10) then begin
-         //SetSize(WantedWidth,WantedHeight,0);
          ClientWidth := WantedWidth;
          ClientHeight := WantedHeight + Panel1.Height;
          ScrollBox1.HorzScrollBar.Visible := false;
          ScrollBox1.VertScrollBar.Visible := false;
+         {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize point 2A, ' + MapDraw.MapSizeString); {$EndIf}
       end
       else begin
-         //SetSize(WantedWidth,WantedHeight,20);
-         ClientWidth := 8 * wmdem.ClientWidth div 10;
-         ClientHeight := 8 * wmdem.ClientHeight div 10;
+         //ClientWidth := 8 * wmdem.ClientWidth div 10;
+         //ClientHeight := 8 * wmdem.ClientHeight div 10;
          ScrollBox1.HorzScrollBar.Visible := true;
          ScrollBox1.VertScrollBar.Visible := true;
+         {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize point 2B-1, ' + MapDraw.MapSizeString); {$EndIf}
          if (ScrollBox1.Width > WantedWidth) then ScrollBox1.ClientWidth := WantedWidth;
          if (ScrollBox1.Height > WantedHeight) then ScrollBox1.ClientHeight := WantedHeight;
          ScrollBox1.HorzScrollBar.Range := MapDraw.MapXSize;
          ScrollBox1.VertScrollBar.Range := MapDraw.MapYSize;
+         {$IfDef RecordFormResize} RecordFormSize(Self.Caption + ' FormResize point 2B-2, ' + MapDraw.MapSizeString); {$EndIf}
       end;
-      //ClientWidth := ScrollBox1.Width;
-      //ClientHeight := ScrollBox1.Height;
-
    end;
    SetPanButtons;
 
@@ -15297,9 +15325,7 @@ begin
       MemNeed := round( 4.0 * MapDraw.MapXSize * BlowUp * MapDraw.MapYSize * BlowUp);
       if AskUserAboutMemory(MemNeed) then begin
          OK := AnswerIsYes('Image requires  ' + SmartMemorySizeBytes(MemNeed) + MessLineBreak +
-             '  displays slowly, will not fit on screen.' + MessLineBreak +
-             'Subset before using this zoom.'+ MessLineBreak + MessLineBreak +
-             'Continue anyway');
+             'Subset before using this zoom.'+ MessLineBreak + MessLineBreak + 'Continue anyway');
          if not OK then BlowUp := 1.0;
       end
       else OK := true;
@@ -16383,11 +16409,8 @@ begin
 end;
 
 procedure TMapForm.Pickmapsforbigimage1Click(Sender: TObject);
-//var
-   //Maps : tStringList;
 begin
    Bigimagewithallmaps(3,'',PickMaps('Maps for to combine on big figure'));
-   //Maps.Free;
 end;
 
 procedure TMapForm.PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
@@ -16443,7 +16466,6 @@ end;
 
 procedure TMapForm.PixelsinlowresDEMs1Click(Sender: TObject);
 begin
-   //  MapDraw.PrimMapProj.DefineDatumFromUTMZone(MapDraw.PrimMapProj.h_DatumCode,GetUTMZone(Long),HemiFromLat(Lat),'TMapForm.Image1DblClick');
    WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',GetUTMZone(RightClickLong),HemiFromLat(RightClickLat),'PixelsLowRes');
    OutlineGridOutlines(RightClickLat,RightClickLong);
 end;
@@ -20200,8 +20222,17 @@ begin
    DoFastMapRedraw;
    {$IfDef RecordFan} WriteLineToDebugFile('Done'); {$EndIf}
 end;
-
 {$EndIf}
+
+
+procedure TMapForm.AdjustedStdDevElevRoughness1Click(Sender: TObject);
+const
+   Radius : integer = 2;
+begin
+   ReadDefault('Radius (pixels)',Radius);
+   MakeAdjustedStdDevElevRoughness(true,MapDraw.DEMonMap,Radius);
+end;
+
 
 procedure TMapForm.EditGridButtonClick(Sender: TObject);
 begin
@@ -20330,7 +20361,7 @@ end;
 
 procedure TMapForm.SpeedButton22Click(Sender: TObject);
 begin
-   N11view1Click(Sender);
+   ResizeByPercentage(100);
 end;
 
 
@@ -20397,15 +20428,13 @@ begin
    {$IfDef RecordSave} WriteLineToDebugFile('TMapForm.MDDEM1Click'); {$EndIf}
    FileName := '';
    DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(FileName);
-   //DoFastMapRedraw;
-end;
+ end;
 
 procedure TMapForm.DTED1Click(Sender: TObject);
 begin
    {$IfDef ExOddballDEMexports}
    {$Else}
       DEMGlb[MapDraw.DEMonMap].SaveAsDTED(0,0);
-      //DoFastMapRedraw;
    {$EndIf}
 end;
 
@@ -20438,72 +20467,67 @@ var
   OK,Prime : boolean;
   xg,yg,xg1,yg1,xg2,yg2,xs,ys, lat,Long,xc,yc,LatC,LongC,Lat1,Long1,h,k : float64;
 begin
-  //with mapDraw do begin
-     MapDraw.ScreenToLatLongDegree(lastx,LastY,Lat,Long);
-      {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click enter'); {$EndIf}
-     MapScaledForm := DEM_Map_scale.TMapScaledForm.Create(Application);
-     with MapScaledForm,MapDraw do begin
-        WantLat := Lat;
-        WantLong := Long;
-        if  (VectorIndex <> 0) then with PrimMapProj do begin
-           OldCenterLat := MapDraw.MapLatCent;
-           OldCenterLong := MapDraw.MapLongCent;
-        end;
-        MapDatumConstants := MapDraw.PrimMapProj;
-        ShowMapSize;
-        ShowModal;
-       Lat := WantLat;
-       Long := WantLong;
-       MapDraw.MapLatCent := Lat;
-       MapDraw.MapLongCent := Long;
-       MapXSize := WantMapXSize;
-       MapYSize := WantMapYSize;
-       ClientWidth := MapXSize;
-       ClientHeight := MapYSize;
-       MapDraw.ZeroTickInt;
-
-       if (VectorIndex <> 0) then begin
-         PrimMapProj.GetMapScaleFactor(Lat,Long,h,k ,Prime);
-         PrimMapProj.ForwardProjectDegrees(Lat,Long,Xc,yc);
-         PrimMapProj.InverseProjectDegrees(xc-0.5*xmeters*h,yc+0.5*ymeters*h,LatC,LongC);
-         PrimMapProj.InverseProjectDegrees(xc+0.5*xmeters*h,yc-0.5*ymeters*h,Lat1,Long1);
-
-         {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click 4' + '  ' + LatLongDegreeToString(Lat1,LongC) +'  ' + LatLongDegreeToString(LatC,Long1)); {$EndIf}
-
-          MapDraw.MaximizeLatLongMapCoverage(Lat1,LongC,LatC,Long1);
-          {$IfDef RecordMapDraw} WriteLineToDebugFile('Resizing vector map'); {$EndIf}
-          DrawColoredMap1Click(Nil);
-       end
-       else begin
-          if DEMMap then with DEMGLB[DEMonMap] do begin
-             LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-             OK := GridInDataSetFloat(xg,yg);
-             xs := AverageXSpace;
-             ys := AverageYSpace;
-             yg1 := yg + MapScaledForm.YMeters / 2 / ys;
-             yg2 := yg - MapScaledForm.YMeters / 2 / ys;
-          {$IfDef ExSat}
-          {$Else}
-          end
-          else with SatImage[SatOnMap] do begin
-             LatLongDegreeToSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,Lat,Long,xg,yg);
-             OK := SatGridInDataSet(SatImage[MapDraw.SatOnMap].BandForSize,XG,YG);
-             xs := xMetersPerPixel;
-             ys := yMetersPerPixel;
-             yg2 := yg + MapScaledForm.YMeters / 2 / ys;
-             yg1 := yg - MapScaledForm.YMeters / 2 / ys;
-          {$EndIf}
-          end;
-          if OK then begin
-             xg1 := xg - MapScaledForm.XMeters / 2 / xs;
-             xg2 := xg + MapScaledForm.XMeters / 2 / xs;
-             RedrawMapForDataGrid(xg1,yg1,xg2,yg2,MapXSize,MapYSize);
-          end
-          else MessageToContinue('Requested location outside current map coverage');
-       end;
-
+  MapDraw.ScreenToLatLongDegree(lastx,LastY,Lat,Long);
+   {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click enter'); {$EndIf}
+  MapScaledForm := DEM_Map_scale.TMapScaledForm.Create(Application);
+  with MapScaledForm,MapDraw do begin
+     WantLat := Lat;
+     WantLong := Long;
+     if  (VectorIndex <> 0) then with PrimMapProj do begin
+        OldCenterLat := MapDraw.MapLatCent;
+        OldCenterLong := MapDraw.MapLongCent;
      end;
- // end;
+     MapDatumConstants := MapDraw.PrimMapProj;
+     ShowMapSize;
+     ShowModal;
+    Lat := WantLat;
+    Long := WantLong;
+    MapDraw.MapLatCent := Lat;
+    MapDraw.MapLongCent := Long;
+    MapXSize := WantMapXSize;
+    MapYSize := WantMapYSize;
+    ClientWidth := MapXSize;
+    ClientHeight := MapYSize;
+    MapDraw.ZeroTickInt;
+
+    if (VectorIndex <> 0) then begin
+       PrimMapProj.GetMapScaleFactor(Lat,Long,h,k ,Prime);
+       PrimMapProj.ForwardProjectDegrees(Lat,Long,Xc,yc);
+       PrimMapProj.InverseProjectDegrees(xc-0.5*xmeters*h,yc+0.5*ymeters*h,LatC,LongC);
+       PrimMapProj.InverseProjectDegrees(xc+0.5*xmeters*h,yc-0.5*ymeters*h,Lat1,Long1);
+       {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click 4' + '  ' + LatLongDegreeToString(Lat1,LongC) +'  ' + LatLongDegreeToString(LatC,Long1)); {$EndIf}
+       MapDraw.MaximizeLatLongMapCoverage(Lat1,LongC,LatC,Long1);
+       {$IfDef RecordMapDraw} WriteLineToDebugFile('Resizing vector map'); {$EndIf}
+       DrawColoredMap1Click(Nil);
+    end
+    else begin
+       if DEMMap then with DEMGLB[DEMonMap] do begin
+          LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
+          OK := GridInDataSetFloat(xg,yg);
+          xs := AverageXSpace;
+          ys := AverageYSpace;
+          yg1 := yg + MapScaledForm.YMeters / 2 / ys;
+          yg2 := yg - MapScaledForm.YMeters / 2 / ys;
+       {$IfDef ExSat}
+       {$Else}
+       end
+       else with SatImage[SatOnMap] do begin
+          LatLongDegreeToSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,Lat,Long,xg,yg);
+          OK := SatGridInDataSet(SatImage[MapDraw.SatOnMap].BandForSize,XG,YG);
+          xs := xMetersPerPixel;
+          ys := yMetersPerPixel;
+          yg2 := yg + MapScaledForm.YMeters / 2 / ys;
+          yg1 := yg - MapScaledForm.YMeters / 2 / ys;
+       {$EndIf}
+       end;
+       if OK then begin
+          xg1 := xg - MapScaledForm.XMeters / 2 / xs;
+          xg2 := xg + MapScaledForm.XMeters / 2 / xs;
+          RedrawMapForDataGrid(xg1,yg1,xg2,yg2,MapXSize,MapYSize);
+       end
+       else MessageToContinue('Requested location outside map coverage');
+    end;
+  end;
   MapScaledForm.Free;
  {$IfDef RecordMapDraw} WriteLineToDebugFile('TMapForm.Setscale1Click done'); {$EndIf}
 end;
@@ -20526,23 +20550,24 @@ begin
    {$EndIf}
 end;
 
+
 procedure TMapForm.Smallcirclethroughpoint1Click(Sender: TObject);
 var
-Lat,Long,Lat2,Long2,Azimuth,Distance : float64;
-x,y : integer;
+   Lat,Long,Lat2,Long2,Azimuth,Distance : float64;
+   x,y : integer;
 begin
- MapDraw.ScreenToLatLongDegree(LastX,LastY,Lat,Long);
- Distance := 10;
- repeat
-    ReadDefault('Radius (' + '°' +') for small circle',Distance);
-    Azimuth := 0;
-    while (Azimuth < 360.001) do begin
-       VincentyPointAtDistanceBearing(Lat,Long,Distance*111200,Azimuth,Lat2,Long2);
-       MapDraw.LatLongDegreeToScreen(Lat2,Long2,x,y);
-       Petmar.ScreenSymbol(Image1.Canvas,x,y,FilledBox,2,clared);
-       Azimuth := Azimuth + 1;
-    end;
-until not AnswerIsYes('Another small circle about point');
+   MapDraw.ScreenToLatLongDegree(LastX,LastY,Lat,Long);
+   Distance := 10;
+   ReadDefault('Radius (' + '°' +') for small circle',Distance);
+   repeat
+      Azimuth := 0;
+      while (Azimuth < 360.001) do begin
+         VincentyPointAtDistanceBearing(Lat,Long,Distance*111200,Azimuth,Lat2,Long2);
+         MapDraw.LatLongDegreeToScreen(Lat2,Long2,x,y);
+         Petmar.ScreenSymbol(Image1.Canvas,x,y,FilledBox,2,clared);
+         Azimuth := Azimuth + 1;
+      end;
+   until not AnswerIsYes('Another small circle about point');
 end;
 
 
@@ -22380,28 +22405,13 @@ end;
 
 procedure TMapForm.Show1Click(Sender: TObject);
 var
-   Bitmap : tMyBitmap;
    grid_posting_options : Grid_Postings_Form.Tgrid_posting_options;
 begin
-   CopyImageToBitmap(Image1,Bitmap);
-   MapDraw.DEMGridLabel := (Sender = Nil);
-   if (Sender = GridPosts2) then begin
-      grid_posting_options := Tgrid_posting_options.Create(Application);
-      grid_posting_options.CheckBox1.Checked := MapDraw.DEMGridLabel;
-      grid_posting_options.MapOwner := Self;
-      Petmar.SymbolOnButton(grid_posting_options.BitBtn1,MapDraw.DEMGridSym,MapDraw.DEMGridSymSize,MapDraw.DEMGridSymColor);
-      grid_posting_options.ShowModal;
-      MapDraw.DEMGridRedraw := (grid_posting_options.RadioGroup1.ItemIndex = 1);
-      MapDraw.DEMGridLabel := grid_posting_options.CheckBox1.Checked;
-      if (grid_posting_options.RadioGroup1.ItemIndex = 2) then begin
-         DoFastMapRedraw;
-         exit;
-      end;
-      grid_posting_options.Free;
-   end;
-   MapDraw.ShowDEMGrid(Bitmap);
-   Image1.Picture.Graphic := Bitmap;
-   Bitmap.Free;
+    grid_posting_options := Tgrid_posting_options.Create(Application);
+    grid_posting_options.CheckBox1.Checked := MapDraw.DEMGridLabel;
+    grid_posting_options.MapOwner := Self;
+    Petmar.SymbolOnButton(grid_posting_options.BitBtn1,MapDraw.DEMGridSym,MapDraw.DEMGridSymSize,MapDraw.DEMGridSymColor);
+    grid_posting_options.Show;
 end;
 
 procedure TMapForm.Label2Click(Sender: TObject);
@@ -22448,6 +22458,14 @@ begin
    SpeedButton5Click(Sender);
 end;
 
+
+procedure TMapForm.VRM1Click(Sender: TObject);
+const
+   WindowRadius : integer = 3;
+begin
+   ReadDefault('Window radius (pixels)',WindowRadius);
+   MakeVRMGrid(MapDraw.DEMonMap,DEMglb[MapDraw.DEMonMap].FullDEMGridLimits,true,WindowRadius);
+end;
 
 procedure TMapForm.Pointmodedigitizing1Click(Sender: TObject);
 begin
@@ -22675,19 +22693,9 @@ end;
 
 procedure TMapForm.N81Click(Sender: TObject);
 begin
-   SaveBackupDefaults;
-   MDDef.ShowElevFreq := false;
-   MDDef.ShowSlopeFreq := false;
-   MDDef.ShowElevSlope := true;
-   MDDef.ShowCumSlope := false;
-   MDDef.ShowAspectRose := false;
-   MDDef.ShowElevSlopeDeg := false;
-   MDDef.ShowColorLegend := false;
-   MDDef.ShowSDonElevSlope := false;
-   MDDef.ShowElevRough := false;
-   ElevationSlopePlot(GetMultipleDEMsFromList('DEMs for elevation/slope plot'),MDDef.ElevBinSize,Nil);
-   RestoreBackupDefaults;
+   MultipleElevationSlopePlots;
 end;
+
 
 procedure TMapForm.NAN1Click(Sender: TObject);
 begin
@@ -23369,14 +23377,15 @@ var
     AvgAspectDir,
     Mag : float64;
     Readings : farray;
-    SlopeAspectRec : tSlopeAspectRec;
+    SAR : tSlopeAspectRec;
+    LegBitmap : tMyBitmap;
 begin
    {$IfDef RecordDrainageVectors} WriteLineToDebugFile('TMapForm.DrawDownhillVector in'); {$EndIf}
    if MapDraw.ValidDEMonMap then begin
-      SaveBackupDefaults;
-      MDdef.SlopeCompute.UseAllPts := true;
+      //SaveBackupDefaults;
+      //MDdef.SlopeCompute.UseAllPts := true;
       CopyImageToBitmap(Image1,Bitmap);
-      if ShowSatProgress then StartProgressAbortOption('Grids');
+      if ShowSatProgress then StartProgressAbortOption('Downhill vectors');
 
       DrainIncr := 0;
       repeat
@@ -23389,51 +23398,49 @@ begin
          Row := round(MapDraw.MapCorners.BoundBoxDataGrid.ymin);
          while (Row <= MapDraw.MapCorners.BoundBoxDataGrid.ymax) do begin
             MapDraw.DEMGridToScreen(Col,Row,x,y);
-
             if MDDef.DrainageMethod in [0,2] then begin
-               MDdef.SlopeCompute.WindowRadius := 2;
-               MDdef.SlopeCompute.LSQorder := 3;
-               MDdef.DrainageArrowColor := ConvertTColorToPlatFormColor(clRed);
-               if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
-                  VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * SlopeAspectRec.Slope);
-                  PlotOrientedLine(Bitmap,x,y,VecLen,SlopeAspectRec.AspectDirTrue,MDdef.DrainageArrowColor,MDdef.DrainageArrowWidth,true);
+               if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(DrainageSlopeNumber2,Col,Row,SAR) then begin
+                  VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * SAR.Slope);
+                  PlotOrientedLine(Bitmap,x,y,VecLen,SAR.AspectDirTrue,MDdef.DrainageArrowColor2,MDdef.DrainageArrowWidth,true);
                end;
             end;
             if MDDef.DrainageMethod in [1,2] then begin
-               MDdef.SlopeCompute.WindowRadius := 1;
-               MDdef.SlopeCompute.LSQorder := 2;
-               MDdef.DrainageArrowColor := ConvertTColorToPlatFormColor(clLime);
-               if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
-                  VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * SlopeAspectRec.Slope);
-                  PlotOrientedLine(Bitmap,x,y,VecLen,SlopeAspectRec.AspectDirTrue,MDdef.DrainageArrowColor,MDdef.DrainageArrowWidth,true);
+               if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(DrainageSlopeNumber1,Col,Row,SAR) then begin
+                  VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * SAR.Slope);
+                  PlotOrientedLine(Bitmap,x,y,VecLen,SAR.AspectDirTrue,MDdef.DrainageArrowColor1,MDdef.DrainageArrowWidth,true);
                end;
             end;
 
+            if MDDef.DrainageMethod in [2] then begin
+               PetImage.CreateBitmap(LegBitmap,800,400);
+               LegBitmap.Canvas.Font.Size := 18;
 
-            (*
-            if MDDef.DrainagePointSlope then begin
-               if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec) then begin
-                  VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * SlopeAspectRec.Slope);
-                  PlotOrientedLine(Bitmap,x,y,VecLen,SlopeAspectRec.AspectDirTrue,MDdef.DrainageArrowColor,MDdef.DrainageArrowWidth,true);
-                  {$IfDef RecordDrainageVectors} WriteLineToDebugFile('Point vector at x=' + IntToStr(x) + '  y=' + IntToStr(y)); {$EndIf}
-               end;
+               PlotOrientedLine(LegBitmap,20,15,15,270,MDdef.DrainageArrowColor1,MDdef.DrainageArrowWidth,true);
+               LegBitmap.Canvas.TextOut(55,2,RemoveUnderscores(SlopeMethodName(DrainageSlopeNumber1,true)));
+
+               PlotOrientedLine(LegBitmap,20,45,15,270,MDdef.DrainageArrowColor2,MDdef.DrainageArrowWidth,true);
+               LegBitmap.Canvas.TextOut(55,32,RemoveUnderscores(SlopeMethodName(DrainageSlopeNumber2,true)));
+
+               PutBitmapInBox(LegBitmap);
+               Bitmap.Canvas.Draw(0,Bitmap.Height - LegBitmap.Height,LegBitmap);
+               LegBitmap.Destroy;
             end;
-            *)
+
 
             if MDDef.DrainageVectorAverage then begin
                AspToAverage := 0;
                for i := -MDDef.AspectRegionSize to MDDef.AspectRegionSize do begin
                   for j := -MDDef.AspectRegionSize to MDDef.AspectRegionSize do begin
-                     if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,Col+i,Row+j,SlopeAspectRec) then begin
-                        Readings[AspToAverage] := SlopeAspectRec.AspectDirTrue;
+                     if DEMGlb[MapDraw.DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,Col+i,Row+j,SAR) then begin
+                        Readings[AspToAverage] := SAR.AspectDirTrue;
                         inc(AspToAverage);
                      end;
                   end;
                end;
                if (AspToAverage > 0) then begin
                   AvgAspectDir := Petmath.VectorAverage(AspToAverage,Readings,Mag);
-                  VecLen := 4 + round(MDdef.DrainageVectAvgArrowLength * 2 * Mag);
-                  PlotOrientedLine(Bitmap,x,y,VecLen,AvgAspectDir,MDdef.DrainageVectAvgArrowColor,MDdef.DrainageVectAvgArrowWidth,true);
+                  VecLen := 4 + round(MDdef.DrainageArrowLength * 2 * Mag);
+                  PlotOrientedLine(Bitmap,x,y,VecLen,AvgAspectDir,MDdef.DrainageVectAvgArrowColor,MDdef.DrainageArrowWidth,true);
                   {$IfDef RecordDrainageVectors} WriteLineToDebugFile('Average vector at x=' + IntToStr(x) + '  y=' + IntToStr(y)); {$EndIf}
                end;
             end;
@@ -23444,7 +23451,7 @@ begin
       end;
       if ShowSatProgress then EndProgress;
       MapDraw.DrawLegendsOnMap(Bitmap);
-      RestoreBackupDefaults;
+      //RestoreBackupDefaults;
       Image1.Picture.Graphic := Bitmap;
       Bitmap.Free;
    end;
@@ -24299,13 +24306,17 @@ begin
    ElevationAndSlopeMoments(GetMultipleDEMsFromList('Elevation and slope moments'),'Elevation_and_slope_Moments');
 end;
 
+procedure TMapForm.Elevationslopeplots1Click(Sender: TObject);
+begin
+   MultipleElevationSlopePlots;
+end;
+
 function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : tMemo; LowZ,HighZ : float32) : integer;
 var
-  Col,Row{,xp,yp},Bad,Shown : integer;
+  Col,Row,Bad,Shown : integer;
   Lat,Long   : float64;
   z : float32;
   fName : PathStr;
-  //Bitmap : tMyBitmap;
   DBlist : tStringList;
 begin
    if ValidDEM(ExtremeZDEM) then begin
@@ -24314,7 +24325,6 @@ begin
       if ShowSatProgress then StartprogressAbortOption('Points');
       Bad := 0;
       Shown := 0;
-      //if (MapForm <> Nil) then CopyImageToBitmap(MapForm.Image1,Bitmap);
       for Col := 0 to pred(DEMGlb[ExtremeZDEM].DEMheader.NumCol) do begin
         if ShowSatProgress and (col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[ExtremeZDEM].DEMheader.NumCol);
          for Row := 0 to pred(DEMGlb[ExtremeZDEM].DEMheader.NumRow) do begin
@@ -24322,15 +24332,6 @@ begin
                inc(Bad);
                DEMGlb[ExtremeZDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
                dbList.Add(RealToString(Lat,-12,-8) + ',' + RealToString(Long,-12,-8) + ',' + RealToString(z,-12,-4));
-               (*
-               if (MapForm <> Nil) then begin
-                  MapForm.MapDraw.LatLongDegreeToScreen(Lat,Long,xp,yp);
-                  if MapForm.MapDraw.OnScreen(xp,yp) then begin
-                     inc(Shown);
-                     ScreenSymbol(Bitmap.Canvas,xp,yp,DrSymbol);
-                  end;
-               end;
-               *)
             end;
          end;
          if WantOut then break;
@@ -24458,8 +24459,6 @@ begin
    end;
    MovieList.Add(ExtractFileName(fName));
 end;
-
-
 
 
 
@@ -25139,7 +25138,7 @@ begin
    BaseDir := WriteSatDir;
    GetDOSPath('write Geotiffs',BaseDir);
    with SatImage[MapDraw.SATonMap],MapDraw,SatView do begin
-       N11view1Click(Sender);
+       ResizeByPercentage(100);
        WindowContrast := NoEnhancement;
        for I := 1 to NumBands do begin
           BandInWindow := i;
@@ -25376,7 +25375,7 @@ var
 begin
    OldMapType := MapDraw.MapType;
    MapDraw.MapType := mtDEMBlank;
-   N11view1Click(Sender);
+   ResizeByPercentage(100);
    CloneImageToBitmap(Image1,Bitmap);
    MapDraw.OverlaySRTMWaterBodies(Bitmap,true);
    WaterRGB := MDDef.WaterColor;

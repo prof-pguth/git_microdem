@@ -128,6 +128,7 @@ type
       function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;  inline;
       //function MeanAbsoluteDeviationFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var MAD : float64; NoteFailure : boolean = true) : boolean;
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
+      procedure MultipleElevationSlopePlots;
 
       procedure DoAnSSODiagram(CurDEM : integer; GridLimits : tGridLimits);
       function GridRatio(Map1Num : integer = 0; Map2Den : integer = 0; inMapType : tMapType = mtDEMBlank) : integer;
@@ -231,6 +232,8 @@ procedure ScatterGramGrid(ScatterGram : boolean; DEMsWanted : tDEMbooleanArray; 
 procedure SSOforVATgrid(FeatureDEM,FeaturesDB,ElevDEM : integer);
 procedure CompareLSQ(DoSlopes : boolean; DEM : integer);
 procedure CompareLSQEdgeEffects(DEM : integer);
+procedure CompareThreeLSQ(DEM : integer);
+
 
 
 function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
@@ -286,7 +289,6 @@ uses
    Make_tables,
    DEM_Indexes,
    DEM_Manager,
-   //DEMStringGrid,
    Petimage_form,
    DEMDef_routines,
    PetImage,
@@ -312,6 +314,8 @@ var
 
 {$I histograms.inc}
 
+{$I demstat_slope_algorithm_compare.inc}
+
 {$IfDef ExWaveLengthHeight}
 {$Else}
    {$I demstat_dune_crest.inc}
@@ -322,9 +326,28 @@ var
    {$I demstat_grid_compare.inc}
 {$EndIf}
 
+
+procedure MultipleElevationSlopePlots;
+begin
+   SaveBackupDefaults;
+   MDDef.ShowElevFreq := false;
+   MDDef.ShowSlopeFreq := false;
+   MDDef.ShowElevSlope := true;
+   MDDef.ShowCumSlope := false;
+   MDDef.ShowAspectRose := false;
+   MDDef.ShowElevSlopeDeg := false;
+   MDDef.ShowColorLegend := false;
+   MDDef.ShowSDonElevSlope := false;
+   MDDef.ShowElevRough := false;
+   ElevationSlopePlot(GetMultipleDEMsFromList('DEMs for elevation/slope plot'),MDDef.ElevBinSize,Nil);
+   RestoreBackupDefaults;
+end;
+
+
+
 procedure SSOforVATgrid(FeatureDEM,FeaturesDB,ElevDEM : integer);
 var
-   ID,FilterGrid,FilterGridValue : integer;
+   ID{,FilterGrid,FilterGridValue} : integer;
    SSOvars : tSSOvars;
    LLtext : shortstring;
    fName : PathStr;
@@ -384,9 +407,9 @@ const
    BetweenGraphs = 20;
 var
    First : boolean;
-   Findings : tStringList;
+   //Findings : tStringList;
    Panelx,PanelY,
-   i,j,k,row,col,x,y : integer;
+   i,j,{k,}row,col,x,y : integer;
    BigBitMap,LegendBitmap,Bitmap : tMyBitmap;
 
          procedure StartBigBitmap(Bitmap : tMyBitmap);
@@ -518,150 +541,6 @@ begin {procedure ScatterGramGrid}
     RestoreBackupDefaults;
     SetColorForWaiting;
 end {procedure ScatterGramGrid};
-
-
-procedure CompareLSQ(DoSlopes : boolean; DEM : integer);
-
-         function Duplicate(HowCompute : tSlopeCurveCompute) : boolean;
-         begin
-            Result := ((HowCompute.LSQorder = 1) and (HowCompute.WindowRadius = 1)) or
-                      ((HowCompute.LSQorder = 2) and (HowCompute.WindowRadius = 1) and (not HowCompute.RequireFullWindow)) or
-                      ((HowCompute.LSQorder in [3,4]) and (HowCompute.WindowRadius = 1)) or
-                      ((HowCompute.LSQorder in [3,4]) and (not HowCompute.RequireFullWindow)) or
-                      ((HowCompute.LSQorder = 4) and (HowCompute.WindowRadius = 2));
-
-
-         end;
-
-
-var
-  i,j,k,Grid,TheCurvature : integer;
-begin
-
-   SetColorForProcessing;
-   SaveBackupDefaults;
-   MDDef.CurveCompute.AlgorithmName := smLSQ;
-
-   if DoSlopes then begin
-      for i := 1 to 4 do begin
-         MDDef.SlopeCompute.LSQorder := i;
-         for j := 1 to 4 do begin
-            MDDef.SlopeCompute.WindowRadius := j;
-            for k := 1 to 2 do begin
-               MDDef.SlopeCompute.UseAllPts := (k=1);
-               if not Duplicate(MDDef.SlopeCompute) then begin
-                  Grid := CreateSlopeMapPercent(true,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-               end;
-            end;
-         end;
-      end;
-   end
-   else begin
-      TheCurvature := PickCurvature;
-      for i := 1 to 4 do begin
-         MDDef.CurveCompute.LSQorder := i;
-         for j := 1 to 4 do begin
-            MDDef.CurveCompute.WindowRadius := j;
-            for k := 1 to 2 do begin
-               MDDef.CurveCompute.UseAllPts := (k=1);
-               if not Duplicate(MDDef.CurveCompute) then begin
-                  Grid := CreateCurvatureMap(TheCurvature,true,DEM,SlopeMethodName(MDDef.CurveCompute) );
-               end;
-            end;
-         end;
-      end;
-   end;
-   RestoreBackupDefaults;
-   SetColorForWaiting;
-end;
-
-
-procedure CompareLSQEdgeEffects(DEM : integer);
-
-    procedure CompareOneOrder(Order,Window : integer);
-    const
-       OpenMap = false;
-    var
-      Grid1,Grid2,Diff : integer;
-    begin
-         MDDef.SlopeCompute.LSQorder := Order;
-         MDDef.SlopeCompute.WindowRadius := Window;
-         TestEdgeEffect := true;
-         Grid2 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-         TestEdgeEffect := false;
-         Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-         Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,true,SlopeMethodName(MDDef.SlopeCompute));
-         DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
-
-         CloseSingleDEM(Grid1);
-         CloseSingleDEM(Grid2);
-    end;
-
-begin
-   SetColorForProcessing;
-   SaveBackupDefaults;
-   MDDef.EvansApproximationAllowed := false;
-   MDDef.SlopeCompute.AlgorithmName := smLSQ;
-   CompareOneOrder(2,1);
-   CompareOneOrder(3,2);
-   CompareOneOrder(4,2);
-
-   RestoreBackupDefaults;
-   SetColorForWaiting;
-end;
-
-
-
-procedure CompareWindowSizesForSlopeMap(DEM : integer);
-const
-   NumWin = 9;
-   Windows : array[1..NumWin] of integer = (1,2,3,5,10,15,20,25,30);
-var
-   i{,NewGrid} : integer;
-   fName : PathStr;
-   //OpenMap : boolean;
-   Findings : tStringList;
-   Fixed : int64;
-   //Series : shortstring;
-
-      procedure ProcessNewGrid;
-      var
-         Slope : integer;
-         n : int64;
-         sMean,sStd,rMean,rStd : float32;
-      begin
-         Slope := CreateSlopeMapPercent(false,DEM,fName);
-         DEMglb[Slope].ElevationStatistics(DEMglb[Slope].FullDEMGridLimits,sMean,sStd,n);
-         Findings.Add(DEMglb[Slope].AreaName + ',UTM,' + RealToString(MDDef.SlopeCompute.WindowRadius * DEMglb[Slope].AverageSpace,-8,-2) + ',' + RealToString(sMean,-8,-2) + ',' + RealToString(sStd,-8,-2) );
-         CloseSingleDEM(Slope);
-      end;
-
-
-begin
-   SetColorForProcessing;
-   SaveBackupDefaults;
-   //OpenMap := false;
-   Findings := tStringList.Create;
-   Findings.Add('NAME,SERIES,AVG_SPACE,AVG_SLOPE,STD_SLOPE');
-
-   DEMGLb[DEM].MarkBelowMissing(1.0,Fixed,false);
-
-   //Series := 'UTM';
-   for i := 1 to NumWin do begin
-      fName := 'window_' + IntToStr(Windows[i]) + '_m';
-      wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/' + IntToStr(NumWin));
-      MDDef.SlopeCompute.WindowRadius := Windows[i];
-      ProcessNewGrid;
-   end;
-
-   wmdem.SetPanelText(3,'');
-   SetColorForWaiting;
-
-   fName := NextFileNumber(MDtempDir,'slope_window_sampler_','.dbf');
-   Findings.SaveToFile(fName);
-   StringList2CSVtoDB(Findings,fName);
-   RestoreBackupDefaults;
-end;
 
 
 
@@ -864,9 +743,9 @@ procedure OneLag(MainDEM,SubDEM : integer; BoxLimits: tGridLimits; var BigResult
 const
    fs = 'DEM,NPTS,LAT,LONG,X_SHIFT_M,Y_SHIFT_M,SHIFT_M,SHIFT_DIR,R,X_LAG,Y_LAG,TOTAL_LAG,NO_LAG_R,RELIEF_M,AVG_SLOPE,R_IMPROVE,BEST_A,BEST_B';
 var
-  i,it,nt,NumStrips : integer;
+  i,it,nt{,NumStrips} : integer;
   Results : array[1..MaxThreadsAllowed] of tStringList;
-  StripBoxLimits: tGridLimits;
+  //StripBoxLimits: tGridLimits;
 begin
    {$IfDef RecordLag} WriteLineToDebugFile('One Lag in, maindem=' + IntToStr(MainDEM) + ' subdem=' + IntToStr(SubDEM)); {$EndIf}
    i := 1;
@@ -918,7 +797,8 @@ function FindPits(DEM : integer; GridLimits : tGridLimits; var PitResults : tStr
 label
    NotPit;
 var
-   x,y,NumPit,Col,Row,db,dx,dy, xp,yp : integer;
+   x,y,NumPit,Col,Row,dx,dy{db,xp,yp} : integer;
+   //Lat,Long : float64;, xp,yp} : integer;
    Lat,Long : float64;
    MaxZ,MinZ,z : float32;
 begin

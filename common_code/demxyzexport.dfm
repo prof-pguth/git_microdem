@@ -3,8 +3,8 @@ object XYZformatform: TXYZformatform
   Top = 356
   BorderStyle = bsDialog
   Caption = 'ASCII export options'
-  ClientHeight = 279
-  ClientWidth = 285
+  ClientHeight = 300
+  ClientWidth = 329
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

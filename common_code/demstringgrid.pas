@@ -21,7 +21,7 @@ unit demstringgrid;
    //{$Define StringGridSortProblems}
    //{$Define StringGridProblems}
    //{$Define StringGridColors}
-   {$Define TrackStringGrid}
+   //{$Define TrackStringGrid}
    //{$Define CorrleationMatrixProblems}
 {$EndIf}
 
@@ -376,8 +376,6 @@ end;
 end;
 
 
-
-
 function OpenCorrelationMatrix(Title : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
 begin
    {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix in'); {$EndIf}
@@ -389,7 +387,6 @@ begin
    Result.SetFormSize;
    {$IfDef StringGridProblems} WriteLineToDebugFile('OpenCorrelationMatrix out'); {$EndIf}
 end;
-
 
 
 procedure Mergesort(Grid:TStringgrid; var Vals: array of integer; sortcol,datatype : integer; ascending : boolean);
@@ -442,8 +439,8 @@ var
           j:=AMid + 1;
           k:=ALo;
           while ((k < j) and (j <= AHi)) do begin
-            {Merge: Compare upper half to copied verasion of the lower half and move the appropriate value (smallest for ascending, largest for descending)
-                into the lower half positions, for equals use Avals to preserve original order}
+            {Merge: Compare upper half to copied verasion of lower half and move ppropriate value (smallest for ascending, largest for descending)
+                into lower half positions, for equals use Avals to preserve original order}
             with grid do
             n:=compare(cells[sortcol,Vals[j]],cells[sortcol,Avals[i]]);
             if ascending and (n>=0) or ((not ascending) and (n<=0)) then begin
@@ -566,7 +563,6 @@ begin
   fName := NextFileNumber(MDTempDir,'string_grid_export_','.csv');
   StringGridToCSVFile(fName,StringGrid1,Nil);
   OpenNumberedGISDataBase(db,fName,true);
-  //DoCSVFileImport(fName);
 end;
 
 procedure TGridForm.BitBtn1Click(Sender: TObject);
@@ -655,18 +651,17 @@ var
   TStr : shortstring;
 begin
    if not ReadRs then begin
-      {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.ReadCSVFile find R'); {$EndIf}
-        for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
-           FieldNames[i] := ptTrim(StringGrid1.Cells[i,0]);
-           for j := 1 to pred(StringGrid1.RowCount) do begin
-              TStr := StringGrid1.Cells[i,j];
-              if (TStr <> '') and (UpperCase(TStr) <> 'NAN') and (i <= MaxMatrixSize) and (j <= MaxMatrixSize) and IsNumeric(TStr) then begin
-                 r[i,j] := StrToFloat(TStr);
-              end;
-           end;
-        end;
-        ReadRs := true;
-      //BitBtn10Click(Nil);
+     {$IfDef StringGridProblems} WriteLineToDebugFile('TGridForm.ReadCSVFile find R'); {$EndIf}
+      for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
+         FieldNames[i] := ptTrim(StringGrid1.Cells[i,0]);
+         for j := 1 to pred(StringGrid1.RowCount) do begin
+            TStr := StringGrid1.Cells[i,j];
+            if (TStr <> '') and (UpperCase(TStr) <> 'NAN') and (i <= MaxMatrixSize) and (j <= MaxMatrixSize) and IsNumeric(TStr) then begin
+               r[i,j] := StrToFloat(TStr);
+            end;
+         end;
+      end;
+      ReadRs := true;
    end;
 end;
 
@@ -679,7 +674,6 @@ begin
    Edit1.Visible := Show;
    Edit2.Visible := Show;
    Label1.Visible := Show;
-   //NeedRs := false;
 end;
 
 
@@ -763,7 +757,6 @@ end;
 
 procedure TGridForm.BitBtn6Click(Sender: TObject);
 begin
-   //DrawCorrelationDiagram(StringGrid1);
    InteractiveCorrelativeMatrix(self);
 end;
 
@@ -783,7 +776,6 @@ begin
    for i := FirstDataColumn to pred(StringGrid1.ColCount) do begin
       for j := 1 to pred(StringGrid1.RowCount) do begin
          r := StrToFloat(StringGrid1.Cells[i,j]);
-         //if (i=j) and (r > 0.9999999) then begin
          if (StringGrid1.Cells[0,j] = StringGrid1.Cells[i,0]) then begin
          end
          else begin

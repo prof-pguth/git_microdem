@@ -120,9 +120,9 @@ object drain_opt_form: Tdrain_opt_form
     object BitBtn2: TBitBtn
       Left = 18
       Top = 24
-      Width = 161
+      Width = 103
       Height = 25
-      Caption = 'Point values'
+      Caption = '2d order'
       TabOrder = 0
       OnClick = BitBtn2Click
     end
@@ -134,12 +134,21 @@ object drain_opt_form: Tdrain_opt_form
       TabOrder = 1
       OnChange = Edit1Change
     end
+    object BitBtn1: TBitBtn
+      Left = 127
+      Top = 24
+      Width = 103
+      Height = 25
+      Caption = '3d order'
+      TabOrder = 2
+      OnClick = BitBtn1Click
+    end
   end
   object GroupBox2: TGroupBox
     Left = 8
     Top = 231
     Width = 281
-    Height = 146
+    Height = 82
     Caption = 'Vector average computation'
     TabOrder = 5
     object Label5: TLabel
@@ -148,13 +157,6 @@ object drain_opt_form: Tdrain_opt_form
       Width = 188
       Height = 13
       Caption = 'Avg aspect region size (DEM grid posts)'
-    end
-    object Label6: TLabel
-      Left = 78
-      Top = 95
-      Width = 68
-      Height = 13
-      Caption = 'Vector lengths'
     end
     object BitBtn3: TBitBtn
       Left = 16
@@ -173,14 +175,6 @@ object drain_opt_form: Tdrain_opt_form
       TabOrder = 1
       OnChange = Edit4Change
     end
-    object Edit5: TEdit
-      Left = 9
-      Top = 93
-      Width = 63
-      Height = 21
-      TabOrder = 2
-      OnChange = Edit5Change
-    end
   end
   object RadioGroup1: TRadioGroup
     Left = 19
@@ -195,5 +189,13 @@ object drain_opt_form: Tdrain_opt_form
       'None')
     TabOrder = 6
     OnClick = RadioGroup1Click
+  end
+  object BitBtn4: TBitBtn
+    Left = 8
+    Top = 328
+    Width = 103
+    Height = 25
+    Caption = 'Legend'
+    TabOrder = 7
   end
 end

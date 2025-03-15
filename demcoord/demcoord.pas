@@ -210,7 +210,6 @@ type
          SmallIntElevations    : pSmallIntElevations;
          ShortFloatElevations  : pShortFloatElevations;
          LongWordElevations    : pLongWordElevations;
-         Normals               : tNormals;
          RefMinElev,RefMaxElev : float64;
          DEMDatumShiftDone     : boolean;
          BytesPerElevation : int32;
@@ -232,6 +231,7 @@ type
          VATFileName      : PathStr;
          GeotiffImageDesc : shortstring;
          Zpercens         : ^floatarray1000;
+         Normals               : tNormals;
          DEMBoundBoxGeo,
          DEMBoundBoxProjected,
          DEMBoundBoxDataGrid,
@@ -557,10 +557,9 @@ type
 
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
 
-
          procedure TrackElevationRange(Where : shortstring);
 
-         function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;    inline;
+         function NormalAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;  inline;
          function DownhillVectorAtPoint(Col,Row : integer; var n1,n2,n3 : float32) : boolean;  inline;
 
          procedure GetStraightRouteLatLongDegree(Lat1,Long1,Lat2,Long2 : float64; StraightAlgorithm : tStraightAlgorithm; var NumPoints : integer; var Lats,Longs,dists : bfarray32);
@@ -3555,18 +3554,29 @@ end;
 procedure PickSlopeAspectMethod(aMessage : shortstring; var SlopeMethod : byte);
 var
    StringList : Classes.tStringList;
-   s1         : byte;
+   s1         : integer;
    i          : integer;
 begin
    {$IfDef VCL}
 (*
+           FirstSlopeMethod = 0;
+   smEvansYoung = 0;
+   smHorn = 1;
+   smZevenbergenThorne = 2;
+   smShary = 3;
+   smLSQ = 4;
+   LastSlopeMethod = 4;
+*)
       StringList := TStringList.Create;
-      for s1 := FirstSlopeMethod to LastSlopeMethod do StringList.Add(SlopeMethodName(s1));
+      StringList.Add('Evans-Young');
+      StringList.Add('Horn');
+      StringList.Add('Zevenbergen and Thorne');
+      StringList.Add('Shary');
+      StringList.Add('LSQ polynomial');
       i := MDDef.SlopeCompute.AlgorithmName;
       MultiSelectSingleColumnStringList('Desired slope method ' + aMessage,i,StringList);
       SlopeMethod := i;
       StringList.Free;
-*)
    {$EndIf}
 end;
 

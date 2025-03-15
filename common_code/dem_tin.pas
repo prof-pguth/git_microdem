@@ -109,13 +109,13 @@ uses
    DEMxyzIm,
    DataBaseCreate,
    DEMEROS,
-   DEMdefs,DEMCoord,BaseMap,//GetGridUnits,
+   DEMdefs,DEMCoord,BaseMap,
    Nevadia_Main;
 
 {$IfDef ExTINGraph}
 {$Else}
-var
-   PlotForm2 : TThisContourGraph; //can't go into tTIN due to circular references
+   var
+      PlotForm2 : TThisContourGraph; //can't go into tTIN due to circular references
 {$EndIf}
 
 function SmallEnoughTriangle(x1,x2,x3,y1,y2,y3 : float32) : boolean;
@@ -426,7 +426,6 @@ var
 begin
    if (BaseMap <> Nil) then begin
       {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.ShowTrianglesOnMap'); {$EndIf}
-
       BaseMap.Image1.Canvas.Pen.Width := MDDef.DelaunayLineThick;
       BaseMap.Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.DelaunayLineColor);
       TinTable.First;
@@ -815,145 +814,144 @@ end;
 
 {$IfDef TriangulationInterpolation}
 
-procedure tTIN.InterpolateImage(Map: tMapForm; SatImageNum : integer; SatForm : TSatelliteForm = Nil; Progress : ShortString = '');
-var
-   Bitmap,Bitmap2,MaskBMP : tMyBitmap;
-   j,x,y,xim,yim : integer;
-   Lat,Long : float64;
-   NewMap : tMapForm;
-   pMask : PRGB;
-   p1,p0 :  tScreenPRGB;
-   polypts :   array[0..4] of Windows.tPoint;
-begin
-   {$IfDef RecordInterpolateImage} WriteLineToDebugFile('tTIN.InterpolateImage in'); {$EndIf}
+      procedure tTIN.InterpolateImage(Map: tMapForm; SatImageNum : integer; SatForm : TSatelliteForm = Nil; Progress : ShortString = '');
+      var
+         Bitmap,Bitmap2,MaskBMP : tMyBitmap;
+         j,x,y,xim,yim : integer;
+         Lat,Long : float64;
+         NewMap : tMapForm;
+         pMask : PRGB;
+         p1,p0 :  tScreenPRGB;
+         polypts :   array[0..4] of Windows.tPoint;
+      begin
+         {$IfDef RecordInterpolateImage} WriteLineToDebugFile('tTIN.InterpolateImage in'); {$EndIf}
 
-   if (SatForm <> Nil) then begin
-      PetImage.CopyImageToBitmap(SatForm.Image1,Bitmap2);
-      {$IfDef RecordInterpolateImage} WriteLineToDebugFile('use satellite image'); {$EndIf}
-   end
-   else if (SatImage[SatImageNum].SelectionMap <> Nil) then begin
-      PetImage.CopyImageToBitmap(SatImage[SatImageNum].SelectionMap.Image1,Bitmap2);
-      {$IfDef RecordInterpolateImage} WriteLineToDebugFile('use selection map'); {$EndIf}
-   end
-   else begin
-      exit;
-   end;
-   PetImage.CloneImageToBitmap(Map.Image1,Bitmap);
-   FillScanlineAddresses(Bitmap,P0);
-   {$IfDef RecordInterpolateImage}
-      WriteLineToDebugFile('Create : ' +  BitmapSizeString(Bitmap));
-      WriteLineToDebugFile('Source : ' +  BitmapSizeString(Bitmap2));
-   {$EndIf}
+         if (SatForm <> Nil) then begin
+            PetImage.CopyImageToBitmap(SatForm.Image1,Bitmap2);
+            {$IfDef RecordInterpolateImage} WriteLineToDebugFile('use satellite image'); {$EndIf}
+         end
+         else if (SatImage[SatImageNum].SelectionMap <> Nil) then begin
+            PetImage.CopyImageToBitmap(SatImage[SatImageNum].SelectionMap.Image1,Bitmap2);
+            {$IfDef RecordInterpolateImage} WriteLineToDebugFile('use selection map'); {$EndIf}
+         end
+         else begin
+            exit;
+         end;
+         PetImage.CloneImageToBitmap(Map.Image1,Bitmap);
+         FillScanlineAddresses(Bitmap,P0);
+         {$IfDef RecordInterpolateImage}
+            WriteLineToDebugFile('Create : ' +  BitmapSizeString(Bitmap));
+            WriteLineToDebugFile('Source : ' +  BitmapSizeString(Bitmap2));
+         {$EndIf}
 
-   StartProgress('Image ' + Progress);
-   FillScanlineAddresses(Bitmap2,P1);
+         StartProgress('Image ' + Progress);
+         FillScanlineAddresses(Bitmap2,P1);
 
-   j := 0;
-   TinTable.First;
-   while not TinTable.EOF do begin
-      RealWorldCoordinates;
-      CloneImageToBitmap(Map.Image1,MaskBMP);
-      MaskBMP.Canvas.Brush.Style := bsSolid;
-      MaskBMP.Canvas.Brush.Color := clBlack;
-      Map.MapDraw.LatLongDegreeToScreen(y1,x1,polypts[0].x,polypts[0].y);
-      Map.MapDraw.LatLongDegreeToScreen(y2,x2,polypts[1].x,polypts[1].y);
-      Map.MapDraw.LatLongDegreeToScreen(y3,x3,polypts[2].x,polypts[2].y);
-      MaskBMP.Canvas.Polygon(slice(PolyPts,3));
-      inc(j);
-      UpdateProgressBar(j/TinTable.RecordCount);
-      RealWorldCoordinates;
-      RealImageCoordinates;
-      for y := 0 to pred(MaskBMP.Height) do begin
-         pMask := MaskBMP.ScanLine[y];
-         for x := 0 to pred(MaskBMP.Width) do begin
-            Map.MapDraw.ScreenToLatLongDegree(x,y,Lat,Long);
-            if SameColor(pMask[x],RGBTripleBlack) then begin
-               if ImageCoordsInTriangle(Long,Lat,xim,yim) then begin
-                  if (SatForm <> Nil) then begin
-                     SatForm.SatGridToScreen(xim,yim,xim,yim);
-                     if SatForm.OnScreen(xim,yim) then p0[y]^[x] := p1[yim]^[xim];
-                  end
-                  else begin
-                     SatImage[SatImageNum].SelectionMap.MapDraw.DataGridToScreen(xim,yim,xim,yim);
-                     if SatImage[SatImageNum].SelectionMap.MapDraw.OnScreen(xim,yim) then p0[y]^[x] := p1[yim]^[xim];
+         j := 0;
+         TinTable.First;
+         while not TinTable.EOF do begin
+            RealWorldCoordinates;
+            CloneImageToBitmap(Map.Image1,MaskBMP);
+            MaskBMP.Canvas.Brush.Style := bsSolid;
+            MaskBMP.Canvas.Brush.Color := clBlack;
+            Map.MapDraw.LatLongDegreeToScreen(y1,x1,polypts[0].x,polypts[0].y);
+            Map.MapDraw.LatLongDegreeToScreen(y2,x2,polypts[1].x,polypts[1].y);
+            Map.MapDraw.LatLongDegreeToScreen(y3,x3,polypts[2].x,polypts[2].y);
+            MaskBMP.Canvas.Polygon(slice(PolyPts,3));
+            inc(j);
+            UpdateProgressBar(j/TinTable.RecordCount);
+            RealWorldCoordinates;
+            RealImageCoordinates;
+            for y := 0 to pred(MaskBMP.Height) do begin
+               pMask := MaskBMP.ScanLine[y];
+               for x := 0 to pred(MaskBMP.Width) do begin
+                  Map.MapDraw.ScreenToLatLongDegree(x,y,Lat,Long);
+                  if SameColor(pMask[x],RGBTripleBlack) then begin
+                     if ImageCoordsInTriangle(Long,Lat,xim,yim) then begin
+                        if (SatForm <> Nil) then begin
+                           SatForm.SatGridToScreen(xim,yim,xim,yim);
+                           if SatForm.OnScreen(xim,yim) then p0[y]^[x] := p1[yim]^[xim];
+                        end
+                        else begin
+                           SatImage[SatImageNum].SelectionMap.MapDraw.DataGridToScreen(xim,yim,xim,yim);
+                           if SatImage[SatImageNum].SelectionMap.MapDraw.OnScreen(xim,yim) then p0[y]^[x] := p1[yim]^[xim];
+                        end;
+                     end;
                   end;
                end;
             end;
+            MaskBMP.Free;
+            TinTable.Next;
          end;
+         EndProgress;
+
+         if (SatForm = Nil) then begin
+            NewMap := Nil;
+            NewMap := Map.DuplicateMap(false);
+            NewMap.Image1.Picture.Graphic := Bitmap;
+            NewMap.Caption := 'Reprojected ' + SatImage[SatImageNum].SceneBaseName;
+         end
+         else begin
+            Map.Image1.Picture.Graphic := Bitmap;
+         end;
+         Bitmap.Free;
+         Bitmap2.Free;
+         EndProgress;
       end;
-      MaskBMP.Free;
-      TinTable.Next;
-   end;
-   EndProgress;
-
-   if (SatForm = Nil) then begin
-      NewMap := Nil;
-      NewMap := Map.DuplicateMap(false);
-      NewMap.Image1.Picture.Graphic := Bitmap;
-      NewMap.Caption := 'Reprojected ' + SatImage[SatImageNum].SceneBaseName;
-   end
-   else begin
-      Map.Image1.Picture.Graphic := Bitmap;
-   end;
-   Bitmap.Free;
-   Bitmap2.Free;
-   EndProgress;
-end;
 
 
-procedure tTIN.PickImageTriangle(SatForm : TSatelliteForm;xim,yim : integer);
-var
-  a,b,c,d,determinant,rhs1,rhs2,xc,yc,zc : float64;
-begin
-  TinTable.First;
-   with TinTable,SatForm do begin
-      while not TinTable.eof do begin
-         RealImageCoordinates;
-         a := xim1 - xim3;
-         b := xim2 - xim3;
-         c := yim1 - yim3;
-         d := yim2 - yim3;
-         determinant := a*d - b*c;
-         if (abs(determinant) > 0.00000001) then begin
-            RHS1 := Xim - xim3;
-            RHS2 := Yim - yim3;
-            xC := (RHS1 * d - RHS2 * b) / determinant;
-            yC := (RHS2 * a - RHS1 * c) / determinant;
-            zC := 1.0 - xC - yC;
-            if (xc > 0) and (yc > 0) and (zc > 0) then begin
-               Image1.Canvas.Pen.Color := clLime;
-               Image1.Canvas.Pen.Width := 3;
+      procedure tTIN.PickImageTriangle(SatForm : TSatelliteForm;xim,yim : integer);
+      var
+        a,b,c,d,determinant,rhs1,rhs2,xc,yc,zc : float64;
+      begin
+        TinTable.First;
+         with TinTable,SatForm do begin
+            while not TinTable.eof do begin
+               RealImageCoordinates;
+               a := xim1 - xim3;
+               b := xim2 - xim3;
+               c := yim1 - yim3;
+               d := yim2 - yim3;
+               determinant := a*d - b*c;
+               if (abs(determinant) > 0.00000001) then begin
+                  RHS1 := Xim - xim3;
+                  RHS2 := Yim - yim3;
+                  xC := (RHS1 * d - RHS2 * b) / determinant;
+                  yC := (RHS2 * a - RHS1 * c) / determinant;
+                  zC := 1.0 - xC - yC;
+                  if (xc > 0) and (yc > 0) and (zc > 0) then begin
+                     Image1.Canvas.Pen.Color := clLime;
+                     Image1.Canvas.Pen.Width := 3;
+                     Image1.Canvas.MoveTo(XSatToScreen(xim1),XSatToScreen(yim1));
+                     Image1.Canvas.LineTo(XSatToScreen(xim2),XSatToScreen(yim2));
+                     Image1.Canvas.LineTo(XSatToScreen(xim3),XSatToScreen(yim3));
+                     Image1.Canvas.LineTo(XSatToScreen(xim1),XSatToScreen(yim1));
+                     exit;
+                  end;
+               end;
+               TinTable.Next;
+            end;
+         end {with};
+      end;
+
+      procedure tTIN.ShowTriangulationOnSatForm(Map: TSatelliteForm);
+      begin
+         if (Map.SatInWindow <> 0)and (TinTable <> Nil) then with SatImage[Map.SatInWindow],Map do begin
+            Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.DelaunayLineColor);
+            Image1.Canvas.Pen.Width := MDDef.DelaunayLineThick;
+            TinTable.First;
+            while (not TinTable.EOF) do with TINTable do begin
+               RealImageCoordinates;
                Image1.Canvas.MoveTo(XSatToScreen(xim1),XSatToScreen(yim1));
                Image1.Canvas.LineTo(XSatToScreen(xim2),XSatToScreen(yim2));
                Image1.Canvas.LineTo(XSatToScreen(xim3),XSatToScreen(yim3));
                Image1.Canvas.LineTo(XSatToScreen(xim1),XSatToScreen(yim1));
-               exit;
+               TinTable.Next;
             end;
          end;
-         TinTable.Next;
       end;
-   end {with};
-end;
-
-procedure tTIN.ShowTriangulationOnSatForm(Map: TSatelliteForm);
-begin
-   if (Map.SatInWindow <> 0)and (TinTable <> Nil) then with SatImage[Map.SatInWindow],Map do begin
-      Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.DelaunayLineColor);
-      Image1.Canvas.Pen.Width := MDDef.DelaunayLineThick;
-      TinTable.First;
-      while (not TinTable.EOF) do with TINTable do begin
-         RealImageCoordinates;
-         Image1.Canvas.MoveTo(XSatToScreen(xim1),XSatToScreen(yim1));
-         Image1.Canvas.LineTo(XSatToScreen(xim2),XSatToScreen(yim2));
-         Image1.Canvas.LineTo(XSatToScreen(xim3),XSatToScreen(yim3));
-         Image1.Canvas.LineTo(XSatToScreen(xim1),XSatToScreen(yim1));
-         TinTable.Next;
-      end;
-   end;
-end;
 
 {$EndIf}
-
 
 
 procedure tTIN.UpdateBaseMap;
@@ -965,7 +963,6 @@ begin
       DrawTriangulatedContoursOnMap;
    end;
 end;
-
 
 
 procedure tTIN.InterpolateImageCoords(x,y : float64; var xim,yim : integer);
@@ -1003,7 +1000,7 @@ var
    Top,Bot,ABit,CZ : float64;
    Cont   : ^ContType;
 begin
-{$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.DrawTriangulatedContoursOnMap in'); {$EndIf}
+   {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.DrawTriangulatedContoursOnMap in'); {$EndIf}
    New(Cont);
    StartProgress('Draw TIN contours');
    TinTable.First;
@@ -1033,9 +1030,9 @@ begin
             Cont^[NumContourLines] :=  Cont^[1] + pred(NumContourLines) * TINContourInterval;
          until Cont^[NumContourLines] > Top;
          {$IfDef RecordDetailedTINProblems}
-         WriteLineToDebugFile('NumContourLines=' + IntToStr(NumContourLines));
-         WriteLineToDebugFile('Range: ' + RealToString(Bot,-12,-2) + ' to ' + RealToString(Top,-12,-2));
-         for JC := 1 to NumContourLines do WriteLineToDebugFile( RealToString(Cont^[JC],12,2));
+            WriteLineToDebugFile('NumContourLines=' + IntToStr(NumContourLines));
+            WriteLineToDebugFile('Range: ' + RealToString(Bot,-12,-2) + ' to ' + RealToString(Top,-12,-2));
+            for JC := 1 to NumContourLines do WriteLineToDebugFile( RealToString(Cont^[JC],12,2));
          {$EndIf}
 
          for JC := 1 to NumContourLines do begin
@@ -1068,7 +1065,7 @@ begin
                end;
                with BaseMap.Image1.Canvas do begin
                   Pen.Color := ConvertPlatformColorToTColor(MDDef.ContourLineColor);
-                  Pen.Width := MDDef.ContourLineThick;
+                  Pen.Width := MDDef.ContourLineWidth;
                   BaseMap.MapDraw.LatLongDegreeToScreen(yn1,xn1,xs,ys);
                   BaseMap.MapDraw.LatLongDegreeToScreen(yn2,xn2,xs2,ys2);
                   MoveTo(xs,ys);

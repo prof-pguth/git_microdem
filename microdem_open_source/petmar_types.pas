@@ -34,7 +34,6 @@ unit petmar_types;
 
 interface
 
-
 uses
    System.UITypes, System.UIConsts,System.IOUtils,System.SysUtils,
 
@@ -56,7 +55,7 @@ uses
    Math,Db,Classes,StrUtils;
 
 const
-   {$IF (CompilerVersion = 36) and System.RTLVersion122} DelphiCompiler = '12.2 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
+   {$IF (CompilerVersion = 36) and System.RTLVersion122} DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
 
 {$IfDef MSWindows}
 const

@@ -1,4 +1,4 @@
-unit demvarop;
+unit dempanorama;
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program           }
@@ -6,6 +6,7 @@ unit demvarop;
 { Released under the MIT Licences        }
 { Copyright (c) 1986-2025 Peter L. Guth  }
 {________________________________________}
+
 
 {$I nevadia_defines.inc}
 
@@ -19,26 +20,19 @@ uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
   Buttons, ExtCtrls, OkCancl2;
 
 type
-  TVariogramOptions = class(TOKRightDlg)
+  TPanoramaOps = class(TOKRightDlg)
     HelpBtn: TButton;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
+    RadioGroup1: TRadioGroup;
     Label1: TLabel;
-    Edit1: TEdit;
     Label2: TLabel;
-    Edit2: TEdit;
     Label3: TLabel;
+    Edit1: TEdit;
+    Edit2: TEdit;
     Edit3: TEdit;
-    Edit4: TEdit;
-    Label4: TLabel;
-    CheckBox3: TCheckBox;
-    CheckBox4: TCheckBox;
-    CheckBox5: TCheckBox;
-    CheckBox6: TCheckBox;
-    CheckBox7: TCheckBox;
+    ComboBox1: TComboBox;
     procedure HelpBtnClick(Sender: TObject);
+    procedure ComboBox1Change(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure CheckBox6Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -46,31 +40,37 @@ type
   end;
 
 var
-  VariogramOptions: TVariogramOptions;
+   PanoramaOps: TPanoramaOps;
 
 implementation
 
 {$R *.DFM}
 
 uses
-   Petmar;
+   PETMAR,DEMDefs;
 
-procedure TVariogramOptions.HelpBtnClick(Sender: TObject);
+
+procedure TPanoramaOps.HelpBtnClick(Sender: TObject);
 begin
-   DisplayHTMLTopic('html\micr1hv1.htm');
+   DisplayHTMLTopic('html\tbme2515.htm');
 end;
 
-procedure TVariogramOptions.CheckBox6Click(Sender: TObject);
+
+procedure TPanoramaOps.ComboBox1Change(Sender: TObject);
+var
+   i : integer;
 begin
-   Label2.Enabled := CheckBox6.Checked;
-   Edit2.Enabled := CheckBox6.Checked;
+   for i := 0 to pred(ComboBox1.Items.Count) do
+      if ComboBox1.Text = ComboBox1.Items[i] then
+         MDdef.PerspOpts.WhichPerspective := tPerspectiveType(i);
+   ComboBox1.Text := ComboBox1.Items[ord(MDdef.PerspOpts.WhichPerspective)];
 end;
 
-procedure TVariogramOptions.FormCreate(Sender: TObject);
+procedure TPanoramaOps.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
-   CheckBox6Click(Sender);
+   PlaceFormAtMousePosition(Self);
 end;
+
 
 end.
 

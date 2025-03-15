@@ -1,12 +1,11 @@
 ﻿Unit MVClusterClientDataSet;
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
 
 //used in demdatabase_special_cases.inc for MICRODEM perform K-means clustering
 
@@ -95,10 +94,6 @@ const
    ONE_QUARTER         = 1 / 4;
    ONE_EIGHTH          = 1 / 8;
 
-   //CRLF                = sLineBreak;
-   //CRLF2               = sLineBreak + sLineBreak;
-   //HTMLRed             = '"#DD0000"';
-   //HTMLBlack           = '"#000000"';
    ERROR_PREFIX        = 'Error in ';
    ABS_NEAR_ZERO       = 0.00001;
    CLOSE_TO_ZERO       = 0.01;

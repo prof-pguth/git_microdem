@@ -307,7 +307,7 @@ begin {tDEMDataSet.SSOComputations}
       ComputeEigenVectors;
       Dispose(M);
       Dispose(s);
-
+      NetForm := nil;
       {$IfDef ShowFullDEMSSOCalc} WriteLineToDebugFile('SSO setup done'); {$EndIf}
 
       AspectStats.Create(ThisDEM);
@@ -327,6 +327,7 @@ begin {tDEMDataSet.SSOComputations}
       SumSqElev := 0;
       MinZ := MaxSmallInt;
       MaxZ := -MaxSmallInt;
+      SSOVars.AspPts := 0;
 
       Symbol.DrawingSymbol := Dot;
       Symbol.Size := 3;
@@ -418,8 +419,10 @@ begin {tDEMDataSet.SSOComputations}
                end;
             end
             else begin
-               NetForm.Close;
-               NetForm := Nil;
+               if NetForm <> Nil then begin
+                  NetForm.Close;
+                  NetForm := Nil;
+               end;
             end;
 
             if (AspName <> '') then begin
@@ -431,8 +434,10 @@ begin {tDEMDataSet.SSOComputations}
          end;
       end
       else if (not Plot) then begin
-         NetForm.Close;
-         NetForm := Nil;
+         if NetForm <> Nil then begin
+            NetForm.Close;
+            NetForm := Nil;
+         end;
       end;
    finally
      AspectStats.Destroy;

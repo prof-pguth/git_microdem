@@ -425,10 +425,10 @@ type
     BitBtn22: TBitBtn;
     Features: TCheckBox;
     N21: TMenuItem;
-    Sigmatee1: TMenuItem;
-    Soundvelocity1: TMenuItem;
+    //Sigmatee1: TMenuItem;
+    //Soundvelocity1: TMenuItem;
     Oceanography1: TMenuItem;
-    Sigmatheta1: TMenuItem;
+    //Sigmatheta1: TMenuItem;
     Fillviewshedfields1: TMenuItem;
     CurrentflterYrestN1: TMenuItem;
     HLCheckbox: TCheckBox;
@@ -1319,9 +1319,9 @@ type
     procedure Renamefield1Click(Sender: TObject);
     procedure BitBtn22Click(Sender: TObject);
     procedure FeaturesClick(Sender: TObject);
-    procedure Sigmatee1Click(Sender: TObject);
-    procedure Soundvelocity1Click(Sender: TObject);
-    procedure Sigmatheta1Click(Sender: TObject);
+    //procedure Sigmatee1Click(Sender: TObject);
+    //procedure Soundvelocity1Click(Sender: TObject);
+    //procedure Sigmatheta1Click(Sender: TObject);
     procedure Fillviewshedfields1Click(Sender: TObject);
     procedure CurrentflterYrestN1Click(Sender: TObject);
     procedure Highlightfan1Click(Sender: TObject);
@@ -5065,38 +5065,7 @@ begin
    GISdb[DBonTable].GISProportionalSymbols(dbasColorByNumeric);
 end;
 
-procedure Tdbtablef.Sigmatee1Click(Sender: TObject);
-{$IfDef ExOceanography}
-begin
-{$Else}
-var
-   depth,salinity,temp : float64;
-begin
-   with GISdb[DBonTable] do begin
-      if (Sender = Sigmatee1) then AddFieldToDataBase(ftFloat,'SIGMA_TEE',12,6)
-      else if (Sender = SigmaTheta1) then AddFieldToDataBase(ftFloat,'SIGMA_THT',12,6)
-      else AddFieldToDataBase(ftFloat,'SOUND_VEL',8,3);
-      EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.eof do begin
-         Depth := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DEPTH');
-         Temp := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('TEMP_C');
-         Salinity := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SALINITY');
-         GISdb[DBonTable].MyData.Edit;
-         if Sender = Sigmatee1 then GISdb[DBonTable].MyData.SetFieldByNameAsFloat('SIGMA_TEE',OceanCal.CalSigmaT(Temp,Salinity))
-         else if Sender = SigmaTheta1 then GISdb[DBonTable].MyData.SetFieldByNameAsFloat('SIGMA_THT',OceanCal.CalSigmaTheta(Temp,Salinity,Depth))
-         else GISdb[DBonTable].MyData.SetFieldByNameAsFloat('SOUND_VEL',OceanCal.SoundVelocity(Temp,Salinity,Depth));
-         GISdb[DBonTable].MyData.Next;
-      end;
-      ShowStatus;
-   end;
-{$EndIf}   
-end;
 
-procedure Tdbtablef.Sigmatheta1Click(Sender: TObject);
-begin
-   Sigmatee1Click(Sender);
-end;
 
 procedure Tdbtablef.Singlefield1Click(Sender: TObject);
 begin
@@ -6636,10 +6605,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Soundvelocity1Click(Sender: TObject);
-begin
-   Sigmatee1Click(Sender);
-end;
 
 procedure Tdbtablef.Splitdatefield1Click(Sender: TObject);
 begin

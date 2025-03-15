@@ -123,17 +123,18 @@ object Dted_save_form: TDted_save_form
     OnClick = CheckBox2Click
   end
   object GroupBox1: TGroupBox
-    Left = 320
-    Top = 8
+    Left = 355
+    Top = 0
     Width = 225
-    Height = 193
+    Height = 240
+    Align = alRight
     Caption = 'Metadata'
     TabOrder = 8
     object StringGrid1: TStringGrid
       Left = 2
       Top = 15
       Width = 221
-      Height = 176
+      Height = 223
       Align = alClient
       ColCount = 2
       DefaultColWidth = 98

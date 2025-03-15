@@ -57,7 +57,7 @@ uses
 //end DB declarations
 
     {$IfDef VCL}
-       forms,shlobj,
+       forms,shlobj,vcl.controls,
     {$EndIf}
     sysutils,System.UITypes,StrUtils,Classes,
     Petmar_types,Petmar,DEMMapDraw,DEMDefs;
@@ -1343,8 +1343,8 @@ end;
 {$IfDef VCL}
 
       function GetTwoCompatibleGrids(WhatFor : shortString; CheckUnits : boolean; var DEM1,DEM2 : integer; WarnIfIncompatible : boolean = true;  AlwaysAsk : boolean = false) : boolean;
-      var
-         xoffset,yoffset : integer;
+      //var
+         //xoffset,yoffset : integer;
       begin
          if (NumDEMDataSetsOpen < 2) then begin
             Result := false;

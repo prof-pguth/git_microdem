@@ -4,7 +4,6 @@
 { Released under the MIT Licences        }
 { Copyright (c) 1986-2025 Peter L. Guth  }
 {----------------------------------------}
-{                                        }
 {   include file for demstat             }
 {________________________________________}
 
@@ -261,14 +260,15 @@ end {function MakeSSIMMap};
 
 procedure DoSSIMandFUVForAnArea(AreaName : shortstring; Overwrite,AreasInsteadOfTiles : boolean);
 var
-   DEMIXtileDB,NumRef,i,j : integer;
+   DEMIXtileDB,{NumRef,j,}i : integer;
    ResultsSSIM,ResultsFUV : tStringList;
    SavefNameSSIM,SavefNameFUV,
-   fName,WetnessName : PathStr;
+   //fName,
+   WetnessName : PathStr;
    aLine,TileName : shortstring;
    bb : sfBoundBox;
    TileFull : float32;
-   MissingFiles : boolean;
+   //MissingFiles : boolean;
 
    function ProcessDEMTileSSIM(Ref,Test : integer; bb : sfBoundBox) : float32;
    var
@@ -289,9 +289,9 @@ var
 
    procedure DoCriterion(Criterion : ANSIString; usingPointGrids,usingAreaGrids : tDEM_int_array; ClearDerived : boolean = true);
    var
-      i,ThisRefDEM,ThisTestDEM,UsingRef : integer;
-      Criterion2,WhatsMissing,What,TStr : shortstring;
-      RefGridLimits,TestGridLimits : tGridLimits;
+      i,{ThisRefDEM,ThisTestDEM,}UsingRef : integer;
+      Criterion2,WhatsMissing,What{,TStr} : shortstring;
+      RefGridLimits{,TestGridLimits} : tGridLimits;
       gl1 : tGridLimits;
       Mean,Std : float32;
       NPts : int64;
@@ -463,8 +463,9 @@ var
 
 var
    Success : boolean;
-   TStr,HowDone : shortstring;
-   fName2 : PathStr;
+   //TStr,
+   HowDone : shortstring;
+   //fName2 : PathStr;
    FullTiles : tStringList;
 begin {procedure DoSSIMandFUVForAnArea}
     if DEMIXanalysismode in [DEMIXneo,DEMIXtraditional] then begin

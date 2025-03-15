@@ -174,7 +174,6 @@ uses
   petfont in '..\common_code\petfont.pas' {FontDlg},
   demsatcontrast in '..\common_code\demsatcontrast.pas' {EROSContrastForm},
   petsymbol in '..\common_code\petsymbol.pas' {PickSymbolForm},
-  OCEANCAL in '..\common_code\OCEANCAL.PAS',
   demxyzexport in '..\common_code\demxyzexport.pas' {XYZformatform},
   petbmpsize in '..\common_code\petbmpsize.pas' {NewBMPForm},
   PETCorrl in '..\common_code\PETCorrl.pas' {CorrelationForm},

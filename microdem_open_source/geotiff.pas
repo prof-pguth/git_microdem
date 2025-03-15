@@ -1478,15 +1478,13 @@ var
    TiePoints,
    TypeSize : integer;
    tf  : float64;
-   //off1 : int64;
    TFWFile,
    HeaderLogList    : tStringList;
    ASCIIStr,UTMString  : AnsiString;
    GeoSuccess,AllGray,
    FirstImage,
    GeoLatLong,
-   ProjectionDefined{,
-   HaveRegistration} : boolean;
+   ProjectionDefined : boolean;
    StripOffsetsOffset,
    GeoKeyDirectoryOffset : int64;
    ColorTableEntries,

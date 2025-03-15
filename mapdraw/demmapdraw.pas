@@ -46,7 +46,7 @@
       //{$Define RecordPlotDBrules}
       //{$Define RecordWorldOutline}
       //{$Define Track_f}
-      //{$Define RecordMapResize}
+      {$Define RecordMapResize}
       //{$Define RecordTissot}
       //{$Define RecordTargetAreasCoverage}
       //{$Define RecordMapDrawCreation}

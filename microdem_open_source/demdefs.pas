@@ -1548,13 +1548,14 @@ type
            //DrainageSlopeAlgorithm : tSlopeCurveCompute;
            DrainageArrowLength,
            DrainageArrowWidth,
-           DrainageVectAvgArrowLength,
-           DrainageVectAvgArrowWidth,
+           //DrainageVectAvgArrowLength,
+           //DrainageVectAvgArrowWidth,
            DrainageArrowSeparation : byte;
-           DrainageArrowColor : tPlatformColor;
+           DrainageArrowColor1,
+           DrainageArrowColor2,
            DrainageVectAvgArrowColor : tPlatformColor;
-           DrainageMethod,
-           DrainageSeedRadius : byte;
+           DrainageMethod : byte;
+           //DrainageSeedRadius : byte;
            //DrainagePointSlope,
            DrainageVectorAverage : boolean;
        {$EndIf}
@@ -2052,6 +2053,7 @@ type
        FightLineColor        : tPlatformColor;
        FlightLineSize        : byte;
        AutoElevationReset : boolean;
+       GridLabelXoff,GridLabelYoff,
        GridLabelDecimals : byte;
        GridLabelsInsideMap : boolean;
        PictureMode,
@@ -2348,7 +2350,7 @@ type
        PCAutoFillHoles : boolean;
 
        DelaunayLineThick : byte;
-       ContourLineThick : byte;
+       //ContourLineThick : byte;
        DelaunayLineColor : tPlatformColor;
        ContourLineColor : tPlatformColor;
        ShowDelauneyTriangles : boolean;
@@ -2447,8 +2449,8 @@ type
        LCPDist,LCPDiagonals : boolean;
        LCPRoadfName, LCPstartFName,LCPendFName : PathStr;
 
+       ContourLineWidth : byte;
        PrinterMapLength,
-       ContourLineWidth,
        DefaultContourInterval : int16;
        MergeInt,
        MergeHue,
@@ -2723,6 +2725,7 @@ type
 
        DefaultGraphFont,
        ContourLabelFont,
+       GridPointLabelFont,
        TitleLabelFont,
        CollarUnitsFont,
        InsideGridFont,
