@@ -1,13 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{____________________________________}
-{                                    }
-{ include file for demdatabase       }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{                                        }
+{   include file for demdatabase         }
+{________________________________________}
 
 function TGISdataBaseModule.BarGraphLegend(Display : boolean = true; theLabel : shortstring = '') : tMyBitmap;
 var
@@ -60,7 +59,7 @@ const
 var
    i,ItemHeight,TextStart : integer;
    Lat,Long,Lat2,Long2 : float64;
-   PCpresent : boolean;
+   PCpresent,DrawLine : boolean;
    PCname,theFilter : ShortString;
    FieldsInDB : tStringList;
 
@@ -89,11 +88,11 @@ var
              Result.Canvas.Brush.Color := Color;
              Result.Canvas.Brush.Style := bsSolid;
              Result.Canvas.Pen.Color := Color;
-             Result.Canvas.Pen.Width := 2;
-             if LineShapeFile(ShapeFileType)  then begin
+             Result.Canvas.Pen.Width := 3;
+             if LineShapeFile(ShapeFileType) or DrawLine then begin
                 if MyData.FieldExists('LINE_WIDTH') then Result.Canvas.Pen.Width := MyData.GetFieldByNameAsInteger('LINE_WIDTH');
-                Result.Canvas.MoveTo(10,10+i*ItemHeight);
-                Result.Canvas.LineTo(30,10+i*ItemHeight);
+                Result.Canvas.MoveTo(10,i*ItemHeight + ItemHeight div 2);
+                Result.Canvas.LineTo(30,i*ItemHeight + ItemHeight div 2);
              end
              else begin
                 Result.Canvas.Pen.Width := 1;
@@ -107,6 +106,7 @@ var
 begin
    {$IfDef RecordLegend} WriteLineToDebugFile('TGISDataBase.CreateDataBaseLegend in'); {$EndIf}
    Result := Nil;
+   DrawLine := false;
    ShowHourglassCursor;
    if (dbOpts.DBAutoShow = dbasKoppen) then Result := KoppenLegend
    else if (dbOpts.dbAutoShow in [dbasQuakeMechColor]) then Result := FocalMechLegend
@@ -142,6 +142,9 @@ begin
        if ColorPresent or RGBColorPresent or LineColorPresent or IconPresent then begin
           ShowHourglassCursor;
           EmpSource.Enabled := false;
+          FieldsInDB := MyData.ListUniqueEntriesInDB(dbOpts.LabelField);
+          if (FieldsInDB.Count = MyData.FiltRecsInDB) then SimpleLegend := true;
+
           if SimpleLegend or PCpresent then begin
              CreateBitmap(Result,BitmapMaxWidth,20*MyData.RecordCount+5);
              ClearBitmap(Result,clNearWhite);
@@ -151,10 +154,11 @@ begin
              Result.Height := ItemHeight*MyData.RecordCount+5;
              i := 0;
              MyData.First;
+             DrawLine := true;
              while not MyData.eof do begin
                 DrawSymbol(i);
                 Result.Canvas.Brush.Style := bsClear;
-                if SimpleLegend then TStr := MyData.GetFieldByNameAsString('NAME')
+                if SimpleLegend then TStr := MyData.GetFieldByNameAsString(dbOpts.LabelField)
                 else begin
                    TStr := RealToString(MyData.GetFieldByNameAsFloat(PCname),-8,2) + '%';
                    TStr := MyData.GetFieldByNameAsString(dbOpts.LabelField) +  '  (' + TStr + ')';
@@ -169,9 +173,7 @@ begin
              if (BaseFilter = '') then UseFilter := ''
              else UseFilter := BaseFilter +  ' AND ';
              if (dbOpts.LabelField = '') or (MyData.GetFieldType(dbOpts.LabelField) <> ftstring) then dbOpts.LabelField := PickField('unique values' ,[ftString,ftInteger,ftSmallInt]);
-             FieldsInDB := MyData.ListUniqueEntriesInDB(dbOpts.LabelField);
              SaveFilterStatus(false);
-
              CreateBitmap(Result,BitmapMaxWidth,20*FieldsInDB.Count+5);
              Petmar.LoadMyFontIntoWindowsFont(MDDef.DefGISLegendFont,Result.Canvas.Font);
              ItemHeight := Result.Canvas.TextHeight('My') + 5;
@@ -188,12 +190,13 @@ begin
                 MyData.Next;
              end;
              MyData.ApplyFilter(BaseFilter);
+             RestoreFilterStatus;
           end;
           if (Result <> Nil) then begin
              PutBitmapInBox(Result);
           end;
-          RestoreFilterStatus;
           EmpSource.Enabled := true;
+          FieldsInDB.Free;
           ShowDefaultCursor;
        end;
    end;
@@ -311,7 +314,8 @@ begin
    if (SaveName <> '') then SaveBitmap(bmp,SaveName);
 
    if (bmp <> Nil) then begin
-      Petimage_form.DisplayBitmap(BMP,'Legend ' + dbName,true,true);
+      Petimage_form.DisplayBitmap(BMP,'Legend ' + dbName,true);
+      Clipboard.Assign(BMP);
       FreeAndNil(Bmp);
    end;
    ShowStatus;
