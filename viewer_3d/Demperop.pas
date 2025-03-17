@@ -546,7 +546,7 @@ begin
    with View3D.PersOpts do begin
       ComboBox1.Text := ComboBox1.Items[ord(WhichPerspective)];
       ComboBox1.ItemIndex := ord(WhichPerspective);
-      ComboBox2.Text := ComboBox2.Items[ord(MDdef.CurvAlg)];
+      ComboBox2.Text := ComboBox2.Items[ord(MDdef.EarthVertCurvAlg)];
       CheckBox1.Checked := LabelPerspectiveViewPort;
       if NapEarth then RadioGroup1.ItemIndex := 0 else RadioGroup1.ItemIndex := 1;
       RadioGroup2.ItemIndex := ord(PerpsectiveStereo);
@@ -735,7 +735,7 @@ var
 begin
    for i := 0 to pred(ComboBox2.Items.Count) do
       if ComboBox2.Text = ComboBox2.Items[i] then
-         MDDef.CurvAlg := tVerticalCurvAlg(i);
+         MDDef.EarthVertCurvAlg := tVerticalCurvAlg(i);
 end;
 
 procedure TPerspOptions.CheckBox6Click(Sender: TObject);

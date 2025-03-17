@@ -2110,6 +2110,8 @@ var
                FileList.LoadFromFile(Value)
             end;
             if Key = 'CURVE_MODE' then begin
+               WhichCurvature := CurveCodeFromName(Value);
+(*
                if (Value = 'PROFILE') then WhichCurvature := 1;
                if (Value = 'TANGENTIAL') then WhichCurvature := 2;
                if (Value = 'PLAN') then WhichCurvature := 3;
@@ -2120,6 +2122,7 @@ var
                if (Value = 'GAUSSIAN') then WhichCurvature := 8;
                if (Value = 'MEAN') then WhichCurvature := 9;
                if (Value = 'CASORATI') then WhichCurvature := 10;
+*)
             end;
             if Key = 'SLOPE_ALG' then begin
                 if Value = 'LSQ' then MDDef.SlopeCompute.AlgorithmName := smLSQ;

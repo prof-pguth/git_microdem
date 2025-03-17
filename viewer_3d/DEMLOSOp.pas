@@ -320,9 +320,9 @@ begin
       MDDef.LOSshowPointCloudRangeLines := CheckBox14.Checked;
    {$EndIf}
 
-   if CheckBox4.Checked and (MDdef.CurvAlg <> vcRadioLineOfSight) then begin
-      MDdef.CurvAlg := vcRadioLineOfSight;
-      Label1.Caption := CurvAlgName(MDdef.CurvAlg);
+   if CheckBox4.Checked and (MDdef.EarthVertCurvAlg <> vcRadioLineOfSight) then begin
+      MDdef.EarthVertCurvAlg := vcRadioLineOfSight;
+      Label1.Caption := EarthCurvAlgName(MDdef.EarthVertCurvAlg);
       MessageToContinue('Fresnel zones requires Radio LOS');
    end;
 
@@ -384,7 +384,7 @@ begin
    CheckBox23.Checked := MDDef.LabelMultipleProf;
    Edit4.Enabled := CheckBox4.Checked;
    Label4.Enabled := CheckBox4.Checked;
-   Label1.Caption := CurvAlgName(MDdef.CurvAlg);
+   Label1.Caption := EarthCurvAlgName(MDdef.EarthVertCurvAlg);
    SetPointCloudOptions;
    if MDDef.LOSVisShowLine then RadioGroup1.ItemIndex := 1 else RadioGroup1.ItemIndex := 0;
 
@@ -582,8 +582,8 @@ end;
 procedure TLOSOption.Button1Click(Sender: TObject);
 begin
    demcurvature.GetCurvAlg;
-   Label1.Caption := CurvAlgName(MDdef.CurvAlg);
-   if (MDdef.CurvAlg <> vcRadioLineOfSight) then CheckBox4.Checked := false;
+   Label1.Caption := EarthCurvAlgName(MDdef.EarthVertCurvAlg);
+   if (MDdef.EarthVertCurvAlg <> vcRadioLineOfSight) then CheckBox4.Checked := false;
    LOSFormMustRecalculate := true;
 end;
 

@@ -168,12 +168,12 @@
         <VerInfo_MajorVer>2025</VerInfo_MajorVer>
         <VerInfo_Release>14</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.3.14.6;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.3.14.10;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>6</VerInfo_Build>
+        <VerInfo_Build>10</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -232,9 +232,6 @@
         <DCCReference Include="..\common_code\BaseGraf.pas">
             <Form>ThisBaseGraph</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\demoptions.pas">
-            <Form>OptionsForm</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\veg_density.pas"/>
         <DCCReference Include="..\common_code\fresnel_block_form.pas">
             <Form>Fres_blockf</Form>
@@ -281,9 +278,6 @@
             <Form>PrintPreviewForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\kml_creator.pas"/>
-        <DCCReference Include="..\common_code\demtrendopt.pas">
-            <Form>TrendPick</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\PETFouri.pas">
             <Form>FFTGraph</Form>
         </DCCReference>
@@ -301,9 +295,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demterrc.pas">
             <Form>GetTerrC</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\kml_opts.pas">
-            <Form>kml_opts_fm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\GIS_Scaled_symbols.pas">
             <Form>gis_scaled_form</Form>
@@ -325,9 +316,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\sun_position.pas"/>
         <DCCReference Include="..\common_code\DEMTiger.pas"/>
-        <DCCReference Include="..\common_code\DEMShowDbRecord.pas">
-            <Form>showrecordform</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\dem_cart_proj.pas">
             <Form>ProjectionDemForm</Form>
         </DCCReference>
@@ -337,9 +325,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\map_overlays.pas">
             <Form>MapOverlayForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\block_opts.pas">
-            <Form>BlockOpsForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\map_masking.pas">
             <Form>MapMaskForm</Form>
@@ -361,32 +346,14 @@
         <DCCReference Include="..\common_code\legend_placement.pas">
             <Form>leg_opts_form</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\map_options.pas">
-            <Form>TMapOptsForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\cart_movie_options.pas">
-            <Form>CartMovieOptsForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\clusterOptions.pas">
-            <Form>ClusterOptsForm</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\computations.pas">
             <Form>CompForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\dem_hist_opts.pas">
-            <Form>HistOptForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\dem_map_scale.pas">
             <Form>MapScaledForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\koppen_opts.pas">
-            <Form>Koppen_opt_f</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\demmarginalia.pas">
             <Form>DemMarginaliaForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\mask_opts_form.pas">
-            <Form>MaskOptsForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\optima_reg.pas">
             <Form>RegOptsForm</Form>
@@ -396,12 +363,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\mask_multiple.pas">
             <Form>Mask_mult_form</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demconop.pas">
-            <Form>ContourOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\dem_plss_op.pas">
-            <Form>PLSSform</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\DEMGrPik.pas">
             <Form>PickGrid</Form>
@@ -414,9 +375,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demslopeopts.pas">
             <Form>SlopeOptForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demrefop.pas">
-            <Form>RefOptFM</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\rgb_colors_three_params.pas">
             <Form>RGB_form</Form>
@@ -433,12 +391,6 @@
         <DCCReference Include="..\common_code\speed_dist_form.pas">
             <Form>SpeedDistanceForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\db_display_options.pas">
-            <Form>db_display_opts</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\db_field_concatenate.pas">
-            <Form>db_concatenate</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\dem_fan_algorithm.pas">
             <Form>FanAlgParams</Form>
         </DCCReference>
@@ -448,9 +400,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\basin_flooding.pas">
             <Form>FloodingForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\db_join.pas">
-            <Form>dbjoinform2</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\altcommr.pas"/>
         <DCCReference Include="..\common_code\toggle_db_use.pas">
@@ -477,35 +426,20 @@
         <DCCReference Include="..\common_code\demrange.pas">
             <Form>RangeCircleForm</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\ant_hts_ops.pas">
-            <Form>ReqAntOptsForm</Form>
-        </DCCReference>
         <DCCReference Include="..\viewer_3d\dempanorama.pas">
             <Form>PanoramaOps</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\get_sunrise.pas">
             <Form>sunrisepicker</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\DEMTigerOps.pas">
-            <Form>TigerOverlayOptions</Form>
-        </DCCReference>
         <DCCReference Include="..\misc\geology\ternoptions.pas">
             <Form>TernOptForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\DEMVAROP.PAS">
-            <Form>VariogramOptions</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\pc_options.pas">
             <Form>pc_opts_form</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\kml_overlay.pas">
-            <Form>KML_over_opts</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\mag_prof.pas">
             <Form>PickMagProfVars</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\check_8_dirs.pas">
-            <Form>GetDir8</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\petprogr.pas">
             <Form>PetProgF</Form>
@@ -527,12 +461,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demfanparams.pas">
             <Form>PickFanParams</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\dem_gaz_opts.pas">
-            <Form>GazOptsForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demdbdisplay.pas">
-            <Form>dblimit</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\image_erode_dilate.pas">
             <Form>DilateErodeForm</Form>
@@ -567,12 +495,6 @@
         <DCCReference Include="..\common_code\petgraphcolors.pas">
             <Form>graphcolorsform</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\horizon_opts.pas">
-            <Form>HorizonOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demdbfieldpicker.pas">
-            <Form>FieldPicker</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\tissot.pas">
             <Form>TissotOpts</Form>
         </DCCReference>
@@ -581,12 +503,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\demfabricregion.pas">
             <Form>FabricOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demslped.pas">
-            <Form>SlopeCategoryEditor</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\dem_digit_opts.pas">
-            <Form>DEMDigitOptions</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\dem_grid_diffs.pas">
             <Form>GridDiffForm</Form>
@@ -602,12 +518,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\ne_outlines.pas">
             <Form>NEOutlineForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\slope_graph_opts.pas">
-            <Form>slopegraphopts</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\moment_opts.pas">
-            <Form>MomentOptsForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\MVClusterClientDataSet.pas"/>
         <DCCReference Include="..\common_code\DEMXYZdisplay.pas">
@@ -646,12 +556,6 @@
         <DCCReference Include="..\common_code\OKCANCL1.PAS">
             <Form>OKBottomDlg</Form>
         </DCCReference>
-        <DCCReference Include="..\common_code\contouroptsform.pas">
-            <Form>SimpleContourOptions</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\FourOpF.pas">
-            <Form>FourierOptionsForm</Form>
-        </DCCReference>
         <DCCReference Include="..\common_code\dem_fan_compare.pas">
             <Form>FanCompareForm</Form>
         </DCCReference>
@@ -670,9 +574,6 @@
         </DCCReference>
         <DCCReference Include="..\common_code\raster_2_vector.pas">
             <Form>rast_2_vect_f</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\mask_opts2.pas">
-            <Form>GridMaskOptForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\feature_migration.pas">
             <Form>FeatureMigrationForm</Form>
@@ -698,12 +599,6 @@
         </DCCReference>
         <DCCReference Include="..\viewer_3d\DEMPersw.pas">
             <Form>ThreeDview</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demambushparams.pas">
-            <Form>PickAmbushParams</Form>
-        </DCCReference>
-        <DCCReference Include="..\common_code\demdbfilter.pas">
-            <Form>dbFilterCreation</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\tersplsh.pas">
             <Form>TerBaseSplashForm</Form>
@@ -877,11 +772,6 @@
             <Form>MapForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\database\DEMDataBase.pas">
-            <Form>GISdataBaseModule</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TDataModule</DesignClass>
-        </DCCReference>
         <DCCReference Include="..\misc\sgp\SOLAR.PAS"/>
         <DCCReference Include="..\geomorph\demssocalc.pas">
             <Form>SSOCalcDlg</Form>
@@ -903,10 +793,6 @@
         <DCCReference Include="..\geomorph\compare_programs_algorithms.pas"/>
         <DCCReference Include="..\geomorph\compare_algorithms_options.pas">
             <Form>AlgCompareForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="..\database\DEMdbTable.pas">
-            <Form>dbtablef</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\las_lidar\point_cloud_memory.pas"/>
@@ -964,12 +850,161 @@
             <Form>New_area_evals_form</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\set_options\correlation_matrix_options.pas">
-            <Form>CorrelationMatrixOptionsForm</Form>
+        <DCCReference Include="..\ask_options\ant_hts_ops.pas">
+            <Form>ReqAntOptsForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\common_code\drainage_opts.pas">
+        <DCCReference Include="..\ask_options\block_opts.pas">
+            <Form>BlockOpsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\cart_movie_options.pas">
+            <Form>CartMovieOptsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\check_8_dirs.pas">
+            <Form>GetDir8</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\clusterOptions.pas">
+            <Form>ClusterOptsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\contouroptsform.pas">
+            <Form>SimpleContourOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\dem_digit_opts.pas">
+            <Form>DEMDigitOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\dem_gaz_opts.pas">
+            <Form>GazOptsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\dem_hist_opts.pas">
+            <Form>HistOptForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\dem_plss_op.pas">
+            <Form>PLSSform</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\demambushparams.pas">
+            <Form>PickAmbushParams</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\demconop.pas">
+            <Form>ContourOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\demoptions.pas">
+            <Form>OptionsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\demrefop.pas">
+            <Form>RefOptFM</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\db_display_options.pas">
+            <Form>db_display_opts</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\db_field_concatenate.pas">
+            <Form>db_concatenate</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\db_join.pas">
+            <Form>dbjoinform2</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\DEMDataBase.pas">
+            <Form>GISdataBaseModule</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="..\database\demdbdisplay.pas">
+            <Form>dblimit</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\demdbfieldpicker.pas">
+            <Form>FieldPicker</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\demdbfilter.pas">
+            <Form>dbFilterCreation</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\DEMdbTable.pas">
+            <Form>dbtablef</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\database\DEMShowDbRecord.pas">
+            <Form>showrecordform</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\DEMTigerOps.pas">
+            <Form>TigerOverlayOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\koppen_opts.pas">
+            <Form>Koppen_opt_f</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\map_options.pas">
+            <Form>TMapOptsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\mask_opts_form.pas">
+            <Form>MaskOptsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\mask_opts2.pas">
+            <Form>GridMaskOptForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\moment_opts.pas">
+            <Form>MomentOptsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\slope_graph_opts.pas">
+            <Form>slopegraphopts</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\demslped.pas">
+            <Form>SlopeCategoryEditor</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\demtrendopt.pas">
+            <Form>TrendPick</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\DEMVAROP.PAS">
+            <Form>VariogramOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\drainage_opts.pas">
             <Form>drain_opt_form</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\FourOpF.pas">
+            <Form>FourierOptionsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\horizon_opts.pas">
+            <Form>HorizonOptions</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\kml_opts.pas">
+            <Form>kml_opts_fm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\kml_overlay.pas">
+            <Form>KML_over_opts</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\ask_options\correlation_matrix_options.pas">
+            <Form>CorrelationMatrixOptionsForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <None Include="nevadia_defines.inc"/>

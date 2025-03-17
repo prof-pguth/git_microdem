@@ -229,7 +229,7 @@ var
          {$EndIf}
 
          Pts := 0;
-         if HowCompute.UseAllPts then begin
+         if HowCompute.UsePoints = UseAll then begin
             for x := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
                for y := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
                   if (x=0) and (y=0) and SkipCenterPoint then begin
@@ -245,7 +245,6 @@ var
                               zstring := zstring + RealToString(z,-12,-2) + ',';
                            end;
                         {$EndIf}
-                        //inc(Pts);
                      end
                      else begin
                         if HowCompute.RequireFullWindow then exit;
@@ -257,28 +256,44 @@ var
                end;
             end;
          end
-         else begin  //just use the eight surrounding Queen's neighbor points
+         else if HowCompute.UsePoints = UseEdge then begin
+            y := HowCompute.WindowRadius;
+            for x := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
+               if GetElevMetersOnGrid(Col+x,Row-y,z) then begin
+                   AddPointToTrendSurface(HowCompute,x * SlopeAsp.dx,-y*SlopeAsp.dy,z,A,B,C,Iord2,Pts);
+               end
+               else if HowCompute.RequireFullWindow then exit;
+               if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
+                   AddPointToTrendSurface(HowCompute,x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2,Pts);
+               end
+               else if HowCompute.RequireFullWindow then exit;
+            end;
+
+            x := HowCompute.WindowRadius;
+            for y := -HowCompute.WindowRadius+1 to pred(HowCompute.WindowRadius) do begin
+               if GetElevMetersOnGrid(Col+x,Row-y,z) then begin
+                   AddPointToTrendSurface(HowCompute,-x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2,Pts);
+               end
+               else if HowCompute.RequireFullWindow then exit;
+               if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
+                   AddPointToTrendSurface(HowCompute,x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2,Pts);
+               end
+               else if HowCompute.RequireFullWindow then exit;
+            end;
+         end
+         else if HowCompute.UsePoints = UseQueens then begin
             if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,HowCompute.WindowRadius) then begin
                AddPointToTrendSurface(HowCompute,-HowCompute.WindowRadius * SlopeAsp.dx,HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.znw,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,0,HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.zn,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,HowCompute.WindowRadius * SlopeAsp.dx,HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.zne,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,HowCompute.WindowRadius * SlopeAsp.dx,0,SlopeAsp.ze,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,HowCompute.WindowRadius * SlopeAsp.dx,-HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.zse,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,0,-HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.zs,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,-HowCompute.WindowRadius * SlopeAsp.dx,-HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.zsw,A,B,C,Iord2,Pts);
-               //inc(Pts);
                AddPointToTrendSurface(HowCompute,-HowCompute.WindowRadius * SlopeAsp.dx,0,SlopeAsp.zw,A,B,C,Iord2,Pts);
-               //inc(Pts);
             end
             else exit;
          end;
-
 
          {$IfDef OptionSaveSlopeComputePoints}
             if SaveSlopeComputationPoints then begin

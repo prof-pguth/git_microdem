@@ -597,7 +597,7 @@ var
             FanMetadata.Add(DEMGlb[BaseMapDraw.DEMonMap].KeyParams(true));
             FanMetadata.Add('Sensor height: ' + RealToString(WeaponsFan.W_Up,-12,2));
             FanMetadata.Add('Target height: ' + RealToString(WeaponsFan.W_TargetUp,-12,2));
-            FanMetadata.Add('Vertical earth curvature: ' + CurvAlgName(MDdef.CurvAlg));
+            FanMetadata.Add('Vertical earth curvature: ' + EarthCurvAlgName(MDdef.EarthVertCurvAlg));
             FanMetadata.Add('Viewshed size (pixels): ' + IntToStr(VisBitmap.Width) + 'x' + IntToStr(VisBitmap.Height));
             FanMetadata.Add('Viewshed pixel size (m): ' + RealToString(aNewMapDraw.ScreenPixelSize,-18,-2));
             {$IfDef RecordFanMetadata} WriteStringListToDebugFile(FanMetaData); {$EndIf}

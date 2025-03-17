@@ -204,7 +204,7 @@ begin
    ThisCompute.WindowRadius := Radius;
    ThisCompute.LSQorder := 1;
    ThisCompute.RequireFullWindow := true;
-   ThisCompute.UseAllPts := true;
+   ThisCompute.UsePoints := useAll;
    MDDef.EvansApproximationAllowed := false;
    //New(zs);
    for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
@@ -877,56 +877,76 @@ begin
          {$EndIf}
 
            case CurveType of
-               1 : Curvature := -(SA.dxx * sqr(SA.dzdx) + 2 * SA.dxy * SA.dzdx * SA.dzdy + SA.dyy * sqr(SA.dzdy) ) / Denominator1(SA);    //Profile
-               2 : Curvature := -(SA.dxx * sqr(SA.dzdy) - 2 * SA.dxy * SA.dzdx * SA.dzdy + SA.dyy * sqr(SA.dzdx) ) / Denominator1(SA);    //Tangential
-               3 : Curvature := -(SA.dxx * sqr(SA.dzdy) - 2 * SA.dxy * SA.dzdx * SA.dzdy + SA.dyy * sqr(SA.dzdy) ) / Denominator2(SA);    //Plan
-               4 : Curvature := (SA.dzdx * SA.dzdy * (SA.dxx - SA.dyy) - SA.dxy * (sqr(SA.dzdx) - sqr(SA.dzdy) ) ) / Denominator2(SA);    //flow line
-               5 : Curvature := (SA.dzdx * SA.dzdy * (SA.dxx - SA.dyy) - SA.dxy * sqr(SA.dzdx) * sqr(SA.dzdy) ) / Denominator1(SA);       //contour torsion
-               6 : Curvature := MaxCurve(SA);                                               //maximal curvature, kmax
-               7 : Curvature := MinCurve(SA);                                               //minimal curvature, kmin
-               8 : Curvature := MaxCurve(SA) * MinCurve(SA);                          //Gaussian
-               9 : Curvature := Part1MinMax(SA);   //0.5 * (MinCurve(SA) + MaxCurve(SA));  //Mean    check if this is in fact correct
-               10 : Curvature := sqrt(sqr(MaxCurve(SA)) + sqr(MinCurve(SA)));   //Casorati
-               101 : Curvature := (SA.dzdy * (B(SA) * M(SA) * P(SA) - K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
+               eucurv_kns : Curvature := -(SA.dxx * sqr(SA.dzdx) + 2 * SA.dxy * SA.dzdx * SA.dzdy + SA.dyy * sqr(SA.dzdy) ) / Denominator1(SA);    //Profile
+               eucurv_knc : Curvature := -(SA.dxx * sqr(SA.dzdy) - 2 * SA.dxy * SA.dzdx * SA.dzdy + SA.dyy * sqr(SA.dzdx) ) / Denominator1(SA);    //Tangential
+               eucurv_kpc : Curvature := -(SA.dxx * sqr(SA.dzdy) - 2 * SA.dxy * SA.dzdx * SA.dzdy + SA.dyy * sqr(SA.dzdy) ) / Denominator2(SA);    //Plan
+               eucurv_kps : Curvature := (SA.dzdx * SA.dzdy * (SA.dxx - SA.dyy) - SA.dxy * (sqr(SA.dzdx) - sqr(SA.dzdy) ) ) / Denominator2(SA);    //flow line
+               eucurv_tc  : Curvature := (SA.dzdx * SA.dzdy * (SA.dxx - SA.dyy) - SA.dxy * sqr(SA.dzdx) * sqr(SA.dzdy) ) / Denominator1(SA);       //contour torsion
+               eucurv_k_max : Curvature := MaxCurve(SA);                                               //maximal curvature, kmax
+               eucurv_k_min : Curvature := MinCurve(SA);                                               //minimal curvature, kmin
+               eucurv_k : Curvature := MaxCurve(SA) * MinCurve(SA);                          //Gaussian
+               eucurv_k_mean : Curvature := Part1MinMax(SA);   //0.5 * (MinCurve(SA) + MaxCurve(SA));  //Mean    check if this is in fact correct
+               eucurv_kc : Curvature := sqrt(sqr(MaxCurve(SA)) + sqr(MinCurve(SA)));   //Casorati
+               eucurv_kncc : Curvature := (SA.dzdy * (B(SA) * M(SA) * P(SA) - K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
                                   SA.dzdx * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
-                                  (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5)); //kncc
-               102 : Curvature := (SA.dzdx * (-B(SA) * M(SA) * P(SA) + K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
+                                  (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
+               eucurv_kncs : Curvature := (SA.dzdx * (-B(SA) * M(SA) * P(SA) + K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
                                   SA.dzdy * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
-                                  (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));   //kncs
-               103 : Curvature := (P(SA) * (SA.dzdx * (2 * L(SA) * N(SA) - E(SA) * M(SA)) - SA.dzdy * ( F(SA) * M(SA) - 2 * L(SA) * O(SA) )) +
-                                     3 * L(SA) * M(SA) * (SA.dzdy * O(SA) + SA.dzdx * N(SA) ) / (Math.Power(P(SA),2.5) * Math.Power(M(SA),2.5)));  //knss
+                                  (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
+               eucurv_knss : Curvature := (P(SA) * (SA.dzdx * (2 * L(SA) * N(SA) - E(SA) * M(SA)) - SA.dzdy * ( F(SA) * M(SA) - 2 * L(SA) * O(SA) )) +
+                                     3 * L(SA) * M(SA) * (SA.dzdy * O(SA) + SA.dzdx * N(SA) ) / (Math.Power(P(SA),2.5) * Math.Power(M(SA),2.5)));
            end;
       //end;
    end;
 end;
 
+(*
+  eucurv_kns = 101;
+  eucurv_knc = 102;
+  eucurv_zss = 104;
+  eucurv_ts = 105;
+  eucurv_zcc = 106;
+  eucurv_kpc = 107;
+   = 108;
+  eucurv_sin_sc = 109;
+  eucurv_kd = 110;
+  eucurv_ka = 111;
+  eucurv_kr = 112;
+  eucurv_khe = 113;
+  eucurv_kve = 114;
+  eucurv_el = 118;
+  eucurv_ku = 119;
+*)
 
 function CreateCurvatureMap(Which : integer; OpenMap : boolean; DEM : integer; Outname : PathStr = '') : integer;
 var
    x,y : integer;
    Curvature : float64;
-   //SlpAsp : tSlopeAspectRec;
-   aName : shortstring;
+   //aName : shortstring;
 begin
    SaveBackupDefaults;
    MDDef.CurveCompute.AlgorithmName := smLSQ;
    if (MDDef.CurveCompute.LSQorder = 1) then MDDef.CurveCompute.LSQorder := 2;
-   if Which > 100 then begin
-      if (MDDef.CurveCompute.LSQorder < 1) then MDDef.CurveCompute.LSQorder := 3;
+   if (Which >= 122) then begin
+      if (MDDef.CurveCompute.LSQorder < 3) then MDDef.CurveCompute.LSQorder := 3;
       if (MDDef.CurveCompute.WindowRadius < 2) then MDDef.CurveCompute.WindowRadius := 2;
    end;
 
+(*
    if Which = 101 then aName := 'kncc_'
    else if Which = 102 then aName := 'kncs_'
    else if Which = 103 then aName := 'knss_'
    else aName := CurvatureNames[Which];
-   if (OutName = '') then OutName := aName + DEMGlb[DEM].AreaName;
+*)
+   //aName := CurveNameFromCode(Which);
 
-   {$If Defined(CreateGeomorphMaps) or Defined(CreateCurvature)} WriteLineToDebugFile('Create ' + Outname + ' ' + SlopeMethodName(MDDef.CurveCompute)); {$EndIf}
+   if (OutName = '') then OutName := CurveNameFromCode(Which) + LSQdetails(MDDef.CurveCompute) + '_' + DEMGlb[DEM].AreaName;
+
+   {$If Defined(CreateGeomorphMaps) or Defined(CreateCurvature)} WriteLineToDebugFile('Create ' + Outname); {$EndIf}
 
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,OutName,euPerMeter);
    {$IfDef CreateGeomorphMaps} if (not DEMGlb[Result].DEMAlreadyDefined) then WriteLineToDebugFile(Outname + 'not yet defined at step 1'); {$EndIf}
-   if ShowSatProgress then StartProgressAbortOption(aName);
+   if ShowSatProgress then StartProgressAbortOption(OutName);
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
@@ -979,7 +999,6 @@ begin
    end;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
-
 
 
 function CreateSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Degrees : boolean = false) : integer;

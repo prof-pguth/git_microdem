@@ -611,7 +611,6 @@ type
     Aspect3: TMenuItem;
     EWcomponent1: TMenuItem;
     Slope4: TMenuItem;
-    Curvature1: TMenuItem;
     Sunrisesunsettimes1: TMenuItem;
     Redraw1: TMenuItem;
     Reregisterimage1: TMenuItem;
@@ -850,8 +849,6 @@ type
     Vegetationdensitylayers1: TMenuItem;
     Vegetationlayeroverlay1: TMenuItem;
     Walls1: TMenuItem;
-    N32: TMenuItem;
-    Allcurvatures1: TMenuItem;
     QuarterDEM1: TMenuItem;
     UTMspecifyzone1: TMenuItem;
     Loadsecondvegeationlayers1: TMenuItem;
@@ -2528,7 +2525,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure IwashishiandPikeclassification1Click(Sender: TObject);
     procedure Grassprofilecurvature1Click(Sender: TObject);
     procedure Grasstangentialcurvature1Click(Sender: TObject);
-    procedure Allcurvatures1Click(Sender: TObject);
     procedure Differencebetweentwogrids2Click(Sender: TObject);
     procedure Scatterplotoftwogrids2Click(Sender: TObject);
     procedure Gridcorrelations2Click(Sender: TObject);
@@ -6513,7 +6509,7 @@ end;
 
 procedure TMapForm.Profilecurvature2Click(Sender: TObject);
 begin
-   CreateCurvatureMap(1,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_kns,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Plan1Click(Sender: TObject);
@@ -6530,7 +6526,7 @@ end;
 
 procedure TMapForm.Plancurvature2Click(Sender: TObject);
 begin
-   CreateCurvatureMap(3,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_kpc,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.MenuItem3Click(Sender: TObject);
@@ -7706,7 +7702,7 @@ end;
 
 procedure TMapForm.Minimumcurvature2Click(Sender: TObject);
 begin
-   CreateCurvatureMap(7,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_k_min,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Minimumfilter1Click(Sender: TObject);
@@ -7751,7 +7747,7 @@ end;
 
 procedure TMapForm.Maximumcurvature2Click(Sender: TObject);
 begin
-   CreateCurvatureMap(6,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_k_max,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Maximumfilter1Click(Sender: TObject);
@@ -13767,64 +13763,37 @@ end;
 
 
 procedure TMapForm.Concatenateimages1Click(Sender: TObject);
-{$IfDef ExOTB}
 begin
-{$Else}
-var
-   InNames: tStringList;
-   OutName : PathStr;
-   i : integer;
-begin
-   if ValidSatImage(MapDraw.SatOnMap) then begin
-      InNames := tStringList.Create;
-      for i := 1 to SatImage[MapDraw.SatOnMap].NumBands do
-         if SatImage[MapDraw.SatOnMap].IsLandsatImageAnalysisBand(i) then
-            InNames.Add(SatImage[MapDraw.SatOnMap].TiffImage[i].TiffFileName);
-      OutName := ExtractFilePath(SatImage[MapDraw.SatOnMap].TiffImage[1].TiffFileName) + 'merge.tif';
-      OTB_ConcatenateImages(InNames,OutName);
-   end;
-{$EndIf}
+   {$IfDef ExOTB}
+   {$Else}
+      OTB_PickToConcatenateImages(MapDraw.SatOnmap);
+   {$EndIf}
 end;
 
+
 procedure TMapForm.Kmeansclustering1Click(Sender: TObject);
-{$IfDef ExOTB}
 begin
-{$Else}
-var
-   InName,OutName : PathStr;
-begin
-   {$If Defined(RecordOTB)} WriteLineToDebugFile('TMapForm.Kmeansclustering1Click in');{$EndIf}
-   InName := ExtractFilePath(SatImage[MapDraw.SatOnMap].TiffImage[1].TiffFileName) + 'merge.tif';
-   if not FileExists(InName) then begin
-      {$If Defined(RecordOTB)} WriteLineToDebugFile('Concatenate to ' + InName);{$EndIf}
-      Concatenateimages1Click(Sender);
-   end;
-   OutName := ExtractFilePath(SatImage[MapDraw.SatOnMap].TiffImage[1].TiffFileName) + 'merge_cluster.tif';
-   {$If Defined(RecordOTB)} WriteLineToDebugFile('try to k-means to ' + OutName);{$EndIf}
-   OTB_KMeansClassification(InName, OutName);
-   if FileExists(OutName) then begin
-      OpenNewDEM(OutName);
-   end
-   else begin
-      {$If Defined(RecordOTB)} WriteLineToDebugFile('failed creation, ' + OutName);{$EndIf}
-   end;
-{$EndIf}
+    {$IfDef ExOTB}
+    {$Else}
+       OTB_PickForKMeansClustering(MapDraw.SatOnMap);
+    {$EndIf}
 end;
 
 procedure TMapForm.kncc1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(101,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_kncc,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.kncs1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(102,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_kncs,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.knss1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(103,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_knss,true,MapDraw.DEMonMap);
 end;
+
 
 procedure TMapForm.Segmentation1Click(Sender: TObject);
 {$IfDef ExOTB}
@@ -13837,7 +13806,7 @@ begin
    OutName := ExtractFilePath(SatImage[MapDraw.SatOnMap].TiffImage[1].TiffFileName) + 'merge_segment.tif';
    OTB_Segmentation(InName, OutName);
    if FileExists(OutName) then OpenNewDEM(OutName);
-   {$EndIf}
+{$EndIf}
 end;
 
 
@@ -16147,7 +16116,7 @@ end;
 
 procedure TMapForm.Meancurvature1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(9,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_k_mean,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Meanfilter1Click(Sender: TObject);
@@ -17593,7 +17562,7 @@ end;
 
 procedure TMapForm.Contourtorsion1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(5,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_tc,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Elevationcolors1Click(Sender: TObject);
@@ -20827,7 +20796,7 @@ end;
 
 procedure TMapForm.Gaussiancurvature1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(8,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_k,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Gaussianpyramiddownsample1Click(Sender: TObject);
@@ -23382,8 +23351,6 @@ var
 begin
    {$IfDef RecordDrainageVectors} WriteLineToDebugFile('TMapForm.DrawDownhillVector in'); {$EndIf}
    if MapDraw.ValidDEMonMap then begin
-      //SaveBackupDefaults;
-      //MDdef.SlopeCompute.UseAllPts := true;
       CopyImageToBitmap(Image1,Bitmap);
       if ShowSatProgress then StartProgressAbortOption('Downhill vectors');
 
@@ -23826,7 +23793,7 @@ end;
 
 procedure TMapForm.angentialcurvature1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(2,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_knc,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Tangentdegrees1Click(Sender: TObject);
@@ -25158,15 +25125,6 @@ begin
    EditGridViaColor(emvcAllbutselectedcolor,-99);
 end;
 
-procedure TMapForm.Allcurvatures1Click(Sender: TObject);
-begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      SetAllCurvatures(true);
-      MakeMomentsGrid(MapDraw.DEMonMap,'C');
-   {$EndIf}
-end;
-
 procedure TMapForm.Maskmap1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
@@ -25286,7 +25244,7 @@ end;
 
 procedure TMapForm.Caasoraticurvature1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(10,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_kc,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.CancelBtnClick(Sender: TObject);
@@ -25315,7 +25273,7 @@ end;
 
 procedure TMapForm.Flowlinecurvaturerotor1Click(Sender: TObject);
 begin
-   CreateCurvatureMap(4,true,MapDraw.DEMonMap);
+   CreateCurvatureMap(eucurv_kps,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Setmappixelsize1Click(Sender: TObject);

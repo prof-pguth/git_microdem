@@ -84,7 +84,7 @@ uses
 procedure TFanAlgParams.LabelForm;
 begin
    with iva do begin
-      Label5.Caption := CurvAlgName(FanCurvAlg);
+      Label5.Caption := EarthCurvAlgName(FanCurvAlg);
       Edit1.Text := RealToString(FanDEMSpaceMultiple,-18,-4);
       Edit2.Text := RealToString(FanMapSpaceMultiple,-18,-4);
       Edit6.Text := RealToString(MaskRaySpacingDeg,-18,-4);
@@ -130,7 +130,7 @@ begin
          CheckEditString(Edit5.Text,MDDef.FanMapZoom);
          iva.FanMethod := tFanMethod(FanAlgParams.RadioGroup2.ItemIndex);
          iva.LOSAlgorithm := tLOSAlgorithm(RadioGroup3.ItemIndex);
-         iva.FanCurvAlg := MDdef.CurvAlg;
+         iva.FanCurvAlg := MDdef.EarthVertCurvAlg;
          iva.ElevInterpolation := tElevInterpolation(RadioGroup4.ItemIndex);
          iva.StraightAlgorithm := tStraightAlgorithm(RadioGroup5.ItemIndex);
          in_iva := iva;
@@ -169,7 +169,7 @@ end;
 procedure TFanAlgParams.Button2Click(Sender: TObject);
 begin
    GetCurvAlg;
-   Label5.Caption := CurvAlgName(MDdef.CurvAlg);
+   Label5.Caption := EarthCurvAlgName(MDdef.EarthVertCurvAlg);
 end;
 
 

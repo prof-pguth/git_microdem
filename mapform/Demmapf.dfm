@@ -6422,43 +6422,43 @@ object MapForm: TMapForm
     object Curvature2: TMenuItem
       Caption = 'Curvature'
       object Profilecurvature2: TMenuItem
-        Caption = 'Profile curvature'
+        Caption = 'Profile curvature (kns)'
         OnClick = Profilecurvature2Click
       end
       object Plancurvature2: TMenuItem
-        Caption = 'Plan curvature'
+        Caption = 'Plan curvature (kpc)'
         OnClick = Plancurvature2Click
       end
       object angentialcurvature1: TMenuItem
-        Caption = 'Tangential curvature'
+        Caption = 'Tangential curvature (knc)'
         OnClick = angentialcurvature1Click
       end
       object Flowlinecurvaturerotor1: TMenuItem
-        Caption = 'Flow line curvature (rotor)'
+        Caption = 'Flow line curvature (rotor, kps)'
         OnClick = Flowlinecurvaturerotor1Click
       end
       object Contourtorsion1: TMenuItem
-        Caption = 'Contour torsion'
+        Caption = 'Contour torsion (tc)'
         OnClick = Contourtorsion1Click
       end
       object Maximumcurvature2: TMenuItem
-        Caption = 'Maximum curvature'
+        Caption = 'Maximum curvature (k_max)'
         OnClick = Maximumcurvature2Click
       end
       object Meancurvature1: TMenuItem
-        Caption = 'Mean curvature'
+        Caption = 'Mean curvature (k_mean)'
         OnClick = Meancurvature1Click
       end
       object Minimumcurvature2: TMenuItem
-        Caption = 'Minimum curvature'
+        Caption = 'Minimum curvature (k_min)'
         OnClick = Minimumcurvature2Click
       end
       object Gaussiancurvature1: TMenuItem
-        Caption = 'Gaussian curvature'
+        Caption = 'Gaussian curvature (k)'
         OnClick = Gaussiancurvature1Click
       end
       object Caasoraticurvature1: TMenuItem
-        Caption = 'Caasorati curvature'
+        Caption = 'Caasorati curvature (kc)'
         OnClick = Caasoraticurvature1Click
       end
       object N83: TMenuItem
@@ -6482,32 +6482,6 @@ object MapForm: TMapForm
       object Curvature3: TMenuItem
         Caption = 'Second order partial derivatives'
         OnClick = Curvature3Click
-      end
-    end
-    object Curvature1: TMenuItem
-      Caption = 'Curvature'
-      Enabled = False
-      object Allcurvatures1: TMenuItem
-        Caption = 'All 5 curvatures'
-        OnClick = Allcurvatures1Click
-      end
-      object N32: TMenuItem
-        Caption = '-'
-      end
-      object Profileconvexity1: TMenuItem
-        Caption = 'Profile/slope convexity'
-      end
-      object Planconvexity1: TMenuItem
-        Caption = 'Plan convexity'
-      end
-      object Crosssectionalcurvature1: TMenuItem
-        Caption = 'Cross sectional curvature'
-      end
-      object Minimumcurvature1: TMenuItem
-        Caption = 'Minimum curvature'
-      end
-      object Maximumcurvature1: TMenuItem
-        Caption = 'Maximum curvature'
       end
     end
     object Relief2: TMenuItem

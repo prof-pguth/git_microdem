@@ -55,12 +55,12 @@ var
 begin
    CurvatureForm := TCurvatureForm.Create(Application);
    with CurvatureForm do begin
-      RadioGroup1.ItemIndex := ord(MDdef.CurvAlg);
+      RadioGroup1.ItemIndex := ord(MDdef.EarthVertCurvAlg);
      {$IfDef ExFresnel}
         Edit1.Visible := false;
      {$Else}
         Edit1.Text := RealToString(MDdef.RadioK,-18,-4);
-        Edit1.Enabled := MDdef.CurvAlg = vcRadioLineOfSight;
+        Edit1.Enabled := MDdef.EarthVertCurvAlg = vcRadioLineOfSight;
      {$EndIf}
       ShowModal;
    end;
@@ -69,7 +69,7 @@ end;
 
 procedure TCurvatureForm.OKBtnClick(Sender: TObject);
 begin
-   MDdef.CurvAlg := tVerticalCurvAlg(RadioGroup1.ItemIndex);
+   MDdef.EarthVertCurvAlg := tVerticalCurvAlg(RadioGroup1.ItemIndex);
    {$IfDef ExFresnel}
    {$Else}
       CheckEditString(Edit1.Text,MDdef.RadioK);
@@ -84,8 +84,8 @@ end;
 
 procedure TCurvatureForm.RadioGroup1Click(Sender: TObject);
 begin
-   MDdef.CurvAlg := tVerticalCurvAlg(RadioGroup1.ItemIndex);
-   Edit1.Enabled := MDdef.CurvAlg = vcRadioLineOfSight;
+   MDdef.EarthVertCurvAlg := tVerticalCurvAlg(RadioGroup1.ItemIndex);
+   Edit1.Enabled := MDdef.EarthVertCurvAlg = vcRadioLineOfSight;
 end;
 
 procedure TCurvatureForm.FormCreate(Sender: TObject);

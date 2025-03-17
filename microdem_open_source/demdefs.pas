@@ -428,6 +428,9 @@ const
    MaxCoefs = 15;
    TrendSurfacePointsRequired : array[1..4] of byte = (3,6,10,15);
    TrendSurMultiples : array[1..MaxCoefs] of shortstring = ('','x','y','x^2','x*y','y^2','x^3','x^2*y','x*y^2','y^3','x^4','x^3*y','x^2*y^2','x*y^3','y^4');
+   useAll = 1;
+   useQueens = 3;
+   useEdge = 2;
 
 type
    tSlopeAspectRec = record
@@ -446,18 +449,49 @@ type
        Dir : tCompassDirection;
    end;
 
+
    tSlopeCurveCompute = record
        AlgorithmName,
        WindowRadius,
        LSQorder            : byte;
-       RequireFullWindow,
-       UseAllPts           : boolean;
+       UsePoints           : byte;
+       RequireFullWindow   : boolean;
    end;
 
+(*
 const
    NumCurvatures = 10;
    CurvatureNames : array[1..NumCurvatures] of shortstring = ('profile_curvature_','tangential_curvature_','plan_curvature_','flow_line_curvature_', 'contour_torsion_',
                                                               'max_curvature_','min_curvature_','Gaussian_curvature_', 'mean_curvature_','Casorati_curvature_');
+*)
+
+const
+  eucurv_kns = 101;
+  eucurv_knc = 102;
+  eucurv_tc = 103;
+  eucurv_zss = 104;
+  eucurv_ts = 105;
+  eucurv_zcc = 106;
+  eucurv_kpc = 107;
+  eucurv_kps = 108;
+  eucurv_sin_sc = 109;
+  eucurv_kd = 110;
+  eucurv_ka = 111;
+  eucurv_kr = 112;
+  eucurv_khe = 113;
+  eucurv_kve = 114;
+  eucurv_k_max = 115;
+  eucurv_k_min = 116;
+  eucurv_k = 117;
+  eucurv_el = 118;
+  eucurv_ku = 119;
+  eucurv_k_mean = 120;
+  eucurv_kc = 121;
+  eucurv_kncc = 122;
+  eucurv_kncs = 123;
+  eucurv_knss = 124;
+
+
 
 type
    tCanEditGIS = (egisNever,egisSometimes,egisAlways);
@@ -553,7 +587,6 @@ type
         FirstZigDistance,LaterZigDistance,
         FirstBearingPoint,SecondBearingPoint,
         FirstSlopePoint,SecondSlopePoint,
-        //SeekingCenterMeshGrid,
         SeekingFlyThroughRoute,
         SeekingPerspective,SeekingSecondPerspective,
 
@@ -2428,7 +2461,7 @@ type
        LOSClWid : Int16;
        VisPtSymbol,MaskPtSymbol : tFullSymbolDeclaration;
 
-       CurvAlg   : tVerticalCurvAlg;
+       EarthVertCurvAlg   : tVerticalCurvAlg;
 
        DefaultSATFilter,
        DefaultDRGFilter,
@@ -3015,6 +3048,7 @@ var
 
    MainHydroShedsDir,
    WKT_GCS_Proj_fName,
+   Z_units_fName,
    StateGISFileName,
    CountyGISFileName,
    HighwayGISFileName,
@@ -3093,13 +3127,6 @@ var
       www_mag_mod_fName,
    {$EndIf}
 
-   {$IfDef ExPLSS}
-   {$Else}
-      DefaultPLSSBaseline,
-      PLSSMerfName : PathStr;
-      PLSSFile : array[1..5] of PathStr;
-   {$EndIf}
-
    {$IfDef ExGeology}
    {$Else}
       MagneticAnomalyTimeScale,
@@ -3120,6 +3147,13 @@ var
       PredAgesFile : PathStr;
       EpochsTimeScale,
       PeriodsTimeScale : shortstring;
+   {$EndIf}
+
+   {$IfDef ExPLSS}
+   {$Else}
+      DefaultPLSSBaseline,
+      PLSSMerfName : PathStr;
+      PLSSFile : array[1..5] of PathStr;
    {$EndIf}
 
    {$IfDef ExGeography}

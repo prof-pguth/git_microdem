@@ -1363,7 +1363,7 @@ begin
 
             {$IfDef ExFresnel}
             {$Else}
-                if (MDdef.CurvAlg = vcRadioLineOfSight) and MDdef.DrawFresnel then begin
+                if (MDdef.EarthVertCurvAlg = vcRadioLineOfSight) and MDdef.DrawFresnel then begin
                   Fresnel2 := 17.31 * 5 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);
                   GISdb[ProfileDB].MyData.CarefullySetFloat('FRESNEL2_M',Fresnel2,0.1);
                   Fresnel1 := 17.31 * sqrt(0.001 * dists^[j] * (LOSLen - dists^[j]) / MDdef.FresnelFreq / LOSLen);

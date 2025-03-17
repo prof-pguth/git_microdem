@@ -36,8 +36,8 @@ object SlopeOptForm: TSlopeOptForm
     Caption = 'Label6'
   end
   object Label1: TLabel
-    Left = 8
-    Top = 180
+    Left = 5
+    Top = 211
     Width = 79
     Height = 13
     Caption = 'Max slope (%)'
@@ -126,16 +126,16 @@ object SlopeOptForm: TSlopeOptForm
     OnClick = Button11Click
   end
   object Edit2: TEdit
-    Left = 167
-    Top = 180
+    Left = 97
+    Top = 208
     Width = 80
     Height = 21
     TabOrder = 4
     OnChange = Edit2Change
   end
   object CheckBox1: TCheckBox
-    Left = 8
-    Top = 239
+    Left = 5
+    Top = 258
     Width = 161
     Height = 17
     Caption = 'Immediate redraws'
@@ -241,20 +241,25 @@ object SlopeOptForm: TSlopeOptForm
     end
   end
   object CheckBox2: TCheckBox
-    Left = 8
-    Top = 216
+    Left = 5
+    Top = 235
     Width = 239
     Height = 17
     Caption = 'No missing data in window allowed'
     TabOrder = 9
     OnClick = CheckBox2Click
   end
-  object CheckBox3: TCheckBox
+  object RadioGroup5: TRadioGroup
     Left = 8
-    Top = 261
-    Width = 169
-    Height = 17
-    Caption = 'Use all points in window'
+    Top = 153
+    Width = 212
+    Height = 40
+    Caption = 'Use windws points'
+    Columns = 3
+    Items.Strings = (
+      'All'
+      'Edge'
+      'Queen'#39's')
     TabOrder = 10
   end
 end

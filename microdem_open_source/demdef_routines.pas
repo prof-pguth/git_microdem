@@ -111,9 +111,10 @@ function PickCurvature : integer;
 
 
 //functions to return names or descriptions
-   function CurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
+   function EarthCurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
    function DirectionName(Dir : DEMDefs.tCompassDirection) : shortstring;
    function SlopeMethodName(Method : tSlopeCurveCompute; Short : boolean = false) : shortstring;
+   function LSQdetails(Method : tSlopeCurveCompute) : shortstring;
    function ShortSlopeMethodName(Method : tSlopeCurveCompute) : shortstring;
    function SpeedString(MetersPerSec : float64) : ShortString;
 
@@ -314,8 +315,14 @@ function ZUnitCategory (Zunit : tElevUnit) : shortstring;
 function RecycleCompressFile : boolean;
 
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
-function ElevUnitsAre(Code : byte) : shortstring;
 function PixelIsString(Code : integer) : shortstring;
+
+
+//use microdem_z_units.dbf
+  function ElevUnitsAre(Code : byte) : shortstring;
+  function CurveCodeFromName(aName : shortstring) : integer;
+  function CurveNameFromCode(Code : integer) : shortstring;
+
 
 function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
@@ -444,8 +451,8 @@ end;
 
 function RasterPixelIsString(Code : integer) : shortstring;
 begin
-    if Code = 1 then Result := 'Raster Pixel-Is-Area'
-    else if Code = 2 then Result := 'Raster Pixel-Is-Point'
+    if (Code = 1) then Result := 'Raster Pixel-Is-Area'
+    else if (Code = 2) then Result := 'Raster Pixel-Is-Point'
     else Result := 'Raster Pixel-Is-Unknown';
 end;
 
@@ -453,78 +460,49 @@ end;
 
 function ElevUnitsAre(Code : byte) : shortstring;
 //these are for legends, and all elevations are converted to m when DEM read into memory
+var
+   Table : tMyData;
 begin
-   case Code of
-      euMeters	   : Result := ' m';
-      euFeet	      : Result :=	' m';
-      euTenthMgal   : Result := ' mgal';
-      euMilligal	   : Result :=	' mgal';
-      euTenthGamma  : Result := ' gamma';
-      euDecimeters  : Result := ' m';
-      euGammas	   : Result := ' gamma';
-      euHundredthMGal	 : Result := ' mgal'	;
-      euDeciFeet	   : Result := ' m';
-      euCentimeters	: Result := ' m';
-      euHundredthMa	 : Result := ' Ma';
-      euPercentSlope	 : Result := 	'%';
-      euUndefined	 : Result := 	' ';
-      euAspectDeg,
-      euDegreeSlope,
-      euDegrees	 : Result := 	'°';
-      eulnElev	 : Result := 	'ln(z)';
-      euLogElev	 : Result := 	'log(z)'	;
-      euPercent	 : Result := 	'%';
-      euNLCD2001up	 : Result := 	' NLCD';
-      euLandFire	 : Result := 	' LandFire'	;
-      euNanotesla	 : Result := 	' nT'	;
-      euNLCD1992	 : Result := 	'NLCD 1992'	;
-      euIntCode	 : Result := 	' code'	;
-      euGLOBCOVER	 : Result := 	'GlobCover'	;
-      euGLC2000	 : Result := 	'GLC2000'	;
-      euImagery	 : Result := 	' Imagery'	;
-      euMM	 : Result := 	' mm'	;
-      euMetersPerSec	 : Result := 	' m/s';
-      euMperM	 : Result := 	' m/m';
-      euKM	 : Result := ' km';
-      euCCAP	 : Result := ' C-CAP'	;
-      euLASclass13	 : Result :=  ' LAS13';
-      euLASclass14	 : Result :=  ' LAS14';
-      euRGB	 : Result := 	' RGB';
-      euMonth	 : Result := 	' month'	;
-      euCCI_LC	 : Result := 	 'CCI-LC';
-      euS2GLC	 : Result := 	'S2GLC'	;
-      euNLCD_Change	 : Result := 	'dNLCD'	;
-      euGLCS_LC100	 : Result := 	'GLCS_LC100';
-      euMeybeck	 : Result := 	'Meybeck'	;
-      euGeomorphon	 : Result := 	'Geomorphon';
-      euIwahashi	 : Result := 	'Iwahashi'	;
-      euESRI2020	 : Result := 	'ESRI2020'	;
-      euPennock	 : Result := 	'Pennock'	;
-      euPerMeter	 : Result := 	'/m'	;
-      euWorldCover10m	 : Result := 	'WorldCover 10m';
-      euNDVI	 : Result := 	'NDVI';
-      euNBR	 : Result := 'NBR';
-      euDifference : Result := 'diff';
-      euElevDiff : Result := 'diff m';
-      euLCMAP : Result := 'LCMAP';
-      euDNBR	 : Result := 'dNBR';
-      euSent2SLC : Result := 'Sentinel-2 SLC';
-      //euCurvature : Result := 'curvature';
-      else Result := '';
-   end;
+   Table := tMyData.Create(Z_units_fName);
+   Table.Filter := 'CODE=' + IntToStr(Code);
+   if Table.FiltRecsInDB = 1 then Result := Table.GetFieldByNameAsString('UNITS_LABE')
+   else Result := '';
+   Table.Destroy;
+end;
+
+function CurveCodeFromName(aName : shortstring) : integer;
+var
+   Table : tMyData;
+begin
+   Table := tMyData.Create(Z_units_fName);
+   Table.Filter := 'SHORT_NAME=' + QuotedStr(aName);
+   if Table.FiltRecsInDB = 1 then Result := Table.GetFieldByNameAsInteger('CODE')
+   else Result := -999;
+   Table.Destroy;
+end;
+
+function CurveNameFromCode(Code : integer) : shortstring;
+var
+   Table : tMyData;
+begin
+   Table := tMyData.Create(Z_units_fName);
+   Table.Filter := 'CODE=' + IntToStr(Code);
+   if Table.FiltRecsInDB = 1 then Result := Table.GetFieldByNameAsString('SHORT_NAME')
+   else Result := '';
+   Table.Destroy;
 end;
 
 
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 begin
    if (AspectDir < 22.5) or (AspectDir > 337.5) then Result := cdN
-   else if (AspectDir < 67.5) then Result :=cdNE
-   else if (AspectDir < 112.5) then Result :=cdE
-   else if (AspectDir < 157.5) then Result :=cdSE
-   else if (AspectDir < 202.5) then Result :=cdS
-   else if (AspectDir < 247.5) then Result :=cdSW
-   else if (AspectDir < 292.5) then Result :=cdW
-   else Result :=cdNW;
+   else if (AspectDir < 67.5) then Result := cdNE
+   else if (AspectDir < 112.5) then Result := cdE
+   else if (AspectDir < 157.5) then Result := cdSE
+   else if (AspectDir < 202.5) then Result := cdS
+   else if (AspectDir < 247.5) then Result := cdSW
+   else if (AspectDir < 292.5) then Result := cdW
+   else Result := cdNW;
 end;
 
 
@@ -802,7 +780,7 @@ end;
 
 procedure SimpleProfiles;
 begin
-   MDdef.CurvAlg := vcNoCurvature;
+   MDdef.EarthVertCurvAlg := vcNoCurvature;
    MDdef.LOSVisible := false;
    MDdef.DrawLOS := false;
    {$IfDef VCL}
@@ -2376,9 +2354,9 @@ var
          if (iniWhat = iniInit) then FanPickMode := fpSingle;
 
          //AParameter('WeaponFan','CurvAlg',CurvAlg,vcTM5441);
-         if (IniWhat = iniWrite) then IniFile.WriteInteger('WeaponFan','CurvAlg',ord(CurvAlg));
-         if (IniWhat = iniRead) then CurvAlg := tVerticalCurvAlg(IniFile.ReadInteger('WeaponFan','CurvAlg',ord(vcTM5441)));
-         if (iniWhat = iniInit) then CurvAlg := vcTM5441;
+         if (IniWhat = iniWrite) then IniFile.WriteInteger('WeaponFan','CurvAlg',ord(EarthVertCurvAlg));
+         if (IniWhat = iniRead) then EarthVertCurvAlg := tVerticalCurvAlg(IniFile.ReadInteger('WeaponFan','CurvAlg',ord(vcTM5441)));
+         if (iniWhat = iniInit) then EarthVertCurvAlg := vcTM5441;
 
          {$IfDef RecordINIfiles}  WriteLineToDebugFile('ProcessIniFile after Weapons'); {$EndIf}
       end;
@@ -3979,8 +3957,8 @@ begin
       AParameter('Slope','CurveRadius',CurveCompute.WindowRadius,2);
       AParameter('Slope','SlopeFullWindow',SlopeCompute.RequireFullWindow,true);
       AParameter('Slope','CurveFullWindow',CurveCompute.RequireFullWindow,true);
-      AParameter('Slope','SlopeAllPts',SlopeCompute.UseAllPts,true);
-      AParameter('Slope','CurveAllPts',CurveCompute.UseAllPts,true);
+      AParameter('Slope','SlopeAllPts',SlopeCompute.UsePoints,useAll);
+      AParameter('Slope','CurveAllPts',CurveCompute.UsePoints,useAll);
       AParameter('Slope','SlopeLSQ',SlopeCompute.LSQorder,1);
       AParameter('Slope','CurveLSQ',CurveCompute.LSQorder,2);
 
@@ -4676,6 +4654,7 @@ begin
     LandCoverSeriesFName := ProgramRootDir + 'land_cover_22' + DefaultDBExt;
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
+    Z_units_fName := ProgramRootDir + 'microdem_z_units.dbf';
 
     {$IfDef ExMagVar}
     {$Else}
@@ -4958,7 +4937,7 @@ end;
 
 procedure SetFlatProfile;
 begin
-   MDdef.CurvAlg := vcNoCurvature;
+   MDdef.EarthVertCurvAlg := vcNoCurvature;
    MDdef.DrawLOS := false;
    MDDef.LOSVisible := false;
    MDDef.SimpleTopoProfilesOnly := true;
@@ -5080,7 +5059,7 @@ end;
 
 
 
-function CurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
+function EarthCurvAlgName(Alg : tVerticalCurvAlg) : ShortString;
 begin
    Result := BaseCurvAlgName[Alg];
    {$IfDef ExFresnel}
@@ -5095,21 +5074,32 @@ var
    sl : tStringList;
   i: Integer;
 begin
+(*
    sl := tStringList.Create;
    for i := 1 to NumCurvatures do begin
       sl.Add(IntegerToString(i,2) + '  ' + CurvatureNames[i]);
    end;
    if not GetFromList('Curvature LSP',Result,sl,true) then Result := 0;
    sl.Destroy;
+*)
 end;
 
+
+function LSQdetails(Method : tSlopeCurveCompute) : shortstring;
+begin
+   Result := 'LSQ_order_' + IntToStr(Method.LSQorder) + '_' + FilterSizeStr(succ(2*Method.WindowRadius));
+end;
 
 function SlopeMethodName(Method : tSlopeCurveCompute; Short : boolean = false) : shortstring;
 var
    TStr,FiltStr : shortstring;
 begin
    if (not Short) and (Method.AlgorithmName = smLSQ) then begin
-      if Method.UseAllPts then TStr := '__all' else TStr := '_edge';
+      case Method.UsePoints of
+         UseAll    : TStr := '___all';
+         UseEdge   : TStr := '__edge';
+         UseQueens : TStr := '_queen';
+      end;
       if TestEdgeEffect then TStr := TStr + '_hole' else TStr := TStr + '_full';
    end;
    FiltStr := '_' + FilterSizeStr(succ(2*Method.WindowRadius));
@@ -5118,7 +5108,7 @@ begin
       smHorn  : SlopeMethodName := 'Horn' + FiltStr;
       smShary  : SlopeMethodName := 'Shary' + FiltStr;
       smEvansYoung  : SlopeMethodName := 'Evans-Young' + FiltStr;
-      smLSQ  : SlopeMethodName := 'LSQ_order_' + IntToStr(Method.LSQorder) + FiltStr + TStr;
+      smLSQ  : SlopeMethodName := LSQDetails(Method) + TStr;
       {$IfDef IncludeOldSlopeAlgoritms}
          smEightNeighborsWeightedByDistance : SlopeMethodName := '8 neighbors (dist weight)';
          smONeillAndMark      : SlopeMethodName := '3 neighbors';
@@ -5445,13 +5435,13 @@ initialization
    DrainageSlopeNumber1.AlgorithmName := smLSQ;
    DrainageSlopeNumber1.WindowRadius := 1;
    DrainageSlopeNumber1.LSQorder := 2;
-   DrainageSlopeNumber1.UseAllPts := true;
+   DrainageSlopeNumber1.UsePoints := UseAll;
    DrainageSlopeNumber1.RequireFullWindow := true;
 
    DrainageSlopeNumber2.AlgorithmName := smLSQ;
    DrainageSlopeNumber2.WindowRadius := 2;
    DrainageSlopeNumber2.LSQorder := 3;
-   DrainageSlopeNumber2.UseAllPts := true;
+   DrainageSlopeNumber2.UsePoints := UseAll;
    DrainageSlopeNumber2.RequireFullWindow := true;
 
 finalization

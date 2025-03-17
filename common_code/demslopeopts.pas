@@ -47,7 +47,7 @@ type
     ClipboardSpeedButton: TSpeedButton;
     BitBtn2: TBitBtn;
     CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
+    RadioGroup5: TRadioGroup;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);

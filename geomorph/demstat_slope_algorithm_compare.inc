@@ -4,7 +4,6 @@
 { Released under the MIT Licences        }
 { Copyright (c) 1986-2025 Peter L. Guth  }
 {----------------------------------------}
-{                                        }
 {   include file for demstat             }
 {________________________________________}
 
@@ -34,8 +33,8 @@ begin
          MDDef.SlopeCompute.LSQorder := i;
          for j := 1 to 4 do begin
             MDDef.SlopeCompute.WindowRadius := j;
-            for k := 1 to 2 do begin
-               MDDef.SlopeCompute.UseAllPts := (k=1);
+            for k := 1 to 3 do begin
+               MDDef.SlopeCompute.UsePoints := k;
                if not Duplicate(MDDef.SlopeCompute) then begin
                   Grid := CreateSlopeMapPercent(true,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
                end;
@@ -44,13 +43,13 @@ begin
       end;
    end
    else begin
-      TheCurvature := PickCurvature;
+      TheCurvature := eucurv_kns;
       for i := 1 to 4 do begin
          MDDef.CurveCompute.LSQorder := i;
          for j := 1 to 4 do begin
             MDDef.CurveCompute.WindowRadius := j;
-            for k := 1 to 2 do begin
-               MDDef.CurveCompute.UseAllPts := (k=1);
+            for k := 1 to 3 do begin
+               MDDef.CurveCompute.UsePoints := k;
                if not Duplicate(MDDef.CurveCompute) then begin
                   Grid := CreateCurvatureMap(TheCurvature,true,DEM,SlopeMethodName(MDDef.CurveCompute) );
                end;

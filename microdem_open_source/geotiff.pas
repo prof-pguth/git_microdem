@@ -1128,7 +1128,6 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             WantDEM.DEMheader.ElevUnits := TiffHeader.MDZtype; //tElevUnit(TiffHeader.MDZtype);
 
             {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
-            {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM early WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
 
             if ForceType then begin
                WantDEM.DEMheader.DEMPrecision := TypeWanted;
@@ -1167,13 +1166,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                Result := false;
             end;
 
-           {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('InitTiffDEM out, WantDEM.DEMheader.DigitizeDatum=' + StringFromDatumCode(WantDEM.DEMheader.DigitizeDatum)); {$EndIf}
-           {$IfDef TrackA} WriteLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProj.a,-18,-2)); {$EndIf}
-           {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProj)} WantDEM.DEMMapProj.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
-           {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
-           {$If Defined(RecordUKOS)} WriteLineToDebugFile('Initialize TIFF DEM out, pName=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
-           {$IfDef RecordprojProgress} WantDEM.DEMMapProj.WriteProjectionSummaryToDebugFile('DefineProjectionParameters Initialize TIFF DEM out: '); {$EndIf}
-           {$If Defined(TrackWKTstring)} WriteLineToDebugFile('Initialize TIFF DEM out, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
+            {$IfDef TrackA} WriteLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProj.a,-18,-2)); {$EndIf}
+            {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProj)} WantDEM.DEMMapProj.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
+            {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
+            {$If Defined(RecordUKOS)} WriteLineToDebugFile('Initialize TIFF DEM out, pName=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
+            {$IfDef RecordprojProgress} WantDEM.DEMMapProj.WriteProjectionSummaryToDebugFile('DefineProjectionParameters Initialize TIFF DEM out: '); {$EndIf}
+            {$If Defined(TrackWKTstring)} WriteLineToDebugFile('Initialize TIFF DEM out, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
          end {InitializeTiffDEM};
 
 var
@@ -1196,7 +1194,6 @@ begin {tTIFFImage.CreateTiffDEM}
          Result := false;
          exit;
       end;
-      //ElevRangeSet := false;
       Result := InitializeTiffDEM(WantDEM);
       {$If Defined(RecordGeotiffProjection) or Defined(RecordUKOS)} WriteLineToDebugFile('After InitializeTiffDEM back, pname=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
       WantDEM.GeotiffImageDesc := GeotiffImageDesc;
@@ -1252,9 +1249,7 @@ begin {tTIFFImage.CreateTiffDEM}
                         z := FloatRow^[Col];
                         if BigEndian then SwapToShortFloat(z);
                         if ValidZ(z) then begin
-                           z := z * TiffHeader.Factor;
-                           WantDEM.SetGridElevation(Col,dRow,z);
-                           //Petmath.CompareValueToExtremes(z,WantDEM.DEMheader.MinElev,WantDEM.DEMheader.MaxElev);
+                           WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1264,8 +1259,7 @@ begin {tTIFFImage.CreateTiffDEM}
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                         z := Int32Row^[Col];
                         if ValidZ(z) then begin
-                           z := z * TiffHeader.Factor;
-                           WantDEM.SetGridElevation(Col,dRow,z);
+                           WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1300,8 +1294,7 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                      z := DoubleRow^[Col];
                      if ValidZ(z) then begin
-                        z := z * TiffHeader.Factor;
-                        WantDEM.SetGridElevation(Col,dRow,z);
+                        WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
                      end
                      else WantDEM.SetGridMissing(Col,dRow);;
                   end;

@@ -59,7 +59,7 @@ var
     label
        CleanUp;
    const
-      //used for the digitizing datum
+      //used for digitizing datum
       //these go back a long way, and a number are no longer used
       //because they in the the DEM header, the numbering must be retained
       WGS72d = 0;
@@ -67,15 +67,9 @@ var
       NAD27d = 2;
       NAD83d = 3;
       Spherical = 4;
-      //UnusedddLocal = 5;
       Rectangular = 6;
-      //unusedLamAzEqAreaSphere = 7;
-      //unusedSinusEllip = 8;
-      //unusedPRDd = 9;
       UK_OS_grid = 10;
       ddDefined = 11;
-      //unusedMarsD = 12;
-      //unusedVenusD = 13;
       ETRs89d = 14;
 
       LegacyDigitizeDatumName : array[0..14] of ShortString = ('WGS72','WGS84','NAD27','NAD83','Sphere','','Rect','','','','UK OS','Defined','','','ETRS89');

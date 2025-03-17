@@ -182,6 +182,8 @@ uses
    procedure OTB_KMeansClassification(InName, OutName : PathStr);
    procedure OTB_Segmentation(InName, OutName : PathStr);
    procedure OTB_PanSharpen(PanName,OrthoName, OutName : PathStr);
+   procedure OTB_PickForKMeansClustering(SatOnMap : integer);
+   procedure OTB_PickToConcatenateImages(SatOnMap : integer);
 {$EndIf}
 
 procedure RVTgrids(DEM : integer);
@@ -691,6 +693,46 @@ end;
 
 {$IfDef ExOTB}
 {$Else}
+
+  procedure OTB_PickToConcatenateImages(SatOnMap : integer);
+  var
+     InNames: tStringList;
+     OutName : PathStr;
+     i : integer;
+  begin
+     if ValidSatImage(SatOnMap) then begin
+        InNames := tStringList.Create;
+        for i := 1 to SatImage[SatOnMap].NumBands do
+           if SatImage[SatOnMap].IsLandsatImageAnalysisBand(i) then
+              InNames.Add(SatImage[SatOnMap].TiffImage[i].TiffFileName);
+        OutName := ExtractFilePath(SatImage[SatOnMap].TiffImage[1].TiffFileName) + 'merge.tif';
+        OTB_ConcatenateImages(InNames,OutName);
+     end;
+  end;
+
+
+  procedure OTB_PickForKMeansClustering(SatOnMap : integer);
+  var
+     InName,OutName : PathStr;
+  begin
+     {$If Defined(RecordOTB)} WriteLineToDebugFile('TMapForm.Kmeansclustering1Click in');{$EndIf}
+     InName := ExtractFilePath(SatImage[SatOnMap].TiffImage[1].TiffFileName) + 'merge.tif';
+     if not FileExists(InName) then begin
+        {$If Defined(RecordOTB)} WriteLineToDebugFile('Concatenate to ' + InName);{$EndIf}
+        OTB_PickToConcatenateImages(SatOnmap);
+     end;
+     OutName := ExtractFilePath(SatImage[SatOnMap].TiffImage[1].TiffFileName) + 'merge_cluster.tif';
+     {$If Defined(RecordOTB)} WriteLineToDebugFile('try to k-means to ' + OutName);{$EndIf}
+     OTB_KMeansClassification(InName, OutName);
+     if FileExists(OutName) then begin
+        OpenNewDEM(OutName);
+     end
+     else begin
+        {$If Defined(RecordOTB)} WriteLineToDebugFile('failed creation, ' + OutName);{$EndIf}
+     end;
+  end;
+
+
 
     procedure StartOTBbatchFile(var BatchFile : tstringList);
     var

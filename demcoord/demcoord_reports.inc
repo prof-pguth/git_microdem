@@ -79,8 +79,8 @@ begin
          MDDef.SlopeCompute.WindowRadius := i;
          for j := 1 to 4 do begin
             MDDef.SlopeCompute.LSQorder := j;
-            for m := 1 to 2 do begin
-               MDDef.SlopeCompute.UseAllPts := (m = 1);
+            for m := 1 to 3 do begin
+               MDDef.SlopeCompute.UsePoints := m;
                //aMethod := SlopeMethodName(MDDef.SlopeCompute);
                AddSlopeAtPoint(Results,DEM,xp,yp);
             end;
@@ -277,7 +277,7 @@ begin
       {$EndIf}
 
       MDDef.SlopeCompute.AlgorithmName := smLSQ;
-      MDdef.SlopeCompute.UseAllPts := true;
+      MDdef.SlopeCompute.UsePoints := useAll;
       MDdef.SlopeCompute.WindowRadius := 2;
       MDdef.SlopeCompute.LSQorder := 3;
       DoOne {$IfDef TrendSurfacePointClouds} (fName2,0,255,0) {$EndIf};
@@ -315,8 +315,8 @@ begin
          MDDef.SlopeCompute.WindowRadius := i;
          for j := 1 to 4 do begin
             MDDef.SlopeCompute.LSQorder := j;
-            for m := 1 to 2 do begin
-               MDDef.SlopeCompute.UseAllPts := (m = 1);
+            for m := 1 to 3 do begin
+               MDDef.SlopeCompute.UsePoints := m;
                //aMethod := SlopeMethodName(MDDef.SlopeCompute);  // + Fill[m];
                if DEMglb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,xp,yp,SAR) then begin
                   aLine := SlopeMethodName(MDDef.SlopeCompute) + RealToString(SAR.SlopePercent,7,2) + '%' + RealToString(SAR.AspectDirTrue,6,1) + '°T  ' +

@@ -955,7 +955,7 @@ var
 {$If Defined(TrackHorizontalDatum)}
    procedure tDEMDataSet.TrackHorizontalDatumDebugLog(where : shortstring);
    begin
-      WriteLineToDebugFile(Where + ' ' + AreaName + '  ' +  DEMMapProjection.h_DatumCode + '  ' + StringFromDatumCode(DEMheader.DigitizeDatum));
+      WriteLineToDebugFile(Where + ' ' + AreaName + '  ' +  DEMMapProjection.h_DatumCode);
    end;
 {$EndIf}
 
@@ -2691,7 +2691,6 @@ begin {tDEMDataSet.DefineDEMVariables}
    {$If Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + '  DEM ' + zRange); {$EndIf}
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)}  WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' in, proj=' + DEMmapProj.GetProjName); {$EndIf}
    {$IfDef RecordProjectionParameters} DEMmapProj.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
-   {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in,digitize datum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in, pname=' + DEMmapProj.GetProjName); {$EndIf}
 
    if (XSpaceByDEMrow = Nil) then GetMem(XSpaceByDEMrow,4*DEMheader.NumRow);
@@ -2741,9 +2740,6 @@ begin {tDEMDataSet.DefineDEMVariables}
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' out, ' + DEMmapProj.KeyDatumParams); {$EndIf}
    {$IfDef RecordDEMmapProj} DEMmapProj.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in, proj=' + DEMmapProj.GetProjName); {$EndIf}
-   {$IfDef RecordDEMDigitizeDatum}  WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, DigitizeDatum=' + StringFromDatumCode(DEMheader.DigitizeDatum)); {$EndIf}
-   {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, pname=' + DEMmapProj.GetProjName); {$EndIf}
-
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, pname=' + DEMmapProj.GetProjName); {$EndIf}
    {$IfDef TrackSWcorner} WriteDEMCornersToDebugFile('DefineDEMVariables out, ' + AreaName); {$EndIf}
    {$If Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, ' + AreaName + '  DEM ' + zRange); {$EndIf}
@@ -3543,7 +3539,7 @@ function DropEarthCurve(d : float64) : float64;
    {d and DropEarthCurve in meters}
 begin
   DropEarthCurve := 0;
-  if CalculatingEarthCurvature then case MDDef.CurvAlg of
+  if CalculatingEarthCurvature then case MDDef.EarthVertCurvAlg of
       vcTM5441 : DropEarthCurve := Sqr(0.001*d) * 0.0676; {from Army TM5-441 (Feb 70) p.2-12}
       vcRadioLineOfSight : DropEarthCurve := Sqr(0.001*d) / (MDDef.RadioK * 0.25 * 51);
       vcYoeli : DropEarthCurve := 0.87 * sqr(0.001 * d) / (2 * 6370) * 1e3;

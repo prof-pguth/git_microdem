@@ -641,7 +641,7 @@ var
          while (Dist <= Finish) do begin
             v[1] := Dist * HorizFactor;
             for j := 1 to NumMods do begin
-               MDDef.CurvAlg := ca[j];
+               MDDef.EarthVertCurvAlg := ca[j];
                MDDef.RadioK := k[j];
                v[2] := DropEarthCurve(1000*v[1]) * VertFactor;
                BlockWrite(rf[j],v,1);
