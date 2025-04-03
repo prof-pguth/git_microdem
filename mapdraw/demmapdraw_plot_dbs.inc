@@ -175,7 +175,7 @@ begin
    if (NumOpenDB > 0) then for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];
       {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('check db=' + IntToStr(j) + '  drawing order=' + IntoStr(j); {$EndIf}
-      if ValidDB(i) and (GISdb[i].theMapOwner <> nil) then begin
+      if ValidDB(i) and (GISdb[i].theMapOwner <> nil) and (GISdb[i].MyData <> nil) then begin
          {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('valid db=' + IntToStr(i) + '  ' + GISdb[i].dbName); {$EndIf}
          if (GISdb[i].MyData.FiltRecsInDB > 0) then begin
             {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('filtered records=' + IntToStr(GISdb[i].MyData.FiltRecsInDB)); {$EndIf}
@@ -241,6 +241,9 @@ var
    inTheData : tMyData;
    GISNum : integer;
 begin
+    if not FileExists(IndexFName) then begin
+       {$If Defined(RecordShapeFileGroup) or Defined(RecordProblems)} WriteLineToDebugFile('TMapDraw.PlotShapeFileGroupOnMap No file requested'); {$EndIf}
+    end;
     {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('PlotShapeFileGroupOnMap in ' + IndexFName + '  ' + SmartMemorySizeBytes(GetFileSize(IndexfName))); {$EndIf}
     inTheData := TMyData.Create(IndexFName);
     {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('PlotShapeFileGroupOnMap loaded ' + IndexFName); {$EndIf}

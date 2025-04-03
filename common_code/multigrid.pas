@@ -657,7 +657,7 @@ var
       if (MG <> 0) then begin
          inc(Plots);
          Result.GraphDraw.ShowLine[Plots] := true;
-         Result.OpenDataFile(rfile,MultiGridArray[MG].Color);
+         Result.OpenDataFile(rfile,'',MultiGridArray[MG].Color);
          for i := 1 to 12 do begin
             if DEMGlb[MultiGridArray[MG].Grids[i]].GetElevFromLatLongDegree(Lat,Long,z1) then begin
                Result.AddPointToDataBuffer(rfile,i,z1);
@@ -861,7 +861,7 @@ begin
       db := MapOwner.StringListtoLoadedDatabase(Findings, fName);
 
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph db loaded'); {$EndIf}
-      Result := GISdb[db].CreateScatterGram(GISdb[db].MonthFieldName,'PARAMETER',clRed,true,MG_Name + ' at ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees),'Month',MG_Name);
+      Result := GISdb[db].CreateScatterGram(TStr,GISdb[db].MonthFieldName,'PARAMETER',clRed,true,MG_Name + ' at ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees),'Month',MG_Name);
       Result.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Tstr;
       Result.GraphDraw.ShowLine[1] := true;
       Result.RedrawDiagram11Click(Nil);
@@ -1102,7 +1102,7 @@ begin
               HorizLabel := DEMGlb[CurDEM].AreaName;
               if MDDef.CumFreqNormAxis then VertAxisFunctionType := CumulativeNormalAxis;
               SetUpGraphForm;
-              aGraph.GraphDraw.LegendList := tStringList.Create;
+              //aGraph.GraphDraw.LegendList := tStringList.Create;
               aGraph.Caption := DEMGlb[CurDEM].AreaName + ' in training classes';
           end;
           Results := tStringList.Create;
@@ -1135,7 +1135,7 @@ begin
                   MyData.GetFieldByNameAsString('COLOR')   );
            end
            else if (StatOpts in [soCumDist]) then with aGraph.GraphDraw do begin
-              aGraph.OpenDataFile(rFile);
+              aGraph.OpenDataFile(rFile,MyData.GetFieldByNameAsString('NAME'));
               for i := 1 to MomentVar.NPts do begin
                  v[1] := Values[i];
                  v[2] := (i-1) / (MomentVar.NPts-1) * 100;
@@ -1147,8 +1147,8 @@ begin
 
               fName := aGraph.GraphDraw.DataFilesPlotted.Strings[pred(aGraph.GraphDraw.DataFilesPlotted.Count)];
               Results.Add(MyData.GetFieldByNameAsString('NAME') + ',3,' + MyData.GetFieldByNameAsString('COLOR') + ',' + fName);
-              aGraph.GraphDraw.LegendList.Add(MyData.GetFieldByNameAsString('NAME'));
-              aGraph.GraphDraw.FileColors256[aGraph.GraphDraw.LegendList.Count] := MyData.PlatformColorFromTable;
+              //aGraph.GraphDraw.LegendList.Add(MyData.GetFieldByNameAsString('NAME'));
+              //aGraph.GraphDraw.FileColors256[aGraph.GraphDraw.LegendList.Count] := MyData.PlatformColorFromTable;
            end;
        end;
        if (StatOpts in [soTable,soGraph]) then begin
@@ -2127,7 +2127,7 @@ var
       rfile : file;
       Max{,x} : float32;
    begin
-       PointGraph.OpenDataFile(rfile,Color);
+       PointGraph.OpenDataFile(rfile,PointGraph.Caption,Color);
        for Band := 1 to MaxGridsInMG do begin
           if ValidDEM(Grids[Band]) then begin
              DEMGlb[Grids[Band]].GetElevMetersOnGrid(x1,y1,Refs[Band]);
@@ -2150,7 +2150,7 @@ begin
    if (PointGraph = Nil) then begin
       PointGraph := tThisBaseGraph.Create(Application);
       //PointGraph.CanCloseGraph := true;
-      PointGraph.GraphDraw.LegendList := tStringList.Create;
+      //PointGraph.GraphDraw.LegendList := tStringList.Create;
       if MDDef.BandsByWavelength and (BandWavelengths[1] > -9) then PointGraph.GraphDraw.HorizLabel := 'Wavelength (nm)'
       else PointGraph.GraphDraw.HorizLabel := 'Band';
       PointGraph.GraphDraw.VertLabel := 'Reflectance';
@@ -2160,8 +2160,8 @@ begin
    if DEMGlb[Grids[FirstValidGrid]].GridInDataSetInteger(xg,yg) then begin
        MakeGraphFile(xg,yg,-1);
        if Redraw then begin
-          PointGraph.Caption := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + '  col=' + IntToStr(xg) + '  row=' + IntToStr(yg);
-          PointGraph.GraphDraw.LegendList.Add(PointGraph.Caption);
+          PointGraph.Caption := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + '__col=' + IntToStr(xg) + '__row=' + IntToStr(yg);
+          //PointGraph.GraphDraw.LegendList.Add(PointGraph.Caption);
           PointGraph.AutoScaleAndRedrawDiagram;
        end;
    end;

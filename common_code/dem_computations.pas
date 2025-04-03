@@ -433,7 +433,7 @@ var
          v : tGraphPoint32;
          i,j : integer;
       begin
-         if not MemoOutPut then ThisGraph.OpenDataFile(rf);
+         if not MemoOutPut then ThisGraph.OpenDataFile(rf,'');
          Bearing := 0;
          while Bearing <= 361 do begin
             VincentyPointAtDistanceBearing(Lat1,Long1,FullDistance,Bearing,Lat2,Long2);
@@ -621,6 +621,8 @@ end;
 
 
 procedure ShowVerticalEarthCurvature;
+const
+  theNames : array[1..5] of shortstring = ('TM5-441','Yoeli','Radio,_k=0.67','Radio,_k=1.33','Radio,_k=10');
 var
    ThisGraph  : TThisBaseGraph;
    NumMods,i,j : integer;
@@ -684,15 +686,15 @@ begin
 
    ThisGraph.GraphDraw.VertLabel := 'Earth curvature (' + Tstr+ ')';
 
-   ThisGraph.GraphDraw.LegendList := tStringList.Create;
-   ThisGraph.GraphDraw.LegendList.Add('TM5-441');
-   ThisGraph.GraphDraw.LegendList.Add('Yoeli');
-   ThisGraph.GraphDraw.LegendList.Add('Radio, k=0.67');
-   ThisGraph.GraphDraw.LegendList.Add('Radio, k=4/3');
-   ThisGraph.GraphDraw.LegendList.Add('Radio, k=10');
+   //ThisGraph.GraphDraw.LegendList := tStringList.Create;
+   //ThisGraph.GraphDraw.LegendList.Add('TM5-441');
+   //ThisGraph.GraphDraw.LegendList.Add('Yoeli');
+   //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=0.67');
+   //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=1.33');
+   //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=10');
    for i := 1 to NumMods do begin
       ThisGraph.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
-      ThisGraph.OpenPointFile(rf[i],ThisGraph.Symbol);
+      ThisGraph.OpenPointFile(rf[i],ThisGraph.Symbol,theNames[i]);
    end;
    ca[1] := vcTM5441;
    ca[2] := vcYoeli;

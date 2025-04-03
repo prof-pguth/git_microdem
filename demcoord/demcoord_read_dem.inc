@@ -584,7 +584,6 @@ begin
    NewHeadRecs.DEMxSpacing := LongSize / pred(xPixels);
    NewHeadRecs.DEMSWCornerX := LongCorner;
    NewHeadRecs.DEMSWCornerY := LatCorner;
-   //NewHeadRecs.aDigitizeDatum := WGS84d;
    NewHeadRecs.h_datumcode := 'WGS84';
    {$IfDef RecordCreateNewDEM}
       WriteLineToDebugFile('xll=' + RealToString(NewHeadRecs.DEMSWCornerX,-18,-8) + ' yll=' + RealToString(NewHeadRecs.DEMSWCornerY,-18,-8) + ' dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-8) + ' dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-8));
@@ -686,7 +685,7 @@ var
    Hemi : ANSIchar;
    MenuStr : ShortString;
    DatCode : ShortString;
-   PName :  tProjectType;
+   PName :  tProjType;
    llCornerCoords,GeoLatLong : boolean;
 
 

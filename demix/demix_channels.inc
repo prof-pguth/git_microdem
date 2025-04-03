@@ -171,8 +171,8 @@ var
 
           Results := tStringList.Create;
           aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
-          for i := 1 to NumPtDEMs do aLine := aline + ',' + SRTM_centroid_names[i];
-          for i := 1 to NumAreaDEMs do aLine := aline + ',' + ALOS_centroid_names[i];
+          for i := 1 to NumPtDEMs do aLine := aline + ',' + DEMGlb[PointDEMs[i]].AreaName;
+          for i := 1 to NumAreaDEMs do aLine := aline + ',' + DEMGlb[AreaDEMs[i]].AreaName;
           Results.Add(aLine);
 
           DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,false);
@@ -266,8 +266,8 @@ begin {procedure CompareChannelNetworks}
        else begin
           Results := tStringList.Create;
           aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
-          for i := 1 to NumPtDEMs do aLine := aline + ',' + SRTM_centroid_names[i];
-          for i := 1 to NumAreaDEMs do aLine := aline + ',' + ALOS_centroid_names[i];
+          for i := 1 to NumPtDEMs do aLine := aline + ',' + DEMGlb[PointDEMs[i]].AreaName;
+          for i := 1 to NumAreaDEMs do aLine := aline + ',' + DEMGlb[AreaDEMs[i]].AreaName;
           Results.Add(aLine);   // + ',VECTOR_PIX');
 
           DEMIXtileDB := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,true);
@@ -416,8 +416,8 @@ begin {procedure CompareGeomorphons}
          if Continue then begin
              Results := tStringList.Create;
              aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
-             for i := 1 to NumPtDEMs do aLine := aline + ',' + SRTM_centroid_names[i];
-             for i := 1 to NumAreaDEMs do aLine := aline + ',' + ALOS_centroid_names[i];
+             for i := 1 to NumPtDEMs do aLine := aline + ',' + DEMGlb[PointDEMs[i]].AreaName;
+             for i := 1 to NumAreaDEMs do aLine := aline + ',' + DEMGlb[AreaDEMs[i]].AreaName;
              Results.Add(aLine);
 
              DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,false);

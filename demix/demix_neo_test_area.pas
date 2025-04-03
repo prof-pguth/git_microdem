@@ -24,8 +24,10 @@ unit demix_neo_test_area;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,AnsiStrings,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics,AnsiStrings, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
+  StrUtils,
   petmar,petmar_types;
 
 
@@ -60,7 +62,7 @@ implementation
 
 uses
    demix_definitions,demix_control,demstringgrid,
-   PetMath,PetdbUtils,
+   PetMath,PetdbUtils,Petmar_DB,
    dem_Manager,
    Make_grid,
    nevadia_main,
@@ -85,8 +87,6 @@ var
 
    procedure OpenElevationAndSlopeGrids;
    const
-      //NumDEMs = 9;
-      //DEMsInOrder : array[1..NumDEMs] of shortstring = ('Native_5m_DSM','Point_cloud_DSM','CopDEM_upsample','AW3D30_upsample','Native_5m_DTM','HRDEM_downsample','Point_cloud_DTM','Point_cloud_NVS','FABDEM_upsample');
       NumDEMs = 7;
       DEMsInOrder : array[1..NumDEMs] of shortstring = ('Point_cloud_DSM','CopDEM_upsample','AW3D30_upsample','Native_5m_DTM','HRDEM_downsample','Point_cloud_NVS','FABDEM_upsample');
    var
@@ -96,13 +96,6 @@ var
       DataDir := 'J:\aaa_neo_eval\oxnard\multiple_0.15sec\';
       InitializeDEMsWanted(DEMList,false);
       InitializeDEMsWanted(SlopeList,false);
-(*
-      TheDEMs := Nil;
-      FindMatchingFiles(DataDir,'*.tif',TheDEMs);
-
-      for i := 0 to pred(TheDEMs.Count) do begin
-         DEMName := TheDEMs.Strings[i];
-*)
       n := 0;
       for I := 1 to NumDEMs do begin
          DEMName := DataDir + DEMsinOrder[i] + '.tif';
@@ -127,10 +120,9 @@ var
 
    procedure MakeGraphDifferenceDistributionsAllLandCover;
    var
-      i : integer;
-      MomentVar : tMomentVar;
       zs : ^bfArray32;
       Findings : tstringList;
+      MomentVar : tMomentVar;
 
 
       procedure ComputeDifferenceDistribution(Parameter,LandType : shortstring; Code,Ref,Test : integer);
@@ -158,8 +150,7 @@ var
       var
          aLine : shortstring;
       begin {procedure ComputeDifferenceDistribution}
-         {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Start landcover for ' + LandType + ' ref=' + IntToStr(Ref) + ' test=' + IntToStr(Test)); {$EndIf}
-
+         {$IfDef RecordDEMIXneoFull} WriteLineToDebugFile('Start landcover for ' + LandType + ' ref=' + IntToStr(Ref) + ' test=' + IntToStr(Test)); {$EndIf}
          wmdem.SetPanelText(2,Parameter,true);
          wmdem.SetPanelText(3,LandType,true);
 
@@ -170,7 +161,7 @@ var
          end;
 
          DoParameter(Test,Ref);
-         aline := 'Test area, test area,' + Parameter + ',' + LandType + ',' + DEMIXMomentStatsString(MomentVar);
+         aline := 'Test area, test area,' + ExtractDEMIXDEMName(DEMGlb[Test].AreaName) + ',' + Parameter + ',' + LandType + ',' + DEMIXMomentStatsString(MomentVar);
          Findings.Add(aLine);
 
          if (Code <> 0) then begin
@@ -181,65 +172,133 @@ var
       end {procedure ComputeDifferenceDistribution};
 
 
+      procedure DoOneTestDEM(RefElev,RefSlope,RefRuff,TestElev : integer; ManyLandcover : boolean);
+      var
+         i,Ref,Test,
+         TestSlope,
+         TestRuff : integer;
+      begin
+        TestSlope := 0;
+        TestRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(TestElev,5,TestSlope,false);
+        fName := MDTempDir + 'slope_' + DEMGlb[TestElev].AreaName + '.dem';
+        DEMGlb[TestSlope].WriteNewFormatDEM(fName);
+        fName := MDTempDir + 'ruffslope_' + DEMGlb[TestElev].AreaName + '.dem';
+        DEMGlb[TestRuff].WriteNewFormatDEM(fName);
+
+        for I := 1 to 3 do begin
+           {$IfDef RecordDEMIXneoFull} WriteLineToDebugFile('Start loop for ' + DiffParams[i]); {$EndIf}
+           if (i = 1) then begin
+              Ref := RefElev;
+              Test := TestElev;
+           end
+           else if (i = 2) then begin
+              Ref := RefSlope;
+              Test := TestSlope;
+           end
+           else if (i = 3) then begin
+              Ref := RefRuff;
+              Test := TestRuff;
+           end;
+
+           ComputeDifferenceDistribution(DiffParams[i],'All',0,Ref,Test);
+           if ManyLandCover then begin
+             ComputeDifferenceDistribution(DiffParams[i],'Forest',10,Ref,Test);
+             {$IfDef DoOnlyThreeLandTypes}
+             {$Else}
+                ComputeDifferenceDistribution(DiffParams[i],'Shrub',20,Ref,Test);
+                ComputeDifferenceDistribution(DiffParams[i],'Grassland',30,Ref,Test);
+                ComputeDifferenceDistribution(DiffParams[i],'Urban',50,Ref,Test);
+                ComputeDifferenceDistribution(DiffParams[i],'Barren',60,Ref,Test);
+             {$EndIf}
+           end;
+        end;
+        CloseSingleDEM(TestElev);
+        CloseSingleDEM(TestSlope);
+        CloseSingleDEM(TestRuff);
+      end;
+
+
+
    var
-      aLine,Parameter : shortstring;
-      RefElev,TestElev,Ref,Test,
-      RefSlope,TestSlope,
-      TestRuff,RefRuff : integer;
+      Area,aLine,Parameter : shortstring;
+      RefElev,RefSlope,RefRuff,TestElev,i,j : integer;
+      DEMFiles,DEMNames,TestDEMs : tStringList;
+      Table : tMyData;
    begin {procedure MakeGraphDifferentDistributionsAllLandCover}
-      New(zs);
-      DataDir := 'J:\aaa_neo_eval\oxnard\multiple_0.15sec\';
+      {$Define RecordDEMIXneo} WriteLineToDebugFile('MakeGraphDifferentDistributionsAllLandCover in');
+      GetDEMIXpaths;
+      SetColorForProcessing;
+      Area := 'oxnard';
+      DataDir := 'J:\aaa_neo_eval\' + Area + '\';
+
+      GetDOSPath('with DEMs',DataDir);
+
       Findings := tStringList.Create;
-      aLine := 'DEMIX_TILE,AREA,PARAMETER,LANDTYPE';
+      aLine := 'DEMIX_TILE,AREA,DEM,PARAMETER,LANDTYPE';
       for i := 1 to 10 do aLine := aLine + ',' + LongParamSuffixes[i];
       Findings.Add(aline);
 
-      RefElev := OpenNewDEM(DataDir + 'ref_dtm_0.15sec.tif');
-      TestElev := OpenNewDEM(DataDir + 'NeoDTM_0.15sec.tif');
-      ESA_LC10 := LoadLC10LandCover('',DEMGlb[RefElev].DEMBoundBoxGeo,true);
-      RefSlope := 0;
-      RefRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(RefElev,5,RefSlope,true);
-      fName := MDTempDir + 'slope_' + DEMGlb[refElev].AreaName + '.dem';
-      DEMGlb[refSlope].WriteNewFormatDEM(fName);
-      fName := MDTempDir + 'ruff_' + DEMGlb[refElev].AreaName + '.dem';
-      DEMGlb[refRuff].WriteNewFormatDEM(fName);
+      DEMFiles := Nil;
+      FindMatchingFiles(DataDir,'*.tif',DEMfiles);
 
-      TestSlope := 0;
-      TestRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(TestElev,5,TestSlope,true);
-      fName := MDTempDir + 'slope_' + DEMGlb[TestElev].AreaName + '.dem';
-      DEMGlb[TestSlope].WriteNewFormatDEM(fName);
-      fName := MDTempDir + 'ruffslope_' + DEMGlb[TestElev].AreaName + '.dem';
-      DEMGlb[TestRuff].WriteNewFormatDEM(fName);
+     fName := DemixSettingsDir + 'demix_dems.dbf';
+     Table := tMyData.Create(fName);
+     Table.ApplyFilter('USE=' + QuotedStr('Y'));
+     TestDEMs := Table.ListUniqueEntriesInDB('SHORT_NAME',false);
+     TestDEMs.Add('ref_DTM');
+     Table.Destroy;
 
-      for I := 1 to 3 do begin
-         {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Start loop for ' + DiffParams[i]); {$EndIf}
-         if i = 1 then begin
-            Ref := RefElev;
-            Test := TestElev;
-         end
-         else if i = 2 then begin
-            Ref := RefSlope;
-            Test := TestSlope;
-         end
-         else if i = 3 then begin
-            Ref := RefRuff;
-            Test := TestRuff;
-         end;
+     DEMnames := tStringList.Create;
+     for i := 0 to pred(TestDEMs.Count) do begin
+        aline := 'mia';
+        for j := 0 to pred(DEMfiles.Count) do begin
+            if (StrUtils.AnsiContainsText(Uppercase(DEMfiles.Strings[j]),UpperCase(TestDEMs.Strings[i]))) then begin
+               aLine := DEMfiles.Strings[j];
+            end;
+        end;
+        if (aLine <> 'mia') then begin
+           DEMnames.add(aLine);
+        end
+        else begin
+           {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Test DEM Missing: ' + TestDEMs.Strings[i]); {$EndIf}
+        end;
+     end;
+     DEMFiles.Destroy;
 
-         ComputeDifferenceDistribution(DiffParams[i],'All',0,Ref,Test);
-         ComputeDifferenceDistribution(DiffParams[i],'Forest',10,Ref,Test);
-         {$IfDef DoOnlyThreeLandTypes}
-         {$Else}
-            ComputeDifferenceDistribution(DiffParams[i],'Shrub',20,Ref,Test);
-            ComputeDifferenceDistribution(DiffParams[i],'Grassland',30,Ref,Test);
-            ComputeDifferenceDistribution(DiffParams[i],'Urban',50,Ref,Test);
-            ComputeDifferenceDistribution(DiffParams[i],'Barren',60,Ref,Test);
-         {$EndIf}
+     {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Setup done'); {$EndIf}
+     RefElev := OpenNewDEM(DEMnames[0],false);
+     if ValidDEM(RefElev) then begin
+        {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Ref DEM: ' + DEMglb[RefElev].AreaName); {$EndIf}
+        New(zs);
+        ESA_LC10 := LoadLC10LandCover('',DEMGlb[RefElev].DEMBoundBoxGeo,false);
+
+        RefSlope := 0;
+        RefRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(RefElev,5,RefSlope,false);
+        fName := MDTempDir + 'slope_' + DEMGlb[refElev].AreaName + '.dem';
+        DEMGlb[refSlope].WriteNewFormatDEM(fName);
+        fName := MDTempDir + 'ruff_' + DEMGlb[refElev].AreaName + '.dem';
+        DEMGlb[refRuff].WriteNewFormatDEM(fName);
+
+        for i := 1 to pred(DEMNames.Count) do begin
+           {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Test DEM: ' + DEMnames[i]); {$EndIf}
+           TestElev := OpenNewDEM(DEMnames[i],false);
+           if ValidDEM(TestElev) then begin
+              DoOneTestDEM(RefElev,RefSlope,RefRuff,TestElev,false);
+           end
+           else begin
+
+           end;
+        end;
+
+        Dispose(zs);
+        //fName := NextFileNumber(MDTempDir,'difference_dist_by_landcover_','.dbf');
+        fName := NextFileNumber(DataDir,'difference_dist_by_DEMs_','.dbf');
+        StringList2CSVtoDB(Findings,fName);
+        CloseSingleDEM(RefElev);
+        CloseSingleDEM(RefSlope);
+        CloseSingleDEM(RefRuff);
       end;
-
-      Dispose(zs);
-      fName := NextFileNumber(MDTempDir,'difference_dist_by_landcover_','.dbf');
-      StringList2CSVtoDB(Findings,fName);
+      SetColorForWaiting;
    end {procedure MakeGraphDifferentDistributionsAllLandCover};
 
 
@@ -394,6 +453,9 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
    MDDef.SSIM_hill := true;
    MDDef.SSIM_tpi := true;
    MDDef.SSIM_Openness := false;
+   MDDef.SSIM_PLANC := true;
+   MDDef.SSIM_PROFC := true;
+   MDDef.SSIM_TANGC := true;
 
    MDDef.SSIM_Rotor := false;
    MDDef.SSIM_ConvergeIndex := false;
@@ -401,9 +463,6 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
    MDDef.SSIM_LS := false;
    MDDef.SSIM_Wet := false;
    MDDef.SSIM_HAND := false;
-   MDDef.SSIM_PLANC := false;
-   MDDef.SSIM_PROFC := false;
-   MDDef.SSIM_TANGC := false;
 
    MDDef.DoSSIM := false;
    MDDef.DoFUV := true;
@@ -524,10 +583,10 @@ begin
    {$IfDef RecordDEMIXneo} WriteLineToDebugFile('TNew_area_evals_form.RadioGroup1Click=' + IntToStr(RadioGroup1.ItemIndex) + '  ' + AreaName); {$EndIf}
    if (RadioGroup1.ItemIndex <> 0) then ClearDerivedGrids;
    case RadioGroup1.ItemIndex of
-       0 : CreateDEMIXSlopeRoughnessGrids(AreaName,true,true);
-       1 : CreateDEMIXhillshadeGrids(AreaName,true,true);
-       2 : CreateDEMIXSlopeRoughnessGrids(AreaName,true,true);
-       3 : CreateDEMIXRRIgrids(AreaName,true,true);
+       //0 : CreateDEMIXSlopeRoughnessGrids(AreaName,true,true);
+       1 : CreateDEMIXSlopeRoughnessGrids(AreaName,true,true);
+       2 : CreateDEMIXDerivedGrids('HILL_',AreaName,true,false);
+       3 : CreateDEMIXDerivedGrids('RRI_',AreaName,true,false);
        4 : CreateDEMIXOpennessGrids(AreaName,true,false);
    end;
 end;

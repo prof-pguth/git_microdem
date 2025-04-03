@@ -47,7 +47,7 @@
       //{$Define RecordResample}
       //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
-      {$Define RecordBigMap}
+      //{$Define RecordBigMap}
       //{$Define RecordBigMapFont}
       //{$Define RecordLegend}
       //{$Define RecordVAT}
@@ -58,7 +58,7 @@
       //{$Define RecordPickRoute}
       //{$Define RecordFocalPlanes}
       //{$Define RecordRangeCircle}
-      {$Define RecordMapResize}
+      //{$Define RecordMapResize}
       //{$Define RecordCreateGeomorphMaps}
       //{$Define RecordGeomorphometry}
       //{$Define RecordGeography}
@@ -82,7 +82,7 @@
       //{$Define Slicer}
       //{$Define RecordHeatMap}
       //{$Define RecordDrainageVectors}
-      {$Define RecordSetup}
+      //{$Define RecordSetup}
       //{$Define RecordZoomWindow}
       //{$Define RecordDoubleClick}
       //{$Define RecordLoadClass}
@@ -105,7 +105,7 @@
       //{$Define RecordMessages}
       //{$Define RecordGlobeRotation}
       //{$Define RecordThreadCheckPlane}
-      //{$Define RecordOpenVectorMap}
+      {$Define RecordOpenVectorMap}
       //{$Define RecordPrinter}
       //{$Define RecordKMLexport}
       //{$Define RecordCollarMapMargins}
@@ -118,7 +118,7 @@
       //{$Define RecordSatContrast}
       //{$Define RecordGetFabricAtPoint}
       //{$Define RecordFullGetFabricAtPoint}  //slowdown
-      {$Define RecordFormResize}
+      //{$Define RecordFormResize}
       //{$Define RecordDefineDatum}
       //{$Define RecordUTMZone}
       //{$Define HiresintervisibilityDEM}
@@ -1083,7 +1083,7 @@ type
     CompareDNconversions1: TMenuItem;
     IwashishiandPikeclassification1: TMenuItem;
     GDALtranslatesubset1: TMenuItem;
-    Orfeotoolbox1: TMenuItem;
+    //Orfeotoolbox1: TMenuItem;
     Concatenateimages1: TMenuItem;
     Kmeansclustering1: TMenuItem;
     Segmentation1: TMenuItem;
@@ -1614,8 +1614,6 @@ type
     UpsampleDEMtomatchthisgrid1: TMenuItem;
     N80: TMenuItem;
     N81: TMenuItem;
-    DerivativegridformultipleDEMs1: TMenuItem;
-    Slopes2: TMenuItem;
     Slopewindowusecentralpoint1: TMenuItem;
     N82: TMenuItem;
     Maximumcurvature2: TMenuItem;
@@ -1638,6 +1636,10 @@ type
     Roughnessmapaveragevector1: TMenuItem;
     AdjustedStdDevElevRoughness1: TMenuItem;
     Elevationslopeplots1: TMenuItem;
+    CompareLSQeffectofpointsused1: TMenuItem;
+    CompareLSQeffectpointsusedonslopemap1: TMenuItem;
+    N32: TMenuItem;
+    N84: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2788,7 +2790,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Ressamplefor025to1secDTMs1Click(Sender: TObject);
     procedure UpsampleDEMtomatchthisgrid1Click(Sender: TObject);
     procedure N81Click(Sender: TObject);
-    procedure Slopes2Click(Sender: TObject);
     procedure Slopewindowusecentralpoint1Click(Sender: TObject);
     procedure Maximumcurvature2Click(Sender: TObject);
     procedure Meancurvature1Click(Sender: TObject);
@@ -2809,6 +2810,9 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Roughnessmapaveragevector1Click(Sender: TObject);
     procedure AdjustedStdDevElevRoughness1Click(Sender: TObject);
     procedure Elevationslopeplots1Click(Sender: TObject);
+    procedure CompareLSQeffectofpointsused1Click(Sender: TObject);
+    procedure CompareLSQeffectpointsusedonslopemap1Click(Sender: TObject);
+    procedure N84Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3218,8 +3222,8 @@ var
 
 procedure BroadcastLatLong(Handle : tHandle; Lat,Long : float64);
 procedure ChangeDEMNowDoing(WhatTo : tDEMDoingWhat; WhatNext : tDEMDoingWhat = JustWandering; ThisCapt : shortstring = '');
-function SetUpVectorMap(DrawIt,WorldOutline : boolean; WantProjection : tProjectType = undefinedProj; ProjName : PathStr = '') : integer;
-function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjectType = undefinedProj; ProjName : PathStr = '') : tMapForm;
+function SetUpVectorMap(DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : integer;
+function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : tMapForm;
 
 function MakeRequiredAntennaMap(ProgTitle: shortString; CurDEM : integer;  W_Lat,W_Long : float64; ObserverTotalElevation : float64 = 0; MaxRange : float64 = 75000;
      DrawMap : boolean = true; StartAngle : float64 = 0; EndAngle : float64 = 360) : integer;
@@ -3843,9 +3847,9 @@ begin
          Result.GraphDraw.MaxHorizAxis := 12;
          Result.GraphDraw.MinHorizAxis := 1;
          Result.GraphDraw.VertLabel := 'POTET/Precip (mm)';
-         Result.GraphDraw.LegendList := tStringList.Create;
-         Result.GraphDraw.LegendList.Add('Evapotranspiration');
-         Result.GraphDraw.LegendList.Add('Precipitation');
+         //Result.GraphDraw.LegendList := tStringList.Create;
+         //Result.GraphDraw.LegendList.Add('Evapotranspiration');
+         //Result.GraphDraw.LegendList.Add('Precipitation');
          Result.Caption := 'Water budget: ' + Result.Caption + ' ' + TStr;
          Result.Width := 500;
          Result.Height := 400;
@@ -3989,10 +3993,7 @@ end;
 
 procedure TMapForm.OutlineGridOutlines;
 var
-   DEM,{x,y,xp,yp,n,SymSize,}db : integer;
-   //bb{,bbp} : sfBoundBox;
-   //Sum{,Lat1,Long1} : float64;
-   //z : float32;
+   DEM,db : integer;
    fName : PathStr;
    DEMsWanted : tDEMbooleanArray;
 begin
@@ -5720,72 +5721,13 @@ begin
    CompareContourTorsion(MapDraw.DEMonMap);
 end;
 
+
 procedure TMapForm.CompareDEMheaders1Click(Sender: TObject);
-const
-   NumParams = 21;
-   Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW','PIXEL_IS','H_DATUM',
-         'VERT_DATUM','UTM_ZONE','MIN_Z','MAX_Z',
-        'X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072','GeoTIIF_2048','SPACING_M');
-var
-   i,j,Decs : integer;
-   DEMsWanted : tDEMbooleanArray;
-   Results : tStringList;
-   aLine,TStr : ANSIstring;
-   fName : PathStr;
- begin
-   {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click in'); {$EndIf}
-   GetMultipleDEMsFromList('Grids to drape on ' + DEMGlb[MapDraw.DEMonMap].AreaName  + '(max ' + IntToStr(pred(MaxClouds)) + ')',DEMsWanted);
-   Results := tStringList.Create;
-   aLine := 'PARAMETER';
-   for i := 1 to MaxDEMDataSets do begin
-      if DEMsWanted[i] and ValidDEM(i) then begin
-         aLine := aLine + ',' + 'DEM_' + IntToStr(i);
-      end;
-   end;
-   Results.Add(aLine);
-   for j := 0 to NumParams do begin
-      aline := Params[j];
-      for i := 1 to MaxDEMDataSets do begin
-         if DEMsWanted[i] and ValidDEM(i) then begin
-            if (DEMGlb[i].DEMHeader.DEMUsed = UTMbasedDEM) then Decs := -2 else Decs := -6;
-            TStr := '';
-            case j of
-               0 : TStr := DEMGlb[i].AreaName;
-               1 : TStr := DEMGlb[i].DEMmodel;
-               2 : TStr := DEMGlb[i].GridPrecisionString;
-               3 : TStr := SpacingUnits[DEMGlb[i].DEMHeader.DataSpacing];
-               4 : TStr := ElevUnitsAre(DEMGlb[i].DEMHeader.ElevUnits);
-               5 : TStr := DEMGlb[i].DEMHeader.LatHemi;
-               6 : TStr := IntToStr(DEMGlb[i].DEMHeader.NumCol);
-               7 : TStr := IntToStr(DEMGlb[i].DEMHeader.NumRow);
-               8 : TStr := RasterPixelIsString(DEMGlb[i].DEMHeader.RasterPixelIsGeoKey1025);
-               9 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
-               10 : TStr := VertDatumName(DEMGlb[i].DEMHeader.VerticalCSTypeGeoKey);
-               11 : TStr := IntToStr(DEMGlb[i].DEMHeader.UTMZone);
-               //12 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMinElev,-12,-4);
-               //13 : TStr := RealToString(DEMGlb[i].DEMHeader.StoredMaxElev,-12,-4);
-               12 : TStr := RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-4);
-               13 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
-               14 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
-               15 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
-               16 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
-               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
-               18 : begin
-                        TStr := DEMGlb[i].DEMHeader.WKTString;
-                        if (length(TStr) > 0) then TStr := IntToStr(length(TStr)) + ' chars'
-                    end;
-               19 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
-               20 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
-               21 : TStr := DEMGlb[i].HorizontalDEMSpacing(true);
-            end;
-            aLine := aline + ',' + tStr;
-         end;
-      end {for i};
-      Results.Add(aLine);
-   end {for j};
-   fName := Petmar.NextFileNumber(MDTempDir, 'Compare_grid_headers_', DefaultDBExt);
-   StringListToLoadedDatabase(Results,fName);
+begin
+   DEMHeaderTable;
 end;
+
+
 
 
 procedure TMapForm.CompareDNconversions1Click(Sender: TObject);
@@ -5878,7 +5820,21 @@ end;
 
 procedure TMapForm.CompareLSQedgeeffects1Click(Sender: TObject);
 begin
-   CompareLSQEdgeEffects(MapDraw.DEMonMap);
+   {$IfDef SlopeWindowEdgeEffect}
+      CompareLSQEdgeEffects(MapDraw.DEMonMap);
+   {$Else}
+      MessageToContinue('Recompile to enable this option');
+   {$EndIf}
+end;
+
+procedure TMapForm.CompareLSQeffectofpointsused1Click(Sender: TObject);
+begin
+   CompareLSQSlopePointSelection(MapDraw.DEMonMap);
+end;
+
+procedure TMapForm.CompareLSQeffectpointsusedonslopemap1Click(Sender: TObject);
+begin
+   CompareLSQPointsUsedEffects(MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.CompareLSQslopewindowsize1Click(Sender: TObject);
@@ -6548,17 +6504,6 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.Slopes2Click(Sender: TObject);
-var
-   WhichDEMs : tDEMBooleanArray;
-   Which : integer;
-begin
-   WhichDEMs := GetMultipleDEMsFromList('DEMs for slope maps');
-   for Which := 1 to MaxDEMDataSets do if WhichDEMs[Which] and ValidDEM(Which) then begin
-       CreateSlopeMapPercent(true,Which);
-   end;
-end;
-
 procedure TMapForm.SlopeSin1Click(Sender: TObject);
 begin
    {$IfDef ExGeoStats}
@@ -7219,8 +7164,12 @@ procedure TMapForm.Slopemissingedgeeffectmissingdata1Click(Sender: TObject);
 var
    xDEMg1,yDEMg1,xSATg1,ySATg1 : float64;
 begin
-   CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
-   LocalTrendSurfaceEdgeEffects(MapDraw.DEMonMap,round(xDEMg1),round(yDEMg1));
+   {$IfDef SlopeWindowEdgeEffect}
+      CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
+      LocalTrendSurfaceEdgeEffects(MapDraw.DEMonMap,round(xDEMg1),round(yDEMg1));
+   {$Else}
+      MessageToContinue('Recompile to enable this option');
+   {$EndIf}
 end;
 
 procedure TMapForm.Slopemm1Click(Sender: TObject);
@@ -7277,7 +7226,7 @@ begin
    end;
    Fname := Petmar.NextFileNumber(MDTempDir,DEMGlb[MapDraw.DEMonMap].AreaName + '_percentiles_',DefaultDBExt);
    db := StringListToLoadedDatabase(Results,fName);
-   Graph := GISdb[db].CreateScatterGram('PERCENTILE','VALUE',clRed,true);
+   Graph := GISdb[db].CreateScatterGram('test','PERCENTILE','VALUE',clRed,true);
    Graph.GraphDraw.LLcornerText := DEMGlb[MapDraw.DEMonMap].AreaName;
    Graph.RedrawDiagram11Click(Nil);
 end;
@@ -7620,12 +7569,9 @@ begin
 end;
 
 procedure TMapForm.Gridcorrelations1Click(Sender: TObject);
-//var
-   //DEMsWanted : tDEMBooleanArray;
 begin
    {$IfDef ExGeostats}
    {$Else}
-      //GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
       GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Grid correlations'),'Grid correlation matrix');
    {$EndIf}
 end;
@@ -8458,6 +8404,128 @@ begin
       SunAtLocalNoon(Self,RightClickLat,RightClickLong);
    {$EndIf}
 end;
+
+procedure TMapForm.GDALslopemap1Click(Sender: TObject);
+var
+   NewGrid : integer;
+begin
+   NewGrid := GDAL_SlopeMap_ZT(true,MapDraw.DEMonMap);
+   MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
+end;
+
+
+procedure TMapForm.GDALslopemapHorn1Click(Sender: TObject);
+var
+   NewGrid : integer;
+begin
+   NewGrid := GDAL_SlopeMap_Horn(true,MapDraw.DEMonMap);
+   MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
+end;
+
+
+procedure TMapForm.GDALinfo1Click(Sender: TObject);
+{$IfDef ExGDAL}
+begin
+{$Else}
+var
+   GDALinfo : tGDALinfo;
+   fName    : PathStr;
+begin
+     if MapDraw.DEMMap then fName := DEMGlb[Mapdraw.DEMonMap].DEMFileName
+     else if ValidSatImage(MapDraw.SatOnMap) then fName := SatImage[MapDraw.SATonMap].IndexFileName
+     else exit;
+     GetGDALinfo(fName, GDALinfo);
+     ShowInNotepadPlusPlus(GDALinfoOutputFName(fname),'GDALinfo results ' + ExtractFileName(fName));
+{$EndIf}
+end;
+
+procedure TMapForm.GDALtranslatesubset1Click(Sender: TObject);
+begin
+   {$IfDef ExGDAL}
+   {$Else}
+      GDALSubsetSatImageToMatchMap(Self,GDAL_Translate_Name);
+   {$EndIf}
+end;
+
+procedure TMapForm.ContoursShapefile1Click(Sender: TObject);
+{$IfDef ExGDAL}
+begin
+{$Else}
+var
+   OutName,InName : PathStr;
+   ContInt : float64;
+begin
+   {$IfDef RecordSave} WriteLineToDebugFile('TMapForm.Contoursshapefile1Click'); {$EndIf}
+   if IsGDALFilePresent(GDAL_contour_name) then begin
+      ContInt := 10;
+      ReadDefault('contour interval (m)',ContInt);
+      InName := DEMGlb[MapDraw.DEMonMap].DEMFileName;
+      OutName := Petmar.NextFileNumber(MDtempdir,DEMGlb[MapDraw.DEMonMap].AreaName + '_' + RealToString(ContInt,-8,-2) + '_contours_','.shp');
+      GDALcommand(MDTempDir + 'contour.bat', GDAL_contour_name + ' -a elev ' + GeotiffDEMNameOfMap + ' ' + OutName + ' -i ' + RealToString(ContInt,-12,-2));
+      LoadDataBaseFile(OutName);
+   end;
+{$EndIf}
+end;
+
+procedure TMapForm.GDALbilinearbicubictoUTM1Click(Sender: TObject);
+begin
+   {$IfDef NoExternalPrograms}
+   {$Else}
+      GDAL_dual_UTM(MapDraw.DEMonMap);
+   {$EndIf}
+end;
+
+procedure TMapForm.GDALfillholes1Click(Sender: TObject);
+begin
+   {$IfDef NoExternalPrograms}
+   {$Else}
+      GDAL_Fill_Holes(GeotiffDEMNameOfMap);
+   {$EndIf}
+end;
+
+procedure TMapForm.GDALhillshadeHorn1Click(Sender: TObject);
+begin
+   GDAL_HillshadeMap_Horn(true,MapDraw.DEMonMap);
+end;
+
+
+procedure TMapForm.GDALroughness1Click(Sender: TObject);
+begin
+   GDAL_Roughness(true,MapDraw.DEMonMap);
+end;
+
+
+procedure TMapForm.GDALTPI1Click(Sender: TObject);
+begin
+   GDAL_TPI(true,MapDraw.DEMonMap);
+end;
+
+
+procedure TMapForm.GDALTRIRileyterrestrial1Click(Sender: TObject);
+begin
+   GDAL_TRI_Riley(true,MapDraw.DEMonMap);
+end;
+
+procedure TMapForm.GDALTRIWilsonbathymetric1Click(Sender: TObject);
+begin
+   GDAL_TRI_Wilson(true,MapDraw.DEMonMap);
+end;
+
+procedure TMapForm.GDALupsample1Click(Sender: TObject);
+begin
+   GDAL_upsample_DEM(True,MapDraw.DEMonMap,true);
+end;
+
+procedure TMapForm.GDALwarpsubset1Click(Sender: TObject);
+begin
+   {$IfDef ExGDAL}
+   {$Else}
+      GDALSubsetSatImageToMatchMap(Self,GDAL_warp_Name);
+   {$EndIf}
+end;
+
+
+
 
 procedure TMapForm.Annualsolarillumination1Click(Sender: TObject);
 begin
@@ -9549,9 +9617,6 @@ begin
       {$IfDef ExPLSS}
          MDDef.ShowPLSS := false;
       {$EndIf}
-
-
-
 end;
 
 procedure TMapForm.Vegetationdensitymovie1Click(Sender: TObject);
@@ -9669,7 +9734,6 @@ begin
      end;
    {$IfDef GPSBroadcast} WriteLineToDebugFile('BroadcastLatLong out');{$EndIf}
 end;
-
 
 
 procedure TMapForm.LoadSecondGrid(which : tSecondGrid);
@@ -10492,7 +10556,7 @@ end;
                    aLeft := theGraph.Left;
                    theGraph.Destroy;
                 end;
-                theGraph := GISdb[GISNum].CreateScatterGram(f1,f2);
+                theGraph := GISdb[GISNum].CreateScatterGram('test',f1,f2);
                 theGraph.Top := aTop;
                 theGraph.Left := aLeft;
                 theGraph.CanCloseGraph := false;
@@ -11102,7 +11166,7 @@ end;
 
 procedure TMapForm.Curvature3Click(Sender: TObject);
 begin
-   CreateSecondOrderPartialDerivatives(true,MapDraw.DEMonMap);
+   CreateFirstSecondThirdOrderPartialDerivatives(MDDef.CurveCompute,true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.Curvaturecategories1Click(Sender: TObject);
@@ -11144,7 +11208,7 @@ var
                x : integer;
             begin
               with SatImage[MapDraw.SATonMap] do begin
-                  PointSatReflectanceGraph.OpenDataFile(rfile,Color);
+                  PointSatReflectanceGraph.OpenDataFile(rfile,'',Color);
                   TiffImage[1].GetPointReflectances(Col,Row,Refs);
                   for x := 1 to NumBands do begin
                      PointSatReflectanceGraph.AddPointToDataBuffer(rfile,BandAxisValue(x),Refs[x]);
@@ -14485,7 +14549,7 @@ begin
       StreamGraph.BaseCaption := 'Stream Profile';
       StreamGraph.VertCompare := 0.001;
       StreamGraph.GraphDraw.TopMargin := 150;
-      StreamGraph.OpenDataFile(rfile);
+      StreamGraph.OpenDataFile(rfile,'');
       i := 0;
       FirstPoint := i;
       v[1] := 0;
@@ -22666,6 +22730,18 @@ begin
 end;
 
 
+procedure TMapForm.N84Click(Sender: TObject);
+var
+   WhichDEMs : tDEMBooleanArray;
+   Which : integer;
+begin
+   WhichDEMs := GetMultipleDEMsFromList('DEMs for slope maps');
+   for Which := 1 to MaxDEMDataSets do if WhichDEMs[Which] and ValidDEM(Which) then begin
+       CreateSlopeMapPercent(true,Which);
+   end;
+end;
+
+
 procedure TMapForm.NAN1Click(Sender: TObject);
 begin
    Markasmissing1Click(Sender);
@@ -23611,7 +23687,7 @@ begin
    EndProgress;
    fName := Petmar.NextFileNumber(MDTempDir,'param_by_lat_','.csv');
    db := StringListToLoadedDatabase(Findings, fName);
-   sg := GISdb[db].CreateScatterGram('PARAMETER','LAT',clRed,true);
+   sg := GISdb[db].CreateScatterGram('test','PARAMETER','LAT',clRed,true);
    sg.Caption := DEMGlb[MapDraw.DEMonMap].AreaName;
 {$EndIf}
 end;
@@ -25034,10 +25110,7 @@ end;
 
 
 procedure TMapForm.SelectmultipleDEMsgrids1Click(Sender: TObject);
-//var
-   //DEMsWanted : tDEMbooleanArray;
 begin
-   //GetMultipleDEMsFromList('Grids for histograms',DEMsWanted);
    CreateGridHistograms(GetMultipleDEMsFromList('Grids for histograms'));
 end;
 

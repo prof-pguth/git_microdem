@@ -214,7 +214,7 @@ var
    LastVectorMap : integer;
 
 
-       procedure NewMap(Proj : tProjectType; fName : PathStr = '');
+       procedure NewMap(Proj : tProjType; fName : PathStr = '');
        var
           TStr : string;
        begin

@@ -173,7 +173,7 @@ begin
          Edit16.Text := RealToString(OwningGraph.HistogramBinSize,-12,-3);
          Edit17.Text := RealToString(OwningGraph.HistogramNumBins,-12,-3);
 
-         if (DBFLineFilesPlotted.Count > 0) then begin
+         if (DBFLineFilesPlotted <> Nil) and (DBFLineFilesPlotted.Count > 0) then begin
             ComboBox3.Visible := true;
             fName := DBFLineFilesPlotted.Strings[0];
             MyTable := tMyData.Create(fName);
@@ -182,7 +182,7 @@ begin
             ComboBox3.Text := '';
             MyTable.Destroy;
          end;
-         if (XYZFilesPlotted.Count > 0) then begin
+         if (XYZFilesPlotted <> Nil) and (XYZFilesPlotted.Count > 0) then begin
             Label1.Visible := true;
             Label4.Visible := true;
             Edit5.Visible := true;

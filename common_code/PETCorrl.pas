@@ -330,7 +330,7 @@ begin
       MinHorizAxis := MinVal[VarWant];
       MaxHorizAxis := MaxVal[VarWant];
       HorizLabel := VarNames[pred(VarWant)];
-      OpenDataFile(rfile);
+      OpenDataFile(rfile,'');
       VertLabel := 'Percentage of Data';
       MaxVertAxis := 0;
       for i := 0 to 100 do begin
@@ -356,7 +356,7 @@ begin
       VertAxisFunctionType := CumulativeNormalAxis;
       VertLabel := 'Cumulative Percentage of Data';
       SetUpGraphForm;
-      OpenDataFile(rfile);
+      OpenDataFile(rfile,'');
       for i := 1 to 100 do OutData[i,2] := OutData[i,2] + OutData[pred(i),2];
       BlockWrite(rfile,OutData,101);
       CloseFile(Rfile);

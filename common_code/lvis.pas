@@ -320,7 +320,7 @@ begin
       Graph.RedrawDiagram11Click(Nil);
    end
    else Graph.ClearDataOnGraph;
-   Graph.OpenDataFile(rfile);
+   Graph.OpenDataFile(rfile,'');
 
    OpenLGWfile;
 

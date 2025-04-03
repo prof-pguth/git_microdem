@@ -222,10 +222,10 @@ begin
        StringToByteArray(HeaderString,HeaderBytes);
        BlockWrite(fFile,HeaderBytes[1],2048);
 
-       if ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then StartProgress('Write ' + ExtractFileName(FileName));
+       //if ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then StartProgress('Write ' + ExtractFileName(FileName));
        ShowHourglassCursor;
        for x := Limits.XGridLow to Limits.XGridHigh do begin
-          if (x mod 50 = 0) and ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then UpDateProgressBar(x/pred(NewHeadRecs.NumCol));
+          //if (x mod 50 = 0) and ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then UpDateProgressBar(x/pred(NewHeadRecs.NumCol));
           if (NewHeadRecs.DEMPrecision = FloatingPointDEM) then begin
              BlockWrite(Ffile,ShortFloatElevations^[x]^[Limits.YGridLow],4*NewHeadRecs.NumRow);
           end
@@ -248,7 +248,7 @@ begin
        CheckVAT;
     finally
        //HeavyDutyProcessing := false;
-       EndProgress;
+       //EndProgress;
        DEMstatus := dsSaved;
        if SelectionMap <> Nil then SelectionMap.ClosingMapNotAllowed := false;
     end;

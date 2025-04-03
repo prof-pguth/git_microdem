@@ -47,7 +47,7 @@ type
     ClipboardSpeedButton: TSpeedButton;
     BitBtn2: TBitBtn;
     CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
+    RadioGroup5: TRadioGroup;
     procedure HelpBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -62,7 +62,7 @@ type
     procedure RadioGroup4Click(Sender: TObject);
     procedure ClipboardSpeedButtonClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
-    procedure CheckBox2Click(Sender: TObject);
+    procedure RadioGroup5Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -110,8 +110,9 @@ end;
 
 procedure TSlopeOptForm.SetUpForm;
 begin
-   if MapOwner.MapDraw.MapType = mtDEMaspect then PageControl1.ActivePage := TabSheet2
-   else PageControl1.ActivePage := TabSheet2;
+   if (MapOwner.MapDraw.MapType = mtDEMaspect) then PageControl1.ActivePage := TabSheet2
+   else PageControl1.ActivePage := TabSheet1;
+
    case MDDef.DefSlopeMap of
       mtSlopeStandardCats : RadioGroup1.ItemIndex := 0;
       mtSlopeTrafficCats  : RadioGroup1.ItemIndex := 1;
@@ -122,22 +123,31 @@ begin
       mtSlopeGoNoGo       : RadioGroup1.ItemIndex := 6;
    end;
    Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
-   //Edit1.Text := IntToStr(MDdef.SlopeCompute.WindowRadius);
    Edit2.Text := IntToStr(MDdef.MaxSlopeOnMaps);
    Button11.Enabled := (MDDef.ProgramOption = ExpertProgram) or MDDef.ShowGeomorphometry;
-   //Edit1.Enabled := Button11.Enabled;
    CheckBox1.Checked := MDDef.QuickMapRedraw;
-   CheckBox1.Checked := MDDef.NeedFullSlopeWindows;
+   //CheckBox2.Checked := MDDef.NeedFullSlopeWindows;
    RadioGroup2.ItemIndex := pred(MDDef.SlopeCompute.LSQorder);
    RadioGroup3.ItemIndex := pred(MDDef.SlopeCompute.WindowRadius);
+   RadioGroup5.ItemIndex := pred(MDDef.SlopeCompute.UsePoints);
    if (MapOwner = nil) then begin
       CheckBox1.Visible := false;
       BitBtn1.Visible := false;
+   end
+   else begin
+      if not DEMglb[MapOwner.MapDraw.DEMonMap].ElevationDEM then begin
+         RadioGroup2.Enabled := false;
+         RadioGroup3.Enabled := false;
+         RadioGroup5.Enabled := false;
+         BitBtn2.Enabled := false;
+         CheckBox2.Enabled := false;
+         Button11.Enabled := false;
+         Label6.Enabled := false;
+      end;
    end;
    DrawPreview;
    SetUpdone := true;
 end;
-
 
 
 procedure TSlopeOptForm.BitBtn2Click(Sender: TObject);
@@ -163,15 +173,11 @@ begin
     MDdef.QuickMapRedraw := CheckBox1.Checked;
 end;
 
-procedure TSlopeOptForm.CheckBox2Click(Sender: TObject);
-begin
-   MDDef.NeedFullSlopeWindows := CheckBox2.Checked;
-end;
-
 procedure TSlopeOptForm.ClipboardSpeedButtonClick(Sender: TObject);
 begin
    MapOwner.Quickmap1Click(Sender);
 end;
+
 
 procedure TSlopeOptForm.DrawPreview;
 var
@@ -206,8 +212,6 @@ begin
        NeedRedraw := false;
    end;
 end;
-
-
 
 
 procedure TSlopeOptForm.Edit2Change(Sender: TObject);
@@ -275,6 +279,12 @@ begin
    MapOwner.MapDraw.MapType := mtDEMAspect;
    DrawPreview;
 end;
+
+procedure TSlopeOptForm.RadioGroup5Click(Sender: TObject);
+begin
+   MDDef.SlopeCompute.UsePoints := succ(RadioGroup5.ItemIndex);
+end;
+
 
 procedure TSlopeOptForm.RedrawSpeedButton12Click(Sender: TObject);
 begin

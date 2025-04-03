@@ -107,8 +107,8 @@ begin
       MaxVertAxis := zMax;
       HorizLabel := 'Time sequence';
       PadAxis(MinVertAxis,MaxVertAxis);
-      OpenDataFile(Rfile);
-      if FitTotal then OpenDataFile(RFile2);
+      OpenDataFile(Rfile,'');
+      if FitTotal then OpenDataFile(RFile2,'');
       for I := 1 to NumSamples do begin
          v[1] := i;
          v[2] := z^[i];

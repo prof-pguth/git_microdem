@@ -62,40 +62,109 @@ begin
 end;
 
 
-procedure CompareLSQEdgeEffects(DEM : integer);
+{$IfDef SlopeWindowEdgeEffect}
+  procedure CompareLSQEdgeEffects(DEM : integer);
 
-    procedure CompareOneOrder(Order,Window : integer);
-    const
-       OpenMap = false;
-    var
-      Grid1,Grid2,Diff : integer;
-    begin
-       MDDef.SlopeCompute.LSQorder := Order;
-       MDDef.SlopeCompute.WindowRadius := Window;
-       TestEdgeEffect := true;
-       Grid2 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-       TestEdgeEffect := false;
-       Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-       Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,true,SlopeMethodName(MDDef.SlopeCompute));
-       DEMGlb[Diff].SelectionMap.MapDraw.MapType := mtElevSpectrum;
-       DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
-       CloseSingleDEM(Grid1);
-       CloseSingleDEM(Grid2);
-    end;
+      procedure CompareOneOrder(Order,Window : integer);
+      const
+         OpenMap = false;
+      var
+        Grid1,Grid2,Diff : integer;
+        Graph : tThisBaseGraph;
+      begin
+         MDDef.SlopeCompute.LSQorder := Order;
+         MDDef.SlopeCompute.WindowRadius := Window;
+         TestEdgeEffect := true;
+         Grid2 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
+         TestEdgeEffect := false;
+         Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
+         Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,false,SlopeMethodName(MDDef.SlopeCompute,true));
+         DEMGlb[Diff].SelectionMap.MapDraw.MapType := mtElevSpectrum;
+         DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
 
-begin
-   SetColorForProcessing;
-   NakedMapOptions;
-   //SaveBackupDefaults;
-   MDDef.EvansApproximationAllowed := false;
-   MDDef.SlopeCompute.AlgorithmName := smLSQ;
-   CompareOneOrder(2,1);
-   CompareOneOrder(3,2);
-   CompareOneOrder(4,2);
+         MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-75;
+         MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-75;
 
-   RestoreBackupDefaults;
-   SetColorForWaiting;
-end;
+         Graph := GridScatterGram(DEMglb[Grid1].FullDEMGridLimits,Grid1,Grid2);
+         Graph.GraphDraw.MaxHorizAxis := 150;
+         Graph.GraphDraw.MaxVertAxis := 150;
+         Graph.GraphDraw.MinHorizAxis := 0;
+         Graph.GraphDraw.MinVertAxis := 0;
+         Graph.GraphDraw.HorizLabel := 'Slope (%)--Full Window';
+         Graph.GraphDraw.VertLabel := 'Slope (%)--Edge Window';
+
+         Graph.RedrawDiagram11Click(Nil);
+
+         CloseSingleDEM(Grid1);
+         CloseSingleDEM(Grid2);
+      end;
+
+  begin
+     SetColorForProcessing;
+     //NakedMapOptions;
+     SaveBackupDefaults;
+     MDDef.EvansApproximationAllowed := false;
+     MDDef.SlopeCompute.AlgorithmName := smLSQ;
+     CompareOneOrder(2,1);
+     CompareOneOrder(3,2);
+     CompareOneOrder(4,2);
+
+     RestoreBackupDefaults;
+     SetColorForWaiting;
+  end;
+{$EndIf}
+
+
+  procedure CompareLSQPointsUsedEffects(DEM : integer);
+
+      procedure CompareOneOrder(Order,Window,Use : integer; title : shortstring);
+      const
+         OpenMap = false;
+      var
+        Grid1,Grid2,Diff : integer;
+        Graph : tThisBaseGraph;
+      begin
+         MDDef.SlopeCompute.LSQorder := Order;
+         MDDef.SlopeCompute.WindowRadius := Window;
+         MDDef.SlopeCompute.UsePoints := useAll;
+         Grid2 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
+
+         MDDef.SlopeCompute.UsePoints := Use;
+
+         Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
+         Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,false,SlopeMethodName(MDDef.SlopeCompute,true) + '_' + Title);
+         DEMGlb[Diff].SelectionMap.MapDraw.MapType := mtElevSpectrum;
+         DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
+
+         MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-65;
+         MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-65;
+         Graph := GridScatterGram(DEMglb[Grid1].FullDEMGridLimits,Grid1,Grid2);
+         Graph.GraphDraw.MaxHorizAxis := 150;
+         Graph.GraphDraw.MaxVertAxis := 150;
+         Graph.GraphDraw.MinHorizAxis := 0;
+         Graph.GraphDraw.MinVertAxis := 0;
+         Graph.GraphDraw.HorizLabel := 'Slope (%)--' + Title + ' Points';
+         Graph.GraphDraw.VertLabel := 'Slope (%)--All Points';
+         Graph.Caption := 'Scattergram_' + SlopeMethodName(MDDef.SlopeCompute);
+         Graph.RedrawDiagram11Click(Nil);
+
+         CloseSingleDEM(Grid1);
+         CloseSingleDEM(Grid2);
+      end;
+
+  begin
+     SetColorForProcessing;
+     SaveBackupDefaults;
+     MDDef.EvansApproximationAllowed := false;
+     MDDef.SlopeCompute.AlgorithmName := smLSQ;
+     CompareOneOrder(2,2,useEdge,'Edge');
+     CompareOneOrder(2,2,useQueens,'Queen');
+     CompareOneOrder(3,2,useEdge,'Edge');
+     CompareOneOrder(4,2,useEdge,'Edge');
+
+     RestoreBackupDefaults;
+     SetColorForWaiting;
+  end;
 
 
 procedure CompareThreeLSQ(DEM : integer);
@@ -104,22 +173,39 @@ const
 var
    Evans : integer;
 
-    procedure CleanupMap(Map : integer);
-    begin
-       DEMGlb[Map].SelectionMap.MapDraw.MapType := mtElevSpectrum;
-       DEMGlb[Map].SelectionMap.N11view1Click(Nil);
-    end;
+
+        procedure CleanupMap(Map : integer);
+        begin
+           DEMGlb[Map].SelectionMap.MapDraw.MapType := mtElevSpectrum;
+           DEMGlb[Map].SelectionMap.N11view1Click(Nil);
+        end;
+
+
 
     procedure CompareOneOrder(Order,Window : integer);
     var
-      Grid1,Grid2,Diff : integer;
+      Grid1,Diff : integer;
+      Graph : tThisBaseGraph;
     begin
        MDDef.SlopeCompute.LSQorder := Order;
        MDDef.SlopeCompute.WindowRadius := Window;
        Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-       Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,true,'Evans compared to ' + SlopeMethodName(MDDef.SlopeCompute));
+       Diff := MakeDifferenceMap(Grid1,Evans,Grid1,0,true,false,true,'Evans compared to ' + SlopeMethodName(MDDef.SlopeCompute));
        CleanUpMap(Grid1);
        CleanUpMap(Diff);
+
+         MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-65;
+         MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-65;
+         Graph := GridScatterGram(DEMglb[Evans].FullDEMGridLimits,Grid1,Evans);
+         Graph.GraphDraw.MaxHorizAxis := 150;
+         Graph.GraphDraw.MaxVertAxis := 150;
+         Graph.GraphDraw.MinHorizAxis := 0;
+         Graph.GraphDraw.MinVertAxis := 0;
+         Graph.GraphDraw.HorizLabel := 'Slope (%)--' + SlopeMethodName(MDDef.SlopeCompute);
+         Graph.GraphDraw.VertLabel := 'Slope (%)--Evans';
+         Graph.Caption := 'Scattergram_' + SlopeMethodName(MDDef.SlopeCompute);
+         Graph.RedrawDiagram11Click(Nil);
+
        //CloseSingleDEM(Grid1);
        //CloseSingleDEM(Grid2);
     end;
@@ -127,6 +213,7 @@ var
 begin
    SetColorForProcessing;
    SaveBackupDefaults;
+   DEMGlb[DEM].SelectionMap.N11view1Click(Nil);
    MDDef.EvansApproximationAllowed := false;
    MDDef.SlopeCompute.AlgorithmName := smLSQ;
    MDDef.SlopeCompute.LSQorder := 2;
@@ -134,12 +221,35 @@ begin
    Evans := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
    CleanUpMap(Evans);
    CompareOneOrder(3,2);
-   CompareOneOrder(4,3);
-
+   CompareOneOrder(3,3);
    RestoreBackupDefaults;
    SetColorForWaiting;
 end;
 
+
+procedure CompareLSQSlopePointSelection(DEM : integer);
+const
+   OpenMap = true;
+var
+   i,j : integer;
+begin
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   MDDef.EvansApproximationAllowed := false;
+   MDDef.SlopeCompute.AlgorithmName := smLSQ;
+   MDDef.SlopeCompute.WindowRadius := 2;
+   for j := 2 to 3 do begin
+     MDDef.SlopeCompute.LSQorder := j;
+     for i := 1 to 3 do begin
+        MDDef.SlopeCompute.UsePoints := i;
+        if IsLSQslopeMethodAllowed(MDDef.SlopeCompute) then begin
+           CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+        end;
+     end;
+   end;
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+end;
 
 
 procedure CompareWindowSizesForSlopeMap(DEM : integer);

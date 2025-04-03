@@ -420,6 +420,10 @@ type
     CheckBox161: TCheckBox;
     BitBtn20: TBitBtn;
     CheckBox167: TCheckBox;
+    BitBtn39: TBitBtn;
+    BitBtn43: TBitBtn;
+    Label47: TLabel;
+    Label49: TLabel;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -485,6 +489,8 @@ type
     procedure BitBtn40Click(Sender: TObject);
     procedure BitBtn41Click(Sender: TObject);
     procedure BitBtn42Click(Sender: TObject);
+    procedure BitBtn43Click(Sender: TObject);
+    procedure BitBtn39Click(Sender: TObject);
     //procedure CheckBox106Click(Sender: TObject);
   private
     { Private declarations }
@@ -533,6 +539,7 @@ uses
       Pit_and_Spire,
       DEMCurvature,
       demslopeopts,
+      get_slope_algorithm,
    {$EndIf}
 
 {$IfDef ExSat}
@@ -1036,6 +1043,9 @@ begin
    Edit3.Text := RealToString(MDdef.DEMIXSimpleTolerance,-12,-2);
    Edit16.Text := RealToString(MDdef.DEMIXSlopeTolerance,-12,-2);
    Edit30.Text := RealToString(MDdef.DEMIXRuffTolerance,-12,-2);
+
+   Label47.Caption := SlopeMethodName(MDDef.CurveCompute);
+   Label49.Caption := SlopeMethodName(MDDef.SlopeCompute);
 
    CheckBox6.Checked := MDDef.RoamAllZ;
    Label36.Caption := IntToStr(MDDef.DefaultGraphXSize) + 'x' + IntToStr(MDDef.DefaultGraphYSize);
@@ -2101,6 +2111,12 @@ begin
    {$EndIf}
 end;
 
+procedure TOptionsForm.BitBtn39Click(Sender: TObject);
+begin
+   Get_Users_Slope_Algorithm(MDDef.CurveCompute);
+   Label47.Caption := SlopeMethodName(MDDef.CurveCompute);
+end;
+
 procedure TOptionsForm.BitBtn40Click(Sender: TObject);
 begin
    PickMapIndexLocation;
@@ -2117,6 +2133,12 @@ begin
    {$IfDef AllowUSNAdataDownloads}
        GetNaturalEarthData(True);
    {$EndIf}
+end;
+
+procedure TOptionsForm.BitBtn43Click(Sender: TObject);
+begin
+   Get_Users_Slope_Algorithm(MDDef.SlopeCompute);
+   Label49.Caption := SlopeMethodName(MDDef.SlopeCompute);
 end;
 
 procedure TOptionsForm.BitBtn4Click(Sender: TObject);

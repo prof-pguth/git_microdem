@@ -212,7 +212,7 @@ var
    SlopeAspectRec : tSlopeAspectRec;
    SlopeRange,z : float32;
    Color : tColor;
-   NeedAspect : boolean;
+   NeedAspect,GoodPt : boolean;
 begin
    GrayRange := MDDef.SlopeMaxGray - MDDef.SlopeMinGray;
    SlopeRange := MDDef.MaxSlopeForGray-MDDef.MinSlopeForGray;
@@ -225,34 +225,40 @@ begin
             if (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) or (MapType = mtFlowDir360)  then begin
                if DEMGlb[DEMonMap].GetElevMeters(xg,yg,z) then BMPMemory.SetPixelColor(i,j,AspColor[round(z)]);
             end
-            else if DEMGlb[DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAspectRec,NeedAspect,false) then begin
-               if (MapType in [mtDEMaspectSlope]) then begin
-                  Color := Rgb(161,161,161);
-                  if (SlopeAspectRec.SlopePercent > 5) then begin
-                     if (SlopeAspectRec.SlopePercent < 20) then SlopeBin := 1
-                     else if SlopeAspectRec.SlopePercent < 40 then SlopeBin := 2
-                     else SlopeBin := 3;
-                     AspectBin := succ(ord(SlopeAspectRec.Dir));
-                     if AspectBin in [1..8] then Color := SlopeAspectColor[SlopeBin,AspectBin];
-                  end;
-                  BMPMemory.SetPixelColor(i,j,ConvertTColorToPlatformColor(Color));
+            else begin
+               if (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euPercentSlope])  then begin
+                  GoodPt := DEMGlb[DEMonMap].GetElevMeters(xg,yg,SlopeAspectRec.SlopePercent);
                end
-               else if isSlopeMap(MapType) or (MapMerge = mmSlope) then begin
-                  if (MapType = mtSlopeGrayScaleReversed) then begin
-                     ValueInRange(SlopeAspectRec.SlopePercent,MDDef.MinSlopeForGray,MDDef.MaxSlopeForGray);
-                     SlopeVal := ValidByteRange254(MDDef.SlopeMaxGray - round(GrayRange * (SlopeAspectRec.SlopePercent-MDDef.MinSlopeForGray) / SlopeRange));
-                     BMPMemory.SetPixelColor(i,j,GrayRGBtrip(SlopeVal));
-                  end
-                  else begin
-                     if MapType in [mtSlopeStandardCats,mtSlopeTrafficCats,mtSlopeGoNoGo] then SlopeVal := round(SlopeAspectRec.SlopePercent)
-                     else SlopeVal := round(SlopeAspectRec.SlopePercent / MDDef.MaxSlopeOnMaps * 254);
-                     BMPMemory.SetPixelColor(i,j,SlopeColorChoices[ValidByteRange254(SlopeVal)]);
-                  end;
-               end
-               else if (MapType = mtDEMaspect) or (MapMerge = mmAspect) then begin
-                  if (SlopeAspectRec.AspectDirTrue < pred(MaxSmallInt)) then begin
-                     BMPMemory.SetPixelColor(i,j,AspColor[round(SlopeAspectRec.AspectDirTrue)]);
-                  end;
+               else GoodPt := DEMGlb[DEMonMap].GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAspectRec,NeedAspect,false);
+               if GoodPt then begin
+                   if (MapType in [mtDEMaspectSlope]) then begin
+                      Color := Rgb(161,161,161);
+                      if (SlopeAspectRec.SlopePercent > 5) then begin
+                         if (SlopeAspectRec.SlopePercent < 20) then SlopeBin := 1
+                         else if SlopeAspectRec.SlopePercent < 40 then SlopeBin := 2
+                         else SlopeBin := 3;
+                         AspectBin := succ(ord(SlopeAspectRec.Dir));
+                         if AspectBin in [1..8] then Color := SlopeAspectColor[SlopeBin,AspectBin];
+                      end;
+                      BMPMemory.SetPixelColor(i,j,ConvertTColorToPlatformColor(Color));
+                   end
+                   else if isSlopeMap(MapType) or (MapMerge = mmSlope) then begin
+                      if (MapType = mtSlopeGrayScaleReversed) then begin
+                         ValueInRange(SlopeAspectRec.SlopePercent,MDDef.MinSlopeForGray,MDDef.MaxSlopeForGray);
+                         SlopeVal := ValidByteRange254(MDDef.SlopeMaxGray - round(GrayRange * (SlopeAspectRec.SlopePercent-MDDef.MinSlopeForGray) / SlopeRange));
+                         BMPMemory.SetPixelColor(i,j,GrayRGBtrip(SlopeVal));
+                      end
+                      else begin
+                         if MapType in [mtSlopeStandardCats,mtSlopeTrafficCats,mtSlopeGoNoGo] then SlopeVal := round(SlopeAspectRec.SlopePercent)
+                         else SlopeVal := round(SlopeAspectRec.SlopePercent / MDDef.MaxSlopeOnMaps * 254);
+                         BMPMemory.SetPixelColor(i,j,SlopeColorChoices[ValidByteRange254(SlopeVal)]);
+                      end;
+                   end
+                   else if (MapType = mtDEMaspect) or (MapMerge = mmAspect) then begin
+                      if (SlopeAspectRec.AspectDirTrue < pred(MaxSmallInt)) then begin
+                         BMPMemory.SetPixelColor(i,j,AspColor[round(SlopeAspectRec.AspectDirTrue)]);
+                      end;
+                   end;
                end;
             end;
          end;

@@ -846,7 +846,7 @@ begin
                 Graph.GraphDraw.YWindowSize := 1000;
                 Graph.SetUpGraphForm;
 
-               Graph.OpenDataFile(rfile);
+               Graph.OpenDataFile(rfile,'');
                Graph.GraphDraw.LineSize256[1] := 1;
                Graph.GraphDraw.ShowLine[1] := true;
                Graph.GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(clBrown);   //ConvertTColorToPlatformColor(WinGraphColors[1]);

@@ -1770,7 +1770,6 @@ type
     procedure LoadthisDEM1Click(Sender: TObject);
     procedure Updatestatus1Click(Sender: TObject);
     procedure Averagebylatitude1Click(Sender: TObject);
-    procedure Datumshift2Click(Sender: TObject);
     procedure Latlongelevofrecordcorners1Click(Sender: TObject);
     procedure Exporttablewithuniquerecords1Click(Sender: TObject);
     procedure DEMIX1Click(Sender: TObject);
@@ -3808,7 +3807,7 @@ end;
 procedure Tdbtablef.BitBtn4Click(Sender: TObject);
 begin
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn4Click--DB filter selected'); {$EndIf}
-   GISdb[DBonTable].DisplayTable(GISdb[DBonTable].MyData.Filter);
+   if ValidDB(DBonTable) then GISdb[DBonTable].DisplayTable(GISdb[DBonTable].MyData.Filter);
    ShowStatus;
 end;
 
@@ -4755,7 +4754,7 @@ begin
        if (dbOpts.LabelField <> '') then TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(dbOpts.LabelField);
 
        Result.Caption := 'Profile ' + TStr;
-       Result.OpenDataFile(rf);
+       Result.OpenDataFile(rf,'');
 
        if (Sender = CompareshapefileandDEMprofiles1) then Result.OpenPointFile(rf2,Result.Symbol);
 
@@ -4896,7 +4895,7 @@ begin
      ThisGraph.GraphDraw.VertLabel := GISdb[DBonTable].dbOpts.YField;
      ThisGraph.Caption := GISdb[DBonTable].dbOpts.XField + ' vs ' + GISdb[DBonTable].dbOpts.YField;
      ThisGraph.SetUpGraphForm;
-     ThisGraph.GraphDraw.LegendList := tStringList.Create;
+     //ThisGraph.GraphDraw.LegendList := tStringList.Create;
      if (Sender = N2Dgraphallopendatabaseslines1) then begin
         for i := 1 to 255 do begin
            ThisGraph.GraphDraw.LineSize256[i] := 2;
@@ -4914,22 +4913,22 @@ begin
             {$IfDef RecordGraph} WriteLineToDebugFile(GISDB[j].DBName); {$EndIf}
             GISdb[j].MyData.First;
             GISdb[j].EmpSource.Enabled := false;
-            ThisGraph.GraphDraw.LegendList.Add(GISdb[j].dbName);
+            //ThisGraph.GraphDraw.LegendList.Add(GISdb[j].dbName);
             if (Sender = N2Dgraphallopendatabases1) and GISdb[j].ColorPresent then begin
                v[3] := GISdb[j].MyData.tColorFromTable;
-               ThisGraph.OpenXYColorFile(rfile);
+               ThisGraph.OpenXYColorFile(rfile,GISdb[j].dbName);
                TStr := ThisGraph.GraphDraw.XYColorFilesPlotted.Strings[pred(ThisGraph.GraphDraw.XYColorFilesPlotted.Count)];
             end
             else if (Sender = N2Dgraphallopendatabases1) then begin
                ThisGraph.Symbol.Color := GISdb[j].dbOpts.LineColor;
                ThisGraph.Symbol.DrawingSymbol := GISdb[j].dbOpts.Symbol.DrawingSymbol;
-               ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
+               ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol,GISdb[j].dbName);
             end
             else if (Sender = N2Dgraphallopendatabaseslines1) then begin
-               ThisGraph.OpenDataFile(rfile,ConvertPlatformColorToTColor(GISdb[j].dbOpts.LineColor));
+               ThisGraph.OpenDataFile(rfile,GISdb[j].dbName,ConvertPlatformColorToTColor(GISdb[j].dbOpts.LineColor));
             end
             else begin
-               ThisGraph.OpenDataFile(rfile);
+               ThisGraph.OpenDataFile(rfile,GISdb[j].dbName);
                TStr := ThisGraph.GraphDraw.DataFilesPlotted.Strings[pred(ThisGraph.GraphDraw.DataFilesPlotted.Count)];
                ThisGraph.GraphDraw.FileColors256[ThisGraph.GraphDraw.DataFilesPlotted.Count] := GISdb[j].MyData.PlatformColorFromTable;
             end;
@@ -7309,15 +7308,15 @@ begin
   GISdb[DBonTable].EmpSource.Enabled := false;
 
   ThisGraph := TThisBaseGraph.Create(Application);
-  ThisGraph.GraphDraw.LegendList := tStringList.create;
+  //ThisGraph.GraphDraw.LegendList := tStringList.create;
 
    for j := 0 to pred(subs.Count) do begin
       GISdb[DBonTable].ApplyGISFilter(sField + '=' + QuotedStr(Subs.Strings[j]));
       New(zs);
       GetFieldValuesInArray(GISdb[DBonTable].MyData,aField,zs^,Npts,Missing,Min,Max);
       PetMath.HeapSort(NPts,zs^);
-      ThisGraph.OpenDataFile(rfile);
-      ThisGraph.GraphDraw.LegendList.Add(Subs.Strings[j] + '  n=' + IntToStr(NPts));
+      ThisGraph.OpenDataFile(rfile,Subs.Strings[j] + '__n=' + IntToStr(NPts));
+      //ThisGraph.GraphDraw.LegendList.Add(Subs.Strings[j] + '  n=' + IntToStr(NPts));
       ShowHourglassCursor;
       Cum := 0;
       for i := 0 to pred(Npts) do begin
@@ -8048,19 +8047,20 @@ var
    Bitmap : tMyBitmap;
 begin
    GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := BaseMapBitmap;
-   if not CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap) then exit;
-   case HighLightCycle of
-      1 : Bitmap.Canvas.Pen.Color := clRed;
-      2 : Bitmap.Canvas.Pen.Color := clGreen;
-      3 : Bitmap.Canvas.Pen.Color := clBlue;
+   if CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,Bitmap) then begin
+       case HighLightCycle of
+          1 : Bitmap.Canvas.Pen.Color := clRed;
+          2 : Bitmap.Canvas.Pen.Color := clGreen;
+          3 : Bitmap.Canvas.Pen.Color := clBlue;
+       end;
+       Bitmap.Canvas.Pen.Width := 4;
+       Bitmap.Canvas.Brush.Color := Bitmap.Canvas.Pen.Color;
+       inc(HighLightCycle);
+       if (HighLightCycle = 3) then HighLightCycle := 1;
+       GISdb[DBonTable].DisplayCurrentRecordOnMap(GISdb[DBonTable].TheMapOwner.MapDraw,Bitmap);
+       GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
+       Bitmap.Destroy;
    end;
-   Bitmap.Canvas.Pen.Width := 4;
-   Bitmap.Canvas.Brush.Color := Bitmap.Canvas.Pen.Color;
-   inc(HighLightCycle);
-   if (HighLightCycle = 3) then HighLightCycle := 1;
-   GISdb[DBonTable].DisplayCurrentRecordOnMap(GISdb[DBonTable].TheMapOwner.MapDraw,Bitmap);
-   GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
-   Bitmap.Destroy;
 end;
 
 procedure Tdbtablef.TrackBar1Change(Sender: TObject);
@@ -8087,11 +8087,11 @@ begin
 end;
 
 procedure Tdbtablef.Linelength2Click(Sender: TObject);
-var
-  ll : float64;
+//var
+  //ll : float64;
 begin
-   ll := GISdb[DBonTable].aShapeFile.LineLength(GISdb[DBonTable].MyData.RecNo);
-   MessageToContinue('Length: ' + SmartDistanceMetersFormat(ll),True );
+   //ll := GISdb[DBonTable].aShapeFile.LineLength(GISdb[DBonTable].MyData.RecNo);
+   MessageToContinue('Length: ' + SmartDistanceMetersFormat(GISdb[DBonTable].aShapeFile.LineLength(GISdb[DBonTable].MyData.RecNo)),True );
 end;
 
 
@@ -8166,8 +8166,8 @@ var
    i,rc : integer;
    Long : float64;
 begin
-   with GISdb[DBonTable] do begin
-       EmpSource.Enabled := false;
+   //with GISdb[DBonTable] do begin
+       GISdb[DBonTable].EmpSource.Enabled := false;
        GISdb[DBonTable].MyData.First;
        i := 0;
        rc := GISdb[DBonTable].MyData.RecordCount;
@@ -8176,18 +8176,18 @@ begin
           inc(i);
           if (i mod 500 = 0) then begin
              UpdateProgressBar(i/rc);
-             EmpSource.Enabled := false;
+             GISdb[DBonTable].EmpSource.Enabled := false;
           end;
-          Long := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(LongFieldName);
+          Long := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName);
           if (Long > 180) or (Long < -180) then begin
              GISdb[DBonTable].MyData.Edit;
              LongitudeAngleInRange(Long);
-             GISdb[DBonTable].MyData.SetFieldByNameAsFloat(LongFieldName,Long);
+             GISdb[DBonTable].MyData.SetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName,Long);
           end;
           GISdb[DBonTable].MyData.Next;
        end;
        ShowStatus;
-    end;
+    //end;
 end;
 
 procedure Tdbtablef.Fixcompassangles1Click(Sender: TObject);
@@ -8196,9 +8196,9 @@ var
    Long : float64;
    WantedFieldName : ShortString;
 begin
-   with GISdb[DBonTable] do begin
-       WantedFieldName := PickField('Compass angles',[ftFloat,ftInteger,ftSmallInt]);
-       EmpSource.Enabled := false;
+   //with GISdb[DBonTable] do begin
+       WantedFieldName := GISdb[DBonTable].PickField('Compass angles',[ftFloat,ftInteger,ftSmallInt]);
+       GISdb[DBonTable].EmpSource.Enabled := false;
        GISdb[DBonTable].MyData.First;
        i := 0;
        rc := GISdb[DBonTable].MyData.RecordCount;
@@ -8207,7 +8207,7 @@ begin
           inc(i);
           if (i mod 500 = 0) then begin
              UpdateProgressBar(i/rc);
-             EmpSource.Enabled := false;
+             GISdb[DBonTable].EmpSource.Enabled := false;
           end;
           Long := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(WantedFieldName);
           if (Long > 360) or (Long <0) then begin
@@ -8217,7 +8217,7 @@ begin
          GISdb[DBonTable].MyData. Next;
        end;
        ShowStatus;
-    end;
+    //end;
 end;
 
 procedure Tdbtablef.FixExceldates1Click(Sender: TObject);
@@ -8279,7 +8279,6 @@ var
    DataSpacing : float64;
    DataSpacingUnits : shortstring;
 begin
-   //with GISdb[DBonTable] do begin
       if (Sender = Fitfouriercurve1) then TStr := 'Fourier curve fitting'
       else if (Sender = Crosscorrelation1) then begin
          WantedFieldName2 := GISdb[DBonTable].PickField('First series cross correlation',NumericFieldTypes);
@@ -8312,7 +8311,6 @@ begin
          else CrossCor.CrossCorrelating(true,fName,'',true,true,DataSpacing,DataSpacingUnits);
       end;
       ShowStatus;
-   //end;
 {$EndIf}
 end;
 
@@ -8413,51 +8411,49 @@ var
    Sum : array[0..180] of float64;
    Count : array[0..180] of int64;
 begin
-   //with GISdb[DBonTable] do begin
-      aField := GISdb[DBonTable].PickField('Field for rose diagram',NumericFieldTypes);
-      BinSize := 5;
-      ReadDefault('Lat bin size (degrees)',BinSize);
-      if BinSize < 1 then BinSize := 1;
-      for i := 0 to 180 do begin
-          Sum[i] := 0;
-          Count[i] := 0;
-      end;
+    aField := GISdb[DBonTable].PickField('Field for rose diagram',NumericFieldTypes);
+    BinSize := 5;
+    ReadDefault('Lat bin size (degrees)',BinSize);
+    if BinSize < 1 then BinSize := 1;
+    for i := 0 to 180 do begin
+        Sum[i] := 0;
+        Count[i] := 0;
+    end;
 
-      GraphData := tStringList.Create;
-      GraphData.Add(aField + ',LAT');
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      StartProgress('Average');
+    GraphData := tStringList.Create;
+    GraphData.Add(aField + ',LAT');
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    StartProgress('Average');
 
-      i := 0;
-      GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.eof do begin
-         if (i mod 100 = 0) then UpdateProgressBar(i / GISdb[DBonTable].MyData.FiltRecsInDB);
-         Lat := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName);
-         Value := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(aField);
-         Bin := round((180 - (Lat + 90)) / BinSize);
-         Sum[Bin] := Sum[Bin] + value;
-         inc(Count[Bin]);
-         inc(i);
-         GISdb[DBonTable].MyData.Next;
-      end;
-      for i := 0 to 180 do begin
-          if Count[i]  > 0 then begin
-            GraphData.Add(RealToString(Sum[i]/Count[i],-9,-2) + ',' + RealToString((90 - (i+0.5) * BinSize),-8,-2) );
-          end;
-      end;
-      GraphFromCSVfile(GraphData,false,true);
-      GISdb[DBonTable].ClearGISFilter;
-      EndProgress;
-      ShowStatus;
-   //end;
+    i := 0;
+    GISdb[DBonTable].MyData.First;
+    while not GISdb[DBonTable].MyData.eof do begin
+       if (i mod 100 = 0) then UpdateProgressBar(i / GISdb[DBonTable].MyData.FiltRecsInDB);
+       Lat := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName);
+       Value := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(aField);
+       Bin := round((180 - (Lat + 90)) / BinSize);
+       Sum[Bin] := Sum[Bin] + value;
+       inc(Count[Bin]);
+       inc(i);
+       GISdb[DBonTable].MyData.Next;
+    end;
+    for i := 0 to 180 do begin
+        if Count[i]  > 0 then begin
+          GraphData.Add(RealToString(Sum[i]/Count[i],-9,-2) + ',' + RealToString((90 - (i+0.5) * BinSize),-8,-2) );
+        end;
+    end;
+    GraphFromCSVfile(GraphData,false,true);
+    GISdb[DBonTable].ClearGISFilter;
+    EndProgress;
+    ShowStatus;
 end;
 
 procedure Tdbtablef.Averageranksbyarea1Click(Sender: TObject);
 begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   DEMIXwineContestCriterionGraph(dgArea,DBonTable);
-{$EndIf}
+  {$IfDef ExDEMIXexperimentalOptions}
+  {$Else}
+     DEMIXwineContestCriterionGraph(dgArea,DBonTable);
+  {$EndIf}
 end;
 
 procedure Tdbtablef.AverageStandarddeviation1Click(Sender: TObject);
@@ -8553,12 +8549,10 @@ procedure Tdbtablef.Requiredantennaheight1Click(Sender: TObject);
 begin
 {$Else}
 begin
-   //with GISdb[DBonTable] do begin
-      MDDef.ObsAboveGround := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SENSOR_UP');
-      MDDef.MaskObsRange := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SENSOR_RNG');
-      GISdb[DBonTable].TheMapOwner.RequiredAntennaMap(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('LAT'),GISdb[DBonTable].MyData.GetFieldByNameAsFloat('LONG'));
-   //end;
-{$EndIf}   
+    MDDef.ObsAboveGround := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SENSOR_UP');
+    MDDef.MaskObsRange := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('SENSOR_RNG');
+    GISdb[DBonTable].TheMapOwner.RequiredAntennaMap(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('LAT'),GISdb[DBonTable].MyData.GetFieldByNameAsFloat('LONG'));
+{$EndIf}
 end;
 
 procedure Tdbtablef.Resetjoin1Click(Sender: TObject);
@@ -8699,11 +8693,6 @@ begin
 end;
 
 
-procedure Tdbtablef.Datumshift2Click(Sender: TObject);
-begin
-   //ComputeVDatumShift(dbOnTable);
-end;
-
 procedure Tdbtablef.DayofweekfromYRMonDay1Click(Sender: TObject);
 var
    m,y,d,i,rc : integer;
@@ -8759,31 +8748,29 @@ var
    fName : PathStr;
 begin
    {$IfDef RecordDataBaseSaveFiles} WriteLineRoDebugFile('Tdbtablef.DBFfile1Click in'); {$EndIf}
-   //with GISdb[DBonTable] do begin
-      if (Sender <> DataDBFonlynogeometry1) then begin
-         if GISdb[DBonTable].ItsAShapeFile and LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then exit;
-      end;
-      AllVis := true;
-      for j := 0 to MaxFieldsInDB do if (not GISdb[DBonTable].dbOpts.VisCols[j]) then AllVis := false;
-      if (not GISdb[DBonTable].MyData.Filtered) and AllVis then begin
-         if (GISdb[DBonTable].dbFullName = '') or GISdb[DBonTable].dbIsUnsaved then fName := Caption
-         else fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + 'copy-' + ExtractFileName(GISdb[DBonTable].dbFullName);
-         Petmar.GetFileNameDefaultExt('Copy of DB',DefaultDBMask,fName);
-         Petmar.CopyFile(GISdb[DBonTable].dbFullName,fName);
-      end
-      else begin
-         if (not AllVis) and GISdb[DBonTable].MyData.Filtered then begin
-            if (not AnswerIsYes('Save filtered DB without hidden fields')) then Button1Click(Sender);
-         end
-         else begin
-            if (not AllVis) and (not AnswerIsYes('Save without hidden fields')) then Button1Click(Sender);
-            if GISdb[DBonTable].MyData.Filtered and (not AnswerIsYes('Confirm save filtered database')) then Button1Click(Sender);
-         end;
-         GISdb[DBonTable].SaveCurrentDBaseSubset('');
-      end;
-      GISdb[DBonTable].dbIsUnsaved := false;
-   //end;
-      ShowStatus;
+    if (Sender <> DataDBFonlynogeometry1) then begin
+       if GISdb[DBonTable].ItsAShapeFile and LineOrAreaShapeFile(GISdb[DBonTable].ShapeFileType) then exit;
+    end;
+    AllVis := true;
+    for j := 0 to MaxFieldsInDB do if (not GISdb[DBonTable].dbOpts.VisCols[j]) then AllVis := false;
+    if (not GISdb[DBonTable].MyData.Filtered) and AllVis then begin
+       if (GISdb[DBonTable].dbFullName = '') or GISdb[DBonTable].dbIsUnsaved then fName := Caption
+       else fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + 'copy-' + ExtractFileName(GISdb[DBonTable].dbFullName);
+       Petmar.GetFileNameDefaultExt('Copy of DB',DefaultDBMask,fName);
+       Petmar.CopyFile(GISdb[DBonTable].dbFullName,fName);
+    end
+    else begin
+       if (not AllVis) and GISdb[DBonTable].MyData.Filtered then begin
+          if (not AnswerIsYes('Save filtered DB without hidden fields')) then Button1Click(Sender);
+       end
+       else begin
+          if (not AllVis) and (not AnswerIsYes('Save without hidden fields')) then Button1Click(Sender);
+          if GISdb[DBonTable].MyData.Filtered and (not AnswerIsYes('Confirm save filtered database')) then Button1Click(Sender);
+       end;
+       GISdb[DBonTable].SaveCurrentDBaseSubset('');
+    end;
+    GISdb[DBonTable].dbIsUnsaved := false;
+    ShowStatus;
    {$IfDef RecordDataBaseSaveFiles} WriteLineRoDebugFile('Tdbtablef.DBFfile1Click out'); {$EndIf}
 end;
 
@@ -8866,10 +8853,7 @@ end;
 
 procedure Tdbtablef.Vectordata1Click(Sender: TObject);
 begin
-   {$IfDef ExAdvancedGIS}
-   {$Else}
-      GISdb[DBonTable].GISProportionalSymbols(dbasVector);
-   {$EndIf}
+   GISdb[DBonTable].GISProportionalSymbols(dbasVector);
 end;
 
 
@@ -8914,11 +8898,11 @@ var
    wf : tWeaponsFan;
    i : integer;
 begin
-   with GISdb[DBonTable] do begin
-      AddOrSubtractOverlay(TheMapOwner,ovoFans,false);
+   //with GISdb[DBonTable] do begin
+      AddOrSubtractOverlay(GISdb[DBonTable].TheMapOwner,ovoFans,false);
       InitializeWeaponsFan(wf);
       if GetWeaponParameters(GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap,wf,false,false,Nil,true,true) then begin
-         if (Sender = ViewshedFields1) then AddFieldGroupToTable('WeaponsFan');
+         if (Sender = ViewshedFields1) then GISdb[DBonTable].AddFieldGroupToTable('WeaponsFan');
          GISdb[DBonTable].MyData.First;
          GISdb[DBonTable].EmpSource.Enabled := false;
          i := 0;
@@ -8926,18 +8910,19 @@ begin
             inc(i);
             wf.Fan_Name := GISdb[DBonTable].MyData.GetFieldByNameAsString('NAME');
             if wf.Fan_Name = '' then wf.Fan_Name := 's_' + IntToStr(i);
-            if GISdb[DBonTable].ValidLatLongFromTable(wf.W_Lat,wf.W_Long) then AddFanToWeaponsTable(TheMapOwner.MapDraw.PrimMapProj,true,true,MyData,wf);
+            if GISdb[DBonTable].ValidLatLongFromTable(wf.W_Lat,wf.W_Long) then
+               AddFanToWeaponsTable(GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj,true,true,GISdb[DBonTable].MyData,wf);
             GISdb[DBonTable].MyData.Next;
          end;
 
-         ItsFanFile := true;
-         dbTablef.Panel1.Visible := true;
+         GISdb[DBonTable].ItsFanFile := true;
+         GISdb[DBonTable].dbTablef.Panel1.Visible := true;
          ShowStatus;
-         TheMapOwner.MapDraw.CurrentFansTable := DBonTable;
-         AddOrSubtractOverlay(TheMapOwner,ovoFans,true);
-         TheMapOwner.DoFastMapRedraw;
+         GISdb[DBonTable].TheMapOwner.MapDraw.CurrentFansTable := DBonTable;
+         AddOrSubtractOverlay(GISdb[DBonTable].TheMapOwner,ovoFans,true);
+         GISdb[DBonTable].TheMapOwner.DoFastMapRedraw;
       end;
-   end;
+   //end;
 end;
 
 
@@ -9027,7 +9012,6 @@ end;
 
 procedure Tdbtablef.Calculatecentroid1Click(Sender: TObject);
 begin
-   //CalculateArea1Click(Sender);
    GISdb[DBonTable].CalculateAreaorCentroid(true);
 end;
 
@@ -9215,10 +9199,10 @@ var
    Address : shortString;
    Asked : boolean;
 begin
-   with GISdb[DBonTable] do begin
-      AddLatLong;
+   //with GISdb[DBonTable] do begin
+      GISdb[DBonTable].AddLatLong;
       if GISdb[DBonTable].MyData.FieldExists('ADDRESS') then TheField := 'ADDRESS'
-      else TheField := PickField('Addresses',[ftString]);
+      else TheField := GISdb[DBonTable].PickField('Addresses',[ftString]);
       StartProgressAbortOption('Geocode');
       GISdb[DBonTable].MyData.First;
       i := 0;
@@ -9226,17 +9210,17 @@ begin
       rc := GISdb[DBonTable].MyData.RecordCount;
       while not GISdb[DBonTable].MyData.EOF do begin
          if (i mod 25 = 0) then begin
-            EmpSource.Enabled := false;
+            GISdb[DBonTable].EmpSource.Enabled := false;
             UpdateProgressBar(i/rc);
          end;
          inc(i);
-         if not ValidLatLongFromTable(Lat,Long) then begin
+         if not GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
             Address := GISdb[DBonTable].MyData.GetFieldByNameAsString(TheField);
-            TheMapOwner.AddressGeocode(false,false,Address,Lat,Long);
+            GISdb[DBonTable].TheMapOwner.AddressGeocode(false,false,Address,Lat,Long);
             if (Lat > -89) then begin
                GISdb[DBonTable].MyData.Edit;
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat(LatFieldName,Lat);
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat(LongFieldName,Long);
+               GISdb[DBonTable].MyData.SetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName,Lat);
+               GISdb[DBonTable].MyData.SetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName,Long);
             end
             else begin
                if not Asked then begin
@@ -9249,7 +9233,7 @@ begin
          if WantOut then break;
       end;
       ShowStatus;
-   end;
+   //end;
 end;
 
 
@@ -9260,12 +9244,12 @@ var
    Address : shortString;
 begin
    {$IfDef RecordGeoCoding} WriteLineRoDebugFile('Tdbtablef.Geocodelatlong1Click in'); {$EndIf}
-   with GISdb[DBonTable] do begin
-      AddLatLong;
-      EmpSource.Enabled := false;
-      AddFieldToDataBase(ftString,'ADDRESS',128);
+   //with GISdb[DBonTable] do begin
+      GISdb[DBonTable].AddLatLong;
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].AddFieldToDataBase(ftString,'ADDRESS',128);
       {$IfDef RecordGeoCoding} WriteLineRoDebugFile('field added'); {$EndIf}
-      EmpSource.Enabled := false;
+      GISdb[DBonTable].EmpSource.Enabled := false;
 
       StartProgressAbortOption('Geocode');
       GISdb[DBonTable].MyData.First;
@@ -9273,14 +9257,14 @@ begin
       rc := GISdb[DBonTable].MyData.RecordCount;
       while not GISdb[DBonTable].MyData.EOF do begin
          if (i mod 25 = 0) then begin
-            EmpSource.Enabled := false;
+            GISdb[DBonTable].EmpSource.Enabled := false;
             UpdateProgressBar(i/rc);
          end;
          inc(i);
-         if ValidLatLongFromTable(Lat,Long) then begin
+         if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
            {$IfDef RecordGeoCoding} WriteLineRoDebugFile('do record ' + LatLongDegreeToString(Lat,long)); {$EndIf}
            Address := '';
-           TheMapOwner.AddressGeocode(true,true,Address,Lat,Long,false);
+           GISdb[DBonTable].TheMapOwner.AddressGeocode(true,true,Address,Lat,Long,false);
            if (Address <> '') then begin
               GISdb[DBonTable].MyData.Edit;
               GISdb[DBonTable].MyData.SetFieldByNameAsString('ADDRESS',Address);
@@ -9290,7 +9274,7 @@ begin
          if WantOut then break;
       end;
       ShowStatus;
-   end;
+   //end;
 end;
 
 
@@ -9298,7 +9282,7 @@ procedure Tdbtablef.Geomorphometryatlas1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
    {$Else}
-   Grid_over_map.GridOverlayPointsOnMap(GISDB[DBonTable].TheMapOwner,DBOnTable);
+      Grid_over_map.GridOverlayPointsOnMap(GISDB[DBonTable].TheMapOwner,DBOnTable);
    {$EndIf}
 end;
 
@@ -9329,25 +9313,25 @@ var
    i,rc  : integer;
    DEC,DIP,TI,GV : double;
 begin
-     GISdb[DBonTable].AddFieldToDataBase(ftFloat,'AZIMUTH',6,2);
-     GISdb[DBonTable].MyData.First;
-     i := 0;
-     rc := GISdb[DBonTable].MyData.RecordCount;
-     ShowHourglassCursor;
-     StartProgress('Mag azimuth');
-     while not GISdb[DBonTable].MyData.EOF do begin
-        if (i mod 100 = 0) then begin
-           GISdb[DBonTable].EmpSource.Enabled := false;
-           UpdateProgressBar(i/rc);
-        end;
-        inc(i);
-        GISdb[DBonTable].MyData.Edit;
-        MagVr1(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('ALTITUDE'), GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName),GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName),
-              CurMagYear,DEC,DIP,TI,GV);
-        GISdb[DBonTable].MyData.SetFieldByNameAsFloat('AZIMUTH',GISdb[DBonTable].MyData.GetFieldByNameAsFloat('MAG_HEAD') + Dec);
-        GISdb[DBonTable].MyData.Next;
-     end;
-     ShowStatus;
+   GISdb[DBonTable].AddFieldToDataBase(ftFloat,'AZIMUTH',6,2);
+   GISdb[DBonTable].MyData.First;
+   i := 0;
+   rc := GISdb[DBonTable].MyData.RecordCount;
+   ShowHourglassCursor;
+   StartProgress('Mag azimuth');
+   while not GISdb[DBonTable].MyData.EOF do begin
+      if (i mod 100 = 0) then begin
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         UpdateProgressBar(i/rc);
+      end;
+      inc(i);
+      GISdb[DBonTable].MyData.Edit;
+      MagVr1(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('ALTITUDE'), GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName),GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName),
+            CurMagYear,DEC,DIP,TI,GV);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('AZIMUTH',GISdb[DBonTable].MyData.GetFieldByNameAsFloat('MAG_HEAD') + Dec);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowStatus;
 {$EndIf}
 end;
 
@@ -9359,14 +9343,14 @@ var
    SymColor : tPlatformColor;
    Font : tFont;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       GISdb[DBonTable].MyData.Edit;
-      if (Sender = EditPointSymbol1) and PointSymbolFieldsPresent then begin
+      if (Sender = EditPointSymbol1) and GISdb[DBonTable].PointSymbolFieldsPresent then begin
          GISdb[DBonTable].MyData.DefinePointSymbol(Sym,SymSize,SymColor);
          GetSymbol(Sym,SymSize,SymColor);
          GISdb[DBonTable].MyData.PostPointSymbol(Sym,SymSize,SymColor);
       end;
-      if (Sender = EditFont1) and FontFieldExists then begin
+      if (Sender = EditFont1) and GISdb[DBonTable].FontFieldExists then begin
          Font := tFont.Create;
          GISdb[DBonTable].MyData.DefineFontFromTable(Font);
          EditTFont(Font);
@@ -9374,7 +9358,7 @@ begin
          Font.Destroy;
       end;
       GISdb[DBonTable].MyData.Post;
-   end;
+   //end;
 end;
 
 
@@ -9447,20 +9431,23 @@ procedure Tdbtablef.Keyboardnewpointlocation1Click(Sender: TObject);
 var
    Lat,Long : float64;
 begin
-   with GISdb[DBonTable] do begin
-      if (MyData.GetFieldByNameAsString(LatFieldName) = '') or  (MyData.GetFieldByNameAsString(LongFieldName) = '') then begin
+   //with GISdb[DBonTable] do begin
+(*
+      if (GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LatFieldName) = '') or  (GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LongFieldName) = '') then begin
          Lat := 0;
          Long := 0;
       end
       else begin
-         Lat := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(LatFieldName);
-         Long := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(LongFieldName);
+         Lat := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName);
+         Long := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName);
       end;
-      GetLatLongDefault(TheMapOwner.MapDraw.PrimMapProj,'revised location',Lat,Long);
+*)
+      GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long);
+      GetLatLongDefault(GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj,'revised location',Lat,Long);
       GISdb[DBonTable].MyData.Edit;
-      ChangeLatLongLocation(Lat,Long);
+      GISdb[DBonTable].ChangeLatLongLocation(Lat,Long);
       GISdb[DBonTable].MyData.Post;
-   end;
+   //end;
 end;
 
 
@@ -11223,7 +11210,7 @@ var
              aShapeFile.ShapeFileDEM := TheMapOwner.MapDraw.DEMonMap;
              MaxDist := 0.001 * aShapeFile.LineLength(MyData.RecNo,True);
              if aShapeFile.CurrentPolyLineHeader.NumPoints < 2 then exit;
-             Result.OpenDataFile(rfile);
+             Result.OpenDataFile(rfile,'');
              MinZ := aShapeFile.CurrentLineZRange[1];
              MaxZ := aShapeFile.CurrentLineZRange[2];
                for i := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
@@ -11390,7 +11377,7 @@ begin
             end;
             CloseFile(rfile);
 
-           Result.OpenDataFile(rfile);
+           Result.OpenDataFile(rfile,'');
             for i := 0 to 100 do begin
                v[1] := 0.01 * i;
                v[2] := 0;

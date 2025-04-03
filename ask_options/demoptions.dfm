@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet20
+    ActivePage = TabSheet11
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -1654,6 +1654,20 @@ inherited OptionsForm: TOptionsForm
         Height = 15
         Caption = 'Label23'
       end
+      object Label47: TLabel
+        Left = 143
+        Top = 386
+        Width = 40
+        Height = 15
+        Caption = 'Label47'
+      end
+      object Label49: TLabel
+        Left = 143
+        Top = 424
+        Width = 40
+        Height = 28
+        Caption = 'Label49'
+      end
       object UpDown1: TUpDown
         Left = 16
         Top = 120
@@ -1968,6 +1982,24 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Process loops forward'
         TabOrder = 18
+      end
+      object BitBtn39: TBitBtn
+        Left = 10
+        Top = 382
+        Width = 127
+        Height = 25
+        Caption = 'Curvature algorithm'
+        TabOrder = 19
+        OnClick = BitBtn39Click
+      end
+      object BitBtn43: TBitBtn
+        Left = 10
+        Top = 417
+        Width = 127
+        Height = 25
+        Caption = 'Slope algorithm'
+        TabOrder = 20
+        OnClick = BitBtn43Click
       end
     end
     object TabSheet13: TTabSheet

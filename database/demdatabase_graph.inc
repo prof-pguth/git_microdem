@@ -32,7 +32,7 @@ var
          else Result := TThisbasegraph.Create(Application);
          Result.SetDataBaseOnGraph(DBNumber, dbOpts.XField,dbOpts.YField,MyData.Filter);
          Result.GraphDraw.UpperLeftText := aCapt;
-         if (GraphType = dbgtN2Dgraphsimplelines1) then Result.OpenDataFile(rfile)
+         if (GraphType = dbgtN2Dgraphsimplelines1) then Result.OpenDataFile(rfile,'')
          else Result.OpenPointFile(rfile,Result.Symbol);
          TimeCount := 0;
          MyData.First;
@@ -55,16 +55,16 @@ var
         end
         else if (GraphType = dbgtN2Dgraph2series1) then begin
            Result.Symbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
-           Result.OpenPointFile(rfile,Result.Symbol);
+           Result.OpenPointFile(rfile,Result.Symbol,dbOpts.YField);
            Result.Symbol.Color := claLime;
-           Result.OpenPointFile(rfile2,Result.Symbol);
+           Result.OpenPointFile(rfile2,Result.Symbol,dbOpts.ZField);
         end
         else if (GraphType in[dbgtCluster1,dbgtN2DgraphCOLORfield1,dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2,dbgtN2Dgraphcolorcoded1,dbgtN2Dgraphcolorcodetext1]) then begin
            Result.OpenXYColorFile(rfile);
            if (GraphType = dbgtByLatitude2) or ( GraphType = dbgtByLongitude2) then Result.GraphDraw.CorrectScaling := true;
         end
         else if (GraphType = dbgtN2Dgraphsimplelines1) then begin
-           Result.OpenDataFile(rfile);
+           Result.OpenDataFile(rfile,'');
            Result.GraphDraw.ShowLine[1] := true;
            Result.GraphDraw.ShowPoints[1] := false;
         end
@@ -87,9 +87,9 @@ var
         end
         else if (GraphType = dbgtN2Dgraph2series1) then begin
            Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.YField) + ' / ' + RemoveUnderscores(dbOpts.ZField);
-           Result.GraphDraw.LegendList := tStringList.Create;
-           Result.GraphDraw.LegendList.Add(RemoveUnderscores(dbOpts.YField));
-           Result.GraphDraw.LegendList.Add(RemoveUnderscores(dbOpts.ZField));
+           //Result.GraphDraw.LegendList := tStringList.Create;
+           //Result.GraphDraw.LegendList.Add(RemoveUnderscores(dbOpts.YField));
+           //Result.GraphDraw.LegendList.Add(RemoveUnderscores(dbOpts.ZField));
         end
         else begin
            Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
@@ -212,7 +212,7 @@ begin
                  end;
                  {$IfDef ExGeology}
                  {$Else}
-                    if ( GraphType = dbgtByLatitude1) or ( GraphType = dbgtByLongitude1) or ( GraphType = dbgtByLatitude2) or ( GraphType = dbgtByLongitude2) then begin
+                    if (GraphType = dbgtByLatitude1) or ( GraphType = dbgtByLongitude1) or ( GraphType = dbgtByLatitude2) or ( GraphType = dbgtByLongitude2) then begin
                        v[3] := ConvertPlatformColorToTColor(FocalMechanismColor);
                        if (GraphType = dbgtByLatitude2) then begin
                            v[1] := (v[1] - xmin) * 111;
@@ -266,10 +266,10 @@ begin
     {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph draw over'); {$EndIf}
 
      if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-        Result.GraphDraw.LegendList := tStringList.Create;
+        //Result.GraphDraw.LegendList := tStringList.Create;
         for k := 0 to pred(DataThere.Count) do begin
            TStr := dbOpts.StringColorField + '=' + DataThere.Strings[k] + ' (n=' + IntToStr(Hist[k]) + ')';
-           Result.GraphDraw.LegendList.Add(Tstr);
+           //Result.GraphDraw.LegendList.Add(Tstr);
         end;
         Result.SetMenus;
      end;
@@ -602,15 +602,15 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.AddSeriesToScatterGram(Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString;  Connect : boolean = false);
+procedure TGISdataBaseModule.AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString;  Connect : boolean = false);
 var
   rFile : file;
   v : array[1..2] of float32;
 begin
    ShowHourglassCursor;
-   Graph.GraphDraw.LegendList.Add(anXField);
+   //Graph.GraphDraw.LegendList.Add(anXField);
    if Connect then begin
-      Graph.OpenDataFile(rfile);
+      Graph.OpenDataFile(rfile,fName);
    end
    else begin
       Graph.Symbol.Size := 3;
@@ -630,13 +630,13 @@ begin
 end;
 
 
-function TGISdataBaseModule.CreateScatterGram(anXField,anYField : ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
+function TGISdataBaseModule.CreateScatterGram(fName : PathStr; anXField,anYField : ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
     H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
 begin
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram in'); {$EndIf}
    EmpSource.Enabled := false;
    Result := TThisbasegraph.Create(Application);
-   Result.GraphDraw.LegendList := TStringList.Create;
+   //Result.GraphDraw.LegendList := TStringList.Create;
    if (Capt = '') then Result.Caption := anXField + ' vs ' + anYField + ' from ' + dbName
    else Result.Caption := Capt;
    if NormProb then begin
@@ -650,7 +650,7 @@ begin
    if (V_lab = '') then Result.GraphDraw.VertLabel := RemoveUnderscores(anYField)
    else Result.GraphDraw.VertLabel := V_Lab;
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram labels set'); {$EndIf}
-   if (Color > 0) then AddSeriesToScatterGram(Result,Color,anXField,anYField,Connect);
+   if (Color > 0) then AddSeriesToScatterGram(fName,Result,Color,anXField,anYField,Connect);
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram out'); {$EndIf}
 end;
 

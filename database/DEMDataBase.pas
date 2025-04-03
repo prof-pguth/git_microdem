@@ -657,9 +657,9 @@ type
 
          procedure SingleRose(AddTitle : shortString; Field1,Field2 : ShortString);
          function WaveFormGraph(SingleGraph : boolean) : tThisBaseGraph;
-         function CreateScatterGram(anXField, anYField: ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
+         function CreateScatterGram(fName : PathStr; anXField, anYField: ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
             H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
-         procedure AddSeriesToScatterGram(Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
+         procedure AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
          function ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
@@ -5221,7 +5221,7 @@ begin
           if ExtEquals(Ext,'.TCX') then begin
              sl := FitBitTCXtoStringList(FileWanted,ID);
              FileWanted := BasePath + ID + '.dbf';
-             i := StringList2CSVtoDB(sl,FileWanted);
+             i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
              if MDDef.AddFitNav then begin
                 GISDB[i].AddNavFields;
                 GISDB[i].ApplyGISFilter('DIST_KM<0.0004');

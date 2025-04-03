@@ -332,130 +332,132 @@ end;
 
 
 
-function CreateDEMIXTestDEMsForArea(Overwrite : boolean; AreaName : ShortString; AreaRefDEM,PointRefDEM : integer) : boolean;
-var
-   {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
-   WantSeries,ShortName : shortstring;
-   IndexSeriesTable : tMyData;
-   NumPts : int64;
-   WantDEM,Ser,i,GeoidGrid,aRefDEM : integer;
-   fName,SaveName : Pathstr;
+
+procedure CreateDEMIXTestAreaDEMs(Overwrite : boolean);
+
+      function CreateDEMIXTestDEMsForArea(Overwrite : boolean; AreaName : ShortString; AreaRefDEM,PointRefDEM : integer) : boolean;
+      var
+         {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
+         WantSeries,ShortName : shortstring;
+         IndexSeriesTable : tMyData;
+         NumPts : int64;
+         WantDEM,Ser,i,GeoidGrid,aRefDEM : integer;
+         fName,SaveName : Pathstr;
 
 
-         procedure MoveFromEGM96toEGM2008(var DEM : integer);
-         //Reproject vertical datum to EGM2008 if required because DEM is EGM96
-         var
-           Col,Row,NewDEM : integer;
-           z,z2 : float32;
-           Lat,Long : float64;
-         begin
-            {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift in, DEM=' + IntToStr(DEM)  + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-            if ValidDEM(DEM) {and (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96)} then begin
-               if not ValidDEM(GeoidGrid) then begin
-                  GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
-                  GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
-               end;
+               procedure MoveFromEGM96toEGM2008(var DEM : integer);
+               //Reproject vertical datum to EGM2008 if required because DEM is EGM96
+               var
+                 Col,Row,NewDEM : integer;
+                 z,z2 : float32;
+                 Lat,Long : float64;
+               begin
+                  {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift in, DEM=' + IntToStr(DEM)  + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+                  if ValidDEM(DEM) then begin
+                     if not ValidDEM(GeoidGrid) then begin
+                        GeoidGrid := OpenNewDEM(GeoidDiffFName,false,'geoid difference from EGM96 to EGM2008');  //to move DEMs from EGM96 to EGM2008
+                        GeoidDiffFName := DEMGlb[GeoidGrid].DEMFileName;
+                     end;
 
-               NewDEM := DEMGlb[DEM].ResaveNewResolution(fcSaveFloatingPoint); //have to resave because input DEMs are all integer resolution
-               DEMGlb[NewDEM].AreaName := DEMGlb[DEM].AreaName;  // + '_egm2008';
-               DEMGlb[NewDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
-               {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift with shift ' + DEMGlb[DEM].AreaName); {$EndIf}
-               z2 := 0;
-               for Col := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumCol) do begin
-                  for Row := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumRow) do begin
-                      if DEMGlb[NewDEM].GetElevMetersOnGrid(Col,Row,z) then begin
-                         DEMGlb[NewDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                         if DEMGlb[GeoidGrid].GetElevFromLatLongDegree(Lat,Long,z2) then begin
-                            DEMGlb[NewDEM].SetGridElevation(Col,Row,z+z2);
-                         end;
-                      end;
+                     NewDEM := DEMGlb[DEM].ResaveNewResolution(fcSaveFloatingPoint); //have to resave because input DEMs are all integer resolution
+                     DEMGlb[NewDEM].AreaName := DEMGlb[DEM].AreaName;  // + '_egm2008';
+                     DEMGlb[NewDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+                     {$IfDef RecordDEMIXVDatum} writeLineToDebugFile('CheckVerticalDatumShift with shift ' + DEMGlb[DEM].AreaName); {$EndIf}
+                     z2 := 0;
+                     for Col := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumCol) do begin
+                        for Row := 0 to pred(DEMGlb[NewDEM].DEMHeader.NumRow) do begin
+                            if DEMGlb[NewDEM].GetElevMetersOnGrid(Col,Row,z) then begin
+                               DEMGlb[NewDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+                               if DEMGlb[GeoidGrid].GetElevFromLatLongDegree(Lat,Long,z2) then begin
+                                  DEMGlb[NewDEM].SetGridElevation(Col,Row,z+z2);
+                               end;
+                            end;
+                        end;
+                     end;
+                     CloseSingleDEM(DEM);
+                     {$IfDef RecordDEMIXLoad} WriteLineToDebugFile('Closed DEM; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+                     DEMGlb[NewDEM].CheckMaxMinElev;
+                     DEM := NewDEM;
+                     {$IfDef RecordDEMIXVDatum} WriteLineToDebugFile('CheckVerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+                  end
+                  else begin
+                     {$IfDef RecordDEMIXVDatum} WriteLineToDebugFile('CheckVerticalDatumShift out, not EGM96, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
                   end;
                end;
-               CloseSingleDEM(DEM);
-               {$IfDef RecordDEMIXLoad} WriteLineToDebugFile('Closed DEM; Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-               DEMGlb[NewDEM].CheckMaxMinElev;
-               DEM := NewDEM;
-               {$IfDef RecordDEMIXVDatum} WriteLineToDebugFile('CheckVerticalDatumShift out, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-            end
-            else begin
-               {$IfDef RecordDEMIXVDatum} WriteLineToDebugFile('CheckVerticalDatumShift out, not EGM96, DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
+
+
+      begin {CreateDEMIXTestDEMsForArea}
+         {$If Defined(RecordDEMIXLoad)} WriteLineToDebugFile('CreateDEMIXCandidateDEMs in; AreaName=' + AreaName + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+         Result := false;
+         if (ValidDEM(AreaRefDEM) and ValidDEM(PointRefDEM)) then begin
+            {$IfDef RecordDEMIX} AllDEMs := ''; {$EndIf}
+            for I := 1 to MaxDEMIXDEM do begin
+               TestDEMs[i] := 0;
+               TestSeries[i] := '';
             end;
-         end;
+            GeoidGrid := 0;
 
+            Ser := 0;
+            for I := 1 to NumDEMIXtestDEM do begin
+               WantSeries := DEMIXDEMTypeName[i];
+               ShortName := DEMIXShort[i];
+               SaveName := DEMIX_test_dems + AreaName + '_' + shortname + '.tif';
+               wmdem.SetPanelText(3,'Load candidate DEM ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXtestDEM));
+               if Overwrite or (not FileExists(SaveName)) then begin
+                  {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoad)} writeLineToDebugFile('Try ' + WantSeries + ' ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXDEM)); {$EndIf}
+                  {$If Defined(RecordFullDEMIX)} WriteLineRoDebugFile('Ref DEM=' + DEMGlb[PointRefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[PointRefDEM].DEMBoundBoxGeo,6)); {$EndIf}
+                  WantDEM := LoadMapLibraryBox(true,DEMGlb[PointRefDEM].DEMBoundBoxGeo,WantSeries,false);
+                  if ValidDEM(WantDEM) then begin
+                     {$If Defined(RecordDEMIXLoad)} WriteLineRoDebugFile('CreateDEMIXCandidateDEMs done LoadMapLib; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+                     {$If Defined(TrackPixelIs)} WriteLineRoDebugFile('Loaded from Map Library, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
+                     inc(Ser);
+                     TestDEMs[Ser] := WantDEM;
+                     TestSeries[Ser] := ShortName;
+                     if (ShortName = 'ALOS') then aRefDEM := AreaRefDEM else aRefDEM := PointRefDEM;
 
-begin {CreateDEMIXTestDEMsForArea}
-   {$If Defined(RecordDEMIXLoad)} WriteLineToDebugFile('CreateDEMIXCandidateDEMs in; AreaName=' + AreaName + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-   Result := false;
-   if (ValidDEM(AreaRefDEM) and ValidDEM(PointRefDEM)) then begin
-      {$IfDef RecordDEMIX} AllDEMs := ''; {$EndIf}
+                     {$IfDef RecordDEMIX}
+                        if not AllOfBoxInAnotherBox(DEMGlb[aRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
+                           AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial ' + sfBoundBoxToString(DEMGlb[WantDEM].DEMBoundBoxGeo) + ' and need ' + sfBoundBoxToString(DEMGlb[aRefDEM].DEMBoundBoxGeo) + ')';
+                        end;
+                     {$EndIf}
+                     DEMGlb[TestDEMs[Ser]].AreaName := TestSeries[Ser];
+                     DEMGlb[TestDEMs[Ser]].DEMFileName := SaveName;
 
-      for I := 1 to MaxDEMIXDEM do begin
-         TestDEMs[i] := 0;
-         TestSeries[i] := '';
-      end;
-      GeoidGrid := 0;
-
-      Ser := 0;
-      for I := 1 to NumDEMIXtestDEM do begin
-         WantSeries := DEMIXDEMTypeName[i];
-         ShortName := DEMIXShort[i];
-         SaveName := DEMIX_test_dems + AreaName + '_' + shortname + '.tif';
-         wmdem.SetPanelText(3,'Load candidate DEM ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXtestDEM));
-         if Overwrite or (not FileExists(SaveName)) then begin
-            {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoad)} writeLineToDebugFile('Try ' + WantSeries + ' ' + ShortName + '  ' + IntToStr(i) + '/' + IntToStr(NumDEMIXDEM)); {$EndIf}
-            {$If Defined(RecordFullDEMIX)} WriteLineRoDebugFile('Ref DEM=' + DEMGlb[PointRefDEM].AreaName + '  ' + sfBoundBoxToString(DEMGlb[PointRefDEM].DEMBoundBoxGeo,6)); {$EndIf}
-            WantDEM := LoadMapLibraryBox(true,DEMGlb[PointRefDEM].DEMBoundBoxGeo,WantSeries,false);
-            if ValidDEM(WantDEM) then begin
-               {$If Defined(RecordDEMIXLoad)} WriteLineRoDebugFile('CreateDEMIXCandidateDEMs done LoadMapLib; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-               {$If Defined(TrackPixelIs)} WriteLineRoDebugFile('Loaded from Map Library, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
-               inc(Ser);
-               TestDEMs[Ser] := WantDEM;
-               TestSeries[Ser] := ShortName;
-               if (ShortName = 'ALOS') then aRefDEM := AreaRefDEM else aRefDEM := PointRefDEM;
-
-               {$IfDef RecordDEMIX}
-                  if not AllOfBoxInAnotherBox(DEMGlb[aRefDEM].DEMBoundBoxGeo,DEMGlb[WantDEM].DEMBoundBoxGeo) then begin
-                     AllDEMs := AllDEMs + TestSeries[Ser] + ' (partial ' + sfBoundBoxToString(DEMGlb[WantDEM].DEMBoundBoxGeo) + ' and need ' + sfBoundBoxToString(DEMGlb[aRefDEM].DEMBoundBoxGeo) + ')';
+                     {$IfDef RecordDEMIXLoad} WriteLineRoDebugFile('Opened:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+                     if (ShortName = 'COP') or (ShortName = 'TANDEM') or (ShortName = 'FABDEM') or (ShortName = 'DILUV') then DEMGlb[TestDEMs[Ser]].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008
+                     else begin
+                        MoveFromEGM96toEGM2008(TestDEMs[Ser]);
+                        {$If Defined(TrackPixelIs) or Defined(RecordDEMIXLoad)} WriteLineRoDebugFile('Moved to EGM2008, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
+                     end;
+                     EditsDone := 0;
+                     MaskGridFromSecondGrid(TestDEMs[Ser],aRefDEM, msSecondMissing);
+                     DEMGlb[TestDEMs[Ser]].SavePartOfDEMWithDataGeotiff(SaveName);
+                     {$If Defined(TrackPixelIs)} WriteLineRoDebugFile('Masked and saved, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
+                     Result := true;
+                  end
+                  else begin
+                     {$IfDef RecordDEMIX} AllDEMs := AllDEMs + WantSeries + ' (missing) '; {$EndIf}
                   end;
-               {$EndIf}
-               DEMGlb[TestDEMs[Ser]].AreaName := TestSeries[Ser];
-               DEMGlb[TestDEMs[Ser]].DEMFileName := SaveName;   //NextFileNumber(MDTempDir, DEMGlb[TestDEMs[Ser]].AreaName + '_', '.dem');
-
-               {$IfDef RecordDEMIXLoad} WriteLineRoDebugFile('Opened:' + WantSeries + '  Open DEMs=' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-               if (ShortName = 'COP') or (ShortName = 'TANDEM') or (ShortName = 'FABDEM') or (ShortName = 'DILUV') then DEMGlb[TestDEMs[Ser]].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008
-               else begin
-                  MoveFromEGM96toEGM2008(TestDEMs[Ser]);
-                  {$If Defined(TrackPixelIs) or Defined(RecordDEMIXLoad)} WriteLineRoDebugFile('Moved to EGM2008, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
                end;
-               EditsDone := 0;
-               MaskGridFromSecondGrid(TestDEMs[Ser],aRefDEM, msSecondMissing);
-               DEMGlb[TestDEMs[Ser]].SavePartOfDEMWithDataGeotiff(SaveName);
-               {$If Defined(TrackPixelIs)} WriteLineRoDebugFile('Masked and saved, ' + DEMglb[WantedDEM].AreaName + '  ' + GridCornerModelAndPixelIsString); {$EndIf}
-               Result := true;
-            end
-            else begin
-               {$IfDef RecordDEMIX} AllDEMs := AllDEMs + WantSeries + ' (missing) '; {$EndIf}
             end;
+            CloseSingleDEM(GeoidGrid);
+            {$IfDef RecordDEMIX} if (AllDEMs <> '') then HighlightLineToDebugFile(AreaName + ' DEM problem, ' + AllDEMs); {$EndIf}
+            {$IfDef RecordDEMIXLoad} WriteLineRoDebugFile('CreateDEMIXCandidateDEMs out; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+      //end;
+         end
+         else begin
+            {$IfDef RecordDEMIX} HighlightLineToDebugFile(AreaName + ' CreateDEMIXCandidateDEMs fails, no reference DEMs'); {$EndIf}
          end;
-      end;
-      CloseSingleDEM(GeoidGrid);
-      {$IfDef RecordDEMIX} if (AllDEMs <> '') then HighlightLineToDebugFile(AreaName + ' DEM problem, ' + AllDEMs); {$EndIf}
-      {$IfDef RecordDEMIXLoad} WriteLineRoDebugFile('CreateDEMIXCandidateDEMs out; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-//end;
-   end
-   else begin
-      {$IfDef RecordDEMIX} HighlightLineToDebugFile(AreaName + ' CreateDEMIXCandidateDEMs fails, no reference DEMs'); {$EndIf}
-   end;
-end {CreateDEMIXTestDEMsForArea};
+      end {CreateDEMIXTestDEMsForArea};
 
 
-procedure CreateTestAreaDEMs(Overwrite : boolean);
+
 var
    i,RefDEM : integer;
    Areas : tStringList;
    AreaName : shortstring;
 begin
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateTestAreaDEMs in, dir=' + DEMIX_test_dems); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateDEMIXTestAreaDEMs in, dir=' + DEMIX_test_dems); {$EndIf}
    try
       GetDEMIXPaths(true);
       SafeMakeDir(DEMIX_test_dems);
@@ -480,6 +482,6 @@ begin
    finally
       EndDEMIXProcessing;
    end;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateTestAreaDEMs out'); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateDEMIXTestAreaDEMs out'); {$EndIf}
 end;
 

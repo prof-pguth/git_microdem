@@ -256,7 +256,7 @@ var
       end;
    end;
 
-begin
+begin {procedure ReadNEDBIL}
    {$IfDef RecordReadDEM} WriteLineToDebugFile('ReadNEDBIL in'); {$EndIf}
    FSplit(fName,Dir,bName,Ext);
    Error := true;
@@ -425,7 +425,7 @@ begin
       Error := false;
       {$IfDef RecordReadDEM} WriteLineToDebugFile('NED read out'); {$EndIf}
    end;
-end;
+end {procedure ReadNEDBIL};
 
 
 {$IfDef ExcludeUKOSDEM}

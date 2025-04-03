@@ -54,7 +54,6 @@ inherited FitFourierForm: TFitFourierForm
     PlainText = True
     ScrollBars = ssVertical
     TabOrder = 3
-    ExplicitHeight = 135
   end
   object Panel1: TPanel
     Left = 0

@@ -48,7 +48,7 @@ type
   public
     { Public declarations }
      FormDatumCode : Shortstring;
-     PName : tProjectType;
+     PName : tProjType;
      GeoLatLong : boolean;
      ProjFName : PathStr;
   end;

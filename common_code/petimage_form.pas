@@ -1479,10 +1479,10 @@ begin
    {$Else}
       if (ImageDoingWhat = ColorCrossSection) then begin
          ThisGraph := TThisBaseGraph.Create(Application);
-         ThisGraph.OpenDataFile(rfileGray);
-         ThisGraph.OpenDataFile(rfileRed);
-         ThisGraph.OpenDataFile(rfileGreen);
-         ThisGraph.OpenDataFile(rfileBlue);
+         ThisGraph.OpenDataFile(rfileGray,'');
+         ThisGraph.OpenDataFile(rfileRed,'');
+         ThisGraph.OpenDataFile(rfileGreen,'');
+         ThisGraph.OpenDataFile(rfileBlue,'');
          ThisGraph.GraphDraw.MaxHorizAxis := 255;
          ThisGraph.GraphDraw.MaxVertAxis := Image1.Height;
          ThisGraph.GraphDraw.NormalCartesianY := false;

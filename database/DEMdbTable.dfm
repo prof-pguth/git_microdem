@@ -2610,7 +2610,6 @@ object dbtablef: Tdbtablef
       end
       object Datumshift2: TMenuItem
         Caption = 'Datum shift using VDATUM output'
-        OnClick = Datumshift2Click
       end
       object Verticaldatumshift1: TMenuItem
         Caption = 'Vertical datum shift'

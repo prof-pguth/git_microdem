@@ -337,12 +337,12 @@ begin
    if DEMGlb[WhichDEM].DEMheader.ElevUnits = euImagery then TStr := 'DNs '
    else TStr := 'Elevation ';
    if Quick or MDDef.ShowRegularHistogram then begin
-      if MDDef.CountHistograms then GISDB[theDB].CreateScatterGram('CONCENT','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + ' Histogram',
+      if MDDef.CountHistograms then GISDB[theDB].CreateScatterGram('test','CONCENT','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + ' Histogram',
            'Concentration (Fraction of Uniform)',  TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')')
       else begin
          if (DEMGlb[WhichDEM].DEMheader.ElevUnits = euImagery) then
-              GISDB[theDB].CreateScatterGram('Z','NPTS',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')','Number of Points')
-         else GISDB[theDB].CreateScatterGram('NPTS','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram','Number of Points', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')');
+              GISDB[theDB].CreateScatterGram('test','Z','NPTS',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')','Number of Points')
+         else GISDB[theDB].CreateScatterGram('test','NPTS','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' ' + TStr + 'Histogram','Number of Points', TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')');
       end;
    end;
 
@@ -350,14 +350,14 @@ begin
       CloseAndNilNumberedDB(theDB);
    end
    else begin
-      if MDDef.ShowCumulativeHistogram then GISDB[theDB].CreateScatterGram('CUM_PC','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative Elevation Distribution',
+      if MDDef.ShowCumulativeHistogram then GISDB[theDB].CreateScatterGram('test','CUM_PC','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative Elevation Distribution',
           'Cumulative Percentage', 'Elevation (' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')');
 
-      if MDDef.ShowStrahlerHistogram then GISDB[theDB].CreateScatterGram('PROP_AREA','PROP_HGT',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Strahler Elevation Distribution',
+      if MDDef.ShowStrahlerHistogram then GISDB[theDB].CreateScatterGram('test','PROP_AREA','PROP_HGT',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Strahler Elevation Distribution',
           'Proportion of Area', 'Proportion of Basin Height');
 
        if MDDef.ShowNormalHistogram then begin
-          GISDB[theDB].CreateScatterGram('Z','CUM_PC',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative ' + TStr + 'Distribution',
+          GISDB[theDB].CreateScatterGram('test','Z','CUM_PC',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative ' + TStr + 'Distribution',
             TStr + '(' + ElevUnitsAre(DEMGlb[WhichDEM].DEMheader.ElevUnits)  + ')','Cumulative Percentage',true);
        end;
 
@@ -387,10 +387,8 @@ var
   i,NumVals,NegBins : integer;
   Value,Range,MaxCount,MinInSeries,MaxInSeries : float32;
   l2 : shortstring;
-  //AutoScale,
   First : boolean;
   Bins : array[0..MaxBins] of integer;
-  //StackedPercents : boolean;
 
 
          function ProcessSeries(fName : PathStr) : boolean;
@@ -399,6 +397,7 @@ var
             inf,rfile : file;
             v   : array[1..2] of float32;
             i,j,ax,ay : integer;
+            TStr : shortstring;
          begin
             if FileExists(fName) then begin
                {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + fName); {$EndIf}
@@ -413,15 +412,17 @@ var
                Result := (NumVals > 1) and ((Histogram.GraphDraw.MaxHorizAxis - Histogram.GraphDraw.MinHorizAxis) > 0.00001);
                if Result then begin
                   for j := 0 to MaxBins do Bins[j] := 0;
-                  //StartProgress('Histogram');
                   for i := 0 to pred(NumVals) do begin
-                     //if (i mod 250 = 0) then UpdateProgressBar(i/NumVals);
                      Value := Values^[i];
                      j := round((Value - Histogram.GraphDraw.MinHorizAxis) / Histogram.HistogramBinSize);
                      if (j >= 0) and (j <= Histogram.HistogramNumBins) then inc(Bins[j]);
                   end;
-                  //EndProgress;
-                  Histogram.OpenDataFile(rfile);
+
+                  TStr := ExtractFileNameNoExt(fName);
+                  while TStr[length(TStr)] in ['0','9'] do Delete(Tstr,Length(TStr),1);
+                  Delete(Tstr,Length(TStr),1);
+
+                  Histogram.OpenDataFile(rfile,TStr);
                   if MDDef.FlipHistogram then begin
                      ax := 2;
                      ay := 1;
@@ -533,6 +534,7 @@ begin
       Result.GraphDraw.GraphType := gtMultHist;
       Result.HistogramChanged := false;
 
+      (*
       if (LegendList <> Nil) then begin
          Result.GraphDraw.LegendList := tStringList.Create;
          for I := 0 to pred(LegendList.Count) do begin
@@ -540,6 +542,8 @@ begin
             {$IfDef RecordHistogram} WriteLineToDebugFile('Series=' + IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
          end;
       end;
+      *)
+
       ShowHourglassCursor;
       Result.Caption := TitleBar;
       Result.GraphDraw.SetShowAllPoints(false);

@@ -41,7 +41,6 @@ unit DEMCoord;
       //{$Define ShowFullDEMSSOCalc}
       {$Define RecordMaskFromSecondGrid}
       {$Define RecordLSQ}
-
       //{$Define RecordGridIdenticalProblems}
       //{$Define TrackDEMboundingBox}
       //{$Define RecordUKOS}
@@ -483,7 +482,8 @@ type
          procedure ReflectanceParams(Min : float64 = -9999; Max : float64 = -9999);
 
      //slope and aspect
-         function GetSlopeAndAspect(HowCompute : tSlopeCurveCompute; Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
+         function GetSlopeAndAspect(HowCompute : tSlopeCurveCompute; Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true;
+            NeedSecondOrder : boolean = false) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function QuickEvansSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
 
@@ -787,11 +787,12 @@ procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic
 
 
 //reports, in demcoord_reports.inc
-   procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = '');
+   {$IfDef SlopeWindowEdgeEffect} procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = ''); {$EndIf}
    procedure TrendSurfacePartialDerivatives(DEM,xp,yp : integer; Title : shortstring = '');
    procedure TrendSurfaceEquations(DEM,xp,yp : integer; Title : shortstring = '');
    procedure LocalTrendSurface(DEM,xp,yp : integer; Title : shortstring = '');
    procedure TrendSurfaceEquationsUseCenterPoint(DEM,xp,yp : integer; Title : shortstring = '');
+
    procedure AddSlopeAtPoint(var  Results : tStringList; DEM,xp,yp : integer);
    procedure StartSlopeReport(var Results : tStringList; DEM,xp,yp : integer; Title : shortstring = '');
    procedure SlopeMethodsReport(DEM,xp,yp : integer; Title : shortstring = '');
@@ -842,7 +843,7 @@ var
 const
    {$IfDef OptionSaveSlopeComputePoints} SaveSlopeComputationPoints : boolean = false; {$EndIf} //saves definitions to verify slope least squares with Python
    SkipCenterPoint : boolean = false;
-   TestEdgeEffect : boolean = false;
+   {$IfDef SlopeWindowEdgeEffect} TestEdgeEffect : boolean = false;  {$EndIf}
 
 
 implementation
@@ -1150,8 +1151,8 @@ var
 begin
     LatLongDegreeToDEMGrid( round(DEMSWcornerLat),round(DEMSWcornerLong),xg,yg);
     f := abs(frac(xg));
-    if (f < 0.0001) or (f > 0.9999) then Result := 'SRTM'
-    else if (f-0.5) < 0.0001 then Result := 'ALOS'
+    if (f < 0.001) or (f > 0.999) then Result := 'SRTM'
+    else if (f-0.5) < 0.001 then Result := 'ALOS'
     else Result := 'Other';
 end;
 

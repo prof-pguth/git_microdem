@@ -26,6 +26,8 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
+      {$Define RecordMapDraw}
+      {$Define RecordWorldOutline}
       //{$Define RecordClosing}
       //{$Define RecordDrawSecondGrid}
       //{$Define RecordNumberOpenMaps}
@@ -44,9 +46,8 @@
       //{$Define TrackDEMboundingBox}    //must also be defined in DEMcoord
       //{$Define RecordShapeFileGroup}
       //{$Define RecordPlotDBrules}
-      //{$Define RecordWorldOutline}
       //{$Define Track_f}
-      {$Define RecordMapResize}
+      //{$Define RecordMapResize}
       //{$Define RecordTissot}
       //{$Define RecordTargetAreasCoverage}
       //{$Define RecordMapDrawCreation}
@@ -54,7 +55,6 @@
       //{$Define RecordKeyMap}
       //{$Define ShowProjectedLimits}
       //{$Define RecordElevRange}
-      //{$Define RecordMapDraw}
       //{$Define RecordNLCD}
       //{$Define RecordRefMapColors}
 
@@ -77,7 +77,7 @@
       //{$Define RecordPixelSize}
       //{$Define RecordShortDefineDatum}
       //{$Define RecordDBPlots}
-      //{$Define RecordOverlays}
+      {$Define RecordOverlays}
       //{$Define RecordPLSS}
       //{$Define RecordOffMap}
       //{$Define RecordWMS}
@@ -1048,7 +1048,8 @@ function tMapDraw.ValidProjectedCoordinates : boolean;
 begin
    Result := false;
    if (VectorIndex <> 0) then begin
-      Result := (PrimMapProj.PName in [AlbersEqAreaConicalEllipsoid,MercatorEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,LamAzEqAreaEllipsoidal,IrishGrid]);
+      Result := (PrimMapProj.PName in [AlbersEqAreaConicalEllipsoid,MercatorEllipsoid,PolarStereographicEllipsoidal,LambertConformalConicEllipse,
+           GeneralTransverseMercator,LamAzEqAreaEllipsoidal,UK_OS,Finn_GK,IrishGrid]);
    end;
    if DEMMap and (DEMGlb[DEMonMap].DEMMapProj <> Nil) then begin
       Result := true;

@@ -305,7 +305,7 @@ var
          Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM')));
          GISdb[DBonTable].EmpSource.Enabled := false;
          while not GISdb[DBonTable].MyData.eof do begin
-            Graph[i].OpenDataFile(rfile,Color);
+            Graph[i].OpenDataFile(rfile,'',Color);
             for j := 1 to NCrits do begin
                Graph[i].AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
             end;
@@ -334,7 +334,7 @@ var
                Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM')));
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
-                  Graph[i].OpenDataFile(rfile,Color);
+                  Graph[i].OpenDataFile(rfile,'',Color);
                   for j := 1 to NCrits do begin
                      Graph[i].AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
                   end;
@@ -346,7 +346,7 @@ var
          else begin
             while not GISdb[DBonTable].MyData.eof do begin
                Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR');
-               Graph[i].OpenDataFile(rfile,Color);
+               Graph[i].OpenDataFile(rfile,'',Color);
                for j := 1 to NCrits do begin
                   Graph[i].AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
                end;
@@ -390,7 +390,7 @@ function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBa
 (*
          function OneGraph(MaxCluster : integer): tThisBaseGraph;
          var
-            Crit,aline : shortstring;
+            Crit,aline,fName : shortstring;
             i,j,k,NCrit,NDEM,Cluster : integer;
             rfile : file;
          begin
@@ -406,8 +406,9 @@ function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBa
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
                   Cluster := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('CLUSTER');
-                  Result.GraphDraw.LegendList.Add('Cluster ' + IntToStr(Cluster) + ' n=' + IntToStr(GISdb[DBonTable].MyData.GetFieldByNameAsInteger('N')));
-                  Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
+                  fName := 'Cluster_' + IntToStr(Cluster) + '_n=' + IntToStr(GISdb[DBonTable].MyData.GetFieldByNameAsInteger('N');
+                  Result.GraphDraw.LegendList.Add(fName));
+                  Result.OpenDataFile(rfile,fName,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
                   for j := 1 to NCrits do begin
                      Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
                   end;
@@ -467,19 +468,20 @@ end;
                Result.GraphDraw.GraphLeftLabels := tStringList.Create;
                Result.GraphDraw.BottomMargin := 75;
                Result.GraphDraw.SetShowAllPoints(false);
-               Result.GraphDraw.LegendList := tStringList.Create;
+               //Result.GraphDraw.LegendList := tStringList.Create;
                Result.GraphDraw.HorizLabel := 'Fraction variance unexplained';
                GISdb[DBonTable].EmpSource.Enabled := false;
                while not GISdb[DBonTable].MyData.eof do begin
                   if ClusterOption then begin
                      Cluster := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('CLUSTER');
                      n := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('N');
-                     Result.GraphDraw.LegendList.Add('Cluster ' + IntToStr(Cluster) + ' (n=' + IntToStr(n) + ')');
-                     Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
+                     fName := 'Cluster_' + IntToStr(Cluster) + '_(n=' + IntToStr(n) + ')';
+                     //Result.GraphDraw.LegendList.Add(fName);
+                     Result.OpenDataFile(rfile,fName,GISdb[DBonTable].MyData.GetFieldByNameAsInteger('COLOR'));
                   end
                   else begin
                      DEM := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
-                     Result.OpenDataFile(rfile,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
+                     Result.OpenDataFile(rfile,DEM,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
                   end;
                   for j := 0 to pred(CritList.Count) do begin
                      Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(CritList.Strings[j]),succ(j));

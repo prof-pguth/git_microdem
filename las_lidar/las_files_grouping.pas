@@ -574,10 +574,10 @@ begin
      end;
      fName := Petmar.NextFileNumber(MDtempDir,'las_hist_','.dbf');
      db := BaseMap.StringListtoLoadedDatabase(sl,fname);
-     TheGraph := GISDB[db].CreateScatterGram('TOTAL','ELEV_M',clRed,true,'LAS elevation histogram');
-     GISDB[db].AddSeriesToScatterGram(TheGraph,clLime,'VEG','ELEV_M',true);
-     GISDB[db].AddSeriesToScatterGram(TheGraph,clBrown,'GROUND','ELEV_M',true);
-     GISDB[db].AddSeriesToScatterGram(TheGraph,clAqua,'BUILDING','ELEV_M',true);
+     TheGraph := GISDB[db].CreateScatterGram('Total','TOTAL','ELEV_M',clRed,true,'LAS elevation histogram');
+     GISDB[db].AddSeriesToScatterGram('Vegetation',TheGraph,clLime,'VEG','ELEV_M',true);
+     GISDB[db].AddSeriesToScatterGram('Ground',TheGraph,clBrown,'GROUND','ELEV_M',true);
+     GISDB[db].AddSeriesToScatterGram('Building',TheGraph,clAqua,'BUILDING','ELEV_M',true);
    {$IfDef RecordLASHist} WriteLineToDebugFile('tLas_files.ElevationHistogram out'); {$EndIf}
 end;
 
@@ -621,8 +621,8 @@ var
             Total := 0;
             for z := First to Last do Total := Total + int[z];
             if Total = 0 then exit;
-            ThisGraph2.GraphDraw.LegendList.Add(LegendEntry);
-            ThisGraph2.OpenDataFile(rfile);
+            //ThisGraph2.GraphDraw.LegendList.Add(LegendEntry);
+            ThisGraph2.OpenDataFile(rfile,LegendEntry);
             for z := First to Last do begin
                v[1] := Int[z] /Total * succ(Last-First);
                v[2] := z;
@@ -886,7 +886,7 @@ var
                     FindMinMax('Intensity',Intensities^);
                     if ((Last-First) <> 0) and DoGraph then begin
                        ThisGraph2 := TThisBaseGraph.Create(Application);
-                       ThisGraph2.GraphDraw.LegendList := tStringList.Create;
+                       //ThisGraph2.GraphDraw.LegendList := tStringList.Create;
                        AddHistogramFile(Intensities^,'overall');
                        ThisGraph2.Caption := 'LAS Intensity Histogram: '+ Self.CloudName;
                        ThisGraph2.GraphDraw.HorizLabel := 'Concentration (fraction of uniform)';

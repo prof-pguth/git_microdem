@@ -151,7 +151,7 @@ begin
 end;
 
 
-function SetUpVectorMap(DrawIt,WorldOutline : boolean; WantProjection : tProjectType = undefinedProj; ProjName : PathStr = '') : integer;
+function SetUpVectorMap(DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : integer;
 var
    i : integer;
 begin
@@ -169,12 +169,13 @@ begin
       Result := i;
       VectorMap[i] := SetUpANewVectorMap(i,DrawIt,WorldOutline,WantProjection,ProjName);
    end;
+   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('SetUpVectorMap out'); {$EndIf}
 end;
 
 
-function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjectType = undefinedProj; ProjName : PathStr = '') : tMapForm;
+function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : tMapForm;
 
-         procedure SetProjection(WantProjection : tProjectType);
+         procedure SetProjection(WantProjection : tProjType);
          begin
               Result.MapDraw.PrimMapProj.PName := WantProjection;
               SetUpDefaultNewProjection(Result.MapDraw.PrimMapProj);
@@ -204,7 +205,7 @@ begin
              end;
           end;
        end;
-       {$IfDef RecordOpenVectorMap} (if ProjName <> '') then WriteLineToDebugFile('After setting, ProjName=' + ProjName); {$EndIf}
+       {$IfDef RecordOpenVectorMap} if (ProjName <> '') then WriteLineToDebugFile('After setting, ProjName=' + ProjName); {$EndIf}
 
        Result.MapDraw.PrimMapProj.PName := MapDraw.PrimMapProj.PName;
        MapDraw.BaseTitle := MapDraw.PrimMapProj.GetProjName;
@@ -215,6 +216,7 @@ begin
        MapDraw.ResetMarginalia;
        if DrawIt then DoCompleteMapRedraw;
     end;
+    {$IfDef RecordOpenVectorMap} writeLineToDebugFile('SetUpANewVectorMap out, ProjName=' + ProjName); {$EndIf}
 end;
 
 

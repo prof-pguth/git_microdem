@@ -646,22 +646,17 @@ begin
 
          //Histogram := DeprecatedCreateHistogram(true,MomentVar.NPts,zvs^,'Elevations','Distribution at ' + LatLongDegreeToString(Lat,Long) );
 
-
-
-
          Distributions := tStringList.Create;
          fName := NextFileNumber(MDTempDir,'pc_distrib_','.z');
          Distributions.Add(SaveSingleValueSeries(MomentVar.NPts,zvs^,fName));
          Histogram := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Nil,'', '');   //,200,Min,Max,BinSize);
 
 
-
-
-         Histogram.GraphDraw.LegendList := tStringList.Create;
-         Histogram.GraphDraw.LegendList.Add('Point cloud');
+         //Histogram.GraphDraw.LegendList := tStringList.Create;
+         //Histogram.GraphDraw.LegendList.Add('Point cloud');
          for i := 1 to MaxCompare do begin
             if (CompareDEMIndexes[i] <> 0) then begin
-               Histogram.GraphDraw.LegendList.Add(CompareDEMNames[i]);
+               //Histogram.GraphDraw.LegendList.Add(CompareDEMNames[i]);
                DEMSymbol(CompareDEMIndexes[i],ConvertTColorToPlatformColor(WinGraphColors[i]));
             end;
          end;

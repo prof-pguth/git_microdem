@@ -396,7 +396,6 @@ var
    fName : PathStr;
 begin
    if (not FileExists(SeriesIndexFileName)) then PickMapIndexLocation;
-
    fName  := SeriesIndexFileName;
    IndexSeriesTable := tMyData.Create(fName);
    IndexSeriesTable.InsureFieldPresentAndAdded(ftInteger,'PIXEL_IS',2);
@@ -583,27 +582,6 @@ var
          Min,Max : float64;
          i : integer;
 
-           {$IfDef ExSat}
-           {$Else}
-              (*
-              procedure CheckImageryFile(fName : PathStr);
-              var
-                 Success : boolean;
-                 SatView : tSatView;
-                 bb : sfBoundBox;
-              begin
-                 {$IfDef RecordIndexFileNames} WriteLineToDebugFile(fName); {$EndIf}
-                     SatImage[1] := tSatImage.Create(SatView,Nil,fName,False,Success);
-                     if Success then begin
-                        bb := SatImage[1].SatelliteBoundBoxGeo(1);
-                        InsertMapLibraryRecord(TheTable,fName,Series,bb);  //bb.ymin,bb.XMin,bb.YMax,bb.xmax);
-                        SatImage[1].Destroy;
-                     end;
-                end;
-                *)
-             {$EndIf}
-
-
          procedure DataTypeTableInsert(What : string16);
          begin
             DataTypeTable.ApplyFilter('DATA_TYPE=' + QuotedStr(What));
@@ -652,15 +630,6 @@ var
                        Where := AlreadyIndexed.IndexOf(fName);
                        if (Where = -1) then begin
                           {$IfDef ListIndexFileName} WriteLineToDebugFile(' file not indexed already'); {$EndIf}
-
-                          {$ifDef ExSat}
-                          {$Else}
-                             (*
-                             if ((DataType = 'IMAGERY') or (DataType = 'DRGS') ) and ValidImageryExt(ext) then begin
-                                CheckImageryFile(fName);
-                             end;
-                             *)
-                          {$EndIf}
 
                           if (DataType = 'DEMS') {or (DataType = 'BATHY'))} and ValidDEMExt(ext) then begin
                              if StrUtils.AnsiContainsText(fName,'original_') then begin
@@ -714,12 +683,14 @@ var
          while not IndexSeriesTable.eof do begin
             TheTable.ApplyFilter('SERIES=' + QuotedStr(IndexSeriesTable.GetFieldByNameAsString('SERIES')));
             if (TheTable.RecordCount > 0) then begin
-               IndexSeriesTable.Edit;
-               IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',TheTable.RecordCount);
-               if TheTable.FindFieldRange('LAT_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_LOW',Min);
-               if TheTable.FindFieldRange('LAT_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_HI',Max);
-               if TheTable.FindFieldRange('LONG_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_LOW',Min);
-               if TheTable.FindFieldRange('LONG_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_HI',Max);
+               if IndexSeriesTable.GetFieldByNameAsString('MONSTER') = '' then begin
+                 IndexSeriesTable.Edit;
+                 IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',TheTable.RecordCount);
+                 if TheTable.FindFieldRange('LAT_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_LOW',Min);
+                 if TheTable.FindFieldRange('LAT_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_HI',Max);
+                 if TheTable.FindFieldRange('LONG_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_LOW',Min);
+                 if TheTable.FindFieldRange('LONG_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_HI',Max);
+               end;
                IndexSeriesTable.Next;
             end
             else IndexSeriesTable.Delete;
@@ -1261,8 +1232,8 @@ var
 var
    DataInSeries : tStringList;
    IndexSeriesTable : tMyData;
-   DataType : ShortString;
-begin
+   DataType,Monster : ShortString;
+begin {function LoadMapLibraryBox}
    {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt) + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
    try
       LoadingFromMapLibrary := true;
@@ -1277,13 +1248,20 @@ begin
          MergeSeriesName := IndexSeriesTable.GetFieldByNameAsString('SERIES');
          if IndexSeriesTable.FieldExists('SHORT_NAME') then MergedName := IndexSeriesTable.GetFieldByNameAsString('SHORT_NAME')
          else MergedName := MergeSeriesName;
-         {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
-         DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,bb);
-         {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Files found: ' + IntToStr(DataInSeries.Count)); {$EndIf}
-         if (DataInSeries.Count > 0) then begin
-            DataType := UpperCase(IndexSeriesTable.GetFieldByNameAsString('DATA_TYPE'));
-            LoadTheDEMs(DataInSeries);
-            {$If Defined(RecordMerge) or Defined(LoadLibrary)} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}
+
+         Monster := IndexSeriesTable.GetFieldByNameAsString('MONSTER');
+         if (Monster <> '') then begin
+            Result := ExtractFromMonsterTIFFforBoundingBox(Monster,bb,DisplayIt,Monster);
+         end
+         else begin
+           {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
+           DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,bb);
+           {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Files found: ' + IntToStr(DataInSeries.Count)); {$EndIf}
+           if (DataInSeries.Count > 0) then begin
+              DataType := UpperCase(IndexSeriesTable.GetFieldByNameAsString('DATA_TYPE'));
+              LoadTheDEMs(DataInSeries);
+              {$If Defined(RecordMerge) or Defined(LoadLibrary)} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}
+           end;
          end;
          IndexSeriesTable.Next;
       end;
@@ -1293,7 +1271,7 @@ begin
       LoadingFromMapLibrary := false;
    end;
    {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Out LoadMapLibraryBox; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
-end;
+end {function LoadMapLibraryBox};
 
 
 procedure CreateLandsatIndex(Browse : boolean);

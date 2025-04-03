@@ -575,12 +575,12 @@ begin
    fName := Petmar.NextFileNumber(MDTempDir,'hours_sun_' + LatLongToStringForFileName(Lat,Long) + '_','.dbf');
    db := StringList2CSVtoDB(SunResults, fName);
 
-   Result := GISdb[db].CreateScatterGram('JULIAN_DAY','HOURS_ILL',clRed,true);
-   GISdb[db].AddSeriesToScatterGram(Result,clLime,'JULIAN_DAY','HOUR_LIGHT',true);
+   Result := GISdb[db].CreateScatterGram('Hours direct illumination','JULIAN_DAY','HOURS_ILL',clRed,true);
+   GISdb[db].AddSeriesToScatterGram('Hours daylight',Result,clLime,'JULIAN_DAY','HOUR_LIGHT',true);
 
-   Result.GraphDraw.LegendList := tStringList.Create;
-   Result.GraphDraw.LegendList.Add('Hours direct illumination');
-   Result.GraphDraw.LegendList.Add('Hours daylight');
+   //Result.GraphDraw.LegendList := tStringList.Create;
+   //Result.GraphDraw.LegendList.Add('Hours direct illumination');
+   //Result.GraphDraw.LegendList.Add('Hours daylight');
 
    Result.GraphDraw.SetShowAllLines(true);
    Result.GraphDraw.SetShowAllPoints(false);
@@ -626,13 +626,13 @@ var
    Graph1 : tThisBaseGraph;
 
 
-         procedure AddToGraph(JDay : integer);
+         procedure AddToGraph(fName : PathStr; JDay : integer);
          var
             hr,az,alt,sunrise,sunset : float64;
             rfile : file;
          begin
             hr := 0;
-            Graph1.OpenDataFile(rfile);
+            Graph1.OpenDataFile(rfile,fName);
             repeat
                Sun_Position.ComputeSunPosition(lat,long, hr,Long / 15,JDay,az,alt,sunrise,sunset);
                if (alt > 0) then begin
@@ -682,23 +682,23 @@ begin
     end;
 
     if AngleGraph then begin
-       Graph1 := GISdb[db].CreateScatterGram('AZIMUTH','ELEV_DEG',clRed,true);
+       Graph1 := GISdb[db].CreateScatterGram('Horizon','AZIMUTH','ELEV_DEG',clRed,true);
        Graph1.GraphDraw.FileColors256[1] := MDDef.HorizonColor;
        if MDDef.ShowSolstices then begin
-          Graph1.GraphDraw.LegendList := tStringList.Create;
-          Graph1.GraphDraw.LegendList.Add('Horizon');
-          Graph1.GraphDraw.LegendList.Add('June solstice');
-          Graph1.GraphDraw.LegendList.Add('Equinoxes');
-          Graph1.GraphDraw.LegendList.Add('December solstice');
-          AddToGraph(AnnualJulianDay(2019,6,21));
-          AddToGraph(AnnualJulianDay(2019,9,21));
-          AddToGraph(AnnualJulianDay(2019,12,21));
+          //Graph1.GraphDraw.LegendList := tStringList.Create;
+          //Graph1.GraphDraw.LegendList.Add('Horizon');
+          //Graph1.GraphDraw.LegendList.Add('June solstice');
+          //Graph1.GraphDraw.LegendList.Add('Equinoxes');
+         // Graph1.GraphDraw.LegendList.Add('December solstice');
+          AddToGraph('June solstice',AnnualJulianDay(2019,6,21));
+          AddToGraph('Equinoxes',AnnualJulianDay(2019,9,21));
+          AddToGraph('December solstice',AnnualJulianDay(2019,12,21));
        end;
        Graph1.GraphDraw.SetShowAllLines(true);
        Graph1.GraphDraw.SetShowAllPoints(false);
        Graph1.AutoScaleAndRedrawDiagram;
     end;
-    if RangeGraph then GISdb[db].CreateScatterGram('AZIMUTH','BLOCK_M',clRed,true);
+    if RangeGraph then GISdb[db].CreateScatterGram('test','AZIMUTH','BLOCK_M',clRed,true);
 
     if MDDef.HorizonSkyMap then begin
        Result.UpdateDisplay;
@@ -729,7 +729,7 @@ begin
    EndProgress;
    fName := Petmar.NextFileNumber(MDTempDir, 'sun_altitude_noon_',DefaultDBExt);
    db := BaseMap.StringListToLoadedDatabase(SunResults,fName);
-   TheGraph := GISdb[db].CreateScatterGram('JULIAN_DAY','MAX_ALT',clRed,false,'Local noon solar altitude ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
+   TheGraph := GISdb[db].CreateScatterGram('test','JULIAN_DAY','MAX_ALT',clRed,false,'Local noon solar altitude ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
    TheGraph.GraphDraw.MaxVertAxis := 90;
    TheGraph.GraphDraw.MinVertAxis := -15;
    TheGraph.GraphDraw.MaxHorizAxis := 365;
@@ -786,10 +786,10 @@ var
             rfile,rfile2,rfile3  : file;
             v                    : tGraphPoint32;
          begin
-            SunGraph.OpenDataFile(rfile);
+            SunGraph.OpenDataFile(rfile,'');
             if MDDef.KoppenOpts.ShowSunRiseSet then begin
-               SunGraph.OpenDataFile(rfile2);
-               SunGraph.OpenDataFile(rfile3);
+               SunGraph.OpenDataFile(rfile2,'');
+               SunGraph.OpenDataFile(rfile3,'');
             end;
             StartProgress('Sunrise');
             for i := 0 to 365 do begin
@@ -952,7 +952,7 @@ begin
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'sunrise_',DefaultDBExt);
    db := MapForm.StringListToLoadedDatabase(Results,fName);
-   TheGraph := GISDB[db].CreateScatterGram('JULIAN_DAY','DAY_HOURS',clRed,false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
+   TheGraph := GISDB[db].CreateScatterGram('Hours daylight','JULIAN_DAY','DAY_HOURS',clRed,false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
    TheGraph.GraphDraw.MaxVertAxis := 24;
    TheGraph.GraphDraw.MinVertAxis := 0;
    TheGraph.GraphDraw.MaxHorizAxis := 365;
@@ -960,12 +960,12 @@ begin
    TheGraph.GraphDraw.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    TheGraph.RedrawDiagram11Click(Nil);
    if AddSunriseSunset then begin
-      GISdb[db].AddSeriesToScatterGram(TheGraph,clLime,'JULIAN_DAY','SUNRISE_F');
-      GISdb[db].AddSeriesToScatterGram(TheGraph,clBlue,'JULIAN_DAY','SUNSET_F');
-      TheGraph.GraphDraw.LegendList := tStringList.Create;
-      TheGraph.GraphDraw.LegendList.Add('Hours daylight');
-      TheGraph.GraphDraw.LegendList.Add('Time of sunrise');
-      TheGraph.GraphDraw.LegendList.Add('Time of sunset');
+      GISdb[db].AddSeriesToScatterGram('Time of sunrise',TheGraph,clLime,'JULIAN_DAY','SUNRISE_F');
+      GISdb[db].AddSeriesToScatterGram('Time of sunset',TheGraph,clBlue,'JULIAN_DAY','SUNSET_F');
+      //TheGraph.GraphDraw.LegendList := tStringList.Create;
+      //TheGraph.GraphDraw.LegendList.Add('Hours daylight');
+      //TheGraph.GraphDraw.LegendList.Add('Time of sunrise');
+      //TheGraph.GraphDraw.LegendList.Add('Time of sunset');
    end;
    if (MDdef.ProgramOption = ExpertProgram) then GISDB[db].dbtablef.ShowStatus
    else CloseAndNilNumberedDB(db);
@@ -1163,9 +1163,9 @@ begin
       {$IfDef RecordHorizon} WriteLineToDebugFile('Graph created'); {$EndIf}
       GISdb[db].AddSeriesToScatterGram(TheGraph,clLime,'JULIAN_DAY','DIRECT_ILL');
       GISdb[db].AddSeriesToScatterGram(TheGraph,clBlue,'JULIAN_DAY','TERR_MASK');
-      TheGraph.GraphDraw.LegendList := tStringList.Create;
-      TheGraph.GraphDraw.LegendList.Add('Hours direct illumination');
-      TheGraph.GraphDraw.LegendList.Add('Hours of terrain masking');
+      //TheGraph.GraphDraw.LegendList := tStringList.Create;
+      //TheGraph.GraphDraw.LegendList.Add('Hours direct illumination');
+      //TheGraph.GraphDraw.LegendList.Add('Hours of terrain masking');
       TheGraph.RedrawDiagram11Click(Nil);
       if (MDDef.ProgramOption <> ExpertProgram) then GISdb[db].Destroy;
    end;

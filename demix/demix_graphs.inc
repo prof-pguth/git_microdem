@@ -132,12 +132,13 @@ begin {BestDEMSbyCategory}
       fName := NextFileNumber(MDTempDir,RefDEMType[i] + '_average_scores_','.dbf');
       ScoresDB := StringList2CSVtoDB(AverageScore,fName);
       Graph := DEMIXwineContestScoresGraph(ScoresDB,'Average score',0.5, 6.25);
-      if (Graph.GraphDraw.LegendList <> nil) and (Graph.GraphDraw.LegendList.Count > 0) then begin
+
+      //if (Graph.GraphDraw.LegendList <> nil) and (Graph.GraphDraw.LegendList.Count > 0) then begin
          LegendfName := NextFileNumber(MDTempDir,'legend_','.png');
          bmp := Graph.MakeLegend;
          SaveBitmap(bmp,LegendfName);
          Bmp.free;
-      end;
+      //end;
 
       fName := NextFileNumber(MDTempDir,'best_graph_','.png');
       SaveImageAsBMP(Graph.Image1,fName);
@@ -213,7 +214,7 @@ var
        Graph := CreateMultipleHistogram(MDDef.CountHistograms,Dist,Legs,TStr,TStr,100,Min,Max,BinSize);
 
       for I := 1 to NumDEMIXtestDEM  do begin
-         Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
+         Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Legs[i]);
       end;
       Graph.GraphDraw.InsideMarginLegend := Corner;
       Graph.RedrawDiagram11Click(Nil);
@@ -318,12 +319,12 @@ var
 
       Graph := tThisBaseGraph.Create(Application);
 
-      Graph.GraphDraw.LegendList := tStringList.Create;
+      //Graph.GraphDraw.LegendList := tStringList.Create;
       for DEM := 1 to NumDEMIXtestDEM do begin
          Symbol := SymbolFromDEMName(DEMIXDEMTypeName[DEM]);
          Symbol.DrawingSymbol := FilledBox;
-         Graph.OpenPointFile(rfile[DEM],Symbol);
-         Graph.GraphDraw.LegendList.Add(DEMIXDEMTypeName[DEM]);
+         Graph.OpenPointFile(rfile[DEM],Symbol,DEMIXDEMTypeName[DEM]);
+         //Graph.GraphDraw.LegendList.Add(DEMIXDEMTypeName[DEM]);
       end;
 
       Graph.GraphDraw.TopLabel := RefFilter  + '  n=' + IntToStr(NumTiles);
@@ -574,7 +575,7 @@ var
           Graph := CreateMultipleHistogram(MDDef.CountHistograms,Dist,Legs,TStr,TStr,100,Min,Max,BinSize);
 
          for I := 1 to NumDEMIXtestDEM do begin
-            Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Graph.GraphDraw.LegendList[pred(i)]);
+            Graph.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(DEMIXDEMTypeName[i]);
          end;
          Graph.GraphDraw.InsideMarginLegend := Corner;
          Graph.RedrawDiagram11Click(Nil);
@@ -674,7 +675,7 @@ var
 
             Graph := tThisBaseGraph.Create(Application);
             Graph.GraphDraw.GraphLeftLabels := tStringList.Create;
-            Graph.GraphDraw.LegendList := tStringList.Create;
+            //Graph.GraphDraw.LegendList := tStringList.Create;
             Graph.GraphDraw.VertLabel := '';
             Graph.Caption := GISdb[DBonTable].DBName;
             Graph.GraphDraw.MinVertAxis := -1;
@@ -693,8 +694,8 @@ var
 
             for DEM := 1 to DEMsPresent.Count do begin
                Symbol := SymbolFromDEMName(DEMsPresent.Strings[Pred(DEM)]);
-               Graph.OpenPointFile(rfile[DEM],Symbol);
-               Graph.GraphDraw.LegendList.Add(DEMsPresent.Strings[Pred(DEM)]);
+               Graph.OpenPointFile(rfile[DEM],Symbol,DEMsPresent.Strings[Pred(DEM)]);
+               //Graph.GraphDraw.LegendList.Add(DEMsPresent.Strings[Pred(DEM)]);
             end;
 
             for i := 0 to pred(AreaList.Count) do begin
@@ -1106,7 +1107,7 @@ begin
       while not GISdb[DBonTable].MyData.eof do begin
          DEM := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
          Result.GraphDraw.LegendList.Add(DEM);
-         Result.OpenDataFile(rfile,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)));
+         Result.OpenDataFile(rfile,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM)),DEM);
 
          for j := 1 to NCrits do begin
             Result.AddPointToDataBuffer(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Crits[j]),j);
@@ -1175,8 +1176,8 @@ begin
    if (Distributions.Count = 6) and (Legends.Count = 6) then begin
       Result := CreateMultipleHistogram(MDDef.CountHistograms,Distributions,Legends,Tile + '  ' + param + ' difference distribution to reference ' + Ref,
            Tile + '  ' + param + ' difference',100,Min,Max,BinSize);
-      for I := 1 to Result.GraphDraw.LegendList.Count do begin
-         Result.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Result.GraphDraw.LegendList[pred(i)]);
+      for I := 1 to Legends.Count do begin
+         Result.GraphDraw.FileColors256[i] := DEMIXColorFromDEMName(Legends[pred(i)]);
       end;
       Result.GraphDraw.InsideMarginLegend := lpNWMap;
       SetDirtAirballBackground(Result,Ref);
@@ -1190,7 +1191,6 @@ begin
    end;
    FilesWanted.Free;
 end;
-
 
 
 function GraphAverageScoresByTile(DB : integer; DEMs,TileList,CriteriaList : tStringList): tThisBaseGraph;

@@ -53,8 +53,7 @@ begin
                 else Decs := 8;
             end;
             Aline := Aline + ' ';
-            {if (SlopeAspectRec.B[k] > 0) then Aline := Aline + '+' + RealToString(SlopeAspectRec.B[k],-12,Decs)
-            else} Aline := Aline + RealToString(SlopeAspectRec.B[k],-12,Decs);
+            Aline := Aline + RealToString(SlopeAspectRec.B[k],-12,Decs);
             if (k > 1) then Aline := Aline + '*' + TrendSurMultiples[k];
          end;
       end;
@@ -81,8 +80,9 @@ begin
             MDDef.SlopeCompute.LSQorder := j;
             for m := 1 to 3 do begin
                MDDef.SlopeCompute.UsePoints := m;
-               //aMethod := SlopeMethodName(MDDef.SlopeCompute);
-               AddSlopeAtPoint(Results,DEM,xp,yp);
+               if ((m = UseEdge) and (i > 1)) or (m in [UseAll,UseQueens]) then begin
+                  AddSlopeAtPoint(Results,DEM,xp,yp);
+               end;
             end;
          end;
          Results.Add('');
@@ -95,53 +95,55 @@ begin
 end;
 
 
-procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = '');
-var
-   Results : tStringList;
-   CurMethod : byte;
-   i,j,m : integer;
-   aLine : shortstring;
-   SAR :  tSlopeAspectRec;
+{$IfDef SlopeWindowEdgeEffect}
+  procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = '');
+  var
+     Results : tStringList;
+     CurMethod : byte;
+     i,j,m : integer;
+     aLine : shortstring;
+     SAR :  tSlopeAspectRec;
 
-   procedure TryOne;
-   begin
-      if DEMglb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,xp,yp,SAR) then begin
-        aLine := SlopeMethodName(MDDef.SlopeCompute) + RealToString(SAR.SlopePercent,7,2) + '%' + RealToString(SAR.AspectDirTrue,6,1) + '°T';
-        Results.Add(aline);
-      end;
-   end;
+     procedure TryOne;
+     begin
+        if DEMglb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,xp,yp,SAR) then begin
+          aLine := SlopeMethodName(MDDef.SlopeCompute) + RealToString(SAR.SlopePercent,7,2) + '%' + RealToString(SAR.AspectDirTrue,6,1) + '°T';
+          Results.Add(aline);
+        end;
+     end;
 
-begin
-   try
-      SaveBackupDefaults;
-      MDDef.EvansApproximationAllowed := false;
-      StartSlopeReport(Results,DEM,xp,yp,Title);
-      MDDef.SlopeCompute.AlgorithmName := smLSQ;
-      MDDef.SlopeCompute.WindowRadius := 1;
-      MDDef.SlopeCompute.LSQorder := 2;
-      TestEdgeEffect := false;
-      TryOne;
-      TestEdgeEffect := true;
-      TryOne;
-      Results.Add('');
-      MDDef.SlopeCompute.WindowRadius := 2;
-      MDDef.SlopeCompute.LSQorder := 3;
-      TestEdgeEffect := false;
-      TryOne;
-      TestEdgeEffect := true;
-      TryOne;
-      Results.Add('');
-      MDDef.SlopeCompute.WindowRadius := 3;
-      MDDef.SlopeCompute.LSQorder := 4;
-      TestEdgeEffect := false;
-      TryOne;
-      TestEdgeEffect := true;
-      TryOne;
-      DisplayAndPurgeStringList(Results,'Point Slope Algorithms Edge Effects');
-   finally
-      RestoreBackupDefaults;
-   end;
-end;
+  begin
+     try
+        SaveBackupDefaults;
+        MDDef.EvansApproximationAllowed := false;
+        StartSlopeReport(Results,DEM,xp,yp,Title);
+        MDDef.SlopeCompute.AlgorithmName := smLSQ;
+        MDDef.SlopeCompute.WindowRadius := 1;
+        MDDef.SlopeCompute.LSQorder := 2;
+        TestEdgeEffect := false;
+        TryOne;
+        TestEdgeEffect := true;
+        TryOne;
+        Results.Add('');
+        MDDef.SlopeCompute.WindowRadius := 2;
+        MDDef.SlopeCompute.LSQorder := 3;
+        TestEdgeEffect := false;
+        TryOne;
+        TestEdgeEffect := true;
+        TryOne;
+        Results.Add('');
+        MDDef.SlopeCompute.WindowRadius := 3;
+        MDDef.SlopeCompute.LSQorder := 4;
+        TestEdgeEffect := false;
+        TryOne;
+        TestEdgeEffect := true;
+        TryOne;
+        DisplayAndPurgeStringList(Results,'Point Slope Algorithms Edge Effects');
+     finally
+        RestoreBackupDefaults;
+     end;
+  end;
+{$EndIf}
 
 
 procedure LocalTrendSurface(DEM,xp,yp : integer; Title : shortstring = '');
@@ -317,12 +319,11 @@ begin
             MDDef.SlopeCompute.LSQorder := j;
             for m := 1 to 3 do begin
                MDDef.SlopeCompute.UsePoints := m;
-               //aMethod := SlopeMethodName(MDDef.SlopeCompute);  // + Fill[m];
                if DEMglb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,xp,yp,SAR) then begin
                   aLine := SlopeMethodName(MDDef.SlopeCompute) + RealToString(SAR.SlopePercent,7,2) + '%' + RealToString(SAR.AspectDirTrue,6,1) + '°T  ' +
-                     ' zx=' + RealToString(SAR.dzdx,9,6) + ' zy=' + RealToString(SAR.dzdy,9,6);
-                  if j > 1 then aLine := aLine + ' zxx=' + RealToString(SAR.dxx,9,6) + ' zxy=' + RealToString(SAR.dxy,9,6) +  ' zxy=' + RealToString(SAR.dxy,9,6);
-                  if j > 2 then aLine := aLine + ' zxxx=' + RealToString(SAR.dxxx,9,6) + ' zxxy=' + RealToString(SAR.dxxy,9,6) +  ' zxyy=' + RealToString(SAR.dxyy,9,6) +  ' zyyy=' + RealToString(SAR.dyyy,9,6);
+                     ' zx=' + RealToString(SAR.zx,9,6) + ' zy=' + RealToString(SAR.zy,9,6);
+                  if j > 1 then aLine := aLine + ' zxx=' + RealToString(SAR.zxx,9,6) + ' zxy=' + RealToString(SAR.zxy,9,6) +  ' zxy=' + RealToString(SAR.zxy,9,6);
+                  if j > 2 then aLine := aLine + ' zxxx=' + RealToString(SAR.zxxx,9,6) + ' zxxy=' + RealToString(SAR.zxxy,9,6) +  ' zxyy=' + RealToString(SAR.zxyy,9,6) +  ' zyyy=' + RealToString(SAR.zyyy,9,6);
                   Results.Add(aline);
                end;
             end;

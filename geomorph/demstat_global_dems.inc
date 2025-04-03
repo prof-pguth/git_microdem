@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{   include file for demstat        }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{                                        }
+{   include file for demstat             }
+{________________________________________}
 
 type
    tLidarStringArray = array[1..10] of shortstring;
@@ -231,7 +231,7 @@ var
           Result.GraphDraw.MinVertAxis := 6000;
           Result.GraphDraw.MaxVertAxis := -500;
           Result.SetUpGraphForm;
-          Result.GraphDraw.LegendList := tStringList.Create;
+          //Result.GraphDraw.LegendList := tStringList.Create;
           ShowHourglassCursor;
            for i := 1 to MaxCompare do begin
               for Bin := -100 to 5000 do begin
@@ -264,8 +264,8 @@ var
 
          for i := 1 to MaxCompare do begin
             if (DEM_Manager.CompareDEMNames[i] <> '') then begin
-               Result.GraphDraw.LegendList.Add(DEM_Manager.CompareDEMNames[i]);
-               Result.OpenDataFile(rfile[i]);
+               //Result.GraphDraw.LegendList.Add(DEM_Manager.CompareDEMNames[i]);
+               Result.OpenDataFile(rfile[i],DEM_Manager.CompareDEMNames[i]);
                Result.GraphDraw.LineSize256[i] := 1;
                Result.GraphDraw.ShowLine[i] := true;
                Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i]);
@@ -304,7 +304,7 @@ begin {proc ElevationSlopePlot}
    for j := 1 to MaxDataBase do if ValidDB(j) then begin
       Graph := GraphPlot(j);
    end;
-   bmp := Graph.MakeLegend(Graph.GraphDraw.LegendList,false);
+   bmp := Graph.MakeLegend;
    fName := Petmar.NextFileNumber(MDTempDir,'elev_Slope_','.bmp');
    Bmp.saveToFile(fName);
    BMP.free;
@@ -344,10 +344,11 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
               end;
               if i in [1,2] then Result.Symbol.Size := 3
               else Result.Symbol.Size := 2;
-              Result.OpenPointFile(rfiles[i],Result.Symbol);
+              Result.OpenPointFile(rfiles[i],Result.Symbol,LidarLabels[i]);
            end;
-           Result.GraphDraw.LegendList := tStringList.Create;
-           for i := 1 to ns do Result.GraphDraw.LegendList.Add(LidarLabels[i]);
+
+           //Result.GraphDraw.LegendList := tStringList.Create;
+           //for i := 1 to ns do Result.GraphDraw.LegendList.Add(LidarLabels[i]);
 
            if (DirField = LatFieldName) then begin
               Result.GraphDraw.HorizLabel := 'Latitude';
@@ -630,7 +631,7 @@ var
                   SaveImageAsBMP(g2.Image1,fName);
                   s2.Add(fName);
                   if (LegendFName = '') then begin
-                     bmp := g2.MakeLegend(g2.GraphDraw.LegendList,false);
+                     bmp := g2.MakeLegend;
                      LegendFName := Petmar.NextFileNumber(MDTempDir,'legend_','.bmp');
                      SaveBitmap(bmp,LegendFName);
                      bmp.Free;

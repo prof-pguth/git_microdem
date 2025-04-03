@@ -233,7 +233,7 @@ with DisplayGrid do begin
       else begin
          if (DoR = gcmMAbD) then begin
             Perfect := MDDef.PerfectMAbD;
-            if (MinVal < Perfect) then begin
+            if (MinVal <= Perfect) then begin
                delta := (MaxVal-Perfect) / pred(Table.TotRecsInDB);
                Table.Edit;
                Table.SetFieldByNameAsFloat('MIN',MinVal);
@@ -278,7 +278,7 @@ with DisplayGrid do begin
    Bitmap.Canvas.Font.Style := [fsBold];
 
    for j := 1 to pred(StringGrid1.RowCount) do begin
-      if FirstDataColumn = 1 then LeftLabel := StringGrid1.Cells[0,j]
+      if (FirstDataColumn = 1) then LeftLabel := StringGrid1.Cells[0,j]
       else LeftLabel := StringGrid1.Cells[0,j] + '  ' + StringGrid1.Cells[1,j];
 
       i := Bitmap.Canvas.TextWidth(LeftLabel) + 15;
@@ -316,7 +316,7 @@ with DisplayGrid do begin
             end
             else begin
                 Table.First;
-                while (ThisR < Table.GetFieldByNameAsFloat('MIN')) or (ThisR > Table.GetFieldByNameAsFloat('MAX')) do begin
+                while (ThisR < Table.GetFieldByNameAsFloat('MIN')) or (ThisR >= Table.GetFieldByNameAsFloat('MAX')) do begin
                    Table.Next;
                    if Table.eof then break;
                 end;

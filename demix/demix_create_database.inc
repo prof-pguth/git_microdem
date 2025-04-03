@@ -174,8 +174,8 @@ begin
 end;
 
 
- procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
-//transpose the DB so it has one TILE/DEM pair on each line, the Criteria as columns
+procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
+//transpose DB so it has one TILE/DEM pair on each line, Criteria as columns
 var
    values : array[1..9,0..25] of float32;
    Tile,Crit,aline : shortstring;
@@ -472,7 +472,6 @@ var
                      end;
                      LandTypeMask := 'ALL';
                  end {WriteDifferenceResults};
-
 
 
                   procedure LandCover(LandCoverGrid : integer; Lat,Long : float32; Value : float32);
@@ -1203,18 +1202,12 @@ var
             end;
          end;
          EndProgress;
-         //GISdb[DBonTable].ClearGISFilter;
          Table.Destroy;
-         //Headers.Free;
          Criteria.Free;
          DEMs.Free;
-         //Result := ChangeFileExt(GISdb[DBonTable].dbFullName, '_transpose_' + ExtractFileNameNoExt(CriteriaFile) + '.dbf');
-         //DeleteFileIfExists(Result);
-         //Result := ChangeFileExt(Result,'.csv');
          Result := MDTempDir + ExtractFileNameNoExt(fName) + '_transpose.csv';
          OutPut.SaveToFile(Result);
          OutPut.Free;
-         //GISdb[DBonTable].ShowStatus;
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('TransposeDEMIXcriteria out, created ' + Result); {$EndIf}
       end;
 
@@ -1317,10 +1310,6 @@ begin
 end;
 
 
-
-
-
-
 procedure MergeCSV(Mode : integer);
 begin
    MDDef.DEMIX_all_areas := true;
@@ -1336,8 +1325,6 @@ begin
       5 : MergeCSVtoCreateFinalDB(Stream_valley_dir,'_ridges_valleys.csv','_ridges_valleys_' );
    end;
 end;
-
-
 
 
 procedure RankDEMS(DBonTable : integer);
@@ -1547,7 +1534,6 @@ begin
     result := StringList2CSVtoDB(Findings,fName);
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXScoreDEMs out, ' + GISdb[DBonTable].dbName); {$EndIf}
 end;
-
 
 
 procedure ModeOfDifferenceDistributions;
@@ -1950,26 +1936,6 @@ begin {FindTilesInAreaForCoast}
    {$IfDef RecordDEMIX} WriteLineToDebugFile('End FindTilesInAreaForCoast'); {$EndIf}
 end;
 
-(*
-procedure AddFilteredRankID(DBonTable : integer);
-//  as of 6/3/2024, this is not being used
-var
-   i,ID : integer;
-begin
-   GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FILT_ID',8);
-
-   GISDb[DBonTable].EmpSource.Enabled := false;
-   ShowHourglassCursor;
-   GISdb[DBonTable].MyData.First;
-   ID := 0;
-   while not GISdb[DBonTable].MyData.eof do begin
-      GISdb[DBonTable].MyData.Edit;
-      inc(ID);
-      GISdb[DBonTable].MyData.SetFieldByNameAsInteger('FILT_ID',ID);
-      GISdb[DBonTable].MyData.Next;
-   end;
-end;
-*)
 
 procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
 begin

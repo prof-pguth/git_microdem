@@ -886,7 +886,9 @@ end;
 procedure TDemixFilterForm.BitBtn40Click(Sender: TObject);
 begin
 //cannot be enabled until area is loaded via the new structure
-   WBT_CreateDEMIX_GeomorphonGrids(true);
+   {$IfDef ExternalProgramFUV_SSIM}
+      WBT_CreateDEMIX_GeomorphonGrids(true);
+   {$EndIf}
 end;
 
 procedure TDemixFilterForm.BitBtn4Click(Sender: TObject);

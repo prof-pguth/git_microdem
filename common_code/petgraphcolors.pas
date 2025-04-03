@@ -98,11 +98,13 @@ begin
    PetImage.GetImagePartOfBitmap(Bitmap);
    Btn.Glyph := Bitmap;
    FreeAndNil(Bitmap);
+   (*
    if (TheGraph.GraphDraw.LegendList <> Nil) then begin
       if (TheGraph.GraphDraw.LegendList.Count >= SymNum) then Btn.Caption := TheGraph.GraphDraw.LegendList.Strings[pred(SymNum)]
       else Btn.Visible := false;
    end
    else Btn.Caption := '';
+   *)
 end;
 
 

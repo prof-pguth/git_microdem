@@ -127,51 +127,6 @@ end;
 
 
 
-
-{$IfDef AllowEDTM}
-
-      procedure ExtractEDTMforTestAreas;
-      //because these are extracted from a single monster Geotiff, they are handled differently than others in the map library
-      var
-         TheFiles : tStringList;
-         AreaName : Shortstring;
-         fName,EDTM_fName : PathStr;
-         i,DEM,NewDEM : Integer;
-      begin
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('ExtractEDTMforTestAreas in'); {$EndIf}
-         try
-            GetDEMIXpaths(true);
-            EDTM_fName := 'j:\dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
-            TheFiles := Nil;
-            FindMatchingFiles(DEMIX_test_dems,'*.DEM',TheFiles);
-            RemoveFilesThatDoHaveString(TheFiles,'DSM');  //if there is a DSM, there is also a DTM
-            for i := 0 to pred(TheFiles.Count) do begin
-               wmdem.SetPanelText(1,'Area ' + IntToStr(i) + '/' + IntToStr(TheFiles.Count));
-               fName := TheFiles.Strings[i];
-               if StrUtils.AnsiContainsText(UpperCase(fname),'COP') then begin
-                  AreaName := Petmar_Types.BeforeSpecifiedString(ExtractFileName(fName),'_COP');
-                  fName := DEMIX_test_dems + AreaName + '_EDTM.dem';
-                  if not FileExists(fName) then begin
-                     wmdem.SetPanelText(2,AreaName);
-                     DEM := OpenNewDEM(fName,false);
-                     NewDEM := GDALsubsetGridAndOpen(DEMGlb[DEM].DEMBoundBoxGeo,true,EDTM_fName);
-                     DEMGlb[NewDEM].MultiplyGridByConstant(0.1);
-                     DEMGlb[NewDEM].WriteNewFormatDEM(fName);
-                     CloseAllDEMs;
-                  end;
-               end;
-            end;
-         finally
-            EndDEMIXProcessing;
-         end;
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('ExtractEDTMforTestAreas out');
-      end;
-
-{$EndIf}
-
-
-
-
 procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
 var
    BaseFilter,BaseFilterAnd : shortstring;

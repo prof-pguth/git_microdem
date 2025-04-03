@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1738
+  ClientHeight = 1758
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1711
+    Height = 1731
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,7 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitHeight = 1691
     object Image1: TImage
       Left = 3
       Top = -247
@@ -208,12 +207,11 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1666
+      Top = 1686
       Width = 3840
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1646
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -4254,9 +4252,11 @@ object MapForm: TMapForm
           Caption = 'GDAL slope'
           object GDALslopemap1: TMenuItem
             Caption = 'Zevenbergen -Thorne'
+            OnClick = GDALslopemap1Click
           end
           object GDALslopemapHorn1: TMenuItem
             Caption = 'Horn'
+            OnClick = GDALslopemapHorn1Click
           end
         end
         object GDALaspectmap1: TMenuItem
@@ -4413,13 +4413,6 @@ object MapForm: TMapForm
       object Comparegeomorphometryprograms1: TMenuItem
         Caption = 'Compare geomorphometry programs/algorithms'
         OnClick = Comparegeomorphometryprograms1Click
-      end
-      object DerivativegridformultipleDEMs1: TMenuItem
-        Caption = 'Derivative grid for multiple DEMs'
-        object Slopes2: TMenuItem
-          Caption = 'Slopes'
-          OnClick = Slopes2Click
-        end
       end
       object Comparemultiplegridstothisone1: TMenuItem
         Caption = 'Compare multiple grids'
@@ -5475,7 +5468,7 @@ object MapForm: TMapForm
         OnClick = PickseriesandloadDEMsfromlibrary1Click
       end
       object PicksingleDEMseriesthisarea1: TMenuItem
-        Caption = 'Pick single DEM seriesnad load DEMs from library'
+        Caption = 'Pick single DEM series and load DEMs from library'
         OnClick = PicksingleDEMseriesthisarea1Click
       end
       object DEMsfrommaplibrary1: TMenuItem
@@ -6480,7 +6473,7 @@ object MapForm: TMapForm
         Caption = '-'
       end
       object Curvature3: TMenuItem
-        Caption = 'Second order partial derivatives'
+        Caption = 'Partial derivatives'
         OnClick = Curvature3Click
       end
     end
@@ -6678,6 +6671,13 @@ object MapForm: TMapForm
     object StdDevinregion2: TMenuItem
       Caption = 'Std Dev in region'
       OnClick = StdDevinregion2Click
+    end
+    object N32: TMenuItem
+      Caption = '-'
+    end
+    object N84: TMenuItem
+      Caption = 'Slope grids for multiple DEMs'
+      OnClick = N84Click
     end
   end
   object PopupMenu17: TPopupMenu
@@ -7233,8 +7233,16 @@ object MapForm: TMapForm
       OnClick = CompareLSQcurvaturepolynomialorder1Click
     end
     object CompareLSQedgeeffects1: TMenuItem
-      Caption = 'Compare LSQ edge effects on map'
+      Caption = 'Compare LSQ edge effects on slope map'
       OnClick = CompareLSQedgeeffects1Click
+    end
+    object CompareLSQeffectpointsusedonslopemap1: TMenuItem
+      Caption = 'Compare LSQ effect points used on slope map'
+      OnClick = CompareLSQeffectpointsusedonslopemap1Click
+    end
+    object CompareLSQeffectofpointsused1: TMenuItem
+      Caption = 'Compare LSQ effect of points used'
+      OnClick = CompareLSQeffectofpointsused1Click
     end
     object Compare3LSQslopemaps1: TMenuItem
       Caption = 'Compare 3 LSQ slope maps'

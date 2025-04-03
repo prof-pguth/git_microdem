@@ -123,11 +123,11 @@ begin
    ThisGraph.GraphDraw.HorizLabel := Param;
    ThisGraph.GraphDraw.VertLabel := 'Percentage';
    ThisGraph.Caption := Param + 'v Percentage';
-   ThisGraph.GraphDraw.LegendList := tStringList.Create;
+   //ThisGraph.GraphDraw.LegendList := tStringList.Create;
 
    while not GISdb[theDB].MyData.eof do begin
-      ThisGraph.OpenDataFile(rfile);
-      ThisGraph.GraphDraw.LegendList.Add(GISdb[theDB].MyData.GetFieldByNameAsString('NAME'));
+      ThisGraph.OpenDataFile(rfile,GISdb[theDB].MyData.GetFieldByNameAsString('NAME'));
+      //ThisGraph.GraphDraw.LegendList.Add(GISdb[theDB].MyData.GetFieldByNameAsString('NAME'));
       WritePair(0,GISdb[theDB].MyData.GetFieldByNameAsFloat('MIN'));
       WritePair(5,GISdb[theDB].MyData.GetFieldByNameAsFloat('PERC_5'));
       WritePair(10,GISdb[theDB].MyData.GetFieldByNameAsFloat('PERC_10'));

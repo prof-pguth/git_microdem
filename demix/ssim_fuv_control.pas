@@ -91,7 +91,6 @@ var
 begin
    fuv_ssim_control := Tfuv_ssim_control.Create(Application);
    fuv_ssim_control.Show;
-   //fuv_ssim_control.Destroy;
 end;
 
 

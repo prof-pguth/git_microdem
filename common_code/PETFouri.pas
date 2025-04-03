@@ -249,7 +249,7 @@ begin
          memcof(dataarray^,MomentVar.NPts,MEMPowerDefaults.NumPoles,pm,cof);
 
          with FFTGraph,MEMPowerDefaults do begin
-            OpenDataFile(rfile);
+            OpenDataFile(rfile,'');
             ACaption := Title + ' Power spectrum by Maximum Entropy Method';
             {if (not CreateGraphHidden) then} Caption := ACaption;
             fdt := FirstFreq;
@@ -584,7 +584,7 @@ var
          {$IfDef FFTGraphProblems} WriteLineToDebugFile('GraphPowerSpectrum, ' + AxisRange); {$EndIf}
 
          SetUpGraphForm;
-         OpenDataFile(rfile);
+         OpenDataFile(rfile,'');
          for i := 3 to SegSize do begin
             v[2] := p[i];
             v[1] := pred(i) / (2 * SegSize*BinTime);

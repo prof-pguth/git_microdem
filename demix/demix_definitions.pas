@@ -133,29 +133,27 @@ const
    RufDiffStatsString = ',RUFD_MIN,RUFD_Max,RUFD_Mean,RUFD_AVD,RUFD_STD,RUFD_MED,RUFD_RMSE,RUFD_MAE,RUFD_LE90,RUFD_N';
 
 
+
+
 const
-   MaxDEMIXDEM = 12;
+   MaxDEMIXDEM = 15;
    NumDEMIXtestDEM : integer = 0;
-   //AllDEMIXTheDEMs : array[1..MaxDEMIXDEM] of shortstring = ('COP','ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA','SRTM','NASA','ASTER');
-
-type
-   tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
-   tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
-
-
-const
    NewFormatDEMIXDB : integer = 0;
    DEMIXtraditional = 1;
    DEMIXneo         = 2;
    DEMIXanalysismode : integer = 1;
 
 var
-   DEMIXDEMTypeName,
-   DEMIXshort     : array[1..MaxDEMIXDEM] of shortstring;
+   DEMIXDEMTypeName,                                           //name of folder with the DEMs, in case there are multiple versions
+   DEMIXshort     : array[1..MaxDEMIXDEM] of shortstring;      //short name used to identify DEM (comparing of multiple versions not currently implemented)
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
    NotRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
    CriteriaFamily : shortstring;
    DEMIXModeName : shortstring;
+
+   type
+   tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
+   tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
 
 const
    Ref1SecPointStr = '_ref_1sec_point';
@@ -166,16 +164,16 @@ const
          const
             NumPtDEMs : integer = 6;
             NumAreaDEMs : integer = 1;
-            PossPt = 8;
-            PossArea = 2;
+            //PossPt = 8;
+            //PossArea = 2;
 
          //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
          //-1 for the high latitude (currently none for area grid),
          //0 for the 1" reference,
          //the rest for the test DEMs
-         const
-            SRTM_centroid_names : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','COAST','DELTA');
-            ALOS_centroid_names : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
+         //const
+            //SRTM_centroid_names : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','COAST','DELTA');
+            //ALOS_centroid_names : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
          type
             tDEM_int_array = array [-1..MaxDEMIXDEM] of integer; //-1 for high latitude ref DEM, 0 for ref DEMs, others for the test DEMs
          var
@@ -190,19 +188,23 @@ const
          procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
 
          //grids created by MICRODEM
-         function CreateDEMIXhillshadeGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
+         function CreateDEMIXDerivedGrids(Which : shortstring; AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
+
          procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
          function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
-         function CreateDEMIXTPIGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
-         procedure CreateDEMIXRRIgrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
 
          //links to grids created by other programs
          function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
-         procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
-         procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
          procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
-         function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
-         function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
+         {$IfDef ExternalProgramFUV_SSIM}
+           procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
+           procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
+           function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
+           function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
+         {$EndIf}
+
+
+
 
 const
    yasName = 0;
@@ -318,11 +320,10 @@ var
 
 
 //create test DEMs
-   function CreateDEMIXTestDEMsForArea(Overwrite : boolean; AreaName : ShortString; AreaRefDEM,PointRefDEM : integer) : boolean;
    procedure DiluviumDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
    procedure DeltaDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
    procedure CoastalDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
-   procedure CreateTestAreaDEMs(Overwrite : boolean);
+   procedure CreateDEMIXTestAreaDEMs(Overwrite : boolean);
    procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
 
 //inventory and reports
@@ -355,6 +356,7 @@ var
 
 
 procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
+function ExtractDEMIXDEMName(var fName : PathStr) : shortstring;
 
 
 //vector (channel network, ridges, valleys) comparisons
@@ -393,7 +395,6 @@ procedure AreasInClusters(DB : integer);
 
 procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');
 
-
 procedure ClearDerivedGrids;
 
 function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shortstring; IsPoint : boolean) : PathStr;
@@ -428,6 +429,30 @@ uses
 {$include demix_channels.inc}
 
 {$include demix_external_program_derived_grids.inc}
+
+
+
+      function ExtractDEMIXDEMName(var fName : PathStr) : shortstring;
+      begin
+         fName := UpperCase(fName);
+         if (StrUtils.AnsiContainsText(fName,'TIE')) then Result :=  'TIE'
+         else if (StrUtils.AnsiContainsText(fName,'ALOS')) then Result :=  'ALOS'
+         else if (StrUtils.AnsiContainsText(fName,'COP')) then Result :=  'COP'
+         else if (StrUtils.AnsiContainsText(fName,'ASTER')) then Result :=  'ASTER'
+         else if (StrUtils.AnsiContainsText(fName,'FABDEM')) then Result :=  'FABDEM'
+         else if (StrUtils.AnsiContainsText(fName,'FATHOM')) then Result :=  'FATHOM'
+         else if (StrUtils.AnsiContainsText(fName,'NASA')) then Result :=  'NASA'
+         else if (StrUtils.AnsiContainsText(fName,'SRTM')) then Result :=  'SRTM'
+         else if (StrUtils.AnsiContainsText(fName,'GEDTM')) then Result :=  'GEDTM'   //must be first, or it will be seen at EDTM
+         else if (StrUtils.AnsiContainsText(fName,'EDTM')) then Result :=  'EDTM'
+         else if (StrUtils.AnsiContainsText(fName,'DILUV')) then Result :=  'DILUV'
+         else if (StrUtils.AnsiContainsText(fName,'TANDEM')) then Result :=  'TANDEM'
+         else if (StrUtils.AnsiContainsText(fName,'DELTA')) then Result :=  'DELTA'
+         else if (StrUtils.AnsiContainsText(fName,'NEO_DTM')) then Result :=  'NEO_DTM'
+         else if (StrUtils.AnsiContainsText(fName,'NEO_DSM')) then Result :=  'NEO_DSM';
+      end;
+
+
 
 
 procedure ComputeCriteriaRanges;
@@ -538,6 +563,8 @@ begin {procedure DoSSIMandFUVForAnArea}
           {$If Defined(TrackPixelIs) or Defined(RecordDEMIXFull)} ShowDEMIXGrids(AreaName + ' DEMs opened',PointDEMs,AreaDEMs); {$EndIf}
           InitializePointAndAreaGrids(PointGrids,AreaGrids);
 
+{$IfDef ExternalProgramFUV_SSIM}
+
           if MDDef.SSIM_ROTOR then begin //created by WbE with Jupyter Notebook
              wmdem.SetPanelText(3,DEMIXModeName + ' 1 ROTOR',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
@@ -560,40 +587,6 @@ begin {procedure DoSSIMandFUVForAnArea}
              end;
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbT HAND created ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('HAND_SSIM',PointGrids,AreaGrids);
-          end;
-
-          if MDDef.SSIM_hill then begin
-             wmdem.SetPanelText(3,DEMIXModeName + ' 3 Hillshade',true);
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXhillshadeGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('Hillshade' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('HILL_SSIM',PointGrids,AreaGrids);
-          end;
-
-          if MDDef.SSIM_Slope or MDDef.SSIM_ruff then begin
-             wmdem.SetPanelText(3,DEMIXModeName + ' 4,5 Slope/ruff',true);
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXSlopeRoughnessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Slope/ruff' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('SLOPE_SSIM',PointGrids2,AreaGrids2,false);
-             DoCriterion('RUFF_SSIM',PointGrids,AreaGrids);
-          end;
-
-          if MDDef.SSIM_Openness then begin
-             wmdem.SetPanelText(3,DEMIXModeName + ' 6,7 Openness',true);
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXOpennessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Openness' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('OPEND_SSIM',PointGrids2,AreaGrids2,false);
-             DoCriterion('OPENU_SSIM',PointGrids,AreaGrids);
-          end;
-
-          if MDDef.SSIM_RRI then begin
-             wmdem.SetPanelText(3,DEMIXModeName + ' 8 RRI',true);
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXRRIgrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD RRI created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('RRI_SSIM',PointGrids,AreaGrids);
           end;
 
           if MDDef.SSIM_LS then begin //created by WbE with Jupyter Notebook
@@ -675,12 +668,54 @@ begin {procedure DoSSIMandFUVForAnArea}
              else ClearDerivedGrids;
           end;
 
+
+{$EndIf}
+
+          if MDDef.SSIM_hill then begin
+             wmdem.SetPanelText(3,DEMIXModeName + ' 3 Hillshade',true);
+             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+             //CreateDEMIXhillshadeGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+             CreateDEMIXDerivedGrids('HILL_',AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+
+             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('Hillshade' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+             DoCriterion('HILL_SSIM',PointGrids,AreaGrids);
+          end;
+
+          if MDDef.SSIM_RRI then begin
+             wmdem.SetPanelText(3,DEMIXModeName + ' 8 RRI',true);
+             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+             //CreateDEMIXRRIgrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+             CreateDEMIXDerivedGrids('RRI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+
+             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD RRI created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+             DoCriterion('RRI_SSIM',PointGrids,AreaGrids);
+          end;
+
           if MDDef.SSIM_TPI then begin
              wmdem.SetPanelText(3,DEMIXModeName + ' 16 TPI',true);
              {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXTPIGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+             //CreateDEMIXTPIGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+             CreateDEMIXDerivedGrids('TRI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
              {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('TPI' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
              DoCriterion('TPI_SSIM',PointGrids,AreaGrids);
+          end;
+
+          if MDDef.SSIM_Slope or MDDef.SSIM_ruff then begin
+             wmdem.SetPanelText(3,DEMIXModeName + ' 4,5 Slope/ruff',true);
+             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+             CreateDEMIXSlopeRoughnessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Slope/ruff' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+             DoCriterion('SLOPE_SSIM',PointGrids2,AreaGrids2,false);
+             DoCriterion('RUFF_SSIM',PointGrids,AreaGrids);
+          end;
+
+          if MDDef.SSIM_Openness then begin
+             wmdem.SetPanelText(3,DEMIXModeName + ' 6,7 Openness',true);
+             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+             CreateDEMIXOpennessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,true);
+             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Openness' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+             DoCriterion('OPEND_SSIM',PointGrids2,AreaGrids2,false);
+             DoCriterion('OPENU_SSIM',PointGrids,AreaGrids);
           end;
 
           if MDDef.SSIM_elev then begin

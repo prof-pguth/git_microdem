@@ -139,14 +139,14 @@ begin
       if (Lag < 0) then R := NegCrossCor^[-Lag]
       else R := PlusCrossCor^[Lag];
       Caption := 'R=' + RealToString(R,5,3) + '   lag=' +  IntToStr(Lag);
-      OpenDataFile(Rfile);
+      OpenDataFile(Rfile,'');
       for I := 0 to pred(LengthLong) do begin
             v[1] := i;
             v[2] := Series1^[i];
             BlockWrite(rfile,v,1);
       end;
       if ((not Auto) or (Lag <> 0)) then begin
-         OpenDataFile(RFile2);
+         OpenDataFile(RFile2,'');
          for I := 0 to pred(LengthShort) do begin
             v[1] := i - lag;
             v[2] := Series2^[i];
@@ -278,7 +278,7 @@ var
                inc(i);
             end;
 
-            OpenDataFile(rfile);
+            OpenDataFile(rfile,'');
             if Auto then begin
                for i := 0 to MaxContourPoints do begin
                   R := PlusCrossCor^[i];
