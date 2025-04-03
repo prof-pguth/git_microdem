@@ -313,7 +313,7 @@ begin
       FFTfileName := MDTempDir + 'temp.fft';
       assignFile(tfile,fftfilename);
       rewrite(tfile);
-      ThisGraph.OpenDataFile(rfile);
+      ThisGraph.OpenDataFile(rfile,'');
 
       Time := StartTime;
 

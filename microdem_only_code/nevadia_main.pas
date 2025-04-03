@@ -499,7 +499,7 @@ type
     N28: TMenuItem;
     DEMIXhelp1: TMenuItem;
     Landformcategorieslegends1: TMenuItem;
-    Extract1: TMenuItem;
+    //Extract1: TMenuItem;
     N43: TMenuItem;
     N44: TMenuItem;
     Pythontestrun1: TMenuItem;
@@ -965,7 +965,7 @@ type
     procedure MultipledNBRmaps1Click(Sender: TObject);
     procedure DEMIXhelp1Click(Sender: TObject);
     procedure Landformcategorieslegends1Click(Sender: TObject);
-    procedure Extract1Click(Sender: TObject);
+    //procedure Extract1Click(Sender: TObject);
     procedure Pythontestrun1Click(Sender: TObject);
     procedure Listofsubdirectoriesrelativenames1Click(Sender: TObject);
     procedure Listofsubdirectoriesfullpaths1Click(Sender: TObject);
@@ -2111,18 +2111,6 @@ var
             end;
             if Key = 'CURVE_MODE' then begin
                WhichCurvature := CurveCodeFromName(Value);
-(*
-               if (Value = 'PROFILE') then WhichCurvature := 1;
-               if (Value = 'TANGENTIAL') then WhichCurvature := 2;
-               if (Value = 'PLAN') then WhichCurvature := 3;
-               if (Value = 'FLOWLINE') then WhichCurvature := 4;
-               if (Value = 'CONTOUR') then WhichCurvature := 5;
-               if (Value = 'MAX') then WhichCurvature := 6;
-               if (Value = 'MIN') then WhichCurvature := 7;
-               if (Value = 'GAUSSIAN') then WhichCurvature := 8;
-               if (Value = 'MEAN') then WhichCurvature := 9;
-               if (Value = 'CASORATI') then WhichCurvature := 10;
-*)
             end;
             if Key = 'SLOPE_ALG' then begin
                 if Value = 'LSQ' then MDDef.SlopeCompute.AlgorithmName := smLSQ;
@@ -2439,11 +2427,6 @@ end;
 
 
 procedure Twmdem.FormCreate(Sender: TObject);
-//var
-   //TStr  : ShortString;
-   //i : integer;
-   //fName : PathStr;
-   //BatchMode : boolean;
 begin
   {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('start wmdem FormCreate'); {$EndIf}
   ClientWidth := 4000;
@@ -2451,42 +2434,6 @@ begin
   ProgramClosing := false;
   NoAutoOpen := false;
   Self.Visible := false;
-
-(*
-  fName := ChangeFileExt(application.exename,'.ico');
-  if FileExists(fName) then begin
-     Application.MainFormOnTaskbar := false;
-     Application.Icon.LoadFromFile(fName);
-  end;
-  //AskForDebugUpdateNow := false;
-  //AskForNewUpdateNow := false;
-  //BatchMode := false;
-   {$IfDef NoCommandLineParameters}
-   {$Else}
-      for i := 1 to ParamCount do begin
-         TStr := UpperCase(ptTrim(ParamStr(i)));
-         //if (TStr = '-GRID') or (TStr = '-MINIMIZE') or (TStr = '-TCP') then BatchMode := true;
-         if (TStr = '-AONOTHING') then NoAutoOpen := true;
-      end;
-   {$EndIf}
-
-   if (not BatchMode) then begin
-      TerSplsh.MDStartSplashing;
-      {$If Defined(TrackFormCreate)} MessageToContinue('FormCreate start splashing'); {$EndIf}
-   end;
-   {$IfDef AllowProgramWebUpdates}
-   {$Else}
-       Updatehelpfile1.Visible := false;
-   {$EndIf}
-
-   {$IfDef Include2021datafusion}
-   {$Else}
-       Mediansatellitedatacontest1.Visible := false;
-       Makelittletilescontest1.Visible := false;
-       Postprocesscontest1.Visible := false;
-   {$EndIf}
-*)
-
    {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
 end;
 
@@ -2584,7 +2531,6 @@ begin
    StopSplashing;
    DemixAnalysisPopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
-
 
 
 procedure Twmdem.Ages1Click(Sender: TObject);
@@ -2711,7 +2657,7 @@ end;
 
 procedure Twmdem.Overwrite4Click(Sender: TObject);
 begin
-   CreateTestAreaDEMs(True);
+   CreateDEMIXTestAreaDEMs(True);
 end;
 
 procedure Twmdem.Overwrite5Click(Sender: TObject);
@@ -2782,10 +2728,7 @@ end;
 
 procedure Twmdem.Elevationhistograms1Click(Sender: TObject);
 begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      DoElevationHistograms;
-   {$EndIf}
+   DoElevationHistograms;
 end;
 
 
@@ -2816,14 +2759,14 @@ procedure Twmdem.ConvertDBFsfor64bit1Click(Sender: TObject);
         {$EndIf}
 
         if FileExists(NewName) then begin
-           {$IfDef RecordDBFconvert} WriteLineToDebugFile('   File already exists ' + NewName); {$EndIf}
+           {$IfDef RecordDBFconvert} WriteLineToDebugFile('File already exists ' + NewName); {$EndIf}
         end
         else begin
            if FileExists(OldName) then begin
               ConvertDBFtoSQLite(OldName);
            end
            else begin
-              {$IfDef RecordDBFconvert} WriteLineToDebugFile('   old file missing ' + OldName); {$EndIf}
+              {$IfDef RecordDBFconvert} WriteLineToDebugFile('old file missing ' + OldName); {$EndIf}
            end;
         end;
      end;
@@ -3483,7 +3426,7 @@ end;
 
 procedure Twmdem.CreatetestareaDEMSskipifexists1Click(Sender: TObject);
 begin
-   CreateTestAreaDEMs(False);
+   CreateDEMIXTestAreaDEMs(False);
 end;
 
 procedure Twmdem.Criteriaranges1Click(Sender: TObject);
@@ -3773,11 +3716,6 @@ begin
    end;
 end;
 
-
-procedure Twmdem.Extract1Click(Sender: TObject);
-begin
-   {$IfDef AllowEDTM} ExtractEDTMforTestAreas; {$EndIf}
-end;
 
 procedure Twmdem.CloseallDBs1Click(Sender: TObject);
 begin
@@ -4818,7 +4756,7 @@ end;
 
 procedure Twmdem.MultipleDEMsonearea015secscale1Click(Sender: TObject);
 begin
-   FUVforScales_0_15sec;
+   FUVforMultipleTestDEMstoReference;
 end;
 
 procedure Twmdem.MultipledNBRmaps1Click(Sender: TObject);
@@ -4849,7 +4787,7 @@ end;
 
 procedure Twmdem.FUVfor5DEMstoreference1Click(Sender: TObject);
 begin
-   FUVforScales_0_15sec;
+   FUVforMultipleTestDEMstoReference;
 end;
 
 procedure Twmdem.FUVforrangescales1Click(Sender: TObject);
@@ -5198,10 +5136,10 @@ begin
    if (Sender = Guam1) then begin
       ConvertForm.Caption := 'Guam converter';
       ConvertForm.This_projection.PName := AzimuthalEquidistantEllipsoidal;
-      ConvertForm.Edit1.Text := '37712.48';  //x
-      ConvertForm.Edit2.Text := '35242';  //y
-      ConvertForm.Edit3.Text := '13.339038461';  //lat
-      ConvertForm.Edit4.Text := '144.635331292';  //long
+      //ConvertForm.Edit1.Text := '37712.48';  //x
+      //ConvertForm.Edit2.Text := '35242';  //y
+      //ConvertForm.Edit3.Text := '13.339038461';  //lat
+      //ConvertForm.Edit4.Text := '144.635331292';  //long
 
       ConvertForm.This_projection.Lat0 := 13.472466353 * Petmar_types.DegToRad;
       ConvertForm.This_projection.Long0 := 144.748750706 * Petmar_types.DegToRad;

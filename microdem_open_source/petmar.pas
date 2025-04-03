@@ -269,8 +269,8 @@ var
 
 
 //progress routines, which do nothing if NoProgress is defined
-      procedure StartProgress(Title : ShortString); //overload;
-      procedure StartProgressAbortOption(Title : ShortString); //overload;
+      procedure StartProgress(Title : ShortString; ProgressTop  : integer = -99; ProgressLeft : integer = -99);
+      procedure StartProgressAbortOption(Title : ShortString; ProgressTop : integer = -99; ProgressLeft : integer = -99);
       procedure UpdateProgressBar(HowFar : float64);
       procedure EndProgress;
 
@@ -3765,11 +3765,8 @@ begin
 end;
 
 
-const
-  ProgressTop  : integer = -99;
-  ProgressLeft : integer = -99;
 
-procedure StartProgress(Title : ShortString);
+procedure StartProgress(Title : ShortString; ProgressTop : integer = -99; ProgressLeft : integer = -99);
 begin
    {$IfDef VCL}
       WantOut := false;
@@ -3791,11 +3788,11 @@ begin
    {$EndIf}
 end;
 
-procedure StartProgressAbortOption(Title : ShortString);
+procedure StartProgressAbortOption(Title : ShortString; ProgressTop : integer = -99; ProgressLeft : integer = -99);
 begin
    {$IfDef VCL}
       if WantShowProgress then begin
-         StartProgress(Title);
+         StartProgress(Title,ProgressTop,ProgressLeft);
          PetProgF.SetUpForAborting;
       end;
    {$EndIf}
@@ -3826,8 +3823,6 @@ begin
       {$IfDef ShowProgressBarSize} WriteLineToDebugFile('End Progress, form height=' + IntToStr(PetProgF.Height )); {$EndIf}
       if WantShowProgress and (PETProgF <> Nil) then begin
          PetProgF.Visible := false;
-         ProgressTop := PetProgF.Top;
-         ProgressLeft := PetProgF.Left;
       end;
       ShowDefaultCursor;
    {$EndIf}

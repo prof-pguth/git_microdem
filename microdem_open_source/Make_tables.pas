@@ -1327,6 +1327,7 @@ begin
       AddAField('PIXEL_IS',ftInteger,2);
       AddAField('VERT_DATUM',ftString,20);
       AddBoundingBoxToTable;
+      AddAField('MONSTER',ftString,128);
       WriteCorrectHeader;
    end;
 end;

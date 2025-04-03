@@ -30,7 +30,7 @@ unit GeoTiff;
       //{$Define RecordWKT}
       //{$Define RecordProjProgress}
       //{$Define TrackWKTstring}
-      //{$Define RecordInitializeDEM}
+      //{$Define RecordInitDEM}
       //{$Define Record_h_datum_code}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
 
@@ -50,7 +50,7 @@ unit GeoTiff;
       //{$Define RecordTiePoints}
       //{$Define RecordGeotiffRestart}
       //{$Define TrackModelType}
-      //{$Define RecordTffDisplayInBitmap}
+      //{$Define RecordDisplayBitmat}
       //{$Define GeotiffSave}
       //{$Define RecordBitPerPixel}
       //{$Define TrackA}
@@ -61,7 +61,7 @@ unit GeoTiff;
       //{$Define FullDEMinit}         //potential major slowdown
       //{$Define RecordGeotiffHistogram}
       //{$Define Record3076}
-      //{$Define RecordWhileProcessingHeader}
+      //{$Define RecordProcessingHeader}
       //{$Define RecordGeotiffPalette}
       //{$Define RecordGeotiffRow}    //potential major slowdown
       //{$Define RecordMultiGrids}
@@ -141,7 +141,7 @@ type
          OriginalFileName: PathStr;
          CurrentMissing : float32;
 
-         procedure WordToByte(Band : integer; Row16bit : Word; var TheRow : byte); inline;
+         function WordToByte(Band : integer; Row16bit : Word) : byte; inline;
          function MakeDouble : Double;   {$IfDef InlineGeotiff} inline; {$EndIf}
          function MakeSingle : Single;   {$IfDef InlineGeotiff} inline; {$EndIf}
          function MakeWord : Word;       {$IfDef InlineGeotiff} inline; {$EndIf}
@@ -192,12 +192,13 @@ type
 procedure CaptureBMPInGeoTIFF(MapDraw : tMapDraw; FileName : PathStr; Image1 : tImage; MonoImage : boolean = false);
 function BandsInGeotiff(fName : PathStr) : integer;
 function GeotiffImageSize(fName : PathStr; var Width,Height : integer) : boolean;
-function GeotiffBoudingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
+function GeotiffBoundingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
+function GeotiffRegVars(fName : PathStr; var RegVars : tRegVars) : boolean;
 
 procedure RewriteGeotiffIfRequired(var TIFFFileName : PathStr);
 function GetGeotiffTag42112(fName : PathStr; var Tag : shortstring; var Tag42112Offset,Tag42112Length : int64) : boolean;
 
-function GeotiffBBox(fName : PathStr) : sfBoundBox;
+//function GeotiffBBox(fName : PathStr) : sfBoundBox;
 function Geotiff_UTMzone(fName : PathStr) : integer;
 
 {$IfDef VCL}
@@ -240,6 +241,7 @@ uses
    gdal_tools,
    PETMath;
 
+(*
 
 function GeotiffBBox(fName : PathStr) : sfBoundBox;
 var
@@ -255,6 +257,7 @@ begin
       TiffImage.Destroy;
    end;
 end;
+*)
 
 function Geotiff_UTMzone(fName : PathStr) : integer;
 var
@@ -326,7 +329,22 @@ begin
    end;
 end;
 
-function GeotiffBoudingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
+
+function GeotiffRegVars(fName : PathStr; var RegVars : tRegVars) : boolean;
+var
+   success : boolean;
+   TiffImage : tTIFFImage;
+begin
+   Result := FileExists(fName);
+   if Result then begin
+      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
+      RegVars := TiffImage.RegVars;
+      TiffImage.Destroy;
+   end;
+end;
+
+
+function GeotiffBoundingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
 var
    success : boolean;
    TiffImage : tTIFFImage;
@@ -671,7 +689,7 @@ end;
          TheRow : tLongRGB;
          BMPMemory : tBMPMemory;
       begin
-         {$IfDef RecordTffDisplayInBitmap} WriteLineToDebugFile('tTIFFImage.DisplayInBitmap in, ' + IntToStr(TiffHeader.ImageWidth) + 'x' + IntToStr(TiffHeader.ImageLength)); {$EndIf}
+         {$IfDef RecordDisplayBitmat} WriteLineToDebugFile('tTIFFImage.DisplayInBitmap in, ' + IntToStr(TiffHeader.ImageWidth) + 'x' + IntToStr(TiffHeader.ImageLength)); {$EndIf}
          PetImage.CreateBitmap(Result,TiffHeader.ImageWidth,TiffHeader.ImageLength);
          BMPMemory := tBMPMemory.Create(Result);
          OpenTiffFile;
@@ -681,14 +699,14 @@ end;
          end;
          BMPMemory.Destroy;
          CloseTiffFile;
-         {$IfDef RecordTffDisplayInBitmap} WriteLineToDebugFile('tTIFFImage.DisplayInBitmap out'); {$EndIf}
+         {$IfDef RecordDisplayBitmat} WriteLineToDebugFile('tTIFFImage.DisplayInBitmap out'); {$EndIf}
       end;
 
 {$EndIf}
 
-procedure tTIFFImage.WordToByte(Band : integer; Row16bit : Word; var TheRow : byte);
+function tTIFFImage.WordToByte(Band : integer; Row16bit : Word) : byte;
 begin
-   TheRow := ValidByteRange(round((Row16bit - TiffHeader.MinSampleValue[Band]) / (TiffHeader.MaxSampleValue[Band] - TiffHeader.MinSampleValue[Band]) * 255));
+   Result := ValidByteRange(round((Row16bit - TiffHeader.MinSampleValue[Band]) / (TiffHeader.MaxSampleValue[Band] - TiffHeader.MinSampleValue[Band]) * 255));
 end;
 
 
@@ -851,7 +869,7 @@ begin
    if (TiffHeader.PhotometricInterpretation = 2) or (TiffHeader.SamplesPerPixel > 1) then begin    //color image
       if (TiffHeader.BitsPerSample in [15,16]) then begin
          GetTiffRow16bit(Band,Row,Row16bit^);
-         for x := 0 to TiffHeader.ImageWidth do WordToByte(Band,Row16bit^[x],TheRow[x]);
+         for x := 0 to TiffHeader.ImageWidth do TheRow[x] := WordToByte(Band,Row16bit^[x]);
       end
       else begin
          MemNeed := TiffHeader.ImageWidth*TiffHeader.SamplesPerPixel;
@@ -873,7 +891,7 @@ begin
          else if (TiffHeader.BitsPerSample in [15,16,32]) then begin
             GetTiffRow16bit(Band,Row,Row16bit^);
             for x := 0 to TiffHeader.ImageWidth do begin
-               WordToByte(Band,Row16bit^[x],TheRow[x]);
+               TheRow[x] := WordToByte(Band,Row16bit^[x]);
             end;
          end
          else if (TiffHeader.BitsPerSample = 4) then begin
@@ -1008,7 +1026,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
             procedure SetCornersAndSpacing;
             begin
-              {$If Defined(RecordInitializeDEM) or Defined(GeotiffCorner)}
+              {$If Defined(RecordInitDEM) or Defined(GeotiffCorner)}
                  HighlightLineToDebugFile(WantDEM.AreaName);
                  WriteLineToDebugFile('ScaleX=' + RealToString(TiffHeader.ScaleX,-18,-6) + ' ScaleY=' + RealToString(TiffHeader.ScaleY,-18,-6) +
                       ' ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) +
@@ -1101,7 +1119,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                         WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
                         WantDEM.DEMheader.DataSpacing := SpaceMeters;
                         WantDEM.DEMheader.h_DatumCode := 'Rect';
-                        {$IfDef RecordInitializeDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone)); {$EndIf}
+                        {$IfDef RecordInitDEM} WriteLineToDebugFile('DEM SW Corner: ' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + RealToString(WantDEM.DEMheader.DEMSWCornerY,18,-6) + '  UTM zone:' + IntToStr(WantDEM.DEMheader.UTMzone)); {$EndIf}
                      end;
                      //if (WantDEM.DEMMapProj.h_DatumCode <> '') then WantDEM.DEMheader.aDigitizeDatum := DatumCodeFromString(WantDEM.DEMMapProj.h_DatumCode);
                      WantDEM.DEMMapProj.InitProjFomDEMHeader(WantDEM.DEMHeader);
@@ -1125,9 +1143,20 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             WantDEM.DEMheader.NumRow := TiffHeader.ImageLength;
             WantDEM.DEMHeader.RasterPixelIsGeoKey1025 := TiffHeader.RasterPixelIs;
             WantDEM.DEMheader.VerticalCSTypeGeoKey := TiffHeader.VertDatum;
+
+            if TiffHeader.MDZtype = euCentimeters then begin
+               TiffHeader.MDZtype := euMeters;
+               TiffHeader.Factor := 0.01;
+            end;
+
+            if TiffHeader.MDZtype = euDecimeters then begin
+               TiffHeader.MDZtype := euMeters;
+               TiffHeader.Factor := 0.1;
+            end;
+
             WantDEM.DEMheader.ElevUnits := TiffHeader.MDZtype; //tElevUnit(TiffHeader.MDZtype);
 
-            {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
+            {$IfDef RecordInitDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
 
             if ForceType then begin
                WantDEM.DEMheader.DEMPrecision := TypeWanted;
@@ -1146,28 +1175,28 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             SetCornersAndSpacing;
             DefineProjectionParameters;
 
-           {$If Defined(RecordInitializeDEM) or Defined(RecordUKOS)}
+           {$If Defined(RecordInitDEM) or Defined(RecordUKOS)}
               WriteLineToDebugFile('after define proj, ' + WantDEM.GridDefinition + ' pName=' + WantDEM.DEMMapProj.GetProjName);
            {$EndIf}
-           {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM Header set, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,6)); {$EndIf}
+           {$If Defined(RecordInitDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM Header set, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,6)); {$EndIf}
 
             if IsThisLandCover(TIFFFileName,LandCover) then begin
                NLCDOptions;
             end;
 
-            {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Call define DEM variables ' + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
+            {$IfDef RecordInitDEM} WriteLineToDebugFile('Call define DEM variables ' + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
             WantDEM.DefineDEMvariables(true);
-            {$IfDef RecordInitializeDEM} WriteLineToDebugFile('Back from define DEM variables '  + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
+            {$IfDef RecordInitDEM} WriteLineToDebugFile('Back from define DEM variables '  + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
             {$If Defined(RecordUKOS)} WriteLineToDebugFile('After DefineDEMvariable, pName=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
 
             Result := true;
             if ReallyReadDEM and (not WantDEM.AllocateDEMMemory(InitDEMnone)) then begin
-               {$IfDef RecordInitializeDEM} WriteLineToDebugFile('WantDEM.AllocateDEMMemory failed'); {$EndIf}
+               {$IfDef RecordInitDEM} WriteLineToDebugFile('WantDEM.AllocateDEMMemory failed'); {$EndIf}
                Result := false;
             end;
 
             {$IfDef TrackA} WriteLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProj.a,-18,-2)); {$EndIf}
-            {$If Defined(RecordInitializeDEM) or Defined(RecordDEMMapProj)} WantDEM.DEMMapProj.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
+            {$If Defined(RecordInitDEM) or Defined(RecordDEMMapProj)} WantDEM.DEMMapProj.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
             {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
             {$If Defined(RecordUKOS)} WriteLineToDebugFile('Initialize TIFF DEM out, pName=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
             {$IfDef RecordprojProgress} WantDEM.DEMMapProj.WriteProjectionSummaryToDebugFile('DefineProjectionParameters Initialize TIFF DEM out: '); {$EndIf}
@@ -1187,8 +1216,8 @@ var
    zb : byte;
    z : float32;
 begin {tTIFFImage.CreateTiffDEM}
-   {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM) or Defined(RecordModelType) or Defined(RecordDefineDatum) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('tTIFFImage.CreateDEM in, modelType=' + IntToStr(TiffHeader.ModelType)); {$EndIf}
-   {$IfDef RecordInitializeDEM} WriteLineToDebugFile('ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
+   {$If Defined(RecordGeotiff) or Defined(RecordInitDEM) or Defined(RecordModelType) or Defined(RecordDefineDatum) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('tTIFFImage.CreateDEM in, modelType=' + IntToStr(TiffHeader.ModelType)); {$EndIf}
+   {$IfDef RecordInitDEM} WriteLineToDebugFile('ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
       if (TiffHeader.SamplesPerPixel > 1) then begin
          MessageToContinue('File has ' + IntToStr(TiffHeader.SamplesPerPixel) + ' bands and is not a DEM; open as an image');
          Result := false;
@@ -1199,7 +1228,7 @@ begin {tTIFFImage.CreateTiffDEM}
       WantDEM.GeotiffImageDesc := GeotiffImageDesc;
       {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM read DEM, ' + WantDEM.AreaName + '  ' + WantDEM.DEMMapProj.h_DatumCode);   {$EndIf}
       if Result and ReallyReadDEM then begin
-         {$If Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM initialization done and reading DEM'); {$EndIf}
+         {$If Defined(RecordInitDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM initialization done and reading DEM'); {$EndIf}
          if (WantDEM.AreaName = 'EXISTING_VEGETATION_HEIGHT') or (WantDEM.AreaName = 'CANOPY_BASE_HEIGHT') or (WantDEM.AreaName = 'CANOPY_HEIGHT') then TiffHeader.Factor := 0.1;
          if (WantDEM.DEMheader.NumRow > 10000) then ShowDEMReadingProgress := true;
          if ShowDEMReadingProgress then StartProgress('Read grid: ' + ExtractFileNameNoExt(TIFFFileName));
@@ -1249,7 +1278,8 @@ begin {tTIFFImage.CreateTiffDEM}
                         z := FloatRow^[Col];
                         if BigEndian then SwapToShortFloat(z);
                         if ValidZ(z) then begin
-                           WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                           z := z * TiffHeader.Factor;
+                           WantDEM.SetGridElevation(Col,dRow,z);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1259,7 +1289,8 @@ begin {tTIFFImage.CreateTiffDEM}
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                         z := Int32Row^[Col];
                         if ValidZ(z) then begin
-                           WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                           z := z * TiffHeader.Factor;
+                           WantDEM.SetGridElevation(Col,dRow,z);
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
@@ -1294,7 +1325,8 @@ begin {tTIFFImage.CreateTiffDEM}
                   for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
                      z := DoubleRow^[Col];
                      if ValidZ(z) then begin
-                        WantDEM.SetGridElevation(Col,dRow,z * TiffHeader.Factor);
+                        z := z * TiffHeader.Factor;
+                        WantDEM.SetGridElevation(Col,dRow,z);
                      end
                      else WantDEM.SetGridMissing(Col,dRow);;
                   end;
@@ -1340,11 +1372,13 @@ begin {tTIFFImage.CreateTiffDEM}
          else WantDEM.CheckMaxMinElev;
          {$If Defined(RecordFullGeotiff) or Defined(ShowKeyDEM) or Defined(TrackZ) or Defined(RecordUKOS)} WantDEM.TrackElevationRange('Geotiff DEM CheckMaxMinElev over '); {$EndIf}
       end;
-   {$If Defined(RecordGeotiff) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
+   {$If Defined(RecordGeotiff) or Defined(RecordInitDEM)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
    {$If Defined(RecordDefineDatum) or Defined(RecordGeotiff) or Defined(RecordFullGeotiff) or Defined(RecordGeotiffProjection) or Defined(RecordUKOS)}
       WriteLineToDebugFile('tTIFFImage.CreateDEM out, DEM=' + WantDEM.DEMMapProj.GetProjName);
    {$EndIf}
-   {$If Defined(RecordDEMMapProj) or Defined(RecordInitializeDEM) or Defined(TrackProjection)} WantDEM.DEMMapProj.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
+   {$If Defined(RecordDEMMapProj) or Defined(RecordInitDEM) or Defined(TrackProjection)}
+      WantDEM.DEMMapProj.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out');
+   {$EndIf}
    {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  DEM=' + WantDEM.DEMMapProj.h_DatumCode); {$EndIf}
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
 end  {tTIFFImage.CreateTiffDEM};
@@ -1494,13 +1528,13 @@ var
            I : integer;
            TheBytes : array[0..62000] of byte;
         begin
-            {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile('LogASCIIdata, offset=' + IntToStr(anOffset) + '  size=' + IntToStr(aSize)); {$EndIf}
+            {$IfDef RecordProcessingHeader} WriteLineToDebugFile('LogASCIIdata, offset=' + IntToStr(anOffset) + '  size=' + IntToStr(aSize)); {$EndIf}
             FileSeek(TiffHandle,anOffset,0);
             FileRead(TiffHandle,TheBytes[1],aSize);
             Result := ByteArrayToString(TheBytes,asize);
             for I := 1 to length(Result) do if ((Result[i] = #0) or (Result[i] = #$A)) then Result[i] := ' ';
             Result := trim(Result);
-            {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile('LogASCIIdata, result=' + Result); {$EndIf}
+            {$IfDef RecordProcessingHeader} WriteLineToDebugFile('LogASCIIdata, result=' + Result); {$EndIf}
         end;
 
 
@@ -1522,7 +1556,7 @@ var
                TiffHeader.ModelZ := MakeDouble;
                PetMath.CompareValueToExtremes(TiffHeader.ModelX,TieBoundBox.xMin,TieBoundBox.xMax);
                PetMath.CompareValueToExtremes(TiffHeader.ModelY,TieBoundBox.yMin,TieBoundBox.yMax);
-               {$If Defined(RecordFullGeotiff) or Defined(RecordInitializeDEM) or Defined(RecordTiePoints)}
+               {$If Defined(RecordFullGeotiff) or Defined(RecordInitDEM) or Defined(RecordTiePoints)}
                   WriteLineToDebugFile('Tie point ' + IntToStr(i) + ' rasterx=' + RealToString(TiffHeader.RasterX,-12,2) + ' rastery=' + RealToString(TiffHeader.RasterY,-12,2) +
                       ' modelx =' + RealToString(TiffHeader.ModelX,-18,-8) + ' modely=' + RealToString(TiffHeader.ModelY,-18,-8) + ' modelz=' + RealToString(TiffHeader.Modelz,-18,-2));
                {$EndIf}
@@ -1978,7 +2012,7 @@ var
                            TStr := ' scalex=' + RealToString(TiffHeader.ScaleX,-18,-8) + '   scaley=' + RealToString(TiffHeader.ScaleY,-18,-8)+ '   scalez=' + RealToString(TiffHeader.Scalez,-18,-8);
                       end;
               33922 : begin {ModelTiePointTag}
-                          {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile('Key=33922   ' + IntToStr(TiffKeys[j].KeyOffset) + '  ' + IntToStr(TiffKeys[j].LengthIm) ); {$EndIf}
+                          {$IfDef RecordProcessingHeader} WriteLineToDebugFile('Key=33922   ' + IntToStr(TiffKeys[j].KeyOffset) + '  ' + IntToStr(TiffKeys[j].LengthIm) ); {$EndIf}
                           HandleTiePoints(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                       end;
               34264 : begin {ModelTransformationTag, JPL Carto Group}
@@ -2107,7 +2141,7 @@ var
             end {case};
             TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + '  ' + IntToStr(TiffKeys[j].KeyOffset) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
             HeaderLogList.Add(TStr);
-            {$If Defined(RecordWhileProcessingHeader) or Defined(RecordKeys)} WriteLineToDebugFile(TStr); {$EndIf}
+            {$If Defined(RecordProcessingHeader) or Defined(RecordKeys)} WriteLineToDebugFile(TStr); {$EndIf}
          end {for j};
 
          if (SampleFormat = sfUndefined) then begin
@@ -2119,7 +2153,7 @@ var
       if (TiffHeader.StripOffsets = 0) and (TileOffsets <> 0) then TiffHeader.StripOffsets := TileOffsets;
       {$If Defined(LongCent)} WriteLineToDebugFile('ReadTIFFtags done, LongCent: ' + RadToDegString(MapProjection.Long0)); {$EndIf}
       {$IfDef TrackModelType} WriteLineToDebugFile('ReadTIFFtags done, TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) ); {$EndIf}
-      {$IfDef RecordInitializeDEM} WriteLineToDebugFile('ReadTiffTags out, ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
+      {$IfDef RecordInitDEM} WriteLineToDebugFile('ReadTiffTags out, ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
       {$IfDef RecordBitPerPixel} WriteLineToDebugFile('ReadTiffTags out, BitsPerSample=' + IntToStr(TiffHeader.BitsPerSample)); {$EndIf}
       {$If Defined(RecordDefineDatum) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile('ReadTiffTags out'); {$EndIf}
    end;
@@ -2263,7 +2297,7 @@ var
                                     else Factor := 1;
                                  end;
                                  TStr := RealToString(Factor,-12,-6);
-                                {$If Defined(Record3076) or Defined(RecordInitializeDEM)}
+                                {$If Defined(Record3076) or Defined(RecordInitDEM)}
                                    WriteLineToDebugFile('Got factor ScaleX=' + RealToString(TiffHeader.ScaleX,-18,-6) + ' ScaleY=' + RealToString(TiffHeader.ScaleY,-18,-6) +
                                         ' ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) +
                                         ' RasterX=' + RealToString(TiffHeader.RasterX,-18,-6) + ' RasterY=' + RealToString(TiffHeader.RasterY,-18,-6) );
@@ -2272,7 +2306,7 @@ var
                                  TiffHeader.ScaleY := TiffHeader.ScaleY * Factor;
                                  TiffHeader.ModelX := TiffHeader.ModelX * Factor;
                                  TiffHeader.ModelY := TiffHeader.ModelY * Factor;
-                                {$If Defined(Record3076) or Defined(RecordInitializeDEM)}
+                                {$If Defined(Record3076) or Defined(RecordInitDEM)}
                                     WriteLineToDebugFile('Used factor ScaleX=' + RealToString(TiffHeader.ScaleX,-18,-6) + ' ScaleY=' + RealToString(TiffHeader.ScaleY,-18,-6) +
                                         ' ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) +
                                         ' RasterX=' + RealToString(TiffHeader.RasterX,-18,-6) + ' RasterY=' + RealToString(TiffHeader.RasterY,-18,-6) );
@@ -2298,7 +2332,7 @@ var
                          end;
                end;
                Aline := IntegerToString(tag,7) + '  ' + TIFFTypeName(FType) + IntegerToString(LengthIm,7) + IntegerToString(TiffOffset,8) + '  ' + GeoTiffTagName(Tag) + '   ' + TStr;
-               {$IfDef RecordWhileProcessingHeader} WriteLineToDebugFile(ALine); {$EndIf}
+               {$IfDef RecordProcessingHeader} WriteLineToDebugFile(ALine); {$EndIf}
                HeaderLogList.Add(aLine);
                {$If Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('After tag' + IntToStr(i) + '  key=' + IntToStr(tag)); {$EndIf}
             end {for i};
@@ -2321,7 +2355,7 @@ var
 
          {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
          {$If Defined(RecordDefineDatum) or Defined(RecordPlateCaree) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile(' ReadGeotiffTags out, Projection=' + MapProjection.GetProjName); {$EndIf}
-         {$If Defined(Record3076) or Defined(RecordInitializeDEM)} WriteLineToDebugFile('Out geotiff tags ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
+         {$If Defined(Record3076) or Defined(RecordInitDEM)} WriteLineToDebugFile('Out geotiff tags ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
          {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('End ReadGeotiffTags: '); {$EndIf}
      end {ReadGeotiffTags};
 
@@ -2381,6 +2415,7 @@ var
             RegVars.pr_deltaY  := TiffHeader.ScaleY;
             RegVars.pr_deltaX  := TiffHeader.ScaleX;
             RegVars.Registration := RegProjection;
+            RegVars.pName := MapProjection.pName;
             HeaderLogList.Add('GEOTIFF registration analyzed OK');
             {$IfDef RecordFullGeotiff} MapProjection.WriteProjectionParametersToDebugFile('Tiff Read Projection'); {$EndIf}
          end;
@@ -2590,7 +2625,7 @@ begin
 
 
 
-   {$IfDef RecordInitializeDEM} WriteLineToDebugFile(' closed tiff file,  ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
+   {$IfDef RecordInitDEM} WriteLineToDebugFile(' closed tiff file,  ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
 
    if (not MetadataOnly) then begin
       if (TiffHeader.BitsPerSample in [15,16]) and (TiffHeader.SamplesPerPixel > 1) then begin

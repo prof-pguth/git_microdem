@@ -33,7 +33,6 @@ uses
   DEM_indexes in '..\common_code\DEM_indexes.pas',
   dem_legend in '..\common_code\dem_legend.pas' {SetUpLegendForm},
   thread_timers in '..\common_code\thread_timers.pas' {ThreadTimerForm},
-  BaseGraf in '..\common_code\BaseGraf.pas' {ThisBaseGraph},
   veg_density in '..\common_code\veg_density.pas',
   fresnel_block_form in '..\common_code\fresnel_block_form.pas' {Fres_blockf},
   DEMweapn in '..\common_code\DEMweapn.pas' {PickWeapon},
@@ -87,7 +86,6 @@ uses
   DEMGrPik in '..\common_code\DEMGrPik.pas' {PickGrid},
   NetMainW in '..\common_code\NetMainW.pas' {NetForm},
   Beach_Ball_Options in '..\misc\geology\Beach_Ball_Options.pas' {BeachBallForm},
-  demslopeopts in '..\common_code\demslopeopts.pas' {SlopeOptForm},
   rgb_colors_three_params in '..\common_code\rgb_colors_three_params.pas' {RGB_form},
   MEM_Power_spect in '..\common_code\MEM_Power_spect.pas' {MemForm},
   new_field in '..\common_code\new_field.pas' {NewFieldForm},
@@ -164,10 +162,8 @@ uses
   feature_migration in '..\common_code\feature_migration.pas' {FeatureMigrationForm},
   param_graphs in '..\gis_db\param_graphs.pas' {ParamGraphForm},
   petimage_form in '..\common_code\petimage_form.pas' {ImageDisplayForm},
-  demhandw in '..\common_code\demhandw.pas' {DemHandForm},
   usoutlines in '..\common_code\usoutlines.pas' {USOutlineForm},
   main_gray_game in '..\common_code\main_gray_game.pas' {GrayGameForm},
-  make_grid in '..\common_code\make_grid.pas',
   survey_lines in '..\common_code\survey_lines.pas' {GetTracjksForm},
   DEMPersw in '..\viewer_3d\DEMPersw.pas' {ThreeDview},
   tersplsh in '..\common_code\tersplsh.pas' {TerBaseSplashForm},
@@ -208,8 +204,6 @@ uses
   dbf_prssupp in '..\tdbf_current\dbf_prssupp.pas',
   dbf_str in '..\tdbf_current\dbf_str.pas',
   dbf_wtil in '..\tdbf_current\dbf_wtil.pas',
-  ScreenUnicode in '..\UnicodeViewer-Duibhin\ScreenUnicode.pas' {FormUnicode},
-  UnicodeLibrary in '..\UnicodeViewer-Duibhin\UnicodeLibrary.pas',
   NyqGraph in '..\misc\nyquist\NyqGraph.pas' {NyquistBaseGraph},
   map_splitter in '..\common_code\map_splitter.pas' {splitter_form},
   color_filter in '..\common_code\color_filter.pas' {ColorFilterForm},
@@ -231,7 +225,6 @@ uses
   dem_computations in '..\common_code\dem_computations.pas',
   gdal_tools in '..\microdem_open_source\gdal_tools.pas',
   fat_fingers in '..\misc\nyquist\fat_fingers.pas' {fat_fingers_form},
-  new_petmar_movie in '..\movie\new_petmar_movie.pas' {FormAnimate},
   CCR.Exif.BaseUtils in '..\xif\CCR.Exif.BaseUtils.pas',
   CCR.Exif.Consts in '..\xif\CCR.Exif.Consts.pas',
   CCR.Exif.Demos in '..\xif\CCR.Exif.Demos.pas',
@@ -244,7 +237,6 @@ uses
   CCR.Exif.XMPUtils in '..\xif\CCR.Exif.XMPUtils.pas',
   JpegDumpForm in '..\xif\JpegDumpForm.pas' {NewfrmJpegDump},
   JpegDumpOutputFrame in '..\xif\JpegDumpOutputFrame.pas' {NewOutputFrame: TFrame},
-  U_SolarPos2 in '..\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
   ufrmMain in '..\misc\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
   demix_filter in '..\demix\demix_filter.pas' {DemixFilterForm},
   monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
@@ -351,7 +343,16 @@ uses
   horizon_opts in '..\ask_options\horizon_opts.pas' {HorizonOptions},
   kml_opts in '..\ask_options\kml_opts.pas' {kml_opts_fm},
   kml_overlay in '..\ask_options\kml_overlay.pas' {KML_over_opts},
-  correlation_matrix_options in '..\ask_options\correlation_matrix_options.pas' {CorrelationMatrixOptionsForm};
+  correlation_matrix_options in '..\ask_options\correlation_matrix_options.pas' {CorrelationMatrixOptionsForm},
+  new_petmar_movie in '..\misc\movie\new_petmar_movie.pas' {FormAnimate},
+  U_SolarPos2 in '..\misc\SolarPosSource\U_SolarPos2.pas' {SolorPosForm1},
+  ScreenUnicode in '..\misc\UnicodeViewer-Duibhin\ScreenUnicode.pas' {FormUnicode},
+  UnicodeLibrary in '..\misc\UnicodeViewer-Duibhin\UnicodeLibrary.pas',
+  get_slope_algorithm in '..\ask_options\get_slope_algorithm.pas' {GetSlopeAlgorithm},
+  demslopeopts in '..\ask_options\demslopeopts.pas' {SlopeOptForm},
+  make_grid in '..\microdem_open_source\make_grid.pas',
+  demhandw in '..\microdem_open_source\demhandw.pas' {DemHandForm},
+  BaseGraf in '..\microdem_open_source\BaseGraf.pas' {ThisBaseGraph};
 
 {$R *.RES}
 
@@ -377,14 +378,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.CreateForm(TCartMovieOptsForm, CartMovieOptsForm);
-  Application.CreateForm(TContourOptions, ContourOptions);
-  Application.CreateForm(Tdb_concatenate, db_concatenate);
-  Application.CreateForm(TdbFilterCreation, dbFilterCreation);
-  Application.CreateForm(TMomentOptsForm, MomentOptsForm);
-  Application.CreateForm(Tslopegraphopts, slopegraphopts);
-  Application.CreateForm(TVariogramOptions, VariogramOptions);
-  Application.CreateForm(TFourierOptionsForm, FourierOptionsForm);
+  Application.CreateForm(TDemHandForm, DemHandForm);
   Application.Run;
       end;
     finally

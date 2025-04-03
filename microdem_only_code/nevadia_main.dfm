@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -3299,7 +3298,7 @@ object wmdem: Twmdem
   end
   object GeologyPopupMenu: TPopupMenu
     Left = 192
-    Top = 320
+    Top = 312
     object Quickplatetectonicsmaps1: TMenuItem
       Caption = 'Quick plate tectonics maps'
       OnClick = Quickplatetectonicsmaps1Click
@@ -3678,7 +3677,6 @@ object wmdem: Twmdem
     object Extract1: TMenuItem
       Caption = 'Extract EDTM for test areas'
       Enabled = False
-      OnClick = Extract1Click
     end
     object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
       Caption = 'Merge 1 sec reference DEMs from Visioterra'

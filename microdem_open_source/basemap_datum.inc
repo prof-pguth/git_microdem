@@ -971,7 +971,7 @@ end;
       end;
 
 
-      procedure GetMapParametersSPCSOption(var ProjFileName : PathStr; var Hemi : ANSIchar; var UTMZone : int16; var DatCode : shortstring; var  PName :  tProjectType; var GeoLatLong : boolean; UTMZoneOnly : boolean = false; AreaName : shortString = '');
+      procedure GetMapParametersSPCSOption(var ProjFileName : PathStr; var Hemi : ANSIchar; var UTMZone : int16; var DatCode : shortstring; var  PName :  tProjType; var GeoLatLong : boolean; UTMZoneOnly : boolean = false; AreaName : shortString = '');
       var
          PickDatumParams : TPickDatumParams;
       begin
@@ -1008,7 +1008,7 @@ end;
 
       procedure GetMapParameters(var Hemi : ANSIchar; var UTMZone : int16; var DatCode : ShortString; UTMZoneOnly : boolean = false);
       var
-         PName     : tProjectType;
+         PName     : tProjType;
          ProjFileName : PathStr;
          GeoLatLong : boolean;
       begin

@@ -503,7 +503,6 @@ end;
 
 function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
 //https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_0.html
-//  2/26/24, both grids are empty: CHNLNTWRK and CHNLROUTE, reason we go vector
 var
    cmd : shortstring;
 begin
@@ -516,14 +515,23 @@ begin
                ' -ELEVATION ' + inName +
                ' -INIT_GRID ' + inName +
                ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network_' + ExtractFileNameNoExt(InName) + '.tif' +
-               //' -CHNLROUTE ' + MDTempDir + 'saga_channel_route_' + ExtractFileNameNoExt(InName) + '.tif' +
                ' -SHAPES ' + ChannelName;
           WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
           {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
        end;
-       //Result := SAGAMap(OpenMap,cmd,InName,'',Undefined,false);
     end;
 end;
+
+    function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
+    //https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_0.html
+    var
+       cmd : shortstring;
+    begin
+       if (OutGridName = '') then OutGridName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
+       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutGridName ;
+       Result := SAGAMap(OpenMap,cmd,OutGridName,euUndefined);
+    end;
+
 
 
 function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; ChannelNetwork : PathStr = ''; OutName : PathStr = '') : integer;
@@ -555,18 +563,6 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     //Result := SAGAMap(OpenMap,cmd,InName,'',Undefined,false);
  end;
 
-
-    function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
-    //https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_0.html
-    var
-       cmd : shortstring;
-    begin
-       if (OutGridName = '') then OutGridName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.tif';
-       //if (ShpName = '') then ShpName := MDTempDir + 'saga_channel_' + ExtractFileNameNoExt(InName) + '.shp';
-       CMD := MDDef.SagaCMD + ' ta_channels "Channel Network" -ELEVATION ' + inName + ' -INIT_GRID ' + inName + ' -CHNLNTWRK ' + OutGridName ;
-       Result := SAGAMap(OpenMap,cmd,OutGridName,euUndefined);
-       //Result := 0;
-    end;
 
 
     function SagaSinkRemoval(InName: PathStr; OutName : PathStr = '') : integer;

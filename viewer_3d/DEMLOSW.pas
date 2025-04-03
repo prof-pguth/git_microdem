@@ -533,7 +533,7 @@ var
    i : integer;
 begin
    {$IfDef RecordHideProfiles} ShowThoseToDraw('Enter TDEMLOSF.Hideprofiles1Click'); {$EndIf}
-   GetMultipleDEMsFromList('DEMs to include in profile',LOSDraw.ShowProfile);
+   LOSDraw.ShowProfile := GetMultipleDEMsFromList('DEMs to include in profile');
    {$IfDef RecordHideProfiles} ShowThoseToDraw('Mid TDEMLOSF.Hideprofiles1Click'); {$EndIf}
    FormResize(Nil);
 end;
@@ -1428,7 +1428,7 @@ var
        DEMGlb[DEM].GetStraightRouteDEMGrid(LatLeft2,LongLeft2,LatRight2,LongRight2,MDDef.wf.StraightAlgorithm,Points,xgrids^,ygrids^,dists^);
        DEMGlb[DEM].GetVisiblePoints(MDDef.ObsAboveGround,MDDef.TargetAboveGround,-89,89,true,true,Points,xgrids^,ygrids^,dists^,elevs^,VisPoints);
 
-       if MDDef.ShowAllProfiles then ThisGraph.OpenDataFile(rfile);
+       if MDDef.ShowAllProfiles then ThisGraph.OpenDataFile(rfile,'');
 
        for i := 0 to Points do if (elevs^[i] < 32000) then begin
           v[1] := 0.001 * avdists^[i];
@@ -1487,7 +1487,7 @@ begin
       FigureForSpacing(-90,i * MDDef.LOSParallelProfileSep);
    end;
 
-    ThisGraph.OpenDataFile(rfile);
+    ThisGraph.OpenDataFile(rfile,'');
     ThisGraph.GraphDraw.FileColors256[(ThisGraph.GraphDraw.DataFilesPlotted.Count)] := claLime;
     for i := 0 to Points do begin
        v[1] := 0.001 * avdists^[i];

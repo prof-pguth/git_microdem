@@ -73,7 +73,6 @@ var
    TStr,TStr2,TStr3 : shortstring;
 begin
    if WhiteBoxPresent and FileExistsErrorMessage(DEMName) then begin
-      //BreachName := '';
       Result := 0;
       if not FileExists(BreachName) then WBT_breach_depression(DEMName,BreachName);
       TStr := 'num_cells_';
@@ -88,13 +87,15 @@ end;
 
 
 function WBT_extract_streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;
-// whitebox_tools -r=ExtractStreams -v --wd="/path/to/data/" --flow_accum='d8accum.tif' -o='output.tif' --threshold=100.0 --zero_background=false
+//  https://www.whiteboxgeo.com/manual/wbt_book/available_tools/stream_network_analysis.html#ExtractStreams
+//  -r=ExtractStreams -v --wd="/path/to/data/" --flow_accum='d8accum.tif' -o='output.tif' --threshold=100.0 --zero_background=false
+//  could convert to vector file, https://www.whiteboxgeo.com/manual/wbt_book/available_tools/stream_network_analysis.html#rasterstreamstovector
 var
    FlowAccName : PathStr;
    cmd : ansistring;
 begin
    WBT_FlowAccumulation(false,false,True,DEMName,BreachName,FlowAccName);
-   if StreamName = '' then StreamName := MDTempDir + 'wbt_streams_' + ExtractFileNameNoExt(DEMName) + '.tif';
+   if (StreamName = '') then StreamName := MDTempDir + 'wbt_streams_' + ExtractFileNameNoExt(DEMName) + '.tif';
    if FileExists(StreamName) then begin
       LoadNewDEM(Result,StreamName,OpenMap);
    end

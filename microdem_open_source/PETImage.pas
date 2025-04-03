@@ -722,7 +722,7 @@ begin
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
          CopyImageToBitmap((WMDEM.MDIChildren[i] as TThisBaseGraph).Image1,Bitmap);
-
+         fName := (WMDEM.MDIChildren[i] as TThisBaseGraph).Caption + '_';
          if LegendOnRight then begin
             bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend;
             x := Bitmap.Width + 10;
@@ -732,7 +732,7 @@ begin
          end;
 
          Bitmap.Height := Bitmap.Height + BottomMargin;
-         fName := NextFileNumber(MDtempDir,'graph_4_biggie_','.bmp');
+         fName := NextFileNumber(MDtempDir,fName,'.bmp');
          Bitmap.SaveToFile(fName);
          Findings.Add(fName);
       end;

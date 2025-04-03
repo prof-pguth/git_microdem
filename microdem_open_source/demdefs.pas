@@ -435,9 +435,9 @@ const
 type
    tSlopeAspectRec = record
        z,znw,zw,zsw,zn,zs,zne,ze,zse,
-       dzdx,dzdy,     //first order partial derivatives
-       dxx,dxy,dyy,   //second order partial derivatives
-       dxxx,dyyy,dxxy,dxyy,    //third order partial derivatives
+       zx,zy,     //first order partial derivatives
+       zxx,zxy,zyy,   //second order partial derivatives
+       zxxx,zyyy,zxxy,zxyy,    //third order partial derivatives
        {$IfDef IlichEquations} a,b,c,d,e,f, {$EndIf}  //LSQ surface constants
        dx,dy,dia_space,
        GridTrueAngle,
@@ -458,22 +458,20 @@ type
        RequireFullWindow   : boolean;
    end;
 
-(*
-const
-   NumCurvatures = 10;
-   CurvatureNames : array[1..NumCurvatures] of shortstring = ('profile_curvature_','tangential_curvature_','plan_curvature_','flow_line_curvature_', 'contour_torsion_',
-                                                              'max_curvature_','min_curvature_','Gaussian_curvature_', 'mean_curvature_','Casorati_curvature_');
-*)
-
 const
   eucurv_kns = 101;
+  eucurv_prof = 101;
   eucurv_knc = 102;
+  eucurv_tang = 102;
   eucurv_tc = 103;
+  eucurv_cont_tors = 103;
   eucurv_zss = 104;
   eucurv_ts = 105;
   eucurv_zcc = 106;
   eucurv_kpc = 107;
+  eucurv_plan = 107;
   eucurv_kps = 108;
+  eucurv_flow = 108;
   eucurv_sin_sc = 109;
   eucurv_kd = 110;
   eucurv_ka = 111;
@@ -483,10 +481,12 @@ const
   eucurv_k_max = 115;
   eucurv_k_min = 116;
   eucurv_k = 117;
+  eucurv_gauss = 117;
   eucurv_el = 118;
   eucurv_ku = 119;
   eucurv_k_mean = 120;
   eucurv_kc = 121;
+  eucurv_casorati = 121;
   eucurv_kncc = 122;
   eucurv_kncs = 123;
   eucurv_knss = 124;
@@ -835,7 +835,7 @@ type
 
    tDEMprecision = (SmallIntDEM,FloatingPointDEM,ByteDEM,WordDEM,LongWordDEM);
 
-   tProjectType = (AlbersEqAreaConicalEllipsoid,Cassini,EquiDistantCylindrical,Gnomonic,HammerProj,LamAzEqArea,Mercator,MercatorEllipsoid,Mollweide,
+   tProjType = (AlbersEqAreaConicalEllipsoid,Cassini,EquiDistantCylindrical,Gnomonic,HammerProj,LamAzEqArea,Mercator,MercatorEllipsoid,Mollweide,
       OrthoProj,PolarStereographicEllipsoidal,SinusProj,SinusEllipsoidal,OldStereographic,UTMEllipsoidal,VanDerGrinten,MillerCylindrical,
       CylindricalEqualArea,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,PlateCaree,LamAzEqAreaEllipsoidal,SphericalStereographic,
       WebMercator,IrishGrid,UndefinedProj,EqualEarth,CylindricalEqualAreaEllipsoidal,AzimuthalEquidistantEllipsoidal,ObliqueStereoGraphic);
@@ -1578,18 +1578,13 @@ type
 
        {$IfDef ExDrainage}
        {$Else}
-           //DrainageSlopeAlgorithm : tSlopeCurveCompute;
            DrainageArrowLength,
            DrainageArrowWidth,
-           //DrainageVectAvgArrowLength,
-           //DrainageVectAvgArrowWidth,
            DrainageArrowSeparation : byte;
            DrainageArrowColor1,
            DrainageArrowColor2,
            DrainageVectAvgArrowColor : tPlatformColor;
            DrainageMethod : byte;
-           //DrainageSeedRadius : byte;
-           //DrainagePointSlope,
            DrainageVectorAverage : boolean;
        {$EndIf}
 
@@ -2748,7 +2743,7 @@ type
        AspectRegionSize : int32;
        //CurvatureRegionRadius,
        //SlopeRegionRadius : int32;
-       NeedFullSlopeWindows : boolean;
+       //NeedFullSlopeWindows : boolean;
 
        DeleteAuxTiffFiles : boolean;
 

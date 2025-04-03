@@ -92,7 +92,7 @@ function DEMListForAllOpenDEM: tDEMBooleanArray;
 procedure WriteDEMListToDebug(Title : shortString; FileDEMList : tDEMBooleanArray);
 
 procedure MakeDEMSummaryTable;
-
+procedure DEMHeaderTable;
 
 {$IfDef ExIndexes}
 {$Else}
@@ -101,7 +101,7 @@ procedure MakeDEMSummaryTable;
    var
       CompareDEMIndexes : array[1..MaxCompare] of integer;
       CompareDEMNames : array[1..MaxCompare] of shortstring;
-      LikeDTED : array[1..MaxCompare] of boolean;
+      //LikeDTED : array[1..MaxCompare] of boolean;
 
    function LoadDEMsCoveringPoint(Lat,long : float64; LoadMap : boolean = false) : integer;
    function LoadDEMsCoveringBox(bb : sfBoundBox; LoadMap : boolean = false) : integer;
@@ -361,6 +361,73 @@ begin
    FindDriveWithFile(Geoid2008FName);
    WGS84toEGM2008 := OpenNewDEM(Geoid2008FName,false,'WGS84ellipsoid to EGM2008');
    Result := true;
+end;
+
+procedure DEMHeaderTable;
+const
+   NumParams = 23;
+   Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW',
+        'PIXEL_IS','H_DATUM','VERT_DATUM','UTM_ZONE','MIN_Z','MAX_Z','X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072',
+        'GeoTIIF_2048','SPACING_M','PIXEL_GEOMETRY','FILE_SIZE');
+var
+   i,j,Decs : integer;
+   DEMsWanted : tDEMbooleanArray;
+   Results : tStringList;
+   aLine,TStr : ANSIstring;
+   fName : PathStr;
+ begin
+   {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click in'); {$EndIf}
+   DEMsWanted := GetMultipleDEMsFromList('Grids to compare');
+   Results := tStringList.Create;
+   aLine := 'PARAMETER';
+   for i := 1 to MaxDEMDataSets do begin
+      if DEMsWanted[i] and ValidDEM(i) then begin
+         aLine := aLine + ',' + 'DEM_' + IntToStr(i);
+      end;
+   end;
+   Results.Add(aLine);
+   for j := 0 to NumParams do begin
+      aline := Params[j];
+      for i := 1 to MaxDEMDataSets do begin
+         if DEMsWanted[i] and ValidDEM(i) then begin
+            if (DEMGlb[i].DEMHeader.DEMUsed = UTMbasedDEM) then Decs := -2 else Decs := -6;
+            TStr := '';
+            case j of
+               0 : TStr := DEMGlb[i].AreaName;
+               1 : TStr := DEMGlb[i].DEMmodel;
+               2 : TStr := DEMGlb[i].GridPrecisionString;
+               3 : TStr := SpacingUnits[DEMGlb[i].DEMHeader.DataSpacing];
+               4 : TStr := ElevUnitsAre(DEMGlb[i].DEMHeader.ElevUnits) + ' (' + IntToStr(DEMGlb[i].DEMHeader.ElevUnits) + ')';
+               5 : TStr := DEMGlb[i].DEMHeader.LatHemi;
+               6 : TStr := IntToStr(DEMGlb[i].DEMHeader.NumCol);
+               7 : TStr := IntToStr(DEMGlb[i].DEMHeader.NumRow);
+               8 : TStr := RasterPixelIsString(DEMGlb[i].DEMHeader.RasterPixelIsGeoKey1025);
+               9 : TStr := DEMGlb[i].DEMHeader.h_DatumCode;
+               10 : TStr := VertDatumName(DEMGlb[i].DEMHeader.VerticalCSTypeGeoKey);
+               11 : TStr := IntToStr(DEMGlb[i].DEMHeader.UTMZone);
+               12 : TStr := RealToString(DEMGlb[i].DEMHeader.MinElev,-12,-4);
+               13 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
+               14 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
+               15 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
+               16 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
+               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
+               18 : begin
+                        TStr := DEMGlb[i].DEMHeader.WKTString;
+                        if (length(TStr) > 0) then TStr := IntToStr(length(TStr)) + ' chars'
+                    end;
+               19 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
+               20 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
+               21 : TStr := DEMGlb[i].HorizontalDEMSpacing(true);
+               22 : TStr := DEMGlb[i].GridCornerModel;
+               23 : TStr := SmartMemorySizeBytes(GetFileSize(DEMGlb[i].DEMfileName));
+            end;
+            aLine := aline + ',' + tStr;
+         end;
+      end {for i};
+      Results.Add(aLine);
+   end {for j};
+   fName := Petmar.NextFileNumber(MDTempDir, 'Compare_grid_headers_', DefaultDBExt);
+   StringList2CSVtoDB(Results,fName);
 end;
 
 
@@ -664,14 +731,14 @@ end;
          while not Table.eof do begin
             inc(i);
             CompareDEMNames[i] := Table.GetFieldByNameAsString('SERIES');
-            CompareDEMIndexes[i] := LoadMapLibraryBox(true,bb,CompareDEMNames[i],false);
+            CompareDEMIndexes[i] := LoadMapLibraryBox(true,bb,CompareDEMNames[i],LoadMap);
             if ValidDEM(CompareDEMIndexes[i]) then begin
                if Table.FieldExists('SHORT_NAME') then CompareDEMNames[i] := Table.GetFieldByNameAsString('SHORT_NAME');
                DEMGlb[CompareDEMIndexes[i]].DEMheader.VerticalCSTypeGeoKey := Table.GetFieldByNameAsInteger('VERT_DATUM');
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile('Series=' + CompareDEMNames[i] +  '   DEM=' + IntToStr(CompareDEMIndexes[i])); {$EndIf}
                inc(Result);
                DEMGlb[CompareDEMIndexes[i]].AreaName := CompareDEMNames[i];
-               LikeDTED[i] := (DEMGlb[CompareDEMIndexes[i]].DEMHeader.RasterPixelIsGeoKey1025 = 2) or (DEMGlb[CompareDEMIndexes[i]].AreaName = 'ASTER');
+               //LikeDTED[i] := (DEMGlb[CompareDEMIndexes[i]].DEMHeader.RasterPixelIsGeoKey1025 = 2) or (DEMGlb[CompareDEMIndexes[i]].AreaName = 'ASTER');
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile(DEMGlb[CompareDEMIndexes[i]].AreaName + ' ' + DEMGlb[CompareDEMIndexes[i]].PixelIsString); {$EndIf}
                if LoadMap then CreateDEMSelectionMap(CompareDEMIndexes[i],true,MDDef.DefElevsPercentile,MDdef.DefElevMap);
             end
@@ -917,7 +984,10 @@ end;
 
 
    function GetMultipleDEMsFromList(TheMessage : shortstring) : tDEMbooleanArray;  overload;
+   var
+      i : integer;
    begin
+      for i := 1 to MaxDEMDataSets do Result[i] := true;
       GetMultipleDEMsFromList(TheMessage,Result);
    end;
 

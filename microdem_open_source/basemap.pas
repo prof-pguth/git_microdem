@@ -113,7 +113,7 @@ type
           procedure TransverseMercatorForwardProjectionRadians(Lat,Long : float64; var X,Y : float64);
           function M_3_21(LatRadians : float64) : float64;  //equation 3-21 of Synder, p.17
       public
-         PName   : tProjectType;
+         PName   : tProjType;
          projUTMZone  : int16;
          LatHemi      : Ansichar;
          h_DatumCode,
@@ -244,10 +244,11 @@ type
 
    end;
 
-   tRegistration = (RegNone,RegProjection,regTIN);
+   tRegistration = (RegNone,RegProjection);  //,regTIN);
 
    tRegVars = record
       Registration         : tRegistration;
+      pName             : tProjType;
       UpLeftX,UpLeftY      : float64;
       pr_deltaX,pr_deltaY  : float64;
    end;
@@ -297,7 +298,7 @@ function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
    procedure PickUTMZone(var UTMZone : int16);
    procedure GetSecondaryDatum;
    procedure GetMapParameters(var Hemi : ANSIchar; var UTMZone : int16; var DatCode : ShortString; UTMZoneOnly : boolean = false);
-   procedure GetMapParametersSPCSOption(var ProjFileName : PathStr; var Hemi : ANSIchar; var UTMZone : int16; var DatCode : ShortString; var  PName :  tProjectType; var GeoLatLong : boolean; UTMZoneOnly : boolean = false; AreaName : shortString = '');
+   procedure GetMapParametersSPCSOption(var ProjFileName : PathStr; var Hemi : ANSIchar; var UTMZone : int16; var DatCode : ShortString; var  PName :  tProjType; var GeoLatLong : boolean; UTMZoneOnly : boolean = false; AreaName : shortString = '');
 {$EndIf}
 
 
@@ -388,7 +389,6 @@ begin
    {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitProjFromDEMHeader, map ' + GetProjName); {$EndIf}
    {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader out, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
 end;
-
 
 
 function tMapProjection.ConvertGeoBoundBoxToUTMBoundBox(geoBox : sfBoundbox) : sfBoundBox;

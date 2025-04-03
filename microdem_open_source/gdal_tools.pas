@@ -17,11 +17,14 @@ unit gdal_tools;
 //   gdal_calc
 
 
+//{$Define AllowEDTM}
+
+
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
       //{$Define RecordGDALOpen}
-      //{$Define RecordSubsetOpen}
+      {$Define RecordSubsetOpen}
       {$Define RecordDatumShift}
       //{$Define RecordDEMIX}
       //{$Define RecordWKT}
@@ -125,6 +128,14 @@ uses
 
    procedure GDAL_Raster_Calculator(Expression : shortstring);
 
+   (*
+   {$IfDef AllowEDTM} function ExtractEDTMforBoundingBox(bb : sfBoundBox; OpenMap : boolean; fName : PathStr = '') : integer; {$EndIf}
+   function ExtractGEDTMforBoundingBox(bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; fName : PathStr = '') : integer;
+   *)
+
+   function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
+
+
    //create grids from DEM
       function GDAL_SlopeMap_ZT(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
       function GDAL_SlopeMap_Horn(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
@@ -221,6 +232,19 @@ const
          EndBatchFile(fName,BatchFile);
       end;
    {$EndIf}
+
+
+    function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
+    begin
+       //EDTM_fName := 'I:\backup_map_data\ensemble_dtm\dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
+       Result := GDALsubsetGridAndOpen(bb,true,InName,false);
+       if ValidDEM(Result) then begin
+          DEMGlb[Result].AreaName := ShortName;
+          DEMGlb[Result].MultiplyGridByConstant(0.1);
+          if (OutfName <> '') then DEMGlb[Result].WriteNewFormatDEM(OutfName);
+          if OpenMap then CreateDEMSelectionMap(Result,true,true,MDDef.DefaultElevationColors);
+       end;
+     end;
 
 
 procedure GDAL_warp_reproject(How : tgdalWarpMethod);
@@ -1197,9 +1221,10 @@ end;
         var
            OutPath,OutName : PathStr;
            LandCover : integer;
-           TStr,ExtentBoxString   : shortstring;
+           TStr,ExtentBoxString,Cmd   : shortstring;
            Imagebb : sfBoundBox;
            Ext : ExtStr;
+           RegVars : tRegVars;
          begin
             CheckFileNameForSpaces(fName);
             if (BaseOutPath = '') or (not ValidPath(BaseOutPath)) then BaseOutPath := MDtempdir;
@@ -1208,20 +1233,45 @@ end;
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
             Ext := UpperCase(ExtractFileExt(fName));
-            GeotiffBoudingBox(fName,Imagebb);
-            {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' in file ' + sfBoundBoxToString(ImageBB,4)); {$EndIf}
+            GeotiffBoundingBox(fName,Imagebb);
+            if GeotiffRegVars(fName, RegVars) then begin
+               if (RegVars.pName = PlateCaree) then begin
+                  //In pixel line you might do something like this to take a 300x300 chunk out of gtopo.dat starting a line 600 and 500 pixels in from
+                  //the left:    gdal_translate -srcwin 500 600 300 300 gtopo.dat  subset.tif
+(*
+   tRegVars = record
+      Registration         : tRegistration;
+      pName             : tProjType;
+      UpLeftX,UpLeftY      : float64;
+      pr_deltaX,pr_deltaY  : float64;
+   end;
+*)
 
-            if LatLongBox then begin
-               ExtentBoxString := GDALextentBoxLatLong(bb);
-            end
-            else begin
-               ExtentBoxString := GDALextentBoxUTM(bb);
+                  ExtentBoxString := ' -srcwin ' + IntToStr(trunc((bb.xMin - RegVars.UpLeftX) / RegVars.pr_deltax)) + ' ' +
+                                                   IntToStr(trunc((RegVars.UpLeftY - bb.YMax) / RegVars.pr_deltaY)) + ' ' +
+                                                  IntToStr(succ( round((bb.xMax - bb.xMin) / RegVars.pr_deltax))) + ' ' +
+                                                  IntToStr(succ( round((bb.yMax - bb.yMin) / RegVars.pr_deltaY)));
+                  TStr := ' -r nearest ';
+               end
+               else begin
+                  if LatLongBox then begin
+                     ExtentBoxString := GDALextentBoxLatLong(bb);
+                  end
+                  else begin
+                     ExtentBoxString := GDALextentBoxUTM(bb);
+                  end;
+                  if IsThisLandCover(fName,LandCover) then TStr := ' -r nearest '
+                  else TStr := ' ';
+               end;
             end;
 
+
+
+
             if AtLeastPartOfBoxInAnotherBox(ImageBB, bb) then begin
-               if IsThisLandCover(fName,LandCover) then TStr := ' -r nearest '
-               else TStr := '';
-               GDALcommand(MDTempDir + 'raster_subset.bat',GDAL_Translate_Name + ' ' + ExtentBoxString + TStr + fName + ' ' + OutName);
+               cmd := GDAL_Translate_Name + ' ' + ExtentBoxString + TStr + fName + ' ' + OutName;
+               {$IfDef RecordSubsetOpen} WriteLineToDebugFile('cmd=' + cmd); {$EndIf}
+               GDALcommand(MDTempDir + 'raster_subset.bat',cmd);
                if FileExists(OutName) then begin
                   Result := OpenNewDEM(OutName,OpenMap);
                   {$IfDef RecordSubsetOpen} WriteLineToDebugFile('Grid opened ' + IntToStr(Result)); {$EndIf}
@@ -1468,20 +1518,19 @@ end;
          if (aDir = '') then Exit;
          if StrUtils.AnsiContainsText(aDir,' ') then fName := ExtractShortPathName(aDir);
 
-          if IsGDALFilePresent(GDAL_info_Name) then begin
-            GDALCommand(MDTempDir + 'r2v.bat_part2.bat',GDAL_info_Name + ' '  + aDir);
-          end;
+         if IsGDALFilePresent(GDAL_info_Name) then begin
+           GDALCommand(MDTempDir + 'r2v.bat_part2.bat',GDAL_info_Name + ' '  + aDir);
+         end;
 
-          if IsGDALFilePresent(GDAL_ogr_Name) then begin
-            OutDir := adir + '_shapefiles\';
-            GDALCommand(MDTempDir + 'r2v_part2.bat',GDAL_ogr_Name + ' ' +  OutDir + ' ' + aDir + ogr2ogr_params);
+         if IsGDALFilePresent(GDAL_ogr_Name) then begin
+           OutDir := adir + '_shapefiles\';
+           GDALCommand(MDTempDir + 'r2v_part2.bat',GDAL_ogr_Name + ' ' +  OutDir + ' ' + aDir + ogr2ogr_params);
           end;
       end;
 
 
       procedure GDAL_Convert_Shapefile_2_geopackage(fName : pathStr);
       var
-         //NewDir : PathStr;
          cmd : shortstring;
       begin
 //convert a shapefile to geopackage
@@ -1490,8 +1539,6 @@ end;
 //$ ogr2ogr -f GPKG filename.gpkg ./path/to/dir
           cmd := GDAL_ogr_Name + ' -f GPKG ' + ChangeFileExt(fName,'.gpkg') + ' ' + fName  + ' -progress -t_srs EPSG:4326';
           GDALCommand(MDTempDir + 'shp2gkpg.bat',cmd);
-          //NewDir := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_shapefile_wgs84';
-          //GDALCommand(MDTempDir + 'shp2wgs.bat',GDAL_ogr_Name + ' ' + NewDir + ' ' + fname + ogr2ogr_params);
       end;
 
 

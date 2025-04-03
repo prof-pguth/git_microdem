@@ -103,27 +103,28 @@ begin
             end;
          until (n=12) and (m =12);
 
-      SNORM[0,0] := 1;
-      for N  := 1 to MAXDEG do begin
-         SNORM[N,0] := SNORM[N-1,0]*(2*N-1)/(N);
-         J := 2;
-         for M := 0 to N do begin
-             K[N,M] := (sqr(N-1)-sqr(M))/((2*N-1)*(2*N-3));
-             IF (M > 0) THEN begin
-                 FLNMJ := ((N-M+1)*J)/ (N+M);
-                 SNORM[N,M] := SNORM[N,M-1]*SQRT(FLNMJ);
-                 J := 1;
-                 C[M-1,N] := SNORM[N,M]*C[M-1,N];
-                 CD[M-1,N] := SNORM[N,M]*CD[M-1,N];
-             END {IF};
-             C[N,M] := SNORM[N,M]*C[N,M];
-             CD[n,M] := SNORM[N,M]*CD[N,M];
-         end {for m};
-         FN[N] := (N+1);
-         FM[N] := (N);
-      end {for n};
-      K[1,1] := 0;
+        SNORM[0,0] := 1;
+        for N  := 1 to MAXDEG do begin
+           SNORM[N,0] := SNORM[N-1,0]*(2*N-1)/(N);
+           J := 2;
+           for M := 0 to N do begin
+               K[N,M] := (sqr(N-1)-sqr(M))/((2*N-1)*(2*N-3));
+               IF (M > 0) THEN begin
+                   FLNMJ := ((N-M+1)*J)/ (N+M);
+                   SNORM[N,M] := SNORM[N,M-1]*SQRT(FLNMJ);
+                   J := 1;
+                   C[M-1,N] := SNORM[N,M]*C[M-1,N];
+                   CD[M-1,N] := SNORM[N,M]*CD[M-1,N];
+               END {IF};
+               C[N,M] := SNORM[N,M]*C[N,M];
+               CD[n,M] := SNORM[N,M]*CD[N,M];
+           end {for m};
+           FN[N] := N+1;
+           FM[N] := N;
+        end {for n};
+        K[1,1] := 0;
       end;
+      CloseFile(wmmfile);
    end
    else begin
       {$IfDef RecordProblems} WriteLineToDebugFile('Missing ' + www_mag_mod_fName); {$EndIf}
@@ -271,7 +272,6 @@ END;
 
 
 initialization
-   InitializeMagneticVariation;
 finalization
    Dispose(MagModel);
    {$IfDef RecordMagVarProblems} WriteLineToDebugFile('RecordMagVarProblems active in demmagvar'); {$EndIf}

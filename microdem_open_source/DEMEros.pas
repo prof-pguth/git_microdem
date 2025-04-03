@@ -506,7 +506,7 @@ begin
    Result.GraphDraw.SatBands := 'TM8';
    Result.Caption := 'Reflectance Spectrum';
    Result.SetUpGraphForm;
-   Result.GraphDraw.LegendList := tStringList.Create;
+   //Result.GraphDraw.LegendList := tStringList.Create;
    for i := 0 to pred(FilesWanted.Count) do begin
       fName := FilesWanted.Strings[i];
       Data := tStringList.Create;
@@ -515,8 +515,8 @@ begin
 
       fName := ExtractFileNameNoExt(FilesWanted.Strings[i]);
       Result.Caption := Result.Caption + '  ' + fName;
-      Result.GraphDraw.LegendList.Add(fName);
-      Result.OpenDataFile(rfile);
+      //Result.GraphDraw.LegendList.Add(fName);
+      Result.OpenDataFile(rfile,fName);
       for j := 16 to pred(Data.Count) do begin
          Line := ptTrim(Data.Strings[j]);
          x := StrToFloat(Petmar_types.BeforeSpecifiedCharacterANSI(Line,' ',true,true));
@@ -550,8 +550,8 @@ end;
                   Factor : float32;
                begin
                     Factor := BandXSpace[1] / BandXSpace[Band] * BandYSpace[1] / BandYSpace[Band];
-                    Result.GraphDraw.LegendList.Add(BandLongName[Band]);
-                    Result.OpenDataFile(rfile);
+                    //Result.GraphDraw.LegendList.Add(BandLongName[Band]);
+                    Result.OpenDataFile(rfile,BandLongName[Band]);
                     for j := 0 to MaxRefCount do begin
                        if Distrib[Band]^[j] > 0 then begin
                           v[1] := j;
@@ -574,7 +574,7 @@ end;
             {$IfDef RecordHistogram} WriteLineToDebugFile('MaxCount found'); {$EndIf}
 
             Result := TThisBaseGraph.Create(Application);
-            Result.GraphDraw.LegendList := tStringList.Create;
+            //Result.GraphDraw.LegendList := tStringList.Create;
             with Result,GraphDraw do begin
                if Desired in [shAllBands,shRGBBands] then begin
                   HorizLabel := 'Band Reflectance';
@@ -627,8 +627,8 @@ end;
                var
                   J : integer;
                begin
-                    Result.GraphDraw.LegendList.Add(BandLongName[Band]);
-                    Result.OpenDataFile(rfile);
+                    //Result.GraphDraw.LegendList.Add(BandLongName[Band]);
+                    Result.OpenDataFile(rfile,BandLongName[Band]);
                     for j := MinRef[Band] to MaxRef[Band] do begin
                           v[1] := j;
                           v[2] := Colors[j];
@@ -648,7 +648,7 @@ end;
             VertLabel := 'Ouput intensity';
             Result.SetUpGraphForm;
             Result.GraphDraw.LeftMargin := 80;
-            Result.GraphDraw.LegendList := tStringList.Create;
+            //Result.GraphDraw.LegendList := tStringList.Create;
 
             if SelectionMap.MapDraw.MapType = mtSatImageGray then begin
                 AddBand(SelectionMap.MapDraw.SatView.BandInWindow,GraysLookUp);
@@ -1069,7 +1069,7 @@ end;
 function tSatImage.RegInfo : AnsiString;
 begin
     case RegVars.Registration of
-       RegTIN      : Result := 'Delauney TIN registration';
+       //RegTIN      : Result := 'Delauney TIN registration';
        RegNone     : Result := 'No registration';
        RegProjection : Result := 'Data projection: ' + ImageMapProjection.GetProjName;
     end;
@@ -1670,11 +1670,12 @@ var
    xims,yims : integer;
    x,y : float64;
 begin
-   if (RegVars.Registration <> RegTIN)  then begin
+   //if (RegVars.Registration <> RegTIN)  then begin
       if (ImageMapProjection.pName <> PlateCaree) then ImageMapProjection.ForwardProjectDegrees(Lat,Long,X,Y);
       xu := (x - RegVars.UpleftX) / BandXSpace[Band];
       yu := (RegVars.UpleftY - y) / BandYSpace[Band];
-   end
+   //end
+(*
    else begin
       {$IfDef ExTIN}
       {$Else}
@@ -1683,6 +1684,7 @@ begin
          yu := yims;
       {$EndIf}
    end;
+*)
 end;
 
 
@@ -1699,12 +1701,14 @@ begin
       SatGridToProjectedCoords(Band,xgrid,ygrid,Xp,Yp);
       ImageMapProjection.InverseProjectDegrees(xp,yp,Lat,Long);
    end
+   (*
    {$IfDef ExTIN}
    {$Else}
       else if (RegVars.Registration = RegTIN) then begin
          SatTinRegistration.InterpolateXY(xgrid,ygrid,Long,Lat);
       end
    {$EndIf}
+   *)
 end;
 
 
@@ -2817,6 +2821,7 @@ initialization
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demeros out'); {$EndIf}
 end {unit}.
+
 
 
 

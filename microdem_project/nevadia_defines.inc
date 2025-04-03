@@ -28,7 +28,15 @@
 
 //{$Define TrackElevationPointers}
 
+
+//options for slope/curvature algorithm, turned off by default
+  //{$Define OptionSaveSlopeComputePoints}
+  //{$Define SlopeWindowEdgeEffect}
+
+
+
 {$Define FMXU_point_cloud}
+{$Define AllowEDTM}
 
 
 {$Define MICRODEM}
@@ -51,6 +59,7 @@
 {$Define UseFireDacSQLlite}
 
 {$Define ExOddballDEMexports}
+{$Define ExDTED}
 {$Define ExOddballDEMs}
 {$Define ExBILWrite}
 {$Define ExDRGimport}
@@ -58,7 +67,6 @@
 {$Define ExWMS}
 {$Define ExLandsatQA}
 {$Define ExWaveLengthHeight}
-{$Define ExDTED}
 
  //deleted 4/19/2023 to track down problems with recent optimizations; they are not key options
    {$Define ExSidescan}

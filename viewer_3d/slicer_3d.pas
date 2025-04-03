@@ -883,6 +883,8 @@ end;
 
 
 procedure TSlicerForm.BitBtn45Click(Sender: TObject);
+begin
+(*
 var
    Bitmap : tMyBitmap;
    i : integer;
@@ -954,6 +956,7 @@ begin
          NeedLegend := false;
       end;
    end;
+*)
 end;
 
 

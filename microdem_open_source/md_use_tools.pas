@@ -96,9 +96,11 @@ uses
    function WBT_DeNoise(InName,OutName : PathStr) : shortString;
 
    function WBT_SlopeMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-   function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
    function WBT_HillshadeMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+   function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+   function WBT_AspectMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 
+   function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
    function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
    function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr): integer;
@@ -106,12 +108,10 @@ uses
    function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr): integer;
 
-   function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
    function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
    function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
-   function WBT_AspectMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_BNearNeighCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
    function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
    function WBT_Breach_Depression(DEMName : PathStr; var BreachName : PathStr) : integer;
@@ -733,7 +733,6 @@ end;
   end;
 
 
-
     procedure StartOTBbatchFile(var BatchFile : tstringList);
     var
        tf : tstringList;
@@ -787,7 +786,6 @@ end;
        BatchFile : tStringList;
     begin
        StartOTBbatchFile(BatchFile);
-       //BatchFile.Add('otbcli_KMeansClassification -in ' + InName + ' -ts 1000 -nc 25 -maxit 1000 -nodata 0 -out ' + OutName + ' uint8');  //nodata removed, Oct 2021
        BatchFile.Add('otbcli_KMeansClassification -in ' + InName + ' -ts 1000 -nc 25 -maxit 1000 -out ' + OutName + ' uint8');
        EndBatchFile(Otb_dir + 'otb_kmeans.bat', BatchFile);
     end;

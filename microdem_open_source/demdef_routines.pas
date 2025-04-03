@@ -26,7 +26,7 @@
       //{$Define RecordLoadDefault}
       //{$Define RecordFindUTM}
       //{$Define RecordGDAL}
-      //{$Define RecordNaturalEarthFileNames}
+      {$Define RecordNaturalEarthFileNames}
       //{$Define RecordInitialization}
       //{$IfDef RecordInitializationDetailed}
       //{$Define RecordINIfiles}
@@ -317,6 +317,9 @@ function RecycleCompressFile : boolean;
 function AspectDir8FromAspect(AspectDir : float32) : tCompassDirection;  inline;
 function PixelIsString(Code : integer) : shortstring;
 
+function IsLSQslopeMethodAllowed(aMethod : tSlopeCurveCompute) : boolean;
+
+
 
 //use microdem_z_units.dbf
   function ElevUnitsAre(Code : byte) : shortstring;
@@ -399,6 +402,12 @@ begin
 end;
 
 
+function IsLSQslopeMethodAllowed(aMethod : tSlopeCurveCompute) : boolean;
+begin
+   Result := (aMethod.AlgorithmName = smLSQ);
+   if Result then Result := (aMethod.LSQorder <= 2) or ((aMethod.LSQorder > 2) and (aMethod.UsePoints in [useAll,useEdge]) and (aMethod.WindowRadius > 1));
+end;
+
 
  procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
  begin
@@ -464,8 +473,8 @@ var
    Table : tMyData;
 begin
    Table := tMyData.Create(Z_units_fName);
-   Table.Filter := 'CODE=' + IntToStr(Code);
-   if Table.FiltRecsInDB = 1 then Result := Table.GetFieldByNameAsString('UNITS_LABE')
+   Table.ApplyFilter('CODE=' + IntToStr(Code));
+   if (Table.FiltRecsInDB = 1) then Result := Table.GetFieldByNameAsString('UNITS_LABE')
    else Result := '';
    Table.Destroy;
 end;
@@ -475,7 +484,7 @@ var
    Table : tMyData;
 begin
    Table := tMyData.Create(Z_units_fName);
-   Table.Filter := 'SHORT_NAME=' + QuotedStr(aName);
+   Table.ApplyFilter('SHORT_NAME=' + QuotedStr(aName));
    if Table.FiltRecsInDB = 1 then Result := Table.GetFieldByNameAsInteger('CODE')
    else Result := -999;
    Table.Destroy;
@@ -486,7 +495,7 @@ var
    Table : tMyData;
 begin
    Table := tMyData.Create(Z_units_fName);
-   Table.Filter := 'CODE=' + IntToStr(Code);
+   Table.ApplyFilter('CODE=' + IntToStr(Code));
    if Table.FiltRecsInDB = 1 then Result := Table.GetFieldByNameAsString('SHORT_NAME')
    else Result := '';
    Table.Destroy;
@@ -4656,9 +4665,11 @@ begin
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     Z_units_fName := ProgramRootDir + 'microdem_z_units.dbf';
 
+
     {$IfDef ExMagVar}
     {$Else}
-       www_mag_mod_fName  := ProgramRootDir + 'wmm_2020.cof';
+       www_mag_mod_fName  := ProgramRootDir + 'wmm_2025.cof';
+       InitializeMagneticVariation;
     {$EndIf}
 
     {$IfDef ExPLSS}
@@ -5094,13 +5105,14 @@ function SlopeMethodName(Method : tSlopeCurveCompute; Short : boolean = false) :
 var
    TStr,FiltStr : shortstring;
 begin
+   TStr := '';
    if (not Short) and (Method.AlgorithmName = smLSQ) then begin
       case Method.UsePoints of
          UseAll    : TStr := '___all';
          UseEdge   : TStr := '__edge';
          UseQueens : TStr := '_queen';
       end;
-      if TestEdgeEffect then TStr := TStr + '_hole' else TStr := TStr + '_full';
+      {$IfDef SlopeWindowEdgeEffect} if TestEdgeEffect then TStr := TStr + '_hole' else TStr := TStr + '_full';  {$EndIf}
    end;
    FiltStr := '_' + FilterSizeStr(succ(2*Method.WindowRadius));
    case Method.AlgorithmName of
