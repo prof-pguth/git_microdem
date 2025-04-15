@@ -37,12 +37,18 @@ type
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
     RadioGroup2: TRadioGroup;
+    Edit2: TEdit;
+    Label2: TLabel;
+    Edit3: TEdit;
+    Label3: TLabel;
     procedure BitBtn1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
+    procedure Edit2Change(Sender: TObject);
+    procedure Edit3Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -68,6 +74,18 @@ uses
    DEMcoord,DEMstat,Petmar,Petmath,DEMMapf,
    BaseMap,
    Nevadia_Main;
+
+
+procedure MakeGraphsByRegionSize;
+begin
+   regionsizeform := Tregionsizeform.Create(Application);
+   regionsizeform.Lat := Lat;
+   regionsizeform.Long := Long;
+   regionsizeform.CurDEM := CurDEM;
+   regionsizeform.Show;
+end;
+
+
 
 
 function Tregionsizeform.GeomorphParameterVersusRegion(aLat,aLong : float64) : TThisBaseGraph;
@@ -305,23 +323,6 @@ begin
    GeomorphParameterVersusRegion(Lat,Long);
 end;
 
-procedure MakeGraphsByRegionSize;
-begin
-   regionsizeform := Tregionsizeform.Create(Application);
-   regionsizeform.Lat := Lat;
-   regionsizeform.Long := Long;
-   regionsizeform.CurDEM := CurDEM;
-
-   (*
-   regionsizeform.Label4.Caption := IntToStr(round(DEMGlb[CurDEM].SelectionMap.MapDraw.MapCorners.CurScrRightGrid) -
-                                             round(DEMGlb[CurDEM].SelectionMap.MapDraw.MapCorners.CurScrLeftGrid)) + 'x' +
-                                    IntToStr(round(DEMGlb[CurDEM].SelectionMap.MapDraw.MapCorners.CurScrTopGrid) -
-                                             round(DEMGlb[CurDEM].SelectionMap.MapDraw.MapCorners.CurScrBottGrid));
-   regionsizeform.Label5.Caption := DEMGlb[CurDEM].HeadRecs.NumCol.ToString + 'x' + DEMGlb[CurDEM].HeadRecs.NumRow.ToString;
-   *)
-   regionsizeform.Show;
-end;
-
 
 procedure Tregionsizeform.BitBtn1Click(Sender: TObject);
 begin
@@ -339,11 +340,24 @@ begin
    CheckEditString(Edit1.Text,MDDef.LastBoxSize);
 end;
 
+procedure Tregionsizeform.Edit2Change(Sender: TObject);
+begin
+   CheckEditString(Edit2.Text,MDDef.FirstBoxSize);
+end;
+
+procedure Tregionsizeform.Edit3Change(Sender: TObject);
+begin
+   CheckEditString(Edit3.Text,MDDef.BoxSizeIncr);
+end;
+
 procedure Tregionsizeform.FormCreate(Sender: TObject);
 begin
    Edit1.Text := MDDef.LastBoxSize.ToString;
+   Edit2.Text := IntToStr(MDDef.FirstBoxSize);
+   Edit3.Text := IntToStr(MDDef.BoxSizeIncr);
    wmDEM.FormPlacementInCorner(self);
 end;
+
 
 initialization
    regionsizeform := Nil;

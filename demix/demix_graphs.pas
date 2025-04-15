@@ -17,7 +17,7 @@ unit demix_graphs;
    //{$Define RecordDEMIX}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
-   {$Define RecordDEMIX_criteria_colors}
+   //{$Define RecordDEMIX_criteria_colors}
    //{$Define RecordDEMIXWins}
 {$EndIf}
 
@@ -48,8 +48,8 @@ uses
 //end core DB functions definitions
 
     System.SysUtils,System.Classes,System.UITypes,
-    StrUtils,dbGrids,
     VCL.ExtCtrls,VCL.Forms, VCL.Graphics, VCL.Controls,
+    StrUtils,dbGrids,
     WinAPI.Windows,
     Petmar,Petmar_types,BaseGraf,
     DEMDefs;
@@ -129,7 +129,7 @@ var
    begin
       Graph := tThisBaseGraph.Create(Application);
       Graph.Width := 700;
-      Graph.GraphDraw.LLcornerText := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE') + ' ' + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
+      Graph.GraphDraw.LLcornerText := GISdb[DBonTable].dbName;
       Graph.GraphDraw.VertGraphBottomLabels := false;
       Graph.GraphDraw.SetShowAllLines(true);
    end;
@@ -149,7 +149,8 @@ var
       Findings.Add(fName);
    end;
 
-     function DoMultipleResoltionGraph : tThisBaseGraph;
+
+     function DoMultipleResolutionGraph : tThisBaseGraph;
      const
         VertFUV : boolean = true;
      var
@@ -222,8 +223,6 @@ var
             closeFile(rFile);
             GISdb[DBonTable].MyData.Next;
          end;
-         //Result.AutoScaleAndRedrawDiagram(false,false);
-
          FinishGraph(Result);
      end;
 
@@ -282,20 +281,27 @@ var
     var
         j,i : integer;
         rfile2 : file;
+        gName : PathStr;
      begin
          StartGraph(Result);
          Result.GraphDraw.GraphBottomLabels := tStringList.Create;
-         Result.GraphDraw.VertLabel := ThisParam + ' Difference';
          //Result.GraphDraw.LegendList := tStringList.Create;
-         GISdb[DBonTable].ApplyGISFilter('PARAMETER=' + QuotedStr(ThisParam));
+         if (ThisParam <> '') then GISdb[DBonTable].ApplyGISFilter('PARAMETER=' + QuotedStr(ThisParam));
          j := 0;
          while not GISdb[DBonTable].MyData.eof do begin
-            inc(j);
-            Color := WinGraphColors[j];
-            //Result.GraphDraw.LegendList.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('LANDTYPE'));
-
             //separate file for mean, median, to show break and emphasize their difference
-            Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsString('LANDTYPE'),Color);
+            inc(j);
+            if (ThisParam <> '') then begin
+               gName := GISdb[DBonTable].MyData.GetFieldByNameAsString('LANDTYPE');
+               Color := WinGraphColors[j];
+               Result.GraphDraw.VertLabel := ThisParam + ' Difference';
+            end
+            else begin
+               gName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
+               Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(gName));
+               Result.GraphDraw.VertLabel := GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION') + ' Difference';
+            end;
+            Result.OpenDataFile(rfile,gName,Color);
             v[1] := 1;
             v[2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('MEAN');
             BlockWrite(rfile,v,1);
@@ -309,8 +315,15 @@ var
          j := 0;
          GISdb[DBonTable].MyData.First;
          while not GISdb[DBonTable].MyData.eof do begin
+            //separate file for unsigned differences
+            if (ThisParam <> '') then begin
+               Color := WinGraphColors[j];
+            end
+            else begin
+               gName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM');
+               Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(gName));
+            end;
             inc(j);
-            Color := WinGraphColors[j];
             Result.OpenDataFile(rfile2,'',Color);
             for I := 1 to 5 do begin
                v[1] := i + 2;
@@ -320,21 +333,25 @@ var
             closeFile(rFile2);
             GISdb[DBonTable].MyData.Next;
          end;
-
+         Result.Caption := 'Difference distributions';
          FinishDifferenceDistributionGraph(Result);
      end;
+
 
      function DoFUVgraph(ItsLandcover : boolean) : tThisBaseGraph;
      var
         i,j,n : integer;
         Criterion : shortstring;
         Evals : array[1..8] of float32;
+        TheCriteria : tstringList;
      begin
+         TheCriteria := OpenFUVOrderedParams;
+
          StartGraph(Result);
          Result.GraphDraw.GraphBottomLabels := tStringList.Create;
          Result.GraphDraw.ShowGraphBottomLabels := true;
-         for j := 0 to pred(OrderedFUVParams.Count)  do begin
-            Result.GraphDraw.GraphBottomLabels.Add(IntToStr(j) + ',' + OrderedFUVParams[j]);
+         for j := 0 to pred(TheCriteria.Count)  do begin
+            Result.GraphDraw.GraphBottomLabels.Add(IntToStr(succ(j)) + ',' + TheCriteria[j]);
          end;
 
          Result.Width := 800;
@@ -342,17 +359,14 @@ var
          if ItsLandcover then begin
             {$IfDef TrackColors} Result.GraphColorsRecord('ItsLandcover start'); {$EndIf}
             n := 0;
-            //Result.GraphDraw.LegendList := tStringList.Create;
-
             GISdb[DBonTable].MyData.First;
             while not GISdb[DBonTable].MyData.eof do begin
                inc(n);
                Color := WinGraphColors[n];
                Result.OpenDataFile(rfile,GISdb[DBonTable].MyData.GetFieldByNameAsString('LANDCOVER'),Color);
-               //Result.GraphDraw.LegendList.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('LANDCOVER'));
-               for j := 1 to 8 do begin
+               for j := 1 to TheCriteria.Count do begin
                   v[1] := j;
-                  v[2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(OrderedFUVParams[j] + '_FUV');
+                  v[2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(TheCriteria.Strings[pred(j)] + '_FUV');
                   BlockWrite(rfile,v,1);
                end;
                GISdb[DBonTable].MyData.Next;
@@ -369,15 +383,15 @@ var
                   while not GISdb[DBonTable].MyData.eof do begin
                      Criterion := GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION');
                      Criterion := StringReplace(Criterion, '_FUV', '',[rfIgnoreCase]);
-                     for j := 1 to 8 do begin
-                        if (Criterion = OrderedFUVParams[j]) then Evals[j] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
+                     for j := 1 to TheCriteria.Count do begin
+                        if (Criterion = TheCriteria.Strings[pred(j)]) then Evals[j] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
                      end;
                      GISdb[DBonTable].MyData.Next;
                   end;
 
-                  for j := 0 to pred(OrderedFUVParams.Count) do begin
+                  for j := 0 to pred(TheCriteria.Count) do begin
                       if (i = 1) then begin
-                        Result.GraphDraw.GraphBottomLabels.Add(IntToStr(j) + ',' + OrderedFUVParams[j]);
+                        Result.GraphDraw.GraphBottomLabels.Add(IntToStr(j) + ',' + TheCriteria.Strings[j]);
                       end;
                       v[1] := j;
                       v[2] := Evals[j];
@@ -405,11 +419,33 @@ begin {procedure GraphForDifferenceDistributionByTile}
       end;
       GISdb[DBonTable].EmpSource.Enabled := false;
       Findings := tStringList.Create;
-      if GISdb[DBonTable].MyData.FieldExists('RESOLUTION') then begin
+
+      if GISdb[DBonTable].MyData.FieldExists('RMSE') then begin
+         //this is a difference distribution file
+         for i := 1 to 3 do begin
+            //find out which parameter it is
+            ThisParam := DiffParams[i];
+            if GISdb[DBonTable].MyData.FieldExists(ThisParam + ParamSuffixes[1]) then break
+            else ThisParam := '';
+         end;
+
+         if (ThisParam = '') then begin
+            //this is a new DB, with multiple parameters
+            DoDifferenceDistributionGraphType2('');
+         end
+         else begin
+            for Tile := 0 to pred(Tiles.Count) do begin
+               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[Tile]));
+               DoDifferenceDistributionGraph;
+            end;
+         end;
+
+      end
+      else if GISdb[DBonTable].MyData.FieldExists('RESOLUTION') then begin
          //This is a range of scales file
          Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
          Resolutions := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('RESOLUTION');
-         DoMultipleResoltionGraph;
+         DoMultipleResolutionGraph;
       end
       else if GISdb[DBonTable].MyData.FieldExists('CRITERION') then begin //this is an FUV file
          Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
@@ -422,25 +458,12 @@ begin {procedure GraphForDifferenceDistributionByTile}
          DoFUVGraph(true);
       end
       else if StrUtils.AnsiContainsText(UpperCase(GISdb[DBonTable].dbName),'FUV') then begin
-         DoMultipleResoltionGraph;
+         DoMultipleResolutionGraph;
       end
-      else if GISdb[DBonTable].MyData.FieldExists('PARAMETER') and GISdb[DBonTable].MyData.FieldExists('PARAMETER') then begin
+      else if GISdb[DBonTable].MyData.FieldExists('PARAMETER') then begin
          DoDifferenceDistributionGraphType2('ELVD');
          DoDifferenceDistributionGraphType2('SLPD');
          DoDifferenceDistributionGraphType2('RUFD');
-      end
-      else begin
-         //this is a difference distribution file
-         for i := 1 to 3 do begin
-            //find out which parameter it is
-            ThisParam := DiffParams[i];
-            if GISdb[DBonTable].MyData.FieldExists(ThisParam + ParamSuffixes[1]) then break;
-         end;
-
-         for Tile := 0 to pred(Tiles.Count) do begin
-            GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[Tile]));
-            DoDifferenceDistributionGraph;
-         end;
       end;
       if (Findings.Count = 0) then Findings.Destroy
       else MakeBigBitmap(Findings,'','',4);
@@ -886,6 +909,7 @@ var
    aField,aLabel : shortstring;
    DEMsPresent : tStringList;
    Color : array[0..15] of tColor;
+   MinF,MaxF : float64;
 
       function TheLabel : shortstring;
       begin
@@ -899,6 +923,19 @@ begin
    Result.Canvas.Font.Style := [fsBold];
    Result.Canvas.Font.Name := Result.FontDialog1.Font.Name;
    Result.Canvas.Font.Size := Result.FontDialog1.Font.Size;
+
+   if (MinHoriz < -9998) and (MaxHoriz < -9998) then begin
+      MinHoriz := 9999;
+      for i := 0 to pred(DEMs.Count) do begin
+         if GISdb[DB].MyData.FieldExists(DEMs.Strings[i]) then begin
+            if GISdb[DB].MyData.FindFieldRange(DEMs.Strings[i],MinF,MaxF) then begin
+               if MinF < MinHoriz then MinHoriz := round(MinF-1);
+               if MaxF > MaxHoriz then MaxHoriz := round(MaxF + 1);
+            end;
+         end;
+      end;
+      Result.GraphDraw.ShowVertAxis0 := true;
+   end;
 
    DEMsPresent := tStringList.Create;
    j := 0;

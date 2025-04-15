@@ -300,14 +300,11 @@ end;
 
 procedure TEROSContrastForm.BitBtn1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       if g1 <> Nil then g1.destroy;
       if g2 <> nil then g2.Destroy;
       g1 := SatImage[Sat].EnhancementGraph;
       if BaseMap.MapDraw.MapType = mtSatImageGray then g2 := SatImage[Sat].GraphHistogram(shOneBand,BaseMap.MapDraw.SatView.BandInWindow)
       else g2 := SatImage[Sat].GraphHistogram(shRGBBands,0);
-   {$EndIf}
 end;
 
 procedure TEROSContrastForm.BitBtn2Click(Sender: TObject);

@@ -472,19 +472,6 @@ begin
 end;
 
 
-(*   //removed 6/16/2022
-procedure Tgis_scaled_form.StartQuickFilter(TwoFields : boolean = true);
-begin
-   Refilter;
-   {$IfDef NoDBGrafs}
-   {$Else}
-      if (GISdb[theDB].theGraphOwner <> Nil) then CopyImageToBitmap(GISdb[theDB].TheGraphOwner.Image1,GISdb[theDB].dbTablef.GraphOwnerBitmap);
-   {$EndIf}
-   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Tdbtablef.Quickfiltering1Click' + ' ComboBox8.Items.Count=' + IntToStr(ComboBox10.Items.Count) + ' qf2ComboBox9.Items.Count=' + IntToStr(qf2ComboBox9.Items.Count)); {$EndIf}
-   CheckThemPanels;
-end;
-*)
-
 procedure Tgis_scaled_form.CheckThemPanels;
 var
    TheTop : integer;
@@ -888,14 +875,11 @@ end;
 
 procedure Tgis_scaled_form.MakeHistogram;
 begin
-{$IfDef NoDBGrafs}
-{$Else}
    BaseGraf.CreateSmallGraph := true;
    HistGraph := GISdb[theDB].OldCreateHistogramFromDataBase(true,NumbersComboBox2.Text,'','',false);
    BaseGraf.CreateSmallGraph := false;
    HistGraph.Top := 0;
    HistGraph.Left := wmdem.Width - HistGraph.Width - 10;
-{$EndIf}
 end;
 
 
@@ -1102,10 +1086,7 @@ begin
   end;
   qfLabel.Caption := QFField;
   Refilter;
-  {$IfDef NoDBGrafs}
-  {$Else}
-      if (GISdb[theDB].theGraphOwner <> Nil) then CopyImageToBitmap(GISdb[theDB].TheGraphOwner.Image1,GISdb[theDB].dbTablef.GraphOwnerBitmap);
-  {$EndIf}
+  if (GISdb[theDB].theGraphOwner <> Nil) then CopyImageToBitmap(GISdb[theDB].TheGraphOwner.Image1,GISdb[theDB].dbTablef.GraphOwnerBitmap);
   {$IfDef RecordQuickFilter} WriteLineToDebugFile('Tdbtablef.Quickfiltering1Click' + ' ComboBox8.Items.Count=' + IntToStr(ComboBox10.Items.Count) + ' qf2ComboBox9.Items.Count=' + IntToStr(qf2ComboBox9.Items.Count)); {$EndIf}
   CheckThemPanels;
 end;

@@ -13,7 +13,6 @@ unit demESRIshapefile;
 
 //{$Define InlinePlots}
 
-//{$Define NoDBMaps}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    //{$Define RecordMissingPolygons}
@@ -90,15 +89,8 @@ uses
       FMX.Graphics,
    {$EndIf}
 
-   {$IfDef NoDBMaps}
-   {$Else}
-      DEMMapF,
-   {$EndIf}
-
-   {$IfDef NoDBGrafs}
-   {$Else}
-      BaseGraf,
-   {$EndIf}
+   DEMMapF,
+   BaseGraf,
 
    DEMMapDraw,
    DEMDefs,
@@ -187,22 +179,18 @@ type
             procedure OpenMemoryStreams(FName1,FName2 : PathStr);
          {$EndIf}
 
-         {$IfDef NoDBMaps}
-         {$Else}
+         //map operations
             procedure LabelNthPointOnMap(BaseMap : tMapForm; var Bitmap : tMyBitmap; N : int32; Symbol : tDrawingSymbol; SymSize : int32; Color  : tPlatformColor; ReallyLabel : boolean);
             procedure RotateAndPlotSingleRecord(MapForm : tMapDraw; Bitmap : tMyBitmap; RecNum : int32;  RotationMatrix : MatrixType);
             function PlotSingleRecordMap(MapForm : tMapDraw; var Bitmap : tMyBitmap; RecNum : int32) : boolean;  {$IfDef InlinePlots} inline; {$EndIf}
             procedure PlotBoundingBox(MapForm : tMapForm);
             procedure PlotPointCloudOnMap(BaseMap : tMapForm; var Bitmap : tMyBitmap; MinAreaZ : float64 = 99; MaxAreaZ : float64 = -99; SymSize : integer = 2);
             procedure ScreenLocationOfPointRecord(MapForm : tMapDraw; RecNo : int32; var xpic,ypic : int32);
-         {$EndIf}
 
-         {$IfDef NoDBGrafs}
-         {$Else}
+         //graph operations
             procedure PlotAllRecordsOnGraph(GraphForm : TThisBaseGraph; var Bitmap : tMyBitmap);
             procedure PlotSingleRecordGraph(GraphForm : TThisBaseGraph; var Bitmap : tMyBitmap; RecNum : int32);
             procedure ScreenLocationOfPointRecordGraph(GraphForm : TThisBaseGraph; RecNo : int32; var xpic,ypic : int32);
-         {$EndIf}
 
          {$IfDef VCL}
             procedure RotateToNewShapefile(fName : PathStr;  RotationMatrix : MatrixType);
@@ -248,11 +236,8 @@ type
          procedure AddPointToShapeStream(Lat,Long : float64);
          procedure AddPointWithZToShapeStream(Lat,Long,z : float64);
          procedure GetPolyLineHeader(var PolyLineHeader : sfPolyLineHeader; var zMin,zMax : float64);
-         {$IfDef NoDBMaps}
-         {$Else}
             procedure ProcessShapeDigitization(TheMap : tMapForm);
             procedure ProcessShapeFileRecord;
-         {$EndIf}
    end;
 
 
@@ -300,10 +285,7 @@ var
    DrawPolygonsAsPolygons,       //this is for PLSS, where it is false, otherwise it is true
    NeedCentroid : boolean;
    ShapeFileNewLeader : ShortString;
-   {$IfDef NoDBMaps}
-   {$Else}
-      MapForShapeDigitizing : tMapForm;
-   {$EndIf}
+   MapForShapeDigitizing : tMapForm;
 
 
 implementation
@@ -517,9 +499,6 @@ end;
 end;
 
 
-
-{$IfDef NoDBMaps}
-{$Else}
 
 procedure tShapeFile.ScreenLocationOfPointRecord(MapForm : tMapDraw; RecNo : int32; var xpic,ypic : int32);
 var
@@ -887,11 +866,6 @@ begin
    end;
 end;
 
-{$EndIf}
-
-
-{$IfDef NoDBGrafs}
-{$Else}
 
 procedure tShapeFile.PlotAllRecordsOnGraph(GraphForm : TThisBaseGraph; var Bitmap : tMyBitmap);
 var
@@ -991,7 +965,6 @@ begin
       end;
   end {with};
 end;
-{$EndIf}
 
 
 

@@ -14,7 +14,7 @@ unit multigrid;
    {$IFDEF DEBUG}
       //{$Define RecordMultiGrids}
       //{$Define RecordHyperion}
-      {$Define RecordSentinel1}
+      //{$Define RecordSentinel1}
       //{$Define RecordMultiGridsDetailed}
       //{$Define RecordCloseMultiGrids}
       //{$Define RecordSatClass}

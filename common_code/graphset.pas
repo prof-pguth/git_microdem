@@ -358,6 +358,7 @@ begin
    for i := 1 to 15 do begin
       OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size + 1;
    end;
+   inc(MDDef.DemixSymSize);
    RedrawSpeedButton12Click(Sender);
 end;
 
@@ -368,6 +369,7 @@ begin
    for i := 1 to 15 do begin
       if (OwningGraph.GraphDraw.Symbol[i].Size) > 0 then OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size - 1;
    end;
+   dec(MDDef.DemixSymSize);
    RedrawSpeedButton12Click(Sender);
 end;
 

@@ -20,6 +20,20 @@ object regionsizeform: Tregionsizeform
     Height = 13
     Caption = 'Max range (m)'
   end
+  object Label2: TLabel
+    Left = 216
+    Top = 50
+    Width = 66
+    Height = 13
+    Caption = 'Min range (m)'
+  end
+  object Label3: TLabel
+    Left = 216
+    Top = 72
+    Width = 69
+    Height = 13
+    Caption = 'Incr range (m)'
+  end
   object RadioGroup1: TRadioGroup
     Left = 8
     Top = 8
@@ -45,7 +59,7 @@ object regionsizeform: Tregionsizeform
     OnClick = RadioGroup1Click
   end
   object Edit1: TEdit
-    Left = 306
+    Left = 292
     Top = 13
     Width = 65
     Height = 21
@@ -55,7 +69,7 @@ object regionsizeform: Tregionsizeform
   end
   object BitBtn1: TBitBtn
     Left = 211
-    Top = 43
+    Top = 107
     Width = 75
     Height = 25
     Caption = 'Make graph'
@@ -64,7 +78,7 @@ object regionsizeform: Tregionsizeform
   end
   object BitBtn2: TBitBtn
     Left = 211
-    Top = 74
+    Top = 138
     Width = 75
     Height = 25
     Caption = 'New point'
@@ -72,8 +86,8 @@ object regionsizeform: Tregionsizeform
     OnClick = BitBtn2Click
   end
   object RadioGroup2: TRadioGroup
-    Left = 211
-    Top = 105
+    Left = 216
+    Top = 169
     Width = 94
     Height = 105
     Caption = 'Moment'
@@ -85,5 +99,23 @@ object regionsizeform: Tregionsizeform
       'Curtosis')
     TabOrder = 4
     OnClick = RadioGroup2Click
+  end
+  object Edit2: TEdit
+    Left = 292
+    Top = 45
+    Width = 65
+    Height = 21
+    TabOrder = 5
+    Text = 'Edit1'
+    OnChange = Edit2Change
+  end
+  object Edit3: TEdit
+    Left = 291
+    Top = 72
+    Width = 65
+    Height = 21
+    TabOrder = 6
+    Text = 'Edit1'
+    OnChange = Edit3Change
   end
 end

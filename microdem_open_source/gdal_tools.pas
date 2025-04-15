@@ -24,8 +24,8 @@ unit gdal_tools;
 
    {$IFDEF DEBUG}
       //{$Define RecordGDALOpen}
-      {$Define RecordSubsetOpen}
-      {$Define RecordDatumShift}
+      //{$Define RecordSubsetOpen}
+      //{$Define RecordDatumShift}
       //{$Define RecordDEMIX}
       //{$Define RecordWKT}
       //{$Define RecordDEMIXCompositeDatum}
@@ -73,10 +73,13 @@ uses
    petmar,Petmar_types,
    DEMMapf,DEMMapDraw,DEMDefs,BaseMap,DEM_NLCD;
 
+const
+   GDAL_testScaleFactor : shortstring = '';
+   BiLinearString = ' -r bilinear ';
+   BiCubicString = ' -r cubic ';
 
    type
       tgdalWarpMethod = (gdaltoGeoWGS84,gdalviaEPSG,gdaltoUTMNAD83,gdaltoadjacentUTMzone);
-
       tGDALGeoPDF = (gdalOpenGeoPDFimagelayer1,gdalAllindividuallayers1,gdalOpenGeoPDF1,gdalMergeGeoPDF1);
    var
       SetGDALdataStr : ANSIString;
@@ -107,9 +110,10 @@ uses
    procedure BatchGDALSRSinfo(Infiles : tStringList);
    procedure GDAL_Convert_JSON(var fName : pathStr);
    procedure GDAL_Fill_Holes(InName : PathStr);
-   function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
+   function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99; OutName : PathStr = '') : integer;
+   function GDAL_warp_DEM(OpenMap : boolean; DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring = biLinearString) : integer;
    function GDAL_downsample_DEM_1sec(OpenMap : boolean; DEM : integer; OutName : PathStr) : integer;
-   procedure GDAL_dual_UTM(DEM : integer);
+   //procedure GDAL_dual_UTM(DEM : integer);
 
    procedure GDAL_replace_42112_tag(DEMName : PathStr; ReplaceStr : shortstring = '');
 
@@ -127,11 +131,6 @@ uses
    procedure GDALConvert4BitGeotiff(fName : PathStr);
 
    procedure GDAL_Raster_Calculator(Expression : shortstring);
-
-   (*
-   {$IfDef AllowEDTM} function ExtractEDTMforBoundingBox(bb : sfBoundBox; OpenMap : boolean; fName : PathStr = '') : integer; {$EndIf}
-   function ExtractGEDTMforBoundingBox(bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; fName : PathStr = '') : integer;
-   *)
 
    function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
 
@@ -188,10 +187,6 @@ uses
    {$Else}
       procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
    {$EndIf}
-
-const
-   GDAL_testScaleFactor : shortstring = '';
-
 
 
 implementation
@@ -394,7 +389,7 @@ begin
       fName := TheFiles.Strings[j];
       if StrUtils.AnsiContainsText(UpperCase(fName),'GRD') and (not StrUtils.AnsiContainsText(UpperCase(fName),'utm')) then begin
          OutName := ExtractFilePath(fName) + ExtractFileNameNoExt(fName) + '_' + RealToString(UTMSpace,-8,-2) + '_m_utm.tif';
-         cmd := GDAL_warp_name + ' -tps -r bilinear -tr' + TStr2 + Tstr2 + ' -srcnodata 0 -dstnodata 0 -t_srs ' + OutEPSG + ' ' + fName + ' ' + Outname;
+         cmd := GDAL_warp_name + ' -tps ' + BilinearString + ' -tr' + TStr2 + Tstr2 + ' -srcnodata 0 -dstnodata 0 -t_srs ' + OutEPSG + ' ' + fName + ' ' + Outname;
          {$IfDef RecordGDAL} WriteLineToDebugFile(cmd); {$EndIf}
          BatchFile.Add('REM   file ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count));
          BatchFile.Add(cmd);
@@ -524,17 +519,9 @@ begin
 end;
 
 
-function GDAL_DEM_command(OpenMap : boolean; InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
+function OpenDEMfromGDAL(OpenMap : boolean; InputDEM : integer; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
 begin
-    if (GDAL_testScaleFactor <> '') then begin
-       cmd := GDAL_dem_name + cmd + GDAL_testScaleFactor;
-       GDAL_testScaleFactor := '';
-    end
-    else cmd := GDAL_dem_name + cmd + DEMGlb[InputDEM].GDAL_ScaleFactorString;
-    if WinExecAndWait32(cmd) = -1 then begin
-      {$IfDef RecordProblems} HighlightLineToDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
-    end
-    else if FileExists(OutName) then begin
+    if FileExists(OutName) then begin
        Result := OpenNewDEM(OutName,false);
        if ValidDEM(Result) then begin
           DEMGlb[Result].DEMheader.ElevUnits := ElevUnits;
@@ -546,8 +533,23 @@ begin
     end
     else begin
        Result := 0;
-       MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
+       //MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
     end;
+end;
+
+function GDAL_DEM_command(OpenMap : boolean; InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
+begin
+    if (GDAL_testScaleFactor <> '') then begin
+       cmd := GDAL_dem_name + cmd + GDAL_testScaleFactor;
+       GDAL_testScaleFactor := '';
+    end
+    else cmd := GDAL_dem_name + cmd + DEMGlb[InputDEM].GDAL_ScaleFactorString;
+    if WinExecAndWait32(cmd) = -1 then begin
+      {$IfDef RecordProblems} HighlightLineToDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
+       Result := 0;
+       MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
+    end
+    else Result := OpenDEMfromGDAL(OpenMap,InputDEM,OutName,mt,ElevUnits);
 end;
 
 
@@ -804,19 +806,6 @@ begin
 end;
 
 
-function GDAL_warp_DEM(OpenMap : boolean; DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring; TargetEPSG : shortstring = '') : integer;
-var
-   cmd : AnsiString;
-   SpaceStr : shortString;
-   InName : PathStr;
-begin
-   InName := DEMGlb[DEM].GeotiffDEMName;
-   SpaceStr := ' -tr ' + RealToString(xSpace,-12,-8) + ' ' + RealToString(ySpace,-12,-8);
-   cmd := GDAL_Warp_Name  + SpaceStr + IntString + InName + ' ' + OutName;
-   Result := GDAL_DEM_command(OpenMap,DEM,cmd,OutName,DEMGlb[DEM].SelectionMap.MapDraw.MapType);
-end;
-
-
 function GDAL_downsample_DEM_1sec(OpenMap : boolean; DEM : integer; OutName : PathStr) : integer;
 var
    cmd : AnsiString;
@@ -840,30 +829,51 @@ begin
 end;
 
 
-function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99) : integer;
+function GDAL_warp_DEM(OpenMap : boolean; DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring = biLinearString) : integer;
 var
-   OutName : PathStr;
+   cmd : AnsiString;
+   SpaceStr : shortString;
+   InName : PathStr;
+   MapType : tMapType;
+begin
+   InName := DEMGlb[DEM].GeotiffDEMName;
+   SpaceStr := ' -tr ' + RealToString(xSpace,-12,-8) + ' ' + RealToString(ySpace,-12,-8);
+   if DEMglb[DEM].SelectionMap <> Nil then MapType := DEMglb[DEM].SelectionMap.MapDraw.MapType
+   else MapType := mtElevSpectrum;
+   cmd := GDAL_Warp_Name  + SpaceStr + IntString + InName + ' ' + OutName;
+    if WinExecAndWait32(cmd) = -1 then begin
+      {$IfDef RecordProblems} HighlightLineToDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
+       Result := 0;
+       MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
+    end
+    else Result := OpenDEMfromGDAL(OpenMap,DEM,OutName,MapType,DEMglb[DEM].DEMHeader.ElevUnits);
+end;
+
+
+function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99; OutName : PathStr = '') : integer;
+var
    SpaceStr : shortString;
 begin
-   {$If Defined(RecordSave) or Defined(RecordGDAL)} WriteLineToDebugFile('GDALresamplethin1Click'); {$EndIf}
+   {$If Defined(RecordSave) or Defined(RecordGDAL)} WriteLineToDebugFile('GDAL_upsample_DEM in'); {$EndIf}
    if IsGDALFilePresent(GDAL_Warp_Name) then begin
       if (Spacing < 0) then begin
          ReadDefault('upsample factor (multiple of grid spacing)',MDDef.GDALThinFactor);
          Spacing := MDDef.GDALThinFactor * DEMGlb[DEM].DEMheader.DEMxSpacing;
       end;
-      if DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM then SpaceStr := RealToString(3600 * Spacing,-8,-2) + '_sec' else SpaceStr := RealToString(Spacing,-8,-2) + '_m';
+      //if (DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM) then SpaceStr := RealToString(3600 * Spacing,-8,-2) + '_sec' else SpaceStr := RealToString(Spacing,-8,-2) + '_m';
+
       if Bilinear then begin
-         OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bilinear_' + SpaceStr + '.tif';
-         Result := GDAL_warp_DEM(OpenMap,DEM,OutName,Spacing,Spacing,' -r bilinear ');
+         if (OutName = '') then OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bilinear_upsample' {+ SpaceStr} + '.tif';
+         Result := GDAL_warp_DEM(OpenMap,DEM,OutName,Spacing,Spacing,BiLinearString);
       end
       else begin
-         OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bicubic_' + SpaceStr + '.tif';
-         Result := GDAL_warp_DEM(OpenMap,DEM,OutName,Spacing,Spacing,' -r cubic ');
+         if (OutName = '') then OutName := MDTempDir + DEMGlb[DEM].AreaName + '_bicubic_upsample' {+ SpaceStr} + '.tif';
+         Result := GDAL_warp_DEM(OpenMap,DEM,OutName,Spacing,Spacing,BiCubicString);
       end;
    end;
 end;
 
-
+(*
 procedure GDAL_dual_UTM(DEM : integer);
 var
    OutName : PathStr;
@@ -877,7 +887,7 @@ begin
       ReadDefault('UTMSpacing (m)',UTMSpacing);
 
       Code := 32600;      {WGS84 default}
-      if DEMGlb[DEM].DEMheader.LatHemi = 'S' then Code := Code + 100;
+      if (DEMGlb[DEM].DEMheader.LatHemi = 'S') then Code := Code + 100;
       Code := Code + DEMGlb[DEM].DEMheader.UTMZone;
 
       SpaceStr := ' -t_srs EPSG:' + IntToStr(Code) + ' ';  //-tr ' + RealToString(UTMSpacing,-12,-8) + ' ' + RealToString(UTMSpacing,-12,-8);
@@ -888,7 +898,7 @@ begin
       GDAL_warp_DEM(true,DEM,OutName,UTMSpacing,UTMSpacing,' -r bilinear ',SpaceStr);
    end;
 end;
-
+*)
 
 procedure ResaveAsGDALgeotiff(fName : PathStr);
 var

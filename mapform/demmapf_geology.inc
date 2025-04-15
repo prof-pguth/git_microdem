@@ -10,14 +10,12 @@
 
 
 
-       procedure GetEulerPole(var EulerLat,EulerLong,EulerOmega : float64);
-       begin
-          EulerLat := GISdb[PickRotationForm.MotionTable].MyData.GetFieldByNameAsFloat('LAT');
-          EulerLong := GISdb[PickRotationForm.MotionTable].MyData.GetFieldByNameAsFloat('LONG');
-          EulerOmega := GISdb[PickRotationForm.MotionTable].MyData.GetFieldByNameAsFloat('OMEGA');
-       end;
-
-
+procedure GetEulerPole(var EulerLat,EulerLong,EulerOmega : float64);
+begin
+  EulerLat := GISdb[PickRotationForm.MotionTable].MyData.GetFieldByNameAsFloat('LAT');
+  EulerLong := GISdb[PickRotationForm.MotionTable].MyData.GetFieldByNameAsFloat('LONG');
+  EulerOmega := GISdb[PickRotationForm.MotionTable].MyData.GetFieldByNameAsFloat('OMEGA');
+end;
 
 
 procedure tMapForm.BroadCastDrawPlane;
@@ -37,7 +35,7 @@ procedure TMapForm.WMBroadcastDrawPlane(var Msg: TMessage);
 var
    xDEMg1,yDEMg1 : float64;
 begin
-   if (MapDraw.ValidDEMonMap) then begin
+   if ValidDEM(MapDraw.DEMonMap) then begin
       DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(BroadCastPlaneData.Lat,BroadCastPlaneData.Long,xDEMg1,yDEMg1);
       ThreadCheckPlane(false,xDEMg1,yDEMg1,BroadCastPlaneData.Dip,BroadCastPlaneData.aStrike,BroadCastPlaneData.DipDir);
    end;
@@ -178,21 +176,6 @@ begin
    GetEulerPole(EulerLat,EulerLong,EulerOmega);
    VincentyCalculateDistanceBearing(Lat,Long,EulerLat,EulerLong,Distance,Bearing);
    {$IfDef RecordFullDriftRate} WriteLineToDebugFile('Pole at Location: ' + LatLongDegreeToString(Lat,Long) + '  Euler: ' + LatLongDegreeToString(EulerLat,EulerLong) +  '   Omega: ' + RealToString(EulerOmega,-12,4)); {$EndIf}
-   //{$IfDef RecordFullDriftRate} WriteLineToDebugFile('Distance to pole: ' + RealToString(Distance,-12,0) + '  Bearing to pole:  ' + RealToString(Bearing,5,1)); {$EndIf}
-(*
-Plate motions are described by geocentric rotation vectors either given by the geographic coordinates PHI,LAM [°]
-of the rotation pole and the angular velocity OMEGA[ °/Ma], or by angular velocities around the cartesian axes,
-omegax, omegay, omegaz [rad/109 a]. The velocities of a point with geographic coordinates phi,lam [°] or
-cartesian coordinates x,y,z [in units of 1000 km] are then computed  by
-dphi/dt = OMEGA·cos(PHI)·sin(lam-LAM)
-dlam/dt = OMEGA·[sin(PHI) - cos(lam-LAM)·tan(phi)·cos(PHI)]
-
-dx/dt = omegay·z - omegaz·y
-dy/dt = omegaz·x - omegax·z
-dz/dt = omegax·y - omegay·x
-
-where dphi/dt and dlam/dt are given in [°/Ma] and dx/dt, dy/dt and dz/dt are given in [mm/a] .
-*)
    EulerLat := EulerLat * Petmar_types.DegToRad;
    EulerLong := EulerLong * Petmar_types.DegToRad;
    EulerOmega := EulerOmega * Petmar_types.DegToRad;
@@ -206,8 +189,6 @@ where dphi/dt and dlam/dt are given in [°/Ma] and dx/dt, dy/dt and dz/dt are giv
    else Azimuth := 90 + ArcSin(Top/Bottom) / Petmar_types.DegToRad;
 
    v := abs(v);
-
-   //{$IfDef RecordFullDriftRate} WriteLineToDebugFile('v: ' + RealToString(v,-12,4)+ ' top: ' + RealToString(top,-12,4) + ' bottom: ' + RealToString(bottom,-12,4) + ' Azimuth: ' + RealToString(Azimuth,-12,4)); {$EndIf}
 end;
 
 
@@ -219,7 +200,6 @@ begin
       ThreePointer.Memo1.Lines.Add('');
    end;
 end;
-
 
 
 function TMapForm.CheckGeologyOptions(Lat,Long : float64; LastX,LastY : integer; NotSamePoint : boolean) : boolean;

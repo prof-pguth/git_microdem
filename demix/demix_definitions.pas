@@ -14,10 +14,11 @@ unit demix_definitions;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordDEMIX}
+   {$Define RecordDEMIX}
    //{$Define RecordNeoDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
+   //{$Define RecordTestDEMstart}
    //{$Define RecordDiluvium}
    //{$Define TrackAverageStats}
    //{$Define RecordDEMIX_CONIN}
@@ -132,9 +133,6 @@ const
    ElevDiffStatsString = ',ELVD_MIN,ELVD_Max,ELVD_Mean,ELVD_AVD,ELVD_STD,ELVD_MED,ELVD_RMSE,ELVD_MAE,ELVD_LE90,ELVD_N';
    RufDiffStatsString = ',RUFD_MIN,RUFD_Max,RUFD_Mean,RUFD_AVD,RUFD_STD,RUFD_MED,RUFD_RMSE,RUFD_MAE,RUFD_LE90,RUFD_N';
 
-
-
-
 const
    MaxDEMIXDEM = 15;
    NumDEMIXtestDEM : integer = 0;
@@ -161,22 +159,16 @@ const
    Ref1_5SecPointStr = '_ref_1.5x1sec_point';
 
 //this should be rolled into a DEMIX_grid object; for now it is global variables
-         const
-            NumPtDEMs : integer = 6;
-            NumAreaDEMs : integer = 1;
-            //PossPt = 8;
-            //PossArea = 2;
 
          //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
          //-1 for the high latitude (currently none for area grid),
          //0 for the 1" reference,
-         //the rest for the test DEMs
-         //const
-            //SRTM_centroid_names : array[-1..PossPt] of shortstring = ('REF_HI_PNT','REF_POINT','COP','TANDEM','FABDEM','NASA','SRTM','ASTER','COAST','DELTA');
-            //ALOS_centroid_names : array[-1..PossArea] of shortstring = ('REF_HI_AREA','REF_AREA','ALOS','DILUV');
+         // >=1 for test DEMs
          type
             tDEM_int_array = array [-1..MaxDEMIXDEM] of integer; //-1 for high latitude ref DEM, 0 for ref DEMs, others for the test DEMs
          var
+            NumPtDEMs,
+            NumAreaDEMs : integer;
             PointDEMs,AreaDEMs,      //used for referenced and test DEMs
             AreaGrids,PointGrids,    //used for derived parameters
             AreaGrids2,PointGrids2,  //used for parameters created at the same time (slope/roughness, openness upward and downward
@@ -257,7 +249,6 @@ var
    DEMIX_GIS_dbName,
 
    AreaListFName,
-   //DEMListFName,
 
    DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
 
@@ -277,20 +268,18 @@ var
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
-   procedure CreateDEMIX_GIS_database_by_transposing(Overwrite : boolean);
+   //procedure CreateDEMIX_diff_dist_DB_by_transposing(Overwrite : boolean);
    procedure RankDEMS(DBonTable : integer);
-   function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
-   //procedure AddFilteredRankID(DBonTable : integer);
+   function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
    procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
    procedure MakeWinsDB(DBonTable : integer; aField : shortstring);
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
-   procedure CreateFinalDB;
+   procedure CreateFinalDiffDistDB;
    procedure MergeCSV(Mode : integer);
    procedure AddPercentPrimaryData(DBonTable : integer);
-
 
 //clusters function
    procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFilteringToGetAllTiles : boolean; FilterToUse : tStringList = Nil; {UseStringsInCriterion : boolean = false;} SingleCriterion : shortstring = '');
@@ -405,6 +394,8 @@ function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstrin
 procedure CriteriaRanges(AreaName : shortstring);
 procedure ComputeCriteriaRanges;
 
+function ID_DEMIX_DB_type(db : integer) : byte;
+
 implementation
 
 uses
@@ -431,6 +422,37 @@ uses
 {$include demix_external_program_derived_grids.inc}
 
 
+function ID_DEMIX_DB_type(db : integer) : byte;
+var
+   Criteria : tStringList;
+
+   function FindPartialMatch(Key : shortString) : boolean;
+   var
+     Crit : shortstring;
+     i : integer;
+   begin
+      Result := false;
+      for i := 0 to pred(Criteria.Count) do begin
+         Crit := UpperCase(Criteria.Strings[i]);
+         if StrUtils.AnsiContainsText(Crit,Key) then begin
+            Result := true;
+            exit;
+         end;
+      end;
+
+   end;
+
+begin
+   Result := ddbUndefined;
+   if GISdb[db].MyData.FieldExists('CRITERION') then begin
+     Criteria := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
+     if FindPartialMatch('LE90') and FindPartialMatch('MAE') then Result := ddbDiffDist
+     else if FindPartialMatch('FUV') then Result := ddbFUV
+     else if FindPartialMatch('SSIM') then Result := ddbSSIM;
+     Criteria.Destroy;
+   end;
+end;
+
 
       function ExtractDEMIXDEMName(var fName : PathStr) : shortstring;
       begin
@@ -451,8 +473,6 @@ uses
          else if (StrUtils.AnsiContainsText(fName,'NEO_DTM')) then Result :=  'NEO_DTM'
          else if (StrUtils.AnsiContainsText(fName,'NEO_DSM')) then Result :=  'NEO_DSM';
       end;
-
-
 
 
 procedure ComputeCriteriaRanges;
@@ -484,17 +504,18 @@ var
    i,j : integer;
    //ResultsSSIM,ResultsFUV : tStringList;
    //fName,
-   WetnessName : PathStr;
+   //WetnessName : PathStr;
 
 
    procedure DoCriterion(Criterion : ANSIString; usingPointGrids,usingAreaGrids : tDEM_int_array; ClearDerived : boolean = true);
    var
-      i,ThisRefDEM,ThisTestDEM,UsingRef : integer;
-      Criterion2,WhatsMissing,What,TStr : shortstring;
-      RefGridLimits,TestGridLimits : tGridLimits;
+      i{,ThisRefDEM,ThisTestDEM,UsingRef} : integer;
+      //Criterion2,WhatsMissing,
+      What,TStr : shortstring;
+      //RefGridLimits,TestGridLimits : tGridLimits;
       gl1 : tGridLimits;
-      Mean,Std : float32;
-      NPts : int64;
+      //Mean,Std : float32;
+      //NPts : int64;
 
       procedure CheckNormalization(DEM : integer; What : shortstring);
       var
@@ -549,11 +570,11 @@ var
        //wmdem.SetPanelText(2,'',true);
    end;
 
-var
-   Success : boolean;
-   TStr    : shortstring;
-   fName2  : PathStr;
-   FullTiles : tStringList;
+//var
+   //Success : boolean;
+   //TStr    : shortstring;
+   //fName2  : PathStr;
+   //FullTiles : tStringList;
 begin {procedure DoSSIMandFUVForAnArea}
        {$If Defined(TimeGridsForArea)} Stopwatch2 := TStopwatch.StartNew; {$EndIf}
        {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}

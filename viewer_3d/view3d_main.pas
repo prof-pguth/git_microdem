@@ -11,9 +11,9 @@ unit view3d_main;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define Record3d}
-      {$Define AddLayer}
-      {$Define Start3DView}
+      //{$Define Record3d}
+      //{$Define AddLayer}
+      //{$Define Start3DView}
       //{$Define ShortRecord}
       //{$Define RecordMoves}
       //{$Define Record3dDetailed}

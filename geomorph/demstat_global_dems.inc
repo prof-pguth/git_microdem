@@ -1093,7 +1093,7 @@ begin
                   if DEMGlb[DEM_Manager.CompareDEMIndexes[j]].GetElevFromLatLongDegree(Lat,Long,zc[j]) then begin
                      if DEMGlb[DEM_Manager.CompareDEMIndexes[j]].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96 then zc[j] := zc[j] + GISdb[DBonTable].MyData.GetFieldByNameAsFloat('EGM_DIFF');
                      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Z_' + DEM_Manager.CompareDEMNames[j],zc[j]);
-                     GISdb[DBonTable].MyData.SetFieldByNameAsFloat('SLP_' + DEM_Manager.CompareDEMNames[j],DEMGlb[DEM_Manager.CompareDEMIndexes[j]].SlopePercentFromLatLong(Lat,Long));
+                     GISdb[DBonTable].MyData.SetFieldByNameAsFloat('SLP_' + DEM_Manager.CompareDEMNames[j],DEMGlb[DEM_Manager.CompareDEMIndexes[j]].SlopePercentFromLatLong(MDDef.SlopeCompute,Lat,Long));
                      Fraction(ztop,zbot,zc[j],'FR_' + DEM_Manager.CompareDEMNames[j] );
                      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DTM_' + DEM_Manager.CompareDEMNames[j], zc[j]-zbot);
                      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DSM_' + DEM_Manager.CompareDEMNames[j], zc[j]-ztop);

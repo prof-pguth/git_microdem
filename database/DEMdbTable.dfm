@@ -4028,7 +4028,7 @@ object dbtablef: Tdbtablef
       Caption = '-'
     end
     object Sumscores1: TMenuItem
-      Caption = 'Average cores based on active filters'
+      Caption = 'Average scores based on active filters'
     end
     object Graphmeanmedianbyterraincategory1: TMenuItem
       Caption = 'Graphs with various filters (experimental, untested recently)'

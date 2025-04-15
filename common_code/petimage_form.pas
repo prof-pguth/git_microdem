@@ -16,8 +16,8 @@ unit petimage_form;
    //{$Define RecordAddGraphToBigBitmap}
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
-   {$Define RecordChangeColumns}
-   {$Define RecordBigBitmap}
+   //{$Define RecordChangeColumns}
+   //{$Define RecordBigBitmap}
    //{$Define RecordBitmapEdit}
    //{$Define RecordBlendBitmaps}
    //{$Define RecordGetImagePartOfBitmap}

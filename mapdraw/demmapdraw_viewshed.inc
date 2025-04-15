@@ -14,27 +14,14 @@
          wf : tWeaponsFan;
          ShowName,CoverName : PathStr;
       begin
-         //{$IfDef RecordFan} ShowMapUTMCorners('TMapDraw.FanBitmap in'); {$EndIf}
-         {$IfDef AndroidProgress} ShowMainFormProgress('TMapDraw.FanBitmap in'); {$EndIf}
-
          InitializeWeaponsFan(wf);
          wf.W_Lat := Lat;
          wf.W_Long := Long;
          DrawRadialFan(wf,ShowName,CoverName);
-         //{$IfDef RecordFan} ShowMapUTMCorners('TMapDraw.FanBitmap DrawRadialFan done'); {$EndIf}
-         {$IfDef AndroidProgress} ShowMainFormProgress('TMapDraw.FanBitmap after draw'); {$EndIf}
          if FileExists(BaseMapFName) then begin
             CreateBitmap(Bitmap,0,0);
             Bitmap := LoadBitmapFromFile(BaseMapFName);
             DrawWorldFileImageOnMap(Bitmap,ShowName);
-            {$IfDef AndroidProgress} ShowMainFormProgress('TMapDraw.FanBitmap out'); {$EndIf}
-         end
-         else begin
-            {$IfDef AndroidProgress}
-               CreateBitmap(Bitmap,0,0);
-               Bitmap := LoadBitmapFromFile(ShowName);
-               ShowMainFormProgress('Missing: ' + BaseMapFName);
-            {$EndIf}
          end;
       end;
 
@@ -223,9 +210,7 @@
                  end;
               end;
            end;
-
            {$IfDef TimeFigureMultiSensorCoverage} WriteLineToDebugFile('Done single sensor stats'); {$EndIf}
-
            fName := System.IOUtils.TPath.Combine(ImageDir, 'fans\num_views' + OverlayFExt);
            PetImage.SaveBitmap(MultCover,fName);
            WriteMapsWorldFile(fName);

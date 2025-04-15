@@ -77,7 +77,7 @@ end;
 
 procedure Make3DviewSelectedDEMs;
 var
-   i{,DEM1,DEM2} : integer;
+   i : integer;
    DEMsWanted : tDEMbooleanArray;
    Viewer : TView3DForm;
  begin

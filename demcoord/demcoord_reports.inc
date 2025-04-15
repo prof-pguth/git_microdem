@@ -303,7 +303,7 @@ end;
 procedure TrendSurfacePartialDerivatives(DEM,xp,yp : integer; Title : shortstring = '');
 var
    Results : tStringList;
-   CurMethod : byte;
+   //CurMethod : byte;
    i,j,m : integer;
    aLine : shortstring;
    SAR :  tSlopeAspectRec;
@@ -342,7 +342,7 @@ const
    Fill : array[1..2] of shortstring = (' Use center ',' Skip center');
 var
    Results : tStringList;
-   CurMethod : byte;
+   //CurMethod : byte;
    i,j,m : integer;
 begin
    try

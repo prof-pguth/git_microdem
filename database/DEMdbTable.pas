@@ -32,12 +32,12 @@
        //{$Define RecordIceSat}
        //{$Define RecordKML}
        //{$Define RecordHTML}
-       {$Define RecordGeostats}
+       //{$Define RecordGeostats}
        //{$Define RecordMapSizing}
        //{$Define RecordExports}
        //{$Define RecordFieldAdds}
        //{$Define RecordStatus}
-       {$Define RecordGraph}
+       //{$Define RecordGraph}
        //{$Define RecordClustering}
        //{$Define RecordGeoCoding}
        //{$Define RecordMultigrid}
@@ -1792,7 +1792,7 @@ type
     procedure Descending2Click(Sender: TObject);
     //procedure GraphSSIMR2foratile1Click(Sender: TObject);
     procedure Clustercomposition1Click(Sender: TObject);
-    procedure TransposeSSIMFUVforclusters1Click(Sender: TObject);
+    //procedure TransposeSSIMFUVforclusters1Click(Sender: TObject);
     procedure ilecharacteristicsbytileforCopDEM1Click(Sender: TObject);
     procedure ClustersperDEMIXtile1Click(Sender: TObject);
     procedure Clusterdiversity1Click(Sender: TObject);
@@ -4849,27 +4849,18 @@ end;
 
 procedure Tdbtablef.N2Dgraph1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraph1);
-   {$EndIf}
 end;
 
 
 procedure Tdbtablef.N2Dgraph2series1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2series1);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.N2Dgraph2yaxes1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2yaxes1);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.N2Dgraphallopendatabases1Click(Sender: TObject);
@@ -6316,9 +6307,6 @@ end;
 
 
 procedure Tdbtablef.Allfields1Click(Sender: TObject);
-{$IfDef NoDBGrafs}
-begin
-{$Else}
 var
   WantXField : shortstring;
   UseFields : tStringList;
@@ -6336,7 +6324,6 @@ begin
       WantXField := UseFields.Strings[j];
       GISdb[DBonTable].OldCreateHistogramFromDataBase(true,WantXField,'','',false);
    end;
-{$EndIf}
 end;
 
 
@@ -6765,9 +6752,6 @@ end;
 
 
 procedure Tdbtablef.Histogram1Click(Sender: TObject);
-{$IfDef NoDBGrafs}
-begin
-{$Else}
 var
   WantXField : shortstring;
   i : integer;
@@ -6846,8 +6830,6 @@ begin
 
       sl.Destroy;
    end;
-{$EndIf}
-
 end;
 
 
@@ -6855,15 +6837,10 @@ procedure Tdbtablef.Historgram1Click(Sender: TObject);
 var
    Fields : tStringList;
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       Fields := tStringList.Create;
       Fields.Add(SelectedColumn);
-      //GISdb[DBonTable].OldCreateHistogramFromDatabase(true,SelectedColumn,'','',false);
-      //CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
       GISdb[DBonTable].CreateHistogramFromDataBase(true,Fields,false);
       Fields.Destroy;
-   {$EndIf}
 end;
 
 
@@ -7245,10 +7222,7 @@ begin
       DEMMapf.ChangeDEMNowDoing(GraphFilterDB);
       GISdb[DBonTable].theMapOwner.SetFocus;
    end;
-   {$IfDef NoDBGrafs}
-   {$Else}
       if (GISdb[DBonTable].theGraphOwner <> Nil) then ChangeGraphDoing(gdGraphDBBoxFilter);
-   {$EndIf}
    ShowStatus;
    {$IfDef RecordDataBase} WriteLineRoDebugFile('Tdbtablef.Selectionregion1Click--DB map query out'); {$EndIf}
 end;
@@ -7403,18 +7377,12 @@ end;
 
 procedure Tdbtablef.Lidarwaveform1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].WaveFormGraph(true);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.Lidarwaveforms1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].WaveFormGraph(false);
-   {$EndIf}
 end;
 
 
@@ -7771,12 +7739,9 @@ begin
    if (GISdb[DBonTable].TheMapOwner <> Nil) then begin
       GISdb[DBonTable].RedrawLayerOnMap;
    end;
-   {$IfDef NoDBGrafs}
-   {$Else}
       if (GISdb[DBonTable].TheGraphOwner <> Nil) and (GraphOwnerBitmap <> Nil) then begin
          GISdb[DBonTable].TheGraphOwner.Image1.Picture.Graphic := GraphOwnerBitmap;
       end;
-   {$EndIf}
 
    if ShowFilter or ShowN then begin
       ff := '';
@@ -7786,13 +7751,10 @@ begin
          LoadMyFontIntoWindowsFont(GISdb[DBonTable].dbOpts.GisLabelFont1,GISdb[DBonTable].TheMapOwner.Image1.Canvas.Font);
          GISdb[DBonTable].TheMapOwner.Image1.Canvas.TextOut(0,0,ff);
       end;
-     {$IfDef NoDBGrafs}
-     {$Else}
       if (GISdb[DBonTable].theGraphOwner <> Nil) then begin
          LoadMyFontIntoWindowsFont(GISdb[DBonTable].dbOpts.GisLabelFont1,GISdb[DBonTable].TheGraphOwner.Image1.Canvas.Font);
          GISdb[DBonTable].TheGraphOwner.Image1.Canvas.TextOut(GISdb[DBonTable].TheGraphOwner.GraphDraw.LeftMargin,5,ff);
       end;
-      {$EndIf}
    end;
    ShowStatus;
   {$IfDef RecordQuickFilter} WriteLineRoDebugFile('Tdbtablef.ShowFilteredDB out'); {$EndIf}
@@ -7946,10 +7908,7 @@ end;
 
 procedure Tdbtablef.Bycategory1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].HistogramByCategory('','',false);
-   {$EndIf}
 end;
 
 
@@ -7960,38 +7919,26 @@ end;
 
 procedure Tdbtablef.Bylatitude1Click(Sender: TObject);
 begin
-  {$IfDef NoDBGrafs}
-  {$Else}
       GISdb[DBonTable].dbOpts.XField := GISdb[DBonTable].LatFieldName;
       GISdb[DBonTable].MakeGraph(dbgtBylatitude1);
-  {$EndIf}
 end;
 
 procedure Tdbtablef.ByLatitude2Click(Sender: TObject);
 begin
-  {$IfDef NoDBGrafs}
-  {$Else}
       GISdb[DBonTable].dbOpts.XField := GISdb[DBonTable].LatFieldName;
       GISdb[DBonTable].MakeGraph(dbgtByLatitude2);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.Bylongitude1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
        GISdb[DBonTable].dbOpts.XField := GISdb[DBonTable].LongFieldName;
        GISdb[DBonTable].MakeGraph(dbgtBylongitude1);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.byLongitude2Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].dbOpts.XField := GISdb[DBonTable].LongFieldName;
       GISdb[DBonTable].MakeGraph(dbgtbyLongitude2);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.Ascending1Click(Sender: TObject);
@@ -8631,10 +8578,7 @@ end;
 
 procedure Tdbtablef.Plotforsubsamples1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtPlotforsubsamples1);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.Plotfanlocations1Click(Sender: TObject);
@@ -8928,10 +8872,7 @@ end;
 
 procedure Tdbtablef.N2Dgraphcolorcoded1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcoded1);
-   {$EndIf}
 end;
 
 
@@ -8949,9 +8890,6 @@ end;
 
 
 procedure Tdbtablef.Rosediagram1Click(Sender: TObject);
-{$IfDef NoDBGrafs}
-begin
-{$Else}
 var
    Month : integer;
 begin
@@ -8971,7 +8909,6 @@ begin
      end;
      ShowStatus;
    end;
-{$EndIf}
 end;
 
 
@@ -10048,27 +9985,18 @@ end;
 
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext1);
-   {$EndIf}
 end;
 
 
 procedure Tdbtablef.N2DgraphCOLORfield1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield1);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.N2Dgraphsimplelines1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraphsimplelines1);
-   {$EndIf}
 end;
 
 procedure Tdbtablef.Eachprofileseparately1Click(Sender: TObject);
@@ -10540,23 +10468,21 @@ var
    Lat,Long : float64;
    x,y : integer;
 begin
-   with GISdb[DBonTable],MyData do begin
-      if ItsAPointDB then begin
-         PreEditFilter := GISdb[DBonTable].MyData.Filter;
-         if (GetFieldByNameAsString(LatFieldName) = '') or (GetFieldByNameAsString(LongFieldName) = '') then begin
-            Lat := 0.5 * (TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.ymax + TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.ymin);
-            Long := 0.5 * (TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.xmax + TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.xmin);
-            TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
-            ScreenSymbol(TheMapOwner.Image1.Canvas,x,y,dbOpts.Symbol);
-            Edit;
-            ChangeLatLongLocation(Lat,Long);
-            Post;
-         end;
-         ChangeDEMNowDoing(MovePointDBRecs);
-      end
-      else ChangeDEMNowDoing(PickDBRecsToMove);
-      DBEditting := DBonTable;
-   end;
+    if GISdb[DBonTable].ItsAPointDB then begin
+       PreEditFilter := GISdb[DBonTable].MyData.Filter;
+       if (GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LatFieldName) = '') or (GISdb[DBonTable].MyData.GetFieldByNameAsString(GISdb[DBonTable].LongFieldName) = '') then begin
+          Lat := 0.5 * (GISdb[DBonTable].TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.ymax + GISdb[DBonTable].TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.ymin);
+          Long := 0.5 * (GISdb[DBonTable].TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.xmax + GISdb[DBonTable].TheMapOwner.MapDraw.MapCorners.BoundBoxGeo.xmin);
+          GISdb[DBonTable].TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
+          ScreenSymbol(GISdb[DBonTable].TheMapOwner.Image1.Canvas,x,y,GISdb[DBonTable].dbOpts.Symbol);
+          GISdb[DBonTable].MyData.Edit;
+          GISdb[DBonTable].ChangeLatLongLocation(Lat,Long);
+          GISdb[DBonTable].MyData.Post;
+       end;
+       ChangeDEMNowDoing(MovePointDBRecs);
+    end
+    else ChangeDEMNowDoing(PickDBRecsToMove);
+    DBEditting := DBonTable;
 end;
 
 
@@ -10600,10 +10526,6 @@ begin
    DEMIX_SSIM_FUV_clusters_graph(DBonTable);
 end;
 
-procedure Tdbtablef.TransposeSSIMFUVforclusters1Click(Sender: TObject);
-begin
-    //DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable);
-end;
 
 procedure Tdbtablef.TransposeSSIMR2forclusters1Click(Sender: TObject);
 begin
@@ -10726,22 +10648,20 @@ var
    DestPath : PathStr;
    fName : ShortString;
 begin
-   with GISdb[DBonTable] do begin
-      DestPath := ProgramRootDir;
-      GetDosPath('File destination',DestPath);
-      ShowHourglassCursor;
-      if FileNameFieldExists or ImagePresent then begin
-         GISdb[DBonTable].MyData.First;
-         while not GISdb[DBonTable].MyData.EOF do begin
-            if FileNameFieldExists and GISdb[DBonTable].MyData.GetFullFileName(fName) then CopyFile(fName,DestPath + ExtractFileName(fName));
-            if ImagePresent and GetFullImageName(fName) then begin
-               CopyFile(fName,DestPath + ExtractFileName(fName));
-            end;
-            GISdb[DBonTable].MyData.Next;
-         end;
-      end;
-      ShowHourglassCursor;
-   end;
+    DestPath := ProgramRootDir;
+    GetDosPath('File destination',DestPath);
+    ShowHourglassCursor;
+    if GISdb[DBonTable].FileNameFieldExists or GISdb[DBonTable].ImagePresent then begin
+       GISdb[DBonTable].MyData.First;
+       while not GISdb[DBonTable].MyData.EOF do begin
+          if GISdb[DBonTable].FileNameFieldExists and GISdb[DBonTable].MyData.GetFullFileName(fName) then CopyFile(fName,DestPath + ExtractFileName(fName));
+          if GISdb[DBonTable].ImagePresent and GISdb[DBonTable].GetFullImageName(fName) then begin
+             CopyFile(fName,DestPath + ExtractFileName(fName));
+          end;
+          GISdb[DBonTable].MyData.Next;
+       end;
+    end;
+    ShowHourglassCursor;
 end;
 
 procedure Tdbtablef.Copyfieldtostringfield1Click(Sender: TObject);
@@ -15123,11 +15043,8 @@ end;
 
 procedure Tdbtablef.Plot1series1Click(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
        GISdb[DBonTable].MakeGraph(dbgtPlot1series1);
-   {$EndIf}
-end;
+ end;
 
 procedure Tdbtablef.PlotallXYFiles1Click(Sender: TObject);
 var
@@ -15214,10 +15131,7 @@ end;
 
 procedure Tdbtablef.PlotClick(Sender: TObject);
 begin
-   {$IfDef NoDBGrafs}
-   {$Else}
-      GISdb[DBonTable].MakeGraph(dbgtPlot);
-   {$EndIf}
+     GISdb[DBonTable].MakeGraph(dbgtPlot);
 end;
 
 
@@ -15411,7 +15325,7 @@ begin
       GetMaskingOptions(false,(Sender <> Maskdatabasewithgazetteer1));
       {$IfDef RecordMaskDEMShapeFile} WriteLineRoDebugFile('Got masking options'); {$EndIf}
       MaskDEMFromShapeFile(UseDEM,DBonTable,(Sender <> Nil),MDDef.MaskShapesIn,SingleRecord,MDDef.MaskDistance);
-      if (DEMGlb[UseDEM].SelectionMap <> Nil) and (GISdb[DBonTable].TheMapOwner.MapDraw.ValidDEMonMap and (DEMGlb[UseDEM].LandCoverGrid)) then begin
+      if (DEMGlb[UseDEM].SelectionMap <> Nil) and (ValidDEM(GISdb[DBonTable].TheMapOwner.MapDraw.DEMonMap) and (DEMGlb[UseDEM].LandCoverGrid)) then begin
          DEMGlb[UseDEM].SelectionMap.NLCDLegend1Click(Nil);
       end;
       ShowStatus;
@@ -15688,7 +15602,7 @@ end;
 
 procedure Tdbtablef.Monthlywinds1Click(Sender: TObject);
 begin
-   {$If Defined(NoDBGrafs) or Defined(ExGeograph)}
+   {$If Defined(ExGeograph)}
    {$Else}
       GISdb[DBonTable].MonthlyWindPlotCurrentPoint;
    {$EndIf}
@@ -15839,8 +15753,6 @@ var
    Max : float64;
    fN,lN  : array[1..25] of shortstring;
 begin
-{$IfDef NoDBGrafs}
-{$Else}
    with GISdb[DBonTable] do begin
       fName := 'C:\mapdata\0--current_projects\pa_point_cloud\combined_los_definitions.dbf';
       if not Petmar.GetFileFromDirectory('Field groupings',DBNameMask,fName) then exit;
@@ -15889,7 +15801,6 @@ begin
    end;
    RestoreBackupDefaults;
    ShowStatus;
-{$EndIf}
 end;
 
 

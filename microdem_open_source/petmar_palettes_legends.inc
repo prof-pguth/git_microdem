@@ -1,13 +1,13 @@
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{   include file for petmar         }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{   include file for petmar              }
+{________________________________________}
 
 
 function SelectedColorSchemeColorFunct(ColorScheme: tLegendColors; ColorTable : tColorTableDefinitions; z : float64; Min,Max : float64) : TColor;
@@ -311,10 +311,37 @@ end;
 
         function DoLegendOnBitmap(Horizontal : boolean; Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = ''; LegendSize : integer = 1) : tMyBitmap;
          var
-           Width,Height,Size,i,j,LastLabel,Dec,xloc,yloc,TopText : integer;
+           Width,Height,Size,i,j,LastLabel,Dec,xloc,yloc,TopText,LabelsDrawn : integer;
            Min,Max,Range,Tick,FirstTick  : float64;
            First          : boolean;
            TStr           : ShortString;
+
+            procedure DoCenterAndEnds(DoMiddle : boolean = true);
+            begin
+               with Result.Canvas do begin
+                   TopText := LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
+                   xloc := 5 + LegendSize * (255) * Size;
+                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                   TStr := RealToString(Min,-12,-Dec);
+                   TextOut(xloc - TextWidth(TStr),TopText,TStr);
+
+                   if DoMiddle then begin
+                     xloc := 5 + LegendSize * (127) * Size;
+                     MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                     LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                     TStr := '0';
+                     TextOut(xloc - TextWidth(TStr) div 2,TopText,TStr);
+                   end;
+
+                   xloc := 5 + LegendSize * (0) * Size;
+                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
+                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
+                   TStr := RealToString(Max,-12,-Dec);
+                   TextOut(xloc,TopText,TStr);
+               end;
+            end;
+
          begin
             {$IfDef RecordLegends} if Horizontal then TStr := 'horizontal'else TStr := 'vertical'; WriteLineToDebugFile('DoLegendOnBitmap ' + TStr); {$EndIf}
 
@@ -336,7 +363,7 @@ end;
             else begin
                if (LegendTitle <> '') then i := 45 else i := 20;
                Height := LegendSize * (256) + 20 +i;
-               Width := 500;
+               Width := 600;
             end;
             Result.Width := Width;
             Result.Height := Height;
@@ -374,36 +401,20 @@ end;
 
                Range := Max - Min;
                Tick := PetMath.GetTickInt(256,25,Range);
-               if (Range < 0.001) then Dec := 4
-               else if (Range < 0.01) then Dec := 3
+               if (Range < 0.002) or (abs(Max) < 0.002) then Dec := 4
+               else if (Range < 0.02) or (abs(Max) < 0.02) then Dec := 3
                else Dec := 2;
 
                if Min <= 0 then FirstTick := (trunc(Min / Tick)) * Tick
                else FirstTick := succ(trunc((Min-0.0001) / Tick)) * Tick;
 
                if Horizontal and (abs(Max + Min) < 0.0001) then begin
-                   TopText := LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize + 3;
-                   xloc := 5 + LegendSize * (255) * Size;
-                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
-                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
-                   TStr := RealToString(Max,-12,-Dec);
-                   TextOut(xloc - TextWidth(TStr),TopText,TStr);
-
-                   xloc := 5 + LegendSize * (127) * Size;
-                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
-                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
-                   TStr := '0';
-                   TextOut(xloc - TextWidth(TStr) div 2,TopText,TStr);
-
-                   xloc := 5 + LegendSize * (0) * Size;
-                   MoveTo(xloc,LegendSize * MDDef.LegendBarWidth);
-                   LineTo(xloc,LegendSize * MDDef.LegendBarWidth + MDDef.LegendTickSize);
-                   TStr := RealToString(Min,-12,-Dec);
-                   TextOut(xloc,TopText,TStr);
+                   DoCenterAndEnds;
                end
                else begin
                   First := true;
                   LastLabel := MaxInt;
+                  LabelsDrawn := 0;
                   repeat
                      i := 0;
                      while (abs(Values[i] - FirstTick) > abs(Values[succ(i)] - FirstTick)) and (i < 254) do inc(i);
@@ -421,10 +432,11 @@ end;
                         end;
                         if Horizontal then begin //draw the ticks
                            xloc := 5 + LegendSize * (256-i)*Size;
-                           if LastLabel >  (xloc -5 + TextWidth(TStr)) then begin
+                           if LastLabel > (xloc -5 + TextWidth(TStr)) then begin
                               LastLabel := xloc - TextWidth(TStr) div 2;
                               if (LastLabel < 0) then LastLabel := 0;
                               TextOut(LastLabel,TopText,TStr);
+                              inc(LabelsDrawn);
                               {$IfDef RecordLegends} WriteLineToDebugFile('Tick label at: ' + IntToStr(LastLabel) + '--' + IntToStr(j)); {$EndIf}
                               Pen.Width := 3;
                            end
@@ -442,11 +454,19 @@ end;
                            if yloc < LastLabel - TextHeight(TStr) then begin
                               TextOut(28,yloc,TStr);
                               LastLabel := yloc;
+                              inc(LabelsDrawn);
                            end;
                         end;
                         FirstTick := FirstTick + Tick;
                      end;
                   until (FirstTick > Max) or (i = 255);
+                  if LabelsDrawn = 1 then begin
+                     if Horizontal then begin
+                        DoCenterAndEnds(false);
+                     end
+                     else begin
+                     end;
+                  end;
                end;
             end;
             PutBitmapInBox(Result);

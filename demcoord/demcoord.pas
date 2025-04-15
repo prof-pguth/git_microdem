@@ -39,8 +39,8 @@ unit DEMCoord;
       //{$Define SaveNetDrawingSteps}
       //{$Define ShowDEMSSOCalc}
       //{$Define ShowFullDEMSSOCalc}
-      {$Define RecordMaskFromSecondGrid}
-      {$Define RecordLSQ}
+      //{$Define RecordMaskFromSecondGrid}
+      //{$Define RecordLSQ}
       //{$Define RecordGridIdenticalProblems}
       //{$Define TrackDEMboundingBox}
       //{$Define RecordUKOS}
@@ -484,24 +484,25 @@ type
      //slope and aspect
          function GetSlopeAndAspect(HowCompute : tSlopeCurveCompute; Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true;
             NeedSecondOrder : boolean = false) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
-         function GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
+         function GetSlopeAndAspectFromLatLong(HowCompute : tSlopeCurveCompute; Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function QuickEvansSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
+         //function QuickEvansSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
 
-         function SlopePercent(XGrid,YGrid : integer; var Slope : float64) : boolean; inline;
-         function SlopePercentFromLatLong(Lat,Long : float64) : float64;
+         function SlopePercent(HowCompute : tSlopeCurveCompute; XGrid,YGrid : integer; var Slope : float64) : boolean; inline;
+         function SlopePercentFromLatLong(HowCompute : tSlopeCurveCompute; Lat,Long : float64) : float64;
          {$IfDef RichardsonExtrapolate} procedure RichardsonExtrapolationSlopeMaps(Save : boolean = false); {$EndIf}
 
          function RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
 
 
          function FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;  inline;
-         procedure OpennessOneDirection(Col,Row,RegionSizeMeters,dx,dy : integer; Spacing : float64; Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
+         procedure OpennessOneDirection(Col,Row,PixelsInDirection,dx,dy : integer; Spacing : float32;Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
 
          function AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : boolean;
 
          procedure ResetPrimaryDatumZone(NewLong : float64);
 
-         function ReinterpolateLatLongDEM(var SpacingArcSec : float32; fName : PathStr = '') : integer;
+         //function ReinterpolateLatLongDEM(var SpacingArcSec : float32; fName : PathStr = '') : integer;
          function ReinterpolateUTMDEM(FloatSpacingMeters : float64; UTMzone : int16 = -99; fName : PathStr = '') : integer;
          function ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 
@@ -2099,7 +2100,7 @@ begin
 end;
 
 
-   procedure tDEMDataSet.OpennessOneDirection(Col,Row,RegionSizeMeters,dx,dy : integer; Spacing : float64; Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
+   procedure tDEMDataSet.OpennessOneDirection(Col,Row,PixelsInDirection,dx,dy : integer; Spacing : float32; Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
    //done like this so it can be inline
    var
       TanAngle,MinTanAngle,MaxTanAngle,PointElev : float32;
@@ -2109,7 +2110,7 @@ end;
       MaxTanAngle := -999;
       MinTanAngle := 999;
       FoundOne := false;
-      For i := 1 to round(RegionSizeMeters / Spacing) do begin
+      For i := 1 to PixelsInDirection do begin
          if GetElevMeters(Col + i * dx,Row + i * dy,PointElev) then begin
             TanAngle := (PointElev - zp) / (i * Spacing);
             CompareValueToExtremes(TanAngle,MinTanAngle,MaxTanAngle);
@@ -2131,7 +2132,7 @@ end;
 function tDEMDataSet.FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
 var
    UpAngle,DownAngle,zp : float32;
-   RaysUsed : integer;
+   RaysUsed,PixelsInDirection : integer;
 begin
    Result := IsSurroundedPoint(Col,Row);
    if Not Result then exit;
@@ -2148,14 +2149,17 @@ begin
       Findings.Add('Direction Upward Openness   Downward Openness');
    end;
 
-   if MDDef.OpennessDirs[1] then OpennessOneDirection(Col,Row,RegionSizeMeters,0,1,AverageYSpace,'N ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[2] then OpennessOneDirection(Col,Row,RegionSizeMeters,1,1,AverageDiaSpace,'NE',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[3] then OpennessOneDirection(Col,Row,RegionSizeMeters,1,0,AverageXSpace,'E ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[4] then OpennessOneDirection(Col,Row,RegionSizeMeters,1,-1,AverageDiaSpace,'SE',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[5] then OpennessOneDirection(Col,Row,RegionSizeMeters,0,-1,AverageYSpace,'S ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[6] then OpennessOneDirection(Col,Row,RegionSizeMeters,-1,-1,AverageDiaSpace,'SW',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[7] then OpennessOneDirection(Col,Row,RegionSizeMeters,-1,0,AverageXSpace,'W ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[8] then OpennessOneDirection(Col,Row,RegionSizeMeters,-1,1,AverageDiaSpace,'NW',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   PixelsInDirection := round(RegionSizeMeters / AverageXSpace);
+   if MDDef.OpennessDirs[3] then OpennessOneDirection(Col,Row,PixelsInDirection,1,0,AverageXSpace,'E ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[7] then OpennessOneDirection(Col,Row,PixelsInDirection,-1,0,AverageXSpace,'W ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   PixelsInDirection := round(RegionSizeMeters / AverageYSpace);
+   if MDDef.OpennessDirs[1] then OpennessOneDirection(Col,Row,PixelsInDirection,0,1,AverageYSpace,'N ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[5] then OpennessOneDirection(Col,Row,PixelsInDirection,0,-1,AverageYSpace,'S ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   PixelsInDirection := round(RegionSizeMeters / AverageDiaSpace);
+   if MDDef.OpennessDirs[2] then OpennessOneDirection(Col,Row,PixelsInDirection,1,1,AverageDiaSpace,'NE',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[4] then OpennessOneDirection(Col,Row,PixelsInDirection,1,-1,AverageDiaSpace,'SE',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[6] then OpennessOneDirection(Col,Row,PixelsInDirection,-1,-1,AverageDiaSpace,'SW',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[8] then OpennessOneDirection(Col,Row,PixelsInDirection,-1,1,AverageDiaSpace,'NW',UpAngle,DownAngle,zp,RaysUsed,Findings);
 
    Upward := 90 - ArcTan(UpAngle / RaysUsed) / DegToRad;
    Downward := 90 + ArcTan(DownAngle / RaysUsed) / DegToRad;
@@ -2497,7 +2501,7 @@ end;
 procedure tDEMDataSet.DefineDEMVariables(TransformToPreferDatum : boolean);
 var
    l1,l2,xutm1,yutm1 : float64;
-   TStr : shortstring;
+   //TStr : shortstring;
    x,y : array[1..4] of float64;
 
 
@@ -3551,7 +3555,7 @@ end;
 procedure PickSlopeAspectMethod(aMessage : shortstring; var SlopeMethod : byte);
 var
    StringList : Classes.tStringList;
-   s1         : integer;
+   //s1         : integer;
    i          : integer;
 begin
    {$IfDef VCL}
@@ -3764,25 +3768,6 @@ begin
    {$IfDef RecordResample} WriteLineToDebugFile('tDEMDataSet.ReinterpolateUTMDEM out, New DEM=' + IntToStr(Result)); {$EndIf}
 end;
 
-
-function tDEMDataSet.ReinterpolateLatLongDEM(var SpacingArcSec : float32; fName : PathStr = '') : integer;
-begin
-   if (SpacingArcSec < 0) then begin
-      SpacingArcSec := 1;
-      ReadDefault('Spacing for new DEM (sec)',SpacingArcSec);
-   end;
-   {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyParams(true)); {$EndIf}
-   Result := SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,PixelIsPoint);   //DEMHeader.RasterPixelIsGeoKey1025);
-   DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMheader.VerticalCSTypeGeoKey;
-   DEMGlb[Result].DEMheader.ElevUnits := DEMheader.ElevUnits;
-   DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,ThisDEM,hfEverything);
-   if (fName = '') then DEMGlb[Result].AreaName := AreaName + '_geo_reint_' + RealToString(SpacingArcSec,-8,-2)
-   else begin
-      DEMGlb[Result].AreaName := ExtractFileNameNoExt(fName);
-      DEMGlb[Result].WriteNewFormatDEM(fName);
-      {$IfDef RecordResample} WriteLineToDebugFile('Resample Lat/Long, saved to ' + fName + '   '  + DEMGlb[Result].KeyParams(true)); {$EndIf}
-   end;
-end;
 
 
 function tDEMDataSet.MaxHorizonAngle(Lat,Long,LeftAzimuthTrue,RightAzimuthTrue,AzIncrement,DistanceToGoOut,ObsUp : float64; StraightAlgorithm : DemDefs.tStraightAlgorithm) : float64;

@@ -501,7 +501,7 @@ var
 
 
 begin {DrawGridLines}
-   if ( (MDDef.MapTicks = tixNone) and (not MDDef.ShowNativeGrid) ) or (inBitmap = Nil) or (DEMMap and ValidDEMonMap and (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Rect')) then begin
+   if ( (MDDef.MapTicks = tixNone) and (not MDDef.ShowNativeGrid) ) or (inBitmap = Nil) or (ValidDEM(DEMonMap) and (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Rect')) then begin
       exit;
    end;
 
@@ -567,7 +567,7 @@ end {DrawGridLines};
             end;
 
          begin
-            if ValidDEMonMap then begin
+            if ValidDEM(DEMonMap) then begin
                LoadMyFontIntoWindowsFont(MDDef.GridPointLabelFont,Bitmap.Canvas.Font);
                Bitmap.Canvas.Font.Name := 'Verdana';
                for Col := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin

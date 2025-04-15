@@ -769,7 +769,8 @@ end;
 procedure ResampleForDEMIXOneSecDEMs(OverWrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
 var
    NewDEM : integer;
-   fName,BaseName : PathStr;
+   //fName,
+   BaseName : PathStr;
    Ext : ExtStr;
    ps : float32;
 begin

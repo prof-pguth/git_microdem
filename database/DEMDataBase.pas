@@ -27,12 +27,12 @@
       //{$Define RecordRedistrict}
       //{$Define RecordDataBaseTiming}
       //{$Define RecordDBPlot}
-      {$Define RecordFIT}
+      //{$Define RecordFIT}
       //{$Define RecordKML}
       //{$Define RecordTiger}
       //{$Define LogModuleCreate}
       //{$Define RecordIcesat}
-      {$Define RecordPlotFabric}
+      //{$Define RecordPlotFabric}
 
       //{$Define RecordFieldStatistics}
       //{$Define RecordOpenDataBase}
@@ -149,15 +149,8 @@ uses
       NetMainW,Demdips,
    {$EndIf}
 
-   {$IfDef NoDBMaps}
-   {$Else}
-      DEMMapF,
-   {$EndIf}
-
-   {$IfDef NoDBGrafs}
-   {$Else}
-      BaseGraf,
-   {$EndIf}
+   DEMMapF,
+   BaseGraf,
 
    DEMMapDraw,
 
@@ -198,6 +191,11 @@ const
    //dgJust3Params = 9;
    dg7Params = 10;
    dgNormalizedDiff = 11;
+
+   ddbUndefined = 0;
+   ddbDiffDist = 1;
+   ddbFUV = 2;
+   ddbSSIM = 3;
 
 type
   tHowRestrict = (resNone);
@@ -282,7 +280,6 @@ type
      {$IfDef VCL}
         function FocalMechLegend: tMyBitmap;
      {$EndIf}
-
   public
     { Public declarations }
      MyData,LinkTable,NeighborTable,RangeTable,LinkRangeTable,LayerTable : TMyData;
@@ -301,16 +298,8 @@ type
         gis_scaled_form : Tgis_scaled_form;
      {$EndIf}
 
-     {$IfDef NoDBMaps}
-     {$Else}
-        theMapOwner : DEMMapF.tMapForm;
-     {$EndIf}
-
-     {$IfDef NoDBGrafs}
-     {$Else}
-        theGraphOwner : TThisBaseGraph;
-     {$EndIf}
-
+     theMapOwner : DEMMapF.tMapForm;
+     theGraphOwner : TThisBaseGraph;
 
      StringDataThere : tStringList;
      DBAuxDir,
@@ -392,11 +381,10 @@ type
      MaskingDistance : float64;
      LegendCaption : shortstring;
 
-     {$IfDef NoDBGrafs}
-     {$Else}
-        LastGraph : tThisBaseGraph;
-        LastGraphType : tdbGraphType;
-     {$EndIf}
+     LastGraph : tThisBaseGraph;
+     LastGraphType : tdbGraphType;
+
+     DEMIXdbType : byte;
 
      {$IfDef ExGeography}
      {$Else}
@@ -562,8 +550,7 @@ type
      procedure CalculateAreaorCentroid(DoCentroid : boolean);
      procedure BackupDB;
 
-     {$IfDef NoDBMaps}
-     {$Else}
+     //map operations
          procedure PlotDefaultSymbols(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
          function DEMwithDBsMap : boolean;
 
@@ -603,7 +590,6 @@ type
          procedure ZoommaptorecordWithBufferMeters(Buffer : float64);
          procedure Recentermaponrecord;
          procedure ZoomToDBCoverageOnMap;
-     {$EndIf}
 
      {$IfDef VCL}   //long time since testing for another operating system, so be ready for work to make it work
         procedure AddMultiFieldStats(WhatFor : shortstring; What : tMultiFieldStats; TheFields : tStringList = Nil; NewFName : shortstring = '');
@@ -648,8 +634,7 @@ type
          procedure CloseDBtableF(Reopen : boolean = false);
      {$EndIf}
 
-     {$IfDef NoDBGrafs}
-     {$Else}
+     //graphs
          procedure HistogramByCategory(WantXField,FilterField : shortstring; AutoRescale : boolean; Summary : tStringList = nil);
          function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
          function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
@@ -664,7 +649,6 @@ type
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
          function ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
          procedure MonthlyWindPlotCurrentPoint;
-     {$EndIf}
 
      {$IfDef ExGeography}
      {$Else}
@@ -717,15 +701,12 @@ type
 procedure InitializeDEMdbs;
 
 
-{$IfDef NoDBMaps}
-{$Else}
       procedure LoadShapeFileGroup(MapOwner : tMapForm; fName : PathStr = '');
       procedure UpdateShapeFileGroup;
       procedure LegendFromShapeFileGroup(MapOwner : tMapForm; FName : PathStr);
       function OpenGazetteer(var i : integer; fName : PathStr; MapOwner : tMapForm) : boolean;
       function NumOpenDatabaseThisMap(MapOwner : tMapForm) : integer;
       procedure ConvertShapeFileToKML(fName : PathStr; MapOwner : tMapForm);
-{$EndIf}
 
 {$IfDef FMX}
    function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; MapDraw : tMapDraw = nil) : boolean;
@@ -739,10 +720,7 @@ procedure InitializeDEMdbs;
    procedure OpenDBForModalEdit(fName : PathStr);
    function PickOpenGISDataBase(WhatFor : shortString; Ignore : integer = 0; Geometry : integer = 0; FieldNeeded : ShortString = '') : integer;
    procedure MaskDEMFromShapeFile(DEM,DBonTable : integer; UseShapeFile,MaskShapesAreIn : boolean; SingleRecord  : integer; MaskingDistance : float64; ProgressCount : shortstring = '');
-   {$IfDef NoDBGrafs}
-   {$Else}
-      function GraphFromCSVfile(var sl : tStringList; ShowTable : boolean; Lines : boolean = false) : tThisBaseGraph;
-   {$EndIf}
+   function GraphFromCSVfile(var sl : tStringList; ShowTable : boolean; Lines : boolean = false) : tThisBaseGraph;
 {$EndIf}
 
 function FindOpenDataBase(var db : integer) : boolean;
@@ -759,9 +737,6 @@ procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr 
 procedure DoKMeansClustering(DBonTable : integer);
 procedure ClusterMapLocation(DBonTable : integer; TheFilters : tStringList = nil);
 procedure MapsByClusterAndDEM(DBonTable : integer);
-
-//procedure ComputeVDatumShift(dbOnTable : integer);
-//function AnalyzeVDatumShift(CSVName : PathStr; ErrorLog : tStringList = Nil) : integer;
 
 function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
@@ -908,16 +883,10 @@ uses
    {$include demdatabase_field_edits.inc}
 {$Endif}
 
-{$IfDef NoDBMaps}
-{$Else}
    {$include demdatabase_maps.inc}
    {$include demdatabase_legend.inc}
-{$Endif}
 
-{$IfDef NoDBGrafs}
-{$Else}
-   {$include demdatabase_graph.inc}
-{$EndIf}
+{$include demdatabase_graph.inc}
 
 {$IfDef ExGeology}
 {$Else}
@@ -1839,15 +1808,7 @@ end;
 
 function TGISdataBaseModule.DBhasMapOrGraph : boolean;
 begin
-   {$IfDef VCL}
-      {$IfDef NoDBGrafs}
-         Result := (theMapOwner <> Nil);
-      {$Else}
-         Result := (theMapOwner <> Nil) or (theGraphOwner <> Nil);
-      {$EndIf}
-   {$Else}
-      Result := false;
-   {$EndIf}
+   Result := (theMapOwner <> Nil) or (theGraphOwner <> Nil);
 end;
 
 
@@ -2649,6 +2610,7 @@ end;
 
          function TGISdataBaseModule.IsThisDEMIXdatabase : boolean;
          begin
+             DEMIXdbType := ID_DEMIX_DB_type(dbNumber);
              Result := (MyData.FieldExists('COP') and MyData.FieldExists('ALOS')) or
                        StrUtils.AnsiContainsText(dbName,'DEMIX') or
                        (MyData.FieldExists('U120_TILES') and MyData.FieldExists('U80_TILES')) or
@@ -2719,8 +2681,6 @@ end;
             begin
                Result := false;
                if XYZfile then begin
-                  {$IfDef NoDBGrafs}
-                  {$Else}
                      if (TheGraphOwner <> Nil) then begin
                         if MyData.GetXYZFromTable(v[1],v[2],v[3]) then begin
                            x := TheGraphOwner.GraphDraw.GraphX(v[TheGraphOwner.GraphDraw.c1]);
@@ -2729,7 +2689,6 @@ end;
                            exit;
                         end;
                      end;
-                  {$EndIf}
                end
                else begin
                   if ValidLatLongFromTable(Lat,Long) then begin
@@ -3496,15 +3455,12 @@ end;
                          AssembleGISFilter;
                       end
                       else begin
-                        {$IfDef NoDBGrafs}
-                        {$Else}
                            LongLow := theGraphOwner.GraphDraw.InvGraphX(xpic-i);
                            LongHigh := theGraphOwner.GraphDraw.InvGraphX(xpic+i);
                            LatLow := theGraphOwner.GraphDraw.InvGraphY(ypic+i);
                            LatHigh := theGraphOwner.GraphDraw.InvGraphY(ypic-i);
                            MyData.ApplyFilter('X' + ' >= ' + RealToString(LongLow,-12,-4) + ' AND ' + 'X' + ' <= ' + RealToString(LongHigh,-12,-4) + ' AND ' + 'Y' + ' >= ' +
                               RealToString(LatLow,-12,-4) + ' AND ' + 'Y' + ' <= ' + RealToString(LatHigh,-12,-4));
-                        {$EndIf}
                       end;
                   until (MyData.FiltRecsInDB > 0) or (i >= IDRecScreenTolerance);
 
@@ -4052,10 +4008,7 @@ begin
       for I := 1 to MaxPLSS do PLSS[i] := Nil;
    {$EndIf}
 
-   {$IfDef NoDBMaps}
-   {$Else}
-      MapForShapeDigitizing := Nil;
-   {$EndIf}
+   MapForShapeDigitizing := Nil;
 
    NeedCentroid := false;
    ClimateStationDB := 0;
@@ -4067,12 +4020,12 @@ end;
 
 {$IfDef ExSat}
 {$Else}
-function TGISdataBaseModule.GridStatsName(CurDEM : integer; Ext : ExtStr) : PathStr;
-begin
-   Result := ExtractFilePath(dbFullName) + 'grid_stats\';
-   SafeMakeDir(Result);
-   Result := Result +  ptTrim(DEMGlb[CurDEM].AreaName) + '_classes' + Ext;
-end;
+    function TGISdataBaseModule.GridStatsName(CurDEM : integer; Ext : ExtStr) : PathStr;
+    begin
+       Result := ExtractFilePath(dbFullName) + 'grid_stats\';
+       SafeMakeDir(Result);
+       Result := Result +  ptTrim(DEMGlb[CurDEM].AreaName) + '_classes' + Ext;
+    end;
 {$EndIf}
 
 
@@ -5141,11 +5094,8 @@ begin
        gis_scaled_form := Nil;
     {$EndIf}
 
-    {$IfDef NoDBGrafs}
-    {$Else}
        theGraphOwner := Nil;
        LastGraph := Nil;
-    {$EndIf}
 end;
 
 

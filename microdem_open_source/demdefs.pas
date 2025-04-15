@@ -277,11 +277,28 @@ type
 
    tAngUnits = (auRadian,auDegree,auArcMin,auArcSec);
    tPointType = (EdgePoint,MissingPoint,FlatPoint,PitPoint,PeakPoint,RidgePoint,ValleyPoint,OtherPoint,PassPoint);
-   tElevInterpolation = (piBilinear,piBicubicVT,piBicubicNR,piTriangle,piWeightedR,piWeightedR2,piNearestGrid,piSWGrid);
    tCompassDirection = (cdN,cdNE,cdE,cdSE,cdS,cdSW,cdW,cdNW,cdFlat,cdPit);
    tFilterCat =(fcMin,fcMax,fcMean,fcMedian,fcParamIsotrop,fcSum,fcSTD,fcNeighbors,fcNumNeigh,fcSaveByte,fcSaveSmallInt,fcSaveWord,fcSaveFloatingPoint,fcDissimilarNeighbors,fcFilFile,fcVectAvg);
    tSpeedUnit =(spMPS,spKPH,spMPH,spKnots);
    tAspectDir = array[2..4] of tCompassDirection;
+
+type
+   tElevInterpolation = byte;
+const
+   piFirst = 0;
+   piBilinear = 0;
+   piBicubicVT = 1;
+   piBicubicNR = 2;
+   piTriangle = 3;
+   piWeightedR = 4;
+   piWeightedR2 = 5;
+   piNearestGrid = 6;
+   piSWGrid = 7;
+   piLast = 7;
+
+   ElevInterpolationName : array[piFirst..piLast] of ShortString = ('Bilinear Interpolation','Bicubic interpolation VT','Bicubic interpolation NR','Grid triangle','1/R weighting','1/R² weighting','Nearest grid','SW grid');
+
+
 const
    CompassDirectionNames : array[tCompassDirection] of ShortString = ('N','NE','E','SE','S','SW','W','NW','Flat','Pit');
    NominalCompassDirection : array[tCompassDirection] of integer = (0,45,90,135,180,225,270,315,-99,-99);
@@ -491,6 +508,8 @@ const
   eucurv_kncs = 123;
   eucurv_knss = 124;
 
+  CurvNamesShort : array[101..124] of shortstring = ('kns','knc','tc','zss','ts','zcc','kpc','pks','sin_sc','kd',
+              'ka','kr','khe','kve','k_max','k_min','k','el','ku','k_mean','kc','kncc','kncs','knss');
 
 
 type
@@ -980,7 +999,6 @@ type
 
 const
    StraightAlgorithmName : array[tStraightAlgorithm] of ShortString = ('DEM Grid','UTM','Lat/Long','Geodetic','Smart');
-   ElevInterpolationName : array[tElevInterpolation] of ShortString = ('Bilinear Interpolation','Bicubic interpolation VT','Bicubic interpolation NR','Grid triangle','1/R weighting','1/R² weighting','Nearest grid','SW grid');
    SpacingUnits : array[tSpacingUnit] of ShortString = (' m',' sec',' min',' km',' 100m',' ft','k ft',' deg','0.01 sec',' m(M)','100m(PS)','10m','0.1 sec','0.0001 deg',' Int Feet',' US feet');
 
    hdColors = 0;
@@ -1118,7 +1136,7 @@ type
       FanTargetMustBeGrid : boolean;
       FanCurvAlg : tVerticalCurvAlg;
       StraightAlgorithm : tStraightAlgorithm;
-      ElevInterpolation : tElevInterpolation;
+      //ElevInterpolation : tElevInterpolation;
       MaskAreaInterval,
       MaskRaySpacingDeg,
       SmartSwitchOver,
@@ -1391,6 +1409,7 @@ const
    smDefault = -1;
    FirstSlopeMethod = 0;
    smEvansYoung = 0;
+   smEvans = 0;
    smHorn = 1;
    smZevenbergenThorne = 2;
    smShary = 3;
@@ -1984,6 +2003,8 @@ type
       WBSegFilterRadius,
       WBDeNoiseRadius,
       WBDenoiseElevDiff  : float32;
+
+      ElevInterpolation : tElevInterpolation;
 
       DEMIX_Mode,
       DEMIXsymsize,
@@ -2737,6 +2758,7 @@ type
 
        OpenMultipleVectorMaps : boolean;
 
+       DEMIXSlopeCompute,
        SlopeCompute,
        CurveCompute : tSlopeCurveCompute;
        CD2 : boolean;

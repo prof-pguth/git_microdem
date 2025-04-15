@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demix_definitions }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{   include file for  demix_definitions  }
+{________________________________________}
 
 
 procedure TilesInEachElevRangeForTestAreas;
@@ -75,8 +75,6 @@ begin
 end;
 
 
-
-
 procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
 var
    Areas : tStringList;
@@ -114,12 +112,13 @@ end;
 
 procedure CoastalDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
 var
-   TheFiles,nt,Results : tStringList;
+   //TheFiles,
+   nt,Results : tStringList;
    AreaName,TStr : Shortstring;
    fName,SaveName : PathStr;
    Lat,Long : float64;
    Local : boolean;
-   i,RefDEM,NewDEM,WantImage : Integer;
+   i,RefDEM,NewDEM{,WantImage} : Integer;
 begin
    {$If Defined(RecordDEMIX) or Defined(RecordDiluvium)} WriteLineToDebugFile('CoastalDEMforTestAreas in'); {$EndIf}
    try
@@ -185,7 +184,8 @@ end;
 
 procedure DiluviumDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
 var
-   TheFiles,nt,Results : tStringList;
+   //TheFiles,
+   nt,Results : tStringList;
    AreaName,TStr : Shortstring;
    fName,SaveName : PathStr;
    Lat,Long : float64;
@@ -256,10 +256,10 @@ begin
 end;
 
 
-
 procedure DeltaDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
 var
-   TheFiles,nt,Results: tStringList;
+   //TheFiles,
+   nt,Results: tStringList;
    AreaName,TStr : Shortstring;
    NumPts : int64;
    fName,SaveName : PathStr;
@@ -339,10 +339,11 @@ procedure CreateDEMIXTestAreaDEMs(Overwrite : boolean);
       var
          {$IfDef RecordDEMIX} AllDEMs, {$EndIf}
          WantSeries,ShortName : shortstring;
-         IndexSeriesTable : tMyData;
-         NumPts : int64;
+         //IndexSeriesTable : tMyData;
+         //NumPts : int64;
          WantDEM,Ser,i,GeoidGrid,aRefDEM : integer;
-         fName,SaveName : Pathstr;
+         //fName,
+         SaveName : Pathstr;
 
 
                procedure MoveFromEGM96toEGM2008(var DEM : integer);
@@ -450,13 +451,11 @@ procedure CreateDEMIXTestAreaDEMs(Overwrite : boolean);
          end;
       end {CreateDEMIXTestDEMsForArea};
 
-
-
 var
    i,RefDEM : integer;
    Areas : tStringList;
    AreaName : shortstring;
-begin
+begin {procedure CreateDEMIXTestAreaDEMs}
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateDEMIXTestAreaDEMs in, dir=' + DEMIX_test_dems); {$EndIf}
    try
       GetDEMIXPaths(true);
@@ -483,5 +482,5 @@ begin
       EndDEMIXProcessing;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('CreateDEMIXTestAreaDEMs out'); {$EndIf}
-end;
+end {procedure CreateDEMIXTestAreaDEMs};
 

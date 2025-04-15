@@ -30,7 +30,7 @@ unit petdbutils;
       //{$Define RecordGAZ}
       //{$Define RecordShortCSV}
       //{$Define RecordKML}
-      {$Define RecordGPX}
+      //{$Define RecordGPX}
       //{$Define RecordCSVParse}
       //{$Define RecordFullGPX}      //major slowdown, but shows the line that is causing an error
       //{$Define RecordProcessLine}  //major slowdown
@@ -232,6 +232,7 @@ begin
           slt.Free;
       end;
       fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
+      s11.SaveToFile(MDtempDir + 'merged_csv_files.csv');
       if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then begin
          if (BaseMap = Nil) then StringList2CSVtoDB(s11,fName,true)
          else BaseMap.StringListToLoadedDatabase(s11,fName);
@@ -1191,10 +1192,11 @@ var
    OldNames,NewNames : array[1..250] of string35;
 
 
-         procedure CleanLine(var MenuStr : String);
+         function CleanLine(var MenuStr : String) : boolean;
          var
             j : integer;
          begin
+              Result := true;
               if (SepChar = ' ') then begin
                  for j := length(MenuStr) downto 2 do begin
                     if (MenuStr[j] = ' ') and (MenuStr[pred(j)] = ' ') then begin
@@ -1219,7 +1221,7 @@ var
             i : integer;
          begin
            {$IfDef RecordProcessLine} inc(RecsDone); WriteLineToDebugFile('Recs=' + IntToStr(RecsDone)); if (RecsDone > 100) then MDdef.MDRecordDebugLog := false; {$EndIf}
-           CleanLine(MenuStr);
+            CleanLine(MenuStr);
             RecordValues := tStringList.Create;
             for i := 0 to pred(LocalStringGrid.ColCount) do begin
                fName := ptTrim(LocalStringGrid.Cells[i,0]);

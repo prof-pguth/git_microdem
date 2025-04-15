@@ -17,6 +17,28 @@ unit Koppengr;
 interface
 
 uses
+//need for inline of core DB functions
+   Data.DB,
+
+   {$IfDef UseFireDacSQLlite}
+      FireDAC.Stan.ExprFuncs,
+      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+      FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+      FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+      FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+   {$EndIf}
+
+   {$IfDef UseTDBF}
+      dbf,
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      DBClient,
+   {$EndIf}
+//end core DB functions definitions
+
+
   SysUtils, Windows, Messages, Classes, Graphics, Controls,
   Forms, Dialogs,  Menus, Vcl.ExtCtrls,
   PETMAR,Petmar_db,Petmar_types,DEMMapf;
@@ -121,7 +143,7 @@ begin
       fName := ClimateDir + 'koppen_grid' + DefaultDBExt;
       FindDriveWithFile(fName);
       if FileExists(fName) then begin
-         if theMap <> nil then begin
+         if (theMap <> nil) then begin
             KoppenGridDB := theMap.LoadDataBaseFile(fName,OpenTable);
             CreateKoppenLegend(false);
          end

@@ -11,7 +11,7 @@ unit demslopeopts;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDrawMap}
+   //{$Define RecordDrawMap}
 {$EndIf}
 
 interface
@@ -122,7 +122,7 @@ begin
       mtSlopePastel       : RadioGroup1.ItemIndex := 5;
       mtSlopeGoNoGo       : RadioGroup1.ItemIndex := 6;
    end;
-   Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
+   //Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
    Edit2.Text := IntToStr(MDdef.MaxSlopeOnMaps);
    Button11.Enabled := (MDDef.ProgramOption = ExpertProgram) or MDDef.ShowGeomorphometry;
    CheckBox1.Checked := MDDef.QuickMapRedraw;
@@ -154,7 +154,7 @@ procedure TSlopeOptForm.BitBtn2Click(Sender: TObject);
 var
    DEM : integer;
 begin
-   DEM := CreateSlopeMapPercent(false,MapOwner.MapDraw.DEMonMap);
+   DEM := CreateEvansSlopeMapPercent(false,MapOwner.MapDraw.DEMonMap);
    DEMglb[DEM].AreaName := DEMglb[MapOwner.MapDraw.DEMonMap].AreaName + '_' + SlopeMethodName(MDDef.SlopeCompute);
    CreateDEMSelectionMap(DEM,true,true,MDDef.DefSlopeMap);
 end;
@@ -162,9 +162,6 @@ end;
 procedure TSlopeOptForm.Button11Click(Sender: TObject);
 begin
    PickSlopeAspectMethod('',MDDef.SlopeCompute.AlgorithmName);
-   Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
-   RadioGroup2.Enabled := MDDef.SlopeCompute.AlgorithmName = smLSQ;
-   RadioGroup3.Enabled := MDDef.SlopeCompute.AlgorithmName = smLSQ;
    DrawPreview;
 end;
 
@@ -187,6 +184,10 @@ var
    SlopeAspectRec : tSlopeAspectRec;
    {$If Defined(RecordDrawMap)} MapStopwatch : TStopwatch; {$EndIf}
 begin
+   Label6.Caption := SlopeMethodName(MDDef.SlopeCompute);
+   RadioGroup2.Enabled := MDDef.SlopeCompute.AlgorithmName = smLSQ;
+   RadioGroup5.Enabled := MDDef.SlopeCompute.AlgorithmName = smLSQ;
+
    if (MapOwner <> Nil) and SetupDone then begin
        XC := round(MapOwner.MapDraw.MapCorners.BoundBoxDataGrid.xmin + MapOwner.MapDraw.MapCorners.BoundBoxDataGrid.xmax) div 2 - 50;
        YC := round(MapOwner.MapDraw.MapCorners.BoundBoxDataGrid.ymax + MapOwner.MapDraw.MapCorners.BoundBoxDataGrid.ymin) div 2 + 5;

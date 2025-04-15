@@ -13,7 +13,7 @@
 {$Define InlineCoreMapping}    //turn off to debug inline functions
 
 {$IfDef Debug}
-   {$Define NoParallelForMaps} //used to debug only
+   //{$Define NoParallelForMaps} //used to debug only
    //{$Define NoParallelLAS}
    //{$Define NoParallelOpenness}
 {$ELSE}
@@ -26,8 +26,8 @@
    //{$Define RecordKeyMap}         //don't use if there will be a lot of map drawing
 
    {$IfDef Debug}
-      {$Define RecordMapDraw}
-      {$Define RecordWorldOutline}
+      //{$Define RecordMapDraw}
+      //{$Define RecordWorldOutline}
       //{$Define RecordClosing}
       //{$Define RecordDrawSecondGrid}
       //{$Define RecordNumberOpenMaps}
@@ -77,7 +77,7 @@
       //{$Define RecordPixelSize}
       //{$Define RecordShortDefineDatum}
       //{$Define RecordDBPlots}
-      {$Define RecordOverlays}
+      //{$Define RecordOverlays}
       //{$Define RecordPLSS}
       //{$Define RecordOffMap}
       //{$Define RecordWMS}
@@ -461,8 +461,8 @@ type
       procedure ColorTintedElevationMap(var inBitmap : tMyBitmap);
 
     //map boolean functions
-      function ValidDEMMap : boolean;
-      function ValidDEMonMap : boolean;
+      //function ValidDEMMap : boolean;
+      //function ValidDEMonMap : boolean;
       function ValidSatonMap : boolean;
       function IsThisMapUTM : boolean;
       function MGRSValid : boolean;
@@ -1206,12 +1206,12 @@ begin
       try
          MapDrawValid := true;
          GridTrueAngle := -999;
-         if (VectorIndex <> 0) or ValidSatOnMap or (ValidDEMonMap and (DEMGlb[DEMonMap].DEMheader.h_DatumCode <> 'Rect')) then begin
+         if (VectorIndex <> 0) or ValidSatOnMap or (ValidDEM(DEMonMap) and (DEMGlb[DEMonMap].DEMheader.h_DatumCode <> 'Rect')) then begin
              ScreenToLatLongDegree(MapXSize div 2, MapYSize div 2, Lat,Long);
              MapMagDec := 0;
             {$IfDef ExMagVar}
             {$Else}
-               if ValidDEMonMap then z := 0.0005*(MinMapElev+MaxMapElev)
+               if ValidDEM(DEMonMap) then z := 0.0005*(MinMapElev+MaxMapElev)
                else z := 0;
                try
                   MagVr1(z,lat,Long,CurMagYear,MapMagDEC,DIP,TI,GV);
@@ -1242,7 +1242,7 @@ begin
                else if (MapType in [mtLASclass]) then begin
                   DrawLASClassMap(BitMap);     //Las_rgb_colors[zi]);
                end
-               else if ValidDEMMap then begin
+               else if ValidDEM(DEMonMap) then begin
                   if (BaseTitle = '') then begin
                      BaseTitle := DEMGlb[DEMonMap].AreaName;
                      if (MapType = mtDEMContour) then BaseTitle := DEMGlb[DEMonMap].AreaName + ' with ' + RealToString(DEMGlb[DEMonMap].ZinMeters(MapOverlays.ConInt),-6,-1) + ' m contours';
@@ -1626,7 +1626,7 @@ begin
       Result := ZoomableVectorMap;
    end
    else if DEMMap then begin
-      if ValidDEMonMap then begin
+      if ValidDEM(DEMonMap) then begin
          if (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Sphere') then exit;
          Result := true;
       end;
@@ -1640,7 +1640,7 @@ end;
 procedure TMapDraw.ScaleMapElevationsToDEM;
 begin
    {$IfDef RecordElevationScaling} WriteLineToDebugFile(MapColorRange('TMapDraw.ScaleMapElevationsToDEM in')); {$EndIf}
-   if ValidDEMonMap then begin
+   if ValidDEM(DEMonMap) then begin
       MinMapElev := DEMGlb[DEMonMap].DEMheader.MinElev;
       MaxMapElev := DEMGlb[DEMonMap].DEMheader.MaxElev;
       if UsePercentiles or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euNanotesla]) then begin
@@ -2013,11 +2013,12 @@ begin
    else Result := false;
 end;
 
+(*
 function tMapDraw.ValidDEMonMap: boolean;
 begin
    Result := (DEMonMap <> 0) and (DEMGlb[DEMonMap] <> Nil);
 end;
-
+*)
 
 function tMapDraw.ValidSatonMap: boolean;
 begin
@@ -2033,7 +2034,7 @@ function TMapDraw.ScreenToElev(xpic,ypic : integer; var z : float32) : boolean;
 var
    xg,yg : float64;
 begin
-   if ValidDEMonMap then begin
+   if ValidDEM(DEMonMap) then begin
       ScreenToDataGrid(xpic,ypic,xg,yg);
       Result := GetMapElev(xg,yg,Z);
    end
@@ -2080,12 +2081,12 @@ begin
    Result := ValidDEM(DEMonMap) and (isElevationMap(MapType) or isReflectanceMap(MapType) or isSlopeMap(MapType) or IsOtherGridMap(MapType));
 end;
 
-
+(*
 function tMapDraw.ValidDEMMap : boolean;
 begin
    Result := DEMMap and ValidDEM(DEMonMap);
 end;
-
+*)
 
 
 procedure TMapDraw.SaveLayerBitmap(Bitmap : tMyBitmap; var FName : PathStr);
@@ -2698,54 +2699,6 @@ procedure tMapDraw.GetMapScaleFactor(var Lat,Long,Maph,Mapk: float64; var Prime 
          end;
 
 
-         function TMapDraw.TerrainCategoryLegend : tMyBitmap;
-         var
-            i,x,y,{xlo,xhi,ylo,yhi,}Num,Tot, MaxWidth,Width : integer;
-            TerrainCategory : tTerrainCatDefinition;
-            TStr : shortstring;
-            CatList : tStringList;
-         begin
-            {$IfDef RecordTerrainCategories} WriteLineToDebugFile('Terrain categories in TMapDraw.TerrainCategoryLegend'); {$EndIf}
-            CatList := tStringList.Create;
-            ShowHourglassCursor;
-            CreateBitmap(Result,500,15 * MapOverlays.ovTerrainCat.Count);
-            Result.Canvas.Brush.Style := bsSolid;
-            //DEMGridLimitsOnMap(xlo,ylo,yhi,xhi);
-
-            MaxWidth := 0;
-            for i := 0 to pred(MapOverlays.ovTerrainCat.Count) do begin
-               {$IfDef RecordTerrainCategories} WriteLineToDebugFile(MapOverlays.ovTerrainCat[i]); {$EndIf}
-               TerrainCategory := StringToTerrainCategory(MapOverlays.ovTerrainCat[i]);
-               if MDDef.TerrainCatPercentages then begin
-                  Num := 0;
-                  Tot := 0;
-                  for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
-                     for y := Round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
-                        if DEMGlb[DEMonMap].InTerrainCategory(x,y,TerrainCategory) then inc(Num);
-                        inc(Tot);
-                     end;
-                  end;
-                  TStr := ' (' + RealToString(100*Num/Tot,-8,2) + '%  ' + SmartAreaFormat(Num * DEMGlb[DEMonMap].AverageXSpace * DEMGlb[DEMonMap].AverageYSpace) + ')';
-               end
-               else TStr := '';
-               TStr := DEMGlb[DEMonMap].TerrainCategoryLabel(TerrainCategory) + TStr;
-               {$IfDef RecordTerrainCategories} WriteLineToDebugFile('Legend: ' + TStr); {$EndIf}
-               CatList.Add(TStr);
-               Width := Result.Canvas.TextWidth(TStr);
-               if (Width > MaxWidth) then MaxWidth := Width;
-            end;
-            Result.Width := MaxWidth +30;
-
-            for i := 0 to pred(CatList.Count) do begin
-               TerrainCategory := StringToTerrainCategory(MapOverlays.ovTerrainCat[i]);
-               Result.Canvas.Brush.Color := clWhite;
-               Result.Canvas.TextOut(25,i*15,CatList.Strings[i]);
-               Result.Canvas.Brush.Color := ConvertPlatformColorToTColor(TerrainCategory.CatColor);
-               Result.Canvas.Rectangle(2,i*15,23,i*15 + 13);
-            end;
-            CatList.Free;
-            ShowDefaultCursor;
-         end;
 {$EndIf}
 
 

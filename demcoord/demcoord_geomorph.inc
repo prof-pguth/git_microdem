@@ -23,7 +23,7 @@ begin
       Radius := Radius div 2;
       for I := -Radius to Radius do begin
          for J := -Radius to Radius do begin
-            if GetSlopeAndAspect(MDDef.SlopeCompute,x+i,y+j,SlopeAsp) then begin
+            if QuickEvansSlopeAndAspect(x+i,y+j,SlopeAsp) then begin
                inc(MomentVar.Npts);
                sl[MomentVar.Npts] := SlopeAsp.SlopePercent;
             end;
@@ -66,8 +66,8 @@ begin
    Result := false;
    SlopeAsp.AspectDirTrue := 0;
    SlopeAsp.Slope := 0;
-   PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
    if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1) then begin
+      PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
       Result := true;
       with SlopeAsp do begin
          // first order partial derivatives
@@ -100,9 +100,10 @@ var
          //       AspectDirTrue, true north coordinates
          //       Dir, a code for the 8 principal cardinal directions plus pits and flats where aspect is problematical
          // this procedure, and the external functions it calls, are coded inline for faster performance
-         var
-            a0,a1,a2,a3 : float32;
-            TStr : shortstring;
+
+         //var
+            //a0,a1,a2,a3 : float32;
+            //TStr : shortstring;
          begin
             if (abs(SlopeAsp.zx) < 0.001) and (abs(SlopeAsp.zy) < 0.001) then begin
                //flat pixel where aspect is undefined
@@ -167,18 +168,18 @@ var
       var
          A    : tTrendMatrix;
          B,C  : tTrendVector;
-         NumDataPoints : LongInt;
-         ResultsFile : System.text;
-         NDF1,NDF2,NDF3 : LongInt;
-         IOrd2,I,J,TrendSurfInc,rc,Pts,x,y       : integer;
-         SST,SSR,SSD,AMSR,AMSD,SY,SYY,SYC,SYYC : extended;
-         xutmoffset,yutmoffset,R,F,xutm,yutm  : float64;
-         z,zs,zMeters,zg : float32;
-         csv : tStringList;
-         FName      : PathStr;
-         ThisGraph  : tThisBaseGraph;
-         rfile      : file;
-         v          : array[1..2] of float32;
+         //NumDataPoints : LongInt;
+         //ResultsFile : System.text;
+         //NDF1,NDF2,NDF3 : LongInt;
+         IOrd2,I,J,{TrendSurfInc,rc,}Pts,x,y       : integer;
+         //SST,SSR,SSD,AMSR,AMSD{,SY,SYY,SYC,SYYC} : extended;
+         //xutmoffset,yutmoffset,R,F,xutm,yutm  : float64;
+         z{,zs,zMeters,zg} : float32;
+         //csv : tStringList;
+        // FName      : PathStr;
+         //ThisGraph  : tThisBaseGraph;
+        //rfile      : file;
+         //v          : array[1..2] of float32;
          {$IfDef OptionSaveSlopeComputePoints} xstring,ystring,zstring : shortstring; {$EndIf}
 
             procedure AddPointToTrendSurface(HowCompute : tSlopeCurveCompute; xutm,yutm,zmeters : float32; var A : tTrendMatrix; var B,C  : tTrendVector;
@@ -458,31 +459,31 @@ begin
 end;
 
 
-function tDEMDataSet.SlopePercent(XGrid,YGrid : integer; var Slope : float64) : boolean;
+function tDEMDataSet.SlopePercent(HowCompute : tSlopeCurveCompute; XGrid,YGrid : integer; var Slope : float64) : boolean;
 var
    SlpAsp : tSlopeAspectRec;
 begin
-   Result := GetSlopeAndAspect(MDDef.SlopeCompute,xgrid,ygrid,SlpAsp,false,false);
+   Result := GetSlopeAndAspect(HowCompute,xgrid,ygrid,SlpAsp,false,false);
    if Result then Slope := SlpAsp.SlopePercent else Slope := -9999;
 end;
 
 
-function tDEMDataSet.GetSlopeAndAspectFromLatLong(Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
+function tDEMDataSet.GetSlopeAndAspectFromLatLong(HowCompute : tSlopeCurveCompute; Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 var
    xg,yg  : integer;
 begin
     LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
-    Result := GetSlopeAndAspect(MDDef.SlopeCompute,xg,yg,SlopeAspectRec,true,false);
+    Result := GetSlopeAndAspect(HowCompute,xg,yg,SlopeAspectRec,true,false);
 end;
 
 
-function tDEMDataSet.SlopePercentFromLatLong(Lat,Long : float64) : float64;
+function tDEMDataSet.SlopePercentFromLatLong(HowCompute : tSlopeCurveCompute; Lat,Long : float64) : float64;
 var
    xgrid,ygrid : float64;
    SlopeAsp : tSlopeAspectRec;
 begin
    LatLongDegreeToDEMGrid(Lat,Long,xgrid,ygrid);
-   GetSlopeAndAspect(MDDef.SlopeCompute,round(xgrid),round(ygrid),SlopeAsp,false);
+   GetSlopeAndAspect(HowCompute,round(xgrid),round(ygrid),SlopeAsp,false);
    Result := SlopeAsp.SlopePercent;
 end;
 

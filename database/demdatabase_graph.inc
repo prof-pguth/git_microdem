@@ -322,9 +322,6 @@ begin
      Result := ActuallyDrawGraph(Graphtype);
 end;
 
-{$EndIf}
-
-
 
 procedure TGISdataBaseModule.HistogramByCategory(WantXField,FilterField : shortstring; AutoRescale : boolean; Summary : tStringList = nil);
 var

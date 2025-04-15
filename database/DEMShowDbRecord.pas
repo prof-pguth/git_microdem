@@ -423,8 +423,7 @@ begin
          else i := GISDb[DBShown].TheMapOwner.MapDraw.DEMonMap;
       {$EndIf}
 
-      {$IfDef NoDBGrafs}
-      {$Else}
+      //graphs
          TabSheet8.TabVisible := GISDb[DBShown].TimeSeriesPresent;
          if TabSheet8.TabVisible then begin
             Graph := GISDb[DBShown].Stationtimeseries;
@@ -433,7 +432,6 @@ begin
             Image5.Picture.Graphic := Graph.Image1.Picture.Graphic;
             if (Not PopOutGraph) then Graph.Close;
          end;
-      {$EndIf}
 
       {$IfDef ExGeology}
       {$else}

@@ -593,10 +593,7 @@ end;
                LastDisplayed : boolean;
             begin
                if (MapDraw = Nil) and ItsAShapeFile then begin
-                  {$IfDef NoDBGrafs}
-                  {$Else}
-                     aShapeFile.PlotSingleRecordGraph(theGraphOwner,Bitmap,MyData.RecNo);
-                  {$EndIf}
+                  aShapeFile.PlotSingleRecordGraph(theGraphOwner,Bitmap,MyData.RecNo);
                end
                else begin
                   if XYZFile or ((LatFieldName <> '') and (LongFieldName <> '')) then begin

@@ -26,7 +26,7 @@
       //{$Define RecordLoadDefault}
       //{$Define RecordFindUTM}
       //{$Define RecordGDAL}
-      {$Define RecordNaturalEarthFileNames}
+      //{$Define RecordNaturalEarthFileNames}
       //{$Define RecordInitialization}
       //{$IfDef RecordInitializationDetailed}
       //{$Define RecordINIfiles}
@@ -337,6 +337,9 @@ procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
 
 function PossibleElevationUnits(What : byte) : boolean;
 
+const
+  GiveMICRODEM_credit : boolean = true;
+function MD_Made_string : shortstring;
 
 var
    VegDenstColors : array[0..255] of tPlatformColor;
@@ -367,25 +370,14 @@ uses
       Mask_Opts_Form,
    {$EndIf}
 
-   {$IfDef ExGIS}
-   {$Else}
-      demdatabase,
-   {$EndIf}
-
    {$IfDef ExMagVar}
    {$Else}
       DEMMagVar,
    {$EndIf}
 
-   {$IfDef ExDatum}
-   {$Else}
-      DEMCoord,
-   {$EndIf}
-
-   {$IfDef ExcludeExternalTools}
-   {$Else}
-      MD_Use_tools,
-   {$EndIf}
+   DEMCoord,
+   MD_Use_tools,
+   demdatabase,
    DEMIX_definitions,
    PETMath,
    PetImage,
@@ -394,6 +386,12 @@ uses
    DEM_indexes,
    DEMStat,
    DataBaseCreate;
+
+function MD_Made_string : shortstring;
+begin
+   if GiveMICRODEM_credit then Result := 'md_'
+   else Result := '';
+end;
 
 
 function PossibleElevationUnits(What : byte) : boolean;
@@ -2277,11 +2275,6 @@ var
          if (IniWhat = iniRead) then FanShowVisible := tFanShow(IniFile.ReadInteger('WeaponFaAlgorithm','FanShowVisible',ord(fsVisible)));
          if (iniWhat = iniInit) then FanShowVisible := fsVisible;
 
-         //AParameter('WeaponFan','ElevInterpolation',ElevInterpolation,piBilinear);
-         if (IniWhat = iniWrite) then IniFile.WriteInteger('WeapFanAlg','ElevInterpolation',ord(ElevInterpolation));
-         if (IniWhat = iniRead) then ElevInterpolation := tElevInterpolation(IniFile.ReadInteger('WeapFanAlg','ElevInterpolation',ord(piBilinear)));
-         if (iniWhat = iniInit) then ElevInterpolation := piBilinear;
-
          //AParameter('WeaponFan','StraightAlgorithm',StraightAlgorithm,saSmart);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('WeapFanAlg','StraightAlgorithm',ord(StraightAlgorithm));
          if (IniWhat = iniRead) then StraightAlgorithm := tStraightAlgorithm(IniFile.ReadInteger('WeapFanAlg','StraightAlgorithm',ord(saSmart)));
@@ -2554,6 +2547,7 @@ var
          AParameter('DEMIX','DEMIX_U120DBfName',DEMIX_U120DBfName,'');
          AParameter('DEMIX','DEMIX_U80DBfName',DEMIX_U80DBfName,'');
          AParameter('DEMIX','DEMIX_U10DBfName',DEMIX_U10DBfName,'');
+         AParameter('Slope','DEMIXSlopeCompute',DEMIXSlopeCompute.AlgorithmName,smEvansYoung);
       end;
    end;
 
@@ -3846,6 +3840,7 @@ begin
       {$EndIf}
 
       AParameter('LandCover','LongLandCoverResults',LongLandCoverResults,false);
+      AParameter('Interpolation','ElevInterpolation',ElevInterpolation,piBilinear);
 
       {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 6'); {$EndIf}
 
@@ -4343,7 +4338,7 @@ function LOSAlgorithmDescription(iva :  tIntervisibilityAlgorithm) : ShortString
 begin
    with Iva do begin
       Result := LOSAlgorithmName[LOSAlgorithm] + ' / ' + StraightAlgorithmName[StraightAlgorithm] + '/' +
-         BaseCurvAlgName[FanCurvAlg ] + '/' + ElevInterpolationName[ElevInterpolation];
+         BaseCurvAlgName[FanCurvAlg ] + '/' + ElevInterpolationName[MDDef.ElevInterpolation];
       if (FanMethod = fmRadialIHS) then Result := Result + RealToString(FanDEMSpaceMultiple,-8,-2) + '-' + RealToString(FanMapSpaceMultiple,-8,-1);
       if (FanMethod = fmFanRadials) then Result := Result +  ' ' + RealToString(MaskRaySpacingDeg,-8,-2) + '°-' + RealToString(MaskAreaInterval,-8,-1) + 'm';
    end;
@@ -4367,7 +4362,7 @@ begin
          if FanViewerMustBeGrid then Result := Result + '/Viewer on grid';
          if FanTargetMustBeGrid then Result := Result + '/Target on grid';
       end;
-      Result := Result + '/' + StraightAlgorithmName[StraightAlgorithm] + '/' + BaseCurvAlgName[FanCurvAlg ] + '/' +  ElevInterpolationName[ElevInterpolation];
+      Result := Result + '/' + StraightAlgorithmName[StraightAlgorithm] + '/' + BaseCurvAlgName[FanCurvAlg ] + '/' +  ElevInterpolationName[MDDef.ElevInterpolation];
    end;
 end;
 

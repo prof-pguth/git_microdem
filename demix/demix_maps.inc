@@ -1,12 +1,12 @@
-﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demix_control     }
-{____________________________________}
-
+﻿{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{   include file for demix_control       }
+{________________________________________}
 
 
 
@@ -45,7 +45,7 @@ const
 
 
 begin
-   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, DEM=' + IntToStr(DEM));  {$EndIf}
+   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, DEM=' + IntToStr(DEM)); {$EndIf}
    if ValidDEM(DEM)then begin
       for i := 0 to 8 do begin
           HighHist[i] := 0;
@@ -197,7 +197,7 @@ begin
    FinalizeMap(Result,Hist,'');
    fName := NextFileNumber(MDtempDir,AName + '_rgb3_','.png');
    Bigimagewithallmaps(2,fName,Maps);
-   Maps.Free;
+   //Maps.Free;
    RestoreBackupDefaults;
 
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
@@ -342,10 +342,10 @@ begin
       DEMGlb[Result].VATFileName := fName2;
       DEMglb[Result].CheckMaxMinElev;
       if ShowMap then DEMglb[Result].SetupMap(true,mtDEMVATTable);
-      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result) + ' ' + fName2);  {$EndIf}
+      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap out, new grid=' + IntToStr(Result) + ' ' + fName2); {$EndIf}
    end
    else begin
-      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, ref=' + IntToStr(RefDEM) + ' cop=' + IntToStr(COP) + ' alos=' + IntToStr(ALOS));  {$EndIf}
+      {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, ref=' + IntToStr(RefDEM) + ' cop=' + IntToStr(COP) + ' alos=' + IntToStr(ALOS)); {$EndIf}
    end;
 end;
 

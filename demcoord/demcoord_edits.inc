@@ -268,8 +268,8 @@ var
    SearchRadiusX,SearchRadiusY,
    x,y,xi,yi,xn,yn,n,xp,yp : integer;
    Lat,Long,Sum : float64;
-   z,z1 : float32;
-   NewHeadRecs : tDEMheader;
+   z{,z1} : float32;
+   //NewHeadRecs : tDEMheader;
    NewAreaName : shortstring;
    UTMzone : integer;
    LatCh : ANSIchar;
@@ -362,7 +362,7 @@ label
 const
    MaxFilterSize = 5000;
 var
-   ItsZ,znw,zw,zsw,zn,z,zs,zne,ze,zse,z1 : float32;
+   ItsZ,z{,znw,zw,zsw,zn,z,zs,zne,ze,zse},z1 : float32;
    Col,Row,x,y,Removed,NumSame,i,j,fv,Margin,Missing : integer;
    Sum, Min,Max,FilterValue,Mag     : float64;
    MomentVar : tMomentVar;

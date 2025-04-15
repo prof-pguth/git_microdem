@@ -8,6 +8,64 @@
 {________________________________________}
 
 
+
+
+procedure CompareUpsampling(SlopeOption : boolean = false);
+var
+   HRD_DEM,LowResDEM,
+   NewDEM1,NewDEM2,NewDEM3,NewDEM4,NewDEM5,
+   LowResUpsample,
+   LowSlopeUpsample,
+   SlopeLowUpsample,
+   HiSlope,LowSlope : integer;
+   spacingInDegrees,SpacingInSeconds : float32;
+begin
+   {$IfDef RecordComparisons} WriteLineToDebugFile('CompareUpsampling, SlopeOption=' + TrueOrFalse(SlopeOption));  {$EndIf}
+
+   if (NumDEMDataSetsOpen = 2) and ValidDEM(1) and ValidDEM(2) then begin
+      if DEMGlb[1].AverageSpace < DEMGlb[2].AverageSpace then begin
+         HRD_DEM := 1;
+         LowResDEM := 2;
+      end
+      else begin
+         HRD_DEM := 2;
+         LowResDEM := 1;
+      end;
+      LowResUpsample := UpsampleDEM(true,HRD_DEM,LowResDEM);
+      if SlopeOption then begin
+          HiSlope := CreateEvansSlopeMapPercent(true,HRD_DEM,MDtempDir + 'Slope_HRD.tif');
+          LowSlope := CreateEvansSlopeMapPercent(true,LowResDEM,MDtempDir + 'Slope_LowRes_DEM.tif');
+          LowSlopeUpsample := UpsampleDEM(true,HRD_DEM,LowSlope,MDtempDir + 'Upsampled_LowRes_Slope.tif');
+          SlopeLowUpsample := CreateEvansSlopeMapPercent(true,LowResUpsample,MDtempDir + 'Slope_Upsampled_LowRes_DEM.tif');
+      end
+      else begin
+
+        SpacingInDegrees := {3600 *} DEMGlb[HRD_DEM].DEMHeader.DEMxSpacing;
+
+        NewDEM4 := GDAL_upsample_DEM(True,LowResDEM,false,SpacingInDegrees,MDTempDir + 'GDAL_Upsampled_' + DEMGlb[LowResDEM].AreaName + '_bilinear.tif');
+        NewDEM5 := GDAL_upsample_DEM(True,LowResDEM,true,SpacingInDegrees,MDTempDir + 'GDAL_Upsampled_' + DEMGlb[LowResDEM].AreaName + '_bicubic.tif');
+
+        SpacingInSeconds := 3600 * DEMGlb[HRD_DEM].DEMHeader.DEMxSpacing;
+        MDDef.ElevInterpolation := piBicubicVT;
+        NewDEM1 := ReinterpolateLatLongDEM(True,LowResDEM,SpacingInSeconds,MDTempDir + 'Upsampled_' + DEMGlb[LowResDEM].AreaName + '_bicubicVT.dem');
+        MDDef.ElevInterpolation := piBicubicVT;
+        NewDEM3 := ReinterpolateLatLongDEM(True,LowResDEM,SpacingInSeconds,MDTempDir + 'Upsampled_' + DEMGlb[LowResDEM].AreaName + '_bicubicNR.dem');
+        MDDef.ElevInterpolation := piBilinear;
+        NewDEM2 := ReinterpolateLatLongDEM(True,LowResDEM,SpacingInSeconds,MDTempDir + 'Upsampled_' + DEMGlb[LowResDEM].AreaName + '_bilinear.dem');
+
+      end;
+   end
+   else begin
+      //to be done later
+   end;
+end;
+
+procedure CompareLSPthenupsampletoUpsamplethenLSP;
+begin
+   CompareUpsampling(false);
+end;
+
+
 procedure CompareLSQ(DoSlopes : boolean; DEM : integer);
 
          function Duplicate(HowCompute : tSlopeCurveCompute) : boolean;
@@ -36,7 +94,7 @@ begin
             for k := 1 to 3 do begin
                MDDef.SlopeCompute.UsePoints := k;
                if not Duplicate(MDDef.SlopeCompute) then begin
-                  Grid := CreateSlopeMapPercent(true,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+                  Grid := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,true,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
                end;
             end;
          end;
@@ -127,11 +185,11 @@ end;
          MDDef.SlopeCompute.LSQorder := Order;
          MDDef.SlopeCompute.WindowRadius := Window;
          MDDef.SlopeCompute.UsePoints := useAll;
-         Grid2 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
+         Grid2 := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
 
          MDDef.SlopeCompute.UsePoints := Use;
 
-         Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
+         Grid1 := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
          Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,false,SlopeMethodName(MDDef.SlopeCompute,true) + '_' + Title);
          DEMGlb[Diff].SelectionMap.MapDraw.MapType := mtElevSpectrum;
          DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
@@ -189,25 +247,22 @@ var
     begin
        MDDef.SlopeCompute.LSQorder := Order;
        MDDef.SlopeCompute.WindowRadius := Window;
-       Grid1 := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+       Grid1 := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
        Diff := MakeDifferenceMap(Grid1,Evans,Grid1,0,true,false,true,'Evans compared to ' + SlopeMethodName(MDDef.SlopeCompute));
        CleanUpMap(Grid1);
        CleanUpMap(Diff);
 
-         MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-65;
-         MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-65;
-         Graph := GridScatterGram(DEMglb[Evans].FullDEMGridLimits,Grid1,Evans);
-         Graph.GraphDraw.MaxHorizAxis := 150;
-         Graph.GraphDraw.MaxVertAxis := 150;
-         Graph.GraphDraw.MinHorizAxis := 0;
-         Graph.GraphDraw.MinVertAxis := 0;
-         Graph.GraphDraw.HorizLabel := 'Slope (%)--' + SlopeMethodName(MDDef.SlopeCompute);
-         Graph.GraphDraw.VertLabel := 'Slope (%)--Evans';
-         Graph.Caption := 'Scattergram_' + SlopeMethodName(MDDef.SlopeCompute);
-         Graph.RedrawDiagram11Click(Nil);
-
-       //CloseSingleDEM(Grid1);
-       //CloseSingleDEM(Grid2);
+       MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-65;
+       MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-65;
+       Graph := GridScatterGram(DEMglb[Evans].FullDEMGridLimits,Grid1,Evans);
+       Graph.GraphDraw.MaxHorizAxis := 150;
+       Graph.GraphDraw.MaxVertAxis := 150;
+       Graph.GraphDraw.MinHorizAxis := 0;
+       Graph.GraphDraw.MinVertAxis := 0;
+       Graph.GraphDraw.HorizLabel := 'Slope (%)--' + SlopeMethodName(MDDef.SlopeCompute);
+       Graph.GraphDraw.VertLabel := 'Slope (%)--Evans';
+       Graph.Caption := 'Scattergram_' + SlopeMethodName(MDDef.SlopeCompute);
+       Graph.RedrawDiagram11Click(Nil);
     end;
 
 begin
@@ -218,7 +273,7 @@ begin
    MDDef.SlopeCompute.AlgorithmName := smLSQ;
    MDDef.SlopeCompute.LSQorder := 2;
    MDDef.SlopeCompute.WindowRadius := 1;
-   Evans := CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+   Evans := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
    CleanUpMap(Evans);
    CompareOneOrder(3,2);
    CompareOneOrder(3,3);
@@ -243,7 +298,7 @@ begin
      for i := 1 to 3 do begin
         MDDef.SlopeCompute.UsePoints := i;
         if IsLSQslopeMethodAllowed(MDDef.SlopeCompute) then begin
-           CreateSlopeMapPercent(OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
+           CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
         end;
      end;
    end;
@@ -268,7 +323,7 @@ var
          n : int64;
          sMean,sStd,rMean,rStd : float32;
       begin
-         Slope := CreateSlopeMapPercent(false,DEM,fName);
+         Slope := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,false,DEM,fName);
          DEMglb[Slope].ElevationStatistics(DEMglb[Slope].FullDEMGridLimits,sMean,sStd,n);
          Findings.Add(DEMglb[Slope].AreaName + ',UTM,' + RealToString(MDDef.SlopeCompute.WindowRadius * DEMglb[Slope].AverageSpace,-8,-2) + ',' + RealToString(sMean,-8,-2) + ',' + RealToString(sStd,-8,-2) );
          CloseSingleDEM(Slope);

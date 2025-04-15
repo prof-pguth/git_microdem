@@ -540,7 +540,7 @@ type
      procedure SetBackgroundRegion(xlo,ylo,xhigh,yhigh : float32);
      procedure FitGraph(AllData : boolean; nt : integer; fName : PathStr; var a,b,r : float32; var n  : integer; LowLimitPoint : integer = 0; HighLimitPoint : integer = -1);
      procedure WriteDataSeriesASCII(XAxis,ASCII : boolean; var fftfilename : PathStr; var TotalNumberPoints : integer; DefSeries : integer = -1);
-     procedure WindowGraphAxes(Bitmap : tMyBitmap);  //; DrawInsideLines : boolean = true);
+     procedure WindowGraphAxes(Bitmap : tMyBitmap);
      procedure AddCorrelationToCorner;
      {$IfDef TrackColors} procedure GraphColorsRecord(WhereAt : shortstring);  {$EndIf}
   end;
@@ -814,7 +814,7 @@ var
    sTable : tMyData;
 begin
    sTable := tMyData.Create(BarGraphDBName);
-   y := 1;
+   //y := 1;
    aMax := sTable.FindFieldMax('NTOTAL');
    MaxN := round(aMax);
    sTable.First;
@@ -864,7 +864,7 @@ var
 begin
    sTable := tMyData.Create(BarGraphDBName);
    sTable.First;
-   y := 1;
+   //y := 1;
    aMax := sTable.FindFieldMax('N');
    MaxN := round(aMax);
    sTable.First;
@@ -2178,7 +2178,6 @@ var
                x := GraphDraw.GraphX(Max);
                if (x >= GraphDraw.LeftMargin) and (x <= GraphDraw.LeftMargin + GraphDraw.XWindowSize) then begin
                   if GraphDraw.LabelXFromLog then begin
-                     //TStr := '';
                      if (Frac(Max) < 0.001) then begin
                         DashLine(Max);
                         Max := Math.Power(10,Max);
@@ -2188,7 +2187,7 @@ var
 
                   if not GraphDraw.ShowGraphBottomLabels then begin
                      TStr := RealToString(Max,-12,AxisDecimals);
-                     DrawLine(Bitmap,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin + 5,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin);
+                     DrawLine(Bitmap,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin + 5,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin - 5);
                      LabelWidth := Bitmap.Canvas.TextWidth(Tstr);
                      LabelStart := x-LabelWidth div 2;
                      LabelYStart := GraphDraw.YWindowSize - GraphDraw.BottomMargin + 6;
@@ -2318,7 +2317,7 @@ var
             TStr := RealToString(Min,-12,-AxisDecimals);
             if RightSide then begin
                y := GraphDraw.GraphY2(Min);
-               Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin,y);
+               Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin - 5,y);
                Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin + 5,y);
                y := y - Bitmap.Canvas.TextHeight(TStr) div 2;
                if (y >= 0) then Bitmap.Canvas.TextOut(GraphDraw.XWindowSize - GraphDraw.RightMargin + 8,y,TStr);
@@ -2326,7 +2325,7 @@ var
             else begin
                y := GraphDraw.GraphY(Min);
                Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin - 5,y);
-               Bitmap.Canvas.LineTo(GraphDraw.LeftMargin,y);
+               Bitmap.Canvas.LineTo(GraphDraw.LeftMargin + 5,y);
                y := y - Bitmap.Canvas.TextHeight(TStr) div 2;
                if (y >= 0) then Bitmap.Canvas.TextOut(GraphDraw.LeftMargin - 5 - Bitmap.Canvas.TextWidth(TStr),y,TStr);
             end;
@@ -2335,7 +2334,7 @@ var
          TStr := RealToString(Max,-12,-AxisDecimals);
          if RightSide then begin
             y2 := GraphDraw.GraphY2(Max);
-            Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin,y2);
+            Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin - 5,y2);
             Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin + 5,y2);
             y2 := y2-Bitmap.Canvas.TextHeight(TStr) div 2;
             if (y2 < y - Bitmap.Canvas.TextHeight(TStr) - 5) and (y2 > 0) then Bitmap.Canvas.TextOut(GraphDraw.XWindowSize - GraphDraw.RightMargin + 8,y2,Tstr);
@@ -3790,8 +3789,6 @@ end;
 
 procedure tThisBaseGraph.OpenPointFile(var rfile : file; Symbol : tFullSymbolDeclaration; fName : shortstring = '');
 begin
-   if (fName = '') then fname := 'bf-pet';
-   fName := NextFileNumber(MDTempDir, fname,'.tmp');
    OpenDataFile(rfile,fName);
    GraphDraw.LineSize256[GraphDraw.DataFilesPlotted.Count] := 0;
    GraphDraw.FileColors256[GraphDraw.DataFilesPlotted.Count] := Symbol.color;
@@ -5080,9 +5077,9 @@ end;
 
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
 var
-   BitMap{,bmp} : tMyBitmap;
+   BitMap : tMyBitmap;
    LastXi,LastYi,LastYi2,
-   xi,yi,yi2,i,err,NumRead{,tw,ts} : integer;
+   xi,yi,yi2,i,err,NumRead : integer;
    x      : float32;
    MenuStr : ShortString;
    aTable : tMyData;
@@ -5657,29 +5654,32 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
 
          for i := 1 to n do begin
              if FileExists(fList.Strings[pred(i)]) then begin
-               inc(NumF);
-               SetMyBitmapColors(Result,i);
-               {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
-               Result.Canvas.Font.Style := [fsBold];
-               Result.Canvas.Font.Name := FontDialog1.Font.Name;
-               Result.Canvas.Font.Size := FontDialog1.Font.Size;
-               if GraphDraw.ShowLine[i] then begin
-                  Result.Canvas.MoveTo(5,pred(NumF) * ItemHigh + 12);
-                  Result.Canvas.LineTo(45,pred(NumF) * ItemHigh + 12);
-               end;
-
-               if GraphDraw.ShowPoints[i] then begin
-                  GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(Result.Canvas.Pen.Color);
-                  Petmar.ScreenSymbol(Result.Canvas,30,pred(NumF) * ItemHigh + 12,GraphDraw.Symbol[i]);
-               end;
                TStr := ExtractFileNameNoExt(GraphDraw.DataFilesPlotted[pred(i)]);
-               while TStr[length(TStr)] in ['0','9'] do Delete(Tstr,Length(TStr),1);
-               Delete(Tstr,Length(TStr),1);
-               TStr := RemoveUnderScores(TStr);
-               Len := Result.Canvas.TextWidth(TStr);
-               if (Len > MaxLen) then MaxLen := Len;
-               Result.Canvas.TextOut(50,pred(NumF) * ItemHigh, TStr);
-             end;
+               if not StrUtils.AnsiContainsText(UpperCase(TStr),'BF-PET_') then begin
+                 inc(NumF);
+                 SetMyBitmapColors(Result,i);
+                 {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
+                 Result.Canvas.Font.Style := [fsBold];
+                 Result.Canvas.Font.Name := FontDialog1.Font.Name;
+                 Result.Canvas.Font.Size := FontDialog1.Font.Size;
+                 if GraphDraw.ShowLine[i] then begin
+                    Result.Canvas.MoveTo(5,pred(NumF) * ItemHigh + 12);
+                    Result.Canvas.LineTo(45,pred(NumF) * ItemHigh + 12);
+                 end;
+
+                 if GraphDraw.ShowPoints[i] then begin
+                    GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(Result.Canvas.Pen.Color);
+                    Petmar.ScreenSymbol(Result.Canvas,30,pred(NumF) * ItemHigh + 12,GraphDraw.Symbol[i]);
+                 end;
+                 TStr := ExtractFileNameNoExt(GraphDraw.DataFilesPlotted[pred(i)]);
+                 while TStr[length(TStr)] in ['0','9'] do Delete(Tstr,Length(TStr),1);
+                 Delete(Tstr,Length(TStr),1);
+                 TStr := RemoveUnderScores(TStr);
+                 Len := Result.Canvas.TextWidth(TStr);
+                 if (Len > MaxLen) then MaxLen := Len;
+                 Result.Canvas.TextOut(50,pred(NumF) * ItemHigh, TStr);
+               end;
+            end;
          end;
          Result.Width := 60 + MaxLen;
          Result.Height := ItemHigh*NumF+4;

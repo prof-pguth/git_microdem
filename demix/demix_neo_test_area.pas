@@ -85,6 +85,7 @@ var
    Fixed : int64;
    Findings : tStringList;
 
+
    procedure OpenElevationAndSlopeGrids;
    const
       NumDEMs = 7;
@@ -103,7 +104,7 @@ var
             inc(n);
             aDEM := OpenNewDEM(DEMName,OpenMaps);
             DEMList[aDEM] := true;
-            aSlope := CreateSlopeMapPercent(OpenMaps, aDEM);
+            aSlope := CreateEvansSlopeMapPercent(OpenMaps, aDEM);
             fName := MDTempDir + DEMGlb[aSlope].AreaName + '.dem';
             DEMGlb[aSlope].WriteNewFormatDEM(fName);
             SlopeList[aSlope] := true;
@@ -125,7 +126,7 @@ var
       MomentVar : tMomentVar;
 
 
-      procedure ComputeDifferenceDistribution(Parameter,LandType : shortstring; Code,Ref,Test : integer);
+      procedure ComputeDifferenceDistribution(Parameter,LandType : shortstring; LandCoverCode,Ref,Test : integer);
 
             function DoParameter(Test,Ref : integer) : boolean;
             var
@@ -154,8 +155,8 @@ var
          wmdem.SetPanelText(2,Parameter,true);
          wmdem.SetPanelText(3,LandType,true);
 
-         if (Code <> 0) then begin
-            DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
+         if (LandCoverCode <> 0) then begin
+            DEMGLb[ESA_LC10].MarkOutsideRangeMissing(LandCoverCode-0.01,LandCoverCode+0.01,Fixed,false);
             MaskGridFromSecondGrid(Ref,ESA_LC10, msSecondMissing);
             MaskGridFromSecondGrid(Test,ESA_LC10, msSecondMissing);
          end;
@@ -164,7 +165,7 @@ var
          aline := 'Test area, test area,' + ExtractDEMIXDEMName(DEMGlb[Test].AreaName) + ',' + Parameter + ',' + LandType + ',' + DEMIXMomentStatsString(MomentVar);
          Findings.Add(aLine);
 
-         if (Code <> 0) then begin
+         if (LandCoverCode <> 0) then begin
             DEMGLb[ESA_LC10].ReloadDEM(true);
             DEMGlb[Ref].ReloadDEM(true);
             DEMGlb[Test].ReloadDEM(true);
@@ -284,14 +285,10 @@ var
            TestElev := OpenNewDEM(DEMnames[i],false);
            if ValidDEM(TestElev) then begin
               DoOneTestDEM(RefElev,RefSlope,RefRuff,TestElev,false);
-           end
-           else begin
-
            end;
         end;
 
         Dispose(zs);
-        //fName := NextFileNumber(MDTempDir,'difference_dist_by_landcover_','.dbf');
         fName := NextFileNumber(DataDir,'difference_dist_by_DEMs_','.dbf');
         StringList2CSVtoDB(Findings,fName);
         CloseSingleDEM(RefElev);

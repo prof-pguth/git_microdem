@@ -101,7 +101,6 @@ procedure DEMHeaderTable;
    var
       CompareDEMIndexes : array[1..MaxCompare] of integer;
       CompareDEMNames : array[1..MaxCompare] of shortstring;
-      //LikeDTED : array[1..MaxCompare] of boolean;
 
    function LoadDEMsCoveringPoint(Lat,long : float64; LoadMap : boolean = false) : integer;
    function LoadDEMsCoveringBox(bb : sfBoundBox; LoadMap : boolean = false) : integer;
@@ -987,7 +986,10 @@ end;
    var
       i : integer;
    begin
-      for i := 1 to MaxDEMDataSets do Result[i] := true;
+      for i := 1 to MaxDEMDataSets do begin
+         if ValidDEM(i) then Result[i] := true
+         else Result[i] := false;
+      end;
       GetMultipleDEMsFromList(TheMessage,Result);
    end;
 

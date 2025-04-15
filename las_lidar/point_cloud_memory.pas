@@ -521,7 +521,7 @@ begin
                                  if DEMGlb[CompareDEMIndexes[j]].GetElevFromLatLongDegree(Lat,Long,z[j]) then begin
                                     inc(n);
                                     pc[j] := PCfromZ(z[j],fr[j]);
-                                    slp[j] := DEMGlb[CompareDEMIndexes[j]].SlopePercentFromLatLong(Lat,Long);
+                                    slp[j] := DEMGlb[CompareDEMIndexes[j]].SlopePercentFromLatLong(MDDef.SlopeCompute,Lat,Long);
                                  end;
                               end;
                            end;

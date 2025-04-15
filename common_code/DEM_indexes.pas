@@ -24,7 +24,7 @@ unit dem_indexes;
      //{$Define RecordAutoZoom}
      //{$Define RecordImageIndex}
      //{$Define RecordIndexFileNames}
-     {$Define RecordMerge}
+     //{$Define RecordMerge}
      //{$Define RecordMergeDetails}
      //{$Define RecordTimeMerge}
      //{$Define RecordIndexImagery}

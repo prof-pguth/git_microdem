@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demix_definitions }
-{____________________________________}
-
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{   include file for demix_definitions   }
+{________________________________________}
 
 procedure InventoryAreasAndTilesByCountry(DB : integer);
 var
@@ -44,7 +44,7 @@ end;
 procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 var
    TestDEMs : tStringList;
-   i,DEM,ad : integer;
+   BoxSize,i,DEM,ad : integer;
    AreaName : shortstring;
    fName,fName2 : PathStr;
    PointGrids : array[1..7] of integer;
@@ -65,7 +65,7 @@ begin
           end
           else begin
              {$If Defined(RecordDEMIX)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-
+             BoxSize := round(3 * DEMglb[PointGrids[1]].AverageSpace);
              wmdem.SetPanelText(3,DEMIXModeName + ' Hillshade',true);
              fName := ExternalProgramOutPutFile(DEMIndex,'MD','HILL_',AreaName,IsPoint);
              PointGrids[1] := CreateHillshadeMap(false,DEM);
@@ -95,7 +95,7 @@ begin
              PointGrids[6] := -1;
              PointGrids[7] := -1;
              ad := 0;   //we don't want openness difference
-             CreateOpennessMap(False,DEMGlb[DEM].FullDEMGridLimits,DEM,250,PointGrids[6],PointGrids[7],ad);
+             CreateOpennessMap(False,DEMGlb[DEM].FullDEMGridLimits,DEM,BoxSize,PointGrids[6],PointGrids[7],ad);
              DEMglb[PointGrids[7]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[6]].SaveAsGeotiff(fName);
              CloseAllDEMs;
@@ -168,7 +168,7 @@ end;
 
 procedure GetRangesForSSIM;
 var
-   Areas,Tiles,Results : tStringList;
+   Areas,{Tiles,}Results : tStringList;
    DEM,grid,j : integer;
    fName,BreachName,FlowAccumulationName,StreamName,HANDName,WetnessName: PathStr;
    Area : shortstring;
@@ -268,8 +268,8 @@ end;
 procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
 var
    Tiles,Results,Criteria : tStringList;
-   Tile,Criterion,Aline : shortstring;
-   i,j,k,n,tileIndex,CriterionIndex : integer;
+   Tile,{Criterion,}Aline : shortstring;
+   i,j,k,n,tileIndex{,CriterionIndex} : integer;
    fName : PathStr;
    Stats : array[0..MaxTiles,0..MaxCriteria] of float32;
 begin
@@ -419,8 +419,8 @@ var
    TheBytes : array[0..4000] of byte;
    FilesWanted,Results,Paths : tStringList;
    Tag : shortstring;
-   fName,fName2,NewName,JustName,BaseDir : PathStr;
-   Num1m,NumEGM,Num1secArea,Num1secPoint,
+   fName,fName2,{NewName,JustName,}BaseDir : PathStr;
+   //Num1m,NumEGM,Num1secArea,Num1secPoint,
    i,j,DTMs,DSMs,DEM : Integer;
    Tag42112Offset,Tag42112Length : int64;
    TiffHandle : THandle;

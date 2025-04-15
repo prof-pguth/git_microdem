@@ -30,7 +30,7 @@ unit md_use_tools;
       //{$Define RecordSaveProblems}
       //{$Define RecordReformat}
       //{$Define RecordMapProj}
-      {$Define RecordWBT_DEM}
+      //{$Define RecordWBT_DEM}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -103,6 +103,7 @@ uses
    function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
    function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
    function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+
    function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr): integer;
    function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
@@ -113,7 +114,7 @@ uses
    function WBT_DrainageBasins(InName : PathStr) : integer;
    function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
    function WBT_BNearNeighCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
-   function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
+   function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; WetnessName : PathStr = '') : integer;
    function WBT_Breach_Depression(DEMName : PathStr; var BreachName : PathStr) : integer;
    function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var BreachName, FlowAccName : PathStr) : integer;
    function WBT_Extract_Streams(OpenMap : boolean; DEMName : PathStr; var BreachName,FlowAccumulationName,StreamName : PathStr; Threshhold : float32 = 100.0) : integer;

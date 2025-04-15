@@ -10,7 +10,7 @@ unit zipatone;
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-   {$Define RecordZipatoneProblems}
+   //{$Define RecordZipatoneProblems}
 {$EndIf}
 
 

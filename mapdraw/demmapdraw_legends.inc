@@ -1,12 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{   include file for demmapdraw     }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
 function MakeChangeMapLegend(DEMonMap : integer) : tMyBitmap;
@@ -417,9 +416,9 @@ var
    NewSize : integer;
    TStr : ANSIstring;
 begin
-    {$IfDef RecordMapDrawLegends} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap in');{$EndIf}
+    {$IfDef RecordMapDrawLegends} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap in, fName=' + LegendOverlayFName); {$EndIf}
     if (Bitmap = Nil) then exit;
-    if (LegendOverlayFName <> '') and FileExists(LegendOverlayFName) then begin
+    if FileExists(LegendOverlayFName) then begin
        Overlay := PetImage.LoadBitmapFromFile(LegendOverlayFName);
     end
     else begin
@@ -498,4 +497,53 @@ begin
     DrawAndDeleteOverlay(Bitmap,Overlay);
     {$IfDef RecordMapDrawLegends} WriteLineToDebugFile('tMapDraw.DrawLegendsOnMap out');{$EndIf}
 end;
+
+
+         function TMapDraw.TerrainCategoryLegend : tMyBitmap;
+         var
+            i,x,y,Num,Tot, MaxWidth,Width : integer;
+            TerrainCategory : tTerrainCatDefinition;
+            TStr : shortstring;
+            CatList : tStringList;
+         begin
+            {$IfDef RecordTerrainCategories} WriteLineToDebugFile('Terrain categories in TMapDraw.TerrainCategoryLegend'); {$EndIf}
+            CatList := tStringList.Create;
+            ShowHourglassCursor;
+            CreateBitmap(Result,500,15 * MapOverlays.ovTerrainCat.Count);
+            Result.Canvas.Brush.Style := bsSolid;
+            MaxWidth := 0;
+            for i := 0 to pred(MapOverlays.ovTerrainCat.Count) do begin
+               {$IfDef RecordTerrainCategories} WriteLineToDebugFile(MapOverlays.ovTerrainCat[i]); {$EndIf}
+               TerrainCategory := StringToTerrainCategory(MapOverlays.ovTerrainCat[i]);
+               if MDDef.TerrainCatPercentages then begin
+                  Num := 0;
+                  Tot := 0;
+                  for x := round(MapCorners.BoundBoxDataGrid.xmin) to round(MapCorners.BoundBoxDataGrid.xmax) do begin
+                     for y := Round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
+                        if DEMGlb[DEMonMap].InTerrainCategory(x,y,TerrainCategory) then inc(Num);
+                        inc(Tot);
+                     end;
+                  end;
+                  TStr := ' (' + RealToString(100*Num/Tot,-8,2) + '%  ' + SmartAreaFormat(Num * DEMGlb[DEMonMap].AverageXSpace * DEMGlb[DEMonMap].AverageYSpace) + ')';
+               end
+               else TStr := '';
+               TStr := DEMGlb[DEMonMap].TerrainCategoryLabel(TerrainCategory) + TStr;
+               {$IfDef RecordTerrainCategories} WriteLineToDebugFile('Legend: ' + TStr); {$EndIf}
+               CatList.Add(TStr);
+               Width := Result.Canvas.TextWidth(TStr);
+               if (Width > MaxWidth) then MaxWidth := Width;
+            end;
+            Result.Width := MaxWidth +30;
+
+            for i := 0 to pred(CatList.Count) do begin
+               TerrainCategory := StringToTerrainCategory(MapOverlays.ovTerrainCat[i]);
+               Result.Canvas.Brush.Color := clWhite;
+               Result.Canvas.TextOut(25,i*15,CatList.Strings[i]);
+               Result.Canvas.Brush.Color := ConvertPlatformColorToTColor(TerrainCategory.CatColor);
+               Result.Canvas.Rectangle(2,i*15,23,i*15 + 13);
+            end;
+            CatList.Free;
+            ShowDefaultCursor;
+         end;
+
 

@@ -15,7 +15,7 @@ unit demlos_draw;
       //{$Define RecordPointClouds}
       //{$Define RecordUTMZones}
       //{$Define RecordLOSDraw}
-      {$Define RecordLOS}
+      //{$Define RecordLOS}
       //{$Define RecordLOSPrettyDrawing}
       //{$Define RecordRandomProfiles}
       //{$Define RecordWaveLenghtHeight}
@@ -1398,7 +1398,7 @@ begin
                     GISdb[ProfileDB].MyData.CarefullySetFloat('SLOPE_2D',Slope2,0.1);
                  end;
 
-                 if DEMglb[DEMonView].GetSlopeAndAspectFromLatLong(Lat,Long,SlopeAspectRec) then begin
+                 if DEMglb[DEMonView].GetSlopeAndAspectFromLatLong(MDDef.SlopeCompute,Lat,Long,SlopeAspectRec) then begin
                      if (SlopeAspectRec.SlopePercent > 0.0001) then begin
                         GISdb[ProfileDB].MyData.CarefullySetFloat32('ASPECT',SlopeAspectRec.AspectDirTrue,0.1);
                      end;

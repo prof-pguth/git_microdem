@@ -221,7 +221,7 @@ begin
    Result := false;
    z := ThisDEMMissingValue;
    if (XGrid < -0.01) or (YGrid < -0.01) or (XGrid > pred(DEMheader.NumCol) + 0.01) or (YGrid > pred(DEMheader.NumRow) + 0.01) then exit;
-   if (MDDef.wf.ElevInterpolation = piNearestGrid) or MDDef.NoDEMInterpolations or LandCoverGrid or (DEMheader.ElevUnits in [euIntCode]) then begin
+   if (MDDef.ElevInterpolation = piNearestGrid) or MDDef.NoDEMInterpolations or LandCoverGrid or (DEMheader.ElevUnits in [euIntCode]) then begin
       Result := GetElevMetersOnGrid(round(xgrid),round(ygrid),z);
       exit;
    end;
@@ -232,23 +232,23 @@ begin
       Result := GetElevMetersOnGrid(round(xgrid),round(ygrid),z);
    end
    else begin
-     if (MDDef.wf.ElevInterpolation = piBicubicVT) and InterpolateBiCubicVisioTerra(round(xgrid),round(ygrid),z) then begin
+     if (MDDef.ElevInterpolation = piBicubicVT) and InterpolateBiCubicVisioTerra(round(xgrid),round(ygrid),z) then begin
      //if InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
 
      end
-     else if (MDDef.wf.ElevInterpolation = piBicubicNR) and InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
+     else if (MDDef.ElevInterpolation = piBicubicNR) and InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
 
      end
      else if GetElevSquareMeters(XGrid,YGrid,Elev) then begin {elevations surrounding a point: 1=SW, 2=SE, 3=NE, 4=NW, 5=1=SW}
-          if MDDef.wf.ElevInterpolation in [piBilinear] then begin
+          if MDDef.ElevInterpolation in [piBilinear] then begin
              z := (  (1-XIncr) * (1-YIncr)  * Elev[1] + (1-XIncr) * YIncr * Elev[4] + XIncr * (1-YIncr) * Elev[2] + XIncr * YIncr * Elev[3]);
           end
-          else if  MDDef.wf.ElevInterpolation = piTriangle then begin
+          else if MDDef.ElevInterpolation = piTriangle then begin
              if (Yincr < 1 - XIncr) then z := YIncr * Elev[4] + (1 - YIncr - XIncr) * Elev[1] + XIncr * Elev[2]
              else z := (1-YIncr) * Elev[2] + (YIncr + XIncr - 1) * Elev[3] + (1-XIncr) * Elev[4];
           end
-          else if MDDef.wf.ElevInterpolation in [piWeightedR,piWeightedR2] then begin
-             if MDDef.wf.ElevInterpolation in [piWeightedR] then begin
+          else if MDDef.ElevInterpolation in [piWeightedR,piWeightedR2] then begin
+             if MDDef.ElevInterpolation in [piWeightedR] then begin
                 dSW := 1 / sqrt( sqr(Xincr) + sqr(yIncr));
                 dSE := 1 / sqrt( sqr(1-Xincr) + sqr(yIncr));
                 dNW := 1 / sqrt( sqr(Xincr) + sqr(1-yIncr));
@@ -263,7 +263,7 @@ begin
              sum := dSW + dNW + dSE + dNE;
              z := (dSw / Sum) * Elev[1] + (dNW / Sum) * Elev[4] + (dSE / Sum) * Elev[2] + (dNE / Sum) * Elev[3];
           end
-          else if ( MDDef.wf.ElevInterpolation = piSWGrid) then begin
+          else if (MDDef.ElevInterpolation = piSWGrid) then begin
              Result := GetElevMeters(trunc(xgrid),trunc(ygrid),z);
           end;
       end

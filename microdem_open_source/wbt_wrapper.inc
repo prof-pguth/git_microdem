@@ -1,12 +1,12 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program      }
-{ PETMAR Trilobite Breeding Ranch   }
-{ Released under the MIT Licences   }
-{ Copyright (c) 2024 Peter L. Guth  }
-{___________________________________}
-{                                   }
-{   include file for md_use_tools   }
-{___________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+{                                        }
+{   include file for md_use_tools        }
+{________________________________________}
 
 
 function WhiteBoxPresent : boolean;
@@ -70,15 +70,16 @@ function WBT_FlowAccumulation(OpenMap,Log,D8 : boolean; DEMName : PathStr; var B
 //https://www.whiteboxgeo.com/manual/wbt_book/available_tools/hydrological_analysis.html#D8FlowAccumulation
 var
    cmd : ansistring;
-   TStr,TStr2,TStr3 : shortstring;
+   TStr,TStr2,TStr3,TStr4 : shortstring;
 begin
    if WhiteBoxPresent and FileExistsErrorMessage(DEMName) then begin
       Result := 0;
       if not FileExists(BreachName) then WBT_breach_depression(DEMName,BreachName);
       TStr := 'num_cells_';
       if Log then TStr3 := ' --log' else TStr3 := '';
+      if Log then TStr4 := 'log_' else TStr4 := '';
       if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
-      if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(DEMName) + '.tif';
+      if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_' + TStr4 + 'flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(DEMName) + '.tif';
       cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_FlowAccumulation cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(OpenMap,cmd,FlowAccName,euUndefined,mtElevRainbow);
@@ -126,7 +127,7 @@ begin
 end;
 
 
-function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; var WetnessName : PathStr) : integer;
+function WBT_WetnessIndex(OpenMap,D8 : boolean; DEMName : PathStr; WetnessName : PathStr = '') : integer;
 //whitebox_tools -r=WetnessIndex -v --wd="/path/to/data/" --sca='flow_accum.tif' --slope='slope.tif' -o=output.tif
 var
    SlopeName,FlowAccName,BreachName : PathStr;

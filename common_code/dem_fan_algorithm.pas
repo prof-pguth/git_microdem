@@ -93,7 +93,7 @@ begin
       Edit4.Text := IntToStr(ClosestBlockingDistance);
       RadioGroup2.ItemIndex := ord(FanMethod);
       RadioGroup3.ItemIndex := ord(LOSAlgorithm);
-      RadioGroup4.ItemIndex := ord(ElevInterpolation);
+      RadioGroup4.ItemIndex := MDDef.ElevInterpolation;
       RadioGroup5.ItemIndex := ord(StraightAlgorithm);
    end;
 end;
@@ -114,7 +114,7 @@ begin
       CheckBox3.Checked := MDDef.MissingDataBlocksLOS;
       Edit5.Text := IntToStr(MDDef.FanMapZoom);
       iva := in_iva;
-      for aElevInterpolation := piBilinear to piSWGrid do RadioGroup4.Items.Add(ElevInterpolationName[aElevInterpolation]);
+      for aElevInterpolation := piFirst to piLast do RadioGroup4.Items.Add(ElevInterpolationName[aElevInterpolation]);
       for aStraightAlgorithm := saDEMGrid to saSmart do RadioGroup5.Items.Add(StraightAlgorithmName[aStraightAlgorithm]);
       LabelForm;
       Hide;
@@ -131,7 +131,7 @@ begin
          iva.FanMethod := tFanMethod(FanAlgParams.RadioGroup2.ItemIndex);
          iva.LOSAlgorithm := tLOSAlgorithm(RadioGroup3.ItemIndex);
          iva.FanCurvAlg := MDdef.EarthVertCurvAlg;
-         iva.ElevInterpolation := tElevInterpolation(RadioGroup4.ItemIndex);
+         MDDef.ElevInterpolation := RadioGroup4.ItemIndex;
          iva.StraightAlgorithm := tStraightAlgorithm(RadioGroup5.ItemIndex);
          in_iva := iva;
          MDDef.MissingDataBlocksLOS := CheckBox3.Checked;

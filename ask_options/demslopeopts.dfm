@@ -144,7 +144,7 @@ object SlopeOptForm: TSlopeOptForm
   end
   object RadioGroup2: TRadioGroup
     Left = 8
-    Top = 41
+    Top = 97
     Width = 212
     Height = 50
     Caption = 'LSQ order'
@@ -159,10 +159,10 @@ object SlopeOptForm: TSlopeOptForm
   end
   object RadioGroup3: TRadioGroup
     Left = 8
-    Top = 97
+    Top = 41
     Width = 212
     Height = 50
-    Caption = 'LSQ window size'
+    Caption = 'Slope window size'
     Columns = 4
     Items.Strings = (
       '3x3'

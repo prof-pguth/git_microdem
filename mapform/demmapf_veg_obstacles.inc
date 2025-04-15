@@ -178,7 +178,7 @@ end;
                               end;
                            end;
                         end;
-                        {$IfDef MakeLandCoverGrid}  WriteLineToDebugFile('call close tDEM'); {$EndIf}
+                        {$IfDef MakeLandCoverGrid} WriteLineToDebugFile('call close tDEM'); {$EndIf}
                         CloseSingleDEM(tDEM);
                         {$IfDef MakeLandCoverGrid} WriteLineToDebugFile('close tDEM done'); {$EndIf}
                      end;
@@ -196,7 +196,7 @@ end;
                            SatImage[NewSatImage].GetSatRow(1,j,NLCDRow);
                            for i := 0 to pred(SatImage[NewSatImage].LandCoverImage.NumCols) do begin
                               SatImage[NewSatImage].SatGridToLatLongDegree(i,j,Lat,Long);
-                              v := {SatImage[NewSatImage].LandCoverImage.ConvertNLCD[}NLCDRow[i];  //];
+                              v := NLCDRow[i];
                               if CategoryGrid then begin
                                  DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,v);
                               end

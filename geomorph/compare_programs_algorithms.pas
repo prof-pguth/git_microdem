@@ -12,7 +12,7 @@ unit compare_programs_algorithms;
 
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-      {$Define RecordCompareLSPs}
+      //{$Define RecordCompareLSPs}
    {$EndIf}
 {$ELSE}
    //{$Define NoParallelFor}
@@ -82,12 +82,8 @@ uses
    Make_grid;
 
 const
-   //lsp_calc_3d_dir = 'J:\aa_new_zealand\lsp_calc_ponui_30m_3d\';
-   //lsp_calc_4d_dir = 'J:\aa_new_zealand\lsp_calc_ponui_30m_4d\';
    lsp_calc_3d_dir = 'J:\aa_new_zealand\shifted_ponui_3d\';
    lsp_calc_4d_dir = 'J:\aa_new_zealand\shifted_ponui_4d\';
-   //arc_utm_dir = 'J:\aa_new_zealand\GeomorphometryChapter_ArcGISPro_SlopeCurvature_Output\ponui_island_dtm_utm_egm2008_30m\';
-   //arc_geo_dir = 'J:\aa_new_zealand\GeomorphometryChapter_ArcGISPro_SlopeCurvature_Output\ponui_island_dtm_utm_egm2008_1sec\';
    arc_utm_dir =  'J:\aa_new_zealand\GeomorphometryChapter_ArcGISPro_SlopeCurvature_Output\datums_shifted_ponui_island_dtm_ref_30m\';
    arc_geo_dir = 'J:\aa_new_zealand\GeomorphometryChapter_ArcGISPro_SlopeCurvature_Output\datums_shifted_ponui_island_dtm_ref_1sec\';
 
@@ -112,8 +108,6 @@ const
       end;
 
 
-
-
 procedure CompareGDAL_ScaleFactorsForSlope(DEM : integer; OpenMap : boolean = true);
 var
    NewMap1,NewMap2,NewMap3,NewMap4 : integer;
@@ -128,7 +122,7 @@ begin
 
       InitializeDEMsWanted(DEMList,false);
       MDDef.SlopeCompute.AlgorithmName := smHorn;
-      NewMap1 := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_2_spacing');
+      NewMap1 := CreateEvansSlopeMapPercent(OpenMap,DEM,'md_horn_slope_2_spacing');
       DEMList[NewMap1] := true;
       GDAL_testScaleFactor := ' -s ' + RealToString(DistanceAVG,-12,2);
       NewMap2 := GDAL_SlopeMap_Horn(OpenMap,DEM,MDTempDir + 'gdal_horn_slope_average.tif');
@@ -179,8 +173,6 @@ begin
       Graph := CreateGridHistograms(DEMList,TStr,0);
       SaveBitmap(Graph.AddLegendBesideGraph,MDTempDir + TStr + '.png');
       *)
-
-
       RestoreBackupDefaults;
    end
    else begin
@@ -197,25 +189,24 @@ procedure CompareMICRODEMslopes(DEM,How : integer; OpenMap : boolean = false);
       Evans,Horn,ZT,LSQ : integer;
       DEMList : tDEMBooleanArray;
       TStr : shortstring;
-      //Graph : tThisBaseGraph;
    begin
       InitializeDEMsWanted(DEMList,false);
       MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
       MDDef.SlopeCompute.WindowRadius := FilterSize;
-      Evans := CreateSlopeMapPercent(OpenMap,DEM,'md_evans_slope_' + Which);
+      Evans := CreateEvansSlopeMapPercent(OpenMap,DEM,MD_Made_string + 'evans_slope_' + Which);
       DEMlist[Evans] := true;
       MDDef.SlopeCompute.AlgorithmName := smHorn;
-      Horn := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_' + Which);
+      Horn := CreateEvansSlopeMapPercent(OpenMap,DEM,MD_Made_string + 'horn_slope_' + Which);
       DEMlist[Horn] := true;
       MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
-      ZT := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_' + Which);
+      ZT := CreateEvansSlopeMapPercent(OpenMap,DEM,MD_Made_string + 'zt_slope_' + Which);
       DEMlist[ZT] := true;
 
       MDDef.SlopeCompute.AlgorithmName := smLSQ;
-      LSQ := CreateSlopeMapPercent(OpenMap,DEM,'md_lsq_slope_' + Which);
+      LSQ := CreateEvansSlopeMapPercent(OpenMap,DEM,MD_Made_string + 'lsq_slope_' + Which);
       DEMlist[LSQ] := true;
 
-      TStr := DEMglb[DEM].AreaName + '_md_slope';
+      TStr := DEMglb[DEM].AreaName + MD_Made_string + 'slope';
       CreateGridHistograms(DEMList,TStr,0);
       JustElevationMoments(DEMlist,TStr,true,true);
 
@@ -243,17 +234,19 @@ var
 
    procedure OpenOneFilter(DEM : integer; Which : shortstring; FilterSize : integer);
    var
-      Evans,Horn,ZT{,Diff,DiffCat} : integer;
+      Evans,Horn,ZT : integer;
    begin
       MDDef.SlopeCompute.WindowRadius := FilterSize;
       MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
-      Evans := CreateSlopeMapPercent(OpenMap,DEM,'md_evans_slope_' + Which);
+      Evans := CreateEvansSlopeMapPercent(OpenMap,DEM,'evans_slope_' + Which);
       DEMlist[Evans] := true;
       MDDef.SlopeCompute.AlgorithmName := smHorn;
-      Horn := CreateSlopeMapPercent(OpenMap,DEM,'md_horn_slope_' + Which);
+      Horn := CreateSlopeMap(DEM,OpenMap);
+      DEMglb[Horn].AreaName := 'horn_slope_' + Which;
       DEMlist[Horn] := true;
       MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
-      ZT := CreateSlopeMapPercent(OpenMap,DEM,'md_zt_slope_' + Which);
+      ZT := CreateSlopeMap(DEM,OpenMap);
+      DEMglb[ZT].AreaName := 'zt_slope_' + Which;
       DEMlist[ZT] := true;
    end;
 
@@ -270,6 +263,7 @@ begin
    TStr := DEMglb[DEM].AreaName + '_md_slope';
    Graph := CreateGridHistograms(DEMList,TStr,0);
    JustElevationMoments(DEMlist,TStr,true,true);
+   ScatterGramGrid(True,DEMlist);
    RestoreBackupDefaults;
 end;
 
@@ -447,7 +441,7 @@ begin
    StartComparisonProcess(DEM,DEMList);
 
    MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
-   Grid := CreateSlopeMapPercent(OpenMap,DEM,'md_slope');
+   Grid := CreateEvansSlopeMapPercent(OpenMap,DEM,'md_slope');
    DEMlist[Grid] := true;
 
    if (DEMGlb[DEM].DEMheader.DEMUsed = ArcSecDEM) then begin
@@ -498,45 +492,33 @@ end;
 
 procedure MakeMDcurvatures(OpenMap : boolean; DEM,Curvature : integer; var DEMList : tDEMBooleanArray);
 
-      procedure MICRODEMCurvature(Algorithm : integer; CD2 : boolean; Name : ShortString);
+      procedure MICRODEMCurvature(Algorithm : integer; Name : ShortString);
       var
          Grid : integer;
       begin
-         //MDDef.CurveCompute.AlgorithmName := Algorithm;
-         //MDDef.CD2 := CD2;
          case Curvature of
-            eucurv_kns : Grid := CreateCurvatureMap(eucurv_kns,OpenMap,DEM,'md_' + Name + '_prof_curv');
-            eucurv_knc : Grid := CreateCurvatureMap(eucurv_knc,OpenMap,DEM,'md_' + Name + '_tang_curv');
-            eucurv_kpc : Grid := CreateCurvatureMap(eucurv_kpc,OpenMap,DEM,'md_' + Name + '_plan_curv');
-            eucurv_tc  : Grid := CreateCurvatureMap(eucurv_tc,OpenMap,DEM,'md_' + Name + '_cont_tors');
+            eucurv_kns : Grid := CreateCurvatureMap(eucurv_kns,OpenMap,DEM,MD_made_string + Name + '_prof_curv');
+            eucurv_knc : Grid := CreateCurvatureMap(eucurv_knc,OpenMap,DEM,MD_made_string + Name + '_tang_curv');
+            eucurv_kpc : Grid := CreateCurvatureMap(eucurv_kpc,OpenMap,DEM,MD_made_string + Name + '_plan_curv');
+            eucurv_tc  : Grid := CreateCurvatureMap(eucurv_tc,OpenMap,DEM,MD_made_string + Name + '_cont_tors');
          end;
          DEMlist[Grid] := true;
          DEMGlb[Grid].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
       end;
 
 begin
-   (*
-   MICRODEMCurvature(smHorn,False,'horn_cd1');
-   MICRODEMCurvature(smHorn,True,'horn_cd2');
-   MICRODEMCurvature(smEvansYoung,False,'evans_cd1');
-   MICRODEMCurvature(smEvansYoung,True,'evans_cd2');
-   MICRODEMCurvature(smZevenbergenThorne,False,'zt_cd1');
-   MICRODEMCurvature(smZevenbergenThorne,True,'zt_cd2');
-   *)
-
    MDDef.CurveCompute.AlgorithmName := smLSQ;
    MDDef.CurveCompute.RequireFullWindow := true;
    MDDef.CurveCompute.LSQorder := 2;
    MDDef.CurveCompute.WindowRadius := 1;
    MDDef.EvansApproximationAllowed := false;
-   MICRODEMCurvature(smlsq,True,SlopeMethodName(MDDef.CurveCompute));
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
    MDDef.CurveCompute.LSQorder := 2;
    MDDef.CurveCompute.WindowRadius := 2;
-   MICRODEMCurvature(smlsq,True,SlopeMethodName(MDDef.CurveCompute));
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
    MDDef.CurveCompute.LSQorder := 3;
    MDDef.CurveCompute.WindowRadius := 2;
-   MICRODEMCurvature(smlsq,True,SlopeMethodName(MDDef.CurveCompute));
-
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
 end;
 
 
@@ -721,7 +703,7 @@ begin
       StartComparisonProcess(DEM,DEMList);
 
       MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_evans_slope');
       if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
          NewMap := SAGA_Slope_percent(MDDef.CompareShowMaps,'3',DEMGlb[DEM].GeotiffDEMName,OutPath + 'saga_evans_slope.tif');
@@ -729,7 +711,7 @@ begin
       end;
 
       MDDef.SlopeCompute.AlgorithmName := smHorn;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_horn_slope');
       if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
          NewMap := SAGA_Slope_percent(MDDef.CompareShowMaps,'2',DEMGlb[DEM].GeotiffDEMName,OutPath + 'saga_horn_slope.tif');
@@ -745,7 +727,7 @@ begin
       {$EndIf}
 
       MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_zt_slope');
       if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
          NewMap := SAGA_Slope_percent(MDDef.CompareShowMaps,'6',DEMGlb[DEM].GeotiffDEMName,OutPath + 'saga_zt_slope.tif');
@@ -755,7 +737,7 @@ begin
       end;
 
       MDDef.SlopeCompute.AlgorithmName := smShary;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_shary_slope');
 
       if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
@@ -778,13 +760,13 @@ begin
       if Use5x5 then begin
          MDDef.SlopeCompute.WindowRadius := 2;
          MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
-         NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM,'');
+         NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM,'');
          MatchAndSave('md_evans_slope_5x5');
          MDDef.SlopeCompute.AlgorithmName := smHorn;
-         NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM,'');
+         NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM,'');
          MatchAndSave('md_horn_slope_5x5');
          MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
-         NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM,'');
+         NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM,'');
          MatchAndSave('md_zt_slope_5x5');
       end;
 
@@ -798,9 +780,7 @@ procedure CompareMICRODEMSlopeMaps(DEM : integer);
 var
    NewMap : integer;
    DEMList : tDEMBooleanArray;
-   //CorrelationMatrix : DEMStringGrid.TGridForm;
    OutPath : PathStr;
-   //fName : PathStr;
 
       procedure MatchAndSave(AreaName : shortstring; SaveIt : boolean = true);
       var
@@ -825,22 +805,22 @@ begin
       OutPath := MDtempDir;
       StartComparisonProcess(DEM,DEMList);
       MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateEvansSlopeMapPercent(MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_evans_slope');
       MDDef.SlopeCompute.AlgorithmName := smHorn;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_horn_slope');
       MDDef.SlopeCompute.AlgorithmName := smLSQ;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
+      NewMap := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,MDDef.CompareShowMaps,DEM);
       MatchAndSave('md_lsq_slope');
+      MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
+      NewMap := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,MDDef.CompareShowMaps,DEM);
+      MatchAndSave('md_zt_slope');
       {$IfDef ExUseGrass}
       {$Else}
          NewMap := GRASSSlopeMap(DEMGlb[DEM].GeotiffDEMName,MDDef.CompareShowMaps);
          if ValidDEM(NewMap) then MatchAndSave('grass_horn_slope');
       {$EndIf}
-      MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
-      NewMap := CreateSlopeMapPercent(MDDef.CompareShowMaps,DEM);
-      MatchAndSave('md_zt_slope');
       NewMap := WBT_SlopeMap(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName);
       if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then MatchAndSave('wbt_flor_slope')
       else MatchAndSave('wbt_evans_slope');

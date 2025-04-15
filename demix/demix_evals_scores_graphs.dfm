@@ -245,7 +245,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object Edit4: TEdit
     Left = 504
     Top = 474
-    Width = 65
+    Width = 49
     Height = 23
     TabOrder = 18
     Text = 'Edit4'
@@ -284,7 +284,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   end
   object BitBtn28: TBitBtn
     Left = 8
-    Top = 194
+    Top = 225
     Width = 170
     Height = 25
     Caption = 'Best eval graph per criterion'
@@ -293,7 +293,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   end
   object BitBtn29: TBitBtn
     Left = 8
-    Top = 232
+    Top = 256
     Width = 169
     Height = 25
     Caption = 'Comparison DEM wins w/ filters'
@@ -442,8 +442,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     TabOrder = 30
   end
   object ComboBox1: TComboBox
-    Left = 199
-    Top = 233
+    Left = 208
+    Top = 257
     Width = 88
     Height = 23
     TabOrder = 31
@@ -452,7 +452,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object Edit6: TEdit
     Left = 1269
     Top = 561
-    Width = 84
+    Width = 69
     Height = 23
     TabOrder = 32
     Text = 'Edit6'
@@ -470,6 +470,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       'Roughness intervals'
       'Forest percentages'
       'Barren percentages'
+      'Urban percentages'
       'Multiple panels')
     TabOrder = 33
     OnClick = RadioGroup8Click
@@ -478,7 +479,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Left = 8
     Top = 16
     Width = 145
-    Height = 172
+    Height = 203
     Caption = 'Average evaluation'
     Items.Strings = (
       'Selected filters'
@@ -486,7 +487,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
       'Roughness intervals'
       'Forest percentages'
       'Barren percentages'
-      'Multiple panels')
+      'Urban percentages'
+      'Multiple panels'
+      'Panels, each criterion')
     TabOrder = 34
     OnClick = RadioGroup9Click
   end

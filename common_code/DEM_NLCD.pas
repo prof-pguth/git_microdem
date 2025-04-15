@@ -307,7 +307,7 @@ var
    Count :  array[1..MaxLandCoverCategories] of int64;
 begin
    {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click in'); {$EndIf}
-   if (DEMGLB[DEM].SelectionMap.MapDraw.ValidDEMonMap and (DEMGlb[DEM].LandCoverGrid)) then begin
+   if (ValidDEM(DEMGLB[DEM].SelectionMap.MapDraw.DEMonMap) and (DEMGlb[DEM].LandCoverGrid)) then begin
       for x := 1 to MaxLandCoverCategories do Count[x] := 0;
       Total := 0;
       StartProgress('Land cover');

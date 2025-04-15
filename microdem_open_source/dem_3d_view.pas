@@ -528,10 +528,8 @@ var
          DrapeForm.DrapeMapFromTwoGridCorners(xu1,yu4,xu4,yu1);   {order is left,bottom,right,top}
 
          {$IfDef ShowDrapeExtent}
-            MapForm.MapDraw.GridToScreen(xu1,yu4,xp1,yp1);
-            MapForm.MapDraw.GridToScreen(xu4,yu1,xp2,yp2);
-            MapForm.Image1.Canvas.Brush.Style := bsClear;
-            MapForm.Image1.Canvas.Rectangle(xp1,yp1,xp2,yp2);
+            MapForm.MapDraw.GridToScreen(xu1,yu4,xp1,yp1); MapForm.MapDraw.GridToScreen(xu4,yu1,xp2,yp2);
+            MapForm.Image1.Canvas.Brush.Style := bsClear;  MapForm.Image1.Canvas.Rectangle(xp1,yp1,xp2,yp2);
          {$EndIf}
 
          {$IfDef RecordFullDrape} WriteLineToDebugFile('back from DrapeForm.DrapeMapFromTwoGridCorners'); {$EndIf}
@@ -874,11 +872,9 @@ begin
                PitchToScreen(ThisPitch,y);
 
                {$IfDef RecordInnerLoopPerspective}
-                  WriteLineToDebugFile('Viewport height: ' + IntToStr(ViewPortHeight));
-                  WriteLineToDebugFile('PersOpts.PersMaxVertAngle: ' + RealToString(PersOpts.PersMaxVertAngle,12,4));
+                  WriteLineToDebugFile('Viewport height: ' + IntToStr(ViewPortHeight) + 'PersMaxVertAngle: ' + RealToString(PersOpts.PersMaxVertAngle,12,4));
                   WriteLineToDebugFile('PersOpts.PersVFOV: ' + RealToString( ViewVFOV,12,4));
-                  WriteLineToDebugFile('ThisPitch: ' + RealToString(ThisPitch,12,4));
-                  WriteLineToDebugFile('y:' + IntToStr(y));
+                  WriteLineToDebugFile('ThisPitch: ' + RealToString(ThisPitch,12,4) + '  y:' + IntToStr(y));
                {$EndIf}
 
                if (y < Min) and (y >= 0) then begin
@@ -906,24 +902,24 @@ begin
                            end
                            else begin
                               {$IfDef VCL}
-                           if (NumRuns = 2) then begin
-                              if not SameColor(BMPMemory.p1[ip][i],rgbTripleWhite) then  begin
-                                 if (Runs = 1) then  begin
-                                    BMPMemory.p1[ip][i].rgbtGreen := RGBtriple.rgbtGreen;
-                                    BMPMemory.p1[ip][i].rgbtBlue := RGBtriple.rgbtBlue;
-                                 end
-                                 else BMPMemory.p1[ip][i].rgbtRed := RGBtriple.rgbtRed;
-                              end;
-                           end
-                           else begin
-                              if (MaxShift > 0) then  begin
-                                 Shift := MaxShift - round(fDists^[Pt]/ViewDepth * MaxShift);
-                                 if (i + shift <= BMPMemory.BMPHeight) then BMPMemory.p1[ip][i+Shift].rgbtRed := RGBtriple.rgbtRed;
-                              end
-                              else BMPMemory.p1[ip][i].rgbtRed := RGBtriple.rgbtRed;
-                              BMPMemory.p1[ip][i].rgbtGreen := RGBtriple.rgbtGreen;
-                              BMPMemory.p1[ip][i].rgbtBlue := RGBtriple.rgbtBlue;
-                           end;
+                                   if (NumRuns = 2) then begin
+                                      if not SameColor(BMPMemory.p1[ip][i],rgbTripleWhite) then  begin
+                                         if (Runs = 1) then  begin
+                                            BMPMemory.p1[ip][i].rgbtGreen := RGBtriple.rgbtGreen;
+                                            BMPMemory.p1[ip][i].rgbtBlue := RGBtriple.rgbtBlue;
+                                         end
+                                         else BMPMemory.p1[ip][i].rgbtRed := RGBtriple.rgbtRed;
+                                      end;
+                                   end
+                                   else begin
+                                      if (MaxShift > 0) then  begin
+                                         Shift := MaxShift - round(fDists^[Pt]/ViewDepth * MaxShift);
+                                         if (i + shift <= BMPMemory.BMPHeight) then BMPMemory.p1[ip][i+Shift].rgbtRed := RGBtriple.rgbtRed;
+                                      end
+                                      else BMPMemory.p1[ip][i].rgbtRed := RGBtriple.rgbtRed;
+                                      BMPMemory.p1[ip][i].rgbtGreen := RGBtriple.rgbtGreen;
+                                      BMPMemory.p1[ip][i].rgbtBlue := RGBtriple.rgbtBlue;
+                                   end;
                               {$EndIf}
                            end;
                         end;
@@ -1071,9 +1067,9 @@ var
           {$IfDef RecordPerspective} WriteLineToDebugFile('DrawFishnetPerspective in'); {$EndIf}
 
            {$IfDef VCL}
-           RegColor := clLime;
-           HiColor := clTeal;
-           LabelColor := clSilver;
+             RegColor := clLime;
+             HiColor := clTeal;
+             LabelColor := clSilver;
            {$EndIf}
 
           New(LastProfX);
@@ -1264,28 +1260,28 @@ var
     begin
        if PersOpts.CloudBackground and FileExists(CloudBitmapName) then begin
           {$IfDef VCL}
-          CloudBMP := LoadBitmapFromFile(CloudBitmapName);
-          if (CloudBMP.Height < Bitmap.Height) and (CloudBMP.Width < Bitmap.Width) then
-             Bitmap.Canvas.StretchDraw(Rect(0,0,pred(Bitmap.Width),pred(Bitmap.Height)),CloudBMP)
-          else Bitmap.Canvas.Draw(0,0,CloudBMP);
-          CloudBMP.Free;
+            CloudBMP := LoadBitmapFromFile(CloudBitmapName);
+            if (CloudBMP.Height < Bitmap.Height) and (CloudBMP.Width < Bitmap.Width) then
+               Bitmap.Canvas.StretchDraw(Rect(0,0,pred(Bitmap.Width),pred(Bitmap.Height)),CloudBMP)
+            else Bitmap.Canvas.Draw(0,0,CloudBMP);
+            CloudBMP.Free;
           {$EndIf}
        end
        else begin
           {$IfDef VCL}
-          for i := 0 to pred(Bitmap.Width) do begin
-             for ip := 0 to pred(Bitmap.height) do begin
-                if MDDef.PerspOpts.UsersSky then FastScreen[runs].p1[ip][i] := MDDef.PerspOpts.rgbtSky
-                else begin {blue sky}
-                   y := 240 - round(240 - ip/(Bitmap.Height/2)*250 + Random(5));
-                   if (y > 240) then y := 240 + Random(5);
-                   if (y < 50) then Y := 50 + Random(5);
-                   FastScreen[runs].p1[ip][i].rgbtBlue := y;
-                   FastScreen[runs].p1[ip][i].rgbtRed := 0;
-                   FastScreen[runs].p1[ip][i].rgbtGreen := 0;
-                end;
-             end;
-          end;
+              for i := 0 to pred(Bitmap.Width) do begin
+                 for ip := 0 to pred(Bitmap.height) do begin
+                    if MDDef.PerspOpts.UsersSky then FastScreen[runs].p1[ip][i] := MDDef.PerspOpts.rgbtSky
+                    else begin {blue sky}
+                       y := 240 - round(240 - ip/(Bitmap.Height/2)*250 + Random(5));
+                       if (y > 240) then y := 240 + Random(5);
+                       if (y < 50) then Y := 50 + Random(5);
+                       FastScreen[runs].p1[ip][i].rgbtBlue := y;
+                       FastScreen[runs].p1[ip][i].rgbtRed := 0;
+                       FastScreen[runs].p1[ip][i].rgbtGreen := 0;
+                    end;
+                 end;
+              end;
           {$EndIf}
        end;
     end;
@@ -1438,10 +1434,10 @@ begin
 
     if PersOpts.LabelPerspectiveViewport then LabelViewPort;
     {$IfDef VCL}
-    if PersOpts.TitlePerspectiveViewport then begin
-       x := 20 + Bitmap.Canvas.TextWidth('-200');
-       BitmapTextOut(Bitmap,x,BitMap.Height-5-Bitmap.Canvas.TextHeight(ViewCaption),ViewCaption);
-    end;
+        if PersOpts.TitlePerspectiveViewport then begin
+           x := 20 + Bitmap.Canvas.TextWidth('-200');
+           BitmapTextOut(Bitmap,x,BitMap.Height-5-Bitmap.Canvas.TextHeight(ViewCaption),ViewCaption);
+        end;
     {$EndIf}
 
     ComputeCorners;
@@ -1458,9 +1454,7 @@ begin
 
     Result := true;
 
-    {$IfDef FMX}
-    Bitmap.Canvas.EndScene;
-    {$EndIf}
+    {$IfDef FMX} Bitmap.Canvas.EndScene; {$EndIf}
 
     {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective out'); {$EndIf}
 end;

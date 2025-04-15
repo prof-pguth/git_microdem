@@ -12,7 +12,7 @@ unit point_cloud_options;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordMakeGrid}
+      //{$Define RecordMakeGrid}
       //{$Define BasicOpens}
       //{$Define RecordMakeBaseMap}
       //{$Define TrackPointCloud}
@@ -30,7 +30,7 @@ unit point_cloud_options;
       //{$Define PointCloudOutlines}
       //{$Define RecordPointCloudViewing}
       //{$Define RecordLASfilesRedraw}
-      {$Define RecordLASOpen}
+      //{$Define RecordLASOpen}
       //{$Define RecordPointCloudOptionsForm}
       //{$Define RecordPointCloudViewing}
       //{$Define RecordNewGrids}

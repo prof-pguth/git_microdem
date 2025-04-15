@@ -553,8 +553,8 @@ type
     N53: TMenuItem;
     Full3DEPprocessingchair1: TMenuItem;
     Partial3DEPsteps1: TMenuItem;
-    Overwriteifexists3: TMenuItem;
-    Overwriteifexists4: TMenuItem;
+    //Overwriteifexists3: TMenuItem;
+    //Overwriteifexists4: TMenuItem;
     N39: TMenuItem;
     N54: TMenuItem;
     Inventorychanneldatabyarea1: TMenuItem;
@@ -627,7 +627,7 @@ type
     Createcompositebitmap2: TMenuItem;
     DEMIXNeo1: TMenuItem;
     N15: TMenuItem;
-    N58: TMenuItem;
+    //N58: TMenuItem;
     MultipleDEMsonearea015secscale1: TMenuItem;
     CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem;
     CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem;
@@ -1003,8 +1003,8 @@ type
     procedure ComputeDEMIXtilestats1Click(Sender: TObject);
     procedure VerifytestDEMcoverages1Click(Sender: TObject);
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
-    procedure Overwriteifexists3Click(Sender: TObject);
-    procedure Overwriteifexists4Click(Sender: TObject);
+    //procedure Overwriteifexists3Click(Sender: TObject);
+    //procedure Overwriteifexists4Click(Sender: TObject);
     procedure Inventorychanneldatabyarea1Click(Sender: TObject);
     procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
@@ -1062,7 +1062,7 @@ type
     procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
-    procedure N58Click(Sender: TObject);
+    //procedure N58Click(Sender: TObject);
     procedure MultipleDEMsonearea015secscale1Click(Sender: TObject);
     procedure CorrelationsingleDEMtoreferencealllandcovers1Click(
       Sender: TObject);
@@ -1304,7 +1304,7 @@ uses
    {$EndIf}
 
    {$IfDef ExDEMIX}
-      //might have to disable options in code (add compiler directives) to get this to work
+      //not tested recently; might have to disable options in code (add compiler directives) to get this to work
    {$Else}
       demix_definitions,
       DEMIX_Control,
@@ -1333,7 +1333,6 @@ uses
 
    lcp_options,
    ScreenUnicode,
-   //DEMSlopeCompare,
    PetDBUtils,
    Make_tables,
    DEMDef_routines,
@@ -1363,6 +1362,7 @@ uses
 procedure SetColorForWaiting; inline
 begin
    WMdem.Color := clScrollBar;
+   WMDEM.ClearStatusBarPanelText;
    ShowDefaultCursor;
 end;
 
@@ -1527,7 +1527,6 @@ begin
       GeotiffImageSize(fName2,w2,h2);
       Findings.Add(fName + ',' + fName2 + ',' + IntToStr(w1) + ',' + IntToStr(h1) + ',' + IntToStr(w2)+ ',' + IntToStr(h2) );
    end;
-
    DisplayAndPurgeStringList(Findings,'Size mismatches');
    ShowDefaultCursor;
    sl.Destroy;
@@ -2147,7 +2146,7 @@ var
          if Action = 'SLOPE_MAP' then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               {NewDEM :=} CreateSlopeMapPercent(false,DEM,outfile,SlopeDegree);
+               {NewDEM :=} CreateEvansSlopeMapPercent(false,DEM,outfile,SlopeDegree);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
             end;
          end;
@@ -2635,14 +2634,10 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries out'); {$EndIf}
 end;
 
-procedure Twmdem.N58Click(Sender: TObject);
-begin
-   FUVforRangeScales(false)
-end;
 
 procedure Twmdem.Overwrite1Click(Sender: TObject);
 begin
-   CreateDEMIX_GIS_database_by_transposing(True);
+   //CreateDEMIX_diff_dist_DB_by_transposing(True);
 end;
 
 procedure Twmdem.Overwrite2Click(Sender: TObject);
@@ -3138,7 +3133,7 @@ end;
 
 procedure Twmdem.Skipifexists3Click(Sender: TObject);
 begin
-   CreateDEMIX_GIS_database_by_transposing(False);
+   //CreateDEMIX_diff_dist_DB_by_transposing(False);
 end;
 
 procedure Twmdem.Skipifexits1Click(Sender: TObject);
@@ -3406,7 +3401,7 @@ end;
 
 procedure Twmdem.CreatefinalDB1Click(Sender: TObject);
 begin
-   CreateFinalDB;
+   CreateFinalDiffDistDB;
 end;
 
 procedure Twmdem.CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
@@ -3664,18 +3659,6 @@ procedure Twmdem.Overwriteifexists2Click(Sender: TObject);
 begin
    DEMIX_CreateReferenceDEMsFromSource(false);
 end;
-
-procedure Twmdem.Overwriteifexists3Click(Sender: TObject);
-begin
-   //DEMIXRef_DEM_create_full_chain(true);
-end;
-
-procedure Twmdem.Overwriteifexists4Click(Sender: TObject);
-begin
-   //DEMIXRef_DEM_create_full_chain(false);
-end;
-
-
 
 procedure Twmdem.Overwriteifexits1Click(Sender: TObject);
 begin

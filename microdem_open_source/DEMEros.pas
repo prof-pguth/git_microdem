@@ -260,12 +260,9 @@ type
             procedure PickMultipleBands(aMessage : ShortString; var UseBands : tUseBands);
             procedure OptimumIndexFactor;
             function MakeNewBand(NewBand : tNewSatBand; OpenMap : boolean = true) : integer;
-            {$IfDef NoDBGrafs}
-            {$Else}
                function GraphHistogram(Desired : integer; WhichBand : integer) : TThisBaseGraph;
                procedure SatHistograms(xlo,ylo,xhi,yhi : integer);
                function EnhancementGraph : TThisBaseGraph;
-            {$EndIf}
          {$EndIf}
 
          {$IfDef ExLandsatQA}
@@ -533,9 +530,6 @@ begin
    Result.RedrawDiagram11Click(Nil);
 end;
 
-{$IfDef NoDBGrafs}
-{$Else}
-
       function tSatImage.GraphHistogram(Desired : integer; WhichBand : integer) : TThisBaseGraph;
       var
          Band : integer;
@@ -574,7 +568,6 @@ end;
             {$IfDef RecordHistogram} WriteLineToDebugFile('MaxCount found'); {$EndIf}
 
             Result := TThisBaseGraph.Create(Application);
-            //Result.GraphDraw.LegendList := tStringList.Create;
             with Result,GraphDraw do begin
                if Desired in [shAllBands,shRGBBands] then begin
                   HorizLabel := 'Band Reflectance';
@@ -627,7 +620,6 @@ end;
                var
                   J : integer;
                begin
-                    //Result.GraphDraw.LegendList.Add(BandLongName[Band]);
                     Result.OpenDataFile(rfile,BandLongName[Band]);
                     for j := MinRef[Band] to MaxRef[Band] do begin
                           v[1] := j;
@@ -648,7 +640,6 @@ end;
             VertLabel := 'Ouput intensity';
             Result.SetUpGraphForm;
             Result.GraphDraw.LeftMargin := 80;
-            //Result.GraphDraw.LegendList := tStringList.Create;
 
             if SelectionMap.MapDraw.MapType = mtSatImageGray then begin
                 AddBand(SelectionMap.MapDraw.SatView.BandInWindow,GraysLookUp);
@@ -708,8 +699,6 @@ end;
          EndProgress;
          {$IfDef RecordSat} WriteLineToDebugFile('tSatImage.SatHistograms out'); {$EndIf}
       end;
-
-{$EndIf}
 
 
 
@@ -1056,9 +1045,7 @@ begin
    {$IfDef RecordNewSat} WriteLineToDebugFile('Band range: ' + DEMGlb[Result].zRange); {$EndIf}
 
    {$IfDef VCL}
-      if OpenMap then begin
-         CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
-      end;
+      if OpenMap then CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
    {$EndIf}
     WmDem.SetMenusForVersion;
 end;
@@ -1069,7 +1056,6 @@ end;
 function tSatImage.RegInfo : AnsiString;
 begin
     case RegVars.Registration of
-       //RegTIN      : Result := 'Delauney TIN registration';
        RegNone     : Result := 'No registration';
        RegProjection : Result := 'Data projection: ' + ImageMapProjection.GetProjName;
     end;

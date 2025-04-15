@@ -2,7 +2,7 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1233
+  ClientHeight = 1253
   ClientWidth = 2418
   Color = clScrollBar
   DefaultMonitor = dmDesktop
@@ -1675,7 +1675,7 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1214
+    Top = 1234
     Width = 2418
     Height = 19
     Panels = <
@@ -1695,6 +1695,7 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1214
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -3508,7 +3509,7 @@ object wmdem: Twmdem
       end
     end
     object DEMIXmergeCSVfiles1: TMenuItem
-      Caption = 'Merge and transpose DEMIX-classic CSV files by area'
+      Caption = 'Merge and transpose difference distribution CSV files by area'
       Enabled = False
       object Overwrite1: TMenuItem
         Caption = 'Overwrite'
@@ -3520,7 +3521,7 @@ object wmdem: Twmdem
       end
     end
     object CreatefinalDB1: TMenuItem
-      Caption = 'Create final DB'
+      Caption = 'Create final difference distribution DB'
       OnClick = CreatefinalDB1Click
     end
     object SSIM2: TMenuItem
@@ -3706,7 +3707,6 @@ object wmdem: Twmdem
     end
     object N58: TMenuItem
       Caption = 'Range scales, 0.15 to 1 sec (single test area, single test DEM)'
-      OnClick = N58Click
     end
     object MultipleDEMsonearea015secscale1: TMenuItem
       Caption = 'Multiple DEMs, one area, 0.15 sec scale'
@@ -3890,11 +3890,9 @@ object wmdem: Twmdem
         Enabled = False
         object Overwriteifexists3: TMenuItem
           Caption = 'Overwrite if exists'
-          OnClick = Overwriteifexists3Click
         end
         object Overwriteifexists4: TMenuItem
           Caption = 'Skip if exists'
-          OnClick = Overwriteifexists4Click
         end
       end
       object Partial3DEPsteps1: TMenuItem

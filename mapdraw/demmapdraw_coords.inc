@@ -1,12 +1,12 @@
 
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{ include file for demmapdraw        }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for demmapdraw        }
+{________________________________________}
 
 
 procedure TMapDraw.LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float64);
@@ -229,7 +229,7 @@ procedure TMapDraw.DEMGridToScreen(xg,yg : float64; var xs,ys : integer);
 var
    Lat,Long : float64;
 begin
-   if ValidDEMonMap then begin
+   if ValidDEM(DEMonMap) then begin
       if DEMMap then begin
          xs := round( (xg - MapCorners.BoundBoxDataGrid.xmin) / MapCorners.GridDX);
          ys := round( (MapCorners.BoundBoxDataGrid.ymax - yg) / MapCorners.GridDY);
@@ -426,7 +426,7 @@ procedure TMapDraw.MapGridToDEMGrid(xg,yg : float64; var xg1,yg1 : float64);
 var
    Lat,Long : float64;
 begin
-   if ValidDEMonMap then begin
+   if ValidDEM(DEMonMap) then begin
       if DEMMap then begin
          xg1 := xg;
          yg1 := yg;

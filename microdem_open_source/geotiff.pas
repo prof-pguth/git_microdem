@@ -33,7 +33,6 @@ unit GeoTiff;
       //{$Define RecordInitDEM}
       //{$Define Record_h_datum_code}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
-
       //{$Define TrackPixelIs}
       //{$Define TrackDEMCorners}
       //{$Define GeotiffCorner}

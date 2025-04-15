@@ -18,16 +18,18 @@ unit DEMStat;
    {$IfDef Debug }
       //{$Define NoParallelFor}
       //{$Define RecordDEMIX_colors}
-      {$Define RecordSSIM}
-      {$Define TrackCovariance}
+      {$Define RecordComparisons}
+      //{$Define RecordSSIM}
+      //{$Define TrackCovariance}
       //{$Define RecordSSIMFull}
       //{$Define RecordDEMIX}
       //{$Define RecordDEMIXTimeCriterion}
-      {$Define RecordFUV}
-      {$Define RecordHistogram}
-      {$Define RecordGridCorrrelations}
-      {$Define RecordGridScatterGram}
-      {$Define RecordDEMMapProj}
+      //{$Define RecordFUV}
+      //{$Define RecordSSO}
+      //{$Define RecordHistogram}
+      //{$Define RecordGridCorrrelations}
+      //{$Define RecordGridScatterGram}
+      //{$Define RecordDEMMapProj}
       //{$Define RecordSingleGridScatterGram}
       //{$Define RecordFUVsteps}
       //{$Define TimeGridsForArea}
@@ -49,7 +51,6 @@ unit DEMStat;
       //{$Define RecordDiffMap}
       //{$Define RecordStdDef}
       //{$Define RecordElevationSlopePlot}
-      {$Define RecordSSO}
       //{$Define RecordGlobalDEM}
       //{$Define RecordElevMoment}
       //{$Define RecordElevationSlopePlotAll}
@@ -238,6 +239,9 @@ procedure CompareLSQPointsUsedEffects(DEM : integer);
 {$IfDef SlopeWindowEdgeEffect} procedure CompareLSQEdgeEffects(DEM : integer); {$EndIf}
 
 
+procedure CompareLSPthenupsampletoUpsamplethenLSP;
+procedure CompareUpsampling(SlopeOption : boolean = false);
+
 
 function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
 
@@ -290,15 +294,16 @@ uses
    GetLatLn,
    Thread_Timers,
    Make_tables,
+   Make_grid,
    DEM_Indexes,
    DEM_Manager,
    Petimage_form,
    DEMDef_routines,
    PetImage,
-   Make_grid,
    las_lidar,
    basemap,
    DEM_NLCD,
+   GDAL_tools,
    md_use_tools,
    icesat_filter_form,
    PETMath;
@@ -397,6 +402,9 @@ var
          end
          else begin
              Result := TThisBaseGraph.Create(Application);
+             Result.GraphDraw.LeftMargin := 100;
+             Result.GraphDraw.BottomMargin := 65;
+             Result.GraphDraw.DrawInsideLines := false;
              bsString := 'bin size=' + IntToStr(BinSize) + ' m';
              case Graph of
                 ElevRuff  : TStr := ' Elevation vs Roughness (%), ' + bsString;
@@ -604,7 +612,7 @@ begin {proc ElevationSlopePlot}
       New(SumSquares[CurDEM]);
       New(BinElev[CurDEM]);
       New(Slopes[CurDEM]);
-      New(Ruffs[CurDEM]);
+      if MDDef.ShowElevRough then New(Ruffs[CurDEM]);
       New(SlopeHist[CurDEM]);
       for Dir := Low(Dir) to High(Dir) do PointCount[Dir] := 0;
 
@@ -613,7 +621,7 @@ begin {proc ElevationSlopePlot}
 
       for x := MinSlopeValue to MaxSlopeValue do begin
          Slopes[CurDEM]^[x] := 0;
-         Ruffs[CurDEM]^[x] := 0;
+         if MDDef.ShowElevRough then Ruffs[CurDEM]^[x] := 0;
          SumSquares[CurDEM]^[x] := 0;
          Count[CurDEM]^[x] := -0.0000001;
       end {for x};
@@ -630,7 +638,8 @@ begin {proc ElevationSlopePlot}
          {$IfDef RecordElevationSlopePlotAll} WriteLineToDebugFile('x=' + IntToStr(x)); {$EndIf}
          j := 1;
          while j <= (DEMGlb[CurDEM].DEMheader.NumRow - 2) do begin
-            if DEMGlb[CurDEM].GetSlopeAndAspect(MDDef.SlopeCompute,x,j,SlopeAspectRec) and DEMGlb[CurDEM].RoughnessFromSlopeSTD(x,j,MDDef.RoughnessBox,Ruff1) then begin
+            if DEMGlb[CurDEM].QuickEvansSlopeAndAspect(x,j,SlopeAspectRec) then begin
+               if Graph in [ElevRuff] then DEMGlb[CurDEM].RoughnessFromSlopeSTD(x,j,MDDef.RoughnessBox,Ruff1);
                if (MDDef.UseSealevel) or (abs(SlopeAspectRec.z) > 0.001) then begin
                   AspectStats.AddPoint(SlopeAspectRec);
                end;
@@ -644,7 +653,7 @@ begin {proc ElevationSlopePlot}
                   SlopeSqrTotal[CurDEM] := SlopeSqrTotal[CurDEM] + sqr(SlopeAspectRec.Slope);
                   inc(PointCount[Dir]);
                   Slopes[CurDEM]^[Bin] := Slopes[CurDEM]^[Bin] + SlopeAspectRec.Slope;
-                  Ruffs[CurDEM]^[Bin] := Ruffs[CurDEM]^[Bin] + Ruff1;
+                  if MDDef.ShowElevRough then Ruffs[CurDEM]^[Bin] := Ruffs[CurDEM]^[Bin] + Ruff1;
                   SumSquares[CurDEM]^[Bin] := SumSquares[CurDEM]^[Bin] + sqr(SlopeAspectRec.Slope);
                   IntSlope := round(SlopeAspectRec.SlopePercent);
                   if (IntSlope <= MaxSlopeValue) then begin
@@ -666,8 +675,10 @@ begin {proc ElevationSlopePlot}
          if Count[CurDEM]^[x] > 0.5 then begin
             if Count[CurDEM]^[x]  < 2.5 then SumSquares[CurDEM]^[x] := 0
             else SumSquares[CurDEM]^[x] := 100.0 * sqrt(1.0 * (SumSquares[CurDEM]^[x] * Count[CurDEM]^[x] - sqr(1.0 * Slopes[CurDEM]^[x])) / (sqr(1.0 * Count[CurDEM]^[x])));
-            Ruffs[CurDEM]^[x] := Ruffs[CurDEM]^[x] / Count[CurDEM]^[x];
-            if Ruffs[CurDEM]^[x] > MaxRuff then MaxRuff := Ruffs[CurDEM]^[x];
+            if MDDef.ShowElevRough then begin
+               Ruffs[CurDEM]^[x] := Ruffs[CurDEM]^[x] / Count[CurDEM]^[x];
+               if Ruffs[CurDEM]^[x] > MaxRuff then MaxRuff := Ruffs[CurDEM]^[x];
+            end;
             Slopes[CurDEM]^[x] := 100 * Slopes[CurDEM]^[x] / Count[CurDEM]^[x];
             if Slopes[CurDEM]^[x] > MaxSlope then MaxSlope := Slopes[CurDEM]^[x];
             if (100 * Count[CurDEM]^[x] / TotalCount[CurDEM] > MaxCount) then MaxCount := 100 * Count[CurDEM]^[x] / TotalCount[CurDEM];
@@ -3446,7 +3457,7 @@ begin
       else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);
       if DEMGlb[DEM2].ShortName = '' then Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].AreaName)
       else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
-      Result.OpenPointFile(rfile,Result.Symbol);
+      Result.OpenPointFile(rfile,Result.Symbol,'scattergram');
       Incr := 1;
       while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
       NPts := 0;
