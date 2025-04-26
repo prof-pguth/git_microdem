@@ -17,10 +17,12 @@ unit DEMStat;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug }
       //{$Define NoParallelFor}
+      {$Define MultipleLSPFUV}
       //{$Define RecordDEMIX_colors}
-      {$Define RecordComparisons}
+      //{$Define RecordComparisons}
       //{$Define RecordSSIM}
       //{$Define TrackCovariance}
+      //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
       //{$Define RecordDEMIX}
       //{$Define RecordDEMIXTimeCriterion}
@@ -117,9 +119,6 @@ type
    CountType = array[-5..2500] of integer;
    PlotArray = array[1..(MaxPlotGlb+2)] of float64;
 
-
-  {$IfDef ExGeoStats}
-  {$Else}
       procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; SamplingCheck : boolean = false; CurDEM : integer = 0; Memo1 : tMemo = Nil);
       procedure JustElevationMoments(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; Whiskers : boolean = true; StringGrid : boolean = false);
       procedure ElevationAndSlopeMoments(DEMSWanted : tDEMbooleanArray; aTitle : shortstring);
@@ -128,6 +127,10 @@ type
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
       function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;  inline;
+      function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
+      function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
+
+
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
       procedure MultipleElevationSlopePlots;
 
@@ -148,7 +151,6 @@ type
           NumBins : integer = 100; Min : float32 = 1; Max : float32 = -1; BinSize : float32 =  -99; TColorList : tStringList = Nil) : TThisBaseGraph;
       procedure MultipleHistogramPrep(Histogram : TThisBaseGraph);
 
-
       procedure CalculateGrainProfile(MapForm : tMapForm; DEMonMap : integer; Lat1,Long1,Lat2,Long2 : float64);
       function IwashuriPikeColor(Slope,Convexity,Texture : float64; var TerClass : integer) : tPlatformColor;  //inline;
       function IwashuriPikeCat(Slope,Convexity,Texture : float64) : integer; //inline;
@@ -158,7 +160,7 @@ type
 
        procedure SemiVariogramOptions;
        procedure SemiVariogram(DEMtoUse : integer; GridLimits: tGridLimits);
-       procedure FastFourierTransform(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float32; CloseGraphs : boolean = false);
+       procedure FastFourierTransform(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float64; CloseGraphs : boolean = false);
 
        procedure MakeGeomporphDBforPolygons(DBonTable : integer);
        procedure MakeGeomporphDBforPoints(DBonTable : integer);
@@ -176,15 +178,10 @@ type
           procedure CrestsAlongProfile(theLOSView : TDEMLOSF; var Results : tStringList; Memo1 : tMemo = Nil);
       {$EndIf}
 
-  {$EndIf}
-
-  {$IfDef ExCompare}
-  {$Else}
       procedure MissingPointsInGrids(MapForm : tMapForm; DEM1 : integer = 0; DEM2 : integer = 0);
       function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
       procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 : integer = 0; Percentages : boolean = true);
       procedure DBCoOccurrence(Table : tMyData; EmpSource: TDataSource; Field1,Field2 : ShortString; Percentages : boolean);
-  {$EndIf}
 
    function SumDEMs(FirstDEM : integer; Merge : tDEMbooleanArray; NewName : shortstring; OpenMap : boolean = true; AllGridsValidZ : boolean = true) : integer;
    procedure AddaDEM(FirstDEM,AddDEM : integer; Mult : integer = 1);
@@ -242,8 +239,8 @@ procedure CompareLSQPointsUsedEffects(DEM : integer);
 procedure CompareLSPthenupsampletoUpsamplethenLSP;
 procedure CompareUpsampling(SlopeOption : boolean = false);
 
+procedure LSP_gridMultipleDEMs(Which : integer; OpenMap : boolean = true);
 
-function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
 
 const
    SSIM_fudge : float64 = 1.0;
@@ -259,8 +256,6 @@ implementation
 uses
    Nevadia_Main,
 
-   {$IfDef ExGeoStats}
-   {$Else}
       PETFouri,
       DEMVarOp,
       Slope_Graph_Opts,
@@ -271,15 +266,8 @@ uses
       CrossCor,
       DEM_Hist_Opts,
       DEM_grid_diffs,
-   {$EndIf}
-   {$IfDef ExStereoNet}
-   {$Else}
       NetMainW,
-   {$EndIf}
-   {$IfDef ExGIS}
-   {$Else}
       demdatabase,
-   {$EndIf}
 
    {$IfDef ExDEMIX}
    {$Else}
@@ -329,10 +317,7 @@ var
    {$I demstat_dune_crest.inc}
 {$EndIf}
 
-{$IfDef ExCompare}
-{$Else}
    {$I demstat_grid_compare.inc}
-{$EndIf}
 
 
 procedure GetBins(MaxMax,MinMin : integer; var BinSize,StartIndex : integer);
@@ -392,10 +377,12 @@ var
 
       function GraphPlot(Graph : GraphType) : TThisBaseGraph;
       var
-         Which,x,n,CurDEM : integer;
+         //Which,
+         x,n,CurDEM : integer;
          rfile,rfile2,rfile3 : file;
          v       : tGraphPoint32;
-         MenuStr,TStr,bsString : ShortString;
+         //MenuStr,
+         TStr,bsString : ShortString;
       begin
          if (Graph in [AspectRose]) then begin
             Result := AspectStats.CreateRose;
@@ -1051,7 +1038,7 @@ var
    x,y : ^bfarray32;
    xs,ys,Col,Row : integer;
    Lat,Long,xg,yg : float64;
-   zMin,zMax, a,b,siga,sigb,r : float32;
+   zMin,zMax, a,b,siga,sigb,r : float64;
    z : array[1..2] of float32;
    MomentVar : tMomentVar;
 begin
@@ -1775,6 +1762,7 @@ begin
                  on Exception do begin end;
              end;
           finally
+             SkipMenuUpdating := false;
           end;
       end;
    end;
@@ -2410,6 +2398,63 @@ end;
 
 //{$EndIf}
 
+function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
+begin
+  {$IfDef TrackCovarianceFull} WriteLineToDebugFile('GetFUVForPairGrids in, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
+   if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
+      Result := 1-sqr(CorrelationTwoGrids(RefGridLimits,Grid1,Grid2));
+  end
+   else begin
+      Result := -999;
+      {$IfDef TrackCovariance} WriteLineToDebugFile('Invalid grid, GetFUVForPairGrids Fail for ' + ' ' + DEMglb[Grid1].AreaName + ' ' + DEMglb[Grid2].AreaName); {$EndIf}
+   end;
+   {$IfDef TrackCovariance} WriteLineToDebugFile('GetFUVForPairGrids out, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName + ' FUV=' + RealToString(Result,-8,-4)); {$EndIf}
+end;
+
+
+function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
+var
+   Col,Row,xoff,yoff,i : integer;
+   NPts : int64;
+   Lat,Long,a,b,siga,sigb : float64;
+   z1,z2 : float32;
+   xs,ys : ^BfArray32;
+   IdenticalOffsetGrids,MatchPt : boolean;
+begin
+   {$IfDef TrackCovarianceFull} WriteLineToDebugFile('CorrelationTwoGrids in, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName); {$EndIf}
+   New(xs);
+   New(ys);
+   NPts := 0;
+   IdenticalOffsetGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff,true);
+   Col := GridLimitsDEM1.XGridLow;
+   while (Col <= GridLimitsDEM1.XGridHigh) do begin
+      Row := GridLimitsDEM1.YGridLow;
+      while (Row <= GridLimitsDEM1.YGridHigh) do begin
+         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
+            if IdenticalOffsetGrids then begin
+               MatchPt := DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2);
+            end
+            else begin
+               DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+               MatchPt := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2);
+            end;
+            if MatchPt then begin
+               xs^[Npts] := z1;
+               ys^[Npts] := z2;
+               inc(NPts);
+            end;
+         end;
+         inc(row);
+      end;
+      inc(Col);
+   end;
+   {$IfDef TrackCovarianceFull} WriteLineToDebugFile('CorrelationTwoGrids call fit'); {$EndIf}
+   fit(xs^,ys^,NPts, a,b,siga,sigb,Result);
+   //Result := r;
+   Dispose(xs);
+   Dispose(ys);
+   {$IfDef TrackCovariance} WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
+end;
 
 
 function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;
@@ -2439,6 +2484,41 @@ begin
       WriteLineToDebugFile('DEM1 grid limits ' + GridLimitsToString(GridLimitsDEM1));
    {$EndIf}
 
+ (*
+   sx := 0.0;
+   sy := 0.0;
+   sxy := 0.0;
+   st2 := 0.0;
+   sty2 := 0;
+   b := 0.0;
+   for i := pred(FirstPoint) to pred(LastPoint) do begin
+      sy := sy + y[i];
+      sx := sx + x[i];
+   END;
+   {$IfDef RecordFitProblems} WriteLineToDebugFile('sx=' + RealToString(sx,-18,-8) + '  sy=' + RealToString(sy,-18,-8)); {$EndIf}
+   //ss := ndata;
+
+   sxoss := sx / ndata;
+   syoss := sy / ndata;
+   {$IfDef RecordFitProblems} WriteLineToDebugFile('sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8)); {$EndIf}
+
+   for i := pred(FirstPoint) to pred(LastPoint) do begin
+      t := x[i] - sxoss;
+      ty := y[i] - syoss;
+      st2 := st2 + sqr(t);
+      sty2 := sty2 + sqr(ty);
+      b := b + t * y[i];
+      sxy := sxy + t * ty;
+   END;
+   b := b/st2;
+   a := (sy-sx*b) / Ndata;
+   siga := sqrt((1.0 + sqr(sx) / (NData * st2)) / NData);
+// siga := sqrt((1.0+sx*sx/(ss*st2))/ss);
+
+   sigb := sqrt(1.0 / st2);
+   r := sxy / sqrt(st2 * sty2);
+*)
+
    Col := GridLimitsDEM1.XGridLow;
    while (Col <= GridLimitsDEM1.XGridHigh) do begin
       Row := GridLimitsDEM1.YGridLow;
@@ -2452,8 +2532,8 @@ begin
                MatchPt := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2);
             end;
             if MatchPt then begin
-               Sum[1] := Sum[1] + z1;
-               Sum[2] := Sum[2] + z2;
+               Sum[1] := Sum[1] + z1;       //sx
+               Sum[2] := Sum[2] + z2;       //sy
                sp[1] := sp[1] + z1 * z1;
                sp[2] := sp[2] + z2 * z2;
                SPc := SPc + z1 * z2;
@@ -2469,9 +2549,9 @@ begin
    Result := (NPts > 0);
    if Result then begin
       Mean1 := (Sum[1] / NPts);
-      StdDev1 := sqrt( (NPts * SP[1] - (sum[1] * sum[1]) ) / (NPts-1) / Npts );
+      StdDev1 := sqrt( (NPts * SP[1] - sqr(sum[1]) ) / pred(NPts) / Npts );
       Mean2 := (Sum[2] / NPts);
-      StdDev2 := sqrt( (NPts * SP[2] - (sum[2] * sum[2]) ) / (NPts-1) / Npts );
+      StdDev2 := sqrt( (NPts * SP[2] - sqr(sum[2]) ) / pred(NPts) / Npts );
       Covar := (NPts * SPc - Sum[1] * Sum[2]) / NPts / pred(NPts);
       r := Covar / StdDev1 / StdDev2;
       MeanDiff := MeanDiff / NPts;
@@ -3206,29 +3286,6 @@ begin
                         Corrs^[i,j] := MeanDiff;
                         Corrs^[j,i] := -MeanDiff;
                      end;
-
-(*
-                  if (Which = gcmR) then begin
-                     if CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j],NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff) then begin
-                        Corrs^[i,j] := r;
-                        Corrs^[j,i] := r;
-                     end;
-                  end
-                  else begin
-                     MDDef.CreateGraphHidden := true;
-                     Graph := GridScatterGram(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j]);
-                     Graph.Linearfit1Click(nil);
-                     {$IfDef RecordGridCorrrelations} WriteLineToDebugFile(TStr + ' From scattergraph, r='  + RealToString(Graph.GraphComputedR,9,4) ); {$EndIf}
-                     if (Which = gcmMAbD) then begin
-                        Corrs^[i,j] := Graph.GraphComputedMAbD;
-                        Corrs^[j,i] := Graph.GraphComputedMAbD;
-                     end
-                     else begin
-                        Corrs^[i,j] := Graph.GraphComputedMAvD;
-                        Corrs^[j,i] := -Graph.GraphComputedMAvD;
-                     end;
-                     Graph.Destroy;
-*)
                   end;
                end;
             end;
@@ -3290,12 +3347,13 @@ end;
 
 {$IfDef ExGeoStats}
 {$Else}
-procedure FastFourierTransform(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float32; CloseGraphs : boolean = false);
+procedure FastFourierTransform(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float64; CloseGraphs : boolean = false);
 var
    FFTFile : file;
    FName   : PathStr;
    Size,x,y,Good,Bad : integer;
-   z,a,r : float32;
+   z : float32;
+   a,r : float64;
    Vals    : array[0..MaxElevArraySize] of float32;
 
          procedure SetUpAnalysis(NumRecs : integer);
@@ -3313,7 +3371,7 @@ var
             if ShowSatProgress then StartProgress('Set up FFT');
          end;
 
-         procedure SetUpGraph(Title : ShortString; AverageSpace : float32; var Slope : float32);
+         procedure SetUpGraph(Title : ShortString; AverageSpace : float32; var Slope : float64);
          var
             FFTGraph : TFFTGraph;
          begin
@@ -3422,82 +3480,6 @@ begin
 end {proc SemiVariogram};
 
 {$EndIf}
-
-
-function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
-var
-   Incr,Col,Row,NPts : integer;
-   Lat,Long : float64;
-   XGrid,YGrid : float32;
-   rFile : file;
-   v : tFloatPoint;
-   IdenticalGrids : boolean;
-begin
-   {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram in, want visible=' + TrueOrFalse(not MDDef.CreateGraphHidden)); {$EndIf}
-   if (DEM1 = 0) and (DEM2 = 0) then begin
-      IdenticalGrids := GetTwoCompatibleGrids('DEM1=x axis, DEM2= y axis',false,DEM1,DEM2,false,true);
-      GridLimits := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
-   end
-   else IdenticalGrids := DEMGlb[DEM1].SecondGridIdentical(DEM2);
-   if ValidDEM(DEM1) and ValidDEM(DEM2) then begin
-      {$IfDef RecordSingleGridScatterGramFull}
-         WriteLineToDebugFile('Two grid scattergram');
-         WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyParams);
-         WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyParams);
-         WriteLineToDebugFile('  ll corner :' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornerx,-12,-2) + '   ' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornery,-12,-2) );
-         WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits));
-      {$EndIf}
-      SetReasonableGraphSize;
-
-      Result := TThisBaseGraph.Create(Application);
-      Result.Caption := 'Two grid scattergram';
-      Result.GraphDraw.AutoPointDensity := true;
-
-      if DEMGlb[DEM1].ShortName = '' then Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].AreaName)
-      else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);
-      if DEMGlb[DEM2].ShortName = '' then Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].AreaName)
-      else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
-      Result.OpenPointFile(rfile,Result.Symbol,'scattergram');
-      Incr := 1;
-      while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
-      NPts := 0;
-      //Prog := 0;
-      {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram start scatter, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
-      StartProgress('Scatter plot');
-      Col := GridLimits.XGridLow;
-      while (Col <= GridLimits.XGridHigh) do begin
-         if (Col mod 10 = 0) then begin
-            UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
-            {$IfDef RecordSingleGridScatterGramFull} WriteLineToDebugFile('Col=' + IntToStr(Col)); {$EndIf}
-         end;
-         //Inc(Prog);
-         Row := GridLimits.YGridLow;
-         while (Row <= GridLimits.YGridHigh) do begin
-            if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
-               if DEMGlb[DEM1].GetElevMetersFromSecondDEM(IdenticalGrids,Dem2,Col,Row,v[2]) then begin
-                  Result.AddPointToDataBuffer(rfile,v);
-                  inc(NPts);
-               end;
-            end;
-            inc(Row,Incr);
-         end;
-         inc(Col,Incr);
-      end;
-      Result.ClosePointDataFile(rfile);
-      {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram in, points added=' + IntToStr(NPts)); {$EndIf}
-
-      EndProgress;
-      if (NPts > 0) then begin
-         Result.AutoScaleAndRedrawDiagram;
-         Result.AddCorrelationToCorner;
-      end
-      else begin
-         Result.Close;
-         MessageToContinue('No scattergram matches ' + DEMGlb[DEM1].AreaName + ' and ' + DEMGlb[DEM2].AreaName);
-      end;
-      {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram out, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
-   end;
-end;
 
 
 procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);

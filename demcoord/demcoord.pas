@@ -374,7 +374,7 @@ type
          //routines to get value from another grid
             function GetElevMetersFromSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z  : float32) : boolean;
             function GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row : integer; var z2  : float32) : boolean;
-            function GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
+            function GetElevMetersFromThisAndSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
             function GetSlopeAspectFromSecondDEM(Dem2 : integer; Col,Row : int32; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 
          function GetElevSquareMeters(XGrid,YGrid : float64; var Elev : tElevFloatArray) : boolean; inline;
@@ -494,8 +494,7 @@ type
 
          function RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
 
-
-         function FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;  inline;
+         function FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;  inline;
          procedure OpennessOneDirection(Col,Row,PixelsInDirection,dx,dy : integer; Spacing : float32;Dir : ShortString; var UpAngle,DownAngle,zp : float32; var RaysUsed : integer; Findings : tStringList);
 
          function AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : boolean;
@@ -624,7 +623,7 @@ type
 
          {$IfDef AllowDEMGeomorph}
             procedure GetBoxGridSizeDiameter(BoxSizeMeters : integer; var XBoxGridSize,YBoxGridSize : integer; var BoxSizeString : shortstring);
-            procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64; var UpValues,DownValues : bfarray32; IncludeSeaLevel : boolean = true);
+            //procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64; var UpValues,DownValues : bfarray32; IncludeSeaLevel : boolean = true);
             procedure ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32; var NPts : int64);
             function ElevationMoments(GridLimits: tGridLimits; MomentStop : tMomentStop = msAll) : tMomentVar;
             procedure ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
@@ -687,7 +686,7 @@ type
             {$IfDef ExComplexGeostats}
             {$Else}
                function ContourLineCrossing(x,y : integer; z : float64) : boolean;
-               procedure FractalBox(GridLimits: tGridLimits; var FracDim,r : float32; SkipDraw : boolean = false; CloseGraph : boolean = false);
+               procedure FractalBox(GridLimits: tGridLimits; var FracDim,r : float64; SkipDraw : boolean = false; CloseGraph : boolean = false);
                procedure EntireDEMFractalBox;
                procedure InitializeNormals;
                procedure DisposeNormals;
@@ -2053,11 +2052,19 @@ begin
 end;
 
 
-function tDEMDataSet.GetElevMetersFromThisAndSecondDEM(Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
+function tDEMDataSet.GetElevMetersFromThisAndSecondDEM(IdenticalGrids : boolean; Dem2,Col,Row : integer; var z1,z2  : float32) : boolean;
 begin
-   Result := GetElevMeters(Col,Row,z1);
-   if Result then begin
-      Result := GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row,z2);
+   if IdenticalGrids then begin
+       Result := GetElevMetersOnGrid(Col,Row,z1);
+       if Result then begin
+          Result := GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row,z2);
+       end;
+   end
+   else begin
+       Result := GetElevMeters(Col,Row,z1);
+       if Result then begin
+          Result := GetElevMetersFromSecondDEMLatLong(Dem2,Col,Row,z2);
+       end;
    end;
 end;
 
@@ -2110,7 +2117,7 @@ end;
       MaxTanAngle := -999;
       MinTanAngle := 999;
       FoundOne := false;
-      For i := 1 to PixelsInDirection do begin
+      For i := MDDef.OpenStartRadialsAtPixel to PixelsInDirection do begin
          if GetElevMeters(Col + i * dx,Row + i * dy,PointElev) then begin
             TanAngle := (PointElev - zp) / (i * Spacing);
             CompareValueToExtremes(TanAngle,MinTanAngle,MaxTanAngle);
@@ -2129,7 +2136,7 @@ end;
 
 
 
-function tDEMDataSet.FigureOpenness(Col,Row,RegionSizeMeters : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
+function tDEMDataSet.FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia : integer; var  Upward,Downward : float64; Findings : tStringList = Nil) : boolean;
 var
    UpAngle,DownAngle,zp : float32;
    RaysUsed,PixelsInDirection : integer;
@@ -2149,17 +2156,16 @@ begin
       Findings.Add('Direction Upward Openness   Downward Openness');
    end;
 
-   PixelsInDirection := round(RegionSizeMeters / AverageXSpace);
-   if MDDef.OpennessDirs[3] then OpennessOneDirection(Col,Row,PixelsInDirection,1,0,AverageXSpace,'E ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[7] then OpennessOneDirection(Col,Row,PixelsInDirection,-1,0,AverageXSpace,'W ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   PixelsInDirection := round(RegionSizeMeters / AverageYSpace);
-   if MDDef.OpennessDirs[1] then OpennessOneDirection(Col,Row,PixelsInDirection,0,1,AverageYSpace,'N ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[5] then OpennessOneDirection(Col,Row,PixelsInDirection,0,-1,AverageYSpace,'S ',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   PixelsInDirection := round(RegionSizeMeters / AverageDiaSpace);
-   if MDDef.OpennessDirs[2] then OpennessOneDirection(Col,Row,PixelsInDirection,1,1,AverageDiaSpace,'NE',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[4] then OpennessOneDirection(Col,Row,PixelsInDirection,1,-1,AverageDiaSpace,'SE',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[6] then OpennessOneDirection(Col,Row,PixelsInDirection,-1,-1,AverageDiaSpace,'SW',UpAngle,DownAngle,zp,RaysUsed,Findings);
-   if MDDef.OpennessDirs[8] then OpennessOneDirection(Col,Row,PixelsInDirection,-1,1,AverageDiaSpace,'NW',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   //PixelsInDirection := round(RegionSizeMeters / AverageXSpace);
+   if MDDef.OpennessDirs[3] then OpennessOneDirection(Col,Row,PixelsEW,1,0,AverageXSpace,'E ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[7] then OpennessOneDirection(Col,Row,PixelsEW,-1,0,AverageXSpace,'W ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   //PixelsInDirection := round(RegionSizeMeters / AverageYSpace);
+   if MDDef.OpennessDirs[1] then OpennessOneDirection(Col,Row,PixelsNS,0,-1,AverageYSpace,'S ',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   //PixelsInDirection := round(RegionSizeMeters / AverageDiaSpace);
+   if MDDef.OpennessDirs[2] then OpennessOneDirection(Col,Row,PixelsNS,1,1,AverageDiaSpace,'NE',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[4] then OpennessOneDirection(Col,Row,PixelsDia,1,-1,AverageDiaSpace,'SE',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[6] then OpennessOneDirection(Col,Row,PixelsDia,-1,-1,AverageDiaSpace,'SW',UpAngle,DownAngle,zp,RaysUsed,Findings);
+   if MDDef.OpennessDirs[8] then OpennessOneDirection(Col,Row,PixelsDia,-1,1,AverageDiaSpace,'NW',UpAngle,DownAngle,zp,RaysUsed,Findings);
 
    Upward := 90 - ArcTan(UpAngle / RaysUsed) / DegToRad;
    Downward := 90 + ArcTan(DownAngle / RaysUsed) / DegToRad;
@@ -2217,7 +2223,7 @@ var
    xg,yg : float64;
 begin
    z := ThisDEMMissingValue;
-   {Result :=} LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
+   LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
    Result := GetElevMeters(xg,yg,z);
    //else z := ThisDEMMissingValue;
 end;
@@ -2234,6 +2240,7 @@ procedure tDEMDataSet.GetElevCol(XGrid : integer; var z : pSmallIntCol);
 begin
    if (SmallIntElevations[XGrid] <> Nil) and (XGrid >= 0) and (XGrid <= pred(DEMheader.NumCol)) then Move(SmallIntElevations[XGrid]^,z^,BytesPerColumn);
 end {proc GetElevCol};
+
 
 procedure tDEMDataSet.GetFloatElevCol(XGrid: integer; var z : pShortFloatCol); {returns an entire column of elevations, needed to pass to contouring routine}
 begin

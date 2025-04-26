@@ -582,6 +582,31 @@ end;
 
 
 procedure tDEMDataSet.BothOpennessMoments(GridLimits: tGridLimits; var UpOpenMoment,DownOpenMoment : tMomentVar);
+
+      procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64;   var UpValues,DownValues : bfarray32; IncludeSeaLevel : boolean);
+      var
+         Col,Row,Incr : integer;
+         UpOpen,DownOpen : float64;
+      begin
+         NPts := 0;
+         Incr := GetSamplingSize(GridLimits);
+         Col := GridLimits.XGridLow;
+         while (Col <= GridLimits.XGridHigh) do begin
+            Row := GridLimits.YGridLow;
+            while (Row <= GridLimits.YGridHigh) do begin
+               if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
+                  if FigureOpenness(Col,Row,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,UpOpen,DownOpen) then begin
+                     UpValues[Npts] := UpOpen;
+                     DownValues[Npts] := DownOpen;
+                     inc(NPts);
+                  end;
+               end;
+               inc(Row,Incr);
+            end;
+            inc(Col,Incr);
+         end;
+      end;
+
 var
    ups, downs : ^bfarray32;
 begin
@@ -851,7 +876,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.FractalBox(GridLimits: tGridLimits; var FracDim,r : float32; SkipDraw : boolean = false; CloseGraph : boolean = false);
+procedure tDEMDataSet.FractalBox(GridLimits: tGridLimits; var FracDim,r : float64; SkipDraw : boolean = false; CloseGraph : boolean = false);
 var
    Results : tStringList;
    DoResults : boolean;
@@ -859,7 +884,7 @@ var
    function DoBox(Col,Row,Step : integer; var area : float64) : boolean;
    var
       a,b,c,d : float32;
-      e, w,x,y,z, o,p,q,r, sa,sb,sc,sd, aa,ab,ac,ad : float64;
+      e, w,x,y,z, o,p,q,r, sa,sb,sc,sd, aa,ab,ac,ad,
       XSpace,YSpace,DiaSpace : float64;
    begin
       Result := false;
@@ -945,7 +970,7 @@ var
 
 var
    Step,n,Valid : integer;
-   a,b,Area : float32;
+   a,b,Area : float64;
    Graph :  TThisBaseGraph;
    v         : array[1..2] of float32;
    TStr      : ShortString;
@@ -1033,7 +1058,7 @@ end;
 
 procedure tDEMDataSet.EntireDEMFractalBox;
 var
-   FracDim,r  : float32;
+   FracDim,r  : float64;
 begin
    FractalBox(FullDEMGridLimits,FracDim,r);
 end;
@@ -1115,7 +1140,7 @@ var
 
 begin
    {$IfDef RecordVariogram} WriteLineToDebugFile('tDEMDataSet.ComputeVariogram in for ' + AreaName);{$EndIf}
-   with MDDef.VariogramOptionsRecord do if DoGraph or DoSlopes then begin
+   with MDDef.VariogramOptionsRecord do if DoGraph {or DoSlopes} then begin
       Dist := round(DistanceOut / AverageXSpace);
 
       for j := 1 to 4 do begin
@@ -1233,6 +1258,7 @@ begin
       Results := tStringList.Create;
    end;
 
+   (*
    if MDDef.VariogramOptionsRecord.DoSlopes then begin
       SlopeNorthSouth := -999;
       SlopeEastWest   := -999;
@@ -1256,7 +1282,7 @@ begin
       {$IfDef RecordVariogram} WriteStringListToDebugFile(Results); {$EndIf}
       if not MDDef.VariogramOptionsRecord.DoGraph then ThisGraph.Close;
    end;
-
+   *)
    if MDDef.VariogramOptionsRecord.DoGamma then begin
       VariogramGamma(GridLimits,EastWest,NorthSouth,NESW,NWSE);
       Results.Add('Variogram Gammas, ' + AreaName);
@@ -1402,30 +1428,6 @@ end;
 {$IfDef ExGeostats}
 {$Else}
 
-procedure tDEMDataSet.GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64;   var UpValues,DownValues : bfarray32; IncludeSeaLevel : boolean = true);
-var
-   Col,Row,Incr : integer;
-   UpOpen,DownOpen : float64;
-begin
-   NPts := 0;
-   Incr := GetSamplingSize(GridLimits);
-   Col := GridLimits.XGridLow;
-   while (Col <= GridLimits.XGridHigh) do begin
-      Row := GridLimits.YGridLow;
-      while (Row <= GridLimits.YGridHigh) do begin
-         if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-            if FigureOpenness(Col,Row,MDDef.OpenGridBoxSize,UpOpen,DownOpen) then begin
-               UpValues[Npts] := UpOpen;
-               DownValues[Npts] := DownOpen;
-               inc(NPts);
-            end;
-         end;
-         inc(Row,Incr);
-      end;
-      inc(Col,Incr);
-   end;
-end;
-
 
 function tDEMDataSet.FindLocationOfMaximum(GridLimits: tGridLimits; var xloc,yloc : integer; var LocMax : float32) : boolean;
 var
@@ -1555,9 +1557,9 @@ begin
       {$EndIf}
 
       Results2 := tStringList.Create;
-      if FigureOpenness(Col,Row,MDDef.OpenGridBoxSize,Upward,Downward,Results2) then begin
+      if FigureOpenness(Col,Row,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,Upward,Downward,Results2) then begin
          Results.Add('');
-         Results.Add('Openness parameters (' + IntToStr(MDDef.OpenGridBoxSize) + ' m)');
+         Results.Add('Openness parameters (' + IntToStr(MDDef.OpennessBoxRadiusPixels) + ' pixels)');
          Results.Add('  Upward openness: ' + RealToString(Upward,12,2) + '°');
          Results.Add('  Downward openness:' + RealToString(Downward,12,2) + '°');
          Results.Add('');

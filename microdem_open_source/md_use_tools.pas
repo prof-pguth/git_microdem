@@ -17,7 +17,7 @@ unit md_use_tools;
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordWBT}
-      //{$RecordSAGA}
+      {$Define RecordSAGA}
       //{$Define RecordSAGARanges}
       //{$Define RecordSAGA_JustResult}
       //{$Define RecordSAGALS}
@@ -133,7 +133,7 @@ uses
 {$Else}
    procedure SAGA_all_DEMs_remove_sinks;
    function SagaTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-   function SagaTPIMap(OpenMap : boolean; InName : PathStr) : integer;
+   function SagaTPIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function SagaVectorRuggednessMap(OpenMap : boolean; InName : PathStr; Radius : integer) : integer;
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
    function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
@@ -200,6 +200,7 @@ procedure ACOLITEprocessing(MapOwner : tMapForm; OpenMaps : boolean = true);
 procedure laslibReproject(ask : boolean);
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
+function RUN_LSPcalculator(DEM : integer; Options : shortstring) : integer;
 
 
 implementation
@@ -239,6 +240,19 @@ function BBtoPathString(bb : sfBoundBox; Decs : integer = 2) : shortstring;
 begin
    Result := RealToString(bb.ymin,-8,Decs) + '_' + RealToString(bb.xmin,-8,Decs) + '_' + RealToString(bb.ymax,-8,Decs) + '_' + RealToString(bb.xmax,-8,Decs);
 end;
+
+
+function RUN_LSPcalculator(DEM : integer; Options : shortstring) : integer;
+var
+   cmd : shortstring;
+begin
+   cmd := 'J:\gis_software\xiceph\lsp_calculator.exe -i ' + DEMGlb[DEM].GeotiffDEMName +
+         ' -o ' + MDtempDir + DEMGlb[DEM].AreaName + ' ' + Options;
+   WriteLineToDebugFile(cmd);
+   WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+end;
+
+
 
 
 

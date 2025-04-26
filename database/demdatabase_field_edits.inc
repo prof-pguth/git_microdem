@@ -712,40 +712,44 @@ end;
 procedure TGISdataBaseModule.AddSequentialIndex(fName : shortstring; Fill : boolean = true);
 var
    I : int64;
-   OldFilter : shortstring;
 begin
-   {$IfDef RecordAddField} WriteLineToDebugFile('TGISdataBaseModule.AddSequentialIndex enter ' + fName + ' for ' + dbName + '  recs=' + IntToStr(Mydata.RecordCount)); {$EndIf}
    if MyData.Filtered then exit;
-   OldFilter := MyData.Filter;
-   MyData.ApplyFilter('');
-
+   {$If Defined(RecordAddField) or Defined(RecordSeqIndex)} WriteLineToDebugFile('TGISdataBaseModule.AddSequentialIndex enter ' + fName + ' for ' + dbName + '  recs=' + IntToStr(Mydata.RecordCount)); {$EndIf}
    if (not MyData.FieldExists(fName)) then begin
       AddFieldToDataBase(ftInteger,fName,9);
       Fill := true;
-     {$IfDef RecordAddField} WriteLineToDebugFile('TGISdataBaseModule.AddSequentialIndex added, recs=' + IntToStr(Mydata.RecordCount)); {$EndIf}
+     {$If Defined(RecordSeqIndex)} WriteLineToDebugFile('Must fill after adding ' + fName); {$EndIf}
    end
    else begin
-      if not Fill then begin
+      if (not Fill) then begin
          EmpSource.Enabled := false;
          MyData.First;
          i := MyData.GetFieldByNameAsInteger(fName);
-         if (i <> 1) then Fill := true;
+         if (i <> 1) then begin
+            {$If Defined(RecordSeqIndex)} WriteLineToDebugFile('First record, ' + FName + ' is not 1'); {$EndIf}
+            Fill := true;
+         end;
          MyData.Last;
          i := MyData.GetFieldByNameAsInteger(fName);
-         if (i <> MyData.TotRecsInDB) then Fill := true;
+         if (i <> MyData.TotRecsInDB) then begin
+            Fill := true;
+            {$If Defined(RecordSeqIndex)} WriteLineToDebugFile('Last record, ' + FName + ' is ' + IntToStr(i) + ' and not ' + IntToStr(MyData.TotRecsInDB)); {$EndIf}
+         end;
       end;
    end;
 
    if Fill then begin
-      {$IfDef RecordAddField} WriteLineToDebugFile('TGISdataBaseModule.AddSequentialIndex fill ' + fName + ' for ' + dbName + '  recs=' + IntToStr(Mydata.RecordCount)); {$EndIf}
+      {$If Defined(RecordAddField) or Defined(RecordSeqIndex)}
+         WriteLineToDebugFile('AddSequentialIndex fill ' + fName + ' for ' + dbName + '  recs=' + IntToStr(Mydata.RecordCount));
+      {$EndIf}
       i := 0;
       EmpSource.Enabled := false;
-      {$IfDef VCL}  StartProgress('Fill ' + fName + ' in ' + dbName); {$EndIf}
+      {$IfDef VCL} StartProgress('Fill ' + fName + ' in ' + dbName); {$EndIf}
       MyData.First;
       while not MyData.eof do begin
          inc(i);
          if (i mod 500 = 0) then begin
-            {$IfDef VCL} UpDateProgressBar(i/MyData.TotRecsInDB);   {$EndIf}
+            {$IfDef VCL} UpDateProgressBar(i/MyData.TotRecsInDB); {$EndIf}
             EmpSource.Enabled := false;
          end;
          MyData.Edit;
@@ -753,9 +757,8 @@ begin
          MyData.Next;
       end;
    end;
-   MyData.ApplyFilter(OldFilter);
    ShowStatus;
-   {$IfDef RecordAddField} WriteLineToDebugFile('TGISdataBaseModule.AddSequentialIndex out, recs=' + IntToStr(Mydata.RecordCount)); {$EndIf}
+   {$If Defined(RecordAddField) or Defined(RecordSeqIndex)} WriteLineToDebugFile('AddSequentialIndex out, recs=' + IntToStr(Mydata.RecordCount)); {$EndIf}
 end;
 
 

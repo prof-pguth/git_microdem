@@ -326,7 +326,7 @@ end;
 
 procedure TPickGeoStat.BitBtn1Click(Sender: TObject);
 var
-   FracDim,r  : float32;
+   FracDim,r  : float64;
 begin
    DEMGlb[CurDEM].FractalBox(GridLimits,FracDim,r);
 end;
@@ -455,7 +455,7 @@ end;
 
 procedure TPickGeoStat.BitBtn2Click(Sender: TObject);
 var
-   SlopeByColumn,SlopeByRow : float32;
+   SlopeByColumn,SlopeByRow : float64;
 begin
    NeedSingleDEM;
    DEMStat.FastFourierTransform(CurDEM,GridLimits,SlopeByColumn,SlopeByRow);

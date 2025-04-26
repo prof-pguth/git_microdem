@@ -53,6 +53,8 @@ procedure CompareSlopeAndThreeCurvature(DEM : integer);
 procedure CompareHillshadeMaps(DEM : integer; OpenMap : boolean = true);
 procedure ComparePartialDerivatives(DEM : integer; OpenMap : boolean = true);
 procedure CompareTRI(DEM : integer; OpenMap : boolean = true);
+procedure CompareTPI(DEM : integer; OpenMap : boolean = true);
+
 procedure CompareAspectMaps(DEM : integer; OpenMap : boolean = true);
 procedure CompareContourTorsion(DEM : integer);
 
@@ -433,6 +435,24 @@ begin  {procedure EndComparison}
 end {procedure EndComparison};
 
 
+procedure CompareTPI(DEM : integer; OpenMap : boolean = true);
+var
+   DEMList : tDEMBooleanArray;
+   Grid : integer;
+begin
+   StartComparisonProcess(DEM,DEMList);
+   Grid := MakeTPIGrid(DEM,nmRRI,OpenMap,'md_tpi');
+   DEMlist[Grid] := true;
+   Grid := GDAL_TPI(OpenMap,DEM,MDtempDir + 'gdal_tpi.tif');
+   DEMlist[Grid] := true;
+   //Grid := GrassTPIMap(DEMGlb[DEM].GeotiffDEMName,OpenMap,MDtempDir + 'grass_tri.tif');
+   //DEMlist[Grid] := true;
+   //Grid := SagaTPIMap(OpenMap,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'saga_tri.tif');
+   //DEMlist[Grid] := true;
+   EndComparison(DEM,DEMList,'TRI');
+end;
+
+
 procedure CompareTRI(DEM : integer; OpenMap : boolean = true);
 var
    DEMList : tDEMBooleanArray;
@@ -507,18 +527,22 @@ procedure MakeMDcurvatures(OpenMap : boolean; DEM,Curvature : integer; var DEMLi
       end;
 
 begin
+   SaveBackupDefaults;
    MDDef.CurveCompute.AlgorithmName := smLSQ;
+   MDDef.EvansApproximationAllowed := false;
+
    MDDef.CurveCompute.RequireFullWindow := true;
    MDDef.CurveCompute.LSQorder := 2;
    MDDef.CurveCompute.WindowRadius := 1;
-   MDDef.EvansApproximationAllowed := false;
    MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
+
    MDDef.CurveCompute.LSQorder := 2;
    MDDef.CurveCompute.WindowRadius := 2;
    MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
    MDDef.CurveCompute.LSQorder := 3;
-   MDDef.CurveCompute.WindowRadius := 2;
+   MDDef.CurveCompute.WindowRadius := 3;
    MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
+   RestoreBackupDefaults;
 end;
 
 
@@ -874,15 +898,15 @@ end;
 procedure ComparePlanCurvatures(DEM : integer);
 var
    DEMList : tDEMBooleanArray;
-   //Fixed,
    i : int64;
- //fName : PathStr;
    Grid : integer;
-   //CorrelationMatrix : DEMStringGrid.TGridForm;
 begin
    StartComparisonProcess(DEM,DEMList);
 
    MakeMDcurvatures(MDDef.CompareShowMaps,DEM,eucurv_kpc,DEMList);
+
+   Grid := WBT_PlanCurvature(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'wbt_plan_curv.tif');
+   if ValidDEM(Grid) then DEMlist[Grid] := true;
 
    if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
       for i := 2 to 3 do begin  //skip Horn, Flor method, which fail
@@ -890,9 +914,6 @@ begin
          if ValidDEM(Grid) then DEMlist[Grid] := true;
       end;
    end;
-
-   Grid := WBT_PlanCurvature(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'wbt_plan_curv.tif');
-   if ValidDEM(Grid) then DEMlist[Grid] := true;
 
    if (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin
       LoadLSPgrids(MDDef.CompareShowMaps,true,'30m',DEMlist,'kpc','plan_curv');

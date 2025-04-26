@@ -1292,11 +1292,12 @@ end;
 
       procedure CloseSingleSatelliteImage(var j : integer);
       begin
-         if ValidSatImage(j) then begin
+         if ValidSatImage(j) then try
             {$IfDef RecordClosingData} WriteLineToDebugFile('CloseSingleSatelliteImage in, j=' + IntToStr(j)); {$EndIf}
-            {$IfDef VCL} SkipMenuUpdating := true; {$EndIf}
+            SkipMenuUpdating := true;
             FreeAndNil(SatImage[j]);
-            {$IfDef VCL} SkipMenuUpdating := false; {$EndIf}
+         finally
+            SkipMenuUpdating := false;
             {$IfDef RecordClosingData} WriteLineToDebugFile('CloseSingleSatelliteImage out'); {$EndIf}
          end;
       end;

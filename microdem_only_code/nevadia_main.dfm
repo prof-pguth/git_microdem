@@ -29,6 +29,7 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -1695,7 +1696,6 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 1214
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2456,6 +2456,10 @@ object wmdem: Twmdem
           Caption = 'FUV by Landcover, 1 DEM to reference'
           OnClick = FUVbyLandcover1DEMtoreference1Click
         end
+        object ComparelandcoverinpointcloudDTM1: TMenuItem
+          Caption = 'Compare land cover in point cloud DTM'
+          OnClick = ComparelandcoverinpointcloudDTM1Click
+        end
       end
       object Multipletiles1: TMenuItem
         Caption = 'Multiple tiles'
@@ -2467,6 +2471,31 @@ object wmdem: Twmdem
           Caption = 'FUV'
           OnClick = FUV2Click
         end
+      end
+      object N61: TMenuItem
+        Caption = '-'
+      end
+      object N62: TMenuItem
+        Caption = 'Open DEMs'
+        OnClick = N62Click
+      end
+      object N59: TMenuItem
+        Caption = '-'
+      end
+      object N60: TMenuItem
+        Caption = 'Pick LSPs to use'
+        OnClick = N60Click
+      end
+      object PicktestDEMs1: TMenuItem
+        Caption = 'Pick test DEMs'
+        OnClick = PicktestDEMs1Click
+      end
+      object N65: TMenuItem
+        Caption = '-'
+      end
+      object N64: TMenuItem
+        Caption = 'Curvatures comparison'
+        OnClick = N64Click
       end
     end
     object Help1: TMenuItem

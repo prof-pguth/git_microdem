@@ -344,9 +344,12 @@ type
             function OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
             procedure SplitLASfile;
             procedure ExportXYZ(Output : tLASAsciiOutput; ScaleFactor : float64 = -99; CenterOutput : boolean = true);
-            procedure ExportGeoJSON;
             procedure ExportXYZ_DB(LatLong : boolean; fName : PathStr; MaxPoint : int64);
             procedure ExportIcesat(MapOwner : tMapForm; Lat,Long : float64);
+         {$EndIf}
+
+         {$IfDef IncludeGeoJSONexport}
+            procedure ExportGeoJSON;
          {$EndIf}
 
          {$IfDef VCL}
@@ -420,10 +423,11 @@ procedure ZeroLidarPointType0(lp0 : tLidarPointType0);
 function LidarPointTypeRecordBaseLength(LidarPointType : byte) : int64;
 
 
-{$IfDef MSWindows}
    procedure SubsetLASfiles(fName : PathStr; Memo1 : tMemo = nil);
    procedure LidarASCIIout(Output : tLASAsciiOutput); overload;
    procedure LidarASCIIout(fName : PathStr; Output : tLASAsciiOutput); overload;
+
+{$IfDef IncludeGeoJSONexport}
    procedure LAS2GeoJSON; overload;
    procedure LAS2GeoJSON(fName : PathStr); overload;
 {$EndIf}
@@ -609,7 +613,7 @@ var
    NoFilter : boolean;
    ColorRGB : tPlatformColor;
 begin
-   if {true or} IsLASFileOnMap(BaseMapDraw) then begin
+   if IsLASFileOnMap(BaseMapDraw) then begin
       {$If Defined(RecordLASplot)} WritelineToDebugFile('tLAS_data.PlotOnMap ' + ExtractFileNameNoExt(LasFileName) + ' LAS proj=' + sfBoundBoxToString(LAS_Proj_Box,1)); {$EndIf}
       NoFilter := NoFilterWanted;
       {$If Defined(RecordLASplot) or Defined(RecordTilePlotSummary)} pplot := 0; {$EndIf}

@@ -1045,12 +1045,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 FirstReturnDensityForMean := MissingDataGrid(NewGridname('First_return__density'),InitDEMZero);
                 LastReturnDensity := MissingDataGrid(NewGridname('Last_return__density'),InitDEMZero);
              end
-
-             (*
-             else if (PCGridMaker in [pcgmLowXYZ]) then MissingDataGrid(NewLowXYZDEM,NewGridname('low_min_elev_'))
-             else if (PCGridMaker in [pcgmGroundLowXYZ]) then MissingDataGrid(NewGroundXYZDEM,NewGridname('low_ground_min_elev_'))
-             *)
-
              else if (PCGridMaker in [pcgmThreeDEMs,pcgmCeilFloor]) then begin
                 if (MDDef.MakePCFloor) then NVSDEM := MissingDataGrid(NewGridname('Point_cloud_NVS_min'),InitDEMmissing);
                 if (MDDef.MakePCCeiling) then DSMdem := MissingDataGrid(NewGridname('Point_cloud_DSM_max'),InitDEMmissing);
@@ -1064,7 +1058,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 {$IfDef RecordMakeGrid} WriteLineToDebugFile('start pcgmGrndPtDTM'); {$EndIf}
                 NewHeadRecs.DEMPrecision := FloatingPointDEM;
                 NewHeadRecs.ElevUnits := euMeters;
-                if (MDDef.DTMoption in [dtmAll,dtmMean]) then NewGroundMean := MissingDataGrid(NewGridname('PointCloud_DTM_Mean'),InitDEMzero);
+                if (MDDef.DTMoption in [dtmAll,dtmMean]) then NewGroundMean := MissingDataGrid(NewGridname('PointCloud_DTM_Mean'));
                 if (MDDef.DTMoption in [dtmAll,dtmMax]) then NewGroundMax := MissingDataGrid(NewGridname('DTM_ground_pts_Max'));
                 if (MDDef.DTMoption in [dtmAll,dtmMin]) then NewGroundMin := MissingDataGrid(NewGridname('DTM_ground_pts_Min'));
                 if (MDDef.DTMoption in [dtmAll,dtmNearest]) then begin
@@ -1091,7 +1085,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                 EndProgress;
              end
              else if (PCGridMaker = pcgmDensityVox) then begin
-                {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click set up PCGridMaker = pcgmDensityVox'); {$EndIf}
                 GetDosPath('Point cloud density voxels',OutDir);
                 if (OutDir = '') then exit;
                 MDDef.VoxBinHeight := 1;
@@ -1104,7 +1097,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
                    OpenAndZeroNewDEM(true,NewHeadRecs,VegDensity[i],'Voxel height ' + IntToStr(i * MDDef.VoxBinHeight),InitDEMvalue,0);
                 end;
                 EndProgress;
-                {$IfDef RecordMakeGrid} WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click done set up PCGridMaker = pcgmDensityVox'); {$EndIf}
              end
              else if (PCGridMaker in [pcgmScanAngle]) then begin
                 NewHeadRecs.DEMPrecision := SmallIntDEM;  //byte would work for scan angle, but we need negatives
@@ -1432,7 +1424,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
            CheckMap(NewGroundMin,true,mtIHSReflect);
            CheckMap(NewGroundNearest,true,mtIHSReflect);
 
-
            CheckMap(NewOtherDEM,false);
            CheckMap(NewPointIDDEM,false);
            CheckMap(NewUnclassDEM,false);
@@ -1449,16 +1440,7 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
 
     begin {MakeGridFromLidarCloud}
        {$If Defined(RecordMakeGrid) or Defined(TrackPointCloud)} WriteLineToDebugFile(''); WriteLineToDebugFile('Tpt_cloud_opts_fm.BitBtn9Click (Make grid) in, ' + IntToStr(ord(PCGridMaker))); {$EndIf}
-
-       (*
-       if (PCGridMaker in [pcgmAboveBelow,pcgmLowXYZ, pcgmGroundLowXYZ]) then begin
-          MessageToContinue('Option currentely disabled');
-          exit;
-       end;
-       *)
-
        ShowHourglassCursor;
-       //BaseMap.MapDraw.MapCorners.BoundBoxUTM := BaseMap.MapDraw.GetBoundBoxUTM;
        TempDEM := BaseMap.MakeTempGrid;
       {$IfDef RecordMakeGrid} WriteLineToDebugFile('CreateGridToMatchMap done, TempDEM=' + IntToStr(TempDEM) + ' ' + DEMGlb[TempDEM].GridDefinition + ' ' + DEMGlb[TempDEM].DEMSizeString + ' ' + DEMGlb[TempDEM].ColsRowsString); {$EndIf}
       AirReturnDEM := 0;
@@ -1488,10 +1470,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
       NewGroundMin := 0;
       NewGroundNearest := 0;
       NewGroundXYZ := 0;
-      //NewGroundXYZDEM := 0;
-      //NewLowXYZ := 0;
-      //NewLowXYZDEM := 0;
-      NewOtherDEM := 0;
       NewPointIDdem := 0;
       NewRGBGrid := 0;
       NewUnclassDEM := 0;
@@ -1520,14 +1498,6 @@ function Tpt_cloud_opts_fm.MakeGrid(PCGridMaker : tPCGridMaker) : integer;
 
 
 begin {Tpt_cloud_opts_fm.MakeGrid}
-   (*
-   if (MDDef.LidarGridProjection = UTMBasedDEM) or (PCGridMaker in [pcgmLowXYZ, pcgmGroundLowXYZ]) then begin
-       if (Edit19.Text = '') then begin
-          PickUTMZone(MDdef.DefaultUTMZone);
-          Edit19.Text := IntToStr(MDdef.DefaultUTMZone);
-       end;
-    end;
-    *)
    Result := MakeGridFromLidarCloud(TheCloudName,PCGridMaker,BaseMap,UsePC,LasFiles);
 end {Tpt_cloud_opts_fm.MakeGrid};
 
@@ -2836,10 +2806,12 @@ begin
           OutName := '';
           LasFiles[i].ShowLASProgress := true;
           LasFiles[i].MergeLasPoints(mlOnMap,BaseMap,OutName,nil);
-          if (Sender = BitBtn48) then begin
-            LidarASCIIout(OutName,lasascClassInt);
-            LAS2GeoJSON(OutName);
-          end;
+          {$IfDef IncludeGeoJSONexport}
+              if (Sender = BitBtn48) then begin
+                LidarASCIIout(OutName,lasascClassInt);
+                LAS2GeoJSON(OutName);
+              end;
+          {$EndIf}
        end;
     end
     else begin

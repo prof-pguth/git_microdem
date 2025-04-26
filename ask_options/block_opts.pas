@@ -444,7 +444,7 @@ begin
    Edit10.Text := MDDef.MomentCalcThin.ToString;
    Edit11.Text := MDDef.ReliefCalcThin.ToString;
 
-   Edit2.Text := IntToStr(MDDef.OpenBoxSizeMeters);
+   Edit2.Text := IntToStr(MDDef.OpennessBoxRadiusMeters);
    Edit4.Text := IntToStr(MDDef.GeomorphBoxSizeMeters);
    Edit3.Text := IntToStr(MDDef.SSOBoxSizeMeters);
    Edit9.Text := MDDef.MomentsBoxSizeMeters.ToString;
@@ -536,7 +536,7 @@ begin
    CheckEditString(Edit11.Text,MDDef.ReliefCalcThin);
    CheckEditString(Edit13.Text,MDDef.ReliefBoxSizeMeters);
    CheckEditString(Edit3.Text,MDDef.SSOBoxSizeMeters);
-   CheckEditString(Edit2.Text,MDDef.OpenBoxSizeMeters);
+   CheckEditString(Edit2.Text,MDDef.OpennessBoxRadiusMeters);
    CheckEditString(Edit4.Text,MDDef.GeomorphBoxSizeMeters);
    CheckEditString(Edit5.Text,MDDef.GeomorphElevsNeeded);
    CheckEditString(Edit7.Text,MDDef.StatSampleIncr);

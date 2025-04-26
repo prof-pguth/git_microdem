@@ -39,6 +39,9 @@
 {$Define AllowEDTM}
 
 
+{$Define SaveUpwardOpenness}
+
+
 {$Define MICRODEM}
 {$Define VCL}
 {$Define RecordProblems}

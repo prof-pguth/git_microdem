@@ -515,7 +515,7 @@ type
      procedure Filter(Terms : integer; Median : boolean = false);
      procedure DoFFT(XAxis,SeekPeaks  : boolean);
      procedure DrawBestFitLineOnGraph(a,b : float32);
-     procedure BestSegmentFitGraph(nt : integer; fName : PathStr; var FittedInt,FittedSlope,FittedR : float32; var NPtsUsed : integer; PtsRequired : integer; SlopeDifferenceAllowed : float32);
+     //procedure BestSegmentFitGraph(nt : integer; fName : PathStr; var FittedInt,FittedSlope,FittedR : float32; var NPtsUsed : integer; PtsRequired : integer; SlopeDifferenceAllowed : float32);
 
      function MakeLegend : tMyBitmap;
 
@@ -538,7 +538,7 @@ type
      procedure HideToolbar(HideIt : boolean);
      procedure HideMenus;
      procedure SetBackgroundRegion(xlo,ylo,xhigh,yhigh : float32);
-     procedure FitGraph(AllData : boolean; nt : integer; fName : PathStr; var a,b,r : float32; var n  : integer; LowLimitPoint : integer = 0; HighLimitPoint : integer = -1);
+     procedure FitGraph(AllData : boolean; nt : integer; fName : PathStr; var a,b,r : float64; var n  : integer; LowLimitPoint : integer = 0; HighLimitPoint : integer = -1);
      procedure WriteDataSeriesASCII(XAxis,ASCII : boolean; var fftfilename : PathStr; var TotalNumberPoints : integer; DefSeries : integer = -1);
      procedure WindowGraphAxes(Bitmap : tMyBitmap);
      procedure AddCorrelationToCorner;
@@ -5349,12 +5349,12 @@ begin
 end;
 
 
-procedure TThisBaseGraph.FitGraph(AllData : boolean; nt : integer; fName : PathStr; var a,b,r : float32; var n  : integer; LowLimitPoint : integer = 0; HighLimitPoint : integer = -1);
+procedure TThisBaseGraph.FitGraph(AllData : boolean; nt : integer; fName : PathStr; var a,b,r : float64; var n  : integer; LowLimitPoint : integer = 0; HighLimitPoint : integer = -1);
 var
    infile : file;
    v      : array[1..3] of float32;
    x,y    : ^bfarray32;
-   siga,sigb : float32;
+   siga,sigb : float64;
    sum,sum2 : float64;
    PtInSeries,NumRead,i : integer;
    Coords : ^tPointDataBuffer;
@@ -5392,7 +5392,8 @@ begin
            v[1] := Coords^[i][1];
            v[2] := Coords^[i][2];
            ProcessPoint;
-           if (HighLimitPoint > 0) and (PtInSeries > HighLimitPoint) then break;
+           //if (HighLimitPoint > 0) and (PtInSeries > HighLimitPoint) then break;
+           if (PtInSeries > bfArrayMaxSize) then break;
         end;
      end;
      Dispose(Coords);
@@ -5401,7 +5402,8 @@ begin
        while not EOF(infile) do begin
           BlockRead(infile,v,1);
           ProcessPoint;
-          if (HighLimitPoint > 0) and (PtInSeries > HighLimitPoint) then break;
+          //if (HighLimitPoint > 0) and (PtInSeries > HighLimitPoint) then break;
+          if (PtInSeries > bfArrayMaxSize) then break;
        end;
    end;
    CloseFile(InFile);
@@ -5421,9 +5423,11 @@ begin
    Dispose(y);
 end;
 
+
+(*
 procedure TThisBaseGraph.BestSegmentFitGraph(nt : integer; fName : PathStr; var FittedInt,FittedSlope,FittedR : float32; var NPtsUsed : integer; PtsRequired : integer; SlopeDifferenceAllowed : float32);
 var
-   nPts,FirstPoint,LastPoint  : integer;
+   nPts{,FirstPoint,LastPoint}  : integer;
    siga,sigb,a,r,StartSlope,EndSlope,Difference  : float32;
    x,y    : ^bfarray32;
    infile : file;
@@ -5451,11 +5455,11 @@ begin
       WriteLineToDebugFile('First Last  n    Slope    r²');
    {$EndIf}
    repeat
-      FitOnRange(x^,y^,FirstPoint,LastPoint,nPts,FittedInt,FittedSlope,siga,sigb,FittedR);
+      FitOnRange(x^,y^,{FirstPoint,LastPoint,}nPts,FittedInt,FittedSlope,siga,sigb,FittedR);
       {$IfDef RecordFit} WriteLineToDebugFile(IntegerToString(FirstPoint,5) + IntegerToString(LastPoint,5) + IntegerToString(nPts,5) + RealToString(FittedSlope,9,3) + RealToString(sqr(FittedR),8,4)); {$EndIf}
-      FitOnRange(x^,y^,FirstPoint,pred(LastPoint),npts,a,StartSlope,siga,sigb,R);
+      FitOnRange(x^,y^,{FirstPoint,pred(LastPoint),}npts,a,StartSlope,siga,sigb,R);
       {$IfDef RecordFit} WriteLineToDebugFile(IntegerToString(FirstPoint,5) + IntegerToString(pred(LastPoint),5) + IntegerToString(nPts,5) + RealToString(StartSlope,9,3) + RealToString(sqr(r),8,4)); {$EndIf}
-      FitOnRange(x^,y^,succ(FirstPoint),LastPoint,npts,a,EndSlope,siga,sigb,R);
+      FitOnRange(x^,y^,{succ(FirstPoint),LastPoint,}npts,a,EndSlope,siga,sigb,R);
       Difference := (StartSlope-EndSlope) / FittedSlope;
       {$IfDef RecordFit}
          WriteLineToDebugFile(IntegerToString(succ(FirstPoint),5) + IntegerToString(LastPoint,5) + IntegerToString(nPts,5) + RealToString(EndSlope,9,3) + RealToString(sqr(r),8,4));
@@ -5469,7 +5473,7 @@ begin
    Dispose(x);
    Dispose(y);
 end;
-
+*)
 
 procedure TThisBaseGraph.DrawBestFitLineOnGraph(a,b : float32);
 var
@@ -5528,7 +5532,7 @@ var
    procedure ProcessFile(i : integer; Fname : PathStr; Nt : integer);
    var
       n  : integer;
-      a,b,r,MinX,MaxX : float32;
+      a,b,r,MinX,MaxX : float64;
    begin
       {$IfDef RecordFit} WriteLineToDebugFile('TThisBaseGraph.Linearfit1Click ' + fName); {$EndIf}
       MinX := GraphDraw.MinHorizAxis;

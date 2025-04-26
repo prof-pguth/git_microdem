@@ -858,7 +858,6 @@ end;
 
 function LoadNewDEM(var WantedDem : integer; var FullFileName : PathStr; CreateMap : boolean = true; DEMMessage : shortstring = 'New DEM'; MapTitleBar : shortstring = ''; DrawTheMap : boolean = true; ChangeDefaultName : boolean = true) : boolean;
 var
-   //i       : integer;
    SavedName : PathStr;
 begin
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('function LoadNewDEM in ' + FullFileName); {$EndIf}

@@ -1545,7 +1545,7 @@ end;
 procedure tMultiGridArray.MakeSlopeCorrelationGrids;
 var
    x,y,n,Band,R_DEM,Slope_DEM : integer;
-   a,b,siga,sigb,r : float32;
+   a,b,siga,sigb,r : float64;
    Z : float32;
    xf,yf : array[1..MaxGridsInMG] of float32;
 begin

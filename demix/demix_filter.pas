@@ -682,30 +682,10 @@ end;
 
 procedure TDemixFilterForm.BitBtn33Click(Sender: TObject);
 var
-   i,UseDSM,UseDTM : integer;
-   DiffGrid : tDEMIXindexes;
    DEMSwanted : tDEMbooleanArray;
-   //GridLimits: tGridLimits;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click in'); {$EndIf}
    MakeGeomorphometricMaps('TPI',DEMSwanted);
-
-
-exit;
-
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click TPI done'); {$EndIf}
-   InitializeDEMsWanted(DEMsWanted,false);
-   for I := 1 to MaxDEMIXDEM do begin
-      if ValidDEM(TestDEMs[i]) then begin
-         GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
-         DiffGrid[i] := MakeDifferenceMap(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,true,false,false);
-         //GridLimits := DEMGlb[TestTPI[i]].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(ComboBox1.Text));
-         DiffGrid[i] := MakeDifferenceMap(RefTPI[UseDTM],TestTPI[i],TestTPI[i],0,true,false,false);
-         DEMsWanted[DiffGrid[i]] := true;
-      end;
-   end;
-   CreateGridHistograms(DEMSwanted);
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn33Click out'); {$EndIf}
 end;
 
 
@@ -809,12 +789,12 @@ begin
             {$IfDef RecordGeomorphMaps} WriteLineToDebugFile('Scattergram for ' + DEMGlb[i].AreaName); {$EndIf}
             if What = 'RRI' then ThisRefDEM := GetReferenceDEMforTestDEM(i,RefRRI);
             if What = 'TPI' then ThisRefDEM := GetReferenceDEMforTestDEM(i,RefTPI);
-            if UpperCase(What) = 'RUFF' then ThisRefDEM := GetReferenceDEMforTestDEM(i,RefRuffMap);
+            if (UpperCase(What) = 'RUFF') then ThisRefDEM := GetReferenceDEMforTestDEM(i,RefRuffMap);
             if (UpperCase(What) = 'ELEV') then ThisRefDEM := GetReferenceDEMforTestDEM(i,RefDEMs);
             if ValidDEM(ThisRefDEM) then begin
                GridLimits := DEMGlb[i].sfBoundBox2tGridLimits(bb);
                inc(ng);
-               Graphs[ng] := GridScatterGram(GridLimits,i,ThisRefDEM);
+               Graphs[ng] := DEMstat.GridScatterGram(GridLimits,i,ThisRefDEM);
 
                CopyImageToBitmap(Graphs[ng].Image1,Bitmap);
                fName := NextFileNumber(MDtempDir,'scattergram_','.bmp');

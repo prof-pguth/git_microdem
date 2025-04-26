@@ -665,7 +665,7 @@ object dbtablef: Tdbtablef
       OnClick = Principalcomponents1Click
     end
     object Heatmap1: TMenuItem
-      Caption = 'Heat map'
+      Caption = 'Heat map (record density)'
       OnClick = Heatmap1Click
     end
     object Cluster2: TMenuItem

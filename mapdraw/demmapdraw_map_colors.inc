@@ -308,6 +308,18 @@ var
    GrayRange : integer;
    UpRange,
    Upward,Downward : float64;
+   PixelsNS,PixelsEW,PixelsDia : integer;
+
+(*
+         PixelsNS,PixelsEW,PixelsDia : integer;
+           PixelsNS := round(RegionM / DEMGlb[CurDEM].AverageYSpace);
+            PixelsEW := round(RegionM / DEMGlb[CurDEM].AverageXSpace);
+            PixelsDia := round(RegionM / DEMGlb[CurDEM].AverageDiaSpace);
+            Result := DEMGlb[CurDEM].FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia,Upward,Downward);
+
+*)
+
+
 begin
    GrayRange := MDDef.OpenMaxGray - MDDef.OpenMinGray;
    UpRange := MDDef.MaxUpward-MDDef.MinUpward;
@@ -315,7 +327,7 @@ begin
       for i := 0 to pred(MapXSize) do begin
          if OnScreen(i,j) then  begin
             ScreenToDEMGridInteger(i,j,XG,yg);
-            if DEMGlb[DEMonMap].FigureOpenness(xg,yg,round(5*DEMGlb[DEMonMap].AverageSpace),Upward,Downward) then begin
+            if DEMGlb[DEMonMap].FigureOpenness(xg,yg,5,5,5,Upward,Downward) then begin
                ValueInRange(Upward,MDDef.MinUpward,MDDef.MaxUpward);
                Val := ValidByteRange254(MDDef.OpenMinGray + round(GrayRange * (Upward-MDDef.MinUpward) / UpRange));
                BMPMemory.SetPixelColor(i,j,GrayRGBtrip(Val));

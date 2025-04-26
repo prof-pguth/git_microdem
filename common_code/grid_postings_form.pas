@@ -34,6 +34,7 @@ type
     Edit1: TEdit;
     Label2: TLabel;
     Edit2: TEdit;
+    CheckBox2: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -45,6 +46,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
+    procedure CheckBox2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -103,6 +105,12 @@ begin
       MapOwner.MapDraw.DEMGridLabel := CheckBox1.Checked;
       MapOwner.DoFastMapRedraw;
    end;
+end;
+
+procedure Tgrid_posting_options.CheckBox2Click(Sender: TObject);
+begin
+   MapOwner.MapDraw.HalfPixelOffsets := CheckBox2.Checked;
+   if MapOwner <> Nil then MapOwner.DoFastMapRedraw;
 end;
 
 procedure Tgrid_posting_options.Edit1Change(Sender: TObject);

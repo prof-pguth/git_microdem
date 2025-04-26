@@ -19,7 +19,7 @@ object DemixFilterForm: TDemixFilterForm
     Top = 0
     Width = 772
     Height = 516
-    ActivePage = TabSheet1
+    ActivePage = TabSheet5
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet

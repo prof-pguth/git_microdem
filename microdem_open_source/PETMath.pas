@@ -84,6 +84,7 @@ function erfc(x : float64): float64;
 function erf(x : float64) : float64;
 function Ninv( P : float32 ) : float32;
 function IsInfinity(const d: double) : boolean;
+
 function ArcTanDeg(val : float64) : float64;
 
 procedure TransformCoordinates(xin,yin : float64; var xout,yout : float64; XlateArray : OneBySixFloatArray);
@@ -158,9 +159,8 @@ function ShortMomentResultsToString(MomentVar : tMomentVar) : shortstring;
 procedure VarCovar(var x,y : array of float32; NPts : integer; var correlation,covar : float64);
 procedure NewVarCovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
 
-
-procedure Fit(var x,y : array of float32; ndata : integer; var a,b,siga,sigb,r : float32);
-procedure FitOnRange(var x,y : array of float32; FirstPoint,LastPoint : integer; var ndata : integer; VAR a,b,siga,sigb,r : float32);
+procedure Fit(var x,y : array of float32; ndata : integer; var a,b,siga,sigb,r : float64);
+procedure FitOnRange(var x,y : array of float32; {FirstPoint,LastPoint : integer;} ndata : integer; VAR a,b,siga,sigb,r : float64);
 
 function VectorAverage(Num : integer; var Readings : farray; var Mag : float64) : float64;
 
@@ -1031,49 +1031,68 @@ begin
 end;
 
 
-procedure fit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float32);
+procedure fit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
 begin
-   FitOnRange(x,y,1,ndata,ndata,a,b,siga,sigb,r);
+   FitOnRange(x,y,{1,ndata,}ndata,a,b,siga,sigb,r);
 end;
 
 
-procedure FitOnRange(var x,y : array of float32; FirstPoint,LastPoint : integer; var ndata : integer; var a,b,siga,sigb,r : float32);   {from Press and others, Numerical Recipes, 14.2}
-//a is intercept, b is slope, with respective goodness-of-fit
+procedure FitOnRange(var x,y : array of float32; {FirstPoint,LastPoint : integer; var} ndata : integer; var a,b,siga,sigb,r : float64);
+// from Press and others, Numerical Recipes, 14.2
+// a is intercept, b is slope, with respective goodness-of-fit
 VAR
-   i : integer;
-   sxy,sy,sxoss,syoss,sx,st2,ss,t,ty,sty2 : float64;
+   i,ValidData : integer;
+   sxy,sy,sxoss,syoss,sx,st2,t,ty,sty2 : float64;
 BEGIN
+   {$IfDef RecordFitProblems} WriteLineToDebugFile('PROCEDURE fit in, NPts=' + IntToStr(Ndata)); {$EndIf}
    sx := 0.0;
    sy := 0.0;
-   sxy := 0;
+   sxy := 0.0;
    st2 := 0.0;
    sty2 := 0;
    b := 0.0;
-   for i := pred(FirstPoint) to pred(LastPoint) do begin
-      sx := sx+x[i];
-      sy := sy+y[i];
-   END;
-   NData := succ(LastPoint - FirstPoint);
-   ss := ndata;
+   ValidData := 0;
+   for i := 0 to pred(NData) do begin
+      if (Math.IsNAN(x[i])) or (Math.IsNAN(y[i])) then begin
 
-   sxoss := sx/ss;
-   syoss := sy/ndata;
-   for i := pred(FirstPoint) to pred(LastPoint) do begin
-      t := x[i]-sxoss;
-      ty := y[i]-syoss;
-      st2 := st2+t*t;
-      sty2 := sty2 + ty*ty;
-      b := b+t*y[i];
-      sxy := sxy + t * ty;
+      end
+      else begin
+         sy := sy + y[i];
+         sx := sx + x[i];
+         Inc(ValidData);
+      end;
+   END;
+   {$IfDef RecordFitProblems} WriteLineToDebugFile('Valid points=' + IntToStr(ValidData) + '  sx=' + RealToString(sx,-18,-8) + '  sy=' + RealToString(sy,-18,-8)); {$EndIf}
+   //ss := ndata;
+
+   sxoss := sx / ndata;
+   syoss := sy / ndata;
+   {$IfDef RecordFitProblems} WriteLineToDebugFile('sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8)); {$EndIf}
+
+   for i := 0 to pred(NData) do begin
+      if (Math.IsNAN(x[i])) or (Math.IsNAN(y[i])) then begin
+
+      end
+      else begin
+        t := x[i] - sxoss;
+        ty := y[i] - syoss;
+        st2 := st2 + sqr(t);
+        sty2 := sty2 + sqr(ty);
+        b := b + t * y[i];
+        sxy := sxy + t * ty;
+      end;
    END;
    b := b/st2;
-   a := (sy-sx*b)/ss;
-   siga := sqrt((1.0+sx*sx/(ss*st2))/ss);
-   sigb := sqrt(1.0/st2);
+   a := (sy-sx*b) / ValidData;
+   siga := sqrt((1.0 + sqr(sx) / (ValidData * st2)) / ValidData);
+// siga := sqrt((1.0+sx*sx/(ss*st2))/ss);
+
+   sigb := sqrt(1.0 / st2);
    r := sxy / sqrt(st2 * sty2);
 
    {$IfDef RecordFitProblems}
-      WriteLineToDebugFile('PROCEDURE fit');
+      WriteLineToDebugFile('PROCEDURE fit out, r=' + RealToString(r,-12,-6));
+      WriteLineToDebugFile('siga=' + RealToString(siga,18,8) + '  sigb=' + RealToString(sigb,18,8));
       WriteLineToDebugFile('b=' + RealToString(b,18,8) + '  st2=' + RealToString(st2,18,8) + ' sty2=' + RealToString(sty2,18,8));
       WriteLineToDebugFile('sx=' + RealToString(sx,18,8) + ' sy=' + RealToString(sy,18,8)  + '  sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8));
    {$EndIf}
@@ -1994,9 +2013,9 @@ BEGIN
    MomentVar.Mean := s / MomentVar.Npts;
 
    {$IfDef TrackNAN}
-      if IsNAN(MomentVar.Mean) then begin
+      if Math.IsNAN(MomentVar.Mean) then begin
          for j := 0 to pred(MomentVar.Npts) do begin
-            if IsNAN(data[j]) then begin
+            if Math.IsNAN(data[j]) then begin
                WriteLineToDebugFile(IntToStr(j));
             end;
          end;

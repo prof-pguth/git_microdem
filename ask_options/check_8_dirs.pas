@@ -66,7 +66,7 @@ begin
       CheckBox6.Checked := Aspects[6];
       CheckBox7.Checked := Aspects[7];
       CheckBox8.Checked := Aspects[8];
-      if GetDir8.ShowModal = mrCancel then begin
+      if (GetDir8.ShowModal = mrCancel) then begin
          Result := false;
       end
       else begin

@@ -1655,6 +1655,14 @@ type
     Slopeandroughness2: TMenuItem;
     WetnessIndex1: TMenuItem;
     FlowaccumulationFD8log1: TMenuItem;
+    Openness2: TMenuItem;
+    N76: TMenuItem;
+    Downwardopenness3pixelradials1: TMenuItem;
+    Downwardopenness10pixelradials1: TMenuItem;
+    LSPcalculator1: TMenuItem;
+    AllLSPs1: TMenuItem;
+    Allpartialderivatives1: TMenuItem;
+    CompareTPI1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2515,7 +2523,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DEMsfrommaplibrarymaparea1Click(Sender: TObject);
     procedure Maskallothergridstomatchthisone1Click(Sender: TObject);
     procedure ResampleDEMgridbyaveraging1Click(Sender: TObject);
-    procedure Downsampling2Click(Sender: TObject);
     procedure hinaveragingcomparison1Click(Sender: TObject);
     procedure Annualsolarillumination1Click(Sender: TObject);
     procedure Sunandsatellitevisibilityandblocking1Click(Sender: TObject);
@@ -2841,6 +2848,12 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Slopeandroughness2Click(Sender: TObject);
     procedure WetnessIndex1Click(Sender: TObject);
     procedure FlowaccumulationFD8log1Click(Sender: TObject);
+    procedure Downwardopenness3pixelradials1Click(Sender: TObject);
+    procedure Downwardopenness10pixelradials1Click(Sender: TObject);
+   // procedure LSPcalculator1Click(Sender: TObject);
+    procedure AllLSPs1Click(Sender: TObject);
+    procedure Allpartialderivatives1Click(Sender: TObject);
+    procedure CompareTPI1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -2941,7 +2954,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     {$Else}
        procedure CheckDrainageDblClick;
        procedure FindDrainageAreaContributing(x,y : integer);
-       procedure LSP_gridMultipleDEMs(Which: integer);
     {$EndIf}
 
     {$IfDef RecordFormResize}
@@ -3299,6 +3311,9 @@ function NumOpenMaps : integer;
 
 procedure SetMapsForBigBitmaps(Setting : boolean);
 procedure Bigimagewithallmaps(NumCols : integer = 3; FileName : PathStr = ''; MapsToUse : tStringList = Nil);
+procedure MatchAnotherMapThisPixelSize(ThisMap,OtherMap : tMapForm);
+procedure MatchAnotherMapThisCoverageArea(ThisMap,OtherMap : tMapForm);
+
 
 
 implementation
@@ -3590,6 +3605,8 @@ uses
    demix_definitions,
    DEMIX_Control,
 
+   Openness_Choices,
+
    DEMcoord,
    compare_programs_algorithms,
 
@@ -3693,16 +3710,15 @@ begin
    for DEM := 1 to MaxDEMDataSets do begin
       if WhichDEMs[DEM] and ValidDEM(DEM) and (DEM <> BaseDEM) and (DEMglb[DEM].SelectionMap <> Nil) then begin
          if (Match = 1) then DEMglb[DEM].SelectionMap.SetMapDisplayType(DEMglb[BaseDEM].SelectionMap.MapDraw.MapType);
+         if (Match in [4,5]) then MatchAnotherMapThisCoverageArea(DEMglb[BaseDEM].SelectionMap,DEMglb[DEM].SelectionMap);
          if (Match in [2,4]) then MatchAnotherMapThisPixelSize(DEMglb[BaseDEM].SelectionMap,DEMglb[DEM].SelectionMap);
          if (Match = 3) then DEMglb[DEM].SelectionMap.RecolorMapWithElevationRange(DEMglb[BaseDEM].SelectionMap.MapDraw.MinMapElev,
                                 DEMglb[BaseDEM].SelectionMap.MapDraw.MaxMapElev);
-         if (Match in [4,5]) then MatchAnotherMapThisCoverageArea(DEMglb[BaseDEM].SelectionMap,DEMglb[DEM].SelectionMap);
-
       end;
    end;
    UpdateMenusForAllMaps;
-
 end;
+
 
 procedure TMapForm.OutlineGridLimitsOnMap(GridLimits : tGridLimits);
 var
@@ -3739,18 +3755,21 @@ var
    Bitmap : tMyBitmap;
    MouseRoamAllMaps : boolean;
 
-   function UseThisMap(MapCaption : shortstring) : boolean;
-   var
-      i : integer;
-   begin
-      for i := 0 to pred(MapsToUse.Count) do begin
-         if (MapCaption = MapsToUse[i]) then begin
-            Result := true;
-            exit;
-         end;
-      end;
-      Result := false;
-   end;
+       function UseThisMap(MapCaption : shortstring) : boolean;
+       var
+          i : integer;
+       begin
+          if (MapsToUse = Nil) then Result := true
+          else begin
+            for i := 0 to pred(MapsToUse.Count) do begin
+               if (MapCaption = MapsToUse[i]) then begin
+                  Result := true;
+                  exit;
+               end;
+            end;
+            Result := false;
+          end;
+       end;
 
 begin
    {$IfDef RecordBigMap} WriteLineToDebugFile('Bigimagewithallmaps in'); {$EndIf}
@@ -3762,13 +3781,14 @@ begin
       StartFont := 34;
       for i := pred(WMDEM.MDIChildCount) downto 0 do begin
          if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i] as TMapForm).UseMapForMultipleMapOperations then begin
-            if (MapsToUse = Nil) or UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
+            {$IfDef RecordBigMap} WriteLineToDebugFile('Child window=' + IntToStr(i)); {$EndIf}
+            if UseThisMap((WMDEM.MDIChildren[i] as TMapForm).Caption) then begin
                CopyImageToBitmap((WMDEM.MDIChildren[i] as TMapForm).Image1,Bitmap);
                Bitmap.Canvas.Font.Size := StartFont;
                Bitmap.Canvas.Font.Style := [fsBold];
                DEM := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.DEMonMap;
                if ValidDEM(DEM) then begin
-                  {$IfDef RecordBigMap} WriteLineToDebugFile(DEMGLB[DEM].AreaName); {$EndIf}
+                  {$IfDef RecordBigMap} WriteLineToDebugFile('DEM=' + IntToStr(DEM) + '  ' + DEMGLB[DEM].AreaName); {$EndIf}
                   repeat
                      Len := Bitmap.Canvas.TextWidth(RemoveUnderScores(DEMGLB[DEM].AreaName));
                      {$IfDef RecordBigMapFont} WriteLineToDebugFile('Len='+ IntToStr(Len) + ' width=' + IntToStr(Bitmap.Width) + ' font=' + IntToStr(Bitmap.Canvas.Font.Size)); {$EndIf}
@@ -5982,6 +6002,12 @@ end;
 
 
 
+procedure TMapForm.CompareTPI1Click(Sender: TObject);
+begin
+   CompareTPI(MapDraw.DEMonMap);
+end;
+
+
 procedure TMapForm.CompareTRI1Click(Sender: TObject);
 begin
    CompareTRI(MapDraw.DEMonMap);
@@ -7489,20 +7515,10 @@ begin
     end;
 end;
 
+
 procedure TMapForm.Both1Click(Sender: TObject);
-var
-   i,Upward,DownWard,Difference : integer;
 begin
-    GetSampleBoxSize(MapDraw.DEMonMap,MDDef.OpenBoxSizeMeters);
-    if MDDef.ConfirmOpennesDirections then Check_8_Dirs.GetDirectionsToUse(MDDef.OpennessDirs)
-    else for I := 1 to 8 do MDDef.OpennessDirs[i] := true;
-    Upward := -1;
-    DownWard  := -1;
-    Difference := -1;
-    CreateOpennessMap(true,MapDraw.MapAreaDEMGridLimits,MapDraw.DEMonMap,MDDef.OpenBoxSizeMeters,Upward,DownWard,Difference);
-    MatchAnotherMapThisCoverageArea(Self,DEMGlb[Upward].SelectionMap);
-    MatchAnotherMapThisCoverageArea(Self,DEMGlb[Downward].SelectionMap);
-    MatchAnotherMapThisCoverageArea(Self,DEMGlb[Difference].SelectionMap);
+    GetOptionsDrawOpenness(Self);
 end;
 
 
@@ -7545,10 +7561,7 @@ procedure TMapForm.N2bandscattergram1Click(Sender: TObject);
 var
    GridLimits : tGridLimits;
 begin
-    {$IfDef ExGeoStats}
-    {$Else}
-       DEMStat.GridScatterGram(GridLimits);
-    {$EndIf}
+    DEMStat.GridScatterGram(GridLimits);
 end;
 
 
@@ -7725,6 +7738,8 @@ procedure TMapForm.Logbase10transform1Click(Sender: TObject);
 begin
    SingleGridArithmetic(sgaLogbase10transform1);
 end;
+
+
 
 procedure TMapForm.LSTfromemissivity1Click(Sender: TObject);
 begin
@@ -8522,6 +8537,11 @@ begin
    ClimographandETO1Click(Sender);
    Monthlyinsolation1Click(Sender);
    Solarparameters1Click(Sender);
+end;
+
+procedure TMapForm.AllLSPs1Click(Sender: TObject);
+begin
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--all');
 end;
 
 procedure TMapForm.Annualsolarelevation1Click(Sender: TObject);
@@ -9567,8 +9587,8 @@ begin
      else exit;
    end
    else begin
-     GISdb[db].LatFieldName := GISdb[db].PickField('Lat field for heat map',[ftFloat]);
-     GISdb[db].LongFieldName := GISdb[db].PickField('Long field for heat map',[ftFloat]);
+     if GISdb[db].LatFieldName = '' then GISdb[db].LatFieldName := GISdb[db].PickField('Lat field for heat map',[ftFloat]);
+     if GISdb[db].LongFieldName = '' then GISdb[db].LongFieldName := GISdb[db].PickField('Long field for heat map',[ftFloat]);
      GISdb[db].ItsAPointDB := true;
      MakeHeatMap;
      GISdb[db].MyData.First;
@@ -9580,7 +9600,6 @@ begin
    DEMGlb[HeatGrid].SelectionMap.SetUpNewDEMMapWindow(HeatGrid,mtElevSpectrum,DEMGlb[HeatGrid].AreaName,true,true,false);
    {$IfDef RecordHeatMap} WriteLineToDebugFile('TMapForm.MakeHeatMap out'); {$EndIf}
 end;
-
 
 
 procedure TMapForm.Heatmap1Click(Sender: TObject);
@@ -16360,7 +16379,6 @@ end;
 
 procedure TMapForm.Meanfilter1Click(Sender: TObject);
 begin
-   //ThinDEM1Click(Sender);
    DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcMean);
 end;
 
@@ -16403,12 +16421,6 @@ begin
    end;
 end;
 
-(*
-procedure TMapForm.ClipDEMtoFullDEMIXTiles(NewName: PathStr);
-begin
-
-end;
-*)
 
 procedure TMapForm.ClipDEMtofullDEMIXtiles1Click(Sender: TObject);
 begin
@@ -22968,44 +22980,6 @@ begin
 end;
 
 
-procedure TMapForm.LSP_gridMultipleDEMs(Which : integer);
-const
-   OpenMap = true;
-var
-   WhichDEMs : tDEMBooleanArray;
-   fName1,fName2 : PathStr;
-
-   BoxSizeMeters,Upward, DownWard,Difference,DEM,RuffMap,SlopeMap : integer;
-begin
-   WhichDEMs := GetMultipleDEMsFromList('DEMs for LSP maps');
-   for DEM := 1 to MaxDEMDataSets do begin
-      if WhichDEMs[DEM] and ValidDEM(DEM) then begin
-         Upward := -1;
-         DownWard  := 0;
-         Difference := 0;
-         RuffMap := 0;
-         SlopeMap := -1;   //forces creation of slope and roughness maps
-         BoxSizeMeters := round(DEMglb[DEM].AverageSpace);
-         fName1 := '';
-         fName2 := '';
-         case which of
-            1 : CreateEvansSlopeMapPercent(OpenMap,DEM);
-            2 : CreateCurvatureMap(eucurv_kns,OpenMap,DEM);
-            3 : CreateOpennessMap(OpenMap,DEMglb[DEM].FullDEMGridLimits,DEM,3 * BoxSizeMeters,Upward,DownWard,Difference);
-            4 : CreateOpennessMap(OpenMap,DEMglb[DEM].FullDEMGridLimits,DEM,10 * BoxSizeMeters,Upward,DownWard,Difference);
-            5 : MakeTRIGrid(DEM,nmRRI,OpenMap);
-            6 : MakeTPIGrid(DEM,nmRRI,OpenMap);
-            7 : CreateHillshadeMap(OpenMap,DEM);
-            8 : CreateCurvatureMap(eucurv_tang,OpenMap,DEM);
-            9 : CreateCurvatureMap(eucurv_plan,OpenMap,DEM);
-            10 : CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,5,SlopeMap,OpenMap);
-            11 : WBT_WetnessIndex(OpenMap,true,DEMGlb[DEM].GeotiffDEMName);
-            12 : WBT_FlowAccumulation(OpenMap,True,false,DEMGlb[DEM].GeotiffDEMName,fName1,fName2);
-         end;
-      end;
-   end;
-end;
-
 
 procedure TMapForm.NAN1Click(Sender: TObject);
 begin
@@ -23689,9 +23663,14 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.Downsampling2Click(Sender: TObject);
+procedure TMapForm.Downwardopenness10pixelradials1Click(Sender: TObject);
 begin
+  LSP_gridMultipleDEMs(14);
+end;
 
+procedure TMapForm.Downwardopenness3pixelradials1Click(Sender: TObject);
+begin
+   LSP_gridMultipleDEMs(13);
 end;
 
 {$IfDef ExDrainage}
@@ -24831,6 +24810,11 @@ end;
 procedure TMapForm.Allopengrids1Click(Sender: TObject);
 begin
    GetOptimalLagParameters(Self,0);
+end;
+
+procedure TMapForm.Allpartialderivatives1Click(Sender: TObject);
+begin
+   RUN_LSPcalculator(MapDraw.DEMonMap,'-p');
 end;
 
 procedure TMapForm.Allpoints1Click(Sender: TObject);

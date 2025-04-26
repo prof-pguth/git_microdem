@@ -254,6 +254,9 @@ var
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euRGB]) then Result := mtRGBimagery
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euAspectDeg]) then Result := mtDEMaspect
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euPercentSlope]) then Result := MDDef.DefSlopeMap
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euOpenUp,euOpenDiff,euHillshade]) then Result := mtElevGray
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [101..124]) then Result := mtCurvature
+         else if (DEMGlb[DEM].DEMheader.ElevUnits in [euOpenDown]) then Result := mtElevGrayReversed
          else if (DEMGlb[DEM].DEMheader.ElevUnits in [euIntCode]) or (abs(DEMGlb[DEM].DEMheader.MaxElev - DEMGlb[DEM].DEMheader.MinElev) < 0.00001) then Result := mtElevContrast
          {$IfDef ExPointCloud}
          {$Else}

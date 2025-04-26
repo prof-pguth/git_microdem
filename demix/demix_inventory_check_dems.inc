@@ -44,7 +44,8 @@ end;
 procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 var
    TestDEMs : tStringList;
-   BoxSize,i,DEM,ad : integer;
+   //BoxSize,
+   i,DEM,ad : integer;
    AreaName : shortstring;
    fName,fName2 : PathStr;
    PointGrids : array[1..7] of integer;
@@ -65,7 +66,7 @@ begin
           end
           else begin
              {$If Defined(RecordDEMIX)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             BoxSize := round(3 * DEMglb[PointGrids[1]].AverageSpace);
+             //BoxSize := round(3 * DEMglb[PointGrids[1]].AverageSpace);
              wmdem.SetPanelText(3,DEMIXModeName + ' Hillshade',true);
              fName := ExternalProgramOutPutFile(DEMIndex,'MD','HILL_',AreaName,IsPoint);
              PointGrids[1] := CreateHillshadeMap(false,DEM);
@@ -95,7 +96,7 @@ begin
              PointGrids[6] := -1;
              PointGrids[7] := -1;
              ad := 0;   //we don't want openness difference
-             CreateOpennessMap(False,DEMGlb[DEM].FullDEMGridLimits,DEM,BoxSize,PointGrids[6],PointGrids[7],ad);
+             CreateOpennessMap(False,DEMGlb[DEM].FullDEMGridLimits,DEM,-99,3,PointGrids[6],PointGrids[7],ad);
              DEMglb[PointGrids[7]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[6]].SaveAsGeotiff(fName);
              CloseAllDEMs;

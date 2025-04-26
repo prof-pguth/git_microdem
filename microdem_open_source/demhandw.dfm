@@ -463,6 +463,7 @@ object DemHandForm: TDemHandForm
           end
           object GeoJSONP1: TMenuItem
             Caption = 'GeoJSON-P'
+            Visible = False
             OnClick = GeoJSONP1Click
           end
         end

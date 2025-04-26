@@ -352,7 +352,8 @@ uses
   demslopeopts in '..\ask_options\demslopeopts.pas' {SlopeOptForm},
   make_grid in '..\microdem_open_source\make_grid.pas',
   demhandw in '..\microdem_open_source\demhandw.pas' {DemHandForm},
-  BaseGraf in '..\microdem_open_source\BaseGraf.pas' {ThisBaseGraph};
+  BaseGraf in '..\microdem_open_source\BaseGraf.pas' {ThisBaseGraph},
+  openness_choices in '..\ask_options\openness_choices.pas' {OpenOptForm};
 
 {$R *.RES}
 
@@ -378,8 +379,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-  Application.CreateForm(TDemHandForm, DemHandForm);
-  Application.Run;
+         Application.Run;
       end;
     finally
        CloseHandle(FMutex);

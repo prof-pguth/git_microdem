@@ -241,13 +241,14 @@ end;
 
 function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
 var
-   BoxSize,i,ad : integer;
+   //BoxSize,
+   i,ad : integer;
    fName,fName2 : PathStr;
 begin
     Result := ' opened ';
     InitializePointAndAreaGrids(PointGrids,AreaGrids,-1);
     InitializePointAndAreaGrids(PointGrids,AreaGrids,-1);
-    BoxSize := round(3 * DEMglb[PointDEMs[i]].AverageSpace);
+    //BoxSize := round(3 * DEMglb[PointDEMs[i]].AverageSpace);
     ad := 0;
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,'MD','OPEND_',AreaName,true);
@@ -259,7 +260,7 @@ begin
        else begin
           PointGrids[i] := -1;
           PointGrids2[i] := -1;
-          CreateOpennessMap(OpenMaps,DEMGlb[PointDEMs[i]].FullDEMGridLimits,PointDEMs[i],BoxSize,PointGrids[i],PointGrids2[i],ad);
+          CreateOpennessMap(OpenMaps,DEMGlb[PointDEMs[i]].FullDEMGridLimits,PointDEMs[i],-99,3,PointGrids[i],PointGrids2[i],ad);
           Result := ' created ';
           if SaveMaps then begin
              DEMglb[PointGrids2[i]].SaveAsGeotiff(fName2);
@@ -278,7 +279,7 @@ begin
           else begin
              AreaGrids[i] := -1;
              AreaGrids2[i] := -1;
-             CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],BoxSize,AreaGrids[i],AreaGrids2[i],ad);
+             CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],-99,3,AreaGrids[i],AreaGrids2[i],ad);
              Result := ' created ';
              if SaveMaps then begin
                 DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);

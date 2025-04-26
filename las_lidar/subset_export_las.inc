@@ -1,5 +1,4 @@
 
-{$IfDef MSWindows}
 
 procedure LidarASCIIout(fName : PathStr; Output : tLASAsciiOutput);
 var
@@ -18,27 +17,6 @@ begin
    fname := LastLidarDirectory;
    while GetFileFromDirectory('LAS file','*.las',fName) do begin
       LidarASCIIout(fName,Output);
-   end;
-end;
-
-
-procedure LAS2GeoJSON(fName : PathStr);
-var
-   LasData : Las_Lidar.tLAS_data;
-begin
-    LasData := Las_Lidar.tLAS_data.Create(fName);
-    LASdata.ExportGeoJSON;
-    LasData.Destroy;
-end;
-
-
-procedure LAS2GeoJSON;
-var
-   fName : PathStr;
-begin
-   fname := LastLidarDirectory;
-   while GetFileFromDirectory('LAS file','*.las',fName) do begin
-      LAS2GeoJSON(fName);
    end;
 end;
 
@@ -432,78 +410,100 @@ begin
    {$IfDef RecordLAS_subset} WriteLineToDebugFile('SubsetLASfiles out'); {$EndIf}
 end;
 
-{$EndIf}
+
+{$IfDef IncludeGeoJSONexport}
+
+    procedure LAS2GeoJSON(fName : PathStr);
+    var
+       LasData : Las_Lidar.tLAS_data;
+    begin
+        LasData := Las_Lidar.tLAS_data.Create(fName);
+        LASdata.ExportGeoJSON;
+        LasData.Destroy;
+    end;
 
 
-procedure tLAS_data.ExportGeoJSON;
-var
-   i,j,RecsRead,Npts,Decs : integer;
-   xoff,yoff,zoff : float64;
-   sl : tStringList;
-   JSONstring : ANSIstring;
-   fName : PathStr;
-begin
-  {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.ExportGeoJSON in'); {$EndIf}
-   StartProgress('LAS2GeoJSON');
-   FigureOffsets(false,true,xoff, yoff,zoff);
-   if lasProjDef.LASProj.ThisIsUTMFile then Decs := MDDef.GeoJSONP_xydec
-   else Decs := 7;
+    procedure LAS2GeoJSON;
+    var
+       fName : PathStr;
+    begin
+       fname := LastLidarDirectory;
+       while GetFileFromDirectory('LAS file','*.las',fName) do begin
+          LAS2GeoJSON(fName);
+       end;
+    end;
 
-   sl := tStringList.Create;
 
-   JSONString := '{"v":"GeoJSON-P 0.2"' +
-                  ',"npts":' + IntToStr(NumPointRecs) +
-                  ',"minx":' + RealToString(LasHeader.MinX,-18,-Decs) +
-                  ',"maxx":' + RealToString(LasHeader.MaxX,-18,-Decs) +
-                  ',"miny":' + RealToString(LasHeader.MinY,-18,-Decs) +
-                  ',"maxy":' + RealToString(LasHeader.MaxY,-18,-Decs) +
-                  ',"minz":' + RealToString(LasHeader.MinZ,-18,-2) +
-                  ',"maxz":' + RealToString(LasHeader.MaxZ,-18,-2) +
-                  ',"offx":' + RealToString(xoff,-18,-Decs) +
-                  ',"offy":' + RealToString(yoff,-18,-Decs) +
-                  ',"offz":' + RealToString(zoff,-18,-2) +
-                  ',"proj":';
+      procedure tLAS_data.ExportGeoJSON;
+      var
+         i,j,RecsRead,Npts,Decs : integer;
+         xoff,yoff,zoff : float64;
+         sl : tStringList;
+         JSONstring : ANSIstring;
+         fName : PathStr;
+      begin
+        {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.ExportGeoJSON in'); {$EndIf}
+         StartProgress('LAS2GeoJSON');
+         FigureOffsets(false,true,xoff, yoff,zoff);
+         if lasProjDef.LASProj.ThisIsUTMFile then Decs := MDDef.GeoJSONP_xydec
+         else Decs := 7;
 
-   if lasProjDef.LASProj.ThisIsUTMFile then JSONString := JSONString + '"UTM"'
-   else JSONString :=  JSONString  + '"GCS"';
-   JSONString := JSONString + ',"data":[';
-   sl.Add(JSONstring);
-   JSONString := '';
-   NPts := 0;
-   PrepDataRead;
-   for i := 0 to ReadsRequired do begin
-      UpdateProgressBar(i/ReadsRequired);
-      ReadPoints(RecsRead);
-      {$IfDef RecordLASexport} WriteLineToDebugFile('Read: ' + IntToStr(i) + '/' + IntToStr(ReadsRequired) + '   Rec=' + IntToStr(RecsRead));   {$EndIf}
-       for j := 1 to RecsRead do begin
-          inc(NPts);
-          JSONString :=  JSONString + RealToString(ExpandLAS_X(j)-xoff,-12,-Decs) + ',' +
-                                      RealToString(ExpandLAS_Y(j)-yoff,-12,-Decs) + ',' +
-                                      RealToString(ExpandLAS_Z(j)-zoff,-12,-MDDef.GeoJSONP_zdec) + ',' +
-                                      IntToStr(LASclassification(j)) + ',' +
-                                      IntToStr(GetShotIntensity(j)) + ',';
-          if (j mod 100 = 0) then begin
-             {$IfDef RecordLASexport}  if (j mod 1000 = 0) then WriteLineToDebugFile('    Saved: ' + IntToStr(j)); {$EndIf}
-             sl.Add(JSONstring);
-             JSONString := '';
-          end;
+         sl := tStringList.Create;
+
+         JSONString := '{"v":"GeoJSON-P 0.2"' +
+                        ',"npts":' + IntToStr(NumPointRecs) +
+                        ',"minx":' + RealToString(LasHeader.MinX,-18,-Decs) +
+                        ',"maxx":' + RealToString(LasHeader.MaxX,-18,-Decs) +
+                        ',"miny":' + RealToString(LasHeader.MinY,-18,-Decs) +
+                        ',"maxy":' + RealToString(LasHeader.MaxY,-18,-Decs) +
+                        ',"minz":' + RealToString(LasHeader.MinZ,-18,-2) +
+                        ',"maxz":' + RealToString(LasHeader.MaxZ,-18,-2) +
+                        ',"offx":' + RealToString(xoff,-18,-Decs) +
+                        ',"offy":' + RealToString(yoff,-18,-Decs) +
+                        ',"offz":' + RealToString(zoff,-18,-2) +
+                        ',"proj":';
+
+         if lasProjDef.LASProj.ThisIsUTMFile then JSONString := JSONString + '"UTM"'
+         else JSONString :=  JSONString  + '"GCS"';
+         JSONString := JSONString + ',"data":[';
+         sl.Add(JSONstring);
+         JSONString := '';
+         NPts := 0;
+         PrepDataRead;
+         for i := 0 to ReadsRequired do begin
+            UpdateProgressBar(i/ReadsRequired);
+            ReadPoints(RecsRead);
+            {$IfDef RecordLASexport} WriteLineToDebugFile('Read: ' + IntToStr(i) + '/' + IntToStr(ReadsRequired) + '   Rec=' + IntToStr(RecsRead));   {$EndIf}
+             for j := 1 to RecsRead do begin
+                inc(NPts);
+                JSONString :=  JSONString + RealToString(ExpandLAS_X(j)-xoff,-12,-Decs) + ',' +
+                                            RealToString(ExpandLAS_Y(j)-yoff,-12,-Decs) + ',' +
+                                            RealToString(ExpandLAS_Z(j)-zoff,-12,-MDDef.GeoJSONP_zdec) + ',' +
+                                            IntToStr(LASclassification(j)) + ',' +
+                                            IntToStr(GetShotIntensity(j)) + ',';
+                if (j mod 100 = 0) then begin
+                   {$IfDef RecordLASexport}  if (j mod 1000 = 0) then WriteLineToDebugFile('    Saved: ' + IntToStr(j)); {$EndIf}
+                   sl.Add(JSONstring);
+                   JSONString := '';
+                end;
+            end;
+         end;
+         FreeLASRecordMemory;
+         EndProgress;
+         Delete(JSONString,Length(JSONString),1);
+         JSONString :=  JSONString + ']}';
+         sl.Add(JSONstring);
+
+         fName := ChangeFileExt(LasFileName,'.json');
+         sl.SaveToFile(fName);
+         sl.Free;
+         {$IfDef VCL}
+            MainBZ2(fName);
+         {$EndIf}
+         ShowDefaultCursor;
+         if not QuietActions then MessageToContinue('Extracted points: ' + IntToStr(NPts));
+         {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.ExportGeoJSON out, Extracted points: ' + IntToStr(NPts)); {$EndIf}
       end;
-   end;
-   FreeLASRecordMemory;
-   EndProgress;
-   Delete(JSONString,Length(JSONString),1);
-   JSONString :=  JSONString + ']}';
-   sl.Add(JSONstring);
-
-   fName := ChangeFileExt(LasFileName,'.json');
-   sl.SaveToFile(fName);
-   sl.Free;
-   {$IfDef VCL}
-      MainBZ2(fName);
-   {$EndIf}
-   ShowDefaultCursor;
-   if not QuietActions then MessageToContinue('Extracted points: ' + IntToStr(NPts));
-   {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.ExportGeoJSON out,  Extracted points: ' + IntToStr(NPts)); {$EndIf}
-end;
+{$EndIf}
 
 

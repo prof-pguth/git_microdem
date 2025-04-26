@@ -34,6 +34,7 @@
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
        WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
        if FileExists(OutName) then begin
+         {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap convert simple Geotiff'); {$EndIf}
          //output file from SAGA must be converted to simple Geotiff
          tName := ExtractFilePath(OutName) + 'temp' + ExtractFileName(OutName);
          RenameFile(OutName,tName);
@@ -610,12 +611,11 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
     end;
 
 
-    function SagaTPIMap(OpenMap : boolean; InName : PathStr) : integer;
+    function SagaTPIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
     var
        cmd : shortstring;
-       OutName : shortstring;
     begin
-       OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
+       if OutName = '' then OutName := MDTempDir + 'saga_tpi_' + ExtractFileNameNoExt(InName) + '.tif';
        CMD := MDDef.SagaCMD + ' ta_morphometry 18 -DEM ' + inName + ' -TPI ' + OutName;
        Result := SAGAMap(OpenMap,cmd,outname,euMeters);
     end;

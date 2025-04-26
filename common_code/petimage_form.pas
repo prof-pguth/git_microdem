@@ -17,7 +17,7 @@ unit petimage_form;
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
    //{$Define RecordChangeColumns}
-   //{$Define RecordBigBitmap}
+   {$Define RecordBigBitmap}
    //{$Define RecordBitmapEdit}
    //{$Define RecordBlendBitmaps}
    //{$Define RecordGetImagePartOfBitmap}
@@ -529,6 +529,7 @@ var
    i : integer;
    Findings : tStringList;
 begin
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineAllPanelGraphs in'); {$EndIf}
    Findings := tStringList.Create;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
@@ -536,7 +537,7 @@ begin
       end;
    end;
    MakeBigBitmap(Findings,'','',Cols);
-   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('AllGraphsOneImage out'); {$EndIf}
+   {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineAllPanelGraphs out'); {$EndIf}
 end;
 
 
@@ -560,6 +561,7 @@ begin
         if not AskCols then Cols := MDDef.BigBM_nc;
      end;
      BigBMP := CombineBitmaps(Cols, theFiles, '');
+     {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, bitmaps combined'); {$EndIf}
      if (BigBMP <> nil) then begin
         if (Capt <> '') then begin
            Capt := RemoveUnderscores(Capt);
@@ -579,8 +581,10 @@ begin
             BigBmp.Canvas.Draw(X,y,LegBmp);
             LegBMP.Free;
         end;
+        {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, legend/caption done'); {$EndIf}
 
          Result := TImageDisplayForm.Create(Application);
+        {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, display form created'); {$EndIf}
          if (SaveName <> '') then begin
             {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
             SaveBitmap(BigBmp,SaveName);

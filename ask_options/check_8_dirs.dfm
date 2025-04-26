@@ -4,8 +4,8 @@ object GetDir8: TGetDir8
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Directions to use'
-  ClientHeight = 201
-  ClientWidth = 240
+  ClientHeight = 206
+  ClientWidth = 370
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -83,7 +83,7 @@ object GetDir8: TGetDir8
   object GroupBox1: TGroupBox
     Left = 48
     Top = 16
-    Width = 193
+    Width = 81
     Height = 161
     Caption = 'Direction'
     TabOrder = 3

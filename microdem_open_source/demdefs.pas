@@ -808,7 +808,11 @@ const
    euDegreeSlope = 68;
    euNeoEDM = 69;
    euNeoFLM = 70;
-   euHighElevUnits = 70;  //same as last real one;  used only for loops through all the elevation units;
+   euOpenUp = 71;
+   euOpenDown = 72;
+   euOpenDiff = 73;
+   euHillshade = 74;
+   euHighElevUnits = 74;  //same as last real one;  used only for loops through all the elevation units;
 
 const
    VertCSUndefined = 0;
@@ -1626,7 +1630,11 @@ type
            LagSearchRadius : int16;
            PyramidLevels : byte;
            SSOSampleIncr: int16;
-           OpenGridBoxSize,OpenBoxSizeMeters,
+
+           OpenStartRadialsAtPixel,
+           OpenRadiusUnits : byte;
+           OpennessBoxRadiusPixels,OpennessBoxRadiusMeters : int32;
+
            SSOGridBoxSize,SSOBoxSizeMeters,
            MomentsBoxSizeMeters,
            ReliefBoxSizeMeters,

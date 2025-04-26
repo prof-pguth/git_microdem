@@ -5,7 +5,7 @@ object grid_posting_options: Tgrid_posting_options
   BorderStyle = bsDialog
   Caption = 'DEM Grid Options'
   ClientHeight = 218
-  ClientWidth = 251
+  ClientWidth = 279
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -125,5 +125,14 @@ object grid_posting_options: Tgrid_posting_options
     Height = 21
     TabOrder = 7
     OnChange = Edit2Change
+  end
+  object CheckBox2: TCheckBox
+    Left = 161
+    Top = 95
+    Width = 97
+    Height = 17
+    Caption = 'Half pixel offsets'
+    TabOrder = 8
+    OnClick = CheckBox2Click
   end
 end

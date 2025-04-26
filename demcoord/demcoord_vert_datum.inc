@@ -34,7 +34,7 @@ begin
       for Col := 0 to pred(DEMGlb[DEM].DEMHeader.NumCol) do begin
           if (Col mod 150 = 0) then UpdateProgressBar(Col/DEMGlb[DEM].DEMHeader.NumCol);
           for Row := 0 to pred(DEMGlb[DEM].DEMHeader.NumRow) do begin
-             if DEMGlb[DEM].GetElevMetersFromThisAndSecondDEM(GeoidGrid,Col,Row,z1,z2) then begin
+             if DEMGlb[DEM].GetElevMetersFromThisAndSecondDEM(false,GeoidGrid,Col,Row,z1,z2) then begin
                 DEMGlb[DEM].SetGridElevation(Col,Row,z1+z2);
              end;
           end;

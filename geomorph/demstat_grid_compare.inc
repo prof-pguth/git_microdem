@@ -8,6 +8,175 @@
 {   include file for demstat             }
 {________________________________________}
 
+
+
+procedure LSP_gridMultipleDEMs(Which : integer; OpenMap : boolean = true);
+var
+   WhichDEMs : tDEMBooleanArray;
+   fName1,fName2 : PathStr;
+   RefDEM,RefGrid,NewGrid,Upward,DownWard,Difference,DEM,RuffMap,SlopeMap : integer;
+
+   function ProcessOneDEM(DEM : integer) : integer;
+   var
+      r,FUV : float64;
+      Pixels : integer;
+   begin
+      if WhichDEMs[DEM] and ValidDEM(DEM) then begin
+         if Which in [3,4,13,14] then Result := -1; //for desired openness
+         if Which in [3,13] then Pixels := 3;
+         if Which in [4,14] then Pixels := 10;
+         Upward := 0;
+         DownWard := 0;
+         Difference := 0;
+         if (Which = 10) then Result := 0;  //for roughness
+         SlopeMap := -1;  //forces creation of slope and roughness maps
+         //BoxSizeMeters := round(DEMglb[DEM].AverageSpace);
+         fName1 := '';
+         fName2 := '';
+         case which of
+            1 : Result := CreateEvansSlopeMapPercent(false,DEM);
+            2 : Result := CreateCurvatureMap(eucurv_kns,false,DEM);
+            3,4 : CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,Pixels,Result,DownWard,Difference);
+            5 : Result := MakeTRIGrid(DEM,nmRRI,false);
+            6 : Result := MakeTPIGrid(DEM,nmRRI,false);
+            //6 : Result := BoxCarDetrendDEM(false,DEM,DEMGlb[DEM].FullDEMGridLimits,3);
+            7 : Result := CreateHillshadeMap(false,DEM);
+            8 : Result := CreateCurvatureMap(eucurv_tang,false,DEM);
+            9 : Result := CreateCurvatureMap(eucurv_plan,false,DEM);
+            10 : Result := CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,5,SlopeMap,false);
+            11 : Result := WBT_WetnessIndex(false,true,DEMGlb[DEM].GeotiffDEMName);
+            12 : Result := WBT_FlowAccumulation(false,True,false,DEMGlb[DEM].GeotiffDEMName,fName1,fName2);
+            13,14 : CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,Pixels,Upward,Result,Difference);
+            else Result := 0;
+         end;
+         if ValidDEM(RefGrid) and ValidDEM(Result) then begin
+            {$If SaveUpwardOpenness}
+               DEMGlb[RefGrid].SaveAsGeotiff('c:\temp\' + DEMGlb[RefGrid].AreaName + '_up_open_lspmult.tif');
+               DEMGlb[Result].SaveAsGeotiff('c:\temp\' + DEMGlb[Result].AreaName + '_up_open_lspmult.tif');
+            {$EndIf}
+
+            FUV := GetFUVForPairGrids(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Result);
+            if (FUV > -99) then begin
+               //FUV := 1 - sqr(r);
+               DEMglb[Result].AreaName := DEMglb[Result].AreaName + '_FUV_' + RealToString(FUV,-8,4);
+               {$IfDef MultipleLSPFUV} WriteLineToDebugFile('Ref=' + DEMglb[RefGrid].AreaName + '   test=' + DEMglb[Result].AreaName + '  FUV=' + RealToString(FUV,-8,4)); {$EndIf}
+            end;
+            if OpenMap then begin
+                CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
+                if DEMglb[RefDEM].SelectionMap.FullMapSpeedButton.Enabled then begin
+                   MatchAnotherMapThisCoverageArea(DEMglb[RefDEM].SelectionMap,DEMglb[Result].SelectionMap);
+                   MatchAnotherMapThisPixelSize(DEMglb[RefDEM].SelectionMap,DEMglb[Result].SelectionMap);
+                end;
+            end;
+         end;
+      end
+      else Result := 0;
+   end;
+
+begin {procedure LSP_gridMultipleDEMs}
+   GiveMicrodem_Credit := false;
+   WhichDEMs := GetMultipleDEMsFromList('DEMs for LSP maps');
+   RefGrid:= 0;
+   RefDEM := 0;
+   for DEM := 1 to MaxDEMDataSets do begin
+      if WhichDEMs[DEM] and ValidDEM(DEM) and StrUtils.AnsiContainsText(UpperCase(DEMglb[DEM].AreaName),'REF') then begin
+         RefDEM := DEM;
+         RefGrid := ProcessOneDEM(RefDEM);
+         CreateDEMSelectionMap(RefGrid,true,true,mtDEMBlank);
+      end;
+   end;
+
+   for DEM := 1 to MaxDEMDataSets do begin
+      if (DEM <> RefDEM) then ProcessOneDEM(DEM);
+   end;
+   GiveMicrodem_Credit := true;
+end {procedure LSP_gridMultipleDEMs};
+
+function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
+var
+   Incr,Col,Row,NPts,xoff,yoff : integer;
+   Lat,Long : float64;
+   XGrid,YGrid : float32;
+   rFile : file;
+   v : tFloatPoint;
+   IdenticalGrids : boolean;
+begin
+   {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram in, want visible=' + TrueOrFalse(not MDDef.CreateGraphHidden)); {$EndIf}
+   if (DEM1 = 0) and (DEM2 = 0) then begin
+      IdenticalGrids := GetTwoCompatibleGrids('DEM1=x axis, DEM2= y axis',false,DEM1,DEM2,false,true);
+      GridLimits := DEMGlb[DEM1].SelectionMap.MapDraw.MapAreaDEMGridLimits;
+   end;
+   IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff);
+
+   if ValidDEM(DEM1) and ValidDEM(DEM2) then begin
+      {$IfDef RecordSingleGridScatterGramFull}
+         WriteLineToDebugFile('Two grid scattergram');
+         WriteLineToDebugFile('  DEM 1:' + DEMGlb[DEM1].AreaName + '  ' + DEMGlb[DEM1].KeyParams);
+         WriteLineToDebugFile('  DEM 2:' + DEMGlb[DEM2].AreaName + '  ' + DEMGlb[DEM2].KeyParams);
+         WriteLineToDebugFile('  ll corner :' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornerx,-12,-2) + '   ' + RealToString(DEMGlb[DEM2].Headrecs.hdfSWCornery,-12,-2) );
+         WriteLineToDebugFile('Grid from DEM 1: ' + GridLimitsToString(GridLimits));
+      {$EndIf}
+      SetReasonableGraphSize;
+
+      Result := TThisBaseGraph.Create(Application);
+      Result.Caption := 'Two grid scattergram';
+      Result.GraphDraw.AutoPointDensity := true;
+
+      if DEMGlb[DEM1].ShortName = '' then Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].AreaName)
+      else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);
+      if DEMGlb[DEM2].ShortName = '' then Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].AreaName)
+      else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
+      Result.OpenPointFile(rfile,Result.Symbol,'scattergram');
+      Incr := 1;
+      while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
+      NPts := 0;
+      //Prog := 0;
+      {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram start scatter, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
+      StartProgress('Scatter plot');
+      Col := GridLimits.XGridLow;
+      while (Col <= GridLimits.XGridHigh) do begin
+         if (Col mod 10 = 0) then begin
+            UpdateProgressBar((Col - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
+            {$IfDef RecordSingleGridScatterGramFull} WriteLineToDebugFile('Col=' + IntToStr(Col)); {$EndIf}
+         end;
+         //Inc(Prog);
+         Row := GridLimits.YGridLow;
+         while (Row <= GridLimits.YGridHigh) do begin
+            //if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
+               //if DEMGlb[DEM1].GetElevMetersFromSecondDEM(IdenticalGrids,Dem2,Col,Row,v[2]) then begin
+            if IdenticalGrids then begin
+               if DEMGlb[DEM1].GetElevMetersOnGrid(Col,Row,v[1]) and DEMGlb[DEM2].GetElevMetersOnGrid(Col+xoff,Row+yoff,v[2]) then begin
+                  Result.AddPointToDataBuffer(rfile,v);
+                  inc(NPts);
+               end;
+            end
+            else if DEMGlb[DEM1].GetElevMetersFromThisAndSecondDEM(false,Dem2,Col,Row,v[1],v[2]) then begin
+               Result.AddPointToDataBuffer(rfile,v);
+               inc(NPts);
+            end;
+            inc(Row,Incr);
+         end;
+         inc(Col,Incr);
+      end;
+      Result.ClosePointDataFile(rfile);
+      {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram in, points added=' + IntToStr(NPts)); {$EndIf}
+
+      EndProgress;
+      if (NPts > 0) then begin
+         Result.AutoScaleAndRedrawDiagram;
+         Result.AddCorrelationToCorner;
+      end
+      else begin
+         Result.Close;
+         MessageToContinue('No scattergram matches ' + DEMGlb[DEM1].AreaName + ' and ' + DEMGlb[DEM2].AreaName);
+      end;
+      {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram out, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
+   end;
+end;
+
+
+
+
 type
    tIntVector256 = array[0..255] of integer;
    tIntMatrix256 = array[0..255,0..255] of integer;
@@ -363,8 +532,7 @@ var
    DEM1,DEM2,i : integer;
    Diffs : array[1..NumDiffs] of integer;
    n11,n12,n13,n21,n22,n23,
-   dp,  //,mag1,mag2,
-   z1,z2 : float32;
+   dp,z1,z2 : float32;
    Lat,Long,fc,fr : float64;
    IdenticalGrids : boolean;
    ThisGraph : TThisBaseGraph;

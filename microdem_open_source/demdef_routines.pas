@@ -1541,8 +1541,14 @@ var
 
             AParameter('Geomorph','MomentsBoxSizeMeters',MomentsBoxSizeMeters,750);
 
-            AParameter('Geomorph','OpenGridBoxSize',OpenGridBoxSize,100);
-            AParameter('Geomorph','OpenBoxSizeMeters',OpenBoxSizeMeters,750);
+            AParameter('Geomorph','OpennessBoxRadiusPixels',OpennessBoxRadiusPixels,3);
+            AParameter('Geomorph','OpennessBoxRadiusMeters',OpennessBoxRadiusMeters,750);
+            AParameter('Geomorph','OpenRadiusUnits',OpenRadiusUnits,0);
+            AParameter('Geomorph','OpenStartRadialsAtPixel',OpenStartRadialsAtPixel,0);
+            AParameter('Geomorph','OpennesstCalcThin',OpennessCalcThin,1);
+            AParameterShortFloat('Openness','OpennessHowHigh',OpennessHowHigh,0);
+            AParameter('Openness','ConfirmOpennesDirections',ConfirmOpennesDirections,false);
+            AParameter('Openness','OpennessHt',OpennessHt,opOnGround);
 
             AParameter('Geomorph','SSOGridBoxSize',SSOGridBoxSize,100);
             AParameter('Geomorph','SSOBoxSizeMeters',SSOBoxSizeMeters,750);
@@ -1551,7 +1557,6 @@ var
             AParameter('Geomorph','MinPointsForSSO',MinPointsForSSO,100);
             AParameter('Geomorph','FabricCalcThin',FabricCalcThin,4);
             AParameter('Geomorph','MomentCalcThin',MomentCalcThin,4);
-            AParameter('Geomorph','OpennesstCalcThin',OpennessCalcThin,1);
             AParameter('Geomorph','ReliefCalcThin',ReliefCalcThin,4);
 
             AParameter('Geomorph','LimitSSODirByStrength',LimitSSODirByStrength,true);
@@ -1788,7 +1793,7 @@ var
             AParameter('Variogram','PointsRequired',PointsRequired,100);
             AParameter('Variogram','DoGraph',DoGraph,true);
             AParameter('Variogram','DoGamma',DoGamma,false);
-            AParameter('Variogram','DoSlopes',DoSlopes,true);
+            //Parameter('Variogram','DoSlopes',DoSlopes,true);
             AParameter('Variogram','LogLog',LogLog,false);
             AParameter('Variogram','SemiVar',SemiVar,false);
             AParameter('Variogram','OldMethod',OldMethod,false);
@@ -3939,9 +3944,6 @@ begin
          AParameter('OpenGL','OGLObjectSize',OGLObjectSize,5);
       {$EndIf}
 
-      AParameterShortFloat('Openness','OpennessHowHigh',OpennessHowHigh,0);
-      AParameter('Openness','ConfirmOpennesDirections',ConfirmOpennesDirections,false);
-      AParameter('Openness','OpennessHt',OpennessHt,opOnGround);
       AParameter('Palettes','ElevPalName',ElevPalName,'Terrain, 25 steps');
 
     {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 9'); {$EndIf}
@@ -4218,6 +4220,7 @@ end;
       MVClusterClientDataSet.AccumulateClusterStats := false;  //MDDef.ShowClusterResults and MDDef.IncludeClusterStatistics;
    end;
 {$EndIf}
+
 
 procedure ToggleShowProgress(ShowIt : boolean);
 begin

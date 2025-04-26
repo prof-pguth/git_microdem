@@ -81,7 +81,6 @@ begin
       if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
       if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_' + TStr4 + 'flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(DEMName) + '.tif';
       cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_FlowAccumulation cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(OpenMap,cmd,FlowAccName,euUndefined,mtElevRainbow);
    end;
 end;
@@ -102,7 +101,6 @@ begin
    end
    else begin
       cmd := WhiteBoxfName + WBNoCompress + '-r=ExtractStreams -v --flow_accum=' + FlowAccName + ' -o=' + StreamName + ' --threshold=' + RealToString(Threshhold,-8,1);  // + ' --zero_background=false';
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_extract_streams cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(OpenMap,cmd,StreamName,euUndefined,mtElevRainbow);
    end;
 end;
@@ -120,7 +118,6 @@ begin
       WBT_extract_streams(false,DEMName,BreachName,FlowAccumulationName,StreamName,Threshhold);
       if (HANDName = '') then HandName := MDTempDir + 'wbt_elev_above_stream_' + ExtractFileNameNoExt(DEMName) + '.tif';
       cmd := WhiteBoxfName + WBNoCompress + '-r=ElevationAboveStream -v --dem=' + BreachName + ' --streams=' + StreamName + ' -o=' + HANDName;
-      {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream cmd=' + cmd); {$EndIf}
       Result := ExecuteWBandOpenMap(OpenMap,cmd,HandName,euUndefined,mtElevRainbow);
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream out, ' + HandName); {$EndIf}
    end;
@@ -335,10 +332,7 @@ begin
   if WhiteBoxPresent then begin
       SetColorForProcessing;
       MDDef.ShowWinExec := true;
-     //cmd := WhiteBoxfName + WBNoCompress + '-r=LidarNearestNeighbourGridding -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     //Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euMeters,mtElevSpectrum);
-
-     cmd := WhiteBoxfName + ' -r=' + Tool + ' ' + WBNoCompress + ' -v --wd=' + InDirectory + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1) +
+      cmd := WhiteBoxfName + ' -r=' + Tool + ' ' + WBNoCompress + ' -v --wd=' + InDirectory + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1) +
          ' --exclude_cls=0,1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18';
      {$IfDef RecordWBT_DEM} WriteLineToDebugFile('cmd=' + cmd); {$EndIf}
      if (OutName = '') then WinExecAndWait32(cmd,false,MDDef.LogDOScommands)
@@ -374,17 +368,9 @@ begin
 end;
 
 function WBT_IDWCreate(OpenMap : boolean; InDirectory,OutName : PathStr; GridSize : float64; AssignProjection : shortstring = '') : integer;
-//   cmd : ansistring;
 begin
   {$IfDef RecordWBT_DEM} WriteLineToDebugFile('WBT_IDWCreate in'); {$EndIf}
   Result := WBT_MakeDTM('LidarIdwInterpolation ',OpenMap,InDirectory,OutName,GridSize,AssignProjection)
-(*
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WBIDWCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-  if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     cmd := WhiteBoxfName  + WBNoCompress + '-r=LidarIdwInterpolation -v -i=' + InName + ' -o=' + OutName + ' --resolution=' + RealToString(GridSize,-12,-1) + ' --radius=' + RealToString(GridSize * MDDef.FillHoleRadius,-12,-1);
-     ExecuteWBandOpenMap(Openmap,cmd,OutName,euMeters,mtElevSpectrum);
-  end;
-*)
 end;
 
 
@@ -525,14 +511,12 @@ function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=5
 // https://www.whiteboxgeo.com/manual/wbt_book/available_tools/geomorphometric_analysis.html#Geomorphons
 var
    OutName : PathStr;
-   //bfile : tStringList;
    cmd : ansistring;
 begin
   {$If Defined(RecordUseOtherPrograms) or Defined(RecordWBT)} WriteLineToDebugFile('WhiteBoxGeomorphons, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_search_' + IntToStr(Search) + '_skip_' + IntToStr(Skip) + '_' + ExtractFileNameNoExt(InName) + '_','.tif');
      cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=' + IntToStr(Search) + ' --threshold=0.0 --skip=' + IntToStr(Skip) + ' --forms=True';
-     {$If Defined(RecordWBT)} WriteLineToDebugFile(cmd); {$EndIf}
      Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euGeomorphon,mtLandCover);
   end;
    {$If Defined(RecordUseOtherPrograms) or Defined(RecordWBT)} WriteLineToDebugFile('WhiteBoxGeomorphons out'); {$EndIf}

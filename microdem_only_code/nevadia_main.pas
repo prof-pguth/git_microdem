@@ -642,6 +642,14 @@ type
     CorrelationmatricesamongallDEMsjustALLlandcover1: TMenuItem;
     CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1: TMenuItem;
     Areaevaluations1: TMenuItem;
+    N59: TMenuItem;
+    N60: TMenuItem;
+    PicktestDEMs1: TMenuItem;
+    N61: TMenuItem;
+    N62: TMenuItem;
+    N64: TMenuItem;
+    N65: TMenuItem;
+    ComparelandcoverinpointcloudDTM1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1078,6 +1086,11 @@ type
     procedure CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(
       Sender: TObject);
     procedure Areaevaluations1Click(Sender: TObject);
+    procedure N60Click(Sender: TObject);
+    procedure PicktestDEMs1Click(Sender: TObject);
+    procedure N62Click(Sender: TObject);
+    procedure N64Click(Sender: TObject);
+    procedure ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2097,7 +2110,7 @@ var
             if Key = 'INI' then ProcessIniFile(iniRead,'',Value);
             if Key = 'X' then xval := Value;
             if Key = 'Y' then yval := Value;
-            if Key = 'RAD' then MDDef.OpenBoxSizeMeters := StrToInt(Value);
+            if Key = 'RAD' then MDDef.OpennessBoxRadiusMeters := StrToInt(Value);
             if Key = 'SLOPE_RAD' then MDDef.SlopeCompute.WindowRadius := StrToInt(Value);
             if Key = 'SLOPE_UNIT' then SlopeDegree := Value = 'DEGREE';
             if Key = 'CURVE_RAD' then MDDef.CurveCompute.WindowRadius := StrToInt(Value);
@@ -2177,7 +2190,7 @@ var
                MDDef.DoUpOpen := (UpFile <> '');
                MDDef.DoDownOpen := (DownFile <> '');
                MDDef.DoDiffOpen := (DiffFile <> '');
-               MakeMomentsGrid(DEM,'O',MDDef.OpenBoxSizeMeters,false);
+               MakeMomentsGrid(DEM,'O',MDDef.OpennessBoxRadiusMeters,false);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
                if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
                if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
@@ -2208,16 +2221,18 @@ var
             LeastCostPathOptions(1);
          end;
 
-         if Action = 'DEM2JSON' then begin
-            if OpenADEM then begin
-               DEMGlb[DEM].SaveAsGeoJSON;
-            end;
-         end;
+        {$IfDef IncludeGeoJSONexport}
+             if (Action = 'DEM2JSON') then begin
+                if OpenADEM then begin
+                   DEMGlb[DEM].SaveAsGeoJSON;
+                end;
+             end;
 
-         if Action = 'LAS2JSON' then begin
-            QuietActions := true;
-            LAS2GeoJSON(infile);
-         end;
+             if (Action = 'LAS2JSON') then begin
+                QuietActions := true;
+                LAS2GeoJSON(infile);
+             end;
+        {$EndIf}
 
          DEM_Manager.CloseAllWindowsAndData;
          {$IfDef RecordCommandLine} WriteLineToDebugFile('ending command line ops'); {$EndIf}
@@ -2634,6 +2649,68 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Clip DEMs to DEMIX tile boundaries out'); {$EndIf}
 end;
 
+
+procedure Twmdem.N60Click(Sender: TObject);
+begin
+   GetDEMIXpaths;
+   VerifyRecordsToUse(DemixSettingsDir + 'demix_fuv_parameters.dbf','PARAMETER');
+end;
+
+procedure Twmdem.N62Click(Sender: TObject);
+var
+   theDEMs : tStringList;
+   DataDir,fName : PathStr;
+   i,j : integer;
+begin
+    DataDir := '';
+    theDEMs := GetFileNamesOfDEMinUse(DataDir);
+    for i := 0 to pred(TheDEMs.Count) do begin
+       fName := TheDEMs[i];
+       LoadNewDEM(j,fName,true);
+    end;
+end;
+
+procedure Twmdem.N64Click(Sender: TObject);
+const
+   DEMs : array[1..4] of shortstring = ('ref_dtm','cop','fathom','gedtm');
+var
+   Paths : array[1..4] of PathStr;
+   TheGrids : array[1..4] of integer;
+   RefName,fName,BasePath : PathStr;
+   theDEMs,Findings : tStringList;
+   i,j : integer;
+   aLine : shortstring;
+begin
+   BasePath := 'J:\aaa_neo_eval\silver_peak_range\curvature\';
+   for i := 1 to 4 do Paths[i] := BasePath + DEMs[i] + '_d3\';
+
+   //Path1 := BasePath := 'J:\aaa_neo_eval\silver_peak_range\curvature\COP_d3\';
+   //Path2 := 'J:\aaa_neo_eval\silver_peak_range\curvature\ref_dtm_d3\';
+
+   Findings := tStringList.Create;
+   aLine := 'CURVATURE';
+   for j := 2 to 4 do aline := aline + ',' + 'FUV_' + Uppercase(DEMs[j]);
+   Findings.Add(aLine);
+   TheDEMs := nil;
+   Petmar.FindMatchingFiles(Paths[1],'*.tif',TheDEMs,1);
+   for i := 0 to pred(TheDEMs.Count) do begin
+      RefName := TheDEMs.Strings[i];
+      LoadNewDEM(TheGrids[1],RefName,false);
+      aline := StringReplace(ExtractFileNameNoExt(RefName),'ref_dtm_','',[rfReplaceAll, rfIgnoreCase]);
+      for j := 2 to 4 do  begin
+        FName := Paths[j] + ExtractFileName(RefName);
+        fName := StringReplace(fName,DEMs[1],DEMs[j],[rfReplaceAll, rfIgnoreCase]);
+        LoadNewDEM(TheGrids[j],fName,false);
+
+        aline := aline + ',' + RealToString(GetFUVForPairGrids(DEMglb[TheGrids[1]].FullDEMGridLimits,TheGrids[1],TheGrids[j]),-12,6);
+      end;
+      WriteLineToDebugFile(aLine);
+      Findings.Add(aline);
+      for j := 1 to 4 do CloseSingleDEM(j);
+   end;
+   RefName := MDTempDir + 'curvature_fuvs.dbf';
+   StringList2CSVtoDB(Findings,RefName);
+end;
 
 procedure Twmdem.Overwrite1Click(Sender: TObject);
 begin
@@ -3920,6 +3997,12 @@ begin
    {$IfDef CopALOSCompare}
       OpenHalfSecCopALOS(True);
    {$EndIf}
+end;
+
+procedure Twmdem.PicktestDEMs1Click(Sender: TObject);
+begin
+   GetDEMIXpaths;
+   VerifyRecordsToUse(DemixSettingsDir + 'demix_dems.dbf','SHORT_NAME');
 end;
 
 procedure Twmdem.Pixelbypixelmapstatistics1Click(Sender: TObject);
@@ -5958,6 +6041,11 @@ end;
 procedure Twmdem.Compareconvergenceindexfortestarea1Click(Sender: TObject);
 begin
    OpenCopDEMandLandcoverForArea(false);
+end;
+
+procedure Twmdem.ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
+begin
+   LandCoverBreakdowPointCloud;
 end;
 
 procedure Twmdem.CompareUTMandgeographicslopes1Click(Sender: TObject);

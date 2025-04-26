@@ -54,7 +54,7 @@ uses
     Petmar,Petmar_types,BaseGraf,
     DEMDefs;
 
-   procedure DEMIX_evaluations_graph(DBonTable,YAxisWhat : integer; DEMs,Criteria : tStringList; Evaluations : boolean = true);
+procedure DEMIX_evaluations_graph(DBonTable,YAxisWhat : integer; DEMs,Criteria : tStringList; Evaluations : boolean = true);
 
 procedure DEMIX_SSIM_FUV_GraphSettings(var Graph : tThisBaseGraph; DBonTable : integer; lltext : shortstring; Ncrits : integer);
 procedure SSIM_FUV_scatterplot(db : integer; theCrit : shortstring);
@@ -166,12 +166,9 @@ var
            Result.GraphDraw.MinVertAxis := -0.05;
            Result.GraphDraw.MaxVertAxis := 1.05;
            Result.GraphDraw.VertLabel := 'FUV';
-
            Result.GraphDraw.MinHorizAxis := 0.5;
            Result.GraphDraw.MaxHorizAxis := OrderedFUVParams.Count  + 0.5;
-
            Result.GraphDraw.ShowGraphBottomLabels  := true;
-
            Result.GraphDraw.GraphBottomLabels := tStringList.Create;
            for j := 0 to pred(OrderedFUVParams.Count) do begin
               Result.GraphDraw.GraphBottomLabels.Add(IntToStr(succ(j)) + ',' + OrderedFUVParams[j]);
@@ -181,7 +178,6 @@ var
             Result.GraphDraw.MinHorizAxis := -0.05;
             Result.GraphDraw.MaxHorizAxis := 1.05;
             Result.GraphDraw.HorizLabel := 'FUV';
-
             Result.GraphDraw.MinVertAxis := 0.5;
             Result.GraphDraw.MaxVertAxis := OrderedFUVParams.Count  + 0.5;
             Result.GraphDraw.ShowGraphLeftLabels := true;
@@ -190,7 +186,6 @@ var
                Result.GraphDraw.GraphLeftLabels.Add(IntToStr(succ(j)) + ',' + OrderedFUVParams[j]);
             end;
          end;
-
 
          GISdb[DBonTable].MyData.First;
          i := 0;
@@ -285,7 +280,6 @@ var
      begin
          StartGraph(Result);
          Result.GraphDraw.GraphBottomLabels := tStringList.Create;
-         //Result.GraphDraw.LegendList := tStringList.Create;
          if (ThisParam <> '') then GISdb[DBonTable].ApplyGISFilter('PARAMETER=' + QuotedStr(ThisParam));
          j := 0;
          while not GISdb[DBonTable].MyData.eof do begin
@@ -338,21 +332,48 @@ var
      end;
 
 
+    {$Define RecordFUVGraph}
+
      function DoFUVgraph(ItsLandcover : boolean) : tThisBaseGraph;
      var
         i,j,n : integer;
         Criterion : shortstring;
-        Evals : array[1..8] of float32;
-        TheCriteria : tstringList;
+        Evals : array[1..25] of float32;
+        TheCriteria,Criteria2 : tstringList;
      begin
          TheCriteria := OpenFUVOrderedParams;
+          if GISdb[DBonTable].MyData.FieldExists('CRITERION') then begin
+             Criteria2 := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
+             for i := pred(TheCriteria.Count) downto 0 do begin
+                Criterion := TheCriteria.Strings[i] + '_FUV';
+                if Criteria2.IndexOf(Criterion) = -1 then begin
+                   TheCriteria.Delete(i);
+                end
+                else begin
+                end;
+             end;
+          end
+          else begin
+            for i := pred(TheCriteria.Count) downto 0 do begin
+              Criterion := TheCriteria.Strings[i] + '_FUV';
+              if not GISdb[DBonTable].MyData.FieldExists(Criterion) then begin
+                 TheCriteria.Delete(i);
+              end;
+            end;
+          end;
+         if (TheCriteria.Count = 0) then begin
+            MessageToContinue('No matching criteria in file');
+            exit;
+         end;
+
+         {$IfDef RecordFUVGraph} WriteLineToDebugFile('DoFUVgraph criteria'); WriteStringListToDebugFile(theCriteria,true); {$EndIf}
 
          StartGraph(Result);
          Result.GraphDraw.GraphBottomLabels := tStringList.Create;
          Result.GraphDraw.ShowGraphBottomLabels := true;
-         for j := 0 to pred(TheCriteria.Count)  do begin
-            Result.GraphDraw.GraphBottomLabels.Add(IntToStr(succ(j)) + ',' + TheCriteria[j]);
-         end;
+         //for j := 0 to pred(TheCriteria.Count) do begin
+            //Result.GraphDraw.GraphBottomLabels.Add(IntToStr(succ(j)) + ',' + TheCriteria[j]);
+         //end;
 
          Result.Width := 800;
 
@@ -377,21 +398,26 @@ var
          else begin
             for i := 1 to NumDEMIXtestDEM do begin
                if GISdb[DBonTable].MyData.FieldExists(DEMIXShort[i]) then begin
+                  {$IfDef RecordFUVGraph} writeLineToDebugFile(DEMIXShort[i]); {$EndIf}
                   Color := ConvertPlatformColorToTColor(DEMIXDEMcolors[i]);
-                  Result.OpenDataFile(rfile,'',Color);
+                  Result.OpenDataFile(rfile,DEMIXShort[i],Color);
                   GISdb[DBonTable].MyData.First;
                   while not GISdb[DBonTable].MyData.eof do begin
                      Criterion := GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION');
                      Criterion := StringReplace(Criterion, '_FUV', '',[rfIgnoreCase]);
                      for j := 1 to TheCriteria.Count do begin
-                        if (Criterion = TheCriteria.Strings[pred(j)]) then Evals[j] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
+                        if (Criterion = TheCriteria.Strings[pred(j)]) then begin
+                           writeLineToDebugFile('i=' + IntToStr(i) +  '  j=' + IntToStr(j));
+                           Evals[j] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXShort[i]);
+                            {$IfDef RecordFUVGraph} writeLineToDebugFile(Criterion + '  ' + RealToString(Evals[j],-12,-4)); {$EndIf}
+                        end;
                      end;
                      GISdb[DBonTable].MyData.Next;
                   end;
 
-                  for j := 0 to pred(TheCriteria.Count) do begin
+                  for j := 1 to TheCriteria.Count do begin
                       if (i = 1) then begin
-                        Result.GraphDraw.GraphBottomLabels.Add(IntToStr(j) + ',' + TheCriteria.Strings[j]);
+                         Result.GraphDraw.GraphBottomLabels.Add(IntToStr(j) + ',' + TheCriteria.Strings[pred(j)]);
                       end;
                       v[1] := j;
                       v[2] := Evals[j];
@@ -403,20 +429,24 @@ var
          end;
 
          Result.GraphDraw.VertLabel := 'FUV';
+         Result.GraphDraw.LLcornerText := 'DEMIX tile: ' +GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
          Result.AutoScaleAndRedrawDiagram;
          Result.GraphDraw.MinVertAxis := -0.05;
          Result.GraphDraw.MaxVertAxis := 1.05;
          Result.GraphDraw.MinHorizAxis := 0.5;
-         Result.GraphDraw.MaxHorizAxis := OrderedFUVParams.Count  + 0.5;
+         Result.GraphDraw.MaxHorizAxis := TheCriteria.Count  + 0.5;
          FinishGraph(Result);
+         TheCriteria.Destroy;
      end;
 
 begin {procedure GraphForDifferenceDistributionByTile}
    if ValidDB(DBonTable) then begin
+      (*
       if (Tiles = Nil) then begin
          Tiles := tStringList.Create;
          Tiles.LoadFromFile('j:\aaa_neo_eval\neo_tiles.txt');
       end;
+      *)
       GISdb[DBonTable].EmpSource.Enabled := false;
       Findings := tStringList.Create;
 
@@ -434,25 +464,28 @@ begin {procedure GraphForDifferenceDistributionByTile}
             DoDifferenceDistributionGraphType2('');
          end
          else begin
+            Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
             for Tile := 0 to pred(Tiles.Count) do begin
                GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[Tile]));
                DoDifferenceDistributionGraph;
             end;
+            Tiles.Destroy;
          end;
-
       end
       else if GISdb[DBonTable].MyData.FieldExists('RESOLUTION') then begin
          //This is a range of scales file
          Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
          Resolutions := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('RESOLUTION');
          DoMultipleResolutionGraph;
+         Areas.Destroy;
       end
       else if GISdb[DBonTable].MyData.FieldExists('CRITERION') then begin //this is an FUV file
-         Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
+         Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
          for Tile := 0 to pred(Tiles.Count) do begin
             GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[Tile]));
             DoFUVGraph(false);
          end;
+         //Criteria.Destroy;
       end
       else if GISdb[DBonTable].MyData.FieldExists('LANDCOVER') then begin //this is an FUV file based on landcover
          DoFUVGraph(true);
@@ -467,8 +500,6 @@ begin {procedure GraphForDifferenceDistributionByTile}
       end;
       if (Findings.Count = 0) then Findings.Destroy
       else MakeBigBitmap(Findings,'','',4);
-   end
-   else begin
    end;
 end {procedure GraphForDifferenceDistributionByTile};
 

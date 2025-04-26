@@ -231,32 +231,6 @@ end {function MakeSSIMMap};
 
 
 
-    function GetFUVForPair(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
-    var
-       Mean1,Mean2,StdDev1,StdDev2,r,covar,MeanDiff,MeanAbsDiff : float64;
-       NPts : int64;
-    begin
-       if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
-          {$IfDef TrackSWcorner} DEMGlb[Grid1].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); DEMGlb[Grid2].WriteToDebugSWCornerForComputations('AreaSSIMComputations'); {$EndIf}
-          if CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2,Npts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff) then begin
-             Result := 1-sqr(r);
-             {$If Defined(TrackCovariance)} WriteLineToDebugFile('FUV=' + RealToString(Result,10,8) + '  ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
-          end
-          else begin
-             {$If Defined(RecordDEMIXfull)} WriteLineToDebugFile('DoCovarianceForPair computation Fail for tile ' + TileName + ' TileFill=' + RealToString(TileFull,-8,-2) + '%'); {$EndIf}
-             Result := -999;
-             {$IfDef RepeatProblematicComputations}
-                MessageToContinue('Check debugger for computation fail');
-                CovariancesFromTwoGrids(RefGridLimits,Grid1,Grid2, r,covar,Mean1,Mean2,StdDev1,StdDev2);
-             {$EndIf}
-          end;
-       end
-       else begin
-          Result := -999;
-          {$If Defined(RecordDEMIXfull)} WriteLineToDebugFile('Invalid grid, DoCovarianceForPair Fail for tile ' + ' ' + DEMglb[Grid1].AreaName + ' ' + DEMglb[Grid2].AreaName); {$EndIf}
-       end;
-    end;
-
 function RemoveAreaFromDEMName(Area,DEMarea : shortstring) : shortstring;
 begin
    Result := DEMarea;
@@ -369,14 +343,14 @@ var
              aLine := TileSetup + Criterion2;
              if (NumAreaDEMs > 0) then begin
                 for i := 1 to NumAreaDEMs do begin
-                   FUV := GetFUVForPair(DEMglb[usingAreaGrids[0]].FullDEMGridLimits,usingAreaGrids[0],usingAreaGrids[i]);
+                   FUV := GetFUVForPairGrids(DEMglb[usingAreaGrids[0]].FullDEMGridLimits,usingAreaGrids[0],usingAreaGrids[i]);
                    aLine := aline + ',' + RealToString(FUV,-12,8);
                 end;
              end;
              if (NumPtDEMs > 0) then begin
                 for i := 1 to NumPtDEMs do begin
                    {$If Defined(RecordFUV)} WriteLineToDebugFile(IntToStr(i) + ' ref=' + IntToStr(usingPointGrids[0]) + ' test=' + IntToStr(usingPointGrids[i])); {$EndIf}
-                   FUV := GetFUVForPair(DEMglb[usingPointGrids[0]].FullDEMGridLimits,usingPointGrids[0],usingPointGrids[i]);
+                   FUV := GetFUVForPairGrids(DEMglb[usingPointGrids[0]].FullDEMGridLimits,usingPointGrids[0],usingPointGrids[i]);
                    aLine := aline + ',' + RealToString(FUV,-12,8);
                 end;
              end;
@@ -395,7 +369,7 @@ var
                    if DEMIXanalysismode in [DEMIXneo] then RefGridLimits := DEMglb[usingAreaGrids[0]].FullDEMGridLimits
                    else RefGridLimits := DEMglb[usingAreaGrids[0]].sfBoundBox2tGridLimits(bb);
                    for i := 1 to NumAreaDEMs do begin
-                      aLine := aline + ',' + RealToString(GetFUVForPair(RefGridLimits,usingAreaGrids[0],usingAreaGrids[i]),-12,8);
+                      aLine := aline + ',' + RealToString(GetFUVForPairGrids(RefGridLimits,usingAreaGrids[0],usingAreaGrids[i]),-12,8);
                    end;
                 end;
 
@@ -406,7 +380,7 @@ var
                       RefGridLimits := DEMglb[UsingRef].sfBoundBox2tGridLimits(bb);
                       {$If Defined(TrackCovariance)} WriteLineToDebugFile(''); WriteLineToDebugFile('GridLimits: ' + GridLimitsToString(RefGridLimits)); {$EndIf}
                       {$If Defined(RecordFUV)} WriteLineToDebugFile(IntToStr(i) + ' ref=' + IntToStr(UsingRef) + ' test=' + IntToStr(usingPointGrids[i])); {$EndIf}
-                      aLine := aline + ',' + RealToString(GetFUVForPair(RefGridLimits,UsingRef,usingPointGrids[i]),-12,8);
+                      aLine := aline + ',' + RealToString(GetFUVForPairGrids(RefGridLimits,UsingRef,usingPointGrids[i]),-12,8);
                    end;
                 end;
                 ResultsFUV.Add(aline);

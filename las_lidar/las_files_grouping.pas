@@ -116,7 +116,6 @@ type
          HasUserData,
          HasScanAngle,
          HasReturnNumbers : boolean;
-         //CloudBaseDir,
          CloudDir,
          CloudName : PathStr;
          UTMBBox,

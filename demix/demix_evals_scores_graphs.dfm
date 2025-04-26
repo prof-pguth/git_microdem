@@ -189,7 +189,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup5Click
   end
   object BitBtn12: TBitBtn
-    Left = 335
+    Left = 344
     Top = 194
     Width = 209
     Height = 25
@@ -207,9 +207,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox4Click
   end
   object BitBtn16: TBitBtn
-    Left = 744
-    Top = 560
-    Width = 159
+    Left = 644
+    Top = 524
+    Width = 269
     Height = 25
     Caption = 'Best eval colored by slope'
     TabOrder = 14

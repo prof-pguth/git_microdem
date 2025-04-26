@@ -275,6 +275,7 @@ type
      TigerSingleOverlayUp,
      GroundOnly,
      UseDistortedRawLatLongScaling,
+     HalfPixelOffsets,
      LASlayerOnMap : boolean;
 
      OSMShapesUp : tStringList;
@@ -1906,6 +1907,7 @@ begin
    TigerSingleOverlayUp := false;
    Log10Elev := false;
    LASlayerOnMap := false;
+   HalfPixelOffsets := false;
 
    NoDrawingNow := false;
    AllowDataBaseDrawing := true;

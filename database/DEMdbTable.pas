@@ -4973,15 +4973,13 @@ var
    Max : integer;
    Ls,FieldName : ShortString;
 begin
-   //with GISdb[DBonTable] do begin
-      if (Sender = LongestString2) then FieldName := SelectedColumn
-      else FieldName := GISdb[DBonTable].PickField('longest string',[ftString]);
-      if (FieldName <> '') then begin
-         GISdb[DBonTable].LongestString(FieldName,Max,LS);
-         ShowStatus;
-         MessageToContinue('Max length field ' + FieldName + ': ' + IntToStr(Max) + '   (' + ls + ')');
-     end;
-  // end;
+    if (Sender = LongestString2) then FieldName := SelectedColumn
+    else FieldName := GISdb[DBonTable].PickField('longest string',[ftString]);
+    if (FieldName <> '') then begin
+       GISdb[DBonTable].LongestString(FieldName,Max,LS);
+       ShowStatus;
+       MessageToContinue('Max length field ' + FieldName + ': ' + IntToStr(Max) + '   (' + ls + ')');
+    end;
 end;
 
 

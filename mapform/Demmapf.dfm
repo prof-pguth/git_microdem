@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1778
+  ClientHeight = 1798
   ClientWidth = 3844
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 3844
-    Height = 1751
+    Height = 1771
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,7 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitHeight = 1731
     object Image1: TImage
       Left = 3
       Top = -247
@@ -208,12 +207,11 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1706
+      Top = 1726
       Width = 3840
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 1686
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -4396,6 +4394,18 @@ object MapForm: TMapForm
         object N63: TMenuItem
           Caption = '-'
         end
+        object LSPcalculator1: TMenuItem
+          Caption = 'LSP_calculator'
+          object AllLSPs1: TMenuItem
+            Caption = 'All LSPs'
+            RadioItem = True
+            OnClick = AllLSPs1Click
+          end
+          object Allpartialderivatives1: TMenuItem
+            Caption = 'All partial derivatives'
+            OnClick = Allpartialderivatives1Click
+          end
+        end
         object LinedetectionHoughtransform1: TMenuItem
           Caption = 'Line detection (Hough transform)'
           OnClick = LinedetectionHoughtransform1Click
@@ -4404,11 +4414,9 @@ object MapForm: TMapForm
           Caption = 'Raster to vector'
           OnClick = Rastertovector1Click
         end
-        object auDEMtools1: TMenuItem
-          Caption = 'TauDEM tools'
-        end
         object RVTgridcreation1: TMenuItem
           Caption = 'RVT grid creation'
+          OnClick = RVTgridcreation1Click
         end
       end
       object Comparemultiplegridstothisone1: TMenuItem
@@ -6704,13 +6712,27 @@ object MapForm: TMapForm
         Caption = 'Plan curvature (kpc)'
         OnClick = Plancurvature3Click
       end
-      object Openness3pixelradius1: TMenuItem
-        Caption = 'Openness, 3 pixel radius'
-        OnClick = Openness3pixelradius1Click
-      end
-      object Openness3pixelradius2: TMenuItem
-        Caption = 'Openness, 10 pixel radius'
-        OnClick = Openness3pixelradius2Click
+      object Openness2: TMenuItem
+        Caption = 'Openness'
+        object Openness3pixelradius1: TMenuItem
+          Caption = 'Upward Openness, 3 pixel radials'
+          OnClick = Openness3pixelradius1Click
+        end
+        object Openness3pixelradius2: TMenuItem
+          Caption = 'Upward Openness, 10 pixel radials'
+          OnClick = Openness3pixelradius2Click
+        end
+        object N76: TMenuItem
+          Caption = '-'
+        end
+        object Downwardopenness3pixelradials1: TMenuItem
+          Caption = 'Downward openness, 3 pixel radials'
+          OnClick = Downwardopenness3pixelradials1Click
+        end
+        object Downwardopenness10pixelradials1: TMenuItem
+          Caption = 'Downward openness, 10 pixel radials'
+          OnClick = Downwardopenness10pixelradials1Click
+        end
       end
       object RRI1: TMenuItem
         Caption = 'RRI'
@@ -7236,6 +7258,10 @@ object MapForm: TMapForm
     object CompareTRI1: TMenuItem
       Caption = 'Compare TRI'
       OnClick = CompareTRI1Click
+    end
+    object CompareTPI1: TMenuItem
+      Caption = 'Compare TPI'
+      OnClick = CompareTPI1Click
     end
     object Comparepartialderivatives1: TMenuItem
       Caption = 'Compare partial derivatives'

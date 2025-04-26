@@ -104,9 +104,13 @@ var
          Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf,z : float32;
          Upward,Downward,Relief1 : float64;
          SlopeAspectRec : tSlopeAspectRec;
+         PixelsNS,PixelsEW,PixelsDia : integer;
       begin
          if Param in [rsOpenUp,rsOpenDown,rsOpenDiff] then begin
-            Result := DEMGlb[CurDEM].FigureOpenness(Col,Row,RegionM,Upward,Downward);
+            PixelsNS := round(RegionM / DEMGlb[CurDEM].AverageYSpace);
+            PixelsEW := round(RegionM / DEMGlb[CurDEM].AverageXSpace);
+            PixelsDia := round(RegionM / DEMGlb[CurDEM].AverageDiaSpace);
+            Result := DEMGlb[CurDEM].FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia,Upward,Downward);
             if Param in [rsOpenUp] then Relief1 := Upward
             else if Param in [rsOpenDown] then Relief1 := Downward
             else Relief1 := Upward-Downward;

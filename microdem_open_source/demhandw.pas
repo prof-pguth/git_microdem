@@ -425,13 +425,9 @@ type
 var
    DemHandForm  : TDemHandForm;
 
+
 procedure MergeICESat2Photons(BaseMap : tMapForm = nil);
-
-
 function MakeGraphFromSOESTtides(fName : PathStr; var Lat,Long : float64; var Year1,Year2 : integer; var StationName : shortString) :  TThisBaseGraph;
-
-
-procedure JSONtoShapefile(fname : pathStr);
 procedure CopyFiles(JustCopyNotMove : boolean);
 
 
@@ -784,70 +780,6 @@ end;
 procedure TDemHandForm.XTfiles1Click(Sender: TObject);
 begin
    BatchRenameDEMfiles(Sender);
-end;
-
-
-procedure JSONtoShapefile(fname : pathStr);
-var
-   FileInMemory : tStringList;
-   pos : integer;
-   Str : String;
-   Coords  : ANSIString;
-   NameStr,LatStr,LongStr : shortstring;
-   Table : tMyData;
-   ShapeFileCreator : tShapeFileCreation;
-begin
-   {$IfDef RecordImportProblems} WriteLineToDebugFile('JSONtoShapefile ' + fname); {$EndIf}
-   ShowHourglassCursor;
-   FileInMemory := tStringList.Create;
-   FileInMemory.LoadFromFile(fName);
-   fName := ChangeFileExt(fName,DefaultDBExt);
-
-   ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,3);
-   ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'FEAT_TYPE',15);
-   ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'SUBTYPE',15);
-
-   Str := ptTrim(FileInMemory.Strings[0]);
-   Pos := PosEx('"xy"',Str);
-   if Pos > 0  then Delete(Str,Pos,Length(Str) - Pos);
-
-   while length(Str) > 0 do begin
-        Pos := PosEx('feature_type',Str);
-        if Pos = 0 then break;
-
-        Delete(Str,1,Pos);
-        Petmar_Types.BeforeSpecifiedCharacter(Str,':',true,true);
-        Table.Insert;
-
-        NameStr := trim(Petmar_Types.BeforeSpecifiedCharacter(Str,',',true,true));
-        StripCharacter(NameStr,'"');
-        Table.SetFieldByNameAsString('FEAT_TYPE',NameStr);
-
-        Pos := PosEx('subtype',Str);
-        if Pos > 0 then begin
-          Delete(Str,1,Pos);
-          Petmar_Types.BeforeSpecifiedCharacter(Str,':',true,true);
-          NameStr := trim(Petmar_Types.BeforeSpecifiedCharacter(Str,',',true,true));
-          StripCharacter(NameStr,'"');
-          Table.SetFieldByNameAsString('SUBTYPE',NameStr);
-        end;
-
-        Pos := PosEx('((',Str);
-        Delete(Str,1,Pos+1);
-        Coords := trim(Petmar_Types.BeforeSpecifiedCharacter(Str,')',true,true));
-        Coords := Coords + ',';
-
-        while length(Coords) > 0 do begin
-           LongStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Coords,' ',true,true);
-           LatStr := Petmar_Types.BeforeSpecifiedCharacterANSI(Coords,',',true,true);
-           Coords := ptTrim(Coords);
-           ShapeFileCreator.AddPointToShapeStream(StrToFloat(LatStr),StrToFloat(LongStr));
-        end;
-        ShapeFileCreator.ProcessRecordForShapeFile;
-        Table.Post;
-      end;
-    ShapeFileCreator.CloseShapeFiles;
-    FileInMemory.Destroy;
 end;
 
 
@@ -3737,8 +3669,7 @@ end;
 
 procedure TDemHandForm.GeoJSONP1Click(Sender: TObject);
 begin
-   {$ifDef ExPointClouds}
-   {$Else}
+   {$IfDef IncludeGeoJSONexport}
       LAS2GeoJSON;
    {$EndIf}
 end;

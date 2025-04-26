@@ -574,8 +574,10 @@ end {DrawGridLines};
                   for Row := round(MapCorners.BoundBoxDataGrid.ymin) to round(MapCorners.BoundBoxDataGrid.ymax) do begin
                      Bitmap.Canvas.Font.Style := [fsBold];
                      Point(Col,Row);
-                     Bitmap.Canvas.Font.Style := [fsItalic];
-                     Point(Col + 0.5, Row + 0.5);
+                     if HalfPixelOffsets then begin
+                        Bitmap.Canvas.Font.Style := [fsItalic];
+                        Point(Col + 0.5, Row + 0.5);
+                     end;
                   end;
                end;
             end;

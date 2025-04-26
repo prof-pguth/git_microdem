@@ -85,7 +85,7 @@ type
     ZeroPad             : boolean;
     SegExp              : integer;
     function FastFourierTransform : boolean;
-    procedure GetSlopeLofOfValues(ShowResults : boolean; var a,b,r : float32);
+    procedure GetSlopeLofOfValues(ShowResults : boolean; var a,b,r : float64);
     function NewOptions : boolean;
     function ComputeAndDraw : boolean;
   end;
@@ -105,7 +105,7 @@ uses
    Nevadia_Main;
 
 
-PROCEDURE memcof(var data: array of float32; n,m: integer; VAR pm: float32; VAR cof : array of float32);
+PROCEDURE memcof(var data: array of float32; n,m: integer; VAR pm: float64; VAR cof : array of float32);
 //Maximum Entropy power spectrum //from Press and others, 1989, Numerical Recipes
 //n is the length of the input data array
 //m is the number of coefficients to return
@@ -186,7 +186,7 @@ var
    DataFName: PathStr;
    n,i,j,err : integer;
    MomentVar : tMomentVar;
-   MaxPeriod,a,b,r,pm,fdt,MaxPower : float32;
+   MaxPeriod,a,b,r,pm,fdt,MaxPower : float64;
    v         : array[1..2] of float32;
    rFile : file;
    cof : array[0..100] of float32;
@@ -848,13 +848,13 @@ end;
 
 procedure TFFTGraph.SlopeSpeedButtonClick(Sender: TObject);
 var
-   a,b,r : float32;
+   a,b,r : float64;
 begin
    GetSlopeLofOfValues(True,a,b,r);
 end;
 
 
-procedure TFFTGraph.GetSlopeLofOfValues(ShowResults : boolean; var a,b,r : float32);
+procedure TFFTGraph.GetSlopeLofOfValues(ShowResults : boolean; var a,b,r : float64);
 var
    infile,outfile : file;
    v       : array[1..2] of float32;
