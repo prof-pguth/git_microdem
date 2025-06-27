@@ -71,6 +71,8 @@
 {$Define ExLandsatQA}
 {$Define ExWaveLengthHeight}
 
+{$Define ExHydrography}
+
  //deleted 4/19/2023 to track down problems with recent optimizations; they are not key options
    {$Define ExSidescan}
    {$Define ExOceanography}

@@ -2954,6 +2954,13 @@ var
    Input,OutPath : PathStr;
    TStr,inName,OutName : AnsiString;
    DefFilter : byte;
+
+   function FileAlreadyDownLoaded(fName : PathStr) : boolean;
+   //might already have extracted las, or reprojected
+   begin
+      Result := FileExists(fName) or FileExists(ChangeFileExt(FName,'.las')) or FileExists(ChangeFileExt(FName,'_utm.las'));
+   end;
+
 begin
    try
       WMdem.Color := clInactiveCaption;
@@ -2994,7 +3001,7 @@ begin
                           dec(j)
                        until TStr[j] = '/';
                        OutName := OutPath + Copy(TStr,j+1,Length(TStr)-j);
-                       if FileExists(OutName) then begin
+                       if FileAlreadyDownloaded(OutName) then begin
                           inc(NumAlreadyDone);
                        end
                        else begin

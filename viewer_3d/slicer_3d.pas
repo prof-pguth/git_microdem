@@ -917,7 +917,7 @@ var
                   DEMGlb[CompareDEMIndexes[i]].DEMGridToLatLongDegree(x,ygs,Lat,Long);
                   Symbol.DrawingSymbol := FilledBox;
                   Symbol.Size := 5;
-                  Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
+                  Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
                   SliceGraph[CurSlice].GISGraf.PlotPointOnGraph(Long,z,Symbol);
                end;
             end;
@@ -940,8 +940,8 @@ begin
          CreateBitmap(Bitmap,500,200);
          for i := 1 to MaxCompare do begin
             if ValidDEM(CompareDEMIndexes[i]) then begin
-               Bitmap.Canvas.Pen.Color := WinGraphColors[i];
-               Bitmap.Canvas.Brush.Color := WinGraphColors[i];
+               Bitmap.Canvas.Pen.Color := WinGraphColors(i);
+               Bitmap.Canvas.Brush.Color := WinGraphColors(i);
                Bitmap.Canvas.Brush.Style := bsSolid;
                Bitmap.Canvas.Rectangle(5,5+i*20,25,25 + i*20);
                Bitmap.Canvas.Brush.Style := bsClear;

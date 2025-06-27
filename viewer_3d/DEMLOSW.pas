@@ -1613,8 +1613,8 @@ begin
          if LOSDraw.ShowProfile[WhichDEM] then begin
             inc(LegendItem);
             {$If Defined(RecordLOSProblems) or Defined(RecordLOSLegend)}  WriteLineToDebugFile('Item=' + IntToStr(DEMshown) + ' ' +  LOSdraw.ProfileName[WhichDEM] + '  y=' + IntToStr(5+ItemHigh*pred(LegendItem))); {$EndIf}
-            Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(LOSDraw.LOSLineColors256[DEMshown]);
-            Result.Canvas.Pen.Width := LOSDraw.LOSLineSize256[DEMshown];
+            Result.Canvas.Pen.Color := WinGraphColors(DEMshown);
+            Result.Canvas.Pen.Width := 2;
             Result.Canvas.Font.Color := Result.Canvas.Pen.Color;
             Result.Canvas.TextOut(35,5+ItemHigh*pred(LegendItem),LOSdraw.ProfileName[WhichDEM]);
             Result.Canvas.MoveTo(5,ItemHigh*pred(LegendItem) + ItemHigh div 2);

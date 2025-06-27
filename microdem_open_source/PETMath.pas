@@ -2047,7 +2047,7 @@ BEGIN
    MomentVar.rmse := sqrt(S2/MomentVar.Npts);
    MomentVar.mae := MomentVar.mae / MomentVar.Npts;
    MomentVar.avg_dev := MomentVar.avg_dev / MomentVar.Npts;
-   IF abs(MomentVar.svar) > 0.000001 then begin
+   IF (abs(MomentVar.svar) > 0.000001) then begin
       MomentVar.skew := MomentVar.skew / (MomentVar.Npts*MomentVar.std_dev*MomentVar.std_dev*MomentVar.std_dev);
       MomentVar.curt := MomentVar.curt / (MomentVar.Npts*sqr(MomentVar.svar))-3.0;
    END;
@@ -2055,13 +2055,13 @@ BEGIN
    MomentVar.median := Median(data,MomentVar.Npts);
    MomentVar.Q1 := data[round(MomentVar.NPts / 4)];
    MomentVar.Q3 := data[round(MomentVar.NPts * 3 / 4)];
-   MomentVar.PC95 := data[round(MomentVar.NPts * 95 / 100)];
-   MomentVar.PC98 := data[round(MomentVar.NPts * 98 / 100)];
-   MomentVar.PC99 := data[round(MomentVar.NPts * 99 / 100)];
    MomentVar.PC1 := data[round(MomentVar.NPts * 1 / 100)];
    MomentVar.PC2 := data[round(MomentVar.NPts * 2 / 100)];
    MomentVar.PC5 := data[round(MomentVar.NPts * 5 / 100)];
    MomentVar.LE90 := data[round(MomentVar.NPts * 90 / 100)];
+   MomentVar.PC95 := data[round(MomentVar.NPts * 95 / 100)];
+   MomentVar.PC98 := data[round(MomentVar.NPts * 98 / 100)];
+   MomentVar.PC99 := data[round(MomentVar.NPts * 99 / 100)];
 end;
 
 

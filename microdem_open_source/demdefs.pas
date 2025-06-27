@@ -511,7 +511,6 @@ const
   CurvNamesShort : array[101..124] of shortstring = ('kns','knc','tc','zss','ts','zcc','kpc','pks','sin_sc','kd',
               'ka','kr','khe','kve','k_max','k_min','k','el','ku','k_mean','kc','kncc','kncs','knss');
 
-
 type
    tCanEditGIS = (egisNever,egisSometimes,egisAlways);
    tGISSymbolSize = (gisSizeDBfield,gisSizeConstant);
@@ -532,7 +531,7 @@ type
    tDEMIntegerArray = array[1..MaxDEMDataSets] of integer;
    tSunriseSunsetAngle = (Sun,Civil,Nautical,Astronomical);
    tGridCorrelationMatrix = (gcmR,gcmMAbD,gcmMAvD);
-
+   tPartialGrids = array[1..9] of integer;  //1st to 5rd order partials
 
    {$IfDef ExGeography}
    {$Else}
@@ -939,6 +938,11 @@ type
        UTMZone,FIPS : int16;
        Hemi : ANSIchar;
    end;
+
+   tPCGridMaker = (pcgmAllIntensity,pcgmMaxIntensity,pcgmPointCount,pcgmCeilFloor,{pcgmAboveBelow,}pcgmClass,pcgmAirNonLastReturn,pcgmGround,pcgmFirstRet,pcgmSecondRet,pcgmThreeKeyDensities,pcgmMeanFirst,
+       pcgmSingleRet,pcgmMeanStd,pcgmVegVox,pcgmDensityVox,pcgmScanAngle,pcgmGrndPtDTM,{pcgmGroundLowXYZ,pcgmLowXYZ,}pcgmClassification,pcgmRGB,pcgmOverlap,
+       pcgmPointSourceID,pcgmUserData,pcgmBlank,pcgmMinIntensity,pcgmThreeDEMs,pcgmFirstIntensity,pcgmLastIntensity);
+   tUsePC    = array[1..MaxClouds] of boolean;
 
 const  {for ESRI shapefiles}
    sfMaxParts = 25000;
@@ -1453,14 +1457,7 @@ type
      PanSharpenImage : boolean;
    end;
 
-
-
    tDefaultRecord = packed record
-       {$If Defined(ExDRGimport) or Defined(ExGeoPDF)}
-       {$Else}
-          DRGQuadClip, DRGCollar,DRGStructures,DRGTransport,DRGHydrography,DRGShadedRelief,DRGBoundaries,DRGOrthos,DRGGrid,DRGContours,DRGWoodland,DRGPLSS : boolean;
-       {$EndIf}
-
        {$IfDef ExTiger}
        {$Else}
           TigrDef : tTigrDef;
@@ -1826,9 +1823,9 @@ type
           DoMinCurve,
           DoSlopeCurve,
           DoPlanCurve,
-          DoUpOpen,
-          DoDownOpen,
-          DoDiffOpen,
+          //DoUpOpen,
+          //DoDownOpen,
+          //DoDiffOpen,
 
           DoRelief1,
           DoAvgElev,
@@ -2014,6 +2011,7 @@ type
 
       ElevInterpolation : tElevInterpolation;
 
+      DEMIX_AllowCoastal : boolean;
       DEMIX_Mode,
       DEMIXsymsize,
       DEMIX_Tile_Full,
@@ -2028,7 +2026,7 @@ type
       DEMIX_default_tile   : shortstring;
       DEMIX_combined_graph,
       PanelsByTestDEM,
-
+      DEMIXsaveLSPmaps,
       DEMIX_overwrite_enabled,
       DEMIX_highlat,
       DEMIX_default_half_sec_ref : boolean;
@@ -2047,8 +2045,6 @@ type
       DEMIX_all_areas,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
-      SSIM_elev,SSIM_slope,SSIM_ruff,SSIM_rri,SSIM_hill,SSIM_tpi,SSIM_Rotor,SSIM_ConvergeIndex,
-      SSIM_flow,SSIM_LS,SSIM_Wet,SSIM_HAND,SSIM_PLANC,SSIM_PROFC,SSIM_TANGC,SSIM_Openness,
       DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoAirOrDirt,
@@ -2636,6 +2632,7 @@ type
       BigBM_nc : byte;
       MapNameBelowComposite : boolean;
       DefaultGraphBackgroundColor : tPlatformColor;
+      WinGraphColors : shortstring;
 
       ExpandNeighborsRequired,
       ShrinkNeighborsRequired,
@@ -2766,14 +2763,13 @@ type
 
        OpenMultipleVectorMaps : boolean;
 
-       DEMIXSlopeCompute,
+       DEMIX_open_radials,
+       DEM_ruff_window : byte;
+       DEMIXSlopeCompute : tSlopeCurveCompute;
        SlopeCompute,
        CurveCompute : tSlopeCurveCompute;
        CD2 : boolean;
        AspectRegionSize : int32;
-       //CurvatureRegionRadius,
-       //SlopeRegionRadius : int32;
-       //NeedFullSlopeWindows : boolean;
 
        DeleteAuxTiffFiles : boolean;
 
@@ -2873,9 +2869,9 @@ type
        LogTCPcommands,
        LogTCPResults,
        MDRecordDebugLog : boolean;
-       MaxDebugLinesToKeep,
-       FinalLinesToKeep,
-       InitialLinesToKeep : integer;
+      // MaxDebugLinesToKeep,
+       //FinalLinesToKeep,
+       //InitialLinesToKeep : integer;
 
        FigureCoverageOfRoads : boolean;
        RangeCircleUnit   : tRangeCircleUnit;
@@ -3247,6 +3243,7 @@ var
    lastools_bindir,
    CloudCompareFName,
    WhiteBoxFName,
+   lsp_calculator_fName,
 
    {$IfDef MSWindows}
       CurrentProject,

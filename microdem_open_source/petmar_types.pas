@@ -56,6 +56,7 @@ uses
 
 const
    {$IF (CompilerVersion = 36) and System.RTLVersion122} DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
+   //IF (CompilerVersion = 36)}  DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
 
 {$IfDef MSWindows}
 const
@@ -80,7 +81,7 @@ const
    JustBeforeMidnight = 'T23:59:01';
    MessLineBreak = #13;
 
-   EdburgGeneralFuncsMaxObservations  = 264000;   //must the same as in EdbugGeneralFuncs
+   EdburgGeneralFuncsMaxObservations  = 264000;
    EdburgMaxVariables = 250;
    EdburgGeneralFuncsMaxClusters = 50;
 
@@ -163,6 +164,13 @@ type
           Max_Path = 255;
    {$EndIf}
 
+{$IfDef VCL}
+//const
+   //WinGraphColors : tColorArray = (clBlack,clRed,clBlue,clLime,clFuchsia,clPurple,clNavy,clAqua,clTeal,clOlive,clMaroon,clGreen,clYellow,clDkGray,clSilver,clWhite);
+{$EndIf}
+
+
+
 type
    tRGBLookUp = array[0..255] of TPlatformcolor;
 
@@ -197,10 +205,6 @@ const
    ReasonableNumericChars = ['0'..'9','-','d'..'f','D'..'F','.'];
    DBaseFieldNameChars = ['A'..'Z','0'..'9','_'];
    MonthName : array[1..12] of ShortString = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
-
-   {$IfDef VCL}
-      ElevColors : tColorArray = (clNavy,clBlue,clDkGray,clSilver,clFuchsia,clPurple,clAqua,clTeal,clGreen,clLime,clYellow,clOlive,clRed,clMaroon,ClWhite,clBlack);
-   {$EndIf}
 
    DegSym = #248;  //'°';
    MaskBit     : array[0..7] of byte = (128,64,32,16,8,4,2,1);
@@ -359,7 +363,7 @@ var
    ParallelRowsDone,EditsDone,
    ParallelRowsToDo,
    CombinedScreenWidth : integer;
-   RGBColorArray : tRGBColorArray;
+   //RGBColorArray : tRGBColorArray;
 
 {$IfDef VCL}
    claRed,claWhite,claBlack,claLime,claBlue,claNavy,claDarkGrey,claSilver,claFuchsia,claPurple,claAqua,claTeal,claGreen,claYellow,claOlive,claMaroon,claNearWhite,claCyan : tPlatformColor;
@@ -475,10 +479,6 @@ var
    clRed,clWhite,clBlack, clLime,clBlue,clMaroon,clPurple,clGreen,clYellow,clSilver,clGray,clTeal,clNavy,clFuchsia,clAqua,clDkGray,clOlive : TAlphaColor;
 {$EndIf}
 
-{$IfDef VCL}
-const
-   WinGraphColors : tColorArray = (clBlack,clRed,clBlue,clLime,clFuchsia,clPurple,clNavy,clAqua,clTeal,clOlive,clMaroon,clGreen,clYellow,clDkGray,clSilver,clWhite);
-{$EndIf}
 
 
 var
@@ -940,7 +940,7 @@ end;
       {$Else}
          TheDebugLog.Add('Build: ' + BuildString);
       {$EndIf}
-      TheDebugLog.Add('Compiled: Delphi ' + DelphiCompiler);
+      TheDebugLog.Add('Compiled: Delphi compiler ' + FloatToStr(System.CompilerVersion));
       {$IfDef ExGIS}
       {$Else}
          TheDebugLog.Add('DB driver: ' + DBDriver);

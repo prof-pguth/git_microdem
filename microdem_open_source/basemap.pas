@@ -887,7 +887,7 @@ var
           i : integer;
        begin
           ParamName := UpperCase(ParamName);
-          if StrUtils.AnsiContainsText(UpperCase(pjString),UpperCase(ParamName)) then begin
+          if StrUtils.AnsiContainsText(pjString,UpperCase(ParamName)) then begin
               PrepPJstring(pjString,ParamName,Skip);
               //in case there are more fields that we designed for, it might be a comma instead of square end bracket
               i := 0;
@@ -937,7 +937,24 @@ var
 
        function ParameterInString(Name : shortstring) : boolean;
        begin
-          Result := StrUtils.AnsiContainsText(UpperCase(TheProjectionString),UpperCase(Name));
+          Result := StrUtils.AnsiContainsText(TheProjectionString,UpperCase(Name));
+       end;
+
+       function FloatInString(Name : shortstring; var Value : float64) : boolean;
+       begin
+          Result := StrUtils.AnsiContainsText(TheProjectionString,UpperCase(Name));
+          if Result then begin
+             Value := FloatFromParameter(TheProjectionString,'"' + Name + '"',0,']');
+          end;
+       end;
+
+       function RadiansInString(Name : shortstring; var Value : float64) : boolean;
+       begin
+          Result := StrUtils.AnsiContainsText(TheProjectionString,UpperCase(Name));
+          if Result then begin
+             Value := FloatFromParameter(TheProjectionString,'"' + Name + '"',0,']');
+             Value := DegToRad * Value;
+          end;
        end;
 
 
@@ -976,23 +993,27 @@ begin
       end;
       TheProjectionString := HorizWKT;
 
-      if ParameterInString('LATITUDEOFORIGIN') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"LATITUDEOFORIGIN"',0,']')
-      else if ParameterInString('Latitudeofnaturalorigin') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"Latitudeofnaturalorigin"',0,']')
-      else if ParameterInString('latitudeofcenter') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"latitudeofcenter"',0,']')
-      else if ParameterInString('Latitudeofstandardparallel') then Lat0 := DegToRad * FloatFromParameter(HorizWKT,'"Latitudeofstandardparallel"',0,']');
+      if RadiansInString('LATITUDEOFORIGIN',Lat0) or RadiansInString('Latitudeofnaturalorigin',Lat0) or
+         RadiansInString('latitudeofcenter',Lat0) or RadiansInString('Latitudeofstandardparallel',Lat0) or
+         RadiansInString('Latitudeoffalseorigin',Lat0) then begin
+       end;
 
-      if ParameterInString('CentralMeridian') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"CentralMeridian"',0,']')
-      else if ParameterInString('Longitudeofnaturalorigin') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"Longitudeofnaturalorigin"',0,']')
-      else if ParameterInString('longitudeofcenter') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"longitudeofcenter"',0,']')
-      else if ParameterInString('Longitudeoforigin') then Long0 := DegToRad * FloatFromParameter(HorizWKT,'"Longitudeoforigin"',0,']');
+      if RadiansInString('CentralMeridian',Long0) or RadiansInString('Longitudeofnaturalorigin',Long0) or
+         RadiansInString('Longitudeoffalseorigin',Long0) or RadiansInString('Longitudeoforigin',Long0) or
+         RadiansInString('Longitudeofcenter',Long0) then begin
+       end;
 
-      if ParameterInString('FALSEEASTING') then false_east := FloatFromParameter(HorizWKT,'"FALSEEASTING"',0,']');
-      if ParameterInString('FALSENORTHING') then false_north := FloatFromParameter(HorizWKT,'"FALSENORTHING"',0,']');
+      if FloatInString('FALSEEASTING',false_east) or FloatInString('EASTINGatFalseOrigin',false_east) then begin end;
+      if FloatInString('FALSENORTHING',false_north) or FloatInString('NorthingatFalseOrigin',false_north) then begin end;
 
-      if ParameterInString('StandardParallel1') then phi1 := DegToRad * FloatFromParameter(HorizWKT,'"StandardParallel1"',0,']');
-      if ParameterInString('StandardParallel2') then phi2 := DegToRad * FloatFromParameter(HorizWKT,'"StandardParallel2"',0,']');
+      if RadiansInString('StandardParallel1',phi1) or RadiansInString('Latitudeof1ststandardparallel',phi1) then begin
+      end;
+      if RadiansInString('StandardParallel2',phi2) or RadiansInString('Latitudeof2ndstandardparallel',phi2) then begin
+      end;
 
-      ProjMapScale := FloatFromParameter(HorizWKT,'"ScaleFactor"',0,']');
+      ProjMapScale := 1;
+      if ParameterInString('ScaleFactor') then ProjMapScale := FloatFromParameter(HorizWKT,'"ScaleFactor"',0,']');
+
       if ParameterInString('UNIT["FOOT",') or ParameterInString('USSURVEYFOOT') then begin
           if ParameterInString('UNIT["FOOT",') then ftf := FloatFromParameter(HorizWKT,'"FOOT"',0,']')
           else ftf := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']');
@@ -1036,7 +1057,7 @@ begin
           phi2 := Lat0;
           phi1 := Lat0;
        end
-       else if ParameterInString('LambertConformalConic') then begin
+       else if ParameterInString('LambertConformalConic') or ParameterInString('LambertConicConformal(2SP)')  then begin
           PName := LambertConformalConicEllipse;
        end
        else if ParameterInString('UTM') then begin

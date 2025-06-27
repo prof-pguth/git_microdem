@@ -105,9 +105,11 @@ type
         LOSProfileDB,FirstX,FirstY,MinAreaZ,MaxAreaZ : integer;
         ZoomedDiagram,CompareDensityAlongProfile,ShowSeaLevel,
         EnvelopeDone,FirstDraw   : boolean;
+        (*
         LOSSymbol : tSymbols256;
         LOSLineColors256 : tPlatformColors256;
         LOSLineSize256 :  tbytes256;
+        *)
         ProfLats,ProfLongs : bfarray32;
         ShowProfile : tDEMbooleanArray;
         ProfileName : array[1..MaxDEMDataSets] of ShortString;
@@ -282,7 +284,7 @@ begin
                     {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('Draw profile ' + fName); {$EndIf}
                     OpenNumberedGISDataBase(LOSProfileDB,fName);
                     ShowHourglassCursor;
-                    DrawTheProfile(Bitmap,'ELEV_M',ConvertPlatformColorToTColor(losLineColors256[i]),losLineSize256[i]);
+                    DrawTheProfile(Bitmap,'ELEV_M',WinGraphColors(i),2);
                     CloseAndNilNumberedDB(LOSProfileDB);
                  end;
               end;
@@ -1679,7 +1681,7 @@ begin
    TargetGroundElevLAS := -9999;
    ObsGroundElevLAS := -9999;
    InitializeDEMsWanted(ShowProfile,true);
-   DefaultGraphColors(LOSSymbol,LOSLineColors256,LOSLineSize256);
+   //DefaultGraphColors(LOSSymbol,LOSLineColors256,LOSLineSize256);
 
    {$IfDef ExPointCloudMemory}
    {$Else}

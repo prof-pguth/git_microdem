@@ -167,6 +167,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
 
 procedure MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil);
 
+function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
 
 {$IfDef ExDBImages}
 {$Else}
@@ -202,6 +203,15 @@ uses
 
 
 {$I petdbutils_import.inc}
+
+function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
+var
+   j : integer;
+begin
+   Result := UpperCase(FieldName);
+   for j := length(Result) downto 1 do if not (Result[j] in DBaseFieldNameChars) then Delete(Result,j,1);
+end;
+
 
 
 procedure MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil);
@@ -893,7 +903,7 @@ procedure FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisD
 var
    Count,rc : integer;
    BaseTable : tMyData;
-   TStr : ShortString;
+   TStr,LastTStr : ShortString;
 begin
    {$If Defined(RecordRangeProblems) or Defined(RecordUniqueProblems)} WriteLineToDebugFile('FindUniqueEntriesLinkPossible in ' + Table.TableName + '  ' + FieldName); {$EndIf}
    try
@@ -907,19 +917,23 @@ begin
             DataThere.Sorted := true;
             DataThere.Duplicates := dupIgnore;
          end;
-         {$IfDef VCL} if WantShowProgress then StartProgressAbortOption('Find field values: ' + FieldName); {$EndIf}
+        // {$IfDef VCL} if WantShowProgress then StartProgressAbortOption('Find field values: ' + FieldName); {$EndIf}
          rc := BaseTable.RecordCount;
+         LastTStr := '';
          while not BaseTable.EOF do begin
-           TStr := ptTrim(BaseTable.GetFieldByNameAsString(FieldName));
-           if (TStr <> '') then DataThere.Add(TStr);
-           BaseTable.Next;
-           inc(Count);
-           {$IfDef VCL} if WantShowProgress and ((Count mod 500) = 0) then UpdateProgressBar(Count/rc); {$EndIf}
-           if WantOut then break;
+            TStr := ptTrim(BaseTable.GetFieldByNameAsString(FieldName));
+            if (TStr <> '') and (TStr <> LastTStr) then begin
+               DataThere.Add(TStr);
+            end;
+            BaseTable.Next;
+            inc(Count);
+            LastTStr := Tstr;
+            //{$IfDef VCL} if WantShowProgress and ((Count mod 500) = 0) then UpdateProgressBar(Count/rc); {$EndIf}
+            if WantOut then break;
          end;
       end;
    finally
-     {$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
+     //{$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
    end;
    {$IfDef RecordRange} WriteLineToDebugFile('FindUniqueEntriesLinkPossible out'); {$EndIf}
 end;
@@ -1417,7 +1431,7 @@ begin
             if (FieldName = 'LONGITUDE') then FieldName := 'LONG';
             if (FieldName = 'LONGITUDEE/W') then FieldName := 'LONG';
             if (FieldName = 'LON') then FieldName := 'LONG';
-            for j := length(FieldName) downto 1 do if not (FieldName[j] in DBaseFieldNameChars) then Delete(FieldName,j,1);
+            FieldName := dBaseSafeNameByDeletion(FieldName);
             if (FieldName = '')  then FieldName := 'F_' + IntToStr(i);
             for j := 1 to NumRules do if FieldName = OldNames[j] then FieldName := NewNames[j];
            if (FieldName[1] in ['0'..'9']) then FieldName := 'N_' + FieldName;
@@ -1444,7 +1458,7 @@ begin
       CreateDataBase := tCreateDataBase.Create(Result);
       CreateDataBase.AddRecId := not RecIdExists;
         {$IfDef RecordCSV}
-            WriteLineToDebugFile('Fields in Input file ' + fName  + 'NumFields= ' + IntToStr(LocalStringGrid.ColCount));
+            WriteLineToDebugFile('Input file ' + fName  + ' NumFields= ' + IntToStr(LocalStringGrid.ColCount));
             for i := 0 to pred(LocalStringGrid.ColCount) do WriteLineToDebugFile(UpperCase(LocalStringGrid.Cells[i,0]));
         {$EndIf}
 

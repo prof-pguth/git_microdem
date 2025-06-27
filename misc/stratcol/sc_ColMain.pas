@@ -744,6 +744,12 @@ begin
       if (TopUnit < 2) then TopUnit := 2;
       if (BaseUnit > UnitsInColumn) then BaseUnit := UnitsInColumn;
 
+(*
+      //removed June 2025
+      //unclear what it did
+      //only place in MICRODEM that used ElevColors
+      //ElevColors : tColorArray = (clNavy,clBlue,clDkGray,clSilver,clFuchsia,clPurple,clAqua,clTeal,clGreen,clLime,clYellow,clOlive,clRed,clMaroon,ClWhite,clBlack);
+
       i := 0;
       repeat
          inc(i);
@@ -755,6 +761,7 @@ begin
             if (CurrentPattern.WinColor = Color) then OK := false;
          end;
       until OK;
+*)
       try
          ShowHourglassCursor;
          UnitTopAndBottom(Column,TopUnit);

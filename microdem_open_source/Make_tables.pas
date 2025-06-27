@@ -106,7 +106,6 @@ procedure MakeGMTfile(fName : PathStr; GMTfile : boolean);
 procedure DefineAndCreateDatumShiftTable(FName : PathStr);
 procedure MakeAtlasParametersTable(fName : PathStr);
 
-
 {$IfDef ExHydrography}
 {$Else}
    procedure MakeSideScanRecordFile(fName : PathStr; Long : boolean = true);
@@ -361,63 +360,63 @@ end;
 
 {$IfDef ExGeology}
 {$Else}
-procedure CreateGeologySymbolFile(fName : PathStr);
-begin
-   if not FileExists(fName) then begin
-      CreateDataBase := tCreateDataBase.Create(fName);
-      with CreateDataBase do begin
-         AddLatLongToTable;
-         AddAField('PLOT',ftString,1,0);
-         AddAField('FEATURE',ftInteger,1,0);
-         AddAField('DIPSTRIKE',ftString,10,0);
-         AddAField('NOTE',ftString,64,0);
-         WriteCorrectHeader;
+      procedure CreateGeologySymbolFile(fName : PathStr);
+      begin
+         if not FileExists(fName) then begin
+            CreateDataBase := tCreateDataBase.Create(fName);
+            with CreateDataBase do begin
+               AddLatLongToTable;
+               AddAField('PLOT',ftString,1,0);
+               AddAField('FEATURE',ftInteger,1,0);
+               AddAField('DIPSTRIKE',ftString,10,0);
+               AddAField('NOTE',ftString,64,0);
+               WriteCorrectHeader;
+            end;
+         end;
       end;
-   end;
-end;
 
 
-procedure MakeStatColGIS(fName : PathStr);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   with CreateDataBase do begin
-      AddLatLongToTable;
-      AddAField('COL_NAME',ftString,80,0);
-      AddAField('NAME',ftString,35,0);
-      AddAField('THICK',ftFloat,10,2);
-      WriteCorrectHeader;
-   end;
-end;
+      procedure MakeStatColGIS(fName : PathStr);
+      begin
+         CreateDataBase := tCreateDataBase.Create(fName);
+         with CreateDataBase do begin
+            AddLatLongToTable;
+            AddAField('COL_NAME',ftString,80,0);
+            AddAField('NAME',ftString,35,0);
+            AddAField('THICK',ftFloat,10,2);
+            WriteCorrectHeader;
+         end;
+      end;
 
 
-procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   with CreateDataBase do begin
-      AddAField('EVENT_ID',ftString,16,0);
-      AddAField('MONTH',ftInteger,2,0);
-      AddAField('DAY',ftInteger,2,0);
-      AddAField('YEAR',ftInteger,4,0);
-      AddAField('TIME',ftString,10,0);
-      AddLatLongToTable;
-      AddAField('DEPTH',ftFloat,6,2);
-      AddAField('MB',ftFloat,6,2);
-      AddAField('MS',ftFloat,6,2);
-      AddAField('MECH',ftString,1,0);
-      AddAField('REGION',ftString,30,0);
-      AddAField('FP1_STRIKE',ftInteger,3,0);
-      AddAField('FP1_DIP',ftInteger,2,0);
-      AddAField('FP2_STRIKE',ftInteger,3,0);
-      AddAField('FP2_DIP',ftInteger,2,0);
-      AddAField('PLUNGE_1',ftInteger,2,0);
-      AddAField('STRIKE_1',ftInteger,3,0);
-      AddAField('PLUNGE_2',ftInteger,2,0);
-      AddAField('STRIKE_2',ftInteger,3,0);
-      AddAField('PLUNGE_3',ftInteger,2,0);
-      AddAField('STRIKE_3',ftInteger,3,0);
-      WriteCorrectHeader;
-   end;
-end;
+      procedure MakeEarthQuakeCentroidsFile(fName : PathStr);
+      begin
+         CreateDataBase := tCreateDataBase.Create(fName);
+         with CreateDataBase do begin
+            AddAField('EVENT_ID',ftString,16,0);
+            AddAField('MONTH',ftInteger,2,0);
+            AddAField('DAY',ftInteger,2,0);
+            AddAField('YEAR',ftInteger,4,0);
+            AddAField('TIME',ftString,10,0);
+            AddLatLongToTable;
+            AddAField('DEPTH',ftFloat,6,2);
+            AddAField('MB',ftFloat,6,2);
+            AddAField('MS',ftFloat,6,2);
+            AddAField('MECH',ftString,1,0);
+            AddAField('REGION',ftString,30,0);
+            AddAField('FP1_STRIKE',ftInteger,3,0);
+            AddAField('FP1_DIP',ftInteger,2,0);
+            AddAField('FP2_STRIKE',ftInteger,3,0);
+            AddAField('FP2_DIP',ftInteger,2,0);
+            AddAField('PLUNGE_1',ftInteger,2,0);
+            AddAField('STRIKE_1',ftInteger,3,0);
+            AddAField('PLUNGE_2',ftInteger,2,0);
+            AddAField('STRIKE_2',ftInteger,3,0);
+            AddAField('PLUNGE_3',ftInteger,2,0);
+            AddAField('STRIKE_3',ftInteger,3,0);
+            WriteCorrectHeader;
+         end;
+      end;
 {$EndIf}
 
 
@@ -468,17 +467,17 @@ begin
       AddLatLongToTable(true);
       AddAField('NODE_ID',ftInteger,10);
       AddAField('BASIN_ID',ftString,12);
-     //IDs for the streams at the node
+     //IDs for streams at the node
       AddAField('DOWN',ftString,15);
       AddAField('UP_MAIN',ftString,15);
       AddAField('UP_TRIB',ftString,15);
       AddAField('UP_TRIB2',ftString,15);
-    //upstream contributing areas for the main channel and tributaries
+    //upstream contributing areas for main channel and tributaries
       AddAField('CONT_MAIN',ftInteger,9);
       AddAField('CONT_TRIB',ftInteger,9);
       AddAField('CONT_TRIB2',ftInteger,9);
       AddAField('CONT_TRIB2',ftInteger,9);
-    //orders for the streams at the node
+    //orders for streams at node
       AddAField('UP_MAIN_O',ftInteger,3);
       AddAField('UP_TRIB_O',ftInteger,3);
       AddAField('UP_TRIB2_O',ftInteger,3);
@@ -778,7 +777,6 @@ begin
 end;
 
 
-
 procedure CreateGeomorphometryAttributesTable(fname : PathStr; IncludeName : boolean);
 begin
    {$IfDef RecordMakeTables} WriteLineToDebugFile('CreateGeomorphometryAtributesTable in'); {$EndIf}
@@ -923,7 +921,6 @@ begin
 end;
 
 
-
 procedure CreatePointFabricFile(fname : PathStr; DoWaveLength : boolean);
 begin
    CreateDataBase := tCreateDataBase.Create(fName);
@@ -984,66 +981,65 @@ end;
 {$IfDef ExHydrography}
 {$Else}
 
-
-procedure MakeSideScanTargetFile(fName : PathStr);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   with CreateDataBase do begin
-      AddLatLongToTable(true);
-      CreateDataBase.AddAField('PING',ftInteger,6,0);
-      CreateDataBase.AddAField('FILENAME',ftString,120,0);
-      CreateDataBase.AddAField('NOTES',ftString,255,0);
-      WriteCorrectHeader;
-   end;
-end;
-
-
-procedure MakeSideScanRecordFile(fName : PathStr; Long : boolean = true);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   CreateDataBase.AddLatLongToTable(true);
-   CreateDataBase.AddAField('PING',ftInteger,9);
-   CreateDataBase.AddAField('TIME',ftString,12);
-   CreateDataBase.AddAField('DEPTH',ftFloat,6,2);
-   CreateDataBase.AddAField('SLANT_RNG',ftInteger,3);
-   if Long then begin
-      CreateDataBase.AddAField('SPEED',ftFloat,6,2);
-      CreateDataBase.AddAField('HEADING',ftFloat,6,1);
-      CreateDataBase.AddAField('FISH_HEAD',ftFloat,6,1);
-      CreateDataBase.AddAField('FISH_DEPTH',ftFloat,6,1);
-      CreateDataBase.AddAField('WATER_TEMP',ftFloat,6,2);
-      CreateDataBase.AddAField('PRESSURE',ftFloat,6,2);
-      CreateDataBase.AddAField('FISH_PITCH',ftFloat,6,2);
-      CreateDataBase.AddAField('FISH_ALT',ftFloat,6,2);
-      CreateDataBase.AddAField('FISH_ROLL',ftFloat,6,2);
-   end;
-   CreateDataBase.AddRecNoToTable;
-   CreateDataBase.WriteCorrectHeader;
-end;
-
-procedure MakeHydrographyIndex(fName : PathStr);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   CreateDataBase.AddAField('FILENAME',ftString,120,0);
-   CreateDataBase.AddAField('CHIRP',ftInteger,8,0);
-   CreateDataBase.AddBoundingBoxToTable;
-   CreateDataBase.WriteCorrectHeader;
-end;
+    procedure MakeSideScanTargetFile(fName : PathStr);
+    begin
+       CreateDataBase := tCreateDataBase.Create(fName);
+       with CreateDataBase do begin
+          AddLatLongToTable(true);
+          CreateDataBase.AddAField('PING',ftInteger,6,0);
+          CreateDataBase.AddAField('FILENAME',ftString,120,0);
+          CreateDataBase.AddAField('NOTES',ftString,255,0);
+          WriteCorrectHeader;
+       end;
+    end;
 
 
-procedure MakeSideScanIndex(fName : PathStr);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   CreateDataBase.AddAField('FILENAME',ftString,120,0);
-   CreateDataBase.AddLatLongToTable(true);
-   CreateDataBase.AddAField('LAT2',ftFloat,12,8);
-   CreateDataBase.AddAField('LONG2',ftFloat,13,8);
-   CreateDataBase.AddAField('RANGE',ftFloat,6,2);
-   CreateDataBase.AddAField('HEADING',ftFloat,6,1);
-   CreateDataBase.AddAField('LENGTH',ftFloat,6,1);
-   CreateDataBase.AddAField('PINGS',ftInteger,6,0);
-   CreateDataBase.WriteCorrectHeader;
-end;
+    procedure MakeSideScanRecordFile(fName : PathStr; Long : boolean = true);
+    begin
+       CreateDataBase := tCreateDataBase.Create(fName);
+       CreateDataBase.AddLatLongToTable(true);
+       CreateDataBase.AddAField('PING',ftInteger,9);
+       CreateDataBase.AddAField('TIME',ftString,12);
+       CreateDataBase.AddAField('DEPTH',ftFloat,6,2);
+       CreateDataBase.AddAField('SLANT_RNG',ftInteger,3);
+       if Long then begin
+          CreateDataBase.AddAField('SPEED',ftFloat,6,2);
+          CreateDataBase.AddAField('HEADING',ftFloat,6,1);
+          CreateDataBase.AddAField('FISH_HEAD',ftFloat,6,1);
+          CreateDataBase.AddAField('FISH_DEPTH',ftFloat,6,1);
+          CreateDataBase.AddAField('WATER_TEMP',ftFloat,6,2);
+          CreateDataBase.AddAField('PRESSURE',ftFloat,6,2);
+          CreateDataBase.AddAField('FISH_PITCH',ftFloat,6,2);
+          CreateDataBase.AddAField('FISH_ALT',ftFloat,6,2);
+          CreateDataBase.AddAField('FISH_ROLL',ftFloat,6,2);
+       end;
+       CreateDataBase.AddRecNoToTable;
+       CreateDataBase.WriteCorrectHeader;
+    end;
+
+    procedure MakeHydrographyIndex(fName : PathStr);
+    begin
+       CreateDataBase := tCreateDataBase.Create(fName);
+       CreateDataBase.AddAField('FILENAME',ftString,120,0);
+       CreateDataBase.AddAField('CHIRP',ftInteger,8,0);
+       CreateDataBase.AddBoundingBoxToTable;
+       CreateDataBase.WriteCorrectHeader;
+    end;
+
+
+    procedure MakeSideScanIndex(fName : PathStr);
+    begin
+       CreateDataBase := tCreateDataBase.Create(fName);
+       CreateDataBase.AddAField('FILENAME',ftString,120,0);
+       CreateDataBase.AddLatLongToTable(true);
+       CreateDataBase.AddAField('LAT2',ftFloat,12,8);
+       CreateDataBase.AddAField('LONG2',ftFloat,13,8);
+       CreateDataBase.AddAField('RANGE',ftFloat,6,2);
+       CreateDataBase.AddAField('HEADING',ftFloat,6,1);
+       CreateDataBase.AddAField('LENGTH',ftFloat,6,1);
+       CreateDataBase.AddAField('PINGS',ftInteger,6,0);
+       CreateDataBase.WriteCorrectHeader;
+    end;
 
 {$EndIf}
 

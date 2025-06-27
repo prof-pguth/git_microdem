@@ -11,7 +11,7 @@ unit make_grid;
 {$I nevadia_defines.inc}
 
 {$IFDEF DEBUG}
-   //{$Define CurvatureInline} //turn off to debug
+   {$Define CurvatureInline} //turn off to debug
    //{$Define NoParallelFor} //used to debug only
    {$Define NoParallelMoments} // added 4/25/2022 to track down bug, removed 8/5/2022 but immediately returned since SSO normals might not be thread safe
 
@@ -33,7 +33,7 @@ unit make_grid;
    {$EndIf}
 {$ELSE}
    //{$Define NoParallelFor}
-   {$Define CurvatureInline}
+   //{$Define CurvatureInline}
 {$ENDIF}
 
 interface
@@ -54,16 +54,20 @@ interface
    {$EndIf}
 
    Nevadia_main,
+   DEMMapf,
+   las_files_grouping,
    DEMDefs,
    Petmar_types,PETMAR,PETMath;
 
 const
    MaxGrids = 12;
 
+(*
 const
    UpOpenDEM = 1;
    DownOpenDEM = 2;
    DiffOpenDEM = 3;
+*)
 
 const
    PartialNames : array[1..9] of shortstring = ('zx','zy','zxx','zyy','zxy','zxxx','zxxy','zxyy','zyyy');
@@ -71,7 +75,6 @@ const
 type
    tListOfDEMs = array[1..MaxGrids] of integer;
    tNormalMethod = (nmNone,nmEastWest,nmNorthSouth,nmInterpolate,nm30m,nmTRIK,nmRRI,nmMAD2K);
-   tPartialGrids = array[1..9] of integer;  //1st to 5rd order partials
 
 //new, faster (hopefully)
    function CreateHillshadeMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
@@ -83,7 +86,7 @@ function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components
 function CreateSlopeMapPercentAlgorithm(HowCompute : tSlopeCurveCompute; OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Degrees : boolean = false) : integer;
 
 
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; {GridLimits : tGridLimits;} FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -124,7 +127,6 @@ function MakeDNBRMap(PreNBR,PostNBR : integer) : integer;
 
 function CreateCurvatureMap(Which : integer; OpenMap : boolean; DEM : integer; Outname : PathStr = '') : integer;
 
-procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids; OpenMap : boolean = true);
 procedure MICRODEM_partialDerivatives(DEM : integer; var Grids : tPartialGrids; OpenMap : boolean = true);
 function CreateFirstSecondThirdOrderPartialDerivatives(Method : tSlopeCurveCompute; OpenMap : boolean; DEM : integer;
           Order1 : boolean = true;  Order2 : boolean = true;  Order3 : boolean = true) : tPartialGrids;
@@ -156,6 +158,12 @@ function MakeAdjustedStdDevElevRoughness(OpenMap : boolean; DEM : integer; Radiu
 
 
 
+procedure CreateDEMsfromLidar;
+function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : tPCGridMaker; BaseMap : tMapForm;  UsePC : tUsePC; LasFiles : tLasFiles;
+        HorizDatum,VertDatum : shortstring; MaxAreaZ,MinAreaZ : float32; AutoSaveDir : PathStr; ShowMeanDensityGrid : boolean) : integer;
+
+
+
 var
    NewTrendDirGrid : integer;
    MomentDEMs : tListOfDEMs;
@@ -166,7 +174,7 @@ uses
    DEMCoord,Check_8_Dirs,DEM_Manager,DEMOptions,
    PetDBUtils,
    DEMDef_routines,Petimage,DEMRefOp,DEMterrC,
-   DEMStat,DEMMapf,
+   DEMStat,
    Geomorph_point_class,
    MD_use_tools,
    gdal_tools,
@@ -175,10 +183,17 @@ uses
    dem_grid_diffs,
    DEMStringGrid,
    PetImage_Form,
+   Thread_Timers,
+   //grid from lidar
+      point_cloud_options,
+      las_lidar,
    DEMweapn;
 
 var
    CountInStrips : integer;
+
+{$I ..\las_lidar\make_grids_from_lidar.inc}
+
 
 function ReinterpolateLatLongDEM(OpenMap : boolean; DEM : integer; var SpacingArcSec : float32; fName : PathStr = '') : integer;
 var
@@ -539,23 +554,6 @@ begin
 end;
 
 
-
-procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids;  OpenMap : boolean = true);
-var
-   i : integer;
-begin
-   grids[1] := Grass_dx_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[2] := Grass_dy_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[3] := Grass_dxx_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[4] := Grass_dxy_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[5] := Grass_dyy_partial(DEMGlb[DEM].GeotiffDEMName);
-   for i := 1 to 5 do begin
-      DEMglb[Grids[i]].MultiplyGridByConstant(-1);
-      DEMglb[Grids[i]].CheckMaxMinElev;
-   end;
-end;
-
-
 procedure MICRODEM_partialDerivatives(DEM : integer; var Grids : tPartialGrids;  OpenMap : boolean = true);
 var
    i,x,y : integer;
@@ -637,7 +635,7 @@ end;
 
 
 
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; GridLimits : tGridLimits; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; {GridLimits : tGridLimits;} FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
 var
    x,y,xr,yr,n : integer;
    Sum,zt,z : float32;
@@ -646,9 +644,11 @@ begin
       Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
       if (FilterRadius < 1) then ReadDefault('radius to filter (pixels)',FilterRadius);
       StartProgress('Detrend/residual ' + AreaName);
-      for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+      //for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+      for x := 0 to pred(DEMglb[DEM].DEMheader.NumCol) do begin
          if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
-         for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+         //for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
+         for y := 0 to pred(DEMglb[DEM].DEMheader.NumRow) do begin
             Sum := 0;
             n := 0;
             if GetElevMetersOnGrid(x,y,zt) then begin
@@ -802,202 +802,6 @@ begin
 end;
 
 
-function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float64) : boolean; {$IfDef CurvatureInline} inline; {$EndIf}
-//https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/PARAMETERS.md
-var
-   SA : tSlopeAspectRec;
-
-         {$IfDef IlichEquations}
-            function LSQ1(SA : tSlopeAspectRec) : float64; inline;
-            begin
-               Result := sqr(SA.d) + sqr(SA.e);
-            end;
-
-            function LSQ2(SA : tSlopeAspectRec) : float64; inline;
-            begin
-               Result := 1 + sqr(SA.d) + sqr(SA.e);
-            end;
-
-            function LSQ3(SA : tSlopeAspectRec) : float64; inline;
-            begin
-               Result := Math.Power(LSQ2(SA),1.5);
-            end;
-         {$EndIf}
-
-         function Denominator1(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := (sqr(SA.zx) + sqr(SA.zy)) * sqrt(1 + sqr(SA.zx) + sqr(SA.zy));
-         end;
-
-         function Denominator2(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := sqrt( Math.Power(sqr(SA.zx) + sqr(SA.zy), 3) ) ;
-         end;
-
-         function SquareOnePlusSquares(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := Math.Power(1 + sqr(SA.zx) + sqr(SA.zy),3);
-         end;
-
-         function CubeOnePlusSquares(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := Math.Power(1 + sqr(SA.zx) + sqr(SA.zy),3);
-         end;
-
-         function Part0MinMax(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := (1 + sqr(SA.zy) * SA.zxx) - (2 * SA.zxy * SA.zy * SA.zx) + (1 + sqr(SA.zx) * SA.zyy);
-         end;
-
-         function Part1MinMax(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := Part0MinMax(SA) / ( 2 * sqrt(CubeOnePlusSquares(SA)));
-         end;
-
-         function Part2MinMax(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := sqrt(sqr(Part1MinMax(SA)) - (SA.zxx * SA.zyy - sqr(SA.zxy) / SquareOnePlusSquares(SA)));
-         end;
-
-         function MaxCurve(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := -Part1MinMax(SA) + Part2MinMax(SA);
-         end;
-
-         function MinCurve(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := -Part1MinMax(SA) - Part2MinMax(SA);
-         end;
-
-         function A(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            Result := sqr(SA.zxy) - SA.zxx * SA.zyy;
-         end;
-
-         function B(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := 2 * zx * (zxxy * zy + A(SA)) - zxxx * sqr(zy) - zxyy * sqr(zx);
-         end;
-
-         function C(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := 2 * zy * (zxyy * zy + A(SA)) - zxxy * sqr(zy) - zxxx - zyyy * sqr(zx);
-         end;
-
-         function D(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := zxy * (zxx + zyy);
-         end;
-
-         function E(SA : tSlopeAspectRec) : float64; inline;
-         begin
-             with SA do Result := -2 * (zx * (zxxy * zy + sqr(zxy) + sqr(zxx)) + D(SA) * zy) - zxxx * sqr(zx) - zxyy * sqr(zy);
-         end;
-
-         function F(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := -2 * (zy * (zxyy * zx + sqr(zxy) + sqr(zyy)) + D(SA) * zx) - zyyy * sqr(zy) - zxxy * sqr(zx);
-         end;
-
-         function G(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := sqr(zy) - sqr(zx);
-         end;
-
-         function H(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := zxx - zyy;
-         end;
-
-         function I(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := zxxy * G(SA) + 2 * zxy * (zxy * zy - zxx * zx) + (zxx * zy + zxy * zx) * H(SA) + zx * zy * ( zxxx - zyyy);
-         end;
-
-         function J(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := zxyy * G(SA) + 2 * zxy * (zyy * zy - zxy * zx) + (zxy * zy + zyy * zx) * H(SA) + zx * zy * ( zxxy - zyyy);
-         end;
-
-         function K(SA : tSlopeAspectRec) : float64; inline;
-         begin
-             with SA do Result := 2 * zxy * zx * zy - zxx *sqr(zy) - zyy * sqr(zx);
-         end;
-
-         function L(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := -sqr(zx) * zxx - 2 * zxy *zx * zy - sqr(zy) - zyy;
-         end;
-
-         function M(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := sqr(zx) + sqr(zy);
-         end;
-
-         function N(SA : tSlopeAspectRec) : float64; inline;
-         begin
-             with SA do Result := zxx * zx + zxy * zy;
-         end;
-
-         function O(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := zyy * zy + zxy * zx;
-         end;
-
-         function P(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := 1 + M(SA);
-         end;
-
-         function R(SA : tSlopeAspectRec) : float64; inline;
-         begin
-            with SA do Result := zx * zy * H(SA) + zxy * G(SA);
-         end;
-
-
-
-begin
-//https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/src/lsp.rs
-   Result := DEMGlb[DEM].GetSlopeAndAspect(MDDef.CurveCompute,x,y,SA,false,true);
-   if Result then begin
-      //with SA do begin
-         {$IfDef IlichEquations}
-            if (MDDef.SlopeAlgorithm = smLSQ) then begin
-               case CurveType of
-                  1 : Curvature := -2 * (a * sqr(d) + c * d * e + b * sqr(e)) / (LSQ1(SA) * LSQ3(SA)) ;      //Profile
-                  2 : Curvature :=  0;                                                                               //Tangential, not yet coded
-                  3 : Curvature := -2 * (a * sqr(e) - c * d * e + b * sqr(d)) / (LSQ1(SA) * sqrt(LSQ2(SA))); //Plan
-                  4 : Curvature :=  0;                                                                               //flow line, not yet coded
-                  5 : Curvature := (2 * d * (a - b) - c * (sqr(d) - sqr(e))) / (LSQ1(SA) * LSQ2(SA));        //contour torsion
-               end;
-            end;
-         {$EndIf}
-
-           case CurveType of
-               eucurv_kns : Curvature := -(SA.zxx * sqr(SA.zx) + 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator1(SA);    //Profile
-               eucurv_knc : Curvature := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zx) ) / Denominator1(SA);    //Tangential
-               eucurv_kpc : Curvature := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator2(SA);    //Plan
-               eucurv_kps : Curvature := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * (sqr(SA.zx) - sqr(SA.zy) ) ) / Denominator2(SA);    //flow line
-               eucurv_tc  : Curvature := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * sqr(SA.zx) * sqr(SA.zy) ) / Denominator1(SA);       //contour torsion
-               eucurv_k_max : Curvature := MaxCurve(SA);                                               //maximal curvature, kmax
-               eucurv_k_min : Curvature := MinCurve(SA);                                               //minimal curvature, kmin
-               eucurv_k : Curvature := MaxCurve(SA) * MinCurve(SA);                          //Gaussian
-               eucurv_k_mean : Curvature := Part1MinMax(SA);   //0.5 * (MinCurve(SA) + MaxCurve(SA));  //Mean    check if this is in fact correct
-               eucurv_kc : Curvature := sqrt(0.5 * (sqr(MaxCurve(SA)) + sqr(MinCurve(SA))));   //Casorati
-               eucurv_kncc : Curvature := (SA.zy * (B(SA) * M(SA) * P(SA) - K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
-                                  SA.zx * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
-                                  (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
-               eucurv_kncs : Curvature := (SA.zx * (-B(SA) * M(SA) * P(SA) + K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
-                                  SA.zy * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
-                                  (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
-               eucurv_knss : Curvature := (P(SA) * (SA.zx * (2 * L(SA) * N(SA) - E(SA) * M(SA)) - SA.zy * ( F(SA) * M(SA) - 2 * L(SA) * O(SA) )) +
-                                     3 * L(SA) * M(SA) * (SA.zy * O(SA) + SA.zx * N(SA) ) / (Math.Power(P(SA),2.5) * Math.Power(M(SA),2.5)));
-           end;
-      //end;
-   end;
-end;
-
-
 function CreateCurvatureMap(Which : integer; OpenMap : boolean; DEM : integer; Outname : PathStr = '') : integer;
 var
    x,y : integer;
@@ -1005,15 +809,20 @@ var
    SaveEvans : boolean;
 begin
    //SaveBackupDefaults;
+   (*
    MDDef.CurveCompute.AlgorithmName := smLSQ;
    MDDef.CurveCompute.RequireFullWindow := true;
+   MDDef.CurveCompute.UsePoints := useAll;
    MDDef.CurveCompute.LSQorder := 2;
    MDDef.CurveCompute.WindowRadius := 1;
+   *)
+   if (MDDef.CurveCompute.AlgorithmName <> smLSQ) then begin
+      SetCurvatureDefaults;
+   end;
 
-   if MDDef.CurveCompute.AlgorithmName = smLSQ then begin
+     {$If Defined(CreateCurvature)} WriteLineToDebugFile('Start curvature ' + SlopeMethodName(MDDef.CurveCompute)); {$EndIf}
      SaveEvans := MDDef.EvansApproximationAllowed;
      MDDef.EvansApproximationAllowed := false;
-     {$If Defined(CreateGeomorphMaps) or Defined(CreateCurvature)} WriteLineToDebugFile('Start curvature ' + SlopeMethodName(MDDef.CurveCompute)); {$EndIf}
      if (MDDef.CurveCompute.LSQorder = 1) then MDDef.CurveCompute.LSQorder := 2;
      if (Which >= 122) then begin
         if (MDDef.CurveCompute.LSQorder < 3) then MDDef.CurveCompute.LSQorder := 3;
@@ -1022,8 +831,7 @@ begin
 
      if (OutName = '') then OutName := CurvNamesShort[Which]  + '_' + DEMGlb[DEM].AreaName + '_' + SlopeMethodName(MDDef.CurveCompute);
 
-     {$If Defined(CreateGeomorphMaps) or Defined(CreateCurvature)} WriteLineToDebugFile('Create ' + Outname); {$EndIf}
-
+     {$If Defined(CreateCurvature)} WriteLineToDebugFile('Create ' + Outname); {$EndIf}
      Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,OutName,Which);
      {$IfDef CreateGeomorphMaps} if (not DEMGlb[Result].DEMAlreadyDefined) then WriteLineToDebugFile(Outname + 'not yet defined at step 1'); {$EndIf}
      if ShowSatProgress then StartProgressAbortOption(OutName);
@@ -1048,8 +856,6 @@ begin
      MDDef.EvansApproximationAllowed := SaveEvans;
      {$IfDef CreateGeomorphMaps} if (not DEMGlb[Result].DEMAlreadyDefined) then WriteLineToDebugFile(Outname + 'not yet defined at step 4'); {$EndIf}
      {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateCurvatureMap, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
-   end;
-   //RestoreBackupDefaults;
  end;
 
 
@@ -1071,9 +877,7 @@ begin
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
       for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
-         if DEMGlb[DEM].SlopePercent(HowCompute,x,y,Slope) then begin
-            if Degrees then Slope := SlopeAsp.SlopeDegree
-            else Slope := SlopeAsp.SlopePercent;
+         if DEMGlb[DEM].SlopePercent(HowCompute,x,y,Slope,Degrees) then begin
             DEMGlb[Result].SetGridElevation(x,y,Slope);
          end;
       end;
@@ -1158,6 +962,7 @@ var
    UpO,DownO : float64;
    Sizing : shortstring;
    PixelsNS,PixelsEW,PixelsDia : integer;
+   Graph : tThisBaseGraph;
 
       procedure Finalize(which : integer; mt : byte);
       begin
@@ -1168,7 +973,7 @@ var
       end;
 
 begin
-   if BoxRadiusMeters > 0 then begin
+   if (BoxRadiusMeters > 0) then begin
       PixelsNS := round(BoxRadiusMeters / DEMGlb[DEM].AverageYSpace);
       PixelsEW := round(BoxRadiusMeters / DEMGlb[DEM].AverageXSpace);
       PixelsDia := round(BoxRadiusMeters / DEMGlb[DEM].AverageDiaSpace);
@@ -1189,13 +994,13 @@ begin
    if (Upward <> 0) then Upward := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Upward_Openness_' + Sizing + DEMGlb[DEM].AreaName,euOpenUp);
    if (Downward <> 0) then Downward := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Downward_Openness_' + Sizing + DEMGlb[DEM].AreaName,euOpenDown);
    if (Difference <> 0) then Difference := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Difference_Openness_' + Sizing + DEMGlb[DEM].AreaName,euOpenDiff);
-
+   Graph := Nil;
    if ShowSatProgress then StartProgressAbortOption('Openness ' + DEMglb[DEM].AreaName);
    for x := GridLimits.XgridLow to GridLimits.XGridHigh do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/GridLimits.XGridHigh);
       for y := GridLimits.YgridLow to GridLimits.YGridHigh  do begin
          if not DEMGlb[DEM].MissingDataInGrid(x,y) then begin
-            DEMGlb[DEM].FigureOpenness(x,y,PixelsNS,PixelsEW,PixelsDia,UpO,DownO);
+            DEMGlb[DEM].FigureOpenness(x,y,PixelsNS,PixelsEW,PixelsDia,UpO,DownO,Graph);
             if (Upward <> 0) then DEMGlb[Upward].SetGridElevation(x,y,UpO);
             if (Downward <> 0) then DEMGlb[Downward].SetGridElevation(x,y,DownO);
             if (Difference <> 0) then DEMGlb[Difference].SetGridElevation(x,y,UpO-DownO);
@@ -1917,13 +1722,6 @@ begin {MakeMomentsGrid}
       if MDDef.DoElevStd then NewGrid(MomentDEMs[3], 'Std_Dev_Elev' + TStr,DEMGlb[CurDEM].DEMheader.ElevUnits);
       if MDDef.DoREL then NewGrid(MomentDEMs[4], 'REL' + TStr,euUndefined);
       if MDDef.DoTPI then NewGrid(MomentDEMs[5], 'TPI' + TStr,euUndefined);
-   end
-   else if (What = 'O') then begin
-      WantMapType := mtElevGray;
-      ThinFactor := MDDef.OpennessCalcThin;
-      if MDDef.DoUpOpen then NewGrid(MomentDEMs[1], 'Upward_openness' + TStr,euDegrees);
-      if MDDef.DoDownOpen then NewGrid(MomentDEMs[2], 'Downward_openness' + TStr,euDegrees);
-      if MDDef.DoDiffOpen then NewGrid(MomentDEMs[3], 'Difference_openness' + TStr,euDegrees);
    end
    else if (What in ['F']) then begin
       if MDDef.DoS2S3 then NewGrid(MomentDEMs[1], 'Organization_Strength' + Tstr,euUndefined);

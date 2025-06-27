@@ -1,11 +1,11 @@
-{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
-{ Part of MICRODEM GIS Program       }
-{ PETMAR Trilobite Breeding Ranch    }
-{ Released under the MIT Licences    }
-{ Copyright (c) 2024 Peter L. Guth   }
-{------------------------------------}
-{    include file for pet_image.pas  }
-{____________________________________}
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{----------------------------------------}
+{     include file for pet_image.pas     }
+{________________________________________}
 
 
 function IsJPEG(Ext : ExtStr) : boolean;
@@ -139,8 +139,6 @@ end;
       {$IfDef ExExif}
       {$Else}
          ExifData: TExifData;
-         //RegVar : tRegVars;
-         //MapProj  : tMapProjection;
       {$EndIf}
 
       {$IfDef ExPNG}
@@ -305,7 +303,7 @@ begin
    Result := false;
    if (Image1 <> Nil) and (Image1.Picture.Graphic <> Nil) then begin
       try
-         {$IfDef RecordBitmapProblems} WriteLineToDebugFile('CopyImageToBitmap  Image dimensions:' + ImageHeight(Image1) + '  Picture dimensions:' + IntToStr(Image1.Picture.Graphic.Width) + 'x' + IntToStr(Image1.Picture.Graphic.Height));         {$EndIf}
+         {$IfDef RecordBitmapProblems} WriteLineToDebugFile('CopyImageToBitmap, Image dimensions:' + ImageHeight(Image1) + '  Picture dimensions:' + IntToStr(Image1.Picture.Graphic.Width) + 'x' + IntToStr(Image1.Picture.Graphic.Height));         {$EndIf}
          PetImage.CreateBitmap(Bitmap,Image1.Picture.Graphic.Width,Image1.Picture.Graphic.Height);
          Bitmap.Canvas.Draw(0,0,Image1.Picture.Graphic);
          if ClearWhite then begin

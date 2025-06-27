@@ -462,6 +462,7 @@ begin
    ShowDefaultCursor;
 end;
 
+
 procedure CheckGeoidNames;
 begin
    if not FileExists(Geoid2008FName) then begin
@@ -889,7 +890,7 @@ function GetSatMaskList(ASatImage : boolean) : ANSIString;
 var
    TStr : ShortString;
 begin
-    TStr :=  'All files|*.*|GEOTIFF|*.tif;*.tiff|' + 'Imagery with world files|*.jgw;*.tfw;*.tifw;*.gfw;*.pnw;*.sdw;*.bpw|' + 'BMP/JPEG/PNG, 3 pt reg|*.xy|JPEG2000|*.jp2|ECW|*.ecw|IMG|*.img|' + 'GeoPDF|*.pdf';
+    TStr :=  'All files|*.*|GEOTIFF|*.tif;*.tiff|' + 'Imagery with world files|*.jgw;*.tfw;*.tifw;*.gfw;*.pnw;*.sdw;*.bpw|' + 'BMP/JPEG/PNG, 3 pt reg|*.xy|JPEG2000|*.jp2|ECW|*.ecw|IMG|*.img';
     if ASatImage then begin
        Result := '|Landsat Look true color|*T1.TIF|Landsat Look TIR|*TIR.TIF|Likely images|*.tif;*.sid|' + 'Imagery|*.bmp;*.jpg;*.jpeg;*.png;*.gif|' + 'BIP file|*.BIP|';
        Result := TStr + Result;
@@ -1165,7 +1166,7 @@ end;
             FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
          end;
 
-            //already have TIFFs, but maybe need to delete JP2 that were not originally deleted
+            //already have TIFFs, but maybe need to delete JP2 not originally deleted
             if MDDef.DeleteJP2 then begin
                {$If Defined(RecordSatLoad) or Defined(RecordSatDirOpen)} WriteLineToDebugFile('check JP2 delete'); {$EndIf}
                Files2 := Nil;
@@ -1176,13 +1177,13 @@ end;
 
             //  3/6/23--originally import of tar Landsat kept the original compreesed tif files
             //    at some point those were recycled, and the checking for them was deleted
-            //    this will take care of that legacy problem
+            //    this will take care of legacy problem
             Files2 := Nil;
             FindMatchingFiles(LastSatDir,'ORIGINAL_*.tif',Files2,8);
             for I := 0 to pred(Files2.Count) do DeleteFile(Files2.Strings[i]);
 
          if IsThisSentinel2(TheFiles.Strings[0]) then begin
-            //there might be metadata or other TIFFS we don't want to open
+            //might be metadata or other TIFFS we don't want to open
             for i := pred(TheFiles.Count) downto 0 do begin
                if not AnsiContainsText(TheFiles.Strings[i],'IMG_DATA') then TheFiles.Delete(i);
             end;

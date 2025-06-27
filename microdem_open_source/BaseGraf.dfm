@@ -3,7 +3,7 @@ object ThisBaseGraph: TThisBaseGraph
   Top = 262
   Hint = 'Graph legend'
   BorderIcons = [biSystemMenu, biMinimize]
-  Caption = 'Correlation matrices among all DEMs only single ALL landcover'
+  Caption = 'Graph'
   ClientHeight = 273
   ClientWidth = 809
   Color = clBtnFace
@@ -55,7 +55,8 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 215
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 195
+    ExplicitWidth = 803
+    ExplicitHeight = 168
     object Image1: TImage
       Left = 0
       Top = 0
@@ -87,7 +88,8 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 223
+    ExplicitTop = 196
+    ExplicitWidth = 803
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -95,6 +97,7 @@ object ThisBaseGraph: TThisBaseGraph
     Width = 809
     Height = 28
     TabOrder = 2
+    ExplicitWidth = 803
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

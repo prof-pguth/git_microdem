@@ -29,12 +29,12 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
     TabOrder = 0
     OnMouseDown = ToolBar1MouseDown
+    ExplicitWidth = 2412
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -1696,6 +1696,8 @@ object wmdem: Twmdem
     Visible = False
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
+    ExplicitTop = 1217
+    ExplicitWidth = 2412
   end
   object MainMenu1: TMainMenu
     Left = 136
@@ -2413,91 +2415,6 @@ object wmdem: Twmdem
       GroupIndex = 6
       OnClick = DEMIX2Click
     end
-    object DEMIXNeo1: TMenuItem
-      Caption = 'DEMIX Neo'
-      GroupIndex = 6
-      object Areaevaluations1: TMenuItem
-        Caption = 'Area interactive evaluations (under development)'
-        OnClick = Areaevaluations1Click
-      end
-      object Singletile1: TMenuItem
-        Caption = 'Single tile'
-        object CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem
-          Caption = 
-            'Correlation matrix single DEM to all others, multiple land cover' +
-            's breakout'
-          OnClick = CorrelationsingleDEMtoreferencealllandcovers1Click
-        end
-        object CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1: TMenuItem
-          Caption = 'Correlation matrix single DEM to all others, ALL landcover only'
-          OnClick = CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click
-        end
-        object CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem
-          Caption = 'Correlation matrices among all DEMs for all land cover groups'
-          OnClick = CorrelationmatrixamongallDEMsforALLpixels1Click
-        end
-        object CorrelationmatricesamongallDEMsjustALLlandcover1: TMenuItem
-          Caption = 'Correlation matrices among all DEMs just ALL landcover'
-          OnClick = CorrelationmatricesamongallDEMsjustALLlandcover1Click
-        end
-        object Graphdifferencedistributionsalllandcovers1: TMenuItem
-          Caption = 'Graph difference distributions all land covers'
-          OnClick = Graphdifferencedistributionsalllandcovers1Click
-        end
-        object FUVforrangescales1: TMenuItem
-          Caption = 'FUV for range scales (1 DEM to reference)'
-          OnClick = FUVforrangescales1Click
-        end
-        object FUVfor5DEMstoreference1: TMenuItem
-          Caption = 'FUV for multiple test DEMs to reference'
-          OnClick = FUVfor5DEMstoreference1Click
-        end
-        object FUVbyLandcover1DEMtoreference1: TMenuItem
-          Caption = 'FUV by Landcover, 1 DEM to reference'
-          OnClick = FUVbyLandcover1DEMtoreference1Click
-        end
-        object ComparelandcoverinpointcloudDTM1: TMenuItem
-          Caption = 'Compare land cover in point cloud DTM'
-          OnClick = ComparelandcoverinpointcloudDTM1Click
-        end
-      end
-      object Multipletiles1: TMenuItem
-        Caption = 'Multiple tiles'
-        object Differencedistributionstatistics1: TMenuItem
-          Caption = 'Difference distribution statistics'
-          OnClick = Differencedistributionstatistics1Click
-        end
-        object FUV2: TMenuItem
-          Caption = 'FUV'
-          OnClick = FUV2Click
-        end
-      end
-      object N61: TMenuItem
-        Caption = '-'
-      end
-      object N62: TMenuItem
-        Caption = 'Open DEMs'
-        OnClick = N62Click
-      end
-      object N59: TMenuItem
-        Caption = '-'
-      end
-      object N60: TMenuItem
-        Caption = 'Pick LSPs to use'
-        OnClick = N60Click
-      end
-      object PicktestDEMs1: TMenuItem
-        Caption = 'Pick test DEMs'
-        OnClick = PicktestDEMs1Click
-      end
-      object N65: TMenuItem
-        Caption = '-'
-      end
-      object N64: TMenuItem
-        Caption = 'Curvatures comparison'
-        OnClick = N64Click
-      end
-    end
     object Help1: TMenuItem
       Caption = '&Help'
       GroupIndex = 6
@@ -2999,8 +2916,12 @@ object wmdem: Twmdem
         OnClick = Noaddedlegends1Click
       end
       object Noaddedlegends2: TMenuItem
-        Caption = 'Added legends'
+        Caption = 'Add legends each graph'
         OnClick = Noaddedlegends2Click
+      end
+      object Addlegendonlylastgraph1: TMenuItem
+        Caption = 'Add legend only last graph'
+        OnClick = Addlegendonlylastgraph1Click
       end
     end
     object Combineallcombinedimages1: TMenuItem
@@ -3486,6 +3407,94 @@ object wmdem: Twmdem
       object N3OpenDEMs1: TMenuItem
         Caption = '3 Open DEMs'
         OnClick = N3OpenDEMs1Click
+      end
+    end
+    object N63: TMenuItem
+      Caption = '-'
+    end
+    object DEMIXNeo1: TMenuItem
+      Caption = 'DEMIX Neo'
+      GroupIndex = 6
+      object Areaevaluations1: TMenuItem
+        Caption = 'Area interactive evaluations (under development)'
+        OnClick = Areaevaluations1Click
+      end
+      object Singletile1: TMenuItem
+        Caption = 'Single tile'
+        object CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem
+          Caption = 
+            'Correlation matrix single DEM to all others, multiple land cover' +
+            's breakout'
+          OnClick = CorrelationsingleDEMtoreferencealllandcovers1Click
+        end
+        object CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1: TMenuItem
+          Caption = 'Correlation matrix single DEM to all others, ALL landcover only'
+          OnClick = CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click
+        end
+        object CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem
+          Caption = 'Correlation matrices among all DEMs for all land cover groups'
+          OnClick = CorrelationmatrixamongallDEMsforALLpixels1Click
+        end
+        object CorrelationmatricesamongallDEMsjustALLlandcover1: TMenuItem
+          Caption = 'Correlation matrices among all DEMs just ALL landcover'
+          OnClick = CorrelationmatricesamongallDEMsjustALLlandcover1Click
+        end
+        object Graphdifferencedistributionsalllandcovers1: TMenuItem
+          Caption = 'Graph difference distributions all land covers'
+          OnClick = Graphdifferencedistributionsalllandcovers1Click
+        end
+        object FUVforrangescales1: TMenuItem
+          Caption = 'FUV for range scales (1 DEM to reference)'
+          OnClick = FUVforrangescales1Click
+        end
+        object FUVfor5DEMstoreference1: TMenuItem
+          Caption = 'FUV for multiple test DEMs to reference'
+          OnClick = FUVfor5DEMstoreference1Click
+        end
+        object FUVbyLandcover1DEMtoreference1: TMenuItem
+          Caption = 'FUV by Landcover, many test DEMs to reference'
+          OnClick = FUVbyLandcover1DEMtoreference1Click
+        end
+        object ComparelandcoverinpointcloudDTM1: TMenuItem
+          Caption = 'Compare land cover in point cloud DTM'
+          OnClick = ComparelandcoverinpointcloudDTM1Click
+        end
+      end
+      object Multipletiles1: TMenuItem
+        Caption = 'Multiple tiles'
+        object Differencedistributionstatistics1: TMenuItem
+          Caption = 'Difference distribution statistics'
+          OnClick = Differencedistributionstatistics1Click
+        end
+        object FUV2: TMenuItem
+          Caption = 'FUV'
+          OnClick = FUV2Click
+        end
+      end
+      object N61: TMenuItem
+        Caption = '-'
+      end
+      object N62: TMenuItem
+        Caption = 'Open DEMs'
+        OnClick = N62Click
+      end
+      object N59: TMenuItem
+        Caption = '-'
+      end
+      object N60: TMenuItem
+        Caption = 'Pick LSPs to use'
+        OnClick = N60Click
+      end
+      object PicktestDEMs1: TMenuItem
+        Caption = 'Pick test DEMs'
+        OnClick = PicktestDEMs1Click
+      end
+      object N65: TMenuItem
+        Caption = '-'
+      end
+      object N64: TMenuItem
+        Caption = 'Curvatures comparison'
+        OnClick = N64Click
       end
     end
   end

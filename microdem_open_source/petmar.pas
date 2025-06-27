@@ -2473,7 +2473,7 @@ begin
       clAlmostBlack := RGB(1,1,1);
 
       {$IfDef VCL}
-      for i := 0 to 14 do RGBColorArray[i] := ConvertTColorToPlatformColor(ElevColors[i]);
+      //for i := 0 to 14 do RGBColorArray[i] := ConvertTColorToPlatformColor(ElevColors[i]);
       ProgramRootDir := ExtractFilePath(ExpandFileName(Forms.Application.ExeName));
       {$EndIf}
 

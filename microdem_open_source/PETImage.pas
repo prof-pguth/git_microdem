@@ -256,7 +256,7 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
    procedure MovieFromTwoBitmaps(f1,f2 : PathStr); overload;
 {$EndIf}
 
-procedure AllGraphsOneImage(NumCols : integer = -99; legendOnRight : boolean = false);
+procedure AllGraphsOneImage(NumCols : integer = -99; legendOnRight : boolean = false; LegendEachGraph : boolean = true);
 
 
 type
@@ -295,6 +295,16 @@ var
 const
    bmpx = 4096;
    bmpy = 4096;
+
+var
+   NumWinGraphColors : integer;
+   WinGraphColorArray : array[0..64] of tColor;
+
+function WinGraphColors(i : integer) : tColor;
+
+procedure LoadWinGraphColors;
+procedure PickWinGraphColors;
+
 
 implementation
 
@@ -359,6 +369,7 @@ uses
       DEMDefs,
    {$EndIf}
    BaseMap,
+   Petmar_db,
    PETMath;
 
 type
@@ -369,6 +380,46 @@ type
 {$IfDef VCL}
    {$I petimage_vcl.inc}
 {$EndIf}
+
+
+function WinGraphColors(i : integer) : tColor; inline;
+begin
+    Result := WinGraphColorArray[succ(i mod succ(NumWinGraphColors))];
+end;
+
+
+procedure PickWinGraphColors;
+var
+   db : tMyData;
+   i : integer;
+   dname : PathStr;
+   Palettes : tStringList;
+begin
+   dName := ProgramRootDir + 'graph_colors.dbf';
+   db := tMyData.Create(dName);
+   Palettes := db.ListUniqueEntriesInDB('NAME');
+   MDDef.WinGraphColors := GetFromList('Graph colors',Palettes);
+   db.Destroy;
+   Palettes.Destroy;
+   LoadWinGraphColors;
+end;
+
+procedure LoadWinGraphColors;
+var
+   db : tMyData;
+   i : integer;
+   dname : PathStr;
+begin
+   dName := ProgramRootDir + 'graph_colors.dbf';
+   db := tMyData.Create(dName);
+     db.ApplyFilter('NAME=' + QuotedStr(MDDef.WinGraphColors));
+     NumWinGraphColors := db.FiltRecsInDB;
+     for i := 1 to NumWinGraphColors do begin
+        WinGraphColorArray[i] := db.TColorFromTable;
+        db.Next;
+     end;
+     db.Destroy;
+end;
 
 
 function PixelsWithThisColor(var Bitmap : tMyBitmap; TestColor : tPlatformColor) : int64;
@@ -662,6 +713,8 @@ begin
    if (TheFiles.Count > 0) then begin
       if (nc <= 1) then nc := 1;
       nr := theFiles.Count div nc;
+      if theFiles.Count mod nc > 0 then inc(nr);
+
       if nr <= 0 then nr := 1;
       BigWidth := 0;
       BigHeight := 0;
@@ -699,8 +752,10 @@ begin
          end;
       end;
       if (Result <> nil) then begin
-         Result.Canvas.Font.Size := 14;
-         Result.Canvas.TextOut(25,Result.Height - 40,Capt);
+         if Capt <> '' then begin
+            Result.Canvas.Font.Size := 14;
+            Result.Canvas.TextOut(25,Result.Height - 40,Capt);
+         end;
          GetImagePartOfBitmap(Result);
          {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineBitmaps out, bmp=' + BitmapSizeString(Result)); {$EndIf}
       end;
@@ -708,10 +763,10 @@ begin
 end;
 
 
-procedure AllGraphsOneImage(NumCols : integer = -99; legendOnRight : boolean = false);
+procedure AllGraphsOneImage(NumCols : integer = -99; legendOnRight : boolean = false; LegendEachGraph : boolean = true);
 var
    BottomMargin,
-   i,x : integer;
+   i,x,NumGraphs,ThisGraph : integer;
    Findings : tStringlist;
    fName : PathStr;
    Bitmap,bmp : tMyBitmap;
@@ -719,18 +774,27 @@ begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('AllGraphsOneImage in'); {$EndIf}
    Findings := tStringList.Create;
    BottomMargin := 45;
+   NumGraphs := 0;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
+         inc(NumGraphs);
+      end;
+   end;
+   ThisGraph := 0;
+   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+      if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
+         inc(ThisGraph);
          CopyImageToBitmap((WMDEM.MDIChildren[i] as TThisBaseGraph).Image1,Bitmap);
          fName := (WMDEM.MDIChildren[i] as TThisBaseGraph).Caption + '_';
          if LegendOnRight then begin
-            bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend;
-            x := Bitmap.Width + 10;
-            Bitmap.Width := x + bmp.Width;
-            Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
-            bmp.Free;
+            if LegendEachGraph or (ThisGraph = NumGraphs) then begin
+                bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend;
+                x := Bitmap.Width + 10;
+                Bitmap.Width := x + bmp.Width;
+                Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
+                bmp.Free;
+            end;
          end;
-
          Bitmap.Height := Bitmap.Height + BottomMargin;
          fName := NextFileNumber(MDtempDir,fName,'.bmp');
          Bitmap.SaveToFile(fName);

@@ -2253,13 +2253,14 @@ var
 
                      for i := 1 to Numbands do begin
                          bFileName[i] := LandSatDir + LandsatMetadata.BandFileName[i + BandNumberOffset];
-
+                         (*
+                         //commented out, 5/5/2025
                          //added 2/25/2022 to resolve issues with GDAL incorrectly rewriting tiled/compressed files and losing the rewritten file
                          if not FileExists(bFileName[i]) then begin
                             fName := ExtractFilePath(bFileName[i]) + 'original_' + ExtractFileName(bFileName[i]);
                             if FileExists(fName) then SysUtils.RenameFile(fName,bFileName[i]);
                          end;
-
+                         *)
                          {$IfDef RecordTMSat} WriteLineToDebugFile('TM Band = ' + IntToStr(i) + '  ' + bFileName[i] ); {$EndIf}
                          if not ReadTiffBand(bFileName[i],i,SatelliteName) then inc(Result);
                      end;
@@ -2282,12 +2283,7 @@ var
                      ReadBandData('Sentinel-2',SatView);
                      SingleTiff := false;
                      SatelliteName := 'Sentinel-2';
-
-   //"J:\china_desert\level_1c\S2A_MSIL1C_20230605T051651_N0509_R062_T44SNH_20230605T070628.SAFE\GRANULE\L1C_T44SNH_A041529_20230605T051754\IMG_DATA\T44SNH_20230605T051651_B02.tif"
-   //"J:\china_desert\level_2a\S2A_MSIL2A_20230913T051651_N0509_R062_T44SNH_20230913T105102.SAFE\GRANULE\L2A_T44SNH_A042959_20230913T051654\IMG_DATA\R10m\T44SNH_20230913T051651_B02_10m.tif"
-
                      BaseName := ExtractFilePath(IndexFileName) + ExtractFileNameNoExt(IndexFileName);
-
                      if ANSIcontainsText(IndexFileName,'L2A') then begin
                         BaseName := StringReplace(BaseName, '20m','10m',[rfReplaceAll]);
                         BaseName := StringReplace(BaseName, '60m','10m',[rfReplaceAll]);

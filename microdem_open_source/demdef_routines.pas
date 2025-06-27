@@ -137,6 +137,9 @@ function TerrainCategoryToString(tc : tTerrainCatDefinition) : ShortString;
 
 procedure SetReflectanceDefaults;
 procedure SetContourDefaults;
+procedure SetSlopeDefaults;
+procedure SetCurvatureDefaults;
+
 procedure SetSlopedefaultColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 procedure SetDEMIXSlopeColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 
@@ -163,7 +166,7 @@ procedure SetLOSDefaults;
 
 {$IfDef ExGeomorphGrids}
 {$Else}
-   procedure SetAllCurvatures(Setting : boolean);
+   //procedure SetAllCurvatures(Setting : boolean);
    procedure SetAllSlopes(Setting : boolean);
    procedure SetAllOrganization(Setting : boolean);
 {$EndIf}
@@ -343,7 +346,6 @@ function MD_Made_string : shortstring;
 
 var
    VegDenstColors : array[0..255] of tPlatformColor;
-   DrainageSlopeNumber1,DrainageSlopeNumber2 : tSlopeCurveCompute;
 
 
 implementation
@@ -977,6 +979,7 @@ end;
 
 {$IfDef ExGeomorphGrids}
 {$Else}
+      (*
       procedure SetAllCurvatures(Setting : boolean);
       begin
           MDDef.DoCrossCurve := Setting;
@@ -985,6 +988,7 @@ end;
           MDDef.DoSlopeCurve := Setting;
           MDDef.DoPlanCurve := Setting;
       end;
+      *)
 
       procedure SetAllSlopes(Setting : boolean);
       begin
@@ -1133,9 +1137,9 @@ procedure InitializeMICRODEM;
 var
    wYear,wmonth,wDay : word;
 begin
-    MDDef.MaxDebugLinesToKeep := 1250;
-    MDDef.FinalLinesToKeep := 10;
-    MDDef.InitialLinesToKeep := 7;
+    //MDDef.MaxDebugLinesToKeep := 1250;
+    //MDDef.FinalLinesToKeep := 10;
+    //MDDef.InitialLinesToKeep := 7;
 
      {$IfDef MSWindows}
         ProgramRootDir := UpperCase(ExtractFilePath(ParamStr(0)));
@@ -1610,14 +1614,14 @@ var
 
             {$IfDef ExGeomorphGrids}
             {$Else}
-               AParameter('Geomorph','DoCrossCurve',DoCrossCurve,false);
-               AParameter('Geomorph','DoMaxCurve',DoMaxCurve,false);
-               AParameter('Geomorph','DoMinCurve',DoMinCurve,false);
-               AParameter('Geomorph','DoSlopeCurve',DoSlopeCurve,true);
-               AParameter('Geomorph','DoPlanCurve',DoPlanCurve,true);
-               AParameter('Geomorph','DoUpOpen',DoUpOpen,true);
-               AParameter('Geomorph','DoDownOpen',DoDownOpen,true);
-               AParameter('Geomorph','DoDiffOpen',DoDiffOpen,true);
+               //AParameter('Geomorph','DoCrossCurve',DoCrossCurve,false);
+               //AParameter('Geomorph','DoMaxCurve',DoMaxCurve,false);
+               //AParameter('Geomorph','DoMinCurve',DoMinCurve,false);
+               //AParameter('Geomorph','DoSlopeCurve',DoSlopeCurve,true);
+               //AParameter('Geomorph','DoPlanCurve',DoPlanCurve,true);
+               //AParameter('Geomorph','DoUpOpen',DoUpOpen,true);
+               //AParameter('Geomorph','DoDownOpen',DoDownOpen,true);
+               //AParameter('Geomorph','DoDiffOpen',DoDiffOpen,true);
                AParameter('Geomorph','DoRelief1',DoRelief1,true);
                AParameter('Geomorph','DoAvgElev',DoAvgElev,false);
                AParameter('Geomorph','DoElevStd',DoElevStd,false);
@@ -2496,7 +2500,6 @@ var
          AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
-         //AParameter('DEMIX','DEMIX_DoCHM',DEMIX_DoCHM,true);
          AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
          AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
          AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
@@ -2504,6 +2507,9 @@ var
          AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
          AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
          AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
+         AParameter('DEMIX','DEMIX_open_radials',DEMIX_open_radials,5);
+         AParameter('DEMIX','DEM_ruff_window',DEM_ruff_window,5);
+         AParameter('DEMIX','DEMIXsaveLSPmaps',DEMIXsaveLSPmaps,false);
          AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
          AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
          AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
@@ -2515,30 +2521,16 @@ var
          AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
-         AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,25);
+         AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,50);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
          AParameter('DEMIX','LoadTestDEMMaps',LoadTestDEMMaps,true);
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
          AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
          AParameter('DEMIX','OpenSavedMapsFUVSSIM',OpenSavedMapsFUVSSIM,false);
          AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
-         AParameter('DEMIX','SSIM_elev',SSIM_elev,true);
-         AParameter('DEMIX','SSIM_slope',SSIM_slope,true);
-         AParameter('DEMIX','SSIM_Openness',SSIM_Openness,true);
-         AParameter('DEMIX','SSIM_ruff',SSIM_ruff,true);
-         AParameter('DEMIX','SSIM_rri',SSIM_rri,true);
-         AParameter('DEMIX','SSIM_ConvergeIndex',SSIM_ConvergeIndex,true);
-         AParameter('DEMIX','SSIM_tpi',SSIM_tpi,true);
-         AParameter('DEMIX','SSIM_rotor',SSIM_rotor,true);
-         AParameter('DEMIX','SSIM_hill',SSIM_hill,true);
-         AParameter('DEMIX','SSIM_PLANC',SSIM_PLANC,true);
-         AParameter('DEMIX','SSIM_PROFC',SSIM_PROFC,true);
-         AParameter('DEMIX','SSIM_TANGC',SSIM_TANGC,true);
-         AParameter('DEMIX','SSIM_LS',SSIM_LS,true);
-         AParameter('DEMIX','SSIM_flow',SSIM_Flow,true);
-         AParameter('DEMIX','SSIM_wet',SSIM_wet,true);
-         AParameter('DEMIX','SSIM_HAND',SSIM_HAND,true);
          AParameter('DEMIX','ProcessLoopsForward',ProcessLoopsForward,true);
+         AParameter('DEMIX','DEMIX_AllowCoastal',DEMIX_AllowCoastal,false);
+
          AParameter('DEMIX','DoSSIM',DoSSIM,true);
          AParameter('DEMIX','DoFUV',DoFUV,true);
          AParameter('DEMIX','DEMIX_all_areas',DEMIX_all_areas,true);
@@ -2560,6 +2552,13 @@ var
    procedure ProgramFileSettings;
    begin
       with MDIniFile,MDDef do begin
+            AParameter('Files','lastools_bindir',lastools_bindir,'');
+            AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
+            AParameter('Files','WhiteBoxFName',WhiteBoxFName,'');
+            AParameter('Files','GRASSexe',GrassEXE,'GRASS84');
+            AParameter('GDAL','GDALtools_Dir',GDALtools_Dir,'');
+            AParameter('GDAL','RouteGeotiffExportGDAL',RouteGeotiffExportGDAL,true);
+
             AParameter('Files','MainMapData',MainMapData,'');
             AParameter('Files','LastSatDir',LastSatDir,'');
             AParameter('Files','LastDEMName',LastDEMName,'');
@@ -2568,19 +2567,9 @@ var
             AParameter('Files','PhotoDir',PhotoDir,'');
             AParameter('Files','LastLidarMult',LastLidarMulti,'');
             AParameter('Files','MapLibDir',MapLibDir,'');
-            AParameter('Files','lastools_bindir',lastools_bindir,'');
-            AParameter('Files','WhiteBoxfName',WhiteBoxfName,'');
-            AParameter('Files','SagaCMD',SagaCMD,'H:\gis_software\saga-8.2.1_x64\saga_cmd.exe');
-            AParameter('Files','WhiteBoxFName',WhiteBoxFName,'');
-            AParameter('Files','GRASSexe',GrassEXE,'GRASS84');
 
-            {$IfDef ExGDAL}
-            {$Else}
-               AParameter('GDAL','GDALtools_Dir',GDALtools_Dir,'');
-               AParameter('GDAL','DontBugMeAboutGDAL',DontBugMeAboutGDAL,true);
-               AParameter('GDAL','RouteGeotiffExportGDAL',RouteGeotiffExportGDAL,true);
-               AParameterShortFloat('GDAL','GDALThinFactor',GDALThinFactor,0.1);
-            {$EndIf}
+            AParameter('GDAL','DontBugMeAboutGDAL',DontBugMeAboutGDAL,true);
+            AParameterShortFloat('GDAL','GDALThinFactor',GDALThinFactor,0.1);
 
             {$IfDef MSWindows}
                AParameter('Files','mcc_lidarFName',mcc_lidarFName,'');
@@ -2701,6 +2690,7 @@ var
      end;
   end;
 
+
    procedure MiscSettings;
    begin
       with MDIniFile,MDDef do begin
@@ -2797,8 +2787,8 @@ var
          AParameter('Misc','DefElevsPercentile',DefElevsPercentile,true);
          AParameter('Misc','New3Dviewer',New3Dviewer,true);
 
-         AParameter('Misc','FinalLinesToKeep',FinalLinesToKeep,10);
-         MDDef.InitialLinesToKeep := 7;
+         //AParameter('Misc','FinalLinesToKeep',FinalLinesToKeep,10);
+         //MDDef.InitialLinesToKeep := 7;
          AParameter('Misc','MDRecordDebugLog',MDRecordDebugLog,true);
 
          AParameter('Misc','MaskCode',MaskCode,1);
@@ -2817,9 +2807,9 @@ var
             AParameter('Misc','SB1PanelWidths[1]',SB1PanelWidths[1],360);
             AParameter('Misc','SB1PanelWidths[2]',SB1PanelWidths[2],240);
             AParameter('Misc','SB1PanelWidths[3]',SB1PanelWidths[3],300);
-            AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,5000);
+            //AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,5000);
          {$Else}
-            AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,1250);
+            //AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,1250);
          {$EndIf}
       end;
    end;
@@ -3478,27 +3468,6 @@ var
       {$EndIf}
    end;
 
-      {$IfDef ExDRGimport}
-      {$Else}
-      procedure DRGImportSettings;
-      begin
-         with MDIniFile,MDDef do begin
-            AParameter('DRG','DRGCollar',DRGCollar,false);
-            AParameter('DRG','DRGStructures',DRGStructures,true);
-            AParameter('DRG','DRGTransport',DRGTransport,true);
-            AParameter('DRG','DRGHydrography',DRGHydrography,true);
-            AParameter('DRG','DRGShadedRelief',DRGShadedRelief,true);
-            AParameter('DRG','DRGBoundaries',DRGBoundaries,false);
-            AParameter('DRG','DRGOrthos',DRGOrthos,false);
-            AParameter('DRG','DRGGrid',DRGGrid,true);
-            AParameter('DRG','DRGContours',DRGContours,true);
-            AParameter('DRG','DRGWoodland',DRGWoodland,false);
-            AParameter('DRG','DRGPLSS',DRGPLSS,false);
-            AParameter('DRG','DRGQuadClip',DRGQuadClip,true);
-         end;
-      end;
-      {$EndIf}
-
    procedure MapGridSettings;
    begin
       {$IfDef RecordINIfiles} WriteLineToDebugFile('MapGridSetting'); {$EndIf}
@@ -3573,8 +3542,8 @@ var
       with MDIniFile,MDDef do begin
          AParameter('OpenGray','OpenMinGray',OpenMinGray,120);
          AParameter('OpenGray','OpenMaxGray',OpenMaxGray,200);
-         AParameter('OpenGray','MinUpward',MinUpward,0);
-         AParameter('OpenGray','MaxUpward',MaxUpward,250);
+         AParameter('OpenGray','MinUpward',MinUpward,80);
+         AParameter('OpenGray','MaxUpward',MaxUpward,100);
       end;
    end;
 
@@ -3755,6 +3724,7 @@ begin
 
    {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 5'); {$EndIf}
 
+      AParameter('Graph','WinGraphColors',WinGraphColors,'MICRODEM classic');
       AParameterShortFloat('Graph','GraphDensityXBlock',GraphDensityXBlock,1);
       AParameterShortFloat('Graph','GraphDensityYBlock',GraphDensityYBlock,1);
       AParameter('Graph','SummarySymbol',SummarySymbol,0);
@@ -3957,17 +3927,19 @@ begin
          AParameterShortFloat('RasterVector','potrace_corner', potrace_corner,1);
       {$EndIf}
 
-      AParameter('Slope','CD2',CD2,True);
-      AParameter('Slope','SlopeAlgorithm',SlopeCompute.AlgorithmName,smEvansYoung);
-      AParameter('Slope','SlopeRadius',SlopeCompute.WindowRadius,1);
-      AParameter('Slope','CurveRadius',CurveCompute.WindowRadius,2);
-      AParameter('Slope','SlopeFullWindow',SlopeCompute.RequireFullWindow,true);
-      AParameter('Slope','CurveFullWindow',CurveCompute.RequireFullWindow,true);
-      AParameter('Slope','SlopeAllPts',SlopeCompute.UsePoints,useAll);
-      AParameter('Slope','CurveAllPts',CurveCompute.UsePoints,useAll);
-      AParameter('Slope','SlopeLSQ',SlopeCompute.LSQorder,1);
-      AParameter('Slope','CurveLSQ',CurveCompute.LSQorder,2);
+      AParameter('SlopeAlg','SlopeAlgorithm',SlopeCompute.AlgorithmName,smEvansYoung);
+      AParameter('SlopeAlg','SlopeRadius',SlopeCompute.WindowRadius,1);
+      AParameter('SlopeAlg','SlopeFullWindow',SlopeCompute.RequireFullWindow,true);
+      AParameter('SlopeAlg','SlopeAllPts',SlopeCompute.UsePoints,useAll);
+      AParameter('SlopeAlg','SlopeLSQ',SlopeCompute.LSQorder,1);
 
+      AParameter('SlopeAlg','SlopeAlgorithm',CurveCompute.AlgorithmName,smLSQ);
+      AParameter('CurveAlg','CurveLSQ',CurveCompute.LSQorder,2);
+      AParameter('CurveAlg','CurveRadius',CurveCompute.WindowRadius,2);
+      AParameter('CurveAlg','CurveFullWindow',CurveCompute.RequireFullWindow,true);
+      AParameter('CurveAlg','CurveAllPts',CurveCompute.UsePoints,useAll);
+
+      AParameter('Slope','CD2',CD2,True);
       AParameter('Slope','AspectRegionSize',AspectRegionSize,5);
       AParameter('Slope','NumSlopeBands',NumSlopeBands,5);
 
@@ -5207,6 +5179,17 @@ begin
    ProcessIniFile(iniInit,'Reflect');
 end;
 
+procedure SetSlopeDefaults;
+begin
+   ProcessIniFile(iniInit,'SlopeAlg');
+end;
+
+procedure SetCurvatureDefaults;
+begin
+   ProcessIniFile(iniInit,'CurveAlg');
+end;
+
+
 procedure SetSlopedefaultColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 begin
    NumCats := 15;
@@ -5442,18 +5425,6 @@ initialization
    AspColorW := RGBtrip(255,171,71);
    AspColorNW := RGBtrip(244,250,0);
    AspColorN := RGBtrip(132,214,0);
-   DrainageSlopeNumber1.AlgorithmName := smLSQ;
-   DrainageSlopeNumber1.WindowRadius := 1;
-   DrainageSlopeNumber1.LSQorder := 2;
-   DrainageSlopeNumber1.UsePoints := UseAll;
-   DrainageSlopeNumber1.RequireFullWindow := true;
-
-   DrainageSlopeNumber2.AlgorithmName := smLSQ;
-   DrainageSlopeNumber2.WindowRadius := 2;
-   DrainageSlopeNumber2.LSQorder := 3;
-   DrainageSlopeNumber2.UsePoints := UseAll;
-   DrainageSlopeNumber2.RequireFullWindow := true;
-
 finalization
 end.
 

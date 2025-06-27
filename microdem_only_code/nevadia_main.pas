@@ -42,7 +42,7 @@
       //{$Define RecordFirstRun}
       //{$Define RecordOpenVectorMap}
       //{$Define TimeLoadDEM}
-      //{$Define RecordClosing}
+      {$Define RecordClosing}
       //{$Define RecordMGT}
       //{$Define RecordHelp}
       //{$Define RecordDBFconvert}
@@ -650,6 +650,8 @@ type
     N64: TMenuItem;
     N65: TMenuItem;
     ComparelandcoverinpointcloudDTM1: TMenuItem;
+    Addlegendonlylastgraph1: TMenuItem;
+    N63: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1081,16 +1083,15 @@ type
     procedure FUVforrangescales1Click(Sender: TObject);
     procedure FUVfor5DEMstoreference1Click(Sender: TObject);
     procedure FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
-    procedure CorrelationmatricesamongallDEMsjustALLlandcover1Click(
-      Sender: TObject);
-    procedure CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(
-      Sender: TObject);
+    procedure CorrelationmatricesamongallDEMsjustALLlandcover1Click(Sender: TObject);
+    procedure CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(Sender: TObject);
     procedure Areaevaluations1Click(Sender: TObject);
     procedure N60Click(Sender: TObject);
     procedure PicktestDEMs1Click(Sender: TObject);
     procedure N62Click(Sender: TObject);
     procedure N64Click(Sender: TObject);
     procedure ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
+    procedure Addlegendonlylastgraph1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1352,6 +1353,7 @@ uses
    zipatone,
    GetLatLn,
    KML_creator,
+   Las_files_grouping,
 
    PETMath,BaseGraf,
    DEMCoord,
@@ -1976,6 +1978,11 @@ begin
    OverwriteIfExits3.Enabled := MDDef.DEMIX_overwrite_enabled;
    Overwrite4.Enabled := MDDef.DEMIX_overwrite_enabled;
    //OverwriteIfExits2.Enabled := MDDef.DEMIX_overwrite_enabled;
+   CoastalDEMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
+   DiluviumDEMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
+   DeltaDTMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
+   OverwriteallthreecoastalDTMS1.Visible := MDdef.DEMIX_AllowCoastal;
+
 
    if (not MDDef.ShowMenus) then begin
       File1.Visible := false;
@@ -2061,6 +2068,8 @@ var
       //CommandLine comes in capitalized
       var
          Key,Value : AnsiString;
+         SlopeOrCurveCompute : tSlopeCurveCompute;
+         Upward,DownWard,Difference,BoxRadiusPixels,StartOnRadial,
          DEM,NewDEM,WhichCurvature : integer;
          FileList : tStringList;
          SlopeDegree : boolean;
@@ -2084,11 +2093,14 @@ var
          difffile := '';
          WhichCurvature := 0;
          SlopeDegree := false;
-         MDDef.SlopeCompute.AlgorithmName := smLSQ;
-         MDDef.SlopeCompute.LSQorder := 2;
-         MDDef.SlopeCompute.WindowRadius := 1;
-         MDDef.CurveCompute.WindowRadius := 2;
-         MDDef.SlopeCompute.RequireFullWindow := true;
+         BoxRadiusPixels := 10;
+         StartOnRadial := 1;
+
+         SlopeOrCurveCompute.AlgorithmName := smLSQ;
+         SlopeOrCurveCompute.LSQorder := 2;
+         SlopeOrCurveCompute.WindowRadius := 1;
+         SlopeOrCurveCompute.RequireFullWindow := true;
+         SlopeOrCurveCompute.UsePoints := UseAll;
 
          while (CommandLine[1] = '?') do Delete(CommandLine,1,1);      //the question mark
          ReplaceCharacter(CommandLine,'+','&');
@@ -2111,12 +2123,13 @@ var
             if Key = 'X' then xval := Value;
             if Key = 'Y' then yval := Value;
             if Key = 'RAD' then MDDef.OpennessBoxRadiusMeters := StrToInt(Value);
-            if Key = 'SLOPE_RAD' then MDDef.SlopeCompute.WindowRadius := StrToInt(Value);
+            if Key = 'SLOPE_RAD' then SlopeOrCurveCompute.WindowRadius := StrToInt(Value);
             if Key = 'SLOPE_UNIT' then SlopeDegree := Value = 'DEGREE';
-            if Key = 'CURVE_RAD' then MDDef.CurveCompute.WindowRadius := StrToInt(Value);
-            if Key = 'POLY_ORDER' then MDDef.SlopeCompute.LSQorder := StrToInt(Value);
-            if Key = 'SLOPE_FULL' then MDDef.SlopeCompute.RequireFullWindow := (Value = 'YES');
+            if Key = 'POLY_ORDER' then SlopeOrCurveCompute.LSQorder := StrToInt(Value);
+            if Key = 'SLOPE_FULL' then SlopeOrCurveCompute.RequireFullWindow := (Value = 'YES');
             if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
+            if Key = 'RADIUS' then BoxRadiusPixels := StrToInt(Value);
+            if Key = 'START' then StartOnRadial := StrToInt(Value);
             if Key = 'FILELIST' then begin
                FileList := tStringList.Create;
                FileList.LoadFromFile(Value)
@@ -2124,11 +2137,16 @@ var
             if Key = 'CURVE_MODE' then begin
                WhichCurvature := CurveCodeFromName(Value);
             end;
+            if Key = 'USE_PTS' then begin
+               if Value = 'ALL' then SlopeOrCurveCompute.UsePoints := UseAll;
+               if Value = 'EDGE' then SlopeOrCurveCompute.UsePoints := UseEdge;
+               if Value = 'QUEEN' then SlopeOrCurveCompute.UsePoints := UseQueens;
+            end;
             if Key = 'SLOPE_ALG' then begin
-                if Value = 'LSQ' then MDDef.SlopeCompute.AlgorithmName := smLSQ;
-                if Value = 'EVANS' then MDDef.SlopeCompute.AlgorithmName := smEvansYoung;
-                if Value = 'ZQ' then MDDef.SlopeCompute.AlgorithmName := smZevenbergenThorne;
-                if Value = 'HORN' then MDDef.SlopeCompute.AlgorithmName := smHorn;
+                if Value = 'LSQ' then SlopeOrCurveCompute.AlgorithmName := smLSQ;
+                if Value = 'EVANS' then SlopeOrCurveCompute.AlgorithmName := smEvansYoung;
+                if Value = 'ZQ' then SlopeOrCurveCompute.AlgorithmName := smZevenbergenThorne;
+                if Value = 'HORN' then SlopeOrCurveCompute.AlgorithmName := smHorn;
             end;
             if Key = 'PROJ' then begin
                 if Value = 'UTM' then MDDef.LidarGridProjection := 0;
@@ -2155,26 +2173,24 @@ var
          end;
          {$IfDef RecordCommandLine} WriteLineToDebugFile('command line parsed, action=' + Action); {$EndIf}
 
-
-         if Action = 'SLOPE_MAP' then begin
+         if (Action = 'SLOPE_MAP') then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               {NewDEM :=} CreateEvansSlopeMapPercent(false,DEM,outfile,SlopeDegree);
+               CreateSlopeMapPercentAlgorithm(SlopeOrCurveCompute, false,DEM,outfile,SlopeDegree);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
             end;
          end;
 
-         if Action = 'CURVE_MAP' then begin
+         if (Action = 'CURVE_MAP') then begin
             if OpenADEM then begin
+               MDDef.CurveCompute := SlopeOrCurveCompute;
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               {NewDEM :=} CreateCurvatureMap(WhichCurvature,false,DEM,OutFile);
+               CreateCurvatureMap(WhichCurvature,false,DEM,OutFile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('curvature map created'); {$EndIf}
-               //DEMGlb[NewDEM].SaveAsGeotiff(outfile);
-               //{$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
             end;
          end;
 
-         if Action = 'ASPECT_MAP' then begin
+         if (Action = 'ASPECT_MAP') then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
                NewDEM := MakeAspectMap(false,DEM);
@@ -2184,22 +2200,26 @@ var
             end;
          end;
 
-         if Action = 'OPENNESS_MAP' then begin
+         if (Action = 'OPENNESS_MAP') then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               MDDef.DoUpOpen := (UpFile <> '');
-               MDDef.DoDownOpen := (DownFile <> '');
-               MDDef.DoDiffOpen := (DiffFile <> '');
-               MakeMomentsGrid(DEM,'O',MDDef.OpennessBoxRadiusMeters,false);
+               //MDDef.DoUpOpen := (UpFile <> '');
+               //MDDef.DoDownOpen := (DownFile <> '');
+               //MDDef.DoDiffOpen := (DiffFile <> '');
+               Upward := -1;
+               DownWard := -1;
+               Difference := -1;
+               MDDef.OpenStartRadialsAtPixel := StartOnRadial;
+               CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,BoxRadiusPixels,Upward,DownWard,Difference);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('openness map created'); {$EndIf}
-               if (UpFile <> '') then DEMGlb[MomentDEMs[UpOpenDEM]].SaveAsGeotiff(UpFile);
-               if (DownFile <> '') then DEMGlb[MomentDEMs[DownOpenDEM]].SaveAsGeotiff(DownFile);
-               if (DiffFile <> '') then DEMGlb[MomentDEMs[DiffOpenDEM]].SaveAsGeotiff(DiffFile);
+               if (UpFile <> '') then DEMGlb[MomentDEMs[Upward]].SaveAsGeotiff(UpFile);
+               if (DownFile <> '') then DEMGlb[MomentDEMs[Downward]].SaveAsGeotiff(DownFile);
+               if (DiffFile <> '') then DEMGlb[MomentDEMs[Difference]].SaveAsGeotiff(DiffFile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
             end;
          end;
 
-         if Action = 'TERR_FABRIC' then begin
+         if (Action = 'TERR_FABRIC') then begin
             if OpenADEM then begin
                DEMGlb[DEM].OrientationTable(OutFile,Nil);
             end;
@@ -2208,7 +2228,7 @@ var
          if Action = 'RESAMP_AVG' then begin
             if OpenADEM(true) then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               {NewDEM :=} DEMGlb[DEM].ResampleByAveraging(false,Outfile);
+               DEMGlb[DEM].ResampleByAveraging(false,Outfile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('resampled created'); {$EndIf}
             end;
          end;
@@ -2339,9 +2359,6 @@ begin
       PetImage.FullPaletteBitmap;
       AddFreeDiskSpaceToDebugFile;
 
-      //MDDef.PerfectMAbD := 0.05;
-      //MDDef.DefCurveMap := mtCurvature;
-
       GetGDALFileNames;
       if not ValidPath(MapLibDir) then PickMapIndexLocation;
 
@@ -2349,6 +2366,17 @@ begin
     {$Else}
        if (ParamCount <> 0) then begin
           TStr := UpperCase(ptTrim(ParamStr(1)));
+           if (TStr = '-FUVSSIM') then begin
+              Self.Width := 750;
+              Self.Height := 450;
+              Self.Top := 100;
+              Self.Left := 100;
+              {$IfDef RecordProblems} WriteLineToDebugFile('Call FUV_SSIM_Processing'); {$EndIf}
+              FUV_SSIM_Processing(dmFull,false,false);
+              {$IfDef RecordProblems} WriteLineToDebugFile('Done FUV_SSIM_Processing, halting'); {$EndIf}
+              Halt;
+              exit;
+           end;
           if not SetProgramOptions(TStr) then begin
               if (ParamCount = 1) and (TStr[1] = '?') then begin
                  ProcessCommandLine(TStr);
@@ -2358,18 +2386,7 @@ begin
                   for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(i)));
                   ProcessCommandLine(TStr);
               end;
-                  (*
-                     {$IfDef RecordProblems} WriteLineToDebugFile('Command line parameter ' + IntToStr(i) + '=' + TStr); {$EndIf}
-                     if TStr = '-FUVSSIM' then begin
-                        Self.Width := 750;
-                        Self.Height := 450;
-                        Self.Top := 100;
-                        Self.Left := 100;
-                        FUV_SSIM_Processing(dmFull,false,false);
-                        Halt;
-                        exit;
-                     end;
-                  *)
+             {$IfDef RecordProblems} WriteLineToDebugFile('Command line parameter ' + IntToStr(i) + '=' + TStr); {$EndIf}
           end;
        end;
     {$EndIf}
@@ -2415,6 +2432,9 @@ begin
      {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time'); {$EndIf}
      {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate ending first time'); {$EndIf}
    end;
+
+   PetImage.LoadWinGraphColors;
+
    WmDEM.StatusBar1.Panels[0].Text := '';
    SetMenusForVersion;
    {$If Defined(RecordFormResize) or Defined(TrackFormCreate)} WriteLineToDebugFile('Twmdem.FormActivate set menu versions'); {$EndIf}
@@ -2515,6 +2535,11 @@ begin
 *)
 begin
    AddEXIFfields;
+end;
+
+procedure Twmdem.Addlegendonlylastgraph1Click(Sender: TObject);
+begin
+   AllGraphsOneImage(-99,true,false);
 end;
 
 procedure Twmdem.Addnormaliziedstatsforblockgridstotrainingset1Click(Sender: TObject);
@@ -2678,7 +2703,7 @@ var
    TheGrids : array[1..4] of integer;
    RefName,fName,BasePath : PathStr;
    theDEMs,Findings : tStringList;
-   i,j : integer;
+   i,j,k : integer;
    aLine : shortstring;
 begin
    BasePath := 'J:\aaa_neo_eval\silver_peak_range\curvature\';
@@ -2706,7 +2731,9 @@ begin
       end;
       WriteLineToDebugFile(aLine);
       Findings.Add(aline);
-      for j := 1 to 4 do CloseSingleDEM(j);
+      for k := 1 to 4 do begin
+         CloseSingleDEM(j);
+      end;
    end;
    RefName := MDTempDir + 'curvature_fuvs.dbf';
    StringList2CSVtoDB(Findings,RefName);
@@ -3794,10 +3821,18 @@ procedure Twmdem.Closeallgraphs1Click(Sender: TObject);
 var
    i : integer;
 begin
+   {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Closeallgraphs1Click in'); {$EndIf}
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TThisBaseGraph then (WMDEM.MDIChildren[i] as TThisBaseGraph).Close;
-      if WMDEM.MDIChildren[i] is TNetForm then (WMDEM.MDIChildren[i] as TNetForm).Close;
+      if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
+         {$IfDef RecordClosing} WriteLineToDebugFile('Close ' + (WMDEM.MDIChildren[i] as TThisBaseGraph).Caption); {$EndIf}
+         (WMDEM.MDIChildren[i] as TThisBaseGraph).Close;
+      end;
+      if WMDEM.MDIChildren[i] is TNetForm then begin
+         {$IfDef RecordClosing} WriteLineToDebugFile('Close ' + (WMDEM.MDIChildren[i] as TNetForm).Caption); {$EndIf}
+         (WMDEM.MDIChildren[i] as TNetForm).Close;
+      end;
    end;
+   {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Closeallgraphs1Click in'); {$EndIf}
 end;
 
 
@@ -3839,8 +3874,14 @@ procedure Twmdem.Closeallpictureviewwindows1Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := pred(WMDEM.MDIChildCount) downto 0 do
-      if WMDEM.MDIChildren[i] is TImageDisplayForm then (WMDEM.MDIChildren[i] as TImageDisplayForm).Close;
+   {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Closeallpictureviewwindows1Click in'); {$EndIf}
+   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
+      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
+          {$IfDef RecordClosing} WriteLineToDebugFile((WMDEM.MDIChildren[i] as TImageDisplayForm).Caption); {$EndIf}
+          (WMDEM.MDIChildren[i] as TImageDisplayForm).Close;
+      end;
+   end;
+   {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Closeallpictureviewwindows1Click out'); {$EndIf}
 end;
 
 procedure Twmdem.Closealltexteditwindows1Click(Sender: TObject);
@@ -4358,7 +4399,7 @@ end;
 
 procedure Twmdem.Mergemasp1Click(Sender: TObject);
 begin
-   {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
+   {$If Defined(ExGeoPDF)}
    {$Else}
       GDALconvertGeoPDF(gdalMergeGeoPDF1);
    {$EndIf}
@@ -4547,7 +4588,7 @@ begin
    FilesWanted := tStringList.Create;
    FilesWanted.Add(MainMapData);
    DefFilter := 1;
-   if GetMultipleFiles('GeoPDF or Geotiff or IMG or SHP','*.PDF;*.TIF;*.TIFF;*.IMG;*.shp',FilesWanted ,DefFilter) then begin
+   if GetMultipleFiles('Geotiff or IMG or SHP','*.TIF;*.TIFF;*.IMG;*.shp',FilesWanted ,DefFilter) then begin
        BatchGDALsrsinfo(FilesWanted);
        for i := 0 to pred(FilesWanted.Count) do begin
           fName := FilesWanted.Strings[i];
@@ -4822,7 +4863,7 @@ end;
 
 procedure Twmdem.MultipleDEMsonearea015secscale1Click(Sender: TObject);
 begin
-   FUVforMultipleTestDEMstoReference;
+   //FUVforMultipleTestDEMstoReference;
 end;
 
 procedure Twmdem.MultipledNBRmaps1Click(Sender: TObject);
@@ -4853,7 +4894,7 @@ end;
 
 procedure Twmdem.FUVfor5DEMstoreference1Click(Sender: TObject);
 begin
-   FUVforMultipleTestDEMstoReference;
+   //FUVforMultipleTestDEMstoReference;
 end;
 
 procedure Twmdem.FUVforrangescales1Click(Sender: TObject);
@@ -5421,7 +5462,6 @@ begin
          FormActivate(Sender);
       end;
    end;
-
 end;
 
 procedure Twmdem.Webpagethumbnails1Click(Sender: TObject);
@@ -5834,7 +5874,7 @@ end;
 
 procedure Twmdem.LASdata1Click(Sender: TObject);
 begin
-   Point_cloud_options.OverlayPointClouds(Nil);
+   OverlayPointClouds(Nil);
    StopSplashing;
 end;
 

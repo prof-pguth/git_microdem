@@ -138,7 +138,7 @@ begin
    Result := true;
    if not FileExists(fName) then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('GetGDALFileNames in, but not in ' + fName); {$EndIf}
-      FindPath('Map library',':\gis_software\LAStools\bin\',LAStools_BinDir);
+      FindPath('LAStools_BinDir',':\gis_software\LAStools\bin\',LAStools_BinDir);
       BaseName := ExtractFileName(fName);
       fName := LAStools_BinDir + BaseName;
       if not FileExists(fName) then begin

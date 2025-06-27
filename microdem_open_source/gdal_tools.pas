@@ -80,7 +80,6 @@ const
 
    type
       tgdalWarpMethod = (gdaltoGeoWGS84,gdalviaEPSG,gdaltoUTMNAD83,gdaltoadjacentUTMzone);
-      tGDALGeoPDF = (gdalOpenGeoPDFimagelayer1,gdalAllindividuallayers1,gdalOpenGeoPDF1,gdalMergeGeoPDF1);
    var
       SetGDALdataStr : ANSIString;
 
@@ -185,6 +184,8 @@ const
 
    {$IfDef ExGeoPDF}
    {$Else}
+      type
+         tGDALGeoPDF = (gdalOpenGeoPDFimagelayer1,gdalAllindividuallayers1,gdalOpenGeoPDF1,gdalMergeGeoPDF1);
       procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
    {$EndIf}
 
@@ -228,6 +229,13 @@ const
       end;
    {$EndIf}
 
+
+    function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
+    begin
+       //WebName := https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
+       //C:\OSGeo4W\bin\gdal_translate.exe --debug on /vsicurl/' + WebName + ' -projwin ' + RealToString(bb.xmin,-12,-4) + ' 'RealToString(bb.ymin,-12,-4) + ' ' +
+       //  RealToString(bb.xmax,-12,-4) + ' 'RealToString(bb.ymax,-12,-4) +  ' ' + OutFName
+    end;
 
     function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
     begin

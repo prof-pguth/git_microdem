@@ -17,7 +17,8 @@ unit md_use_tools;
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordWBT}
-      {$Define RecordSAGA}
+      //{$Define RecordLSPcalculator}
+      //{$Define RecordSAGA}
       //{$Define RecordSAGARanges}
       //{$Define RecordSAGA_JustResult}
       //{$Define RecordSAGALS}
@@ -97,19 +98,21 @@ uses
 
    function WBT_SlopeMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_HillshadeMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+   function WBT_MultidirectionalHillshadeMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
+
    function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_AspectMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 
-   function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-   function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-   function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+  //curvatures
+     function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+     function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
 
-   function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr): integer;
-   function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr): integer;
-   function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr): integer;
-   function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr): integer;
-
-   function WBT_AvgNormVectAngDev(InName : PathStr; filtersize : integer) : integer;
+   function WBT_AvgNormVectAngDev(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
    function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
@@ -134,7 +137,11 @@ uses
    procedure SAGA_all_DEMs_remove_sinks;
    function SagaTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function SagaTPIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+
    function SagaVectorRuggednessMap(OpenMap : boolean; InName : PathStr; Radius : integer) : integer;
+   function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
+   function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
+
    function SagaSinkRemoval(InName : PathStr; OutName : PathStr = '') : integer;
    function SagaChannelNetworkGrid(OpenMap : boolean; InName : PathStr; OutGridName : PathStr = '') : integer;
    function SagaChannelShapefile(InName : PathStr; ChannelName : PathStr = '') : integer;
@@ -143,10 +150,8 @@ uses
    function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
    function SAGA_StrahlerOrderGrid(InName : PathStr; OutName : PathStr = '') : integer;
    function SAGA_FlowAccumulationParallizeable(InName : PathStr; OutName : PathStr = '') : integer;
-   function SAGA_LSFactor(OpenMap : boolean; InName : PathStr; LSGridName : PathStr = '') : integer;
    function SAGA_Slope_percent(OpenMap : boolean; SlopeMethod : char; InName : PathStr; SlopeFName : PathStr = '') : integer;
    function SAGA_Aspect(OpenMap : boolean; InName : PathStr; AspectFName : PathStr = '') : integer;
-   function SAGA_ConvergenceIndex(OpenMap : boolean; InName : PathStr; ConIndexGridName : PathStr = '') : integer;
    function SAGA_PlanCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; PlanCurvatureFName : PathStr = '') : integer;
    function SAGA_ProfileCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; OutName : PathStr = '') : integer;
    function SAGA_TangentialCurvature(OpenMap : boolean; InName : PathStr; SlopeMethod : char = '3'; OutName : PathStr = '') : integer;
@@ -169,6 +174,7 @@ uses
    function GrassVectorRuggedness(InName : PathStr; WindowSize : integer; OutName : PathStr = '') : integer;
    function GrassTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function GrassTPIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
+   procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids;  OpenMap : boolean = true);
    function Grass_dx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function Grass_dy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
    function Grass_dxx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
@@ -200,7 +206,7 @@ procedure ACOLITEprocessing(MapOwner : tMapForm; OpenMaps : boolean = true);
 procedure laslibReproject(ask : boolean);
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
-function RUN_LSPcalculator(DEM : integer; Options : shortstring) : integer;
+function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true) : integer;
 
 
 implementation
@@ -242,14 +248,30 @@ begin
 end;
 
 
-function RUN_LSPcalculator(DEM : integer; Options : shortstring) : integer;
+function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true) : integer;
 var
    cmd : shortstring;
+   OutName : PathStr;
 begin
-   cmd := 'J:\gis_software\xiceph\lsp_calculator.exe -i ' + DEMGlb[DEM].GeotiffDEMName +
-         ' -o ' + MDtempDir + DEMGlb[DEM].AreaName + ' ' + Options;
-   WriteLineToDebugFile(cmd);
-   WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+   Result := 0;
+   lsp_calculator_fName := 'J:\gis_software\xiceph\lsp_calculator.exe';
+
+   if FileExists(lsp_calculator_fName) then begin
+     cmd := lsp_calculator_fName + ' -i ' + DEMGlb[DEM].GeotiffDEMName + ' -o ' + MDtempDir + DEMGlb[DEM].AreaName + ' ' + Options;
+     {$IfDef RecordLSPcalculator} WriteLineToDebugFile(cmd); {$EndIf}
+     WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+     OutName := MDtempDir + DEMGlb[DEM].AreaName + Options + '.tif';
+     OutName := StringReplace(OutName,'--','_',[rfReplaceAll, rfIgnoreCase]);
+     if FileExists(OutName) then begin
+        Result := OpenNewDEM(OutName,false);
+        DEMGlb[Result].DEMheader.ElevUnits := eucurv_kncc;
+        DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
+        if OpenMap then CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
+     end;
+   end
+   else begin
+      MessageToContinue('Missing lsp_calculator.exe');
+   end;
 end;
 
 
@@ -523,7 +545,6 @@ begin
       Result := OpenNewDEM(OutName,false);
       DEMGlb[Result].DEMheader.ElevUnits := eu;
       if not PossibleElevationUnits(DEMGlb[Result].DEMheader.ElevUnits) then DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
-
       if OpenMap then CreateDEMSelectionMap(Result,true,true,mt);
       {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap map opened'); {$EndIf}
       {$If Defined(RecordMapProj)} WriteLineToDebugFile('ExecuteGrassAndOpenMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProj.GetProjName); {$EndIf}
@@ -676,6 +697,22 @@ function GrassTangentialCurvatureMap(InName : PathStr; OpenMap : boolean = true;
 begin
    Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap tcurvature=tcurve','tcurve','GrassTang_',euPerMeter,MDDef.DefCurveMap,OutName,OpenMap);
 end;
+
+procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids;  OpenMap : boolean = true);
+var
+   i : integer;
+begin
+   grids[1] := Grass_dx_partial(DEMGlb[DEM].GeotiffDEMName);
+   grids[2] := Grass_dy_partial(DEMGlb[DEM].GeotiffDEMName);
+   grids[3] := Grass_dxx_partial(DEMGlb[DEM].GeotiffDEMName);
+   grids[4] := Grass_dxy_partial(DEMGlb[DEM].GeotiffDEMName);
+   grids[5] := Grass_dyy_partial(DEMGlb[DEM].GeotiffDEMName);
+   for i := 1 to 5 do begin
+      DEMglb[Grids[i]].MultiplyGridByConstant(-1);
+      DEMglb[Grids[i]].CheckMaxMinElev;
+   end;
+end;
+
 
 
 
