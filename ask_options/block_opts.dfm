@@ -589,63 +589,6 @@ object BlockOpsForm: TBlockOpsForm
           TabOrder = 10
         end
       end
-      object GroupBox3: TGroupBox
-        Left = 183
-        Top = 210
-        Width = 137
-        Height = 114
-        Caption = 'Curvature'
-        Color = clGradientInactiveCaption
-        Enabled = False
-        ParentBackground = False
-        ParentColor = False
-        TabOrder = 4
-        object CheckBox17: TCheckBox
-          Left = 24
-          Top = 36
-          Width = 97
-          Height = 17
-          Caption = 'Plan'
-          Enabled = False
-          TabOrder = 0
-        end
-        object CheckBox18: TCheckBox
-          Left = 24
-          Top = 55
-          Width = 97
-          Height = 17
-          Caption = 'Minimum'
-          Enabled = False
-          TabOrder = 1
-        end
-        object CheckBox19: TCheckBox
-          Left = 24
-          Top = 72
-          Width = 97
-          Height = 17
-          Caption = 'Maximum'
-          Enabled = False
-          TabOrder = 2
-        end
-        object CheckBox20: TCheckBox
-          Left = 24
-          Top = 90
-          Width = 97
-          Height = 17
-          Caption = 'Cross'
-          Enabled = False
-          TabOrder = 3
-        end
-        object CheckBox16: TCheckBox
-          Left = 24
-          Top = 18
-          Width = 97
-          Height = 17
-          Caption = 'Profile'
-          Enabled = False
-          TabOrder = 4
-        end
-      end
       object GroupBox2: TGroupBox
         Left = 349
         Top = 3
@@ -656,7 +599,7 @@ object BlockOpsForm: TBlockOpsForm
         Enabled = False
         ParentBackground = False
         ParentColor = False
-        TabOrder = 5
+        TabOrder = 4
         object Label9: TLabel
           Left = 8
           Top = 79
@@ -671,30 +614,12 @@ object BlockOpsForm: TBlockOpsForm
           Height = 13
           Caption = 'Map thinning'
         end
-        object CheckBox14: TCheckBox
-          Left = 21
-          Top = 22
-          Width = 97
-          Height = 16
-          Caption = 'Upward'
-          Enabled = False
-          TabOrder = 0
-        end
-        object CheckBox15: TCheckBox
-          Left = 21
-          Top = 35
-          Width = 97
-          Height = 17
-          Caption = 'Downward'
-          Enabled = False
-          TabOrder = 1
-        end
         object Edit2: TEdit
           Left = 76
           Top = 76
           Width = 49
           Height = 21
-          TabOrder = 2
+          TabOrder = 0
           OnChange = Edit1Change
         end
         object Edit1: TEdit
@@ -702,7 +627,7 @@ object BlockOpsForm: TBlockOpsForm
           Top = 103
           Width = 47
           Height = 21
-          TabOrder = 3
+          TabOrder = 1
         end
         object BitBtn5: TBitBtn
           Left = 3
@@ -710,17 +635,8 @@ object BlockOpsForm: TBlockOpsForm
           Width = 126
           Height = 25
           Caption = 'Test box size'
-          TabOrder = 4
+          TabOrder = 2
           OnClick = BitBtn5Click
-        end
-        object CheckBox54: TCheckBox
-          Left = 20
-          Top = 58
-          Width = 97
-          Height = 17
-          Caption = 'Difference'
-          Enabled = False
-          TabOrder = 5
         end
       end
       object CheckBox46: TCheckBox
@@ -729,7 +645,7 @@ object BlockOpsForm: TBlockOpsForm
         Width = 97
         Height = 17
         Caption = 'Toggle all/none'
-        TabOrder = 6
+        TabOrder = 5
         OnClick = CheckBox46Click
       end
       object CheckBox52: TCheckBox
@@ -738,7 +654,7 @@ object BlockOpsForm: TBlockOpsForm
         Width = 97
         Height = 17
         Caption = 'Auto save grids'
-        TabOrder = 7
+        TabOrder = 6
         OnClick = CheckBox52Click
       end
       object GroupBox5: TGroupBox
@@ -750,7 +666,7 @@ object BlockOpsForm: TBlockOpsForm
         Color = clGradientInactiveCaption
         ParentBackground = False
         ParentColor = False
-        TabOrder = 8
+        TabOrder = 7
         object CheckBox25: TCheckBox
           Left = 16
           Top = 12
@@ -808,7 +724,7 @@ object BlockOpsForm: TBlockOpsForm
         Width = 123
         Height = 25
         Caption = 'Create all maps'
-        TabOrder = 9
+        TabOrder = 8
         OnClick = BitBtn4Click
       end
       object GroupBox10: TGroupBox
@@ -820,7 +736,7 @@ object BlockOpsForm: TBlockOpsForm
         Color = clGradientInactiveCaption
         ParentBackground = False
         ParentColor = False
-        TabOrder = 10
+        TabOrder = 9
         object Label18: TLabel
           Left = 3
           Top = 23

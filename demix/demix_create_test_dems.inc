@@ -48,16 +48,20 @@ begin
       SafeMakeDir(DEMIX_Under_ref_dtm);
       Areas := DEMIX_AreasWanted;
       Results := tStringList.Create;
-      Results.Add('AREA,LAT,LONG,FULL_TILES,U120_TILES,U80_TILES,U10_TILES');
+      aLine := 'AREA,LAT,LONG,FULL_TILES';
+      if MDdef.DEMIX_AllowCoastal then aLine := aLine + ',U120_TILES,U80_TILES,U10_TILES';
+      Results.Add(aLine);
       for i := 0 to pred(Areas.Count) do begin
          AreaName := Areas.Strings[i];
          {$If Defined(RecordDEMIX) or Defined(RecordDiluvium)} WriteLineToDebugFile('Start area: ' + AreaName); {$EndIf}
          wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + '  ' +  AreaName);
          aLine := '';
          CheckSeries(DEMIX_Ref_1sec + AreaName + '_dtm' + Ref1SecPointStr + '.tif');
-         CheckSeries(DEMIX_coastal_dtms + AreaName + '_COAST' + '.tif');
-         CheckSeries(DEMIX_diluvium_dtms + AreaName + '_DILUV' + '.tif');
-         CheckSeries(DEMIX_delta_dtms + AreaName + '_DELTA' + '.tif');
+         if MDdef.DEMIX_AllowCoastal then begin
+             CheckSeries(DEMIX_coastal_dtms + AreaName + '_COAST' + '.tif');
+             CheckSeries(DEMIX_diluvium_dtms + AreaName + '_DILUV' + '.tif');
+             CheckSeries(DEMIX_delta_dtms + AreaName + '_DELTA' + '.tif');
+         end;
          Results.Add(aLine);
       end;
       if (Results.Count > 1) then begin

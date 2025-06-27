@@ -1,16 +1,17 @@
 object GISdataBaseModule: TGISdataBaseModule
-  Height = 251
-  Width = 486
+  Height = 377
+  Width = 729
+  PixelsPerInch = 144
   object EmpSource: TDataSource
-    Left = 16
-    Top = 24
+    Left = 24
+    Top = 36
   end
   object LinkSource1: TDataSource
-    Left = 96
-    Top = 24
+    Left = 144
+    Top = 36
   end
   object FDStanStorageBinLink1: TFDStanStorageBinLink
-    Left = 192
-    Top = 128
+    Left = 288
+    Top = 192
   end
 end

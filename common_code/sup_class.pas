@@ -433,7 +433,7 @@ begin
     i := 1;
     for j := 1 to MVClusterClientDataSet.NClusters do begin
        if (n[j] > 0) then begin
-          Color := WinGraphColors[i mod 15];
+          Color := WinGraphColors(i);
           Vat.add(IntToStr(j) + ',' + 'Cluster ' + IntToStr(i) + ',' + IntToStr(n[j]) + ',Y,' + IntToStr(Color));
           MetaData.Add('Cluster ' + IntToStr(i) + '   n=' + IntToStr(n[j]));
           inc(i);

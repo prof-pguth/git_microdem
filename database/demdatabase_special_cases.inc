@@ -388,7 +388,7 @@ var
          end;
          GISdb[DBonTable].MyData.Edit;
          GISdb[DBonTable].MyData.SetFieldByNameAsInteger(ClusterField,j);
-         GISdb[DBonTable].MyData.SetFieldByNameAsInteger('COLOR',WinGraphColors[j mod 15]);
+         GISdb[DBonTable].MyData.SetFieldByNameAsInteger('COLOR',WinGraphColors(j));
          GISdb[DBonTable].MyData.Next;
       end;
 
@@ -448,7 +448,7 @@ var
          //Make legend
          CreateBitmap(Bitmap,200,20* NClustersUsed);
          for i := 1 to NClustersUsed do begin
-            Bitmap.Canvas.Brush.Color := WinGraphColors[i mod 15];
+            Bitmap.Canvas.Brush.Color := WinGraphColors(i);
             Bitmap.Canvas.Brush.Style := bsSolid;
             Bitmap.Canvas.Rectangle(5,2 + pred(i) * 20, 25, (i) * 20 - 2);
             Bitmap.Canvas.Brush.Style := bsClear;

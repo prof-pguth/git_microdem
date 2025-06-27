@@ -9,6 +9,200 @@
 
 
 
+function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float64) : boolean; {$IfDef CurvatureInline} inline; {$EndIf}
+//https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/PARAMETERS.md
+var
+   SA : tSlopeAspectRec;
+
+         {$IfDef IlichEquations}
+            function LSQ1(SA : tSlopeAspectRec) : float64; inline;
+            begin
+               Result := sqr(SA.d) + sqr(SA.e);
+            end;
+
+            function LSQ2(SA : tSlopeAspectRec) : float64; inline;
+            begin
+               Result := 1 + sqr(SA.d) + sqr(SA.e);
+            end;
+
+            function LSQ3(SA : tSlopeAspectRec) : float64; inline;
+            begin
+               Result := Math.Power(LSQ2(SA),1.5);
+            end;
+         {$EndIf}
+
+         function Denominator1(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := (sqr(SA.zx) + sqr(SA.zy)) * sqrt(1 + sqr(SA.zx) + sqr(SA.zy));
+         end;
+
+         function Denominator2(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := sqrt( Math.Power(sqr(SA.zx) + sqr(SA.zy), 3) ) ;
+         end;
+
+         function SquareOnePlusSquares(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := Math.Power(1 + sqr(SA.zx) + sqr(SA.zy),3);
+         end;
+
+         function CubeOnePlusSquares(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := Math.Power(1 + sqr(SA.zx) + sqr(SA.zy),3);
+         end;
+
+         function Part0MinMax(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := (1 + sqr(SA.zy) * SA.zxx) - (2 * SA.zxy * SA.zy * SA.zx) + (1 + sqr(SA.zx) * SA.zyy);
+         end;
+
+         function Part1MinMax(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := Part0MinMax(SA) / ( 2 * sqrt(CubeOnePlusSquares(SA)));
+         end;
+
+         function Part2MinMax(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := sqrt(sqr(Part1MinMax(SA)) - (SA.zxx * SA.zyy - sqr(SA.zxy) / SquareOnePlusSquares(SA)));
+         end;
+
+         function MaxCurve(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := -Part1MinMax(SA) + Part2MinMax(SA);
+         end;
+
+         function MinCurve(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := -Part1MinMax(SA) - Part2MinMax(SA);
+         end;
+
+         function A(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := sqr(SA.zxy) - SA.zxx * SA.zyy;
+         end;
+
+         function B(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := 2 * zx * (zxxy * zy + A(SA)) - zxxx * sqr(zy) - zxyy * sqr(zx);
+         end;
+
+         function C(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := 2 * zy * (zxyy * zy + A(SA)) - zxxy * sqr(zy) - zxxx - zyyy * sqr(zx);
+         end;
+
+         function D(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := zxy * (zxx + zyy);
+         end;
+
+         function E(SA : tSlopeAspectRec) : float64; inline;
+         begin
+             with SA do Result := -2 * (zx * (zxxy * zy + sqr(zxy) + sqr(zxx)) + D(SA) * zy) - zxxx * sqr(zx) - zxyy * sqr(zy);
+         end;
+
+         function F(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := -2 * (zy * (zxyy * zx + sqr(zxy) + sqr(zyy)) + D(SA) * zx) - zyyy * sqr(zy) - zxxy * sqr(zx);
+         end;
+
+         function G(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := sqr(zy) - sqr(zx);
+         end;
+
+         function H(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := zxx - zyy;
+         end;
+
+         function I(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := zxxy * G(SA) + 2 * zxy * (zxy * zy - zxx * zx) + (zxx * zy + zxy * zx) * H(SA) + zx * zy * ( zxxx - zyyy);
+         end;
+
+         function J(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := zxyy * G(SA) + 2 * zxy * (zyy * zy - zxy * zx) + (zxy * zy + zyy * zx) * H(SA) + zx * zy * ( zxxy - zyyy);
+         end;
+
+         function K(SA : tSlopeAspectRec) : float64; inline;
+         begin
+             with SA do Result := 2 * zxy * zx * zy - zxx *sqr(zy) - zyy * sqr(zx);
+         end;
+
+         function L(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := -sqr(zx) * zxx - 2 * zxy *zx * zy - sqr(zy) - zyy;
+         end;
+
+         function M(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := sqr(zx) + sqr(zy);
+         end;
+
+         function N(SA : tSlopeAspectRec) : float64; inline;
+         begin
+             with SA do Result := zxx * zx + zxy * zy;
+         end;
+
+         function O(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := zyy * zy + zxy * zx;
+         end;
+
+         function P(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := 1 + M(SA);
+         end;
+
+         function R(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            with SA do Result := zx * zy * H(SA) + zxy * G(SA);
+         end;
+
+begin
+//https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/src/lsp.rs
+   Result := DEMGlb[DEM].GetSlopeAndAspect(MDDef.CurveCompute,x,y,SA,false,true);
+   if Result then begin
+      {$IfDef IlichEquations}
+        if (MDDef.SlopeAlgorithm = smLSQ) then begin
+           case CurveType of
+              1 : Curvature := -2 * (a * sqr(d) + c * d * e + b * sqr(e)) / (LSQ1(SA) * LSQ3(SA)) ;      //Profile
+              2 : Curvature :=  0;                                                                               //Tangential, not yet coded
+              3 : Curvature := -2 * (a * sqr(e) - c * d * e + b * sqr(d)) / (LSQ1(SA) * sqrt(LSQ2(SA))); //Plan
+              4 : Curvature :=  0;                                                                               //flow line, not yet coded
+              5 : Curvature := (2 * d * (a - b) - c * (sqr(d) - sqr(e))) / (LSQ1(SA) * LSQ2(SA));        //contour torsion
+           end;
+        end;
+      {$EndIf}
+
+       case CurveType of
+           eucurv_kns : Curvature := -(SA.zxx * sqr(SA.zx) + 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator1(SA);    //Profile
+           eucurv_knc : Curvature := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zx) ) / Denominator1(SA);    //Tangential
+           eucurv_kpc : Curvature := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator2(SA);    //Plan
+           eucurv_kps : Curvature := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * (sqr(SA.zx) - sqr(SA.zy) ) ) / Denominator2(SA);    //flow line
+           eucurv_tc  : Curvature := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * sqr(SA.zx) * sqr(SA.zy) ) / Denominator1(SA);       //contour torsion
+           eucurv_k_max : Curvature := MaxCurve(SA);                                               //maximal curvature, kmax
+           eucurv_k_min : Curvature := MinCurve(SA);                                               //minimal curvature, kmin
+           eucurv_k : Curvature := MaxCurve(SA) * MinCurve(SA);                          //Gaussian
+           eucurv_k_mean : Curvature := Part1MinMax(SA);   //0.5 * (MinCurve(SA) + MaxCurve(SA));  //Mean    check if this is in fact correct
+           eucurv_kc : Curvature := sqrt(0.5 * (sqr(MaxCurve(SA)) + sqr(MinCurve(SA))));   //Casorati
+           eucurv_kncc : Curvature := (SA.zy * (B(SA) * M(SA) * P(SA) - K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
+                              SA.zx * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
+                              (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
+           eucurv_kncs : Curvature := (SA.zx * (-B(SA) * M(SA) * P(SA) + K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
+                              SA.zy * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
+                              (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
+           eucurv_knss : Curvature := (P(SA) * (SA.zx * (2 * L(SA) * N(SA) - E(SA) * M(SA)) - SA.zy * ( F(SA) * M(SA) - 2 * L(SA) * O(SA) )) +
+                                 3 * L(SA) * M(SA) * (SA.zy * O(SA) + SA.zx * N(SA) ) / (Math.Power(P(SA),2.5) * Math.Power(M(SA),2.5)));
+       end;
+    end;
+end;
+
+
+
+
 function tDEMDataSet.RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;
 const
    MaxPoints = 51 * 51;
@@ -85,6 +279,7 @@ end {proc GetSlopeAndAspect};
 var
    aMethod : shortstring;
 
+
 function tDEMDataSet.GetSlopeAndAspect(HowCompute : tSlopeCurveCompute; Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false) : boolean;
 var
    Ring2 : tSlopeAspectRec;
@@ -125,19 +320,6 @@ var
                //insure result in range of 0-360, adding or subtracting 360
                //aspect in terms of the map project grid coordinates
 
-               (*
-               SlopeAsp.AspectDirGrid := Atan2(SlopeAsp.zy,SlopeAsp.zx);  //order for most programming language.  for Ex or Mathematica or Google Sheets, it will be Atan2(zx, zy).
-               SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid / DegToRad;  //Covert radians to geographer-friendly degrees.
-               SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid - 90;   //Move the circular origin from east to north, the math convention transformed to geographic.
-               SlopeAsp.AspectDirGrid := 360 - SlopeAsp.AspectDirGrid;  //Change from counterclockwise to clockwise, the math convention transformed to geographic.
-               SlopeAsp.AspectDirGrid := CompassAngleInRangeFloat32( (360 - ((Math.ArcTan2(SlopeAsp.zy,SlopeAsp.zx) / DegToRad) - 90)) - 180);   //move to uphill direction
-
-               a2 := SlopeAsp.AspectDirGrid;
-               SlopeAsp.AspectDirGrid := SlopeAsp.AspectDirGrid - 180;  //Change from the uphill direction to downhill.
-               a1 := SlopeAsp.AspectDirGrid;
-               a0 := CompassAngleInRangeFloat32(HeadingOfLine(SlopeAsp.zx,SlopeAsp.zy) + 180);
-               *)
-
                SlopeAsp.AspectDirGrid := CompassAngleInRangeFloat32(Math.ArcTan2(-SlopeAsp.zx,-SlopeAsp.zy) / DegToRad);
 
                 //to get aspect in true north, add grid true angle
@@ -163,23 +345,11 @@ var
       {from a program in Davis, 1st ed, p.332; 2d ed does not have code}
       label
          EarlyOut;
-      const
-         MaxTrendSurfacePoints = 100;
       var
          A    : tTrendMatrix;
          B,C  : tTrendVector;
-         //NumDataPoints : LongInt;
-         //ResultsFile : System.text;
-         //NDF1,NDF2,NDF3 : LongInt;
-         IOrd2,I,J,{TrendSurfInc,rc,}Pts,x,y       : integer;
-         //SST,SSR,SSD,AMSR,AMSD{,SY,SYY,SYC,SYYC} : extended;
-         //xutmoffset,yutmoffset,R,F,xutm,yutm  : float64;
-         z{,zs,zMeters,zg} : float32;
-         //csv : tStringList;
-        // FName      : PathStr;
-         //ThisGraph  : tThisBaseGraph;
-        //rfile      : file;
-         //v          : array[1..2] of float32;
+         IOrd2,I,J,Pts,x,y       : integer;
+         z : float32;
          {$IfDef OptionSaveSlopeComputePoints} xstring,ystring,zstring : shortstring; {$EndIf}
 
             procedure AddPointToTrendSurface(HowCompute : tSlopeCurveCompute; xutm,yutm,zmeters : float32; var A : tTrendMatrix; var B,C  : tTrendVector;
@@ -212,12 +382,6 @@ var
             end;
 
       begin {ComputeTrendSurfaceForSlopeAspect}
-
-            //z = b[1] + b[2]*x + b[3]*y +
-            //    b[4]*x^2 + b[5]*x*y + b[6]*y^2 +
-            //    b[7]*x^3 + b[8]*x^2*y + b[9]*x*y^2 + b[10]*y^3 +
-            //    b[11]*x^4 + b[12]*x^3*y + b[13]*x^2*y^2 + b[14]*x*y^3 + b[15]*y^4
-
          Result := false;
          C[1] := 1.0;
          for i := 1 to MaxMatrixSize do B[i] := 0;
@@ -238,20 +402,15 @@ var
          {$EndIf}
 
          Pts := 0;
-         if HowCompute.UsePoints = UseAll then begin
+         if (HowCompute.UsePoints = UseAll) then begin
             for x := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
                for y := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
-                  //if (x=0) and (y=0) and SkipCenterPoint then begin
-                     //this could be removed, since it does not affect the LSQ computation
-                  //end
-                  //else begin
-                     if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
-                        AddPointToTrendSurface(HowCompute,x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2,Pts {$IfDef OptionSaveSlopeComputePoints} ,xstring,ystring,zstring {$EndIf});
-                     end
-                     else begin
-                        if HowCompute.RequireFullWindow then exit;
-                     end;
-                  //end;
+                   if GetElevMetersOnGrid(Col+x,Row+y,z) then begin
+                      AddPointToTrendSurface(HowCompute,x * SlopeAsp.dx,y*SlopeAsp.dy,z,A,B,C,Iord2,Pts {$IfDef OptionSaveSlopeComputePoints} ,xstring,ystring,zstring {$EndIf});
+                   end
+                   else begin
+                      if HowCompute.RequireFullWindow then exit;
+                   end;
                   {$IfDef SlopeWindowEdgeEffect}
                     if (TestEdgeEffect) and (HowCompute.LSQorder > 1) and (Pts >= TrendSurfacePointsRequired[HowCompute.LSQorder]) then begin
                        goto EarlyOut;
@@ -260,7 +419,7 @@ var
                end;
             end;
          end
-         else if HowCompute.UsePoints = UseEdge then begin
+         else if (HowCompute.UsePoints = UseEdge) then begin
             for x := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
                for y := -HowCompute.WindowRadius to HowCompute.WindowRadius do begin
                   if ((x=-HowCompute.WindowRadius) or (x=HowCompute.WindowRadius)) or ((y=-HowCompute.WindowRadius) or (y=HowCompute.WindowRadius)) then begin
@@ -274,7 +433,7 @@ var
                end;
             end;
          end
-         else if HowCompute.UsePoints = UseQueens then begin
+         else if (HowCompute.UsePoints = UseQueens) then begin
             if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,HowCompute.WindowRadius) then begin
                AddPointToTrendSurface(HowCompute,-HowCompute.WindowRadius * SlopeAsp.dx,HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.znw,A,B,C,Iord2,Pts {$IfDef OptionSaveSlopeComputePoints} ,xstring,ystring,zstring {$EndIf});
                AddPointToTrendSurface(HowCompute,0,HowCompute.WindowRadius*SlopeAsp.dy,SlopeAsp.zn,A,B,C,Iord2,Pts {$IfDef OptionSaveSlopeComputePoints} ,xstring,ystring,zstring {$EndIf});
@@ -308,7 +467,7 @@ var
          begin
             SolveSLE(A,B,IORD2,1.0E-08);
 
-            //this is true for all orders; 1 and 2 resturn the same results, 3 and 4 the same resuls, but differ from 1 and 2
+            //this is true for all orders; 1 and 2 resturn the same results, 3 and 4 the same results, but differ from 1 and 2
             SlopeAsp.zx := B[2];
             SlopeAsp.zy := B[3];
 
@@ -351,15 +510,11 @@ begin
    Result := false;
    SlopeAsp.AspectDirTrue := 0;
    SlopeAsp.Slope := 0;
-   //if (Radius = 0) then Radius := MDdef.SlopeCompute.WindowRadius;
    if (HowCompute.AlgorithmName = smLSQ) then begin
-      //for the simple case, we can skip the LSQ computation and just use the Evans simplification
-      //if GridInDataSetInteger(Col,Row) then begin
-         if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1) then begin
-            PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
-            ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
-         end;
-      //end;
+      if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,1) then begin
+         PixelSpacingAndRotation(Col,Row,Lat,Long,SlopeAsp.dx,SlopeAsp.dy,SlopeAsp.GridTrueAngle,MDDef.QuickSlopeSpacings);
+         ComputeTrendSurfaceForSlopeAspect(SlopeAsp);
+      end;
    end
    else begin
       if SurroundedPointElevs(Col,Row,SlopeAsp.znw,SlopeAsp.zw,SlopeAsp.zsw,SlopeAsp.zn,SlopeAsp.z,SlopeAsp.zs,SlopeAsp.zne,SlopeAsp.ze,SlopeAsp.zse,HowCompute.WindowRadius) then begin
@@ -459,12 +614,16 @@ begin
 end;
 
 
-function tDEMDataSet.SlopePercent(HowCompute : tSlopeCurveCompute; XGrid,YGrid : integer; var Slope : float64) : boolean;
+function tDEMDataSet.SlopePercent(HowCompute : tSlopeCurveCompute; XGrid,YGrid : integer; var Slope : float64; Degrees : boolean = false) : boolean;
 var
    SlpAsp : tSlopeAspectRec;
 begin
    Result := GetSlopeAndAspect(HowCompute,xgrid,ygrid,SlpAsp,false,false);
-   if Result then Slope := SlpAsp.SlopePercent else Slope := -9999;
+   if Result then begin
+      if Degrees then Slope := SlpAsp.SlopeDegree
+      else Slope := SlpAsp.SlopePercent
+   end
+   else Slope := -9999;
 end;
 
 
@@ -587,15 +746,17 @@ procedure tDEMDataSet.BothOpennessMoments(GridLimits: tGridLimits; var UpOpenMom
       var
          Col,Row,Incr : integer;
          UpOpen,DownOpen : float64;
+         Graph : tThisBaseGraph;
       begin
          NPts := 0;
+         Graph := Nil;
          Incr := GetSamplingSize(GridLimits);
          Col := GridLimits.XGridLow;
          while (Col <= GridLimits.XGridHigh) do begin
             Row := GridLimits.YGridLow;
             while (Row <= GridLimits.YGridHigh) do begin
                if (IncludeSeaLevel) or (not SeaLevelCell(Col,Row)) then begin
-                  if FigureOpenness(Col,Row,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,UpOpen,DownOpen) then begin
+                  if FigureOpenness(Col,Row,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,UpOpen,DownOpen,Graph) then begin
                      UpValues[Npts] := UpOpen;
                      DownValues[Npts] := DownOpen;
                      inc(NPts);
@@ -1230,7 +1391,7 @@ begin
       *)
       {$IfDef RecordVariogram} WriteLineToDebugFile('tDEMDataSet.ComputeVariogram create files'); {$EndIf}
       for i := 1 to 4 do begin
-         ThisGraph.GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(WinGraphColors[i]);
+         ThisGraph.GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(WinGraphColors(i));
          ThisGraph.OpenDataFile(Rfile,DirStr[i]);
          j := 1;
          while (j <= Dist) do begin
@@ -1507,6 +1668,7 @@ var
    Upward,Downward : float64;
    z : float32;
    SlopeAspectRec : tSlopeAspectRec;
+   Graph : tThisBaseGraph;
 begin
    {$If Defined(TimePointParameters)} WriteLineToDebugFile('tDEMDataSet.PointParameters in'); {$EndIf}
    ShowHourGlassCursor;
@@ -1557,7 +1719,8 @@ begin
       {$EndIf}
 
       Results2 := tStringList.Create;
-      if FigureOpenness(Col,Row,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,Upward,Downward,Results2) then begin
+      Graph := Nil;
+      if FigureOpenness(Col,Row,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,MDDef.OpennessBoxRadiusPixels,Upward,Downward{,Results2},Graph) then begin
          Results.Add('');
          Results.Add('Openness parameters (' + IntToStr(MDDef.OpennessBoxRadiusPixels) + ' pixels)');
          Results.Add('  Upward openness: ' + RealToString(Upward,12,2) + '°');

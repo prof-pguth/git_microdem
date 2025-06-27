@@ -149,7 +149,7 @@ uses
    DEM_manager,
    demdatabase,
    MultiGrid,
-   PetMath, Petmar,DEMDefs,DEMCoord, DEMStat,nevadia_main, basemap;
+   PetMath, Petmar,PetImage,DEMDefs,DEMCoord, DEMStat,nevadia_main, basemap;
 
 type
    tHyperDoing = (hypGetCube,hypRoam);
@@ -377,7 +377,7 @@ procedure THyperspectralForm.MakeScatterPlotsWithClasses;
                for x := 0 to pred(DEMGlb[xaxis].DEMheader.NumCol) do begin
                   for y := 0 to pred(DEMGlb[xaxis].DEMheader.NumRow) do begin
                      if DEMGlb[xaxis].GetElevMetersOnGrid(x,y,v[1]) and DEMGlb[yaxis].GetElevMetersOnGrid(x,y,v[2]) and DEMGlb[Colors].GetElevMetersOnGrid(x,y,zc) then begin
-                        v[3] := WingraphColors[round(zc) mod 15];
+                        v[3] := WinGraphColors(round(zc));
                         BlockWrite(Rfile,v,1);
                      end;
                   end;

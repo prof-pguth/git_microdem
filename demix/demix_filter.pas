@@ -745,12 +745,12 @@ begin
                DEMSWanted[RefRRI[i]] := true;
             end;
             if UpperCase(What) = 'RUFF' then begin
-               RefRuffMap[i] := BoxCarDetrendDEM(true,RefDEMs[i],GridLimits,3);
+               RefRuffMap[i] := BoxCarDetrendDEM(true,RefDEMs[i],{GridLimits}3);
                DEMGlb[RefRuffMap[i]].AreaName := DEMglb[RefDEMs[i]].AreaName + '_Ruff';
                DEMSWanted[RefRuffMap[i]] := true;
             end;
             if What = 'TPI' then begin
-               RefTPI[i] := BoxCarDetrendDEM(true,RefDEMs[i],GridLimits,3);
+               RefTPI[i] := BoxCarDetrendDEM(true,RefDEMs[i],{GridLimits,}3);
                DEMGlb[RefTPI[i]].AreaName := DEMGlb[RefDEMs[i]].AreaName + '_TPI';
                DEMSWanted[RefTPI[i]] := true;
             end;
@@ -767,13 +767,13 @@ begin
                DEMSWanted[TestRRI[i]] := true;
             end;
             if UpperCase(What) = 'RUFF' then begin
-               TestRuffMap[i] := BoxCarDetrendDEM(true,TestDEMs[i],GridLimits,3);
+               TestRuffMap[i] := BoxCarDetrendDEM(true,TestDEMs[i],{GridLimits,}3);
                DEMGlb[TestRuffMap[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_Ruff';
                DEMSWanted[TestRuffMap[i]] := true;
             end;
 
             if What = 'TPI' then begin
-               TestTPI[i] := BoxCarDetrendDEM(true,TestDEMs[i],GridLimits,3);
+               TestTPI[i] := BoxCarDetrendDEM(true,TestDEMs[i],{GridLimits,}3);
                DEMGlb[TestTPI[i]].AreaName := DEMGlb[TestDEMs[i]].AreaName + '_TPI';
                DEMSWanted[TestTPI[i]] := true;
             end;

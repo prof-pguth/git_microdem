@@ -81,7 +81,6 @@ procedure CompareLSQ(DoSlopes : boolean; DEM : integer);
 var
   i,j,k,Grid,TheCurvature : integer;
 begin
-
    SetColorForProcessing;
    SaveBackupDefaults;
    MDDef.CurveCompute.AlgorithmName := smLSQ;

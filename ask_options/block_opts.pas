@@ -71,15 +71,7 @@ type
     CheckBox48: TCheckBox;
     CheckBox49: TCheckBox;
     CheckBox50: TCheckBox;
-    GroupBox3: TGroupBox;
-    CheckBox17: TCheckBox;
-    CheckBox18: TCheckBox;
-    CheckBox19: TCheckBox;
-    CheckBox20: TCheckBox;
-    CheckBox16: TCheckBox;
     GroupBox2: TGroupBox;
-    CheckBox14: TCheckBox;
-    CheckBox15: TCheckBox;
     CheckBox46: TCheckBox;
     CheckBox52: TCheckBox;
     Label15: TLabel;
@@ -114,7 +106,6 @@ type
     Label1: TLabel;
     Edit1: TEdit;
     BitBtn5: TBitBtn;
-    CheckBox54: TCheckBox;
     Edit9: TEdit;
     Label12: TLabel;
     Label13: TLabel;
@@ -219,13 +210,6 @@ end;
 procedure TBlockOpsForm.BitBtn4Click(Sender: TObject);
 begin
     CheckSettings;
-
-(*
-    if MDDef.DoUpOpen or MDDef.DoDownOpen then MakeMomentsGrid(DEM, 'O',MDDef.OpenBoxSizeMeters);
-    if MDDef.SlopeCurvMoments then MakeMomentsGrid(DEM, 'r',MDDef.MomentsBoxSizeMeters);
-    if MDDef.DoCrossCurve or MDDef.DoMaxCurve or MDDef.DoMinCurve or MDDef.DoSlopeCurve or MDDef.DoPlanCurve then MakeMomentsGrid(DEM, 'C');
-*)
-
     if MDDef.DoRelief1 or MDDef.DoAvgElev or MDDef.DoElevStd or MDDef.DoREL or MDDef.DoTPI then MakeMomentsGrid(DEM, 'R',MDDef.ReliefBoxSizeMeters);
     if MDDef.DoRelief2 or MDDef.DoSummit or MDDef.DoBaseLevel or MDDef.DoGeophysical or MDDef.DoDropoff or MDDef.DoElevRelief then MakeMomentsGrid(DEM, 'G',MDDef.ReliefBoxSizeMeters);
     BitBtn8Click(Sender);
@@ -309,16 +293,6 @@ end;
 
 procedure TBlockOpsForm.SetAll(setting : boolean);
 begin
-    //curvature
-      CheckBox20.Checked := Setting;
-      CheckBox19.Checked := Setting;
-      CheckBox18.Checked := Setting;
-      CheckBox16.Checked := Setting;
-      CheckBox17.Checked := Setting;
-    //openness
-      CheckBox14.Checked := Setting;
-      CheckBox15.Checked := Setting;
-      CheckBox54.Checked := Setting;
     //relief1
       CheckBox21.Checked := Setting;
       CheckBox22.Checked := Setting;
@@ -384,15 +358,13 @@ begin
    CheckBox9.Checked := MDDef.EntireDEMGeostats;
    CheckBox9Click(nil);
 
+   (*
    CheckBox20.Checked := MDDef.DoCrossCurve;
    CheckBox19.Checked := MDDef.DoMaxCurve;
    CheckBox18.Checked := MDDef.DoMinCurve;
    CheckBox16.Checked := MDDef.DoSlopeCurve;
    CheckBox17.Checked := MDDef.DoPlanCurve;
-
-   CheckBox14.Checked := MDDef.DoUpOpen;
-   CheckBox15.Checked := MDDef.DoDownOpen;
-   CheckBox54.Checked := MDDef.DoDiffOpen;
+   *)
 
    CheckBox21.Checked := MDDef.DoRelief1;
    CheckBox22.Checked := MDDef.DoAvgElev;
@@ -475,16 +447,6 @@ begin
    MDDef.IncludeAdvancedElevation := CheckBox11.Checked;
    MDDef.IncludeMissingHoles := CheckBox12.Checked;
    MDDef.IncludeOpenness := CheckBox13.Checked;
-
-   MDDef.DoCrossCurve := CheckBox20.Checked;
-   MDDef.DoMaxCurve := CheckBox19.Checked;
-   MDDef.DoMinCurve := CheckBox18.Checked;
-   MDDef.DoSlopeCurve := CheckBox16.Checked;
-   MDDef.DoPlanCurve := CheckBox17.Checked;
-
-   MDDef.DoUpOpen := CheckBox14.Checked;
-   MDDef.DoDownOpen := CheckBox15.Checked;
-   MDDef.DoDiffOpen := CheckBox54.Checked;
 
    MDDef.DoRelief1 := CheckBox21.Checked;
    MDDef.DoAvgElev := CheckBox22.Checked;

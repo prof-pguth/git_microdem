@@ -675,7 +675,6 @@ var
 
             Graph := tThisBaseGraph.Create(Application);
             Graph.GraphDraw.GraphLeftLabels := tStringList.Create;
-            //Graph.GraphDraw.LegendList := tStringList.Create;
             Graph.GraphDraw.VertLabel := '';
             Graph.Caption := GISdb[DBonTable].DBName;
             Graph.GraphDraw.MinVertAxis := -1;
@@ -695,7 +694,6 @@ var
             for DEM := 1 to DEMsPresent.Count do begin
                Symbol := SymbolFromDEMName(DEMsPresent.Strings[Pred(DEM)]);
                Graph.OpenPointFile(rfile[DEM],Symbol,DEMsPresent.Strings[Pred(DEM)]);
-               //Graph.GraphDraw.LegendList.Add(DEMsPresent.Strings[Pred(DEM)]);
             end;
 
             for i := 0 to pred(AreaList.Count) do begin
@@ -1369,8 +1367,6 @@ begin {DEMIX_AreaAverageScores_graph}
       EndDEMIXProcessing;
    end;
 end {DEMIX_AreaAverageScores_graph};
-
-
 
 
 procedure DEMIX_Area_ind_criteria_graph(DBonTable : integer; DEMs : tStringList);

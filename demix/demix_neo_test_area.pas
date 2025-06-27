@@ -162,7 +162,7 @@ var
          end;
 
          DoParameter(Test,Ref);
-         aline := 'Test area, test area,' + ExtractDEMIXDEMName(DEMGlb[Test].AreaName) + ',' + Parameter + ',' + LandType + ',' + DEMIXMomentStatsString(MomentVar);
+         aline := 'Test area, test area,' + DEMGlb[Test].AreaName + ',' + Parameter + ',' + LandType + ',' + DEMIXMomentStatsString(MomentVar);
          Findings.Add(aLine);
 
          if (LandCoverCode <> 0) then begin
@@ -340,11 +340,11 @@ var
                         {$IfDef RecordDEMIXneoFull} WriteLineToDebugFile('Analysis 2 compute, ' + IntToStr(DEM1) + ' ' + DEMGlb[DEM1].AreaName + ' ' + IntToStr(DEM2) + ' ' + DEMGlb[DEM2].AreaName); {$EndIf}
                         if (DEM1 = DEM2) then r := 1.0
                         else begin
-                           CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
+                           CorrelationTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2);  //,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
                            if (r < -99) then begin
                               //so we can put a breakpoint here
                               {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Analysis 2 problem, ' + IntToStr(DEM1) + ' ' + DEMGlb[DEM1].AreaName + ' ' + IntToStr(DEM2) + ' ' + DEMGlb[DEM2].AreaName); {$EndIf}
-                              CovariancesFromTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
+                              CorrelationTwoGrids(DEMGlb[DEM1].FullDEMGridLimits, DEM1,DEM2);  //,NPts, r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff);
                            end
                         end;
                         aLine := aLine + ',' + RealToString(r,12,-8);
@@ -443,6 +443,7 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
    DEMIXanalysismode := DEMIXneo;
    MDDef.DEMIX_mode := dmFull;
 
+(*
    MDDef.SSIM_elev := true;
    MDDef.SSIM_slope := true;
    MDDef.SSIM_ruff := true;
@@ -460,6 +461,7 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
    MDDef.SSIM_LS := false;
    MDDef.SSIM_Wet := false;
    MDDef.SSIM_HAND := false;
+*)
 
    MDDef.DoSSIM := false;
    MDDef.DoFUV := true;

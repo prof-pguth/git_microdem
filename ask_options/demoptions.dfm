@@ -48,10 +48,12 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet11
+    ActivePage = TabSheet21
     Align = alClient
     MultiLine = True
     TabOrder = 2
+    ExplicitWidth = 787
+    ExplicitHeight = 488
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup
@@ -1109,126 +1111,13 @@ inherited OptionsForm: TOptionsForm
         TabOrder = 15
         OnClick = GDALClick
       end
-      object GroupBox15: TGroupBox
-        Left = 279
-        Top = 3
-        Width = 225
-        Height = 159
-        Caption = 'GeoPDF'
-        TabOrder = 16
-        object CheckBox168: TCheckBox
-          Left = 16
-          Top = 16
-          Width = 97
-          Height = 17
-          Caption = 'Collar'
-          TabOrder = 0
-        end
-        object CheckBox170: TCheckBox
-          Left = 16
-          Top = 32
-          Width = 97
-          Height = 17
-          Caption = 'Structures'
-          TabOrder = 1
-        end
-        object CheckBox171: TCheckBox
-          Left = 16
-          Top = 48
-          Width = 97
-          Height = 17
-          Caption = 'Transport'
-          TabOrder = 2
-        end
-        object CheckBox172: TCheckBox
-          Left = 16
-          Top = 64
-          Width = 97
-          Height = 17
-          Caption = 'Hydorgraphy'
-          TabOrder = 3
-        end
-        object CheckBox173: TCheckBox
-          Left = 14
-          Top = 99
-          Width = 97
-          Height = 17
-          Caption = 'Shaded relief'
-          TabOrder = 4
-        end
-        object CheckBox174: TCheckBox
-          Left = 119
-          Top = 87
-          Width = 97
-          Height = 17
-          Caption = 'Boundaries'
-          TabOrder = 5
-        end
-        object CheckBox175: TCheckBox
-          Left = 16
-          Top = 122
-          Width = 97
-          Height = 17
-          Caption = 'Orthos'
-          TabOrder = 6
-        end
-        object CheckBox176: TCheckBox
-          Left = 119
-          Top = 9
-          Width = 97
-          Height = 17
-          Caption = 'Grid'
-          TabOrder = 7
-        end
-        object CheckBox177: TCheckBox
-          Left = 119
-          Top = 25
-          Width = 97
-          Height = 17
-          Caption = 'Woodland'
-          TabOrder = 8
-        end
-        object CheckBox178: TCheckBox
-          Left = 119
-          Top = 48
-          Width = 97
-          Height = 17
-          Caption = 'Contours'
-          TabOrder = 9
-        end
-        object CheckBox179: TCheckBox
-          Left = 119
-          Top = 71
-          Width = 97
-          Height = 17
-          Caption = 'PLSS'
-          TabOrder = 10
-        end
-        object CheckBox7: TCheckBox
-          Left = 119
-          Top = 110
-          Width = 97
-          Height = 17
-          Caption = 'Clip to quad'
-          TabOrder = 11
-        end
-        object BitBtn38: TBitBtn
-          Left = 104
-          Top = 133
-          Width = 75
-          Height = 20
-          Caption = 'Defaults'
-          TabOrder = 12
-          OnClick = BitBtn38Click
-        end
-      end
       object Button6: TButton
         Left = 24
         Top = 368
         Width = 75
         Height = 25
         Caption = 'Nav Opts'
-        TabOrder = 17
+        TabOrder = 16
         OnClick = Button6Click
       end
       object CheckBox36: TCheckBox
@@ -1237,7 +1126,7 @@ inherited OptionsForm: TOptionsForm
         Width = 136
         Height = 17
         Caption = 'Nav with FIT loading'
-        TabOrder = 18
+        TabOrder = 17
       end
       object CheckBox79: TCheckBox
         Left = 536
@@ -1245,7 +1134,7 @@ inherited OptionsForm: TOptionsForm
         Width = 209
         Height = 17
         Caption = 'Delete FIT files after import'
-        TabOrder = 19
+        TabOrder = 18
       end
       object CheckBox54: TCheckBox
         Left = 279
@@ -1253,7 +1142,7 @@ inherited OptionsForm: TOptionsForm
         Width = 148
         Height = 17
         Caption = 'Assume -32767 missing'
-        TabOrder = 20
+        TabOrder = 19
       end
       object BitBtn29: TBitBtn
         Left = 105
@@ -1261,7 +1150,7 @@ inherited OptionsForm: TOptionsForm
         Width = 112
         Height = 25
         Caption = 'Output grids'
-        TabOrder = 21
+        TabOrder = 20
         OnClick = BitBtn29Click
       end
       object CheckBox300: TCheckBox
@@ -1270,7 +1159,7 @@ inherited OptionsForm: TOptionsForm
         Width = 273
         Height = 17
         Caption = 'Sea level to missing on import'
-        TabOrder = 22
+        TabOrder = 21
       end
       object GroupBox16: TGroupBox
         Left = 544
@@ -1278,7 +1167,7 @@ inherited OptionsForm: TOptionsForm
         Width = 249
         Height = 105
         Caption = 'Hole filling'
-        TabOrder = 23
+        TabOrder = 22
         object Label24: TLabel
           Left = 29
           Top = 69
@@ -1316,7 +1205,7 @@ inherited OptionsForm: TOptionsForm
         Width = 289
         Height = 17
         Caption = 'Delete metadada Geotiff DEM files'
-        TabOrder = 24
+        TabOrder = 23
       end
     end
     object TabSheet9: TTabSheet
@@ -1665,7 +1554,7 @@ inherited OptionsForm: TOptionsForm
         Left = 143
         Top = 424
         Width = 40
-        Height = 28
+        Height = 15
         Caption = 'Label49'
       end
       object UpDown1: TUpDown
@@ -3303,6 +3192,15 @@ inherited OptionsForm: TOptionsForm
         Caption = 'DEMIX wine contest'
         TabOrder = 12
       end
+      object BitBtn38: TBitBtn
+        Left = 528
+        Top = 180
+        Width = 121
+        Height = 25
+        Caption = 'Graph colors'
+        TabOrder = 13
+        OnClick = BitBtn38Click
+      end
     end
   end
   object Panel1: TPanel
@@ -3312,6 +3210,8 @@ inherited OptionsForm: TOptionsForm
     Height = 58
     Align = alBottom
     TabOrder = 3
+    ExplicitTop = 488
+    ExplicitWidth = 787
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

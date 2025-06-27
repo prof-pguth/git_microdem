@@ -175,12 +175,12 @@ begin
    if (NumOpenDB > 0) then for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];
       {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('check db=' + IntToStr(j) + '  drawing order=' + IntoStr(j); {$EndIf}
-      if ValidDB(i) and (GISdb[i].theMapOwner <> nil) and (GISdb[i].MyData <> nil) then begin
+      if ValidDB(i) and (GISdb[i].theMapOwner <> nil) and (GISdb[i].LayerIsOn) then begin
          {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('valid db=' + IntToStr(i) + '  ' + GISdb[i].dbName); {$EndIf}
-         if (GISdb[i].MyData.FiltRecsInDB > 0) then begin
+         if (GISdb[i].MyData.FiltRecsInDB > 0) {and (not GISdb[i].PLSSfile)} then begin
             {$If Defined(RecordDBPlotsFull)} WriteLineToDebugFile('filtered records=' + IntToStr(GISdb[i].MyData.FiltRecsInDB)); {$EndIf}
-            if (not GISdb[i].PLSSfile) then begin
-               if (GISdb[i].LayerIsOn) and DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and (not GISdb[i].ShowLocalMapOnly))) then begin
+            //if (not GISdb[i].PLSSfile) then begin
+               if {(GISdb[i].LayerIsOn) and} DBPlotNow[i] and ( (DBonThisMap[i]) or (MDdef.DBsOnAllMaps and (not GISdb[i].ShowLocalMapOnly))) then begin
                   {$IfDef Defined(RecordDBPlots) or RecordDBPlotsFull} WriteLineToDebugFile('  Plot db=' + IntToStr(i) + '  ' + GISDB[i].dbName + '   recs=' + IntToStr(GISDB[i].MyData.FiltRecsInDB)); {$EndIf}
                   if (DBOverlayfName[i] <> '') then begin
                      Overlay := LoadBitmapFromFile(DBOverlayfName[i]);
@@ -196,7 +196,7 @@ begin
                   DrawOverlayNoDelete(Bitmap,Overlay,GISdb[i].dbOpts.Opacity);
                end;
                if (GISdb[i].dbTablef <> Nil) and (GISdb[i].dbTablef.BaseMapBitmap <> Nil) then FreeAndNil(GISdb[i].dbTablef.BaseMapBitmap);
-            end;
+            //end;
          end;
       end;
    end;

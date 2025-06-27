@@ -112,7 +112,7 @@ begin {function OpenBothPixelIsDEMs}
 
       {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
 
-       if MDDef.DEMIX_mode in [dmU80,dmU10,dmU120] then begin
+       if MDdef.DEMIX_AllowCoastal and (MDDef.DEMIX_mode in [dmU80,dmU10,dmU120]) then begin
           if MDDef.DEMIX_mode in [dmU120] then begin
              for i := 1 to NumAreaDEMs do begin
                  if (DEMGlb[AreaDEMs[i]].AreaName = 'COAST') then MaskDEM := AreaDEMs[i];
@@ -187,7 +187,6 @@ begin {function OpenBothPixelIsDEMs}
       MessageToContinue('Invalid DEMIXanalysismode');
    end;
 end {function OpenBothPixelIsDEMs};
-
 
 
 procedure OpenDEMIXAreaMaps;

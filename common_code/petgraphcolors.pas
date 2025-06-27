@@ -71,7 +71,7 @@ type
 
 
 procedure SetGraphColors(inTheGraph : tThisBaseGraph);
-procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tBytes256);
+//procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tBytes256);
 
 
 implementation
@@ -121,12 +121,13 @@ begin
 end;
 
 
+(*
 procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tbytes256);
 var
    i : integer;
 begin
    for i := 1 to 255 do begin
-      FileColors[i] := ConvertTColorToPlatformColor(WinGraphColors[i mod 15]);
+      FileColors[i] := ConvertTColorToPlatformColor(WinGraphColors(i));
    end;
 
    for i := 1 to 255 do begin
@@ -135,7 +136,7 @@ begin
 
    for i := 1 to 15 do begin
       Symbol[i].Size := 3;
-      Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
+      Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors(i));
    end;
 
    Symbol[0].DrawingSymbol := FilledBox;
@@ -156,7 +157,7 @@ begin
    Symbol[15].DrawingSymbol := Dot;
    for i := 16 to 255 do Symbol[i].DrawingSymbol := FilledBox;
 end;
-
+*)
 
 procedure SetGraphColors(inTheGraph : tThisBaseGraph);
 var
@@ -172,7 +173,7 @@ begin
    graphcolorsform.ColorBitButton(graphcolorsform.BitBtn7,4);
    graphcolorsform.ColorBitButton(graphcolorsform.BitBtn8,5);
    graphcolorsform.ColorBitButton(graphcolorsform.BitBtn9,6);
-   if inTheGraph.GraphDraw.GraphType = gtTwoVertAxes then begin
+   if (inTheGraph.GraphDraw.GraphType = gtTwoVertAxes) then begin
       graphcolorsform.BitBtn6.Visible := false;
       graphcolorsform.BitBtn7.Visible := false;
       graphcolorsform.BitBtn8.Visible := false;

@@ -528,12 +528,14 @@ procedure MakeMDcurvatures(OpenMap : boolean; DEM,Curvature : integer; var DEMLi
 
 begin
    SaveBackupDefaults;
-   MDDef.CurveCompute.AlgorithmName := smLSQ;
    MDDef.EvansApproximationAllowed := false;
+   SetCurvatureDefaults;
+   //MDDef.CurveCompute.AlgorithmName := smLSQ;
+   //MDDef.CurveCompute.RequireFullWindow := true;
+   //MDDef.CurveCompute.UsePoints := useAll;
+   //MDDef.CurveCompute.LSQorder := 2;
+   //MDDef.CurveCompute.WindowRadius := 1;
 
-   MDDef.CurveCompute.RequireFullWindow := true;
-   MDDef.CurveCompute.LSQorder := 2;
-   MDDef.CurveCompute.WindowRadius := 1;
    MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
 
    MDDef.CurveCompute.LSQorder := 2;

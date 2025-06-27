@@ -125,6 +125,7 @@ begin
    else if ColorScale = ChangeRed then ProcessIniFile(iniInit,'RedChangeSettings')
    else if ColorScale = ChangeGreen then ProcessIniFile(iniInit,'GreenChangeSettings');
    SetupForm;
+   BitBtn1Click(Sender);
 end;
 
 procedure TGrayscaleForm.ColorScaleBar;

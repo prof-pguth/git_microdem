@@ -60,6 +60,7 @@ Interface
 Uses
 //needed for inline of the core DB functions
    Petmar_db,
+   PetImage,
    Data.DB,
    {$IfDef UseFireDacSQLlite}
       FireDAC.Comp.Client, FireDAC.Comp.Dataset,FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteWrapper,
@@ -10909,7 +10910,7 @@ begin
      {$EndIf}
 
     for j := 1 to NClusters do if (ClsCounts[j] > 0) then begin
-       aline := IntToStr(StartCluster) + ',' + IntToStr(iEndIter) + ',' + IntToStr(j) + ',' + IntToStr(ClsCounts[j]) + ',' + RealToString(SSEArray[iEndIter],-15,4) + ',' + IntToStr(WinGraphColors[j mod 15]);
+       aline := IntToStr(StartCluster) + ',' + IntToStr(iEndIter) + ',' + IntToStr(j) + ',' + IntToStr(ClsCounts[j]) + ',' + RealToString(SSEArray[iEndIter],-15,4) + ',' + IntToStr(WinGraphColors(j));
        for i := 1 to k do aline := aline + ',' + RealToString(NewCenters[j,i],12,6);
        ClusterSummary.Add(aline);
     end;

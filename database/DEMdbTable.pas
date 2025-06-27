@@ -1054,6 +1054,9 @@ type
     AddMGRSboundingbox1: TMenuItem;
     LoadNeoDEMs1: TMenuItem;
     Graphforatile1: TMenuItem;
+    FUVbycriteriaandtileslopecategories1: TMenuItem;
+    GraphbyDEM1: TMenuItem;
+    Grandbytilecharacterisitic1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1867,6 +1870,8 @@ type
     procedure AddMGRSboundingbox1Click(Sender: TObject);
     procedure LoadNeoDEMs1Click(Sender: TObject);
     procedure Graphforatile1Click(Sender: TObject);
+    procedure GraphbyDEM1Click(Sender: TObject);
+    procedure Grandbytilecharacterisitic1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -10436,10 +10441,20 @@ begin
    end;
 end;
 
+procedure Tdbtablef.Grandbytilecharacterisitic1Click(Sender: TObject);
+begin
+   MainGraphOptions(DBonTable,Nil,Nil,2);
+end;
+
 procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
 begin
    MessageToContinue('Disabled; need to add DEM stringlist');
    //DEMIX_AreaAverageScores_graph(DBonTable);
+end;
+
+procedure Tdbtablef.GraphbyDEM1Click(Sender: TObject);
+begin
+   MainGraphOptions(DBonTable,Nil,Nil,1);
 end;
 
 procedure Tdbtablef.Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
@@ -10457,7 +10472,7 @@ end;
 
 procedure Tdbtablef.Graphforatile1Click(Sender: TObject);
 begin
-   GraphForDifferenceDistributionByTile(DBonTable);
+   MainGraphOptions(DBonTable,Nil,Nil);
 end;
 
 

@@ -326,21 +326,7 @@ type
     CheckBox121: TCheckBox;
     BitBtn37: TBitBtn;
     CheckBox110: TCheckBox;
-    GroupBox15: TGroupBox;
-    CheckBox168: TCheckBox;
-    CheckBox170: TCheckBox;
-    CheckBox171: TCheckBox;
-    CheckBox172: TCheckBox;
-    CheckBox173: TCheckBox;
-    CheckBox174: TCheckBox;
-    CheckBox175: TCheckBox;
-    CheckBox176: TCheckBox;
-    CheckBox177: TCheckBox;
-    CheckBox178: TCheckBox;
-    CheckBox179: TCheckBox;
     RadioGroup8: TRadioGroup;
-    CheckBox7: TCheckBox;
-    BitBtn38: TBitBtn;
     Label6: TLabel;
     RadioGroup1: TRadioGroup;
     CheckBox13: TCheckBox;
@@ -424,6 +410,7 @@ type
     BitBtn43: TBitBtn;
     Label47: TLabel;
     Label49: TLabel;
+    BitBtn38: TBitBtn;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -638,6 +625,7 @@ uses
 
    gdal_tools,
    PetEd32,
+   PetImage,
    DEM_Digit_opts,
    DEMGrPik,DEMRefOp,BaseMap,
    DEM_Gaz_opts,
@@ -908,22 +896,6 @@ end;
 
 procedure TOptionsForm.ShowDRGBoxes;
 begin
-   {$If Defined(ExDRGimport) or Defined(ExGeoPDF)}
-      GroupBox15.Visible := false;
-   {$Else}
-      CheckBox7.Checked := MDdef.DRGQuadClip;
-      CheckBox168.Checked := MDDef.DRGCollar;
-      CheckBox170.Checked:= MDDef.DRGStructures;
-      CheckBox171.Checked := MDDef.DRGTransport;
-      CheckBox172.Checked := MDDef.DRGHydrography;
-      CheckBox173.Checked := MDDef.DRGShadedRelief;
-      CheckBox174.Checked := MDDef.DRGBoundaries;
-      CheckBox175.Checked := MDDef.DRGOrthos;
-      CheckBox176.Checked := MDDef.DRGGrid;
-      CheckBox178.Checked := MDDef.DRGContours;
-      CheckBox177.Checked := MDDef.DRGWoodland;
-      CheckBox179.Checked := MDDef.DRGPLSS;
-   {$EndIf}
 end;
 
 
@@ -1396,23 +1368,6 @@ begin
 
    {$IfDef AllowGeomorphometry}
       MDDef.CumFreqNormAxis := CheckBox149.Checked;
-   {$EndIf}
-
-   {$IfDef ExDRGimport}
-   {$Else}
-      MDDef.DRGCollar := CheckBox168.Checked;
-      MDDef.DRGStructures := CheckBox170.Checked;
-      MDDef.DRGTransport := CheckBox171.Checked;
-      MDDef.DRGHydrography := CheckBox172.Checked;
-      MDDef.DRGShadedRelief := CheckBox173.Checked;
-      MDDef.DRGBoundaries := CheckBox174.Checked;
-      MDDef.DRGOrthos := CheckBox175.Checked;
-      MDDef.DRGGrid := CheckBox176.Checked;
-      MDDef.DRGContours := CheckBox178.Checked;
-      MDDef.DRGWoodland := CheckBox177.Checked;
-      MDDef.DeleteFIT := CheckBox79.Checked;
-      MDDef.DRGPLSS := CheckBox179.Checked;
-      MDdef.DRGQuadClip := CheckBox7.Checked;
    {$EndIf}
 
    {$IfDef ExFly}
@@ -2105,10 +2060,7 @@ end;
 
 procedure TOptionsForm.BitBtn38Click(Sender: TObject);
 begin
-   {$IfDef ExDRGimport}
-   {$Else}
-      SetDRGDefaults;
-   {$EndIf}
+   PickWinGraphColors;
 end;
 
 procedure TOptionsForm.BitBtn39Click(Sender: TObject);

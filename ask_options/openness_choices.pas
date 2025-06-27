@@ -36,16 +36,16 @@ type
     CheckBox10: TCheckBox;
     CheckBox11: TCheckBox;
     RedrawSpeedButton12: TSpeedButton;
-    RadioGroup2: TRadioGroup;
     Label3: TLabel;
     Edit3: TEdit;
+    HelpBtn: TBitBtn;
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RedrawSpeedButton12Click(Sender: TObject);
-    procedure RadioGroup2Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
     procedure Edit3Change(Sender: TObject);
+    procedure HelpBtnClick(Sender: TObject);
   private
     { Private declarations }
       MapOwner : tMapform;
@@ -98,7 +98,7 @@ begin
    Edit2.Text := IntToStr(MDDef.OpennessBoxRadiusPixels);
    Edit3.Text := IntToStr(MDDef.OpenStartRadialsAtPixel);
 
-   RadioGroup2.ItemIndex := pred(MDDef.OpenStartRadialsAtPixel);
+   //RadioGroup2.ItemIndex := pred(MDDef.OpenStartRadialsAtPixel);
    RadioGroup1.ItemIndex := MDDef.OpenRadiusUnits;
 
     CheckBox1.Checked := MDDef.OpennessDirs[1];
@@ -111,6 +111,11 @@ begin
     CheckBox8.Checked := MDDef.OpennessDirs[8];
 end;
 
+procedure TOpenOptForm.HelpBtnClick(Sender: TObject);
+begin
+   DisplayHTMLTopic('html/openness_opts.htm');
+end;
+
 procedure TOpenOptForm.RadioGroup1Click(Sender: TObject);
 begin
    MDDef.OpenRadiusUnits := RadioGroup1.ItemIndex;
@@ -118,11 +123,6 @@ begin
    Edit1.Enabled := MDDef.OpenRadiusUnits = 0;
    Label2.Enabled := MDDef.OpenRadiusUnits = 1;
    Edit2.Enabled := MDDef.OpenRadiusUnits = 1;
-end;
-
-procedure TOpenOptForm.RadioGroup2Click(Sender: TObject);
-begin
-   MDDef.OpenStartRadialsAtPixel := succ(RadioGroup2.ItemIndex);
 end;
 
 procedure TOpenOptForm.RedrawSpeedButton12Click(Sender: TObject);
@@ -139,7 +139,7 @@ begin
    MDDef.OpennessDirs[7] := CheckBox7.Checked;
    MDDef.OpennessDirs[8] := CheckBox8.Checked;
 
-   if RadioGroup1.ItemIndex = 0 then begin
+   if (RadioGroup1.ItemIndex = 0) then begin
       Meters := MDDef.OpennessBoxRadiusMeters;
       Pixels := -99;
    end
@@ -152,11 +152,13 @@ begin
     if CheckBox10.Checked then DownWard  := -1 else Downward := 0;
     if CheckBox11.Checked then Difference := -1 else Difference := 0;
     CreateOpennessMap(true,MapOwner.MapDraw.MapAreaDEMGridLimits,MapOwner.MapDraw.DEMonMap,Meters,Pixels,Upward,DownWard,Difference);
-    if ValidDEM(Upward) then MatchAnotherMapThisCoverageArea(MapOwner,DEMGlb[Upward].SelectionMap);
-    if ValidDEM(Downward) then MatchAnotherMapThisCoverageArea(MapOwner,DEMGlb[Downward].SelectionMap);
-    if ValidDEM(Difference) then MatchAnotherMapThisCoverageArea(MapOwner,DEMGlb[Difference].SelectionMap);
-
-
+    if MapOwner.FullMapSpeedButton.Enabled then begin
+        if ValidDEM(Upward) then MatchAnotherMapThisCoverageArea(MapOwner,DEMGlb[Upward].SelectionMap);
+        if ValidDEM(Downward) then MatchAnotherMapThisCoverageArea(MapOwner,DEMGlb[Downward].SelectionMap);
+        if ValidDEM(Difference) then MatchAnotherMapThisCoverageArea(MapOwner,DEMGlb[Difference].SelectionMap);
+    end;
 end;
+
+
 
 end.

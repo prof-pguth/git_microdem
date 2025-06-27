@@ -87,7 +87,7 @@ begin
 
              wmdem.SetPanelText(3,DEMIXModeName + ' TPI',true);
              fName := ExternalProgramOutPutFile(DEMIndex,'MD','TPI_',AreaName,IsPoint);
-             PointGrids[5] := BoxCarDetrendDEM(MDDef.OpenSavedMapsFUVSSIM,DEM,DEMGlb[DEM].FullDEMGridLimits,3);
+             PointGrids[5] := BoxCarDetrendDEM(MDDef.OpenSavedMapsFUVSSIM,DEM,{DEMGlb[DEM].FullDEMGridLimits,}3);
              DEMglb[PointGrids[5]].SaveAsGeotiff(fName);
 
              wmdem.SetPanelText(3,DEMIXModeName + ' Openness',true);

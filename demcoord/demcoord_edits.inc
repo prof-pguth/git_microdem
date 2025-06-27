@@ -362,7 +362,7 @@ label
 const
    MaxFilterSize = 5000;
 var
-   ItsZ,z{,znw,zw,zsw,zn,z,zs,zne,ze,zse},z1 : float32;
+   ItsZ,z,z1 : float32;
    Col,Row,x,y,Removed,NumSame,i,j,fv,Margin,Missing : integer;
    Sum, Min,Max,FilterValue,Mag     : float64;
    MomentVar : tMomentVar;
@@ -470,6 +470,51 @@ begin
 end;
 
 
+function tDEMDataSet.GaussianFilter(OpenMap : boolean; FilterSize : integer; Sigma : float32) : integer;
+const
+   MaxFilter = 9;
+   MaxRad = MaxFilter div 2;
+var
+   Kernel : array[-MaxRad..MaxRad,-MaxRad..MaxRad] of float32;
+   Col,Row,x,y,HalfSize : integer;
+   Sum,z : float32;
+begin
+   HalfSize := FilterSize div 2;
+   Sum := 0;
+   for x := -MaxRad to MaxRad do begin
+      for y := -MaxRad to MaxRad  do begin
+          Kernel[x,y] := 0;
+      end;
+   end;
+   for x := -HalfSize to HalfSize do begin
+      for y := -HalfSize to HalfSize do begin
+          Kernel[x,y] := Exp(-(Sqr(x) + Sqr(y)) / (2 * Sqr(Sigma))) / (2 * Pi * Sqr(Sigma));
+          Sum := Sum + Kernel[x,y];
+      end;
+   end;
+
+   for x := -HalfSize to HalfSize do begin
+      for y := -HalfSize to HalfSize do begin
+          Kernel[x,y] := Kernel[x,y] / Sum;
+      end;
+   end;
+
+   OpenAndZeroNewDEM(true,DEMHeader,Result,'Gaussian_filter_' + FilterSizeStr(FilterSize) + '_' + AreaName,InitDEMmissing);
+   for Row := HalfSize to pred(DEMHeader.NumRow)-HalfSize do begin
+      for Col := HalfSize to pred(DEMHeader.NumCol)-HalfSize do begin
+         Sum := 0;
+         for x := -HalfSize to HalfSize do begin
+            for y := -HalfSize to HalfSize do begin
+               if GetElevMetersOnGrid(Col + x, Row + y,z) then
+                  Sum := Sum + Kernel[x,y] * z;
+            end;
+         end;
+         DEMglb[Result].SetGridElevation(Col,Row,z);
+      end;
+   end;
+   if OpenMap then DEMGlb[Result].SetupMap(true,SelectionMap.MapDraw.MapType);
+end;
+
 function tDEMDataSet.FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
 const
    MaxSize = 1000;
@@ -477,8 +522,8 @@ var
    Title,BoxSizeStr         : Shortstring;
    NewHeadRecs   : tDEMheader;
    FilterLap,Sum : integer;
-   Filter   : FilterType;
-   fName : PathStr;
+   Filter : FilterType;
+   fName  : PathStr;
    {$IfDef NoParallelFor}
    {$Else}
        //PartLimits : tGridLimitsArray;
@@ -487,7 +532,6 @@ var
 begin
    {$IfDef RecordDEMEdits}  WriteLineToDebugFile('tDEMDataSet.FilterThisDEM in'); {$EndIf}
    SaveBackupDefaults;
-   //NewDEM := 0;
    BoxsizeStr := '';
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := FloatingPointDEM;

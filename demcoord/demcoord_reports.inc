@@ -95,6 +95,52 @@ begin
 end;
 
 
+procedure PointCurvatures(DEM,xp,yp : integer; Title : shortstring = '');
+var
+   Results : tStringList;
+   CurveMethod : byte;
+   i,j,m : integer;
+
+
+      procedure AddCurvatureAtPoint(var Results : tStringList; DEM,xp,yp : integer);
+      var
+         k,Decs : integer;
+         SlopeAspectRec : tSlopeAspectRec;
+         aLine : shortstring;
+         PlanC,ProfC,TangC : float64;
+      begin
+         if ComputeLSQCurvature(DEM,eucurv_plan,xp,yp,PlanC) and ComputeLSQCurvature(DEM,eucurv_tang,xp,yp,TangC) and
+            ComputeLSQCurvature(DEM,eucurv_tang,xp,yp,ProfC) then begin
+            aLine := SlopeMethodName(MDDef.CurveCompute) + RealToString(PlanC,12,8) + RealToString(TangC,12,8) + RealToString(ProfC,12,8);
+            Results.Add(aLine);
+         end;
+      end;
+
+
+begin
+   try
+      SaveBackupDefaults;
+      MDDef.EvansApproximationAllowed := false;
+      MDDef.CurveCompute.UsePoints := UseAll;
+      StartSlopeReport(Results,DEM,xp,yp,Title);
+      Results.Add('         Plan     Tangential     Profile  ');
+      MDDef.CurveCompute.AlgorithmName := smLSQ;
+      for i := 1 to 4 do begin
+         MDDef.CurveCompute.WindowRadius := i;
+         for j := 2 to 4 do begin
+            MDDef.CurveCompute.LSQorder := j;
+            AddCurvatureAtPoint(Results,DEM,xp,yp);
+         end;
+         Results.Add('');
+      end;
+      DisplayAndPurgeStringList(Results,'Point Curvature Algorithms');
+   finally
+      RestoreBackupDefaults;
+   end;
+end;
+
+
+
 {$IfDef SlopeWindowEdgeEffect}
   procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = '');
   var

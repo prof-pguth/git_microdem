@@ -1674,7 +1674,7 @@ end;
 procedure tMultiGridArray.LoadMultigridsFromStringList(TheFilesSL : tStringList);
 var
    i : integer;
-   fName,BaseName : PathStr;
+   fName{,BaseName} : PathStr;
 begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.LoadMultigrids in'); {$EndIf}
    HeavyDutyProcessing := true;

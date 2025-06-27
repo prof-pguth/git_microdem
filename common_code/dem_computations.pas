@@ -599,15 +599,15 @@ begin
       BigBitmap.Canvas.Font.Name := 'Verdana';
       BigBitmap.Canvas.Font.Size := 20;
       BigBitmap.Canvas.Font.Style := [fsBold];
-      BigBitmap.Canvas.Font.Color := WinGraphColors[1];
+      BigBitmap.Canvas.Font.Color := WinGraphColors(1);
       BigBitmap.Canvas.TextOut(0,2450,'10 km');
-      BigBitmap.Canvas.Font.Color := WinGraphColors[2];
+      BigBitmap.Canvas.Font.Color := WinGraphColors(2);
       BigBitmap.Canvas.TextOut(150,2450,'25 km');
-      BigBitmap.Canvas.Font.Color := WinGraphColors[3];
+      BigBitmap.Canvas.Font.Color := WinGraphColors(3);
       BigBitmap.Canvas.TextOut(300,2450,'50 km');
-      BigBitmap.Canvas.Font.Color := WinGraphColors[4];
+      BigBitmap.Canvas.Font.Color := WinGraphColors(4);
       BigBitmap.Canvas.TextOut(450,2450,'100 km');
-      BigBitmap.Canvas.Font.Color := WinGraphColors[5];
+      BigBitmap.Canvas.Font.Color := WinGraphColors(5);
       BigBitmap.Canvas.TextOut(600,2450,'150 km');
 
       BigBitmap.SaveToFile(MDTempDir + 'result' + OverlayFExt);
@@ -693,7 +693,7 @@ begin
    //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=1.33');
    //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=10');
    for i := 1 to NumMods do begin
-      ThisGraph.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i]);
+      ThisGraph.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
       ThisGraph.OpenPointFile(rf[i],ThisGraph.Symbol,theNames[i]);
    end;
    ca[1] := vcTM5441;

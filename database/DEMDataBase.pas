@@ -16,7 +16,7 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordDEMIX}
       //{$Define RecordDBsort}
-      {$Define RecordSeqIndex}
+      //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
       //{$Define RecordCloseDB}
       //{$Define RecordCopyFieldLinkDB}
@@ -2615,6 +2615,7 @@ end;
              Result := (MyData.FieldExists('COP') and MyData.FieldExists('ALOS')) or
                        StrUtils.AnsiContainsText(dbName,'DEMIX') or
                        (MyData.FieldExists('U120_TILES') and MyData.FieldExists('U80_TILES')) or
+                       (MyData.FieldExists('LSP') and MyData.FieldExists('WINDOW')) or
                        MyData.FieldExists('DEMIX_TILE');  // or MyData.FieldExists('COP_WIN')
          end;
 
@@ -4229,9 +4230,9 @@ end;
              end
              else begin
                 {$IfDef VCL}
-                   dbOpts.FillColor := ConvertTColorToPlatformColor(WinGraphColors[DBNumber mod 15]);
-                   dbOpts.LineColor := ConvertTColorToPlatformColor(WinGraphColors[DBNumber mod 15]);
-                   dbOpts.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[DBNumber mod 15]);
+                   dbOpts.FillColor := ConvertTColorToPlatformColor(WinGraphColors(DBNumber));
+                   dbOpts.LineColor := ConvertTColorToPlatformColor(WinGraphColors(DBNumber));
+                   dbOpts.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(DBNumber));
                 {$EndIf}
                 dbOpts.Symbol.Size := 3;
 
@@ -4728,25 +4729,25 @@ procedure TGISdataBaseModule.DBFieldUniqueEntries(FieldName : shortstring; var F
             if (Table.RecordCount > 0) then begin
                FieldsInDB.Sorted := true;
                FieldsInDB.Duplicates := dupIgnore;
-               {$IfDef VCL} if WantShowProgress then StartProgressAbortOption('Find field values: ' + FieldName); {$EndIf}
+               //{$IfDef VCL} if WantShowProgress then StartProgressAbortOption('Find field values: ' + FieldName); {$EndIf}
                rc := Table.RecordCount;
                while not Table.EOF do begin
                  TStr := ptTrim(Table.GetFieldByNameAsString(FieldName));
                  if (TStr <> '') then FieldsInDB.Add(TStr);
                  Table.Next;
                  inc(Count);
-                 {$IfDef VCL} if WantShowProgress and ((Count mod 500) = 0) then UpdateProgressBar(Count/rc); {$EndIf}
+                 //{$IfDef VCL} if WantShowProgress and ((Count mod 500) = 0) then UpdateProgressBar(Count/rc); {$EndIf}
                  if WantOut then break;
                end;
             end;
          finally
-           {$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
+           //{$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
          end;
       end;
 
 
 begin
-   {$IfDef RecordUnique} WriteLineToDebugFile('TGISdataBaseModule.DBFieldUniqueEntries in'); {$EndIf}
+   //{$IfDef RecordUnique} WriteLineToDebugFile('TGISdataBaseModule.DBFieldUniqueEntries in'); {$EndIf}
    EmpSource.Enabled := false;
    if (LinkTable <> Nil) and LinkedField(FieldName) then UseCorrectTable(LinkTable)
    else UseCorrectTable(MyData);

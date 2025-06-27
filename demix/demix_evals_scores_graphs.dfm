@@ -1,9 +1,9 @@
 object eval_scores_graph_form: Teval_scores_graph_form
   Left = 0
   Top = 0
-  Caption = 'Add tolerances to table'
-  ClientHeight = 672
-  ClientWidth = 1497
+  Caption = 'DEMIX DB graphs'
+  ClientHeight = 717
+  ClientWidth = 1614
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,8 +16,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
   OnCreate = FormCreate
   TextHeight = 15
   object Label1: TLabel
-    Left = 1177
-    Top = 591
+    Left = 383
+    Top = 558
     Width = 86
     Height = 15
     Caption = 'Legend font size'
@@ -51,15 +51,15 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Graph columns'
   end
   object Label6: TLabel
-    Left = 1176
-    Top = 564
+    Left = 382
+    Top = 531
     Width = 79
     Height = 15
     Caption = 'Graph font size'
   end
   object RadioGroup2: TRadioGroup
-    Left = 1320
-    Top = 233
+    Left = 1064
+    Top = 8
     Width = 153
     Height = 106
     Caption = 'Average multiple criteria '
@@ -99,8 +99,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox3Click
   end
   object BitBtn3: TBitBtn
-    Left = 776
-    Top = 633
+    Left = 280
+    Top = 598
     Width = 161
     Height = 25
     Caption = 'Close graphs and images'
@@ -108,8 +108,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn3Click
   end
   object Edit1: TEdit
-    Left = 1269
-    Top = 590
+    Left = 475
+    Top = 557
     Width = 69
     Height = 23
     TabOrder = 5
@@ -144,11 +144,12 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn5Click
   end
   object RadioGroup4: TRadioGroup
-    Left = 711
-    Top = 8
+    Left = 1064
+    Top = 135
     Width = 130
     Height = 209
     Caption = 'Scatter plot SSIM/FUV'
+    Enabled = False
     Items.Strings = (
       'ELEV'
       'HILL'
@@ -189,8 +190,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup5Click
   end
   object BitBtn12: TBitBtn
-    Left = 344
-    Top = 194
+    Left = 24
+    Top = 403
     Width = 209
     Height = 25
     Caption = 'Whisker plots by parameter/criterion'
@@ -207,8 +208,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox4Click
   end
   object BitBtn16: TBitBtn
-    Left = 644
-    Top = 524
+    Left = 24
+    Top = 527
     Width = 269
     Height = 25
     Caption = 'Best eval colored by slope'
@@ -216,8 +217,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn16Click
   end
   object BitBtn2: TBitBtn
-    Left = 511
-    Top = 633
+    Left = 8
+    Top = 598
     Width = 138
     Height = 25
     Caption = 'Merge graph panels'
@@ -225,8 +226,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn2Click
   end
   object BitBtn17: TBitBtn
-    Left = 644
-    Top = 493
+    Left = 24
+    Top = 496
     Width = 269
     Height = 25
     Caption = 'Best eval graph for each criterion by filters'
@@ -234,8 +235,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn17Click
   end
   object BitBtn23: TBitBtn
-    Left = 671
-    Top = 633
+    Left = 167
+    Top = 598
     Width = 90
     Height = 25
     Caption = 'Merge graphs'
@@ -261,8 +262,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnChange = Edit5Change
   end
   object BitBtn27: TBitBtn
-    Left = 1344
-    Top = 343
+    Left = 134
+    Top = 633
     Width = 75
     Height = 25
     Caption = 'New DB'
@@ -270,8 +271,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn27Click
   end
   object RadioGroup7: TRadioGroup
-    Left = 960
-    Top = 566
+    Left = 1410
+    Top = 147
     Width = 113
     Height = 75
     Caption = 'Group Won/Lost'
@@ -301,8 +302,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn29Click
   end
   object BitBtn30: TBitBtn
-    Left = 1439
-    Top = 352
+    Left = 229
+    Top = 642
     Width = 18
     Height = 18
     Glyph.Data = {
@@ -318,8 +319,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn30Click
   end
   object GroupBox1: TGroupBox
-    Left = 1088
-    Top = 16
+    Left = 588
+    Top = 8
     Width = 217
     Height = 257
     Caption = 'Criteria'
@@ -368,44 +369,43 @@ object eval_scores_graph_form: Teval_scores_graph_form
       TabOrder = 4
       OnClick = BitBtn18Click
     end
+    object BitBtn9: TBitBtn
+      Left = 130
+      Top = 158
+      Width = 75
+      Height = 25
+      Caption = 'Ranked order'
+      TabOrder = 5
+      OnClick = BitBtn9Click
+    end
   end
   object GroupBox2: TGroupBox
-    Left = 891
-    Top = 16
+    Left = 384
+    Top = 8
     Width = 185
     Height = 231
     Caption = 'Test DEMs'
     TabOrder = 26
     object Memo3: TMemo
       Left = 3
-      Top = 24
+      Top = 21
       Width = 102
       Height = 193
-      Lines.Strings = (
-        'COP'
-        'TANDEM'
-        'ALOS'
-        'NASA'
-        'ASTER'
-        'FABDEM'
-        'COAST'
-        'DILUV'
-        'DELTA')
       TabOrder = 0
     end
-    object BitBtn36: TBitBtn
+    object BitBtn11: TBitBtn
       Left = 111
-      Top = 146
-      Width = 51
+      Top = 96
+      Width = 75
       Height = 25
-      Caption = 'All in DB'
+      Caption = 'Pick'
       TabOrder = 1
-      OnClick = BitBtn36Click
+      OnClick = BitBtn11Click
     end
   end
   object BitBtn33: TBitBtn
-    Left = 344
-    Top = 225
+    Left = 24
+    Top = 434
     Width = 209
     Height = 25
     Caption = 'Whister plots by slope categories'
@@ -413,8 +413,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn33Click
   end
   object BitBtn34: TBitBtn
-    Left = 344
-    Top = 256
+    Left = 24
+    Top = 465
     Width = 209
     Height = 25
     Caption = 'Whisker plots by clusters'
@@ -422,8 +422,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn34Click
   end
   object BitBtn35: TBitBtn
-    Left = 384
-    Top = 535
+    Left = 24
+    Top = 567
     Width = 185
     Height = 25
     Caption = 'Cluster maps'
@@ -431,8 +431,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn35Click
   end
   object Memo4: TMemo
-    Left = 32
-    Top = 499
+    Left = 1073
+    Top = 415
     Width = 225
     Height = 89
     Lines.Strings = (
@@ -450,8 +450,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Text = 'COP'
   end
   object Edit6: TEdit
-    Left = 1269
-    Top = 561
+    Left = 475
+    Top = 528
     Width = 69
     Height = 23
     TabOrder = 32
@@ -459,11 +459,12 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnChange = Edit6Change
   end
   object RadioGroup8: TRadioGroup
-    Left = 184
-    Top = 16
+    Left = 1233
+    Top = 8
     Width = 145
     Height = 172
     Caption = 'Average ranks'
+    Enabled = False
     Items.Strings = (
       'Selected filters'
       'Slope intervals'
@@ -478,24 +479,24 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object RadioGroup9: TRadioGroup
     Left = 8
     Top = 16
-    Width = 145
+    Width = 161
     Height = 203
-    Caption = 'Average evaluation'
+    Caption = 'Filtered evaluation'
     Items.Strings = (
-      'Selected filters'
+      'Selected mixed filters'
       'Slope intervals'
       'Roughness intervals'
       'Forest percentages'
       'Barren percentages'
       'Urban percentages'
-      'Multiple panels'
-      'Panels, each criterion')
+      'Graphs average criteria'
+      'Graphs each criterion')
     TabOrder = 34
     OnClick = RadioGroup9Click
   end
   object BitBtn22: TBitBtn
-    Left = 1320
-    Top = 498
+    Left = 464
+    Top = 598
     Width = 105
     Height = 25
     Caption = 'Legend'
@@ -503,8 +504,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn22Click
   end
   object RadioGroup1: TRadioGroup
-    Left = 344
-    Top = 16
+    Left = 192
+    Top = 19
     Width = 177
     Height = 172
     Caption = 'Graph, Y axis sort by'
@@ -519,29 +520,34 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup1Click
   end
   object GroupBox3: TGroupBox
-    Left = 1328
-    Top = 8
+    Left = 824
+    Top = 24
     Width = 129
-    Height = 193
-    Caption = 'Filters'
+    Height = 257
+    Caption = 'Mixed Filters'
     TabOrder = 37
     object Memo2: TMemo
       Left = 3
-      Top = 29
+      Top = 5
       Width = 114
-      Height = 119
+      Height = 151
       Lines.Strings = (
         'AVG_SLOPE<5'
         '(None)'
         'AVG_SLOPE>5'
         'AVG_SLOPE>30'
         'AVG_SLOPE>55'
-        'BARREN_PC>40')
+        'BARREN_PC>40'
+        'AVG_SLOPE>20 '
+        'AND '
+        'AVG_SLOPE<40'
+        ''
+        '')
       TabOrder = 0
     end
     object BitBtn7: TBitBtn
       Left = 3
-      Top = 154
+      Top = 186
       Width = 75
       Height = 25
       Caption = 'Clear'
@@ -550,8 +556,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     end
   end
   object GroupBox4: TGroupBox
-    Left = 928
-    Top = 279
+    Left = 1396
+    Top = 8
     Width = 185
     Height = 122
     Caption = 'Multiple elevation range DBs'
@@ -585,8 +591,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     end
   end
   object GroupBox5: TGroupBox
-    Left = 644
-    Top = 253
+    Left = 1217
+    Top = 228
     Width = 259
     Height = 169
     Caption = 'GroupBox5'
@@ -599,8 +605,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Caption = 'X axis'
     end
     object Label8: TLabel
-      Left = 120
-      Top = 64
+      Left = 119
+      Top = 59
       Width = 29
       Height = 15
       Caption = 'Y axis'

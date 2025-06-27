@@ -657,7 +657,7 @@ begin
          for i := 1 to MaxCompare do begin
             if (CompareDEMIndexes[i] <> 0) then begin
                //Histogram.GraphDraw.LegendList.Add(CompareDEMNames[i]);
-               DEMSymbol(CompareDEMIndexes[i],ConvertTColorToPlatformColor(WinGraphColors[i]));
+               DEMSymbol(CompareDEMIndexes[i],ConvertTColorToPlatformColor(WinGraphColors(i)));
             end;
          end;
          Histogram.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long);

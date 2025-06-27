@@ -8,13 +8,11 @@ unit geomorph_region_size_graph;
 {________________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
 {$EndIf}
-
 
 
 interface
@@ -23,7 +21,6 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   BaseGraf,DEMDefs,DEMDef_routines,Petmar_types;
-
 
 type
    tRegionSizeParameter = (rsRelief,rsOpenUp,rsOpenDown,rsOpenDiff,rsSummit,rsBaseLevel,rsGeoRelief,rsDropoff,rsElevRelf,
@@ -44,9 +41,7 @@ type
     procedure BitBtn1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
-    procedure RadioGroup1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
-    procedure RadioGroup2Click(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure Edit3Change(Sender: TObject);
   private
@@ -86,18 +81,15 @@ begin
 end;
 
 
-
-
 function Tregionsizeform.GeomorphParameterVersusRegion(aLat,aLong : float64) : TThisBaseGraph;
 var
    MomentVar : tMomentVar;
    Col,Row,RegionM  : Integer;
    SumRelief : float64;
-   rFile : file;
+   rFile,rfile2 : file;
    TStr1,TStr2 : string35;
    v : tGraphPoint32;
    zvs : ^bfarray32;
-
 
       function PerformPointComputations(Col,Row : integer) : boolean;
       var
@@ -105,17 +97,28 @@ var
          Upward,Downward,Relief1 : float64;
          SlopeAspectRec : tSlopeAspectRec;
          PixelsNS,PixelsEW,PixelsDia : integer;
+         Graph : tThisBaseGraph;
       begin
          if Param in [rsOpenUp,rsOpenDown,rsOpenDiff] then begin
             PixelsNS := round(RegionM / DEMGlb[CurDEM].AverageYSpace);
             PixelsEW := round(RegionM / DEMGlb[CurDEM].AverageXSpace);
             PixelsDia := round(RegionM / DEMGlb[CurDEM].AverageDiaSpace);
-            Result := DEMGlb[CurDEM].FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia,Upward,Downward);
-            if Param in [rsOpenUp] then Relief1 := Upward
-            else if Param in [rsOpenDown] then Relief1 := Downward
+            Graph := Nil;
+            Result := DEMGlb[CurDEM].FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia,Upward,Downward,Graph);
+
+            if Param in [rsOpenUp,rsOpenDown] then begin
+              //if Param in [rsOpenUp] then begin
+                  v[2] := Upward;
+                  BlockWrite(rfile,v,1);
+               //end
+               //else if Param in [rsOpenDown] then begin
+                  v[2] := downward;
+                  BlockWrite(rfile2,v,1);
+               //end;
+            end
             else Relief1 := Upward-Downward;
          end
-         else if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
+         else if Param in [rsElevMoment,rsSlopeMoment] then begin
              if Param in [rsElevMoment] then begin
                 Result := DEMGlb[CurDEM].GetElevMeters(Col,Row,z);
              end
@@ -167,19 +170,19 @@ begin
    DEMGlb[CurDEM].LatLongDegreeToDEMGridInteger(Lat,Long,Col,Row);
    if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
       New(zvs);
-   end;
-
-   case RadioGroup2.ItemIndex of
-      0 : TStr1 := 'average';
-      1 : TStr1 := 'std dev';
-      2 : TStr1 := 'skewness';
-      3 : TStr1 := 'kurtosis';
+      case RadioGroup2.ItemIndex of
+         0 : TStr1 := 'average';
+         1 : TStr1 := 'std dev';
+         2 : TStr1 := 'skewness';
+         3 : TStr1 := 'kurtosis';
+      end;
    end;
 
    if Param = rsRelief then begin
       TStr1 := 'Relief';
       TStr2 := TStr1 + ' (m)';
    end
+(*
    else if Param = rsOpenUp then begin
       TStr1 := 'Upward openness';
       TStr2 := TStr1 + '°';
@@ -188,6 +191,7 @@ begin
       TStr1 := 'Downward openness';
       TStr2 := TStr1 + '°';
    end
+*)
    else if Param = rsOpenDiff then begin
       TStr1 := 'Difference openness';
       TStr2 := TStr1 + '°';
@@ -234,79 +238,95 @@ begin
       PadAxis(MinVertAxis,MaxVertAxis);
       Caption := TStr1 + ' versus Region Size';  // +  TStr;
       HorizLabel := 'Region Box Size (m)';
-      VertLabel := TStr2;
+      LLCornerText := LatLongDegreeToString(Lat,Long,DecDegrees);
       SetUpGraphForm;
-      OpenPointFile(rfile,Result.Symbol);
+      if Param in [rsOpenUp,rsOpenDown] then begin
+         OpenPointFile(rfile,Result.Symbol,'Upward_openness');
+         Result.Symbol.Color := claLime;
+         OpenPointFile(rfile2,Result.Symbol,'Downward_openness');
+         VertLabel := 'Openness (°)';
+      end
+      else begin
+         VertLabel := TStr2;
+         OpenPointFile(rfile,Result.Symbol,TStr2);
+      end;
    end;
+
    First := true;
    StartProgressAbortOption(TStr1);
    MomentVar.NPts := 0;
    SumRelief := 0;
    RegionM := MDDef.FirstBoxSize;
-   while (RegionM < MDDef.LastBoxSize) do begin
+   while (RegionM <= MDDef.LastBoxSize) do begin
       UpdateProgressBar(RegionM/MDDef.LastBoxSize);
-      if First then begin
-         Minx := Col - round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageXSpace);
-         MaxX := Col + round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageXSpace);
-         MinY := Row - round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageYSpace);
-         MaxY := Row + round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageYSpace);
-         First := false;
-            x := Minx;
-            while x <= MaxX do begin
-               y := MinY;
-               while Y <= MaxY do begin
-                  PerformPointComputations(Col,Row);
-                  inc(y);
-               end {while Row};
-               inc(x);
-            end {while Col};
+      v[1] := RegionM;
+      if Param in [rsOpenUp,rsOpenDown] then begin
+         PerformPointComputations(Col,Row);
       end
       else begin
-         //strip on left of analysis region
-         NewMinX := Col - round(0.5*RegionM / DEMGlb[CurDEM].AverageXSpace);
-         for y := MinY to MaxY do PerformPointComputations(NewMinX,y);
-         //new strip on right of analysis region
-         NewMaxX := Col + round(0.5*RegionM / DEMGlb[CurDEM].AverageXSpace);
-         for y := MinY to MaxY do PerformPointComputations(NewMAxX,y);
-         //new strips on Bottom
-         NewMinY := Row - round(0.5*RegionM / DEMGlb[CurDEM].AverageYSpace);
-         if NewMinY <> MinY then begin
-            for y := NewMinY to pred(MinY) do
-               for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
-         end;
-         //new strips on top
-         NewMaxY := Row + round(0.5*RegionM / DEMGlb[CurDEM].AverageYSpace);
-         if NewMaxY <> MaxY then begin
-            for y := NewMinY to pred(MinY) do
-               for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
-         end;
-         (*
-         Minx := NewMinX;
-         MaxX := NewMaxX;
-         MinY := NewMinY;
-         MaxY := NewMaxY;
-         *)
-      end;
-
-      if (MomentVar.NPts > 0) then begin
-         if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
-            moment(zvs^,MomentVar,msBeforeMedian);
-            case RadioGroup2.ItemIndex of
-               0 : v[2] := MomentVar.mean;
-               1 : v[2] := MomentVar.std_dev;
-               2 : v[2] := MomentVar.skew;
-               3 : v[2] := MomentVar.curt;
-            end;
-         end
-         else begin
-           v[2] := SumRelief / MomentVar.NPts;
-         end;
-         v[1] := RegionM;
-         BlockWrite(rfile,v,1);
+        if First then begin
+           Minx := Col - round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageXSpace);
+           MaxX := Col + round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageXSpace);
+           MinY := Row - round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageYSpace);
+           MaxY := Row + round(0.5*MDDef.FirstBoxSize / DEMGlb[CurDEM].AverageYSpace);
+           First := false;
+              x := Minx;
+              while x <= MaxX do begin
+                 y := MinY;
+                 while Y <= MaxY do begin
+                    PerformPointComputations(Col,Row);
+                    inc(y);
+                 end {while Row};
+                 inc(x);
+              end {while Col};
+        end
+        else begin
+           //strip on left of analysis region
+           NewMinX := Col - round(0.5 * RegionM / DEMGlb[CurDEM].AverageXSpace);
+           for y := MinY to MaxY do PerformPointComputations(NewMinX,y);
+           //new strip on right of analysis region
+           NewMaxX := Col + round(0.5 * RegionM / DEMGlb[CurDEM].AverageXSpace);
+           for y := MinY to MaxY do PerformPointComputations(NewMAxX,y);
+           //new strips on Bottom
+           NewMinY := Row - round(0.5 * RegionM / DEMGlb[CurDEM].AverageYSpace);
+           if NewMinY <> MinY then begin
+              for y := NewMinY to pred(MinY) do
+                 for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
+           end;
+           //new strips on top
+           NewMaxY := Row + round(0.5 * RegionM / DEMGlb[CurDEM].AverageYSpace);
+           if NewMaxY <> MaxY then begin
+              for y := NewMinY to pred(MinY) do
+                 for x := NewMinX to NewMaxX do PerformPointComputations(x,y);
+           end;
+           (*
+           Minx := NewMinX;
+           MaxX := NewMaxX;
+           MinY := NewMinY;
+           MaxY := NewMaxY;
+           *)
+        end;
+        if (MomentVar.NPts > 0) then begin
+           if Param in [rsElevMoment,rsSlopeMoment{,rsPlanCurveMoment,rsProfCurveMoment}] then begin
+              moment(zvs^,MomentVar,msBeforeMedian);
+              case RadioGroup2.ItemIndex of
+                 0 : v[2] := MomentVar.mean;
+                 1 : v[2] := MomentVar.std_dev;
+                 2 : v[2] := MomentVar.skew;
+                 3 : v[2] := MomentVar.curt;
+              end;
+           end
+           else begin
+             v[2] := SumRelief / MomentVar.NPts;
+           end;
+           BlockWrite(rfile,v,1);
+        end;
       end;
       RegionM := RegionM + round(2 * DEMGlb[CurDEM].AverageXSpace);
    end;
    CloseFile(rfile);
+   if Param in [rsOpenUp,rsOpenDown] then CloseFile(rfile2);
+
    Result.AutoScaleAndRedrawDiagram;
    wmdem.FormPlacementInCorner(Result,lpNEMap);
    EndProgress;
@@ -314,17 +334,6 @@ begin
       Dispose(zvs);
    end;
    {$IfDef RecordGeostat} WriteLineToDebugFile('GeomorphParameterVersusRegion out'); {$EndIf}
-end;
-
-
-procedure Tregionsizeform.RadioGroup1Click(Sender: TObject);
-begin
-   GeomorphParameterVersusRegion(Lat,Long);
-end;
-
-procedure Tregionsizeform.RadioGroup2Click(Sender: TObject);
-begin
-   GeomorphParameterVersusRegion(Lat,Long);
 end;
 
 

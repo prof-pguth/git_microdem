@@ -95,7 +95,7 @@ var
    ULtitle,Report : shortstring;
 begin
    Result := TThisBaseGraph.Create(Application);
-   Result.RoseColor := WinGraphColors[DEM mod 16];
+   Result.RoseColor := WinGraphColors(DEM);
    Report := '';
    VectorAverage;
    ULtitle := 'Vector Avg: ' + RealToString(AvgAspectMag,-8,2) + ' ' + RealToString(AvgAspectDir,-8,1) + '°';

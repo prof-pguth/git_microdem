@@ -58,6 +58,7 @@ object ImageDisplayForm: TImageDisplayForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    ExplicitWidth = 809
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

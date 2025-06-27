@@ -9,6 +9,14 @@ unit ssim_fuv_control;
 
 {$I nevadia_defines.inc}
 
+{$IfDef RecordProblems} //normally only defined for debugging specific problems
+   {$IFDEF DEBUG}
+      {$Define RecordFUV_SSIM}
+   {$ELSE}
+   {$ENDIF}
+{$EndIf}
+
+
 
 interface
 
@@ -18,20 +26,6 @@ uses
 
 type
   Tfuv_ssim_control = class(TForm)
-    GroupBox9: TGroupBox;
-    CheckBox12: TCheckBox;
-    CheckBox13: TCheckBox;
-    CheckBox14: TCheckBox;
-    CheckBox15: TCheckBox;
-    Hillshade: TCheckBox;
-    CheckBox17: TCheckBox;
-    CheckBox19: TCheckBox;
-    CheckBox20: TCheckBox;
-    CheckBox21: TCheckBox;
-    HAND: TCheckBox;
-    CheckBox26: TCheckBox;
-    CheckBox27: TCheckBox;
-    CheckBox28: TCheckBox;
     GroupBox1: TGroupBox;
     CheckBox1: TCheckBox;
     CheckBox2: TCheckBox;
@@ -44,16 +38,14 @@ type
     CheckBox22: TCheckBox;
     BitBtn1: TBitBtn;
     BitBtn38: TBitBtn;
-    CheckBox7: TCheckBox;
-    CheckBox8: TCheckBox;
     CheckBox9: TCheckBox;
-    CheckBox10: TCheckBox;
     CheckBox157: TCheckBox;
     BitBtn2: TBitBtn;
-    BitBtn3: TBitBtn;
-    BitBtn4: TBitBtn;
     BitBtn5: TBitBtn;
     CheckBox11: TCheckBox;
+    BitBtn3: TBitBtn;
+    Edit1: TEdit;
+    Label1: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
@@ -61,12 +53,10 @@ type
     procedure BitBtn3Click(Sender: TObject);
     procedure HillshadeClick(Sender: TObject);
     procedure HANDClick(Sender: TObject);
-    procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
   private
     { Private declarations }
     procedure CheckParameters;
-    procedure CheckAll(whichway : boolean);
   public
     { Public declarations }
   end;
@@ -82,6 +72,7 @@ implementation
 
 uses
   Petmar_types,DEMDefs,demdef_routines,demix_definitions,Demix_control,DEMstat,
+  toggle_db_use,
   petmar;
 
 
@@ -127,30 +118,9 @@ begin
 end;
 
 
-
-procedure Tfuv_ssim_control.CheckAll(whichway : boolean);
-begin
-   CheckBox12.Checked := WhichWay;
-   CheckBox13.Checked := WhichWay;
-   CheckBox14.Checked := WhichWay;
-   CheckBox15.Checked := WhichWay;
-   Hillshade.Checked := WhichWay;
-   HAND.Checked := WhichWay;
-   CheckBox17.Checked := WhichWay;
-   CheckBox19.Checked := WhichWay;
-   CheckBox20.Checked := WhichWay;
-   CheckBox21.Checked := WhichWay;
-   CheckBox26.Checked := WhichWay;
-   CheckBox27.Checked := WhichWay;
-   CheckBox28.Checked := WhichWay;
-   CheckBox7.Checked := WhichWay;
-   CheckBox8.Checked := WhichWay;
-   CheckBox10.Checked := WhichWay;
-end;
-
-
 procedure Tfuv_ssim_control.FormCreate(Sender: TObject);
 begin
+   (*
    CheckBox12.Checked := MDDef.SSIM_elev;
    CheckBox13.Checked := MDDef.SSIM_slope;
    CheckBox14.Checked := MDDef.SSIM_ruff;
@@ -170,23 +140,28 @@ begin
    CheckBox7.Checked := MDDef.SSIM_rotor;
    CheckBox8.Checked := MDDef.SSIM_Openness;
    CheckBox10.Checked := MDDef.SSIM_ConvergeIndex;
-
+   *)
    CheckBox5.Checked := MDDef.DEMIX_overwrite_enabled;
    CheckBox6.Checked := MDDef.DEMIX_all_areas;
    CheckBox1.Checked := true;
    CheckBox9.Checked := MDDef.ProcessLoopsForward;
    CheckBox157.Checked := MDDef.ShowWinExec;
+
+   Edit1.Text := IntToStr(MDDef.DEMIX_Tile_Full);
+   CheckBox22.Checked := MDDef.DoSSIM;
+   CheckBox24.Checked := MDDef.DoFUV;
+   GroupBox1.Visible := MDdef.DEMIX_AllowCoastal;
 end;
 
 
 procedure Tfuv_ssim_control.HANDClick(Sender: TObject);
 begin
-   MDDef.SSIM_HAND := HAND.Checked;
+   //MDDef.SSIM_HAND := HAND.Checked;
 end;
 
 procedure Tfuv_ssim_control.HillshadeClick(Sender: TObject);
 begin
-   MDDef.SSIM_hill := Hillshade.Checked;
+  // MDDef.SSIM_hill := Hillshade.Checked;
 end;
 
 
@@ -196,26 +171,34 @@ procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
    procedure DoOne(Mode : byte);
    begin
       if (Sender = BitBtn1) then begin
+         {$IfDef RecordFUV_SSIM} WriteLineToDebugFile('DoOne Processing, mode=' + IntToStr(Mode)); {$EndIf}
          FUV_SSIM_Processing(Mode,MDDef.DEMIX_overwrite_enabled,CheckBox11.Checked);
       end
       else begin
+         {$IfDef RecordFUV_SSIM} WriteLineToDebugFile('DoOne Merge, mode=' + IntToStr(Mode)); {$EndIf}
          MDDef.DEMIX_mode := Mode;
-         if MDDef.DoFUV then MergeCSV(1);   //MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
-         if MDDef.DoSSIM then MergeCSV(2); //MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
+         if MDDef.DoFUV then MergeCSV(1);
+         if MDDef.DoSSIM then MergeCSV(2);
       end;
    end;
 
 
 begin
+   {$IfDef RecordFUV_SSIM} WriteLineToDebugFile('Tfuv_ssim_control.BitBtn1Click in'); {$EndIf}
    CheckParameters;
    MDDef.DEMIX_mode := dmFull;
    PickWineContestDBLocation;
    ToggleShowProgress(false);
+   Self.Visible := false;
    if CheckBox1.Checked then DoOne(dmFull);
-   if CheckBox2.Checked then DoOne(dmU120);
-   if CheckBox3.Checked then DoOne(dmU80);
-   if CheckBox4.Checked then DoOne(dmU10);
+   if MDdef.DEMIX_AllowCoastal then begin
+       if CheckBox2.Checked then DoOne(dmU120);
+       if CheckBox3.Checked then DoOne(dmU80);
+       if CheckBox4.Checked then DoOne(dmU10);
+   end;
    ToggleShowProgress(true);
+   Self.Visible := true;
+   {$IfDef RecordFUV_SSIM} WriteLineToDebugFile('Tfuv_ssim_control.BitBtn1Click out'); {$EndIf}
 end;
 
 
@@ -232,12 +215,8 @@ end;
 
 procedure Tfuv_ssim_control.BitBtn3Click(Sender: TObject);
 begin
-   CheckAll(true);
-end;
-
-procedure Tfuv_ssim_control.BitBtn4Click(Sender: TObject);
-begin
-   CheckAll(false);
+   GetDEMIXpaths;
+   VerifyRecordsToUse(DemixSettingsDir + 'demix_fuv_parameters.dbf','PARAMETER');
 end;
 
 procedure Tfuv_ssim_control.BitBtn5Click(Sender: TObject);
@@ -247,22 +226,9 @@ end;
 
 procedure Tfuv_ssim_control.CheckParameters;
 begin
-   MDDef.SSIM_elev := CheckBox12.Checked;
-   MDDef.SSIM_slope := CheckBox13.Checked;
-   MDDef.SSIM_ruff := CheckBox14.Checked;
-   MDDef.SSIM_rri := CheckBox15.Checked;
-   MDDef.SSIM_tpi := CheckBox17.Checked;
-   MDDef.SSIM_flow := CheckBox19.Checked;
-   MDDef.SSIM_wet := CheckBox20.Checked;
-   MDdef.SSIM_ls := CheckBox21.Checked;
+   CheckEditString(Edit1.Text,MDDef.DEMIX_Tile_Full);
    MDDef.DoSSIM := CheckBox22.Checked;
    MDDef.DoFUV := CheckBox24.Checked;
-   MDDef.SSIM_ProfC := CheckBox26.Checked;
-   MDDef.SSIM_PlanC := CheckBox27.Checked;
-   MDDef.SSIM_TangC := CheckBox28.Checked;
-   MDDef.SSIM_rotor := CheckBox7.Checked;
-   MDDef.SSIM_Openness := CheckBox8.Checked;
-   MDDef.SSIM_ConvergeIndex := CheckBox10.Checked;
 
    MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;

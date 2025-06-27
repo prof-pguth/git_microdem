@@ -155,11 +155,14 @@ begin
    RefMap := IsReflectanceMap(MapType);
    for j := Limits.YGridLow to Limits.YGridHigh do begin
       for i := Limits.XGridLow to Limits.XGridHigh do begin
-         ScreenToDEMGrid(i,j,xr,yr);
-         if DEMGlb[DEMonMap].GridInDataSetFloat(xr,yr) then begin
-            if RefMap then Color := DEMGlb[DEMonMap].RGBReflectanceColor(MapType,round(xr),round(yr))
-            else Color := GetElevColor(xr,yr);
-            BMPMemory.SetPixelColor(i,j,Color);
+         if OnScreen(i,j) then begin
+
+           ScreenToDEMGrid(i,j,xr,yr);
+           if DEMGlb[DEMonMap].GridInDataSetFloat(xr,yr) then begin
+              if RefMap then Color := DEMGlb[DEMonMap].RGBReflectanceColor(MapType,round(xr),round(yr))
+              else Color := GetElevColor(xr,yr);
+              BMPMemory.SetPixelColor(i,j,Color);
+           end;
          end;
       end;
       {$IfDef VCL}
@@ -309,25 +312,16 @@ var
    UpRange,
    Upward,Downward : float64;
    PixelsNS,PixelsEW,PixelsDia : integer;
-
-(*
-         PixelsNS,PixelsEW,PixelsDia : integer;
-           PixelsNS := round(RegionM / DEMGlb[CurDEM].AverageYSpace);
-            PixelsEW := round(RegionM / DEMGlb[CurDEM].AverageXSpace);
-            PixelsDia := round(RegionM / DEMGlb[CurDEM].AverageDiaSpace);
-            Result := DEMGlb[CurDEM].FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia,Upward,Downward);
-
-*)
-
-
+   Graph : tThisBaseGraph;
 begin
    GrayRange := MDDef.OpenMaxGray - MDDef.OpenMinGray;
-   UpRange := MDDef.MaxUpward-MDDef.MinUpward;
+   UpRange := MDDef.MaxUpward - MDDef.MinUpward;
+   Graph := Nil;
    for j := Limits.YGridLow to Limits.YGridHigh do begin
       for i := 0 to pred(MapXSize) do begin
          if OnScreen(i,j) then  begin
-            ScreenToDEMGridInteger(i,j,XG,yg);
-            if DEMGlb[DEMonMap].FigureOpenness(xg,yg,5,5,5,Upward,Downward) then begin
+            ScreenToDEMGridInteger(i,j,xg,yg);
+            if DEMGlb[DEMonMap].FigureOpenness(xg,yg,5,5,5,Upward,Downward,Graph) then begin
                ValueInRange(Upward,MDDef.MinUpward,MDDef.MaxUpward);
                Val := ValidByteRange254(MDDef.OpenMinGray + round(GrayRange * (Upward-MDDef.MinUpward) / UpRange));
                BMPMemory.SetPixelColor(i,j,GrayRGBtrip(Val));
@@ -803,7 +797,7 @@ begin
    end
    else if (MapType = mtElevContrast) then begin
       {$IfDef VCL}
-         for i := 0 to 255 do pPal[i] := ConvertTColorToPlatformColor(WinGraphColors[i mod 16]);
+         for i := 0 to 255 do pPal[i] := ConvertTColorToPlatformColor(WinGraphColors(i));
       {$EndIf}
    end
    {$IfDef ExGeology}
@@ -1053,7 +1047,7 @@ begin
          if MapType in [mtDEMVATTable] then Result := VATColors[round(zj)]
          else if MapType in [mtElevFromTable,mtElevDefinedPalette,mtCurvature,mtDifferenceDiverge] then Result := ColorFromZColorTable(ZColorTable,zj,i)
          else if (MapType = mtElevContrast) then begin
-            Result := ConvertTColorToPlatformColor(WinGraphColors[(round(zj) mod 16)]);
+            Result := ConvertTColorToPlatformColor(WinGraphColors(round(zj)));
          end
          else
       {$EndIf}

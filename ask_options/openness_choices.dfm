@@ -2,8 +2,8 @@ object OpenOptForm: TOpenOptForm
   Left = 0
   Top = 0
   Caption = 'Openness options'
-  ClientHeight = 441
-  ClientWidth = 624
+  ClientHeight = 279
+  ClientWidth = 471
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -27,11 +27,12 @@ object OpenOptForm: TOpenOptForm
     Caption = 'Radial length (pixels)'
   end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 38
-    Top = 388
-    Width = 25
+    Left = 24
+    Top = 246
+    Width = 73
     Height = 25
     Hint = 'Force redraw'
+    Caption = 'Redraw'
     Glyph.Data = {
       F6000000424DF600000000000000760000002800000010000000100000000100
       0400000000008000000000000000000000001000000010000000000000000000
@@ -44,15 +45,15 @@ object OpenOptForm: TOpenOptForm
     OnClick = RedrawSpeedButton12Click
   end
   object Label3: TLabel
-    Left = 32
-    Top = 208
+    Left = 26
+    Top = 210
     Width = 107
     Height = 15
     Caption = 'Start readials at pixel'
   end
   object RadioGroup1: TRadioGroup
-    Left = 32
-    Top = 32
+    Left = 145
+    Top = 24
     Width = 121
     Height = 89
     Caption = 'Radials in terms of '
@@ -169,8 +170,8 @@ object OpenOptForm: TOpenOptForm
     OnChange = Edit2Change
   end
   object GroupBox2: TGroupBox
-    Left = 288
-    Top = 240
+    Left = 12
+    Top = 24
     Width = 121
     Height = 105
     Caption = 'Compute Openness'
@@ -206,29 +207,26 @@ object OpenOptForm: TOpenOptForm
       TabOrder = 2
     end
   end
-  object RadioGroup2: TRadioGroup
-    Left = 16
-    Top = 240
-    Width = 241
-    Height = 64
-    Caption = 'Start radials at pixel'
-    Columns = 5
-    Items.Strings = (
-      '1'
-      '2'
-      '3'
-      '4'
-      '5')
-    TabOrder = 5
-    OnClick = RadioGroup2Click
-  end
   object Edit3: TEdit
-    Left = 145
+    Left = 139
     Top = 207
-    Width = 56
+    Width = 62
     Height = 23
-    TabOrder = 6
+    TabOrder = 5
     Text = 'Edit3'
     OnChange = Edit3Change
+  end
+  object HelpBtn: TBitBtn
+    Left = 126
+    Top = 244
+    Width = 48
+    Height = 27
+    Kind = bkHelp
+    Margin = 2
+    NumGlyphs = 2
+    Spacing = -1
+    TabOrder = 6
+    OnClick = HelpBtnClick
+    IsControl = True
   end
 end

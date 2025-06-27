@@ -145,9 +145,9 @@ type
             procedure ExtractGroundPoints(var NewName : PathStr);
          {$EndIf}
    end;
-
-   tUsePC    = array[1..MaxClouds] of boolean;
    tLasFiles = array[1..MaxClouds] of tLas_files;
+
+procedure OverlayPointClouds(inBaseMap : tMapForm; DirOpen : PathStr = '');
 
 
 implementation
@@ -162,10 +162,58 @@ uses
       DEMDatabase,
    {$EndIf}
 
-   las_lidar,
+   las_lidar,point_cloud_options,
    PetDBUtils,
    DEMCoord, DEMDef_routines,
    Make_tables;
+
+procedure OverlayPointClouds(inBaseMap : tMapForm; DirOpen : PathStr = '');
+var
+   Paths : tStringList;
+   i : integer;
+   fName : PathStr;
+begin
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OverlayPointCloud in'); {$EndIf}
+   MDDef.ShiftMercToUTM := true;
+   pt_cloud_opts_fm := Tpt_cloud_opts_fm.Create(Application);
+   pt_cloud_opts_fm.InitialCloudDisplay := true;
+   pt_cloud_opts_fm.BaseMap := InBaseMap;
+   if (inBaseMap <> Nil) then begin
+      {$If Defined(RecordLASfiles) or Defined(RecordLASopen)} WriteLineToDebugFile('OverlayPointCloud start map creation'); {$EndIf}
+      inBaseMap.MapDraw.DrawLegendsThisMap := false;
+      pt_cloud_opts_fm.BaseMap.MapDraw.LasLayerOnMap := true;
+      pt_cloud_opts_fm.Caption := 'Point clouds on ' + InBaseMap.Caption;
+      InBaseMap.PointCloudBase := true;
+      pt_cloud_opts_fm.BitBtn56.Visible := (InBaseMap.MapDraw.DEMonMap <> 0);
+      pt_cloud_opts_fm.CanAutoZoom := false;
+   end
+   else pt_cloud_opts_fm.CanAutoZoom := true;
+   pt_cloud_opts_fm.Show;
+   if (DirOpen = '') then begin
+      Paths := tStringList.Create;
+      Paths.Add(LastLidarDirectory);
+      if MDDef.PickLASDirs and GetMultipleDirectories('Lidar point clouds',Paths) then begin
+         for i := 0 to pred(Paths.Count) do begin
+            if (i=0) then LastLidarDirectory := Paths.Strings[0];
+            if (succ(i) < MaxClouds) then begin
+               if (i>1) then pt_cloud_opts_fm.InitialCloudDisplay := false;
+               fName := Paths.Strings[i];
+               pt_cloud_opts_fm.GetFilesForPointCloud(succ(i),fName,true);
+            end;
+         end;
+      end
+      else begin
+         pt_cloud_opts_fm.GetFilesForPointCloud(1,LastLidarDirectory);
+      end;
+      Paths.Destroy;
+   end
+   else pt_cloud_opts_fm.GetFilesForPointCloud(1,DirOpen,true);
+   pt_cloud_opts_fm.UpdateColorOptions;
+   pt_cloud_opts_fm.InitialCloudDisplay := true;
+   {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OverlayPointCloud out'); {$EndIf}
+end;
+
+
 
 
 function tLas_files.IndexTableName : PathStr;
@@ -271,7 +319,6 @@ begin
    ShowDefaultCursor;
    {$If Defined(RecordMergeLASfiles) or Defined(TimeMergeLAS) or Defined(RecordLASexport)} WriteLineToDebugFile('tLas_files.ExportBinary out, PointsOut=' + SmartNumberPoints(NPts)); {$EndIf}
 end;
-
 
 
 {$IfDef VCL}
@@ -885,7 +932,6 @@ var
                     FindMinMax('Intensity',Intensities^);
                     if ((Last-First) <> 0) and DoGraph then begin
                        ThisGraph2 := TThisBaseGraph.Create(Application);
-                       //ThisGraph2.GraphDraw.LegendList := tStringList.Create;
                        AddHistogramFile(Intensities^,'overall');
                        ThisGraph2.Caption := 'LAS Intensity Histogram: '+ Self.CloudName;
                        ThisGraph2.GraphDraw.HorizLabel := 'Concentration (fraction of uniform)';
@@ -1020,10 +1066,10 @@ var
                        IntToStr(LasData.NumPointRecs) + ',' +
                        RealToString(LasData.SingleFilePointDensity,-12,2) + ',' +
 
-                      RealToString(LasData.LAS_LatLong_Box.ymax,-18,-7) + ',' +
-                      RealToString(LasData.LAS_LatLong_Box.ymin,-18,-7) + ',' +
-                      RealToString(LasData.LAS_LatLong_Box.xmax,-18,-7) + ',' +
-                      RealToString(LasData.LAS_LatLong_Box.xmin,-18,-7) + ',' +
+                       RealToString(LasData.LAS_LatLong_Box.ymax,-18,-7) + ',' +
+                       RealToString(LasData.LAS_LatLong_Box.ymin,-18,-7) + ',' +
+                       RealToString(LasData.LAS_LatLong_Box.xmax,-18,-7) + ',' +
+                       RealToString(LasData.LAS_LatLong_Box.xmin,-18,-7) + ',' +
 
                        RealToString(LasData.LasHeader.MaxZ,-12,2)  + ',' +
                        RealToString(LasData.LasHeader.MinZ,-12,2)  + ',' +

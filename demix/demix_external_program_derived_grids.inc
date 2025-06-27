@@ -69,11 +69,15 @@ begin
        SpaceSec := 3600 * DEMglb[WhatGroup[i]].DEMHeader.DEMxSpacing;
        {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile(DEMGlb[WhatGroup[i]].AreaName + ' ' + RealToString(SpaceSec,-8,-2) + 'sec'); {$EndIf}
        Result := WhatGroup[0];
-       if (SpaceSec > 1.05) and ValidDEM(WhatGroup[-1]) then Result := WhatGroup[-1]
+       if (SpaceSec > 1.05) then begin
+          if ValidDEM(WhatGroup[-1]) then Result := WhatGroup[-1]
+          else begin
+             {$IfDef RecordDEMIX} HighlightLineToDebugFile('SpaceSec=' + RealToString(SpaceSec,-8,-3) + '  Missing high lat ref DEM for ' + DEMglb[WhatGroup[i]].AreaName); {$EndIf}
+          end;
+       end
        else begin
-          {$IfDef RecordDEMIX} HIghlightLineToDebugFile('Missing high lat ref DEM for ' + DEMglb[WhatGroup[i]].AreaName); {$EndIf}
+          {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile('Ref DEM for ' + DEMGlb[WhatGroup[i]].AreaName + ' is ' + DEMGlb[Result].AreaName); {$EndIf}
        end;
-       {$IfDef RecordDEMIXRefDEM} WriteLineToDebugFile('Ref DEM for ' + DEMGlb[WhatGroup[i]].AreaName + ' is ' + DEMGlb[Result].AreaName); {$EndIf}
     end
     else begin
        {$IfDef RecordDEMIX} WriteLineToDebugFile('Invaild DEM=' + IntToStr(i) + ' in RefGridForThisPointGrid'); {$EndIf}
@@ -149,7 +153,7 @@ var
    i : integer;
    fName : PathStr;
 begin
-    {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades) or Defined(RecordProblems)}
+    {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXhillshades)}
        WriteLineToDebugFile(Which + ' CreateDEMIXDerivedGrids in, PointDEMs=' + IntToStr(NumPtDEMs) + ' AreaDEMs=' + IntToStr(NumAreaDEMs));
     {$EndIf}
     Result := ' opened ';
@@ -161,7 +165,7 @@ begin
        end
        else begin
           if (Which = 'HILL_') then PointGrids[i] := CreateHillshadeMap(OpenMaps,PointDEMs[i]);
-          if (Which = 'TPI_') then PointGrids[i] := BoxCarDetrendDEM(OpenMaps,PointDEMs[i],DEMGlb[PointDEMs[i]].FullDEMGridLimits,3);
+          if (Which = 'TPI_') then PointGrids[i] := BoxCarDetrendDEM(OpenMaps,PointDEMs[i],{DEMGlb[PointDEMs[i]].FullDEMGridLimits,}3);
           if (Which = 'RRI_') then PointGrids[i] := MakeTRIGrid(PointDEMs[i],nmRRI,OpenMaps);
           Result := ' created ';
           if SaveMaps then DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
@@ -175,13 +179,12 @@ begin
        for i := dmxFirstArea to NumAreaDEMs do begin
           fName := ExternalProgramOutPutFile(i,'MD',Which,AreaName,false);
           if SaveMaps and FileExists(fName) then begin
-             LoadNewDEM(AreaGrids[i],fName,OpenMaps);
+            LoadNewDEM(AreaGrids[i],fName,OpenMaps);
           end
           else begin
              if (Which = 'HILL_') then AreaGrids[i] := CreateHillshadeMap(OpenMaps,AreaDEMs[i]);
-             if (Which = 'TPI_') then AreaGrids[i] := BoxCarDetrendDEM(OpenMaps,AreaDEMs[i],DEMGlb[PointDEMs[i]].FullDEMGridLimits,3);
+             if (Which = 'TPI_') then AreaGrids[i] := BoxCarDetrendDEM(OpenMaps,AreaDEMs[i],{DEMGlb[AreaDEMs[i]].FullDEMGridLimits,}3);
              if (Which = 'RRI_') then AreaGrids[i] := MakeTRIGrid(AreaDEMs[i],nmRRI,OpenMaps);
-
              Result := 'created';
              if SaveMaps then DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
           end;
@@ -209,7 +212,7 @@ begin
           LoadNewDEM(PointGrids[i],fName,OpenMaps);
        end
        else begin
-          PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],5,PointGrids2[i],OpenMaps);
+          PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],MDDef.DEM_ruff_window,PointGrids2[i],OpenMaps);
           if SaveMaps then begin
              DEMglb[PointGrids2[i]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
@@ -221,12 +224,12 @@ begin
        for i := dmxFirstArea to NumAreaDEMs do begin
           fName2 := ExternalProgramOutPutFile(i,'MD','SLOPE_',AreaName,false);
           fName := ExternalProgramOutPutFile(i,'MD','ROUGH_',AreaName,false);
-          if FileExists(fName) and FileExists(fName2) then begin
+          if SaveMaps and FileExists(fName) and FileExists(fName2) then begin
              LoadNewDEM(AreaGrids2[i],fName2,OpenMaps);
              LoadNewDEM(AreaGrids[i],fName,OpenMaps);
           end
           else begin
-             AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],5,AreaGrids2[i],OpenMaps);
+             AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],MDDef.DEM_ruff_window,AreaGrids2[i],OpenMaps);
              if SaveMaps then begin
                 DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
                 DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);
@@ -237,11 +240,8 @@ begin
 end;
 
 
-
-
 function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
 var
-   //BoxSize,
    i,ad : integer;
    fName,fName2 : PathStr;
 begin
@@ -253,14 +253,14 @@ begin
     for i := dmxFirstPoint to NumPtDEMs do begin
        fName2 := ExternalProgramOutPutFile(i,'MD','OPEND_',AreaName,true);
        fName := ExternalProgramOutPutFile(i,'MD','OPENU_',AreaName,true);
-       if FileExists(fName) and FileExists(fName2) then begin
+       if SaveMaps and FileExists(fName) and FileExists(fName2) then begin
           LoadNewDEM(PointGrids2[i],fName2,MDDef.OpenSavedMapsFUVSSIM);
           LoadNewDEM(PointGrids[i],fName,MDDef.OpenSavedMapsFUVSSIM);
        end
        else begin
           PointGrids[i] := -1;
           PointGrids2[i] := -1;
-          CreateOpennessMap(OpenMaps,DEMGlb[PointDEMs[i]].FullDEMGridLimits,PointDEMs[i],-99,3,PointGrids[i],PointGrids2[i],ad);
+          CreateOpennessMap(OpenMaps,DEMGlb[PointDEMs[i]].FullDEMGridLimits,PointDEMs[i],-99,MDDef.DEMIX_open_radials,PointGrids[i],PointGrids2[i],ad);
           Result := ' created ';
           if SaveMaps then begin
              DEMglb[PointGrids2[i]].SaveAsGeotiff(fName2);
@@ -279,7 +279,7 @@ begin
           else begin
              AreaGrids[i] := -1;
              AreaGrids2[i] := -1;
-             CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],-99,3,AreaGrids[i],AreaGrids2[i],ad);
+             CreateOpennessMap(OpenMaps,DEMGlb[AreaDEMs[i]].FullDEMGridLimits,AreaDEMs[i],-99,MDDef.DEMIX_open_radials,AreaGrids[i],AreaGrids2[i],ad);
              Result := ' created ';
              if SaveMaps then begin
                 DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
@@ -291,6 +291,16 @@ begin
 end;
 
 
+    procedure LSP_Calc_Grids(kwat : shortstring; OpenMaps : boolean = false);
+    var
+       i : integer;
+    begin
+       for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := RUN_LSPcalculator(PointDEMs[i],'--' + kwat,OpenMaps);
+       if (NumAreaDEMs > 0) then begin
+           for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := RUN_LSPcalculator(AreaDEMs[i],'--' + kwat,OpenMaps);
+       end;
+    end;
+
 
     procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
     var
@@ -300,6 +310,56 @@ end;
        if (NumAreaDEMs > 0) then begin
            for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_Geomorphons(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
        end;
+    end;
+
+
+    procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
+    var
+       i : integer;
+       BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
+    begin
+       for i := dmxFirstPoint to NumPtDEMs do begin
+          BreachName := '';
+          FlowAccumulationName  := '';
+          StreamName := '';
+          HANDName := '';
+          PointGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HANDName);
+       end;
+       if (NumAreaDEMs > 0) then begin
+          for i := dmxFirstArea to NumAreaDEMs do begin
+             BreachName := '';
+             FlowAccumulationName  := '';
+             StreamName := '';
+             HANDName := '';
+             AreaGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HandName);
+          end;
+       end;
+    end;
+
+
+    procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
+    var
+       i : integer;
+       BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
+    begin
+        //using Log, and using D8
+        for i := dmxFirstPoint to NumPtDEMs do begin
+          BreachName := '';
+          FlowAccumulationName  := '';
+          StreamName := '';
+          HANDName := '';
+          PointGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
+        end;
+        if (NumAreaDEMs > 0) then begin
+           for i := dmxFirstArea to NumAreaDEMs do begin
+              BreachName := '';
+              FlowAccumulationName  := '';
+              StreamName := '';
+              HANDName := '';
+              AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
+           end;
+        end;
+        {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Flow accumulation grids created'); {$EndIf}
     end;
 
 
@@ -368,55 +428,6 @@ end;
         Result := true;
     end;
 
-
-    procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
-    var
-       i : integer;
-       BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
-    begin
-       for i := dmxFirstPoint to NumPtDEMs do begin
-          BreachName := '';
-          FlowAccumulationName  := '';
-          StreamName := '';
-          HANDName := '';
-          PointGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HANDName);
-       end;
-       if (NumAreaDEMs > 0) then begin
-          for i := dmxFirstArea to NumAreaDEMs do begin
-             BreachName := '';
-             FlowAccumulationName  := '';
-             StreamName := '';
-             HANDName := '';
-             AreaGrids[i] := WBT_ElevAboveStream(OpenMaps,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName,StreamName,HandName);
-          end;
-       end;
-    end;
-
-
-    procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
-    var
-       i : integer;
-       BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
-    begin
-        //using Log, and using D8
-        for i := dmxFirstPoint to NumPtDEMs do begin
-          BreachName := '';
-          FlowAccumulationName  := '';
-          StreamName := '';
-          HANDName := '';
-          PointGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[PointDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
-        end;
-        if (NumAreaDEMs > 0) then begin
-           for i := dmxFirstArea to NumAreaDEMs do begin
-              BreachName := '';
-              FlowAccumulationName  := '';
-              StreamName := '';
-              HANDName := '';
-              AreaGrids[i] := WBT_FlowAccumulation(OpenMaps,Log,True,DEMGlb[AreaDEMs[i]].GeotiffDEMName,BreachName,FlowAccumulationName);
-           end;
-        end;
-        {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Flow accumulation grids created'); {$EndIf}
-    end;
 
 
 {$EndIf}

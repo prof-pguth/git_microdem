@@ -77,7 +77,6 @@
               {$EndIf}
            end;
 
-
       begin
         {$IfDef TimeFigureMultiSensorCoverage} WriteLineToDebugFile('FigureMultiSensorCoverage in'); {$EndIf}
 
@@ -262,7 +261,7 @@
          for y := 0 to pred(VisBitmap.Height) do begin
             p0 := VisBitmap.Scanline[y];
             if (TargetMaskBitmap = Nil) then begin
-              //for a target mask, just use visible bitmap
+              //for target mask, just use visible bitmap
               //if point is colored in target mask, it will be visible if in visible bitmap and masked otherwise
               //for this to be valid, the fan must have considered every point in the area
                p2 := MaskBitmap.Scanline[y];
@@ -272,7 +271,7 @@
                end;
             end
             else begin
-              //this option can use sampling, and will report the percentage of the points considered
+              //this option can use sampling, and will report percentage of points considered
                pm := TargetMaskBitmap.Scanline[y];
                for x := 0 to pred(VisBitmap.Width) do begin
                   if (not SameColor(pm[x],RGBTripleWhite)) then begin
@@ -289,8 +288,6 @@
 
 
 procedure TMapDraw.AddFanToMap(var WeaponsFan : tWeaponsFan);
-//var
-   //SummaryBitmap : tMyBitmap;
 
          procedure PutFanInTable;
          begin
@@ -302,17 +299,6 @@ begin
    if (MDDef.FanPickMode = fpSingle) then begin
       DeleteSingleMapLayer(AllFansCoverageFName);
       PutFanInTable;
-
-      (*
-      {$IfDef VCL}
-         if (DEMGlb[DEMonMap].FanBlowUpDEM <> 0) then begin
-            CopyImageToBitmap(DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1,SummaryBitmap);
-            DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.MapDraw.DrawWorldFileImageOnMap(SummaryBitmap,WeaponsFan.FanFileName);
-            DEMGlb[DEMGlb[DEMonMap].FanBlowUpDEM].SelectionMap.Image1.Picture.Graphic := SummaryBitmap;
-            SummaryBitmap.Free;
-         end;
-      {$EndIf}
-      *)
    end
    else PutFanInTable;
 

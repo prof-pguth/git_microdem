@@ -17,7 +17,7 @@ unit petimage_form;
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
    //{$Define RecordChangeColumns}
-   {$Define RecordBigBitmap}
+   //{$Define RecordBigBitmap}
    //{$Define RecordBitmapEdit}
    //{$Define RecordBlendBitmaps}
    //{$Define RecordGetImagePartOfBitmap}
@@ -551,14 +551,16 @@ begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := nil;
    if (TheFiles <> Nil) and (TheFiles.Count > 0) then begin
-     if (TheFiles.Count = 1) then begin
-        if (Legend = '') then exit;
-        Cols := 1;
-        AskCols := false;
-     end
-     else begin
-        AskCols := (Cols < 0);
-        if not AskCols then Cols := MDDef.BigBM_nc;
+     if Cols < 0 then begin
+       if (TheFiles.Count = 1) then begin
+          if (Legend = '') then exit;
+          Cols := 1;
+          AskCols := false;
+       end
+       else begin
+          AskCols := (Cols < 0);
+          if not AskCols then Cols := MDDef.BigBM_nc;
+       end;
      end;
      BigBMP := CombineBitmaps(Cols, theFiles, '');
      {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, bitmaps combined'); {$EndIf}
@@ -820,7 +822,6 @@ var
    fName2 : PathStr;
 begin
    fName2 := NextFileNumber(MDTempDir,TheTitle + '_', '.png');
-   //bmp.SaveToFile(fName2);
    SaveBitmap(bmp,fName2);
    BMP.Free;
    DisplayBitmap(fName2,TheTitle, StayAtop, FewChoices);

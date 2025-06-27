@@ -4069,6 +4069,17 @@ object dbtablef: Tdbtablef
       Caption = 'Graph by tile, with all difference distribution statistics'
       OnClick = Graphforatile1Click
     end
+    object FUVbycriteriaandtileslopecategories1: TMenuItem
+      Caption = 'FUV by criteria and tile characteristics'
+      object GraphbyDEM1: TMenuItem
+        Caption = 'Graph by DEM'
+        OnClick = GraphbyDEM1Click
+      end
+      object Grandbytilecharacterisitic1: TMenuItem
+        Caption = 'Grand by tile characterisitic'
+        OnClick = Grandbytilecharacterisitic1Click
+      end
+    end
     object Comparerankingswithdifferentcriteria1: TMenuItem
       Caption = 'Compare rankings with different criteria'
       Enabled = False

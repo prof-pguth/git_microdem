@@ -838,11 +838,9 @@ var
    end;
 
 
-
 begin
    UpdateValues;
    DEMDef_routines.SaveBackupDefaults;
-   //MDDef.SlopeAlgorithm := smSteepestNeighbor;
 
    if (RadioGroup2.ItemIndex = 2) then begin
       if (SlopeGrid = 0) then SlopeGrid := MakeSingleNewDerivativeMap('S',MapOwner.MapDraw.DEMonMap,0,false);
@@ -951,7 +949,6 @@ begin
       DEMGlb[PeakRoofGrid].CheckMaxMinElev;
       DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.GridpointsfromsecondDEMAssignAndDraw(PeakRoofGrid);
       MessageToContinue('NS done');
-
    end
    else begin
        if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(RoofDB);
@@ -994,7 +991,6 @@ begin
     end;
     DEMDef_routines.RestoreBackupDefaults;
 end;
-
 
 
 procedure TPitSpireForm.BitBtn9Click(Sender: TObject);
@@ -1109,7 +1105,6 @@ begin
       EndProgress;
       fName := MDTempDir + DEMGlb[DEMonMap].AreaName + '_ht_' + IntToStr(round(MDDef.BuildingMinHeight)) + '_to_' + IntToStr(round(MDDef.BuildingMaxHeight)) + '_v' +'.csv';
       EdgeDB := DEMGlb[DEMonMap].SelectionMap.DisplayAndPurgeStringListDB(SpireResults,fName);
-      //EdgeDB := LastDBLoaded;
    end {with};
 end;
 
@@ -1274,7 +1269,6 @@ begin
    else begin
       GridLimits := DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.MapDraw.MapAreaDEMGridLimits;
    end;
-
 end;
 
 initialization

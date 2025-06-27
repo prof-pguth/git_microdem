@@ -562,7 +562,7 @@ var
                IndexSeriesTable.SetFieldByNameAsString('SERIES',Series);
                IndexSeriesTable.SetFieldByNameAsString('USE','Y');
                IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',nf);
-               IndexSeriesTable.SetFieldByNameAsInteger('COLOR',WinGraphColors[k mod 15]);
+               IndexSeriesTable.SetFieldByNameAsInteger('COLOR',WinGraphColors(k));
                IndexSeriesTable.Post;
             end
             else begin
@@ -631,7 +631,7 @@ var
                        if (Where = -1) then begin
                           {$IfDef ListIndexFileName} WriteLineToDebugFile(' file not indexed already'); {$EndIf}
 
-                          if (DataType = 'DEMS') {or (DataType = 'BATHY'))} and ValidDEMExt(ext) then begin
+                          if (DataType = 'DEMS') and ValidDEMExt(ext) then begin
                              if StrUtils.AnsiContainsText(fName,'original_') then begin
                                 SysUtils.DeleteFile(fName);
                              end
@@ -681,16 +681,14 @@ var
          IndexSeriesTable.ApplyFilter('');
          IndexSeriesTable.First;
          while not IndexSeriesTable.eof do begin
-            TheTable.ApplyFilter('SERIES=' + QuotedStr(IndexSeriesTable.GetFieldByNameAsString('SERIES')));
+            TheTable.ApplyFilter('SERIES=' + QuotedStr(IndexSeriesTable.GetFieldByNameAsString('SERIES')) + ' AND MONSTER=' + QuotedStr(''));
             if (TheTable.RecordCount > 0) then begin
-               if IndexSeriesTable.GetFieldByNameAsString('MONSTER') = '' then begin
-                 IndexSeriesTable.Edit;
-                 IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',TheTable.RecordCount);
-                 if TheTable.FindFieldRange('LAT_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_LOW',Min);
-                 if TheTable.FindFieldRange('LAT_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_HI',Max);
-                 if TheTable.FindFieldRange('LONG_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_LOW',Min);
-                 if TheTable.FindFieldRange('LONG_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_HI',Max);
-               end;
+               IndexSeriesTable.Edit;
+               IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',TheTable.RecordCount);
+               if TheTable.FindFieldRange('LAT_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_LOW',Min);
+               if TheTable.FindFieldRange('LAT_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_HI',Max);
+               if TheTable.FindFieldRange('LONG_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_LOW',Min);
+               if TheTable.FindFieldRange('LONG_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_HI',Max);
                IndexSeriesTable.Next;
             end
             else IndexSeriesTable.Delete;
@@ -792,17 +790,17 @@ begin
              else begin
                if GISdb[db].ItsAPointDB then begin
                    GISdb[db].dbOpts.Symbol.DrawingSymbol := FilledBox;
-                   GISdb[db].dbOpts.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
+                   GISdb[db].dbOpts.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
                    GISdb[db].dbOpts.Symbol.Size := 3;
                    GetSymbol(GISdb[db].dbOpts.Symbol.DrawingSymbol,GISdb[db].dbOpts.Symbol.Size,GISdb[db].dbOpts.Symbol.Color,fName);
                end
                else if LineShapeFile(GISdb[db].ShapeFileType) then begin
-                   GISdb[db].dbOpts.LineColor := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
+                   GISdb[db].dbOpts.LineColor := ConvertTColorToPlatformColor(WinGraphColors(i));
                    GISdb[db].dbOpts.LineWidth := 3;
                    PickLineSizeAndColor(fName,Nil,GISdb[db].dbOpts.LineColor,GISdb[db].dbOpts.LineWidth);
                end
                else if AreaShapeFile(GISdb[db].ShapeFileType) then begin
-                   GISdb[db].dbOpts.FillColor := ConvertTColorToPlatformColor(WinGraphColors[i mod 14]);
+                   GISdb[db].dbOpts.FillColor := ConvertTColorToPlatformColor(WinGraphColors(i));
                    GISdb[db].dbOpts.AreaSymbolFill := bsSolid;
                    GISdb[db].dbOpts.LineColor := claBlack;
                    GISdb[db].dbOpts.LineWidth := 1;
@@ -1251,7 +1249,7 @@ begin {function LoadMapLibraryBox}
 
          Monster := IndexSeriesTable.GetFieldByNameAsString('MONSTER');
          if (Monster <> '') then begin
-            Result := ExtractFromMonsterTIFFforBoundingBox(Monster,bb,DisplayIt,Monster);
+            Result := ExtractFromMonsterTIFFforBoundingBox(Monster,bb,DisplayIt,MergedName);
          end
          else begin
            {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}

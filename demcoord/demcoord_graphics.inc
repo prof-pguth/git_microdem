@@ -321,7 +321,7 @@ begin
          i := 1;
          Table.First;
          while not Table.eof do begin
-            aColor := WinGraphColors[i];
+            aColor := WinGraphColors(i);
             Table.Edit;
             Table.SetFieldByNameAsInteger('COLOR',AColor);
             Table.Next;

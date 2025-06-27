@@ -17,16 +17,18 @@ unit DEMStat;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug }
       //{$Define NoParallelFor}
-      {$Define MultipleLSPFUV}
+      {$Define RecordDEMIX}
+      {$Define RecordFUV}
+      //{$Define RecordFUVbb}
+      //{$Define MultipleLSPFUV}
+      //{$Define RecordSensitivity}
       //{$Define RecordDEMIX_colors}
       //{$Define RecordComparisons}
       //{$Define RecordSSIM}
       //{$Define TrackCovariance}
       //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
-      //{$Define RecordDEMIX}
       //{$Define RecordDEMIXTimeCriterion}
-      //{$Define RecordFUV}
       //{$Define RecordSSO}
       //{$Define RecordHistogram}
       //{$Define RecordGridCorrrelations}
@@ -71,7 +73,7 @@ unit DEMStat;
       //{$Define RecordFFT}
    {$Else}
       //{$Define RecordDEMIX}
-      {$Define RecordFUVsteps}
+      //{$Define RecordFUVsteps}
    {$EndIf}
 {$EndIf}
 
@@ -129,7 +131,6 @@ type
       function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;  inline;
       function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
       function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
-
 
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
       procedure MultipleElevationSlopePlots;
@@ -240,6 +241,11 @@ procedure CompareLSPthenupsampletoUpsamplethenLSP;
 procedure CompareUpsampling(SlopeOption : boolean = false);
 
 procedure LSP_gridMultipleDEMs(Which : integer; OpenMap : boolean = true);
+procedure OpennessSensitivity;
+procedure SlopeCurvatureSensitivityWindowSize(WhichLSP : integer);
+procedure Compare_one_dem_mult_windows(DEM : integer);
+
+
 
 
 const
@@ -449,7 +455,7 @@ var
                end;
                //Result.GraphDraw.LegendList.Add(DEMGlb[CurDEM].AreaName);
                Result.OpenDataFile(rfile,DEMGlb[CurDEM].AreaName);
-               Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors[CurDEM mod 16]);
+               Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors(CurDEM));
 
                if DoingDEMIXnow then begin
                   LoadDEMIXnames;
@@ -591,7 +597,7 @@ begin {proc ElevationSlopePlot}
       AspectStats.Create(CurDEM);
 
       if MDDef.ShowColorLegend then begin
-         LegendBMP.Canvas.Font.Color := WinGraphColors[CurDEM];
+         LegendBMP.Canvas.Font.Color := WinGraphColors(CurDEM);
          LegendBMP.Canvas.TextOut(15,LegendY,DEMGlb[CurDEM].AreaName);
          inc(LegendY,25);
       end;
@@ -2403,7 +2409,7 @@ begin
   {$IfDef TrackCovarianceFull} WriteLineToDebugFile('GetFUVForPairGrids in, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
    if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
       Result := 1-sqr(CorrelationTwoGrids(RefGridLimits,Grid1,Grid2));
-  end
+   end
    else begin
       Result := -999;
       {$IfDef TrackCovariance} WriteLineToDebugFile('Invalid grid, GetFUVForPairGrids Fail for ' + ' ' + DEMglb[Grid1].AreaName + ' ' + DEMglb[Grid2].AreaName); {$EndIf}
@@ -2414,7 +2420,7 @@ end;
 
 function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
 var
-   Col,Row,xoff,yoff,i : integer;
+   Col,Row,xoff,yoff : integer;
    NPts : int64;
    Lat,Long,a,b,siga,sigb : float64;
    z1,z2 : float32;
@@ -2449,8 +2455,7 @@ begin
       inc(Col);
    end;
    {$IfDef TrackCovarianceFull} WriteLineToDebugFile('CorrelationTwoGrids call fit'); {$EndIf}
-   fit(xs^,ys^,NPts, a,b,siga,sigb,Result);
-   //Result := r;
+   fit(xs^,ys^,NPts,a,b,siga,sigb,Result);
    Dispose(xs);
    Dispose(ys);
    {$IfDef TrackCovariance} WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
@@ -2793,7 +2798,7 @@ procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; 
 var
    {$IfDef AllowCurvatureStatistics} PlanCurvFiles,ProfCurvFiles, {$EndIf}
    LegendFiles,ElevFiles,SlopeFiles,RoughFiles : tStringList;
-   DEMsDone,OnLine{,LinesPer} : integer;
+   DEMsDone,OnLine : integer;
    GridForm : TGridForm;
    MaxSlope,MinElev,MaxElev,MaxRough : float64;
    ElevDist,SlopeDist,RufDist : tStringList;
@@ -2803,12 +2808,9 @@ var
       label
          Done;
       var
-         //Col,Row,
-         Incr{,RuffGrid}  : integer;
-        // Ruff1 : float32;
-         //Slope : float64;
+         Incr : integer;
          MomentVar : tMomentVar;
-         zvs{,zvs2} : ^bfarray32;
+         zvs : ^bfarray32;
 
                function MomentResults : shortstring;
                begin
@@ -2860,9 +2862,9 @@ var
          Dispose(zvs);
 
          if MDDef.StringGridWithMoments then begin
-            GridForm.StringGrid1.Cells[DEMsDone,2] := IntToStr(Incr);
             GridForm.StringGrid1.Cells[DEMsDone,0] := DEMGlb[CurDEM].AreaName;
             GridForm.StringGrid1.Cells[DEMsDone,1] := RealToString(DEMGlb[CurDEM].AverageSpace,-12,2);
+            GridForm.StringGrid1.Cells[DEMsDone,2] := IntToStr(Incr);
             GridForm.StringGrid1.Cells[0,0] := 'DEM';
             GridForm.StringGrid1.Cells[0,1] := 'Avg Grid Space';
             GridForm.StringGrid1.Cells[0,2] := 'Sampling';
@@ -2873,7 +2875,7 @@ var
          ShowDefaultCursor;
       end;
 
-      procedure DoOne(Incr : integer);
+      procedure DoOneSampling(Incr : integer);
       begin
          if (Memo1 <> Nil) then Memo1.Lines.Add(TimeToStr(Now) + ' start ' + IntToStr(Incr));
          LegendFiles.Add('Sampling=' + IntToStr(Incr));
@@ -2955,13 +2957,13 @@ begin
          {$IfDef RecordElevMoment} WriteLineToDebugFile('Just DEM=' + IntToStr(CurDEM)); {$EndIf}
          if SamplingCheck then begin
             MDDef.CountHistograms := false;
-            DoOne(1);
-            DoOne(2);
-            DoOne(3);
-            DoOne(4);
-            DoOne(5);
-            DoOne(7);
-            DoOne(10);
+            DoOneSampling(1);
+            DoOneSampling(2);
+            DoOneSampling(3);
+            DoOneSampling(4);
+            DoOneSampling(5);
+            DoOneSampling(7);
+            DoOneSampling(10);
          end
          else MomentReportForDEM(CurDEM);
       end;
@@ -2984,7 +2986,7 @@ end;
       ThisGraph.GraphDraw.HorizLabel := 'Aspect direction';
       ThisGraph.GraphDraw.VertLabel := VertLabel;
       //ThisGraph.GraphDraw.LegendList := tStringList.Create;
-      for i := 1 to 6 do ThisGraph.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i]);
+      for i := 1 to 6 do ThisGraph.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors(i));
    end;
 
    procedure FinishGraph(var ThisGraph : tThisBaseGraph);
@@ -3188,7 +3190,7 @@ begin
       RoseGraph := TThisBaseGraph.Create(Application);
       RoseGraph.ClientHeight := 400;
       RoseGraph.ClientWidth := 400;
-      RoseGraph.RoseColor := WinGraphColors[i];
+      RoseGraph.RoseColor := WinGraphColors(i);
       RoseGraph.DrawAspectRose(AspectFreq^,SlopeMethodName(MDDef.SlopeCompute));
 
       k := 0;

@@ -268,7 +268,7 @@ var
                Result.OpenDataFile(rfile[i],DEM_Manager.CompareDEMNames[i]);
                Result.GraphDraw.LineSize256[i] := 1;
                Result.GraphDraw.ShowLine[i] := true;
-               Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors[i]);
+               Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors(i));
                for Bin := -100 to 5000 do begin
                    if ElevBinCount[i,Bin] > 0 then begin
                       if Bin > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := Bin;
@@ -340,7 +340,7 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
               case i of
                   1 : Result.Symbol.Color := ConvertTColorToPlatformColor(clBrown);
                   2 : Result.Symbol.Color := claGreen;
-                  else Result.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors[i-2]);
+                  else Result.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
               end;
               if i in [1,2] then Result.Symbol.Size := 3
               else Result.Symbol.Size := 2;

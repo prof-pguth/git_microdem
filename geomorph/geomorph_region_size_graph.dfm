@@ -56,7 +56,6 @@ object regionsizeform: Tregionsizeform
       'Plan curvature  moment'
       'Profile curvature moment')
     TabOrder = 0
-    OnClick = RadioGroup1Click
   end
   object Edit1: TEdit
     Left = 292
@@ -98,7 +97,6 @@ object regionsizeform: Tregionsizeform
       'Skewness'
       'Curtosis')
     TabOrder = 4
-    OnClick = RadioGroup2Click
   end
   object Edit2: TEdit
     Left = 292

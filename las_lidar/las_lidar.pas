@@ -21,6 +21,7 @@
       //{$Define RecordLASfiles}
       //{$Define RecordWKT}
       //{$Define RecordVarLenRec}
+      //{$Define RecordReadPoints}  //super slowdown
       //{$Define RecordFirstPulse}
       //{$Define RecordReprojectLAS}
       //{$Define RecordLASplot}
@@ -74,7 +75,7 @@ uses
    DEMESRIShapeFile,DEMDefs,BaseMap,DEMMapDraw;
 
 const
-   MaxLASPtsToRead = 1024000;  //256000;
+   MaxLASPtsToRead = 256000;    //1024000;
    MaxGeoKeys = 8128;
    LASLatLong = 2;
 
@@ -229,7 +230,7 @@ type
 
    tSFColorArray  = array[1..3] of float32;
    tCatSet = set of byte;
-   tBigBuffer = array[1..MaxLASPtsToRead*50] of byte;
+   tBigBuffer = array[1..MaxLASPtsToRead*60] of byte;  //found one with 51
 
    tLAS_data = class
       private
@@ -1588,19 +1589,23 @@ end;
 
 procedure tLAS_data.ReadPoints(var RecsRead: integer);
 var
-   i,j : integer;
-   BytesRead : integer;
+   i,j,BytesRead : integer;
 begin
    if DataHasExtraBytes then begin
        BlockRead(LasFile,bb^,MaxLASPtsToRead*LasHeader.PointDataRecLen,BytesRead);
        RecsRead := BytesRead div LasHeader.PointDataRecLen;
+       {$IfDef RecordReadPoints} WriteLineToDebugFile('Bytes=' + IntToStr(BytesRead) +'  Recs=' + IntToStr(RecsRead)); {$EndIf}
        if (LidarPointType = 0) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints0^[i],BaseLength);
        if (LidarPointType = 1) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints1^[i],BaseLength);
        if (LidarPointType = 2) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints2^[i],BaseLength);
        if (LidarPointType = 3) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints3^[i],BaseLength);
        if (LidarPointType = 4) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints4^[i],BaseLength);
        if (LidarPointType = 5) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints5^[i],BaseLength);
-       if (LidarPointType = 6) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints6^[i],BaseLength);
+       if (LidarPointType = 6) then
+          for i := 1 to RecsRead do begin
+             {$IfDef RecordReadPoints} WriteLineToDebugFile('i=' + IntToStr(i)); {$EndIf}
+             Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints6^[i],BaseLength);
+          end;
        if (LidarPointType = 7) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints7^[i],BaseLength);
        if (LidarPointType = 8) then for i := 1 to RecsRead do Move(bb^[1 + pred(i) * LasHeader.PointDataRecLen],LidarPoints8^[i],BaseLength);
    end
@@ -1632,7 +1637,6 @@ begin
 end;
 
 
-
 destructor tLAS_data.Destroy;
 begin
    {$IfDef RecordCreateEveryFile} writeLineToDebugFile('tLAS_data.Destroy for ' + LasFileName); {$EndIf}
@@ -1640,8 +1644,8 @@ begin
    if (LasProjDef.LasProj <> Nil) then begin
       LasProjDef.LasProj.Destroy;
    end;
-
 end;
+
 
 function tLAS_data.ExpandLAS_X(ShotNumber : integer): float64;
 var

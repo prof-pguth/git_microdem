@@ -2,8 +2,8 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1798
-  ClientWidth = 3844
+  ClientHeight = 1041
+  ClientWidth = 2404
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object MapForm: TMapForm
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 27
-    Width = 3844
-    Height = 1771
+    Width = 2404
+    Height = 1014
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,6 +51,8 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitWidth = 2398
+    ExplicitHeight = 997
     object Image1: TImage
       Left = 3
       Top = -247
@@ -207,11 +209,13 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1726
-      Width = 3840
+      Top = 969
+      Width = 2400
       Height = 41
       Align = alBottom
       TabOrder = 8
+      ExplicitTop = 952
+      ExplicitWidth = 2394
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -330,11 +334,12 @@ object MapForm: TMapForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 3844
+    Width = 2404
     Height = 27
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
+    ExplicitWidth = 2398
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -3980,6 +3985,10 @@ object MapForm: TMapForm
           Caption = 'Maximum filter'
           OnClick = Maximumfilter1Click
         end
+        object Gaussianfilter1: TMenuItem
+          Caption = 'Gaussian filter'
+          OnClick = Gaussianfilter1Click
+        end
         object Parametricisotropicsmoothing1: TMenuItem
           Caption = 'Parametric isotropic smoothing'
           OnClick = Parametricisotropicsmoothing1Click
@@ -4116,115 +4125,9 @@ object MapForm: TMapForm
       end
       object Externaltools1: TMenuItem
         Caption = 'External tools'
-        object Whiteboxslopemape1: TMenuItem
-          Caption = 'Whitebox slope map (Horn)'
-          OnClick = Whiteboxslopemape1Click
-        end
-        object Whiteboxaspectmap1: TMenuItem
-          Caption = 'Whitebox aspect map'
-          OnClick = Whiteboxaspectmap1Click
-        end
-        object Whiteboxcurvature1: TMenuItem
-          Caption = 'Whitebox curvature'
-          object Plan1: TMenuItem
-            Caption = 'Plan'
-            OnClick = Plan1Click
-          end
-          object Profile1: TMenuItem
-            Caption = 'Profile'
-            OnClick = Profile1Click
-          end
-          object angential1: TMenuItem
-            Caption = 'Tangential'
-            OnClick = angential1Click
-          end
-          object Minimal1: TMenuItem
-            Caption = 'Minimal'
-            OnClick = Minimal1Click
-          end
-          object Maximal1: TMenuItem
-            Caption = 'Maximal'
-            OnClick = Maximal1Click
-          end
-          object Mean1: TMenuItem
-            Caption = 'Mean'
-            OnClick = Mean1Click
-          end
-          object Gaussian1: TMenuItem
-            Caption = 'Gaussian'
-            OnClick = Gaussian1Click
-          end
-        end
-        object Whiteboxfillholes2: TMenuItem
-          Caption = 'Whitebox fill holes'
-          OnClick = Whiteboxfillholes2Click
-        end
-        object Whiteboxfeaturepreservingsmoothing1: TMenuItem
-          Caption = 'Whitebox feature preserving smoothing'
-          OnClick = Whiteboxfeaturepreservingsmoothing1Click
-        end
-        object WhiteboxTRI1: TMenuItem
-          Caption = 'Whitebox TRI'
-          OnClick = WhiteboxTRI1Click
-        end
-        object WhiteBoxmultiscaleroughness1: TMenuItem
-          Caption = 'WhiteBox multiscale roughness'
-          OnClick = WhiteBoxmultiscaleroughness1Click
-        end
-        object WhiteboxPennockClassification1: TMenuItem
-          Caption = 'Whitebox Pennock Classification'
-          OnClick = WhiteboxPennockClassification1Click
-        end
-        object WhiteboxGeomorphons1: TMenuItem
-          Caption = 'Whitebox Geomorphons'
-          OnClick = WhiteboxGeomorphons1Click
-        end
-        object Whitebox1: TMenuItem
-          Caption = 'Whitebox Average Normal Vector Angular Deviation'
-          OnClick = Whitebox1Click
-        end
-        object WhiteboxCircularVarianceOfAspect1: TMenuItem
-          Caption = 'Whitebox Circular Variance Of Aspect'
-          OnClick = WhiteboxCircularVarianceOfAspect1Click
-        end
-        object Whiteboxdrainagebasins1: TMenuItem
-          Caption = 'Whitebox drainage basins'
-          OnClick = Whiteboxdrainagebasins1Click
-        end
-        object Whiteboxstreamnetwork1: TMenuItem
-          Caption = 'Whitebox stream network grid'
-          OnClick = Whiteboxstreamnetwork1Click
-        end
-        object Whiteboxelevationabovestream1: TMenuItem
-          Caption = 'Whitebox elevation above stream grid (HAND)'
-          OnClick = Whiteboxelevationabovestream1Click
-        end
-        object Whiteboxflowaccumulation1: TMenuItem
-          Caption = 'Whitebox flow accumulation grid'
-          object Whieboxflowaccumulationlog1: TMenuItem
-            Caption = 'D8, Log number cells'
-            OnClick = Whieboxflowaccumulationlog1Click
-          end
-          object Numbercells1: TMenuItem
-            Caption = 'D8, Number cells'
-            OnClick = Numbercells1Click
-          end
-          object FD8Lognumbercells1: TMenuItem
-            Caption = 'FD8, Log number cells'
-            OnClick = FD8Lognumbercells1Click
-          end
-          object FD8Lognumbercells2: TMenuItem
-            Caption = 'FD8, Number cells'
-            OnClick = FD8Lognumbercells2Click
-          end
-        end
-        object Whiteboxwetnessindex1: TMenuItem
-          Caption = 'Whitebox wetness index grid'
-          OnClick = Whiteboxwetnessindex1Click
-        end
-        object Whiteboxkappaindex1: TMenuItem
-          Caption = 'Whitebox kappa index'
-          OnClick = Whiteboxkappaindex1Click
+        object Whiteboxoptions1: TMenuItem
+          Caption = 'Whitebox options'
+          OnClick = Whiteboxoptions1Click
         end
         object N50: TMenuItem
           Caption = '-'
@@ -4405,6 +4308,21 @@ object MapForm: TMapForm
             Caption = 'All partial derivatives'
             OnClick = Allpartialderivatives1Click
           end
+          object N85: TMenuItem
+            Caption = '-'
+          end
+          object kncc2: TMenuItem
+            Caption = 'kncc'
+            OnClick = kncc2Click
+          end
+          object kncs2: TMenuItem
+            Caption = 'kncs'
+            OnClick = kncs2Click
+          end
+          object knss2: TMenuItem
+            Caption = 'knss'
+            OnClick = knss2Click
+          end
         end
         object LinedetectionHoughtransform1: TMenuItem
           Caption = 'Line detection (Hough transform)'
@@ -4459,6 +4377,10 @@ object MapForm: TMapForm
         object Scatterplotoftwogrids2: TMenuItem
           Caption = 'Scatter plot of two grids'
           OnClick = Scatterplotoftwogrids2Click
+        end
+        object Correlationbothwaysifinterpolationrequired1: TMenuItem
+          Caption = 'Correlation both ways if interpolation required'
+          OnClick = Correlationbothwaysifinterpolationrequired1Click
         end
         object Percentages1: TMenuItem
           Caption = 'Co-occurrence, Percentages'
@@ -5650,6 +5572,10 @@ object MapForm: TMapForm
         Caption = 'Slope window use central point'
         OnClick = Slopewindowusecentralpoint1Click
       end
+      object Curvatureoptions1: TMenuItem
+        Caption = 'Curvature options'
+        OnClick = Curvatureoptions1Click
+      end
       object Pointinterpolationalgorithms2: TMenuItem
         Caption = 'Point interpolation algorithms'
         OnClick = Pointinterpolationalgorithms2Click
@@ -5668,6 +5594,10 @@ object MapForm: TMapForm
       object Reliefbyregionsize1: TMenuItem
         Caption = 'Parameter graph by region size'
         OnClick = Reliefbyregionsize1Click
+      end
+      object Opennessvisualization1: TMenuItem
+        Caption = 'Openness visualization'
+        OnClick = Opennessvisualization1Click
       end
     end
     object Mapdirectsolarillumination1: TMenuItem
@@ -6688,6 +6618,10 @@ object MapForm: TMapForm
     end
     object N84: TMenuItem
       Caption = 'LSP grids for multiple DEMs'
+      object Elevation1: TMenuItem
+        Caption = 'Elevation'
+        OnClick = Elevation1Click
+      end
       object Slope5: TMenuItem
         Caption = 'Slope'
         OnClick = Slope5Click
@@ -7215,8 +7149,8 @@ object MapForm: TMapForm
     end
   end
   object CompareProgramsPopupMenu1: TPopupMenu
-    Left = 880
-    Top = 355
+    Left = 888
+    Top = 347
     object CompareSlopeMaps: TMenuItem
       Caption = 'Compare slope maps'
       OnClick = CompareSlopeMapsClick
@@ -7266,6 +7200,18 @@ object MapForm: TMapForm
     object Comparepartialderivatives1: TMenuItem
       Caption = 'Compare partial derivatives'
       OnClick = Comparepartialderivatives1Click
+    end
+    object CompareopennessalgorithmsensitivityFUV1: TMenuItem
+      Caption = 'Compare openness algorithm sensitivity (FUV)'
+      OnClick = CompareopennessalgorithmsensitivityFUV1Click
+    end
+    object CompareslopecurvaturealgorithmsensitivityFUV1: TMenuItem
+      Caption = 'Compare slope/curvature algorithm sensitivity (FUV)'
+      OnClick = CompareslopecurvaturealgorithmsensitivityFUV1Click
+    end
+    object Compare1DEM2windowsizesmultipleparameters1: TMenuItem
+      Caption = 'Compare 1 DEM, 2 window sizes, multiple parameters'
+      OnClick = Compare1DEM2windowsizesmultipleparameters1Click
     end
     object N46: TMenuItem
       Caption = '-'
@@ -7342,6 +7288,128 @@ object MapForm: TMapForm
     object DetailedOptions1: TMenuItem
       Caption = 'Options (experimental)'
       OnClick = DetailedOptions1Click
+    end
+  end
+  object WhiteboxPopupMenu1: TPopupMenu
+    Left = 1040
+    Top = 403
+    object Whiteboxslopemape1: TMenuItem
+      Caption = 'Whitebox slope map (Horn)'
+      OnClick = Whiteboxslopemape1Click
+    end
+    object Whiteboxaspectmap1: TMenuItem
+      Caption = 'Whitebox aspect map'
+      OnClick = Whiteboxaspectmap1Click
+    end
+    object Whiteboxcurvature1: TMenuItem
+      Caption = 'Whitebox curvature'
+      object Plan1: TMenuItem
+        Caption = 'Plan'
+        OnClick = Plan1Click
+      end
+      object Profile1: TMenuItem
+        Caption = 'Profile'
+        OnClick = Profile1Click
+      end
+      object angential1: TMenuItem
+        Caption = 'Tangential'
+        OnClick = angential1Click
+      end
+      object Minimal1: TMenuItem
+        Caption = 'Minimal'
+        OnClick = Minimal1Click
+      end
+      object Maximal1: TMenuItem
+        Caption = 'Maximal'
+        OnClick = Maximal1Click
+      end
+      object Mean1: TMenuItem
+        Caption = 'Mean'
+        OnClick = Mean1Click
+      end
+      object Gaussian1: TMenuItem
+        Caption = 'Gaussian'
+        OnClick = Gaussian1Click
+      end
+    end
+    object Whiteboxfillholes2: TMenuItem
+      Caption = 'Whitebox fill holes'
+      OnClick = Whiteboxfillholes2Click
+    end
+    object Whiteboxfeaturepreservingsmoothing1: TMenuItem
+      Caption = 'Whitebox feature preserving smoothing'
+      OnClick = Whiteboxfeaturepreservingsmoothing1Click
+    end
+    object WhiteboxTRI1: TMenuItem
+      Caption = 'Whitebox TRI'
+      OnClick = WhiteboxTRI1Click
+    end
+    object WhiteBoxmultiscaleroughness1: TMenuItem
+      Caption = 'WhiteBox multiscale roughness'
+      OnClick = WhiteBoxmultiscaleroughness1Click
+    end
+    object WhiteboxPennockClassification1: TMenuItem
+      Caption = 'Whitebox Pennock Classification'
+      OnClick = WhiteboxPennockClassification1Click
+    end
+    object WhiteboxGeomorphons1: TMenuItem
+      Caption = 'Whitebox Geomorphons'
+      OnClick = WhiteboxGeomorphons1Click
+    end
+    object Whitebox1: TMenuItem
+      Caption = 'Whitebox Average Normal Vector Angular Deviation'
+      OnClick = Whitebox1Click
+    end
+    object WhiteboxCircularVarianceOfAspect1: TMenuItem
+      Caption = 'Whitebox Circular Variance Of Aspect'
+      OnClick = WhiteboxCircularVarianceOfAspect1Click
+    end
+    object Whiteboxdrainagebasins1: TMenuItem
+      Caption = 'Whitebox drainage basins'
+      OnClick = Whiteboxdrainagebasins1Click
+    end
+    object Whiteboxstreamnetwork1: TMenuItem
+      Caption = 'Whitebox stream network grid'
+      OnClick = Whiteboxstreamnetwork1Click
+    end
+    object Whiteboxelevationabovestream1: TMenuItem
+      Caption = 'Whitebox elevation above stream grid (HAND)'
+      OnClick = Whiteboxelevationabovestream1Click
+    end
+    object Whiteboxflowaccumulation1: TMenuItem
+      Caption = 'Whitebox flow accumulation grid'
+      object Whieboxflowaccumulationlog1: TMenuItem
+        Caption = 'D8, Log number cells'
+        OnClick = Whieboxflowaccumulationlog1Click
+      end
+      object Numbercells1: TMenuItem
+        Caption = 'D8, Number cells'
+        OnClick = Numbercells1Click
+      end
+      object FD8Lognumbercells1: TMenuItem
+        Caption = 'FD8, Log number cells'
+        OnClick = FD8Lognumbercells1Click
+      end
+      object FD8Lognumbercells2: TMenuItem
+        Caption = 'FD8, Number cells'
+        OnClick = FD8Lognumbercells2Click
+      end
+    end
+    object Whiteboxwetnessindex1: TMenuItem
+      Caption = 'Whitebox wetness index grid'
+      OnClick = Whiteboxwetnessindex1Click
+    end
+    object Whiteboxkappaindex1: TMenuItem
+      Caption = 'Whitebox kappa index'
+      OnClick = Whiteboxkappaindex1Click
+    end
+    object Hillshade2: TMenuItem
+      Caption = 'Hillshade'
+      OnClick = Hillshade2Click
+    end
+    object Multidirectionalhillshade1: TMenuItem
+      Caption = 'Multidirectional hillshade'
+      OnClick = Multidirectionalhillshade1Click
     end
   end
 end

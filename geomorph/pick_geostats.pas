@@ -364,7 +364,7 @@ begin
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click CreateRoughnessSlopeStandardDeviationMap done'); {$EndIf}
          SaveDEM(DEM);
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved'); {$EndIf}
-         WBT_AvgNormVectAngDev(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
+         WBT_AvgNormVectAngDev(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          WBT_CircularVarianceOfAspect(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          SagaVectorRuggednessMap(true,DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);
          GrassVectorRuggedness(DEMGlb[CurDEM].SelectionMap.GeotiffDEMNameOfMap,Box);

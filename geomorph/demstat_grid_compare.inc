@@ -9,11 +9,235 @@
 {________________________________________}
 
 
+procedure Compare_one_dem_mult_windows(DEM : integer);
+var
+   ListBitmaps : tStringList;
+
+   procedure OneWindowSize(WindowRadius : integer);
+   var
+      Upward,DownWard,Difference,Grid : integer;
+   begin
+      {$IfDef RecordSensitivity} WriteLineToDebugFile('Window radius='+ IntToStr(WindowRadius)); {$EndIf}
+      ListBitmaps.Add(DEMGlb[DEM].SelectionMap.CreateBitmapWithMapNameBelow);
+      MDDef.CurveCompute.WindowRadius := WindowRadius;
+      Grid := CreateSlopeMapPercentAlgorithm(MDDef.CurveCompute,True,DEM);
+      DEMglb[Grid].AreaName := 'Slope ' + FilterSizeStr(succ(2*WindowRadius)) + ' window';
+      MatchSingleDEMtoBase(Grid,DEM,4);
+      ListBitmaps.Add(DEMGlb[Grid].SelectionMap.CreateBitmapWithMapNameBelow);
+
+      Grid := CreateCurvatureMap(eucurv_tang,true,DEM);
+      DEMglb[Grid].AreaName := 'Tangential curvature ' + FilterSizeStr(succ(2*WindowRadius)) + ' window';
+      MatchSingleDEMtoBase(Grid,DEM,4);
+      ListBitmaps.Add(DEMGlb[Grid].SelectionMap.CreateBitmapWithMapNameBelow);
+
+      Upward := -1;
+      DownWard := 0;
+      Difference := 0;
+      CreateOpennessMap(True,DEMglb[DEM].FullDEMGridLimits,DEM,-99,WindowRadius,Upward,DownWard,Difference);
+      DEMglb[Upward].AreaName := 'Upward openness ' + FilterSizeStr(succ(2*WindowRadius)) + ' window';
+      MatchSingleDEMtoBase(Upward,DEM,4);
+      ListBitmaps.Add(DEMGlb[Upward].SelectionMap.CreateBitmapWithMapNameBelow);
+   end;
+
+begin
+   {$IfDef RecordSensitivity} WriteLineToDebugFile('Compare_one_dem_mult_windows in'); {$EndIf}
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   wmDEM.ClearStatusBarPanelText;
+
+   //MDDef.CurveCompute.AlgorithmName := smLSQ;
+   //MDDef.CurveCompute.RequireFullWindow := true;
+   //MDDef.CurveCompute.LSQorder := 2;
+   //MDDef.CurveCompute.UsePoints := useAll;
+   SetCurvatureDefaults;
+   MDDef.EvansApproximationAllowed := false;
+
+   ListBitmaps := tStringList.Create;
+   OneWindowSize(1);
+   OneWindowSize(3);
+   OneWindowSize(5);
+
+   MakeBigBitmap(ListBitmaps,'','',4);
+
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+   wmDEM.ClearStatusBarPanelText;
+   {$IfDef RecordSensitivity} WriteLineToDebugFile('Compare_one_dem_mult_windows out'); {$EndIf}
+end;
+
+
+procedure SlopeCurvatureSensitivityWindowSize(WhichLSP : integer);
+var
+   WhichDEMs : tDEMBooleanArray;
+   Findings : tStringList;
+   RefGrid,RefDEM : integer;
+   //HowCompute : tSlopeCurveCompute;
+   LSPName : shortstring;
+
+
+   function ProcessOneDEM(DEM : integer) : integer;
+   var
+      FUV : float64;
+      Grid : integer;
+   begin
+      if WhichDEMs[DEM] and ValidDEM(DEM) then begin
+         WMDEM.SetPanelText(3,'DEM=' + DEMglb[DEM].AreaName,true);
+         MDDef.CurveCompute := MDDef.SlopeCompute;
+         case WhichLSP of
+             1 : Grid := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,false,DEM);
+             eucurv_plan,
+             eucurv_prof,
+             eucurv_tang : Grid := CreateCurvatureMap(WhichLSP,false,DEM);
+         end;
+         if (DEM = RefDEM) then begin
+            RefGrid := Grid;
+         end
+         else begin
+            FUV := GetFUVForPairGrids(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Grid);
+            Findings.Add(DEMglb[DEM].AreaName + ',' + LSPName + ',' + FilterSizeStr(succ(2*MDdef.CurveCompute.WindowRadius)) + ',' + RealToString(FUV,-8,-5));
+            CloseSingleDEM(Grid);
+         end;
+      end
+      else Result := 0;
+   end;
+
+const
+   theLSPs : array[1..4] of integer = (1,eucurv_plan,eucurv_prof,eucurv_tang);
+var
+   i,DEM,Pixels,Start : integer;
+   fName : PathStr;
+begin
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   wmDEM.ClearStatusBarPanelText;
+   WhichDEMs := GetMultipleDEMsFromList('DEMs for LSP maps');
+   {$IfDef RecordSensitivity} WriteLineToDebugFile('SlopeCurvatureSensitivityWindowSize in'); {$EndIf}
+   Findings := tStringList.Create;
+   Findings.Add('DEM,LSP,WINDOW,FUV');
+
+   //HowCompute.AlgorithmName := smLSQ;
+   //HowCompute.RequireFullWindow := true;
+   //HowCompute.LSQorder := 2;
+   //HowCompute.UsePoints := useAll;
+   SetSlopeDefaults;
+   MDDef.EvansApproximationAllowed := false;
+
+    for I := 1 to 4 do begin
+       WhichLSP := theLSPs[i];
+       if WhichLSP = 1 then LSPName := 'slope'
+       else if WhichLSP = eucurv_plan then LSPName := 'plan_curve'
+       else if WhichLSP = eucurv_prof then LSPName := 'prof_curve'
+       else if WhichLSP = eucurv_tang then LSPName := 'tang_curve';
+       WMDEM.SetPanelText(1,LSPName,true);
+       {$IfDef RecordSensitivity} WriteLineToDebugFile('LSP=' + LSPname); {$EndIf}
+
+       for Start := 1 to 5 do begin
+          WMDEM.SetPanelText(2,'Radius=' + IntToStr(Start) + '/5',true);
+         {$IfDef RecordSensitivity} WriteLineToDebugFile('Radius=' + IntToStr(Start)); {$EndIf}
+          MDDef.SlopeCompute.WindowRadius := Start;
+          RefGrid := 0;
+          RefDEM := 0;
+           for DEM := 1 to MaxDEMDataSets do begin
+              if WhichDEMs[DEM] and ValidDEM(DEM) and StrUtils.AnsiContainsText(UpperCase(DEMglb[DEM].AreaName),'REF') then begin
+                 RefDEM := DEM;
+                 ProcessOneDEM(RefDEM);
+              end;
+           end;
+           for DEM := 1 to MaxDEMDataSets do begin
+              if WhichDEMs[DEM] and (DEM <> RefDEM) then ProcessOneDEM(DEM);
+           end;
+           CloseSingleDEM(RefGrid);
+       end;
+    end;
+   //Findings.SaveToFile('c:\temp\results.csv');
+   fName := MDtempDir + 'Slope_curvature_sensitivity.dbf';
+   StringList2CSVtoDB(Findings,fName);
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+   wmDEM.ClearStatusBarPanelText;
+   {$IfDef RecordSensitivity} WriteLineToDebugFile('SlopeCurvatureSensitivityWindowSize out'); {$EndIf}
+end;
+
+
+
+procedure OpennessSensitivity;
+var
+   WhichDEMs : tDEMBooleanArray;
+   Findings : tStringList;
+   RefUp,RefDown,RefDEM : integer;
+
+
+   function ProcessOneDEM(DEM,Pixels : integer) : integer;
+   var
+      r,UpFUV,DownFUV : float64;
+      Upward,DownWard,Difference : integer;
+   begin
+      if WhichDEMs[DEM] and ValidDEM(DEM) then begin
+         Upward := -1;
+         DownWard := -1;
+         Difference := 0;
+         CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,Pixels,Upward,DownWard,Difference);
+         if (DEM = RefDEM) then begin
+            RefUp := Upward;
+            RefDown := Downward;
+         end
+         else begin
+            UpFUV := GetFUVForPairGrids(DEMglb[RefDown].FullDEMGridLimits,RefDown,Downward);
+            DownFUV := GetFUVForPairGrids(DEMglb[RefUp].FullDEMGridLimits,RefUp,Upward);
+            Findings.Add(DEMglb[DEM].AreaName + ',' + IntToStr(Pixels) + ',' + IntToStr(MDDef.OpenStartRadialsAtPixel) + ',' +
+                   RealToString(UpFUV,-8,-5) + ',' + RealToString(DownFUV,-8,-5));
+            CloseSingleDEM(Downward);
+            CloseSingleDEM(Upward);
+         end;
+      end
+      else Result := 0;
+   end;
+
+var
+   DEM,Pixels,Start : integer;
+   fName : PathStr;
+begin
+   SetColorForProcessing;
+   SaveBackupDefaults;
+   wmDEM.ClearStatusBarPanelText;
+   WhichDEMs := GetMultipleDEMsFromList('DEMs for LSP maps');
+   Findings := tStringList.Create;
+   Findings.Add('DEM,RAD_PIXEL,START_PIX,UP_FUV,DOWN_FUV');
+   for Start := 1 to 3 do begin
+      WMDEM.SetPanelText(1,'Start pixel=' + IntToStr(Start) + '/3',true);
+      MDDef.OpenStartRadialsAtPixel := start;
+      for Pixels := 3 to 10 do begin
+         WMDEM.SetPanelText(2,'Radial pixels=' + IntToStr(Pixels) + '/10',true);
+         RefUp:= 0;
+         RefDown := 0;
+         RefDEM := 0;
+         for DEM := 1 to MaxDEMDataSets do begin
+            if WhichDEMs[DEM] and ValidDEM(DEM) and StrUtils.AnsiContainsText(UpperCase(DEMglb[DEM].AreaName),'REF') then begin
+               RefDEM := DEM;
+               ProcessOneDEM(RefDEM,Pixels);
+            end;
+         end;
+         for DEM := 1 to MaxDEMDataSets do begin
+            if WhichDEMs[DEM] and (DEM <> RefDEM) then ProcessOneDEM(DEM,Pixels);
+         end;
+         CloseSingleDEM(RefDown);
+         CloseSingleDEM(RefUp);
+      end;
+   end;
+   //Findings.SaveToFile('c:\temp\results.csv');
+   fName := MDtempDir + 'Openness_sensitivity.dbf';
+   StringList2CSVtoDB(Findings,fName);
+   RestoreBackupDefaults;
+   SetColorForWaiting;
+   wmDEM.ClearStatusBarPanelText;
+end;
+
 
 procedure LSP_gridMultipleDEMs(Which : integer; OpenMap : boolean = true);
 var
    WhichDEMs : tDEMBooleanArray;
    fName1,fName2 : PathStr;
+   BigBMP,bmp : tMyBitmap;
    RefDEM,RefGrid,NewGrid,Upward,DownWard,Difference,DEM,RuffMap,SlopeMap : integer;
 
    function ProcessOneDEM(DEM : integer) : integer;
@@ -30,7 +254,6 @@ var
          Difference := 0;
          if (Which = 10) then Result := 0;  //for roughness
          SlopeMap := -1;  //forces creation of slope and roughness maps
-         //BoxSizeMeters := round(DEMglb[DEM].AverageSpace);
          fName1 := '';
          fName2 := '';
          case which of
@@ -39,7 +262,6 @@ var
             3,4 : CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,Pixels,Result,DownWard,Difference);
             5 : Result := MakeTRIGrid(DEM,nmRRI,false);
             6 : Result := MakeTPIGrid(DEM,nmRRI,false);
-            //6 : Result := BoxCarDetrendDEM(false,DEM,DEMGlb[DEM].FullDEMGridLimits,3);
             7 : Result := CreateHillshadeMap(false,DEM);
             8 : Result := CreateCurvatureMap(eucurv_tang,false,DEM);
             9 : Result := CreateCurvatureMap(eucurv_plan,false,DEM);
@@ -47,25 +269,30 @@ var
             11 : Result := WBT_WetnessIndex(false,true,DEMGlb[DEM].GeotiffDEMName);
             12 : Result := WBT_FlowAccumulation(false,True,false,DEMGlb[DEM].GeotiffDEMName,fName1,fName2);
             13,14 : CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,Pixels,Upward,Result,Difference);
+            15 : Result := DEM;
             else Result := 0;
          end;
-         if ValidDEM(RefGrid) and ValidDEM(Result) then begin
+         if (ValidDEM(RefDEM) or ValidDEM(RefGrid)) and ValidDEM(Result) then begin
             {$If SaveUpwardOpenness}
                DEMGlb[RefGrid].SaveAsGeotiff('c:\temp\' + DEMGlb[RefGrid].AreaName + '_up_open_lspmult.tif');
                DEMGlb[Result].SaveAsGeotiff('c:\temp\' + DEMGlb[Result].AreaName + '_up_open_lspmult.tif');
             {$EndIf}
 
-            FUV := GetFUVForPairGrids(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Result);
-            if (FUV > -99) then begin
-               //FUV := 1 - sqr(r);
-               DEMglb[Result].AreaName := DEMglb[Result].AreaName + '_FUV_' + RealToString(FUV,-8,4);
-               {$IfDef MultipleLSPFUV} WriteLineToDebugFile('Ref=' + DEMglb[RefGrid].AreaName + '   test=' + DEMglb[Result].AreaName + '  FUV=' + RealToString(FUV,-8,4)); {$EndIf}
+            if ValidDEM(RefGrid) then begin
+               FUV := GetFUVForPairGrids(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Result);
+               if (FUV > -99) then begin
+                  DEMglb[Result].AreaName := DEMglb[Result].AreaName + '_FUV_' + RealToString(FUV,-8,4);
+                  {$IfDef MultipleLSPFUV} WriteLineToDebugFile('Ref=' + DEMglb[RefGrid].AreaName + '   test=' + DEMglb[Result].AreaName + '  FUV=' + RealToString(FUV,-8,4)); {$EndIf}
+               end;
+               GridScatterGram(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Result);
             end;
             if OpenMap then begin
-                CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
-                if DEMglb[RefDEM].SelectionMap.FullMapSpeedButton.Enabled then begin
-                   MatchAnotherMapThisCoverageArea(DEMglb[RefDEM].SelectionMap,DEMglb[Result].SelectionMap);
-                   MatchAnotherMapThisPixelSize(DEMglb[RefDEM].SelectionMap,DEMglb[Result].SelectionMap);
+                if (Result <> DEM) then begin
+                   CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
+                   if DEMglb[RefDEM].SelectionMap.FullMapSpeedButton.Enabled then begin
+                      MatchAnotherMapThisCoverageArea(DEMglb[RefDEM].SelectionMap,DEMglb[Result].SelectionMap);
+                      MatchAnotherMapThisPixelSize(DEMglb[RefDEM].SelectionMap,DEMglb[Result].SelectionMap);
+                   end;
                 end;
             end;
          end;
@@ -74,6 +301,7 @@ var
    end;
 
 begin {procedure LSP_gridMultipleDEMs}
+   SetColorForProcessing;
    GiveMicrodem_Credit := false;
    WhichDEMs := GetMultipleDEMsFromList('DEMs for LSP maps');
    RefGrid:= 0;
@@ -82,15 +310,17 @@ begin {procedure LSP_gridMultipleDEMs}
       if WhichDEMs[DEM] and ValidDEM(DEM) and StrUtils.AnsiContainsText(UpperCase(DEMglb[DEM].AreaName),'REF') then begin
          RefDEM := DEM;
          RefGrid := ProcessOneDEM(RefDEM);
-         CreateDEMSelectionMap(RefGrid,true,true,mtDEMBlank);
+        //CreateBitmap(
       end;
    end;
 
    for DEM := 1 to MaxDEMDataSets do begin
-      if (DEM <> RefDEM) then ProcessOneDEM(DEM);
+      if WhichDEMs[DEM] and (DEM <> RefDEM) then ProcessOneDEM(DEM);
    end;
    GiveMicrodem_Credit := true;
+   SetColorForWaiting;
 end {procedure LSP_gridMultipleDEMs};
+
 
 function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
 var
@@ -130,7 +360,6 @@ begin
       Incr := 1;
       while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
       NPts := 0;
-      //Prog := 0;
       {$IfDef RecordSingleGridScatterGram} WriteLineToDebugFile('GridScatterGram start scatter, visible=' + TrueOrFalse(Result.Visible)); {$EndIf}
       StartProgress('Scatter plot');
       Col := GridLimits.XGridLow;
@@ -142,8 +371,6 @@ begin
          //Inc(Prog);
          Row := GridLimits.YGridLow;
          while (Row <= GridLimits.YGridHigh) do begin
-            //if DEMGlb[DEM1].GetElevMeters(Col,Row,v[1]) then begin
-               //if DEMGlb[DEM1].GetElevMetersFromSecondDEM(IdenticalGrids,Dem2,Col,Row,v[2]) then begin
             if IdenticalGrids then begin
                if DEMGlb[DEM1].GetElevMetersOnGrid(Col,Row,v[1]) and DEMGlb[DEM2].GetElevMetersOnGrid(Col+xoff,Row+yoff,v[2]) then begin
                   Result.AddPointToDataBuffer(rfile,v);
@@ -163,6 +390,7 @@ begin
 
       EndProgress;
       if (NPts > 0) then begin
+         Result.GraphDraw.ResetMargins := true;
          Result.AutoScaleAndRedrawDiagram;
          Result.AddCorrelationToCorner;
       end
