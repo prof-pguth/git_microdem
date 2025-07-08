@@ -24,11 +24,12 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 16
+  TextHeight = 20
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
     Width = 2418
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -3502,7 +3503,7 @@ object wmdem: Twmdem
     Left = 896
     Top = 336
     object Graphevaluationandscores1: TMenuItem
-      Caption = 'Open DEMIX databae for graph evaluation and scores'
+      Caption = 'Open DEMIX database for graph evaluation and scores'
       OnClick = Graphevaluationandscores1Click
     end
     object Open4elevationrangeDEMIXDBs1: TMenuItem
@@ -3568,10 +3569,6 @@ object wmdem: Twmdem
     object SSIMR21: TMenuItem
       Caption = 'SSIM-FUV'
       OnClick = SSIMR21Click
-    end
-    object MergeSSIMFUV1: TMenuItem
-      Caption = 'Merge SSIM-FUV evaluations'
-      OnClick = MergeSSIMFUV1Click
     end
     object N48: TMenuItem
       Caption = '-'
@@ -3900,7 +3897,6 @@ object wmdem: Twmdem
     object MergeSSIMandR2database1: TMenuItem
       Caption = 'Merge SSIM and R2 database'
       Enabled = False
-      OnClick = MergeSSIMandR2database1Click
     end
     object N39: TMenuItem
       Caption = '-'

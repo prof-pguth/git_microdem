@@ -1,6 +1,5 @@
 unit survey_lines;
 
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
@@ -9,12 +8,10 @@ unit survey_lines;
 {________________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
 {$EndIf}
-
 
 interface
 
@@ -105,13 +102,11 @@ var
                    RealToString(Lat2,-12,-7) + ',' + RealToString(Long2,-12,-7) + ',' + RealToString(Heading,-12,-1) + ',' + RealToString(Heading2,-12,-1)) ;
        MapOwner.Image1.Canvas.Pen.Width := 3;
        MapOwner.Image1.Canvas.Pen.Color := clRed;
-
        MapOwner.MapDraw.LatLongDegreeToScreen(Lat1,Long1,xp,yp);
        MapOwner.Image1.Canvas.MoveTo(xp,yp);
        MapOwner.MapDraw.LatLongDegreeToScreen(Lat2,Long2,xp,yp);
        MapOwner.Image1.Canvas.LineTo(xp,yp);
     end;
-
 
 var
    Lat1,Lat2,Long1,Long2 : float64;

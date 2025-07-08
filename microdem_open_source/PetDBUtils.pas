@@ -819,7 +819,7 @@ var
    fName : PathStr;
    Ext  : ExtStr;
    BlowUp : integer;
-   LoadedImage : PETImage_form.TImageDisplayForm;
+   LoadedImage : PETImage_form.TImageDispForm;
 begin
    with DataTable do begin
       if not DataTable.FieldExists(fieldName) then exit;
@@ -832,7 +832,7 @@ begin
          {$EndIf}
          Ext := UpperCase(ExtractFileExt(fName));
          if ValidImageFileExt(Ext) then begin
-            LoadedImage := TImageDisplayForm.Create(Application);
+            LoadedImage := TImageDispForm.Create(Application);
             LoadedImage.LoadImage(FName);
             BlowUp := 100;
             repeat

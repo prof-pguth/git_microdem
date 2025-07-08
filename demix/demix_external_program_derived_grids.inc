@@ -363,8 +363,6 @@ end;
     end;
 
 
-{$IfDef ExternalProgramFUV_SSIM}
-
     function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
     //these are automatically saved
     var
@@ -395,6 +393,10 @@ end;
         Result := true;
         {$IfDef RecordDEMIX_CONIN} WriteLineToDebugFile('SAGACreateDEMIX_ConIn_Grids out'); {$EndIf}
     end;
+
+
+
+{$IfDef ExternalProgramFUV_SSIM}
 
 
     function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;

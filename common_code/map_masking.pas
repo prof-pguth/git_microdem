@@ -396,10 +396,7 @@ end;
 
 procedure TMapMaskForm.BitBtn6Click(Sender: TObject);
 begin
-   {$IfDef ExAdvancedGIS}
-   {$Else}
-      DEMDef_routines.GetMaskingOptions(True,true);
-   {$EndIf}
+   DEMDef_routines.GetMaskingOptions(True,true);
 end;
 
 procedure TMapMaskForm.BitBtn8Click(Sender: TObject);
@@ -552,7 +549,6 @@ begin
    except
       on Exception do ;
    end;
-
    {$IfDef RecordMapMaskBMPs} Result.SaveToFile(MDTempDir + 'combined_mask.bmp'); {$EndIf}
    {$IfDef RecordMapMasking} WriteLineToDebugFile('TMapMaskForm.CreateCombinedMask out'); {$EndIf}
 end;
@@ -648,7 +644,6 @@ begin
       CheckBox2.Checked := MDDef.RegionsRidgeMask;
       CheckBox3.Checked := MDDef.RegionsShapeFileMask;
       CheckBox4.Checked := SlopeMask;
-      //CheckBox6.Checked := NonUSMask;
       CheckBox7.Checked := MDDef.RegionsStreamMask;
       CheckBox9.Checked := MDDef.ExcludeStreamsInMask;
       CheckBox8.Checked := MDDef.ExcludeRoadsInMask;

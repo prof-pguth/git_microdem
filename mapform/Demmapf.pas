@@ -1680,6 +1680,8 @@ type
     Gaussianfilter1: TMenuItem;
     Hillshade2: TMenuItem;
     Multidirectionalhillshade1: TMenuItem;
+    Differencemap2: TMenuItem;
+    WhiteboxSphericalAverageDeviationofNormals1: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2886,6 +2888,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Gaussianfilter1Click(Sender: TObject);
     procedure Multidirectionalhillshade1Click(Sender: TObject);
     procedure Hillshade2Click(Sender: TObject);
+    procedure Differencemap2Click(Sender: TObject);
+    procedure WhiteboxSphericalAverageDeviationofNormals1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -6529,6 +6533,11 @@ begin
 end;
 
 
+procedure TMapForm.Differencemap2Click(Sender: TObject);
+begin
+   Make_Grid.GridDiffernces(false);
+end;
+
 procedure TMapForm.MakeAreaNameTheCaption;
 begin
    if MapDraw.DEMMap then begin
@@ -6541,7 +6550,6 @@ procedure TMapForm.Differencemaps1Click(Sender: TObject);
 var
    DEMsWanted : tDEMbooleanArray;
    i,j : integer;
-   //fName : PathStr;
    DiffMaps : array[1..25] of integer;
    Maps : tStringList;
 begin
@@ -7669,7 +7677,7 @@ procedure TMapForm.N2bandscattergram1Click(Sender: TObject);
 var
    GridLimits : tGridLimits;
 begin
-    DEMStat.GridScatterGram(GridLimits);
+   DEMStat.GridScatterGram(GridLimits);
 end;
 
 
@@ -16167,7 +16175,7 @@ begin
          SetUpLegendForm.Edit4.Text := IntToStr(Bitmap2.Width + 20);
          SetUpLegendForm.Edit3.Text := IntToStr(Bitmap2.Height + 190 + SetUpLegendForm.TopHeight);
 
-         PrinterImage := PetImage_form.TImageDisplayForm.Create(Application);
+         PrinterImage := PetImage_form.TImageDispForm.Create(Application);
          PrinterImage.StatusBar1.Height := 20;
          PrinterImage.CreateOverlays;
          PrinterImage.CanCloseItself := false;
@@ -19263,10 +19271,7 @@ end;
 
 procedure TMapForm.Differencebetweentwogrids2Click(Sender: TObject);
 begin
-   {$IfDef ExGeoStats}
-   {$Else}
-      Make_Grid.GridDiffernces(false);
-   {$EndIf}
+   Make_Grid.GridDiffernces(false);
 end;
 
 procedure TMapForm.Diagonalgridspacingcomparison1Click(Sender: TObject);
@@ -20352,7 +20357,7 @@ procedure TMapForm.Whitebox1Click(Sender: TObject);
 const
    FilterSize : integer = 5;
 begin
-   ReadDefault('Filter Size (pixels)',FilterSize);
+   ReadDefault('Filter Size (odd, pixels)',FilterSize);
    WBT_AvgNormVectAngDev(true,GeotiffDEMNameOfMap,FilterSize);
 end;
 
@@ -20427,6 +20432,14 @@ begin
        NewGrid := WBT_SlopeMap(true,GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(NewGrid,MapDraw.DEMonMap);
    {$EndIf}
+end;
+
+procedure TMapForm.WhiteboxSphericalAverageDeviationofNormals1Click(Sender: TObject);
+const
+   FilterSize : integer = 5;
+begin
+   ReadDefault('Filter Size (odd, pixels)',FilterSize);
+   WBT_SphericalStdDevOfNormals(true,GeotiffDEMNameOfMap,FilterSize);
 end;
 
 procedure TMapForm.Whiteboxstreamnetwork1Click(Sender: TObject);

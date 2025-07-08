@@ -466,9 +466,9 @@ end;
                      EmpSource.Enabled := true;
                      GISdb[DBNum].ClearGISFilter;
                   end;
+                  if MDDef.MakeTigerMapGrayscale then MakeTheBitmapGrayScale(Bitmap);
+                  if MDDef.SubdueTigerBase then MakeTheBitmapSubdued(Bitmap);
                end;
-               if MDDef.MakeTigerMapGrayscale then MakeTheBitmapGrayScale(Bitmap);
-               if MDDef.SubdueTigerBase then MakeTheBitmapSubdued(Bitmap);
                {$IfDef RecordTiger} WriteLineToDebugFile('out'); {$EndIf}
             end;
          end;

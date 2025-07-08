@@ -141,7 +141,7 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    function PickMap(WhatFor : shortstring) : integer;
    function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
    function PickMaps(aCaption : ShortString) : tStringList;
-   function PickMapsFromDEMsWanted(DEMSwanted : tDEMbooleanArray) : tStringList;
+   function GetListOfDEMs(DEMSwanted : tDEMbooleanArray) : tStringList;
 
    function EditHeaderRecord(DEM : integer; AllowChangeType : boolean) : boolean;
    procedure ViewHeaderRecord(DEM : integer);
@@ -1491,7 +1491,7 @@ end;
          PickSomeFromStringList(Result, aCaption);
       end;
 
-      function PickMapsFromDEMsWanted(DEMSwanted : tDEMbooleanArray) : tStringList;
+      function GetListOfDEMs(DEMSwanted : tDEMbooleanArray) : tStringList;
       var
          i : integer;
       begin
@@ -1499,7 +1499,6 @@ end;
          for i := 1 to MaxDEMDataSets do
             if DEMsWanted[i] then Result.Add(DEMGlb[i].SelectionMap.Caption);
       end;
-
 
 
       function PickADifferentMap(WhatFor,ThisMapCaption : shortstring) : integer;
@@ -1512,7 +1511,7 @@ end;
             if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption <> ThisMapCaption) then Maps.Add(WMDEM.MDIChildren[i].Caption);
          Result := 0;
 
-         if Maps.Count = 1 then begin
+         if (Maps.Count = 1) then begin
             for i := 0 to pred(WMDEM.MDIChildCount) do
                if (WMDEM.MDIChildren[i] is tMapForm) and (WMDEM.MDIChildren[i].Caption = Maps.Strings[0]) then Result := i;
          end

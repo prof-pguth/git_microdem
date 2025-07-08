@@ -19,6 +19,8 @@ unit DEMStat;
       //{$Define NoParallelFor}
       {$Define RecordDEMIX}
       {$Define RecordFUV}
+      {$Define RecordFUVcreate}
+      {$Define RecordFUVcreateFull}
       //{$Define RecordFUVbb}
       //{$Define MultipleLSPFUV}
       //{$Define RecordSensitivity}
@@ -464,7 +466,7 @@ var
                end;
 
                if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
-                  Result.GraphDraw.ShowLine[Result.GraphDraw.DataFilesPlotted.Count] := true;
+                  Result.GraphDraw.ShowLine[pred(Result.GraphDraw.DataFilesPlotted.Count)] := true;
                end;
                if (Graph in [ElevSlope,ElevSlopeDeg]) and (NumDEMs = 1) and (MDdef.ShowSDonElevSlope) and (MDdef.ShowGeomorphometry) then begin
                   inc(n);
@@ -479,7 +481,7 @@ var
                      v[2] := BinElev[CurDEM]^[x];
                      BlockWrite(Rfile,v,1);
                   end;
-                  Result.GraphDraw.ShowLine[Result.GraphDraw.DataFilesPlotted.Count] := true;
+                  Result.GraphDraw.ShowLine[pred(Result.GraphDraw.DataFilesPlotted.Count)] := true;
                end
                else if (Graph = SlopeFreq) then begin
                   for x := 0 to MaxSlopeValue do if SlopeHist[CurDEM]^[x] > 0 then begin
@@ -2403,6 +2405,7 @@ begin
 end;
 
 //{$EndIf}
+
 
 function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
 begin

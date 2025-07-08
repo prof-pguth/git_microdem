@@ -3,7 +3,7 @@ object fuv_ssim_control: Tfuv_ssim_control
   Top = 0
   Caption = 'fuv_ssim_control_form'
   ClientHeight = 266
-  ClientWidth = 447
+  ClientWidth = 618
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -103,8 +103,8 @@ object fuv_ssim_control: Tfuv_ssim_control
     TabOrder = 5
   end
   object BitBtn1: TBitBtn
-    Left = -1
-    Top = 229
+    Left = 8
+    Top = 233
     Width = 105
     Height = 25
     Caption = 'Process'
@@ -137,8 +137,8 @@ object fuv_ssim_control: Tfuv_ssim_control
     TabOrder = 9
   end
   object BitBtn2: TBitBtn
-    Left = 118
-    Top = 229
+    Left = 119
+    Top = 233
     Width = 107
     Height = 25
     Caption = 'Merge Areas'
@@ -178,5 +178,27 @@ object fuv_ssim_control: Tfuv_ssim_control
     Height = 23
     TabOrder = 14
     Text = 'Edit1'
+  end
+  object CheckBox7: TCheckBox
+    Left = 151
+    Top = 95
+    Width = 97
+    Height = 17
+    Caption = 'Do partials'
+    TabOrder = 15
+  end
+  object RadioGroup1: TRadioGroup
+    Left = 448
+    Top = 40
+    Width = 129
+    Height = 124
+    Caption = 'Criteria set to use'
+    Items.Strings = (
+      'FUV'
+      'SSIM'
+      'Partials'
+      'Curvatures')
+    TabOrder = 16
+    OnClick = RadioGroup1Click
   end
 end

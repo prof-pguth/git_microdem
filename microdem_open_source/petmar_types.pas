@@ -277,12 +277,13 @@ type
    tLegendColors = integer;  //(LegGrays,LegRainbows,LegTerrain,LegSpectrum,LegChloropleth);
 
    tSymbols256  = array[0..255] of tFullSymbolDeclaration;
-   tColors15   = array[1..15] of tColor;
-   tIntegers15 = array[1..15] of integer;
-   tbytes15 = array[1..15] of byte;
    tbytes256 = array[0..255] of byte;
    tColors256  = array[0..255] of TColor;
    tPlatformColors256  = array[0..255] of TPlatformColor;
+
+   //tColors15   = array[1..15] of tColor;
+   //tIntegers15 = array[1..15] of integer;
+   //tbytes15 = array[1..15] of byte;
    tDistanceUnits = (disMetric,disEnglish,disNautical);
    tLatLongMethod = (DecDegrees,DecMinutes,DecSeconds,NearestDegree,NearestMinute,NearestSecond,ShortDegrees,VeryShortDegrees,LongDegrees);
    tAngleMeasure = (amDegree,amMinute,amSecond);
@@ -1007,7 +1008,7 @@ end;
       i : integer;
       TStr : string10;
    begin
-      if OKwriteDebugLog then begin
+      if OKwriteDebugLog and (HeaderLog <> Nil) then begin
          try
             for i := 0 to pred(HeaderLog.Count) do begin
                if LineNumbers then TStr := IntegerToString(i,7) + ':  '

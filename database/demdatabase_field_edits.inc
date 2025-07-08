@@ -9,8 +9,6 @@
 {________________________________________}
 
 
-
-
 function TGISdataBaseModule.AddFieldToDataBase(ft: TFieldType; FName: ShortString; Length : integer; Decimals : integer = 0) : boolean;
 begin
     if (MyData <> Nil) then begin

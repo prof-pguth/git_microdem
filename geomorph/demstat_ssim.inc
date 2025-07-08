@@ -238,11 +238,13 @@ end;
 
 
 procedure DoSSIMandFUVForAnArea(AreaName : shortstring; Overwrite,AreasInsteadOfTiles : boolean);
+//July 2025, changed to only allow one mode at a time
 var
    DEMIXtileDB,i,OnCriterion : integer;
-   ResultsSSIM,ResultsFUV,TheCriteria : tStringList;
-   SavefNameSSIM,SavefNameFUV,
-   WetnessName : PathStr;
+   //ResultsSSIM,ResultsFUV,ResultsPartials,ResultsTheCriteria : tStringList;
+   //SavefNameSSIM,SavefNameFUV,SavefNamePartials,
+   ResultsAnalysis,TheCriteria : tStringList;
+   SavefNameAnalysis,WetnessName : PathStr;
    aLine,TileName : shortstring;
    bb : sfBoundBox;
    TileFull : float32;
@@ -268,12 +270,12 @@ var
    procedure DoCriterion(Criterion : ANSIString; usingPointGrids,usingAreaGrids : tDEM_int_array; ClearDerived : boolean = true);
    var
       i,UsingRef : integer;
-      Criterion2,WhatsMissing{,What} : shortstring;
+      Criterion2,WhatsMissing : shortstring;
       RefGridLimits : tGridLimits;
       gl1 : tGridLimits;
       Mean,Std : float32;
       NPts : int64;
-      TheCriteria : tStringList;
+      //TheCriteria : tStringList;
 
             function TileSetUp : shortstring;
             begin
@@ -332,10 +334,10 @@ var
    var
       FUV : float64;
    begin {procedure DoCriterion}
-       {$If Defined(RecordDEMIXFull) or Defined(RecordFUV)} WriteLineToDebugFile(AreaName + ' Criterion=' + Criterion); {$EndIf}
+       {$If Defined(RecordDEMIXFull) or Defined(RecordFUVcreate)} WriteLineToDebugFile(AreaName + ' Criterion=' + Criterion); {$EndIf}
        if MissingDEMs then exit;
 
-       if MDDef.DoFUV then begin //do FUV correlation coefficients first before normalizing grids for SSIM
+       if MDDef.DoFUV or MDDef.DoPartials or MDDef.DoCurvatures then begin //do FUV correlation coefficients first before normalizing grids for SSIM
           {$If Defined(RecordDEMIXTimeCriterion)}  Stopwatch := TStopwatch.StartNew; {$EndIf}
           Criterion2 := Criterion + '_FUV';   //StringReplace(Criterion,'SSIM','FUV',[rfReplaceAll, rfIgnoreCase]);
 
@@ -355,7 +357,7 @@ var
                    aLine := aline + ',' + RealToString(FUV,-12,8);
                 end;
              end;
-             ResultsFUV.Add(aline);
+             ResultsAnalysis.Add(aline);
              {$If Defined(RecordFUV)} WriteLineToDebugFile(aLine); {$EndIf}
           end
           else begin
@@ -376,12 +378,11 @@ var
                       UsingRef := RefGridForThisPointGrid(UsingPointGrids,i);
                       RefGridLimits := DEMglb[UsingRef].sfBoundBox2tGridLimits(bb);
                       {$If Defined(TrackCovariance)} WriteLineToDebugFile(''); WriteLineToDebugFile('GridLimits: ' + GridLimitsToString(RefGridLimits)); {$EndIf}
-                      //{$If Defined(RecordFUV)} WriteLineToDebugFile(IntToStr(i) + ' ref=' + IntToStr(UsingRef) + ' test=' + IntToStr(usingPointGrids[i])); {$EndIf}
                       {$If Defined(RecordFUVbb)} WriteLineToDebugFile(DEMglb[usingPointGrids[i]].AreaName + '  bb=' + GridLimitsToString(RefGridLimits)); {$EndIf}
                       aLine := aline + ',' + RealToString(GetFUVForPairGrids(RefGridLimits,UsingRef,usingPointGrids[i]),-12,8);
                    end;
                 end;
-                ResultsFUV.Add(aline);
+                ResultsAnalysis.Add(aline);
                 GISdb[DEMIXtileDB].MyData.Next;
              end;
           end;
@@ -426,7 +427,7 @@ var
              for i := 1 to NumPtDEMs do begin
                 FigureSSIMstats(PtSSIMGrids[i]);
              end;
-             ResultsSSIM.Add(aline);
+             ResultsAnalysis.Add(aline);
              GISdb[DEMIXtileDB].MyData.Next;
           end;
           for i := 1 to NumPtDEMs do CloseSingleDEM(PtSSIMGrids[i]);
@@ -441,7 +442,7 @@ var
    procedure UpdateCriteriaPanel(Criterion : shortstring; Together : integer = 1);
    begin
        inc(OnCriterion,Together);
-       wmdem.SetPanelText(3,DEMIXModeName + '  ' + IntToStr(Oncriterion)  + '/' + IntToStr(TheCriteria.Count),true);
+       wmdem.SetPanelText(3,DEMIXModeName + '  ' + IntToStr(Oncriterion)  + '/' + IntToStr(TheCriteria.Count) + ' ' + Criterion,true);
    end;
 
    {$IfDef ExternalProgramFUV_SSIM}
@@ -470,19 +471,8 @@ var
                 {$IfDef RecordDEMIX} HighLightLineToDebugFile('ROTOR criterion fail for area=' + AreaName); {$EndIf}
              end;
           end;
-
-          if (TheCriteria.IndexOf('CONIN') <> -1) then begin //created by SAGA or WbW with Jupyter Notebook
-             UpdateCriteriaPanel('CONIN');
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             HeavyDutyProcessing := true;
-             Success := SAGACreateDEMIX_ConIn_Grids(MDDef.OpenSavedMapsFUVSSIM,AreaName,'CONIN_');
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WBT ConIn ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             if Success then DoCriterion('CONIN',PointGrids,AreaGrids)
-             else ClearDerivedGrids;
-          end;
        end;
     {$EndIf}
-
 
       procedure WhiteBoxToolsLSPs;
       var
@@ -522,6 +512,13 @@ var
              DoCriterion('VDEV',PointGrids,AreaGrids);
           end;
 
+          if (TheCriteria.IndexOf('SSTD') <> -1) then begin //created by WbT
+             UpdateCriteriaPanel('SSTD');
+             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_SphericalStdDevOfNormals(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,5);
+             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_SphericalStdDevOfNormals(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,5);
+             DoCriterion('SSTD',PointGrids,AreaGrids);
+          end;
+
           if (TheCriteria.IndexOf('MHILL') <> -1) then begin //created by WbT
              UpdateCriteriaPanel('MHILL');
              for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_MultidirectionalHillshadeMap(MDDef.OpenSavedMapsFUVSSIM,PointDEMs[i]);
@@ -549,55 +546,147 @@ var
           end;
       end;
 
+
+          procedure MICRODEM_LSPs;
+          var
+             HowDone : shortstring;
+          begin
+              if (TheCriteria.IndexOf('HILL') <> -1) then begin
+                 UpdateCriteriaPanel('HILL');
+                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+                 HowDone := CreateDEMIXDerivedGrids('HILL_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
+                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('Hillshade' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+                 DoCriterion('HILL',PointGrids,AreaGrids);
+              end;
+              if (TheCriteria.IndexOf('TPI') <> -1) then begin
+                 UpdateCriteriaPanel('TPI');
+                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+                 HowDone := CreateDEMIXDerivedGrids('TPI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
+                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('TPI' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+                 DoCriterion('TPI',PointGrids,AreaGrids);
+              end;
+
+              if (TheCriteria.IndexOf('RRI') <> -1) then begin
+                 UpdateCriteriaPanel('RRI');
+                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+                 HowDone := CreateDEMIXDerivedGrids('RRI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
+                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD RRI created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+                 DoCriterion('RRI',PointGrids,AreaGrids);
+              end;
+
+              if (TheCriteria.IndexOf('OPENU') <> -1) or (TheCriteria.IndexOf('OPEND') <> -1) then begin
+                 UpdateCriteriaPanel('Openness',2);
+                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+                 HowDone := CreateDEMIXOpennessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
+                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Openness' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+                 DoCriterion('OPEND',PointGrids2,AreaGrids2,false);
+                 DoCriterion('OPENU',PointGrids,AreaGrids);
+              end;
+
+              if (TheCriteria.IndexOf('SLOPE') <> -1) or (TheCriteria.IndexOf('RUFF') <> -1) then begin
+                 UpdateCriteriaPanel('Slope/ruff',2);
+                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+                 CreateDEMIXSlopeRoughnessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
+                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Slope/ruff' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+                 DoCriterion('SLOPE',PointGrids2,AreaGrids2,false);
+                 DoCriterion('RUFF',PointGrids,AreaGrids);
+              end;
+           end;
+
+           procedure OtherProgramLSPs;
+           var
+              Success : boolean;
+           begin
+              if (TheCriteria.IndexOf('KNSS') <> -1) then begin
+                 UpdateCriteriaPanel('KNSS');
+                 LSP_Calc_Grids('knss',MDDef.OpenSavedMapsFUVSSIM);
+                 DoCriterion('KNSS',PointGrids,AreaGrids);
+              end;
+              if (TheCriteria.IndexOf('KNCC') <> -1) then begin
+                 UpdateCriteriaPanel('KNCC');
+                 LSP_Calc_Grids('kncc',MDDef.OpenSavedMapsFUVSSIM);
+                 DoCriterion('KNCC',PointGrids,AreaGrids);
+              end;
+              if (TheCriteria.IndexOf('KNCS') <> -1) then begin
+                 UpdateCriteriaPanel('KNCS');
+                 LSP_Calc_Grids('kncs',MDDef.OpenSavedMapsFUVSSIM);
+                 DoCriterion('KNCS',PointGrids,AreaGrids);
+              end;
+
+              if (TheCriteria.IndexOf('CONIN') <> -1) then begin //created by SAGA or WbW with Jupyter Notebook
+                 UpdateCriteriaPanel('CONIN');
+                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
+                 Success := SAGACreateDEMIX_ConIn_Grids(MDDef.OpenSavedMapsFUVSSIM,AreaName,'CONIN_');
+                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WBT ConIn ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+                 if Success then DoCriterion('CONIN',PointGrids,AreaGrids)
+                 else ClearDerivedGrids;
+              end;
+           end;
+
+
 var
    Success : boolean;
-   HowDone : shortstring;
+   j : integer;
+   fName : PathStr;
+   HowDone,CritName,Choice : shortstring;
    FullTiles : tStringList;
 begin {procedure DoSSIMandFUVForAnArea}
     if DEMIXanalysismode in [DEMIXneo,DEMIXtraditional] then begin
-       SaveFNameSSIM := SSIMresultsDir + AreaName + '_ssim_results.csv';
-       SaveFNameFUV := FUVresultsDir + AreaName + '_fuv_results.csv';
+       if MDDef.DoSSIM then SaveFNameAnalysis := SSIMresultsDir + AreaName + '_ssim_results.csv';
+       if MDDef.DoFUV then SaveFNameAnalysis := FUVresultsDir + AreaName + '_fuv_results.csv';
+       if MDDef.DoPartials then SaveFNameAnalysis := PartialsresultsDir + AreaName + '_partials_results.csv';
+       if MDDef.DoCurvatures then SaveFNameAnalysis := CurvaturesResultsDir + AreaName + '_curvatures_results.csv';
     end
     else begin
        MessageToContinue('Undefined DEMIXanalysismode');
        exit;
     end;
     if Overwrite then begin
-       if MDDef.DoSSIM and FileExists(SaveFNameSSIM) then File2Trash(SaveFNameSSIM);
-       if MDDef.DoFUV and FileExists(SaveFNameFUV) then File2Trash(SaveFNameFUV);
+       if FileExists(SaveFNameAnalysis) then File2Trash(SaveFNameAnalysis);
     end
     else begin
-       if (MDDef.DoSSIM and (FileExists(SaveFNameSSIM))) or (MDDef.DoFUV and (FileExists(SaveFNameFUV))) then begin
+       if FileExists(SaveFNameAnalysis) then begin
          exit;
        end;
     end;
 
     SaveBackupDefaults;
-    if MDDef.DoSSIM or MDDef.DoFUV then begin
-       TheCriteria := OpenFUVOrderedParams;
+    if MDDef.DoSSIM or MDDef.DoFUV or MDDef.DoPartials or MDDef.DoCurvatures then begin
        OnCriterion := 0;
 
        {$If Defined(TimeGridsForArea)} Stopwatch2 := TStopwatch.StartNew; {$EndIf}
        {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}
        wmdem.SetPanelText(3, 'Load DEMs',true);
        ShowSatProgress :=  false;
+       ResultsAnalysis := tStringList.Create;
        if MDDef.DoFUV then begin
-          ResultsFUV := tStringList.Create;
-          //ResultsFUV.SaveToFile(SaveFNameFUV);
+          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_fuv_parameters.dbf');
+          SafeMakeDir(FUVresultsDir);
        end;
        if MDDef.DoSSIM then begin
-          ResultsSSIM := tStringList.Create;
-          //ResultsSSIM.SaveToFile(SaveFNameSSIM);
+          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_fuv_parameters.dbf');
+          SafeMakeDir(SSIMresultsDir);
+       end;
+       if MDDef.DoPartials then begin
+          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_partials_criteria.dbf');
+          SafeMakeDir(PartialsResultsDir);
+       end;
+       if MDDef.DoCurvatures then begin
+          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_curvatures_criteria.dbf');
+          SafeMakeDir(CurvaturesResultsDir);
        end;
 
        if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,MDDef.OpenSavedMapsFUVSSIM) then begin
-          {$If Defined(TrackPixelIs) or Defined(RecordDEMIXFull)} ShowDEMIXGrids(AreaName + ' DEMs opened',PointDEMs,AreaDEMs); {$EndIf}
+          {$If Defined(RecordFUVcreate)} ShowDEMIXGrids(AreaName + ' DEMs opened',PointDEMs,AreaDEMs); {$EndIf}
           InitializePointAndAreaGrids(PointGrids,AreaGrids);
           aline := 'DEMIX_TILE,AREA,LAT,LONG,GRID_FULL,CRITERION';
-          for i := 1 to NumAreaDEMs do aline := aLine + ',' + RemoveAreaFromDEMName(AreaName,DEMGlb[AreaDEMs[i]].AreaName);
-          for i := 1 to NumPtDEMs do aline := aLine + ',' + RemoveAreaFromDEMName(AreaName,DEMGlb[PointDEMs[i]].AreaName);
-          if MDDef.DoFUV then ResultsFUV.Add(aLine);
-          if MDDef.DoSSIM then ResultsSSIM.Add(aLine);
+          for i := 1 to NumAreaDEMs do begin
+             aline := aLine + ',' + RemoveAreaFromDEMName(AreaName,DEMGlb[AreaDEMs[i]].AreaName);
+          end;
+          for i := 1 to NumPtDEMs do begin
+             aline := aLine + ',' + RemoveAreaFromDEMName(AreaName,DEMGlb[PointDEMs[i]].AreaName);
+          end;
+          ResultsAnalysis.Add(aLine);
 
           if AreasInsteadOfTiles then begin
              FullTiles := tStringList.Create;
@@ -610,99 +699,71 @@ begin {procedure DoSSIMandFUVForAnArea}
              DEMIXtileDB := DEMIXtileFill(PointDEMs[0],DEMGlb[PointDEMs[0]].DEMBoundBoxGeo,false);
              GISdb[DEMIXtileDB].ApplyGISFilter(FilterForDEMIXtilesToUse);
           end;
-          {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile(AreaName + ' num tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
+          {$If Defined(RecordFUVcreate)} WriteLineToDebugFile(AreaName + ' num tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
 
-          if (TheCriteria.IndexOf('HILL') <> -1) then begin
-             UpdateCriteriaPanel('HILL');
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             HowDone := CreateDEMIXDerivedGrids('HILL_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('Hillshade' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('HILL',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('TPI') <> -1) then begin
-             UpdateCriteriaPanel('TPI');
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             HowDone := CreateDEMIXDerivedGrids('TPI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('TPI' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('TPI',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('RRI') <> -1) then begin
-             UpdateCriteriaPanel('RRI');
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             HowDone := CreateDEMIXDerivedGrids('RRI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD RRI created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('RRI',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('OPENU') <> -1) or (TheCriteria.IndexOf('OPEND') <> -1) then begin
-             UpdateCriteriaPanel('Openness',2);
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             HowDone := CreateDEMIXOpennessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Openness' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('OPEND',PointGrids2,AreaGrids2,false);
-             DoCriterion('OPENU',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('SLOPE') <> -1) or (TheCriteria.IndexOf('RUFF') <> -1) then begin
-             UpdateCriteriaPanel('Slope/ruff',2);
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             CreateDEMIXSlopeRoughnessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Slope/ruff' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             DoCriterion('SLOPE',PointGrids2,AreaGrids2,false);
-             DoCriterion('RUFF',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('KNSS') <> -1) then begin
-             UpdateCriteriaPanel('KNSS');
-             LSP_Calc_Grids('knss',MDDef.OpenSavedMapsFUVSSIM);
-             DoCriterion('KNSS',PointGrids,AreaGrids);
-          end;
-          if (TheCriteria.IndexOf('KNCC') <> -1) then begin
-             UpdateCriteriaPanel('KNCC');
-             LSP_Calc_Grids('kncc',MDDef.OpenSavedMapsFUVSSIM);
-             DoCriterion('KNCC',PointGrids,AreaGrids);
-          end;
-          if (TheCriteria.IndexOf('KNCS') <> -1) then begin
-             UpdateCriteriaPanel('KNCS');
-             LSP_Calc_Grids('kncs',MDDef.OpenSavedMapsFUVSSIM);
-             DoCriterion('KNCS',PointGrids,AreaGrids);
-          end;
-
-          WhiteBoxToolsLSPs;
-
-          {$IfDef DoExternalProgramGrids}
-             DoExternalProgramGrids;
-          {$EndIf}
-
-          if (TheCriteria.IndexOf('ELEV') <> -1) then begin
-             //Elevation done last, so we no longer need elevation to create derived grids, and can normalize it
-             UpdateCriteriaPanel('ELEV');
-             DoCriterion('ELEV',PointDEMs,AreaDEMs);
-          end;
-
-          if MDDef.DoSSIM then begin
-             if (ResultsSSIM.Count > 1) then begin
-                ResultsSSIM.SaveToFile(SavefNameSSIM);
-                {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Save to ' + SaveFNameSSIM); {$EndIf}
+          if MDDef.DoPartials or MDDef.DoCurvatures then begin
+             if MDDef.DoPartials then begin
+                Choice := ' -p';
              end
-             else begin
-                {$IfDef RecordDEMIXFull} HighlightLineToDebugFile('No results for ' + SaveFNameSSIM); {$EndIf}
+             else if MDDef.DoCurvatures then begin
+                Choice := ' -a'
              end;
-             ResultsSSIM.Free;
+
+             {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('RUN_LSPcalculator point DEMs'); {$EndIf}
+             for i := dmxFirstPoint to NumPtDEMs do begin
+                wmdem.SetPanelText(3,DEMGlb[PointDEMs[i]].AreaName,true);
+                RUN_LSPcalculator(PointDEMs[i],choice);
+             end;
+             {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('RUN_LSPcalculator area DEMs'); {$EndIf}
+             for i := dmxFirstArea to NumAreaDEMs do begin
+                wmdem.SetPanelText(3,DEMGlb[AreaDEMs[i]].AreaName,true);
+                RUN_LSPcalculator(AreaDEMs[i],Choice);
+             end;
+
+             for j := 0 to pred(TheCriteria.Count) do begin
+                 CritName := TheCriteria.Strings[j];
+                 UpdateCriteriaPanel(CritName);
+                 if CritName = 'ELEV' then begin
+                    DoCriterion('ELEV',PointDEMs,AreaDEMs);
+                 end
+                 else begin
+                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' open grids'); {$EndIf}
+                     for i := dmxFirstPoint to NumPtDEMs do begin
+                        fName := MDtempDir + DEMglb[PointDEMs[i]].AreaName + '_' + CritName + '.tif';
+                        {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(fName); {$EndIf}
+                        PointGrids[i] := OpenNewDEM(fName,false);
+                     end;
+                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' open area DEMs'); {$EndIf}
+                     for i := dmxFirstArea to NumAreaDEMs do begin
+                        fName := MDtempDir + DEMglb[AreaDEMs[i]].AreaName + '_' + CritName + '.tif';
+                        {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(fName); {$EndIf}
+                        AreaGrids[i] := OpenNewDEM(fName,false);
+                     end;
+                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' call DoCriterion'); {$EndIf}
+                     DoCriterion(CritName,PointGrids,AreaGrids);
+                 end;
+             end;
+          end
+          else begin
+              MICRODEM_LSPs;
+              OtherProgramLSPs;
+              WhiteBoxToolsLSPs;
+              {$IfDef DoExternalProgramGrids}
+                 DoExternalProgramGrids;
+              {$EndIf}
+
+              UpdateCriteriaPanel('ELEV');
+              DoCriterion('ELEV',PointDEMs,AreaDEMs);
           end;
 
-          if MDDef.DoFUV then begin
-             if (ResultsFUV.Count > 1) then begin
-                ResultsFUV.SaveToFile(SavefNameFUV);
-                {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Save to ' + SaveFNameFUV); {$EndIf}
-             end
-             else begin
-                {$IfDef RecordDEMIXFull} HighlightLineToDebugFile('No results for ' + SaveFNameFUV); {$EndIf}
-             end;
-             ResultsFUV.Free;
-          end;
+           if (ResultsAnalysis.Count > 1) then begin
+              ResultsAnalysis.SaveToFile(SavefNameAnalysis);
+              {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Save to ' + SaveFNameAnalysis); {$EndIf}
+           end
+           else begin
+              {$IfDef RecordDEMIXFull} HighlightLineToDebugFile('No results for ' + SaveFNameAanlysis); {$EndIf}
+           end;
+           ResultsAnalysis.Free;
 
           if (not MDDef.OpenSavedMapsFUVSSIM) then CloseAllDEMs;
           CloseAndNilNumberedDB(DEMIXtileDB);
@@ -724,10 +785,6 @@ var
    i     : integer;
    LocalAreas : boolean;
 begin
-   if not (MDDef.DoFUV or MDDef.DoSSIM) then begin
-      if not AnswerIsYes('Neither FUV/SSIM selected') then exit;
-   end;
-
    try
       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('AreaSSIMandFUVComputations in'); {$EndIf}
       GetDEMIXPaths(true);
@@ -737,6 +794,8 @@ begin
       {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations in, selected areas=' + IntToStr(Areas.Count)); {$EndIf}
       if MDDef.DoSSIM then SafeMakeDir(SSIMresultsDir);
       if MDDef.DoFUV then SafeMakeDir(FUVresultsDir);
+      if MDDef.DoPartials then SafeMakeDir(PartialsResultsDir);
+      if MDDef.DoCurvatures then SafeMakeDir(CurvaturesResultsDir);
       LockStatusBar := true;
       wmdem.SetPanelText(0, 'Started ' + TimeToStr(Now),true);
       HeavyDutyProcessing := true;

@@ -899,7 +899,7 @@ var
            rFile : file;
            v : tFloatPoint;
         begin
-          CrossTrackProfile.OpenPointFile(rfile,CrossTrackProfile.Symbol);
+          CrossTrackProfile.OpenPointSymbolFile(rfile,'fresnel',CrossTrackProfile.Symbol);
           for I := 0 to 360 do begin
              v[1] := SinDeg(i) * Rad;
              v[2] := Ht + CosDeg(i) * Rad;
@@ -1466,9 +1466,9 @@ begin
    ThisGraph.GraphDraw.VertLabel := 'Elevation (m)';
    ThisGraph.BaseCaption := 'Parallel Profiles';
    ThisGraph.VertCompare := 0.001;
-   for i := 1 to 255 do ThisGraph.GraphDraw.FileColors256[i] := claSilver;
-   for i := 1 to 15 do ThisGraph.GraphDraw.ShowPoints[i] := false;
-   for i := 1 to 15 do ThisGraph.GraphDraw.ShowLine[i] := true;
+   for i := 0 to 255 do ThisGraph.GraphDraw.FileColors256[i] := claSilver;
+   for i := 0 to 15 do ThisGraph.GraphDraw.ShowPoints[i] := false;
+   for i := 0 to 15 do ThisGraph.GraphDraw.ShowLine[i] := true;
    ThisGraph.GraphDraw.FileColors256[1] := claRed;
 
    Points := round(MDDef.wf.FanDEMSpaceMultiple * DEMGlb[DEM].AverageSpace);

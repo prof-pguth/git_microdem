@@ -55,8 +55,6 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 215
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 803
-    ExplicitHeight = 168
     object Image1: TImage
       Left = 0
       Top = 0
@@ -69,9 +67,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnMouseMove = Image1MouseMove
       OnMouseUp = Image1MouseUp
       ExplicitLeft = 3
-      ExplicitTop = -2
-      ExplicitWidth = 929
-      ExplicitHeight = 759
+      ExplicitTop = -4
     end
   end
   object Panel1: TPanel
@@ -88,8 +84,6 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 196
-    ExplicitWidth = 803
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -97,7 +91,6 @@ object ThisBaseGraph: TThisBaseGraph
     Width = 809
     Height = 28
     TabOrder = 2
-    ExplicitWidth = 803
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -629,7 +622,7 @@ object ThisBaseGraph: TThisBaseGraph
   end
   object PopupMenu1: TPopupMenu
     Left = 288
-    Top = 72
+    Top = 64
     object Rescalegraph1: TMenuItem
       Caption = 'Rescale graph'
       OnClick = Rescalegraph1Click

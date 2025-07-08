@@ -86,7 +86,7 @@ var
   Form2 : TDBJoinForm2;
   FieldsInDB : tStringList;
 begin
-  {$IfDef RecordDBjoin} WriteLineToDebugFile('SetUpJoin in'); {$EndIf}
+   {$IfDef RecordDBjoin} WriteLineToDebugFile('SetUpJoin in'); {$EndIf}
    Form2 := TDBJoinForm2.Create(Application);
    with Form2 do begin
       Caption := 'Join for ' + GIS.dbName;

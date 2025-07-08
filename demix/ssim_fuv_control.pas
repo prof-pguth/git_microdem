@@ -22,7 +22,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls;
 
 type
   Tfuv_ssim_control = class(TForm)
@@ -46,6 +46,8 @@ type
     BitBtn3: TBitBtn;
     Edit1: TEdit;
     Label1: TLabel;
+    CheckBox7: TCheckBox;
+    RadioGroup1: TRadioGroup;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
@@ -54,6 +56,7 @@ type
     procedure HillshadeClick(Sender: TObject);
     procedure HANDClick(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
+    procedure RadioGroup1Click(Sender: TObject);
   private
     { Private declarations }
     procedure CheckParameters;
@@ -141,6 +144,12 @@ begin
    CheckBox8.Checked := MDDef.SSIM_Openness;
    CheckBox10.Checked := MDDef.SSIM_ConvergeIndex;
    *)
+
+    if MDDef.DoFUV then RadioGroup1.ItemIndex := 0
+    else if MDDef.DoSSIM then RadioGroup1.ItemIndex := 1
+    else if MDDef.DoPartials then RadioGroup1.ItemIndex := 2
+    else if MDDef.DoCurvatures then RadioGroup1.ItemIndex := 3;
+
    CheckBox5.Checked := MDDef.DEMIX_overwrite_enabled;
    CheckBox6.Checked := MDDef.DEMIX_all_areas;
    CheckBox1.Checked := true;
@@ -165,6 +174,14 @@ begin
 end;
 
 
+procedure Tfuv_ssim_control.RadioGroup1Click(Sender: TObject);
+begin
+    MDDef.DoFUV := RadioGroup1.ItemIndex = 0;
+    MDDef.DoSSIM := RadioGroup1.ItemIndex = 1;
+    MDDef.DoPartials := RadioGroup1.ItemIndex = 2;
+    MDDef.DoCurvatures := RadioGroup1.ItemIndex = 3;
+end;
+
 procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
 
 
@@ -179,6 +196,8 @@ procedure Tfuv_ssim_control.BitBtn1Click(Sender: TObject);
          MDDef.DEMIX_mode := Mode;
          if MDDef.DoFUV then MergeCSV(1);
          if MDDef.DoSSIM then MergeCSV(2);
+         if MDDef.DoPartials then MergeCSV(6);
+         if MDDef.DoCurvatures then MergeCSV(7);
       end;
    end;
 
@@ -216,7 +235,7 @@ end;
 procedure Tfuv_ssim_control.BitBtn3Click(Sender: TObject);
 begin
    GetDEMIXpaths;
-   VerifyRecordsToUse(DemixSettingsDir + 'demix_fuv_parameters.dbf','PARAMETER');
+   VerifyRecordsToUse(DemixSettingsDir + 'demix_fuv_parameters.dbf','CRITERION');
 end;
 
 procedure Tfuv_ssim_control.BitBtn5Click(Sender: TObject);
@@ -229,6 +248,7 @@ begin
    CheckEditString(Edit1.Text,MDDef.DEMIX_Tile_Full);
    MDDef.DoSSIM := CheckBox22.Checked;
    MDDef.DoFUV := CheckBox24.Checked;
+   MDDef.DoPartials := CheckBox7.Checked;
 
    MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;

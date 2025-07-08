@@ -15,6 +15,8 @@ unit demix_definitions;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
+   {$Define TrackCriteriaList}
+
    //{$Define RecordNeoDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
@@ -193,24 +195,23 @@ const
          procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
 
          procedure LSP_Calc_Grids(kwat : shortstring; OpenMaps : boolean = false);
+         function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
 
          {$IfDef ExternalProgramFUV_SSIM}
-             function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
              function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
          {$EndIf}
 
 
 
-
 const
-   yasName = 0;
+   yasBestEval = 0;
    yasSlope = 1;
    yasRuff = 2;
    yasRelief = 3;
-   yasBestEval = 4;
-   yasBarren = 5;
-   yasForest = 6;
-   yasBestEvalColoredBySlope = 8;
+   yasBarren = 4;
+   yasForest = 5;
+   yasBestEvalColoredBySlope = 6;
+   yasLatitude = 7;
    MovieByTestDEM : boolean = false;
 
 var
@@ -227,12 +228,14 @@ var
 
    DEMIX_final_DB_dir,
 
-   SSIMresultsDir, FUVresultsDir, //set according to the mode
+   SSIMresultsDir, FUVresultsDir, PartialsResultsDir,CurvaturesResultsDir,
 
    MD_out_ref_dir,MD_out_test_dir,
    wbt_out_ref_dir,wbt_out_test_dir,
    saga_out_ref_dir,saga_out_test_dir,
    Stream_valley_dir,
+   GeomorphonsDir,
+   ChannelMissesDir,DEMIX_diff_dist,
 
    DEMIX_Ref_1sec,DEMIX_Ref_dsm_1sec,DEMIX_test_dems,
    DEMIX_Under_ref_dtm,DEMIX_Under_test_dems,                //locations for the 1" DEMs used in comparison
@@ -242,8 +245,6 @@ var
    DEMIX_Base_DB_Path,
    DEMIX_profile_test_dir,
 
-   GeomorphonsDir,
-   ChannelMissesDir,DEMIX_diff_dist,
 
    DEMIX_area_lc100,
 
@@ -273,7 +274,7 @@ var
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
    //procedure CreateDEMIX_diff_dist_DB_by_transposing(Overwrite : boolean);
-   procedure RankDEMS(DBonTable : integer);
+   procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
@@ -399,10 +400,14 @@ procedure CriteriaRanges(AreaName : shortstring);
 procedure ComputeCriteriaRanges;
 
 function ID_DEMIX_DB_type(db : integer) : byte;
-procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList;
-    Memo2 : tMemo; BinSize : integer = 0);
+procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; Memo2 : tMemo; BinSize : integer = 0);
+procedure ImportLandParamFilters(fName : PathStr; var GeomorphFilters,Labels : tStringList);
 
 function ContinueExperimentalDEMIX : boolean;
+function WinnerAndTies(DB : integer; DEMs : tStringList; Tolerance : float32) : shortstring;
+function NoSuffixCriterion(Criterion : shortstring) : shortstring;
+function TileCharacteristicsInDB(DB : integer) : boolean;
+procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 
 
 implementation
@@ -430,6 +435,49 @@ uses
 
 {$include demix_channels.inc}
 
+function TileCharacteristicsInDB(DB : integer) : boolean;
+begin
+   Result := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
+end;
+
+
+function NoSuffixCriterion(Criterion : shortstring) : shortstring;
+begin
+   Result := StringReplace(Criterion,'_FUV','',[rfIgnoreCase]);
+end;
+
+procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
+begin
+     WriteLineToDebugFile(Where);
+     WriteStringListToDebugFile(UseLSPs,true);
+end;
+
+
+function WinnerAndTies(DB : integer; DEMs : tStringList; Tolerance : float32) : shortstring;
+var
+   Evals : array[0..15] of float32;
+   i,Besti : integer;
+   Best : float32;
+   //BestDEM : shortstring;
+begin
+   for I := 0 to pred(DEMs.Count) do begin
+      Evals[i] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[i]);
+   end;
+   Best := 999;
+   for I := 0 to pred(DEMs.Count) do begin
+      if Evals[i] < Best then begin
+         Best := Evals[i];
+         //BestDEM := DEMs.Strings[i];
+         BestI := i;
+      end;
+   end;
+   Result := DEMs.strings[BestI];
+   for I := 0 to pred(DEMs.Count) do begin
+      if (i <> BestI) and (Evals[i] <= Best + Tolerance) then begin
+         Result := Result + '-' + DEMs.strings[I];
+      end;
+   end;
+end;
 
 function ContinueExperimentalDEMIX : boolean;
 begin
@@ -437,9 +485,23 @@ begin
 end;
 
 
+procedure ImportLandParamFilters(fName : PathStr; var GeomorphFilters,Labels : tStringList);
+var
+   Table : tMyData;
+begin
+   GeomorphFilters := tStringList.Create;
+   Labels := tStringList.Create;
+   Table := tMyData.Create(fName);
+   while not Table.Eof do begin
+      GeomorphFilters.Add(Table.GetFieldByNameAsString('FILTER'));
+      Labels.Add(Table.GetFieldByNameAsString('LABEL'));
+      Table.Next;
+   end;
+   Table.Destroy;
+end;
 
-procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList;
-    Memo2 : tMemo; BinSize : integer = 0);
+
+procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; Memo2 : tMemo; BinSize : integer = 0);
 var
    i,LowBin,HighBin,Value : integer;
 begin
@@ -642,7 +704,7 @@ begin {procedure DoSSIMandFUVForAnArea}
        {$If Defined(TimeGridsForArea)} Stopwatch2 := TStopwatch.StartNew; {$EndIf}
        {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}
        wmdem.SetPanelText(3, 'Load DEMs',true);
-       TheCriteria := OpenFUVOrderedParams;
+       TheCriteria := OpenDEMIXOrderedCriteria(0);
        ShowSatProgress :=  false;
        if OpenBothPixelIsDEMs(AreaName,'',DEMIX_Ref_1sec,DEMIX_test_dems,MDDef.OpenSavedMapsFUVSSIM) then begin
           {$If Defined(TrackPixelIs) or Defined(RecordDEMIXFull)} ShowDEMIXGrids(AreaName + ' DEMs opened',PointDEMs,AreaDEMs); {$EndIf}
@@ -857,7 +919,7 @@ end;
 
 function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
 begin
-   Result := StrUtils.AnsiContainsText(Criterion,'MEAN') or StrUtils.AnsiContainsText(Criterion,'MED');
+   Result := StrUtils.AnsiContainsText(Criterion,'_MEAN') or StrUtils.AnsiContainsText(Criterion,'_MED');
 end;
 
 
@@ -898,7 +960,7 @@ var
 
 begin
    if (not GISdb[DB].MyData.FieldExists('TOLERANCE')) then begin
-      if AnswerIsYes('Rank DEMs to get TOLERANCEs') then RankDEMS(DB)
+      if AnswerIsYes('Rank DEMs to get TOLERANCEs') then RankDEMS(DB,nil)
       else exit;
    end;
    GISdb[DB].EmpSource.Enabled := false;
@@ -953,7 +1015,7 @@ var
    LowScore : float32;
 begin
    if (not AreDEMIXscoresInDB(DB)) then begin
-      RankDEMS(db);
+      RankDEMS(db,nil);
    end;
 
    GISdb[DB].EmpSource.Enabled := false;

@@ -36,7 +36,7 @@
 
 
 {$Define FMXU_point_cloud}
-{$Define AllowEDTM}
+//{$Define AllowEDTM}
 
 
 {$Define SaveUpwardOpenness}

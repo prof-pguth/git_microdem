@@ -1153,7 +1153,7 @@ var
                    Elev1 := Elev1 - DropCurve;
                    y := ViewportHeight - round(ViewportHeight * (Elev1 - MinProfElev) / ElevRange);
                    if (y < 0) then y := 0 else if (y > ViewPortHeight) then y := ViewPortHeight;
-                   if i <> j then BresenhamDrawAlgorithm(Bitmap,oxl,oyl,i,y,TerCol,HiddenSetPoint);
+                   if (i <> j) then BresenhamDrawAlgorithm(Bitmap,oxl,oyl,i,y,TerCol,HiddenSetPoint);
                    if DistOut > NextOut then begin
                       ThisProfx^[-CountOut] := i;
                       ThisProfY^[-CountOut] := y;
@@ -1165,7 +1165,7 @@ var
                        Elev1 := Elev1 - DropCurve;
                        y := ViewportHeight - round(ViewportHeight * (Elev1 - MinProfElev) / ElevRange);
                        if (y < 0) then y := 0 else if (y > ViewPortHeight) then y := ViewPortHeight;
-                       if j <> i then BresenhamDrawAlgorithm(Bitmap,oxr,oyr,j,y,TerCol,HiddenSetPoint);
+                       if (j <> i) then BresenhamDrawAlgorithm(Bitmap,oxr,oyr,j,y,TerCol,HiddenSetPoint);
                        if DistOut > NextOut then begin
                           ThisProfx[CountOut] := j;
                           ThisProfY[CountOut] := y;
@@ -1418,7 +1418,7 @@ begin
        end
        else begin  //fishnet perspective
          {$IfDef VCL}
-         DrawFishnetPerspective;
+            DrawFishnetPerspective;
          {$EndIf}
        end;
        {$IfDef RecordPerspectiveProgress} WriteLineToDebugFile('DrawPerspective pt 15'); {$EndIf}

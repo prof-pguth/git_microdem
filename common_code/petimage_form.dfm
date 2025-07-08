@@ -1,8 +1,8 @@
-object ImageDisplayForm: TImageDisplayForm
+object ImageDispForm: TImageDispForm
   Left = 180
   Top = 250
   BorderIcons = [biSystemMenu, biMinimize]
-  Caption = 'ImageDisplayForm'
+  Caption = 'ImageDispForm'
   ClientHeight = 334
   ClientWidth = 815
   Color = clBtnFace
@@ -58,7 +58,6 @@ object ImageDisplayForm: TImageDisplayForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
-    ExplicitWidth = 809
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0

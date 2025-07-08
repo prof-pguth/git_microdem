@@ -582,7 +582,6 @@ type
     CreatefinalDB1: TMenuItem;
     N3DEPfileswithtag421121: TMenuItem;
     Fixtileswith42114foottag1: TMenuItem;
-    MergeSSIMFUV1: TMenuItem;
     Onedegreetilestocovertestareas1: TMenuItem;
     N46: TMenuItem;
     GetrangesforSSIMhydro1: TMenuItem;
@@ -983,7 +982,6 @@ type
     procedure Noaddedlegends1Click(Sender: TObject);
     procedure Noaddedlegends2Click(Sender: TObject);
     procedure N45Click(Sender: TObject);
-    procedure MergeSSIMandR2database1Click(Sender: TObject);
     procedure CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
     procedure DiluviumDEMandDEMIXDBoverlap1Click(Sender: TObject);
     procedure CheckreferenceDEMs1Click(Sender: TObject);
@@ -1034,7 +1032,6 @@ type
     procedure N3DEPfileswithtag421121Click(Sender: TObject);
     procedure Fixtileswith42114foottag1Click(Sender: TObject);
     procedure Partialprocessing1Click(Sender: TObject);
-    procedure MergeSSIMFUV1Click(Sender: TObject);
     procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
     procedure GetrangesforSSIMhydro1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
@@ -2922,6 +2919,7 @@ var
    db : integer;
 begin
    StopSplashing;
+   GetDEMIXpaths(false);
    LastDataBase := DEMIX_final_DB_dir;
    db := OpenMultipleDataBases('DEMIX graphs');
    if ValidDB(db) then StartDEMIXgraphs(DB);
@@ -3853,7 +3851,7 @@ var
 begin
    Result := 0;
    for i := pred(WMDEM.MDIChildCount) downto 0 do
-      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
+      if WMDEM.MDIChildren[i] is TImageDispForm then begin
          inc(Result);
       end;
 end;
@@ -3876,9 +3874,9 @@ var
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Closeallpictureviewwindows1Click in'); {$EndIf}
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
-          {$IfDef RecordClosing} WriteLineToDebugFile((WMDEM.MDIChildren[i] as TImageDisplayForm).Caption); {$EndIf}
-          (WMDEM.MDIChildren[i] as TImageDisplayForm).Close;
+      if WMDEM.MDIChildren[i] is TImageDispForm then begin
+          {$IfDef RecordClosing} WriteLineToDebugFile((WMDEM.MDIChildren[i] as TImageDispForm).Caption); {$EndIf}
+          (WMDEM.MDIChildren[i] as TImageDispForm).Close;
       end;
    end;
    {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.Closeallpictureviewwindows1Click out'); {$EndIf}
@@ -4259,7 +4257,7 @@ end;
 
 procedure Twmdem.RGBcolorlayers1Click(Sender: TObject);
 var
-   im : TImageDisplayForm;
+   im : TImageDispForm;
 begin
    im := OpenImageEditor;
    im.MakeRGBandgrayscaleseparates1Click(nil);
@@ -4420,18 +4418,6 @@ procedure Twmdem.Mergesourcedatatiles1Click(Sender: TObject);
 begin
    DEMIX_merge_source;
 end;
-
-procedure Twmdem.MergeSSIMandR2database1Click(Sender: TObject);
-begin
-    //MergeSSIMandR2DB;
-end;
-
-procedure Twmdem.MergeSSIMFUV1Click(Sender: TObject);
-begin
-   if MDDef.DoFUV then MergeCSV(1);
-   if MDDef.DoSSIM then MergeCSV(2);
-end;
-
 
 procedure Twmdem.MergewavelengthheightDBFs1Click(Sender: TObject);
 {$IfDef ExComplexGeoStats}
@@ -4889,7 +4875,11 @@ end;
 
 procedure Twmdem.FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
 begin
-   FUVforRangeScales(true);
+   {$IfDef FUV_RangeScales}
+      FUVforRangeScales(true);
+   {$Else}
+      MessageToContinue('Currently disabled');
+   {$EndIf}
 end;
 
 procedure Twmdem.FUVfor5DEMstoreference1Click(Sender: TObject);
@@ -4899,7 +4889,11 @@ end;
 
 procedure Twmdem.FUVforrangescales1Click(Sender: TObject);
 begin
-   FUVforRangeScales(false);
+   {$IfDef FUV_RangeScales}
+      FUVforRangeScales(false);
+   {$Else}
+      MessageToContinue('Currently disabled');
+   {$EndIf}
 end;
 
 procedure Twmdem.Differencetwobitmaps1Click(Sender: TObject);

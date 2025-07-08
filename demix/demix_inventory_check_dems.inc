@@ -580,6 +580,8 @@ begin
       ClearOutFolder(SSIMresultsDir);
 
       ClearOutFolder(FUVresultsDir);
+      ClearOutFolder(PartialsResultsDir);
+      ClearOutFolder(CurvaturesResultsDir);
    end;
    EndDEMIXProcessing;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DeleteFilesForATestArea out'); {$EndIf}

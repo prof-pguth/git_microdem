@@ -121,43 +121,6 @@ begin
 end;
 
 
-(*
-procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tbytes256);
-var
-   i : integer;
-begin
-   for i := 1 to 255 do begin
-      FileColors[i] := ConvertTColorToPlatformColor(WinGraphColors(i));
-   end;
-
-   for i := 1 to 255 do begin
-      LineSize[i] := 2;
-   end;
-
-   for i := 1 to 15 do begin
-      Symbol[i].Size := 3;
-      Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors(i));
-   end;
-
-   Symbol[0].DrawingSymbol := FilledBox;
-   Symbol[1].DrawingSymbol := FilledBox;
-   Symbol[2].DrawingSymbol := FilledDiamond;
-   Symbol[3].DrawingSymbol := FilledUpTri;
-   Symbol[4].DrawingSymbol := FilledDownTri;
-   Symbol[5].DrawingSymbol := FilledCircle;
-   Symbol[6].DrawingSymbol := Splat;
-   Symbol[7].DrawingSymbol := Box;
-   Symbol[8].DrawingSymbol := Diamond;
-   Symbol[9].DrawingSymbol := UpTri;
-   Symbol[10].DrawingSymbol := DownTri;
-   Symbol[11].DrawingSymbol := Circle;
-   Symbol[12].DrawingSymbol := Box;
-   Symbol[13].DrawingSymbol := EX;
-   Symbol[14].DrawingSymbol := Cross;
-   Symbol[15].DrawingSymbol := Dot;
-   for i := 16 to 255 do Symbol[i].DrawingSymbol := FilledBox;
-end;
-*)
 
 procedure SetGraphColors(inTheGraph : tThisBaseGraph);
 var
@@ -179,7 +142,6 @@ begin
       graphcolorsform.BitBtn8.Visible := false;
       graphcolorsform.BitBtn9.Visible := false;
    end;
-
    graphcolorsform.ShowModal;
 end;
 

@@ -241,14 +241,14 @@ begin
       LLCornerText := LatLongDegreeToString(Lat,Long,DecDegrees);
       SetUpGraphForm;
       if Param in [rsOpenUp,rsOpenDown] then begin
-         OpenPointFile(rfile,Result.Symbol,'Upward_openness');
+         OpenPointSymbolFile(rfile,'Upward_openness',Result.Symbol);
          Result.Symbol.Color := claLime;
-         OpenPointFile(rfile2,Result.Symbol,'Downward_openness');
+         OpenPointSymbolFile(rfile2,'Downward_openness',Result.Symbol);
          VertLabel := 'Openness (°)';
       end
       else begin
          VertLabel := TStr2;
-         OpenPointFile(rfile,Result.Symbol,TStr2);
+         OpenPointSymbolFile(rfile,TStr2,Result.Symbol);
       end;
    end;
 

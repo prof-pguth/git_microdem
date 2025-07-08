@@ -33,7 +33,7 @@ var
          Result.SetDataBaseOnGraph(DBNumber, dbOpts.XField,dbOpts.YField,MyData.Filter);
          Result.GraphDraw.UpperLeftText := aCapt;
          if (GraphType = dbgtN2Dgraphsimplelines1) then Result.OpenDataFile(rfile,'')
-         else Result.OpenPointFile(rfile,Result.Symbol);
+         else Result.OpenPointSymbolFile(rfile,'',Result.Symbol);
          TimeCount := 0;
          MyData.First;
          repeat
@@ -51,13 +51,13 @@ var
      procedure OpenGraphFiles;
      begin
         if (GraphType = dbgtPlot) or (GraphType = dbgtPlot1series1) then begin
-           Result.OpenPointFile(rfile,dbOpts.Symbol);
+           Result.OpenPointSymbolFile(rfile,'',dbOpts.Symbol);
         end
         else if (GraphType = dbgtN2Dgraph2series1) then begin
            Result.Symbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
-           Result.OpenPointFile(rfile,Result.Symbol,dbOpts.YField);
+           Result.OpenPointSymbolFile(rfile,dbOpts.YField,Result.Symbol);
            Result.Symbol.Color := claLime;
-           Result.OpenPointFile(rfile2,Result.Symbol,dbOpts.ZField);
+           Result.OpenPointSymbolFile(rfile2,dbOpts.ZField,Result.Symbol);
         end
         else if (GraphType in[dbgtCluster1,dbgtN2DgraphCOLORfield1,dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2,dbgtN2Dgraphcolorcoded1,dbgtN2Dgraphcolorcodetext1]) then begin
            Result.OpenXYColorFile(rfile);
@@ -65,15 +65,15 @@ var
         end
         else if (GraphType = dbgtN2Dgraphsimplelines1) then begin
            Result.OpenDataFile(rfile,'');
-           Result.GraphDraw.ShowLine[1] := true;
-           Result.GraphDraw.ShowPoints[1] := false;
+           Result.GraphDraw.ShowLine[0] := true;
+           Result.GraphDraw.ShowPoints[0] := false;
         end
         else if (GraphType = dbgtN2Dgraph2yaxes1) then Result.OpenXYZFile(rfile)
         else begin
            Result.Symbol.Color := dbOpts.LineColor;
            Result.Symbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
            Result.Symbol.Size := 3;
-           Result.OpenPointFile(rfile,Result.Symbol);
+           Result.OpenPointSymbolFile(rfile,'',Result.Symbol);
         end;
      end;
 
@@ -140,8 +140,8 @@ begin
      if (GraphType = dbgtN2Dgraph2yaxes1) then begin
         Result.GraphDraw.GraphType := gtTwoVertAxes;
         Result.GraphDraw.RightMargin := 65;
+        Result.GraphDraw.ShowLine[0] := true;
         Result.GraphDraw.ShowLine[1] := true;
-        Result.GraphDraw.ShowLine[2] := true;
      end;
      if (GraphType = dbgtPlot1series1) then Result.Caption := RemoveUnderscores(dbOpts.XField) + ' time series from ' + dbName
      else if (GraphType = dbgtN2Dgraph2series1) then begin
@@ -292,34 +292,34 @@ function TGISdataBaseModule.MakeGraph(Graphtype : tdbGraphType; Ask : boolean = 
 var
     i : integer;
 begin
-     if (GraphType in [dbgtCluster1,dbgtMultiplegraphmatrix1,dbgtPlot]) then begin
-     end
-     else if (GraphType in [dbgtN2Dgraphsimplelines1,dbgtN2Dgraph1]) then begin
-        if Ask then PickNumericFields(GraphType,2,'X axis variable','Y axis variable','')
-     end
-     else if (GraphType in [dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2]) then begin
-        dbOpts.YField := 'DEPTH';
-        dbOpts.ZField := 'MECH';
-     end
-     else if (GraphType = dbgtN2Dgraph2series1) then begin
-        if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis series 1','Y axis series 2')
-     end
-     else if (GraphType = dbgtN2Dgraph2yaxes1) then begin
-        if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis left axis','Y axis right series');
-     end
-     else if (GraphType in [dbgtPlot1series1,dbgtPlotforsubsamples1]) then begin
-        if Ask then PickNumericFields(GraphType,1,'time series variable','','');
-     end
-     else if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-        if Ask then begin
-           PickNumericFields(GraphType,3,'X axis variable','Y axis variable','',true);
-        end;
-     end
-     else begin
-        if (GraphType = dbgtN2Dgraphcolorcoded1) then i := 3 else i := 2;
-        if Ask then PickNumericFields(GraphType,i,'X axis variable','Y axis variable','color coding variable');
-     end;
-     Result := ActuallyDrawGraph(Graphtype);
+   if (GraphType in [dbgtCluster1,dbgtMultiplegraphmatrix1,dbgtPlot]) then begin
+   end
+   else if (GraphType in [dbgtN2Dgraphsimplelines1,dbgtN2Dgraph1]) then begin
+      if Ask then PickNumericFields(GraphType,2,'X axis variable','Y axis variable','')
+   end
+   else if (GraphType in [dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2]) then begin
+      dbOpts.YField := 'DEPTH';
+      dbOpts.ZField := 'MECH';
+   end
+   else if (GraphType = dbgtN2Dgraph2series1) then begin
+      if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis series 1','Y axis series 2')
+   end
+   else if (GraphType = dbgtN2Dgraph2yaxes1) then begin
+      if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis left axis','Y axis right series');
+   end
+   else if (GraphType in [dbgtPlot1series1,dbgtPlotforsubsamples1]) then begin
+      if Ask then PickNumericFields(GraphType,1,'time series variable','','');
+   end
+   else if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
+      if Ask then begin
+         PickNumericFields(GraphType,3,'X axis variable','Y axis variable','',true);
+      end;
+   end
+   else begin
+      if (GraphType = dbgtN2Dgraphcolorcoded1) then i := 3 else i := 2;
+      if Ask then PickNumericFields(GraphType,i,'X axis variable','Y axis variable','color coding variable');
+   end;
+   Result := ActuallyDrawGraph(Graphtype);
 end;
 
 
@@ -612,7 +612,7 @@ begin
    else begin
       Graph.Symbol.Size := 3;
       Graph.Symbol.Color := ConvertTColorToPlatformColor(Color);
-      Graph.OpenPointFile(rfile,Graph.Symbol);
+      Graph.OpenPointSymbolFile(rfile,'',Graph.Symbol);
    end;
    MyData.First;
    repeat

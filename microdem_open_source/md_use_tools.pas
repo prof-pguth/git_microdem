@@ -16,7 +16,7 @@ unit md_use_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordWBT}
+      {$Define RecordWBT}
       //{$Define RecordLSPcalculator}
       //{$Define RecordSAGA}
       //{$Define RecordSAGARanges}
@@ -113,6 +113,8 @@ uses
      function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
 
    function WBT_AvgNormVectAngDev(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
+   function WBT_SphericalStdDevOfNormals(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
+
    function WBT_CircularVarianceOfAspect(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_DrainageBasins(InName : PathStr) : integer;
    function WBT_Geomorphons(OpenMap : boolean; InName : PathStr; Search : integer=50; Skip : integer = 0) : integer;
@@ -208,6 +210,7 @@ procedure laslibReproject(ask : boolean);
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
 function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true) : integer;
 
+procedure ExpandOutName(InName : PathStr; BaseName : shortString; var OutName : PathStr);
 
 implementation
 
@@ -228,12 +231,16 @@ uses
 const
    WBNoCompress = ' --compress_rasters=false ';
 
-
 {$i saga_wrapper.inc}
 
 {$I wbt_wrapper.inc}
 
 {$I lastools_wrapper.inc}
+
+procedure ExpandOutName(InName : PathStr; BaseName : shortString; var OutName : PathStr);
+begin
+   if (OutName = '') then OutName := MDTempDir + BaseName + '_' + ExtractFileNameNoExt(InName) + '.tif';
+end;
 
 
 function ClearGRASSdirectory : shortstring;
@@ -255,11 +262,15 @@ var
 begin
    Result := 0;
    lsp_calculator_fName := 'J:\gis_software\xiceph\lsp_calculator.exe';
+   FindDriveWithFile(lsp_calculator_fName);
+   if Not FileExists(lsp_calculator_fName) then begin
+      if not GetExistingFileName('lsp_calculator.exe','*.exe',lsp_calculator_fName) then exit;
+   end;
 
    if FileExists(lsp_calculator_fName) then begin
      cmd := lsp_calculator_fName + ' -i ' + DEMGlb[DEM].GeotiffDEMName + ' -o ' + MDtempDir + DEMGlb[DEM].AreaName + ' ' + Options;
      {$IfDef RecordLSPcalculator} WriteLineToDebugFile(cmd); {$EndIf}
-     WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+     WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
      OutName := MDtempDir + DEMGlb[DEM].AreaName + Options + '.tif';
      OutName := StringReplace(OutName,'--','_',[rfReplaceAll, rfIgnoreCase]);
      if FileExists(OutName) then begin
@@ -596,18 +607,9 @@ end;
 
 
 function GrassVectorRuggedness(InName : PathStr; WindowSize : integer; OutName : PathStr = '') : integer;
-var
-   PartialResults : shortstring;
 begin
-   (*
-      //Oct 2024, this might now work, but has not been tested recently
-      //this only is valid for GRASS 82, and we are using 78
-      PartialResults :=  'strength=' + MDTempDir + 'grass_vector_strength' + ExtractFileNameNoExt(InName) + '.tif' +
-                      ' fisher=' + MDTempDir + 'grass_fisher_k' + ExtractFileNameNoExt(InName) + '.tif';
-   *)
-   PartialResults := 'size=' + IntToStr(WindowSize);
    Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_' + FilterSizeStr(WindowSize) + '_','r.vector.ruggedness elevation=mymap output=rugged ' +
-      PartialResults +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum,OutName);
+      'size=' + IntToStr(WindowSize) +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum,OutName);
 end;
 
 

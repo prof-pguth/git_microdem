@@ -24,7 +24,7 @@ unit demix_control;
    {$Define RecordDEMIXStart}
    //{$Define LoadDEMIXNames}
    //{$Define RecordDEMIXopenGrids}
-   {$Define RecordTestDEMs}
+   //{$Define RecordTestDEMs}
    //{$Define RecordRangeScales}
    //{$Define RecordRangeScalesFull}
 
@@ -86,7 +86,8 @@ uses
 //end core DB functions definitions
 
     System.SysUtils,System.Classes,System.UITypes,System.Diagnostics,
-    StrUtils,dbGrids,
+    StrUtils,
+    dbGrids,
     VCL.ExtCtrls,VCL.Forms, VCL.Graphics, VCL.Controls,
     WinAPI.Windows,
     Petmar,Petmar_types,BaseGraf,
@@ -98,8 +99,8 @@ const
 
    function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
    procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = false);
-   procedure LoadDEMIXnames;
-   function OpenFUVOrderedParams : tStringList;
+   procedure LoadDEMIXnames(RestrictList : tStringList = nil);
+   function OpenDEMIXOrderedCriteria(db : integer; fName : PathStr = '') : tStringList;
    function GetListOfTestDEMsinUse(GeometricModel : shortstring = '') : tStringList;
 
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
@@ -110,9 +111,6 @@ const
    function FilterForDEMIXtilesToUse : shortstring;
    function FilterForDEMIXtilesToAvoid : shortstring;
 
-//check these to see if still needed
-   procedure CompareSeriousCompetitors(DBonTable : integer);
-   procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
 
 //service functions and procedures
    function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
@@ -124,7 +122,7 @@ const
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
    function GetReferenceDEMforTestDEM(ThisTestDEM : integer; RefDEMs : tDEMIXindexes) : integer;
    function CriterionTieTolerance(Criterion : shortstring) : float32;
-   procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
+   //procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
    function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
 
    function GetAreaNameForDEMIXTile(DB : integer; DemixTile : shortstring) : shortstring;
@@ -148,8 +146,6 @@ procedure MergeDEMIXtileStats;
 
 procedure CompareRankings(DBonTable : integer);
 procedure DifferentRankingsByCriteria(DBonTable : integer);
-
-   procedure WinsAndTies(DBonTable : integer);
 
 function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
 
@@ -180,7 +176,9 @@ procedure PickDEMIXMode;
    procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
 
 procedure DifferentRankingsByTile(DBonTable : integer);
-procedure FUVforRangeScales(LandCoverOption : boolean);
+{$IfDef FUV_RangeScales}
+   procedure FUVforRangeScales(LandCoverOption : boolean);
+{$EndIf}
 
 function DEMIXMomentStatsString(MomentVar : tMomentVar) : shortstring;
 function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
@@ -201,7 +199,6 @@ function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
 
 var
    ElevDiffHists : boolean;
-   OrderedFUVParams : tStringList;
 
 
 const
@@ -212,6 +209,8 @@ const
    function GetFileNamesOfDEMinUse(var DataDir : PathStr) : tStringList;
 
 procedure LandCoverBreakdowPointCloud;
+//function OpenPartialsParams : tStringList;
+
 
 
 implementation
@@ -222,7 +221,9 @@ uses
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
    MD_use_tools,
-   DEMIX_graphs,Pick_DEMIX_mode,pick_demix_areas;
+   DEMIX_graphs,
+   Pick_DEMIX_mode,
+   pick_demix_areas;
 
 var
    DoHorizontalShift : boolean;
@@ -250,17 +251,36 @@ const
 
 
 
-function OpenFUVOrderedParams : tStringList;
+function OpenDEMIXOrderedCriteria(db : integer; fName : PathStr) : tStringList;
+var
+   Table : tMyData;
+begin
+   if not FileExists(fName) then begin
+     if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then
+        fName := DemixSettingsDir + 'demix_partials_criteria.dbf'
+     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then
+        fName := DemixSettingsDir + 'demix_curvatures_criteria.dbf'
+     else fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+   end;
+   Table := tMyData.Create(fName);
+   Table.ApplyFilter('USE=' + QuotedStr('Y'));
+   Result := Table.ListUniqueEntriesInDB('CRITERION',false);
+   Table.Destroy;
+end;
+
+(*
+function OpenPartialsParams : tStringList;
 var
    fName : PathStr;
    Table : tMyData;
 begin
-   fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+   fName := DemixSettingsDir + 'demix_partials_criteria.dbf';
    Table := tMyData.Create(fName);
    Table.ApplyFilter('USE=' + QuotedStr('Y'));
-   Result := Table.ListUniqueEntriesInDB('PARAMETER',false);
+   Result := Table.ListUniqueEntriesInDB('CRITERION',false);
    Table.Destroy;
 end;
+*)
 
 
 function GetListOfTestDEMsinUse(GeometricModel : shortstring = '') : tStringList;
@@ -324,371 +344,6 @@ begin
    {$IfDef RecordRangeScales} WriteLineToDebugFile('DEMNs'); WriteStringListToDebugFile(Result,true); {$EndIf}
 end;
 
-
-procedure FUVforRangeScales(LandCoverOption : boolean);
-var
-   Values : ^bfarray32;
-   RefDEMs,TestDEMs : array[0..MaxOrderedParams] of integer;
-   ParamNames : array[0..MaxOrderedParams] of shortstring;
-   DataDir, fName : PathStr;
-   db,ESA_LC10 : integer;
-   Area,aLine,bline : shortstring;
-   DiffDistFindings,FUVFindings : tStringList;
-   LastLSP : integer;
-
-
-   {$IfDef TrackElevationPointers}
-      procedure CheckElevationPointers(Report : shortstring);
-      var
-         i : integer;
-         RefGood,TestGood : boolean;
-         RefMess,TestMess : shortstring;
-      begin
-         RefGood := true;
-         TestGood := true;
-         RefMess := '';
-         TestMess := '';
-         for I := 1 to MaxOrderedParams do begin
-            if not DEMGlb[RefDEMs[i]].ElevationStructuresAllocated then begin RefGood := false; RefMess := RefMess + ' ' + IntToStr(i); end;
-            if not DEMGlb[TestDEMs[i]].ElevationStructuresAllocated then begin TestGood := false; TestMess := TestMess + ' ' + IntToStr(i); end;
-         end;
-         if RefGood and TestGood then WriteLineToDebugFile(Report + ' DEMs memory allocated');
-         if not RefGood then HighLightLineToDebugFile(Report + ' Ref DEMs memory allocation problem' + RefMess);
-         if not TestGood then HighLightLineToDebugFile(Report + ' Test DEMs memory allocation problem' + TestMess);
-      end;
-   {$EndIf}
-
-
-   procedure LoadLSPs;
-   var
-      ad,Radius,i : integer;
-
-
-         procedure CheckLSP_calc(kwat : shortstring);
-         begin
-            if (OrderedFUVParams.IndexOf(UpperCase(kwat)) <> -1) then begin
-               wmDEM.SetPanelText(3,'Load LSP ' + kwat,true);
-               inc(LastLSP);
-               ParamNames[LastLSP] := UpperCase(kwat);
-               RefDEMs[LastLSP] := RUN_LSPcalculator(RefDEMs[1],'--' + kwat,false);
-               TestDEMs[LastLSP] := RUN_LSPcalculator(TestDEMs[1],'--' + kwat,false);
-            end;
-         end;
-
-
-   begin
-      {$IfDef RecordRangeScales} HighLightLineToDebugFile(DEMglb[TestDEMs[1]].AreaName + ' Load LSPs in'); {$EndIf}
-      LastLSP := 1;
-      ParamNames[1] := 'ELEV';
-
-      if (OrderedFUVParams.IndexOf('OPENU') <> -1) then begin
-        wmDEM.SetPanelText(3,'Load LSP Openness',true);
-        ParamNames[LastLSP+1] := 'OPENU';
-        ParamNames[LastLSP+2] := 'DOWNU';
-        ad := 0;        //difference, not to be computed
-        {$IfDef FastOpenness} Radius := 20; {$Else} Radius := 250; {$EndIf}
-
-        RefDEMs[LastLSP+1] := -1;     //upward
-        RefDEMs[LastLSP+2] := -1;     //downward
-        CreateOpennessMap(false,DEMglb[RefDEMs[1]].FullDEMGridLimits,RefDEMs[1],Radius,-99,RefDEMs[LastLSP+1],RefDEMs[LastLSP+2],ad);
-        DEMGlb[RefDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'openu_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-        DEMGlb[RefDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'opend_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-
-        TestDEMs[LastLSP+1] := -1;    //upward
-        TestDEMs[LastLSP+2] := -1;    //downward
-        CreateOpennessMap(false,DEMglb[TestDEMs[1]].FullDEMGridLimits,TestDEMs[1],Radius,-99,TestDEMs[LastLSP+1],TestDEMs[LastLSP+2],ad);
-        DEMGlb[TestDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'openu_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-        DEMGlb[TestDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'opend_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-        inc(LastLSP,2);
-      end;
-
-      if (OrderedFUVParams.IndexOf('HILL') <> -1) then begin
-         wmDEM.SetPanelText(3,'Load LSP Hillshade',true);
-         inc(LastLSP);
-         ParamNames[LastLSP] := 'HILL';
-         RefDEMs[LastLSP] := CreateHillshadeMap(false,RefDEMs[1],MDTempDir + 'hillshade_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-         TestDEMs[LastLSP] := CreateHillshadeMap(false,TestDEMs[1],MDTempDir + 'hillshade_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-      end;
-
-      if (OrderedFUVParams.IndexOf('SLOPE') <> -1) then begin
-        wmDEM.SetPanelText(3,'Load LSP slope',true);
-        RefDEMs[LastLSP+1] := 0;   //so slope returned
-        TestDEMs[LastLSP+1] := 0;  //so slope returned
-        ParamNames[LastLSP+1] := 'SLOPE';
-        ParamNames[LastLSP+2] := 'RUFF';
-        RefDEMs[LastLSP+2] := CreateSlopeRoughnessSlopeStandardDeviationMap(RefDEMs[1],5,RefDEMs[LastLSP+1],false);
-        TestDEMs[LastLSP+2] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[1],5,TestDEMs[LastLSP+1],false);
-        DEMGlb[RefDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'slope_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-        DEMGlb[TestDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'slope_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-        DEMGlb[RefDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'ruff_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-        DEMGlb[TestDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'ruff_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-        inc(LastLSP,2);
-      end;
-
-      if (OrderedFUVParams.IndexOf('TPI') <> -1) then begin
-         wmDEM.SetPanelText(3,'Load LSP TPI',true);
-         inc(LastLSP);
-         ParamNames[LastLSP] := 'TPI';
-         RefDEMs[LastLSP] := BoxCarDetrendDEM(false,RefDEMs[1],{DEMGlb[RefDEMs[1]].FullDEMGridLimits,}3,MDTempDir + 'tpi_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-         TestDEMs[LastLSP] := BoxCarDetrendDEM(false,TestDEMs[1],{DEMGlb[TestDEMs[1]].FullDEMGridLimits,}3,MDTempDir + 'tpi_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-      end;
-
-      if (OrderedFUVParams.IndexOf('RRI') <> -1) then begin
-         wmDEM.SetPanelText(3,'Load LSP RRI',true);
-         inc(LastLSP);
-         ParamNames[LastLSP] := 'RRI';
-         RefDEMs[LastLSP] := MakeTRIGrid(RefDEMs[1],nmRRI,false,MDTempDir + 'rri_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
-         TestDEMs[LastLSP] := MakeTRIGrid(TestDEMs[1],nmRRI,false,MDTempDir + 'rri_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
-      end;
-
-      {$IfDef IncludeCurvatureLSPs}
-         if (OrderedFUVParams.IndexOf('PLANC') <> -1) then begin
-            wmDEM.SetPanelText(3,'Load LSP PLANC',true);
-            inc(LastLSP);
-            ParamNames[LastLSP] := 'PLANC';
-            if MICRODEMcurvature then begin
-               RefDEMs[LastLSP] := CreateCurvatureMap(eucurv_plan,false,RefDEMs[1]);
-               TestDEMs[LastLSP] := CreateCurvatureMap(eucurv_plan,false,TestDEMs[1]);
-            end
-            else begin
-               RefDEMs[LastLSP] := WBT_PlanCurvature(false,DEMGlb[RefDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_plan_curv.tif');
-               TestDEMs[LastLSP] := WBT_PlanCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_plan_curv.tif');
-            end;
-         end;
-         if (OrderedFUVParams.IndexOf('PROFC') <> -1) then begin
-            wmDEM.SetPanelText(3,'Load LSP PROFC',true);
-            inc(LastLSP);
-            ParamNames[LastLSP] := 'PROFC';
-            if MICRODEMcurvature then begin
-               RefDEMs[LastLSP] := CreateCurvatureMap(eucurv_prof,false,RefDEMs[1]);
-               TestDEMs[LastLSP] := CreateCurvatureMap(eucurv_prof,false,TestDEMs[1]);
-            end
-            else begin
-               RefDEMs[LastLSP] := WBT_ProfileCurvature(false,DEMGlb[RefDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_prof_curv.tif');
-               TestDEMs[LastLSP] := WBT_ProfileCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_prof_curv.tif');
-            end;
-         end;
-         if (OrderedFUVParams.IndexOf('TANGC') <> -1) then begin
-            wmDEM.SetPanelText(3,'Load LSP TANGC',true);
-            inc(LastLSP);
-            ParamNames[LastLSP] := 'TANGC';
-            if MICRODEMcurvature then begin
-               RefDEMs[LastLSP] := CreateCurvatureMap(eucurv_tang,false,RefDEMs[1]);
-               TestDEMs[LastLSP] := CreateCurvatureMap(eucurv_tang,false,TestDEMs[1]);
-             end
-             else begin
-               RefDEMs[LastLSP] := WBT_TangentialCurvature(false,DEMGlb[RefDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_tang_curv.tif');
-               TestDEMs[LastLSP] := WBT_TangentialCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_tang_curv.tif');
-             end;
-         end;
-
-         CheckLSP_calc('knss');
-         CheckLSP_calc('kncc');
-         CheckLSP_calc('kncs');
-      {$EndIf}
-      {$IfDef RecordRangeScales} WriteLineToDebugFile('Load LSPs out, LastLSP=' + IntToStr(LastLSP)); {$EndIf}
-   end;
-
-
-   procedure ComputeOneFUVLine;
-   var
-      i,j,DiffMap : integer;
-      MomentVar : tMomentVar;
-      FUV : float32;
-      cLine : shortstring;
-      Min,Max,Mean,Median : float32;
-   begin
-      {$IfDef TrackElevationPointers} CheckElevationPointers('start ComputeOneFUVLine'); {$EndIf}
-
-      if (DiffDistFindings <> Nil) then begin
-          for j := 1 to LastLSP do begin
-            {$IfDef RecordRangeScales} WriteLineToDebugFile(IntToStr(j) + ' ' + ParamNames[j] +
-               ' ref=' + IntToStr(RefDEMs[j]) + ' test=' + IntToStr(TestDEMs[j])); {$EndIf}
-
-            wmDEM.SetPanelText(3,'Diff Dist ' + ParamNames[j],true);
-            DiffMap := MakeDifferenceMap(TestDEMs[j],RefDEMs[j],RefDEMs[j],0,false,false,false);
-            if ValidDEM(DiffMap) then begin
-              InitializeMomentVar(MomentVar);
-              DEMglb[DiffMap].GetElevationsInLongArray(DEMglb[DiffMap].FullDEMGridLimits, MomentVar.NPts,Values^,Min,Max);
-              //first get signed values
-              moment(Values^,MomentVar,msAll);
-              Min := MomentVar.MinZ;
-              Max := MomentVar.MaxZ;
-              Mean := MomentVar.Mean;
-              Median := MomentVar.Median;
-              //now get unsigned
-              moment(Values^,MomentVar,msAll);
-              for i := 1 to MomentVar.Npts do Values^[i] := abs(Values^[i]);
-              moment(Values^,MomentVar,msAll);
-              MomentVar.MinZ := Min;
-              MomentVar.MaxZ := Max;
-              MomentVar.Mean := Mean;
-              MomentVar.Median := Median;
-              cline := bLine + ',' + ParamNames[j] + ',' + DEMIXMomentStatsString(MomentVar);
-              DiffDistFindings.Add(cline);
-              CloseSingleDEM(DiffMap);
-            end;
-          end;
-      end;
-
-      for j := 1 to LastLSP do begin
-         wmDEM.SetPanelText(3,'FUV ' + ParamNames[j],true);
-         FUV := GetFUVForPairGrids(DEMglb[RefDEMs[j]].FullDEMGridLimits,TestDEMs[j],RefDEMs[j]);
-         aline := aLine + ',' + RealToString(FUV,-12,-6);
-         {$IfDef RecordRangeScalesFull} WriteLineToDebugFile(IntToStr(j) + ' ' + ParamNames[j] + ' fuv=' + RealToString(FUV,-12,-6)); {$EndIf}
-      end;
-      FUVFindings.Add(Aline);
-
-      {$IfDef RecordRangeScalesFull} WriteLineToDebugFile('ComputeOneFUVLine  ' + aLine); {$EndIf}
-      {$IfDef TrackElevationPointers} CheckElevationPointers('end ComputeOneFUVLine'); {$EndIf}
-   end;
-
-      procedure OneLandCover(LandType : shortstring; Code : integer);
-      var
-         Fixed : int64;
-         j : integer;
-      begin
-         {$IfDef RecordRangeScales} WriteLineToDebugFile('OneLandCover, start ' + LandType); {$EndIf}
-         wmDEM.SetPanelText(2,LandType,true);
-         if (Code <> 0) then begin
-            wmDEM.SetPanelText(3,'Mask grids',true);
-            {$IfDef TrackElevationPointers} CheckElevationPointers('Start Masking ' + LandType); {$EndIf}
-            DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
-              for j := 1 to LastLSP do begin
-                 if ValidDEM(RefDEMs[j]) and ValidDEM(TestDEMs[j]) then begin
-                    MaskGridFromSecondGrid(RefDEMs[j],ESA_LC10, msSecondMissing);
-                    MaskGridFromSecondGrid(TestDEMs[j],ESA_LC10, msSecondMissing);
-                 end
-                 else begin
-                    {$IfDef RecordRangeScales} WriteLineToDebugFile('Tried to use bad grid'); {$EndIf}
-                 end;
-              end;
-         end;
-         Fixed := DEMglb[TestDEMs[1]].ComputeNumberValidPoints(DEMglb[TestDEMs[1]].FullDEMGridLimits);
-         bline := Area + ', ,' + LandType + ',' + DEMglb[TestDEMs[1]].AreaName;
-         aline := bline + ',' + IntToStr(Fixed);
-         ComputeOneFUVLine;
-         if (Code <> 0) then begin
-            wmDEM.SetPanelText(3,'UnMask LSPs',true);
-            DEMGLb[ESA_LC10].ReloadDEM(true);
-            for j := 1 to LastLSP do begin
-               DEMGlb[RefDEMs[j]].ReloadDEM(true);
-               DEMGlb[TestDEMs[j]].ReloadDEM(true);
-            end;
-         end;
-         {$IfDef RecordRangeScales} WriteLineToDebugFile('OneLandCover, end ' + LandType); {$EndIf}
-         {$IfDef TrackElevationPointers} CheckElevationPointers('LSPs, after ' + LandType) {$EndIf}
-      end;
-
-      procedure CloseLSPs;
-      var
-         j : integer;
-      begin
-         for j := 1 to LastLSP do begin
-            CloseSingleDEM(RefDEMs[j]);
-            CloseSingleDEM(TestDEMs[j]);
-         end;
-      end;
-
-      procedure SaveAndOpenDB(Findings : tStringList);
-      begin
-         {$IfDef RecordRangeScales} WriteLineToDebugFile('SaveAndOpenDB: ' + fName + '  Findings.Count=' + IntToStr(FUVFindings.Count)); {$EndIf}
-         db := StringList2CSVtoDB(Findings,fName,true);
-         MainGraphOptions(db,Nil,Nil);
-      end;
-
-      procedure StartFindings;
-      var
-         j : integer;
-         TStr : shortstring;
-      begin
-         if LandCoverOption then TStr := 'LANDCOVER,DEM,NPTS' else Tstr := 'RESOLUTION';
-         FUVFindings := tStringList.Create;
-         aLine := 'AREA,DEMIX_TILE,' + TStr;
-         for j := 0 to pred(OrderedFUVParams.Count) do aline := aline + ',' + OrderedFUVParams[j] + '_FUV';
-         FUVFindings.Add(aLine);
-         {$IfDef RecordRangeScalesFull} WriteLineToDebugFile('aline=' + aline); {$EndIf}
-
-         DiffDistFindings := tStringList.Create;
-         aLine := 'AREA,DEMIX_TILE,LANDCOVER,DEM,CRITERION';
-         for j := 1 to 10 do aline := aline + ',' + LongParamSuffixes[j];
-         DiffDistFindings.Add(aLine);
-      end;
-
-var
-   TStr : shortstring;
-   i,j : integer;
-   TestDEMList : tStringList;
-begin {procedure FUVforRangeScales}
-   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale in'); {$EndIf}
-   GetDEMIXpaths;
-   SetColorForProcessing;
-   LockStatusBar := true;
-   Area := 'oxnard';
-   DataDir := 'J:\aaa_neo_eval\' + Area + '\';
-   GetDOSPath('with DEMs',DataDir);
-      for i := 0 to MaxOrderedParams do begin
-        //if i <> 1 then begin
-           RefDEMs[i] := 0;
-           TestDEMs[i] := 0;
-           ParamNames[i] := '';
-        //end;
-      end;
-
-   if LandCoverOption then begin
-      {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale Landcover options'); {$EndIf}
-      New(Values);
-      TestDEMList := GetListOfTestDEMsinUse;
-      TestDEMList.Insert(0,'ref_DTM');
-      StartFindings;
-      for j := 1 to pred(TestDEMList.Count) do begin
-        RefDEMs[1] := OpenNewDEM(DataDir + TestDEMList.Strings[0] + '.tif',false,'reference DTM');
-        TestDEMs[1] := OpenNewDEM(DataDir + TestDEMList.Strings[j] + '.tif',false,'test DEM');
-        wmDEM.SetPanelText(1,IntToStr(j) + '/' + IntToStr(pred(TestDEMList.Count)) + '  ' + DEMGlb[TestDEMs[1]].AreaName,true);
-        if (j = 1) then ESA_LC10 := LoadLC10LandCover('',DEMGlb[RefDEMs[1]].DEMBoundBoxGeo,false);
-        LoadLSPs;
-        {$IfDef TrackElevationPointers} CheckElevationPointers('LSPs loaded'); {$EndIf}
-        OneLandCover('All',0);
-        if false then begin
-          OneLandCover('Forest',10);
-          OneLandCover('Shrub',20);
-          OneLandCover('Grassland',30);
-          OneLandCover('Urban',50);
-          OneLandCover('Barren',60);
-        end;
-        wmDEM.SetPanelText(2,'',true);
-        CloseLSPs;
-      end;
-      fName := DataDir + Area + '_FUV_by_LandCover.dbf';
-      FUVFindings.SaveToFile(MDTempDir + 'fuv_results.csv') ;
-      SaveAndOpenDB(FUVFindings);
-      fName := DataDir + Area + '_diff_dist_by_LandCover.dbf';
-      SaveAndOpenDB(DiffDistFindings);
-
-      CloseSingleDEM(ESA_LC10);
-      Dispose(Values);
-   end
-   else begin
-      StartFindings;
-      for i := 1 to NumScales do begin
-         {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforRangeScale, start ' + Scales[i]); {$EndIf}
-         RefDEMs[1] := OpenNewDEM(DataDir + 'ref_dtm_' + Scales[i] + '.tif',false);
-         TestDEMs[1] := OpenNewDEM(DataDir + 'Neodtm_' + Scales[i] + '.tif',false);
-         LoadLSPs;
-         aline := Area + ', ,' + Scales[i];
-         ComputeOneFUVLine;
-         CloseLSPs;
-      end;
-      fName := DataDir + Area + DEMglb[RefDEMs[1]].AreaName + '_FUV_Range_scales.dbf';
-      SaveAndOpenDB(FUVFindings);
-   end;
-
-   //MessageToContinue('Track down why dbOnTable is not getting set');
-
-   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale out'); {$EndIf}
-   LockStatusBar := false;
-   SetColorForWaiting;
-end {procedure FUVforRangeScales};
 
 
 procedure LandCoverBreakdowPointCloud;
@@ -791,7 +446,7 @@ begin
   MDDef.DEMIX_mode := PickDEMIXmodeForm.RadioGroup1.ItemIndex;
   if MDDef.DEMIX_mode = dmNotYetDefined then begin
      MDDef.DEMIX_mode := dmFull;
-     MessageToContinue('Set to classic; it has to be defined');
+     MessageToContinue('Set to classic; must be defined');
   end;
   PickDEMIXmodeForm.Destroy;
   {$IfDef RecordDEMIX} WriteLineToDebugFile('PickDEMIXMode out'); {$EndIf}
@@ -1215,10 +870,11 @@ begin
 end;
 
 
-procedure LoadDEMIXnames;
+procedure LoadDEMIXnames(RestrictList : tStringList = nil);
 var
    table : tMyData;
    fName : PathStr;
+   ShortName : shortstring;
 begin
     fName := DEMIXSettingsDir + 'demix_dems.dbf';
     {$If Defined(RecordDEMIXStart) or Defined(LoadDEMIXNames)} WriteLineToDebugFile('LoadDEMIXnames in ' + fName); {$EndIf}
@@ -1226,13 +882,15 @@ begin
        Table := tMyData.Create(fName);
        NumDEMIXtestDEM := 0;
        while not Table.eof do begin
-          if Table.GetFieldByNameAsString('USE') = 'Y' then begin
-             inc(NumDEMIXtestDEM);
-             DEMIXDEMTypeName[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('DEM_NAME');
-             DEMIXshort[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('SHORT_NAME');
-             DEMIXDEMcolors[NumDEMIXtestDEM] := Table.PlatformColorFromTable;
-            //NotRetiredDEMs[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('RETIRED') = 'N';
-             {$If Defined(LoadDEMIXNames)} WriteLineToDebugFile(IntToStr(NumDEMIXtestDEM) + '--' + DEMIXshort[NumDEMIXtestDEM] + '--' + DEMIXDEMTypeName[NumDEMIXtestDEM]); {$EndIf}
+          if (Table.GetFieldByNameAsString('USE') = 'Y') then begin
+             ShortName := Table.GetFieldByNameAsString('SHORT_NAME');
+             if (RestrictList = nil) or (RestrictList.IndexOf(ShortName) <> -1) then begin
+                inc(NumDEMIXtestDEM);
+                DEMIXDEMTypeName[NumDEMIXtestDEM] := Table.GetFieldByNameAsString('DEM_NAME');
+                DEMIXshort[NumDEMIXtestDEM] := ShortName;
+                DEMIXDEMcolors[NumDEMIXtestDEM] := Table.PlatformColorFromTable;
+                {$If Defined(LoadDEMIXNames)} WriteLineToDebugFile(IntToStr(NumDEMIXtestDEM) + '--' + DEMIXshort[NumDEMIXtestDEM] + '--' + DEMIXDEMTypeName[NumDEMIXtestDEM]); {$EndIf}
+             end;
           end;
           Table.Next;
        end;
@@ -1332,52 +990,6 @@ begin
       {$If Defined(RecordHalfSec)} WriteLineToDebugFile('Invalid DEM=' + IntToStr(DEM) + ' in ReinterpolateTestDEMtoHalfSec'); {$EndIf}
    end;
 end;
-
-
-      procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
-      var
-         RefFilter : shortstring;
-      begin
-         RefFilter := ' AND REF_TYPE=' + QuotedStr(RefDEMType[i]) + ' AND LAND_TYPE=' + QuotedStr('ALL');
-         case j of
-            1 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile avg slope > 18%';
-                  aFilter := 'AVG_SLOPE > 18' + RefFilter;
-                end;
-            2 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile avg slope < 18%';
-                  aFilter := 'AVG_SLOPE < 18' + RefFilter;
-                end;
-            3 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile relief < 25m';
-                  aFilter := 'RELIEF < 25' + RefFilter;
-                end;
-            4 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile relief > 500m';
-                  aFilter := 'RELIEF > 500' + RefFilter;
-                end;
-            5 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile avg rough > 10%';
-                  aFilter := 'AVG_ROUGH > 10' + RefFilter;
-                end;
-            6 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile avg rough < 5%';
-                  aFilter := 'AVG_ROUGH < 5' + RefFilter;
-                end;
-            7 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile urban > 25%';
-                  aFilter := 'URBAN_PC > 25' + RefFilter;
-                end;
-            8 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile forest > 50%';
-                  aFilter := 'FOREST_PC > 50' + RefFilter;
-                end;
-            9 : begin
-                  aHeader := RefDEMType[i] + ' ' + 'ALL pixels  Tile barren > 25%';
-                  aFilter := 'BARREN_PC > 25' + RefFilter;
-                end;
-         end;
-      end;
 
 
 
@@ -1487,6 +1099,8 @@ begin
       Diff_dist_results_dir := DEMIX_Base_DB_Path + DEMIXModeName + '_diff_dist_results\';
       SSIMresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_ssim_results\';
       FUVresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_fuv_results\';
+      PartialsResultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_partials_results\';
+      CurvaturesResultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_curvatures_results\';
    end
    else if DEMIXanalysismode in [DEMIXneo] then begin
       Diff_dist_results_dir := 'J:\demix_neo\diff_dists\';
@@ -1574,6 +1188,7 @@ begin
       DEMIXProcessing := true;
       SetColorForProcessing;
       ToggleShowProgress(false);
+      LockStatusBar := true;
    end;
    StopSplashing;
 
@@ -1664,7 +1279,7 @@ begin
 
    SetParamsForDEMIXmode;
    LoadDEMIXnames;
-   OrderedFUVParams := OpenFUVOrderedParams;
+   //OrderedFUVParams := OpenDEMIXOrderedCriteria;
 
    {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIX)}
       WriteLineToDebugFile('GetDEMIXpaths out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIXModeName);
@@ -1814,12 +1429,18 @@ end;
 
 function CriterionTieTolerance(Criterion : shortstring) : float32;
 var
-   TieToleranceTable : tMyData;
+   db : tMyData;
+   fName : PathStr;
 begin
-   TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_fName);
-   TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
-   Result := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
-   TieToleranceTable.Destroy;
+   fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+   db := tMyData.Create(fName);
+   //Criterion := StringReplace(Criterion,'_FUV','',[rfIgnoreCase]);
+   //if ValidDB(db) then begin
+      fName := 'CRITERION=' + QuotedStr(NoSuffixCriterion(Criterion));
+      db.ApplyFilter(fname);
+      Result := db.GetFieldByNameAsFloat('TOLERANCE');
+      db.Destroy;
+   //end;
 end;
 
 
@@ -1837,255 +1458,6 @@ end;
 
 
 
-procedure CompareSeriousCompetitors(DBonTable : integer);
-
-
-   procedure OnePair(DEM1,DEM2 : shortstring);
-   var
-      tStr,fName,Criterion : shortstring;
-      j : integer;
-   begin
-      if GISdb[dbOnTable].MyData.FieldExists(DEM1) and GISdb[dbOnTable].MyData.FieldExists(DEM2) then begin
-         fName := DEM1 + '_' + DEM2;
-         GISdb[dbOnTable].AddFieldToDataBase(ftstring,fName,12);
-         GISdb[dbOnTable].MyData.First;
-         GISdb[dbOnTable].EmpSource.Enabled := false;
-         j := 0;
-         while not GISdb[dbOnTable].MyData.eof do begin
-            if (j mod 25 = 0) then wmdem.SetPanelText(3,fName + '  ' + IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
-            inc(j);
-            Criterion := GISdb[dbOnTable].MyData.GetFieldByNameAsString('CRITERION');
-            if IsDEMIX_signedCriterion(Criterion) then begin
-               tStr := 'N/A';
-            end
-            else begin
-               TStr := GetWinner(dbOnTable,DEM1,DEM2);
-            end;
-            GISdb[dbOnTable].MyData.Edit;
-            GISdb[dbOnTable].MyData.SetFieldByNameAsString(fName,tStr);
-            GISdb[dbOnTable].MyData.Next;
-         end;
-      end;
-   end;
-
-begin
-   try
-      ShowHourGlassCursor;
-      OnePair('COP','ALOS');
-      OnePair('COP','FABDEM');
-      OnePair('COP','TANDEM');
-      OnePair('COP','NASA');
-      OnePair('COP','SRTM');
-      OnePair('COP','ASTER');
-      OnePair('COP','DILUV');
-      OnePair('COP','DELTA');
-      OnePair('COP','COAST');
-   finally
-      ShowDefaultCursor;
-      GISdb[dbOnTable].EmpSource.Enabled := true;
-      wmdem.SetPanelText(3,'',true);
-   end;
-end;
-
-
-procedure DEMIXisCOPorALOSbetter(DBonTable : integer);
-var
-   RefFilter : shortstring;
-   Compare,i,j,Opinions,db : integer;
-   fName : PathStr;
-   Findings,Criteria,DEMs : tStringList;
-
-
-   procedure DoOne(Header,theFilter : shortstring);
-   var
-      Cop,ALOS,FAB,dem : integer;
-      aLine : shortString;
-      Counts : array[0..10] of integer;
-   begin
-      {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DO-ONE  ' + theFilter); {$EndIf}
-      WMDEM.SetPanelText(1,theFilter);
-      GISdb[DBonTable].ApplyGISFilter(theFilter);
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      Opinions := GISdb[DBonTable].MyData.FiltRecsInDB;
-      if (Opinions >= 10) then begin
-         if (Compare = 1) then begin
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND COP_ALOS=' + QuotedStr('tie'));
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND COP_ALOS=' + QuotedStr('alos'));
-            ALOS := GISdb[DBonTable].MyData.FiltRecsInDB;
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND COP_ALOS=' + QuotedStr('cop'));
-            COP := GISdb[DBonTable].MyData.FiltRecsInDB;
-            Findings.Add(Header + '  (n=' + IntToStr(Opinions) + '),' + RealToString(100.0 * alos/opinions,-8,-2)+ ','  + RealToString(100.0 * cop/opinions,-8,-2));
-         end
-         else if (Compare = 2) then begin
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND DEM_LOW_SC=' + QuotedStr('alos'));
-            ALOS := GISdb[DBonTable].MyData.FiltRecsInDB;
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND DEM_LOW_SC=' + QuotedStr('cop'));
-            COP := GISdb[DBonTable].MyData.FiltRecsInDB;
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND DEM_LOW_SC=' + QuotedStr('fabdem'));
-            FAB := GISdb[DBonTable].MyData.FiltRecsInDB;
-            Findings.Add(Header + '  (n=' + IntToStr(Opinions) + '),' + RealToString(100.0 * alos/opinions,-8,-2) + ',' + RealToString(100.0 * cop/opinions,-8,-2) + ',' + RealToString(100.0 * fab/opinions,-8,-2));
-         end
-         else begin
-            GISdb[DBonTable].MyData.First;
-            for DEM := 0 to 10 do Counts[DEM] := 0;
-            while not GISdb[DBonTable].MyData.EOF do begin
-               aLine := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC');
-               for DEM := 0 to pred(DEMs.Count) do
-                  if StrUtils.AnsiContainsText(aline,DEMs.Strings[DEM]) then inc(Counts[DEM]);
-               GISdb[DBonTable].MyData.Next;
-            end;
-            aline := Header + '  (n=' + IntToStr(Opinions) + ')';
-            for DEM := 0 to pred(DEMs.Count) do aline := aline + ',' + RealToString(100.0 * Counts[DEM]/opinions,-8,-2);
-            Findings.Add(aLine);
-         end;
-      end;
-   end;
-
-
-var
-   aHeader,aFilter,TStr : shortstring;
-   n : integer;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXisCOPorALOSbetter in'); {$EndIf}
-   try
-      GISdb[DBonTable].ApplyGISFilter('');
-      ShowHourglassCursor;
-      Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
-      DEMs := tStringList.Create;
-      DEMs.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
-
-      for Compare := 1 to 3 do begin
-         for i := 1 to 2 do begin
-            {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIXisCOPorALOSbetter start ' + RefDEMType[i]); {$EndIf}
-            ShowHourglassCursor;
-            Findings := tStringList.Create;
-            if (Compare = 1) then Findings.Add('FILTER,ALOS,COP')
-            else if (Compare = 2) then Findings.Add('FILTER,ALOS,COP,FABDEM')
-            else begin
-               TStr := 'FILTER';
-               for j := 0 to pred(DEMs.Count) do Tstr := Tstr + ',' + DEMs.Strings[j];
-               Findings.Add(TStr);
-            end;
-
-            RefFilter := ' AND REF_TYPE=' + QuotedStr(RefDEMType[i]);
-            for j := 1 to NumLandTypes do begin
-               DoOne(RefDEMType[i] + ' ' + LandTypes[j] + ' pixels','LAND_TYPE=' + QuotedStr(LandTypes[j]) + RefFilter);
-            end;
-            Findings.Add('SKIP');
-
-            if GISdb[DBonTable].MyData.FieldExists('PC_BARREN') then n := 9 else n := 8;
-            for j := 1 to n do begin
-               GetFilterAndHeader(i,j,aHeader,aFilter);
-               DoOne(aHeader,aFilter);
-            end;
-
-            Findings.Add('SKIP');
-            for j := 0 to pred(Criteria.Count) do begin
-               DoOne(RefDEMType[i] + ' ALL pixels  ' + Criteria.Strings[j],'CRITERION=' + QuotedStr(Criteria.Strings[j]) + RefFilter );
-            end;
-            if Compare = 1 then TStr := '_cop_or_alos_'
-            else if Compare = 2 then TStr := '_fab_cop_or_alos_'
-            else TStr := '_share_first_';
-
-            fName := NextFileNumber(MDTempDir,RefDEMType[i] + TStr,'.dbf');
-            db := StringList2CSVtoDB(Findings,fName);
-            if (Compare = 1) then TStr := 'COP or ALOS Winning Percentage'
-            else if (Compare = 2) then TStr := 'COP or ALOS or FABDEM Winning Percentage'
-            else TStr := 'DEM share of First Place';
-            DEMIXwineContestScoresGraph(DB,Tstr + ' (%)',0,100);
-         end;
-      end;
-   finally
-      Criteria.Destroy;
-      GISdb[DBonTable].ApplyGISFilter('');
-      GISdb[DBonTable].ShowStatus;
-   end;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXisCOPorALOSbetter out'); {$EndIf}
-end;
-
-
-
-procedure WinsAndTies(DBonTable : integer);
-const
-    nDEMs = 7;
-    nT = 6;
-    TheDEMs : array[1..NDEMs] of shortstring = ('TIES','ALOS_TIE','COP_TIE','FABDEM_TIE','NASA_TIE','SRTM_TIE','ASTER_TIE');
-var
-   Results : tStringList;
-   aFilter : shortstring;
-
-
-   procedure DoOne(ParameterList : tStringList; FilterField : shortstring);
-   var
-      Findings : array[1..nDEMs,1..nDEMs] of integer;
-      i,j,k,DEM : integer;
-   begin
-      for DEM := 1 to 2 do begin
-         wmdem.SetPanelText(2,RefDEMType[DEM]);
-         for k := 1 to ParameterList.Count do begin
-            wmdem.SetPanelText(3,ParameterList.Strings[pred(k)]);
-            {$IfDef RecordDEMIX} HighlightLineToDebugFile('WinsAndTies, k=' + IntToStr(k)); {$EndIf}
-
-            for i := 1 to nDEMs do begin
-               for j := 2 to nDEMs do begin
-                  Findings[i,j] := 0;
-               end;
-            end;
-
-            for i := 1 to nDEMs do begin
-               for j := 1 to nT do begin
-                  aFilter := TheDEMs[i] + '=' + IntToStr(j)  + ' AND REF_TYPE=' + QuotedStr(RefDEMType[DEM]);
-                  if (k > 1) then aFilter :=  aFilter + ' AND ' + FilterField + '=' + QuotedStr(ParameterList.Strings[pred(k)]);
-                  GISdb[DBonTable].ApplyGISfilter(aFilter);
-                  Findings[i,j] := GISdb[DBonTable].MyData.FiltRecsInDB;
-               end;
-            end;
-
-            for j := 1 to nT do begin
-               aFilter := ParameterList.Strings[pred(k)] + ',' + RefDEMType[DEM] + ',' + IntToStr(j);
-               for i := 1 to nDEMs do begin
-                  aFilter := aFilter + ',' + {IntToStr(nT) + ',' +} IntToStr(Findings[i,j]);
-               end;
-               Results.Add(afilter);
-            end;
-         end;
-      end;
-   end;
-
-const
-   nParams = 4;
-   TheLumpedParams : array[1..NParams] of shortstring = ('*','ELVD','SLPD','RUFD');
-var
-   fName : PathStr;
-   theParams : tstringlist;
-   j : integer;
-begin
-   {$IfDef RecordDEMIX} HighlightLineToDebugFile('WinsAndTies in'); {$EndIf}
-   try
-      if not GISdb[DBonTable].MyData.FieldExists('COP_TIE') then GISdb[DBonTable].dbTablef.iesbyopinions1Click(Nil);
-      GetDEMIXPaths(true);
-
-      GISdb[DBonTable].EmpSource.Enabled := false;
-
-      Results := tStringList.Create;
-      aFilter := 'PARAMETER,REF_TYPE,NUM_TIES';
-      for j := 1 to nDEMs do aFilter :=  aFilter + ',' + TheDEMs[j];
-      Results.Add(aFilter);
-      theParams := tstringlist.Create;
-      for j := 1 to nParams do TheParams.Add(TheLumpedParams[j]);
-      DoOne(TheParams,'CRIT_CAT');
-      TheParams.Clear;
-      TheParams.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
-      DoOne(TheParams,'CRITERION');
-      TheParams.Destroy;
-
-      {$IfDef RecordDEMIX} HighlightLineToDebugFile('WinsAndTies, make db'); {$EndIf}
-      fName := NextFileNumber(MDTempDir,MDTempDir + 'wins_and_ties_','.dbf');
-      StringList2CSVtoDB(Results,fName);
-   finally
-      EndDEMIXProcessing(DBonTable);
-   end;
-end;
 
 
 procedure DoDEMIX_DifferenceMaps(AreaName,ShortName,LongName : shortString; var Graph1,Graph2 : tThisBaseGraph);
@@ -2420,5 +1792,377 @@ begin {procedure FUVforMultipleTestDEMstoReference}
    end;
 end {procedure FUVforMultipleTestDEMstoReference};
 *)
+
+
+{$IfDef FUV_RangeScales}
+
+procedure FUVforRangeScales(LandCoverOption : boolean);
+var
+   Values : ^bfarray32;
+   RefDEMs,TestDEMs : array[0..MaxOrderedParams] of integer;
+   ParamNames : array[0..MaxOrderedParams] of shortstring;
+   DataDir, fName : PathStr;
+   db,ESA_LC10 : integer;
+   Area,aLine,bline : shortstring;
+   DiffDistFindings,FUVFindings : tStringList;
+   LastLSP : integer;
+   OrderedFUVParams : tStringList;
+
+
+
+   {$IfDef TrackElevationPointers}
+      procedure CheckElevationPointers(Report : shortstring);
+      var
+         i : integer;
+         RefGood,TestGood : boolean;
+         RefMess,TestMess : shortstring;
+      begin
+         RefGood := true;
+         TestGood := true;
+         RefMess := '';
+         TestMess := '';
+         for I := 1 to MaxOrderedParams do begin
+            if not DEMGlb[RefDEMs[i]].ElevationStructuresAllocated then begin RefGood := false; RefMess := RefMess + ' ' + IntToStr(i); end;
+            if not DEMGlb[TestDEMs[i]].ElevationStructuresAllocated then begin TestGood := false; TestMess := TestMess + ' ' + IntToStr(i); end;
+         end;
+         if RefGood and TestGood then WriteLineToDebugFile(Report + ' DEMs memory allocated');
+         if not RefGood then HighLightLineToDebugFile(Report + ' Ref DEMs memory allocation problem' + RefMess);
+         if not TestGood then HighLightLineToDebugFile(Report + ' Test DEMs memory allocation problem' + TestMess);
+      end;
+   {$EndIf}
+
+
+   procedure LoadLSPs;
+   var
+      ad,Radius,i : integer;
+
+
+         procedure CheckLSP_calc(kwat : shortstring);
+         begin
+            if (OrderedFUVParams.IndexOf(UpperCase(kwat)) <> -1) then begin
+               wmDEM.SetPanelText(3,'Load LSP ' + kwat,true);
+               inc(LastLSP);
+               ParamNames[LastLSP] := UpperCase(kwat);
+               RefDEMs[LastLSP] := RUN_LSPcalculator(RefDEMs[1],'--' + kwat,false);
+               TestDEMs[LastLSP] := RUN_LSPcalculator(TestDEMs[1],'--' + kwat,false);
+            end;
+         end;
+
+
+   begin
+      {$IfDef RecordRangeScales} HighLightLineToDebugFile(DEMglb[TestDEMs[1]].AreaName + ' Load LSPs in'); {$EndIf}
+      LastLSP := 1;
+      ParamNames[1] := 'ELEV';
+
+      if (OrderedFUVParams.IndexOf('OPENU') <> -1) then begin
+        wmDEM.SetPanelText(3,'Load LSP Openness',true);
+        ParamNames[LastLSP+1] := 'OPENU';
+        ParamNames[LastLSP+2] := 'DOWNU';
+        ad := 0;        //difference, not to be computed
+        {$IfDef FastOpenness} Radius := 20; {$Else} Radius := 250; {$EndIf}
+
+        RefDEMs[LastLSP+1] := -1;     //upward
+        RefDEMs[LastLSP+2] := -1;     //downward
+        CreateOpennessMap(false,DEMglb[RefDEMs[1]].FullDEMGridLimits,RefDEMs[1],Radius,-99,RefDEMs[LastLSP+1],RefDEMs[LastLSP+2],ad);
+        DEMGlb[RefDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'openu_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+        DEMGlb[RefDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'opend_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+
+        TestDEMs[LastLSP+1] := -1;    //upward
+        TestDEMs[LastLSP+2] := -1;    //downward
+        CreateOpennessMap(false,DEMglb[TestDEMs[1]].FullDEMGridLimits,TestDEMs[1],Radius,-99,TestDEMs[LastLSP+1],TestDEMs[LastLSP+2],ad);
+        DEMGlb[TestDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'openu_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+        DEMGlb[TestDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'opend_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+        inc(LastLSP,2);
+      end;
+
+      if (OrderedFUVParams.IndexOf('HILL') <> -1) then begin
+         wmDEM.SetPanelText(3,'Load LSP Hillshade',true);
+         inc(LastLSP);
+         ParamNames[LastLSP] := 'HILL';
+         RefDEMs[LastLSP] := CreateHillshadeMap(false,RefDEMs[1],MDTempDir + 'hillshade_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+         TestDEMs[LastLSP] := CreateHillshadeMap(false,TestDEMs[1],MDTempDir + 'hillshade_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+      end;
+
+      if (OrderedFUVParams.IndexOf('SLOPE') <> -1) then begin
+        wmDEM.SetPanelText(3,'Load LSP slope',true);
+        RefDEMs[LastLSP+1] := 0;   //so slope returned
+        TestDEMs[LastLSP+1] := 0;  //so slope returned
+        ParamNames[LastLSP+1] := 'SLOPE';
+        ParamNames[LastLSP+2] := 'RUFF';
+        RefDEMs[LastLSP+2] := CreateSlopeRoughnessSlopeStandardDeviationMap(RefDEMs[1],5,RefDEMs[LastLSP+1],false);
+        TestDEMs[LastLSP+2] := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[1],5,TestDEMs[LastLSP+1],false);
+        DEMGlb[RefDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'slope_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+        DEMGlb[TestDEMs[LastLSP+1]].WriteNewFormatDEM(MDTempDir + 'slope_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+        DEMGlb[RefDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'ruff_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+        DEMGlb[TestDEMs[LastLSP+2]].WriteNewFormatDEM(MDTempDir + 'ruff_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+        inc(LastLSP,2);
+      end;
+
+      if (OrderedFUVParams.IndexOf('TPI') <> -1) then begin
+         wmDEM.SetPanelText(3,'Load LSP TPI',true);
+         inc(LastLSP);
+         ParamNames[LastLSP] := 'TPI';
+         RefDEMs[LastLSP] := BoxCarDetrendDEM(false,RefDEMs[1],{DEMGlb[RefDEMs[1]].FullDEMGridLimits,}3,MDTempDir + 'tpi_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+         TestDEMs[LastLSP] := BoxCarDetrendDEM(false,TestDEMs[1],{DEMGlb[TestDEMs[1]].FullDEMGridLimits,}3,MDTempDir + 'tpi_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+      end;
+
+      if (OrderedFUVParams.IndexOf('RRI') <> -1) then begin
+         wmDEM.SetPanelText(3,'Load LSP RRI',true);
+         inc(LastLSP);
+         ParamNames[LastLSP] := 'RRI';
+         RefDEMs[LastLSP] := MakeTRIGrid(RefDEMs[1],nmRRI,false,MDTempDir + 'rri_' + DEMglb[RefDEMs[1]].AreaName + '.dem');
+         TestDEMs[LastLSP] := MakeTRIGrid(TestDEMs[1],nmRRI,false,MDTempDir + 'rri_' + DEMglb[TestDEMs[1]].AreaName + '.dem');
+      end;
+
+      {$IfDef IncludeCurvatureLSPs}
+         if (OrderedFUVParams.IndexOf('PLANC') <> -1) then begin
+            wmDEM.SetPanelText(3,'Load LSP PLANC',true);
+            inc(LastLSP);
+            ParamNames[LastLSP] := 'PLANC';
+            if MICRODEMcurvature then begin
+               RefDEMs[LastLSP] := CreateCurvatureMap(eucurv_plan,false,RefDEMs[1]);
+               TestDEMs[LastLSP] := CreateCurvatureMap(eucurv_plan,false,TestDEMs[1]);
+            end
+            else begin
+               RefDEMs[LastLSP] := WBT_PlanCurvature(false,DEMGlb[RefDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_plan_curv.tif');
+               TestDEMs[LastLSP] := WBT_PlanCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_plan_curv.tif');
+            end;
+         end;
+         if (OrderedFUVParams.IndexOf('PROFC') <> -1) then begin
+            wmDEM.SetPanelText(3,'Load LSP PROFC',true);
+            inc(LastLSP);
+            ParamNames[LastLSP] := 'PROFC';
+            if MICRODEMcurvature then begin
+               RefDEMs[LastLSP] := CreateCurvatureMap(eucurv_prof,false,RefDEMs[1]);
+               TestDEMs[LastLSP] := CreateCurvatureMap(eucurv_prof,false,TestDEMs[1]);
+            end
+            else begin
+               RefDEMs[LastLSP] := WBT_ProfileCurvature(false,DEMGlb[RefDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_prof_curv.tif');
+               TestDEMs[LastLSP] := WBT_ProfileCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_prof_curv.tif');
+            end;
+         end;
+         if (OrderedFUVParams.IndexOf('TANGC') <> -1) then begin
+            wmDEM.SetPanelText(3,'Load LSP TANGC',true);
+            inc(LastLSP);
+            ParamNames[LastLSP] := 'TANGC';
+            if MICRODEMcurvature then begin
+               RefDEMs[LastLSP] := CreateCurvatureMap(eucurv_tang,false,RefDEMs[1]);
+               TestDEMs[LastLSP] := CreateCurvatureMap(eucurv_tang,false,TestDEMs[1]);
+             end
+             else begin
+               RefDEMs[LastLSP] := WBT_TangentialCurvature(false,DEMGlb[RefDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_tang_curv.tif');
+               TestDEMs[LastLSP] := WBT_TangentialCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName,MDtempDir + 'wbt_tang_curv.tif');
+             end;
+         end;
+
+         CheckLSP_calc('knss');
+         CheckLSP_calc('kncc');
+         CheckLSP_calc('kncs');
+      {$EndIf}
+      {$IfDef RecordRangeScales} WriteLineToDebugFile('Load LSPs out, LastLSP=' + IntToStr(LastLSP)); {$EndIf}
+   end;
+
+
+   procedure ComputeOneFUVLine;
+   var
+      i,j,DiffMap : integer;
+      MomentVar : tMomentVar;
+      FUV : float32;
+      cLine : shortstring;
+      Min,Max,Mean,Median : float32;
+   begin
+      {$IfDef TrackElevationPointers} CheckElevationPointers('start ComputeOneFUVLine'); {$EndIf}
+
+      if (DiffDistFindings <> Nil) then begin
+          for j := 1 to LastLSP do begin
+            {$IfDef RecordRangeScales} WriteLineToDebugFile(IntToStr(j) + ' ' + ParamNames[j] +
+               ' ref=' + IntToStr(RefDEMs[j]) + ' test=' + IntToStr(TestDEMs[j])); {$EndIf}
+
+            wmDEM.SetPanelText(3,'Diff Dist ' + ParamNames[j],true);
+            DiffMap := MakeDifferenceMap(TestDEMs[j],RefDEMs[j],RefDEMs[j],0,false,false,false);
+            if ValidDEM(DiffMap) then begin
+              InitializeMomentVar(MomentVar);
+              DEMglb[DiffMap].GetElevationsInLongArray(DEMglb[DiffMap].FullDEMGridLimits, MomentVar.NPts,Values^,Min,Max);
+              //first get signed values
+              moment(Values^,MomentVar,msAll);
+              Min := MomentVar.MinZ;
+              Max := MomentVar.MaxZ;
+              Mean := MomentVar.Mean;
+              Median := MomentVar.Median;
+              //now get unsigned
+              moment(Values^,MomentVar,msAll);
+              for i := 1 to MomentVar.Npts do Values^[i] := abs(Values^[i]);
+              moment(Values^,MomentVar,msAll);
+              MomentVar.MinZ := Min;
+              MomentVar.MaxZ := Max;
+              MomentVar.Mean := Mean;
+              MomentVar.Median := Median;
+              cline := bLine + ',' + ParamNames[j] + ',' + DEMIXMomentStatsString(MomentVar);
+              DiffDistFindings.Add(cline);
+              CloseSingleDEM(DiffMap);
+            end;
+          end;
+      end;
+
+      for j := 1 to LastLSP do begin
+         wmDEM.SetPanelText(3,'FUV ' + ParamNames[j],true);
+         FUV := GetFUVForPairGrids(DEMglb[RefDEMs[j]].FullDEMGridLimits,TestDEMs[j],RefDEMs[j]);
+         aline := aLine + ',' + RealToString(FUV,-12,-6);
+         {$IfDef RecordRangeScalesFull} WriteLineToDebugFile(IntToStr(j) + ' ' + ParamNames[j] + ' fuv=' + RealToString(FUV,-12,-6)); {$EndIf}
+      end;
+      FUVFindings.Add(Aline);
+
+      {$IfDef RecordRangeScalesFull} WriteLineToDebugFile('ComputeOneFUVLine  ' + aLine); {$EndIf}
+      {$IfDef TrackElevationPointers} CheckElevationPointers('end ComputeOneFUVLine'); {$EndIf}
+   end;
+
+      procedure OneLandCover(LandType : shortstring; Code : integer);
+      var
+         Fixed : int64;
+         j : integer;
+      begin
+         {$IfDef RecordRangeScales} WriteLineToDebugFile('OneLandCover, start ' + LandType); {$EndIf}
+         wmDEM.SetPanelText(2,LandType,true);
+         if (Code <> 0) then begin
+            wmDEM.SetPanelText(3,'Mask grids',true);
+            {$IfDef TrackElevationPointers} CheckElevationPointers('Start Masking ' + LandType); {$EndIf}
+            DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
+              for j := 1 to LastLSP do begin
+                 if ValidDEM(RefDEMs[j]) and ValidDEM(TestDEMs[j]) then begin
+                    MaskGridFromSecondGrid(RefDEMs[j],ESA_LC10, msSecondMissing);
+                    MaskGridFromSecondGrid(TestDEMs[j],ESA_LC10, msSecondMissing);
+                 end
+                 else begin
+                    {$IfDef RecordRangeScales} WriteLineToDebugFile('Tried to use bad grid'); {$EndIf}
+                 end;
+              end;
+         end;
+         Fixed := DEMglb[TestDEMs[1]].ComputeNumberValidPoints(DEMglb[TestDEMs[1]].FullDEMGridLimits);
+         bline := Area + ', ,' + LandType + ',' + DEMglb[TestDEMs[1]].AreaName;
+         aline := bline + ',' + IntToStr(Fixed);
+         ComputeOneFUVLine;
+         if (Code <> 0) then begin
+            wmDEM.SetPanelText(3,'UnMask LSPs',true);
+            DEMGLb[ESA_LC10].ReloadDEM(true);
+            for j := 1 to LastLSP do begin
+               DEMGlb[RefDEMs[j]].ReloadDEM(true);
+               DEMGlb[TestDEMs[j]].ReloadDEM(true);
+            end;
+         end;
+         {$IfDef RecordRangeScales} WriteLineToDebugFile('OneLandCover, end ' + LandType); {$EndIf}
+         {$IfDef TrackElevationPointers} CheckElevationPointers('LSPs, after ' + LandType) {$EndIf}
+      end;
+
+      procedure CloseLSPs;
+      var
+         j : integer;
+      begin
+         for j := 1 to LastLSP do begin
+            CloseSingleDEM(RefDEMs[j]);
+            CloseSingleDEM(TestDEMs[j]);
+         end;
+      end;
+
+      procedure SaveAndOpenDB(Findings : tStringList);
+      begin
+         {$IfDef RecordRangeScales} WriteLineToDebugFile('SaveAndOpenDB: ' + fName + '  Findings.Count=' + IntToStr(FUVFindings.Count)); {$EndIf}
+         db := StringList2CSVtoDB(Findings,fName,true);
+         MainGraphOptions(db,Nil,Nil);
+      end;
+
+      procedure StartFindings;
+      var
+         j : integer;
+         TStr : shortstring;
+      begin
+         if LandCoverOption then TStr := 'LANDCOVER,DEM,NPTS' else Tstr := 'RESOLUTION';
+         FUVFindings := tStringList.Create;
+         aLine := 'AREA,DEMIX_TILE,' + TStr;
+         for j := 0 to pred(OrderedFUVParams.Count) do aline := aline + ',' + OrderedFUVParams[j] + '_FUV';
+         FUVFindings.Add(aLine);
+         {$IfDef RecordRangeScalesFull} WriteLineToDebugFile('aline=' + aline); {$EndIf}
+
+         DiffDistFindings := tStringList.Create;
+         aLine := 'AREA,DEMIX_TILE,LANDCOVER,DEM,CRITERION';
+         for j := 1 to 10 do aline := aline + ',' + LongParamSuffixes[j];
+         DiffDistFindings.Add(aLine);
+      end;
+
+var
+   TStr : shortstring;
+   i,j : integer;
+   TestDEMList : tStringList;
+begin {procedure FUVforRangeScales}
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale in'); {$EndIf}
+   GetDEMIXpaths;
+   SetColorForProcessing;
+   LockStatusBar := true;
+   Area := 'oxnard';
+   DataDir := 'J:\aaa_neo_eval\' + Area + '\';
+   GetDOSPath('with DEMs',DataDir);
+      for i := 0 to MaxOrderedParams do begin
+        //if i <> 1 then begin
+           RefDEMs[i] := 0;
+           TestDEMs[i] := 0;
+           ParamNames[i] := '';
+        //end;
+      end;
+
+   if LandCoverOption then begin
+      {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale Landcover options'); {$EndIf}
+      New(Values);
+      TestDEMList := GetListOfTestDEMsinUse;
+      TestDEMList.Insert(0,'ref_DTM');
+      StartFindings;
+      for j := 1 to pred(TestDEMList.Count) do begin
+        RefDEMs[1] := OpenNewDEM(DataDir + TestDEMList.Strings[0] + '.tif',false,'reference DTM');
+        TestDEMs[1] := OpenNewDEM(DataDir + TestDEMList.Strings[j] + '.tif',false,'test DEM');
+        wmDEM.SetPanelText(1,IntToStr(j) + '/' + IntToStr(pred(TestDEMList.Count)) + '  ' + DEMGlb[TestDEMs[1]].AreaName,true);
+        if (j = 1) then ESA_LC10 := LoadLC10LandCover('',DEMGlb[RefDEMs[1]].DEMBoundBoxGeo,false);
+        LoadLSPs;
+        {$IfDef TrackElevationPointers} CheckElevationPointers('LSPs loaded'); {$EndIf}
+        OneLandCover('All',0);
+        if false then begin
+          OneLandCover('Forest',10);
+          OneLandCover('Shrub',20);
+          OneLandCover('Grassland',30);
+          OneLandCover('Urban',50);
+          OneLandCover('Barren',60);
+        end;
+        wmDEM.SetPanelText(2,'',true);
+        CloseLSPs;
+      end;
+      fName := DataDir + Area + '_FUV_by_LandCover.dbf';
+      FUVFindings.SaveToFile(MDTempDir + 'fuv_results.csv') ;
+      SaveAndOpenDB(FUVFindings);
+      fName := DataDir + Area + '_diff_dist_by_LandCover.dbf';
+      SaveAndOpenDB(DiffDistFindings);
+
+      CloseSingleDEM(ESA_LC10);
+      Dispose(Values);
+   end
+   else begin
+      StartFindings;
+      for i := 1 to NumScales do begin
+         {$IfDef RecordRangeScales} HighlightLineToDebugFile('FUVforRangeScale, start ' + Scales[i]); {$EndIf}
+         RefDEMs[1] := OpenNewDEM(DataDir + 'ref_dtm_' + Scales[i] + '.tif',false);
+         TestDEMs[1] := OpenNewDEM(DataDir + 'Neodtm_' + Scales[i] + '.tif',false);
+         LoadLSPs;
+         aline := Area + ', ,' + Scales[i];
+         ComputeOneFUVLine;
+         CloseLSPs;
+      end;
+      fName := DataDir + Area + DEMglb[RefDEMs[1]].AreaName + '_FUV_Range_scales.dbf';
+      SaveAndOpenDB(FUVFindings);
+   end;
+
+   //MessageToContinue('Track down why dbOnTable is not getting set');
+
+   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale out'); {$EndIf}
+   LockStatusBar := false;
+   SetColorForWaiting;
+end {procedure FUVforRangeScales};
+
+{$EndIf}
 
 

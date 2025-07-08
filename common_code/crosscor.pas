@@ -467,7 +467,7 @@ begin
       if (Lag >= 0) then R := PlusCrossCor^[Lag]
       else R := NegCrossCor^[-Lag];
       Caption := 'Scatter plot for lag=' +  IntToStr(Lag) + '  r=' + RealToString(r,-8,3);
-      OpenPointFile(Rfile,LagScatterGraph.Symbol);
+      OpenPointSymbolFile(Rfile,'crosscor',LagScatterGraph.Symbol);
       for I := 0 to pred(LengthLong) do begin
          v[1] := Series1^[i];
          if (i+Lag >= 0) and (i <= LengthShort-Lag) then begin

@@ -497,7 +497,7 @@ begin {MultipleHistogramPrep}
    for I := 0 to pred(Histogram.GraphDraw.HistogramDistributionFileList.Count) do begin
       if ProcessSeries(Histogram.GraphDraw.HistogramDistributionFileList.Strings[i]) and (i < MaxGraphSeries) then begin
          {$IfDef RecordHistogram} WriteLineToDebugFile('Process series ' + IntToStr(i) + ' ' + Histogram.GraphDraw.HistogramDistributionFileList.Strings[i]); {$EndIf}
-         Histogram.GraphDraw.ShowLine[succ(i)] := true;
+         Histogram.GraphDraw.ShowLine[i] := true;
       end;
    end;
    Histogram.GraphDraw.MinVertAxis := 0;
@@ -534,16 +534,6 @@ begin
       Result.GraphDraw.GraphType := gtMultHist;
       Result.HistogramChanged := false;
 
-      (*
-      if (LegendList <> Nil) then begin
-         Result.GraphDraw.LegendList := tStringList.Create;
-         for I := 0 to pred(LegendList.Count) do begin
-            Result.GraphDraw.LegendList.Add(LegendList.Strings[i]);
-            {$IfDef RecordHistogram} WriteLineToDebugFile('Series=' + IntToStr(i) + ' ' + LegendList.Strings[i]); {$EndIf}
-         end;
-      end;
-      *)
-
       ShowHourglassCursor;
       Result.Caption := TitleBar;
       Result.GraphDraw.SetShowAllPoints(false);
@@ -553,8 +543,6 @@ begin
          ReadDefault('Minimum value',Result.GraphDraw.MinHorizAxis);
          ReadDefault('Maximum value',Result.GraphDraw.MaxHorizAxis);
          ReadDefault('Number of bins',Result.HistogramNumBins);
-         //Result.GraphDraw.MinHorizAxis := Min;
-         //Result.GraphDraw.MaxHorizAxis := Max;
       end;
 
       l1 := RemoveUnderscores(ParamName);

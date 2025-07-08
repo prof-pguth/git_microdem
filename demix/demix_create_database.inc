@@ -66,6 +66,7 @@ var
    ByCriterion : tStringList;
    fName : PathStr;
 begin
+
    MessageToContinue('MakeWinsDB disabled');
 (*
     if GISdb[DBonTable].MyData.FieldExists('COP_WIN') then begin
@@ -1112,27 +1113,27 @@ end;
 procedure MergeCSV(Mode : integer);
 begin
    MDDef.DEMIX_all_areas := true;
-
-   //PickDEMIXMode;
    SetParamsForDEMIXmode;
    GetDEMIXpaths;
-
    case Mode of
       1 : MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
       2 : MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
       3 : MergeCSVtoCreateFinalDB(ChannelMissesDir,'_Channel_Misses.csv','_channel_misses_' );
       4 : MergeCSVtoCreateFinalDB(GeomorphonsDir,'_geomorphons.csv','_pt_class_demix_db_');
       5 : MergeCSVtoCreateFinalDB(Stream_valley_dir,'_ridges_valleys.csv','_ridges_valleys_' );
+      6 : MergeCSVtoCreateFinalDB(PartialsResultsDir,'_partials_results.csv','_partials_demix_db_');
+      7 : MergeCSVtoCreateFinalDB(CurvaturesResultsDir,'_curvatures_results.csv','_curvatures_demix_db_');
    end;
 end;
 
 
-procedure RankDEMS(DBonTable : integer);
+procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
 const
    IttyBitty = 0.00001;  //added for floating point funny business between Delphi and Python
    MaxTestDEMs = 12;
+   DoScores = false;
 var
-   DEM,Value,N,i,j,Score,BestScore,UsedDEMs : integer;
+   DEM,Value,N,j,Score,BestScore,UsedDEMs : integer;
    Sum,fValue,BestValue,TieTolerance,Cop,alos,fab : float32;
    fName : PathStr;
    BestValueString,aLine,Which : shortstring;
@@ -1163,16 +1164,18 @@ var
              GISdb[DBonTable].MyData.SetFieldByNameAsInteger('NUM_TIES',NumTies);
              {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Find ties =' + BestValueString); {$EndIf}
           end;
-          for i := StartDEM to EndDEM do begin
-             if GISdb[DBonTable].MyData.FieldExists(RankDEMs[i] + '_SCR') then begin
-                GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_SCR',BestScore / NumTies);
-                {$IfDef IncludeCOPwins} GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_WIN',StartDEM); {$EndIf}
-             end
-             else begin
-                WriteLineToDebugFile(IntToStr(i) + '  ' + RankDEMs[i] + '  ' + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2));
-                MessageToContinue('check this out!!');
-             end;
-             {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(RankDEMs[i] + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2)); {$EndIf}
+          if DoScores then begin
+              for i := StartDEM to EndDEM do begin
+                 if GISdb[DBonTable].MyData.FieldExists(RankDEMs[i] + '_SCR') then begin
+                    GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_SCR',BestScore / NumTies);
+                    {$IfDef IncludeCOPwins} GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_WIN',StartDEM); {$EndIf}
+                 end
+                 else begin
+                    WriteLineToDebugFile(IntToStr(i) + '  ' + RankDEMs[i] + '  ' + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2));
+                    MessageToContinue('check this out!!');
+                 end;
+                 {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(RankDEMs[i] + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2)); {$EndIf}
+              end;
           end;
           {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Find ties out, EndDEM=' + IntToStr(EndDEM)); {$EndIf}
        end;
@@ -1185,23 +1188,22 @@ begin {procedure RankDEMS}
     {$If Defined(RecordDEMIX)} WriteLineToDebugFile('RankDEMS in, ' + GISdb[DBonTable].dbName); {$EndIf}
     LoadDEMIXnames;
 
-    if (not FileExists(MDDef.DEMIX_criterion_fName)) and (not GetFileFromDirectory('DEMIX criterial tolerances','*.dbf',MDDef.DEMIX_criterion_fName)) then exit;
-
     GISdb[DBonTable].AddFieldToDataBase(ftString,'DEM_LOW_SC',48);
     if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
-
-    for DEM := 1 to MaxDEMIXDEM do begin
-       if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
-          GISdb[DBonTable].AddFieldToDataBase(ftFloat,DEMIXshort[DEM] + '_SCR',6,2);
-         {$IfDef IncludeCOPwins} GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_WIN',6,2); {$EndIf}
-       end;
+    if DoScores then begin
+      for DEM := 1 to MaxDEMIXDEM do begin
+         if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
+            GISdb[DBonTable].AddFieldToDataBase(ftFloat,DEMIXshort[DEM] + '_SCR',6,2);
+           {$IfDef IncludeCOPwins} GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_WIN',6,2); {$EndIf}
+         end;
+      end;
     end;
+
     GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TOLERANCE',9,6);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NUM_TIES',2);
 
-    i := 0;
-    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Load criterion tolerances, ' + MDDef.DEMIX_criterion_fName); {$EndIf}
-    TieToleranceTable := tMyData.Create(MDDef.DEMIX_criterion_fName);
+    fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+    TieToleranceTable := tMyData.Create(fName);
     if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
        j := 0;
        GISdb[DBonTable].MyData.First;
@@ -1213,8 +1215,10 @@ begin {procedure RankDEMS}
           Criterion := GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION');
           GISdb[DBonTable].MyData.Edit;
           if IsDEMIX_signedCriterion(Criterion) then begin
-             for DEM := 1 to NumDEMIXtestDEM do begin
-                GISdb[DBonTable].MyData.SetFieldByNameAsString(DEMIXshort[DEM] + '_SCR','');
+             if DoScores then begin
+               for DEM := 1 to NumDEMIXtestDEM do begin
+                  GISdb[DBonTable].MyData.SetFieldByNameAsString(DEMIXshort[DEM] + '_SCR','');
+               end;
              end;
           end
           else begin
@@ -1224,7 +1228,7 @@ begin {procedure RankDEMS}
                 if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
                    inc(UsedDEMs);
                    RankDEMs[UsedDEMs] := DEMIXShort[DEM];
-                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);                                           //rank dems is not being set
+                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);       //rank dems is not being set
                    {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
                 end;
              end;
@@ -1243,16 +1247,7 @@ begin {procedure RankDEMS}
                 end;
              end;
 
-             TieToleranceTable.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
-             if (TieToleranceTable.FiltRecsInDB = 0) then begin
-                TieTolerance := 0.01;
-                ReadDefault('Tolerance for ties for ' + Criterion,TieTolerance);
-                TieToleranceTable.Insert;
-                TieToleranceTable.SetFieldByNameAsFloat('TOLERANCE',TieTolerance);
-                TieToleranceTable.SetFieldByNameAsString('CRITERION',Criterion);
-                TieToleranceTable.Post;
-             end
-             else TieTolerance := TieToleranceTable.GetFieldByNameAsFloat('TOLERANCE');
+             TieTolerance := CriterionTieTolerance(Criterion);
              GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TOLERANCE',TieTolerance);
 
              FirstDEM := 1;
@@ -1293,8 +1288,10 @@ var
           GISdb[DBonTable].EmpSource.Enabled := false;
           if GISdb[DBonTable].MyData.FieldExists(Field) then begin
              ShowHourglassCursor;
-             Sum := GISdb[DBonTable].MyData.FieldSum(Field);
-             Average := Sum / GISdb[DBonTable].MyData.FiltRecsInDB;
+             //Sum := GISdb[DBonTable].MyData.FieldSum(Field);
+             //Average := Sum / GISdb[DBonTable].MyData.FiltRecsInDB;
+             if MDDef.DEMIX_UseMedian then Average := GISdb[DBonTable].MyData.FieldMedian(Field)
+             else Average := GISdb[DBonTable].MyData.FieldAverage(Field);
              aline := aline + ',' + RealToString(Average,-12,-4);
           end;
        end;
@@ -1323,6 +1320,7 @@ begin {function AverageScoresOfDEMs}
     end
     else begin
        for I := 0 to pred(Filters.Count) do begin
+          {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(IntToStr(i) + '  ' + Filters.strings[i] + '   ' + Filters.strings[i]); {$EndIf}
           if (Filters.strings[i] = '') then begin
              GISdb[DBonTable].ClearGISFilter;
              if (CriteriaFilter <> '') then GISdb[DBonTable].ApplyGISFilter(CriteriaFilter);
@@ -1330,9 +1328,11 @@ begin {function AverageScoresOfDEMs}
           end
           else begin
              theFilter := Filters.strings[i];
-             if (CriteriaFilter <> '') then theFilter := CriteriaFilter + ' AND ' + TheFilter;
+             if (CriteriaFilter <> '') then begin
+                theFilter := CriteriaFilter + ' AND ' + TheFilter;
+             end;
              GISdb[DBonTable].ApplyGISFilter(theFilter);
-             ProcessFilter(Labels.strings[i])
+             ProcessFilter(Labels.strings[i]);
           end;
        end;
     end;
@@ -1844,7 +1844,8 @@ begin
           GISdb[DBonTable].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criteria.Strings[i]));
           GISdb[DBonTable].EmpSource.Enabled := false;
           MomentVar := GISdb[DBonTable].GetFieldStatistics(aField);
-          Tol := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+          //Tol := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
+          Tol := CriterionTieTolerance('TOLERANCE');
           Findings.Add(Criteria.Strings[i] + ',' + RealToString(MomentVar.MinZ,-12,-6)  + ',' +
                                                    RealToString(MomentVar.PC5,-12,-6)  + ',' +
                                                    RealToString(MomentVar.Q1,-12,-6)  + ',' +

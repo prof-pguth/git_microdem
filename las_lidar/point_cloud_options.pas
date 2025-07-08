@@ -810,9 +810,9 @@ begin
                 Graph.SetUpGraphForm;
 
                Graph.OpenDataFile(rfile,'');
-               Graph.GraphDraw.LineSize256[1] := 1;
-               Graph.GraphDraw.ShowLine[1] := true;
-               Graph.GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(clBrown);   //ConvertTColorToPlatformColor(WinGraphColors[1]);
+               Graph.GraphDraw.LineSize256[0] := 1;
+               Graph.GraphDraw.ShowLine[0] := true;
+               Graph.GraphDraw.FileColors256[0] := ConvertTColorToPlatformColor(clBrown);   //ConvertTColorToPlatformColor(WinGraphColors[1]);
                for Bin := -100 to 5000 do begin
                    if (CellElevs[Bin] > 0) then begin
                       if Bin > Graph.GraphDraw.MaxVertAxis then Graph.GraphDraw.MaxVertAxis := Bin + 10;

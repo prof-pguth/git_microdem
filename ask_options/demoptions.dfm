@@ -10,6 +10,8 @@ inherited OptionsForm: TOptionsForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
+  ExplicitLeft = 3
+  ExplicitTop = 3
   ExplicitWidth = 809
   ExplicitHeight = 602
   TextHeight = 15
@@ -48,7 +50,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet21
+    ActivePage = TabSheet10
     Align = alClient
     MultiLine = True
     TabOrder = 2

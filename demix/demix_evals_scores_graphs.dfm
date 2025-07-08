@@ -2,7 +2,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   Left = 0
   Top = 0
   Caption = 'DEMIX DB graphs'
-  ClientHeight = 717
+  ClientHeight = 770
   ClientWidth = 1614
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -208,13 +208,12 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox4Click
   end
   object BitBtn16: TBitBtn
-    Left = 24
+    Left = 27
     Top = 527
     Width = 269
     Height = 25
     Caption = 'Best eval colored by slope'
     TabOrder = 14
-    OnClick = BitBtn16Click
   end
   object BitBtn2: TBitBtn
     Left = 8
@@ -226,8 +225,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn2Click
   end
   object BitBtn17: TBitBtn
-    Left = 24
-    Top = 496
+    Left = 48
+    Top = 710
     Width = 269
     Height = 25
     Caption = 'Best eval graph for each criterion by filters'
@@ -284,8 +283,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup7Click
   end
   object BitBtn28: TBitBtn
-    Left = 8
-    Top = 225
+    Left = 48
+    Top = 741
     Width = 170
     Height = 25
     Caption = 'Best eval graph per criterion'
@@ -478,8 +477,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
   end
   object RadioGroup9: TRadioGroup
     Left = 8
-    Top = 16
-    Width = 161
+    Top = 8
+    Width = 187
     Height = 203
     Caption = 'Filtered evaluation'
     Items.Strings = (
@@ -489,8 +488,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
       'Forest percentages'
       'Barren percentages'
       'Urban percentages'
-      'Graphs average criteria'
-      'Graphs each criterion')
+      'Panel aggregating criteria'
+      'Panel each criterion')
     TabOrder = 34
     OnClick = RadioGroup9Click
   end
@@ -504,10 +503,10 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn22Click
   end
   object RadioGroup1: TRadioGroup
-    Left = 192
-    Top = 19
+    Left = 208
+    Top = 8
     Width = 177
-    Height = 172
+    Height = 203
     Caption = 'Graph, Y axis sort by'
     Items.Strings = (
       'Best evaluation'
@@ -515,21 +514,23 @@ object eval_scores_graph_form: Teval_scores_graph_form
       'Tile average roughness'
       'Tile relief'
       'Tile percent forested'
-      'Tile percent barren')
+      'Tile percent barren'
+      'Best eval, slope colors'
+      'Tile latitude')
     TabOrder = 36
     OnClick = RadioGroup1Click
   end
   object GroupBox3: TGroupBox
     Left = 824
     Top = 24
-    Width = 129
+    Width = 217
     Height = 257
     Caption = 'Mixed Filters'
     TabOrder = 37
     object Memo2: TMemo
-      Left = 3
-      Top = 5
-      Width = 114
+      Left = 20
+      Top = 9
+      Width = 202
       Height = 151
       Lines.Strings = (
         'AVG_SLOPE<5'
@@ -538,10 +539,6 @@ object eval_scores_graph_form: Teval_scores_graph_form
         'AVG_SLOPE>30'
         'AVG_SLOPE>55'
         'BARREN_PC>40'
-        'AVG_SLOPE>20 '
-        'AND '
-        'AVG_SLOPE<40'
-        ''
         '')
       TabOrder = 0
     end
@@ -553,6 +550,15 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Caption = 'Clear'
       TabOrder = 1
       OnClick = BitBtn7Click
+    end
+    object BitBtn25: TBitBtn
+      Left = 3
+      Top = 229
+      Width = 75
+      Height = 25
+      Caption = 'Load file'
+      TabOrder = 2
+      OnClick = BitBtn25Click
     end
   end
   object GroupBox4: TGroupBox
@@ -686,5 +692,59 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Save defaults'
     TabOrder = 40
     OnClick = BitBtn38Click
+  end
+  object BitBtn13: TBitBtn
+    Left = 728
+    Top = 554
+    Width = 193
+    Height = 25
+    Caption = 'Create Winning DB'
+    TabOrder = 41
+    OnClick = BitBtn13Click
+  end
+  object BitBtn14: TBitBtn
+    Left = 728
+    Top = 585
+    Width = 193
+    Height = 25
+    Caption = 'FUV--Criteria, DEM, landscape'
+    TabOrder = 42
+    OnClick = BitBtn14Click
+  end
+  object BitBtn15: TBitBtn
+    Left = 728
+    Top = 616
+    Width = 193
+    Height = 25
+    Caption = 'Criteria FUV, by DEM'
+    TabOrder = 43
+    OnClick = BitBtn15Click
+  end
+  object BitBtn24: TBitBtn
+    Left = 728
+    Top = 647
+    Width = 193
+    Height = 25
+    Caption = 'Criteria FUV grid (2 land types)'
+    TabOrder = 44
+    OnClick = BitBtn24Click
+  end
+  object CheckBox5: TCheckBox
+    Left = 383
+    Top = 245
+    Width = 153
+    Height = 17
+    Caption = 'FUV expand scale'
+    TabOrder = 45
+    OnClick = CheckBox5Click
+  end
+  object CheckBox6: TCheckBox
+    Left = 384
+    Top = 268
+    Width = 169
+    Height = 17
+    Caption = 'Use median for statistics'
+    TabOrder = 46
+    OnClick = CheckBox6Click
   end
 end

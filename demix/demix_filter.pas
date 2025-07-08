@@ -263,7 +263,6 @@ procedure RescaleDEMs(DEMsWanted : tDEMbooleanArray);
 var
    Max,Min : float32;
    i : integer;
-   //Maps : tstringlist;
 begin
    Max := -9999;
    Min := 9999;
@@ -273,7 +272,7 @@ begin
    for i := 1 to MaxDemixDEM do begin
       if DEMsWanted[i] then if (DEMGlb[i].SelectionMap <> Nil) then DEMGlb[i].SelectionMap .RecolorMapWithElevationRange(Min,Max);
    end;
-   Bigimagewithallmaps(3,'',PickMapsFromDEMsWanted(DEMSwanted));
+   Bigimagewithallmaps(3,'',GetListOfDEMs(DEMSwanted));
 end;
 
 
@@ -336,7 +335,6 @@ end;
 const
    ElevSpecified = 1;   //BitBtn7;
    ElevAll       = 2;   //BitBtn10;
-   //ElevV1        = 3;   //BitBtn11;
    SlopeAll      = 4;   //BitBtn20;
    RuffAll       = 5;   //BitBtn21;
    AllAll        = 6;
@@ -818,7 +816,7 @@ begin
    end;
 
 
-   BigImageWithAllMaps(4,'',PickMapsFromDEMsWanted(DEMSwanted));
+   BigImageWithAllMaps(4,'',GetListOfDEMs(DEMSwanted));
 
    if false {not working at the moment} then CreateGridHistograms(DEMSwanted);
    {$IfDef RecordGeomorphMaps} WriteLineToDebugFile('TDemixFilterForm.MakeGeomorphometricMaps out, ' + What); {$EndIf}

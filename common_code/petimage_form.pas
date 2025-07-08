@@ -17,7 +17,7 @@ unit petimage_form;
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
    //{$Define RecordChangeColumns}
-   //{$Define RecordBigBitmap}
+   {$Define RecordBigBitmap}
    //{$Define RecordBitmapEdit}
    //{$Define RecordBlendBitmaps}
    //{$Define RecordGetImagePartOfBitmap}
@@ -63,7 +63,7 @@ uses
   ExtDlgs, StdCtrls;
 
 type
-  TImageDisplayForm = class(TForm)
+  TImageDispForm = class(TForm)
     MainMenu1: TMainMenu;
     File1: TMenuItem;
     Close1: TMenuItem;
@@ -365,17 +365,17 @@ procedure PopUpDefaultHorizontalLegendOnBitmap(Min,Max : float64;  Units : short
 procedure PutMyBitmapIntoImage(fname : PathStr; Image : tImage);
 procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 
-function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDispForm;
 procedure CombineAllPanelGraphs(Cols : integer = 1);
 
 procedure AddGraphToBigBitmap(ap : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
-procedure FinishBigMap(var BigBitmap,LegendBMP : tMyBitmap; aName : shortstring = ''; LegendBelow : boolean = true);
+procedure FinishBigBitMapWithLegend(var BigBitmap,LegendBMP : tMyBitmap; aName : PathStr; LegendBelow : boolean = true);
 
 
 
 procedure DifferenceTwoBitmaps;
 
-function OpenImageEditor : TImageDisplayForm;
+function OpenImageEditor : TImageDispForm;
 
 var
    LastPhotoRoamX,
@@ -497,7 +497,7 @@ begin
 end;
 
 
-procedure FinishBigMap(var BigBitmap,LegendBMP : tMyBitmap; aName : shortstring = ''; LegendBelow : boolean = true);
+procedure FinishBigBitMapWithLegend(var BigBitmap,LegendBMP : tMyBitmap; aName : PathStr; LegendBelow : boolean = true);
 var
    LegHt,LegWidth : integer;
 begin
@@ -514,7 +514,6 @@ begin
          BigBitmap.Canvas.Draw(BigBitmap.Width + 10,BigBitmap.Height - LegHt - 5,LegendBMP);
       end;
    end;
-   if (aName = '') then aName := MDTempDir + 'Supp_fig_' + aName + '.png';
    SaveBitmap(BigBitmap,aName);
    {$If Defined(RecordAddGraphToBigBitmap)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + aName  + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
    DisplayBitmap(BigBitmap);
@@ -532,8 +531,8 @@ begin
    {$IfDef RecordBigBitmap}  WriteLineToDebugFile('CombineAllPanelGraphs in'); {$EndIf}
    Findings := tStringList.Create;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TImageDisplayForm then begin
-        Findings.Add( (WMDEM.MDIChildren[i] as TImageDisplayForm).LoadedFileName);
+      if WMDEM.MDIChildren[i] is TImageDispForm then begin
+        Findings.Add( (WMDEM.MDIChildren[i] as TImageDispForm).LoadedFileName);
       end;
    end;
    MakeBigBitmap(Findings,'','',Cols);
@@ -541,7 +540,7 @@ begin
 end;
 
 
-function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDisplayForm;
+function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDispForm;
 var
    bigbmp,LegBMP : tMyBitmap;
    fName : PathStr;
@@ -585,7 +584,7 @@ begin
         end;
         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, legend/caption done'); {$EndIf}
 
-         Result := TImageDisplayForm.Create(Application);
+         Result := TImageDispForm.Create(Application);
         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, display form created'); {$EndIf}
          if (SaveName <> '') then begin
             {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap save in ' + SaveName); {$EndIf}
@@ -615,10 +614,10 @@ begin
 end;
 
 
-function OpenImageEditor : TImageDisplayForm;
+function OpenImageEditor : TImageDispForm;
 begin
    StopSplashing;
-   Result := TImageDisplayForm.Create(Application);
+   Result := TImageDispForm.Create(Application);
    Result.LoadedFileName := ImageDir;
    Result.Replaceimage1Click(Nil);
 end;
@@ -792,10 +791,10 @@ end;
 
 procedure DisplayBitmap(fName : PathStr; TheTitle : shortString = ''; StayAtop : boolean = false; FewChoices : boolean = false);
 var
-   img : TImageDisplayForm;
+   img : TImageDispForm;
 begin
    {$IfDef RecordBitmapEdit} WriteLineToDebugFile('DisplayBitmap in, fname=' + fName); {$EndIf}
-   img := TImageDisplayForm.Create(Application);
+   img := TImageDispForm.Create(Application);
    img.LoadImage(fName);
    if StayAtop then img.FormStyle := fsStayOnTop;
    if FewChoices then begin
@@ -840,10 +839,10 @@ end;
 
 procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 var
-   Result : TImageDisplayForm;
+   Result : TImageDispForm;
    fName,fName2 : PathStr;
 begin
-   Result := TImageDisplayForm.Create(Application);
+   Result := TImageDispForm.Create(Application);
    fName := MDTempDir + 'Baseblending.bmp';
    PetImage.SaveBitmap(Bitmap,fName);
    Result.LoadImage(fName);
@@ -853,7 +852,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.TrackBar1Change(Sender: TObject);
+procedure TImageDispForm.TrackBar1Change(Sender: TObject);
 var
    DrawBitmap : tMyBitmap;
 begin
@@ -871,7 +870,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Reviewdirectory1Click(Sender: TObject);
+procedure TImageDispForm.Reviewdirectory1Click(Sender: TObject);
 var
    tPath : PathStr;
 begin
@@ -887,13 +886,13 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Rightofthispoint1Click(Sender: TObject);
+procedure TImageDispForm.Rightofthispoint1Click(Sender: TObject);
 begin
    SolidToEdge(RightClickX,0,pred(EditBMP.Width),pred(EditBMP.Height));
 end;
 
 
-procedure TImageDisplayForm.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
+procedure TImageDispForm.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
 {$IfDef RegisterPhoto}
 var
    Lat,Long,Pitch,DistOut,Azimuth : float64;
@@ -901,8 +900,8 @@ var
    x1,y1,x2,y2 : integer;
 {$EndIf}
 begin
-   wmdem.StatusBar1.Panels[1].Text := 'x=' + IntToStr(x) + '  & y=' + IntToStr(y);
-   wmdem.StatusBar1.Panels[2].Text := ColorString(Image1.Canvas.Pixels[x,y]);
+   wmdem.SetPanelText(1,'x=' + IntToStr(x) + '  & y=' + IntToStr(y));
+   wmdem.SetPanelText(2,ColorString(Image1.Canvas.Pixels[x,y]));
 
    {$IfDef RegisterPhoto}
       if (PhotoRegForm <> Nil) and (PhotoRegForm.DEMPersF <> Nil) then begin
@@ -970,7 +969,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.SpeedButton14Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton14Click(Sender: TObject);
 var
    fName : PathStr;
 begin
@@ -981,7 +980,7 @@ begin
    end;
 end;
 
-procedure TImageDisplayForm.SpeedButton15Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton15Click(Sender: TObject);
 var
    fName : PathStr;
 begin
@@ -994,7 +993,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.SpeedButton16Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton16Click(Sender: TObject);
 var
    fName : PathStr;
 begin
@@ -1004,7 +1003,7 @@ begin
    LoadImage(fName);
 end;
 
-procedure TImageDisplayForm.SpeedButton17Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton17Click(Sender: TObject);
 var
    UL : boolean;
 begin
@@ -1013,7 +1012,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Fill1Click(Sender: TObject);
+procedure TImageDispForm.Fill1Click(Sender: TObject);
 begin
 {$IfDef ExZipatone}
 {$Else}
@@ -1032,7 +1031,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.StartAlphaBlending(fName : PathStr);
+procedure TImageDispForm.StartAlphaBlending(fName : PathStr);
 begin
    Panel2.Height := 41;
    ClientHeight := ClientHeight + Panel2.Height;
@@ -1045,13 +1044,13 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Strecchgrayscale1Click(Sender: TObject);
+procedure TImageDispForm.Strecchgrayscale1Click(Sender: TObject);
 begin
    Recolor(StretchGrayscale);
 end;
 
 
-procedure TImageDisplayForm.SetBlendingButtons(Setting : boolean);
+procedure TImageDispForm.SetBlendingButtons(Setting : boolean);
 begin
     SpeedButton6.Visible := Setting;
     V.Visible := Setting;
@@ -1063,7 +1062,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Getcolorpalette1Click(Sender: TObject);
+procedure TImageDispForm.Getcolorpalette1Click(Sender: TObject);
 {$IfDef ExGIS}
 begin
 {$Else}
@@ -1137,7 +1136,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.ShiftAlphaBlending;
+procedure TImageDispForm.ShiftAlphaBlending;
 var
   tb : tMyBitmap;
 begin
@@ -1154,7 +1153,7 @@ end;
 
 
 
-procedure TImageDisplayForm.FormResize(Sender: TObject);
+procedure TImageDispForm.FormResize(Sender: TObject);
 begin
    TrackBar1.Width := ClientWidth - 248;
    if SizeCorrect then exit;
@@ -1173,7 +1172,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Alphablending1Click(Sender: TObject);
+procedure TImageDispForm.Alphablending1Click(Sender: TObject);
 var
    fName : PathStr;
 begin
@@ -1184,13 +1183,13 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Anyaspectratio1Click(Sender: TObject);
+procedure TImageDispForm.Anyaspectratio1Click(Sender: TObject);
 begin
    ForceAspect := false;
    ImageDoingWhat := imPickingBox;
 end;
 
-procedure TImageDisplayForm.NoRedrawOrReload;
+procedure TImageDispForm.NoRedrawOrReload;
 begin
    RedrawSpeedButton12.Visible := false;
    Refresh1.Visible := false;
@@ -1199,14 +1198,14 @@ begin
 end;
 
 
-procedure TImageDisplayForm.ools1Click(Sender: TObject);
+procedure TImageDispForm.ools1Click(Sender: TObject);
 begin
    if (MDdef.ProgramOption <> DragonPlotProgram) then begin
       wmdem.Tools1Click(Sender);
    end;
 end;
 
-procedure TImageDisplayForm.Overlaynewimagefromclipboard1Click(Sender: TObject);
+procedure TImageDispForm.Overlaynewimagefromclipboard1Click(Sender: TObject);
 var
    DragBitmap : tMyBitmap;
 begin
@@ -1219,7 +1218,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Pickaspectratio1Click(Sender: TObject);
+procedure TImageDispForm.Pickaspectratio1Click(Sender: TObject);
 begin
    ForceAspect := true;
    ReadDefault('Photo width',MDDef.XPixAspect);
@@ -1232,7 +1231,7 @@ end;
 {$IfDef ExImageOverlays}
 {$Else}
 
-      procedure TImageDisplayForm.CreateOverlays;
+      procedure TImageDispForm.CreateOverlays;
       var
         fName : PathStr;
       begin
@@ -1244,12 +1243,12 @@ end;
       end;
 
 
-      procedure TImageDisplayForm.Cyan1Click(Sender: TObject);
+      procedure TImageDispForm.Cyan1Click(Sender: TObject);
       begin
          MakeNewImageForm(TurnCyan,LoadedFileName);
       end;
 
-      procedure TImageDisplayForm.AddImageOverlay(x,y,width,height : integer; fName : PathStr; Plot : boolean);
+      procedure TImageDispForm.AddImageOverlay(x,y,width,height : integer; fName : PathStr; Plot : boolean);
       var
          ch : AnsiChar;
       begin
@@ -1272,7 +1271,7 @@ end;
       end;
 
 
-      procedure TImageDisplayForm.DrawOverlays;
+      procedure TImageDispForm.DrawOverlays;
       var
          Bitmap,Bitmap2 : tMyBitmap;
       begin
@@ -1300,7 +1299,7 @@ end;
 {$EndIf}
 
 
-procedure TImageDisplayForm.ResizeImage(xsize,ysize : integer); //Bitmap2 : tMyBitmap = Nil);
+procedure TImageDispForm.ResizeImage(xsize,ysize : integer); //Bitmap2 : tMyBitmap = Nil);
 var
    Bitmap : tMyBitmap;
    xs,ys : float64;
@@ -1328,26 +1327,26 @@ begin
 end;
 
 
-procedure TImageDisplayForm.SaveThumbnail(FName : PathStr; ThumbNailHeight : integer);
+procedure TImageDispForm.SaveThumbnail(FName : PathStr; ThumbNailHeight : integer);
 begin
    SaveImageAsThumbnail(Image1,fName,ThumbNailHeight);
 end;
 
-procedure TImageDisplayForm.New1Click(Sender: TObject);
+procedure TImageDispForm.New1Click(Sender: TObject);
 var
-   NewImageForm : TImageDisplayForm;
+   NewImageForm : TImageDispForm;
 begin
-   NewImageForm := TImageDisplayForm.Create(Application);
+   NewImageForm := TImageDispForm.Create(Application);
    NewImageForm.Replaceimage1Click(Sender);
 end;
 
 
-procedure TImageDisplayForm.Close1Click(Sender: TObject);
+procedure TImageDispForm.Close1Click(Sender: TObject);
 begin
    Close;
 end;
 
-procedure TImageDisplayForm.ransparentGIFS1Click(Sender: TObject);
+procedure TImageDispForm.ransparentGIFS1Click(Sender: TObject);
 var
    StampBitmap : tMyBitmap;
    DefFilter : byte;
@@ -1370,18 +1369,18 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Erodeimage1Click(Sender: TObject);
+procedure TImageDispForm.Erodeimage1Click(Sender: TObject);
 begin
    Recolor(ErodeImage);
 end;
 
-procedure TImageDisplayForm.Forceaspectratio1Click(Sender: TObject);
+procedure TImageDispForm.Forceaspectratio1Click(Sender: TObject);
 begin
    ForceAspect := true;
    ImageDoingWhat := imPickingBox;
 end;
 
-procedure TImageDisplayForm.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TImageDispForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormClose in, ' + Caption); {$EndIf}
    Action := caFree;
@@ -1409,7 +1408,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Image1DblClick(Sender: TObject);
+procedure TImageDispForm.Image1DblClick(Sender: TObject);
 var
    color : TColor;
    r,g,b : byte;
@@ -1587,12 +1586,12 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Abovethispoint1Click(Sender: TObject);
+procedure TImageDispForm.Abovethispoint1Click(Sender: TObject);
 begin
    SolidToEdge(0,0,0,RightClickY);
 end;
 
-procedure TImageDisplayForm.Add1Click(Sender: TObject);
+procedure TImageDispForm.Add1Click(Sender: TObject);
 begin
   {$IfDef VCL}
       Add1.Checked := not Add1.Checked;
@@ -1611,7 +1610,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Saveimage1Click(Sender: TObject);
+procedure TImageDispForm.Saveimage1Click(Sender: TObject);
 begin
  {$IfDef ExExif}
  {$Else}
@@ -1621,19 +1620,19 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Saveimage2Click(Sender: TObject);
+procedure TImageDispForm.Saveimage2Click(Sender: TObject);
 begin
    Saveimageas1Click(Sender);
 end;
 
-procedure TImageDisplayForm.Saveimageas1Click(Sender: TObject);
+procedure TImageDispForm.Saveimageas1Click(Sender: TObject);
 begin
    if GetNewGraphicsFileName('saved image',LoadedFileName) then begin
       PetImage.SaveBitmap(EditBMP,LoadedFileName);
    end;
 end;
 
-procedure TImageDisplayForm.Savesubset1Click(Sender: TObject);
+procedure TImageDispForm.Savesubset1Click(Sender: TObject);
 begin
    if GetNewGraphicsFileName('saved image subset',LoadedFileName) then begin
       LoadImage(EditBMP);
@@ -1641,7 +1640,7 @@ begin
    end;
 end;
 
-procedure TImageDisplayForm.Recolor(Method : RecolorMethod);
+procedure TImageDispForm.Recolor(Method : RecolorMethod);
 var
    x,y : integer;
    r,g,b : byte;
@@ -1737,12 +1736,12 @@ begin
 end;
 
 
-procedure TImageDisplayForm.ColorstoWhite2Click(Sender: TObject);
+procedure TImageDispForm.ColorstoWhite2Click(Sender: TObject);
 begin
    Recolor(NonBlackToWhite);
 end;
 
-procedure TImageDisplayForm.ComboBox1Change(Sender: TObject);
+procedure TImageDispForm.ComboBox1Change(Sender: TObject);
 var
    TStr : shortstring;
 begin
@@ -1752,37 +1751,37 @@ begin
    ResizeImage(XBMPSize * ImageBlowUp div 100, YBMPSize * ImageBlowUp div 100);
 end;
 
-procedure TImageDisplayForm.Convertwhitetonearwhite1Click(Sender: TObject);
+procedure TImageDispForm.Convertwhitetonearwhite1Click(Sender: TObject);
 begin
    Recolor(WhiteToNearWhite);
 end;
 
-procedure TImageDisplayForm.Copyimagetoclipboard1Click(Sender: TObject);
+procedure TImageDispForm.Copyimagetoclipboard1Click(Sender: TObject);
 begin
    AssignImageToClipBoard(Image1);
 end;
 
-procedure TImageDisplayForm.CopytColortoclipboard1Click(Sender: TObject);
+procedure TImageDispForm.CopytColortoclipboard1Click(Sender: TObject);
 begin
    ClipBrd.ClipBoard.AsText := IntToStr(Image1.Canvas.Pixels[Lastx,Lasty]);
 end;
 
-procedure TImageDisplayForm.ColorstoWhite1Click(Sender: TObject);
+procedure TImageDispForm.ColorstoWhite1Click(Sender: TObject);
 begin
    Recolor(NonWhiteToBlack);
 end;
 
-procedure TImageDisplayForm.N180degrees1Click(Sender: TObject);
+procedure TImageDispForm.N180degrees1Click(Sender: TObject);
 begin
   RotateImage(180);
 end;
 
-procedure TImageDisplayForm.N270degrees1Click(Sender: TObject);
+procedure TImageDispForm.N270degrees1Click(Sender: TObject);
 begin
   RotateImage(270);
 end;
 
-procedure TImageDisplayForm.RotateImage(Angle : int16);
+procedure TImageDispForm.RotateImage(Angle : int16);
 begin
     if (Angle = 90) then Drehen90Grad(EditBMP);
     if (Angle = 180) then Drehen180Grad(EditBMP);
@@ -1791,24 +1790,24 @@ begin
 end;
 
 
-procedure TImageDisplayForm.N90degrees1Click(Sender: TObject);
+procedure TImageDispForm.N90degrees1Click(Sender: TObject);
 begin
    RotateImage(90);
 end;
 
-procedure TImageDisplayForm.Negative1Click(Sender: TObject);
+procedure TImageDispForm.Negative1Click(Sender: TObject);
 begin
    Recolor(NegativeMethod);
 end;
 
 
-procedure TImageDisplayForm.Specifiedcolors1Click(Sender: TObject);
+procedure TImageDispForm.Specifiedcolors1Click(Sender: TObject);
 begin
    if ColorDialog1.Execute and ColorDialog2.Execute then Recolor(PickedColors);
 end;
 
 
-procedure TImageDisplayForm.LoadImage(var Bitmap : tMyBitmap; PickSize : boolean = false);
+procedure TImageDispForm.LoadImage(var Bitmap : tMyBitmap; PickSize : boolean = false);
 begin
    Image1.Picture.Graphic := Bitmap;
    if LoadedFileName = '' then LoadedFileName := 'loaded_image.bmp';
@@ -1839,7 +1838,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.LoadImage(var FName : PathStr; PickSize : boolean = false);
+procedure TImageDispForm.LoadImage(var FName : PathStr; PickSize : boolean = false);
 begin
    try
       {$IfDef RecordImageLoadProblems} WriteLineToDebugFile('TImageFm.LoadImage: ' + fName); {$EndIf}
@@ -1861,11 +1860,11 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Replaceimage1Click(Sender: TObject);
+procedure TImageDispForm.Replaceimage1Click(Sender: TObject);
 var
    fName : PathStr;
    i : integer;
-   NewImageForm : TImageDisplayForm;
+   NewImageForm : TImageDispForm;
 begin
    If OpenPictureDialog1.Execute then begin
       MDdef.DefaultReadImageType := OpenPictureDialog1.FilterIndex;
@@ -1873,7 +1872,7 @@ begin
       LoadImage(fName);
       if (OpenPictureDialog1.Files.Count > 1) then begin
          for i := 1 to pred(OpenPictureDialog1.Files.Count) do begin
-            NewImageForm := TImageDisplayForm.Create(Application);
+            NewImageForm := TImageDispForm.Create(Application);
             fName := OpenPictureDialog1.Files[i];
             NewImageForm.LoadImage(fName);
          end;
@@ -1883,29 +1882,29 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Removegrays1Click(Sender: TObject);
+procedure TImageDispForm.Removegrays1Click(Sender: TObject);
 begin
    Recolor(NoGrays);
 end;
 
 
-procedure TImageDisplayForm.Removenongraypixels1Click(Sender: TObject);
+procedure TImageDispForm.Removenongraypixels1Click(Sender: TObject);
 begin
    Recolor(NoNonGrays);
 end;
 
-procedure TImageDisplayForm.Removewhitemargins1Click(Sender: TObject);
+procedure TImageDispForm.Removewhitemargins1Click(Sender: TObject);
 begin
    GetImagePartOfBitmap(EditBMP);
    LoadImage(EditBMP);
 end;
 
-procedure TImageDisplayForm.Dilateimage1Click(Sender: TObject);
+procedure TImageDispForm.Dilateimage1Click(Sender: TObject);
 begin
    Recolor(DilateImage);
 end;
 
-procedure TImageDisplayForm.Distance1Click(Sender: TObject);
+procedure TImageDispForm.Distance1Click(Sender: TObject);
 begin
    Distance1.Checked := not Distance1.Checked;
    if Distance1.Checked then ImageDoingWhat := imFirstDistancePoint
@@ -1913,18 +1912,18 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Leavesinglecolor1Click(Sender: TObject);
+procedure TImageDispForm.Leavesinglecolor1Click(Sender: TObject);
 begin
    if ColorDialog1.Execute then Recolor(LeaveSingle);
 end;
 
 
-procedure TImageDisplayForm.Leftofthispoint1Click(Sender: TObject);
+procedure TImageDispForm.Leftofthispoint1Click(Sender: TObject);
 begin
    SolidToEdge(0,0,RightClickX,pred(EditBMP.Height));
 end;
 
-procedure TImageDisplayForm.ShowPosition1Click(Sender: TObject);
+procedure TImageDispForm.ShowPosition1Click(Sender: TObject);
 begin
    ShowPosition1.Checked := not ShowPosition1.Checked;
    if ShowColors1.Checked or ShowPosition1.Checked then Panel1.Height := 20
@@ -1932,19 +1931,19 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Skeletonize1Click(Sender: TObject);
+procedure TImageDispForm.Skeletonize1Click(Sender: TObject);
 begin
    SkeletonizeBitmap(Editbmp);
    Image1.Picture.Graphic := EditBmp;
 end;
 
-procedure TImageDisplayForm.Smoothingfilter1Click(Sender: TObject);
+procedure TImageDispForm.Smoothingfilter1Click(Sender: TObject);
 begin
    Recolor(SmoothFilterImage);
 end;
 
 
-procedure TImageDisplayForm.SolidToEdge(StartX,StartY,EndX,EndY : integer);
+procedure TImageDispForm.SolidToEdge(StartX,StartY,EndX,EndY : integer);
 var
    x,y : integer;
    BMPMemory : tBMPMemory;
@@ -1960,7 +1959,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Showcolors1Click(Sender: TObject);
+procedure TImageDispForm.Showcolors1Click(Sender: TObject);
 begin
    ShowColors1.Checked := not ShowColors1.Checked;
    if ShowColors1.Checked or ShowPosition1.Checked then Panel1.Height := 20
@@ -1968,20 +1967,20 @@ begin
 end;
 
 
-procedure TImageDisplayForm.SpeedButton10Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton10Click(Sender: TObject);
 begin
    ShiftImageY := ShiftImageY - 1;
    ShiftAlphaBlending;
 end;
 
-procedure TImageDisplayForm.SpeedButton11Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton11Click(Sender: TObject);
 begin
    ShiftRotateAngle := 5;
    ReadDefault('rotate (deg)',ShiftRotateAngle);
    ShiftAlphaBlending;
 end;
 
-procedure TImageDisplayForm.SpeedButton12Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton12Click(Sender: TObject);
 var
    Bitmap : tMyBitmap;
 begin
@@ -1995,7 +1994,7 @@ begin
   {$EndIf}
 end;
 
-procedure TImageDisplayForm.SpeedButton13Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton13Click(Sender: TObject);
 var
    Bitmap : tMyBitmap;
 begin
@@ -2010,42 +2009,42 @@ begin
 end;
 
 
-procedure TImageDisplayForm.SpeedButton2Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton2Click(Sender: TObject);
 begin
    Saveimage1Click(Sender);
 end;
 
 
-procedure TImageDisplayForm.SpeedButton3Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton3Click(Sender: TObject);
 begin
   FormStyle := fsStayOntop;
 end;
 
-procedure TImageDisplayForm.SpeedButton4Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton4Click(Sender: TObject);
 begin
    Add1Click(Sender);
 end;
 
 
-procedure TImageDisplayForm.SpeedButton6Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton6Click(Sender: TObject);
 begin
    ShiftImageX := ShiftImageX + 1;
    ShiftAlphaBlending;
 end;
 
-procedure TImageDisplayForm.Red1Click(Sender: TObject);
+procedure TImageDispForm.Red1Click(Sender: TObject);
 begin
    Recolor(TurnRed);
 end;
 
 
-procedure TImageDisplayForm.Green1Click(Sender: TObject);
+procedure TImageDispForm.Green1Click(Sender: TObject);
 begin
    Recolor(TurnGreen);
 end;
 
 
-procedure TImageDisplayForm.Horizontalpalette1Click(Sender: TObject);
+procedure TImageDispForm.Horizontalpalette1Click(Sender: TObject);
 {$IfDef ExGIS}
 begin
 {$Else}
@@ -2074,7 +2073,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Batchprocess1Click(Sender: TObject);
+procedure TImageDispForm.Batchprocess1Click(Sender: TObject);
 var
    FilesWanted : TStringList;
    i: integer;
@@ -2097,12 +2096,12 @@ begin
    FilesWanted.Free;
 end;
 
-procedure TImageDisplayForm.Belowthispoint1Click(Sender: TObject);
+procedure TImageDispForm.Belowthispoint1Click(Sender: TObject);
 begin
    SolidToEdge(0,RightClickY,pred(EditBMP.Width),pred(EditBMP.Height));
 end;
 
-procedure TImageDisplayForm.BitBtn1Click(Sender: TObject);
+procedure TImageDispForm.BitBtn1Click(Sender: TObject);
 begin
   {$IfDef ExBlendMovie}
   {$Else}
@@ -2110,7 +2109,7 @@ begin
   {$EndIf}
 end;
 
-procedure TImageDisplayForm.BitBtn2Click(Sender: TObject);
+procedure TImageDispForm.BitBtn2Click(Sender: TObject);
 var
    fName : PathStr;
 begin
@@ -2118,7 +2117,7 @@ begin
    PetImage.ScreenShot(fName);
 end;
 
-procedure TImageDisplayForm.Blue1Click(Sender: TObject);
+procedure TImageDispForm.Blue1Click(Sender: TObject);
 begin
    Recolor(TurnBlue);
 end;
@@ -2167,7 +2166,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.MergeRGBseparates1Click(Sender: TObject);
+procedure TImageDispForm.MergeRGBseparates1Click(Sender: TObject);
 var
    RedName,GreenName,BlueName,fName : PathStr;
    MergeBitmap : tMyBitmap;
@@ -2181,31 +2180,31 @@ begin
    end;
 end;
 
-procedure TImageDisplayForm.Magenta1Click(Sender: TObject);
+procedure TImageDispForm.Magenta1Click(Sender: TObject);
 begin
    MakeNewImageForm(TurnMagenta,LoadedFileName);
 end;
 
-procedure TImageDisplayForm.MakeGrayscale1Click(Sender: TObject);
+procedure TImageDispForm.MakeGrayscale1Click(Sender: TObject);
 begin
    Recolor(MakeGrayscale);
 end;
 
 
-procedure TImageDisplayForm.MakeIHSseparates1Click(Sender: TObject);
+procedure TImageDispForm.MakeIHSseparates1Click(Sender: TObject);
 begin
    MakeNewImageForm(TurnHLS_sat,LoadedFileName);
    MakeNewImageForm(TurnHLS_light,LoadedFileName);
    MakeNewImageForm(TurnHLS_hue,LoadedFileName);
 end;
 
-procedure TImageDisplayForm.MakeRGBandgrayscaleseparates1Click(Sender: TObject);
+procedure TImageDispForm.MakeRGBandgrayscaleseparates1Click(Sender: TObject);
 begin
    MakeRGBgrayscales1Click(Sender);
    MakeRGBseparates1Click(Sender);
 end;
 
-procedure TImageDisplayForm.FormCreate(Sender: TObject);
+procedure TImageDispForm.FormCreate(Sender: TObject);
 var
    Bitmap : tMyBitmap;
 begin
@@ -2254,7 +2253,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Specifiedangle1Click(Sender: TObject);
+procedure TImageDispForm.Specifiedangle1Click(Sender: TObject);
 const
    Angle : float64 = 45;
 var
@@ -2265,7 +2264,7 @@ begin
    RotateBitmapByAngle(Angle,WhiteBackground);
 end;
 
-procedure TImageDisplayForm.RotateBitmapByAngle(Angle : float64; WhiteBackground : boolean = true);
+procedure TImageDispForm.RotateBitmapByAngle(Angle : float64; WhiteBackground : boolean = true);
 var
    BigBitmap : tMyBitmap;
    Diagonal : integer;
@@ -2291,18 +2290,18 @@ begin
    ShowDefaultCursor;
 end;
 
-procedure TImageDisplayForm.Linetohorizontal1Click(Sender: TObject);
+procedure TImageDispForm.Linetohorizontal1Click(Sender: TObject);
 begin
    ImageDoingWhat := FirstHorizontalRotate;
 end;
 
-procedure TImageDisplayForm.Linetovertical1Click(Sender: TObject);
+procedure TImageDispForm.Linetovertical1Click(Sender: TObject);
 begin
    ImageDoingWhat := FirstVerticalRotate;
 end;
 
 
-procedure TImageDisplayForm.CancelBtnClick(Sender: TObject);
+procedure TImageDispForm.CancelBtnClick(Sender: TObject);
 begin
   {$IfDef ExOpacity}
   {$Else}
@@ -2315,7 +2314,7 @@ begin
 end;
 
 
-procedure TImageDisplayForm.Changecolumns1Click(Sender: TObject);
+procedure TImageDispForm.Changecolumns1Click(Sender: TObject);
 var
    bmp : tMyBitmap;
    files : tStringList;
@@ -2335,17 +2334,17 @@ begin
    Files.Free;
 end;
 
-procedure TImageDisplayForm.Changenumberofcolumns1Click(Sender: TObject);
+procedure TImageDispForm.Changenumberofcolumns1Click(Sender: TObject);
 begin
    Changecolumns1Click(Sender);
 end;
 
-procedure TImageDisplayForm.ClipboardSpeedButtonClick(Sender: TObject);
+procedure TImageDispForm.ClipboardSpeedButtonClick(Sender: TObject);
 begin
    AssignImageToClipBoard(Image1);
 end;
 
-procedure TImageDisplayForm.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TImageDispForm.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
    if (ImageDoingWhat = imDoingNothing) and (Button = mbLeft) then begin
       SX := X;  // X start co-ordinate, image panning
@@ -2399,7 +2398,7 @@ begin
    {$EndIf}
 end;
 
-procedure TImageDisplayForm.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift : TShiftState; X, Y: Integer);
+procedure TImageDispForm.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift : TShiftState; X, Y: Integer);
 begin
    if (Panel2.Height > 0) and ImageMouseIsDown then begin
       ShiftImageX := ShiftImageX + (x - FirstX);
@@ -2439,19 +2438,19 @@ begin
 end;
 
 
-procedure TImageDisplayForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+procedure TImageDispForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('TImageFm.FormCloseQuery in'); {$EndIf}
    CanClose := CanCloseItself;
 end;
 
-procedure TImageDisplayForm.Subdueimage1Click(Sender: TObject);
+procedure TImageDispForm.Subdueimage1Click(Sender: TObject);
 begin
    Recolor(MakeSubdued);
 end;
 
 
-procedure TImageDisplayForm.Subsetthispicture1Click(Sender: TObject);
+procedure TImageDispForm.Subsetthispicture1Click(Sender: TObject);
 begin
    {$IfDef RecordBitmapEdit}
       WriteLineToDebugFile('Picked box, x=' + IntToStr(Firstx) + 'x' + IntToStr(EndX) + '  y=' +  IntToStr(Firsty) + 'x' + IntToStr(Endy));
@@ -2463,7 +2462,7 @@ begin
    {$IfDef RecordBitmapEdit} WriteLineToDebugFile('Aspect ratio: ' + realToString(EditBMP.Width/EditBMP.Height,-12,-4)); {$EndIf}
 end;
 
-procedure TImageDisplayForm.Pastefromclipboard1Click(Sender: TObject);
+procedure TImageDispForm.Pastefromclipboard1Click(Sender: TObject);
 begin
    Image1.Picture.Bitmap.Assign(ClipBoard);
    Caption := 'Image from clipboard';
@@ -2473,7 +2472,7 @@ end;
 
 
 
-procedure TImageDisplayForm.Usethissubsetonmultiplebitmaps1Click(Sender: TObject);
+procedure TImageDispForm.Usethissubsetonmultiplebitmaps1Click(Sender: TObject);
 var
    FilesWanted : TStringList;
    df : byte;
@@ -2499,23 +2498,23 @@ begin
    FilesWanted.Free;
 end;
 
-procedure TImageDisplayForm.VClick(Sender: TObject);
+procedure TImageDispForm.VClick(Sender: TObject);
 begin
    ShiftImageY := ShiftImageY + 1;
    ShiftAlphaBlending;
 end;
 
-procedure TImageDisplayForm.Yellow1Click(Sender: TObject);
+procedure TImageDispForm.Yellow1Click(Sender: TObject);
 begin
     MakeNewImageForm(TurnYellow,LoadedFileName);
 end;
 
-procedure TImageDisplayForm.Colorcrosssections1Click(Sender: TObject);
+procedure TImageDispForm.Colorcrosssections1Click(Sender: TObject);
 begin
    ImageDoingWhat := ColorCrossSection;
 end;
 
-procedure TImageDisplayForm.Pickhorizon1Click(Sender: TObject);
+procedure TImageDispForm.Pickhorizon1Click(Sender: TObject);
 const
    HorizonFactor : integer = 25;
 var
@@ -2537,17 +2536,17 @@ begin
    LoadImage(EditBMP);
 end;
 
-procedure TImageDisplayForm.Picksolidcolor1Click(Sender: TObject);
+procedure TImageDispForm.Picksolidcolor1Click(Sender: TObject);
 begin
    QueryColor(MDDef.ReplaceBorderColor);
 end;
 
-procedure TImageDisplayForm.Pickthispointforsolidcolor1Click(Sender: TObject);
+procedure TImageDispForm.Pickthispointforsolidcolor1Click(Sender: TObject);
 begin
    MDDef.ReplaceBorderColor := ConvertTColorToPlatformColor(EditBMP.Canvas.Pixels[RightClickX,RightClickY]);
 end;
 
-procedure TImageDisplayForm.PutEXIFdataintoJPEGS1Click(Sender: TObject);
+procedure TImageDispForm.PutEXIFdataintoJPEGS1Click(Sender: TObject);
 {$IfDef ExExif}
 begin
 {$Else}
@@ -2574,97 +2573,97 @@ begin
 {$EndIf}
 end;
 
-procedure TImageDisplayForm.Refresh1Click(Sender: TObject);
+procedure TImageDispForm.Refresh1Click(Sender: TObject);
 begin
    RedrawSpeedButton12Click(Sender);
 end;
 
-procedure TImageDisplayForm.Reloadimage1Click(Sender: TObject);
+procedure TImageDispForm.Reloadimage1Click(Sender: TObject);
 begin
    LoadImage(LoadedFileName);
 end;
 
-procedure TImageDisplayForm.RedrawSpeedButton12Click(Sender: TObject);
+procedure TImageDispForm.RedrawSpeedButton12Click(Sender: TObject);
 begin
    LoadImage(LoadedFileName);
 end;
 
-procedure TImageDisplayForm.SpeedButton7Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton7Click(Sender: TObject);
 begin
    {$IfDef RegisterPhoto}
       ImageDoingWhat := LocatePoints;
    {$EndIf}
 end;
 
-procedure TImageDisplayForm.SpeedButton8Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton8Click(Sender: TObject);
 begin
   {$IfDef RegisterPhoto}
      ImageDoingWhat := DigitizeOnPhoto;
   {$EndIf}
 end;
 
-procedure TImageDisplayForm.SpeedButton9Click(Sender: TObject);
+procedure TImageDispForm.SpeedButton9Click(Sender: TObject);
 begin
    ShiftImageX := ShiftImageX - 1;
    ShiftAlphaBlending;
 end;
 
-procedure TImageDisplayForm.MakeNewImageForm(Method : RecolorMethod; fName : PathStr);
+procedure TImageDispForm.MakeNewImageForm(Method : RecolorMethod; fName : PathStr);
 var
-   NewImageForm : TImageDisplayForm;
+   NewImageForm : TImageDispForm;
 begin
-   NewImageForm := TImageDisplayForm.Create(Application);
+   NewImageForm := TImageDispForm.Create(Application);
    NewImageForm.LoadImage(fName);
    NewImageForm.Recolor(Method);
 end;
 
-procedure TImageDisplayForm.MakeRGBgrayscales1Click(Sender: TObject);
+procedure TImageDispForm.MakeRGBgrayscales1Click(Sender: TObject);
 begin
    MakeNewImageForm(BlueGrayscale,LoadedFileName);
    MakeNewImageForm(RedGrayscale,LoadedFileName);
    MakeNewImageForm(GreenGrayscale,LoadedFileName);
 end;
 
-procedure TImageDisplayForm.MakeRGBseparates1Click(Sender: TObject);
+procedure TImageDispForm.MakeRGBseparates1Click(Sender: TObject);
 begin
    MakeNewImageForm(TurnBlue,LoadedFileName);
    MakeNewImageForm(TurnRed,LoadedFileName);
    MakeNewImageForm(TurnGreen,LoadedFileName);
 end;
 
-procedure TImageDisplayForm.Makethislowerrightcorner1Click(Sender: TObject);
+procedure TImageDispForm.Makethislowerrightcorner1Click(Sender: TObject);
 begin
    MakeThisLowerRightCornerOfBitmap(EditBMP,RightClickX,RightClickY);
    LoadImage(EditBMP);
 end;
 
-procedure TImageDisplayForm.Makethisupperleftcorner1Click(Sender: TObject);
+procedure TImageDispForm.Makethisupperleftcorner1Click(Sender: TObject);
 begin
    MakeThisUpperLeftCornerOfBitmap(EditBMP,RightClickX,RightClickY);
    LoadImage(EditBMP);
 end;
 
 
-procedure TImageDisplayForm.Zoom1Click(Sender: TObject);
+procedure TImageDispForm.Zoom1Click(Sender: TObject);
 begin
    ReadDefault('Blowup factor (%)',ImageBlowup);
    ResizeImage(XBMPSize * ImageBlowUp div 100, YBMPSize * ImageBlowUp div 100);
 end;
 
-procedure TImageDisplayForm.ZoomInSpeedButton4Click(Sender: TObject);
+procedure TImageDispForm.ZoomInSpeedButton4Click(Sender: TObject);
 begin
    ShiftImageBlowUp := ShiftImageBlowUp * 1.02;
    ShiftAlphaBlending;
 end;
 
 
-procedure TImageDisplayForm.ZoomOutSpeedButton5Click(Sender: TObject);
+procedure TImageDispForm.ZoomOutSpeedButton5Click(Sender: TObject);
 begin
    ShiftImageBlowUp := ShiftImageBlowUp * 0.98;
    ShiftAlphaBlending;
 end;
 
-procedure TImageDisplayForm.Pastefromclipboard2Click(Sender: TObject);
+procedure TImageDispForm.Pastefromclipboard2Click(Sender: TObject);
 begin
    Pastefromclipboard1Click(Sender);
 end;

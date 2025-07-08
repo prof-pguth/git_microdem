@@ -2021,7 +2021,7 @@ type
       DEMIX_U80DBfName,
       DEMIX_U10DBfName,
       DEMIX_base_dir,
-      DEMIX_criterion_fName : PathStr;
+      //DEMIX_criterion_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
       DEMIX_combined_graph,
@@ -2031,6 +2031,7 @@ type
       DEMIX_highlat,
       DEMIX_default_half_sec_ref : boolean;
       DEMIXlegendFontSize,
+      DEMIX_FUV_graph_width,
       DEMIX_xsize,DEMIX_ysize : integer;
       DEMIX_open_ref_DSM,
       MakeCOP_ALOS_diffMaps,
@@ -2042,9 +2043,13 @@ type
       OpenSavedMapsFUVSSIM,
       DoSSIM,
       DoFUV,
+      DoPartials,
+      DoCurvatures,
       DEMIX_all_areas,
+      FUVExpandScales,
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
+      DEMIX_UseMedian,
       DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoAirOrDirt,
@@ -2451,7 +2456,7 @@ type
 
        ShowWinExec,
        LogDOSoutput,
-       LogDOScommands,
+       //LogDOScommands,
        CommasToSemiColons,
        SatImageCoords,
        UseLongsTo360,

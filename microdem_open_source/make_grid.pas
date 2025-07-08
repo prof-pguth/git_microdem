@@ -418,7 +418,7 @@ begin
             ThisGraph := TThisBaseGraph.Create(Application);
             ThisGraph.SetUpGraphForm;
             ThisGraph.Caption := 'Grid comparison';
-            ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol);
+            ThisGraph.OpenPointSymbolFile(rfile,'grid_compare',ThisGraph.Symbol);
             ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
             ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
          end;

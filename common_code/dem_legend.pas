@@ -78,7 +78,7 @@ type
   public
     { Public declarations }
     MapOwner : tMapForm;
-    PrinterImage : TImageDisplayForm;
+    PrinterImage : TImageDispForm;
     TopHeight : integer;
     TickSize,LabelSize : float64;
     TheAngleMeasure : Petmar_types.tAngleMeasure;

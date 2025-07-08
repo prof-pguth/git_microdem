@@ -216,6 +216,9 @@ type
         function IsStringField(WantFieldName : ANSIString) : boolean;
         function IsStringOrIntegerField(WantFieldName : ANSIString) : boolean;
 
+        function CountSingleFieldWithSubstring(FieldDesired,substring : shortstring) : integer;
+
+
         function FieldSum(FieldDesired : shortstring) : float64;
         function FieldAverage(FieldDesired : shortstring) : float64;
         function FieldMedian(FieldDesired : shortstring) : float64;
@@ -366,6 +369,21 @@ begin
         ftFloat : Result := 'float64';
     end;
 end;
+
+
+function tMyData.CountSingleFieldWithSubstring(FieldDesired,substring : shortstring) : integer;
+var
+   TStr : shortstring;
+begin
+   Result := 0;
+   First;
+   while not eof do begin
+      TStr := UpperCase(GetFieldByNameAsString(FieldDesired));
+      if StrUtils.AnsiContainsText(TStr,UpperCase(substring)) then inc(Result);
+      Next;
+   end;
+end;
+
 
 function tMyData.AssignLabelName : shortstring;
 
@@ -2734,6 +2752,7 @@ end;
 initialization
 finalization
 end.
+
 
 
 

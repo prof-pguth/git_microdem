@@ -126,9 +126,9 @@ begin
    DipAndStrike := UpperCase(Edit1.Text);
    StripDipAndStrike(DipAndStrike,GuessDip,GuessStrike,GuessDipDirect,OK);
    {$IfDef RecordQuiz}
-   WriteLineToDebugFile('Actual:  Dip=' + IntToStr(Dip) + ' dip_direct=' + IntToStr(DipDirect));
-   WriteLineToDebugFile('Input:   Dip=' + IntToStr(round(GuessDip)) + ' dip_direct=' + IntToStr(round(GuessDipDirect)));
-   WriteLineToDebugFile(DipAndStrike + '   GuessStrike=' + IntToStr(round(GuessStrike)));
+     WriteLineToDebugFile('Actual:  Dip=' + IntToStr(Dip) + ' dip_direct=' + IntToStr(DipDirect));
+     WriteLineToDebugFile('Input:   Dip=' + IntToStr(round(GuessDip)) + ' dip_direct=' + IntToStr(round(GuessDipDirect)));
+     WriteLineToDebugFile(DipAndStrike + '   GuessStrike=' + IntToStr(round(GuessStrike)));
    {$EndIf}
    if OK then begin
       if (Round(abs(GuessDip-Dip)) < Tolerance) and (Round(abs(GuessDipDirect-DipDirect)) < Tolerance) then begin

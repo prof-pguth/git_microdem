@@ -403,7 +403,7 @@ begin
          MinZ := MinVal[VarWant3];
          MaxZ := MaxVal[VarWant3];
       end
-      else OpenPointFile(rfile,ThisGraph.Symbol);
+      else OpenPointSymbolFile(rfile,'',ThisGraph.Symbol);
 
       AssignFile(inf,DataFile);
       reset(inf);

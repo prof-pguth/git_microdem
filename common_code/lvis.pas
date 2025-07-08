@@ -332,7 +332,7 @@ begin
    closeFile(lgwf);
    Graph.ClosePointDataFile(rfile);
    Graph.Symbol.Color := claLime;
-   Graph.OpenPointFile(rfile,Graph.Symbol);
+   Graph.OpenPointSymbolFile(rfile,'lvis',Graph.Symbol);
    OpenLCEfile;
    seek(lcef,ReturnNumber);
    lce := ReadLCErecord;
@@ -346,7 +346,7 @@ begin
    Graph.AddPointToDataBuffer(rfile,1,lge.zg);
    Graph.ClosePointDataFile(rfile);
    Graph.Symbol.Color := claBlue;
-   Graph.OpenPointFile(rfile,Graph.Symbol);
+   Graph.OpenPointSymbolFile(rfile,'lvis',Graph.Symbol);
    Graph.AddPointToDataBuffer(rfile,5,lge.zg + lge.rh25);
    Graph.AddPointToDataBuffer(rfile,5,lge.zg + lge.rh50);
    Graph.AddPointToDataBuffer(rfile,5,lge.zg + lge.rh75);

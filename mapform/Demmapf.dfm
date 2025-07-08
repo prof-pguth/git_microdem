@@ -4374,6 +4374,10 @@ object MapForm: TMapForm
       end
       object Twogridcomparisons: TMenuItem
         Caption = 'Two grid comparisons'
+        object Differencemap2: TMenuItem
+          Caption = 'Difference map'
+          OnClick = Differencemap2Click
+        end
         object Scatterplotoftwogrids2: TMenuItem
           Caption = 'Scatter plot of two grids'
           OnClick = Scatterplotoftwogrids2Click
@@ -5163,8 +5167,8 @@ object MapForm: TMapForm
     end
   end
   object RightClickPopupMenu3: TPopupMenu
-    Left = 202
-    Top = 182
+    Left = 218
+    Top = 206
     object Displayparameter1: TMenuItem
       Caption = 'Display parameter'
       OnClick = Displayparameter1Click
@@ -7359,6 +7363,10 @@ object MapForm: TMapForm
     object Whitebox1: TMenuItem
       Caption = 'Whitebox Average Normal Vector Angular Deviation'
       OnClick = Whitebox1Click
+    end
+    object WhiteboxSphericalAverageDeviationofNormals1: TMenuItem
+      Caption = 'Whitebox Spherical Average Deviation of Normals'
+      OnClick = WhiteboxSphericalAverageDeviationofNormals1Click
     end
     object WhiteboxCircularVarianceOfAspect1: TMenuItem
       Caption = 'Whitebox Circular Variance Of Aspect'

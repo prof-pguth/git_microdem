@@ -32,7 +32,7 @@
     Result := 0;
     if IsSagaCMDthere then begin
        {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap in, cmd= ' + CMD); {$EndIf}
-       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+       WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
        if FileExists(OutName) then begin
          {$IfDef RecordSAGA} WriteLineToDebugFile('SAGAMap convert simple Geotiff'); {$EndIf}
          //output file from SAGA must be converted to simple Geotiff
@@ -129,7 +129,7 @@ begin
       {$If Defined(RecordSAGALS)} Stopwatch := TStopwatch.StartNew; {$EndIf}
       cmd := MDDef.SagaCMD + ' ta_compound 0 -ELEVATION ' + InName + ' -LSFACTOR ' + LSGridName;
       {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, ' + cmd); {$EndIf}
-      //WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      //WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
       Result := SAGAMap(OpenMap,cmd,LSGridName,euUndefined);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga ls created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
@@ -383,7 +383,7 @@ begin
       {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, catchment area ' + cmd); {$EndIf}
       Result := SAGAMap(OpenMap,cmd,LSGridName,euUndefined,OpenMap);
 
-      //WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      //WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga ls_field based created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
 end;
@@ -422,13 +422,13 @@ begin
       {$If Defined(RecordSAGALS)} SagaStopwatch := TStopwatch.StartNew; {$EndIf}
       cmd := MDDef.SagaCMD + ' ta_hydrology 15 -DEM ' + InName + ' -AREA ' + AreaName + ' TWI ' + TWIName;
       {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, catchment area ' + cmd); {$EndIf}
-      WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga TWI created   ' + RealToString(SAGAStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 
       {$If Defined(RecordSAGALS)} SagaStopwatch := TStopwatch.StartNew; {$EndIf}
       cmd := MDDef.SagaCMD + ' ta_morphometry 0 -ELEVATION ' + InName + ' -SLOPE ' + SlopeName;
       {$IfDef RecordSAGA} WriteLineToDebugFile('LS_factor, slope, ' + cmd); {$EndIf}
-      WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+      WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga slope radians created   ' + RealToString(SAGAStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 
       {$If Defined(RecordSAGALS)} SagaStopwatch := TStopwatch.StartNew; {$EndIf}
@@ -473,7 +473,7 @@ function SAGA_WatershedBasinsWangLiu(InName : PathStr) : integer;
             ' -FILLED ' + FilledGrid +
             ' -FDIR ' + FlowDirections +
             ' -WSHED ' + WaterShedBasins;
-       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+       WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
        {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaWatershedBasinsWangLiu out'); {$EndIf}
        //Result := SAGAMap(OpenMap,cmd,InName,'',Undefined,false);
     end;
@@ -517,7 +517,7 @@ begin
                ' -INIT_GRID ' + inName +
                ' -CHNLNTWRK ' + MDTempDir + 'saga_channel_network_' + ExtractFileNameNoExt(InName) + '.tif' +
                ' -SHAPES ' + ChannelName;
-          WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+          WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
           {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
        end;
     end;
@@ -558,7 +558,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
             ' -BASIN ' + BasinGrid +
             ' -SEGMENT ' + BasinShape +
             ' -BASINS ' + BasinShape;
-       WinExecAndWait32(cmd,true,MDDef.LogDOScommands);
+       WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
        {$IfDef RecordSAGAFull} WriteLineToDebugFile('SagaChannelShapefile in, ChannelName= ' + ChannelName); {$EndIf}
     end;
     //Result := SAGAMap(OpenMap,cmd,InName,'',Undefined,false);

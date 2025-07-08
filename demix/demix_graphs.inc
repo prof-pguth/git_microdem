@@ -8,171 +8,6 @@
 {________________________________________}
 
 
-procedure BestDEMSbyCategory(DBonTable : integer);
-var
-   DEMs,Criteria,Besties,Findings,Findings2,AverageScore,FiltersTooFewOpinions : tStringList;
-   i : integer;
-   MaxSum : float64;
-   theSums : array[0..10] of float64;
-   fName : PathStr;
-   aLine : shortstring;
-
-
-   procedure DoOne(Header,theFilter : shortstring);
-   var
-      Total,DEM,Ties,ThisCat,Opinions : integer;
-   begin
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DO-ONE  ' + theFilter); {$EndIf}
-      WMDEM.SetPanelText(1,theFilter);
-      GISdb[DBonTable].ApplyGISFilter(theFilter);
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      Opinions := GISdb[DBonTable].MyData.FiltRecsInDB;
-      if (Opinions >= 10) then begin
-         Ties := Opinions;
-         Total := Opinions;
-         aline := Header + '  (n=' + IntToStr(Opinions) + ')' + ',' + IntToStr(Opinions);
-         for DEM := 0 to pred(DEMs.Count) do begin
-            GISdb[DBonTable].EmpSource.Enabled := false;
-            GISdb[DBonTable].ApplyGISFilter(theFilter + ' AND DEM_LOW_SC=' + QuotedStr(DEMs.Strings[DEM]) );
-            ThisCat := GISdb[DBonTable].MyData.FiltRecsInDB;
-            aLine := aLine + ',' + IntToStr(ThisCat);
-            Ties := Ties - ThisCat;
-         end;
-         Besties.Add(aLine + ',' + IntToStr(Ties) );
-
-         GISdb[DBonTable].ApplyGISFilter(theFilter);
-         MaxSum := 0;
-         for DEM := 0 to pred(DEMs.Count) do begin
-            GISdb[DBonTable].EmpSource.Enabled := false;
-            GISdb[DBonTable].MyData.FieldSum(DEMs.Strings[DEM] + '_SCR');
-            theSums[DEM] := GISdb[DBonTable].MyData.FieldSum(DEMs.Strings[DEM] + '_SCR');
-            if theSums[DEM] > maxSum then MaxSum := theSums[DEM];
-            Findings.Add(Header + ',' + DEMs.Strings[DEM] + ',' + RealToString(theSums[DEM],12,-4));
-         end;
-
-         aline := Header + ' (n=' + IntToStr(Opinions) + ')' + ',' + IntToStr(Opinions);
-         for DEM := 0 to pred(DEMs.Count) do begin
-            aLine := aLine + ',' + RealToString(theSums[DEM] / MaxSum,12,-4);
-         end;
-         Findings2.Add(aLine);
-
-         aline := Header + '  (n=' + IntToStr(Opinions) + ')' + ',' + IntToStr(Opinions);
-         for DEM := 0 to pred(DEMs.Count) do begin
-            aLine := aLine + ',' +  RealToString(theSums[DEM] / Opinions,12,-4);
-         end;
-         AverageScore.Add(aLine);
-      end
-      else begin
-         FiltersTooFewOpinions.Add(theFilter + ',' + IntToStr(Opinions));
-      end;
-   end;
-
-
-var
-   Header,aFilter,RefFilter : ShortString;
-   j,ScoresDB : integer;
-   Graph : tThisBaseGraph;
-   bmp : tMyBitmap;
-   LegendfName : PathStr;
-   BigBitmap : tStringList;
-   anImage : TImageDisplayForm;
-begin {BestDEMSbyCategory}
-
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BestDEMSbyCategory in, ' + GISdb[DBonTable].dbName); {$EndIf}
-   GetDEMIXPaths;
-   Criteria := tStringList.Create;
-   Criteria.LoadFromFile(DEMIXSettingsDir + 'criteria_all.txt');
-
-   DEMs := tStringList.Create;
-   DEMs.LoadFromFile(DEMIXSettingsDir + 'demix_dems_all_six.txt');
-   ShowHourglassCursor;
-   if not GISdb[DBonTable].MyData.FieldExists(DEMs.Strings[0] + '_SCR') then begin
-      RankDEMS(DBonTable);
-   end;
-
-   FiltersTooFewOpinions := tStringList.Create;
-   FiltersTooFewOpinions.Add('FILTER,OPINIONS');
-
-   Besties := tStringList.Create;
-   aLine := 'FILTER,OPINIONS';
-   for i := 0 to pred(DEMs.Count) do aLine := aLine + ',' + DEMs.Strings[i];
-   Besties.Add(aLine + ',TIES');
-
-   Findings2 := tStringList.Create;
-   aLine := 'FILTER,OPINIONS';
-   for i := 0 to pred(DEMs.Count) do aLine := aLine + ',' + DEMs.Strings[i];
-   Findings2.Add(aLine);
-
-   Findings := tStringList.Create;
-   Findings.Add('FILTER,DEM,SCORE_SUM');
-
-   for i := 1 to 2 do begin
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BestDEMSbyCategory DEM=' + RefDEMType[i] ); {$EndIf}
-      AverageScore := tStringList.Create;
-      aLine := 'FILTER,OPINIONS';
-      for j := 0 to pred(DEMs.Count) do aLine := aLine + ',' + DEMs.Strings[j];
-      AverageScore.Add(aLine);
-      BigBitmap := tStringList.Create;
-      RefFilter := ' AND REF_TYPE=' + QuotedStr(RefDEMType[i]);
-      for j := 1 to NumLandTypes do begin
-         DoOne(RefDEMType[i] + ' ' + LandTypes[j] + ' pixels','LAND_TYPE=' + QuotedStr(LandTypes[j]) + RefFilter);
-      end;
-      AverageScore.Add('SKIP');
-
-      for J := 1 to 9 do begin
-         GetFilterAndHeader(i,j, Header,aFilter);
-         DoOne(Header,aFilter);
-      end;
-      AverageScore.Add('SKIP');
-
-      for j := 0 to pred(Criteria.Count) do begin
-         DoOne(RefDEMType[i] + ' ALL pixels  ' + Criteria.Strings[j],'CRITERION=' + QuotedStr(Criteria.Strings[j]) + RefFilter );
-      end;
-
-      fName := NextFileNumber(MDTempDir,RefDEMType[i] + '_average_scores_','.dbf');
-      ScoresDB := StringList2CSVtoDB(AverageScore,fName);
-      Graph := DEMIXwineContestScoresGraph(ScoresDB,'Average score',0.5, 6.25);
-
-      //if (Graph.GraphDraw.LegendList <> nil) and (Graph.GraphDraw.LegendList.Count > 0) then begin
-         LegendfName := NextFileNumber(MDTempDir,'legend_','.png');
-         bmp := Graph.MakeLegend;
-         SaveBitmap(bmp,LegendfName);
-         Bmp.free;
-      //end;
-
-      fName := NextFileNumber(MDTempDir,'best_graph_','.png');
-      SaveImageAsBMP(Graph.Image1,fName);
-      BigBitmap.Add(fName);
-      BigBitmap.Add(LegendfName);
-      fName := NextFileNumber(MDTempDir,RefDEMType[i] + '_best_graph_with_legend_','.png');
-      anImage := MakeBigBitmap(BigBitmap,'',fName,2);
-      anImage.Destroy;
-
-      GISdb[DBonTable].ClearGISFilter;
-      GISdb[DBonTable].ShowStatus;
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Done BestDEMSbyCategory DEM=' + RefDEMType[i] ); {$EndIf}
-   end;
-
-      //unclear if these are really needed
-         fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + 'criteria_best_count.dbf';
-         StringList2CSVtoDB(Besties,fName);
-
-         fName := NextFileNumber(MDTempDir, 'multi_line_scores_','.dbf');
-         StringList2CSVtoDB(Findings,fName);
-
-         fName := NextFileNumber(MDTempDir,'single_line_scores_','.dbf');
-         StringList2CSVtoDB(Findings2,fName);
-
-         fName := NextFileNumber(MDTempDir,'filters_too_few_opinions_','.dbf');
-         StringList2CSVtoDB(FiltersTooFewOpinions,fName);
-
-   DEMs.Destroy;
-   Criteria.Destroy;
-   EndDEMIXProcessing;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('BestDEMSbyCategory out, ' + GISdb[DBonTable].dbName); {$EndIf}
-end {BestDEMSbyCategory};
-
-
 
 procedure DEMIXMeanMedianHistograms(db : integer);
 var
@@ -321,9 +156,10 @@ var
 
       //Graph.GraphDraw.LegendList := tStringList.Create;
       for DEM := 1 to NumDEMIXtestDEM do begin
-         Symbol := SymbolFromDEMName(DEMIXDEMTypeName[DEM]);
-         Symbol.DrawingSymbol := FilledBox;
-         Graph.OpenPointFile(rfile[DEM],Symbol,DEMIXDEMTypeName[DEM]);
+         TStr := DEMIXDEMTypeName[DEM];
+         //Symbol := SymbolFromDEMName(DEMIXDEMTypeName[DEM]);
+         //Symbol.DrawingSymbol := FilledBox;
+         Graph.OpenDataFile(rfile[DEM],TStr,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(TStr)));
          //Graph.GraphDraw.LegendList.Add(DEMIXDEMTypeName[DEM]);
       end;
 
@@ -626,7 +462,7 @@ var
             v : array[1..2] of float32;
             Max : float32;
             aMinVal,aMaxVal : float64;
-            RefFilter,aFilter : shortstring;
+            RefFilter,aFilter,TStr : shortstring;
             bmp : tMyBitmap;
 
                procedure OnePercentage(aFilter : shortstring);
@@ -692,8 +528,10 @@ var
             end;
 
             for DEM := 1 to DEMsPresent.Count do begin
-               Symbol := SymbolFromDEMName(DEMsPresent.Strings[Pred(DEM)]);
-               Graph.OpenPointFile(rfile[DEM],Symbol,DEMsPresent.Strings[Pred(DEM)]);
+               //Symbol := SymbolFromDEMName(DEMsPresent.Strings[Pred(DEM)]);
+               //Graph.OpenDataFile(rfile[DEM],DEMsPresent.Strings[Pred(DEM)],);
+               TStr := DEMIXDEMTypeName[DEM];
+               Graph.OpenDataFile(rfile[DEM],TStr,ConvertPlatformColorToTColor(DEMIXColorFromDEMName(TStr)));
             end;
 
             for i := 0 to pred(AreaList.Count) do begin
@@ -903,12 +741,6 @@ end {DEMIXwineContestMeanMedianGraph};
 
 
 
-function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXwineContestScoresGraph in, table=' + IntToStr(DBontable)); {$EndIf}
-   BestDEMSbyCategory(DBonTable);
-end;
-
 
 procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
 //Option = 0 Sort by tile parameters, DEM type, graph for each criterion
@@ -922,8 +754,6 @@ var
    UseMax : float32;
    aLine : shortstring;
    Statistics : tStringList;
-
-
 
     procedure MakeGraph(aP : integer; TheCriteria,TheParameter,TheDEM,LandType,HorizLabel,VertLabel : shortstring);
 
@@ -1072,12 +902,10 @@ begin {procedure MultipleBestByParametersSortByValue}
                inc(ap);
             end;
          end;
-         //FinishBigMap(BigBitmap,Legend,aName);
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + IntToStr(aTileParameter)); {$EndIf}
       end;
    end;
-   FinishBigMap(BigBitmap,Legend,aName);
-
+   FinishBigBitMapWithLegend(BigBitmap,Legend,aName);
    fName := NextFileNumber(MDTempDir,MDTempDir + 'dem_batting_average_','.dbf');
    StringList2CSVtoDB(Statistics,fName);
    GISdb[DBonTable].ClearGISFilter;
@@ -1351,7 +1179,7 @@ begin {DEMIX_AreaAverageScores_graph}
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_AreaAverageScores_graph in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
    try
       if DoScores and (not AreDEMIXscoresInDB(DBonTable)) then begin
-         RankDEMS(dbOnTable);
+         RankDEMS(dbOnTable,nil);
       end;
       HeavyDutyProcessing := true;
       LoadDEMIXnames;

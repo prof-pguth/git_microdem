@@ -17,7 +17,6 @@ unit grid_over_map;
 {$EndIf}
 
 
-
 interface
 
 uses
@@ -26,20 +25,20 @@ uses
    Data.DB,
 
    {$IfDef UseFireDacSQLlite}
-   FireDAC.Stan.ExprFuncs,
-   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
-   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
-   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
-   FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
-   FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+     FireDAC.Stan.ExprFuncs,
+     FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+     FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+     FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+     FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
+     FireDAC.Phys.SQLite, FireDAC.Comp.UI,
    {$EndIf}
 
    {$IfDef UseTDBF}
-   dbf,
+      dbf,
    {$EndIf}
 
    {$IfDef UseTCLientDataSet}
-   DBClient,
+      DBClient,
    {$EndIf}
 //end
 
@@ -223,7 +222,7 @@ implementation
 uses
    {$IfDef ExSat}
    {$Else}
-   DEMEros,
+      DEMEros,
    {$EndIf}
 
    DEMDefs,DEMCoord, DEMDef_Routines, BaseGraf,DEMDataBase,
@@ -367,17 +366,6 @@ begin
              LoadNewDEM(NewDem,fName,LoadAtlasMap);
              if j in [1..5] then GridOverlayOnMap.ClassDems[j] := NewDEM;
              if AtlasDefTable.FieldExists('WEIGHT') then VariableWeightings[NewDEM] := AtlasDefTable.GetFieldByNameAsFloat('WEIGHT');
-             (*
-             AtlasDefTable.Edit;
-             if AtlasDefTable.GetFieldByNameAsString('MAX_CAT') = '' then AtlasDefTable.SetFieldByNameAsFloat('MAX_CAT',DEMGlb[NewDEM].HeadRecs.MaxElev);
-             if AtlasDefTable.GetFieldByNameAsString('MAX_COLOR') = '' then AtlasDefTable.SetFieldByNameAsFloat('MAX_COLOR',DEMGlb[NewDEM].HeadRecs.MaxElev);
-             if AtlasDefTable.GetFieldByNameAsString('MIN_CAT') = '' then AtlasDefTable.SetFieldByNameAsFloat('MIN_CAT',DEMGlb[NewDEM].HeadRecs.MinElev);
-             if AtlasDefTable.GetFieldByNameAsString('MIN_COLOR') = '' then AtlasDefTable.SetFieldByNameAsFloat('MIN_COLOR',DEMGlb[NewDEM].HeadRecs.MinElev);
-             AtlasDefTable.Post;
-
-             HS := AtlasDefTable.GetFieldByNameAsString('MAX_CAT');
-             LS := AtlasDefTable.GetFieldByNameAsString('MIN_CAT');
-             *)
              HS := RealToString(DEMGlb[NewDEM].DEMheader.MaxElev,-12,-2);
              LS := RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2);
 
@@ -392,10 +380,6 @@ begin
          LastDEMName := OldName;
       end
       else begin
-         //AtlasDBDataTableName := 'C:\mapdata\0--current_projects\geomorph_dbs\etopo1_15min' + DefaultDBExt;
-         //AtlasDBDefTableName := 'C:\mapdata\0--current_projects\geomorph_dbs\etopo1_30min_params' + DefaultDBExt;
-         //AtlasDefTableName := AtlasDBDefTableName;
-         //theBaseMap.OpenDBonMap('',AtlasDBDataTableName);
          AtlasDBDefTableName := GISDB[inAtlasDB].DBAuxDir + ExtractFileNameNoExt(GISDB[inAtlasDB].DBFullName) + '_classes.dbf';
          if not FileExists(AtlasDBDefTableName) then MakeAtlasParametersTable(AtlasDBDefTableName);
          AtlasDefTable := tMyData.Create(AtlasDBDefTableName);
@@ -618,35 +602,6 @@ begin
          SlopeGrid := DEMforName(ComboBox7.Text);
          ConvexGrid := DEMforName(ComboBox8.Text);
          RoughGrid := DEMforName(ComboBox9.Text);
-
-        //Make_grid.CreateIwashishiPikeMap(DEMGlb[BaseMap.MapDraw.DEMonMap].AreaName,SlopeGrid,RoughGrid,ConvexGrid);
-
-
-         (*
-         ConvexityMeanCut := DEMGLB[ConvexGrid].FindPercentileElev(MDDef.ConvexCut);
-         TextureMeanCut := DEMGLB[RoughGrid].FindPercentileElev(MDDef.RoughnessCut);
-         SlopeMeanCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut1);
-         SlopeQuarterCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut2);
-         SlopeEigthCut := DEMGLB[SlopeGrid].FindPercentileElev(MDDef.SlopeCut3);
-         CloneImageToBitmap(BaseMap.Image1,bmp);
-         StartProgress('Classify');
-         for y := 0 to pred(bmp.Height) do begin
-            p0 := bmp.ScanLine[y];
-            if (y mod 1000 = 0) then UpdateProgressBar(y/bmp.Height);
-
-            for x := 0 to pred(bmp.Width) do begin
-               BaseMap.MapDraw.ScreenToLatLongDegree(x,y,Lat,Long);
-               DEMGlb[SlopeGrid].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-               if DEMGlb[SlopeGrid].GetElevMeters(xg,yg,Slope) then begin
-                  Convex := DEMGlb[ConvexGrid].GridElevMeters(xg,yg);
-                  Rough := DEMGlb[RoughGrid].GridElevMeters(xg,yg);
-                  p0[x] := IwashuriPikeColor(Slope,Convex,Rough,Cat);
-                  inc(Hist[Cat]);
-               end;
-            end;
-         end;
-         *)
-
       end
       else begin
          SlopeField := ComboBox7.Text;
@@ -841,14 +796,10 @@ var
          Memo1.Lines.Add('Matches: '  + IntToStr(NumPts[0]));
       end;
 
-
-
             function PCString(i : integer) : shortstring;
             begin
                Result := ' (' + RealToString(100.0 * i / TotalRecs,-8,-2) + '%)';
             end;
-
-
 
       procedure UpDateFilter(CheckBox : tCheckBox; ComboBox : tComboBox; Edit1,Edit2 : tEdit);
       var

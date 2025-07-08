@@ -161,7 +161,7 @@ uses
   raster_2_vector in '..\common_code\raster_2_vector.pas' {rast_2_vect_f},
   feature_migration in '..\common_code\feature_migration.pas' {FeatureMigrationForm},
   param_graphs in '..\gis_db\param_graphs.pas' {ParamGraphForm},
-  petimage_form in '..\common_code\petimage_form.pas' {ImageDisplayForm},
+  petimage_form in '..\common_code\petimage_form.pas' {ImageDispForm},
   usoutlines in '..\common_code\usoutlines.pas' {USOutlineForm},
   main_gray_game in '..\common_code\main_gray_game.pas' {GrayGameForm},
   survey_lines in '..\common_code\survey_lines.pas' {GetTracjksForm},
@@ -379,7 +379,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

@@ -3804,9 +3804,6 @@ object dbtablef: Tdbtablef
       Caption = 'Areas in clusters'
       OnClick = Areasinclusters1Click
     end
-    object GraphwinningpercentagebyDEM1: TMenuItem
-      Caption = 'Graph winning percentage by DEM'
-    end
     object N51: TMenuItem
       Caption = '-'
     end
@@ -3879,7 +3876,6 @@ object dbtablef: Tdbtablef
       end
       object CiompareCOPtorivals1: TMenuItem
         Caption = 'Compare COP win/loss/tie to rivals'
-        OnClick = CiompareCOPtorivals1Click
       end
       object AddlatlongfieldstoDB1: TMenuItem
         Caption = 'Add lat/long/country/area fields to DB'
@@ -3917,7 +3913,6 @@ object dbtablef: Tdbtablef
       end
       object N53: TMenuItem
         Caption = 'Coffee break--add everything'
-        OnClick = N53Click
       end
     end
     object Filterthistable1: TMenuItem
@@ -4015,7 +4010,6 @@ object dbtablef: Tdbtablef
     end
     object BestDEMbycategory1: TMenuItem
       Caption = 'Graph best DEM (average score) for criteria and filters '
-      OnClick = BestDEMbycategory1Click
     end
     object N55: TMenuItem
       Caption = '-'
@@ -4097,7 +4091,6 @@ object dbtablef: Tdbtablef
     object COPoALOS1: TMenuItem
       Caption = 'Winning percentages and shootouts'
       Enabled = False
-      OnClick = COPoALOS1Click
     end
     object BestDEMpertilebycriteria1: TMenuItem
       Caption = 'Graphs best DEM per tile, by criteria (sort by area)'
@@ -4118,7 +4111,6 @@ object dbtablef: Tdbtablef
     object Wins1: TMenuItem
       Caption = 'Wins and Ties'
       Enabled = False
-      OnClick = Wins1Click
     end
   end
   object SingleFieldArithmeticPopupMenu: TPopupMenu

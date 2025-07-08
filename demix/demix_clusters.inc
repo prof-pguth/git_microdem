@@ -182,7 +182,7 @@ begin
 
    LegBMP := Nil;
    fName := NextFileNumber(MDtempdir,'cluster_characteristics_','.png');
-   FinishBigMap(BigBitmap,LegBMP,fName);
+   FinishBigBitMapWithLegend(BigBitmap,LegBMP,fName);
    GISdb[DBonTable].ApplyGISFilter(OverallBaseFilter);
 end;
 

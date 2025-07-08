@@ -4237,12 +4237,12 @@ end;
                 dbOpts.Symbol.Size := 3;
 
                 case DBNumber of
-                   1 : dbOpts.Symbol.DrawingSymbol := FilledBox;
-                   2 : dbOpts.Symbol.DrawingSymbol := FilledCircle;
-                   3 : dbOpts.Symbol.DrawingSymbol := FilledDiamond;
-                   4 : dbOpts.Symbol.DrawingSymbol := FilledDownTri;
-                   5 : dbOpts.Symbol.DrawingSymbol := FilledUpTri;
-                   6 : dbOpts.Symbol.DrawingSymbol := Box;
+                   0 : dbOpts.Symbol.DrawingSymbol := FilledBox;
+                   1 : dbOpts.Symbol.DrawingSymbol := FilledCircle;
+                   2 : dbOpts.Symbol.DrawingSymbol := FilledDiamond;
+                   3 : dbOpts.Symbol.DrawingSymbol := FilledDownTri;
+                   4 : dbOpts.Symbol.DrawingSymbol := FilledUpTri;
+                   5 : dbOpts.Symbol.DrawingSymbol := Box;
                    else dbOpts.Symbol.DrawingSymbol := FilledBox;
                 end;
              end;

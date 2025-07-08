@@ -816,7 +816,7 @@ end;
 procedure RestoreBigCompositeBitmap(fName : PathStr);
 var
    bigbmp : tMyBitmap;
-   ImageForm : TImageDisplayForm;
+   ImageForm : TImageDispForm;
    theFiles : tStringList;
 begin
    if (fName = '') then Petmar.GetFileFromDirectory('images list','*.txt',fName);
@@ -825,7 +825,7 @@ begin
       theFiles.LoadFromFile(fName);
       BigBMP := CombineBitmaps(MDDef.BigBM_nc, theFiles, '');
       theFiles.Destroy;
-      ImageForm := TImageDisplayForm.Create(Application);
+      ImageForm := TImageDispForm.Create(Application);
       ImageForm.LoadImage(BigBmp,true);
       ImageForm.BigBM_files := fName;
       ImageForm.ChangeColumns1.Visible := true;
@@ -835,7 +835,7 @@ end;
 procedure CreateBigCompositeBitmap;
 var
    bigbmp : tMyBitmap;
-   ImageForm : TImageDisplayForm;
+   ImageForm : TImageDispForm;
    theFiles : tStringList;
    fName : PathStr;
    DefaultFilter : byte;
@@ -848,7 +848,7 @@ begin
       fName := NextFileNumber(MDTempDir,'composite_image_','.txt');
       theFiles.SaveToFile(fName);
       TheFiles.Free;;
-      ImageForm := TImageDisplayForm.Create(Application);
+      ImageForm := TImageDispForm.Create(Application);
       ImageForm.LoadImage(BigBmp,true);
       ImageForm.BigBM_files := fName;
       ImageForm.ChangeColumns1.Visible := true;

@@ -910,7 +910,7 @@ type
     N46: TMenuItem;
     Lattimecolors1: TMenuItem;
     Boxplot1: TMenuItem;
-    BestDEMbycategory1: TMenuItem;
+    //BestDEMbycategory1: TMenuItem;
     RankDEMs1: TMenuItem;
     N1degreetilestocoverrecordsintable1: TMenuItem;
     Sumscores1: TMenuItem;
@@ -922,7 +922,7 @@ type
     Allcriteriavalues1: TMenuItem;
     PercentageofcriteriawhereDEMisbest1: TMenuItem;
     Averageranksbyarea1: TMenuItem;
-    COPoALOS1: TMenuItem;
+    //COPoALOS1: TMenuItem;
     BestDEMpertilebycriteria1: TMenuItem;
     N7Elevationdifferencecriteria1: TMenuItem;
     FriedmanTest1: TMenuItem;
@@ -941,7 +941,7 @@ type
     Stackedpercentages1: TMenuItem;
     AlphabetizefieldwithCSVsubfields1: TMenuItem;
     iesbyopinions1: TMenuItem;
-    Wins1: TMenuItem;
+   //Wins1: TMenuItem;
     LoadthisDEM1: TMenuItem;
     Updatestatus1: TMenuItem;
     Averagebylatitude1: TMenuItem;
@@ -999,13 +999,13 @@ type
     GraphSSIMFUVbyclustermeans1: TMenuItem;
     GraphSSIMFUVbyDEMmeans1: TMenuItem;
     Filterfor999valuesinanyevaluation1: TMenuItem;
-    CiompareCOPtorivals1: TMenuItem;
+    //CiompareCOPtorivals1: TMenuItem;
     CopHeadtoheadrecord1: TMenuItem;
     InventoryFUVSSIMcriteriainDB1: TMenuItem;
     Copycolumntoclipboard1: TMenuItem;
     QuartilesinCLUSTERfieldbasedonsort1: TMenuItem;
     N50: TMenuItem;
-    N53: TMenuItem;
+    //N53: TMenuItem;
     Addmultiplefields1: TMenuItem;
     N54: TMenuItem;
     BitBtn24: TBitBtn;
@@ -1744,7 +1744,7 @@ type
     //procedure ransposeforwinecontest1Click(Sender: TObject);
     //procedure Graphfortransposeddata1Click(Sender: TObject);
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
-    procedure BestDEMbycategory1Click(Sender: TObject);
+    //procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
     procedure DEMIXtilesummary1Click(Sender: TObject);
     procedure PickParam1Click(Sender: TObject);
@@ -1753,7 +1753,7 @@ type
     procedure Allcriteriavalues1Click(Sender: TObject);
     procedure PercentageofcriteriawhereDEMisbest1Click(Sender: TObject);
     procedure Averageranksbyarea1Click(Sender: TObject);
-    procedure COPoALOS1Click(Sender: TObject);
+    //procedure COPoALOS1Click(Sender: TObject);
     procedure BestDEMpertilebycriteria1Click(Sender: TObject);
     procedure N7Elevationdifferencecriteria1Click(Sender: TObject);
     procedure Ascending1Click(Sender: TObject);
@@ -1769,7 +1769,7 @@ type
     procedure Deleterecord1Click(Sender: TObject);
     procedure AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
     procedure iesbyopinions1Click(Sender: TObject);
-    procedure Wins1Click(Sender: TObject);
+    //procedure Wins1Click(Sender: TObject);
     procedure LoadthisDEM1Click(Sender: TObject);
     procedure Updatestatus1Click(Sender: TObject);
     procedure Averagebylatitude1Click(Sender: TObject);
@@ -1779,8 +1779,7 @@ type
     procedure DEMIXtileinvertory1Click(Sender: TObject);
     procedure Filterforjustsignedcrirteria1Click(Sender: TObject);
     procedure Meanandmedianhistograms1Click(Sender: TObject);
-    procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(
-      Sender: TObject);
+    procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(Sender: TObject);
     procedure Modestandarddeviationplots1Click(Sender: TObject);
     procedure AddDEMIXtilecentroid1Click(Sender: TObject);
     procedure Clustermaplocations1Click(Sender: TObject);
@@ -1819,12 +1818,12 @@ type
     procedure GraphSSIMFUVbyclustermeans1Click(Sender: TObject);
     //procedure AddsloperoughnessrelieftoDB1Click(Sender: TObject);
     procedure Filterfor999valuesinanyevaluation1Click(Sender: TObject);
-    procedure CiompareCOPtorivals1Click(Sender: TObject);
+    //procedure CiompareCOPtorivals1Click(Sender: TObject);
     procedure CopHeadtoheadrecord1Click(Sender: TObject);
     procedure InventoryFUVSSIMcriteriainDB1Click(Sender: TObject);
     procedure Copycolumntoclipboard1Click(Sender: TObject);
     procedure QuartilesinCLUSTERfieldbasedonsort1Click(Sender: TObject);
-    procedure N53Click(Sender: TObject);
+    //procedure N53Click(Sender: TObject);
     procedure Addmultiplefields1Click(Sender: TObject);
     procedure BitBtn24Click(Sender: TObject);
     procedure Byclusters1Click(Sender: TObject);
@@ -2860,7 +2859,7 @@ end;
 
 procedure Tdbtablef.RankDEMs1Click(Sender: TObject);
 begin
-   RankDEMS(DBonTable);
+   RankDEMS(DBonTable,nil);
 end;
 
 
@@ -3227,11 +3226,6 @@ end;
 procedure Tdbtablef.Winpercentagesbyarea1Click(Sender: TObject);
 begin
    MakeWinsDB(DBonTable,'AREA');
-end;
-
-procedure Tdbtablef.Wins1Click(Sender: TObject);
-begin
-   WinsAndTies(DBonTable);
 end;
 
 procedure Tdbtablef.woorthreefieldRGB1Click(Sender: TObject);
@@ -4761,7 +4755,7 @@ begin
        Result.Caption := 'Profile ' + TStr;
        Result.OpenDataFile(rf,'');
 
-       if (Sender = CompareshapefileandDEMprofiles1) then Result.OpenPointFile(rf2,Result.Symbol);
+       if (Sender = CompareshapefileandDEMprofiles1) then Result.OpenPointSymbolFile(rf2,'',Result.Symbol);
 
       for i := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
          Lat := aShapeFile.CurrentLineCoords^[i].Lat;
@@ -4787,7 +4781,7 @@ begin
       end;
       CloseFile(rf);
       if (Sender = CompareshapefileandDEMprofiles1) then CloseFile(rf2);
-      Result.GraphDraw.ShowLine[1] := true;
+      Result.GraphDraw.ShowLine[0] := true;
       Result.AutoScaleAndRedrawDiagram(true,true,false,false);
       {$IfDef RecordTerrainProfiles} WriteLineToDebugFile('Profile rec  done=' + IntToStr(MyData.RecNo) + ' CurrentLinePartSize[1]=' + IntToStr(aShapeFile.CurrentLinePartSize[1])); {$EndIf}
    end;
@@ -4854,18 +4848,18 @@ end;
 
 procedure Tdbtablef.N2Dgraph1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2Dgraph1);
+   GISdb[DBonTable].MakeGraph(dbgtN2Dgraph1);
 end;
 
 
 procedure Tdbtablef.N2Dgraph2series1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2series1);
+   GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2series1);
 end;
 
 procedure Tdbtablef.N2Dgraph2yaxes1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2yaxes1);
+   GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2yaxes1);
 end;
 
 procedure Tdbtablef.N2Dgraphallopendatabases1Click(Sender: TObject);
@@ -4918,7 +4912,7 @@ begin
             else if (Sender = N2Dgraphallopendatabases1) then begin
                ThisGraph.Symbol.Color := GISdb[j].dbOpts.LineColor;
                ThisGraph.Symbol.DrawingSymbol := GISdb[j].dbOpts.Symbol.DrawingSymbol;
-               ThisGraph.OpenPointFile(rfile,ThisGraph.Symbol,GISdb[j].dbName);
+               ThisGraph.OpenPointSymbolFile(rfile,GISdb[j].dbName,ThisGraph.Symbol);
             end
             else if (Sender = N2Dgraphallopendatabaseslines1) then begin
                ThisGraph.OpenDataFile(rfile,GISdb[j].dbName,ConvertPlatformColorToTColor(GISdb[j].dbOpts.LineColor));
@@ -5767,7 +5761,7 @@ begin
    try
       GetDEMIXPaths(true);
       //Removerowsmissinganyevaluations1Click(Sender);
-      RankDEMS(DBonTable);
+      RankDEMS(DBonTable,nil);
       EvalRangeAndBestEvalForCriterion(DBonTable);
       //CompareSeriousCompetitors(DBonTable);
       AddTileCharacteristicsToDB(DBonTable);
@@ -6899,6 +6893,7 @@ begin
    IcesatProcessCanopy(DBonTable,false,true);
 end;
 
+(*
 procedure Tdbtablef.N53Click(Sender: TObject);
 begin
    try
@@ -6912,6 +6907,8 @@ begin
       EndDEMIXProcessing;
    end;
 end;
+*)
+
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
 begin
@@ -9978,14 +9975,6 @@ begin
    CreateCopHeadToHeaddb(dbOnTable);
 end;
 
-procedure Tdbtablef.COPoALOS1Click(Sender: TObject);
-begin
-   {$IfDef ExDEMIXexperimentalOptions}
-   {$Else}
-      DEMIXisCOPorALOSbetter(DBonTable);
-   {$EndIf}
-end;
-
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
 begin
       GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext1);
@@ -10443,7 +10432,7 @@ end;
 
 procedure Tdbtablef.Grandbytilecharacterisitic1Click(Sender: TObject);
 begin
-   MainGraphOptions(DBonTable,Nil,Nil,2);
+   MainGraphOptions(DBonTable,Nil,nil,2);
 end;
 
 procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
@@ -12098,15 +12087,6 @@ end;
 procedure Tdbtablef.Beachballscolorandsize1Click(Sender: TObject);
 begin
    Dipandstrikes1Click(Sender);
-end;
-
-
-procedure Tdbtablef.BestDEMbycategory1Click(Sender: TObject);
-begin
-{$IfDef ExDEMIXexperimentalOptions}
-{$Else}
-   BestDEMSbyCategory(DBonTable);
-{$EndIf}
 end;
 
 
@@ -13948,16 +13928,11 @@ begin
 end;
 
 
-procedure Tdbtablef.CiompareCOPtorivals1Click(Sender: TObject);
-begin
-   CompareSeriousCompetitors(DBonTable);
-end;
-
 procedure Tdbtablef.Animatefield1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
    {$Else}
-   GISdb[DBonTable].GISProportionalSymbols(dbasAnimate);
+      GISdb[DBonTable].GISProportionalSymbols(dbasAnimate);
    {$EndIf}
 end;
 

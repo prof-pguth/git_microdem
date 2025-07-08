@@ -4,7 +4,6 @@
 { Released under the MIT Licences        }
 { Copyright (c) 1986-2025 Peter L. Guth  }
 {----------------------------------------}
-{                                        }
 {   include file for demdatabase         }
 {________________________________________}
 

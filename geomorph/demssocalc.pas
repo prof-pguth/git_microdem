@@ -608,7 +608,7 @@ end;
 procedure TSSOCalcDlg.Edit19Change(Sender: TObject);
 begin
    CheckEditString(Edit19.Text,MDdef.PeakPitPostings );
-   if theLOSView <> Nil then
+   if (theLOSView <> Nil) then
       Label11.Caption := 'Region (points); size=' + RealToString(MDdef.PeakPitPostings*2*theLOSView.LOSdraw.FormSectLenMeters /theLOSView.LOSdraw.PixLong,-12,0) + ' m';
 end;
 

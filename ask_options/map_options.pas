@@ -101,7 +101,7 @@ begin
        RadioGroup1.Enabled := ValidDEM(MapDraw.DemOnMap);
        GroupBox1.Enabled := MapForm.OverlayUp(ovoWorldOutlines);
        GroupBox3.Enabled := MapForm.OverlayUp(ovoOSM);
-       GroupBox4.Enabled := MapForm.OverlayUp(ovoTiger);
+       //GroupBox4.Enabled := MapForm.OverlayUp(ovoTiger);
 
        if (MapDraw.DemOnMap = 0) then RadioGroup1.ItemIndex := 0;
        CheckBox1.Checked := MapDraw.MakeMapGrayscale;
@@ -143,7 +143,7 @@ begin
        MapDraw.SubdueOSM := CheckBox8.Checked;
        MDDef.MakeTigerMapGrayscale := CheckBox9.Checked;
        MDDef.SubdueTigerBase := CheckBox10.Checked;
-       DoBaseMapRedraw;
+       DoCompleteMapRedraw;
     end;
 end;
 

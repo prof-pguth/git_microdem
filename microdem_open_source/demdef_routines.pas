@@ -2492,7 +2492,7 @@ var
          AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
          AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
          AParameter('DEMIX','TwoParameterVisualization',TwoParameterVisualization,0);
-         AParameter('DEMIX','DEMIX_criterion_fName',DEMIX_criterion_fName,'');
+         //AParameter('DEMIX','DEMIX_criterion_fName',DEMIX_criterion_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
@@ -2500,6 +2500,7 @@ var
          AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
+         AParameter('DEMIX','DEMIX_FUV_graph_width',DEMIX_FUV_graph_width,800);
          AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
          AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
          AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
@@ -2530,8 +2531,12 @@ var
          AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
          AParameter('DEMIX','ProcessLoopsForward',ProcessLoopsForward,true);
          AParameter('DEMIX','DEMIX_AllowCoastal',DEMIX_AllowCoastal,false);
+         AParameter('DEMIX','DEMIX_UseMedian',DEMIX_UseMedian,false);
 
-         AParameter('DEMIX','DoSSIM',DoSSIM,true);
+         AParameter('DEMIX','FUVExpandScales',FUVExpandScales,false);
+         AParameter('DEMIX','DoPartials',DoPartials,false);
+         AParameter('DEMIX','DoCurvatures',DoCurvatures,false);
+         AParameter('DEMIX','DoSSIM',DoSSIM,false);
          AParameter('DEMIX','DoFUV',DoFUV,true);
          AParameter('DEMIX','DEMIX_all_areas',DEMIX_all_areas,true);
          AParameter('DEMIX','DEMIX_combined_graph',DEMIX_combined_graph,true);
@@ -3770,7 +3775,7 @@ begin
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);
          AParameter('Hardware','LogDOSoutput',LogDOSoutput,false);
-         AParameter('Hardware','LogDOScommands',LogDOScommands,false);
+         //AParameter('Hardware','LogDOScommands',LogDOScommands,false);
       {$EndIf}
 
       AParameterShortFloat('Horizon','HorizonIncrement',HorizonIncrement,5);

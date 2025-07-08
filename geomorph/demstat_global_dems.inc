@@ -262,7 +262,7 @@ var
             end;
           {$IfDef RecordGlobalDEM} WriteLineToDebugFile('Data loaded'); {$EndIf}
 
-         for i := 1 to MaxCompare do begin
+         for i := 0 to pred(MaxCompare) do begin
             if (DEM_Manager.CompareDEMNames[i] <> '') then begin
                //Result.GraphDraw.LegendList.Add(DEM_Manager.CompareDEMNames[i]);
                Result.OpenDataFile(rfile[i],DEM_Manager.CompareDEMNames[i]);
@@ -344,7 +344,7 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
               end;
               if i in [1,2] then Result.Symbol.Size := 3
               else Result.Symbol.Size := 2;
-              Result.OpenPointFile(rfiles[i],Result.Symbol,LidarLabels[i]);
+              Result.OpenPointSymbolFile(rfiles[i],LidarLabels[i],Result.Symbol);
            end;
 
            //Result.GraphDraw.LegendList := tStringList.Create;

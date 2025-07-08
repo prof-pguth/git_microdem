@@ -408,7 +408,7 @@ begin
    Symbol.Size := 2;
    Symbol.Color := claRed;
    Symbol.DrawingSymbol := FilledBox;
-   Scatter1.OpenPointFile(file1,Symbol);
+   Scatter1.OpenPointSymbolFile(file1,'hyper',Symbol);
 
    if (Scatter2 = Nil) then begin
       Scatter2 := TThisBaseGraph.Create(Nil);
@@ -420,7 +420,7 @@ begin
    Scatter2.GraphDraw.HorizLabel := 'Band ' + IntToStr(Red) + ' (' + RealToString(BandCenters[Red],-12,-2) + ' nm)';
    Scatter2.GraphDraw.VertLabel := 'Band ' + IntToStr(Blue) + ' (' + RealToString(BandCenters[Blue],-12,-2) + ' nm)';
    Symbol.Color := claLime;
-   Scatter2.OpenPointFile(file2,Symbol);
+   Scatter2.OpenPointSymbolFile(file2,'hyper',Symbol);
 
    OpenHypFile;
    if (HypData = hdAviris) then begin
