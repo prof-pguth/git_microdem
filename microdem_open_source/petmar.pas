@@ -299,6 +299,9 @@ procedure ReplaceCharacter(var St : AnsiString; FindChar,ReplaceChar : AnsiChar)
 function RemoveLowerCase(k1 : ShortString) : shortString;
 function RemoveNumbers(k1 : ShortString) : shortString;
 
+function NoCommas(TheString: ShortString) : shortstring;
+
+
 function ValidByteRange(value : integer) : integer; inline;
 function ValidByteRange254(value : integer) : integer; inline;
 
@@ -306,7 +309,6 @@ procedure DragDirections;
 
 function MakeLongInt(v1,v2,v3,v4 : byte; BigEndian : boolean) : LongInt;
 
-function NoCommas(TheString: ShortString) : shortstring;
 
 procedure SortAndRemoveDuplicates(var StringList : tStringList);
 procedure CopyStringList(FromList : tStringList; var ToList : tStringList);
@@ -3845,12 +3847,15 @@ begin
     StripBlanks(fName);
     CleanUpFileName(fName);
     StripInvalidPathNameChars(fName);
-    if (fName[length(fName)] <> '_') then fName := fName + '_';
-    i := 0;
-    repeat
-       inc(i);
-       Result  := System.IOUtils.TPath.Combine(Path, fName + IntToStr(i) + Ext);
-    until not FileExists(Result);
+    Result := System.IOUtils.TPath.Combine(Path, fName + IntToStr(i) + Ext);
+    if not FileExists(Result) then begin
+      if (fName[length(fName)] <> '_') then fName := fName + '_';
+      i := 0;
+      repeat
+         inc(i);
+         Result  := System.IOUtils.TPath.Combine(Path, fName + IntToStr(i) + Ext);
+      until not FileExists(Result);
+    end;
 end;
 
 
@@ -3858,12 +3863,17 @@ function NextFilePath(Path : PathStr) : PathStr;
 var
    i : integer;
 begin
-   i := 0;
-   repeat
-      inc(i);
-      Result := Path + '_' + IntToStr(i) + '\';
-   until Not (ValidPath(Result));
-   SafeMakeDir(Result);
+   if ValidPath(Path) then begin
+      Result := Path;
+   end
+   else begin
+     i := 0;
+     repeat
+        inc(i);
+        Result := Path + '_' + IntToStr(i) + '\';
+     until Not (ValidPath(Result));
+     SafeMakeDir(Result);
+   end;
 end;
 
 

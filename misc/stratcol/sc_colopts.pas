@@ -89,6 +89,8 @@ end;
 
 procedure TStratOptsForm.FormCreate(Sender: TObject);
 begin
+  {$IfDef ExStratcol}
+  {$Else}
    OKbtn.Caption := 'OK';
    Petmar.PlaceFormAtMousePosition(Self);
 
@@ -118,6 +120,7 @@ begin
     Edit3.Text := RealToString(MDDef.ColDef.DefaultThickness,-8,-2);
     Edit4.Text := IntToStr(MDDef.ColDef.DefaultMyBitmapWidth);
     Edit5.Text := IntToStr(MDDef.ColDef.DefaultMyBitmapHeight);
+{$EndIf}
 end;
 
 

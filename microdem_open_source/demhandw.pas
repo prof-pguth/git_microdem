@@ -3833,13 +3833,19 @@ end;
 
 procedure TDemHandForm.Icesat1Click(Sender: TObject);
 begin
-   IcesatPhotonConvert(Memo1);
+   {$IfDef ExIceSat}
+   {$Else}
+      IcesatPhotonConvert(Memo1);
+   {$EndIf}
 end;
 
 
 procedure TDemHandForm.ICESat2photonsATL031Click(Sender: TObject);
 begin
-   MergeICESat2Photons(Nil);
+   {$IfDef ExIceSat}
+   {$Else}
+      MergeICESat2Photons(Nil);
+   {$EndIf}
 end;
 
 procedure TDemHandForm.ICOADSLMRF1Click(Sender: TObject);

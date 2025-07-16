@@ -699,8 +699,8 @@ end;
 
 
 function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
-const
-   BetweenBitmaps = 25;
+//const
+   //BetweenBitmaps = 15;
 var
    bmp : tMyBitmap;
    Left,Right,Top,Bottom,
@@ -721,12 +721,12 @@ begin
       for n := 0 to pred(theFiles.Count) do begin
          if FileExists(theFiles.Strings[n]) then begin
             bmp := LoadBitmapFromFile(theFiles.Strings[n]);
-            if (bmp.Width > BigWidth + BetweenBitmaps) then BigWidth := bmp.Width + BetweenBitmaps;
-            if (bmp.Height > BigHeight + BetweenBitmaps) then BigHeight := bmp.Height + BetweenBitmaps;
+            if (bmp.Width > BigWidth + MDdef.BigBM_horizontal_space_between) then BigWidth := bmp.Width + MDdef.BigBM_horizontal_space_between;
+            if (bmp.Height > BigHeight + MDdef.BigBM_vertical_space_between) then BigHeight := bmp.Height + MDdef.BigBM_vertical_space_between;
             bmp.Free;
          end;
       end;
-      CreateBitmap(Result,nc * BigWidth + BetweenBitmaps,nr * BigHeight + 60);
+      CreateBitmap(Result,nc * BigWidth + MDdef.BigBM_horizontal_space_between,nr * BigHeight + 60);
       if (nr = 1) then begin
          LeftPos := 5;
          for n := 0 to pred(theFiles.Count) do begin
@@ -734,8 +734,8 @@ begin
             if FileExists(theFiles.Strings[n]) then begin
                bmp := LoadBitmapFromFile(theFiles.Strings[n]);
                FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
-               Result.Canvas.Draw(LeftPos,15,bmp);
-               LeftPos := LeftPos + bmp.Width + 5;
+               Result.Canvas.Draw(LeftPos,MDdef.BigBM_horizontal_space_between,bmp);
+               LeftPos := LeftPos + bmp.Width + MDdef.BigBM_horizontal_space_between;
                bmp.Free;
             end;
          end;
@@ -746,13 +746,13 @@ begin
             if FileExists(theFiles.Strings[n]) then begin
                bmp := LoadBitmapFromFile(theFiles.Strings[n]);
                FindImagePartOfBitmap(Bmp,Left,Right,Top,Bottom);
-               Result.Canvas.Draw((n mod nc) * BigWidth + 5, (n div nc) * BigHeight + 15,bmp);
+               Result.Canvas.Draw((n mod nc) * BigWidth + MDdef.BigBM_horizontal_space_between, (n div nc) * BigHeight + MDdef.BigBM_vertical_space_between,bmp);
                bmp.Free;
             end;
          end;
       end;
       if (Result <> nil) then begin
-         if Capt <> '' then begin
+         if (Capt <> '') then begin
             Result.Canvas.Font.Size := 14;
             Result.Canvas.TextOut(25,Result.Height - 40,Capt);
          end;
@@ -2071,5 +2071,6 @@ initialization
 finalization
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
+
 
 

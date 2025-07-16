@@ -593,6 +593,7 @@ type
          function FullDEMGridLimits : tGridLimits;
          function SpecifyDEMGridLimits(xgl,ygl,xgh,ygh : float64) :  tGridLimits;
          function SpecifyDEMGridLimitsFromLatLong(LatLow,LongLow,LatHi,LongHi : float64) :  tGridLimits;
+         function SpecifyDEMGridLimitsFromGeoBoundBox(bb : sfBoundBox) :  tGridLimits;
 
          procedure SetElevationMultiple;  //must be public
          procedure DefineDEMvariables(TransformToPreferDatum : boolean);
@@ -622,9 +623,8 @@ type
             function GetElevMetersWithVegFromLatLong(Lat,Long : float64; var z : float32) : boolean;
          {$EndIf}
 
-         {$IfDef AllowDEMGeomorph}
+         {$IfDef AllowGeomorphometry}
             procedure GetBoxGridSizeDiameter(BoxSizeMeters : integer; var XBoxGridSize,YBoxGridSize : integer; var BoxSizeString : shortstring);
-            //procedure GetBothOpennessInLongArray(GridLimits: tGridLimits; var NPts : int64; var UpValues,DownValues : bfarray32; IncludeSeaLevel : boolean = true);
             procedure ElevationStatistics(GridLimits: tGridLimits; var Mean,Std : float32; var NPts : int64);
             function ElevationMoments(GridLimits: tGridLimits; MomentStop : tMomentStop = msAll) : tMomentVar;
             procedure ElevationMomentsWithArray(GridLimits: tGridLimits; var MomentVar : tMomentVar; var zvs : bfarray32; MomentStop : tMomentStop = msAll);
@@ -879,6 +879,12 @@ uses
    {$Else}
       Petmar_geology,
    {$EndIf}
+
+   {$IfDef ExFMX3D}
+   {$Else}
+      fPointCloud,
+   {$EndIf}
+
    PETMath,
    DEM_Manager,
    map_overlays,
@@ -887,7 +893,6 @@ uses
    Compress_form,
    gdal_tools,
    DEMtrendOpt,
-   fPointCloud,
    View3D_main,
    PetImage;
 
@@ -1634,6 +1639,8 @@ begin
 end;
 
 
+
+
 procedure tDEMDataSet.LocationOfMaximumZAroundPoint(var Lat,Long : float64; var MaxZ : float32; BoxSize : integer);
 var
    z   : float32;
@@ -2329,7 +2336,6 @@ begin
          if GetElevMeters(Col,Row,z1) then DEMGlb[Result].SetGridElevation(Col,Row,z1);
       end;
    end {for};
-
    DEMGlb[Result].CheckMaxMinElev;
    EndProgress;
 end;
@@ -2461,6 +2467,14 @@ begin
    LatLongDegreeToDEMGridInteger(LatLow,LongLow, Result.XGridLow, Result.YGridLow);
    LatLongDegreeToDEMGridInteger(LatHi,LongHi, Result.XGridHigh, Result.YGridHigh);
 end;
+
+
+function tDEMDataSet.SpecifyDEMGridLimitsFromGeoBoundBox(bb : sfBoundBox) :  tGridLimits;
+begin
+   Result := SpecifyDEMGridLimitsFromLatLong(bb.YMin,bb.XMin,bb.ymax,bb.XMax);
+end;
+
+
 
 procedure tDEMDataSet.AreaExtremeElevationsFromLatLong(LatLow,LongLow,LatHi,LongHigh : float64; var TheMinElev,TheMaxElev : float32);
 var
@@ -2881,7 +2895,7 @@ var
    NewDEM : tDEMDataSet;
    Ext : ExtStr;
 begin
-   {$IfDef RecordWriteDEM} WriteLineToDebugFile('tDEMDataSet.RectangleSubsetDEM requested ' + GridLimitsString); {$EndIf}
+   {$IfDef RecordWriteDEM} WriteLineToDebugFile('tDEMDataSet.RectangleSubsetDEM requested ' + GridLimitsString(GridLimits)); {$EndIf}
 
     {$IfDef VCL}
        if (FileName = '') then begin

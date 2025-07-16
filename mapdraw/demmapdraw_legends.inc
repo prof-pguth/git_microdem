@@ -484,7 +484,7 @@ begin
              bmp.Canvas.Rectangle(0,0,pred(bmp.Width),pred(bmp.Height));
              PositionBitmap(Overlay,Bmp,MDDef.MapNameLocation.MapPosition);
           end;
-          {$IfDef AllowDEMGeomorph}
+          {$IfDef AllowGeomorphometry}
              if (MapOverlays.ovTerrainCat.Count > 0) and DrawLegendsThisMap and (MDDef.TerrainCatLegend.DrawItem) then begin
                 bmp := TerrainCategoryLegend;
                 PositionBitmap(Overlay,bmp,MDDef.TerrainCatLegend.MapPosition);

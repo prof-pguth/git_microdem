@@ -558,11 +558,11 @@ type
     N39: TMenuItem;
     N54: TMenuItem;
     Inventorychanneldatabyarea1: TMenuItem;
-    DatumshiftCanadianDEMs1: TMenuItem;
+    //DatumshiftCanadianDEMs1: TMenuItem;
     MergeCanadianLidar1: TMenuItem;
     Reference1secDTMsfromCanadianlidar1: TMenuItem;
     Graphevaluationandscores1: TMenuItem;
-    CleardoubleprocessedreferenceDEMtiles1: TMenuItem;
+    //CleardoubleprocessedreferenceDEMtiles1: TMenuItem;
     Inventories1: TMenuItem;
     EditreferenceandtestDEMs1: TMenuItem;
     Experimentaltargetsforelimination1: TMenuItem;
@@ -584,7 +584,7 @@ type
     Fixtileswith42114foottag1: TMenuItem;
     Onedegreetilestocovertestareas1: TMenuItem;
     N46: TMenuItem;
-    GetrangesforSSIMhydro1: TMenuItem;
+    //GetrangesforSSIMhydro1: TMenuItem;
     OpenmapsforDEMIXtestarea1: TMenuItem;
     LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
     Createlandcovergrids1: TMenuItem;
@@ -620,7 +620,7 @@ type
     UTMprojection1: TMenuItem;
     AddEXIFtagsworkinprogress1: TMenuItem;
     N57: TMenuItem;
-    Criteriaranges1: TMenuItem;
+    //Criteriaranges1: TMenuItem;
     CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
@@ -651,6 +651,7 @@ type
     ComparelandcoverinpointcloudDTM1: TMenuItem;
     Addlegendonlylastgraph1: TMenuItem;
     N63: TMenuItem;
+    UTMbasedtilescreation1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1014,10 +1015,10 @@ type
     //procedure Overwriteifexists3Click(Sender: TObject);
     //procedure Overwriteifexists4Click(Sender: TObject);
     procedure Inventorychanneldatabyarea1Click(Sender: TObject);
-    procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
+    //procedure DatumshiftCanadianDEMs1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
     procedure Graphevaluationandscores1Click(Sender: TObject);
-    procedure CleardoubleprocessedreferenceDEMtiles1Click(Sender: TObject);
+    //procedure CleardoubleprocessedreferenceDEMtiles1Click(Sender: TObject);
     procedure Overwirte1Click(Sender: TObject);
     procedure Skipeifpresent1Click(Sender: TObject);
     procedure DEMIX2Click(Sender: TObject);
@@ -1033,7 +1034,7 @@ type
     procedure Fixtileswith42114foottag1Click(Sender: TObject);
     procedure Partialprocessing1Click(Sender: TObject);
     procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
-    procedure GetrangesforSSIMhydro1Click(Sender: TObject);
+    //procedure GetrangesforSSIMhydro1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
     procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
     procedure Createlandcovergrids1Click(Sender: TObject);
@@ -1065,7 +1066,7 @@ type
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
     procedure UTMprojection1Click(Sender: TObject);
     procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
-    procedure Criteriaranges1Click(Sender: TObject);
+    //procedure Criteriaranges1Click(Sender: TObject);
     procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
@@ -1089,6 +1090,7 @@ type
     procedure N64Click(Sender: TObject);
     procedure ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
     procedure Addlegendonlylastgraph1Click(Sender: TObject);
+    procedure UTMbasedtilescreation1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1271,7 +1273,7 @@ uses
       net_quiz,
    {$EndIf}
 
-   {$IfDef ExLASlidar}
+   {$IfDef ExPointCloud}
    {$Else}
       slicer_3d,
       las_lidar,
@@ -1301,7 +1303,8 @@ uses
       DEM_cart_proj,
    {$EndIf}
 
-   {$IfDef FMXU_point_cloud}
+   {$IfDef ExFMX3D}
+   {$Else}
       FPointCloud,
    {$EndIf}
 
@@ -1324,6 +1327,10 @@ uses
       ssim_fuv_control,
       demix_neo_test_area,
    {$EndIf}
+
+      Las_files_grouping,
+
+
 
    ufrmMain,
    CCR.Exif,
@@ -1350,7 +1357,6 @@ uses
    zipatone,
    GetLatLn,
    KML_creator,
-   Las_files_grouping,
 
    PETMath,BaseGraf,
    DEMCoord,
@@ -1399,10 +1405,6 @@ begin
    PlaceFormInCorner(Self,TheForm,FormPosition);
 end;
 
-procedure Twmdem.CleardoubleprocessedreferenceDEMtiles1Click(Sender: TObject);
-begin
-   ClearDoubleProcessed;
-end;
 
 procedure Twmdem.ClearStatusBarPanelText;
 var
@@ -1599,11 +1601,6 @@ begin
 end;
 
 
-procedure Twmdem.DatumshiftCanadianDEMs1Click(Sender: TObject);
-begin
-   ShiftDEMsto_UTM_WGS84_EGM2008(True);
-end;
-
 procedure Twmdem.DBFfile1Click(Sender: TObject);
 begin
    if GetFileFromDirectory('dBase DBF file','*.dbf',LastDataBase) then ScreenDBFFileDump(LastDataBase);
@@ -1621,7 +1618,7 @@ end;
 
 procedure Twmdem.DeltaDTMfortestareas1Click(Sender: TObject);
 begin
-   DeltaDTMforTestAreas(false);
+   //DeltaDTMforTestAreas(false);
 end;
 
 procedure Twmdem.DEMcornerstable1Click(Sender: TObject);
@@ -1649,7 +1646,7 @@ end;
 
 procedure Twmdem.DEMIXtilesineachareaforFULLU120U80andandU101Click(Sender: TObject);
 begin
-   TilesInEachElevRangeForTestAreas;
+   //TilesInEachElevRangeForTestAreas;
 end;
 
 procedure Twmdem.DEMIXtilesizebylatitude1Click(Sender: TObject);
@@ -2230,10 +2227,6 @@ var
             end;
          end;
 
-         if Action = 'DEMIX-CREATE-REF' then begin
-            BatchResampleForDEMIX(FileList);
-         end;
-
          if (Action = 'LCP') then begin
             LeastCostPathOptions(1);
          end;
@@ -2675,7 +2668,7 @@ end;
 procedure Twmdem.N60Click(Sender: TObject);
 begin
    GetDEMIXpaths;
-   VerifyRecordsToUse(DemixSettingsDir + 'demix_fuv_parameters.dbf','PARAMETER');
+   VerifyRecordsToUse(DEMIX_criteria_tolerance_fName,'PARAMETER');
 end;
 
 procedure Twmdem.N62Click(Sender: TObject);
@@ -2748,12 +2741,12 @@ end;
 
 procedure Twmdem.Overwrite3Click(Sender: TObject);
 begin
-   AllHallucinatingDTMsforCoastalAreas(true);
+   //AllHallucinatingDTMsforCoastalAreas(true);
 end;
 
 procedure Twmdem.Overwrite4Click(Sender: TObject);
 begin
-   CreateDEMIXTestAreaDEMs(True);
+   //CreateDEMIXTestAreaDEMs(True);
 end;
 
 procedure Twmdem.Overwrite5Click(Sender: TObject);
@@ -3039,7 +3032,7 @@ end;
 
 procedure Twmdem.MaskwaterinreferenceDEMs1Click(Sender: TObject);
 begin
-   MaskWaterInReferenceAndTestDEMs;
+   //MaskWaterInReferenceAndTestDEMs;
 end;
 
 procedure Twmdem.Cancelpending1Click(Sender: TObject);
@@ -3220,17 +3213,17 @@ end;
 
 procedure Twmdem.Skipifdone1Click(Sender: TObject);
 begin
-   AllHallucinatingDTMsforCoastalAreas(false);
+   //AllHallucinatingDTMsforCoastalAreas(false);
 end;
 
 procedure Twmdem.Skiipifpresent1Click(Sender: TObject);
 begin
-   DEMIX_MergeReferenceDEMs(false);
+   //DEMIX_MergeReferenceDEMs(false);
 end;
 
 procedure Twmdem.Skipeifpresent1Click(Sender: TObject);
 begin
-   DEMIX_Ref_DEM_full_chain(false);
+   //DEMIX_Ref_DEM_full_chain(false);
 end;
 
 procedure Twmdem.Skipifexists3Click(Sender: TObject);
@@ -3240,13 +3233,13 @@ end;
 
 procedure Twmdem.Skipifexits1Click(Sender: TObject);
 begin
-   DEMIX_CreateReferenceDEMs(false,ResampleModeOneSec);
+   //DEMIX_CreateReferenceDEMs(false,ResampleModeOneSec);
 end;
 
 procedure Twmdem.Skipifexits2Click(Sender: TObject);
 begin
-   DEMIX_vert_datum_code := 5703;
-   DEMIX_GDAL_Ref_DEM_datum_shift(false);
+   //DEMIX_vert_datum_code := 5703;
+   //DEMIX_GDAL_Ref_DEM_datum_shift(false);
 end;
 
 procedure Twmdem.Skipifpresent1Click(Sender: TObject);
@@ -3442,7 +3435,7 @@ end;
 
 procedure Twmdem.MovereferenceDSMs1Click(Sender: TObject);
 begin
-   MoveReferenceDSMs;
+   //MoveReferenceDSMs;
 end;
 
 
@@ -3508,33 +3501,30 @@ end;
 
 procedure Twmdem.CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
 begin
-   DEMIXCreateHalfSecRefDEMs;
+  //DEMIXCreateHalfSecRefDEMs;
 end;
 
 procedure Twmdem.Createlandcovergrids1Click(Sender: TObject);
 begin
-   CreateLandCoverGrids;
+   //CreateLandCoverGrids;
 end;
 
 procedure Twmdem.CreaterangereferenceDEMs1Click(Sender: TObject);
 begin
-   DEMIX_CreateReferenceDEMs(false,ResampleModeRange);
+  //DEMIX_CreateReferenceDEMs(false,ResampleModeRange);
 end;
 
 procedure Twmdem.CreatetestareaDEMSskipifexists1Click(Sender: TObject);
 begin
-   CreateDEMIXTestAreaDEMs(False);
+   //CreateDEMIXTestAreaDEMs(False);
 end;
 
-procedure Twmdem.Criteriaranges1Click(Sender: TObject);
-begin
-   ComputeCriteriaRanges;
-end;
 
 procedure Twmdem.InOutButtonClick(Sender: TObject);
 begin
    Data1Click(Sender);
 end;
+
 
 procedure Twmdem.InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
 var
@@ -3566,7 +3556,7 @@ end;
 
 procedure Twmdem.Inventory3DEPtiles1Click(Sender: TObject);
 begin
-    Inventory3DEPtiles;
+    //Inventory3DEPtiles;
 end;
 
 procedure Twmdem.InventoryallDEMIXdatafiles1Click(Sender: TObject);
@@ -3718,7 +3708,7 @@ end;
 
 procedure Twmdem.Other3Dpointclouds1Click(Sender: TObject);
 begin
-   {$IfDef ExLasLidar}
+   {$IfDef ExPointCloud}
    {$Else}
    StopSplashing;
    if GetFileMultipleMask('3D GIS project', 'Project|proj*.dbf|Other GIS formats|*.dbf;*.shp|Text or csv|*.txt;*.csv|Unregistered LAS|*.las',DEMDefs.VasaProjectFName,MDDef.PCDefaultFilter) then begin
@@ -3729,7 +3719,7 @@ end;
 
 procedure Twmdem.Overwirte1Click(Sender: TObject);
 begin
-   DEMIX_Ref_DEM_full_chain(True);
+   //DEMIX_Ref_DEM_full_chain(True);
 end;
 
 procedure Twmdem.Overwirte2Click(Sender: TObject);
@@ -3744,38 +3734,38 @@ end;
 
 procedure Twmdem.Overwirte4Click(Sender: TObject);
 begin
-   DEMIX_MergeReferenceDEMs(true);
+   //DEMIX_MergeReferenceDEMs(true);
 end;
 
 procedure Twmdem.Overwirteifexists1Click(Sender: TObject);
 begin
-   DEMIX_CreateReferenceDEMs(true,ResampleModeOneSec);
+  //DEMIX_CreateReferenceDEMs(true,ResampleModeOneSec);
 end;
 
 procedure Twmdem.Overwriteifexists1Click(Sender: TObject);
 begin
-    DEMIX_CreateReferenceDEMsFromSource(true);
+    //DEMIX_CreateReferenceDEMsFromSource(true);
 end;
 
 procedure Twmdem.Overwriteifexists2Click(Sender: TObject);
 begin
-   DEMIX_CreateReferenceDEMsFromSource(false);
+   //DEMIX_CreateReferenceDEMsFromSource(false);
 end;
 
 procedure Twmdem.Overwriteifexits1Click(Sender: TObject);
 begin
-   DEMIX_MergeReferenceDEMs(True);
+   //DEMIX_MergeReferenceDEMs(True);
 end;
 
 procedure Twmdem.Overwriteifexits2Click(Sender: TObject);
 begin
-   DEMIX_MergeReferenceDEMs(false);
+   //DEMIX_MergeReferenceDEMs(false);
 end;
 
 procedure Twmdem.Overwriteifexits3Click(Sender: TObject);
 begin
-   DEMIX_vert_datum_code := 5703;
-   DEMIX_GDAL_Ref_DEM_datum_shift(true);
+   //DEMIX_vert_datum_code := 5703;
+   //DEMIX_GDAL_Ref_DEM_datum_shift(true);
 end;
 
 
@@ -4169,7 +4159,7 @@ end;
 
 procedure Twmdem.Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
 begin
-   DEMIX_CreateReferenceDEMsFromSource(true);
+   //DEMIX_CreateReferenceDEMsFromSource(true);
 end;
 
 
@@ -4416,7 +4406,7 @@ end;
 
 procedure Twmdem.Mergesourcedatatiles1Click(Sender: TObject);
 begin
-   DEMIX_merge_source;
+   //DEMIX_merge_source;
 end;
 
 procedure Twmdem.MergewavelengthheightDBFs1Click(Sender: TObject);
@@ -4651,10 +4641,6 @@ begin
    GeotiffMetadata(mdMicrodem,ExtractFilePath(LastImageName));
 end;
 
-procedure Twmdem.GetrangesforSSIMhydro1Click(Sender: TObject);
-begin
-   GetRangesForSSIM;
-end;
 
 procedure Twmdem.OpenGeoPDF1Click(Sender: TObject);
 begin
@@ -4926,7 +4912,7 @@ end;
 
 procedure Twmdem.DiluviumDEMfortestareas1Click(Sender: TObject);
 begin
-   DiluviumDTMforTestAreas(false);
+   //DiluviumDTMforTestAreas(false);
 end;
 
 procedure Twmdem.Discussionforum1Click(Sender: TObject);
@@ -5309,6 +5295,227 @@ procedure Twmdem.UTM1Click(Sender: TObject);
 begin
     NLCD20011Click(Sender);
 end;
+
+
+
+procedure UTMbasedtilescreation(BaseDir : PathStr; AreaName : shortstring);
+var
+   AreaDir,WGS_EGMdir,TestDir : PathStr;
+   SourceName,fName,TestName,LCname,RefName : PathStr;
+   UTM_Tile,aDEM,Mode : shortstring;
+   TheFiles,TheDEMs : tStringList;
+   i,j,SourceDEM,TestDEM,RefDEM : integer;
+   NPts : int64;
+   bb : sfBoundBox;
+
+   procedure AreaTileSurvey;
+   var
+      nSource,nEGM,nRef,nTest,nLC,lc,i : integer;
+      TheFiles : tStringList;
+   begin
+       TheFiles := nil;
+       Petmar.FindMatchingFiles(AreaDir + 'wgs_egm\','*.tif',TheFiles,2);
+       nEGM := TheFiles.Count;
+
+       FreeAndNil(theFiles);
+       Petmar.FindMatchingFiles(AreaDir,'*.tif',TheFiles,2);
+       for i := pred(TheFiles.Count) downto 0 do begin
+          fName := UpperCase(TheFiles.Strings[i]);
+          if StrUtils.AnsiContainsText(fName,'TER') or StrUtils.AnsiContainsText(fName,'UTMUTM') then begin
+             TheFiles.Delete(i);
+          end;
+       end;
+       nTest := TheFiles.Count;
+
+       FreeAndNil(theFiles);
+       Petmar.FindMatchingFiles(AreaDir,'Ref*.tif',TheFiles,2);
+       nRef := TheFiles.Count;
+
+       FreeAndNil(theFiles);
+       Petmar.FindMatchingFiles(AreaDir + 'source\','landcover.tif',TheFiles,2);
+       nLC := TheFiles.Count;
+
+       FreeAndNil(theFiles);
+       Petmar.FindMatchingFiles(AreaDir + 'source\','*.tif',TheFiles,2);
+       nSource := TheFiles.Count;
+
+       nTest := nTest - nSource - nLC - nRef - nEGM;
+
+       HighlightLineToDebugFile('Area,SOURCE,WGS_EGM,LANDCOVER,REF,TEST');
+       WriteLineToDebugFile(AreaName + ',' + IntToStr(nSource)  + ',' + IntToStr(nEGM) + ',' + IntToStr(nLC) + ',' + IntToStr(nRef) + ',' + IntToStr(nTest));
+       TheFiles.Destroy;
+    end;
+
+
+             procedure MakeTestDEM;
+             begin
+                {$IfDef RecordDEMIX} WriteLineToDebugFile('Create test DEM ' + TestName); {$EndIf};
+                if not ValidDEM(SourceDEM) then LoadNewDEM(SourceDEM,SourceName,true);
+                bb := DEMglb[SourceDEM].DEMBoundBoxGeo;
+                if (aDEM = 'GEDTMV0') or (aDEM = 'EDTM') or (aDEM = 'GEDTMV1_1') then begin
+                    {$IfDef RecordDEMIX} WriteLineToDebugFile('Web extract ' + TestName); {$EndIf};
+                    if (aDEM = 'GEDTMV1_1') then fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif'
+                    else if (aDEM = 'GEDTMV0') then fName := 'https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif'
+                    else if (aDEM = 'EDTM') then fName := 'https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
+                    TestDEM := GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,false,TestName,TestName);
+                end
+                else begin
+                   {$IfDef RecordDEMIX} WriteLineToDebugFile('Map library ' + TestName); {$EndIf};
+                   TestDEM := LoadMapLibraryBox(true,bb,GetTestDEMLongName(aDEM),True);
+                   if ValidDEM(TestDEM) then begin
+                       //DEMglb[SourceDEM].SelectionMap.MatchMapToThisOne(DEMGlb[TestDEM].SelectionMap);  xx
+                       DEMGlb[TestDEM].SaveGridSubsetGeotiff(DEMGlb[TestDEM].SpecifyDEMGridLimitsFromGeoBoundBox(bb),TestName);
+                   end;
+                   wmDEM.SetPanelText(0,AreaName,true);  //since library load might overwrite
+               end;
+               if not ValidDEM(TestDEM) then HighlightLineToDebugFile('Problem creatiing ' + ExtractFileName(TestName));
+             end;
+
+          procedure MakeReferenceDEM;
+          begin
+             if (aDEM = 'COP') or (aDEM= 'ALOS') {or (aDEM = 'GEDTMV1_1')} then begin
+                if (aDEM = 'COP') then Mode := 'srtm'
+                else if (aDEM= 'ALOS') then Mode := 'alos'
+                else if (aDEM = 'GEDTMV1_1') then mode := 'gedtm';
+                RefName := TestDir + 'ref_dtm_' + Mode + '.tif';
+                if not FileExists(RefName) then begin
+                  wmDEM.SetPanelText(2,'Ref DEM ' + Mode,true);
+                 {$IfDef RecordDEMIX} WriteLineToDebugFile('Create ref DEM ' + RefName); {$EndIf};
+                  if not ValidDEM(TestDEM) then begin
+                    {$IfDef RecordDEMIX} WriteLineToDebugFile('Need to load test DEM ' + TestName); {$EndIf};
+                     LoadNewDEM(TestDEM,TestName,true);
+                  end;
+                  if not ValidDEM(SourceDEM) then begin
+                    {$IfDef RecordDEMIX} WriteLineToDebugFile('Need to load source DEM ' + SourceName); {$EndIf};
+                     LoadNewDEM(SourceDEM,SourceName,true);
+                  end;
+                  RefDEM := DEMGlb[TestDEM].ResaveNewResolution(fcSaveFloatingPoint);
+                  if ValidDEM(RefDEM) then begin
+                     //entire DEM missing to start with
+                     DEMglb[RefDEM].MarkAboveMissing(-9999,NPts,false);
+                     //mean aggregate the new DEM
+                     DEMGlb[SourceDEM].ResampleByAveraging(true,RefName,RefDEM);
+                  end
+                  else begin
+                     {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing ref DEM for' + RefName); {$EndIf};
+                  end;
+                end;
+             end;
+          end;
+
+
+
+begin
+   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Start UTMbasedtilescreation, ' + AreaName); {$EndIf};
+   DEMIX_initialized := true;
+   GetDEMIXpaths(True);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('UTMbasedtilescreation, done DEMIX paths'); {$EndIf};
+   HeavyDutyProcessing := true;
+   wmDEM.SetPanelText(0,AreaName,true);
+   NoDBPlots := true;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('UTMbasedtilescreation, getting DEM list'); {$EndIf};
+   theDEMs := GetListOfTestDEMsinUse;
+
+   AreaDir := BaseDir + AreaName + '\';
+   if not ValidPath(AreaDir) then begin
+      {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing source directory for ' + AreaName); {$EndIf};
+      exit;
+   end;
+
+   AreaTileSurvey;
+
+
+
+   theFiles := TstringList.Create;
+   Petmar.FindMatchingFiles(AreaDir + 'source\','*.tif',TheFiles,2);
+
+   for i := 0 to pred(TheFiles.Count) do begin
+      HeavyDutyProcessing := true;
+      UTM_Tile := DEMIX_UTM_tileName(TheFiles.Strings[i]);
+      {$IfDef RecordDEMIX} WriteLineToDebugFile('Start: ' + UTM_Tile); {$EndIf};
+      wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Thefiles.Count) + '  ' + UTM_Tile,true);
+
+      WGS_EGMdir := AreaDir + 'wgs_egm\';
+      SafeMakeDir(WGS_EGMdir);
+      TestDir := AreaDir + UTM_Tile + '_ref_test_dem\';
+      SafeMakeDir(TestDir);
+
+      SourceName := WGS_EGMdir + UTM_Tile + '.tif';
+      if Not FileExists(SourceName) then begin
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('Getting datum shifted source DTM'); {$EndIf};
+         //this step maxes out CPU on the system (GDAL), and is relatively slow
+         wmDEM.SetPanelText(0,AreaName,true);
+         wmDEM.SetPanelText(2,'Datum shift source DTM',true);
+         fName := TheFiles.strings[i];
+         LoadNewDEM(SourceDEM,fName,false);
+         VerticalDatumShiftWithGDALtoEGM2008(SourceDEM,SourceName);
+         //CloseSingleDEM(SourceDEM);
+      end;
+
+      LCname := TestDir + 'landcover.tif';
+      if not FileExists(LCname) then begin
+         wmDEM.SetPanelText(2,'Land cover ' + AreaName,true);
+         if not ValidDEM(SourceDEM) then LoadNewDEM(SourceDEM,SourceName,false);
+         bb := DEMglb[SourceDEM].DEMBoundBoxGeo;
+         LoadLC10LandCover(LCname,bb,false,true);
+      end;
+
+      SourceDEM := 0;
+      for j := 0 to pred(TheDEMs.Count) do begin
+         HeavyDutyProcessing := true;
+         aDEM := TheDEMs.strings[j];
+         RefDEM := 0;
+         TestDEM := 0;
+
+         if FileExists(MapLibraryFName) then begin  //in case using second computer just to do hard part of the work, like the datum shift
+             wmDEM.SetPanelText(2,IntToStr(succ(j)) + '/' + IntToStr(TheDEMs.Count) + ' Test DEM ' + aDEM,true);
+             TestName := TestDir + aDEM + '.tif';
+             if not FileExists(TestName) then MakeTestDEM;
+             MakeReferenceDEM;
+         end;
+
+           if ValidDEM(TestDEM) or ValidDEM(RefDEM) then begin
+              CloseSingleDEM(TestDEM);
+              CloseSingleDEM(RefDEM);
+              {$IfDef RecordDEMIX} WriteLineToDebugFile('Done ' + aDEM + '  open DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  open maps=' +  IntToStr(NumOpenMaps)); {$EndIf}
+           end;
+       end;
+
+      //CloseSingleDEM(SourceDEM);
+      CloseAllMaps;
+      CloseAllDEMs;
+      CleanUpTempDirectory(true);
+      {$IfDef RecordDEMIX} WriteLineToDebugFile('Done ' + UTM_Tile + '  open DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  open maps=' +  IntToStr(NumOpenMaps)); {$EndIf}
+   end;
+   EndDEMIXProcessing;
+   HeavyDutyProcessing := false;
+   NoDBPlots := false;
+end;
+
+
+procedure Twmdem.UTMbasedtilescreation1Click(Sender: TObject);
+var
+   BaseDir : PathStr;
+   AreaName : ShortString;
+   TheAreas : tStringList;
+   I : Integer;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.UTMbasedtilescreation1Click in'); {$EndIf}
+   BaseDir := '';
+   if FindPath('DEMIX UTM tiles',':\demix_utm_tiles\',BaseDir) then begin
+      TheAreas := tStringList.Create;
+      TheAreas.Add(BaseDir);
+      if GetMultipleDirectories('Areas to process',theAreas) then begin
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('Picked areas=' + IntToStr(theAreas.Count)); {$EndIf}
+         for I := 0 to pred(theAreas.Count) do begin
+            UTMbasedtilescreation(BaseDir,LastSubDir(theAreas.Strings[i]));
+         end;
+      end;
+   end;
+   TheAreas.Destroy;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Twmdem.UTMbasedtilescreation1Click out'); {$EndIf}
+end;
+
 
 procedure Twmdem.UTMordatumconversion1Click(Sender: TObject);
 begin
@@ -5873,7 +6080,7 @@ begin
 end;
 
 procedure Twmdem.LASfile1Click(Sender: TObject);
-{$IfDef ExLASlidar}
+{$IfDef ExPointCloud}
 begin
 {$Else}
 var
@@ -6063,7 +6270,7 @@ end;
 
 procedure Twmdem.CoastalDEMfortestareas1Click(Sender: TObject);
 begin
-   CoastalDTMforTestAreas(false);
+   //CoastalDTMforTestAreas(false);
 end;
 
 procedure Twmdem.Combineallcombinedimages1Click(Sender: TObject);

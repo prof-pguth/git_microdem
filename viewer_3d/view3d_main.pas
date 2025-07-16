@@ -252,7 +252,9 @@ uses
    {$IfDef VCL}
       nevadia_main,
    {$EndIf}
+
    FPointCloud,
+
    Petmar,PetImage,PetImage_Form,PetMath,Math,DEMDefs,DEMCoord, New_Petmar_Movie,
    BaseMap;
 

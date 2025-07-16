@@ -401,7 +401,7 @@ begin
       sl.free;
       exit;
    end;
-   fName := NextFileNumber(MDTempDir,'temp_graph_','.csv');
+   fName := NextFileNumber(MDTempDir,'temp_graph','.csv');
    sl.SaveToFile(fName);
    sl.free;
    if OpenNumberedGISDataBase(GISNum,fName,ShowTable) then begin

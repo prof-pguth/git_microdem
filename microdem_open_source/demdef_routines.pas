@@ -273,9 +273,7 @@ function ExpandIconFileName(var fName : PathStr) : boolean;
    function EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true) : integer;
 {$EndIf}
 
-{$IfDef AllowGeomorphometry}
    function BoxGridSize : shortString;
-{$EndIf}
 
 {$IfDef NoClustering}
 {$Else}
@@ -2491,7 +2489,7 @@ var
       with MDIniFile,MDDef do begin
          AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
          AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
-         AParameter('DEMIX','TwoParameterVisualization',TwoParameterVisualization,0);
+         //AParameter('DEMIX','TwoParameterVisualization',TwoParameterVisualization,0);
          //AParameter('DEMIX','DEMIX_criterion_fName',DEMIX_criterion_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
@@ -2895,9 +2893,7 @@ var
       {$IfDef ExMICRONET}
       {$Else}
          with MDIniFile,MDDef,NetDef do begin
-            {$IfDef AllowGeomorphometry}
-               AParameter('Micronet','SSObyPole',SSObyPole,true);
-            {$EndIf}
+            AParameter('Micronet','SSObyPole',SSObyPole,true);
             AParameter('Micronet','NetDipFill',NetDipFill,2);
             AParameter('Micronet','AllowRightHandRule',AllowRightHandRule,true);
             AParameter('Micronet','NorthTick',NorthTick,true);
@@ -3748,6 +3744,10 @@ begin
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);
       AParameter('Graph','DefaultGraphYSize',DefaultGraphYSize,400);
       AParameter('Graph','BigBM_nc',BigBM_nc,3);
+      AParameter('Graph','BigBM_horizontal_space_between',BigBM_horizontal_space_between,15);
+      AParameter('Graph','BigBM_vertical_space_between',BigBM_vertical_space_between,15);
+      AParameter('Graph',' AddFUVtoR2', AddFUVtoR2,false);
+
       AParameter('Graph','MapNameBelowComposite',MapNameBelowComposite,true);
 
       AParameter('Graph','NoHistFreqLabels',NoHistFreqLabels,false);
@@ -3761,11 +3761,9 @@ begin
 
       AColorParameter('Graph','DefaultGraphBackgroundColor',DefaultGraphBackgroundColor,claWhite);
 
-      {$IfDef AllowGeomorphometry}
-         AParameter('Graph','QuantileRanges',QuantileRanges,true);
-         AParameter('Graph','CumFreqNormAxis',CumFreqNormAxis,true);
-      {$EndIf}
-
+      AParameter('Graph','QuantileRanges',QuantileRanges,true);
+      AParameter('Graph','CumFreqNormAxis',CumFreqNormAxis,true);
+ 
       {$IfDef VCL}
          AParameterShortFloat('Hardware','PrinterScale',PrinterScale,50000);
          AParameter('Hardware','EnableGridNetworkComputing',EnableGridNetworkComputing,true);

@@ -20,7 +20,7 @@ object TigerAddressForm: TTigerAddressForm
     Height = 36
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 481
+    ExplicitWidth = 537
     object Label3: TLabel
       Left = 5
       Top = 5
@@ -139,7 +139,5 @@ object TigerAddressForm: TTigerAddressForm
       '')
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitWidth = 481
-    ExplicitHeight = 8
   end
 end

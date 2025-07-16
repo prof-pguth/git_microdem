@@ -230,7 +230,6 @@ begin
 end;
 
 
-
 function PickMapIndexLocation : boolean;
 begin
    Result := FindPath('Map library',':\mapdata\indexed_data\',MapLibDir);

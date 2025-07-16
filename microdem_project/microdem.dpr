@@ -207,7 +207,6 @@ uses
   NyqGraph in '..\misc\nyquist\NyqGraph.pas' {NyquistBaseGraph},
   map_splitter in '..\common_code\map_splitter.pas' {splitter_form},
   color_filter in '..\common_code\color_filter.pas' {ColorFilterForm},
-  view3d_main in '..\viewer_3d\view3d_main.pas' {View3DForm},
   new_dem_headerf in '..\common_code\new_dem_headerf.pas' {DEMHeaderForm},
   weapons_fan_thread in '..\microdem_open_source\weapons_fan_thread.pas',
   md_use_tools in '..\microdem_open_source\md_use_tools.pas',
@@ -220,7 +219,6 @@ uses
   dp_control in '..\misc\dragonplot_only_code\dp_control.pas' {DragonPlotForm},
   lidar_multiple_grid_display in '..\las_lidar\lidar_multiple_grid_display.pas' {LidarMultipleDisplayForm},
   petmar_ini_file in '..\microdem_open_source\petmar_ini_file.pas',
-  icesat_filter_form in '..\common_code\icesat_filter_form.pas' {Icesat_filter},
   demsatmerge in '..\common_code\demsatmerge.pas' {IHSMergeForm},
   dem_computations in '..\common_code\dem_computations.pas',
   gdal_tools in '..\microdem_open_source\gdal_tools.pas',
@@ -274,10 +272,13 @@ uses
   pick_geostats in '..\geomorph\pick_geostats.pas' {PickGeoStat},
   compare_programs_algorithms in '..\geomorph\compare_programs_algorithms.pas',
   compare_algorithms_options in '..\geomorph\compare_algorithms_options.pas' {AlgCompareForm},
+
   point_cloud_memory in '..\las_lidar\point_cloud_memory.pas',
   point_cloud_options in '..\las_lidar\point_cloud_options.pas' {pt_cloud_opts_fm},
   las_files_grouping in '..\las_lidar\las_files_grouping.pas',
   las_lidar in '..\las_lidar\las_lidar.pas',
+  icesat_filter_form in '..\common_code\icesat_filter_form.pas' {Icesat_filter},
+
   FMXU.Buffers.DX11 in '..\fmxu_point_cloud\FMXU.Buffers.DX11.pas',
   FMXU.Buffers in '..\fmxu_point_cloud\FMXU.Buffers.pas',
   FMXU.Buffers.WebGPU in '..\fmxu_point_cloud\FMXU.Buffers.WebGPU.pas',
@@ -293,11 +294,15 @@ uses
   FMXU.Viewport3D in '..\fmxu_point_cloud\FMXU.Viewport3D.pas',
   FMXU.WebGPU.Materials in '..\fmxu_point_cloud\FMXU.WebGPU.Materials.pas',
   FMXU.WebGPU.Utils in '..\fmxu_point_cloud\FMXU.WebGPU.Utils.pas',
+
   FPointCloud in '..\fmxu_point_cloud\FPointCloud.pas' {PointCloudForm},
   FSimpleViewport in '..\fmxu_point_cloud\FSimpleViewport.pas',
   FSimpleWebGPU in '..\fmxu_point_cloud\FSimpleWebGPU.pas',
   WebGPU.Interfaces in '..\fmxu_point_cloud\WebGPU.Interfaces.pas',
   WebGPU in '..\fmxu_point_cloud\WebGPU.pas',
+  view3d_main in '..\viewer_3d\view3d_main.pas' {View3DForm},
+
+
   Demperop in '..\viewer_3d\Demperop.pas' {PerspOptions},
   trackstarmain in '..\misc\sgp\trackstarmain.pas' {SatTractForm},
   DEMDips in '..\misc\geology\DEMDips.pas' {StructureOptions},

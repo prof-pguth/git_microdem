@@ -2276,84 +2276,88 @@ end;
          end;
 
 
-         procedure TGISdataBaseModule.GetFieldValuesInArrayLinkPossible(FieldDesired : ShortString; var zs : bfarray32; var Npts,Missing : int64; var Min,Max : float64);
-         var
-            z : float64;
-            TStr : string;
-            Skip,rc,i : integer;
-            Linking : boolean;
-         begin
-            Linking := LinkedField(FieldDesired);
-            if (not Linking) and (not MyData.FieldExists(FieldDesired)) then begin
-               NPts := 0;
-               exit;
-            end;
-            NPts := 0;
-            MyData.First;
-            Missing := 0;
-            Min := 99e39;
-            Max := -99e39;
-            Skip := 1;
-            rc := MyData.RecordCount;
-            while (rc div Skip > bfArrayMaxSize) do inc(Skip);
-            StartProgress('Get values ' + FieldDesired);
-
-            repeat
-               if (NPts mod 1000 = 0) then begin
-                  UpdateProgressBar(Npts/rc);
-                  EmpSource.Enabled := false;
-               end;
-
-               if Linking then begin
-                  if FindValidJoin(MyData.GetFieldByNameAsString(dbOpts.LinkFieldThisDB)) then TStr := LinkTable.GetFieldByNameAsString(FieldDesired)
-                  else TStr := '';
-               end
-               else TStr := MyData.GetFieldByNameAsString(FieldDesired);
-               TStr := ptTrim(TStr);
-               if (TStr <> '') then begin
-                  z := StrToFloat(TStr);
-                  Petmath.CompareValueToExtremes(z,Min,Max);
-                  zs[Npts] := z;
-                  inc(NPts);
-               end
-               else inc(Missing);
-               for i := 1 to Skip do MyData.Next;
-            until MyData.eof;
-            ShowStatus;
-         end;
+ function TGISdataBaseModule.GetFieldPercentiles(WantedField : ShortString) : floatarray1000;
+{$IfDef July15Issue}
+begin
+{$Else}
+ var
+    NPts,i,Missing : int64;
+    Minz,MaxZ : float64;
+    zvs : ^bfarray32;
+ begin
+    New(zvs);
+    GetFieldValuesInArrayLinkPossible(WantedField,zvs^,Npts,Missing,MinZ,MaxZ);
+    Petmath.HeapSort(NPts,zvs^);
+    Result[0] := MinZ;
+    Result[1000] := MaxZ;
+    for I := 1 to 999 do begin
+       Result[i] := zvs^[round(0.001 * i * Npts)];
+    end;
+    Dispose(zvs);
+{$EndIf}
+ end;
 
 
-         function TGISdataBaseModule.GetFieldStatistics(WantedField : ShortString) : tMomentVar;
-         var
-             zs : ^bfarray32;
-          begin
-            New(zs);
-            GetFieldValuesInArrayLinkPossible(WantedField,zs^,Result.Npts,Result.Missing,Result.MinZ,Result.MaxZ);
-            if (Result.Npts > 0) then begin
-               moment(zs^,Result,msAll);
-            end
-            else InitializeMomentVar(Result);
-            Dispose(zs);
-            EndProgress;
-         end;
+ procedure TGISdataBaseModule.GetFieldValuesInArrayLinkPossible(FieldDesired : ShortString; var zs : bfarray32; var Npts,Missing : int64; var Min,Max : float64);
+ var
+    z : float64;
+    TStr : string;
+    Skip,rc,i : integer;
+    Linking : boolean;
+ begin
+    Linking := LinkedField(FieldDesired);
+    if (not Linking) and (not MyData.FieldExists(FieldDesired)) then begin
+       NPts := 0;
+       exit;
+    end;
+    NPts := 0;
+    MyData.First;
+    Missing := 0;
+    Min := 99e39;
+    Max := -99e39;
+    Skip := 1;
+    rc := MyData.RecordCount;
+    while (rc div Skip > bfArrayMaxSize) do inc(Skip);
+    StartProgress('Get values ' + FieldDesired);
+
+    repeat
+       if (NPts mod 1000 = 0) then begin
+          UpdateProgressBar(Npts/rc);
+          EmpSource.Enabled := false;
+       end;
+
+       if Linking then begin
+          if FindValidJoin(MyData.GetFieldByNameAsString(dbOpts.LinkFieldThisDB)) then TStr := LinkTable.GetFieldByNameAsString(FieldDesired)
+          else TStr := '';
+       end
+       else TStr := MyData.GetFieldByNameAsString(FieldDesired);
+       TStr := ptTrim(TStr);
+       if (TStr <> '') then begin
+          z := StrToFloat(TStr);
+          Petmath.CompareValueToExtremes(z,Min,Max);
+          zs[Npts] := z;
+          inc(NPts);
+       end
+       else inc(Missing);
+       for i := 1 to Skip do MyData.Next;
+    until MyData.eof;
+    ShowStatus;
+ end;
 
 
-         function TGISdataBaseModule.GetFieldPercentiles(WantedField : ShortString) : floatarray1000;
-         var
-            zvs : ^bfarray32;
-            NPts,i,Missing : int64;
-            Minz,MaxZ : float64;
-         begin
-            New(zvs);
-            GetFieldValuesInArrayLinkPossible(WantedField,zvs^,Npts,Missing,MinZ,MaxZ);
-            Petmath.HeapSort(NPts,zvs^);
-            Result[0] := MinZ;
-            Result[1000] := MaxZ;
-            for I := 1 to 999 do begin
-               Result[i] := zvs^[round(0.001 * Npts * i)];
-            end;
-            Dispose(zvs);
-         end;
+ function TGISdataBaseModule.GetFieldStatistics(WantedField : ShortString) : tMomentVar;
+ var
+     zs : ^bfarray32;
+  begin
+    New(zs);
+    GetFieldValuesInArrayLinkPossible(WantedField,zs^,Result.Npts,Result.Missing,Result.MinZ,Result.MaxZ);
+    if (Result.Npts > 0) then begin
+       moment(zs^,Result,msAll);
+    end
+    else InitializeMomentVar(Result);
+    Dispose(zs);
+    EndProgress;
+ end;
 
 
 function TGISdataBaseModule.FieldRMSE(fName : shortString) : float64;
@@ -5357,11 +5361,14 @@ begin
         ShowHourglassCursor;
         MyData.TrimAllStringFields;
      end;
+  {$IF Defined(ExIceSat)}
+  {$Else}
      if IsIcesat and (not MyData.FieldExists('ICESAT_GRD')) and AnswerIsYes('Clean up ICESat-2 import') then begin
         {$IfDef RecordIcesat} WriteLineToDebugFile('Call IcesatProcessCanopy'); {$EndIf}
         IcesatProcessCanopy(DBnumber,false);
         {$IfDef RecordIcesat} WriteLineToDebugFile('Return from IcesatProcessCanopy'); {$EndIf}
      end;
+  {$EndIf}
 
      MyData.AssignEmpSource(EmpSource);
 

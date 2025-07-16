@@ -70,7 +70,6 @@ begin
 end;
 
 
-
 procedure TCorrelationMatrixOptionsForm.Edit1Change(Sender: TObject);
 begin
    DisplayGrid.ULstring := Edit1.Text;

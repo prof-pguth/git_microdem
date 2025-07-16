@@ -3,8 +3,8 @@ object DEMLOSF: TDEMLOSF
   Top = 454
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'LOS'
-  ClientHeight = 168
-  ClientWidth = 523
+  ClientHeight = 120
+  ClientWidth = 513
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,11 +29,12 @@ object DEMLOSF: TDEMLOSF
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 0
-    Width = 523
-    Height = 91
+    Width = 513
+    Height = 43
     VertScrollBar.Visible = False
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 523
     ExplicitHeight = 71
     object Image1: TImage
       Left = 0
@@ -52,22 +53,24 @@ object DEMLOSF: TDEMLOSF
   end
   object Panel1: TPanel
     Left = 0
-    Top = 127
-    Width = 523
+    Top = 79
+    Width = 513
     Height = 41
     Align = alBottom
     Caption = ' '
     TabOrder = 1
     ExplicitTop = 107
+    ExplicitWidth = 523
   end
   object Panel2: TPanel
     Left = 0
-    Top = 91
-    Width = 523
+    Top = 43
+    Width = 513
     Height = 36
     Align = alBottom
     TabOrder = 2
     ExplicitTop = 71
+    ExplicitWidth = 523
     object Label1: TLabel
       Left = 16
       Top = 8

@@ -837,7 +837,7 @@ begin
    {$EndIf}
 
 
-  {$IFDef ExPointCloud}
+  {$IF Defined(ExPointCloud) or Defined(ExVegDensity)}
   {$Else}
       if (LOSDraw.LOSMemoryPointCloud[1] <> Nil) then begin
          DoVersion('point cloud ' + LOSDraw.LOSMemoryPointCloud[1].CloudName  ,'PTS_AROUND','PTS_ABOVE');
@@ -845,10 +845,6 @@ begin
       if (LOSDraw.LOSMemoryPointCloud[2] <> Nil) then begin
          DoVersion('point cloud ' + LOSDraw.LOSMemoryPointCloud[2].CloudName  ,'PTS2_AROUND','PTS2_ABOVE');
       end;
-  {$EndIf}
-
-  {$IFDef ExVegDensity}
-  {$Else}
       if (DEMGlb[LOSDraw.DEMonView].VegDensityLayers[1] <> Nil) then begin
          DoVersion('veg voxels ' + DEMGlb[LOSDraw.DEMonView].VegDensityLayers[1].VegDensityName,'VPTS_AROUND','VPTS_ABOVE');
       end;
@@ -988,7 +984,7 @@ with LOSdraw do begin
                   RealToString( ((MaxHorizAxis - MinHorizAxis) / (XWindowSize - LeftMargin)) / ((MaxVertAxis - MinVertAxis) / (YWindowSize - BottomMargin)),-12,-2);
           end;
 
-          {$IfDef ExLASlidar}
+          {$IfDef ExPointCloud}
           {$Else}
              if (LOSMemoryPointCloud[PtCldInUse] <> Nil) then begin
                 if (MDdef.ShowPointCloundOnProfile = spcDensity) then begin
@@ -1143,7 +1139,7 @@ begin
          ProfileNames1.Visible := false;
       end;
 
-      {$IfDef ExLasLidar}
+      {$IfDef ExPointCloud}
       OpenGLofPointCloud1.Visible := false;
       {$Else}
       OpenGLofPointCloud1.Visible := (Point_Cloud_Options.pt_cloud_opts_fm <> Nil) and (MDDef.LOSshowPointCloudRangePoints or MDDef.LOSshowPointCloudRangeLines or (MDDef.ShowPointCloundOnProfile in [spcPoints,spcDensity]));
@@ -1649,10 +1645,10 @@ end;
 
 procedure TDEMLOSF.OpenGLofPointCloud1Click(Sender: TObject);
 begin
-   LoadProfilePointCloud;
-   //ObsZ := ObsGroundElev + MDDef.ObsAboveGround;
-   //TarZ := TargetGroundElev + MDDef.TargetAboveGround;
-   //ogl_DEMOpenGLmain.StartPointCloudViewer;
+   {$IF Defined(ExPointCloud) or Defined(ExVegDensity)}
+   {$Else}
+      LoadProfilePointCloud;
+   {$EndIf}
 end;
 
 procedure TDEMLOSF.Openprofiledatabase1Click(Sender: TObject);
@@ -1664,7 +1660,7 @@ begin
 end;
 
 
-{$IfDef ExLASLidar}
+{$IF Defined(ExPointCloud) or Defined(ExVegDensity)}
 {$Else}
 
    procedure TDEMLOSF.LoadProfilePointCloud(ShowLoadProgress : boolean = true);

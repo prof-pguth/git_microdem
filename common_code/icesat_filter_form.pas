@@ -1,5 +1,13 @@
 unit icesat_filter_form;
 
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+
+
 interface
 
 uses
@@ -72,8 +80,6 @@ begin
     CheckBox5.Checked := MDDef.Icesat2.UseBeam[4];
     CheckBox6.Checked := MDDef.Icesat2.UseBeam[5];
     CheckBox7.Checked := MDDef.Icesat2.UseBeam[6];
-    //CheckBox8.Checked := MDDef.Icesat2.MustHaveAllThree;
-    //CheckBox9.Checked := MDDef.Icesat2.LoadDEMfromIndex;
     Edit1.Text := IntToStr(MDDef.Icesat2.Boxsize);
     Edit2.Text := IntToStr(MDDef.Icesat2.PCPtsRequired);
     RadioGroup1.ItemIndex := MDDef.Icesat2.BeamConfidence[1];

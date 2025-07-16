@@ -194,15 +194,23 @@ type
    function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer; DEMsOrdered : tDEMIntegerArray; Title : shortstring; Incr : integer = 1; SaveName : PathStr = '') : DEMStringGrid.TGridForm; overload;
 
    procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
+{$IfDef ExcludeDirtAirShots}
+{$Else}
    procedure DirtAndAirShots(DB : integer; Title : shortString);
-   procedure CloudSummaryGlobalDEMs(DB : integer);
-   function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : shortstring) : TThisbasegraph;
+{$EndIf}
+
+{$IfDef ExIceSat}
+{$Else}
    procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean; LimitDecimals : boolean = false);
    procedure IcesatPhotonConvert(Memo1 : tMemo);
    procedure AddGlobalDEMs(dbOnTable : integer);
-   procedure ElevationSlopePlotCompareDEMs;
-   procedure LandCoverSummary;
    procedure AddEGMfields(dbOnTable : integer);
+{$EndIf}
+
+   procedure CloudSummaryGlobalDEMs(DB : integer);
+   function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : shortstring) : TThisbasegraph;
+ procedure ElevationSlopePlotCompareDEMs;
+   procedure LandCoverSummary;
 
    procedure GridsByRegionSize(CurDEM : integer; GridCh : char);
 
@@ -296,12 +304,15 @@ uses
    Petimage_form,
    DEMDef_routines,
    PetImage,
-   las_lidar,
+   {$If Defined(ExPointCloud)}
+   {$Else}
+      icesat_filter_form,
+      las_lidar,
+   {$EndIf}
    basemap,
    DEM_NLCD,
    GDAL_tools,
    md_use_tools,
-   icesat_filter_form,
    PETMath;
 
 const
@@ -964,6 +975,9 @@ end {procedure ScatterGramGrid};
 
 
 procedure CompareResamplingFiltering(DEM : integer);
+begin
+   MessageToContinue('Disabled');
+(*
 const
    NumGeo = 7;
    NumUTM = 6;
@@ -1037,8 +1051,8 @@ begin
    fName := NextFileNumber(MDtempDir,'slope_spacing_sampler_','.dbf');
    Findings.SaveToFile(fName);
    StringList2CSVtoDB(Findings,fName);
+*)
 end;
-
 
 
 procedure Lag_and_Shift(ColC,RowC : integer; MainDEM,SubDEM : integer; GridLimits : tGridLimits; var NPts,XWhereMaxR,YWhereMaxR : integer; var MaxR,NoLagR,ZRange,AvgSlope,BestA,BestB : float64; CorrelationMatrix : tStringList = Nil);
@@ -2408,6 +2422,7 @@ end;
 
 
 function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
+//if the grids do not match exactly, Grid2 is reinterpolated to match Grid1
 begin
   {$IfDef TrackCovarianceFull} WriteLineToDebugFile('GetFUVForPairGrids in, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
    if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
@@ -2422,6 +2437,7 @@ end;
 
 
 function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
+//if the grids do not match exactly, DEM2 is reinterpolated to match DEM1
 var
    Col,Row,xoff,yoff : integer;
    NPts : int64;

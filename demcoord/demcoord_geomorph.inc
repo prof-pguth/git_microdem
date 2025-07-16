@@ -1511,7 +1511,7 @@ begin
 end;
 
 
-{$IfDef AllowDEMGeomorph}
+{$IfDef AllowGeomorphometry}
    procedure tDEMDataSet.GetBoxGridSizeDiameter(BoxSizeMeters : integer; var XBoxGridSize,YBoxGridSize : integer; var BoxSizeString : shortstring);
    begin
        XBoxGridSize := round(BoxSizeMeters / AverageXSpace);

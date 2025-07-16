@@ -28,8 +28,6 @@ function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shorts
 var
   RefAreaDir,TestAreaDir : PathStr;
 begin
-   //FindPath(Aprogram + ' files for reference DEMs',':\wine_contest\' + aProgram + '_out_ref_areas\',RefAreaDir);
-   //FindPath(Aprogram + ' files for test DEMs',':\wine_contest\' + aProgram + '_out_test_areas\',TestAreaDir);
    if DEMIXanalysismode = DEMIXneo then begin
       if isPoint then begin
          Result := MDtempDir  + Param + AreaName + '_' + DEMGlb[PointDEMs[i]].AreaName + '.tif';
@@ -83,7 +81,6 @@ begin
        {$IfDef RecordDEMIX} WriteLineToDebugFile('Invaild DEM=' + IntToStr(i) + ' in RefGridForThisPointGrid'); {$EndIf}
     end;
 end;
-
 
 
 procedure InitializePointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);

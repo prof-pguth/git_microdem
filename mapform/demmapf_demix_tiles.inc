@@ -8,6 +8,20 @@
 {________________________________________}
 
 
+function DEMIX_UTM_tileName(FileName : PathStr) : shortstring;
+begin
+//USGS_1M_11_x43y414_NV_WestCentral_EarthMRI_2020_D20.tif
+//USGS_one_meter_x28y440_PA_South_Central_B1_2017.tif
+   if StrUtils.AnsiContainsText(FileName,'USGS_1M_') then Result := 'UTM' + Copy(ExtractFileName(FileName),9,10)
+   else if StrUtils.AnsiContainsText(FileName,'USGS_one_meter_') then begin
+       Result := 'UTM' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),15,8)
+   end
+   else begin
+       Result := 'Unknown';
+       MessageToContinue('Unknown UTM tile ' + ExtractFileName(FileName));
+   end;
+end;
+
 procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
 //   9/8/2023, check if this is really needed; only called by TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
 var
@@ -85,7 +99,7 @@ begin
    else FirstLong := trunc(WantBoundBoxGeo.xMin);
    LastLong := trunc(WantBoundBoxGeo.xMax+1);
 
-   if (fName = '') then fName := Petmar.NextFileNumber(MDTempDir, 'demix_tiles_',DefaultDBExt);
+   if (fName = '') then fName := Petmar.NextFileNumber(MDTempDir, 'demix_tiles',DefaultDBExt);
 
    ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,true,5);
    ShapeFileCreator.Table.InsureFieldPresentAndAdded(ftString,'LETTERS',2);
@@ -164,7 +178,7 @@ begin
    {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill in, DEM=' + IntToStr(DEM)); {$EndIf}
    if ValidDEM(DEM) then try
       StartProgress('DEMIX tiles');
-      fName := NextFileNumber(MDtempDir,DEMGLB[DEM].AreaName+ '_demix_tile_fill_','.dbf');
+      fName := NextFileNumber(MDtempDir,DEMGLB[DEM].AreaName+ '_demix_tile_fill','.dbf');
       if (DEMGLB[DEM].SelectionMap = Nil) then Result := LoadDEMIXtileOutlinesNoMap(FName,AreaBox,true,false,OpenTable)
       else Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(fName,AreaBox,true,OpenTable);
 
@@ -262,7 +276,6 @@ end;
 function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
 var
    db : integer;
-   //Name : shortstring;
 begin
    if ValidDEM(DEM) then begin
       db := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,False);
@@ -289,7 +302,7 @@ begin
       GISdb[DB].Empsource.Enabled := false;
    end
    else begin
-      fName := NextFileNumber(MDtempDir,'demix_tile_fill_','.dbf');
+      fName := NextFileNumber(MDtempDir,'demix_tile_fill','.dbf');
       LoadDEMIXtileOutlines(fName,bb,False,False,False);
    end;
    {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.DEMIXtilesOnMap, tiles=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}

@@ -1202,8 +1202,10 @@ begin {procedure RankDEMS}
     GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TOLERANCE',9,6);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NUM_TIES',2);
 
-    fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+
+    //fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
     TieToleranceTable := tMyData.Create(fName);
+
     if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
        j := 0;
        GISdb[DBonTable].MyData.First;

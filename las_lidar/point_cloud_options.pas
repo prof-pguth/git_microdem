@@ -593,12 +593,17 @@ uses
       demdatabase,
    {$EndIf}
 
+   {$IfDef ExPointCloud}
+   {$Else}
+      View3d_Main,
+   {$EndIf}
+
+
    Icesat_filter_Form,
    gdal_tools,
 
 
    Petmar,PetDBUtils,PetImage,
-   View3d_Main,
    PetMath, DEM_tin,
    DEMCoord,
    Thread_timers,

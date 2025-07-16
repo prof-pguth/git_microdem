@@ -65,7 +65,7 @@ begin
        Results.Add(aLine);
        GISdb[db].MyData.Next;
     end;
-    DEMglb[DEM1].SelectionMap.StringListToLoadedDatabase(Results,Petmar.NextFileNumber(MDTempDir,'SSMI_comparison_','.dbf'));
+    DEMglb[DEM1].SelectionMap.StringListToLoadedDatabase(Results,Petmar.NextFileNumber(MDTempDir,'SSMI_comparison','.dbf'));
 end;
 
 
@@ -275,7 +275,6 @@ var
       gl1 : tGridLimits;
       Mean,Std : float32;
       NPts : int64;
-      //TheCriteria : tStringList;
 
             function TileSetUp : shortstring;
             begin
@@ -393,7 +392,6 @@ var
           InitializePointAndAreaGrids(PtSSIMGrids, AreaSSIMGrids);
           //normalize grids for SSIM
           {$IfDef RecordDEMIXTimeCriterion}  Stopwatch := TStopwatch.StartNew; {$EndIf}
-          //What := BeforeSpecifiedCharacterAnsi(Criterion,'_');
           Criterion2 := Criterion + '_SSIM';   //StringReplace(Criterion,'SSIM','FUV',[rfReplaceAll, rfIgnoreCase]);
 
           for i := dmxFirstArea to NumAreaDEMs do NormalizeDEMforSSIM(AreaGrids[i],Criterion);
@@ -445,185 +443,6 @@ var
        wmdem.SetPanelText(3,DEMIXModeName + '  ' + IntToStr(Oncriterion)  + '/' + IntToStr(TheCriteria.Count) + ' ' + Criterion,true);
    end;
 
-   {$IfDef ExternalProgramFUV_SSIM}
-       procedure DoExternalProgramGrids;
-       begin
-          if (TheCriteria.IndexOf('LS') <> -1) then begin //created by WbE with Jupyter Notebook
-             UpdateCriteriaPanel('LS');
-             Success := OpenGridsCreatedByExternalProgram(MDDef.OpenSavedMapsFUVSSIM,'wbt',AreaName,'sed_trans_',PointGrids,AreaGrids);
-             if Success then DoCriterion('LS',PointGrids,AreaGrids)
-             else begin
-                ClearDerivedGrids;
-                {$IfDef RecordDEMIX} HighLightLineToDebugFile('LS criterion fail for area=' + AreaName); {$EndIf}
-             end;
-          end;
-
-          if (TheCriteria.IndexOf('ROTOR') <> -1) then begin //created by WbE with Jupyter Notebook
-             UpdateCriteriaPanel('ROTOR');
-             {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-             Success := OpenGridsCreatedByExternalProgram(MDDef.OpenSavedMapsFUVSSIM,'WBT',AreaName,'rotor_',PointGrids,AreaGrids);
-             {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WbW Rotor created ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-             if Success then begin
-                DoCriterion('ROTOR',PointGrids,AreaGrids);
-             end
-             else begin
-                ClearDerivedGrids;
-                {$IfDef RecordDEMIX} HighLightLineToDebugFile('ROTOR criterion fail for area=' + AreaName); {$EndIf}
-             end;
-          end;
-       end;
-    {$EndIf}
-
-      procedure WhiteBoxToolsLSPs;
-      var
-         i : integer;
-      begin
-          if TheCriteria.IndexOf('HAND') <> -1 then begin //created by WbtT
-             UpdateCriteriaPanel('HAND');
-             WBT_CreateDEMIX_HANDGrids(MDDef.OpenSavedMapsFUVSSIM);
-             DoCriterion('HAND',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('PROFC') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('PROFC');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_ProfileCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_ProfileCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
-             DoCriterion('PROFC',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('PLANC') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('PLANC');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_PlanCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_PlanCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
-             DoCriterion('PLANC',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('TANGC') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('TANGC');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_TangentialCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_TangentialCurvature(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName);
-             DoCriterion('TANGC',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('VDEV') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('VDEV');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_AvgNormVectAngDev(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,5);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_AvgNormVectAngDev(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,5);
-             DoCriterion('VDEV',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('SSTD') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('SSTD');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_SphericalStdDevOfNormals(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[PointDEMs[i]].GeotiffDEMName,5);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_SphericalStdDevOfNormals(MDDef.OpenSavedMapsFUVSSIM,DEMGlb[AreaDEMs[i]].GeotiffDEMName,5);
-             DoCriterion('SSTD',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('MHILL') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('MHILL');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_MultidirectionalHillshadeMap(MDDef.OpenSavedMapsFUVSSIM,PointDEMs[i]);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_MultidirectionalHillshadeMap(MDDef.OpenSavedMapsFUVSSIM,AreaDEMs[i]);
-             DoCriterion('MHILL',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('WETIN') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('WETIN');
-             for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := WBT_WetnessIndex(MDDef.OpenSavedMapsFUVSSIM,true,DEMGlb[PointDEMs[i]].GeotiffDEMName,WetnessName);
-             for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := WBT_WetnessIndex(MDDef.OpenSavedMapsFUVSSIM,true,DEMGlb[AreaDEMs[i]].GeotiffDEMName,WetnessName);
-             DoCriterion('WETIN',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('ACCUM') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('FLOW');
-             WBT_CreateDEMIX_Flow_AccumulationGrids(false,MDDef.OpenSavedMapsFUVSSIM);
-             DoCriterion('ACCUM',PointGrids,AreaGrids);
-          end;
-
-          if (TheCriteria.IndexOf('LOGFA') <> -1) then begin //created by WbT
-             UpdateCriteriaPanel('LOGFA');
-             WBT_CreateDEMIX_Flow_AccumulationGrids(true,MDDef.OpenSavedMapsFUVSSIM);
-             DoCriterion('LOGFA',PointGrids,AreaGrids);
-          end;
-      end;
-
-
-          procedure MICRODEM_LSPs;
-          var
-             HowDone : shortstring;
-          begin
-              if (TheCriteria.IndexOf('HILL') <> -1) then begin
-                 UpdateCriteriaPanel('HILL');
-                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-                 HowDone := CreateDEMIXDerivedGrids('HILL_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('Hillshade' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-                 DoCriterion('HILL',PointGrids,AreaGrids);
-              end;
-              if (TheCriteria.IndexOf('TPI') <> -1) then begin
-                 UpdateCriteriaPanel('TPI');
-                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-                 HowDone := CreateDEMIXDerivedGrids('TPI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('TPI' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-                 DoCriterion('TPI',PointGrids,AreaGrids);
-              end;
-
-              if (TheCriteria.IndexOf('RRI') <> -1) then begin
-                 UpdateCriteriaPanel('RRI');
-                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-                 HowDone := CreateDEMIXDerivedGrids('RRI_',AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD RRI created   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-                 DoCriterion('RRI',PointGrids,AreaGrids);
-              end;
-
-              if (TheCriteria.IndexOf('OPENU') <> -1) or (TheCriteria.IndexOf('OPEND') <> -1) then begin
-                 UpdateCriteriaPanel('Openness',2);
-                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-                 HowDone := CreateDEMIXOpennessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Openness' + HowDone + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-                 DoCriterion('OPEND',PointGrids2,AreaGrids2,false);
-                 DoCriterion('OPENU',PointGrids,AreaGrids);
-              end;
-
-              if (TheCriteria.IndexOf('SLOPE') <> -1) or (TheCriteria.IndexOf('RUFF') <> -1) then begin
-                 UpdateCriteriaPanel('Slope/ruff',2);
-                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-                 CreateDEMIXSlopeRoughnessGrids(AreaName,MDDef.OpenSavedMapsFUVSSIM,MDDef.DEMIXsaveLSPmaps);
-                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('MD Slope/ruff' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-                 DoCriterion('SLOPE',PointGrids2,AreaGrids2,false);
-                 DoCriterion('RUFF',PointGrids,AreaGrids);
-              end;
-           end;
-
-           procedure OtherProgramLSPs;
-           var
-              Success : boolean;
-           begin
-              if (TheCriteria.IndexOf('KNSS') <> -1) then begin
-                 UpdateCriteriaPanel('KNSS');
-                 LSP_Calc_Grids('knss',MDDef.OpenSavedMapsFUVSSIM);
-                 DoCriterion('KNSS',PointGrids,AreaGrids);
-              end;
-              if (TheCriteria.IndexOf('KNCC') <> -1) then begin
-                 UpdateCriteriaPanel('KNCC');
-                 LSP_Calc_Grids('kncc',MDDef.OpenSavedMapsFUVSSIM);
-                 DoCriterion('KNCC',PointGrids,AreaGrids);
-              end;
-              if (TheCriteria.IndexOf('KNCS') <> -1) then begin
-                 UpdateCriteriaPanel('KNCS');
-                 LSP_Calc_Grids('kncs',MDDef.OpenSavedMapsFUVSSIM);
-                 DoCriterion('KNCS',PointGrids,AreaGrids);
-              end;
-
-              if (TheCriteria.IndexOf('CONIN') <> -1) then begin //created by SAGA or WbW with Jupyter Notebook
-                 UpdateCriteriaPanel('CONIN');
-                 {$If Defined(TimeOpenCreateGrids)} Stopwatch := TStopwatch.StartNew; {$EndIf}
-                 Success := SAGACreateDEMIX_ConIn_Grids(MDDef.OpenSavedMapsFUVSSIM,AreaName,'CONIN_');
-                 {$If Defined(TimeOpenCreateGrids)} WriteLineToDebugFile('WBT ConIn ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-                 if Success then DoCriterion('CONIN',PointGrids,AreaGrids)
-                 else ClearDerivedGrids;
-              end;
-           end;
-
-
 var
    Success : boolean;
    j : integer;
@@ -660,19 +479,19 @@ begin {procedure DoSSIMandFUVForAnArea}
        ShowSatProgress :=  false;
        ResultsAnalysis := tStringList.Create;
        if MDDef.DoFUV then begin
-          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_fuv_parameters.dbf');
+          TheCriteria := GetListDEMIXOrderedCriteria(DemixSettingsDir + 'demix_fuv_parameters.dbf');
           SafeMakeDir(FUVresultsDir);
        end;
        if MDDef.DoSSIM then begin
-          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_fuv_parameters.dbf');
+          TheCriteria := GetListDEMIXOrderedCriteria(DemixSettingsDir + 'demix_ssim_parameters.dbf');
           SafeMakeDir(SSIMresultsDir);
        end;
        if MDDef.DoPartials then begin
-          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_partials_criteria.dbf');
+          TheCriteria := GetListDEMIXOrderedCriteria(DemixSettingsDir + 'demix_partials_criteria.dbf');
           SafeMakeDir(PartialsResultsDir);
        end;
        if MDDef.DoCurvatures then begin
-          TheCriteria :=  OpenDEMIXOrderedCriteria(0,DemixSettingsDir + 'demix_curvatures_criteria.dbf');
+          TheCriteria := GetListDEMIXOrderedCriteria(DemixSettingsDir + 'demix_curvatures_criteria.dbf');
           SafeMakeDir(CurvaturesResultsDir);
        end;
 
@@ -745,15 +564,15 @@ begin {procedure DoSSIMandFUVForAnArea}
              end;
           end
           else begin
-              MICRODEM_LSPs;
-              OtherProgramLSPs;
-              WhiteBoxToolsLSPs;
-              {$IfDef DoExternalProgramGrids}
-                 DoExternalProgramGrids;
-              {$EndIf}
-
-              UpdateCriteriaPanel('ELEV');
-              DoCriterion('ELEV',PointDEMs,AreaDEMs);
+              for j := 0 to pred(TheCriteria.Count) do begin
+                 CritName := TheCriteria.Strings[j];
+                 UpdateCriteriaPanel(CritName);
+                 if CritName = 'ELEV' then DoCriterion('ELEV',PointDEMs,AreaDEMs)
+                 else begin
+                    CreateLSPgrids(false,CritName,AreaName,PointGrids,AreaGrids);
+                    DoCriterion(CritName,PointGrids,AreaGrids);
+                 end;
+              end;
           end;
 
            if (ResultsAnalysis.Count > 1) then begin

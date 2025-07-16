@@ -56,7 +56,7 @@ uses
    {$EndIf}
 //end for inline of the core DB functions
 
-  {$IFDef ExPointCloudMemory}
+  {$IFDef ExPointCloud}
   {$Else}
      point_cloud_memory,
   {$EndIf}
@@ -80,7 +80,7 @@ type
          function SimpleProfileExecuteDB(fName : PathStr; DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight : float64) : integer;
 
          function Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; var ProfileDB : integer
-              {$IfDef ExPointCloudMemory}
+              {$IfDef ExPointCloud}
               ) :  tLOSResult;
               {$Else}
               ;pc1,pc2 : Point_cloud_memory.tMemoryPointCloud) :  tLOSResult;
@@ -120,7 +120,7 @@ type
            p3 : tBMPMemory;
         {$EndIf}
 
-        {$IFDef ExPointCloudMemory}
+        {$IFDef ExPointCloud}
         {$Else}
            LOSMemoryPointCloud : tTwoPointClouds;
            PtCldInUse : integer;
@@ -142,7 +142,7 @@ type
          procedure SetSize(var Bitmap : tMybitmap; x,y : integer);
          procedure CreateProfileBMP(var Bitmap : tMyBitmap);
 
-        {$IfDef ExPointCloudMemory}
+        {$IfDef ExPointCloud}
         {$Else}
            procedure OverlayProfilePointCloud(var Bitmap : tMyBitmap);
         {$EndIf}
@@ -295,7 +295,7 @@ begin
 end;
 
 
-{$IFDef ExPointCloudMemory}
+{$IFDef ExPointCloud}
 {$Else}
 
 procedure tLOSdraw.OverlayProfilePointCloud(var Bitmap : tMyBitmap);
@@ -430,7 +430,7 @@ begin
                  (DEMGlb[DEMonView].VegGrid[2] <> 0),
               {$EndIf}
 
-              {$IfDef ExPointCloudMemory}
+              {$IfDef ExPointCloud}
                  false,false,
               {$Else}
                  (LOSMemoryPointCloud[1] <> Nil),
@@ -453,7 +453,7 @@ begin
       {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('try LOSCalculation := tLOSCalculation.Create, db=' + IntToStr(LOSProfileDB)); {$EndIf}
       LOSCalculation := tLOSCalculationCreateDB.Create;
       LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,MDDef.ObsAboveGround, MDDef.TargetAboveGround,LOSProfileDB
-         {$IfDef ExPointCloudMemory}{$Else},LOSMemoryPointCloud[1],LOSMemoryPointCloud[2] {$EndIf} );
+         {$IfDef ExPointCloud}{$Else},LOSMemoryPointCloud[1],LOSMemoryPointCloud[2] {$EndIf} );
       LosCalculation.Destroy;
    end;
 
@@ -667,7 +667,7 @@ begin
              end;
          {$EndIf}
 
-        {$IfDef ExPointCloudMemory}
+        {$IfDef ExPointCloud}
         {$Else}
              if (LOSMemoryPointCloud[2] <> Nil) then begin
                 ShowDenityAlongProfile('Cloud: ' + LOSMemoryPointCloud[2].CloudName,'PTS2_ABOVE',-16);
@@ -690,7 +690,7 @@ begin
          end;
          {$EndIf}
 
-        {$IfDef ExPointCloudMemory}
+        {$IfDef ExPointCloud}
         {$Else}
              if (LOSMemoryPointCloud[1] <> Nil) then begin
                 ShowDenityAlongProfile('Cloud: ' + LOSMemoryPointCloud[1].CloudName,'PTS_AROUND',8 + DownSymbol);
@@ -716,7 +716,7 @@ begin
          Legend.Free;
       end;
 
-       {$IfDef ExVegGrid}
+       {$IfDef ExVegDensity}
        {$Else}
            if (VegGrid[1] > 0) and MDDef.ShowGridVegEffects then begin
              if VegGridUsed = 1 then begin
@@ -1135,7 +1135,7 @@ begin
       end;
 
       LOSCalculation := tLOSCalculationCreateDB.Create;
-      Result := LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp,FresnelTable,Nil,Nil);
+      Result := LosCalculation.Execute(DEMonView,LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp,FresnelTable{$IfDef ExPointCloud}{$Else},Nil,Nil{$EndIf});
       LosCalculation.Destroy;
      {$IfDef RecordLOS} WriteLineToDebugFile('exit LOSComputeOnly'); {$EndIf}
    end;
@@ -1210,7 +1210,7 @@ end;
 
 
 function tLOSCalculationCreateDB.Execute(DEMonView : integer; LatLeft,LongLeft,LatRight,LongRight,LeftObsUp,RightObsUp : float64; var ProfileDB : integer
-     {$IfDef ExPointCloudMemory}
+     {$IfDef ExPointCloud}
      ) :  tLOSResult;
      {$Else}
      ;pc1,pc2 : Point_cloud_memory.tMemoryPointCloud) :  tLOSResult;
@@ -1345,7 +1345,7 @@ begin
                else NeedToCheckPointCloud := true;
             {$EndIf}
 
-            {$IfDef ExPointCloudMemory}
+            {$IfDef ExPointCloud}
             {$Else}
                if NeedToCheckPointCloud and ((pc1 <> Nil) or (pc2 <> Nil)) then begin
                    if (LosHt > elevs^[j]) and (LosHt < elevs^[j] + MDDef.MaxVegHeight) then begin
@@ -1683,7 +1683,7 @@ begin
    InitializeDEMsWanted(ShowProfile,true);
    //DefaultGraphColors(LOSSymbol,LOSLineColors256,LOSLineSize256);
 
-   {$IfDef ExPointCloudMemory}
+   {$IfDef ExPointCloud}
    {$Else}
       PtCldInUse := 1;
       for j := 1 to 2 do LOSMemoryPointCloud[j] := Nil;

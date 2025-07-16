@@ -23,6 +23,7 @@ unit GeoTiff;
    {$IFDEF DEBUG}
       //{$Define RecordGeotiff}
       //{$Define RecordGeotiffRewrite}
+      //{$Define GeotiffSave}
       //{$Define RecordJustMetadata}
       //{$Define RecordGeotiffFailures}
       //{$Define RecordFullGeotiff}
@@ -51,7 +52,6 @@ unit GeoTiff;
       //{$Define RecordGeotiffRestart}
       //{$Define TrackModelType}
       //{$Define RecordDisplayBitmat}
-      //{$Define GeotiffSave}
       //{$Define RecordBitPerPixel}
       //{$Define TrackA}
       //{$Define RecordKeys}
@@ -104,6 +104,7 @@ type
       Num,Den,NewSubfileType,VertDatum,
       StripsPerImage,
       BitsPerSampleCount,MDZtype : int32;
+
       FirstImageOffset,CellWidth,CellLength,StripByteCounts,
       RowsPerStrip,TileWidth,TileHeight,Compression,
       ImageWidth,ImageLength,StripOffsets : int64;
@@ -2087,6 +2088,7 @@ var
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'FOOT') then FootDEM := true;
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'EGM2008') then TiffHeader.VertDatum := VertCSEGM2008;
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'CENTIMETERS') then TiffHeader.MDZtype := euCentimeters;
+                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'"SCALE" SAMPLE="0" ROLE="SCALE">0.1') then TiffHeader.MDZtype := euCentimeters;
                          Tag42112 := TStr;
                          Tag42112Offset := TiffKeys[j].KeyOffset;
                          Tag42112Length := TiffKeys[j].LengthIm;
@@ -2244,12 +2246,12 @@ var
                              TStr := MapProjection.OpenFromTiff3072(TiffOffset);
                              ProjectionDefined :=  TStr <> 'Undefined';
                              NeedWKTHailMary := not ProjectionDefined;
-                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Key 3072'); {$EndIf}
+                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('Key 3072'); {$EndIf}
                          end;
                   3073 : begin end;
                   3075 : begin
                              TStr := MapProjection.ProcessTiff3075(TiffOffset);
-                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Key 3075'); {$EndIf}
+                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('Key 3075'); {$EndIf}
                          end;
                   3076 : begin
                             if (TiffOffset = 9001) or (TiffOffset = 9002) or (TiffOffset = 9003) then begin
@@ -2300,7 +2302,7 @@ var
             end {for i};
 
             if (MapProjection.PName = UTMEllipsoidal) then MapProjection.False_east := 500000;
-            {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('Keys read'); {$EndIf}
+            {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('Keys read'); {$EndIf}
 
             if (WeKnowItsUTMZone <> -99) then begin
                MapProjection.StartUTMProjection(WeKnowItsUTMZone);
@@ -2379,7 +2381,7 @@ var
             RegVars.Registration := RegProjection;
             RegVars.pName := MapProjection.pName;
             HeaderLogList.Add('GEOTIFF registration analyzed OK');
-            {$IfDef RecordFullGeotiff} MapProjection.WriteProjectionParametersToDebugFile('Tiff Read Projection'); {$EndIf}
+            {$IfDef RecordFullGeotiff} MapProjection.WriteProjParamsToDebugFile('Tiff Read Projection'); {$EndIf}
          end;
          {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('end LoadGeotiffProjection: '); {$EndIf}
          {$If Defined(TrackWKTstring)} WriteLineToDebugFile('LoadGeotiffProjection out, map wkt=' + IntToStr(length(MapProjection.wktString))); {$EndIf}
@@ -2666,7 +2668,7 @@ begin
    if (Row16Bit<> Nil) then Dispose(Row16bit);
    if (BigRow <> Nil) then Dispose(BigRow);
 
-   MapProjection.Destroy;
+   if (MapProjection <> Nil) then MapProjection.Destroy;
 
    if (TiffHeader.OffsetArray <> Nil) then FreeMem(TiffHeader.OffsetArray,OffsetArraySize);
    CloseTiffFile;

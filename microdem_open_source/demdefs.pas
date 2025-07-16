@@ -1643,20 +1643,6 @@ type
            GeomorphNameModifier : ShortString;
            GrainSampleSeparation : int16;
 
-
-       //comparing algorithms and programs
-(*
-            SlopePerfectMAbD,
-            SlopePerfectMAvD,
-            SlopePerfectR,
-            SlopeDivergenceRange,
-
-            CurvePerfectMAbD,
-            CurvePerfectMAvD,
-            CurvePerfectR,
-            CurveDivergenceRange,
-*)
-
            PerfectR,
            PerfectMAvD,
            PerfectMAbD : float32;
@@ -2080,7 +2066,7 @@ type
        RotateVectMult : byte;
        AddFitNav,
        ApplyFilterToAllDBs,ConfirmDBEdits : boolean;
-       TwoParameterVisualization,
+       //TwoParameterVisualization,
        NumGraphCols,
        AspectMapMode : byte;
        XAspect,YAspect : int32;
@@ -2634,7 +2620,8 @@ type
       FrameLineWidth : byte;
       GraphDensityXBlock,
       GraphDensityYBlock : float32;
-      BigBM_nc : byte;
+      BigBM_nc,BigBM_vertical_space_between,BigBM_horizontal_space_between : byte;
+      AddFUVtoR2 : boolean;
       MapNameBelowComposite : boolean;
       DefaultGraphBackgroundColor : tPlatformColor;
       WinGraphColors : shortstring;

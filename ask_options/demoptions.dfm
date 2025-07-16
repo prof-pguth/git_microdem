@@ -10,8 +10,6 @@ inherited OptionsForm: TOptionsForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 809
   ExplicitHeight = 602
   TextHeight = 15
@@ -54,8 +52,6 @@ inherited OptionsForm: TOptionsForm
     Align = alClient
     MultiLine = True
     TabOrder = 2
-    ExplicitWidth = 787
-    ExplicitHeight = 488
     object TabSheet1: TTabSheet
       Caption = 'Program'
       object RadioGroup7: TRadioGroup

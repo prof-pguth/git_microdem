@@ -292,7 +292,7 @@ begin
    end;
    Result := (NPts > 0);
    if Result then begin
-      if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
+      if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer','.xyzib');
       case MDdef.ls.ColorCoding of
          lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray);
          lasccPointSourceID,
@@ -618,7 +618,7 @@ begin
      for i := LowElev to HighElev do begin
         if (Elevs[i] > 0) then sl.add(IntToStr(Elevs[i]) + ',' + IntToStr(i) + ',' + IntToStr(Vegs[i]) + ',' + IntToStr(Grounds[i])+ ',' + IntToStr(Builds[i]));
      end;
-     fName := Petmar.NextFileNumber(MDtempDir,'las_hist_','.dbf');
+     fName := Petmar.NextFileNumber(MDtempDir,'las_hist','.dbf');
      db := BaseMap.StringListtoLoadedDatabase(sl,fname);
      TheGraph := GISDB[db].CreateScatterGram('Total','TOTAL','ELEV_M',clRed,true,'LAS elevation histogram');
      GISDB[db].AddSeriesToScatterGram('Vegetation',TheGraph,clLime,'VEG','ELEV_M',true);
@@ -1241,7 +1241,7 @@ begin
          Result := true;
       end
       else begin
-        if (NewName = '') then NewName := Petmar.NextFileNumber(MDTempDir, CloudName + '_','.las');
+        if (NewName = '') then NewName := Petmar.NextFileNumber(MDTempDir, CloudName,'.las');
         Result := MergeLasPoints(mlOnMask,BaseMap,NewName,Mask);
       end;
    end;
@@ -1310,7 +1310,7 @@ begin
       if ShowLasProgress then EndThreadTimers;
 
       if (ExportMode = exmKML) then begin
-         NewName := Petmar.NextFileNumber(MDtempDir,'las_export_','.kml');
+         NewName := Petmar.NextFileNumber(MDtempDir,'las_export','.kml');
          kml.EndFolder;
          kml.CloseAndSaveFile(true,NewName);
          kml.Destroy;

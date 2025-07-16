@@ -293,7 +293,6 @@ begin {DEMIX_MergeReferenceDEMs}
 end {DEMIX_MergeReferenceDEMs};
 
 
-
 procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
 var
    DirStatus : shortstring;
@@ -312,7 +311,8 @@ var
       ShowHourglassCursor;
       Petmar.FindMatchingFiles(aDir,'*.tif',Files,0);
       {$If Defined(Record3DEPX)} HighlightLineToDebugFile('MakeRefDEMsForOneDir ' + aDir + ' Found TIFs=' + IntToStr(Files.Count)); {$EndIf}
-      RemoveFilesThatDoNotHaveString(Files,'EGM2008');  //can only use DEMs with datum shift
+      RemoveFilesThatDoNotHaveString(Files,'EGM2008');  //can only use DEMs with datum shift(*
+
       {$If Defined(Record3DEPX)} WriteLineToDebugFile('MakeRefDEMsForOneDir Found EGM2008 TIFs=' + IntToStr(Files.Count)); {$EndIf}
       RemoveFilesThatDoHaveString(Files,Ref1SecPointStr); //cannot use DEMs already reference
       RemoveFilesThatDoHaveString(Files,Ref1SecAreaStr); //cannot use DEMs already reference
@@ -343,7 +343,6 @@ begin {procedure DEMIX_Create3DEPReferenceDEMs}
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_Create3DEPReferenceDEMs in'); {$EndIf}
    try
       GetDEMIXPaths;
-      //ReportErrors := false;
       LockStatusBar := true;
       LocalList := (DataDirs = Nil);
       if LocalList then begin
@@ -458,21 +457,6 @@ begin {procedure DEMIX_GDAL_3DEP_datum_shift}
 end {procedure DEMIX_GDAL_3DEP_datum_shift};
 
 
-(*
-procedure DEMIXRef_DEM_create_full_chain(overwrite : boolean);
-var
-   DataDirs : tStringList;
-begin
-   GetDEMIXpaths;
-   Get3DEPDataDirs(DataDirs);
-   DEMIX_vert_datum_code := 5703;
-   DEMIX_GDAL_Ref_DEM_datum_shift(Overwrite,DataDirs);
-   DEMIX_CreateReferenceDEMsFromSource(Overwrite,DataDirs);
-   DEMIX_MergeReferenceDEMs(Overwrite,DataDirs);
-end;
-*)
-
-
 procedure DEMIX_Ref_DEM_full_chain(overwrite : boolean);
 var
    DataDirs : tStringList;
@@ -483,7 +467,6 @@ begin
    DEMIX_CreateReferenceDEMsFromSource(Overwrite,DataDirs);
    DEMIX_MergeReferenceDEMs(Overwrite,DataDirs);
 end;
-
 
 
 procedure ConvertASCtoGeotiffDEMs(aPath : PathStr);
@@ -504,76 +487,10 @@ begin
    ASCIIDEMs.Free;
 end;
 
-(*
-procedure DEMIX_merge_Visioterra_source(AreaName : shortstring = '');
-var
-   Areas,ErrorLog : tStringList;
-   Fixed : int64;
-   NewDEM,AnArea : integer;
-   AreaMergeName,AreaPath,TStr : shortstring;
-
-
-        procedure Merge(AreaPath : PathStr; SearchName,AreaMergeName : shortstring);
-        var
-           DEMs : tStringList;
-        begin
-            DEMs := Nil;
-            FindMatchingFiles(AreaPath,SearchName,DEMs,5);
-            if (DEMs.Count > 0) then begin
-               wmdem.SetPanelText(3, 'Merge DEMs=' + IntToStr(DEMs.Count));
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files= ' + IntToStr(DEMs.Count) + ' for ' + AreaMergeName); {$EndIf}
-               if (DEMs.Count = 1) then NewDEM := OpenNewDEM(DEMs.Strings[0],false)
-               else NewDEM := MergeMultipleDEMsHere(DEMs,false,false);  //Frees DEMs
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge files over, MinZ=' + RealToString(DEMGlb[NewDEM].DEMheader.MinElev,-12,-2)); {$EndIf}
-               DEMGlb[NewDEM].DEMheader.VerticalCSTypeGeoKey := VertCSEGM2008;
-               ShowHourglassCursor;
-               wmdem.SetPanelText(3, 'Write DEM ' + AreaMergeName);
-               DEMGlb[NewDEM].CheckMaxMinElev;
-               DEMGlb[NewDEM].WriteNewFormatDEM(AreaMergeName);
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Merge saved to ' + AreaMergeName); {$EndIf}
-               CloseSingleDEM(NewDEM);
-               CleanUpTempDirectory;  //might be many tiled or compressed DEMs expanded
-            end
-            else begin
-               TStr := 'No ' + SearchName + ' files found in ' + AreaPath;
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
-               ErrorLog.Add(TStr);
-            end;
-       end;
-
-
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_Visioterra_source'); {$EndIf}
-   try
-      GetDEMIXPaths(true);
-      ErrorLog := tStringList.Create;
-      Areas := DEMIX_AreasWanted;
-      if (Areas.Count = 0) then begin
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('No areas selected'); {$EndIf}
-      end
-      else begin
-         for anArea := 0 to pred(Areas.Count) do begin
-            wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(anArea)) + '/' + IntToStr(Areas.Count));
-            AreaName := Areas.Strings[AnArea];
-            AreaPath := DEMIX_Ref_Source + AreaName + '\';
-            AreaMergeName := DEMIX_Ref_1sec + AreaName + Ref1SecAreaStr + '.tif';
-            Merge(AreaPath,'*_pia.tif',AreaMergeName);
-            AreaMergeName := DEMIX_Ref_1sec + AreaName + Ref1SecPointStr + '.tif';
-            Merge(AreaPath,'*_pip.tif',AreaMergeName);
-          end {for area};
-      end;
-      Areas.Free;
-   finally
-      DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_Visioterra_source');
-      EndDEMIXProcessing;
-   end;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_Visioterra_source'); {$EndIf}
-end;
-*)
 
 procedure DEMIX_merge_source(Areas : tStringList = Nil);
 var
-   DEMs{,ErrorLog} : tStringList;
+   DEMs : tStringList;
    Fixed : int64;
    VDatumCode,NewDEM,AnArea : integer;
    AreaInventoryName,AreaMergeName, AreaPath,DEMName,OutVRT : PathStr;
@@ -583,7 +500,6 @@ begin
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source in'); {$EndIf}
    try
       GetDEMIXPaths(true);
-      //ErrorLog := tStringList.Create;
       if (Areas = nil) then begin
          Areas := tStringList.Create;
          Areas.Add(DEMIX_3DEP_Dir);
@@ -631,7 +547,6 @@ begin
                   else begin
                      TStr := 'No TIF files found in ' + AreaPath;
                      {$If Defined(RecordDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
-                     //ErrorLog.Add(TStr);
                   end;
                   DEMs.Free;
                end;
@@ -641,7 +556,6 @@ begin
       end;
       Areas.Free;
    finally
-      //DisplayAndPurgeStringList(ErrorLog,'DEMIX_merge_source problems');
       EndDEMIXProcessing;
    end;
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIX_merge_source out'); {$EndIf}
@@ -769,7 +683,6 @@ end;
 procedure ResampleForDEMIXOneSecDEMs(OverWrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
 var
    NewDEM : integer;
-   //fName,
    BaseName : PathStr;
    Ext : ExtStr;
    ps : float32;

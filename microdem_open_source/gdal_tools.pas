@@ -190,6 +190,9 @@ const
    {$EndIf}
 
 
+    function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
+
+
 implementation
 
 
@@ -231,10 +234,27 @@ const
 
 
     function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
+    var
+       cmd : ANSIString;
     begin
-       //WebName := https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
-       //C:\OSGeo4W\bin\gdal_translate.exe --debug on /vsicurl/' + WebName + ' -projwin ' + RealToString(bb.xmin,-12,-4) + ' 'RealToString(bb.ymin,-12,-4) + ' ' +
-       //  RealToString(bb.xmax,-12,-4) + ' 'RealToString(bb.ymax,-12,-4) +  ' ' + OutFName
+(*
+         GEDTM 1.1   https://s3.opengeohub.org/global/edtm/gedtm_rf_std_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif
+         GEDTM 1.01  https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
+         GEDTM 1     https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
+         GEDTM 0     https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
+
+         EDTM 1.1    https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif
+         EDTM 1  https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230210.tif
+*)
+         Result := 0;
+         if (OutfName = '') then OutfName := NextFileNumber(MDTempDir,ShortName,'.tif');
+         cmd := GDAL_translate_name + ' --debug on /vsicurl/' + WebName + ' ' + GDALextentBoxLatLong(bb) +  ' ' + OutFName;
+
+         //WriteLineToDebugFile(cmd);
+
+         if WinExecAndWait32(cmd) = -1 then begin
+
+         end;
     end;
 
     function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
@@ -243,7 +263,7 @@ const
        Result := GDALsubsetGridAndOpen(bb,true,InName,false);
        if ValidDEM(Result) then begin
           DEMGlb[Result].AreaName := ShortName;
-          DEMGlb[Result].MultiplyGridByConstant(0.1);
+          //DEMGlb[Result].MultiplyGridByConstant(0.1);
           if (OutfName <> '') then DEMGlb[Result].WriteNewFormatDEM(OutfName);
           if OpenMap then CreateDEMSelectionMap(Result,true,true,MDDef.DefaultElevationColors);
        end;
@@ -1246,7 +1266,8 @@ end;
          begin
             CheckFileNameForSpaces(fName);
             if (BaseOutPath = '') or (not ValidPath(BaseOutPath)) then BaseOutPath := MDtempdir;
-            OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset_');
+            OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset');
+            SafeMakeDir(OutPath);
             OutName := OutPath + ExtractFileName(fName);
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
@@ -1254,21 +1275,10 @@ end;
             GeotiffBoundingBox(fName,Imagebb);
             if GeotiffRegVars(fName, RegVars) then begin
                if (RegVars.pName = PlateCaree) then begin
-                  //In pixel line you might do something like this to take a 300x300 chunk out of gtopo.dat starting a line 600 and 500 pixels in from
-                  //the left:    gdal_translate -srcwin 500 600 300 300 gtopo.dat  subset.tif
-(*
-   tRegVars = record
-      Registration         : tRegistration;
-      pName             : tProjType;
-      UpLeftX,UpLeftY      : float64;
-      pr_deltaX,pr_deltaY  : float64;
-   end;
-*)
-
                   ExtentBoxString := ' -srcwin ' + IntToStr(trunc((bb.xMin - RegVars.UpLeftX) / RegVars.pr_deltax)) + ' ' +
                                                    IntToStr(trunc((RegVars.UpLeftY - bb.YMax) / RegVars.pr_deltaY)) + ' ' +
-                                                  IntToStr(succ( round((bb.xMax - bb.xMin) / RegVars.pr_deltax))) + ' ' +
-                                                  IntToStr(succ( round((bb.yMax - bb.yMin) / RegVars.pr_deltaY)));
+                                                   IntToStr(succ( round((bb.xMax - bb.xMin) / RegVars.pr_deltax))) + ' ' +
+                                                   IntToStr(succ( round((bb.yMax - bb.yMin) / RegVars.pr_deltaY)));
                   TStr := ' -r nearest ';
                end
                else begin
@@ -1282,9 +1292,6 @@ end;
                   else TStr := ' ';
                end;
             end;
-
-
-
 
             if AtLeastPartOfBoxInAnotherBox(ImageBB, bb) then begin
                cmd := GDAL_Translate_Name + ' ' + ExtentBoxString + TStr + fName + ' ' + OutName;

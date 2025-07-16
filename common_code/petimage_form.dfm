@@ -26,7 +26,8 @@ object ImageDispForm: TImageDispForm
     Height = 267
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 247
+    ExplicitWidth = 809
+    ExplicitHeight = 220
     object Image1: TImage
       Left = -2
       Top = 3
@@ -47,7 +48,8 @@ object ImageDispForm: TImageDispForm
     Align = alBottom
     Caption = 'Panel1'
     TabOrder = 1
-    ExplicitTop = 273
+    ExplicitTop = 246
+    ExplicitWidth = 809
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -58,6 +60,7 @@ object ImageDispForm: TImageDispForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    ExplicitWidth = 809
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -359,7 +362,8 @@ object ImageDispForm: TImageDispForm
       item
         Width = 50
       end>
-    ExplicitTop = 273
+    ExplicitTop = 246
+    ExplicitWidth = 809
   end
   object Panel2: TPanel
     Left = 0
@@ -368,7 +372,8 @@ object ImageDispForm: TImageDispForm
     Height = 41
     Align = alBottom
     TabOrder = 4
-    ExplicitTop = 273
+    ExplicitTop = 246
+    ExplicitWidth = 809
     object TrackBar1: TTrackBar
       Left = 240
       Top = 6
@@ -865,6 +870,14 @@ object ImageDispForm: TImageDispForm
       Caption = 'Change number of columns'
       Visible = False
       OnClick = Changenumberofcolumns1Click
+    end
+    object Changewhitespacebetweenimagespixels1: TMenuItem
+      Caption = 'Change vertical white space between images (pixels)'
+      OnClick = Changewhitespacebetweenimagespixels1Click
+    end
+    object Changeverticalwhitespacebetweenimagespixels1: TMenuItem
+      Caption = 'Change horizontal white space between images (pixels)'
+      OnClick = Changeverticalwhitespacebetweenimagespixels1Click
     end
   end
   object PopupMenu2: TPopupMenu

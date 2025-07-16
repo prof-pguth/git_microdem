@@ -18,7 +18,7 @@ unit dem_nlcd;
    //{$Define TrackWaterMasking}  //generally not needed, but helped finding a bad LC100 tile
    //{$Define RecordNLCDLegend}
    //{$Define RecordBarGraphs}
-   //{$Define RecordDEMIX}
+   {$Define RecordDEMIX}
    //{$Define RecordBatch}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
@@ -65,7 +65,7 @@ procedure LandCoverBarGraphLegends;
 function MakeAnNLCDLegend(DEM : integer;  theLabel : shortstring = ''; Stats : tstringlist = nil) : integer;
 
 function LoadLC100LandCover(fName : PathStr; bb : sfboundbox;OpenMap : boolean) : integer;
-function LoadLC10LandCover(fName : PathStr; bb : sfboundbox;OpenMap : boolean) : integer;
+function LoadLC10LandCover(fName : PathStr; bb : sfboundbox;OpenMap : boolean; Silent : boolean = false) : integer;
 
 function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
 
@@ -270,19 +270,22 @@ begin
 end;
 
 
-function LoadLC10LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
+function LoadLC10LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean; Silent : boolean = false) : integer;
 var
    Lat,Long : float32;
 begin
+   Result := 0;
+{$IfDef July15Issue}
+{$Else}
    Lat := 0.5 * (bb.YMax + bb.YMin);
    Long := 0.5 * (bb.XMax + bb.XMin);
    LandCoverFName := GetLC10_fileName(Lat,Long);
    {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
    if FileExists(LandCoverFName) then begin
-      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
+      Result := GDALsubsetGridAndOpen(bb,true,'land_cover_',{LandCoverFName,}OpenMap);
       if ValidDEM(Result) then begin
          DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
-         if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
+         if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.tif');
          DEMGlb[Result].SaveAsGeotiff(fName);
       end
       else begin
@@ -290,8 +293,9 @@ begin
       end;
    end
    else begin
-      MessageToContinue('Missing land cover file ' + LandCoverFName);
+      if (not Silent) then MessageToContinue('Missing land cover file ' + LandCoverFName);
    end;
+{$EndIf}
 end;
 
 

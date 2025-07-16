@@ -374,8 +374,7 @@ begin
    if CheckBox2.Checked then begin
       for DEM := 1 to MaxDEMDataSets do begin
          if ValidDEM(DEM) then begin
-            gl := DEMGlb[DEM].SpecifyDEMGridLimitsFromLatLong(DEMGlb[MapOwner.MapDraw.DEMonMap].DEMBoundBoxGeo.YMin,DEMGlb[MapOwner.MapDraw.DEMonMap].DEMBoundBoxGeo.XMin,
-               DEMGlb[MapOwner.MapDraw.DEMonMap].DEMBoundBoxGeo.YMax,DEMGlb[MapOwner.MapDraw.DEMonMap].DEMBoundBoxGeo.XMax);
+            gl := DEMGlb[DEM].SpecifyDEMGridLimitsFromGeoBoundBox(DEMGlb[MapOwner.MapDraw.DEMonMap].DEMBoundBoxGeo);
             FindPeaks(DEM,gl,PeakResults,Memo1);
          end;
       end;

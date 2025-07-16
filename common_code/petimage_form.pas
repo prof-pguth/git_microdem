@@ -197,6 +197,8 @@ type
     Savesubset1: TMenuItem;
     MakeIHSseparates1: TMenuItem;
     Changenumberofcolumns1: TMenuItem;
+    Changewhitespacebetweenimagespixels1: TMenuItem;
+    Changeverticalwhitespacebetweenimagespixels1: TMenuItem;
     procedure Overlaynewimagefromclipboard1Click(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure SpeedButton13Click(Sender: TObject);
@@ -308,6 +310,9 @@ type
     procedure Savesubset1Click(Sender: TObject);
     procedure MakeIHSseparates1Click(Sender: TObject);
     procedure Changenumberofcolumns1Click(Sender: TObject);
+    procedure Changewhitespacebetweenimagespixels1Click(Sender: TObject);
+    procedure Changeverticalwhitespacebetweenimagespixels1Click(
+      Sender: TObject);
   private
     { Private declarations }
      BaseTopBitmap,TopBitmap : tMyBitmap;  //need two, one to modify and the other as the original
@@ -516,7 +521,7 @@ begin
    end;
    SaveBitmap(BigBitmap,aName);
    {$If Defined(RecordAddGraphToBigBitmap)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + aName  + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
-   DisplayBitmap(BigBitmap);
+   DisplayBitmap(BigBitmap,aname);
    BigBitmap.Free;
    LegendBMP.Free;
 end;
@@ -576,7 +581,7 @@ begin
         end;
         if (Legend <> '') then begin
             LegBMP := LoadBitmapFromFile(Legend);
-            BigBmp.Height := BigBmp.Height + LegBMP.Height + 8;
+            BigBmp.Height := BigBmp.Height + LegBMP.Height + 20;
             y := BigBmp.Height - LegBMP.Height - 4;
             x := (BigBmp.Width - LegBMP.Width) div 2;
             BigBmp.Canvas.Draw(X,y,LegBmp);
@@ -2322,7 +2327,7 @@ var
 begin
    files := tStringList.Create;
    Files.LoadFromFile(BigBM_files);
-   ReadDefault('Number of Columns (images to combine =' + IntToStr(files.Count) + ')',MDDef.BigBM_Nc);
+   if (Sender <> nil) then ReadDefault('Number of Columns (images to combine =' + IntToStr(files.Count) + ')',MDDef.BigBM_Nc);
    {$IfDef RecordChangeColumns} WriteLineToDebugFile('TImageDisplayForm.Changecolumns1Click started'); {$EndIf}
    bmp := CombineBitmaps(MDDef.BigBM_Nc,files,BigBM_Capt);
    {$IfDef RecordChangeColumns} WriteLineToDebugFile('TImageDisplayForm.Changecolumns1Click bitmaps combined'); {$EndIf}
@@ -2337,6 +2342,18 @@ end;
 procedure TImageDispForm.Changenumberofcolumns1Click(Sender: TObject);
 begin
    Changecolumns1Click(Sender);
+end;
+
+procedure TImageDispForm.Changeverticalwhitespacebetweenimagespixels1Click(Sender: TObject);
+begin
+   ReadDefault('Pixels between rows',MDdef.BigBM_horizontal_space_between);
+   Changecolumns1Click(Nil);
+end;
+
+procedure TImageDispForm.Changewhitespacebetweenimagespixels1Click(Sender: TObject);
+begin
+   ReadDefault('Pixels between rows',MDdef.BigBM_vertical_space_between);
+   Changecolumns1Click(Nil);
 end;
 
 procedure TImageDispForm.ClipboardSpeedButtonClick(Sender: TObject);

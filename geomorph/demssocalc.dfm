@@ -157,14 +157,14 @@ inherited SSOCalcDlg: TSSOCalcDlg
         object Label23: TLabel
           Left = 257
           Top = 221
-          Width = 23
+          Width = 22
           Height = 15
           Caption = 'Max'
         end
         object Label24: TLabel
           Left = 208
           Top = 195
-          Width = 61
+          Width = 62
           Height = 15
           Caption = 'Thin to plot'
         end
@@ -387,7 +387,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
         object Label20: TLabel
           Left = 80
           Top = 200
-          Width = 119
+          Width = 118
           Height = 15
           Caption = 'Max gap tracing crests'
         end
@@ -528,7 +528,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
       object Label14: TLabel
         Left = 8
         Top = 40
-        Width = 82
+        Width = 81
         Height = 15
         Caption = 'Max region (m)'
       end

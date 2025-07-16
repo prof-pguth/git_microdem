@@ -1521,7 +1521,7 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 232
+    Left = 240
     Top = 58
     object File1: TMenuItem
       Caption = '&File'
@@ -2088,6 +2088,15 @@ object MapForm: TMapForm
           Caption = 'ESA World Cover 10 m'
           GroupIndex = 1
           OnClick = ESAWorldCover10m1Click
+        end
+        object N86: TMenuItem
+          Caption = '-'
+          GroupIndex = 1
+        end
+        object N87: TMenuItem
+          Caption = 'EDTM/GEDTM'
+          GroupIndex = 1
+          OnClick = N87Click
         end
       end
       object ViewExifimages1: TMenuItem
@@ -4078,7 +4087,7 @@ object MapForm: TMapForm
           OnClick = N1secand30mresamplesbyaveraging1Click
         end
         object CreateReferenceDEMtoMatchThis1: TMenuItem
-          Caption = 'Aggregate HRDEMs to match this grid'
+          Caption = 'Aggregate HRDEM to match this grid'
           OnClick = CreateReferenceDEMtoMatchThis1Click
         end
         object UpsampleDEMtomatchthisgrid1: TMenuItem

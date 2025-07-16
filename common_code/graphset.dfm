@@ -170,6 +170,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 65
     Height = 21
     TabOrder = 8
+    OnChange = Edit7Change
   end
   object Edit8: TEdit
     Left = 103
@@ -184,6 +185,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 57
     Height = 21
     TabOrder = 10
+    OnChange = Edit9Change
   end
   object BitBtn2: TBitBtn
     Left = 403
@@ -253,7 +255,7 @@ object GraphSettingsForm: TGraphSettingsForm
       Caption = 'Height'
     end
     object Edit11: TEdit
-      Left = 72
+      Left = 74
       Top = 16
       Width = 56
       Height = 21
@@ -309,7 +311,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet2
+    ActivePage = HistogramTabSheet
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -544,7 +546,7 @@ object GraphSettingsForm: TGraphSettingsForm
       Caption = 'Histogram'
       ImageIndex = 4
       object Label13: TLabel
-        Left = 8
+        Left = 12
         Top = 16
         Width = 45
         Height = 13

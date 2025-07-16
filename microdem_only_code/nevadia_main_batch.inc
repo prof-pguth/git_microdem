@@ -88,7 +88,7 @@ begin
    {$IfDef FireStats} WriteLineToDebugFile('Sentinel2BatchdNBR out'); {$EndIf}
 end;
 
-
+(*
 procedure BatchResampleForDEMIX(FilesWanted : tStringList = Nil);
 //aggregates to 1" DEMs, designed to be called from the command line
 //June 2023, not recently tested
@@ -120,7 +120,7 @@ begin
       HeavyDutyProcessing := false;
    end;
 end;
-
+*)
 
 
 

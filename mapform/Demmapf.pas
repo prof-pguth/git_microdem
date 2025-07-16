@@ -8,7 +8,6 @@
 {________________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IFDEF DEBUG}
@@ -26,6 +25,7 @@
    {$IFDEF DEBUG}
       //{$Define RecordFan}
       //{$Define RecordBaseTitle}
+      //{$Define RecordCreateReferenceDEM}
       //{$Define RecordScattergram}
       //{$Define RecordOutlinePixels}
       //{$Define RecordSSOforVATgrid}
@@ -151,7 +151,7 @@
       //{$Define RecordDrainage}
       //{$Define RecordFlooding}
       //{$Define GPSBroadcast}
-      //{$Define RecordSave}
+      {$Define RecordSave}
       //{$Define RecordChangeDEMNowDoing}
       //{$Define RecordFullMapDraw}
       //{$Define RecordDrape}
@@ -1682,6 +1682,8 @@ type
     Multidirectionalhillshade1: TMenuItem;
     Differencemap2: TMenuItem;
     WhiteboxSphericalAverageDeviationofNormals1: TMenuItem;
+    N86: TMenuItem;
+    N87: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2890,6 +2892,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Hillshade2Click(Sender: TObject);
     procedure Differencemap2Click(Sender: TObject);
     procedure WhiteboxSphericalAverageDeviationofNormals1Click(Sender: TObject);
+    procedure N87Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3330,13 +3333,17 @@ function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : t
    procedure CreateNewSatWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Selection : boolean; UseDEM : integer = 0);
 {$EndIf}
 
-procedure CreateDEMIXTileShapefile(var fName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false);
-function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
-function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = false) : sfBoundBox;
-procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
-function LoadDEMIXtileOutlinesNoMap(var DEMIXfName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
-function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
-function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
+
+//DEMIX options
+    procedure CreateDEMIXTileShapefile(var fName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false);
+    function DEMIXtileFill(DEM : integer; AreaBox : sfBoundBox; OpenTable : boolean = true) : integer;
+    function DEMIXtileBoundingBox(tName : shortString; PixelIsAreaSafe : boolean = false) : sfBoundBox;
+    procedure DEMIXtileCentroid(tName : shortString; var Lat,Long : float32);
+    function LoadDEMIXtileOutlinesNoMap(var DEMIXfName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
+    function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
+    function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
+    function DEMIX_UTM_tileName(FileName : PathStr) : shortstring;
+
 
 
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);
@@ -8063,6 +8070,7 @@ end;
 
 procedure TMapForm.GeoTIFF1Click(Sender: TObject);
 begin
+   {$IfDef RecordSave} WriteLineToDebugFile('TMapForm.GeoTIFF1Click'); {$EndIf}
    DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff('');
 end;
 
@@ -10598,7 +10606,6 @@ var
 begin
    {$If Defined(RecordClosing) or Defined(RecordMapClosing)} WriteLineToDebugFile('Enter TMapForm.formClose for ' + Caption); {$EndIf}
    CloseMapTableOfContents(Self);
-
    if (MapDraw <> Nil) then MapDraw.ClosingMapNow := true;
    if (BlendPanel.Height > 0) then BitBtn1Click(Nil);
    for i := 1 to MaxDataBase do begin
@@ -12470,7 +12477,7 @@ end;
 procedure TMapForm.DEMIX1secresamplebyaveraging1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
-   ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,true,'',ResampleModeOneSec);
+   //ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,true,'',ResampleModeOneSec);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click grids out'); {$EndIf}
 end;
 
@@ -12492,7 +12499,7 @@ end;
 
 procedure TMapForm.DEMIXrangescales1Click(Sender: TObject);
 begin
-   ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
+   //ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
 end;
 
 (*
@@ -13255,35 +13262,43 @@ begin
 end;
 
 procedure TMapForm.CreateReferenceDEMtoMatchThis1Click(Sender: TObject);
+{$IfDef July15Issue}
+begin
+   WriteLineToDebugFile('TMapForm.CreateReferenceDEMtoMatchThis1Click July 15 issue commented out');
+{$Else}
+
+
 var
    HRDref,NewMatch : integer;
    fName : PathStr;
-   i,NPts : int64;
-   FilesWanted : tStringList;
+   DEM,NPts : int64;
+   WhichDEMs : tDEMBooleanArray;
 begin
-   FilesWanted := tStringList.Create;
-   FilesWanted.Add(LastDEMName);
-   if GetMultipleFiles('DEM/grid to match reference DEM',DEMFilterMasks,FilesWanted ,MDDef.DefaultDEMFilter) then begin
-     SetColorForProcessing;
-     for i := 0 to pred(FilesWanted.Count) do begin
-        wmDEM.SetPanelText(3,IntToStr(i) + '/' + IntToStr(FilesWanted.Count));
-        fName := FilesWanted.Strings[i];
-
-         HRDref := OpenNewDEM(fName,false,'HRD source DEM');
+   {$IfDef RecordCreateReferenceDEM} WriteLineToDebugFile('TMapForm.CreateReferenceDEMtoMatchThis1Click in'); {$EndIf}
+   //FilesWanted := tStringList.Create;
+   WhichDEMs := GetMultipleDEMsFromList('Open DEMs to match coverage');
+   HRDref := OpenNewDEM(fName,false,'HRD source DEM');
+   SetColorForProcessing;
+   for DEM := 1 to MaxDEMDataSets do begin
+      if WhichDEMs[DEM] and ValidDEM(DEM) and (DEMglb[DEM].SelectionMap <> Nil) then begin
+         wmDEM.SetPanelText(3,IntToStr(DEM) + ' ' + DEMGlb[DEM].AreaName,true);
+         {$IfDef RecordCreateReferenceDEM} WriteLineToDebugFile(IntToStr(DEM) + ' ' + DEMGlb[DEM].AreaName); {$EndIf}
          //save the DEM on map so we will use its geometry
-         fName := ExtractFilePath(fName) + DEMGlb[HRDref].AreaName + '_match_ref_dem' + '.tif';
-         DEMGlb[MapDraw.DEMonMap].SaveAsGeotiff(fName);
-         //open new DEM and mark it entirely missing
-         NewMatch := OpenNewDEM(fName,false,'New match to reference DEM');
+         {$IfDef RecordCreateReferenceDEM} WriteLineToDebugFile('Saved as ' + fName); {$EndIf}
+         //insure floating point (e.g. for ALOS)
+         NewMatch := DEMGlb[DEM].ResaveNewResolution(fcSaveFloatingPoint);
+         //entire DEM missing to start with
          DEMglb[NewMatch].MarkAboveMissing(-9999,NPts,false);
          //mean aggregate the new DEM
+         fName := ExtractFilePath(DEMglb[DEM].DEMFileName) + DEMGlb[DEM].AreaName + '_matching_ref_dem' + '.tif';
          DEMGlb[HRDref].ResampleByAveraging(true,fName,NewMatch);
-         //DEMGlb[NewMatch].SaveAsGeotiff(fName);
-         CloseSingleDEM(HRDref);
      end;
-     SetColorForWaiting;
-     wmDEM.SetPanelText(3,'');
    end;
+   CloseSingleDEM(HRDref);
+   SetColorForWaiting;
+   wmDEM.SetPanelText(3,'');
+   {$IfDef RecordCreateReferenceDEM} WriteLineToDebugFile('TMapForm.CreateReferenceDEMtoMatchThis1Click out'); {$EndIf}
+{$EndIf}
 end;
 
 procedure TMapForm.Createsurveylines1Click(Sender: TObject);
@@ -19275,6 +19290,9 @@ begin
 end;
 
 procedure TMapForm.Diagonalgridspacingcomparison1Click(Sender: TObject);
+{$IfDef July15Issue}
+begin
+{$Else}
 var
    ng : array[1..5] of integer;
    i,Fixed : int64;
@@ -19284,19 +19302,20 @@ begin
    SetColorForProcessing;
    InitializeDEMsWanted(DEMList,false);
    DEMGLb[MapDraw.DEMonMap].MarkBelowMissing(1.0,Fixed,false);
-   ng[5] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nmNone,true,MDTempDir + 'no_norm.tif');
-   ng[2] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nmNorthSouth,true,MDTempDir + 'norm_ns.tif');
-   ng[3] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nmEastWest,true,MDTempDir + 'norm_ew.tif');
-   ng[4] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nm30m,true,MDTempDir + 'norm_30m.tif');
-   ng[1] :=  MakeNEneighborGrid(MapDraw.DEMonMap,nmInterpolate,true,MDTempDir + '_norm_interpolate.tif');
+   ng[5] := MakeNEneighborGrid(MapDraw.DEMonMap,nmNone,true,MDTempDir + 'no_norm.tif');
+   ng[2] := MakeNEneighborGrid(MapDraw.DEMonMap,nmNorthSouth,true,MDTempDir + 'norm_ns.tif');
+   ng[3] := MakeNEneighborGrid(MapDraw.DEMonMap,nmEastWest,true,MDTempDir + 'norm_ew.tif');
+   ng[4] := MakeNEneighborGrid(MapDraw.DEMonMap,nm30m,true,MDTempDir + 'norm_30m.tif');
+   ng[1] := MakeNEneighborGrid(MapDraw.DEMonMap,nmInterpolate,true,MDTempDir + '_norm_interpolate.tif');
    for i := 1 to 5 do DEMlist[ng[i]] := true;
    GridCorrelationMatrix(gcmR,DEMlist,'Diagonal spacing correlation matrix');
    HeavyDutyProcessing := false;
    SetColorForWaiting;
+{$EndIf}
 end;
 
 procedure TMapForm.Pointslopebyregionsize1Click(Sender: TObject);
-   begin
+begin
    {$IfDef ExGeoStats}
    {$Else}
       PointSlopesByRegionSize(MapDraw.DEMonMap,RightClickLat,RightClickLong);
@@ -21860,7 +21879,7 @@ end;
 
 
 procedure TMapForm.Loadvegetationgrid1Click(Sender: TObject);
-{$IfDef ExVegGrid}
+{$IfDef ExVegDensity}
 begin
 {$Else}
 var
@@ -23154,6 +23173,21 @@ begin
 end;
 
 
+
+procedure TMapForm.N87Click(Sender: TObject);
+var
+   fName : PathStr;
+begin
+    fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif';
+    GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,MapDraw.MapCorners.BoundBoxGeo,true,'GEDTM_1_1');
+
+    fName := 'https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif';
+    GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,MapDraw.MapCorners.BoundBoxGeo,true,'GEDTM_0');
+
+    fName := 'https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
+    GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,MapDraw.MapCorners.BoundBoxGeo,true,'EDTM_1_1');
+
+end;
 
 procedure TMapForm.NAN1Click(Sender: TObject);
 begin

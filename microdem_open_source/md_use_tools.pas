@@ -72,9 +72,8 @@ uses
    DEMMapf,DEMMapDraw,DEMDefs,BaseMap,DEM_NLCD;
 
 
-{$IfDef ExLAStools}
+{$If Defined(ExLAStools) or Defined(ExPointCloud)}
 {$Else}
-
    type
       tlas2Las = (lasAssignProjection,lasToUTM,lasAssignEPSGreprojectUTM,lasAssignUTM,lasAssignGeo,lasReprojectSpecifiedtoGeo);
 
@@ -223,7 +222,10 @@ uses
    DEM_Manager,
    DEMDataBase,
    gdal_tools,
-   las_lidar,
+   {$IfDef ExPointCloud}
+   {$Else}
+      las_lidar,
+   {$EndIf}
    geotiff,
    dem_indexes,
    nevadia_main;
@@ -235,7 +237,10 @@ const
 
 {$I wbt_wrapper.inc}
 
-{$I lastools_wrapper.inc}
+{$If Defined(ExLAStools) or Defined(ExPointCloud)}
+{$Else}
+   {$I lastools_wrapper.inc}
+{$EndIf}
 
 procedure ExpandOutName(InName : PathStr; BaseName : shortString; var OutName : PathStr);
 begin

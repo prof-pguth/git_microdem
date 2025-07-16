@@ -170,7 +170,7 @@ var
    i,j : integer;
    Overlay : tMyBitmap;
 begin
-   if ClosingIsHappening or (not MapDrawValid) or ClosingMapNow then exit;
+   if NoDBPlots or ClosingIsHappening or (not MapDrawValid) or ClosingMapNow then exit;
    {$If Defined(RecordDBPlots) or Defined(RecordDBPlotsFull)} WriteLineToDebugFile('TMapDraw.PlotDataBases in, on map ' + BaseTitle); {$EndIf}
    if (NumOpenDB > 0) then for j := MaxDataBase downto 1 do begin
       i := DBPlotOrder[j];

@@ -21,7 +21,7 @@ unit demix_control;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    //{$Define RecordDEMIXneo}
-   {$Define RecordDEMIXStart}
+   //{$Define RecordDEMIXStart}
    //{$Define LoadDEMIXNames}
    //{$Define RecordDEMIXopenGrids}
    //{$Define RecordTestDEMs}
@@ -100,8 +100,9 @@ const
    function GetDEMIXpaths(StartProcessing : boolean = true; DB : integer = 0) : boolean;
    procedure EndDEMIXProcessing(db : integer = 0; CleanTempDir : boolean = false);
    procedure LoadDEMIXnames(RestrictList : tStringList = nil);
-   function OpenDEMIXOrderedCriteria(db : integer; fName : PathStr = '') : tStringList;
    function GetListOfTestDEMsinUse(GeometricModel : shortstring = '') : tStringList;
+   function GetTestDEMLongName(ShortName : shortstring) : shortstring;
+
 
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
    function DEMIXColorForCriterion(Criterion : shortstring) : tColor;
@@ -121,7 +122,6 @@ const
 
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
    function GetReferenceDEMforTestDEM(ThisTestDEM : integer; RefDEMs : tDEMIXindexes) : integer;
-   function CriterionTieTolerance(Criterion : shortstring) : float32;
    //procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
    function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
 
@@ -144,10 +144,15 @@ const
 
 procedure MergeDEMIXtileStats;
 
-procedure CompareRankings(DBonTable : integer);
-procedure DifferentRankingsByCriteria(DBonTable : integer);
 
-function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
+//rankings, winners, tolerances
+    procedure CompareRankings(DBonTable : integer);
+    procedure DifferentRankingsByCriteria(DBonTable : integer);
+    function GetWinnerBetweenTwoDEMs(dbOnTable : integer; DEM1,DEM2 : shortstring; Tolerance : float32) : shortstring;
+    procedure DifferentRankingsByTile(DBonTable : integer);
+    function WinnerAndTies(DB : integer; DEMs : tStringList; Tolerance : float32) : shortstring;
+    function CriterionTieTolerance(Criterion : shortstring) : float32;
+
 
 function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
 function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
@@ -175,7 +180,6 @@ procedure PickDEMIXMode;
    function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
    procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
 
-procedure DifferentRankingsByTile(DBonTable : integer);
 {$IfDef FUV_RangeScales}
    procedure FUVforRangeScales(LandCoverOption : boolean);
 {$EndIf}
@@ -211,6 +215,8 @@ const
 procedure LandCoverBreakdowPointCloud;
 //function OpenPartialsParams : tStringList;
 
+procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
+function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
 
 
 implementation
@@ -251,36 +257,71 @@ const
 
 
 
-function OpenDEMIXOrderedCriteria(db : integer; fName : PathStr) : tStringList;
+procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
+begin
+   if (db = 0) then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+   if not FileExists(DEMIX_criteria_tolerance_fName) then begin
+     if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then
+        DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_partials_criteria.dbf'
+     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then
+        DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_curvatures_criteria.dbf'
+     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'FUV') then
+        DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_fuv_parameters.dbf'
+     else begin
+        DEMIX_criteria_tolerance_fName := '';
+        MessageToContinue('No file for criteria');
+     end;
+   end;
+end;
+
+function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
 var
    Table : tMyData;
 begin
-   if not FileExists(fName) then begin
-     if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then
-        fName := DemixSettingsDir + 'demix_partials_criteria.dbf'
-     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then
-        fName := DemixSettingsDir + 'demix_curvatures_criteria.dbf'
-     else fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
+   if FileExists(DEMIX_criteria_tolerance_fName) then begin
+      Table := tMyData.Create(DEMIX_criteria_tolerance_fName);
+      Table.ApplyFilter('USE=' + QuotedStr('Y'));
+      Result := Table.ListUniqueEntriesInDB('CRITERION',false);
+      Table.Destroy;
+   end
+   else begin
+        MessageToContinue('Invalid file for criteria');
+        exit;
    end;
+end;
+
+
+function CriterionTieTolerance(Criterion : shortstring) : float32;
+var
+   db : tMyData;
+begin
+   if FileExists(DEMIX_criteria_tolerance_fName) then begin
+      db := tMyData.Create(DEMIX_criteria_tolerance_fName);
+      db.ApplyFilter('CRITERION=' + QuotedStr(NoSuffixCriterion(Criterion)));
+      if db.FiltRecsInDB = 1 then Result := db.GetFieldByNameAsFloat('TOLERANCE')
+      else begin
+         MessageToContinue(Criterion + ' missing in ' + DEMIX_criteria_tolerance_fName);
+      end;
+      db.Destroy;
+   end
+   else MessageToContinue('Missing criteria/tolerance file ' + DEMIX_criteria_tolerance_fName);
+end;
+
+
+function GetTestDEMLongName(ShortName : shortstring) : shortstring;
+var
+   fName : PathStr;
+   aFilter : shortstring;
+   Table : tMyData;
+begin
+   fName := DemixSettingsDir + 'demix_dems.dbf';
    Table := tMyData.Create(fName);
-   Table.ApplyFilter('USE=' + QuotedStr('Y'));
-   Result := Table.ListUniqueEntriesInDB('CRITERION',false);
+   aFilter := 'SHORT_NAME=' + QuotedStr(ShortName);
+   Table.ApplyFilter(aFilter);
+   Result := Table.GetFieldByNameAsString('DEM_NAME');
    Table.Destroy;
 end;
 
-(*
-function OpenPartialsParams : tStringList;
-var
-   fName : PathStr;
-   Table : tMyData;
-begin
-   fName := DemixSettingsDir + 'demix_partials_criteria.dbf';
-   Table := tMyData.Create(fName);
-   Table.ApplyFilter('USE=' + QuotedStr('Y'));
-   Result := Table.ListUniqueEntriesInDB('CRITERION',false);
-   Table.Destroy;
-end;
-*)
 
 
 function GetListOfTestDEMsinUse(GeometricModel : shortstring = '') : tStringList;
@@ -304,6 +345,32 @@ function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
 //used for labels on graphs so they are shorter
 begin
    Result := StringReplace(DEMName, 'slope_', '',[rfIgnoreCase]);
+end;
+
+function WinnerAndTies(DB : integer; DEMs : tStringList; Tolerance : float32) : shortstring;
+var
+   Evals : array[0..15] of float32;
+   i,Besti : integer;
+   Best : float32;
+   //BestDEM : shortstring;
+begin
+   for I := 0 to pred(DEMs.Count) do begin
+      Evals[i] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[i]);
+   end;
+   Best := 999;
+   for I := 0 to pred(DEMs.Count) do begin
+      if Evals[i] < Best then begin
+         Best := Evals[i];
+         //BestDEM := DEMs.Strings[i];
+         BestI := i;
+      end;
+   end;
+   Result := DEMs.strings[BestI];
+   for I := 0 to pred(DEMs.Count) do begin
+      if (i <> BestI) and (Evals[i] <= Best + Tolerance) then begin
+         Result := Result + '-' + DEMs.strings[I];
+      end;
+   end;
 end;
 
 
@@ -1196,13 +1263,11 @@ begin
       ElevDiffHists := false;
       DoHorizontalShift := false;
       MDdef.MDRecordDebugLog := true;
-
       MDDef.SlopeFlatBoundary := 12.5;
       MDDef.SlopeGentleBoundary := 25;
       MDDef.SlopeSteepBoundary := 50;
       MDDef.LandTypePointsNeeded := 100;
       MDDef.RoughnessBox := 5;
-      //MDDef.AutoMergeStartDEM := true;
       MDdef.DefaultMapXSize := 800;
       MDdef.DefaultMapYSize := 800;
       MDDef.TitleLabelFont.Size := 24;
@@ -1261,7 +1326,6 @@ begin
 
    Stream_valley_dir := DEMIX_Base_DB_Path + 'full_valleys_ridges\';
 
-
    {$If Defined(RecordDEMIXStart)} WriteLineToDebugFile('GetDEMIXpaths point 4'); {$EndIf}
 
    Geoid2008FName := 'g:\geoid\egm2008-1-vdatum.tif';
@@ -1269,17 +1333,11 @@ begin
    GeoidDiffFName := 'g:\geoid\egm96_to_egm2008.tif';
    FindDriveWithFile(GeoidDiffFName);
 
-   //MDDef.CurveCompute.AlgorithmName := smLSQ;
-   ///MDDef.CurveCompute.RequireFullWindow := true;
-   //MDDef.CurveCompute.LSQorder := 2;
-   //MDDef.CurveCompute.UsePoints := useAll;
-   //MDDef.CurveCompute.WindowRadius := 1;
    SetCurvatureDefaults;
    MDDef.EvansApproximationAllowed := false;
 
    SetParamsForDEMIXmode;
    LoadDEMIXnames;
-   //OrderedFUVParams := OpenDEMIXOrderedCriteria;
 
    {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIX)}
       WriteLineToDebugFile('GetDEMIXpaths out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIXModeName);
@@ -1427,30 +1485,12 @@ begin
 end;
 
 
-function CriterionTieTolerance(Criterion : shortstring) : float32;
+function GetWinnerBetweenTwoDEMs(dbOnTable : integer; DEM1,DEM2 : shortstring; Tolerance : float32) : shortstring;
 var
-   db : tMyData;
-   fName : PathStr;
-begin
-   fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
-   db := tMyData.Create(fName);
-   //Criterion := StringReplace(Criterion,'_FUV','',[rfIgnoreCase]);
-   //if ValidDB(db) then begin
-      fName := 'CRITERION=' + QuotedStr(NoSuffixCriterion(Criterion));
-      db.ApplyFilter(fname);
-      Result := db.GetFieldByNameAsFloat('TOLERANCE');
-      db.Destroy;
-   //end;
-end;
-
-
-function GetWinner(dbOnTable : integer; DEM1,DEM2 : shortstring) : shortstring;
-var
-   eval1,eval2,tolerance : float32;
+   eval1,eval2 : float32;
 begin
    eval1 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM1);
    eval2 := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat(DEM2);
-   tolerance := GISdb[dbOnTable].MyData.GetFieldByNameAsFloat('TOLERANCE');
    if (eval1 + Tolerance < Eval2) then Result := DEM1
    else if (eval2 + Tolerance < Eval1) then Result := DEM2
    else Result := 'TIE';
@@ -1703,10 +1743,6 @@ begin {procedure FUVforMultipleTestDEMstoReference}
                      Test3 := -1;    //upward
                      CreateOpennessMap(false,DEMglb[Test].FullDEMGridLimits,Test,-99,3,Test3,Test2,ad);
                      AddFUV('OPENU',Ref3,Test3);
-                     {$If SaveUpwardOpenness}
-                        DEMGlb[Ref3].SaveAsGeotiff('c:\temp\' + DEMGlb[Ref3].AreaName + '_up_open_maketable.tif');
-                        DEMGlb[Test3].SaveAsGeotiff('c:\temp\' + DEMGlb[Test3].AreaName + '_up_open_maketable.tif');
-                     {$EndIf}
                      AddFUV('OPEND',Ref2,Test2);
                  end
                  else if (OrderedFUVParams[j] = 'HILL') then begin

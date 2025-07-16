@@ -179,14 +179,6 @@ object fuv_ssim_control: Tfuv_ssim_control
     TabOrder = 14
     Text = 'Edit1'
   end
-  object CheckBox7: TCheckBox
-    Left = 151
-    Top = 95
-    Width = 97
-    Height = 17
-    Caption = 'Do partials'
-    TabOrder = 15
-  end
   object RadioGroup1: TRadioGroup
     Left = 448
     Top = 40
@@ -198,7 +190,7 @@ object fuv_ssim_control: Tfuv_ssim_control
       'SSIM'
       'Partials'
       'Curvatures')
-    TabOrder = 16
+    TabOrder = 15
     OnClick = RadioGroup1Click
   end
 end

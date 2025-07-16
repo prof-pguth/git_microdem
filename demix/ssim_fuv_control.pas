@@ -46,7 +46,6 @@ type
     BitBtn3: TBitBtn;
     Edit1: TEdit;
     Label1: TLabel;
-    CheckBox7: TCheckBox;
     RadioGroup1: TRadioGroup;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
@@ -248,7 +247,7 @@ begin
    CheckEditString(Edit1.Text,MDDef.DEMIX_Tile_Full);
    MDDef.DoSSIM := CheckBox22.Checked;
    MDDef.DoFUV := CheckBox24.Checked;
-   MDDef.DoPartials := CheckBox7.Checked;
+   //MDDef.DoPartials := CheckBox7.Checked;
 
    MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;

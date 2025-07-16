@@ -245,7 +245,6 @@ type
      FastMapDraw,
      Log10Elev,
      AllTigerOK,
-     NoMapGrids,
      NoDrawingNow,
      DrawScaleBarThisMap,
      DrawLegendsThisMap,
@@ -274,6 +273,7 @@ type
      UsePercentiles,
      TigerSingleOverlayUp,
      GroundOnly,
+     NoMapGrids,
      UseDistortedRawLatLongScaling,
      HalfPixelOffsets,
      LASlayerOnMap : boolean;
@@ -462,8 +462,6 @@ type
       procedure ColorTintedElevationMap(var inBitmap : tMyBitmap);
 
     //map boolean functions
-      //function ValidDEMMap : boolean;
-      //function ValidDEMonMap : boolean;
       function ValidSatonMap : boolean;
       function IsThisMapUTM : boolean;
       function MGRSValid : boolean;
@@ -514,7 +512,7 @@ type
         procedure PlotVectorOverlay(Bitmap : tMyBitmap; FName : PathStr);
         procedure OverlaySRTMWaterBodies(Bitmap : tMyBitmap; WaterMask : boolean = false);
 
-        {$IfDef AllowDEMGeomorph}
+        {$IfDef AllowGeomorphometry}
            procedure OverlayCategories(Bitmap : tMyBitmap; TerrainCategory : tTerrainCatDefinition);
            function CreateCategoryOverlay(TerrainCategory : tTerrainCatDefinition) : tMyBitmap;
            function TerrainCategoryLegend : tMyBitmap;
@@ -669,6 +667,7 @@ function MakeChangeMapLegend(DEMonMap : integer) : tMyBitmap;
 
 var
    AmbushCountMyBitmap : tMyBitmap;
+   NoDBplots,
    LocationLabel,
    ConnectPoints,
    SizeIsCorrectThankYou : boolean;
@@ -2663,7 +2662,7 @@ procedure tMapDraw.GetMapScaleFactor(var Lat,Long,Maph,Mapk: float64; var Prime 
 
 
 
-{$IfDef AllowDEMGeomorph}
+{$IfDef AllowGeomorphometry}
 
          procedure TMapDraw.OverlayCategories(Bitmap : tMyBitmap; TerrainCategory : tTerrainCatDefinition);
          var
@@ -2705,6 +2704,7 @@ procedure tMapDraw.GetMapScaleFactor(var Lat,Long,Maph,Mapk: float64; var Prime 
 
 
 initialization
+   NoDBplots := false;
 finalization
 end.
 

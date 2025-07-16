@@ -1358,7 +1358,7 @@
                DrawWorldFileImageOnMap(Bitmap,FName);
             end
             else if ExtEquals(Ext,'.CAT') then begin
-               {$IfDef AllowDEMGeomorph}
+               {$IfDef AllowGeomorphometry}
                   CloneBitmap(Bitmap,sBitmap);
                   for i := 0 to pred(MapOverlays.ovTerrainCat.Count) do begin
                      OverlayCategories(sBitMap,StringToTerrainCategory(MapOverlays.ovTerrainCat[i]));

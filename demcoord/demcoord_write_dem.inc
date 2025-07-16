@@ -124,7 +124,6 @@ begin
 end;
 
 
-
 procedure tDEMDataSet.WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName : PathStr);
 
       function HeaderToString(NewHeadRecs : tDEMheader) : ANSIstring;
@@ -145,7 +144,6 @@ procedure tDEMDataSet.WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName
                    'precision=' + IntToStr(Ord(tDEMprecision(NewHeadRecs.DEMPrecision))) + #13 +
                    'spaceunit=' +IntToStr(Ord(tSpacingUnit(NewHeadRecs.DataSpacing))) + #13 +
                    'elevunit=' + IntToStr(Ord(tElevUnit(NewHeadRecs.ElevUnits))) + #13 +
-                   //'digdatum=' + IntToStr(Ord(tDigitizeDatum(NewHeadRecs.aDigitizeDatum))) + #13 +
                    'hemi=' + NewHeadRecs.LatHemi + #13 +
                    'h_datum=' + NewHeadRecs.h_DatumCode + #13 +
                    'VertCSType=' + IntToStr(NewHeadRecs.VerticalCSTypeGeoKey) + #13 +
@@ -180,8 +178,12 @@ var
    NewHeadRecs : tDEMheader;
    avgelev : float32;
 begin
-   {$If Defined(RecordWriteDEM) or Defined(RecordZRange)} WriteLineToDebugFile('WriteNewFormatDEM Elev range: ' + ZRange); {$EndIf}
+   {$If Defined(RecordWriteDEM) or Defined(RecordZRange)} HighlightLineToDebugFile('WriteNewFormatDEM Elev range: ' + ZRange); {$EndIf}
    {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' tDEMDataSet.WriteNewFormatDEM, full ' + GridLimitsToString(FullDEMGridLimits) + '  writing ' + GridLimitsToString(Limits)); {$EndIf}
+
+   if (FileName = '') then begin
+       if not GetFileNameDefaultExt('Save DEM in MICRODEM format','*.dem',FileName) then exit;
+   end;
 
     if (FileExtEquals(FileName,'.TIF')) then begin
        SaveAsGeotiff(FileName);
@@ -214,15 +216,19 @@ begin
             NewHeadRecs.StoredMaxElev := MaxZ / ElevationMultiple;
       end;
 
+      {$IfDef RecordWriteDEM} WriteLineToDebugFile('Done limits DEM write ' + FileName); {$EndIf}
+
        CleanUpFileName(FileName);
        assignFile(fFile,FileName);
        rewrite(fFile,1);
        FillChar(HeaderBytes,2049,0);
        HeaderString := HeaderToString(NewHeadRecs);
+       {$IfDef RecordWriteDEM} WriteLineToDebugFile('Length header string=' + IntToStr(Length(HeaderString)) + '  ' + HeaderString); {$EndIf}
        StringToByteArray(HeaderString,HeaderBytes);
+       {$IfDef RecordWriteDEM} WriteLineToDebugFile('StringToByteArray OK'); {$EndIf}
        BlockWrite(fFile,HeaderBytes[1],2048);
+       {$IfDef RecordWriteDEM} WriteLineToDebugFile('Ready for actual DEM write ' + FileName); {$EndIf}
 
-       //if ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then StartProgress('Write ' + ExtractFileName(FileName));
        ShowHourglassCursor;
        for x := Limits.XGridLow to Limits.XGridHigh do begin
           //if (x mod 50 = 0) and ShowDEMReadingProgress and (NewHeadRecs.NumCol > 4000) then UpDateProgressBar(x/pred(NewHeadRecs.NumCol));
@@ -247,10 +253,9 @@ begin
 
        CheckVAT;
     finally
-       //HeavyDutyProcessing := false;
-       //EndProgress;
        DEMstatus := dsSaved;
-       if SelectionMap <> Nil then SelectionMap.ClosingMapNotAllowed := false;
+       ShowDefaultCursor;
+       if (SelectionMap <> Nil) then SelectionMap.ClosingMapNotAllowed := false;
     end;
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('End DEM write'); {$EndIf}
 end;
@@ -302,7 +307,8 @@ procedure tDEMDataSet.SaveAsGeotiff(SaveName : PathStr = '');
 var
    missing : double;
    WField : word;
-   Offset,NumEnt, ASCIIsize,SF,MissingSize,WidthImage,HeightImage,BytesPer,RowBytes,GeokeyEntries : int32;
+   ASCIIsize : int32;
+   Offset,NumEnt, SF,MissingSize,WidthImage,HeightImage,BytesPer,RowBytes,GeokeyEntries : int32;
    TIFFHeader : tTiffHeader;
    b  : array[1..4] of byte;
    TIFFFile : TBufferedFileStream;
@@ -389,12 +395,16 @@ begin
       NumEnt := NumEnt + 1;
    {$EndIf}
 
+   {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff setup done'); {$EndIf}
+
    GeoKeyEntries := 6;  //changed from 5 4/9/2023, to record vertical datum
    WidthImage := DEMheader.NumCol;
    HeightImage := DEMheader.NumRow;
    BytesPer := TiffHeader.BitsPerSample div 8;
    RowBytes := BytesPer * WidthImage;
+   {$IfDef GeotiffSave} WriteLineToDebugFile('width=' + IntToStr(WidthImage) + ' height=' + IntToStr(HeightImage) + '  bp='  + IntToStr(BytesPer)); {$EndIf}
    TiffHeader.StripByteCounts := WidthImage * HeightImage * BytesPer;
+   {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff did strip byte counts'); {$EndIf}
 
    if (DEMheader.DEMUsed = UTMbasedDEM) then AsciiStr := ' UTM|'
    else AsciiStr := ' Geographic (Lat/Lon)|Units = dd|OK';
@@ -409,7 +419,7 @@ begin
    if (DEMheader.DEMPrecision = ByteDEM) then Missing := 255
    else Missing := MDDef.GeotiffMissingValue;
 
-   TiffHeader.StripOffsets := NumEnt*12 +  8 {TIFF version plus first offset} + 2 {NumFields} + 4 {0 ending offset};
+   TiffHeader.StripOffsets := NumEnt*12 + 8 {TIFF version plus first offset} + 2 {NumFields} + 4 {0 ending offset};
    TiffFile := TBufferedFileStream.Create(SaveName, fmCreate);
 
    {Byte Order}          B[1] := 73;   B[2] := 73;  TiffFile.Write(B,2);
@@ -431,6 +441,8 @@ begin
    StreamFieldEntry(TIFFFile,279,4,1,TiffHeader.StripByteCounts);   //9
    StreamFieldEntry(TIFFFile,284,3,1,1);                            //10  {PlanarConfiguration}
    StreamFieldEntry(TIFFFile,339,3,1,SF);                           //11
+
+   {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff before smax/smin'); {$EndIf}
 
    {$IfDef WriteSminSmax}
       StreamFieldEntryIncrementOffset(TIFFFile,340,12,1,Offset);        //12

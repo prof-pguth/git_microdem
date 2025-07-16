@@ -430,7 +430,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn35Click
   end
   object Memo4: TMemo
-    Left = 1073
+    Left = 1233
     Top = 415
     Width = 225
     Height = 89
@@ -489,7 +489,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       'Barren percentages'
       'Urban percentages'
       'Panel aggregating criteria'
-      'Panel each criterion')
+      'Vertical panel each criterion')
     TabOrder = 34
     OnClick = RadioGroup9Click
   end
@@ -528,8 +528,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Mixed Filters'
     TabOrder = 37
     object Memo2: TMemo
-      Left = 20
-      Top = 9
+      Left = 12
+      Top = 17
       Width = 202
       Height = 151
       Lines.Strings = (
@@ -597,10 +597,10 @@ object eval_scores_graph_form: Teval_scores_graph_form
     end
   end
   object GroupBox5: TGroupBox
-    Left = 1217
-    Top = 228
-    Width = 259
-    Height = 169
+    Left = 632
+    Top = 321
+    Width = 406
+    Height = 183
     Caption = 'GroupBox5'
     TabOrder = 39
     object Label7: TLabel
@@ -618,11 +618,18 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Caption = 'Y axis'
     end
     object Label9: TLabel
-      Left = 119
-      Top = 85
-      Width = 28
+      Left = 120
+      Top = 88
+      Width = 34
       Height = 15
-      Caption = 'Value'
+      Caption = 'DEM 1'
+    end
+    object Label10: TLabel
+      Left = 119
+      Top = 120
+      Width = 34
+      Height = 15
+      Caption = 'DEM 2'
     end
     object ComboBox2: TComboBox
       Left = 16
@@ -640,48 +647,56 @@ object eval_scores_graph_form: Teval_scores_graph_form
       TabOrder = 1
       Text = 'AVG_SLOPE'
     end
-    object ComboBox4: TComboBox
-      Left = 16
-      Top = 80
-      Width = 97
-      Height = 23
-      TabOrder = 2
-      Text = 'BEST_EVAL'
-    end
     object BitBtn1: TBitBtn
-      Left = 168
-      Top = 48
+      Left = 16
+      Top = 141
       Width = 75
       Height = 25
       Caption = 'Graphs'
-      TabOrder = 3
+      TabOrder = 2
       OnClick = BitBtn1Click
     end
     object RadioGroup3: TRadioGroup
-      Left = 17
-      Top = 106
-      Width = 89
+      Left = 233
+      Top = 13
+      Width = 152
       Height = 60
       Caption = 'Symbols'
       ItemIndex = 0
       Items.Strings = (
         'Squares'
         'Circles')
-      TabOrder = 4
+      TabOrder = 3
       OnClick = RadioGroup3Click
     end
-    object RadioGroup6: TRadioGroup
-      Left = 128
-      Top = 101
-      Width = 99
-      Height = 65
-      Caption = '2 Geomorph Plots'
+    object RadioGroup10: TRadioGroup
+      Left = 233
+      Top = 79
+      Width = 152
+      Height = 90
+      Caption = 'RadioGroup10'
       ItemIndex = 0
       Items.Strings = (
-        'Pie charts'
-        'All points')
+        'Compare two DEMs'
+        'Compare all DEMs'
+        'Best evaluation')
+      TabOrder = 4
+    end
+    object ComboBox4: TComboBox
+      Left = 16
+      Top = 80
+      Width = 97
+      Height = 23
       TabOrder = 5
-      OnClick = RadioGroup6Click
+      Text = 'ComboBox4'
+    end
+    object ComboBox5: TComboBox
+      Left = 16
+      Top = 112
+      Width = 97
+      Height = 23
+      TabOrder = 6
+      Text = 'ComboBox5'
     end
   end
   object BitBtn38: TBitBtn
@@ -698,7 +713,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Top = 554
     Width = 193
     Height = 25
-    Caption = 'Create Winning DB'
+    Caption = 'Winning percentages (2 DEM lists)'
     TabOrder = 41
     OnClick = BitBtn13Click
   end
@@ -746,5 +761,32 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Use median for statistics'
     TabOrder = 46
     OnClick = CheckBox6Click
+  end
+  object BitBtn26: TBitBtn
+    Left = 728
+    Top = 678
+    Width = 193
+    Height = 25
+    Caption = 'Criteria FUV, using DB filter'
+    TabOrder = 47
+    OnClick = BitBtn26Click
+  end
+  object BitBtn31: TBitBtn
+    Left = 728
+    Top = 737
+    Width = 193
+    Height = 25
+    Caption = 'Scatter plots, DEMs/criteria'
+    TabOrder = 48
+    OnClick = BitBtn31Click
+  end
+  object BitBtn32: TBitBtn
+    Left = 942
+    Top = 737
+    Width = 75
+    Height = 25
+    Caption = '0.9" DEM'
+    TabOrder = 49
+    OnClick = BitBtn32Click
   end
 end

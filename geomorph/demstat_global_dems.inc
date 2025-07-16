@@ -399,6 +399,8 @@ const
   PtsNeeded : integer = 1;
 
 
+{$IfDef ExcludeDirtAirShots}
+{$Else}
 procedure DirtAndAirShots(DB : integer; Title : shortString);
 var
    s1,Filters,Titles : tStringList;
@@ -587,6 +589,7 @@ begin
    {$IfDef RecordGlobalDEM} WriteLineToDebugFile('DirtAndAirShots out'); {$EndIf}
 end;
 
+{$EndIf}
 
 procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
 var
@@ -761,7 +764,8 @@ exit;
    ShowDefaultCursor;
 end;
 
-
+{$IfDef ExIceSat}
+{$Else}
 procedure IcesatPhotonConvert(Memo1 : tMemo);
 const
    BeamName : array[0..6] of string10 = ('None','GT1R','GT1L','GT2R','GT2L','GT3R','GT3L');
@@ -1127,7 +1131,7 @@ begin
    {$IfDef RecordIceSat} WriteLineToDebugFile('AddGlobalDEMs out'); {$EndIf}
 end;
 
-
+{$EndIf}
 
 
 

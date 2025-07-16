@@ -20,6 +20,20 @@
 
 {$WEAKLINKRTTI ON}
 
+
+{$Define July15Issue}
+
+//{$Define ExFMX3D}
+//{$Define ExPointCloud}
+
+{$Define AllowGeomorphometry}  //July 2025, these would be very hard to remove
+
+//{$Define ExVegDensity}
+{$Define ExcludeDirtAirShots}
+{$Define ExIceSat}
+//{$Define ExStratcol}
+
+
 //{$Define ExDEMIXexperimentalOptions}
 
 //{$Define IncludePython}
@@ -34,12 +48,7 @@
   //{$Define SlopeWindowEdgeEffect}
 
 
-
-{$Define FMXU_point_cloud}
 //{$Define AllowEDTM}
-
-
-{$Define SaveUpwardOpenness}
 
 
 {$Define MICRODEM}
@@ -55,9 +64,6 @@
 
 {$Define RecordTime}
 {$Define RecordIniMemoryOverwrite}
-
-{$Define AllowGeomorphometry}
-{$Define AllowDEMGeomorph}
 
 {$Define UseFireDacSQLlite}
 

@@ -273,11 +273,6 @@ var
             else Result := 0;
          end;
          if (ValidDEM(RefDEM) or ValidDEM(RefGrid)) and ValidDEM(Result) then begin
-            {$If SaveUpwardOpenness}
-               DEMGlb[RefGrid].SaveAsGeotiff('c:\temp\' + DEMGlb[RefGrid].AreaName + '_up_open_lspmult.tif');
-               DEMGlb[Result].SaveAsGeotiff('c:\temp\' + DEMGlb[Result].AreaName + '_up_open_lspmult.tif');
-            {$EndIf}
-
             if ValidDEM(RefGrid) then begin
                FUV := GetFUVForPairGrids(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Result);
                if (FUV > -99) then begin
@@ -351,6 +346,7 @@ begin
       Result := TThisBaseGraph.Create(Application);
       Result.Caption := 'Two grid scattergram';
       Result.GraphDraw.AutoPointDensity := true;
+      Result.GraphDraw.Draw1to1Line := true;
 
       if DEMGlb[DEM1].ShortName = '' then Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].AreaName)
       else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);

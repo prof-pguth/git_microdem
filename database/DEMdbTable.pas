@@ -2999,9 +2999,12 @@ end;
 
 procedure Tdbtablef.hisDBall3groups1Click(Sender: TObject);
 begin
+{$IfDef ExcludeDirtAirShots}
+{$Else}
    DirtAndAirShots(DBonTable,'Landcover');
    DirtAndAirShots(DBonTable,'Canopy');
    DirtAndAirShots(DBonTable,'Slope');
+{$EndIf}
 end;
 
 procedure Tdbtablef.hisDBbycanopyheight1Click(Sender: TObject);
@@ -3021,7 +3024,10 @@ end;
 
 procedure Tdbtablef.hisDBbylandcovercats1Click(Sender: TObject);
 begin
+{$IfDef ExcludeDirtAirShots}
+{$Else}
    DirtAndAirShots(DBonTable,'Landcover');
+{$EndIf}
 end;
 
 procedure Tdbtablef.hisDBByslope1Click(Sender: TObject);
@@ -3031,12 +3037,18 @@ end;
 
 procedure Tdbtablef.hisDBcanopyheights1Click(Sender: TObject);
 begin
+{$IfDef ExcludeDirtAirShots}
+{$Else}
    DirtAndAirShots(DBonTable,'Canopy');
+{$EndIf}
 end;
 
 procedure Tdbtablef.hisDBslopecats1Click(Sender: TObject);
 begin
-   DirtAndAirShots(DBonTable,'Slope');
+{$IfDef ExcludeDirtAirShots}
+{$Else}
+  DirtAndAirShots(DBonTable,'Slope');
+{$EndIf}
 end;
 
 
@@ -5217,7 +5229,7 @@ begin
          Results.Add(GISdb[i].dbName + ',' + RealToString(Min,-12,-4) + ',' + RealToString(Max,-12,-4) );
       end;
    end;
-   fName := Petmar.NextFileNumber(MDTempDir,'field_range_','.csv');
+   fName := Petmar.NextFileNumber(MDTempDir,'field_range','.csv');
    Results.SaveToFile(fname);
    Results.Free;
    OpenMultipleDataBases(fname);
@@ -5241,7 +5253,10 @@ end;
 
 procedure Tdbtablef.AddDEMdata1Click(Sender: TObject);
 begin
+{$IfDef ExIceSat}
+{$Else}
     AddGlobalDEMs(dbOnTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.AddDEMIXtileboundingbox1Click(Sender: TObject);
@@ -5309,7 +5324,10 @@ end;
 
 procedure Tdbtablef.AddEGMfields1Click(Sender: TObject);
 begin
+{$IfDef ExIceSat}
+{$Else}
     AddEGMfields(dbOnTable);
+{$EndIf}
 end;
 
 procedure Tdbtablef.AddEGMfieldsfromalgorithms1Click(Sender: TObject);
@@ -6889,8 +6907,11 @@ end;
 
 procedure Tdbtablef.N45Click(Sender: TObject);
 begin
+{$IfDef ExIceSat}
+{$Else}
    {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2filecleanup1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,false,true);
+{$EndIf}
 end;
 
 (*
@@ -11495,14 +11516,20 @@ end;
 
 procedure Tdbtablef.ICESat2canopyaddDEMdata1Click(Sender: TObject);
 begin
+{$IfDef ExIceSat}
+{$Else}
    {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2canopyaddDEMdata1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,true);
+{$EndIf}
 end;
 
 procedure Tdbtablef.ICESat2filecleanup1Click(Sender: TObject);
 begin
+{$IfDef ExIceSat}
+{$Else}
    {$IfDef RecordIceSat} WriteLineRoDebugFile('ICESat2filecleanup1Click'); {$EndIf}
    IcesatProcessCanopy(DBonTable,false);
+{$EndIf}
 end;
 
 procedure Tdbtablef.Iconfield1Click(Sender: TObject);
@@ -13396,13 +13423,19 @@ end;
 
 procedure Tdbtablef.Distributionsummary1Click(Sender: TObject);
 begin
+{$IfDef ExcludeDirtAirShots}
+{$Else}
    DirtAndAirShots(0,'');
+{$EndIf}
 end;
 
 
 procedure Tdbtablef.DistributionsummarythisDB1Click(Sender: TObject);
 begin
+{$IfDef ExcludeDirtAirShots}
+{$Else}
    DirtAndAirShots(DBonTable,'');
+{$EndIf}
 end;
 
 procedure Tdbtablef.DistributionhistogramsthisDB1Click(Sender: TObject);
@@ -15386,6 +15419,9 @@ begin
 end;
 
 procedure Tdbtablef.MeanstdallDBs1Click(Sender: TObject);
+{$IfDef July15Issue}
+begin
+{$Else}
 var
    FieldDesired : ShortString;
    Missing,i  : int64;
@@ -15418,6 +15454,7 @@ begin
    EndProgress;
    fName := MDTempDir + 'summary_stats.csv';
    GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Findings,fName);
+{$EndIf}
 end;
 
 

@@ -504,7 +504,7 @@ var
 begin
   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('WhiteBoxPennockLandformClass, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := NextFileNumber(MDTempDir,'wbt_pennock_' + ExtractFileNameNoExt(InName) + '_','.tif');
+     OutName := NextFileNumber(MDTempDir,'wbt_pennock_' + ExtractFileNameNoExt(InName),'.tif');
      bfile := tStringList.Create;
      if SmoothFirst then begin
         tName := MDtempDir + 'wbt_FeaturePreserveSmooth_' + ExtractFileNameNoExt(InName) + '.tif';
@@ -527,7 +527,7 @@ var
    cmd : shortstring;
 begin
   if WhiteBoxPresent and FileExistsErrorMessage(ClassifiedName) and FileExistsErrorMessage(ReferenceName) then begin
-     if (HTMLName = '') then HTMLname :=  NextFileNumber(MDtempDir,'wbt_kappa_index_' + ExtractFileNameNoExt(ClassifiedName) + '_', '.html');
+     if (HTMLName = '') then HTMLname :=  NextFileNumber(MDtempDir,'wbt_kappa_index_' + ExtractFileNameNoExt(ClassifiedName), '.html');
      cmd := WhiteBoxfName + ' -r=KappaIndex -v --i1=' + ClassifiedName + ' --i2=' + ReferenceName + ' -o=' + HTMLName;
      WriteLineToDebugFile(cmd);
      WinExecAndWait32(cmd,true,MDDef.ShowWinExec);
@@ -543,7 +543,7 @@ var
 begin
   {$If Defined(RecordUseOtherPrograms) or Defined(RecordWBT)} WriteLineToDebugFile('WhiteBoxGeomorphons, infile=' + InName + '  outfile=' + OutName); {$EndIf}
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
-     OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_search_' + IntToStr(Search) + '_skip_' + IntToStr(Skip) + '_' + ExtractFileNameNoExt(InName) + '_','.tif');
+     OutName := NextFileNumber(MDTempDir,'wbt_geomorphons_search_' + IntToStr(Search) + '_skip_' + IntToStr(Skip) + '_' + ExtractFileNameNoExt(InName),'.tif');
      cmd := WhiteBoxfName  + WBNoCompress + ' -r=Geomorphons -v -i=' + InName + ' -o=' + OutName + ' --search=' + IntToStr(Search) + ' --threshold=0.0 --skip=' + IntToStr(Skip) + ' --forms=True';
      Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euGeomorphon,mtLandCover);
   end;

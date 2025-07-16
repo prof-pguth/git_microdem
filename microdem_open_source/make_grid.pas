@@ -55,7 +55,11 @@ interface
 
    Nevadia_main,
    DEMMapf,
-   las_files_grouping,
+
+   {$IfDef ExPointCloud}
+   {$Else}
+      las_files_grouping,
+   {$EndIf}
    DEMDefs,
    Petmar_types,PETMAR,PETMath;
 
@@ -80,13 +84,15 @@ type
    function CreateHillshadeMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
    function CreateEvansSlopeMapPercent(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Degrees : boolean = false) : integer;
    procedure CreateOpennessMap(OpenMap : boolean; GridLimits : tGridLimits; DEM,BoxRadiusMeters,BoxRadiusPixels : integer; var Upward,DownWard,Difference : integer);
+   function CreateUpwardOpennessMap(OpenMap : boolean; DEM,BoxRadiusMeters,BoxRadiusPixels : integer) : Integer;
+   function CreateDownwardOpennessMap(OpenMap : boolean; DEM,BoxRadiusMeters,BoxRadiusPixels : integer) : Integer;
    function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 function CreateSlopeMapPercentAlgorithm(HowCompute : tSlopeCurveCompute; OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Degrees : boolean = false) : integer;
 
 
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; {GridLimits : tGridLimits;} FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -142,9 +148,12 @@ function ReinterpolateLatLongDEM(OpenMap : boolean; DEM : integer; var SpacingAr
     function CreateAnOrganizationMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
 {$EndIf}
 
+{$IfDef ExPointCloud}
+{$Else}
+   function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
+   function CreateUTMDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
+{$EndIf}
 
-function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
-function CreateUTMDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
 function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; NeighborhoodRadius : integer) : integer;
 
 function GridDiffernces(PercentDifference : boolean = false) : integer;
@@ -157,10 +166,12 @@ procedure PickAspectDifferenceMap(DEM,Window : integer);
 function MakeAdjustedStdDevElevRoughness(OpenMap : boolean; DEM : integer; Radius : integer = 3) : integer;
 
 
-
-procedure CreateDEMsfromLidar;
-function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : tPCGridMaker; BaseMap : tMapForm;  UsePC : tUsePC; LasFiles : tLasFiles;
+{$IfDef ExPointCloud}
+{$Else}
+   procedure CreateDEMsfromLidar;
+   function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : tPCGridMaker; BaseMap : tMapForm;  UsePC : tUsePC; LasFiles : tLasFiles;
         HorizDatum,VertDatum : shortstring; MaxAreaZ,MinAreaZ : float32; AutoSaveDir : PathStr; ShowMeanDensityGrid : boolean) : integer;
+{$EndIf}
 
 
 
@@ -185,14 +196,20 @@ uses
    PetImage_Form,
    Thread_Timers,
    //grid from lidar
+   {$IfDef ExPointCloud}
+   {$Else}
       point_cloud_options,
       las_lidar,
+   {$EndIf}
    DEMweapn;
 
 var
    CountInStrips : integer;
 
-{$I ..\las_lidar\make_grids_from_lidar.inc}
+{$IfDef ExPointCloud}
+{$Else}
+    {$I ..\las_lidar\make_grids_from_lidar.inc}
+{$EndIf}
 
 
 function ReinterpolateLatLongDEM(OpenMap : boolean; DEM : integer; var SpacingArcSec : float32; fName : PathStr = '') : integer;
@@ -517,6 +534,8 @@ begin
 end;
 
 
+   {$IfDef ExPointCloud}
+   {$Else}
 
 function CreateArcSecDEM(OverWrite,OpenMap : boolean; DEM : integer; PixelIs : byte; xgridsize,ygridsize : float32; fName : PathStr) : integer;
 begin
@@ -552,6 +571,8 @@ begin
       {$If Defined(TrackDEMCorners)} DEMGlb[Result].WriteDEMCornersToDebugFile('ResampleForDEMIXOneSecDEMs, new DEM=' + IntToStr(Result)); {$EndIf}
    end;
 end;
+
+{$EndIf}
 
 
 procedure MICRODEM_partialDerivatives(DEM : integer; var Grids : tPartialGrids;  OpenMap : boolean = true);
@@ -953,6 +974,27 @@ begin
 
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
    {$If Defined(RecordDEMIXhillshades)} WriteLineToDebugFile('Created Slope Grid=' + IntToStr(Result) + '  ' + DEMGlb[Result].AreaName + ' ' + DEMGlb[Result].KeyParams(true)); {$EndIf}
+end;
+
+
+function CreateUpwardOpennessMap(OpenMap : boolean; DEM,BoxRadiusMeters,BoxRadiusPixels : integer) : Integer;
+var
+   Down,Diff : integer;
+begin
+   Down := 0;
+   Diff := 0;
+   Result := -99;
+   CreateOpennessMap(OpenMap,DEMglb[DEM].FullDEMGridLimits,DEM,BoxRadiusMeters,BoxRadiusPixels,Result,Down,Diff);
+end;
+
+function CreateDownwardOpennessMap(OpenMap : boolean; DEM,BoxRadiusMeters,BoxRadiusPixels : integer) : Integer;
+var
+   Up,Diff : integer;
+begin
+   Up := 0;
+   Diff := 0;
+   Result := -99;
+   CreateOpennessMap(OpenMap,DEMglb[DEM].FullDEMGridLimits,DEM,BoxRadiusMeters,BoxRadiusPixels,Up,Result,Diff);
 end;
 
 

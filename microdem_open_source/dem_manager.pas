@@ -660,12 +660,11 @@ var
    OutName : PathStr;
 begin
    if FileExists(fName) or GetFileFromDirectory('GeoTiff file','*.TIF;*.TIFF',FName) then begin
+      {$IfDef RecordMetadata} WriteLineToDebugFile('GeotiffMetadata for ' + fName); {$EndIf}
       if (MDversion= mdMicrodem) then begin
          {$IfDef RecordMetadata} WriteLineToDebugFile('MICRODEM GeotiffMetadata for ' + fName); {$EndIf}
-         //MapProjection := tMapProjection.Create('geotiff metadata');
          TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,true,false);
          {$IfDef RecordMetadata} WriteLineToDebugFile('tTiffImage.CreateGeotiff completed'); {$EndIf}
-         //MapProjection.Destroy;
          TiffImage.Destroy;
       end
       else if (MDversion= mdWhiteBox) then WBT_GeotiffMetadata(fName)
@@ -817,7 +816,9 @@ procedure CloseSingleDEM(var DEMtoClose : integer; CloseMap : boolean = true; Re
       begin
          if ValidDEM(DEMnowClosing) then try
             try
-               {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(DEMnowClosing) + '  ' + DEMGlb[DEMnowClosing].AreaName); {$EndIf}
+              //if DEMGlb[DEMnowClosing].SelectionMap <> Nil then DEMGlb[DEMnowClosing].SelectionMap.Destroy;
+
+              {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy DEMGlb=' + IntToStr(DEMnowClosing) + '  ' + DEMGlb[DEMnowClosing].AreaName); {$EndIf}
                DEMGlb[DEMnowClosing].Destroy(CloseMap);
                {$IfDef RecordCloseDEM} WriteLineToDebugFile('Destroy OK for DEMGlb=' + IntToStr(DEMnowClosing)); {$EndIf}
             except

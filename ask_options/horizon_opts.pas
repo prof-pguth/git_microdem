@@ -117,7 +117,10 @@ uses
    {$Else}
       sun_position,
    {$EndIf}
-   Point_Cloud_Options,
+   {$IfDef ExPointCloud}
+   {$Else}
+      Point_Cloud_Options,
+   {$EndIf}
    PetImage, PetMath,petmar_db,
    DEMCoord,
    DEMDefs;
@@ -184,7 +187,7 @@ end;
 
 procedure THorizonOptions.BitBtn9Click(Sender: TObject);
 begin
-  GetGridParameters;
+   GetGridParameters;
 end;
 
 procedure THorizonOptions.FormCreate(Sender: TObject);

@@ -24,12 +24,11 @@ object wmdem: Twmdem
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  TextHeight = 20
+  TextHeight = 16
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -1701,7 +1700,7 @@ object wmdem: Twmdem
     ExplicitWidth = 2412
   end
   object MainMenu1: TMainMenu
-    Left = 136
+    Left = 128
     Top = 48
     object File1: TMenuItem
       Caption = 'File'
@@ -3650,6 +3649,10 @@ object wmdem: Twmdem
     object N44: TMenuItem
       Caption = '-'
     end
+    object UTMbasedtilescreation1: TMenuItem
+      Caption = 'UTM based tiles creation'
+      OnClick = UTMbasedtilescreation1Click
+    end
     object Fullchain1: TMenuItem
       Caption = 'Full chain, source  to reference DEMs'
       object Overwirte1: TMenuItem
@@ -3666,7 +3669,6 @@ object wmdem: Twmdem
       OnClick = Partialprocessing1Click
       object DatumshiftCanadianDEMs1: TMenuItem
         Caption = 'Datum shift DEMs via GDAL to EGM2088 WGS UTM'
-        OnClick = DatumshiftCanadianDEMs1Click
       end
       object Reference1secDTMsfromCanadianlidar1: TMenuItem
         Caption = 'Reference 1 sec DTMs from EGM2008'
@@ -3841,7 +3843,6 @@ object wmdem: Twmdem
       end
       object GetrangesforSSIMhydro1: TMenuItem
         Caption = 'Get ranges for SSIM hydro'
-        OnClick = GetrangesforSSIMhydro1Click
       end
     end
     object EditreferenceandtestDEMs1: TMenuItem
@@ -3865,7 +3866,6 @@ object wmdem: Twmdem
       end
       object CleardoubleprocessedreferenceDEMtiles1: TMenuItem
         Caption = 'Clear double processed reference DEM tiles'
-        OnClick = CleardoubleprocessedreferenceDEMtiles1Click
       end
       object Fixtileswith42114foottag1: TMenuItem
         Caption = 'Fix tiles with 42114 foot tag'
@@ -3874,7 +3874,6 @@ object wmdem: Twmdem
     end
     object Criteriaranges1: TMenuItem
       Caption = 'Criteria ranges'
-      OnClick = Criteriaranges1Click
     end
     object N53: TMenuItem
       Caption = '-'

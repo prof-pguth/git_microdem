@@ -262,14 +262,12 @@ begin
 end;
 
 
-
 function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 var
    SearchRadiusX,SearchRadiusY,
    x,y,xi,yi,xn,yn,n,xp,yp : integer;
    Lat,Long,Sum : float64;
-   z{,z1} : float32;
-   //NewHeadRecs : tDEMheader;
+   z : float32;
    NewAreaName : shortstring;
    UTMzone : integer;
    LatCh : ANSIchar;
@@ -283,6 +281,7 @@ begin
     if (SaveName <> '') then fName := ExtractFileNameNoExt(SaveName);
 
     if ValidDEM(DEMalreadyCreated) then begin
+       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging DEM already created'); {$EndIf}
        Result := DEMalreadyCreated;
     end
     else begin
@@ -305,7 +304,7 @@ begin
    SearchRadiusX := round(DEMGlb[Result].AverageXSpace / AverageXSpace) + 2;
    SearchRadiusY := round(DEMGlb[Result].AverageYSpace / AverageYSpace) + 2;
 
-   StartProgress('Get z values ' + NewAreaName);
+   StartProgress('Get z values ' + NewAreaName,10,10);
    for xn := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
        UpdateProgressBar(xn/DEMGlb[Result].DEMHeader.NumCol);
        for yn := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
@@ -323,19 +322,20 @@ begin
                 end;
              end;
           end;
-          if (n > 0) then begin
+          if (n > 0) and (Sum > 0) then begin
              DEMGlb[Result].SetGridElevation(xn,yn,Sum/n);
           end
           else begin
-             DEMGlb[Result].SetGridMissing(xn,y);
+             DEMGlb[Result].SetGridMissing(xn,yn);
           end;
        end;
    end;
    DEMGlb[Result].CheckMaxMinElev;
    if (SaveName <> '') then begin
       {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
-      DEMGlb[Result].WriteNewFormatDEM(SaveName);
-      {$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
+      //DEMGlb[Result].WriteNewFormatDEM(SaveName);
+      DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
+      //{$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
    if OpenMap then begin
       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging call SetUpMap'); {$EndIf}

@@ -16,7 +16,7 @@ unit petmar_types;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IfDef DEBUG}
-      //{$Define RecordMakeDir}
+      {$Define RecordMakeDir}
       //{$Define RecordFieldPresentProblems}
       //{$Define RecordMyDataCreation}
       //{$Define RecordMyDataFilter}
@@ -55,8 +55,8 @@ uses
    Math,Db,Classes,StrUtils;
 
 const
-   {$IF (CompilerVersion = 36) and System.RTLVersion122} DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
-   //IF (CompilerVersion = 36)}  DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
+   //{$IF (CompilerVersion = 36) and System.RTLVersion122} DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
+   {$IF (CompilerVersion = 36)}  DelphiCompiler = '12.3 Athens'; {$Else} DelphiCompiler = 'Old version'; {$EndIf}
 
 {$IfDef MSWindows}
 const
@@ -680,12 +680,23 @@ var
    IntDirs : tStringList;
    i : integer;
 begin
-   if (DirName <> '') and (not ValidPath(DirName)) then begin
+   if (DirName = '') then begin
+      {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir called with empty directory name'); {$EndIf}
+      DirName := MDtempDir + 'new_folder\';
+   end;
+   if not ValidPath(DirName) then begin
+     {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir try to make ' + DirName); {$EndIf}
+     MkDir(DirName);
+     {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir try made OK ' + DirName); {$EndIf}
+   end;
+(*
+
+   and (not ValidPath(DirName)) then begin
       IntDirs := ParsePath(DirName);
       {$IfDef VCL}
          {$IfDef RecordMakeDir}
             WriteLineToDebugFile('Petmar.SafeMakeDir Desired path: ' + DirName);
-            WriteLineToDebugFile('Petmar.SafeMakeDir found the base path to be: ' + IntDirs[0]);
+            WriteLineToDebugFile('Petmar.SafeMakeDir found base path: ' + IntDirs[0]);
          {$EndIf}
          DirName := IntDirs.Strings[0] + ':' + PathDelim;
          for i := 1 to pred(IntDirs.Count) do begin
@@ -700,6 +711,7 @@ begin
          MkDir(DirName);
       {$EndIf}
    end;
+*)
 end;
 
 
