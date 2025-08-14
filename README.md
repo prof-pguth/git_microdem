@@ -1,6 +1,6 @@
 # git_microdem
  
-Last changes posted 25 July 2025
+Last changes posted 14 August 2025
 
 This is about 400,000 lines of Delphi code, going back to the first iteration of Turbo Pascal.  This can be compiled with the free community edition of Delphi.
 
