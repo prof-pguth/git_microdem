@@ -17,9 +17,6 @@ unit gdal_tools;
 //   gdal_calc
 
 
-//{$Define AllowEDTM}
-
-
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
@@ -134,6 +131,9 @@ const
    function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
 
 
+   function GDAL_DEM_command(OpenMap : boolean; InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
+
+
    //create grids from DEM
       function GDAL_SlopeMap_ZT(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
       function GDAL_SlopeMap_Horn(OpenMap : boolean; DEM : integer; outname : shortstring = '') : integer;
@@ -169,6 +169,8 @@ const
    //projection and datum issues
       procedure GDALAssignProjectionViaWKTorEPSG(DEMName,ProjWKTFileNameOrEPSG : PathStr);
       procedure CompositeDatumShiftWithGDAL(var InName,SaveName : shortstring; s_SRSstring,t_srsstring : shortstring);
+      procedure ShiftAFile_UTM_WGS84_EGM2008(fName,SaveName : PathStr; VertCode,HorizCode,UTMzone : shortstring);
+
       procedure GDALGeotiffToWKT(fName : PathStr);
       function CreateWKTfileForGeotiff(fName : PathStr) : PathStr;
       function CreateWKTStringForGeotiff(fName : PathStr) : ANSIstring;
@@ -237,33 +239,23 @@ const
     var
        cmd : ANSIString;
     begin
-(*
-         GEDTM 1.1   https://s3.opengeohub.org/global/edtm/gedtm_rf_std_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif
-         GEDTM 1.01  https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
-         GEDTM 1     https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
-         GEDTM 0     https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif
-
-         EDTM 1.1    https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif
-         EDTM 1  https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230210.tif
-*)
-         Result := 0;
-         if (OutfName = '') then OutfName := NextFileNumber(MDTempDir,ShortName,'.tif');
-         cmd := GDAL_translate_name + ' --debug on /vsicurl/' + WebName + ' ' + GDALextentBoxLatLong(bb) +  ' ' + OutFName;
-
-         //WriteLineToDebugFile(cmd);
-
-         if WinExecAndWait32(cmd) = -1 then begin
-
-         end;
+       Result := 0;
+       if (OutfName = '') then OutfName := NextFileNumber(MDTempDir,ShortName,'.tif');
+       cmd := GDAL_translate_name + ' --debug on /vsicurl/' + WebName + ' ' + GDALextentBoxLatLong(bb) +  ' ' + OutFName;
+       if WinExecAndWait32(cmd) <> -1 then begin
+       end;
+       if FileExists(OutFName) then begin
+          Result := OpenNewDEM(OutFName,OpenMap);
+       end
+       else Result := 0;
     end;
+
 
     function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
     begin
-       //EDTM_fName := 'I:\backup_map_data\ensemble_dtm\dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
        Result := GDALsubsetGridAndOpen(bb,true,InName,false);
        if ValidDEM(Result) then begin
           DEMGlb[Result].AreaName := ShortName;
-          //DEMGlb[Result].MultiplyGridByConstant(0.1);
           if (OutfName <> '') then DEMGlb[Result].WriteNewFormatDEM(OutfName);
           if OpenMap then CreateDEMSelectionMap(Result,true,true,MDDef.DefaultElevationColors);
        end;
@@ -1266,13 +1258,15 @@ end;
          begin
             CheckFileNameForSpaces(fName);
             if (BaseOutPath = '') or (not ValidPath(BaseOutPath)) then BaseOutPath := MDtempdir;
-            OutPath := NextFilePath(BaseOutPath + ExtractFileNameNoExt(fName) + '_subset');
+            OutPath := NextFilePath(BaseOutPath  {ExtractFileNameNoExt(fName)} + 'extract_subset');
             SafeMakeDir(OutPath);
             OutName := OutPath + ExtractFileName(fName);
+
+
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
 
             Ext := UpperCase(ExtractFileExt(fName));
-            GeotiffBoundingBox(fName,Imagebb);
+            GeotiffBoundingBoxProj(fName,Imagebb);
             if GeotiffRegVars(fName, RegVars) then begin
                if (RegVars.pName = PlateCaree) then begin
                   ExtentBoxString := ' -srcwin ' + IntToStr(trunc((bb.xMin - RegVars.UpLeftX) / RegVars.pr_deltax)) + ' ' +
@@ -1379,7 +1373,9 @@ end;
             BatchFile.Add(GDAL_translate_name + ' -of Gtiff '  + ExtraOptions + ' ' + fName + ' ' + OutName);
             BatchName := Petmar.NextFileNumber(MDTempDir, 'gdal_translate_','.bat');
             EndBatchFile(BatchName,BatchFile);
-            if TrashOriginal and (Uppercase(ExtractFileExt(fName)) <> '.GTX') then File2Trash(fName);
+            if TrashOriginal and (Uppercase(ExtractFileExt(fName)) <> '.GTX') then begin
+               if ExtractFilePath(fName) = MDTempDir then DeleteFileIfExists(fName) else File2Trash(fName);
+            end;
             {$If Defined(RecordGDAL) or Defined(Reformat)} WriteLineToDebugFile(' GDAL_Translate_2_geotiff end'); {$EndIf}
          end;
       end;
@@ -1472,7 +1468,8 @@ end;
                EndBatchFile(Petmar.NextFileNumber(MDTempDir,'gdal_translate_', '.bat'),BatchFile);
             end;
             for I := 0 to pred(RecycleNames.Count) do begin
-               File2Trash(RecycleNames.Strings[i]);
+               if ExtractFilePath(RecycleNames.Strings[i]) = MDtempDir then DeleteFileIfExists(RecycleNames.Strings[i])
+               else File2Trash(RecycleNames.Strings[i]);
             end;
 
             FilesWanted.Free;
@@ -1736,20 +1733,59 @@ begin
       s_SRSstring := ' -s_srs EPSG:4326+' + IntToStr(VertCSEGM96);
       t_srsstring := ' -t_srs EPSG:4326+' + IntToStr(VertCSEGM2008);
    end
-   else if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'WGS84') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'ETRS89') and (DEMGlb[DEM].DEMHeader.DEMUsed = UTMBasedDEM) then begin
-      //this goes from NAD83 NAVD88 to WGS84 EGM2008
-      UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
-      s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+' + IntToStr(VertCSNAVD88);
-      t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+' + IntToStr(VertCSEGM2008);
-   end
    else begin
-      MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProj.h_DatumCode + '+' + IntToStr(DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey));
-      exit;
+       if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'WGS84') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'ETRS89') and (DEMGlb[DEM].DEMHeader.DEMUsed = UTMBasedDEM) then begin
+          //this goes from NAD83 NAVD88 to WGS84 EGM2008
+          UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
+          s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+' + IntToStr(VertCSNAVD88);
+          t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+' + IntToStr(VertCSEGM2008);
+       end
+       else begin
+          MessageToContinue('Not yet supported for ' + DEMGlb[DEM].DEMMapProj.h_DatumCode + '+' + IntToStr(DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey));
+          exit;
+       end;
    end;
    InName := DEMGlb[DEM].GeotiffDEMName;
    CompositeDatumShiftWithGDAL(InName,SaveName,s_SRSstring,t_srsstring);
    {$If Defined(RecordDatumShift)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL out'); {$EndIf}
 end;
+
+
+ procedure ShiftAFile_UTM_WGS84_EGM2008(fName,SaveName : PathStr; VertCode,HorizCode,UTMzone : shortstring);
+ var
+    s_SRSstring,t_srsstring,OutVert : shortstring;
+ begin
+    //SaveName := ChangeFileExt(fName,'_egm2008.tif');
+    if FileExists(SaveName) then begin
+       {$If Defined(Record3DEPXfull)} WriteLineToDebugFile('Already shifted=' + fName); {$EndIf}
+    end
+    else begin
+       {$If Defined(Record3DEPX)} WriteLineToDebugFile('ShiftAFile=' + fName + '  horiz code=' + HorizCode); {$EndIf}
+          if HorizCode = 'NAD83' then begin
+             HorizCode := '269' + UTMZone;
+          end
+          else if HorizCode = 'WGS84' then begin
+             HorizCode := '269' + UTMZone;
+          end
+          else if HorizCode = 'ETRS89' then begin
+             HorizCode := '258' + UTMZone;
+          end
+          else if (HorizCode = 'GCS_WGS') then begin
+             HorizCode := '4326'
+          end;
+       if (VertCode = '') then begin
+          OutVert := '';
+       end
+       else begin
+          OutVert := '+3855';
+          Vertcode := '+' + VertCode
+       end;
+       s_SRSstring := ' -s_srs EPSG:' + HorizCode + VertCode;
+       t_srsstring := ' -t_srs EPSG:' + '326' + UTMzone + OutVert;  //WGS84 + EGM2008
+       CompositeDatumShiftWithGDAL(fName,SaveName,s_SRSstring,t_srsstring);
+    end;
+ end;
+
 
 
 procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);
@@ -1769,6 +1805,7 @@ begin
       {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL cmd=' + cmd); {$EndIf}
       BatchFile.Add(cmd);
       aName := Petmar.NextFileNumber(MDTempDir, 'gdal_datumshift_','.bat');
+      {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('VerticalDatumShiftWithGDAL batch file=' + aName); {$EndIf}
       EndBatchFile(aName,BatchFile);
    end
    else begin

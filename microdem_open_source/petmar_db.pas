@@ -32,10 +32,6 @@ unit petmar_db;
    //{$Define TrackCDStiming}
    //{$Define TrackInsert}
    //{$Define RecordMonitor}
-
-   {$IfDef Android}
-      //{$Define RecordRealToString}
-   {$EndIf}
 {$EndIf}
 
 {$If Defined(UseTDBF)}
@@ -218,7 +214,6 @@ type
 
         function CountSingleFieldWithSubstring(FieldDesired,substring : shortstring) : integer;
 
-
         function FieldSum(FieldDesired : shortstring) : float64;
         function FieldAverage(FieldDesired : shortstring) : float64;
         function FieldMedian(FieldDesired : shortstring) : float64;
@@ -369,6 +364,158 @@ begin
         ftFloat : Result := 'float64';
     end;
 end;
+
+
+
+constructor tMyData.Create(var fName : PathStr; dbMode : tmydbMode = dbmyDefault);
+{$IfDef UseTCLientDataSet}
+   var
+      i : integer;
+{$EndIf}
+{$IfDef SQLiteDefaultDBs}
+   var
+      fName2 : PathStr;
+{$EndIf}
+{$IfDef RecordOpenDB}
+   var
+      Output : tStringList;
+{$EndIf}
+
+begin
+   {$IfDef RecordMyDataCreation} WriteLineToDebugFile('tMyData.Create ' + fName); {$EndIf}
+
+   FileChanged := false;
+   FieldWidthIssues := false;
+   Filtered := false;
+   DBFmovedToRAM := false;
+   Filter := '';
+   RecsTaggedDeletion := 0;
+
+   {$IfDef BDELikeTables}
+      TheBDEdata := Nil;
+   {$EndIf}
+
+   {$IfDef UseTCLientDataSet}
+      TheClientDataSet := Nil;
+   {$EndIf}
+
+   {$IfDef UseFireDacSQLlite}
+      dbMain := Nil;
+      fdTable := Nil;
+      FireDAC_SQL := false;
+   {$EndIf}
+
+   {$IfDef UseFDMemTable}
+      FDMemTable := nil;
+   {$EndIf}
+
+   if (FName = '') then begin
+      if not GetFileFromDirectory('data base','*.dbf',fName) then exit;
+   end;
+
+   if FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
+      OpenNumberedGISDataBase(i,fName,false);
+      CloseAndNilNumberedDB(i);
+      fName := ChangeFileExt(fName,'.dbf');
+   end;
+
+
+   if (FName <> '') and FileExists(fName) then begin
+       CheckFileNameForSpaces(fName);
+       FullTableName := fName;
+       TableName := ExtractFileNameNoExt(fName);
+
+      if FileExtEquals(fName,'.dbf') then begin
+         {$IfDef BDELikeTables}
+            if (dbMode = dbmCDS) and MDDef.AllowMemoryLinkDB then begin
+              {$IfDef TrackCDStiming} WriteLineToDebugFile('call LoadDBFtoClientDataSet ' + ExtractFileName(fName)); {$EndIf}
+              LoadDBFtoClientDataSet(fName,TheClientDataSet);
+              TotRecsInDB := TheClientDataSet.RecordCount;
+              TheClientDataSet.LogChanges := false;
+              DBFmovedToRAM := true;
+              {$IfDef TrackCDStiming} WriteLineToDebugFile('done LoadDBFtoClientDataSet'); {$EndIf}
+            end
+            else begin
+              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('call CreateAndOpenTable'); {$EndIf}
+              CreateAndOpenTable(Self.TheBDEdata,fName);
+              TotRecsInDB := Self.TheBDEdata.RecordCount;
+            end;
+         {$EndIf}
+       end;
+
+   {$IfDef UseTCLientDataSet}
+      if FileExtEquals(fName,'.xml') or FileExtEquals(fName,'.cds') then begin
+          TheClientDataSet := tClientDataSet.Create(Application);
+          TheClientDataSet.LoadFromFile(FName);
+          TheClientDataSet.LogChanges := false;
+          InsureFieldPresentAndAdded(ftInteger,RecNoFName,8);
+          First;
+          i := 0;
+          while not eof do begin
+             inc(i);
+             Edit;
+             SetFieldByNameAsInteger(RecNoFName,i);
+             Next;
+          end;
+          First;
+          TheClientDataSet.SaveToFile(FullTableName,dfBinary);
+          TotRecsInDB := TheClientDataSet.RecordCount;
+      end;
+   {$EndIf}
+
+      {$IfDef UseFireDacSQLlite}
+         if FileExtEquals(fName,'.db') then begin
+            {$IfDef RecordMyDataCreation} WriteLineToDebugFile('doing FireDac'); {$EndIf}
+            FireDAC_SQL := true;
+            FieldWidthIssues := true;
+            OpenSQLLiteFiles(fName,dbMain,fdTable);
+            fdTable.Last;
+            TotRecsInDB := fdTable.RecordCount;
+            fdTable.First;
+         end;
+      {$EndIf}
+      {$IfDef SQLiteDefaultDBs}
+         if FileExtEquals(fName,'.dbf') or FileExtEquals(fName,'.db') then begin
+            fName2 := ChangeFileExt(fName,DefaultDBExt);
+            if not FileExists(fName2) then begin
+               {$IfDef RecordMyDataCreation} WriteLineToDebugFile('ConvertDBFtoSQLite'); {$EndIf}
+               fName := ChangeFileExt(fName,'.dbf');
+               ConvertDBFtoSQLite(fName);
+            end;
+            fName := fName2;
+            TotRecsInDB := RecordCount;
+            {$IfDef RecordMyDataCreation} WriteLineToDebugFile('changed input file to ' + fName); {$EndIf}
+         end;
+      {$EndIf}
+
+      {$IfDef UseFDMemTable}
+         if FileExtEquals(fName,'.adb') then begin
+            FDMemTable := tFDMemTable.Create(Nil);
+            FDMemTable.LoadFromFile(fName);
+            FDMemTable.Open;
+            TotRecordsInDB := FDMemTable.RecordCount;
+         end;
+      {$EndIf}
+
+      {$IfDef RecordMyDataCreation} WriteLineToDebugFile('recs=' + IntToStr(RecordCount)); {$EndIf}
+
+      FiltRecsInDB := TotRecsInDB;
+
+      {$IfDef RecordFullOpenDB}
+         if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then begin
+            Output := GetTableStructure;
+            WriteLineToDebugFile('Structure after tMyData.Create for ' +  fName,true);
+            WriteStringListToDebugFile(Output);
+            Output.Free;
+         end;
+      {$EndIf}
+   end
+   else begin
+      MessageToContinue('DB missing ' + fName);
+   end;
+   {$IfDef RecordMyDataCreation} WriteLineToDebugFile('tMyData.Create out'); {$EndIf}
+end {constructor tMyData.Create};
+
 
 
 function tMyData.CountSingleFieldWithSubstring(FieldDesired,substring : shortstring) : integer;
@@ -864,171 +1011,6 @@ begin
    {$IfDef UseTCLientDataSet}
       if (TheClientDataSet <> Nil) then Result := TheClientDataSet.Fields[i].DataSize;
    {$EndIf}
-end;
-
-
-constructor tMyData.Create(var fName : PathStr; dbMode : tmydbMode = dbmyDefault);
-{$IfDef SQLiteDefaultDBs}
-   var
-      fName2 : PathStr;
-{$EndIf}
-{$IfDef UseTCLientDataSet}
-   var
-      i : integer;
-{$EndIf}
-{$IfDef RecordOpenDB}
-   var
-      Output : tStringList;
-{$EndIf}
-
-begin
-   {$IfDef RecordMyDataCreation} WriteLineToDebugFile('tMyData.Create ' + fName); {$EndIf}
-
-   FileChanged := false;
-   FieldWidthIssues := false;
-   Filtered := false;
-   DBFmovedToRAM := false;
-   Filter := '';
-   RecsTaggedDeletion := 0;
-
-   {$IfDef UseFDMemTable}
-      FDMemTable := nil;
-   {$EndIf}
-
-   {$IfDef BDELikeTables}
-      TheBDEdata := Nil;
-   {$EndIf}
-
-   {$IfDef UseTCLientDataSet}
-      TheClientDataSet := Nil;
-   {$EndIf}
-
-   {$IfDef UseFireDacSQLlite}
-      dbMain := Nil;
-      fdTable := Nil;
-      FireDAC_SQL := false;
-   {$EndIf}
-
-   if (FName = '') then begin
-      if not GetFileFromDirectory('data base','*.dbf',fName) then exit;
-   end;
-
-   if FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
-      OpenNumberedGISDataBase(i,fName,false);
-      CloseAndNilNumberedDB(i);
-      fName := ChangeFileExt(fName,'.dbf');
-   end;
-
-
-   if (FName <> '') and FileExists(fName) then begin
-       CheckFileNameForSpaces(fName);
-       FullTableName := fName;
-       TableName := ExtractFileNameNoExt(fName);
-
-       {$IfDef UseTCLientDataSet}
-          if FileExtEquals(fName,'.xml') or FileExtEquals(fName,'.cds') then begin
-              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('call tClientDataSet.Create'); {$EndIf}
-              TheClientDataSet := tClientDataSet.Create(Application);
-              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('call tClientDataSet.LoadFromFile'); {$EndIf}
-              TheClientDataSet.LoadFromFile(FName);
-              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('done tClientDataSet.LoadFromFile'); {$EndIf}
-              TheClientDataSet.LogChanges := false;
-              InsureFieldPresentAndAdded(ftInteger,RecNoFName,8);
-              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('Added ' + RecNoFName); {$EndIf}
-              First;
-              i := 0;
-              while not eof do begin
-                 inc(i);
-                 Edit;
-                 SetFieldByNameAsInteger(RecNoFName,i);
-                 Next;
-              end;
-              First;
-              TheClientDataSet.SaveToFile(FullTableName,dfBinary);
-              TotRecsInDB := TheClientDataSet.RecordCount;
-              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('CDS/XML set up'); {$EndIf}
-          end;
-       {$EndIf}
-
-      {$IfDef SQLiteDefaultDBs}
-         if FileExtEquals(fName,'.dbf') or FileExtEquals(fName,'.db') then begin
-            fName2 := ChangeFileExt(fName,DefaultDBExt);
-            if not FileExists(fName2) then begin
-               {$IfDef RecordMyDataCreation} WriteLineToDebugFile('ConvertDBFtoSQLite'); {$EndIf}
-               fName := ChangeFileExt(fName,'.dbf');
-               ConvertDBFtoSQLite(fName);
-            end;
-            fName := fName2;
-            TotRecsInDB := RecordCount;
-            {$IfDef RecordMyDataCreation} WriteLineToDebugFile('changed input file to ' + fName); {$EndIf}
-         end;
-      {$EndIf}
-
-      {$IfDef UseFDMemTable}
-         if FileExtEquals(fName,'.adb') then begin
-            FDMemTable := tFDMemTable.Create(Nil);
-            FDMemTable.LoadFromFile(fName);
-            FDMemTable.Open;
-            TotRecordsInDB := FDMemTable.RecordCount;
-         end;
-      {$EndIf}
-
-      if FileExtEquals(fName,'.dbf') then begin
-         {$IfDef BDELikeTables}
-            if (dbMode = dbmCDS) and MDDef.AllowMemoryLinkDB then begin
-              {$IfDef TrackCDStiming} WriteLineToDebugFile('call LoadDBFtoClientDataSet ' + ExtractFileName(fName)); {$EndIf}
-              LoadDBFtoClientDataSet(fName,TheClientDataSet);
-              TotRecsInDB := TheClientDataSet.RecordCount;
-              TheClientDataSet.LogChanges := false;
-              DBFmovedToRAM := true;
-              {$IfDef TrackCDStiming} WriteLineToDebugFile('done LoadDBFtoClientDataSet'); {$EndIf}
-            end
-            else begin
-              {$IfDef RecordMyDataCreation} WriteLineToDebugFile('call CreateAndOpenTable'); {$EndIf}
-              CreateAndOpenTable(Self.TheBDEdata,fName);
-              TotRecsInDB := Self.TheBDEdata.RecordCount;
-            end;
-         {$Else}
-             {$IfDef UseTCLientDataSet}
-                {$IfDef RecordMyDataCreation} WriteLineToDebugFile('call LoadDBFtoClientDataSet'); {$EndIf}
-                LoadDBFtoClientDataSet(fName,TheClientDataSet);
-                TheClientDataSet.LogChanges := false;
-             {$EndIf}
-         {$EndIf}
-       end;
-
-      {$IfDef UseFireDacSQLlite}
-         if FileExtEquals(fName,'.db') then begin
-            {$IfDef RecordMyDataCreation} WriteLineToDebugFile('doing FireDac'); {$EndIf}
-            FireDAC_SQL := true;
-            FieldWidthIssues := true;
-            OpenSQLLiteFiles(fName,dbMain,fdTable);
-            fdTable.Last;
-            TotRecsInDB := fdTable.RecordCount;
-            fdTable.First;
-         end;
-      {$EndIf}
-
-       {$IfDef RecordMyDataCreation}
-          WriteLineToDebugFile('recs=' + IntToStr(RecordCount));
-         {$IfDef UseTCLientDataSet} if (TheClientDataSet <> Nil) then WriteLineToDebugFile('Loaded tClientDataSet'); {$EndIf}
-      {$EndIf}
-
-      FiltRecsInDB := TotRecsInDB;
-
-      {$IfDef RecordFullOpenDB}
-         if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then begin
-            Output := GetTableStructure;
-            WriteLineToDebugFile('Structure after tMyData.Create for ' +  fName,true);
-            WriteStringListToDebugFile(Output);
-            Output.Free;
-         end;
-      {$EndIf}
-   end
-   else begin
-      MessageToContinue('DB missing ' + fName);
-   end;
-   {$IfDef RecordMyDataCreation} WriteLineToDebugFile('tMyData.Create out'); {$EndIf}
 end;
 
 
@@ -2752,6 +2734,7 @@ end;
 initialization
 finalization
 end.
+
 
 
 

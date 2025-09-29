@@ -811,7 +811,10 @@ const
    euOpenDown = 72;
    euOpenDiff = 73;
    euHillshade = 74;
-   euHighElevUnits = 74;  //same as last real one;  used only for loops through all the elevation units;
+   euGRC_L1 = 75;
+   euGRC_L2 = 76;
+   euGRC_L3 = 77;
+   euHighElevUnits = 77;  //same as last real one;  used only for loops through all the elevation units;
 
 const
    VertCSUndefined = 0;
@@ -870,7 +873,6 @@ type
       h_DatumCode : ShortString;
       NumCol,NumRow  : int32;
       RasterPixelIsGeoKey1025 : byte;
-      //aDigitizeDatum : tDigitizeDatum; {sets datum for DEM, and it is transformed to the desired local datum for use}
       LatHemi    : AnsiChar;  {N or S}
       StoredMaxElev,
       StoredMinElev,
@@ -878,8 +880,8 @@ type
       MinElev     : float32; {min elevation in data set}
       DEMySpacing,           {y spacing}
       DEMxSpacing : float64; {x spacing}
-      DEMSWCornerX,
-      DEMSWCornerY : float64;
+      SWCornerX,
+      SWCornerY : float64;   {in terms of the file, could be pixel is area or point}
       VerticalCSTypeGeoKey,
       UTMZone  : Int16;     {6 degree UTM Zone number, USGS/MGRS standard: 1 = W177, 60 = E177}
       WKTString : ANSIString;
@@ -1997,17 +1999,31 @@ type
 
       ElevInterpolation : tElevInterpolation;
 
-      DEMIX_AllowCoastal : boolean;
+      DEMIX_std_filters,
+      DEMIX_slope_filters,
+      DEMIX_ruff_filters,
+      DEMIX_barren_filters,
+      DEMIX_forest_filters,
+      DEMIX_urban_filters,
+      DEMIX_average_criteria,
+      DEMIX_AllowCoastal,
+      DEMIX_Geo_Tiles     : boolean;
+      DEMIX_series_symbol,
       DEMIX_Mode,
       DEMIXsymsize,
+      DEMIX_Line_Width,
       DEMIX_Tile_Full,
       DEMIX_groupWonLost : byte;
+      DEMIX_BaseDir,
       DEMIX_FullDBfName,
       DEMIX_U120DBfName,
       DEMIX_U80DBfName,
       DEMIX_U10DBfName,
       DEMIX_base_dir,
-      //DEMIX_criterion_fName : PathStr;
+      DEMIX_tile_chars_fname,
+      DEMIX_criteria_fName,
+      DEMIX_filter1_fName,
+      DEMIX_filter2_fName : PathStr;
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
       DEMIX_combined_graph,
@@ -2036,7 +2052,7 @@ type
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
       DEMIX_UseMedian,
-      DEMIX_graph_Retired_DEMs,
+      //DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoAirOrDirt,
       DEMIX_DoElevDiff,
@@ -2839,7 +2855,7 @@ type
 
        DefAreaFill            : tBrushStyle;
        FillColor,AreaBorderColor : tPlatformColor;
-       ShowGridDiffMap,ShowGridDiffHistogram : boolean;
+       ShowGridDiffMap,ShowGridDiffHistogram,ShowDiffDistStats : boolean;
        MapLatLongGridColor : tPlatformColor;
        MapLatLongLineWidth : byte;
 

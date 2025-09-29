@@ -57,355 +57,6 @@
 // DELPHI_X is defined if the compiler is at least that version of Delphi
 // e.g. DELPHI_5 means, it's Delphi 5 or newer
 
-{$ifdef VER100}         // Delphi 3
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER110}      // CBuilder 3
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER120}      // Delphi 4
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER125} // C++ BUILDER 4
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER130} // Delphi 5
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER135} // C++ Builder 5 ??
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER140} // Delphi 6
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER145} // C++ Builder 6
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER150} // Delphi 7 :-) For once I am not late (12/07/2001)
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER155} // C++ Builder 7
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER160} // Delphi 8
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER170} // Delphi 2005
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER180} // Delphi 2006
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER185} // Delphi 2007 Win32
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER200} // Delphi 2009
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER210} // Delphi 2010
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER220} // Delphi XE
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER230} // Delphi XE2
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER240} // Delphi XE3 (not tested)
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER250} // Delphi XE4 (not tested)
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER260} // Delphi XE5
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER270} // Delphi XE6
-  {$define DELPHI_XE6}
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER280} // Delphi XE7
-  {$define DELPHI_XE7}
-  {$define DELPHI_XE6}
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER290} // Delphi XE8
-  {$define DELPHI_XE8}
-  {$define DELPHI_XE7}
-  {$define DELPHI_XE6}
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER300} // Delphi 10 Seattle
-  {$define DELPHI_10}
-  {$define DELPHI_XE8}
-  {$define DELPHI_XE7}
-  {$define DELPHI_XE6}
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER310} // Delphi 10.1 Berlin
-  {$define DELPHI_101}
-  {$define DELPHI_10}
-  {$define DELPHI_XE8}
-  {$define DELPHI_XE7}
-  {$define DELPHI_XE6}
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
-
-{$ifdef VER320} // Delphi 10.2 Tokyo
-  {$define DELPHI_102}
-  {$define DELPHI_101}
-  {$define DELPHI_10}
-  {$define DELPHI_XE8}
-  {$define DELPHI_XE7}
-  {$define DELPHI_XE6}
-  {$define DELPHI_XE5}
-  {$define DELPHI_XE4}
-  {$define DELPHI_XE3}
-  {$define DELPHI_XE2}
-  {$define DELPHI_XE}
-  {$define DELPHI_2010}
-  {$define DELPHI_2009}
-  {$define DELPHI_2007}
-  {$define DELPHI_2006}
-  {$define DELPHI_2005}
-  {$define DELPHI_8}
-  {$define DELPHI_7}
-  {$define DELPHI_6}
-  {$define DELPHI_5}
-  {$define DELPHI_4}
-  {$define DELPHI_3}
-{$endif}
 
 {$ifdef VER330} // Delphi 10.3 Rio
   {$define DELPHI_103}
@@ -489,6 +140,36 @@
 {$endif}
 
 {$ifdef VER360} // Delphi 12
+  {$define DELPHI_12}
+  {$define DELPHI_11}
+  {$define DELPHI_104}
+  {$define DELPHI_103}
+  {$define DELPHI_102}
+  {$define DELPHI_101}
+  {$define DELPHI_10}
+  {$define DELPHI_XE8}
+  {$define DELPHI_XE7}
+  {$define DELPHI_XE6}
+  {$define DELPHI_XE5}
+  {$define DELPHI_XE4}
+  {$define DELPHI_XE3}
+  {$define DELPHI_XE2}
+  {$define DELPHI_XE}
+  {$define DELPHI_2010}
+  {$define DELPHI_2009}
+  {$define DELPHI_2007}
+  {$define DELPHI_2006}
+  {$define DELPHI_2005}
+  {$define DELPHI_8}
+  {$define DELPHI_7}
+  {$define DELPHI_6}
+  {$define DELPHI_5}
+  {$define DELPHI_4}
+  {$define DELPHI_3}
+{$endif}
+
+{$ifdef VER370} // Delphi 13
+  {$define DELPHI_13}
   {$define DELPHI_12}
   {$define DELPHI_11}
   {$define DELPHI_104}

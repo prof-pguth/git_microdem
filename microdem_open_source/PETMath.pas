@@ -43,6 +43,7 @@ uses
       DBClient,
    {$EndIf}
 //end needed for inline of the core DB functions
+
    {$IfDef VCL}
       Graphics, VCL.Grids,
    {$EndIf}
@@ -1993,7 +1994,7 @@ end;
 
 
 procedure moment(var data : array of float32; var MomentVar : tMomentVar; MomentStop : tMomentStop);  {after Press and others, 1986, Numerical Recipes, Cambridge University Press, p.458, with additional computations}
-//msAll,msAfterMean,msAfterStdDev,msBeforeMedian
+//msAll,msAfterMean,msAfterStdDev,msBeforeMedian,msEvenLE90
 VAR
    j: integer;
    s,p,s2 : float64;
@@ -2052,16 +2053,21 @@ BEGIN
       MomentVar.curt := MomentVar.curt / (MomentVar.Npts*sqr(MomentVar.svar))-3.0;
    END;
    if (MomentStop = msBeforeMedian) then exit;
+
    MomentVar.median := Median(data,MomentVar.Npts);
    MomentVar.Q1 := data[round(MomentVar.NPts / 4)];
    MomentVar.Q3 := data[round(MomentVar.NPts * 3 / 4)];
    MomentVar.PC1 := data[round(MomentVar.NPts * 1 / 100)];
    MomentVar.PC2 := data[round(MomentVar.NPts * 2 / 100)];
    MomentVar.PC5 := data[round(MomentVar.NPts * 5 / 100)];
-   MomentVar.LE90 := data[round(MomentVar.NPts * 90 / 100)];
    MomentVar.PC95 := data[round(MomentVar.NPts * 95 / 100)];
    MomentVar.PC98 := data[round(MomentVar.NPts * 98 / 100)];
    MomentVar.PC99 := data[round(MomentVar.NPts * 99 / 100)];
+   if not (MomentStop = msIncludeLE90) then exit;
+
+   FOR j := 0 to pred(MomentVar.Npts) do data[j] := abs(data[j]);
+   MomentVar.LE90 := Median(data,MomentVar.Npts); //to sort now all positive values;
+   MomentVar.LE90 := data[round(MomentVar.NPts * 90 / 100)];
 end;
 
 

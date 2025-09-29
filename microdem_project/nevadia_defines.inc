@@ -21,26 +21,27 @@
 {$WEAKLINKRTTI ON}
 
 
-{$Define July15Issue}
+{$Define July15Issue}    //internal error that was very hard to track down; it went away, but returned late August
 
 //{$Define ExFMX3D}
 //{$Define ExPointCloud}
 
 {$Define AllowGeomorphometry}  //July 2025, these would be very hard to remove
 
-//{$Define ExVegDensity}
 {$Define ExcludeDirtAirShots}
 {$Define ExIceSat}
+//{$Define ExVegDensity}
+
+
 //{$Define ExStratcol}
 
 
 //{$Define ExDEMIXexperimentalOptions}
-
 //{$Define IncludePython}
-
 //{$Define ExFresnel}
 
 //{$Define TrackElevationPointers}
+//{$Define TrackPixelIs}
 
 
 //options for slope/curvature algorithm, turned off by default
@@ -49,6 +50,8 @@
 
 
 //{$Define AllowEDTM}
+
+
 
 
 {$Define MICRODEM}

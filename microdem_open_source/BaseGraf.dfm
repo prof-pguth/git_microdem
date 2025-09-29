@@ -55,8 +55,7 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 215
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 803
-    ExplicitHeight = 168
+    ExplicitHeight = 195
     object Image1: TImage
       Left = 0
       Top = 0
@@ -86,8 +85,7 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    ExplicitTop = 196
-    ExplicitWidth = 803
+    ExplicitTop = 223
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -95,7 +93,6 @@ object ThisBaseGraph: TThisBaseGraph
     Width = 809
     Height = 28
     TabOrder = 2
-    ExplicitWidth = 803
     object SpeedButton2: TSpeedButton
       Left = 0
       Top = 0
@@ -371,9 +368,6 @@ object ThisBaseGraph: TThisBaseGraph
         Caption = 'Legend'
         OnClick = Legend1Click
       end
-      object Exportgraphdata1: TMenuItem
-        Caption = 'Export graph data'
-      end
       object Close1: TMenuItem
         Caption = '&Close'
         OnClick = Close1Click
@@ -626,7 +620,7 @@ object ThisBaseGraph: TThisBaseGraph
     Top = 88
   end
   object PopupMenu1: TPopupMenu
-    Left = 288
+    Left = 304
     Top = 64
     object Rescalegraph1: TMenuItem
       Caption = 'Rescale graph'

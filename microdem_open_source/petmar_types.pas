@@ -16,7 +16,7 @@ unit petmar_types;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IfDef DEBUG}
-      {$Define RecordMakeDir}
+      //{$Define RecordMakeDir}
       //{$Define RecordFieldPresentProblems}
       //{$Define RecordMyDataCreation}
       //{$Define RecordMyDataFilter}
@@ -281,9 +281,6 @@ type
    tColors256  = array[0..255] of TColor;
    tPlatformColors256  = array[0..255] of TPlatformColor;
 
-   //tColors15   = array[1..15] of tColor;
-   //tIntegers15 = array[1..15] of integer;
-   //tbytes15 = array[1..15] of byte;
    tDistanceUnits = (disMetric,disEnglish,disNautical);
    tLatLongMethod = (DecDegrees,DecMinutes,DecSeconds,NearestDegree,NearestMinute,NearestSecond,ShortDegrees,VeryShortDegrees,LongDegrees);
    tAngleMeasure = (amDegree,amMinute,amSecond);
@@ -323,7 +320,7 @@ type
    CircleFreqType = array[0..360] of integer;
    ElevArray = array[1..5] of integer;  {elevations surrounding a point: 1=SW, 2=SE, 3=NE, 4=NW, 5=1=SW}
    OneBySixFloatArray = array[1..6] of float64;
-   floatarray1000 = array[0..1000] of float32;
+   tFloatArray1000 = array[0..1000] of float32;
    tElevFloatarray= array[1..5] of float32;
 
 {variables used for contouring;  values can be modified to change memory requirements}
@@ -336,7 +333,7 @@ const
 type
    tRPnt = array[1..MaxContourPoints] of float64;
    tPointerPnt = array[1..5] of ^tRPnt;
-   tMomentStop = (msAll,msAfterMean,msAfterStdDev,msBeforeMedian);
+   tMomentStop = (msAll,msAfterMean,msAfterStdDev,msBeforeMedian,msIncludeLE90);
 
    tMEMPowerDefaults = packed record
       NumProfiles,
@@ -364,7 +361,6 @@ var
    ParallelRowsDone,EditsDone,
    ParallelRowsToDo,
    CombinedScreenWidth : integer;
-   //RGBColorArray : tRGBColorArray;
 
 {$IfDef VCL}
    claRed,claWhite,claBlack,claLime,claBlue,claNavy,claDarkGrey,claSilver,claFuchsia,claPurple,claAqua,claTeal,claGreen,claYellow,claOlive,claMaroon,claNearWhite,claCyan : tPlatformColor;
@@ -678,7 +674,7 @@ end;
 procedure SafeMakeDir(DirName : PathStr);
 var
    IntDirs : tStringList;
-   i : integer;
+   //i : integer;
 begin
    if (DirName = '') then begin
       {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir called with empty directory name'); {$EndIf}

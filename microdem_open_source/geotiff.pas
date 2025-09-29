@@ -40,6 +40,7 @@ unit GeoTiff;
       //{$Define GeotiffCorner}
       //{$Define RecordImageOffsets}
       //{$Define TrackHorizontalDatum}
+      //{$Define TrackVerticalDatum}
       //{$Define RecordDEMMapProj}
       //{$Define RecordGeotiffProjection}
       //{$Define RecordDefineDatum}
@@ -113,7 +114,7 @@ type
       MinSampleValue,MaxSampleValue : array[1..MaxBands] of int32;
       SampleFormat : tSampleFormat;
       OffsetArray : ^tOffsetArray;
-      TieBoundBox : sfBoundBox;
+      //TieBoundBox : sfBoundBox;
       FootDEM : boolean;
 
       //tGeoTiffHeader unique values
@@ -193,14 +194,18 @@ type
 procedure CaptureBMPInGeoTIFF(MapDraw : tMapDraw; FileName : PathStr; Image1 : tImage; MonoImage : boolean = false);
 function BandsInGeotiff(fName : PathStr) : integer;
 function GeotiffImageSize(fName : PathStr; var Width,Height : integer) : boolean;
-function GeotiffBoundingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
+function GeotiffBoundingBoxProj(fName : PathStr; var bb : sfBoundBox) : boolean;
+function GeotiffBoundingBoxGeo(fName : PathStr; var bb : sfBoundBox) : boolean;
+
 function GeotiffRegVars(fName : PathStr; var RegVars : tRegVars) : boolean;
+function GeotiffCentroidLatLong(fName : PathStr; var Lat,Long : float64) : boolean;
 
 procedure RewriteGeotiffIfRequired(var TIFFFileName : PathStr);
 function GetGeotiffTag42112(fName : PathStr; var Tag : shortstring; var Tag42112Offset,Tag42112Length : int64) : boolean;
-
-//function GeotiffBBox(fName : PathStr) : sfBoundBox;
 function Geotiff_UTMzone(fName : PathStr) : integer;
+
+function Geotiff_VerticalDatum(fName : PathStr) : integer;
+
 
 {$IfDef VCL}
 var
@@ -257,6 +262,20 @@ begin
 end;
 
 
+function Geotiff_VerticalDatum(fName : PathStr) : integer;
+var
+   success : boolean;
+   TiffImage : tTIFFImage;
+begin
+   Result := -99;
+   if FileExists(fName) then begin
+      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
+      Result := TiffImage.TiffHeader.VertDatum;
+      TiffImage.Destroy;
+   end;
+end;
+
+
 procedure RewriteGeotiffIfRequired(var TIFFFileName : PathStr);
 var
   TiffImage : tTiffImage;
@@ -282,7 +301,6 @@ begin
    TiffImage.Destroy;
    {$IfDef RecordGeotiffRewrite} WriteLineToDebugFile('RewriteGeotiffIfRequired out for  ' + TIFFFileName); {$EndIf}
 end;
-
 
 
 function tTIFFImage.TiledImage : boolean;
@@ -328,10 +346,10 @@ begin
 end;
 
 
-function GeotiffBoundingBox(fName : PathStr; var bb : sfBoundBox) : boolean;
+function GeotiffBoundingBoxProj(fName : PathStr; var bb : sfBoundBox) : boolean;
 var
-   success : boolean;
    TiffImage : tTIFFImage;
+   Success : boolean;
 begin
    Result := FileExists(fName);
    if Result then begin
@@ -341,6 +359,41 @@ begin
       bb.ymin := TiffImage.RegVars.UpleftY - pred(TiffImage.TiffHeader.ImageLength) * TiffImage.RegVars.pr_deltaY;
       bb.ymax := TiffImage.RegVars.UpleftY;
       TiffImage.Destroy;
+   end;
+end;
+
+
+function GeotiffBoundingBoxGeo(fName : PathStr; var bb : sfBoundBox) : boolean;
+var
+   TiffImage : tTIFFImage;
+   Success : boolean;
+begin
+   Result := FileExists(fName);
+   if Result then begin
+      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
+      bb.xmin := TiffImage.RegVars.UpleftX;
+      bb.xmax := TiffImage.RegVars.UpleftX + pred(TiffImage.TiffHeader.ImageWidth) * TiffImage.RegVars.pr_deltaX;
+      bb.ymin := TiffImage.RegVars.UpleftY - pred(TiffImage.TiffHeader.ImageLength) * TiffImage.RegVars.pr_deltaY;
+      bb.ymax := TiffImage.RegVars.UpleftY;
+      if TiffImage.TiffHeader.ModelType <> 2 then begin
+         TiffImage.MapProjection.InverseProjectDegrees(bb.xmin,bb.ymin,bb.ymin,bb.xmin);
+         TiffImage.MapProjection.InverseProjectDegrees(bb.xmax,bb.ymax,bb.ymax,bb.xmax);
+      end;
+
+      TiffImage.Destroy;
+   end;
+end;
+
+
+
+function GeotiffCentroidLatLong(fName : PathStr; var Lat,Long : float64) : boolean;
+var
+   bb : sfBoundBox;
+begin
+   Result := GeotiffBoundingBoxGeo(fName,bb);
+   if Result then begin
+      Lat := 0.5 * (bb.ymax + bb.ymin);
+      Long := 0.5 * (bb.xmax + bb.xmin);
    end;
 end;
 
@@ -1023,20 +1076,20 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                  if abs(WantDEM.DEMheader.DEMySpacing - 1/3600) < 0.001 then WantDEM.DEMheader.DEMySpacing := 1/3600;
               end;
 
-              WantDEM.DEMheader.DEMSWCornerX := TiffHeader.ModelX;
+              WantDEM.DEMheader.SWCornerX := TiffHeader.ModelX;
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  NW Corner X=' + RealToString(TiffHeader.ModelX,-18,-6) + '  Y=' + RealToString(TiffHeader.ModelY,-18,-6)); {$EndIf}
 
               WantDEM.GeotiffNWCornerX := TiffHeader.ModelX;
               WantDEM.GeotiffNWCornerY := TiffHeader.ModelY;
 
               if (TiffHeader.Orientation in [1,4]) then begin
-                 //as defined, it is the NW corner of the upper left cell; we want to transform to the SW corner of of the lower left cell
-                 WantDEM.DEMheader.DEMSWCornerY := TiffHeader.ModelY - (pred(WantDEM.DEMheader.NumRow) * WantDEM.DEMheader.DEMySpacing);
+                 //as defined, it is NW corner of upper left cell; we want to transform to SW corner of lower left cell
+                 WantDEM.DEMheader.SWCornerY := TiffHeader.ModelY - (pred(WantDEM.DEMheader.NumRow) * WantDEM.DEMheader.DEMySpacing);
                  //for pixel-is-area or undefined this makes the corner the SW corner of the pixel
               end
               else begin
                  // this is probably not completely correct, but I don't think it ever happens
-                 WantDEM.DEMheader.DEMSWCornerY := TiffHeader.ModelY;
+                 WantDEM.DEMheader.SWCornerY := TiffHeader.ModelY;
               end;
               {$IfDef TrackDEMCorners} WantDEM.WriteDEMCornersToDebugFile('Defined the Geotiff'); {$EndIf}
               {$IfDef GeotiffCorner} WriteLineToDebugFile('Read Geotiff DEM,  SW corner  X=' + RealToString(WantDEM.DEMheader.DEMSWCornerX,-18,-6) + '  Y=' + RealToString(WantDEM.DEMheader.DEMSWCornerY,-18,-6)); {$EndIf}
@@ -1088,8 +1141,8 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                      end
                      else if (WantDEM.DEMMapProj.PName = PlateCaree) or (TiffHeader.ModelType = 2) then begin
                         WantDEM.DEMheader.DEMUsed := ArcSecDEM;
-                        if (WantDEM.DEMheader.DEMSWCornerX > 180) then WantDEM.DEMheader.DEMSWCornerX := WantDEM.DEMheader.DEMSWCornerX - 360;
-                        WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.DEMSWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
+                        if (WantDEM.DEMheader.SWCornerX > 180) then WantDEM.DEMheader.SWCornerX := WantDEM.DEMheader.SWCornerX - 360;
+                        WantDEM.DEMheader.UTMZone := GetUTMZone(WantDEM.DEMheader.SWCornerX + 0.5 * WantDEM.DEMheader.NumCol * WantDEM.DEMheader.DEMxSpacing);
                      end
                      else if (WantDEM.DEMMapProj.PName = UTMEllipsoidal) then begin
                         WantDEM.DEMheader.DEMUsed := UTMBasedDEM;
@@ -1123,6 +1176,10 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             WantDEM.DEMheader.NumRow := TiffHeader.ImageLength;
             WantDEM.DEMHeader.RasterPixelIsGeoKey1025 := TiffHeader.RasterPixelIs;
             WantDEM.DEMheader.VerticalCSTypeGeoKey := TiffHeader.VertDatum;
+            {$IfDef TrackVerticalDatum} WriteLineToDebugFile('Geotiff read ' + WantDEM.AreaName + ' vdatum=' + IntToStr(WantDEM.DEMheader.VerticalCSTypeGeoKey)); {$EndIf}
+
+
+            //if (WantDEM.AreaName = 'GEDTMV1_2') then TiffHeader.MDZtype := euDecimeters;
 
             if TiffHeader.MDZtype = euCentimeters then begin
                TiffHeader.MDZtype := euMeters;
@@ -1135,6 +1192,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             end;
 
             WantDEM.DEMheader.ElevUnits := TiffHeader.MDZtype; //tElevUnit(TiffHeader.MDZtype);
+            {$IfDef TrackZ} WriteLineToDebugFile('ElevUnits=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits) + '  TiffHeader.Factor=' + RealToString(TiffHeader.Factor,-8,-2) ); {$EndIf}
 
             {$IfDef RecordInitDEM} WriteLineToDebugFile('WantDEM.DEMHeader.RasterPixelIsGeoKey1025=' + IntToStr(WantDEM.DEMHeader.RasterPixelIsGeoKey1025) ); {$EndIf}
 
@@ -2086,9 +2144,12 @@ var
                          TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                          {$If Defined(TrackZ)} WriteLineToDebugFile('Key 42112 ' + TStr); {$EndIf}
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'FOOT') then FootDEM := true;
-                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'EGM2008') then TiffHeader.VertDatum := VertCSEGM2008;
+                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'EGM2008') then begin
+                            TiffHeader.VertDatum := VertCSEGM2008;
+                            {$IfDef TrackVerticalDatum} WriteLineToDebugFile('Geotiff tag 42112,  vdatum=' + IntToStr(TiffHeader.VertDatum)); {$EndIf}
+                         end;
                          if StrUtils.AnsiContainsText(UpperCase(Tstr),'CENTIMETERS') then TiffHeader.MDZtype := euCentimeters;
-                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'"SCALE" SAMPLE="0" ROLE="SCALE">0.1') then TiffHeader.MDZtype := euCentimeters;
+                         if StrUtils.AnsiContainsText(UpperCase(Tstr),'"SCALE" SAMPLE="0" ROLE="SCALE">0.1') then TiffHeader.MDZtype := euDecimeters;
                          Tag42112 := TStr;
                          Tag42112Offset := TiffKeys[j].KeyOffset;
                          Tag42112Length := TiffKeys[j].LengthIm;
@@ -2288,6 +2349,7 @@ var
                   3095 : xt := SetADouble(TiffOffset,4);
                   4096 : begin
                             TiffHeader.VertDatum := TiffOffset;
+                            {$IfDef TrackVerticalDatum} WriteLineToDebugFile('Geotiff tag 4096 vdatum=' + IntToStr(TiffHeader.VertDatum)); {$EndIf}
                             TStr := MapProjection.ProcessTiff4096(TiffOffset);
                          end;
                   5120 : begin
@@ -2489,10 +2551,10 @@ begin
 
    if (TiffHeader.NumEnt > 100) or (TiffHeader.NumEnt < 10) then begin
       Success := false;
-      {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} WriteLineToDebugFile('NumEnt problem=' + IntToStr(TiffHeader.NumEnt) + '  ' + inFileName); {$EndIf}
+      {$If Defined(RecordGeotiffFailures) or Defined(RecordProblems)} WriteLineToDebugFile('Geotiff read NumEnt problem=' + IntToStr(TiffHeader.NumEnt) + '  ' + inFileName); {$EndIf}
       Success := false;
       CloseTiffFile;
-      MessageToContinue('Tiff read problem; check that file is not open in another program');
+      if not HeavyDutyProcessing then MessageToContinue('Tiff read problem; check that file is not open in another program ' + InFileName);
       exit;
    end;
 

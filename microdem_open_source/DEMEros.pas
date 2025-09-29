@@ -976,8 +976,8 @@ begin
    NewHeadRecs.NumCol := BandColumns[Band1];
    NewHeadRecs.NumRow := BandRows[Band1];
 
-   NewHeadRecs.DEMSWCornerX := SatelliteBoundBoxProj(Band1).xmin;
-   NewHeadRecs.DEMSWCornerY := SatelliteBoundBoxProj(Band1).ymin;
+   NewHeadRecs.SWCornerX := SatelliteBoundBoxProj(Band1).xmin;
+   NewHeadRecs.SWCornerY := SatelliteBoundBoxProj(Band1).ymin;
 
    NewHeadRecs.DEMxSpacing := BandXSpace[Band1];
    NewHeadRecs.DEMySpacing := BandYSpace[Band1];

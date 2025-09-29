@@ -94,6 +94,8 @@ procedure WriteDEMListToDebug(Title : shortString; FileDEMList : tDEMBooleanArra
 procedure MakeDEMSummaryTable;
 procedure DEMHeaderTable;
 
+procedure MakeDBwithLC10FileInventory;
+
 {$IfDef ExIndexes}
 {$Else}
    const
@@ -169,6 +171,9 @@ function ValidImageryExt(ext : extstr) : boolean;
 
 function GetLC100_fileName(Lat,Long : float32) : PathStr;
 function GetLC10_fileName(Lat,Long : float32) : PathStr;
+
+function WebExtractGEDTMorEDTM(aDEM : shortstring;  bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
+
 
 const
    EGM96_grid : integer = 0;
@@ -273,6 +278,31 @@ uses
    BaseMap;
 
 
+function WebExtractGEDTMorEDTM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
+var
+   fName : PathStr;
+begin
+(*
+    if (aDEM = 'GEDTMV1_2w') then      fName := 'https://s3.opengeohub.org/global/dtm/v1.2/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.3857.3855_v1.2.tif'
+    else if (aDEM = 'GEDTMV1_2f') then fName := 'https://s3.opengeohub.org/global/dtm/v1.2/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif'
+    else if (aDEM = 'GEDTMV1_2') then  fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif'
+*)
+
+    if (aDEM = 'GEDTMV1_2') then       fName := 'https://s3.opengeohub.org/global/dtm/v1.2/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif'
+    else if (aDEM = 'GEDTMV1_1') then  fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif'
+    else if (aDEM = 'GEDTMV0') then    fName := 'https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif'
+    else if (aDEM = 'EDTM') then       fName := 'https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
+    Result := GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,OpenMap,SaveName,SaveName);
+    if ValidDEM(Result) then begin
+       //if (aDEM = 'GEDTMV1_2') then DEMGlb[Result].MultiplyGridByConstant(0.1);   //because it lacks any indication it is decimeters
+       SaveGEDTMFamilyDEM(Result,SaveName);  //with EGM2008 code added, MD elevation code for meters, and kill ASCII tag 42112
+    end
+    else MessageToContinue('At it again; download link broken');
+end;
+
+
+
+
 {$IfDef TrackElevationPointers}
    function DEMArrayElevationPointersDefined(Report : shortstring; DEMsWanted : tDEMbooleanArray) : boolean;
    var
@@ -316,7 +346,6 @@ begin
    end;
    if LatFirst then Result := LatStr + LongStr
    else Result := LongStr + LatStr;
-
    ReplaceCharacter(Result,' ','0');
 end;
 
@@ -340,13 +369,38 @@ const
 var
    TileName : shortstring;
 begin
-
-//"J:\landcover\esa_world_cover_10m\ESA_WorldCover_10m_2021_v200_N30W114_Map\ESA_WorldCover_10m_2021_v200_N30W114_Map.tif"
-
-   //Lat := Lat + 20;  //because tiles are named for the NW corner
    TileName := TileBaseName(TileSize,True,Lat,Long);
    Result :=  'J:\landcover\esa_world_cover_10m\ESA_WorldCover_10m_2021_v200_' + TileName + '_Map\ESA_WorldCover_10m_2021_v200_' + TileName + '_Map.tif';
    FindDriveWithFile(Result);
+end;
+
+
+procedure MakeDBwithLC10FileInventory;
+var
+   Location,fName : PathStr;
+   TheFiles,Results : tStringList;
+   Lat,Long, i : Integer;
+begin
+   Location := 'J:\landcover\esa_world_cover_10m\';
+   FindDriveWithPath(Location);
+   TheFiles := Nil;
+   FindMatchingFiles(Location,'*.tif',TheFiles,2);
+   Results := tStringList.Create;
+   Results.Add('LAT,LONG,FILE_NAME');
+   for i := 0 to pred(theFiles.Count) do begin
+      fName := ExtractFileNameNoExt(theFiles.Strings[i]);
+      Lat := StrToInt(Copy(fName,31,2));
+      if FName[30] = 'S' then Lat := -Lat;
+      Long := StrToInt(Copy(fName,34,3));
+      if FName[33] = 'W' then Long := -Long;
+      Results.Add(IntToStr(Lat) + ',' + IntToStr(Long) + ',' + fName);
+   end;
+   fName := MdtempDir + 'LC_10_files.dbf';
+   PetDBUtils.StringList2CSVtoDB(Results,fName);
+   TheFiles.Destroy;
+{
+ESA_WorldCover_10m_2021_v200_N57E003_Map.tif
+}
 end;
 
 
@@ -362,18 +416,20 @@ begin
    Result := true;
 end;
 
+
 procedure DEMHeaderTable;
 const
-   NumParams = 23;
+   NumParams = 28;
    Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW',
         'PIXEL_IS','H_DATUM','VERT_DATUM','UTM_ZONE','MIN_Z','MAX_Z','X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072',
-        'GeoTIIF_2048','SPACING_M','PIXEL_GEOMETRY','FILE_SIZE');
+        'GeoTIIF_2048','SPACING_M','DEM_SIZE','PIXEL_GEOMETRY','FILE_SIZE','VOID_PERCENT','GRID_ELEVS','SW_X_SEC','SW_Y_SEC');
 var
    i,j,Decs : integer;
    DEMsWanted : tDEMbooleanArray;
    Results : tStringList;
    aLine,TStr : ANSIstring;
    fName : PathStr;
+   Missing : float64;
  begin
    {$IfDef Record3d} WriteLineToDebugFile('TMapForm.Selectmultiplegrids1Click in'); {$EndIf}
    DEMsWanted := GetMultipleDEMsFromList('Grids to compare');
@@ -408,8 +464,8 @@ var
                13 : TStr := RealToString(DEMGlb[i].DEMHeader.MaxElev,-12,-4);
                14 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMxSpacing,-12,Decs);
                15 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMySpacing,-12,Decs);
-               16 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerX,-12,Decs);
-               17 : TStr := RealToString(DEMGlb[i].DEMHeader.DEMSWCornerY,-12,Decs);
+               16 : TStr := RealToString(DEMGlb[i].DEMHeader.SWCornerX,-12,Decs);
+               17 : TStr := RealToString(DEMGlb[i].DEMHeader.SWCornerY,-12,Decs);
                18 : begin
                         TStr := DEMGlb[i].DEMHeader.WKTString;
                         if (length(TStr) > 0) then TStr := IntToStr(length(TStr)) + ' chars'
@@ -417,8 +473,14 @@ var
                19 : TStr := IntToStr(DEMGlb[i].DEMMapProj.ProjectedCSTypeGeoKey3072);
                20 : TStr := IntToStr(DEMGlb[i].DEMMapProj.GeographicTypeGeoKey2048);
                21 : TStr := DEMGlb[i].HorizontalDEMSpacing(true);
-               22 : TStr := DEMGlb[i].GridCornerModel;
-               23 : TStr := SmartMemorySizeBytes(GetFileSize(DEMGlb[i].DEMfileName));
+               22 : TStr := DEMGlb[i].DEM_size_km;
+               23 : TStr := DEMGlb[i].GridCornerModel;
+               24 : TStr := SmartMemorySizeBytes(GetFileSize(DEMGlb[i].DEMfileName));
+               25 : TStr := RealToString(DEMglb[i].ComputeMissingDataPercentage(DEMglb[i].FullDEMGridLimits),-12,-2) + '%';
+               26 : TStr := IntToStr(DEMglb[i].DEMheader.NumCol * DEMglb[i].DEMheader.NumRow);
+               27 : if DEMGlb[i].DEMHeader.DEMUsed = ArcSecDEM then TStr := LongToString(DEMGlb[i].DEMHeader.SWCornerX,DecSeconds);
+               28 : if DEMGlb[i].DEMHeader.DEMUsed = ArcSecDEM then TStr := LatToString(DEMGlb[i].DEMHeader.SWCornerY,DecSeconds);
+
             end;
             aLine := aline + ',' + tStr;
          end;
@@ -449,7 +511,7 @@ begin
           RealToString(DEMGlb[i].DEMheader.MinElev,-12,2)  + ',' +  RealToString(DEMGlb[i].DEMheader.MaxElev,-12,2)  + ',' +
           RealToString(DEMGlb[i].GeotiffNWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].GeotiffNWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].CentroidSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].CentroidSWCornerY,-12,Decs)  + ',' +
-          RealToString(DEMGlb[i].DEMheader.DEMSWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.DEMSWCornerY,-12,Decs)  + ',' +
+          RealToString(DEMGlb[i].DEMheader.SWCornerX,-12,Decs)  + ',' +RealToString(DEMGlb[i].DEMheader.SWCornerY,-12,Decs)  + ',' +
           RealToString(DEMGlb[i].DEMheader.DEMxSpacing,-12,Decs) + ',' + RealToString(DEMGlb[i].DEMheader.DEMySpacing,-12,Decs)  + ',' +
           IntToStr(DEMGlb[i].DEMheader.NumCol) + ',' + IntToStr(DEMGlb[i].DEMheader.NumRow) + ',' +
           RealToString(DEMGlb[i].AverageXSpace,-12,-2) + ',' + RealToString(DEMGlb[i].AverageYSpace,-12,-2)  + ',' + RealToString(DEMGlb[i].AverageSpace,-12,-2) + ',' +
@@ -737,7 +799,6 @@ end;
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile('Series=' + CompareDEMNames[i] +  '   DEM=' + IntToStr(CompareDEMIndexes[i])); {$EndIf}
                inc(Result);
                DEMGlb[CompareDEMIndexes[i]].AreaName := CompareDEMNames[i];
-               //LikeDTED[i] := (DEMGlb[CompareDEMIndexes[i]].DEMHeader.RasterPixelIsGeoKey1025 = 2) or (DEMGlb[CompareDEMIndexes[i]].AreaName = 'ASTER');
                {$IfDef LoadDEMsCovering} WriteLineToDebugFile(DEMGlb[CompareDEMIndexes[i]].AreaName + ' ' + DEMGlb[CompareDEMIndexes[i]].PixelIsString); {$EndIf}
                if LoadMap then CreateDEMSelectionMap(CompareDEMIndexes[i],true,MDDef.DefElevsPercentile,MDdef.DefElevMap);
             end
@@ -1163,7 +1224,7 @@ end;
                end;
             end;
             GDAL_warp_multiple(TheFiles);
-            wmdem.SetPanelText(0,'');
+            //wmdem.SetPanelText(0,'');
             FindMatchingFiles(LastSatDir,'*.tif',TheFiles,6);
          end;
 

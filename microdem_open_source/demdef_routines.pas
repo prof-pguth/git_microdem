@@ -101,7 +101,7 @@ var
 
 procedure InitializeMICRODEM;
 
-function PickCurvature : integer;
+//function PickCurvature : integer;
 
 
 //operations on file names
@@ -166,7 +166,6 @@ procedure SetLOSDefaults;
 
 {$IfDef ExGeomorphGrids}
 {$Else}
-   //procedure SetAllCurvatures(Setting : boolean);
    procedure SetAllSlopes(Setting : boolean);
    procedure SetAllOrganization(Setting : boolean);
 {$EndIf}
@@ -185,7 +184,6 @@ procedure SetLOSDefaults;
 
 
 procedure SetDefaultMapSizeToScreen;
-
 
 procedure SetGazDefaults;
 procedure SetGeologyOptions(Allow : boolean);
@@ -320,13 +318,10 @@ function PixelIsString(Code : integer) : shortstring;
 
 function IsLSQslopeMethodAllowed(aMethod : tSlopeCurveCompute) : boolean;
 
-
-
-//use microdem_z_units.dbf
+ //use microdem_z_units.dbf
   function ElevUnitsAre(Code : byte) : shortstring;
   function CurveCodeFromName(aName : shortstring) : integer;
   function CurveNameFromCode(Code : integer) : shortstring;
-
 
 function RasterPixelIsString(Code : integer) : shortstring;
 function VertDatumName(VerticalCSTypeGeoKey : integer) : shortstring;
@@ -977,17 +972,6 @@ end;
 
 {$IfDef ExGeomorphGrids}
 {$Else}
-      (*
-      procedure SetAllCurvatures(Setting : boolean);
-      begin
-          MDDef.DoCrossCurve := Setting;
-          MDDef.DoMaxCurve := Setting;
-          MDDef.DoMinCurve := Setting;
-          MDDef.DoSlopeCurve := Setting;
-          MDDef.DoPlanCurve := Setting;
-      end;
-      *)
-
       procedure SetAllSlopes(Setting : boolean);
       begin
          MDDef.DoSlopePC := setting;
@@ -1105,7 +1089,6 @@ procedure InitializeMICRODEM;
                DebugFileName := ProgramRootDir + 'logs\';
                SafeMakeDir(DebugFileName);
                DebugFileName := DebugFileName + ExtractFileNameNoExt(Forms.Application.ExeName) + '_debug_log.txt';
-               //SafeMakeDir(MyDataPath);
             {$Else}
                {$IfDef Android}
                   DebugFileName := TPath.GetSharedDownloadsPath;
@@ -1135,10 +1118,6 @@ procedure InitializeMICRODEM;
 var
    wYear,wmonth,wDay : word;
 begin
-    //MDDef.MaxDebugLinesToKeep := 1250;
-    //MDDef.FinalLinesToKeep := 10;
-    //MDDef.InitialLinesToKeep := 7;
-
      {$IfDef MSWindows}
         ProgramRootDir := UpperCase(ExtractFilePath(ParamStr(0)));
         ChDir(ProgramRootDir);
@@ -1190,7 +1169,8 @@ begin
      end;
 
      {$IfDef MSWindows}
-        MDTempDir := MainMapData + 'temp\';
+        MDTempDir := MainMapData +  ShortEXEName + '_temp_files\';
+        SafeMakeDir(MDtempDir);
         {$IfDef RecordInitialization} WriteLineToDebugFile('InitializeMICRODEM Call clean up tempdir ' + MDTempDir); {$EndIf}
         CleanUpTempDirectory(true);
      {$Else}
@@ -2496,6 +2476,7 @@ var
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
          AParameter('DEMIX','DEMIX_groupWonLost',DEMIX_groupWonLost,0);
          AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);
+         AParameter('DEMIX','DEMIX_Line_Width',DEMIX_Line_Width,1);
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
          AParameter('DEMIX','DEMIX_FUV_graph_width',DEMIX_FUV_graph_width,800);
@@ -2526,11 +2507,21 @@ var
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
          AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
          AParameter('DEMIX','OpenSavedMapsFUVSSIM',OpenSavedMapsFUVSSIM,false);
-         AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
+         //AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
          AParameter('DEMIX','ProcessLoopsForward',ProcessLoopsForward,true);
          AParameter('DEMIX','DEMIX_AllowCoastal',DEMIX_AllowCoastal,false);
+         AParameter('DEMIX','DEMIX_Geo_Tiles',DEMIX_Geo_Tiles,false);
          AParameter('DEMIX','DEMIX_UseMedian',DEMIX_UseMedian,false);
 
+         //AParameter('DEMIX','DEMIX_std_filters',DEMIX_std_filters,false);
+         AParameter('DEMIX','DEMIX_slope_filters',DEMIX_slope_filters,false);
+         AParameter('DEMIX','DEMIX_ruff_filters',DEMIX_ruff_filters,false);
+         AParameter('DEMIX','DEMIX_barren_filters',DEMIX_barren_filters,false);
+         AParameter('DEMIX','DEMIX_forest_filters',DEMIX_forest_filters,false);
+         AParameter('DEMIX','DEMIX_urban_filters',DEMIX_urban_filters,false);
+         AParameter('DEMIX','DEMIX_average_criteria',DEMIX_average_criteria,false);
+         AParameter('DEMIX','DEMIX_series_symbol',DEMIX_series_symbol,0);
+         AParameter('DEMIX','DEMIX_tile_chars_fname',DEMIX_tile_chars_fname,'');
          AParameter('DEMIX','FUVExpandScales',FUVExpandScales,false);
          AParameter('DEMIX','DoPartials',DoPartials,false);
          AParameter('DEMIX','DoCurvatures',DoCurvatures,false);
@@ -2547,6 +2538,7 @@ var
          AParameter('DEMIX','DEMIX_U120DBfName',DEMIX_U120DBfName,'');
          AParameter('DEMIX','DEMIX_U80DBfName',DEMIX_U80DBfName,'');
          AParameter('DEMIX','DEMIX_U10DBfName',DEMIX_U10DBfName,'');
+         AParameter('DEMIX',' DEMIX_BaseDir', DEMIX_BaseDir,'');
          AParameter('Slope','DEMIXSlopeCompute',DEMIXSlopeCompute.AlgorithmName,smEvansYoung);
       end;
    end;
@@ -2744,6 +2736,7 @@ var
          AParameter('Misc','OpenMultipleVectorMaps',OpenMultipleVectorMaps,false);
          AParameter('Misc','ShowGridDiffMap',ShowGridDiffMap,true);
          AParameter('Misc','ShowGridDiffHistogram',ShowGridDiffHistogram,false);
+         AParameter('Misc','ShowDiffDistStats',ShowDiffDistStats,false);
          AParameter('Misc','ShowScatterPlot',ShowScatterPlot,false);
          AParameter('Misc','ProgressTimeBins',ProgressTimeBins,20);
          AParameter('Misc','LogTCPcommands',LogTCPcommands,true);
@@ -2789,9 +2782,6 @@ var
          AParameter('Misc','RangeRGBColor',RangeRGBColor,150);
          AParameter('Misc','DefElevsPercentile',DefElevsPercentile,true);
          AParameter('Misc','New3Dviewer',New3Dviewer,true);
-
-         //AParameter('Misc','FinalLinesToKeep',FinalLinesToKeep,10);
-         //MDDef.InitialLinesToKeep := 7;
          AParameter('Misc','MDRecordDebugLog',MDRecordDebugLog,true);
 
          AParameter('Misc','MaskCode',MaskCode,1);
@@ -2806,13 +2796,10 @@ var
          if (IniWhat = iniRead) then ProgramOption := tProgramOption(IniFile.ReadInteger('Misc','ProgramOption',ord(ExpertProgram)));
          if (iniWhat = iniInit) then ProgramOption := ExpertProgram;
          {$IfDef VCL}
-            AParameter('Misc','SB1PanelWidths[0]',SB1PanelWidths[0],200);
-            AParameter('Misc','SB1PanelWidths[1]',SB1PanelWidths[1],360);
-            AParameter('Misc','SB1PanelWidths[2]',SB1PanelWidths[2],240);
-            AParameter('Misc','SB1PanelWidths[3]',SB1PanelWidths[3],300);
-            //AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,5000);
-         {$Else}
-            //AParameter('Misc','MaxDebugLinesToKeep',MaxDebugLinesToKeep,1250);
+            AParameter('Misc','SB1PanelWidths[0]',SB1PanelWidths[0],150);
+            AParameter('Misc','SB1PanelWidths[1]',SB1PanelWidths[1],275);
+            AParameter('Misc','SB1PanelWidths[2]',SB1PanelWidths[2],200);
+            AParameter('Misc','SB1PanelWidths[3]',SB1PanelWidths[3],240);
          {$EndIf}
       end;
    end;
@@ -2826,7 +2813,6 @@ var
             AParameter('Geography','LastSunLightDay',LastSunLightDay,365);
             AParameter('Geography','SunlightMapInterval',SunlightMapInterval,30);
             AParameter('Geography','SunlightPrecision',SunlightPrecision,5);
-            //AParameter('Geography','SunlightSingleDay',SunlightSingleDay,2);
             AParameter('Geography','VerifyTimeZone',VerifyTimeZone,false);
             AParameter('Geography','UTCOffset',UTCOffset,-4);
             AParameter('Geography','TZFromLong',TZFromLong,true);
@@ -4675,10 +4661,6 @@ begin
    {$IfDef VCL}
    MovieDir := MainMapData + 'MOVIES\';
    ImageDir := MainMapData + 'IMAGES\';
-      {$IfDef ExTIN}
-      {$Else}
-         TINDir := MainMapData + 'TINS\';
-      {$EndIf}
    {$EndIf}
 
    {$IfDef ExGazetteer}
@@ -4712,16 +4694,12 @@ begin
       SafeMakeDir(DBDir + 'Groups');
       SafeMakeDir(MainMapData + 'icons');
       SafeMakeDir(MainMapData + 'tiger_shapes');
-      SafeMakeDir(MainMapData + 'temp');
+      //SafeMakeDir(MainMapData + 'temp');
       SafeMakeDir(ProjectDir + 'Map_Layers');
 
       {$IfDef ExGazetteer}
       {$Else}
          SafeMakeDir(GazetteerDir);
-      {$EndIf}
-      {$IfDef ExTIN}
-      {$Else}
-         SafeMakeDir(TINDir);
       {$EndIf}
 
       {$IfDef IncludeRiverNetworks}
@@ -4778,6 +4756,9 @@ begin
    CoastLineFile := DBDir + 'natural_earth_vector\50m_physical\ne_50m_coastline' + DefaultDBExt;
    RiversFile := DBDir + 'natural_earth_vector\50m_physical\ne_50m_rivers_lake_centerlines' + DefaultDBExt;
 
+   MDDef.DEMIX_BaseDir := 'g:\demix_utm_tiles\';
+   if (not ValidPath(MDDef.DEMIX_BaseDir)) then if (not FindPath('DEMIX UTM tiles',':\demix_utm_tiles\',MDDef.DEMIX_BaseDir)) then exit;
+
    //needed if map library is on an external drive and has changed
    if (MapLibDir <> '') and (not ValidPath(MapLibDir)) then PickMapIndexLocation;
 
@@ -4793,17 +4774,6 @@ begin
 
    {$IfDef MSWindows}
       if not ValidPath(MainMapData) then FindPath('Map library',':\mapdata\',MainMapData);
-
-      (*
-      if (UpperCase(MainMapData) <> 'C:\MAPDATA\') then begin
-         if (not MDDef.RunOddballLocation) then begin
-            if AnswerIsYes('Sure you want main data location at ' + MainMapData +  '  (not recommended)') then begin
-               MDDef.RunOddballLocation := true;
-            end
-            else MainMapData := 'c:\mapdata\';
-         end;
-      end;
-      *)
    {$Else}
       MainMapData := System.IOutils.TPath.GetDocumentsPath;
    {$EndIf}
@@ -5050,22 +5020,6 @@ begin
    {$Else}
       if (Alg = vcRadioLineOfSight) then Result := Result + '  k=' + RealToString(MDdef.RadioK,-6,2);
    {$EndIf}
-end;
-
-
-function PickCurvature : integer;
-var
-   sl : tStringList;
-  i: Integer;
-begin
-(*
-   sl := tStringList.Create;
-   for i := 1 to NumCurvatures do begin
-      sl.Add(IntegerToString(i,2) + '  ' + CurvatureNames[i]);
-   end;
-   if not GetFromList('Curvature LSP',Result,sl,true) then Result := 0;
-   sl.Destroy;
-*)
 end;
 
 

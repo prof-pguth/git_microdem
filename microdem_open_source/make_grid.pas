@@ -18,6 +18,7 @@ unit make_grid;
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
       //$Define CreateAspectMap}
       //{$Define CreateCurvature}
+      //{$Define RecordTRI}
       //{$Define RecordMapCreation}
       //{$Define RecordDEMIX_VAt}
       //{$Define DEMIXmaps}
@@ -221,7 +222,7 @@ begin
       ReadDefault('Spacing for new DEM (sec)',SpacingArcSec);
    end;
    {$IfDef RecordResample} WriteLineToDebugFile('Resample ' + AreaName + ' Lat/Long,  Spacing sec=' + RealToString(SpacingArcSec,-8,2) + '  ' + KeyParams(true)); {$EndIf}
-   Result := DEMglb[DEM].SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,PixelIsPoint);   //DEMHeader.RasterPixelIsGeoKey1025);
+   Result := DEMglb[DEM].SelectionMap.CreateGridToMatchMap(cgLatLong,false,FloatingPointDEM,SpacingArcSec,SpacingArcSec,MDdef.DefaultUTMZone,PixelIsPoint);
    DEMGlb[Result].DEMheader.VerticalCSTypeGeoKey := DEMGlb[DEM].DEMheader.VerticalCSTypeGeoKey;
    DEMGlb[Result].DEMheader.ElevUnits := DEMGlb[DEM].DEMheader.ElevUnits;
    DEMGlb[Result].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Result].FullDEMGridLimits,DEM,hfEverything);
@@ -313,6 +314,44 @@ begin
 end;
 
 
+
+procedure GridDfferenceStats(DEM : integer);
+var
+   Col,Row : integer;
+   MomentVar : tMomentVar;
+   zs : ^bfarray32;
+   z : float32;
+   Findings : tStringList;
+   fName : PathStr;
+begin
+   InitializeMomentVar(MomentVar);
+   new(zs);
+   for Col := 0 to pred(DEMglb[DEM].DEMheader.NumCol) do begin
+      for Row := 0 to pred(DEMglb[DEM].DEMheader.NumRow) do begin
+         if DEMGlb[DEM].GetElevMetersOnGrid(col,row,z) then begin
+            inc(MomentVar.NPts);
+            zs^[MomentVar.NPts] := z;
+         end;
+      end;
+   end;
+   moment(zs^,MomentVar,msIncludeLE90);
+   Findings := tStringList.Create;
+   Findings.Add('PARAMETER,VALUE');
+   Findings.Add('N,' + IntToStr(MomentVar.NPts));
+   Findings.Add('Mean,' + RealToString(MomentVar.Mean,-12,-2));
+   Findings.Add('Median,' + RealToString(MomentVar.Median,-12,-2));
+   Findings.Add('Std Dev,' + RealToString(MomentVar.std_dev,-12,-2));
+   Findings.Add('MAE,' + RealToString(MomentVar.MAE,-12,-2));
+   Findings.Add('MAE,' + RealToString(MomentVar.MAE,-12,-2));
+   Findings.Add('Average deviation,' + RealToString(MomentVar.avg_dev,-12,-2));
+   Findings.Add('RMSE,' + RealToString(MomentVar.RMSE,-12,-2));
+   Findings.Add('LE90,' + RealToString(MomentVar.LE90,-12,-2));
+   fName := NextFileNumber(MDtempDir,DEMGlb[DEM].AreaName,'.dbf');
+   StringList2CSVtoDB(Findings,fName);
+end;
+
+
+
 function GridDiffernces(PercentDifference : boolean = false) : integer;
 var
    DEM1,DEM2,GridForResult : integer;
@@ -327,6 +366,7 @@ begin
       {$IfDef RecordDEMCompare} WriteLineToDebugFile(aName); {$EndIf}
       SetGridDiffernceProperties(DEM1,DEM2,GridForResult);
       Result := MakeDifferenceMap(DEM1,DEM2,DEM1,0,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName,PercentDifference);
+      if MDDef.ShowDiffDistStats then GridDfferenceStats(Result);
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
    end
    else begin
@@ -1062,7 +1102,7 @@ var
    SlopeMap : integer;
 begin
    SlopeMap := -1;
-   CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd,SlopeMap,OpenMap);
+   Result := CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd,SlopeMap,OpenMap);
 end;
 
 
@@ -1407,7 +1447,7 @@ var
    TStr,NormStr : shortstring;
    zees : array[1..12] of float32;
 begin
-    {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
+    {$If Defined(RecordTimeGridCreate) or Defined(RecordTRI)} Stopwatch1 := TStopwatch.StartNew; {$EndIf}
 
     if (Normalize = nmRRI) then TStr := 'RRI'
     else TStr := 'TRI' + NormStr;
@@ -1449,7 +1489,7 @@ begin
 
        for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
           if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-             if (Normalize in [nmTRIK,nmRRI,nmInterpolate]) then begin
+             if (Normalize in [nmRRI,nmTRIK,nmInterpolate]) then begin
                 InterpolateElevs(CurDEM,Col,Row,0.707,znw,zne,zsw,zse);
                 if InterpolateElevs(CurDEM,Col,Row,1.414,z1,z21,z5,z25) and
                    DEMGLB[CurDEM].GetElevMetersOnGrid(Col,Row+2,z11) and
@@ -1505,10 +1545,13 @@ begin
     if ShowSatProgress then EndProgress;
     DEMGlb[Result].CheckMaxMinElev;
     if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
+    {$If Defined(RecordTimeGridCreate) or Defined(RecordTRI)}
+        WriteLineToDebugFile('Make ' + DEMglb[Result].AreaName + ' took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec, Missing grid=' +
+             RealToString(DEMGlb[Result].ComputeMissingDataPercentage(DEMGlb[Result].FullDEMGridLimits),-12,-2) + '%');
+    {$EndIf}
     if OpenMap then begin
        DEMGlb[Result].SetupMap(false,mtElevSpectrum);
     end;
-    {$IfDef RecordTimeGridCreate} WriteLineToDebugFile('Make TRIGrid took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
 
 
