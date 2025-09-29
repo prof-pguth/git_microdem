@@ -53,7 +53,7 @@ object grid_posting_options: Tgrid_posting_options
     Width = 177
     Height = 81
     Caption = 'Drawing selection'
-    ItemIndex = 0
+    ItemIndex = 1
     Items.Strings = (
       'Draw single time'
       'Always redraw on map'

@@ -151,7 +151,7 @@
       //{$Define RecordDrainage}
       //{$Define RecordFlooding}
       //{$Define GPSBroadcast}
-      {$Define RecordSave}
+      //{$Define RecordSave}
       //{$Define RecordChangeDEMNowDoing}
       //{$Define RecordFullMapDraw}
       //{$Define RecordDrape}
@@ -1424,10 +1424,6 @@ type
     Experimental2: TMenuItem;
     Allmissingtosinglevaluevalidsettomissing1: TMenuItem;
     Interactiveadjusment1: TMenuItem;
-    N54: TMenuItem;
-    N55: TMenuItem;
-    COPandALOS1: TMenuItem;
-    All61: TMenuItem;
     Geoidgrids1: TMenuItem;
     SummaryallopenDEMsGrids1: TMenuItem;
     N56: TMenuItem;
@@ -1684,6 +1680,13 @@ type
     WhiteboxSphericalAverageDeviationofNormals1: TMenuItem;
     N86: TMenuItem;
     N87: TMenuItem;
+    DEMIXtilenames1: TMenuItem;
+    Verticaldatum1: TMenuItem;
+    Pixelischanges1: TMenuItem;
+    SetasPixelispointwithnocornershift1: TMenuItem;
+    SetasPixelisareawithnocornershift1: TMenuItem;
+    EDTMGEDTM1: TMenuItem;
+    Currentversion121: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2674,8 +2677,6 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Allmissingtosinglevaluevalidsettomissing1Click(Sender: TObject);
     procedure Interactiveadjusment1Click(Sender: TObject);
     procedure OpenGLdrapeonanotherDEM1Click(Sender: TObject);
-    procedure COPandALOS1Click(Sender: TObject);
-    procedure All61Click(Sender: TObject);
     procedure Geoidgrids1Click(Sender: TObject);
     procedure SummaryallopenDEMsGrids1Click(Sender: TObject);
     procedure Slopeandroughness1Click(Sender: TObject);
@@ -2893,6 +2894,10 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Differencemap2Click(Sender: TObject);
     procedure WhiteboxSphericalAverageDeviationofNormals1Click(Sender: TObject);
     procedure N87Click(Sender: TObject);
+    procedure DEMIXtilenames1Click(Sender: TObject);
+    procedure SetasPixelispointwithnocornershift1Click(Sender: TObject);
+    procedure SetasPixelisareawithnocornershift1Click(Sender: TObject);
+    procedure Currentversion121Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -2919,7 +2924,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
 
     procedure RespondToRightMouseButton;
     procedure QuadSizeMap(LastX,LastY : integer);
-    procedure ChangePixelIsFormat;
+    //procedure ChangePixelIsFormat;
 
     {$IfDef IncludePeakIslandArea}
          function FindIslandArea(Lat,Long,z : float64; ShowOnMap : boolean) : float64;
@@ -3342,8 +3347,11 @@ function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : t
     function LoadDEMIXtileOutlinesNoMap(var DEMIXfName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false; OpenTable : boolean = true) : integer;
     function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
     function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
-    function DEMIX_UTM_tileName(FileName : PathStr) : shortstring;
-
+    function DEMIX_UTM_tileName(AreaName : shortstring; FileName : PathStr) : shortstring;
+    function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
+    function GetDEMIX_GeoTileName(inLat,inLong : float64) : shortstring;
+    function DEMIX_SpecialCase(AreaName : shortstring) : boolean;
+    function DEMIX_NoVerticalShift(AreaName : shortstring) : boolean;
 
 
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);
@@ -3765,13 +3773,6 @@ begin
    for DEM := 1 to MaxDEMDataSets do begin
       if WhichDEMs[DEM] and ValidDEM(DEM) and (DEM <> BaseDEM) and (DEMglb[DEM].SelectionMap <> Nil) then begin
          MatchSingleDEMtoBase(DEM,BaseDEM,Match);
-(*
-         if (Match = 1) then DEMglb[DEM].SelectionMap.SetMapDisplayType(DEMglb[BaseDEM].SelectionMap.MapDraw.MapType);
-         if (Match in [4,5]) then MatchAnotherMapThisCoverageArea(DEMglb[BaseDEM].SelectionMap,DEMglb[DEM].SelectionMap);
-         if (Match in [2,4]) then MatchAnotherMapThisPixelSize(DEMglb[BaseDEM].SelectionMap,DEMglb[DEM].SelectionMap);
-         if (Match = 3) then DEMglb[DEM].SelectionMap.RecolorMapWithElevationRange(DEMglb[BaseDEM].SelectionMap.MapDraw.MinMapElev,
-                                DEMglb[BaseDEM].SelectionMap.MapDraw.MaxMapElev);
-*)
       end;
    end;
    UpdateMenusForAllMaps;
@@ -3806,7 +3807,7 @@ end;
 function TMapForm.CreateBitmapWithMapNameBelow : PathStr;
 var
    Bitmap : tMyBitmap;
-   BottomMargin,LabelStart,Len,
+   BottomMargin,LabelStart,//Len,
    StartFont : integer;
 begin
     StartFont := 34;
@@ -4579,8 +4580,6 @@ begin
               if MapDraw.RedrawDrainageVectors then DrawDownhillVectors;
            {$EndIf}
 
-           //PlotExtremeZValues(Nil);
-
            if MDDef.NorthArrowLocation.DrawItem then begin
               PlotNorthArrowLegend(15,MapDraw.MapYSize - 65);
            end;
@@ -4674,14 +4673,7 @@ end;
 procedure tMapForm.DoCompleteMapRedraw;
 begin
    if MapRedrawsAllowed then begin
-
-
-
       FormResize(Nil);
-
-
-
-
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in'); {$EndIf}
       MapDraw.DeleteMapSavedLayers;
@@ -4701,7 +4693,7 @@ var
    i : integer;
 begin
    for i := 1 to MaxOverlays do begin
-      if MapDraw.OverLayOrder[i] = Layer then begin
+      if (MapDraw.OverLayOrder[i] = Layer) then begin
          Result := true;
          exit;
       end;
@@ -4739,7 +4731,7 @@ begin
    Result.ShowKeyLocation := true;
    Result.KeyLocationLat := Lat;
    Result.KeyLocationLong := Long;
-   Result.ResizeByPercentage(ZoomSize{,true,true});
+   Result.ResizeByPercentage(ZoomSize);
 end;
 
 
@@ -4766,14 +4758,6 @@ end;
             BackToWandering;
          end;
       end;
-
-(*
-function TMapForm.CheckGeologyOptions(Lat, Long: float64; LastX, LastY: integer;
-  NotSamePoint: boolean): boolean;
-begin
-
-end;
-*)
 
 {$EndIf}
 
@@ -4991,12 +4975,6 @@ begin
    end;
 end;
 
-(*
-procedure TMapForm.CheckAndDrawNewCorners;
-begin
-
-end;
-*)
 {$EndIf}
 
 {$IfDef ExSatAdvanced}
@@ -5960,8 +5938,6 @@ procedure TMapForm.CompareDEMheaders1Click(Sender: TObject);
 begin
    DEMHeaderTable;
 end;
-
-
 
 
 procedure TMapForm.CompareDNconversions1Click(Sender: TObject);
@@ -8041,7 +8017,7 @@ begin
       end;
    end;
 
-   NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
+   NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewElevationPrecision(fcSaveByte);
    fName2 := MDTempDir + 'reclasify_' + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
    DEMGlb[NewDEM].WriteNewFormatDEM(fName2);
 
@@ -9031,8 +9007,8 @@ begin
       Walls1.Visible := ExpertDEMVersion;
       BuildingEdges1.Visible := ExpertDEMVersion;
       ShiftDEM1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram]) and ValidDEM(MapDraw.DEMonMap) and (DEMGlb[MapDraw.DEMonMap].LongSizeMap > 350);
-      oInternationalDateLine1.Enabled := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX < 179.95) and (DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX > -179.95);
-      oPrimeMeridian1.Enabled := ExpertDEMVersion and (abs(DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX) > 0.05);
+      oInternationalDateLine1.Enabled := ExpertDEMVersion and (DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerX < 179.95) and (DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerX > -179.95);
+      oPrimeMeridian1.Enabled := ExpertDEMVersion and (abs(DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerX) > 0.05);
       Loadfeaturegrid1.Visible := (MDDef.ProgramOption = ExpertProgram);
       LoadCHMgrid1.Visible := (MDDef.ProgramOption = ExpertProgram);
       LoadLOStopoprofile1.Visible := (MDDef.ProgramOption = ExpertProgram);
@@ -10306,6 +10282,16 @@ begin
    {$Else}
       MultiGridArray[MapDraw.MultiGridOnMap].ZeroAsMissing(0);
    {$EndIf}
+end;
+
+procedure TMapForm.SetasPixelisareawithnocornershift1Click(Sender: TObject);
+begin
+   ChangeDEMPixelFormatAndSaveDEM(MapDraw.DEMonMap,PixelIsArea,true);
+end;
+
+procedure TMapForm.SetasPixelispointwithnocornershift1Click(Sender: TObject);
+begin
+   ChangeDEMPixelFormatAndSaveDEM(MapDraw.DEMonMap,PixelIsPoint,true);
 end;
 
 procedure TMapForm.SetClientHeight;
@@ -12199,6 +12185,7 @@ begin {TMapForm.OpenDBonMap}
       CheckThatLegendsAreOnTop;
       if (MapTOCIndex <> 0) then MapTOC[MapTOCIndex].LabelTheButtons;
    end;
+   ShowDefaultCursor;
    {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.OpenADataBase out'); {$EndIf}
 end {TMapForm.OpenDBonMap};
 
@@ -12500,6 +12487,13 @@ end;
 procedure TMapForm.DEMIXrangescales1Click(Sender: TObject);
 begin
    //ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,false,MDTempDir,ResampleModeRange);
+end;
+
+procedure TMapForm.DEMIXtilenames1Click(Sender: TObject);
+begin
+    MessageToContinue('DEMIX tiles at ' + LatLongDegreeToString(RightClickLat,RightClickLong) + MessLineBreak +
+       'UTM: ' + GetUTM_DEMIXTile(RightClickLat,RightClickLong) + MessLineBreak +
+       'Geo: ' + GetDEMIX_GeoTileName(RightClickLat,RightClickLong));
 end;
 
 (*
@@ -13286,7 +13280,7 @@ begin
          //save the DEM on map so we will use its geometry
          {$IfDef RecordCreateReferenceDEM} WriteLineToDebugFile('Saved as ' + fName); {$EndIf}
          //insure floating point (e.g. for ALOS)
-         NewMatch := DEMGlb[DEM].ResaveNewResolution(fcSaveFloatingPoint);
+         NewMatch := DEMGlb[DEM].ResaveNewElevationPrecision(fcSaveFloatingPoint);
          //entire DEM missing to start with
          DEMglb[NewMatch].MarkAboveMissing(-9999,NPts,false);
          //mean aggregate the new DEM
@@ -15356,10 +15350,11 @@ begin
    dz := -0.58;
    ReadDefault('dz',dz);
    NewVD := VertCSEGM2008;
+   DEMGlb[MapDraw.DEMonMap].DEMheader.RasterPixelIsGeoKey1025 := PixelIsUndefined;
    ReadDefault('new vertical datum code',NewVD);
    DEMGlb[MapDraw.DEMonMap].DEMHeader.VerticalCSTypeGeoKey := NewVD;
-   DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + dx;
-   DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + dy;
+   DEMGlb[MapDraw.DEMonMap].DEMHeader.SWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.SWCornerX + dx;
+   DEMGlb[MapDraw.DEMonMap].DEMHeader.SWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.SWCornerY + dy;
    DEMGlb[MapDraw.DEMonMap].AddConstantToGrid(dz);
 end;
 
@@ -15807,6 +15802,12 @@ var
              Result := '   ' + RealToString(bb.xmax-bb.xmin,-12,Decs) + 'x' + RealToString(bb.ymax-bb.ymin,-12,Decs);
           end;
 
+          function BBlimitsMin(bb : sfBoundBox) : shortstring;
+          begin
+             Result := '   ' + RealToString(60 * (bb.xmax-bb.xmin),-12,Decs) + 'x' + RealToString(60 * (bb.ymax-bb.ymin),-12,Decs);
+          end;
+
+
 begin
    with MapDraw do begin
       Result := tStringList.Create;
@@ -15844,7 +15845,7 @@ begin
          end;
       end;
       Decs := 8;
-      Result.Add('Map Window Geographic corner coordinates' + bbLimits(MapDraw.MapCorners.BoundBoxGeo) +  MessLineBreak +
+      Result.Add('Map Window Geographic corner coordinates' + bbLimits(MapDraw.MapCorners.BoundBoxGeo) + ' deg  ' +  bbLimitsMin(MapDraw.MapCorners.BoundBoxGeo) + ' min' + MessLineBreak +
                 '   NW: ' + LatLongDegreeToString(MapDraw.MapCorners.BoundBoxGeo.ymax,MapDraw.MapCorners.BoundBoxGeo.xmin,MDDef.OutPutLatLongMethod) +
                 '----------NE: ' + LatLongDegreeToString(MapDraw.MapCorners.BoundBoxGeo.ymax,MapDraw.MapCorners.BoundBoxGeo.xmax, MDDef.OutPutLatLongMethod) + MessLineBreak +
                 '   SW: ' + LatLongDegreeToString(MapDraw.MapCorners.BoundBoxGeo.ymin,MapDraw.MapCorners.BoundBoxGeo.xmin,MDDef.OutPutLatLongMethod)   +
@@ -15874,8 +15875,8 @@ begin
       {$Else}
          if (MagModel <> Nil) and (MapDraw.MapCorners.BoundBoxGeo.xmax - MapDraw.MapCorners.BoundBoxGeo.xmin < 6.01) then begin
             Result.Add(MessLineBreak + DashLine + MessLineBreak);
-            if (GridTrueAngle > -99) then  Result.Add('Magnetic declination:' + RealToString(MapMagDec,6,1) + '°');
-            Result.Add('UTM Grid declination:' + RealToString(GridTrueAngle,6,1) + '°');
+            if (MapGridTrueAngle > -99) then  Result.Add('Magnetic declination:' + RealToString(MapMagDec,6,1) + '°');
+            Result.Add('UTM Grid declination:' + RealToString(MapGridTrueAngle,6,1) + '°');
          end;
       {$EndIf}
       if ValidDEM(MapDraw.DEMonMap) and (not DEMMap) then Result.Add('Elevations from ' + 'DEM=' + DEMGlb[DEMonMap].AreaName + MessLineBreak + DEMGlb[DEMonMap].KeyParams + MessLineBreak);
@@ -22017,8 +22018,7 @@ var
    NewHeader : tDEMheader;
    NewName : shortstring;
    fName : PathStr;
-   //Projection : tMapProjection;
-   xmin,xmax,ymin,ymax{, x,y} : float64;
+   xmin,xmax,ymin,ymax : float64;
 begin
    MapDraw.MapCorners.BoundBoxGeo := MapDraw.GetBoundBoxGeo;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap in, Map geo limits: ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxGeo,4)); {$EndIf}
@@ -22056,8 +22056,8 @@ begin
        else NewHeader.DEMxSpacing := SpacingX;
        if (SpacingY < 0) then NewHeader.DEMySpacing := NewHeader.DEMxSpacing
        else NewHeader.DEMySpacing := SpacingY;
-       NewHeader.DEMSWCornerX := trunc(MapDraw.MapCorners.BoundBoxUTM.XMin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
-       NewHeader.DEMSWCornerY := trunc(MapDraw.MapCorners.BoundBoxUTM.YMin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+       NewHeader.SWCornerX := trunc(MapDraw.MapCorners.BoundBoxUTM.XMin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+       NewHeader.SWCornerY := trunc(MapDraw.MapCorners.BoundBoxUTM.YMin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
        NewHeader.NumCol := round((MapDraw.MapCorners.BoundBoxUTM.XMax - MapDraw.MapCorners.BoundBoxUTM.XMin) / NewHeader.DEMxSpacing);
        NewHeader.NumRow := round((MapDraw.MapCorners.BoundBoxUTM.YMax - MapDraw.MapCorners.BoundBoxUTM.YMin) / NewHeader.DEMySpacing);
        if (not (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM)) then begin
@@ -22077,10 +22077,10 @@ begin
 
         NewHeader.DEMySpacing := NewHeader.DEMySpacing / 3600;
         NewHeader.DEMxSpacing := NewHeader.DEMxSpacing / 3600;
-        NewHeader.DEMSWCornerX := trunc(MapDraw.MapCorners.BoundBoxGeo.xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
-        NewHeader.DEMSWCornerY := trunc(MapDraw.MapCorners.BoundBoxGeo.ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
-        NewHeader.NumCol := round((MapDraw.MapCorners.BoundBoxGeo.xmax - NewHeader.DEMSWCornerX) / NewHeader.DEMxSpacing);
-        NewHeader.NumRow := round((MapDraw.MapCorners.BoundBoxGeo.ymax - NewHeader.DEMSWCornerY) / NewHeader.DEMySpacing);
+        NewHeader.SWCornerX := trunc(MapDraw.MapCorners.BoundBoxGeo.xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+        NewHeader.SWCornerY := trunc(MapDraw.MapCorners.BoundBoxGeo.ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+        NewHeader.NumCol := round((MapDraw.MapCorners.BoundBoxGeo.xmax - NewHeader.SWCornerX) / NewHeader.DEMxSpacing);
+        NewHeader.NumRow := round((MapDraw.MapCorners.BoundBoxGeo.ymax - NewHeader.SWCornerY) / NewHeader.DEMySpacing);
         if not (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM) then begin
            MessageToContinue(ImpGridIncSpace + ' would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow));
            exit;
@@ -22107,8 +22107,8 @@ begin
        {$IfDef RecordNewWKT} WriteLineToDebugFile('TMapForm.CreateGridToMatchMap NewHeader.WKTString=' + IntToStr(length(NewHeader.WKTString)));  {$EndIf}
 
        NewHeader.DEMUsed := WKTDEM;
-       NewHeader.DEMSWCornerX := trunc(xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
-       NewHeader.DEMSWCornerY := trunc(ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+       NewHeader.SWCornerX := trunc(xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+       NewHeader.SWCornerY := trunc(ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
        NewHeader.NumCol := round((xmax-xmin) / NewHeader.DEMxSpacing);
        NewHeader.NumRow := round((ymax-ymin) / NewHeader.DEMxSpacing);
        NewName := ExtractFileName(fName);
@@ -22371,8 +22371,9 @@ begin
    ReadDefault('Posts to shift east-west',xpost);
    ypost := 0;
    ReadDefault('Posts to shift north-south',ypost);
-   DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerX + xpost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
-   DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMheader.DEMSWCornerY + ypost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMySpacing;
+   DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerX := DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerX + xpost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMxSpacing;
+   DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerY := DEMGlb[MapDraw.DEMonMap].DEMheader.SWCornerY + ypost * DEMGlb[MapDraw.DEMonMap].DEMheader.DEMySpacing;
+   DEMGlb[MapDraw.DEMonMap].DEMheader.RasterPixelIsGeoKey1025 := PixelIsUndefined;
    {$IfDef RecordEditsDEM}  WriteLineToDebugFile('x shift=' + IntToStr(xpost) + '  y shift=' + IntToStr(ypost) + '   ' + DEMGlb[MapDraw.DEMonMap].SWcornerString); {$EndIf}
    fName := MDTempDir + 'horiz_shift_x_' + IntToStr(xpost) + '_y_' + IntToStr(ypost) + DEMGlb[MapDraw.DEMonMap].AreaName + '.dem';
    DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fname);
@@ -22880,6 +22881,7 @@ begin
    LoadDataBaseFile(MapDraw.MapOverlays.ovShapeFileGroup);
 end;
 
+
 procedure TMapForm.Show1Click(Sender: TObject);
 var
    grid_posting_options : Grid_Postings_Form.Tgrid_posting_options;
@@ -22929,6 +22931,17 @@ begin
       DEMGlb[NewGrid].SelectionMap.RespondToChangedDEM;
    end;
 end;
+
+procedure TMapForm.Currentversion121Click(Sender: TObject);
+var
+   OutName : PathStr;
+   bb : sfBoundBox;
+begin
+    bb := MapDraw.MapCorners.BoundBoxGeo;
+    OutName := MDtempDir + 'GEDTMV1_2.tif';
+    WebExtractGEDTMorEDTM('GEDTMV1_2',bb,OutName,true);
+end;
+
 
 procedure TMapForm.Volume1Click(Sender: TObject);
 begin
@@ -23176,17 +23189,19 @@ end;
 
 procedure TMapForm.N87Click(Sender: TObject);
 var
-   fName : PathStr;
+   OutName : PathStr;
+   bb : sfBoundBox;
 begin
-    fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif';
-    GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,MapDraw.MapCorners.BoundBoxGeo,true,'GEDTM_1_1');
-
-    fName := 'https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif';
-    GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,MapDraw.MapCorners.BoundBoxGeo,true,'GEDTM_0');
-
-    fName := 'https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
-    GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,MapDraw.MapCorners.BoundBoxGeo,true,'EDTM_1_1');
-
+    //TestDEM := GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,false,TestName,TestName);
+    bb := MapDraw.MapCorners.BoundBoxGeo;
+    OutName := MDtempDir + 'GEDTMV1_2.tif';
+    WebExtractGEDTMorEDTM('GEDTMV1_2',bb,OutName,true);
+    OutName := MDtempDir + 'GEDTMV1_1.tif';
+    WebExtractGEDTMorEDTM('GEDTMV1_1',bb,OutName,true);
+    OutName := MDtempDir + 'GEDTMV0.tif';
+    WebExtractGEDTMorEDTM('GEDTMV0',bb,OutName,true);
+    OutName := MDtempDir + 'EDTM.tif';
+    WebExtractGEDTMorEDTM('EDTM',bb,OutName,true);
 end;
 
 procedure TMapForm.NAN1Click(Sender: TObject);
@@ -24084,11 +24099,6 @@ begin
 end;
 
 
-procedure TMapForm.COPandALOS1Click(Sender: TObject);
-begin
-   LoadDEMIXCandidateDEMs('',true,false);
-end;
-
 procedure TMapForm.ASCIIArcGrid1Click(Sender: TObject);
 begin
    {$IfDef ExOddballDEMexports}
@@ -24974,40 +24984,17 @@ begin
    end;
 end;
 
-procedure TMapForm.ChangePixelIsFormat;
-var
-   fName : PathStr;
-begin
-   {$If Defined(TrackDEMCorners)} DEMGlb[MapDraw.DEMonMap].WriteDEMCornersToDebugFile('TMapForm.ChangePixelIsFormat, original DEM'); {$EndIf}
-
-   OpenNewDEM(DEMGlb[MapDraw.DEMonMap].DEMfileName);
-   if (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsPoint]) then begin
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMxSpacing;
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY - 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsArea;
-      fName := ChangeFileExt(DEMGlb[MapDraw.DEMonMap].DEMfileName,'_pixel_is_area.dem');
-   end
-   else if (DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 in [PixelIsArea]) then begin
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerX + 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMxSpacing;
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY := DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMSWCornerY + 0.5 * DEMGlb[MapDraw.DEMonMap].DEMHeader.DEMySpacing;
-      DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsPoint;
-      fName := ChangeFileExt(DEMGlb[MapDraw.DEMonMap].DEMfileName,'_pixel_is_point.dem');
-   end;
-
-   DEMGlb[MapDraw.DEMonMap].WriteNewFormatDEM(fName);
-   CloseSingleDEM(MapDraw.DEMonMap);
-   OpenNewDEM(fName);
-end;
-
 
 procedure TMapForm.SaveasPixelisarea1Click(Sender: TObject);
 begin
-   ChangePixelIsFormat;
+   ChangeDEMPixelFormatAndSaveDEM(MapDraw.DEMonMap,PixelIsArea);
+   ReloadDEMClick(nil);
 end;
 
 procedure TMapForm.SaveasPixelispoint1Click(Sender: TObject);
 begin
-   ChangePixelIsFormat;
+   ChangeDEMPixelFormatAndSaveDEM(MapDraw.DEMonMap,PixelIsPoint);
+   ReloadDEMClick(nil);
 end;
 
 procedure TMapForm.SaveBitmapForMovie(BaseName : PathStr; var MovieList : tStringList);
@@ -25666,11 +25653,6 @@ begin
    {$EndIf}
 end;
 
-procedure TMapForm.All61Click(Sender: TObject);
-begin
-   LoadDEMIXCandidateDEMs('',{MapDraw.DEMonMap,}true,true);
-end;
-
 procedure TMapForm.AllbandsasGeotiffs1Click(Sender: TObject);
 {$IfDef ExSat}
 begin
@@ -25738,10 +25720,10 @@ begin
       end
       else begin
          NewDEM := 0;
-         if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveByte);
-         if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveSmallInt);
-         if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveWord);
-         if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewResolution(fcSaveFloatingPoint);
+         if (Sender = Bytes1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewElevationPrecision(fcSaveByte);
+         if (Sender = Integer161) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewElevationPrecision(fcSaveSmallInt);
+         if (Sender = Word1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewElevationPrecision(fcSaveWord);
+         if (Sender = FloatingPoint1) then NewDEM := DEMGlb[MapDraw.DEMonMap].ResaveNewElevationPrecision(fcSaveFloatingPoint);
 
          if (Sender = Western1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdW);
          if (Sender = Eastern1) then DEMGlb[MapDraw.DEMonMap].FindEdgeThisDEM(NewDEM,cdE);
@@ -25811,9 +25793,6 @@ var
    NewDEM : integer;
 begin
     NewDEM := MakeTempGrid(true,true);
-    //DEMGlb[NewDEM].DEMHeader.RasterPixelIsGeoKey1025  := DEMGlb[MapDraw.DEMonMap].DEMHeader.RasterPixelIsGeoKey1025;
-    //DEMGlb[NewDEM].DEMHeader.ElevUnits := DEMGlb[MapDraw.DEMonMap].DEMHeader.ElevUnits;
-
     DEMGlb[NewDEM].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[NewDEM].FullDEMGridLimits,MapDraw.DEMonMap,hfOnlyHole);
     DEMGlb[NewDEM].SelectionMap.RespondToChangedDEM;
     DEMGlb[NewDEM].AreaName := DEMGlb[MapDraw.DEMonMap].AreaName + '_reinterpolated';

@@ -8,6 +8,32 @@
 {________________________________________}
 
 
+procedure ChangeDEMPixelFormatAndSaveDEM(DEM : integer; PixelFormat : integer; NoShift : boolean = false; NewName : Pathstr = '');
+//we change the SW corner centroid in a pixel is point interpretation, used in the MICRODEM format
+//for saving as Geotiff, we move the NW corner to write, and move from NW to SW corner centroid when reading
+begin
+   {$If Defined(TrackDEMCorners)} DEMGlb[MapDraw.DEMonMap].WriteDEMCornersToDebugFile('TMapForm.ChangePixelIsFormat, original DEM'); {$EndIf}
+   if (DEMGlb[DEM].DEMHeader.RasterPixelIsGeoKey1025 <> PixelFormat) then begin
+       if (NewName = '') then NewName := DEMGlb[DEM].DEMfileName;
+       if (DEMGlb[DEM].DEMHeader.RasterPixelIsGeoKey1025 = PixelIsUndefined) and NoShift then begin
+           DEMGlb[DEM].DEMHeader.RasterPixelIsGeoKey1025 := PixelFormat;
+       end
+       else begin
+           if (PixelFormat = PixelIsArea) then begin
+              DEMGlb[DEM].DEMHeader.SWCornerX := DEMGlb[DEM].DEMHeader.SWCornerX - 0.5 * DEMGlb[DEM].DEMHeader.DEMxSpacing;
+              DEMGlb[DEM].DEMHeader.SWCornerY := DEMGlb[DEM].DEMHeader.SWCornerY - 0.5 * DEMGlb[DEM].DEMHeader.DEMySpacing;
+              DEMGlb[DEM].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsArea;
+           end
+           else if (PixelFormat = PixelIsPoint) then begin
+              DEMGlb[DEM].DEMHeader.SWCornerX := DEMGlb[DEM].DEMHeader.SWCornerX + 0.5 * DEMGlb[DEM].DEMHeader.DEMxSpacing;
+              DEMGlb[DEM].DEMHeader.SWCornerY := DEMGlb[DEM].DEMHeader.SWCornerY + 0.5 * DEMGlb[DEM].DEMHeader.DEMySpacing;
+              DEMGlb[DEM].DEMHeader.RasterPixelIsGeoKey1025 := PixelIsPoint;
+           end;
+       end;
+       DEMGlb[DEM].WriteNewFormatDEM(NewName);
+   end;
+end;
+
 
 procedure tDEMDataSet.ClipToVerticalRange(Min,Max : float32);
 var
@@ -23,7 +49,6 @@ begin
        end;
     end;
 end;
-
 
 
 function tDEMDataSet.DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
@@ -165,8 +190,8 @@ begin
         else NewHeader.DEMxSpacing := SpacingX;
         if SpacingY < 0 then NewHeader.DEMySpacing := NewHeader.DEMxSpacing
         else NewHeader.DEMySpacing := SpacingY;
-        NewHeader.DEMSWCornerX := trunc(DEMGlb[DEM].DEMBoundBoxUTM.XMin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
-        NewHeader.DEMSWCornerY := trunc(DEMGlb[DEM].DEMBoundBoxUTM.YMin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+        NewHeader.SWCornerX := trunc(DEMGlb[DEM].DEMBoundBoxUTM.XMin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+        NewHeader.SWCornerY := trunc(DEMGlb[DEM].DEMBoundBoxUTM.YMin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
         NewHeader.NumCol := round((DEMGlb[DEM].DEMBoundBoxUTM.XMax - DEMGlb[DEM].DEMBoundBoxUTM.XMin) / NewHeader.DEMxSpacing);
         NewHeader.NumRow := round((DEMGlb[DEM].DEMBoundBoxUTM.YMax - DEMGlb[DEM].DEMBoundBoxUTM.YMin) / NewHeader.DEMySpacing);
         if (not (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM)) then begin
@@ -186,10 +211,10 @@ begin
 
         NewHeader.DEMySpacing := NewHeader.DEMySpacing / 3600;
         NewHeader.DEMxSpacing := NewHeader.DEMxSpacing / 3600;
-        NewHeader.DEMSWCornerX := trunc(DEMGlb[DEM].DEMBoundBoxGeo.xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
-        NewHeader.DEMSWCornerY := trunc(DEMGlb[DEM].DEMBoundBoxGeo.ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
-        NewHeader.NumCol := round((DEMGlb[DEM].DEMBoundBoxGeo.xmax - NewHeader.DEMSWCornerX) / NewHeader.DEMxSpacing);
-        NewHeader.NumRow := round((DEMGlb[DEM].DEMBoundBoxGeo.ymax - NewHeader.DEMSWCornerY) / NewHeader.DEMySpacing);
+        NewHeader.SWCornerX := trunc(DEMGlb[DEM].DEMBoundBoxGeo.xmin / NewHeader.DEMxSpacing) * NewHeader.DEMxSpacing;
+        NewHeader.SWCornerY := trunc(DEMGlb[DEM].DEMBoundBoxGeo.ymin / NewHeader.DEMySpacing) * NewHeader.DEMySpacing;
+        NewHeader.NumCol := round((DEMGlb[DEM].DEMBoundBoxGeo.xmax - NewHeader.SWCornerX) / NewHeader.DEMxSpacing);
+        NewHeader.NumRow := round((DEMGlb[DEM].DEMBoundBoxGeo.ymax - NewHeader.SWCornerY) / NewHeader.DEMySpacing);
         if not (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM) then begin
            MessageToContinue(ImpGridIncSpace + ' would require ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow));
            exit;
@@ -273,15 +298,88 @@ var
    LatCh : ANSIchar;
    fName : PathStr;
    bbp : sfBoundBox;
+
+
+      procedure OldExhaustiveMethod;
+      var
+         xn,yn,x,y : integer;
+      begin
+         //WriteLineToDebugFile('start exhaustive');
+         for xn := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
+             for yn := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
+                DEMGlb[Result].DEMGridToLatLongDegree(xn,yn,Lat,Long);
+                LatLongDegreeToDEMGridInteger(Lat,Long,xp,yp);
+                Sum := 0;
+                N := 0;
+                if (DEMGlb[Result].DEMHeader.DEMUsed = ArcSecDEM) then bbp := DEMGlb[Result].PixelBoundBoxGeo(xn,yn)
+                else bbp := DEMGlb[Result].PixelBoundBoxUTM(xn,yn);
+                for x := xp-SearchRadiusX to xp+SearchRadiusX do begin
+                   for y := yp-SearchRadiusY to yp+SearchRadiusY do begin
+                      if GetElevMetersOnGrid(x,y,z) and PointInLowResPixel(Result,x,y,Lat,Long,bbp) then begin
+                         Sum := Sum + z;
+                         inc(n);
+                      end;
+                   end;
+                end;
+                if (n > 0) and (Sum > 0) then begin
+                   DEMGlb[Result].SetGridElevation(xn,yn,Sum/n);
+                end
+                else begin
+                   DEMGlb[Result].SetGridMissing(xn,yn);
+                end;
+             end;
+         end;
+         //WriteLineToDebugFile('end exhaustive');
+      end;
+
+
+
+      procedure NewMaskMethod;
+      var
+         xn,yn,x,y : integer;
+      begin
+         SearchRadiusX := SearchRadiusX div 2;
+         SearchRadiusY := SearchRadiusY div 2;
+         //WriteLineToDebugFile('start div 2');
+
+         for xn := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
+             for yn := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
+                DEMGlb[Result].DEMGridToLatLongDegree(xn,yn,Lat,Long);
+                LatLongDegreeToDEMGridInteger(Lat,Long,xp,yp);
+                Sum := 0;
+                N := 0;
+                if (DEMGlb[Result].DEMHeader.DEMUsed = ArcSecDEM) then bbp := DEMGlb[Result].PixelBoundBoxGeo(xn,yn)
+                else bbp := DEMGlb[Result].PixelBoundBoxUTM(xn,yn);
+                for x := xp-SearchRadiusX to xp+SearchRadiusX do begin
+                   for y := yp-SearchRadiusY to yp+SearchRadiusY do begin
+                      if GetElevMetersOnGrid(x,y,z) and PointInLowResPixel(Result,x,y,Lat,Long,bbp) then begin
+                         Sum := Sum + z;
+                         inc(n);
+                      end;
+                   end;
+                end;
+                if (n > 0) and (Sum > 0) then begin
+                   DEMGlb[Result].SetGridElevation(xn,yn,Sum/n);
+                end
+                else begin
+                   DEMGlb[Result].SetGridMissing(xn,yn);
+                end;
+             end;
+         end;
+         //WriteLineToDebugFile('end div 2');
+      end;
+
+
+
 begin
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyParams); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyParams); {$EndIf}
     UTMzone := DEMMapProj.projUTMZone;
     LatCh := DEMMapProj.LatHemi;
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'');
     if (SaveName <> '') then fName := ExtractFileNameNoExt(SaveName);
-
+    ShowHourglassCursor;
     if ValidDEM(DEMalreadyCreated) then begin
-       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging DEM already created'); {$EndIf}
+       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging DEM already created'); {$EndIf}
        Result := DEMalreadyCreated;
     end
     else begin
@@ -295,55 +393,45 @@ begin
        end;
     end;
 
-    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging grid created'); {$EndIf}
+    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging grid created=' + IntToStr(Result)); {$EndIf}
     DEMGlb[Result].SetEntireGridToConstant(0);
     DEMGlb[Result].DEMHeader.WKTstring := '';
 
    if (SaveName = '') then NewAreaName := AreaName
    else NewAreaName := ExtractFileNameNoExt(SaveName);
-   SearchRadiusX := round(DEMGlb[Result].AverageXSpace / AverageXSpace) + 2;
-   SearchRadiusY := round(DEMGlb[Result].AverageYSpace / AverageYSpace) + 2;
+   SearchRadiusX := round(DEMGlb[Result].AverageXSpace / AverageXSpace) + 5;
+   SearchRadiusY := round(DEMGlb[Result].AverageYSpace / AverageYSpace) + 5;
 
-   StartProgress('Get z values ' + NewAreaName,10,10);
-   for xn := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
-       UpdateProgressBar(xn/DEMGlb[Result].DEMHeader.NumCol);
-       for yn := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
-          DEMGlb[Result].DEMGridToLatLongDegree(xn,yn,Lat,Long);
-          LatLongDegreeToDEMGridInteger(Lat,Long,xp,yp);
-          Sum := 0;
-          N := 0;
-          if (DEMGlb[Result].DEMHeader.DEMUsed = ArcSecDEM) then bbp := DEMGlb[Result].PixelBoundBoxGeo(xn,yn)
-          else bbp := DEMGlb[Result].PixelBoundBoxUTM(xn,yn);
-          for x := xp-SearchRadiusX to xp+SearchRadiusX do begin
-             for y := yp-SearchRadiusY to yp+SearchRadiusY do begin
-                if GetElevMetersOnGrid(x,y,z) and PointInLowResPixel(Result,x,y,Lat,Long,bbp) then begin
-                   Sum := Sum + z;
-                   inc(n);
-                end;
-             end;
-          end;
-          if (n > 0) and (Sum > 0) then begin
-             DEMGlb[Result].SetGridElevation(xn,yn,Sum/n);
-          end
-          else begin
-             DEMGlb[Result].SetGridMissing(xn,yn);
-          end;
-       end;
-   end;
+   (*
+   OldExhaustiveMethod;
+   DEMGlb[Result].CheckMaxMinElev;
+   SaveName := 'c:\temp\oldmethod.tif';
+   DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
+   *)
+
+   NewMaskMethod;
+   (*
+   DEMGlb[Result].CheckMaxMinElev;
+   SaveName := 'c:\temp\newmethod.tif';
+   DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
+   *)
+
+
+
    DEMGlb[Result].CheckMaxMinElev;
    if (SaveName <> '') then begin
-      {$If Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
+      {$If Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
       //DEMGlb[Result].WriteNewFormatDEM(SaveName);
       DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
       //{$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
    if OpenMap then begin
-      {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging call SetUpMap'); {$EndIf}
-      DEMGlb[Result].SetupMap(true,MDDef.DefElevMap);
+      {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging call SetUpMap'); {$EndIf}
+      DEMGlb[Result].SetupMap(false,MDDef.DefElevMap);
       DEMGlb[Result].SelectionMap.Caption := DEMGlb[Result].AreaName;
    end;
-   EndProgress;
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging out, newDEM=' + IntToStr(Result)); {$EndIf}
+   ShowDefaultCursor;
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResample)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging out, newDEM=' + IntToStr(Result) + '  ' + SaveName); {$EndIf}
 end;
 
 

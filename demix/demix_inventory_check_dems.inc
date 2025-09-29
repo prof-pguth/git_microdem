@@ -171,7 +171,7 @@ end;
 procedure InventoryCriteriaEachDEMIXtile(DB : integer);
 var
    Tiles,Results,Criteria : tStringList;
-   Tile,Criterion,Aline : shortstring;
+   Tile,Criterion,Aline,IsGood : shortstring;
    i,j,TileIndex,CriterionIndex : integer;
    fName : PathStr;
    Stats : array[0..MaxTiles,0..MaxCriteria] of integer;
@@ -203,13 +203,17 @@ begin
       for I := 1 to Criteria.Count do begin
          aline := aline + ',' + Criteria.Strings[pred(i)];
       end;
+      aLine := aline + ',' + 'RESULTS';
       Results.Add(aline);
       for I := 0 to pred(Tiles.Count) do begin
          aline := Tiles.Strings[i] + ',' + IntToStr(Stats[i,0]);
+         IsGood := 'Good';
          for j := 1 to Criteria.Count do begin
             aline := aline + ',' + IntToStr(Stats[i,j]);
+            if Stats[i,j] = 0 then IsGood := 'Missing'
+            else if Stats[i,j] > 1 then IsGood := 'Duplicates';
          end;
-         Results.Add(aline);
+         Results.Add(aline + ',' + IsGood);
       end;
       fName := NextFileNumber(MDTempDir,'Criteria_each_cluster','.dbf');
       PetdbUtils.StringList2CSVtoDB(Results,fName);
@@ -227,8 +231,8 @@ end;
 procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
 var
    Tiles,Results,Criteria : tStringList;
-   Tile,{Criterion,}Aline : shortstring;
-   i,j,k,n,tileIndex{,CriterionIndex} : integer;
+   Tile,Aline : shortstring;
+   i,j,k,n,tileIndex : integer;
    fName : PathStr;
    Stats : array[0..MaxTiles,0..MaxCriteria] of float32;
 begin
@@ -249,14 +253,9 @@ begin
          n := 0;
          while not GISdb[db].MyData.eof do begin
             Tile := GISdb[db].MyData.GetFieldByNameAsString('DEMIX_TILE');
-            //riterion := GISdb[db].MyData.GetFieldByNameAsString('CRITERION');
             TileIndex := Tiles.IndexOf(Tile);
-            //CriterionIndex := Criteria.IndexOf(Criterion);
             inc(n);
-            //if (TileIndex <> -1) then begin
-               //inc(Stats[TileIndex,0]);
-               Stats[TileIndex,k] := {n / GISdb[db].MyData.FiltRecsInDB;}  GISdb[db].MyData.GetFieldByNameAsFloat('COP');
-            //end;
+            Stats[TileIndex,k] := GISdb[db].MyData.GetFieldByNameAsFloat('COP');
             GISdb[db].MyData.Next;
          end;
       end;
@@ -548,26 +547,34 @@ end;
 
 procedure CriteriaInSSIM_FUV_db(db : integer);
 var
-   Areas,Criteria,Results : tStringList;
+   Areas,Results : tStringList;
    fName : PathStr;
-   i : integer;
+   TStr : shortstring;
+   i,Tiles,Criteria,Records : integer;
 begin
+   SetColorForProcessing;
    GISdb[db].EmpSource.Enabled := false;
    Areas := GISdb[db].MyData.ListUniqueEntriesInDB('AREA');
    Results := tStringList.Create;
-   Results.Add('AREA,CRITERIA');
+   Results.Add('AREA,DEMIX_TILES,CRITERIA,RECORDS,COMPLETE');
    for I := 0 to pred(Areas.Count) do begin
       GISdb[db].ApplyGISFilter('AREA=' + QuotedStr(Areas.Strings[i]));
       GISdb[db].EmpSource.Enabled := false;
-      Criteria :=  GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
-      Results.Add(Areas.Strings[i] + ',' + IntToStr(Criteria.Count));
-      Criteria.Free;
+      Tiles := GISdb[db].MyData.NumUniqueEntriesInDB('DEMIX_TILE');
+      Criteria := GISdb[db].MyData.NumUniqueEntriesInDB('CRITERION');
+      Records := GISdb[db].MyData.FiltRecsInDB;
+      if (Records = Tiles * Criteria) then TStr := 'Yes'
+      else begin
+         if (Records < Tiles * Criteria) then TStr := 'NO--Missing' else TStr := 'NO--Duplicates';
+      end;
+      Results.Add(Areas.Strings[i] + ',' + IntToStr(Tiles) + ',' + IntToStr(Criteria) + ',' + IntToStr(Records) + ',' + TStr);
    end;
    Areas.Free;
    fName := NextFileNumber(MDTempDir,'ssim-fuv_inventory','.dbf');
    PetdbUtils.StringList2CSVtoDB(Results,fName);
    GISdb[db].ClearGISFilter;
    GISdb[db].EmpSource.Enabled := true;
+   SetColorForWaiting;
 end;
 
 
@@ -594,142 +601,6 @@ begin
    if (Results.Count = 0) then MessageToContinue('Difference stats done for all areas, n=' + IntToStr (N))
    else DisplayAndPurgeStringList(Results,'Areas Missing DEMIX difference stats (n=' + IntToStr(Results.Count) + ')');
    TheFiles.Free;
-end;
-
-
-procedure InventoryWbWSaagaMDsavedGridsByArea;
-var
-   TestDEMFiles,RefDEMfiles,Results,Areas : tStringList;
-   i,j : integer;
-   Area,aLine : shortstring;
-   fName : PathStr;
-
-
-   function GetTiffFiles(aDir : PathStr; Ext : ShortString) : tStringList;
-   var
-      i : integer;
-      fName : PathStr;
-   begin
-      Result := tStringList.Create;
-      Result.sorted := true;
-      FindMatchingFiles(aDir,Ext,Result);
-      for i := pred(Result.Count) downto 0 do begin
-         fName := Result.Strings[i];
-         (*  //5/31/2024, this can probably be removed
-         if StrUtils.ANSIcontainsText(fName,'_dsm') then begin
-            DeleteFileIfExists(fName);
-         end
-         else begin
-            if Ref and (not StrUtils.ANSIcontainsText(fName,'_dtm')) then begin
-               DeleteFileIfExists(fName);
-            end;
-         end;
-         *)
-      end;
-
-   end;
-
-
-begin
-   GetDEMIXPaths;
-   Areas := tStringList.Create;
-   Areas.LoadFromFile(AreaListFName);
-   ShowHourglassCursor;
-
-   TestDEMFiles := GetTiffFiles(wbt_out_test_dir,'*.shp');
-   RefDEMfiles := GetTiffFiles(wbt_out_ref_dir,'*.shp');
-   Results := tStringList.Create;
-   Results.Add('AREA,VALLEY_REF,RIDGE_REF,VALLEY_TEST,RIDGE_TEST');
-   for j := 0 to pred(Areas.Count) do begin
-      Area := Areas.Strings[j];
-      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'valleys_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'ridges_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'valleys_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'ridges_' + Area));
-      Results.Add(aline);
-  end;
-  fName := NextFileNumber(MDTempDir,'WbW_vector_inventory','.dbf');
-  //Results.SaveToFile('c:\temp\test.csv');
-  PetdbUtils.StringList2CSVtoDB(Results,fName);
-  TestDEMFiles.Free;
-  RefDEMfiles.Free;
-  Results.Free;
-
-   TestDEMFiles := GetTiffFiles(wbt_out_test_dir,'*.tif');
-   RefDEMfiles := GetTiffFiles(wbt_out_ref_dir,'*.tif');
-   Results := tStringList.Create;
-   Results.Add('AREA,FLOW_REF,HAND_REF,ROTOR_REF,STREAM_REF,SED_TR_REF,WETIN_REF,FLOW_TEST,HAND_TEST,ROTOR_TEST,STREAM_TEST,SED_TR_TEST,WETIN_TEST');
-   for j := pred(Areas.Count) downto 0 do begin
-      Area := Areas.Strings[j];
-      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'flow_accum_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'HAND_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'rotor_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'sed_trans_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'streams_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'wetin_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'flow_accum_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'HAND_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'rotor_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'streams_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'sed_trans_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'wetin_' + Area));
-      Results.Add(aline);
-  end;
-  fName := NextFileNumber(MDTempDir,'WbW_data_inventory','.dbf');
-  PetdbUtils.StringList2CSVtoDB(Results,fName);
-  TestDEMFiles.Free;
-  RefDEMfiles.Free;
-  Results.Free;
-
-  TestDEMFiles := GetTiffFiles(saga_out_test_dir,'*.tif');
-  RefDEMfiles := GetTiffFiles(saga_out_ref_dir,'*.tif');
-   Results := tStringList.Create;
-   Results.Add('AREA,IP12_REF,CONIN_REF,IP12_TEST,CONIN_TEST');
-   for j := 0 to pred(Areas.Count) do begin
-      Area := Areas.Strings[j];
-      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'ip12_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'CONIN_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'ip12_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'CONIN_' + Area));
-      Results.Add(aline);
-  end;
-  fName := NextFileNumber(MDTempDir,'SAGA_data_inventory','.dbf');
-  PetdbUtils.StringList2CSVtoDB(Results,fName);
-  TestDEMFiles.Free;
-  RefDEMfiles.Free;
-  Results.Free;
-
-
-  TestDEMFiles := GetTiffFiles(md_out_test_dir,'*.tif');
-  RefDEMfiles := GetTiffFiles(md_out_ref_dir,'*.tif');
-   Results := tStringList.Create;
-   Results.Add('AREA,RRI_REF,ROUGH_REF,SLOPE_REF,OPENU_REF,OPEND_REF,HILL_REF,TPI_REF,RRI_TEST,ROUGH_TEST,SLOPE_TEST,OPENU_TEST,OPEND_TEST,HILL_TEST,TPI_TEST');
-   for j := 0 to pred(Areas.Count) do begin
-      Area := Areas.Strings[j];
-      aline := Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'RRI_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'ROUGH_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'SLOPE_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'OPENU_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'OPEND_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'HILL_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(RefDEMfiles,'TPI_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'RRI_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'ROUGH_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'SLOPE_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'OPENU_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'OPEND_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'HILL_' + Area)) + ',' +
-                            IntToStr(NumberOfStringsWithSubstring(TestDEMfiles,'TPI_' + Area)) ;
-      Results.Add(aline);
-  end;
-  fName := NextFileNumber(MDTempDir,'MD_data_inventory','.dbf');
-  PetdbUtils.StringList2CSVtoDB(Results,fName);
-  TestDEMFiles.Free;
-  RefDEMfiles.Free;
-  Results.Free;
-
-  Areas.Free;
-  EndDEMIXProcessing;
 end;
 
 
@@ -918,24 +789,6 @@ begin
 end;
 
 
-procedure CheckReferenceDEMsAreEGMandPixelIs;
-var
-   FilesWanted,Results : tStringList;
-   fName : PathStr;
-begin
-   GetDEMIXpaths(false);
-   FilesWanted := tStringList.Create;
-   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',FilesWanted,1);
-   FilesWanted.Sort;
-   RemoveFilesThatDoHaveString(FilesWanted,'_dsm_');
-   RemoveFilesThatDoHaveString(FilesWanted,'_area');
-   DoAllFilesHaveSetEGMandPixelIs(FilesWanted,Results);
-   FilesWanted.Free;
-   fName := NextFileNumber(MDTempDir,'ref_dem_status_','.dbf');
-   PetdbUtils.StringList2CSVtoDB(Results,fName);
-   EndDEMIXProcessing;
-end;
-
 
 function TestDEMsAllPresent(AreaName : shortstring; var DEMs : integer; var Missing : shortstring) : boolean;
 var
@@ -999,91 +852,6 @@ begin
    EndDEMIXProcessing;
 end;
 
-
-procedure DEMIXTileSummary(DBonTable : integer);
-var
-   DEMsPresent,LandTypesPresent,Report,CriteriaPresent : tStringList;
-   j,k : integer;
-   aLine : shortstring;
-   fName : PathStr;
-begin
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary in'); {$EndIf}
-   GISdb[DBonTable].EmpSource.Enabled := false;
-
-   DEMsPresent := tStringList.Create;
-   DEMsPresent.LoadFromFile(DEMIXSettingsDir + 'demix_dems.txt');
-
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   LandTypesPresent := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('LAND_TYPE');
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   CriteriaPresent := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('CRITERION');
-   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('Land_Types present=' + IntToStr(LandTypesPresent.Count) + '  Criteria present=' + IntToStr(CriteriaPresent.Count)); {$EndIf}
-
-   Report := tStringList.Create;
-   aline := 'REF_TYPE,AREA';
-   for j := 0 to pred(LandTypesPresent.Count) do aLine := aLine + ',' + LandTypesPresent.strings[j];
-   Report.Add(Aline);
-
-   {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DEMIXTileSummary ' + aline); {$EndIf}
-
-   for j := 2 downto 1 do begin
-      aline := RefDEMType[j];
-      GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(RefDEMType[j]));
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('AREA'));
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      for k := 0 to pred(LandTypesPresent.Count) do begin
-         wmdem.SetPanelText(3,'DEM type=' + RefDEMType[j] + '  land type=' + LandTypesPresent[k]);
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].ApplyGISFilter('REF_TYPE=' + QuotedStr(RefDEMType[j]) + ' AND LAND_TYPE=' + QuotedStr(LandTypesPresent[k]));
-         aLine := aline + ',' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB div CriteriaPresent.Count);
-      end;
-      {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('DEMIXTileSummary ' + aline); {$EndIf}
-      Report.Add(aline);
-   end;
-
-   DEMsPresent.Free;
-   LandTypesPresent.Free;
-   CriteriaPresent.Free;
-   fName := NextFileNumber(MDTempDir,'demix_tile_summary_','.dbf');
-   StringList2CSVtoDB(Report,fName);
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].EmpSource.Enabled := true;
-   GISdb[DBonTable].ShowStatus;
-   wmdem.SetPanelText(3,'');
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('DEMIXTileSummary out'); {$EndIf}
-end {DEMIXTileSummary};
-
-
-procedure DEMIXtile_inventory(DBonTable : integer);
-//table with country, area, number of DEMIX tiles, and list of the reference types (DTM/DSM)
-var
-   TileList,Findings,DEMs : tStringList;
-   TStr : shortstring;
-   fName : PathStr;
-   i : Integer;
-begin
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   TileList := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
-   Findings := tStringList.Create;
-   Findings.Add('COUNTRY,AREA,DEMIX_TILE,DEMS');
-   StartProgress('Inventory tiles');
-   for i := 0 to pred(TileList.Count) do begin
-      wmdem.SetPanelText(3,'Tile ' + IntToStr(i) + '/' + IntToStr(TileList.Count));
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      if (i mod 10 = 0) then UpdateProgressBar(i/TileList.Count);
-      GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(TileList.Strings[i]),false);
-      DEMs := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('REF_TYPE');
-      TStr := DEMs[0];
-      if (DEMs.Count > 1) then TStr := TStr + ' + ' +  DEMs[1];
-      Findings.Add(GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + ',' + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + ',' +  TileList.Strings[i] + ',' + TStr);
-   end;
-   GISdb[DBonTable].ClearGISFilter;
-   fName := NextFileNumber(MDTempDir,'DEMIX_tile_inventory','.dbf');
-   StringList2CSVtoDB(Findings,fName);
-   GISdb[DBonTable].ShowStatus;
-   wmdem.SetPanelText(3,'');
-end;
 
 
 procedure VerifyTestDEMcoverages;

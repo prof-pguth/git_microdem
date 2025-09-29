@@ -17,95 +17,6 @@ const
    DoDSM = false;
 
 
-procedure AddColorsForUnderDBs(DBonTable : integer);
-//create a table with the number of tiles and areas for each mode
-//add color to the table based on the lowest mode for each area
-var
-   Results : tStringList;
-   fName : PathStr;
-   Color : tColor;
-begin
-   Results := tStringList.Create;
-   Results.Add('NAME,DATA_SET,AREAS,DEMIX_TILE,COLOR');
-   GISdb[dbOnTable].ClearGISFilter;
-   Results.Add('Full elevation range,FULL,' + IntToStr(GISdb[dbOnTable].MyData.FiltRecsInDB) + ',' + RealToString(GISdb[dbOnTable].MyData.FieldSum('FULL_TILES'),-8,0) + ',' + IntToStr(clMagenta));
-   if MDdef.DEMIX_AllowCoastal then begin
-       GISdb[dbOnTable].ApplyGISFilter('U120_TILES>0');
-       Results.Add('Under 120 meters,U120,' + IntToStr(GISdb[dbOnTable].MyData.FiltRecsInDB) + ',' + RealToString(GISdb[dbOnTable].MyData.FieldSum('U120_TILES'),-8,0) + ',' + IntToStr(clRed));
-       GISdb[dbOnTable].ApplyGISFilter('U80_TILES>0');
-       Results.Add('Under 80 meters,U80,' + IntToStr(GISdb[dbOnTable].MyData.FiltRecsInDB) + ',' + RealToString(GISdb[dbOnTable].MyData.FieldSum('U80_TILES'),-8,0) + ',' + IntToStr(clLime));
-       GISdb[dbOnTable].ApplyGISFilter('U10_TILES>0');
-       Results.Add('Under 10 m,U10,' + IntToStr(GISdb[dbOnTable].MyData.FiltRecsInDB) + ',' + RealToString(GISdb[dbOnTable].MyData.FieldSum('U10_TILES'),-8,0) + ',' + IntToStr(clBlue));
-   end;
-   fName := MDtempDir + 'tiles_by_area_and)db.dbf';
-   StringList2CSVtoDB(Results,fName);
-
-   GISdb[dbOnTable].ClearGISFilter;
-   GISdb[dbOnTable].AddFieldToDataBase(ftInteger,'COLOR',10);
-   GISdb[dbOnTable].EmpSource.Enabled := false;
-   while not GISdb[dbOnTable].MyData.eof do begin
-      Color := clMagenta;
-      if MDdef.DEMIX_AllowCoastal then begin
-         if GISdb[dbOnTable].MyData.GetFieldByNameAsInteger('U10_TILES') > 0 then Color := clBlue
-         else if GISdb[dbOnTable].MyData.GetFieldByNameAsInteger('U80_TILES') > 0 then Color := clLime
-         else if GISdb[dbOnTable].MyData.GetFieldByNameAsInteger('U120_TILES') > 0 then Color := clRed;
-      end;
-      GISdb[dbOnTable].MyData.Edit;
-      GISdb[dbOnTable].MyData.SetFieldByNameAsInteger('COLOR',color);
-      GISdb[dbOnTable].MyData.Next;
-   end;
-   GISdb[dbOnTable].ShowStatus;
-end;
-
-
-procedure MakeWinsDB(DBonTable : integer; aField : shortstring);
-var
-   Criteria : tStringList;
-   aLine : shortstring;
-   i, DEM,nt,db : integer;
-   ByCriterion : tStringList;
-   fName : PathStr;
-begin
-
-   MessageToContinue('MakeWinsDB disabled');
-(*
-    if GISdb[DBonTable].MyData.FieldExists('COP_WIN') then begin
-       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeWinsDB in'); {$EndIf}
-       GISdb[DBonTable].dbTableF.UnHideColumns;
-       GISdb[DBonTable].EmpSource.Enabled := false;
-       Criteria := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(aField);
-       ByCriterion := tStringList.Create;
-       aLine := aField;
-       for DEM := 1 to NumDEMIXtestDEM do aLine := aLine + ',' + DEMIXShort[DEM] + '_WIN';
-       ByCriterion.Add(aline);
-       StartProgress('Winners');
-       for I := 0 to pred(Criteria.Count) do begin
-          UpdateProgressBar(i/Criteria.Count);
-          GISdb[DBonTable].ApplyGISFilter(aField + '=' + QuotedStr(Criteria.Strings[i]));
-          nt := GISdb[DBonTable].MyData.FiltRecsInDB;
-          aLine :=  Criteria.Strings[i];
-          for DEM := 1 to NumDEMIXtestDEM do begin
-             GISdb[DBonTable].EmpSource.Enabled := false;
-             GISdb[DBonTable].ApplyGISFilter(aField + '=' + QuotedStr(Criteria.Strings[i]) + ' AND ' + DEMIXShort[DEM] + '_WIN=1');
-             aLine := aLine + ',' + RealToString(100* GISdb[DBonTable].MyData.FiltRecsInDB / nt,-8,-2);
-          end;
-          ByCriterion.Add(aline);
-       end;
-       EndProgress;
-
-      fName := Petmar.NextFileNumber(MDTempDir, 'wins_by_' + aField + '_' ,DefaultDBExt);
-      {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
-      db := StringList2CSVtoDB(ByCriterion,fName);
-      GISdb[DBonTable].ClearGISFilter;
-      SortDataBase(db,true,'COP_WIN');
-      {$If Defined(RecordDEMIX)} WriteLineToDebugFile('MakeWinsDB out'); {$EndIf}
-    end
-    else begin
-       MessageToContinue('_WIN fields required');
-    end;
-*)
-end;
-
 
 procedure MakeDBForParamStats(Option,DBonTable : integer);
 var
@@ -459,7 +370,7 @@ var
                                  LandTypeMask := ltMask;
                                  moment(thezs,theMoments,msAll);
                                  for i := 0 to pred(theMoments.NPts) do thezs[i] := abs(thezs[i]);
-                                 theMoments.LE90 := Percentile(90,thezs,theMoments.NPts,false);
+                                 //theMoments.LE90 := Percentile(90,thezs,theMoments.NPts,false);
                                  aline := TileHeader + LineHeader(aTestDEM,RefType)  + RealToString(Percent,-12,-2) + ',' + DEMIXMomentStatsString(theMoments);
                                  sl.Add(aLine);
                                  inc(Result);
@@ -549,7 +460,7 @@ var
                      Col,Row : integer;
                   begin
                      ZeroMomentVar;
-                     {$If Defined(RecordFullDEMIX) or Defined(RecordNeoDEMIX)} WriteLineToDebugFile('DoElev: ' + GridLimitsToString(bbgrid) + ' test=' + DEMglb[aTestDEM].AreaName + ' ref=' + DEMglb[RefDEM].AreaName); {$EndIf}
+                     {$If Defined(RecordDEMIXFull) or Defined(RecordNeoDEMIX)} WriteLineToDebugFile('DoElev: ' + GridLimitsToString(bbgrid) + ' test=' + DEMglb[aTestDEM].AreaName + ' ref=' + DEMglb[RefDEM].AreaName); {$EndIf}
                      for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
                         for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
                            if DEMGlb[aTestDEM].GetElevMetersOnGrid(col,row,z) then begin
@@ -590,7 +501,7 @@ var
                   var
                      Col,Row,xg,yg : integer;
                   begin
-                     {$If Defined(RecordFullDEMIX) or Defined(RecordNeoDEMIX)} WriteLineToDebugFile('DoSlope: ' + GridLimitsToString(bbgrid) + ' test=' + DEMglb[aTestDEM].AreaName + ' ref=' + DEMglb[RefDEM].AreaName); {$EndIf}
+                     {$If Defined(RecordDEMIXFull) or Defined(RecordNeoDEMIX)} WriteLineToDebugFile('DoSlope: ' + GridLimitsToString(bbgrid) + ' test=' + DEMglb[aTestDEM].AreaName + ' ref=' + DEMglb[RefDEM].AreaName); {$EndIf}
                      ZeroMomentVar;
                      for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
                         for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
@@ -630,7 +541,7 @@ var
                      Col,Row : integer;
                      Ruff1,Ruff2 : float32;
                   begin
-                     {$If Defined(RecordFullDEMIX) or Defined(RecordNeoDEMIX)} WriteLineToDebugFile('DoRuff: ' + GridLimitsToString(bbgrid) + ' test=' + DEMglb[aTestDEM].AreaName + ' ref=' + DEMglb[RefDEM].AreaName); {$EndIf}
+                     {$If Defined(RecordDEMIXFull) or Defined(RecordNeoDEMIX)} WriteLineToDebugFile('DoRuff: ' + GridLimitsToString(bbgrid) + ' test=' + DEMglb[aTestDEM].AreaName + ' ref=' + DEMglb[RefDEM].AreaName); {$EndIf}
                      ZeroMomentVar;
                      for Col := bbgrid.xgridlow to bbgrid.xgridhigh do begin
                         for Row := bbgrid.ygridlow to bbgrid.ygridhigh do begin
@@ -680,12 +591,12 @@ var
            {$EndIf}
 
             begin {procedure CompareDifferencesToReferenceDEM}
-               {$If Defined(RecordFullDEMIX) or Defined(RecordGridCompare) or Defined(RecordTestDEMstart)}
+               {$If Defined(RecordDEMIXFull) or Defined(RecordGridCompare) or Defined(RecordTestDEMstart)}
                   WriteLineToDebugFile('Comparison to reference=' + DEMGLB[RefDEM].AreaName + '  test=' + DEMGLB[aTestDEM].AreaName);
                {$EndIf}
                TStr := 'DEM=' + IntToStr(aTestDEM) + ' '  + RefType;
                wmdem.SetPanelText(3,TStr);
-               {$If Defined(RecordTileProcessing) or Defined(RecordFullDEMIX)} WriteLineToDebugFile(TStr); {$EndIf}
+               {$If Defined(RecordTileProcessing) or Defined(RecordDEMIXFull)} WriteLineToDebugFile(TStr); {$EndIf}
                New(zs);
 
                {$IfDef UseOldDifferenceDistributions}
@@ -814,10 +725,10 @@ var
                {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
             end
             else begin
-               {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs) or Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover loading'); {$EndIf}
+               {$If Defined(RecordDEMIXFull) or Defined(TrackDEMIX_DEMs) or Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover loading'); {$EndIf}
                if DoLandTypes then LoadLandcoverForDEMIXarea(AreaName,false);
                {$If Defined(Rec_DEMIX_Landcover)} if ValidDEM(LandCoverGrid) then WriteLineToDebugFile('Land cover area=' + sfBoundBoxToString(DEMGlb[LandCoverGrid].DEMBoundBoxGeo,2)); {$EndIf}
-               {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('comparing'); {$EndIf}
+               {$If Defined(RecordDEMIXFull) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('comparing'); {$EndIf}
                OpenDataStructures;
                j := 0;
                GISdb[DEMIXtileDB].MyData.First;
@@ -834,19 +745,19 @@ var
 //change this for the new one, with the separate loops for area and point
                   for i := 1 to NumDEMIXtestDEM do begin
                      if ValidDEM(TestDEMs[i]) then begin
-                        {$If Defined(RecordFullDEMIX) or Defined(RecordDEMIXLoops) or Defined(RecordCriteriaEvaluation)}
+                        {$If Defined(RecordDEMIXFull) or Defined(RecordDEMIXLoops) or Defined(RecordCriteriaEvaluation)}
                            WriteLineToDebugFile(DEMIXTile + ' Start tests DEM=' + IntToStr(TestDEMs[i]) + '/' + IntToStr(Ser) + ' Series=' + TestSeries[i] + DEMGlb[TestDEMs[i]].AreaName);
                         {$EndIf}
                         GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
                         bbgrid := GridBoundingBox(TestDEMs[i],UseDTM,true);
                         CompareDifferencesToReferenceDEM(TestDEMs[i],UseDTM,'DTM',bbgrid);
                         if DoDSM and ValidDEM(UseDSM) then CompareDifferencesToReferenceDEM(TestDEMs[i],UseDSM,'DSM',bbgrid);
-                        {$If Defined(RecordFullDEMIX)} WriteLineToDebugFile('All tests done for ' + TestSeries[i]); {$EndIf}
+                        {$If Defined(RecordDEMIXFull)} WriteLineToDebugFile('All tests done for ' + TestSeries[i]); {$EndIf}
                      end;
                   end;
                   GISdb[DEMIXtileDB].MyData.Next;
                end;
-               {$If Defined(RecordFullDEMIX)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
+               {$If Defined(RecordDEMIXFull)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
                CloseDataStructures;
             end;
             {$If Defined(RecordCriteriaEvaluation)} WriteLineToDebugFile('call CloseAndNilNumberedDB(DEMIXtileDB)'); {$EndIf}
@@ -860,7 +771,7 @@ var
          {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Error loading reference DEMs, ' + AreaName); {$EndIf}
       end;
       ReportErrors := true;
-      {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs'); {$EndIf}
+      {$If Defined(RecordDEMIXFull) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs'); {$EndIf}
       if DEMIXCloseMap then CloseAllDEMs;
     end {ProcessDEMIXtestarea};
 
@@ -1202,10 +1113,7 @@ begin {procedure RankDEMS}
     GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TOLERANCE',9,6);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NUM_TIES',2);
 
-
-    //fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
     TieToleranceTable := tMyData.Create(fName);
-
     if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
        j := 0;
        GISdb[DBonTable].MyData.First;
@@ -1230,7 +1138,7 @@ begin {procedure RankDEMS}
                 if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
                    inc(UsedDEMs);
                    RankDEMs[UsedDEMs] := DEMIXShort[DEM];
-                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);       //rank dems is not being set
+                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);     //rank dems is not being set
                    {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
                 end;
              end;
@@ -1269,6 +1177,7 @@ begin {procedure RankDEMS}
 end {procedure RankDEMS};
 
 
+
 function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
 var
    i,DEM  : integer;
@@ -1277,32 +1186,30 @@ var
    Field,aLine : shortstring;
    Sum,Average : float64;
 
-  procedure ProcessFilter(aName : shortstring);
-  var
-     DEM : integer;
-  begin
-    {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('Process filter in, ' + aName + ' Filter matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
-    if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-       aLine := aName + ',' + IntToStr(GISdb[DBonTable].NumUniqueEntriesInDB('DEMIX_TILE'));
-       for DEM := 1 to DEMs.Count do begin
-          Field := DEMs.strings[pred(DEM)] + Ext;
-          {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(Field); {$EndIf}
-          GISdb[DBonTable].EmpSource.Enabled := false;
-          if GISdb[DBonTable].MyData.FieldExists(Field) then begin
-             ShowHourglassCursor;
-             //Sum := GISdb[DBonTable].MyData.FieldSum(Field);
-             //Average := Sum / GISdb[DBonTable].MyData.FiltRecsInDB;
-             if MDDef.DEMIX_UseMedian then Average := GISdb[DBonTable].MyData.FieldMedian(Field)
-             else Average := GISdb[DBonTable].MyData.FieldAverage(Field);
-             aline := aline + ',' + RealToString(Average,-12,-4);
-          end;
-       end;
-       Findings.Add(aline);
-    end
-    else begin
-       {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('no records match filter ' + GISdb[DBonTable].MyData.Filter); {$EndIf}
-    end;
-  end;
+      procedure ProcessFilter(aName : shortstring);
+      var
+         DEM : integer;
+      begin
+        {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('Process filter in, ' + aName + ' Filter matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
+        if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+           aLine := aName + ',' + IntToStr(GISdb[DBonTable].NumUniqueEntriesInDB('DEMIX_TILE'));
+           for DEM := 1 to DEMs.Count do begin
+              Field := DEMs.strings[pred(DEM)] + Ext;
+              {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(Field); {$EndIf}
+              GISdb[DBonTable].EmpSource.Enabled := false;
+              if GISdb[DBonTable].MyData.FieldExists(Field) then begin
+                 ShowHourglassCursor;
+                 if MDDef.DEMIX_UseMedian then Average := GISdb[DBonTable].MyData.FieldMedian(Field)
+                 else Average := GISdb[DBonTable].MyData.FieldAverage(Field);
+                 aline := aline + ',' + RealToString(Average,-12,-4);
+              end;
+           end;
+           Findings.Add(aline);
+        end
+        else begin
+           {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('no records match filter ' + GISdb[DBonTable].MyData.Filter); {$EndIf}
+        end;
+      end;
 
 var
   TheFilter : shortstring;
@@ -1340,8 +1247,13 @@ begin {function AverageScoresOfDEMs}
     end;
     if (Filters <> Nil) then GISdb[DBonTable].ClearGISFilter;
     GISdb[DBonTable].ShowStatus;
-    fName := NextFileNumber(MDTempDir,GISdb[DBonTable].dbName + '_average_scores_','.dbf');
-    result := StringList2CSVtoDB(Findings,fName);
+    if (Findings.Count > 1) then begin
+       fName := NextFileNumber(MDTempDir,GISdb[DBonTable].dbName + '_average_scores_','.dbf');
+       result := StringList2CSVtoDB(Findings,fName);
+    end
+    else begin
+       //{$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(IntToStr(i) + '  ' + Filters.strings[i] + '   ' + Filters.strings[i]); {$EndIf}
+    end;
     {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('DEMIXScoreDEMs out, ' + GISdb[DBonTable].dbName); {$EndIf}
 end {function AverageScoresOfDEMs};
 
@@ -1381,7 +1293,6 @@ begin
             if StrUtils.AnsiContainsText(fname,TileList[aTile]) then begin
                if StrUtils.AnsiContainsText(fname,'COP') then begin
                   Area := BeforeSpecifiedString(ExtractFileName(FilesWanted.Strings[i]),'_COP');
-
                   Tile := ExtractFileName(fName);
                   Tile := AfterSpecifiedString(Tile,'COP_');
                   Tile := Copy(Tile,1,9);
@@ -1432,20 +1343,21 @@ begin
 end;
 
 
-procedure ComputeDEMIX_Summary_stats_DB;
+procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
 var
    MomentVar,ForestMomentVar,UrbanMomentVar,BarrenMomentVar,WaterMomentVar : tMomentVar;
    DEMIXtileDB,LandCoverGrid : integer;
    bbgrid : tGridLimits;
    fName : PathStr;
    Country,AreaName,DEMIXtile,LandTypeMask,TileHeader : shortstring;
-   AreaGridFull,
-   AreaAveElev,AreaAveSlope,AreaAveRuff,AreaAveRelief,
-   AreaForestPC, AreaUrbanPC,AreaBarrenPC,AreaWaterPC,
-   AreaMinElev,AreaMaxElev,
+   {$IfDef AllowAreaStats}
+      AreaGridFull,AreaAveElev,AreaAveSlope,AreaAveRuff,AreaAveRelief,
+      AreaForestPC, AreaUrbanPC,AreaBarrenPC,AreaWaterPC,AreaMinElev,AreaMaxElev : float64;
+      AreaStats : tStringList;
+   {$EndIf}
    LatCent,LongCent,
    GridFull,Lat,Long : float64;
-   TileStats,AreaStats : tStringList;
+   AreasWanted,TileStats : tStringList;
    zs : ^bfarray32;
 
          procedure InitializeStringLists;
@@ -1454,9 +1366,12 @@ var
          begin
             TileStats := tStringList.Create;
             TileStats.Add('AREA,DEMIX_TILE' + TileStatsString);
-            AreaStats := tStringList.Create;
-            AreaStats.Add('AREA,NUM_TILE' + TileStatsString);
+            {$IfDef AllowAreaStats}
+               AreaStats := tStringList.Create;
+               AreaStats.Add('AREA,NUM_TILE' + TileStatsString);
+            {$EndIf}
          end;
+
 
          procedure FinalizeStringLists(FinalSaveResults : boolean = true);
 
@@ -1483,7 +1398,9 @@ var
             {$IfDef TrackAverageStats} TileStats.SaveToFile(DEMIXSettingsDir + 'tilestats.csv'); AreaStats.SaveToFile(DEMIXSettingsDir + 'areastats.csv'); {$EndIf}
             db := ProcessStringList('DEMIX_tiles_statistics',TileStats);
             if ValidDB(db) then AddPercentPrimaryData(DB);
-            ProcessStringList('DEMIX_area_statistics',AreaStats);
+            {$IfDef AllowAreaStats}
+               ProcessStringList('DEMIX_area_statistics',AreaStats);
+            {$EndIf}
          end;
 
 
@@ -1522,6 +1439,7 @@ var
                else if (slc = slcUrban) then inc(UrbanMomentVar.Npts)
                else if (slc = slcWater) then inc(WaterMomentVar.Npts);
             end;
+
 
          procedure GetTileStatistics(RefDEM : integer);
          var
@@ -1567,18 +1485,19 @@ var
                      BarrenPC := -999;
                      WaterPC := -999;
                   end;
-
-                  AreaGridFull := AreaGridFull + GridFull;
-                  AreaAveElev := AreaAveElev + ElevMomentVar.Mean;
-                  AreaAveSlope := AreaAveSlope + SlopeMomentVar.Mean;
-                  AreaAveRuff := AreaAveRuff + RoughMomentVar.Mean;
-                  AreaAveRelief := AreaAveRelief + ElevMomentVar.Maxz - ElevMomentVar.Minz;
-                  AreaForestPC := AreaForestPC + ForestPC;
-                  AreaUrbanPC := AreaUrbanPC + UrbanPC;
-                  AreaBarrenPC := AreaBarrenPC + BarrenPC;
-                  AreaWaterPC := AreaWaterPC + WaterPC;
-                  if AreaMinElev > ElevMomentVar.MinZ then AreaMinElev := ElevMomentVar.MinZ;
-                  if AreaMaxElev < ElevMomentVar.MaxZ then AreaMaxElev := ElevMomentVar.MaxZ;
+                  {$IfDef AllowAreaStats}
+                      AreaGridFull := AreaGridFull + GridFull;
+                      AreaAveElev := AreaAveElev + ElevMomentVar.Mean;
+                      AreaAveSlope := AreaAveSlope + SlopeMomentVar.Mean;
+                      AreaAveRuff := AreaAveRuff + RoughMomentVar.Mean;
+                      AreaAveRelief := AreaAveRelief + ElevMomentVar.Maxz - ElevMomentVar.Minz;
+                      AreaForestPC := AreaForestPC + ForestPC;
+                      AreaUrbanPC := AreaUrbanPC + UrbanPC;
+                      AreaBarrenPC := AreaBarrenPC + BarrenPC;
+                      AreaWaterPC := AreaWaterPC + WaterPC;
+                      if AreaMinElev > ElevMomentVar.MinZ then AreaMinElev := ElevMomentVar.MinZ;
+                      if AreaMaxElev < ElevMomentVar.MaxZ then AreaMaxElev := ElevMomentVar.MaxZ;
+                  {$EndIf}
 
                   TileHeader := AreaName + ',' + DEMIXTile + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
                      RealToString(GridFull,-6,-2)   + ','  + RealToString(ElevMomentVar.Mean,-12,-2) + ',' +
@@ -1606,15 +1525,17 @@ var
       ReportErrors := false;
       DEMIXtileDB := 0;
       LandCoverGrid := 0;
-      AreaGridFull := 0;
-      AreaAveElev := 0;
-      AreaAveSlope := 0;
-      AreaAveRuff := 0;
-      AreaAveRelief := 0;
-      AreaForestPC := 0;
-      AreaUrbanPC := 0;
-      AreaBarrenPC := 0;
-      AreaWaterPC := 0;
+      {$IfDef AllowAreaStats}
+          AreaGridFull := 0;
+          AreaAveElev := 0;
+          AreaAveSlope := 0;
+          AreaAveRuff := 0;
+          AreaAveRelief := 0;
+          AreaForestPC := 0;
+          AreaUrbanPC := 0;
+          AreaBarrenPC := 0;
+          AreaWaterPC := 0;
+      {$EndIf}
 
       wmdem.SetPanelText(3,'Load reference DEM');
       DEMIXRefDEM := OpenNewDEM(RefDTMpointFName,false);
@@ -1622,14 +1543,16 @@ var
          DEMIXtileDB := DEMIXtileFill(DEMIXRefDEM,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,false);
          GISdb[DEMIXtileDB].ApplyGISFilter(FilterForDEMIXtilesToUse);
          {$IfDef RecordDEMIX} WriteLineToDebugFile('DTM tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
-         AreaMinElev := 99e38;
-         AreaMaxElev := -99e38;
+         {$IfDef AllowAreaStats}
+            AreaMinElev := 99e38;
+            AreaMaxElev := -99e38;
+         {$EndIf}
          if (GISdb[DEMIXtileDB].MyData.FiltRecsInDB = 0) then begin
             TStr := 'No filled DEMIX tiles on ' + AreaName;
             {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
          end
          else begin
-            {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs) or Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover loading'); {$EndIf}
+            {$If Defined(RecordDEMIXFull) or Defined(TrackDEMIX_DEMs) or Defined(Rec_DEMIX_Landcover)} OpenDEMsToDebugFile('Land cover loading'); {$EndIf}
             LandCoverGrid := LoadLandcoverForDEMIXarea(AreaName,false);
             j := 0;
             GISdb[DEMIXtileDB].MyData.First;
@@ -1642,35 +1565,42 @@ var
                end;
                GISdb[DEMIXtileDB].MyData.Next;
             end;
-            j := GISdb[DEMIXtileDB].MyData.FiltRecsInDB;
-            DEMGlb[DEMIXRefDEM].DEMCenterPoint(LatCent,LongCent);
-            TileHeader := AreaName + ',' + IntToStr(j) + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
-               RealToString(AreaGridFull / j,-6,-2)   + ','  + RealToString(AreaAveElev / j,-12,-2) + ',' +
-               RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
-               RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ',' +
-               RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2) + ',' +
-               RealToString(AreaMinElev,-12,-2) + ',' + RealToString(AreaMaxElev,-12,-2);
-            AreaStats.Add(TileHeader);
-            {$If Defined(RecordFullDEMIX)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
+            {$IfDef AllowAreaStats}
+                j := GISdb[DEMIXtileDB].MyData.FiltRecsInDB;
+                DEMGlb[DEMIXRefDEM].DEMCenterPoint(LatCent,LongCent);
+                TileHeader := AreaName + ',' + IntToStr(j) + ',' + Country + ',' + RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',' +
+                   RealToString(AreaGridFull / j,-6,-2)   + ','  + RealToString(AreaAveElev / j,-12,-2) + ',' +
+                   RealToString(AreaAveSlope / j,-12,-2)  + ',' + RealToString(AreaAveRuff / j,-12,-2)  + ',' +
+                   RealToString(AreaAveRelief / j,-12,-2) + ',' + RealToString(AreaForestPC / j,-12,-2)  + ',' + RealToString(AreaUrbanPC / j,-12,-2) + ',' +
+                   RealToString(AreaBarrenPC / j,-12,-2) + ',' + RealToString(AreaWaterPC / j,-12,-2) + ',' +
+                   RealToString(AreaMinElev,-12,-2) + ',' + RealToString(AreaMaxElev,-12,-2);
+                AreaStats.Add(TileHeader);
+            {$EndIf}
+            {$If Defined(RecordDEMIXFull)} for i := 1 to 2 do writeLineToDebugFile(''); {$EndIf}
          end;
          {$If Defined(RecordCriteriaEvaluation)} WriteLineToDebugFile('call CloseAndNilNumberedDB(DEMIXtileDB)'); {$EndIf}
          CloseAndNilNumberedDB(DEMIXtileDB);
       end;
       ReportErrors := true;
-      {$If Defined(RecordFullDEMIX) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs'); {$EndIf}
+      {$If Defined(RecordDEMIXFull) or Defined(TrackDEMIX_DEMs)} OpenDEMsToDebugFile('closing all DEMs'); {$EndIf}
       if DEMIXCloseMap then CloseAllDEMs;
     end {ProcessDEMIXtestarea};
 
 var
    i : integer;
-   AreasWanted : tStringList;
 begin {procedure ComputeDEMIX_Summary_stats}
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Start ComputeDEMIXstats'); {$EndIf}
    try
       GetDEMIXpaths;
       MDDef.DEMIX_mode := dmFull;
       SetParamsForDEMIXmode;
-      AreasWanted := DEMIX_AreasWanted;
+
+      if GeoTiles then begin
+          AreasWanted := DEMIX_AreasWanted;
+      end
+      else begin
+
+      end;
 
       {$IfDef RecordDEMIX} WriteLineToDebugFile('Areas to process in selected list=' + IntToStr(AreasWanted.Count)); {$EndIf}
 
@@ -1746,12 +1676,25 @@ begin {FindTilesInAreaForCoast}
    {$IfDef RecordDEMIX} WriteLineToDebugFile('End FindTilesInAreaForCoast'); {$EndIf}
 end;
 
-
-procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
+(*
+procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList; LinkTableFName : PathStr : PathStr);
+var
+   OneTile : shortstring;
+   theFields : tStringList;
+   i : integer;
 begin
    GetDEMIXpaths(true);
    GISdb[DBonTable].ClearLinkTable(true);
-   GISdb[DBonTable].dbOpts.LinkTableName := DEMIXSettingsDir + 'demix_tiles_statistics.dbf';
+   theFields := tStringList.Create;
+   for I := 1 to NumTileCharacters do theFields.Add(TileCharacters[i]);
+
+   OneTile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+
+   GISdb[DBonTable].dbOpts.LinkTableName := LinkTableFName;
+
+   //if StrUtils.ANSIcontainsText(OneTile,'UTM') then GISdb[DBonTable].dbOpts.LinkTableName := DEMIX_final_DB_dir + 'demix_utm_tile_statistics.dbf'
+   //else GISdb[DBonTable].dbOpts.LinkTableName := DEMIXSettingsDir + 'demix_tiles_statistics.dbf';
+
    GISdb[DBonTable].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
    GISdb[DBonTable].dbOpts.LinkFieldOtherDB := 'DEMIX_TILE';
    {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB, fields=' + IntToStr(TheFields.Count) + ' link=' + GISdb[DBonTable].dbOpts.LinkTableName); {$EndIf}
@@ -1769,16 +1712,49 @@ begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB done'); {$EndIf}
    EndDEMIXProcessing;
 end;
+*)
+
 
 procedure AddTileCharacteristicsToDB(DBonTable : integer);
 var
+   OneTile : shortstring;
    theFields : tStringList;
    i : integer;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('AddTileCharacteristics'); {$EndIf}
+   //AddFieldsToDEMIXDB(DBonTable,theFields);
+
+   GetDEMIXpaths(true);
+   GISdb[DBonTable].ClearLinkTable(true);
    theFields := tStringList.Create;
    for I := 1 to NumTileCharacters do theFields.Add(TileCharacters[i]);
-   AddFieldsToDEMIXDB(DBonTable,theFields);
+   theFields.Add('COUNTRY');
+
+   OneTile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+
+   if not FileExists(MDdef.DEMIX_tile_chars_fname) then begin
+      MDdef.DEMIX_tile_chars_fname := DEMIX_final_DB_dir;
+      if not GetExistingFileName('DEMIX tile characteristics','*.dbf',MDdef.DEMIX_tile_chars_fname) then exit;
+   end;
+
+   GISdb[DBonTable].dbOpts.LinkTableName := MDdef.DEMIX_tile_chars_fname;
+
+   GISdb[DBonTable].dbOpts.LinkFieldThisDB := 'DEMIX_TILE';
+   GISdb[DBonTable].dbOpts.LinkFieldOtherDB := 'DEMIX_TILE';
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB, fields=' + IntToStr(TheFields.Count) + ' link=' + GISdb[DBonTable].dbOpts.LinkTableName); {$EndIf}
+
+   GISDb[DBonTable].ClearGISFilter;
+   GISDb[DBonTable].EmpSource.Enabled := false;
+   ShowHourglassCursor;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB point 2'); {$EndIf}
+   GISdb[DBonTable].LinkSecondaryTable(GISdb[DBonTable].dbOpts.LinkTableName);
+
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB point 4'); {$EndIf}
+   GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,true);
+   GISDb[DBonTable].ShowStatus;
+   GISdb[DBonTable].ClearLinkTable(true);
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddFieldsToDEMIXDB done'); {$EndIf}
+   EndDEMIXProcessing;
 end;
 
 
@@ -1895,7 +1871,7 @@ begin
          for I := 1 to MaxDEMIXDEM do begin
             if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[i]) then begin
                Eval := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[i]);
-               PetMath.CompareValueToExtremes(Eval,MinEval,MaxEval);
+               if (Eval > 0.001) then PetMath.CompareValueToExtremes(Eval,MinEval,MaxEval);
             end;
          end;
          GISDb[DBonTable].MyData.Edit;
@@ -1909,112 +1885,6 @@ begin
    SetColorForWaiting;
 end;
 
-
-
-
-(*
-      procedure ProcessNewDB;
-      var
-         TestDEM,RefDTM : integer;
-         bb : sfBoundBox;
-         fName,fNameTest,fNameRef : PathStr;
-
-
-            procedure InterpolateOneSecDEM(Name,Series : shortstring);
-            var
-               IntDEM,LibDEM : integer;
-               fNameTest : PathStr;
-            begin
-               fNameTest := ExtractFilePath(DEMglb[RefDTM].DEMfileName) + Name + '.tif';
-               {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile('InterpolateOneSecDEM in ' + Name); {$EndIf}
-               if FileExists(fNameTest) then IntDEM := OpenNewDEM(fNameTest,false)
-               else begin
-                  IntDEM := DEMglb[TestDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,Name,euMeters);
-                  LibDEM := LoadMapLibraryBox(true,DEMglb[TestDEM].DEMBoundBoxGeo,Series,false);
-                  if ValidDEM(LibDEM) then begin
-                     DEMglb[IntDEM].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[IntDEM].FullDEMGridLimits,LibDEM,hfOnlyHole);
-                     DEMglb[IntDEM].SaveAsGeotiff(fNameTest);
-                  end;
-                  CloseSingleDEM(LibDEM);
-               end;
-               if ValidDEM(IntDEM) then begin
-                  NewDEMName := Name;
-                  CompareDifferencesToReferenceDEM(IntDEM,RefDTM,'DTM',DEMGlb[IntDEM].FullDEMGridLimits);
-               end;
-               CloseSingleDEM(IntDEM);
-            end;
-
-      var
-         AreaName : shortstring;
-         MergeName : PathStr;
-         TransposeNames : tStringList;
-         i,TestDEM2 : integer;
-      begin {procedure ProcessNewDB}
-         {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile('ProcessNewDB in'); {$EndIf}
-         HeavyDutyProcessing := true;
-         SetColorForProcessing;
-         InitializeStringLists;
-         for i := 0 to pred(AreasWanted.Count) do begin
-             AreaName := AreasWanted.Strings[i];
-             GISdb[NewFormatDEMIXDB].ApplyGISfilter('AREA=' + QuotedStr(AreaName));
-             TestDEM := 0;
-             RefDTM := 0;
-             fNameTest := GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('DTM');
-             if FileExists(fNameTest) then TestDEM := OpenNewDEM(fNameTest,false);
-
-             fNameRef := GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('REF_DTM');
-             if FileExists(fNameRef) then RefDTM := OpenNewDEM(fNameRef,false);
-             if ValidDEM(TestDEM) and ValidDEM(RefDTM) then begin
-                  {$If Defined(RecordNeoDEMIX)} HighLightLineToDebugFile(AreaName); {$EndIf}
-                  wmdem.SetPanelText(2,AreaName + ' ' + IntToStr(succ(i)) + '/' + IntToStr(AreasWanted.Count) + ' Diff Dist');
-                  bb := GISdb[NewFormatDEMIXDB].MyData.GetRecordBoundingBox;
-                  LatCent := 0.5 * (bb.ymax + bb.ymin);
-                  LongCent := 0.5 * (bb.xmax + bb.xmin);
-                  TileHeader := AreaName + ',' + GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('DEMIX_TILE') + ',' +
-                         RealToString(LatCent,-12,-2) + ',' + RealToString(LongCent,-12,-2) + ',';
-
-                  NewDEMName := 'NEODTM';
-                  {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile('Do test DEM ' + NewDEMName); {$EndIf}
-                  CompareDifferencesToReferenceDEM(TestDEM,RefDTM,'DTM',DEMGlb[TestDEM].FullDEMGridLimits);
-
-                  fNameTest := GISdb[NewFormatDEMIXDB].MyData.GetFieldByNameAsString('DTM');
-                  fNameTest := StringReplace(fNameTest, 'DTM', 'DSM',[rfIgnoreCase,rfReplaceAll]);
-
-                  if FileExists(fNameTest) then begin
-                     TestDEM2 := OpenNewDEM(fNameTest,false);
-                     NewDEMName := 'NEODSM';
-                     CompareDifferencesToReferenceDEM(TestDEM2,RefDTM,'DTM',DEMGlb[TestDEM].FullDEMGridLimits);
-                  end;
-
-                  InterpolateOneSecDEM('ALOS','AW3D30_GLOBAL');
-                  InterpolateOneSecDEM('COP','COP30_HH');
-                  InterpolateOneSecDEM('FABDEM','FABDEM_V1-2');
-             end;
-             CloseSingleDEM(TestDEM);
-             CloseSingleDEM(TestDEM2);
-             CloseSingleDEM(RefDTM);
-         end;
-         FinalizeStringLists(false);
-
-         MergeName := Diff_dist_results_dir + 'Diff_dist_merge_transpose.csv';
-         if Overwrite or (not FileExists(MergeName)) then begin
-            {$IfDef RecordDEMIX} WriteLineToDebugFile('Transposing'); {$EndIf}
-            TransposeNames := tStringList.Create;
-            fName := TransposeDEMIXcriteria(Diff_dist_results_dir + '_ELEV_DIFF_STATS.csv');
-            if FileExists(fName) then TransposeNames.Add(fName);
-            fName := TransposeDEMIXcriteria(Diff_dist_results_dir + '_SLOPE_DIFF_STATS.csv');
-            if FileExists(fName) then TransposeNames.Add(fName);
-            fName := TransposeDEMIXcriteria(Diff_dist_results_dir + '_RUFF_DIFF_STATS.csv');
-            if FileExists(fName) then TransposeNames.Add(fName);
-            {$IfDef RecordDEMIX} WriteLineToDebugFile('Merging'); {$EndIf}
-            if (TransposeNames.Count > 1) then MergeCSVFiles(TransposeNames,MergeName);
-            TransposeNames.Destroy;
-         end;
-
-         SetColorForWaiting;
-         {$If Defined(RecordNeoDEMIX)} WriteLineToDebugFile('ProcessNewDB out'); {$EndIf}
-      end {procedure ProcessNewDB};
-*)
 
 
 

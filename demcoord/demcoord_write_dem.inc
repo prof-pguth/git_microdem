@@ -74,6 +74,7 @@ begin
    WriteNewFormatDEMwithLimits(Limits,FileName);
 end;
 
+
 procedure tDEMDataSet.SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
 var
    tName : PathStr;
@@ -137,8 +138,8 @@ procedure tDEMDataSet.WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName
                    'minz=' + RealToString(NewHeadRecs.StoredMinElev,-18,-6) + #13 +
                    'dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-10) + #13 +
                    'dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-10) + #13 +
-                   'llx=' + RealToString(NewHeadRecs.DEMSWCornerX,-18,-8) + #13 +
-                   'lly=' + RealToString(NewHeadRecs.DEMSWCornerY,-18,-8) + #13 +
+                   'llx=' + RealToString(NewHeadRecs.SWCornerX,-18,-8) + #13 +
+                   'lly=' + RealToString(NewHeadRecs.SWCornerY,-18,-8) + #13 +
                    'utmzone=' + IntToStr(NewHeadRecs.UTMZone) + #13 +
                    'newproj=' + IntToStr(NewHeadRecs.DEMUsed) + #13 +
                    'precision=' + IntToStr(Ord(tDEMprecision(NewHeadRecs.DEMPrecision))) + #13 +
@@ -177,7 +178,7 @@ var
    HeaderBytes : array[0..2048] of byte;
    NewHeadRecs : tDEMheader;
    avgelev : float32;
-begin
+begin {procedure tDEMDataSet.WriteNewFormatDEMwithLimits}
    {$If Defined(RecordWriteDEM) or Defined(RecordZRange)} HighlightLineToDebugFile('WriteNewFormatDEM Elev range: ' + ZRange); {$EndIf}
    {$If Defined(SavePartDEM)} WriteLineToDebugFile(AreaName + ' tDEMDataSet.WriteNewFormatDEM, full ' + GridLimitsToString(FullDEMGridLimits) + '  writing ' + GridLimitsToString(Limits)); {$EndIf}
 
@@ -205,8 +206,8 @@ begin
             NewHeadRecs.NumCol := succ(Limits.XGridHigh - Limits.XGridLow);
             NewHeadRecs.NumRow := succ(Limits.YGridHigh - Limits.YGridLow);
             if (DEMheader.NumCol <> NewHeadRecs.NumCol) or (DEMheader.NumRow <> NewHeadRecs.NumRow) then begin
-               NewHeadRecs.DEMSWCornerX := DEMHeader.DEMSWCornerX + Limits.XGridLow * DEMheader.DEMxSpacing;
-               NewHeadRecs.DEMSWCornerY := DEMHeader.DEMSWCornerY + Limits.YGridLow * DEMheader.DEMySpacing;
+               NewHeadRecs.SWCornerX := DEMHeader.SWCornerX + Limits.XGridLow * DEMheader.DEMxSpacing;
+               NewHeadRecs.SWCornerY := DEMHeader.SWCornerY + Limits.YGridLow * DEMheader.DEMySpacing;
             end;
 
             BoxAreaExtremeElevations(Limits,MinZ,MaxZ,avgelev);
@@ -250,7 +251,6 @@ begin
           end;
        end;
        CloseFile(FFile);
-
        CheckVAT;
     finally
        DEMstatus := dsSaved;
@@ -258,7 +258,7 @@ begin
        if (SelectionMap <> Nil) then SelectionMap.ClosingMapNotAllowed := false;
     end;
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('End DEM write'); {$EndIf}
-end;
+end {procedure tDEMDataSet.WriteNewFormatDEMwithLimits};
 
 
    {$Define WriteSminSmax}
@@ -564,8 +564,8 @@ begin
    CheckEditString(XYZformatform.Edit2.Text,LatLongDecimals);
    CheckEditString(XYZformatform.Edit1.Text,UTMDecimals);
    if (ASCIIFormat = Recenter) then begin
-      xc := DEMheader.DEMSWCornerX + 0.5 * DEMheader.NumCol * DEMheader.DEMxSpacing;
-      yc := DEMheader.DEMSWCornerY + 0.5 * DEMheader.NumRow * DEMheader.DEMySpacing;
+      xc := DEMheader.SWCornerX + 0.5 * DEMheader.NumCol * DEMheader.DEMxSpacing;
+      yc := DEMheader.SWCornerY + 0.5 * DEMheader.NumRow * DEMheader.DEMySpacing;
       zc := 0.5 * (DEMheader.MaxElev + DEMheader.MinElev);
    end;
 

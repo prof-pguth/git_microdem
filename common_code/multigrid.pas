@@ -1495,9 +1495,9 @@ begin
          oneVal := Petmar_types.BeforeSpecifiedCharacterANSI(aline,',',true,true);
          oneVal := Petmar_types.BeforeSpecifiedCharacterANSI(aline,',',true,true);
          oneVal := Petmar_types.BeforeSpecifiedCharacterANSI(aline,',',true,true);
-         DEMHeader.DEMSWCornerX := StrToFloat(oneVal);
+         DEMHeader.SWCornerX := StrToFloat(oneVal);
          oneVal := Petmar_types.BeforeSpecifiedCharacterANSI(aline,',',true,true);
-         DEMHeader.DEMSWCornerY := StrToFloat(oneVal);
+         DEMHeader.SWCornerY := StrToFloat(oneVal);
          oneVal := Petmar_types.BeforeSpecifiedCharacterANSI(aline,',',true,true);
          DEMHeader.DEMxSpacing := StrToFloat(oneVal);
          oneVal := Petmar_types.BeforeSpecifiedCharacterANSI(aline,',',true,true);
@@ -1506,7 +1506,7 @@ begin
          DEMHeader.UTMZone := StrToInt(oneVal);
       end;
    end;
-   DEMHeader.DEMSWCornerY := DEMHeader.DEMSWCornerY - pred(DEMHeader.NumRow) * DEMHeader.DEMySpacing;
+   DEMHeader.SWCornerY := DEMHeader.SWCornerY - pred(DEMHeader.NumRow) * DEMHeader.DEMySpacing;
 
    Header.Free;
 

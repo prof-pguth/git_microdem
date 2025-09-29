@@ -90,7 +90,6 @@ begin
 end;
 
 
-
 procedure HistogramsFromVATDEM(DEMwithVAT,ElevMap,SlopeMap,RuffMap,AspMap : integer; var Graph1,Graph2,Graph3,Graph4 : tThisBaseGraph);
 //creates histograms of elevation, slope, roughness, and aspect for each category in VAT grid
 const
@@ -564,8 +563,8 @@ begin
                Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
             end;
          end;
-         for i := 1 to TColorList.Count do begin
-            if i <= 15 then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
+         for i := 0 to pred(TColorList.Count) do begin
+            if (i <= 15) then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
          end;
       end;
 

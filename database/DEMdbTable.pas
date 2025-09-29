@@ -561,7 +561,6 @@ type
     AllDBsmultiplegraphs1: TMenuItem;
     MeanstdallDBs1: TMenuItem;
     Trimblanks1: TMenuItem;
-    Multiplegraphmatrix1: TMenuItem;
     LOSterrainprofile1: TMenuItem;
     CDSformat1: TMenuItem;
     Mask2: TMenuItem;
@@ -915,7 +914,6 @@ type
     N1degreetilestocoverrecordsintable1: TMenuItem;
     Sumscores1: TMenuItem;
     Graphmeanmedianbyterraincategory1: TMenuItem;
-    DEMIXtilesummary1: TMenuItem;
     PickParam1: TMenuItem;
     Filteroutsignedcriteriameanandmedian1: TMenuItem;
     Hide1: TMenuItem;
@@ -950,7 +948,6 @@ type
     Exporttablewithuniquerecords1: TMenuItem;
     DEMIXPopupMenu1: TPopupMenu;
     N48: TMenuItem;
-    DEMIXtileinvertory1: TMenuItem;
     Filterforjustsignedcrirteria1: TMenuItem;
     Meanandmedianhistograms1: TMenuItem;
     AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem;
@@ -989,8 +986,8 @@ type
     estDEMlegend1: TMenuItem;
     estDEMlegend2: TMenuItem;
     Vertical1: TMenuItem;
-    Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem;
-    Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem;
+    //Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem;
+    //Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem;
     SingleFieldArithmeticPopupMenu: TPopupMenu;
     Addconstanttofield2: TMenuItem;
     Addconstanttofield3: TMenuItem;
@@ -1017,34 +1014,31 @@ type
     Areasinclusters1: TMenuItem;
     AddCOPALOSpercentprimarydata1: TMenuItem;
     CopDEMandLandcoverforthistile1: TMenuItem;
-    Loadmapsforthisarea1: TMenuItem;
-    LoadCopDEMandLandcoverforarea1: TMenuItem;
     Filterfor0valuesinanyevaluation1: TMenuItem;
     CriteriaforeachDEMIXtile1: TMenuItem;
     PercentilesforCOPbycriterionforeachtile1: TMenuItem;
     Sumforallnumericfields1: TMenuItem;
     SortbyBESTEVAL1: TMenuItem;
-    AddlatlongfieldstoDB1: TMenuItem;
+    //AddlatlongfieldstoDB1: TMenuItem;
     N55: TMenuItem;
     MapsbyclusterandDEM1: TMenuItem;
     N56: TMenuItem;
     Removerowsmissinganyevaluations1: TMenuItem;
     N57: TMenuItem;
     Averagetilecharacteristicsbycluster1: TMenuItem;
-    Winpercentagebycriterion1: TMenuItem;
-    Winpercentagesbyarea1: TMenuItem;
+    //Winpercentagebycriterion1: TMenuItem;
+    //Winpercentagesbyarea1: TMenuItem;
     //GraphwinningpercentagebyDEM1: TMenuItem;
     OpenDEMIXgraphs1: TMenuItem;
     N58: TMenuItem;
     Graphofcriteriaforareaortile1: TMenuItem;
     GraphofPrimaryDataFractionbyClusters1: TMenuItem;
-    AddcolorsforFULLU120U80U101: TMenuItem;
     Winlosstie1: TMenuItem;
     Filterforevaluations11: TMenuItem;
     LATEXtable1: TMenuItem;
     AddKoppenclass1: TMenuItem;
     Numberoftestareasandtilesbycountry1: TMenuItem;
-    RemoveSCRfields1: TMenuItem;
+    //RemoveSCRfields1: TMenuItem;
     Differentrankingsbytile1: TMenuItem;
     Sortandreplacedatabase1: TMenuItem;
     Sortandreplacedatabase2: TMenuItem;
@@ -1052,11 +1046,15 @@ type
     AddCopDEMaverageslopeinarea1: TMenuItem;
     AddDEMIXtileboundingbox1: TMenuItem;
     AddMGRSboundingbox1: TMenuItem;
-    LoadNeoDEMs1: TMenuItem;
-    Graphforatile1: TMenuItem;
+    //Graphforatile1: TMenuItem;
     FUVbycriteriaandtileslopecategories1: TMenuItem;
-    GraphbyDEM1: TMenuItem;
-    Grandbytilecharacterisitic1: TMenuItem;
+    //GraphbyDEM1: TMenuItem;
+    //Grandbytilecharacterisitic1: TMenuItem;
+    Addstringtoendofeachrecord1: TMenuItem;
+    AddDEMIXUTMtilename1: TMenuItem;
+    Cret1: TMenuItem;
+    N52: TMenuItem;
+    FindmisplacedGEDTMv12testDEMs1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1445,7 +1443,7 @@ type
     procedure AllDBsmultiplegraphs1Click(Sender: TObject);
     procedure MeanstdallDBs1Click(Sender: TObject);
     procedure Trimblanks1Click(Sender: TObject);
-    procedure Multiplegraphmatrix1Click(Sender: TObject);
+    //procedure Multiplegraphmatrix1Click(Sender: TObject);
     procedure LOSterrainprofile1Click(Sender: TObject);
     procedure CDSformat1Click(Sender: TObject);
     procedure Trimblanksallstringfields1Click(Sender: TObject);
@@ -1746,7 +1744,6 @@ type
     procedure N1degreetilestocoverrecordsintable1Click(Sender: TObject);
     //procedure BestDEMbycategory1Click(Sender: TObject);
     procedure RankDEMs1Click(Sender: TObject);
-    procedure DEMIXtilesummary1Click(Sender: TObject);
     procedure PickParam1Click(Sender: TObject);
     procedure Filteroutsignedcriteriameanandmedian1Click(Sender: TObject);
     procedure Hide1Click(Sender: TObject);
@@ -1776,7 +1773,6 @@ type
     procedure Latlongelevofrecordcorners1Click(Sender: TObject);
     procedure Exporttablewithuniquerecords1Click(Sender: TObject);
     procedure DEMIX1Click(Sender: TObject);
-    procedure DEMIXtileinvertory1Click(Sender: TObject);
     procedure Filterforjustsignedcrirteria1Click(Sender: TObject);
     procedure Meanandmedianhistograms1Click(Sender: TObject);
     procedure AddIMAGEfieldfordifferencedistributiongraphs1Click(Sender: TObject);
@@ -1809,8 +1805,8 @@ type
     procedure AssignDEMIXDEMcolors1Click(Sender: TObject);
     procedure estDEMlegend1Click(Sender: TObject);
     procedure Vertical1Click(Sender: TObject);
-    procedure Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
-    procedure Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
+    //procedure Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
+    //procedure Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
     procedure Addconstanttofield2Click(Sender: TObject);
     procedure Addconstanttofield3Click(Sender: TObject);
     procedure Dividefieldbyconstant2Click(Sender: TObject);
@@ -1835,25 +1831,23 @@ type
     procedure AddCOPALOSpercentprimarydata1Click(Sender: TObject);
     //procedure AddareafieldtoDB1Click(Sender: TObject);
     procedure CopDEMandLandcoverforthistile1Click(Sender: TObject);
-    procedure Loadmapsforthisarea1Click(Sender: TObject);
-    procedure LoadCopDEMandLandcoverforarea1Click(Sender: TObject);
     procedure Filterfor0valuesinanyevaluation1Click(Sender: TObject);
     procedure CriteriaforeachDEMIXtile1Click(Sender: TObject);
     procedure PercentilesforCOPbycriterionforeachtile1Click(Sender: TObject);
     procedure Sumforallnumericfields1Click(Sender: TObject);
     procedure SortbyBESTEVAL1Click(Sender: TObject);
-    procedure AddlatlongfieldstoDB1Click(Sender: TObject);
+    //procedure AddlatlongfieldstoDB1Click(Sender: TObject);
     procedure MapsbyclusterandDEM1Click(Sender: TObject);
     procedure Removerowsmissinganyevaluations1Click(Sender: TObject);
     procedure Averagetilecharacteristicsbycluster1Click(Sender: TObject);
-    procedure Winpercentagebycriterion1Click(Sender: TObject);
-    procedure Winpercentagesbyarea1Click(Sender: TObject);
+    //procedure Winpercentagebycriterion1Click(Sender: TObject);
+    //procedure Winpercentagesbyarea1Click(Sender: TObject);
     //procedure GraphwinningpercentagebyDEM1Click(Sender: TObject);
     procedure OpenDEMIXgraphs1Click(Sender: TObject);
     procedure Graphofcriteriaforareaortile1Click(Sender: TObject);
     procedure GraphofPrimaryDataFractionbyClusters1Click(Sender: TObject);
     procedure AddcountryareafieldstoDB1Click(Sender: TObject);
-    procedure AddcolorsforFULLU120U80U101Click(Sender: TObject);
+    //procedure AddcolorsforFULLU120U80U101Click(Sender: TObject);
     procedure SortandreplaceDB2Click(Sender: TObject);
     procedure Descending3Click(Sender: TObject);
     procedure Winlosstie1Click(Sender: TObject);
@@ -1861,16 +1855,20 @@ type
     procedure LATEXtable1Click(Sender: TObject);
     procedure AddKoppenclass1Click(Sender: TObject);
     procedure Numberoftestareasandtilesbycountry1Click(Sender: TObject);
-    procedure RemoveSCRfields1Click(Sender: TObject);
+    //procedure RemoveSCRfields1Click(Sender: TObject);
     procedure Differentrankingsbytile1Click(Sender: TObject);
     procedure Sortandreplacedatabase2Click(Sender: TObject);
     procedure AddCopDEMaverageslopeinarea1Click(Sender: TObject);
     procedure AddDEMIXtileboundingbox1Click(Sender: TObject);
     procedure AddMGRSboundingbox1Click(Sender: TObject);
-    procedure LoadNeoDEMs1Click(Sender: TObject);
-    procedure Graphforatile1Click(Sender: TObject);
-    procedure GraphbyDEM1Click(Sender: TObject);
-    procedure Grandbytilecharacterisitic1Click(Sender: TObject);
+    //procedure Graphforatile1Click(Sender: TObject);
+    //procedure GraphbyDEM1Click(Sender: TObject);
+    //procedure Grandbytilecharacterisitic1Click(Sender: TObject);
+    procedure Addstringtoendofeachrecord1Click(Sender: TObject);
+    procedure AddDEMIXUTMtilename1Click(Sender: TObject);
+    procedure Cret1Click(Sender: TObject);
+    //procedure N59Click(Sender: TObject);
+    procedure FindmisplacedGEDTMv12testDEMs1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2099,6 +2097,7 @@ uses
     DEMIX_evals_scores_graphs,
 
    map_overlays,
+   DEM_db_ops,
    db_display_options,
    gdal_tools,
    Least_cost_path,
@@ -3230,16 +3229,6 @@ begin
    //TileCharateristicsWhiskerPlotsByCluster(DBonTable,false,Nil,true,'COP_ALOS');
 end;
 
-procedure Tdbtablef.Winpercentagebycriterion1Click(Sender: TObject);
-begin
-   MakeWinsDB(DBonTable,'CRITERION');
-end;
-
-procedure Tdbtablef.Winpercentagesbyarea1Click(Sender: TObject);
-begin
-   MakeWinsDB(DBonTable,'AREA');
-end;
-
 procedure Tdbtablef.woorthreefieldRGB1Click(Sender: TObject);
 begin
    {$IfDef ExAdvancedGIS}
@@ -3998,7 +3987,7 @@ begin
         GeomorphometryStats1.Visible := (GISdb[DBonTable].ItsAShapeFile and AreaShapeFile(GISdb[DBonTable].ShapeFileType)) and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
         Geomrophometrystaseachpointneighborhood1.Visible := GISdb[DBonTable].ItsAPointDB and MDDef.AdvancedDBops and GISdb[DBonTable].DEMwithDBsMap;
         MultipleLinearRegression1.Visible := MDDef.AdvancedDBops;
-        MultipleGraphMatrix1.Visible := MDDef.AdvancedDBops;
+        //MultipleGraphMatrix1.Visible := MDDef.AdvancedDBops;
         LongestString1.Visible := MDDef.AdvancedDBops;
         Sum1.Visible := MDDef.AdvancedDBops;
         Statisticsgroupedbyonefield1.Visible := MDDef.AdvancedDBops;
@@ -4182,7 +4171,7 @@ begin
            {$IfDef CountUniqueValues} WriteLineToDebugFile('First pass done'); {$EndIf}
 
            Findings := tStringList.Create;
-           if (Sender = Assignuniquecolors1) then Findings.Add('NAME,N,COLOR')
+           if (Sender = Assignuniquecolors1) then Findings.Add(WantedFieldName + ',N,COLOR')
            else Findings.Add(WantedFieldName + ',n');
            i := 0;
            Num1 := 0;
@@ -5133,11 +5122,6 @@ begin
 end;
 
 
-procedure Tdbtablef.AddcolorsforFULLU120U80U101Click(Sender: TObject);
-begin
-   AddColorsForUnderDBs(DBonTable);
-end;
-
 procedure Tdbtablef.Addconstanttofield1Click(Sender: TObject);
 begin
    SingleFieldArithmetic(DBonTable,sfaAdd,'');
@@ -5160,7 +5144,6 @@ begin
 end;
 
 procedure Tdbtablef.AddCopDEMaverageslopeinarea1Click(Sender: TObject);
-
 var
    bb : sfBoundBox;
    WantSeries,FieldName : shortstring;
@@ -5298,6 +5281,28 @@ begin
       ShowStatus;
    end;
 end;
+
+procedure Tdbtablef.AddDEMIXUTMtilename1Click(Sender: TObject);
+var
+   WantField,tName : shortstring;
+   Lat,Long : float64;
+   bb : sfBoundBox;
+begin
+   if GISdb[DBonTable].MyData.FieldExists('DEMIX_TILE') then GISdb[DBonTable].MyData.TrimField('DEMIX_TILE',20)
+   else GISdb[DBonTable].AddFieldToDataBase(ftString,'DEMIX_TILE',20);
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+   while not GISdb[DBonTable].MyData.eof do begin
+      if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) then begin
+         tname := GetUTM_DEMIXTile(Lat,Long);
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsString('DEMIX_TILE',tName);
+      end;
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowStatus;
+end;
+
 
 procedure Tdbtablef.AddDISTANCEAZIMUTHfields1Click(Sender: TObject);
 var
@@ -5608,19 +5613,6 @@ begin
    AddUTMcoordfields1Click(Sender);
 end;
 
-procedure Tdbtablef.AddlatlongfieldstoDB1Click(Sender: TObject);
-var
-   theFields : tStringList;
-   i : integer;
-begin
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddTileCharacteristics'); {$EndIf}
-   theFields := tStringList.Create;
-   theFields.Add('LAT');
-   theFields.Add('LONG');
-   theFields.Add('AREA');
-   theFields.Add('COUNTRY');
-   AddFieldsToDEMIXDB(DBonTable,theFields);
-end;
 
 procedure Tdbtablef.Addlatlongfromlinkeddatabase1Click(Sender: TObject);
 var
@@ -5875,6 +5867,27 @@ begin
    //end;
 end;
 
+procedure Tdbtablef.Addstringtoendofeachrecord1Click(Sender: TObject);
+var
+   aString,ExtToAdd : ShortString;
+   Retain : integer;
+begin
+   with GISdb[DBonTable] do begin
+      ShowHourglassCursor;
+      Petmar.GetString('String to add end each record',ExtToAdd,false,ReasonableTextChars);
+      EmpSource.Enabled := false;
+      GISdb[DBonTable].MyData.First;
+      while not GISdb[DBonTable].MyData.eof do begin
+         aString := GISdb[DBonTable].MyData.GetFieldByNameAsString(SelectedColumn);
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsString(SelectedColumn,aString + extToAdd);
+         GISdb[DBonTable].MyData.Next;
+      end;
+      ShowStatus;
+   end;
+end;
+
+
 procedure Tdbtablef.Addtilecharacteristics1Click(Sender: TObject);
 begin
    AddTileCharacteristicsToDB(DBonTable);
@@ -6068,7 +6081,7 @@ var
    i,rc : integer;
 begin
    {$IfDef ExportCoords} WriteLineToDebugFile('Tdbtablef.AddXYZfromjoinedtable1Click'); {$EndIf}
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       GISdb[DBonTable].ClearGISFilter;
       MissingBins := tStringList.Create;
       MissingBins.Sorted := true;
@@ -6080,47 +6093,47 @@ begin
              GISdb[DBonTable].FillFieldWithValue('Z','');
          end;
       end
-      else AddXYZfields;
-      EmpSource.Enabled := false;
+      else GISdb[DBonTable].AddXYZfields;
+      GISdb[DBonTable].EmpSource.Enabled := false;
       FieldsInDB := Nil;
-      FieldsInDB := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(dbOpts.LinkFieldThisDB);
+      FieldsInDB := GISdb[DBonTable].MyData.ListUniqueEntriesInDB(GISdb[DBonTable].dbOpts.LinkFieldThisDB);
       ShowHourglassCursor;
       rc := FieldsInDB.Count;
       StartProgress('Add xyz');
       for i := 0 to pred(FieldsInDB.Count) do begin
          UpdateProgressBar(i/rc);
-         EmpSource.Enabled := false;
-         dbOpts.MainFilter := dbOpts.LinkFieldThisDB + '=' + QuotedStr(trim(FieldsInDB.Strings[i]));
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         GISdb[DBonTable].dbOpts.MainFilter := GISdb[DBonTable].dbOpts.LinkFieldThisDB + '=' + QuotedStr(trim(FieldsInDB.Strings[i]));
          GISdb[DBonTable].AssembleGISFilter;
          {$IfDef ExportCoords} WriteLineToDebugFile('MyData filter=' + GISdb[DBonTable].MyData.Filter  + '  ' + IntToStr(i) + '/' + IntToStr(pred(FieldsInDB.Count) )); {$EndIf}
 
-         LinkTable.ApplyFilter( dbOpts.LinkFieldOtherDB + '=' + QuotedStr(FieldsInDB.Strings[i]));
-         if (LinkTable.RecordCount=0) then begin
+         GISdb[DBonTable].LinkTable.ApplyFilter(GISdb[DBonTable].dbOpts.LinkFieldOtherDB + '=' + QuotedStr(FieldsInDB.Strings[i]));
+         if (GISdb[DBonTable].LinkTable.RecordCount=0) then begin
             {$IfDef ExportCoords} WriteLineToDebugFile('No bin for ' + FieldsInDB.Strings[i]); {$EndIf}
             MissingBins.Add(FieldsInDB.Strings[i]);
          end
-         else if (LinkTable.RecordCount < GISdb[DBonTable].MyData.RecordCount) then begin
+         else if (GISdb[DBonTable].LinkTable.RecordCount < GISdb[DBonTable].MyData.RecordCount) then begin
             {$IfDef ExportCoords} WriteLineToDebugFile('Insufficent XYZ for ' + FieldsInDB.Strings[i]); {$EndIf}
          end
          else begin
             {$IfDef ExportCoords} WriteLineToDebugFile('MyData recs=' + IntToStr(MyData.RecordCount) + '   LinkData recs=' + IntToStr(LinkTable.RecordCount)); {$EndIf}
             while not GISdb[DBonTable].MyData.eof do begin
                GISdb[DBonTable].MyData.Edit;
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('X',LinkTable.GetFieldByNameAsFloat('X'));
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Y',LinkTable.GetFieldByNameAsFloat('Y'));
-               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Z',LinkTable.GetFieldByNameAsFloat('Z'));
+               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('X',GISdb[DBonTable].LinkTable.GetFieldByNameAsFloat('X'));
+               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Y',GISdb[DBonTable].LinkTable.GetFieldByNameAsFloat('Y'));
+               GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Z',GISdb[DBonTable].LinkTable.GetFieldByNameAsFloat('Z'));
                GISdb[DBonTable].MyData.Next;
-               LinkTable.Next;
+               GISdb[DBonTable].LinkTable.Next;
             end;
          end;
       end;
       FieldsInDB.Free;
-      ClearGISFilter;
-      LinkTable.ApplyFilter('');
+      GISdb[DBonTable].ClearGISFilter;
+      GISdb[DBonTable].LinkTable.ApplyFilter('');
       EndProgress;
       ShowStatus;
       Petmar.DisplayAndPurgeStringList(MissingBins,'Missing bins');
-   end;
+  // end;
 end;
 
 
@@ -6138,20 +6151,20 @@ var
          end;
 
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       ThreeD := (Sender <> Addlatlongfromshpfile1) and (Sender <> Nil);
       if not ThreeD then begin
          ItsLatLong;
       end
       else begin
-         if XYZFile then begin
-            AddXYZfields;
-            LatFieldName := 'Y';
-            LongFieldName := 'X';
+         if GISdb[DBonTable].XYZFile then begin
+            GISdb[DBonTable].AddXYZfields;
+            GISdb[DBonTable].LatFieldName := 'Y';
+            GISdb[DBonTable].LongFieldName := 'X';
          end
          else begin
             ItsLatLong;
-            AddFieldToDataBase(ftFloat,'Z',18,6);
+            GISdb[DBonTable].AddFieldToDataBase(ftFloat,'Z',18,6);
          end;
       end;
 
@@ -6162,19 +6175,19 @@ begin
       while not GISdb[DBonTable].MyData.eof do begin
          if (i mod 250 = 0) then begin
             UpdateProgressBar(i/rc);
-            EmpSource.Enabled := false;
+            GISdb[DBonTable].EmpSource.Enabled := false;
          end;
          inc(i);
-         aShapeFile.ReadPointRecord3D(MyData.RecNo,PointsHeader);
+         GISdb[DBonTable].aShapeFile.ReadPointRecord3D(GISdb[DBonTable].MyData.RecNo,PointsHeader);
          GISdb[DBonTable].MyData.Edit;
-         GISdb[DBonTable].MyData.SetFieldByNameAsFloat(LongFieldName,PointsHeader.x);
-         GISdb[DBonTable].MyData.SetFieldByNameAsFloat(LatFieldName,PointsHeader.y);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat(GISdb[DBonTable].LongFieldName,PointsHeader.x);
+         GISdb[DBonTable].MyData.SetFieldByNameAsFloat(GISdb[DBonTable].LatFieldName,PointsHeader.y);
          if ThreeD then GISdb[DBonTable].MyData.SetFieldByNameAsFloat('Z',PointsHeader.z);
          GISdb[DBonTable].MyData.Next;
          if WantOut then break;
       end;
-      ShowStatus;
-   end;
+      GISdb[DBonTable].ShowStatus;
+   //end;
 end;
 
 
@@ -6304,15 +6317,15 @@ var
    i : integer;
 begin
    {$IfDef RecordDBPlot} WriteLineRoDebugFile('Tdbtablef.AllDBsbynumericfield1Click in,'); {$EndIf}
-   with GISdb[DBonTable] do begin
-      WantedField := PickField('coloring',NumericFieldTypes);
+   //with GISdb[DBonTable] do begin
+      WantedField := GISdb[DBonTable].PickField('coloring',NumericFieldTypes);
       for i := 1 to MaxDataBase do begin
          if (GISdb[i] <> nil) then begin
             {$IfDef RecordDBPlot} WriteLineRoDebugFile('Plot ' + GISdb[i].dbName); {$EndIf}
             GISdb[i].PlotFieldOnMap(WantedField);
          end;
       end;
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.AllDBsmultiplegraphs1Click(Sender: TObject);
@@ -6334,7 +6347,6 @@ begin
          UseFields.Add(DBGrid1.Columns[j].Field.FieldName);
       end;
    end;
-
    for j := 0 to pred(UseFields.Count) do begin
       WantXField := UseFields.Strings[j];
       GISdb[DBonTable].OldCreateHistogramFromDataBase(true,WantXField,'','',false);
@@ -6472,9 +6484,9 @@ var
    i : integer;
    Sorting : tStringList;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       ShowHourglassCursor;
-      EmpSource.Enabled := false;
+      GISdb[DBonTable].EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       while not GISdb[DBonTable].MyData.eof do begin
          aString := GISdb[DBonTable].MyData.GetFieldByNameAsString(SelectedColumn);
@@ -6493,7 +6505,7 @@ begin
          GISdb[DBonTable].MyData.Next;
       end;
       ShowStatus;
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.AlphabetizefieldwithCSVsubfields1Click(Sender: TObject);
@@ -6586,7 +6598,7 @@ end;
 
 procedure Tdbtablef.SortbyBESTEVAL1Click(Sender: TObject);
 begin
-   SortDataBase(DBonTable,true,'BEST_EVAL',ExtractFilePath(GISdb[DBonTable].dbFullName));
+   SortDataBase(DBonTable,true,true,'BEST_EVAL',ExtractFilePath(GISdb[DBonTable].dbFullName));
 end;
 
 procedure Tdbtablef.Sortfield1Click(Sender: TObject);
@@ -6780,43 +6792,41 @@ var
   fName : PathStr;
 begin
    if (Sender = AllDBsmultiplegraphs1) then begin
-      with GISdb[DBonTable] do begin
-         WantXField := PickField('Field for histogram',[ftFloat,ftInteger,ftSmallInt]);
-         if (WantXField <> '') then begin
-            if (Sender = AllDBsmultiplegraphs1) then begin
-               MDDef.NoHistFreqLabels := true;
-               CreateSmallGraph := true;
-               MaxY := -9999;
-               MaxX := -9999;
+       WantXField := GISdb[DBonTable].PickField('Field for histogram',[ftFloat,ftInteger,ftSmallInt]);
+       if (WantXField <> '') then begin
+          if (Sender = AllDBsmultiplegraphs1) then begin
+             MDDef.NoHistFreqLabels := true;
+             CreateSmallGraph := true;
+             MaxY := -9999;
+             MaxX := -9999;
 
+             for i := 1 to MaxDataBase do begin
+                if (GISdb[i] <> nil) then begin
+                   Hists[i] := GISdb[i].OldCreateHistogramFromDataBase(true,WantXField,'','',false);
+                   if (Hists[i].GraphDraw.MaxVertAxis > MaxY) then MaxY := Hists[i].GraphDraw.MaxVertAxis;
+                   if (Hists[i].GraphDraw.MaxHorizAxis > MaxX) then MaxX := Hists[i].GraphDraw.MaxHorizAxis;
+                end
+                else Hists[i] := Nil;
+             end;
+
+             MDDef.NoHistFreqLabels := false;
+             CreateSmallGraph := false;
+             if AnswerIsYes('Rescale') then begin
+               ReadDefault('MaxX',MaxX);
+               ReadDefault('MaxY',MaxY);
                for i := 1 to MaxDataBase do begin
-                  if (GISdb[i] <> nil) then begin
-                     Hists[i] := GISdb[i].OldCreateHistogramFromDataBase(true,WantXField,'','',false);
-                     if (Hists[i].GraphDraw.MaxVertAxis > MaxY) then MaxY := Hists[i].GraphDraw.MaxVertAxis;
-                     if (Hists[i].GraphDraw.MaxHorizAxis > MaxX) then MaxX := Hists[i].GraphDraw.MaxHorizAxis;
-                  end
-                  else Hists[i] := Nil;
+                  if (Hists[i] <> Nil) then begin
+                     Hists[i].GraphDraw.MaxHorizAxis := MaxX;
+                     Hists[i].GraphDraw.MaxVertAxis := MaxY;
+                     Hists[i].GraphDraw.BottomMargin := 50;
+                     Hists[i].GraphDraw.LeftMargin := 60;
+                     Hists[i].RedrawDiagram11Click(Nil);
+                  end;
                end;
-
-               MDDef.NoHistFreqLabels := false;
-               CreateSmallGraph := false;
-               if AnswerIsYes('Rescale') then begin
-                 ReadDefault('MaxX',MaxX);
-                 ReadDefault('MaxY',MaxY);
-                 for i := 1 to MaxDataBase do begin
-                    if (Hists[i] <> Nil) then begin
-                       Hists[i].GraphDraw.MaxHorizAxis := MaxX;
-                       Hists[i].GraphDraw.MaxVertAxis := MaxY;
-                       Hists[i].GraphDraw.BottomMargin := 50;
-                       Hists[i].GraphDraw.LeftMargin := 60;
-                       Hists[i].RedrawDiagram11Click(Nil);
-                    end;
-                 end;
-               end;
-            end
-            else OldCreateHistogramFromDatabase(true,WantXField,'','',(Sender = AllDBs1));
+             end;
+          end
+          else GISdb[DBonTable].OldCreateHistogramFromDatabase(true,WantXField,'','',(Sender = AllDBs1));
          end;
-      end;
    end
    else begin
       DataFiles := tStringList.Create;
@@ -6827,22 +6837,17 @@ begin
       Max := -99e30;
       for I := 0 to pred(sl.Count) do begin
          LegendFiles.Add(sl.strings[i]);
-         //Npts := 0;
-         //GISdb[DBonTable].MyData.First;
          GISdb[DBonTable].GetPointArrayForDBField(sl.strings[i],zs^,NPts);
          {$IfDef RecordGraph} WriteLineToDebugFile(sl.strings[i]  + ' NPts=' + IntToStr(NPts)); {$EndIf};
          Petmath.HeapSort(Npts,zs^);
          if zs^[0] < Min then Min := zs^[0];
          if zs^[pred(NPts)] > Max then Max := zs^[pred(NPts)];
-
          fName := BaseGraf.SaveSingleValueSeries(Npts,zs^);
          DataFiles.Add(fName);
          {$IfDef RecordGraph} WriteLineToDebugFile(sl.strings[i] + '  ' + RealToString(Min,-12,-4) + ' to ' + RealToString(Max,-12,-4) + ' Saved to ' + fName); {$EndIf};
       end;
       Dispose(zs);
-
       CreateMultipleHistogram(MDDef.CountHistograms,DataFiles,LegendFiles,'Histograms','Histograms',100,Min,Max,-1);
-
       sl.Destroy;
    end;
 end;
@@ -6852,10 +6857,10 @@ procedure Tdbtablef.Historgram1Click(Sender: TObject);
 var
    Fields : tStringList;
 begin
-      Fields := tStringList.Create;
-      Fields.Add(SelectedColumn);
-      GISdb[DBonTable].CreateHistogramFromDataBase(true,Fields,false);
-      Fields.Destroy;
+    Fields := tStringList.Create;
+    Fields.Add(SelectedColumn);
+    GISdb[DBonTable].CreateHistogramFromDataBase(true,Fields,false);
+    Fields.Destroy;
 end;
 
 
@@ -6914,21 +6919,6 @@ begin
 {$EndIf}
 end;
 
-(*
-procedure Tdbtablef.N53Click(Sender: TObject);
-begin
-   try
-      GetDEMIXPaths(true);
-      Removerowsmissinganyevaluations1Click(Sender);
-      RankDEMS(DBonTable);
-      EvalRangeAndBestEvalForCriterion(DBonTable);
-      CompareSeriousCompetitors(DBonTable);
-      AddTileCharacteristicsToDB(DBonTable);
-   finally
-      EndDEMIXProcessing;
-   end;
-end;
-*)
 
 
 procedure Tdbtablef.N7Elevationdifferencecriteria1Click(Sender: TObject);
@@ -7964,12 +7954,12 @@ end;
 
 procedure Tdbtablef.Ascending1Click(Sender: TObject);
 begin
-   SortDataBase(DBOnTable,true);
+   SortDataBase(DBOnTable,true,true);
 end;
 
 procedure Tdbtablef.Ascending2Click(Sender: TObject);
 begin
-   SortDataBase(DBOnTable,true,SelectedColumn);
+   SortDataBase(DBOnTable,true,true,SelectedColumn);
 end;
 
 procedure Tdbtablef.AssignDEMIXDEMcolors1Click(Sender: TObject);
@@ -8827,7 +8817,7 @@ var
    DEMlist : tStringList;
 begin
    DEMlist := nil;
-   DisplayBitmap(DEMIXTestDEMLegend(Sender <> Vertical1,DEMlist),'Test DEMs');
+   DisplayBitmap(DEMIXTestDEMLegend(DEMList,Sender <> Vertical1),'Test DEMs');
 end;
 
 procedure Tdbtablef.Verticaldatumshift1Click(Sender: TObject);
@@ -9786,22 +9776,6 @@ begin
    else GISdb[DBonTable].DeleteAllSelectedRecords;
 end;
 
-procedure Tdbtablef.RemoveSCRfields1Click(Sender: TObject);
-var
-   fNames : tStringList;
-   fName : shortstring;
-   i : integer;
-begin
-   fNames := GISdb[DBonTable].MyData.FieldsInDataBase;
-   for i := 0 to pred(fNames.Count) do begin
-      fName := fNames[i];
-      if AnsiContainsText(fName,'_SCR') or AnsiContainsText(fName,'_WIN') or AnsiContainsText(fName,'COP_') then begin
-          GISdb[DBonTable].MyData.DeleteField(fName);
-      end;
-   end;
-   fNames.Free;
-   ShowStatus;
-end;
 
 procedure Tdbtablef.Removesubstringandfollowingcharacters1Click(Sender: TObject);
 begin
@@ -10451,39 +10425,13 @@ begin
    end;
 end;
 
-procedure Tdbtablef.Grandbytilecharacterisitic1Click(Sender: TObject);
-begin
-   MainGraphOptions(DBonTable,Nil,nil,2);
-end;
 
-procedure Tdbtablef.Graphbyareawithaveragescoreforselectedcriteria1Click(Sender: TObject);
-begin
-   MessageToContinue('Disabled; need to add DEM stringlist');
-   //DEMIX_AreaAverageScores_graph(DBonTable);
-end;
-
-procedure Tdbtablef.GraphbyDEM1Click(Sender: TObject);
-begin
-   MainGraphOptions(DBonTable,Nil,Nil,1);
-end;
-
-procedure Tdbtablef.Graphbytilewithaveragescoreforselectedcriteria1Click(Sender: TObject);
-begin
-   MessageToContinue('Disabled; need to add DEM stringlist');
-   //GraphAverageScoresByTile(DBonTable,Nil,Nil);
-end;
 
 procedure Tdbtablef.Graphfilters1Click(Sender: TObject);
 begin
    DoDEMIXFilter(DBonTable);
 end;
 
-
-
-procedure Tdbtablef.Graphforatile1Click(Sender: TObject);
-begin
-   MainGraphOptions(DBonTable,Nil,Nil);
-end;
 
 
 procedure Tdbtablef.Graphicallymovepoints1Click(Sender: TObject);
@@ -11103,17 +11051,6 @@ begin
    DEMIXPopUpMenu1.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-procedure Tdbtablef.DEMIXtileinvertory1Click(Sender: TObject);
-begin
-   DEMIXtile_inventory(DBonTable);
-end;
-
-
-procedure Tdbtablef.DEMIXtilesummary1Click(Sender: TObject);
-begin
-   DEMIXTileSummary(DBonTable);
-end;
-
 procedure Tdbtablef.DEMTerrainblowups1Click(Sender: TObject);
 var
    i,xpic,ypic : integer;
@@ -11359,12 +11296,12 @@ end;
 
 procedure Tdbtablef.Descending1Click(Sender: TObject);
 begin
-   SortDataBase(DBOnTable,false);
+   SortDataBase(DBOnTable,false,true);
 end;
 
 procedure Tdbtablef.Descending2Click(Sender: TObject);
 begin
-   SortDataBase(DBOnTable,false,SelectedColumn);
+   SortDataBase(DBOnTable,false,true,SelectedColumn);
 end;
 
 procedure Tdbtablef.Descending3Click(Sender: TObject);
@@ -12279,12 +12216,6 @@ begin
 end;
 
 
-procedure Tdbtablef.LoadCopDEMandLandcoverforarea1Click(Sender: TObject);
-begin
-   LoadCopAndLancoverForDEMIXTile(GISdb[dbOnTable].MyData.GetFieldByNameAsString('AREA'));
-end;
-
-
 procedure Tdbtablef.Loadfrommaplibrary1Click(Sender: TObject);
 const
    Extra = 0.0001;
@@ -12306,10 +12237,6 @@ begin
    WantDEM := LoadMapLibraryBox(true, bbox);
 end;
 
-procedure Tdbtablef.Loadmapsforthisarea1Click(Sender: TObject);
-begin
-   LoadThisDEMIXTile(GISdb[dbOnTable].MyData.GetFieldByNameAsString('AREA'),'');
-end;
 
 procedure Tdbtablef.LoadMSTfiles1Click(Sender: TObject);
 {$IfDef ExSideScan}
@@ -12334,16 +12261,6 @@ begin
       ShowStatus;
    end;
 {$EndIf}
-end;
-
-procedure Tdbtablef.LoadNeoDEMs1Click(Sender: TObject);
-var
-   AreaName : shortstring;
-begin
-   AreaName := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
-   OpenBothPixelIsDEMs(AreaName,'','','',true);
-   StartAreaEvals;
-   ShowDefaultCursor;
 end;
 
 procedure Tdbtablef.LoadtestandreferenceDEMs1Click(Sender: TObject);
@@ -12952,6 +12869,25 @@ end;
 procedure Tdbtablef.CreateXYZpointshapefile1Click(Sender: TObject);
 begin
    GISdb[DBonTable].SavePointShapeFile;
+end;
+
+procedure Tdbtablef.Cret1Click(Sender: TObject);
+var
+   Stats,TheFields : tStringList;
+   MomentVar : tMomentVar;
+   fName : PathStr;
+   db,i : integer;
+begin
+   Stats := tStringList.Create;
+   Stats.Add(MomentStr);
+   TheFields := GISdb[DBonTable].GetMultipleNumericFields('Box plots');
+   for i := 0 to pred(TheFields.Count) do begin
+      MomentVar := GISdb[DBonTable].GetFieldStatistics(TheFields.Strings[i]);
+      Stats.Add(TheFields.Strings[i] + MomentResultsToString(MomentVar));
+   end;
+    fName := NextFileNumber(MDTempDir,'box_plot','.dbf');
+    db := StringList2CSVtoDB(Stats,fName,false,false,false);
+    StartBoxPlot(db);
 end;
 
 procedure Tdbtablef.CriteriaforeachDEMIXtile1Click(Sender: TObject);
@@ -13783,7 +13719,6 @@ end;
 procedure Tdbtablef.FillField1Click(Sender: TObject);
 begin
    Fillfieldforallrecords1Click(Sender);
-   //ShowStatus;
 end;
 
 procedure Tdbtablef.Fillfieldforallrecords1Click(Sender: TObject);
@@ -13791,7 +13726,7 @@ var
    WantedFieldName : string10;
    WantedValue : shortString;
 begin
-   if (Sender = FillField1) and (SelectedColumn <> '') then WantedFieldName := SelectedColumn
+   if ((Sender = FillField1) or (Sender = ClearField1)) and (SelectedColumn <> '') then WantedFieldName := SelectedColumn
    else WantedFieldName := GISDB[DBonTable].PickField('field to fill',[ftString,ftSmallInt,ftFloat,ftInteger]);
    if (WantedFieldName <> '') then begin
       WantedValue := '';
@@ -15419,43 +15354,10 @@ begin
 end;
 
 procedure Tdbtablef.MeanstdallDBs1Click(Sender: TObject);
-{$IfDef July15Issue}
 begin
-{$Else}
-var
-   FieldDesired : ShortString;
-   Missing,i  : int64;
-   zs : ^bfarray32;
-   fName : PathStr;
-   Findings : tStringList;
-   MomentVar : tMomentVar;
-   Min,Max : float64;
-begin
-   FieldDesired := GISdb[DBonTable].PickField('Field for mean/std',NumericFieldTypes);
-   if (FieldDesired = '') then exit;
-   Findings := tStringList.Create;
-   Findings.Add('NAME,N_PTS,MEAN,STD_DEV,SKEWNESS,KURTOSIS,MEDIAN,MIN,MAX');
-   StartProgress('Stats');
-   for i := 1 to MaxDataBase do begin
-      UpdateProgressBar(i/MaxDataBase);
-      if (GISdb[i] <> nil) then begin
-         New(zs);
-         GetFieldValuesInArray(GISdb[i].MyData,FieldDesired,zs^,MomentVar.Npts,Missing,Min,Max);
-         if (MomentVar.NPts > 1)  then begin
-            moment(zs^,MomentVar,msAll);
-            Findings.Add(GISdb[i].DBName + ',' + IntToStr(MomentVar.Npts) + ',' + RealToString(MomentVar.mean,-12,-4) + ',' +
-                 RealToString(MomentVar.std_dev,-12,-4) + ',' + RealToString(MomentVar.skew,-12,-4) + ',' +
-                 RealToString(MomentVar.curt,-12,-4) + ',' + RealToString(MomentVar.Median,-12,-4) + ',' +
-                 RealToString(min,-12,-4) + ',' +  RealToString(max,-12,-4) );
-         end;
-         Dispose(zs);
-      end;
-   end;
-   EndProgress;
-   fName := MDTempDir + 'summary_stats.csv';
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Findings,fName);
-{$EndIf}
+    MeanStDevAllDBs(DBontable);
 end;
+
 
 
 procedure Tdbtablef.Meanwidth1Click(Sender: TObject);
@@ -15770,64 +15672,6 @@ begin
    end;
 end;
 
-procedure Tdbtablef.Multiplegraphmatrix1Click(Sender: TObject);
-var
-   fName : PathStr;
-   Table : tMyData;
-   xp,yp,Records,i,j : integer;
-   Max : float64;
-   fN,lN  : array[1..25] of shortstring;
-begin
-   with GISdb[DBonTable] do begin
-      fName := 'C:\mapdata\0--current_projects\pa_point_cloud\combined_los_definitions.dbf';
-      if not Petmar.GetFileFromDirectory('Field groupings',DBNameMask,fName) then exit;
-      Table := tMyData.Create(fName);
-      Records := Table.RecordCount;
-      ForceXMax := 0;
-      for i := 1 to Records do begin
-         fN[i] := Table.GetFieldByNameAsString('FIELD_NAME');
-         lN[i] := Table.GetFieldByNameAsString('LABEL_NAME');
-         EmpSource.Enabled := false;
-         Max := GISdb[DBonTable].MyData.FindFieldMax(fn[i]);
-         if (Max > ForceXMax) then ForceXMax := Max;
-         Table.Next;
-      end;
-      Table.Destroy;
-      ForceYMax := ForceXMax;
-
-      SaveBackupDefaults;
-      MDDef.DefaultGraphXSize := 400;
-      MDDef.DefaultGraphYSize := 260;
-      CreateSmallGraph := true;
-
-      EmpSource.Enabled := false;
-      PetImage.CreateBitmap(AllGraphBitmap,(Records*MDDef.DefaultGraphXSize div 2){ + 50},(Records*MDDef.DefaultGraphYSize div 2) {+ 45});
-      AllGraphBitmap.Canvas.Font.Style := [fsBold];
-      AllGraphBitmap.Canvas.Font.Size := 10;
-      for i := 1 to records do begin
-         dbOpts.XField := fn[i];
-         xdrawspot := pred(i) * MDDef.DefaultGraphXSize div 2;
-         for j := 1 to records do begin
-            ydrawspot := pred(j) * MDDef.DefaultGraphYSize div 2;
-            if (i = j) then with AllGraphBitmap.Canvas do begin
-               xp := XDrawSpot+(MDDef.DefaultGraphXSize div 4)-(TextWidth(ln[j]) div 2);
-               Yp := yDrawSpot+(MDDef.DefaultGraphYSize div 4)-10;
-               TextOut(xp,yp,ln[j]);
-            end
-            else begin
-               EmpSource.Enabled := false;
-               dbOpts.YField := fn[j];
-               GISdb[DBonTable].MakeGraph(dbgtMultiplegraphmatrix1);
-            end;
-         end;
-      end;
-      PetImage_form.DisplayBitmap(AllGraphBitmap,ExtractFileNameNoExt(fName));
-      AllGraphBitmap.Free;
-   end;
-   RestoreBackupDefaults;
-   ShowStatus;
-end;
-
 
 procedure Tdbtablef.Multiplelinearregression1Click(Sender: TObject);
 var
@@ -15908,23 +15752,10 @@ end;
 
 
 procedure Tdbtablef.Fieldpercentiles2Click(Sender: TObject);
-var
-   FieldDesired : shortstring;
-   pcs : floatarray1000;
-   sl : tStringList;
-   i  : integer;
 begin
-   FieldDesired := GISdb[DBonTable].PickField('Field for percentiles',NumericFieldTypes);
-   ShowHourglassCursor;
-   pcs := GISdb[DBonTable].GetFieldPercentiles(FieldDesired);
-   sl := tStringList.Create;
-   SL.add('PERCENTILE,'+FieldDesired + ',DENSITY');
-   for i := 0 to 1000 do begin
-      SL.Add(RealToString(0.1*i,-6,-1) + ',' + RealToString(pcs[i],-12,-8));
-   end;
-   StringList2CSVtoDB(sl,MDTempDir + GISdb[DBonTable].dbName + '_percentiles.csv');
-   ShowStatus;
+   FieldPercentileReport(DBonTable);
 end;
+
 
 
 procedure Tdbtablef.Schwartzberg1Click(Sender: TObject);
@@ -15932,8 +15763,16 @@ begin
    GISdb[DBonTable].AddGeometry(agSchwartz);
 end;
 
+
+
+procedure Tdbtablef.FindmisplacedGEDTMv12testDEMs1Click(Sender: TObject);
+begin
+   GEDTM_problems(dbOnTable);
+end;
+
+
 initialization
-   {$IfDef MessageStartUpUnit}   MessageToContinue('Startup demdbtable'); {$EndIf}
+   {$IfDef MessageStartUpUnit} MessageToContinue('Startup demdbtable'); {$EndIf}
    HighlightCycle := 1;
    ClipBoard_Coords := false;
    BroadCastingFilterChanges := false;

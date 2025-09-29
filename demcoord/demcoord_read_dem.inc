@@ -173,8 +173,8 @@ var
                    else if key = 'minz' then DEMheader.StoredMinElev := StrToFloat(NextLine)
                    else if key = 'dx' then DEMheader.DEMxSpacing := StrToFloat(NextLine)
                    else if key = 'dy' then DEMheader.DEMySpacing := StrToFloat(NextLine)
-                   else if key = 'llx' then DEMheader.DEMSWCornerX := StrToFloat(NextLine)
-                   else if key = 'lly' then DEMheader.DEMSWCornerY := StrToFloat(NextLine)
+                   else if key = 'llx' then DEMheader.SWCornerX := StrToFloat(NextLine)
+                   else if key = 'lly' then DEMheader.SWCornerY := StrToFloat(NextLine)
                    else if key = 'utmzone' then DEMheader.UTMZone := StrToInt(NextLine)
                    else if key = 'fipszone' then  //needed so it does not go to the drop down
                    else if (key = 'projtype') or (key = 'newproj') then DEMheader.DEMUsed := StrToInt(NextLine)
@@ -337,8 +337,8 @@ var
       if (AreaName[4] in ['w','W']) then long := -long;
 
       DEMheader.UTMZone := GetUTMZone(long + 0.25);
-      DEMheader.DEMSWCornerX := long;
-      DEMheader.DEMSWCornerY := lat;
+      DEMheader.SWCornerX := long;
+      DEMheader.SWCornerY := lat;
       if ReallyReadDEM then begin
          if not AllocateDEMMemory(InitDEMnone) then begin
             closeFile(inf);
@@ -495,10 +495,10 @@ begin
     if ToUTM then begin
        NewHeader.DEMxSpacing := DEMGlb[BigDEM].DEMheader.DEMxSpacing;
        NewHeader.DEMySpacing := NewHeader.DEMxSpacing;
-       NewHeader.DEMSWCornerX := round(xutm[1]);
-       NewHeader.DEMSWCornerY := round(yutm[1]);
-       NewHeader.NumCol := round((xutm[3] - NewHeader.DEMSWCornerX) / NewHeader.DEMxSpacing);
-       NewHeader.NumRow := round((yutm[3] - NewHeader.DEMSWCornerY) / NewHeader.DEMxSpacing);
+       NewHeader.SWCornerX := round(xutm[1]);
+       NewHeader.SWCornerY := round(yutm[1]);
+       NewHeader.NumCol := round((xutm[3] - NewHeader.SWCornerX) / NewHeader.DEMxSpacing);
+       NewHeader.NumRow := round((yutm[3] - NewHeader.SWCornerY) / NewHeader.DEMxSpacing);
     end
     else begin
        NewHeader.DEMxSpacing := 0.1;
@@ -506,10 +506,10 @@ begin
        NewHeader.DEMxSpacing  := NewHeader.DEMxSpacing / 3600;
        NewHeader.DEMySpacing := NewHeader.DEMxSpacing;
        NewHeader.DataSpacing := SpaceDegrees;
-       NewHeader.DEMSWCornerX := LongWGS[1];
-       NewHeader.DEMSWCornerY := LatWGS[1];
-       NewHeader.NumCol := round((LongWGS[3] - NewHeader.DEMSWCornerX) / NewHeader.DEMxSpacing);
-       NewHeader.NumRow := round((LatWGS[3] - NewHeader.DEMSWCornerY) / NewHeader.DEMxSpacing);
+       NewHeader.SWCornerX := LongWGS[1];
+       NewHeader.SWCornerY := LatWGS[1];
+       NewHeader.NumCol := round((LongWGS[3] - NewHeader.SWCornerX) / NewHeader.DEMxSpacing);
+       NewHeader.NumRow := round((LatWGS[3] - NewHeader.SWCornerY) / NewHeader.DEMxSpacing);
     end;
     OpenAndZeroNewDEM(false,NewHeader,NewDEM,'DEM to match maps',InitDEMmissing);
     {$IfDef RecordUKOS} WriteLineToDebugFile('OpenAndZeroNewDEM done'); {$EndIf}
@@ -543,9 +543,9 @@ begin
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGlobalGrid in'); {$EndIf}
    ZeroDEMHeader(NewHeader, false);
    NewHeader.DEMPrecision := Resolution;
-   if GreenwhichLeft then NewHeader.DEMSWCornerX := 0
-   else NewHeader.DEMSWCornerX := -180;
-   NewHeader.DEMSWCornerY := -90;
+   if GreenwhichLeft then NewHeader.SWCornerX := 0
+   else NewHeader.SWCornerX := -180;
+   NewHeader.SWCornerY := -90;
    repeat
       if (Spacing < 0) then begin
          NewHeader.DEMxSpacing := 0.02;
@@ -582,8 +582,8 @@ begin
    NewHeadRecs.NumRow := yPixels;
    NewHeadRecs.DEMySpacing := LatSize / pred(yPixels);
    NewHeadRecs.DEMxSpacing := LongSize / pred(xPixels);
-   NewHeadRecs.DEMSWCornerX := LongCorner;
-   NewHeadRecs.DEMSWCornerY := LatCorner;
+   NewHeadRecs.SWCornerX := LongCorner;
+   NewHeadRecs.SWCornerY := LatCorner;
    NewHeadRecs.h_datumcode := 'WGS84';
    {$IfDef RecordCreateNewDEM}
       WriteLineToDebugFile('xll=' + RealToString(NewHeadRecs.DEMSWCornerX,-18,-8) + ' yll=' + RealToString(NewHeadRecs.DEMSWCornerY,-18,-8) + ' dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-8) + ' dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-8));
@@ -641,8 +641,8 @@ begin
       WantedDEM.DEMheader.DataSpacing := SpaceMeters;
       WantedDEM.DEMheader.DEMxSpacing := PlansHeader.SpaceX;
       WantedDEM.DEMheader.DEMySpacing := PlansHeader.SpaceY;
-      WantedDEM.DEMheader.DEMSWCornerX := PlansHeader.llx;
-      WantedDEM.DEMheader.DEMSWCornerY := PlansHeader.lly;
+      WantedDEM.DEMheader.SWCornerX := PlansHeader.llx;
+      WantedDEM.DEMheader.SWCornerY := PlansHeader.lly;
       WantedDEM.DEMheader.MaxElev := PlansHeader.maxz;
       WantedDEM.DEMheader.MinElev := PlansHeader.minz;
       WantedDEM.DEMheader.NumCol := PlansHeader.NumCol;
@@ -752,7 +752,7 @@ var
 
 var
    HeaderLines : array[1..6] of shortstring;
-begin
+begin {procedure ReadASCIIArcGrid}
    with WantedDEM do begin
       DEMheader.ElevUnits := euMeters;
       FSplit(FileName,Dir,Name,Ext);
@@ -836,8 +836,8 @@ begin
 
       DEMheader.DEMxSpacing := Spacing * RectSpacingFactor(DEMheader.DataSpacing);
       DEMheader.DEMySpacing := Spacing * RectSpacingFactor(DEMheader.DataSpacing);
-      DEMheader.DEMSWCornerX := xbase * RectSpacingFactor(DEMheader.DataSpacing);
-      DEMheader.DEMSWCornerY := ybase * RectSpacingFactor(DEMheader.DataSpacing);
+      DEMheader.SWCornerX := xbase * RectSpacingFactor(DEMheader.DataSpacing);
+      DEMheader.SWCornerY := ybase * RectSpacingFactor(DEMheader.DataSpacing);
 
       DEMheader.DEMPrecision := FloatingPointDEM;
 
@@ -853,7 +853,7 @@ begin
       {$IfDef RecordImport} WriteLineToDebugFile(' DEM read OK'); {$EndIf}
       Error := false;
    end;
-end;
+end {procedure ReadASCIIArcGrid};
 
 
 function LoadNewDEM(var WantedDem : integer; var FullFileName : PathStr; CreateMap : boolean = true; DEMMessage : shortstring = 'New DEM'; MapTitleBar : shortstring = ''; DrawTheMap : boolean = true; ChangeDefaultName : boolean = true) : boolean;
@@ -921,7 +921,8 @@ begin
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
    {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM out ' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
-end;
+   {$IfDef TrackVerticalDatum} WriteLineToDebugFile('Load newDEM ' + DEMGlb[WantedDEM].AreaName + ' vdatum=' + IntToStr(DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey)); {$EndIf}
+end {function LoadNewDEM};
 
 
 function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
@@ -992,6 +993,8 @@ begin
    ImportingDEM := DEMtoUse;
    ShowHourglassCursor;
    OpenDEMDataStructures(ImportingDEM);
+
+
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('off to ReadDEMNow, DEM=' + IntToStr(ImportingDEM)); {$EndIf}
    Result := DEMGlb[ImportingDEM].ReadDEMNow(tFile,TransformToNewDatum);
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('NewArea after ReadDEMNow , dem WKT=' + IntToStr(Length(DEMGlb[ImportingDEM].DEMHeader.wktString))); {$EndIf}
@@ -1011,8 +1014,6 @@ begin
    {$EndIf}
 
    {$If Defined(TrackDEMboundingBox)} DEMGlb[ImportingDEM].TrackDEMBoundingBox('exit ReadDEMNow'); {$EndIf}
-
-
 end;
 
 

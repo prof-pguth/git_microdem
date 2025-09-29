@@ -53,7 +53,6 @@ unit demix_definitions;
    //{$Define RecordUseTile}
 
    //{$Define RecordDEMIXMovies}
-   //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
 
@@ -144,6 +143,12 @@ const
    DEMIXneo         = 2;
    DEMIXanalysismode : integer = 1;
 
+const
+   fuvmMixed = 1;
+   fuvmPartials = 2;
+   fuvmCurves = 3;
+   fuvmDiffDist = 4;
+
 var
    DEMIXDEMTypeName,                                           //name of folder with the DEMs, in case there are multiple versions
    DEMIXshort     : array[1..MaxDEMIXDEM] of shortstring;      //short name used to identify DEM (comparing of multiple versions not currently implemented)
@@ -151,6 +156,7 @@ var
    //NotRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
    CriteriaFamily : shortstring;
    DEMIXModeName : shortstring;
+   DEMIXMode : integer;
 
    type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
@@ -210,8 +216,8 @@ const
    yasRelief = 3;
    yasBarren = 4;
    yasForest = 5;
-   yasBestEvalColoredBySlope = 6;
-   yasLatitude = 7;
+   yasLatitude = 6;
+   yasBestEvalColoredBySlope = 7;
    MovieByTestDEM : boolean = false;
 
 var
@@ -248,7 +254,7 @@ var
    DEMIX_area_lc100,
 
    DEMIX_area_dbName,
-   DEMIX_criteria_dbName,
+   //DEMIX_criteria_dbName,
    DEMIX_Ref_Merge,
    DEMIX_GIS_dbName,
 
@@ -277,8 +283,8 @@ var
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
-   procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
-   procedure MakeWinsDB(DBonTable : integer; aField : shortstring);
+   //procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
+   //procedure MakeWinsDB(DBonTable : integer; aField : shortstring);
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDiffDistDB;
@@ -326,39 +332,29 @@ var
 
 
 
-
-
-
-
 //inventory and reports
-   procedure DEMIXTileSummary(DBonTable : integer);
-   procedure DEMIXtile_inventory(DBonTable : integer);
    procedure InventoryDBwithDSMandDTMbyArea;
    procedure InventoryDEMIXdifferenceStats;
    procedure CheckTestDEMs;
-   procedure CheckReferenceDEMsAreEGMandPixelIs;
+   //procedure CheckReferenceDEMsAreEGMandPixelIs;
    procedure CheckLowElevationAreas;
    procedure VerifyTestDEMcoverages;
-   procedure ComputeDEMIX_Summary_stats_DB;
+   procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
    procedure InventoryDEMIX_SSIM_FUV_Stats;
    procedure DeleteFilesForATestArea;
    procedure FindFilesWith42112;
    procedure FixFilesWith42112;
    procedure EvalRangeAndStatsByCriterion(DBonTable : integer; aField : shortstring = '');
-   //procedure GetRangesForSSIM;
    procedure InventoryCriteriaEachDEMIXtile(DB : integer);
    procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
    procedure FindTilesInAreaForCoast;
    procedure InventoryAllDEMIXdata;
-   procedure InventoryWbWSaagaMDsavedGridsByArea;
    procedure PruneMisnamedReferenceDTMs;
-   procedure AddColorsForUnderDBs(DBonTable : integer);
    procedure InventoryAreasAndTilesByCountry(DB : integer);
    {$IfDef DEMIX_SAGA_channels} procedure InventoryChannelDataByArea; {$EndIf}
 
 
 procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
-//function ExtractDEMIXDEMName(var fName : PathStr) : shortstring;
 
 
 //vector (channel network, ridges, valleys) comparisons
@@ -402,13 +398,15 @@ procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; Is
 function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstring; ClusterOption : boolean): tThisBaseGraph;
 
 function ID_DEMIX_DB_type(db : integer) : byte;
-procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; Memo2 : tMemo; BinSize : integer = 0);
+procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; BinSize : integer = 0);
 procedure ImportLandParamFilters(fName : PathStr; var GeomorphFilters,Labels : tStringList);
 
 function ContinueExperimentalDEMIX : boolean;
 function NoSuffixCriterion(Criterion : shortstring) : shortstring;
-function TileCharacteristicsInDB(DB : integer) : boolean;
+function TileCharacteristicsInDB(DB : integer; Warn : boolean = false) : boolean;
 procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
+
+function InsureFUVinLSPname(aName : shortstring) : shortstring;
 
 
 function CreateSingleLSPGrid(OpenMaps : boolean; DEM : integer; Param : shortstring) : integer;
@@ -444,23 +442,32 @@ uses
 {$include demix_create_lsp_grids.inc}
 
 
-function TileCharacteristicsInDB(DB : integer) : boolean;
-begin
-   Result := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
-end;
 
+function InsureFUVinLSPname(aName : shortstring) : shortstring;
+begin
+    if StrUtils.AnsiContainsText(aName,'_FUV') then Result := aName
+    else Result := aName + '_FUV';
+end;
 
 function NoSuffixCriterion(Criterion : shortstring) : shortstring;
 begin
    Result := StringReplace(Criterion,'_FUV','',[rfIgnoreCase]);
 end;
 
+
+
+function TileCharacteristicsInDB(DB : integer; Warn : boolean = false) : boolean;
+begin
+   Result := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
+   if Warn and (not Result) then MessageToContinue('Tile characteristics missing in ' + GISdb[db].dbName);
+end;
+
+
 procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 begin
      WriteLineToDebugFile(Where);
      WriteStringListToDebugFile(UseLSPs,true);
 end;
-
 
 
 function ContinueExperimentalDEMIX : boolean;
@@ -485,60 +492,50 @@ begin
 end;
 
 
-procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; Memo2 : tMemo; BinSize : integer = 0);
+procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; BinSize : integer = 0);
 var
-   i,LowBin,HighBin,Value : integer;
+   i,LowBin,HighBinBase,Value : integer;
 begin
    Labels := tStringList.Create;
    GeomorphFilters := tStringList.Create;
-   if (LandParam = 'Users') then begin
-      //user assembled filters passed in Memo2
-      for i := 0 to pred(Memo2.Lines.Count) do begin
-         if Memo2.Lines[i] = '(None)' then begin
-           GeomorphFilters.Add('');
-           Labels.Add('All tiles');
-         end
-         else begin
-            GeomorphFilters.Add(Memo2.Lines[i]);
-            Labels.Add(Memo2.Lines[i]);
-         end;
-      end;
+   if LandParam = 'AVG_SLOPE' then begin
+      LowBin := 5;
+      if BinSize = 0 then BinSize := 5;
+      HighBinBase := 70;
+   end
+   else if LandParam = 'AVG_ROUGH' then begin
+      LowBin := 2;
+      if BinSize = 0 then BinSize := 2;
+      HighBinBase := 18;
+   end
+   else if LandParam = 'URBAN_PC' then begin
+      LowBin := 5;
+      if BinSize = 0 then BinSize := 5;
+      HighBinBase := 40;
    end
    else begin
-       if LandParam = 'AVG_SLOPE' then begin
-          LowBin := 5;
-          if BinSize = 0 then BinSize := 5;
-          HighBin := 70;
-       end
-       else if LandParam = 'AVG_ROUGH' then begin
-          LowBin := 2;
-          if BinSize = 0 then BinSize := 2;
-          HighBin := 30;
-       end
-       else begin
-          LowBin := 10;
-          if BinSize = 0 then BinSize := 10;
-          HighBin := 90;
-       end;
-      Labels.Add('All tiles');
-      Labels.Add(LandParam + '<' + IntToStr(LowBin) + '%');
-      GeomorphFilters.Add('');
-      GeomorphFilters.Add(LandParam + '<' + IntToStr(LowBin));
-      Value := LowBin;
-      while Value <= HighBin do begin
-         GeomorphFilters.Add(LandParam + '>=' + IntToStr(Value) + ' AND ' + LandParam + '<' + IntToStr(Value + BinSize));
-         Labels.Add(LandParam + ' ' + IntToStr(Value) + '-' + IntToStr(Value + BinSize)+ '%');
-         Value := Value + BinSize;
-      end;
-      if (Value < 100) then begin
-         GeomorphFilters.Add(LandParam + '>' + IntToStr(Value));
-         Labels.Add(LandParam + '>' + IntToStr(Value) + '%');
-      end;
+      LowBin := 10;
+      if BinSize = 0 then BinSize := 10;
+      HighBinBase := 90;
    end;
-   {$IfDef RecordDEMIXFilters}
-      WriteLineToDebugFile('Labels');   WriteStringListToDebugFile(Labels);
-      WriteLineToDebugFile('GeomorphFilters');   WriteStringListToDebugFile(GeomorphFilters);
-   {$EndIf}
+  Labels.Add('All tiles');
+  Labels.Add(LandParam + '<' + IntToStr(LowBin) + '%');
+  GeomorphFilters.Add('');
+  GeomorphFilters.Add(LandParam + '<' + IntToStr(LowBin));
+  Value := LowBin;
+  while Value <= HighBinBase do begin
+     GeomorphFilters.Add(LandParam + '>=' + IntToStr(Value) + ' AND ' + LandParam + '<' + IntToStr(Value + BinSize));
+     Labels.Add(LandParam + ' ' + IntToStr(Value) + '-' + IntToStr(Value + BinSize)+ '%');
+     Value := Value + BinSize;
+  end;
+  if (Value < 100) then begin
+     GeomorphFilters.Add(LandParam + '>' + IntToStr(Value));
+     Labels.Add(LandParam + '>' + IntToStr(Value) + '%');
+  end;
+  {$IfDef RecordDEMIXFilters}
+     WriteLineToDebugFile('Labels'); WriteStringListToDebugFile(Labels);
+     WriteLineToDebugFile('GeomorphFilters'); WriteStringListToDebugFile(GeomorphFilters);
+  {$EndIf}
 end;
 
 

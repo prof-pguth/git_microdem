@@ -3,7 +3,7 @@ object PetEditf: TPetEditf
   Top = 225
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = ' '
-  ClientHeight = 289
+  ClientHeight = 269
   ClientWidth = 487
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -179,7 +179,7 @@ object PetEditf: TPetEditf
     Left = 0
     Top = 28
     Width = 487
-    Height = 261
+    Height = 241
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -234,16 +234,13 @@ object PetEditf: TPetEditf
       GroupIndex = 1
       object Find1: TMenuItem
         Caption = '&Find ...'
-        OnClick = Find1Click
       end
       object FindNext1: TMenuItem
         Caption = 'Find &Next'
         ShortCut = 114
-        OnClick = FindNext1Click
       end
       object Replace1: TMenuItem
         Caption = '&Replace ...'
-        OnClick = Replace1Click
       end
     end
   end
@@ -258,17 +255,6 @@ object PetEditf: TPetEditf
     Filter = 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
     Left = 151
     Top = 79
-  end
-  object FindDialog1: TFindDialog
-    OnFind = Find
-    Left = 153
-    Top = 127
-  end
-  object ReplaceDialog1: TReplaceDialog
-    OnFind = Find
-    OnReplace = Replace
-    Left = 99
-    Top = 191
   end
   object FontDialog1: TFontDialog
     Font.Charset = DEFAULT_CHARSET

@@ -404,33 +404,26 @@ end;
 
 procedure LoadThisDEMIXTile(AreaName : shortstring; TileName : shortstring; OpenMaps : boolean = true);
 var
-   RefDEM,i : integer;
-   bb : sfBoundBox;
+   i : integer;
+   TileDir,fName : PathStr;
+   Grids : tStringList;
+   DEMs : array[0..25] of integer;
 begin
-   {$If Defined(RecordDEMIXLoad)} WriteLineToDebugFile('LoadThisDEMIXTile in, open DEMs=' + IntToStr(NumDEMDataSetsOpen)); {$EndIf}
-   GetDEMIXpaths(false);
-   LoadDEMIXReferenceDEMs(AreaName,RefDEM,OpenMaps);
-   if (TileName <> '') then bb := DEMIXtileBoundingBox(TileName);
-   for I := 1 to MaxDEMIXDEM do begin
-      if ValidDEM(RefDEMs[i]) then begin
-         {$If Defined(TrackDEMboundingBox)} DEMGlb[RefDEMs[i]].TrackDEMBoundingBox('LoadThisDEMIXTile');  {$EndIf}
-         DEMGlb[RefDEMs[i]].AreaName := StringReplace(DEMGlb[RefDEMs[i]].AreaName, AreaName, TileName,[rfIgnoreCase]);
-         DEMGlb[RefDEMs[i]].AreaName := StringReplace(DEMGlb[RefDEMs[i]].AreaName, '_1sec', '',[rfIgnoreCase]);
-         if (TileName <> '') and (DEMGlb[RefDEMs[i]].SelectionMap <> Nil) then DEMGlb[RefDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
-      end;
+   Grids := Nil;
+   TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileName + '_ref_test_dem\';
+   FindMatchingFiles(TileDir,'*.tif',Grids,0);
+   if (Grids.Count = 0) then begin
+      GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
+      TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileName + '_ref_test_dem\';
+      FindMatchingFiles(TileDir,'*.tif',Grids,0);
    end;
 
-   {$If Defined(RecordDEMIXLoad)} WriteLineToDebugFile('LoadThisDEMIXTile ref loaded, open DEMs=' + IntToStr(NumDEMDataSetsOpen)); {$EndIf}
-   UsingRefDEMs := RefDEMs;
-   LoadDEMIXCandidateDEMs(AreaName,true);
-   for I := 1 to MaxDEMIXDEM do begin
-      if ValidDEM(TestDEMs[i]) then begin
-         DEMGlb[TestDEMs[i]].AreaName := StringReplace(DEMGlb[TestDEMs[i]].AreaName, AreaName, TileName,[rfIgnoreCase]);
-         if (TileName <> '') and (DEMGlb[TestDEMs[i]].SelectionMap <> Nil) then DEMGlb[TestDEMs[i]].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
-      end;
+   for i := 0 to pred(Grids.Count) do begin
+      DEMs[i] := 0;
+      fName := Grids.Strings[i];
+      LoadNewDEM(DEMs[i],fName,true);
    end;
-   ShowDefaultCursor;
-   {$If Defined(RecordDEMIXLoad)} WriteLineToDebugFile('LoadThisDEMIXTile out, open DEMs=' + IntToStr(NumDEMDataSetsOpen)); {$EndIf}
+   Grids.Destroy;
 end;
 
 

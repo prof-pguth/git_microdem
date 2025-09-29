@@ -18,7 +18,7 @@ unit dem_nlcd;
    //{$Define TrackWaterMasking}  //generally not needed, but helped finding a bad LC100 tile
    //{$Define RecordNLCDLegend}
    //{$Define RecordBarGraphs}
-   {$Define RecordDEMIX}
+   //{$Define RecordDEMIX}
    //{$Define RecordBatch}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
@@ -78,8 +78,11 @@ const
    slcWater = 2;
    slcUrban = 3;
    slcBarren = 4;
+   slcOther = 5;
 
 function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
+function SimplifiedLandCoverFromGrid(LandCoverGrid : integer;  x,y : integer; var Value : float32) : integer;
+
 procedure SimplifyLandCoverGrid(DEM : integer);
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 procedure MarkWaterMissingInThisDEM(DEM : integer);
@@ -219,28 +222,47 @@ end;
 function ReclassifyLandCover(LandCoverGrid,Value : integer) : integer;
 begin
    Result := slcUndefined;
-   if (LandCoverGrid <> 0) then begin
+   if ValidDEM(LandCoverGrid) then begin
       if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = euGLCS_LC100) then begin
          if Value in [111..126] then Result := slcForest
          else if Value in [30,60,70] then Result := slcBarren
          else if Value in [50] then Result := slcUrban
-         else if Value in [80,200] then Result := slcWater;
+         else if Value in [80,200] then Result := slcWater
+         else Result := slcOther;
+      end
+      else if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = euWorldCover10m) then begin
+         if Value in [10] then Result := slcForest
+         else if Value in [30,60,70] then Result := slcBarren
+         else if Value in [50] then Result := slcUrban
+         else if Value in [80] then Result := slcWater
+         else Result := slcOther;
       end;
    end;
 end;
 
 
 function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
-var
-   z : float32;
 begin
    Result := slcUndefined;
-   if ValidDEM(LandCoverGrid) then begin
-      if DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,z) then begin
-         if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits = euGLCS_LC100) then begin
-            Result := ReclassifyLandCover(LandCoverGrid,round(z));
+   if (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits in [euGLCS_LC100,euWorldCover10m]) then begin
+      if ValidDEM(LandCoverGrid) then begin
+         if DEMGlb[LandCoverGrid].GetElevFromLatLongDegree(Lat,Long,Value) then begin
+            Result := ReclassifyLandCover(LandCoverGrid,round(Value));
          end;
       end;
+   end;
+end;
+
+function SimplifiedLandCoverFromGrid(LandCoverGrid : integer;  x,y : integer; var Value : float32) : integer;
+begin
+   Result := slcUndefined;
+   if ValidDEM(LandCoverGrid) and (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits in [euGLCS_LC100,euWorldCover10m]) then begin
+       if DEMGlb[LandCoverGrid].GetElevMetersOnGrid(x,y,Value) then begin
+          //if Value < 11 then begin
+             //Result := ReclassifyLandCover(LandCoverGrid,round(Value));
+          //end;
+          Result := ReclassifyLandCover(LandCoverGrid,round(Value));
+       end;
    end;
 end;
 
@@ -275,16 +297,14 @@ var
    Lat,Long : float32;
 begin
    Result := 0;
-{$IfDef July15Issue}
-{$Else}
    Lat := 0.5 * (bb.YMax + bb.YMin);
    Long := 0.5 * (bb.XMax + bb.XMin);
    LandCoverFName := GetLC10_fileName(Lat,Long);
    {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
    if FileExists(LandCoverFName) then begin
-      Result := GDALsubsetGridAndOpen(bb,true,'land_cover_',{LandCoverFName,}OpenMap);
+      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
       if ValidDEM(Result) then begin
-         DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
+         DEMGlb[Result].DEMHeader.ElevUnits := euWorldCover10m;
          if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.tif');
          DEMGlb[Result].SaveAsGeotiff(fName);
       end
@@ -293,9 +313,9 @@ begin
       end;
    end
    else begin
+      {$IfDef RecordDEMIX} writeLineToDebugFile('Missing Landcover=' + LandCoverfName); {$EndIf}
       if (not Silent) then MessageToContinue('Missing land cover file ' + LandCoverFName);
    end;
-{$EndIf}
 end;
 
 
@@ -676,6 +696,9 @@ begin
       else if (StrUtils.AnsiContainsText(fName,'WORLDDEMNEO') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euNeoEDM
       else if (StrUtils.AnsiContainsText(fName,'WORLDDEMNEO') and StrUtils.AnsiContainsText(fName,'FLM.TIF')) then LandCover := euNeoFLM
       else if (StrUtils.AnsiContainsText(fName,'TDM1_EDEM_') and StrUtils.AnsiContainsText(fName,'EDM.TIF')) then LandCover := euTANEDM
+      else if StrUtils.AnsiContainsText(fName,'GRCv1_L1_') then LandCover := euGRC_L1
+      else if StrUtils.AnsiContainsText(fName,'GRCv1_L2_') then LandCover := euGRC_L2
+      else if StrUtils.AnsiContainsText(fName,'GRCv1_L3_') then LandCover := euGRC_L3
       //else if StrUtils.AnsiContainsText(fName,'Sentinel-2_L2A_Scene_classification_map') then LandCover := euSent2SLC      //it is a 3 color scene and not land covers
       else if StrUtils.AnsiContainsText(fName,'LCMAP') then LandCover := euLCMAP;
    end;
@@ -706,6 +729,9 @@ var
          euGLC2000 : Result := 'GLC2000';
          euGLCS_LC100 : Result := 'GLCS-LC100';
          euSent2SLC : Result := 'L2A_scene_class';
+         euGRC_L1 : Result := 'GRCv1_L1';
+         euGRC_L2 : Result := 'GRCv1_L2';
+         euGRC_L3 : Result := 'GRCv1_L3';
 
          //landform classifications
             euMeybeck  : Result := 'MEYBECK';

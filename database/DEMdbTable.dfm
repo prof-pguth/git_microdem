@@ -582,8 +582,8 @@ object dbtablef: Tdbtablef
     OnTitleClick = DBGrid1TitleClick
   end
   object StatsPopupMenu1: TPopupMenu
-    Left = 208
-    Top = 168
+    Left = 216
+    Top = 176
     object Countuniquevalues1: TMenuItem
       Caption = 'Count unique values'
       OnClick = Countuniquevalues1Click
@@ -654,6 +654,10 @@ object dbtablef: Tdbtablef
       object Fieldpercentiles2: TMenuItem
         Caption = 'Field percentiles'
         OnClick = Fieldpercentiles2Click
+      end
+      object Cret1: TMenuItem
+        Caption = 'Create moments DB'
+        OnClick = Cret1Click
       end
     end
     object Fieldcorrelations1: TMenuItem
@@ -1330,10 +1334,6 @@ object dbtablef: Tdbtablef
     object Redistrict1: TMenuItem
       Caption = 'Redistrict'
       OnClick = Redistrict1Click
-    end
-    object Multiplegraphmatrix1: TMenuItem
-      Caption = 'Multiple graph matrix'
-      OnClick = Multiplegraphmatrix1Click
     end
     object DEMIX1: TMenuItem
       Caption = 'DEMIX'
@@ -2145,21 +2145,9 @@ object dbtablef: Tdbtablef
         Caption = 'Load test and reference DEMs for tile'
         OnClick = LoadtestandreferenceDEMs1Click
       end
-      object LoadNeoDEMs1: TMenuItem
-        Caption = 'Load Neo DEMs'
-        OnClick = LoadNeoDEMs1Click
-      end
-      object Loadmapsforthisarea1: TMenuItem
-        Caption = 'Load maps for this area'
-        OnClick = Loadmapsforthisarea1Click
-      end
       object CopDEMandLandcoverforthistile1: TMenuItem
         Caption = 'CopDEM and Land cover for this tile'
         OnClick = CopDEMandLandcoverforthistile1Click
-      end
-      object LoadCopDEMandLandcoverforarea1: TMenuItem
-        Caption = 'Load CopDEM and Landcover for area'
-        OnClick = LoadCopDEMandLandcoverforarea1Click
       end
     end
     object Insertnewrecordatdistancebearing1: TMenuItem
@@ -2528,6 +2516,10 @@ object dbtablef: Tdbtablef
       object AddDEMIXtileboundingbox1: TMenuItem
         Caption = 'Add DEMIX tile bounding box'
         OnClick = AddDEMIXtileboundingbox1Click
+      end
+      object AddDEMIXUTMtilename1: TMenuItem
+        Caption = 'Add DEMIX UTM tile name'
+        OnClick = AddDEMIXUTMtilename1Click
       end
       object AddUTMcoordfields1: TMenuItem
         Caption = 'Add UTM'
@@ -3451,7 +3443,7 @@ object dbtablef: Tdbtablef
     end
   end
   object FieldTitlePopupMenu7: TPopupMenu
-    Left = 208
+    Left = 224
     Top = 464
     object Plotwithcolorsfromthisfield1: TMenuItem
       Caption = 'Plot with colors from this field'
@@ -3618,6 +3610,10 @@ object dbtablef: Tdbtablef
           Caption = 'Translate from table'
           OnClick = ranslatefromtable1Click
         end
+        object Addstringtoendofeachrecord1: TMenuItem
+          Caption = 'Add string to end of each record'
+          OnClick = Addstringtoendofeachrecord1Click
+        end
         object Addfileextension1: TMenuItem
           Caption = 'Add file extension'
           OnClick = Addfileextension1Click
@@ -3737,7 +3733,7 @@ object dbtablef: Tdbtablef
     end
   end
   object DEMIXPopupMenu1: TPopupMenu
-    Left = 656
+    Left = 664
     Top = 472
     object OpenDEMIXgraphs1: TMenuItem
       Caption = 'Open DEMIX graphs'
@@ -3755,11 +3751,9 @@ object dbtablef: Tdbtablef
     end
     object Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem
       Caption = 'Graph by area, with average score for selected criteria'
-      OnClick = Graphbyareawithaveragescoreforselectedcriteria1Click
     end
     object Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem
       Caption = 'Graph by tile, with average score for selected criteria'
-      OnClick = Graphbytilewithaveragescoreforselectedcriteria1Click
     end
     object GraphSSIMFUVbyclustermeans1: TMenuItem
       Caption = 'Graph SSIM/FUV by cluster means'
@@ -3850,11 +3844,9 @@ object dbtablef: Tdbtablef
       end
       object Winpercentagebycriterion1: TMenuItem
         Caption = 'Win percentage by criterion'
-        OnClick = Winpercentagebycriterion1Click
       end
       object Winpercentagesbyarea1: TMenuItem
         Caption = 'Win percentages by area'
-        OnClick = Winpercentagesbyarea1Click
       end
     end
     object Modifythistable1: TMenuItem
@@ -3874,13 +3866,6 @@ object dbtablef: Tdbtablef
         Caption = 'Add best evaluation and range (max - min) for criterion and tile'
         OnClick = Evaluationrangeforcriterion1Click
       end
-      object CiompareCOPtorivals1: TMenuItem
-        Caption = 'Compare COP win/loss/tie to rivals'
-      end
-      object AddlatlongfieldstoDB1: TMenuItem
-        Caption = 'Add lat/long/country/area fields to DB'
-        OnClick = AddlatlongfieldstoDB1Click
-      end
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
@@ -3893,20 +3878,12 @@ object dbtablef: Tdbtablef
         Caption = 'Add IMAGE field for difference distribution graphs'
         OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
       end
-      object AddcolorsforFULLU120U80U101: TMenuItem
-        Caption = 'Add colors for FULL, U120, U80, U10'
-        OnClick = AddcolorsforFULLU120U80U101Click
-      end
       object N57: TMenuItem
         Caption = '-'
       end
       object Removerowsmissinganyevaluations1: TMenuItem
         Caption = 'Remove rows missing any evaluations'
         OnClick = Removerowsmissinganyevaluations1Click
-      end
-      object RemoveSCRfields1: TMenuItem
-        Caption = 'Remove _SCR and _WIN  and COP_ fields'
-        OnClick = RemoveSCRfields1Click
       end
       object N50: TMenuItem
         Caption = '-'
@@ -3934,7 +3911,7 @@ object dbtablef: Tdbtablef
         OnClick = Filterfor999valuesinanyevaluation1Click
       end
       object Filterfor0valuesinanyevaluation1: TMenuItem
-        Caption = 'Filter for mmissing evaluations'
+        Caption = 'Filter for missing evaluations'
         OnClick = Filterfor0valuesinanyevaluation1Click
       end
       object Filterforevaluations11: TMenuItem
@@ -3960,16 +3937,8 @@ object dbtablef: Tdbtablef
     object Inventory1: TMenuItem
       Caption = 'Inventory and data summary'
       object InventoryFUVSSIMcriteriainDB1: TMenuItem
-        Caption = 'Inventory FUV/SSIM criteria in DB'
+        Caption = 'Inventory criteria in DB by area'
         OnClick = InventoryFUVSSIMcriteriainDB1Click
-      end
-      object DEMIXtileinvertory1: TMenuItem
-        Caption = 'DEMIX tile invertory'
-        OnClick = DEMIXtileinvertory1Click
-      end
-      object DEMIXtilesummary1: TMenuItem
-        Caption = 'DEMIX tile characteristic summary (one record per tile)'
-        OnClick = DEMIXtilesummary1Click
       end
       object N1degreetilestocoverrecordsintable1: TMenuItem
         Caption = 'List of 1 degree tiles to cover records in table'
@@ -4061,17 +4030,14 @@ object dbtablef: Tdbtablef
     end
     object Graphforatile1: TMenuItem
       Caption = 'Graph by tile, with all difference distribution statistics'
-      OnClick = Graphforatile1Click
     end
     object FUVbycriteriaandtileslopecategories1: TMenuItem
       Caption = 'FUV by criteria and tile characteristics'
       object GraphbyDEM1: TMenuItem
         Caption = 'Graph by DEM'
-        OnClick = GraphbyDEM1Click
       end
       object Grandbytilecharacterisitic1: TMenuItem
         Caption = 'Grand by tile characterisitic'
-        OnClick = Grandbytilecharacterisitic1Click
       end
     end
     object Comparerankingswithdifferentcriteria1: TMenuItem
@@ -4111,6 +4077,13 @@ object dbtablef: Tdbtablef
     object Wins1: TMenuItem
       Caption = 'Wins and Ties'
       Enabled = False
+    end
+    object N52: TMenuItem
+      Caption = '-'
+    end
+    object FindmisplacedGEDTMv12testDEMs1: TMenuItem
+      Caption = 'Misplaced or bad elevation units GEDTM v1.2 test DEMs'
+      OnClick = FindmisplacedGEDTMv12testDEMs1Click
     end
   end
   object SingleFieldArithmeticPopupMenu: TPopupMenu

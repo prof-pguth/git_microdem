@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1041
+  ClientHeight = 1061
   ClientWidth = 2404
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 2404
-    Height = 1014
+    Height = 1034
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,8 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitWidth = 2398
-    ExplicitHeight = 997
     object Image1: TImage
       Left = 3
       Top = -247
@@ -209,13 +207,11 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 969
+      Top = 989
       Width = 2400
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 952
-      ExplicitWidth = 2394
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -339,7 +335,6 @@ object MapForm: TMapForm
     Align = alTop
     TabOrder = 1
     OnMouseDown = Panel1MouseDown
-    ExplicitWidth = 2398
     object AnnotateSpeedButton1: TSpeedButton
       Left = 31
       Top = -4
@@ -1521,7 +1516,7 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 240
+    Left = 248
     Top = 58
     object File1: TMenuItem
       Caption = '&File'
@@ -1768,7 +1763,7 @@ object MapForm: TMapForm
           end
         end
         object Pickmode1: TMenuItem
-          Caption = 'Pick DEM/grid bits'
+          Caption = 'Pick DEM/grid bits (elevation precision)'
           GroupIndex = 1
           object Bytes1: TMenuItem
             Caption = 'Bytes'
@@ -1787,15 +1782,29 @@ object MapForm: TMapForm
             OnClick = Floatingpoint1Click
           end
         end
-        object SaveasPixelispoint1: TMenuItem
-          Caption = 'Save as Pixel-is-point'
+        object Pixelischanges1: TMenuItem
+          Caption = 'Pixel-is changes'
           GroupIndex = 1
-          OnClick = SaveasPixelispoint1Click
-        end
-        object SaveasPixelisarea1: TMenuItem
-          Caption = 'Save as Pixel-is-area'
-          GroupIndex = 1
-          OnClick = SaveasPixelisarea1Click
+          object SaveasPixelispoint1: TMenuItem
+            Caption = 'Save as Pixel-is-point with corner shift'
+            GroupIndex = 1
+            OnClick = SaveasPixelispoint1Click
+          end
+          object SaveasPixelisarea1: TMenuItem
+            Caption = 'Save as Pixel-is-area with corner shift'
+            GroupIndex = 1
+            OnClick = SaveasPixelisarea1Click
+          end
+          object SetasPixelispointwithnocornershift1: TMenuItem
+            Caption = 'Set as Pixel-is-point with no corner shift'
+            GroupIndex = 1
+            OnClick = SetasPixelispointwithnocornershift1Click
+          end
+          object SetasPixelisareawithnocornershift1: TMenuItem
+            Caption = 'Set as Pixel-is-area with no corner shift'
+            GroupIndex = 1
+            OnClick = SetasPixelisareawithnocornershift1Click
+          end
         end
         object N28: TMenuItem
           Caption = '-'
@@ -2093,10 +2102,19 @@ object MapForm: TMapForm
           Caption = '-'
           GroupIndex = 1
         end
-        object N87: TMenuItem
+        object EDTMGEDTM1: TMenuItem
           Caption = 'EDTM/GEDTM'
           GroupIndex = 1
-          OnClick = N87Click
+          object N87: TMenuItem
+            Caption = 'All versions'
+            GroupIndex = 1
+            OnClick = N87Click
+          end
+          object Currentversion121: TMenuItem
+            Caption = 'Current version 1.2'
+            GroupIndex = 1
+            OnClick = Currentversion121Click
+          end
         end
       end
       object ViewExifimages1: TMenuItem
@@ -2697,63 +2715,67 @@ object MapForm: TMapForm
           OnClick = Genericdifference1Click
         end
       end
-      object Verticaldatumshift1: TMenuItem
-        Caption = 'Vertical datum shift'
+      object Verticaldatum1: TMenuItem
+        Caption = 'Vertical datum'
         GroupIndex = 1
-        object Usingtransformgrids1: TMenuItem
-          Caption = 'Using transform grids'
-          object WGS84elllipsoidtoEGM200081: TMenuItem
-            Caption = 'WGS84 elllipsoid to EGM2008'
-            OnClick = WGS84elllipsoidtoEGM200081Click
+        object Verticaldatumshift1: TMenuItem
+          Caption = 'Vertical datum shift'
+          GroupIndex = 1
+          object Usingtransformgrids1: TMenuItem
+            Caption = 'Using transform grids'
+            object WGS84elllipsoidtoEGM200081: TMenuItem
+              Caption = 'WGS84 elllipsoid to EGM2008'
+              OnClick = WGS84elllipsoidtoEGM200081Click
+            end
+            object EGM2008toWGS84ellipsoid1: TMenuItem
+              Caption = 'EGM2008 to WGS84 ellipsoid'
+              OnClick = EGM2008toWGS84ellipsoid1Click
+            end
+            object EGM1996toEGM20081: TMenuItem
+              Caption = 'EGM96 to EGM2008 '
+              OnClick = EGM1996toEGM20081Click
+            end
+            object LocaddatumtoEGM20081: TMenuItem
+              Caption = 'Locad datum to EGM2008'
+              OnClick = LocaddatumtoEGM20081Click
+            end
           end
-          object EGM2008toWGS84ellipsoid1: TMenuItem
-            Caption = 'EGM2008 to WGS84 ellipsoid'
-            OnClick = EGM2008toWGS84ellipsoid1Click
+          object Specifyxyzshifts1: TMenuItem
+            Caption = 'Specify x,y,z shifts'
+            OnClick = Specifyxyzshifts1Click
           end
-          object EGM1996toEGM20081: TMenuItem
-            Caption = 'EGM96 to EGM2008 '
-            OnClick = EGM1996toEGM20081Click
-          end
-          object LocaddatumtoEGM20081: TMenuItem
-            Caption = 'Locad datum to EGM2008'
-            OnClick = LocaddatumtoEGM20081Click
+          object UsingVDATUM1: TMenuItem
+            Caption = 'Using GDAL to WGS84 and EGM2008'
+            OnClick = UsingVDATUM1Click
           end
         end
-        object Specifyxyzshifts1: TMenuItem
-          Caption = 'Specify x,y,z shifts'
-          OnClick = Specifyxyzshifts1Click
-        end
-        object UsingVDATUM1: TMenuItem
-          Caption = 'Using GDAL to WGS84 and EGM2008'
-          OnClick = UsingVDATUM1Click
-        end
-      end
-      object Assignverticaldatum1: TMenuItem
-        Caption = 'Assign vertical datum'
-        GroupIndex = 1
-        object NAVD881: TMenuItem
-          Caption = 'NAVD88'
-          OnClick = NAVD881Click
-        end
-        object EGM2008: TMenuItem
-          Caption = 'EGM2008'
-          OnClick = EGM2008Click
-        end
-        object WGS84elllipsoid1: TMenuItem
-          Caption = 'WGS84 elllipsoid'
-          OnClick = WGS84elllipsoid1Click
-        end
-        object MainlandSpain1: TMenuItem
-          Caption = 'Mainland Spain'
-          OnClick = MainlandSpain1Click
-        end
-        object Other1: TMenuItem
-          Caption = 'Other via EPSG'
-          OnClick = Other1Click
-        end
-        object Undefined2: TMenuItem
-          Caption = 'Undefined'
-          OnClick = Undefined2Click
+        object Assignverticaldatum1: TMenuItem
+          Caption = 'Assign vertical datum'
+          GroupIndex = 1
+          object NAVD881: TMenuItem
+            Caption = 'NAVD88'
+            OnClick = NAVD881Click
+          end
+          object EGM2008: TMenuItem
+            Caption = 'EGM2008'
+            OnClick = EGM2008Click
+          end
+          object WGS84elllipsoid1: TMenuItem
+            Caption = 'WGS84 elllipsoid'
+            OnClick = WGS84elllipsoid1Click
+          end
+          object MainlandSpain1: TMenuItem
+            Caption = 'Mainland Spain'
+            OnClick = MainlandSpain1Click
+          end
+          object Other1: TMenuItem
+            Caption = 'Other via EPSG'
+            OnClick = Other1Click
+          end
+          object Undefined2: TMenuItem
+            Caption = 'Undefined'
+            OnClick = Undefined2Click
+          end
         end
       end
       object Horizontalshift1: TMenuItem
@@ -5433,20 +5455,6 @@ object MapForm: TMapForm
         Caption = 'ESA World Cover 10 m'
         OnClick = ESAWorldCover10m2Click
       end
-      object N54: TMenuItem
-        Caption = '-'
-      end
-      object N55: TMenuItem
-        Caption = 'DEMIX candidate DEMs in EGM2008'
-        object COPandALOS1: TMenuItem
-          Caption = 'COP and ALOS'
-          OnClick = COPandALOS1Click
-        end
-        object All61: TMenuItem
-          Caption = 'All 6'
-          OnClick = All61Click
-        end
-      end
     end
     object Export1: TMenuItem
       Caption = 'Export'
@@ -5533,6 +5541,10 @@ object MapForm: TMapForm
       object DEMsatpoint1: TMenuItem
         Caption = 'Geographic tiled DEM/grid at point'
         OnClick = DEMsatpoint1Click
+      end
+      object DEMIXtilenames1: TMenuItem
+        Caption = 'DEMIX tile names'
+        OnClick = DEMIXtilenames1Click
       end
       object Geoid1: TMenuItem
         Caption = 'EGM Geoid values'

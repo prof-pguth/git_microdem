@@ -15,7 +15,7 @@
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordDEMIX}
-      //{$Define RecordDBsort}
+      {$Define RecordDBsort}
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
       //{$Define RecordCloseDB}
@@ -34,6 +34,7 @@
       //{$Define LogModuleCreate}
       //{$Define RecordIcesat}
       //{$Define RecordPlotFabric}
+      {$Define RecordHistogram}
 
       //{$Define RecordFieldStatistics}
       //{$Define RecordOpenDataBase}
@@ -130,10 +131,10 @@ uses
    {$EndIf}
 //end DB declarations
 
+   iniFiles,
    System.UITypes,System.Classes,System.Math, System.UIConsts,System.Threading,
    StrUtils,SysUtils,
    ClipBrd,
-   iniFiles,
 
    {$IfDef VCL}
       VCL.Graphics,VCL.Buttons,VCL.StdCtrls,VCL.Controls,Forms,dbGrids,
@@ -629,7 +630,7 @@ type
          procedure AddAndFillFieldFromDEM(AddDEM : tAddDEM; fName : PathStr = ''; DecimalsToUse : integer = 6);
          procedure DisplayFieldStatistics(WantedField : ShortString);
          function GetFieldStatistics(WantedField : ShortString) : tMomentVar;
-         function GetFieldPercentiles(WantedField : ShortString) : floatarray1000;
+        // function GetFieldPercentiles(WantedField : ShortString) : tFloatArray1000;
          function RGBColorFromThreeNumericFields : tColor;
          procedure CountFieldsWithSubstring(FieldName : shortString);
          procedure CloseDBtableF(Reopen : boolean = false);
@@ -638,8 +639,8 @@ type
      //graphs
          procedure HistogramByCategory(WantXField,FilterField : shortstring; AutoRescale : boolean; Summary : tStringList = nil);
          function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
-         function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
-         function CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean): TThisBaseGraph;
+         function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean) : TThisBaseGraph; //MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+         function CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean) : TThisBaseGraph;
 
          procedure SingleRose(AddTitle : shortString; Field1,Field2 : ShortString);
          function WaveFormGraph(SingleGraph : boolean) : tThisBaseGraph;
@@ -650,6 +651,7 @@ type
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
          function ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
          procedure MonthlyWindPlotCurrentPoint;
+
 
      {$IfDef ExGeography}
      {$Else}
@@ -701,7 +703,6 @@ type
 
 procedure InitializeDEMdbs;
 
-
       procedure LoadShapeFileGroup(MapOwner : tMapForm; fName : PathStr = '');
       procedure UpdateShapeFileGroup;
       procedure LegendFromShapeFileGroup(MapOwner : tMapForm; FName : PathStr);
@@ -735,14 +736,10 @@ procedure AdjustGazFeatureName(var FeatureName : ShortString);
 
 procedure MakeLinesFromPoints(GISDataBase : TGISdataBaseModule; fName : PathStr = ''; ShapeTypeWanted : integer = -99; Thin : integer = -1);
 
-procedure DoKMeansClustering(DBonTable : integer);
-procedure ClusterMapLocation(DBonTable : integer; TheFilters : tStringList = nil);
-procedure MapsByClusterAndDEM(DBonTable : integer);
 
-function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
+function SortDataBase(DBOnTable : integer; Ascending : boolean; OpenTable : boolean = true; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = '');
 
-function MakeFiltersForCluster(DBonTable : integer; IncludeBaseFilter : boolean) : tStringList;
 
 {$IfDef IncludeRiverNetworks}
    procedure LoadNodeTableToMemory(NodeTable : tMyData; var NumNodes : integer; var RiverNetwork : pRiverNetwork; ReadLinks,ReadCont,ReadOrders : boolean);
@@ -752,6 +749,7 @@ function MakeFiltersForCluster(DBonTable : integer; IncludeBaseFilter : boolean)
 const
    IDRecScreenTolerance : integer = 8;
    IDRecScreenIncr : integer = 1;
+   MDcreatedCSV : boolean = false;
 var
    GISdb : array[1..MaxDataBase] of TGISdataBaseModule;
    DBPlotOrder :  array[1..MaxDataBase] of byte;
@@ -912,7 +910,7 @@ begin
 end;
 
 
-function SortDataBase(DBOnTable : integer; Ascending : boolean; aField : shortString = ''; OutputDir : PathStr = '') : integer;
+function SortDataBase(DBOnTable : integer; Ascending : boolean; OpenTable : boolean = true; aField : shortString = ''; OutputDir : PathStr = '') : integer;
 var
    GridForm : tGridForm;
    Report : tStringList;
@@ -927,11 +925,9 @@ begin
 
    NeedRestore := false;
    if (GISDB[DBonTable].dbtablef <> Nil) and GISDB[DBonTable].dbtablef.AnyHiddenColumns then begin
-      //If not AnswerIsYes('Sort without hidden fields') then begin
-         GISdb[DBonTable].dbTableF.SaveHiddenColumns;
-         GISdb[DBonTable].dbTableF.UnHideColumns;
-         NeedRestore := true;
-      //end;
+      GISdb[DBonTable].dbTableF.SaveHiddenColumns;
+      GISdb[DBonTable].dbTableF.UnHideColumns;
+      NeedRestore := true;
    end;
 
    if (GISDB[DBonTable].MyData.GetFieldType(aField) = ftString) then ft := 0 else ft := 2;
@@ -980,7 +976,7 @@ var
    NewDB : integer;
    SortedFName : PathStr;
 begin
-   NewDB := SortDataBase(DBOnTable,Ascending,aField);  //,OutputDir);
+   NewDB := SortDataBase(DBOnTable,Ascending,true,aField);  //,OutputDir);
    SortedFName := GISdb[NewDB].DBfullName;
    CloseAndNilNumberedDB(NewDB);
    GISdb[DBonTable].BackupDB;
@@ -2266,35 +2262,13 @@ end;
          end;
 
 
-         procedure TGISdataBaseModule.StartVATEdits;
-         begin
-            dbTablef.BitBtn9.Visible := true;
-            dbTablef.BitBtn23.Visible := true;
-            dbTablef.CheckBox1.Checked := true;
-            dbTablef.VATEdit := true;
-            dbTablef.Editrecordsingrid1Click(Nil);
-         end;
-
-
- function TGISdataBaseModule.GetFieldPercentiles(WantedField : ShortString) : floatarray1000;
-{$IfDef July15Issue}
-begin
-{$Else}
- var
-    NPts,i,Missing : int64;
-    Minz,MaxZ : float64;
-    zvs : ^bfarray32;
+ procedure TGISdataBaseModule.StartVATEdits;
  begin
-    New(zvs);
-    GetFieldValuesInArrayLinkPossible(WantedField,zvs^,Npts,Missing,MinZ,MaxZ);
-    Petmath.HeapSort(NPts,zvs^);
-    Result[0] := MinZ;
-    Result[1000] := MaxZ;
-    for I := 1 to 999 do begin
-       Result[i] := zvs^[round(0.001 * i * Npts)];
-    end;
-    Dispose(zvs);
-{$EndIf}
+    dbTablef.BitBtn9.Visible := true;
+    dbTablef.BitBtn23.Visible := true;
+    dbTablef.CheckBox1.Checked := true;
+    dbTablef.VATEdit := true;
+    dbTablef.Editrecordsingrid1Click(Nil);
  end;
 
 
@@ -2381,7 +2355,6 @@ begin
    else Result := -9999;
    ShowStatus;
 end;
-
 
          procedure TGISdataBaseModule.DisplayFieldStatistics(WantedField : ShortString);
          var
@@ -3896,7 +3869,6 @@ function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTabl
          {$IfDef RecordFullOpenDB} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenGISDataBase out ' + fName); {$EndIf}
       end;
 
-
 var
    i : integer;
 begin
@@ -4491,7 +4463,7 @@ begin
          if MyData.FieldExists('DEPTH_M') then zf := 'DEPTH_M'
          else zf := 'ELEVATION';
       end;
-      
+
       if XYZ or s3D then NewShapeType := 11 else NewShapeType := 1;
 
       ShapeFileCreator := tShapeFileCreation.Create(WGS84DatumConstants,fName,false,NewShapeType,DoSHP);
@@ -5261,7 +5233,7 @@ begin
           NewFile := Dir + bName + DefaultDBExt;
           if AutoOverwriteDBF or (not FileExists(NewFile)) or AnswerIsYes(NewFile + ' already exists; overwrite') then begin
              CSVFileImportToDB(FileWanted);
-             WasCSVImport := true;
+             WasCSVImport := not MDcreatedCSV;
           end;
           FileWanted := Dir + bName + DefaultDBExt;
           if Not FileExists(FileWanted) then begin
@@ -5337,11 +5309,8 @@ begin
 
      if CheckDeleteUnusedFields then Deleteunusedfields;
 
-
      DesiredDBMode := dbmyDefault;
-     if ZeroRecordsAllowed then begin
-     end
-     else if (MyData.RecordCount = 0) then begin
+     if (MyData.RecordCount = 0) and (not ZeroRecordsAllowed) then begin
         if HeavyDutyProcessing or AnswerIsYes('No records in ' + dbFullName + '; Delete file') then begin
            MyData.Destroy;
            DeleteShapeFile(dbFullName);
@@ -5352,26 +5321,15 @@ begin
      end;
      ZeroRecordsAllowed := false;
 
-     {$IfDef VCL}
-         if MyData.FieldExists('ORDER') then RenameField('ORDER','PLOT_ORDER');
-     {$EndIf}
-
      if WasCSVImport then begin
         {$IfDef RecordFullOpenDB} WriteLineToDebugFile('TrimAllStringFields'); {$EndIf}
         ShowHourglassCursor;
         MyData.TrimAllStringFields;
      end;
-  {$IF Defined(ExIceSat)}
-  {$Else}
-     if IsIcesat and (not MyData.FieldExists('ICESAT_GRD')) and AnswerIsYes('Clean up ICESat-2 import') then begin
-        {$IfDef RecordIcesat} WriteLineToDebugFile('Call IcesatProcessCanopy'); {$EndIf}
-        IcesatProcessCanopy(DBnumber,false);
-        {$IfDef RecordIcesat} WriteLineToDebugFile('Return from IcesatProcessCanopy'); {$EndIf}
-     end;
-  {$EndIf}
+     MDcreatedCSV := false;
+
 
      MyData.AssignEmpSource(EmpSource);
-
      if ItsAShapeFile then begin
        Retry:;
         CheckShapeFileNameForSpaces(FileWanted);
@@ -5705,7 +5663,6 @@ end;
          dbTablef.DBonTable := 0;
          Action := caFree;
          dbTablef.FormClose(nil,Action);
-         //dbTablef.Destroy;
          dbTablef := Nil;
          {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISdataBaseModule.CloseDBtableF done'); {$EndIf}
       end;
@@ -5717,8 +5674,6 @@ end;
 
 
 function TGISdataBaseModule.CloseDataBase : boolean;
-//var
-   //i : integer;
 begin
    {$IfDef RecordCloseDB} WriteLineToDebugFile('TGISDataBase.CloseDataBase, ' + dbName); {$EndIf}
    if not (WMDEM.ProgramClosing) then begin
@@ -5946,7 +5901,7 @@ var
    end;
 
 
-begin
+begin {TGISdataBaseModule.FieldRange}
    {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange in, field=' + Field); {$EndIf}
    ShortName := Field;
    Linked := LinkedField(ShortName) and (LinkRangeTable <> Nil);
@@ -5970,7 +5925,8 @@ begin
    end;
    EmpSource.Enabled := true;
    {$IfDef RecordSym} WriteLineToDebugFile('TGISdataBaseModule.FieldRange out, field=' + Field + '  min=' + RealToString(Min,-12,-2) + ' to ' + '  max=' + RealToString(Max,-12,-2)); {$EndIf}
-end;
+end {TGISdataBaseModule.FieldRange};
+
 
 
 initialization

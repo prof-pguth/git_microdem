@@ -167,7 +167,7 @@ type
          procedure DoSetShaderVariable(const aName : String; const matrix : TMatrix3D); override;
 
          constructor CreateFromWindow(const aParent : TWindowHandle; const aWidth, aHeight : Integer;
-                                      const aMultisample : TMultisample; const aDepthStencil : Boolean); override;
+                                      const aMultisample : TMultisample; const aDepthStencil : Boolean); virtual;
          constructor CreateFromTexture(const aTexture : TTexture; const aMultisample : TMultisample;
                                        const aDepthStencil : Boolean); override;
 

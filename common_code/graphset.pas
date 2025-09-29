@@ -355,7 +355,7 @@ procedure TGraphSettingsForm.BitBtn3Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to 15 do begin
+   for i := 0 to 15 do begin
       OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size + 1;
    end;
    inc(MDDef.DemixSymSize);
@@ -366,7 +366,7 @@ procedure TGraphSettingsForm.BitBtn4Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to 15 do begin
+   for i := 0 to 15 do begin
       if (OwningGraph.GraphDraw.Symbol[i].Size) > 0 then OwningGraph.GraphDraw.Symbol[i].Size := OwningGraph.GraphDraw.Symbol[i].Size - 1;
    end;
    dec(MDDef.DemixSymSize);
@@ -388,7 +388,7 @@ procedure TGraphSettingsForm.BitBtn7Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to 255 do begin
+   for i := 0 to 255 do begin
       OwningGraph.GraphDraw.LineSize256[i] := OwningGraph.GraphDraw.LineSize256[i] + 1;
    end;
    RedrawSpeedButton12Click(Sender);
@@ -398,7 +398,7 @@ procedure TGraphSettingsForm.BitBtn8Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to 255 do begin
+   for i := 0 to 255 do begin
       if (OwningGraph.GraphDraw.LineSize256[i] > 0) then OwningGraph.GraphDraw.LineSize256[i] := OwningGraph.GraphDraw.LineSize256[i] - 1;
    end;
    RedrawSpeedButton12Click(Sender);

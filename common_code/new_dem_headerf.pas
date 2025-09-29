@@ -112,8 +112,8 @@ procedure  TDEMHeaderForm.WriteValues;
 begin
    Edit1.Text := RealToString(EditHeadRec.DEMxSpacing,-24,-12);
    Edit2.Text := RealToString(EditHeadRec.DEMySpacing,-24,-12);
-   Edit3.Text := RealToString(EditHeadRec.DEMSWCornerX,-24,-12);
-   Edit4.Text := RealToString(EditHeadRec.DEMSWCornerY,-24,-12);
+   Edit3.Text := RealToString(EditHeadRec.SWCornerX,-24,-12);
+   Edit4.Text := RealToString(EditHeadRec.SWCornerY,-24,-12);
    Edit8.Text := RealToString(EditHeadRec.MaxElev,-18,-6);
    Edit9.Text := RealToString(EditHeadRec.MinElev,-18,-6);
 end;
@@ -244,7 +244,7 @@ procedure TDEMHeaderForm.UpdateChoices;
 begin
    BitBtn2.Enabled := Editable and (EditHeadRec.DEMUsed = ArcSecDEM);
    if (EditHeadRec.DEMUsed = ArcSecDEM) then begin
-      Label7.Caption := LatLongDegreeToString(EditHeadRec.DEMSWCornerY,EditHeadRec.DEMSWCornerX,MDdef.OutPutLatLongMethod);
+      Label7.Caption := LatLongDegreeToString(EditHeadRec.SWCornerY,EditHeadRec.SWCornerX,MDdef.OutPutLatLongMethod);
    end
    else Label7.Caption := '';
 end;
@@ -263,12 +263,12 @@ end;
 
 procedure TDEMHeaderForm.Edit3Click(Sender: TObject);
 begin
-   CheckEditString(Edit3.Text,EditHeadRec.DEMSWCornerX);
+   CheckEditString(Edit3.Text,EditHeadRec.SWCornerX);
 end;
 
 procedure TDEMHeaderForm.Edit4Change(Sender: TObject);
 begin
-    CheckEditString(Edit4.Text,EditHeadRec.DEMSWCornerY);
+    CheckEditString(Edit4.Text,EditHeadRec.SWCornerY);
 end;
 
 procedure TDEMHeaderForm.Edit5Change(Sender: TObject);
@@ -309,15 +309,15 @@ procedure TDEMHeaderForm.BitBtn2Click(Sender: TObject);
 var
    Lat,Long : float64;
 begin
-   {$IfDef RecordEditProblems} WriteLineToDebugFile('Original SW corner: ' + LatLongDegreeToString(EditHeadRec.DEMSWCornerY,EditHeadRec.DEMSWCornerX,DecMinutes)); {$EndIf}
-   Long := EditHeadRec.DEMSWCornerX;
-   Lat := EditHeadRec.DEMSWCornerY;
+   {$IfDef RecordEditProblems} WriteLineToDebugFile('Original SW corner: ' + LatLongDegreeToString(EditHeadRec.SWCornerY,EditHeadRec.SWCornerX,DecMinutes)); {$EndIf}
+   Long := EditHeadRec.SWCornerX;
+   Lat := EditHeadRec.SWCornerY;
    GetLatLongDefaultNoDatum('Lower left (SW) corner',Lat,Long);
-   EditHeadRec.DEMSWCornerX := Long;
-   EditHeadRec.DEMSWCornerY := Lat;
-   Edit3.Text := RealToString(EditHeadRec.DEMSWCornerX,-24,-12);
-   Edit4.Text := RealToString(EditHeadRec.DEMSWCornerY,-24,-12);
-   {$IfDef RecordEditProblems}  WriteLineToDebugFile('Selected SW corner: ' + LatLongDegreeToString(EditHeadRec.DEMSWCornerY,EditHeadRec.DEMSWCornerX,DecMinutes));  {$EndIf}
+   EditHeadRec.SWCornerX := Long;
+   EditHeadRec.SWCornerY := Lat;
+   Edit3.Text := RealToString(EditHeadRec.SWCornerX,-24,-12);
+   Edit4.Text := RealToString(EditHeadRec.SWCornerY,-24,-12);
+   {$IfDef RecordEditProblems}  WriteLineToDebugFile('Selected SW corner: ' + LatLongDegreeToString(EditHeadRec.SWCornerY,EditHeadRec.SWCornerX,DecMinutes));  {$EndIf}
    UpdateChoices;
 end;
 

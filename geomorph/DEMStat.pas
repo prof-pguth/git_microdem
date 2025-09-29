@@ -27,7 +27,9 @@ unit DEMStat;
       //{$Define RecordDEMIX_colors}
       //{$Define RecordComparisons}
       //{$Define RecordSSIM}
-      //{$Define TrackCovariance}
+      {$Define TrackCovariance}
+      {$Define TrackCovarianceFull}
+      {$Define RecordCovarianceFail}
       //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
       //{$Define RecordDEMIXTimeCriterion}
@@ -44,7 +46,6 @@ unit DEMStat;
       //{$Define RecordKappa}
       //{$Define RecordDEMIXFull}
       //{$Define TrackPixelIs}
-      //{$Define RecordCovarianceFail}
       //{$Define RecordDEMIXSSIMGrid}
       //{$Define RepeatProblematicComputations}  //put in breakpoint, and then follow debugger but may have issues
       //{$Define RecordCovariance}
@@ -131,8 +132,8 @@ type
       procedure AspectDistributionByAlgorithm(WhichDEM : Integer; GridLimits : tGridLimits);
 
       function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;  inline;
-      function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
-      function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
+      function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; TrackFailure : boolean = false) : float64;
+      function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer; TrackFailure : boolean = false) : float64;
 
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
       procedure MultipleElevationSlopePlots;
@@ -155,7 +156,7 @@ type
       procedure MultipleHistogramPrep(Histogram : TThisBaseGraph);
 
       procedure CalculateGrainProfile(MapForm : tMapForm; DEMonMap : integer; Lat1,Long1,Lat2,Long2 : float64);
-      function IwashuriPikeColor(Slope,Convexity,Texture : float64; var TerClass : integer) : tPlatformColor;  //inline;
+      function IwahashiiPikeColor(Slope,Convexity,Texture : float64; var TerClass : integer) : tPlatformColor;  //inline;
       function IwashuriPikeCat(Slope,Convexity,Texture : float64) : integer; //inline;
       procedure IandPLegend(pc : array of float64);
 
@@ -209,7 +210,7 @@ type
 
    procedure CloudSummaryGlobalDEMs(DB : integer);
    function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : shortstring) : TThisbasegraph;
- procedure ElevationSlopePlotCompareDEMs;
+   procedure ElevationSlopePlotCompareDEMs;
    procedure LandCoverSummary;
 
    procedure GridsByRegionSize(CurDEM : integer; GridCh : char);
@@ -357,7 +358,6 @@ begin
 end;
 
 
-
 procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = nil);
 label
    Restart;
@@ -396,11 +396,9 @@ var
 
       function GraphPlot(Graph : GraphType) : TThisBaseGraph;
       var
-         //Which,
          x,n,CurDEM : integer;
          rfile,rfile2,rfile3 : file;
          v       : tGraphPoint32;
-         //MenuStr,
          TStr,bsString : ShortString;
       begin
          if (Graph in [AspectRose]) then begin
@@ -457,7 +455,6 @@ var
                             end;
              end {case};
 
-            //Result.GraphDraw.LegendList := tStringList.Create;
             Result.GraphDraw.SetShowAllLines(true);
             Result.GraphDraw.SetShowAllPoints(false);
             n := 0;
@@ -466,14 +463,13 @@ var
                   Memo.Lines.Add(TimeToStr(Now) + '  ' + DEMGlb[CurDEM].AreaName);
                   Application.ProcessMessages;
                end;
-               //Result.GraphDraw.LegendList.Add(DEMGlb[CurDEM].AreaName);
                Result.OpenDataFile(rfile,DEMGlb[CurDEM].AreaName);
                Result.GraphDraw.FileColors256[CurDEM] := ConvertTColorToPlatformColor(WinGraphColors(CurDEM));
 
                if DoingDEMIXnow then begin
                   LoadDEMIXnames;
                   Result.GraphDraw.FileColors256[CurDEM] := DEMIXColorFromDEMName(DEMGlb[CurDEM].AreaName);
-               {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorStringFromPlatformColor(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
+                  {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorStringFromPlatformColor(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
                end;
 
                if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
@@ -1145,7 +1141,7 @@ begin
            GridLimits.XGridHigh := x + MDDef.LagSearchRadius;
            GridLimits.YGridLow := y - MDDef.LagSearchRadius;
            GridLimits.YGridHigh := y + MDDef.LagSearchRadius;
-           DEMGlb[MainDEM].ComputeMissingDataPercentage(GridLimits,Missing);
+           Missing := DEMGlb[MainDEM].ComputeMissingDataPercentage(GridLimits);
            if (Missing < 25) then begin
               Lag_and_Shift(0,0,MainDEM,SubDEM,GridLimits,NPts,xLag,YLag,MaxR,NoLagR,zrange,AvgSlope,BestA,BestB);
               DEMGlb[MainDEM].DEMGridToLatLongDegree(x,y,Lat,Long);
@@ -1230,8 +1226,7 @@ function FindPits(DEM : integer; GridLimits : tGridLimits; var PitResults : tStr
 label
    NotPit;
 var
-   x,y,NumPit,Col,Row,dx,dy{db,xp,yp} : integer;
-   //Lat,Long : float64;, xp,yp} : integer;
+   x,y,NumPit,Col,Row,dx,dy : integer;
    Lat,Long : float64;
    MaxZ,MinZ,z : float32;
 begin
@@ -1540,7 +1535,7 @@ var
 
         procedure ComputeStats;
         var
-           eLat1,eLong1,eLat2,eLong2,MissingPC,Distance,Bearing : float64;
+           eLat1,eLong1,eLat2,eLong2,Distance,Bearing : float64;
            xloc,yloc : integer;
            zl,z : float32;
            SSOvars : tSSOvars;
@@ -1718,8 +1713,7 @@ var
                   end;
 
                  if MDDef.IncludeMissingHoles then begin
-                    DEMGlb[WantedDEM].ComputeMissingDataPercentage(GridLimits,MissingPC);
-                    Table1.SetFieldByNameAsFloat('MISSING',MissingPC);
+                    Table1.SetFieldByNameAsFloat('MISSING',DEMGlb[WantedDEM].ComputeMissingDataPercentage(GridLimits));
                  end;
 
                   if MDDef.IncludeBasinID then begin
@@ -2197,7 +2191,7 @@ begin
 end;
 
 
-function IwashuriPikeColor(Slope,Convexity,Texture : float64;  var TerClass : integer) : tPlatformColor;
+function IwahashiiPikeColor(Slope,Convexity,Texture : float64;  var TerClass : integer) : tPlatformColor;
 begin
    TerClass := IwashuriPikeCat(Slope,Convexity,Texture);
    Result := ConvertTColorToPlatformColor(IPColor[TerClass]);
@@ -2421,22 +2415,22 @@ end;
 //{$EndIf}
 
 
-function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer) : float64;
+function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer; TrackFailure : boolean = false) : float64;
 //if the grids do not match exactly, Grid2 is reinterpolated to match Grid1
 begin
-  {$IfDef TrackCovarianceFull} WriteLineToDebugFile('GetFUVForPairGrids in, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
+  {$IfDef TrackCovarianceFull} if TrackFailure then WriteLineToDebugFile('GetFUVForPairGrids in, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName); {$EndIf}
    if ValidDEM(Grid1) and ValidDEM(Grid2) then begin
-      Result := 1-sqr(CorrelationTwoGrids(RefGridLimits,Grid1,Grid2));
+      Result := 1-sqr(CorrelationTwoGrids(RefGridLimits,Grid1,Grid2,TrackFailure));
    end
    else begin
-      Result := -999;
+      Result := NaN;
       {$IfDef TrackCovariance} WriteLineToDebugFile('Invalid grid, GetFUVForPairGrids Fail for ' + ' ' + DEMglb[Grid1].AreaName + ' ' + DEMglb[Grid2].AreaName); {$EndIf}
    end;
-   {$IfDef TrackCovariance} WriteLineToDebugFile('GetFUVForPairGrids out, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName + ' FUV=' + RealToString(Result,-8,-4)); {$EndIf}
+   {$IfDef TrackCovariance} if TrackFailure then WriteLineToDebugFile('GetFUVForPairGrids out, ' + DEMGlb[Grid1].AreaName + '  ' + DEMGlb[Grid2].AreaName + ' FUV=' + RealToString(Result,-8,-4)); {$EndIf}
 end;
 
 
-function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer) : float64;
+function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; TrackFailure : boolean = false) : float64;
 //if the grids do not match exactly, DEM2 is reinterpolated to match DEM1
 var
    Col,Row,xoff,yoff : integer;
@@ -2446,11 +2440,17 @@ var
    xs,ys : ^BfArray32;
    IdenticalOffsetGrids,MatchPt : boolean;
 begin
-   {$IfDef TrackCovarianceFull} WriteLineToDebugFile('CorrelationTwoGrids in, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName); {$EndIf}
+   {$IfDef TrackCovarianceFull} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids in, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName); {$EndIf}
    New(xs);
    New(ys);
    NPts := 0;
    IdenticalOffsetGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff,true);
+   {$If Defined(TrackCovarianceFull) or Defined(TrackCovariance)}
+      if TrackFailure then begin
+         WriteLineToDebugFile('xoff=' + IntToStr(Xoff) + '   yoff=' + IntToStr(yoff));
+      end;
+   {$EndIf}
+
    Col := GridLimitsDEM1.XGridLow;
    while (Col <= GridLimitsDEM1.XGridHigh) do begin
       Row := GridLimitsDEM1.YGridLow;
@@ -2473,11 +2473,12 @@ begin
       end;
       inc(Col);
    end;
-   {$IfDef TrackCovarianceFull} WriteLineToDebugFile('CorrelationTwoGrids call fit'); {$EndIf}
-   fit(xs^,ys^,NPts,a,b,siga,sigb,Result);
+   {$IfDef TrackCovarianceFull} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids call fit, NPTs=' + IntToStr(NPts)); {$EndIf}
+   if (NPts = 0) then Result := Nan
+   else fit(xs^,ys^,NPts,a,b,siga,sigb,Result);
    Dispose(xs);
    Dispose(ys);
-   {$IfDef TrackCovariance} WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
+   {$IfDef TrackCovariance} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
 end;
 
 
@@ -2905,7 +2906,7 @@ var
 var
    j,Done,ToDo,db,db2 : integer;
    gr : tThisBaseGraph;
-begin
+begin {procedure ElevMomentReport}
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport in'); {$EndIf}
    SetColorForProcessing;
    SaveBackupDefaults;
@@ -2952,7 +2953,7 @@ begin
       if (SlopeDist.Count > 1) then begin
          if MDDef.GraphsOfMoments then CreateMultipleHistogram(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
          db := StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope_','.dbf'));
-         DB2 := SortDataBase(db,false,'STD_DEV');
+         DB2 := SortDataBase(db,false,true,'STD_DEV');
          CloseAndNilNumberedDB(db);
          gr := StartBoxPlot(DB2,'','Slope (%)');
          SaveImageAsBMP(Gr.Image1,NextFileNumber(MDTempDir,aTitle + '_boxplot_','.png'));
@@ -2962,7 +2963,7 @@ begin
       if (ElevDist.Count > 1) then begin
          if MDDef.GraphsOfMoments then CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',200,MinElev,MaxElev,MDDef.ElevHistBinSize);
          db := StringList2CSVtoDB(ElevDist,NextFileNumber(MDTempDir,aTitle + '_','.dbf'));
-         DB2 := SortDataBase(db,false,'STD_DEV');
+         DB2 := SortDataBase(db,false,true,'STD_DEV');
          CloseAndNilNumberedDB(db);
          gr := StartBoxPlot(DB2,'','Elevation (m)');
          SaveImageAsBMP(Gr.Image1,NextFileNumber(MDTempDir,aTitle + '_boxplot_','.png'));
@@ -2993,7 +2994,7 @@ begin
    SetColorForWaiting;
    ShowDefaultCursor;
    {$IfDef RecordElevMoment} WriteLineToDebugFile('ElevMomentReport out'); {$EndIf}
-end;
+end {procedure ElevMomentReport};
 
 
    procedure SetUpGraph(WhichDEM : integer; var ThisGraph : tThisBaseGraph; VertLabel : shortstring);

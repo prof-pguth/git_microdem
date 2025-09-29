@@ -138,14 +138,14 @@ type
                    //DEMheader.aDigitizeDatum  := HeaderV2.DigitizeDatum;
                    DEMheader.LatHemi := HeaderV2.LatHemi;
                    DEMheader.DEMPrecision := HeaderV2.DEMPrecision;
-                   DEMheader.DEMSWCornerX := HeaderV2.hdfSWCornerx;
-                   DEMheader.DEMSWCornerY  := HeaderV2.hdfSWCornerY;
-                   if (abs(DEMheader.DEMSWCornerX) < 0.0000001) and (abs(HeaderV2.oldhdfSWCornerY) > 0.0000001) then begin
-                      DEMheader.DEMSWCornerX := HeaderV2.oldhdfSWCornerx;
+                   DEMheader.SWCornerX := HeaderV2.hdfSWCornerx;
+                   DEMheader.SWCornerY  := HeaderV2.hdfSWCornerY;
+                   if (abs(DEMheader.SWCornerX) < 0.0000001) and (abs(HeaderV2.oldhdfSWCornerY) > 0.0000001) then begin
+                      DEMheader.SWCornerX := HeaderV2.oldhdfSWCornerx;
                       HeaderV2.oldhdfSWCornerx := 0;
                    end;
-                   if (abs(DEMheader.DEMSWCornerY) < 0.0000001) and (abs(HeaderV2.oldhdfSWCornerY) > 0.0000001) then begin
-                      DEMheader.DEMSWCornerY := HeaderV2.oldhdfSWCornerY;
+                   if (abs(DEMheader.SWCornerY) < 0.0000001) and (abs(HeaderV2.oldhdfSWCornerY) > 0.0000001) then begin
+                      DEMheader.SWCornerY := HeaderV2.oldhdfSWCornerY;
                       HeaderV2.oldhdfSWCornerY := 0;
                    end;
                 end;
@@ -177,17 +177,16 @@ type
                          oldSpaceSeconds : l1 := 3600;
                          else L1 := 1;
                       end;
-                      DEMheader.DEMSWCornerY := OldHeadrecs.oBaseYUTM24K / l1;
-                      DEMheader.DEMSWCornerX := OldHeadrecs.oBaseXUTM24K / l1;
+                      DEMheader.SWCornerY := OldHeadrecs.oBaseYUTM24K / l1;
+                      DEMheader.SWCornerX := OldHeadrecs.oBaseXUTM24K / l1;
                       DEMheader.DEMySpacing  := OldHeadrecs.oiLatInterval / l1;
                       DEMheader.DEMxSpacing := OldHeadrecs.oiLongInterval / l1;
                    end
-                   else
-                   begin
+                   else begin
                       DEMheader.DEMySpacing := OldHeadRecs.fLatInterval;
                       DEMheader.DEMxSpacing := OldHeadRecs.fLongInterval;
-                      DEMheader.DEMSWCornerX := OldHeadRecs.fSWCornerx;
-                      DEMheader.DEMSWCornerY := OldHeadRecs.fSWCornerY;
+                      DEMheader.SWCornerX := OldHeadRecs.fSWCornerx;
+                      DEMheader.SWCornerY := OldHeadRecs.fSWCornerY;
                    end;
                    DEMheader.MaxElev := ZinMeters(OldHeadRecs.oMaxElev);
                    DEMheader.MinElev := ZinMeters(OldHeadRecs.oMinElev);
@@ -215,8 +214,8 @@ type
                    //DEMheader.aDigitizeDatum  := HeaderV3.DigitizeDatum;
                    DEMheader.LatHemi  := HeaderV3.LatHemi;
                    DEMheader.DEMPrecision := HeaderV3.DEMPrecision;
-                   DEMheader.DEMSWCornerX := HeaderV3.hdfSWCornerx;
-                   DEMheader.DEMSWCornerY  := HeaderV3.hdfSWCornerY;
+                   DEMheader.SWCornerX := HeaderV3.hdfSWCornerx;
+                   DEMheader.SWCornerY  := HeaderV3.hdfSWCornerY;
                    if (DEMheader.NumCol = 0) or (DEMheader.NumRow = 0) then begin // DEM from program version before 6/16/2011
                       DEMheader.NumCol := HeaderV3.OldNumCol;
                       DEMheader.NumRow := HeaderV3.OldNumRow;

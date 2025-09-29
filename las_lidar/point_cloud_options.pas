@@ -2525,8 +2525,8 @@ var
          ZeroDEMHeader(NewHeader, true);
          NewHeader.DEMxSpacing := Spacing;
          NewHeader.DEMySpacing := Spacing;
-         NewHeader.DEMSWCornerX := bb.XMin;
-         NewHeader.DEMSWCornerY := bb.YMin;
+         NewHeader.SWCornerX := bb.XMin;
+         NewHeader.SWCornerY := bb.YMin;
          NewHeader.NumCol := round((bb.xmax - bb.xmin) / Spacing);
          NewHeader.NumRow := round((bb.ymax - bb.ymin) / Spacing);
 

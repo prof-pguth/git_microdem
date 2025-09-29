@@ -66,8 +66,7 @@ uses
 
 procedure Tgrid_posting_options.BitBtn1Click(Sender: TObject);
 begin
-   with MapOwner.MapDraw do
-      PetMar.PickSymbol(BitBtn1,DEMGridSym,DEMGridSymSize,DEMGridSymColor,'DEM grid postings');
+   PetMar.PickSymbol(BitBtn1,MapOwner.MapDraw.DEMGridSym,MapOwner.MapDraw.DEMGridSymSize,MapOwner.MapDraw.DEMGridSymColor,'DEM grid postings');
    MapOwner.DoFastMapRedraw;
 end;
 

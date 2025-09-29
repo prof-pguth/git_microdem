@@ -633,7 +633,6 @@ begin
    {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram in'); {$EndIf}
    EmpSource.Enabled := false;
    Result := TThisbasegraph.Create(Application);
-   //Result.GraphDraw.LegendList := TStringList.Create;
    if (Capt = '') then Result.Caption := anXField + ' vs ' + anYField + ' from ' + dbName
    else Result.Caption := Capt;
    if NormProb then begin
@@ -721,7 +720,7 @@ begin
 end;
 
 
-function TGISdataBaseModule.CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+function TGISdataBaseModule.CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean) : TThisBaseGraph; //MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
 var
    j : integer;
    Min,Max : float64;
@@ -742,10 +741,10 @@ var
             TheDBName := ' (' + DBName + ')';
             New(Values);
             LegendList.Add(RemoveUnderScores(Fields[pred(i)]));
-            GISDB[db].GetPointArrayForDBField(Fields[pred(i)],Values^,NPts,MinUse,MaxUse);
+            GISDB[db].GetPointArrayForDBField(Fields[pred(i)],Values^,NPts); //,MinUse,MaxUse);
             HeapSort(Npts,Values^);
-            if Values^[0] < Min then Min := Values^[0];
-            if Values^[pred(NPts)] > Max then Max := Values^[pred(NPts)];
+            Min := Values^[0];
+            Max := Values^[pred(NPts)];
 
             fName := BaseGraf.SaveSingleValueSeries(Npts,Values^);
             {$IfDef RecordDBPlot} writeLineToDebugFile('save: ' + fName); {$EndIf}
@@ -755,7 +754,7 @@ var
       end;
 
 begin
-  {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram start'); {$EndIf}
+  {$If Defined(RecordDataBaseTiming) or Defined(RecordHistogram)} WriteLineToDebugFile('TGISDataBase.CreateHistogram start'); {$EndIf}
   Min := 99e39;
   Max := -99e30;
   if AllDBs then begin
@@ -767,9 +766,9 @@ begin
      DoOneDB(DBNumber);
   end;
 
-  {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
+   {$If Defined(RecordHistogram)} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep, range ' + RealToString(Min,-12,-2) + '---' + RealToString(Max,-12,-2)); {$EndIf}
 
-  Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,Min,Max,BinSize);
+  Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,Min,Max,-99);
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 

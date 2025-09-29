@@ -24,8 +24,8 @@ uses
    Winapi.DxgiType, Winapi.DxgiFormat,
    System.Types, System.UITypes, System.SysUtils, System.Classes, System.Math,
    System.Math.Vectors,
-   FMX.Types3D, FMX.Types, FMX.Graphics,
-   FMXU.Context, FMXU.Buffers, FMXU.DX11.Utils;
+   FMXU.Context, FMXU.Buffers, FMXU.DX11.Utils,
+   FMX.Types3D, FMX.Types, FMX.Graphics;
 
 type
    TDX11SharedBufferType = (
@@ -101,6 +101,7 @@ type
          procedure DoSetStencilOp(const aFail, aZFail, aZPass: TStencilOp); override;
          procedure DoSetStencilFunc(const aFunc : TStencilfunc; aRef, aMask : Cardinal); override;
          procedure DoSetScissorRect(const aScissorRect : TRect); override;
+
 
          procedure DoDrawPrimitivesBatch(
             const aKind : TPrimitivesKind;
@@ -342,7 +343,7 @@ constructor TFMXUContext3D_DX11.CreateFromWindow(
    const aMultisample : TMultisample; const aDepthStencil : Boolean
    );
 begin
-   inherited;
+   //inherited;
    vStates := TDX11DeviceStates.Create;
    inherited CreateBuffer;
 end;

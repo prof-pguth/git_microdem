@@ -8,19 +8,102 @@
 {________________________________________}
 
 
-function DEMIX_UTM_tileName(FileName : PathStr) : shortstring;
+function DEMIX_SpecialCase(AreaName : shortstring) : boolean;
+var
+   Starter : shortstring;
 begin
-//USGS_1M_11_x43y414_NV_WestCentral_EarthMRI_2020_D20.tif
-//USGS_one_meter_x28y440_PA_South_Central_B1_2017.tif
-   if StrUtils.AnsiContainsText(FileName,'USGS_1M_') then Result := 'UTM' + Copy(ExtractFileName(FileName),9,10)
-   else if StrUtils.AnsiContainsText(FileName,'USGS_one_meter_') then begin
-       Result := 'UTM' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),15,8)
-   end
-   else begin
+   Starter := UpperCase(Copy(AreaName,1,3));
+   Result := (Starter = 'MX_') or (Starter = 'UK_') or (Starter = 'CH_') or (Starter = 'NL_') or (Starter = 'NZ_') or (Starter = 'FR_') or
+      (Starter = 'DE_') or (Starter = 'DK_') or (Starter = 'FI_') or (Starter = 'EE_')  or (Starter = 'GB_');
+end;
+
+
+function DEMIX_NoVerticalShift(AreaName : shortstring) : boolean;
+var
+   Starter : shortstring;
+begin
+   Starter := UpperCase(Copy(AreaName,1,3));
+   Result := (Starter = 'EE_') or (Starter = 'NZ');
+end;
+
+
+function DEMIX_UTM_TileName(AreaName : shortstring; FileName : PathStr) : shortstring;
+var
+   Northing : integer;
+   Starter : shortstring;
+begin
+   Result := '';
+   if DEMIX_SpecialCase(AreaName) then begin
+      //Result := LastSubDir(ExtractFilePath(FileName));
+      Starter := UpperCase(Copy(AreaName,1,3));
+      if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_')  or (Starter = 'GB_') or (Starter = 'DK_') then Result := AreaName;   //these use the map quad names
+
+      //German states
+      if (UpperCase(Copy(AreaName,4,3)) = 'BV_') then Result := AreaName;
+      if (UpperCase(Copy(AreaName,4,3)) = 'RH_') then Result := AreaName;
+      if (UpperCase(Copy(AreaName,4,3)) = 'SX_') then begin    //Saxony
+         Result := 'DE_SX_' + copy(ExtractFileNameNoExt(FileName),1,9) + copy(ExtractFileNameNoExt(FileName),11,4);
+         {dgm1_33327_5591_1_sn.tif  }
+       end;
+   end;
+
+   if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
+      Result := 'ES_' + copy(ExtractFileNameNoExt(FileName),14,11);
+      {MDT02-ETRS89-HU29-0802-3-COB2.tif    }
+   end;
+
+   if (UpperCase(Copy(AreaName,1,3)) = 'IC_') then begin
+      Result := 'IC_' + copy(ExtractFileNameNoExt(FileName),16,11);
+      {MDT02-REGCAN95-HU28-1105-2-COB2.tif  }
+   end;
+
+   if StrUtils.AnsiContainsText(FileName,'USGS') then begin
+       if StrUtils.AnsiContainsText(FileName,'USGS_1m_x') then begin
+         {USGS_1m_x13y202_PR_PRVI_D_2018.tif  }
+          Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),8,8)
+       end
+       else if StrUtils.AnsiContainsText(FileName,'USGS_1M_') then begin
+          {USGS_1M_11_x43y414_NV_WestCentral_EarthMRI_2020_D20.tif  }
+          Result := 'UTM' + Copy(ExtractFileName(FileName),8,11);
+       end
+       else if StrUtils.AnsiContainsText(FileName,'USGS_one_meter_') then begin
+          {USGS_one_meter_x28y440_PA_South_Central_B1_2017.tif }
+           Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),15,8)
+       end;
+       if (Result[14] = '_') then begin
+          {UTM_4_x86y222_ }
+          //this is Hawaii or other Pacific Island
+          Delete(Result,14,1);
+          Insert('0',Result,5);
+       end;
+       //this only applies to USGS DEM, so it is N hemisphere
+       Insert('N',Result,7);
+       {UTM_10N_x65y529}
+       //drop 10,000 m to SW corner
+       Northing := StrToInt(Copy(Result,13,3));
+       Northing := Northing - 1;
+       Delete(Result,13,3);
+       Insert(IntToStr(Northing),Result,13);
+   end;
+   if (Result = '') then begin
        Result := 'Unknown';
        MessageToContinue('Unknown UTM tile ' + ExtractFileName(FileName));
    end;
 end;
+
+
+function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
+var
+   xutm,yutm : float64;
+   Northing, Easting : integer;
+begin
+   RedefineWGS84DatumConstants(Lat,Long);
+   WGS84DatumConstants.LatLongDegreetoUTM(Lat,Long,xutm,yutm);
+   Northing := trunc(yutm) div 10000;
+   Easting := trunc(xutm) div 10000;
+   Result := 'UTM_' + AddDayMonthLeadingZero(WGS84DatumConstants.projUTMZone) + WGS84DatumConstants.LatHemi + '_x' + IntToStr(Easting) + 'y' + IntToStr(Northing);
+end;
+
 
 procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
 //   9/8/2023, check if this is really needed; only called by TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
@@ -81,6 +164,53 @@ const
           end;
 
 
+function GetDEMIX_GeoTileName(inLat,inLong : float64) : shortstring;
+//const
+   //SegsPerSide = 1;
+var
+   xminutes,yminutes,LongHi,LowLat,HighLat,LongLow{,Wide,High} : float64;
+   Lat,Long,FirstLat, LastLat, FirstLong, LastLong, yt,y,i,xtiles : integer;
+   xch : integer;
+   WantBoundBoxGeo : sfBoundBox;
+   //ShapeFileCreator : tShapeFileCreation;
+begin
+   WantBoundBoxGeo := PointBoundBoxGeo(inLat,inLong);
+   Result := '';
+
+   if (WantBoundBoxGeo.ymin < 0) then FirstLat := trunc(WantBoundBoxGeo.ymin - 1)
+   else FirstLat := trunc(WantBoundBoxGeo.yMin);
+   LastLat := trunc(WantBoundBoxGeo.yMax+1);
+   if (WantBoundBoxGeo.xMin < 0) then FirstLong := trunc(WantBoundBoxGeo.xMin - 1)
+   else FirstLong := trunc(WantBoundBoxGeo.xMin);
+   LastLong := trunc(WantBoundBoxGeo.xMax+1);
+
+   yminutes := 6 / 60;
+   yt := 10;
+   for Lat := FirstLat to LastLat do begin
+      xminutes := DEMIXXMinuteIncr(Lat) / 60;
+      xtiles := 60 div DEMIXXMinuteIncr(Lat);
+      for y := 0 to pred(yt) do begin
+         LowLat := Lat + Y * yminutes;
+         HighLat := LowLat + yminutes;
+         if ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
+            for Long := FirstLong to LastLong do begin
+               xch := 0;
+               for i := 0 to pred(xtiles) do  begin
+                  LongLow := Long + i * xminutes;
+                  LongHi := LongLow + xminutes;
+                  if ((LongLow < WantBoundBoxGeo.xMax) and (LongHi > WantBoundBoxGeo.xMin)) then begin
+                     Result := Result + ' ' + LatToString3(Lat) + DEMIXLatLetters[y] + LongToString4(Long) + DEMIXLongLetters[xch];
+                  end;
+                  inc(xch);
+               end;
+            end;
+         end;
+      end;
+   end;
+   {$If Defined(RecordCarto)} WriteLineToDebugFile('TMapForm.LoadDEMIXtileOutlines out '+ sfBoundBoxToString(WantBoundBoxGeo)); {$EndIf}
+end;
+
+
 procedure CreateDEMIXTileShapefile(var fName : PathStr; WantBoundBoxGeo : sfBoundBox; AddGridFull : boolean = false; AddTileSize : boolean = false);
 const
    SegsPerSide = 1;
@@ -119,7 +249,6 @@ begin
    for Lat := FirstLat to LastLat do begin
       {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Lat=' + IntToStr(Lat)); {$EndIf}
       UpdateprogressBar((Lat-FirstLat)/(LastLat - FirstLat));
-
       xminutes := DEMIXXMinuteIncr(Lat) / 60;
       xtiles := 60 div DEMIXXMinuteIncr(Lat);
       for y := 0 to pred(yt) do begin
@@ -128,8 +257,6 @@ begin
          if ((HighLat > WantBoundBoxGeo.YMin) and (LowLat < WantBoundBoxGeo.YMax)) then begin
             for Long := FirstLong to LastLong do begin
                {$If Defined(RecordCartoFull)} WriteLineToDebugFile('Long=' + IntToStr(Long)); {$EndIf}
-               //LongLow := Long;
-               //LongHi := Long + xminutes;
                xch := 0;
                for i := 0 to pred(xtiles) do  begin
                   LongLow := Long + i * xminutes;

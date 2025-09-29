@@ -476,7 +476,7 @@ begin
    WantedDEM := 0;
    {$IfDef RecordIndexFileNames} WriteLineToDebugFile('check: ' + fName); {$EndIf}
    if MDDef.DeleteAuxTiffFiles and AuxDEMTif(fName) then begin
-      File2Trash(fName);
+      DeleteFileIfExists(fName);
    end
    else begin
       if BoundingBoxFromFileName(fName,bb) then begin
@@ -677,20 +677,23 @@ var
 
          {$IfDef RecordIndex} WriteLineToDebugFile('All data types done'); {$EndIf}
 
-         IndexSeriesTable.ApplyFilter('');
-         IndexSeriesTable.First;
-         while not IndexSeriesTable.eof do begin
-            TheTable.ApplyFilter('SERIES=' + QuotedStr(IndexSeriesTable.GetFieldByNameAsString('SERIES')) + ' AND MONSTER=' + QuotedStr(''));
-            if (TheTable.RecordCount > 0) then begin
-               IndexSeriesTable.Edit;
-               IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',TheTable.RecordCount);
-               if TheTable.FindFieldRange('LAT_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_LOW',Min);
-               if TheTable.FindFieldRange('LAT_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_HI',Max);
-               if TheTable.FindFieldRange('LONG_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_LOW',Min);
-               if TheTable.FindFieldRange('LONG_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_HI',Max);
-               IndexSeriesTable.Next;
-            end
-            else IndexSeriesTable.Delete;
+         if TheTable.FieldExists('MONSTER') then begin
+
+           IndexSeriesTable.ApplyFilter('');
+           IndexSeriesTable.First;
+           while not IndexSeriesTable.eof do begin
+              TheTable.ApplyFilter('SERIES=' + QuotedStr(IndexSeriesTable.GetFieldByNameAsString('SERIES')) + ' AND MONSTER=' + QuotedStr(''));
+              if (TheTable.RecordCount > 0) then begin
+                 IndexSeriesTable.Edit;
+                 IndexSeriesTable.SetFieldByNameAsInteger('NUM_FILES',TheTable.RecordCount);
+                 if TheTable.FindFieldRange('LAT_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_LOW',Min);
+                 if TheTable.FindFieldRange('LAT_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LAT_HI',Max);
+                 if TheTable.FindFieldRange('LONG_LOW',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_LOW',Min);
+                 if TheTable.FindFieldRange('LONG_HI',Min,Max) then IndexSeriesTable.SetFieldByNameAsFloat('LONG_HI',Max);
+                 IndexSeriesTable.Next;
+              end
+              else IndexSeriesTable.Delete;
+           end;
          end;
          IndexSeriesTable.Destroy;
          for i := 0 to 1 do wmdem.StatusBar1.Panels[i].Text := '';
@@ -994,15 +997,15 @@ var
          for i := pred(DEMList.Count) downto 0 do begin
             FName := DEMList.Strings[i];
             {$If Defined(RecordMergeDetails)} HighLightLineToDebugFile('Check DEM ' + IntToStr(i) + '/' + IntToStr(DEMList.Count) + '  ' + fName); {$EndIf}
-            WMDEM.StatusBar1.Panels[0].Text := 'Merge still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
+            if not HeavyDutyProcessing then WMDEM.StatusBar1.Panels[0].Text := 'Merge still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
             if FileExists(fName) then begin
                if NewArea(true,CurDEM,'',FName) then begin
                   {$If Defined(TrackPixelIs)} WriteLineToDebugFile('merge ' + DEMGlb[CurDEM].AreaName + '  ' + DEMGlb[CurDEM].GridCornerModelAndPixelIsString); {$EndIf}
 
                   if (not SubsequentDEM) then begin
                      NewHeader := DEMGlb[CurDEM].DEMheader;
-                     xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
-                     ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
+                     xmin := DEMGlb[CurDEM].DEMheader.SWCornerX;
+                     ymin := DEMGlb[CurDEM].DEMheader.SWCornerY;
                      xMax := xMin + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
                      yMax := yMin + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
                      XSpace := DEMGlb[CurDEM].DEMheader.DEMxSpacing;
@@ -1019,14 +1022,14 @@ var
                         DEMlist.Delete(i);
                      end
                      else begin
-                        if (DEMGlb[CurDEM].DEMheader.DEMSWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.DEMSWCornerX;
-                        tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
+                        if (DEMGlb[CurDEM].DEMheader.SWCornerX < xmin) then xmin := DEMGlb[CurDEM].DEMheader.SWCornerX;
+                        tf := DEMGlb[CurDEM].DEMheader.SWCornerX + pred(DEMGlb[CurDEM].DEMheader.NumCol) * DEMGlb[CurDEM].DEMheader.DEMxSpacing;
                         if (xMax < tf) then xmax := tf;
-                        if (DEMGlb[CurDEM].DEMheader.DEMSWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.DEMSWCornerY;
-                        tf := DEMGlb[CurDEM].DEMheader.DEMSWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
+                        if (DEMGlb[CurDEM].DEMheader.SWCornerY < ymin) then ymin := DEMGlb[CurDEM].DEMheader.SWCornerY;
+                        tf := DEMGlb[CurDEM].DEMheader.SWCornerY + pred(DEMGlb[CurDEM].DEMheader.NumRow) * DEMGlb[CurDEM].DEMheader.DEMySpacing;
                         if (yMax < tf) then ymax := tf;
-                        NewHeader.DEMSWCornerX := xmin;
-                        NewHeader.DEMSWCornerY := ymin;
+                        NewHeader.SWCornerX := xmin;
+                        NewHeader.SWCornerY := ymin;
                         NewHeader.NumCol := succ(round((xmax - xmin) / XSpace));
                         NewHeader.NumRow := succ(round((ymax - ymin) / YSpace));
                         DEMlist.Strings[i] := DEMGlb[CurDEM].DEMfileName;
@@ -1073,7 +1076,7 @@ var
                      MenuStr := 'Merge ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
                      StartProgress(MenuStr);
                      {$IfDef RecordMergeDetails} WriteLineToDebugFile(MenuStr); {$EndIf}
-                     WMDEM.StatusBar1.Panels[0].Text := MenuStr;
+                     if not HeavyDutyProcessing then WMDEM.StatusBar1.Panels[0].Text := MenuStr;
                      {$IfDef RecordMergeDetails} WriteLineToDebugFile('Merging DEM=' + IntToStr(CurDEM) + '  ' + DEMGlb[CurDEM].AreaName); {$EndIf}
                      for Row := 0 to pred(DEMGlb[CurDEM].DEMheader.NumRow) do begin
                         for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
@@ -1161,7 +1164,7 @@ begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) } WriteLineToDebugFile('Failed set up, Result=' + IntToStr(Result)); {$EndIf}
       end;
    finally
-      WMDEM.StatusBar1.Panels[0].Text := '';
+      if not HeavyDutyProcessing then WMDEM.StatusBar1.Panels[0].Text := '';
       UpdateMenusForAllMaps;
       DEMMergeInProgress := false;
       SubsequentDEM := false;
@@ -1222,7 +1225,7 @@ var
                 DEMGlb[Result].AreaName := MergedName;
                 if DisplayIt then DEMGlb[Result].SelectionMap.MapDraw.BaseTitle := MergedName;
              end;
-             {$If Defined(TrackPixelIs)} WriteLineToDebugFile('Loaded ' + DEMGlb[WantDEM].AreaName + '  ' + DEMGlb[WantDEM].GridCornerModelAndPixelIsString); {$EndIf}
+             {$If Defined(TrackPixelIs)} WriteLineToDebugFile('Loaded ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString); {$EndIf}
              {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(WantDEM)); {$EndIf}
          end;
 
@@ -1323,10 +1326,8 @@ end;
 
 initialization
    {$IfDef MessageStartUpUnit} MessageToContinue('Startup dem_indexes'); {$EndIf}
-   //IndexDataOnline := Nil;
    MergeSeriesName := '';
 finalization
-   //CloseIndexDataOnline;
    {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosing active in dem_indexes'); {$EndIf}
    {$IfDef RecordIndex} WriteLineToDebugFile('RecordIndex active in dem_indexes'); {$EndIf}
    {$IfDef RecordAutoZoom} WriteLineToDebugFile('RecordAutoZoom active in dem_indexes'); {$EndIf}

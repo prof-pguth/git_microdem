@@ -110,4 +110,12 @@ object GridDiffForm: TGridDiffForm
     TabOrder = 8
     OnClick = RadioGroup2Click
   end
+  object CheckBox4: TCheckBox
+    Left = 8
+    Top = 96
+    Width = 162
+    Height = 17
+    Caption = 'Difference distribution stats'
+    TabOrder = 9
+  end
 end

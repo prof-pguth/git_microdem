@@ -28,6 +28,7 @@
    {$IfDef Debug}
       //{$Define RecordMapDraw}
       //{$Define RecordWorldOutline}
+      //{$Define RecordAverageGridTrue}
       //{$Define RecordClosing}
       //{$Define RecordDrawSecondGrid}
       //{$Define RecordNumberOpenMaps}
@@ -317,7 +318,7 @@ type
      ScreenPixelSize,
      LongLeftSide,
      LatTickInt,UTMTickInt,NativeTickInt,
-     GridTrueAngle,
+     MapGridTrueAngle,
      MapMagDec        : float64;
      MultiFanMasks,
      FloodLayers : tStringList;
@@ -1205,7 +1206,7 @@ begin
 
       try
          MapDrawValid := true;
-         GridTrueAngle := -999;
+         MapGridTrueAngle := -999;
          if (VectorIndex <> 0) or ValidSatOnMap or (ValidDEM(DEMonMap) and (DEMGlb[DEMonMap].DEMheader.h_DatumCode <> 'Rect')) then begin
              ScreenToLatLongDegree(MapXSize div 2, MapYSize div 2, Lat,Long);
              MapMagDec := 0;
@@ -1922,7 +1923,7 @@ begin
    GrayscaleOSM := false;
 
    DEMGridRedraw := false;
-   DEMGridSym := Box;
+   DEMGridSym := FilledBox;
    DEMGridSymSize := 3;
    DEMGridSymColor := claRed;
    NoMapGrids := false;
@@ -1945,7 +1946,7 @@ begin
    ZeroTickInt;
    MapLatCent := -999;
    MapLongCent := -999;
-   GridTrueAngle := MaxSmallInt;
+   MapGridTrueAngle := MaxSmallInt;
 
    SingleContourColor := false;
    SectorOutlines := '';

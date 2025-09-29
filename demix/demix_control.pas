@@ -55,7 +55,6 @@ unit demix_control;
    //{$Define RecordUseTile}
 
    //{$Define RecordDEMIXMovies}
-   //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
 
@@ -105,13 +104,14 @@ const
 
 
    function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
-   function DEMIXColorForCriterion(Criterion : shortstring) : tColor;
+   function DEMIXColorForCriterion(Criterion : shortstring; fName : PathStr = '') : tColor;
    function WhatTestDEMisThis(fName : PathStr) : shortstring;
    function IsDEMaDSMorDTM(DEMName : ShortString) : integer;
-   function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil; MaxWide : integer = 9999) : tMyBitmap;
+   function DEMIXTestDEMLegend(DEMsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
    function FilterForDEMIXtilesToUse : shortstring;
    function FilterForDEMIXtilesToAvoid : shortstring;
 
+   function DEMIX_GetListOfAreas : tStringList;
 
 //service functions and procedures
    function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
@@ -135,7 +135,7 @@ const
 
    function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 
-   procedure OpenDEMIXDatabaseForAnalysis;
+   //procedure OpenDEMIXDatabaseForAnalysis;
    procedure RecognizeDEMIXVersion(DB : integer);
 
    function GetCountryForArea(Area : shortString) : shortstring;
@@ -203,6 +203,7 @@ function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
 
 var
    ElevDiffHists : boolean;
+   FUVMode : integer;
 
 
 const
@@ -213,10 +214,13 @@ const
    function GetFileNamesOfDEMinUse(var DataDir : PathStr) : tStringList;
 
 procedure LandCoverBreakdowPointCloud;
-//function OpenPartialsParams : tStringList;
 
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
+procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
+procedure DeleteCSV_FilesforArea(AreaName : shortstring);
+procedure GEDTM_problems(dbOnTable : integer);
+procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
 
 
 implementation
@@ -256,22 +260,206 @@ const
    MICRODEMcurvature = true;  //if not, using Whitebox
 
 
+procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
+//the decimeters must have been fixed first
+//removes Geotiff code 42112
+//also saves the vertical datum
+begin
+    DEMGlb[DEM1].CheckMaxMinElev;
+    DEMGlb[DEM1].DEMHeader.ElevUnits := euMeters;
+    DEMGlb[DEM1].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+    DEMGlb[DEM1].SaveAsGeotiff(fName1);
+end;
+
+
+
+procedure GEDTM_problems(dbOnTable : integer);
+var
+   DEM1,DEM2,i,j : integer;
+   NPts : int64;
+   Lat1,Long1,Lat2,Long2,Slope1,Slope2,DistanceMeters,Bearing : float64;
+   Elev1,Elev2,Std,dElev,dSlope,MinMultiple,MaxMultiple : float32;
+   Findings : tStringList;
+   Area,Tile,zUnits,Change,aLine : shortstring;
+   fName,fName1,fName2 : PathStr;
+   bb : SfBoundBox;
+
+        procedure StatsGEDTM;
+        begin
+          DEMglb[DEM1].DEMCenterPoint(Lat1,Long1);
+          DEMglb[DEM1].ElevationStatistics(DEMglb[DEM1].FullDEMGridLimits,Elev1,Std,NPts);
+          Slope1 := DEMglb[DEM1].AverageDEMslope;
+        end;
+
+        procedure Differences;
+        begin
+          dElev := Elev1 - Elev2;
+          dSlope := Slope1 - Slope2;
+          VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+        end;
+
+        function DifferenceString : shortstring;
+        begin
+          Result := RealToString(0.001 * DistanceMeters,-12,-4) + ',' + RealToString(dElev,-12,-2) + ',' + RealToString(dSlope,-12,-2);
+        end;
+
+
+ const
+   GEDTMversions : array[1..4] of shortstring = ('EDTM','GEDTMv0','GEDTMv1_1','GEDTMv1_2');
+ begin
+   Findings := tStringList.Create;
+   Findings.Add('AREA,DEMIX_TILE,GEDTM_ZS,REF_ELEV,REF_SLOPE,DIST_KM,ELEV_DIFF,SLOPE_DIFF,PROBLEM');
+   GISdb[DBonTable].MyData.First;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   i := 0;
+   WantShowProgress := false;
+
+
+   Findings := tStringList.Create;
+   Findings.Add('AREA,DEMIX_TILE,GEDTM_ZS,GEDTM_MAX,REF_MAX,MAX_MULT,CHANGE');
+   while not GISdb[DBonTable].MyData.eof do begin
+      inc(i);
+      Area := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
+      Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+      wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' + Tile,true);
+      fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\GEDTMv1_2.tif';
+      fName2 := MDDef.DEMIX_BaseDir + Area + '\' + Tile +  '_ref_test_dem\ref_dtm_srtm.tif';
+      if FileExists(fName1) and FileExists(fName2) then begin
+          LoadNewDEM(DEM2,fName2,false);
+          DEMglb[DEM2].DEMCenterPoint(Lat2,Long2);
+
+          for j := 1 to 4 do begin
+              fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\' + GEDTMversions[j] + '.tif';
+
+              LoadNewDEM(DEM1,fName1,false);
+              DEMglb[DEM1].DEMCenterPoint(Lat1,Long1);
+              zUnits := ElevUnitsAre(DEMglb[DEM1].DEMheader.ElevUnits);
+
+              MaxMultiple := DEMGlb[DEM1].DEMheader.MaxElev / DEMGlb[DEM2].DEMheader.MaxElev;
+              Change := 'None';
+
+              if (MaxMultiple > 3) then begin
+                  //this is in decimeters, but the Geotiff header does not have any units and meters were assumed when importing
+                  DEMGlb[DEM1].MultiplyGridByConstant(0.1);
+                  SaveGEDTMFamilyDEM(DEM1,fName1);
+                  MaxMultiple := DEMGlb[DEM1].DEMheader.MaxElev / DEMGlb[DEM2].DEMheader.MaxElev;
+                  Change := 'Times 0.1';
+              end
+              else if (MaxMultiple < 0.2) then begin
+                  //this was in decimeters, but the Geotiff header does not have any units and meters were assumed when importing
+                  DEMGlb[DEM1].MultiplyGridByConstant(10);
+                  SaveGEDTMFamilyDEM(DEM1,fName1);
+                  MaxMultiple := DEMGlb[DEM1].DEMheader.MaxElev / DEMGlb[DEM2].DEMheader.MaxElev;
+                  Change := 'Times 10';
+              end;
+          end;
+
+          aLine := Area + ',' + Tile + ',' + Zunits + ',' + RealToString(DEMGlb[DEM1].DEMheader.MaxElev,-8,-2) + ',' +
+                        RealToString(DEMGlb[DEM2].DEMheader.MaxElev,-8,-2)+ ',' + RealToString(MaxMultiple,-8,-2) + ',' + Change;
+          Findings.Add(aLine);
+      end;
+      CloseAllDEMs;
+      GISdb[DBonTable].MyData.Next;
+   end;
+
+
+(*
+   Findings := tStringList.Create;
+   Findings.Add('AREA,DEMIX_TILE,GEDTM_ZS,REF_ELEV,REF_SLOPE,DIST_KM,ELEV_DIFF,SLOPE_DIFF,PROBLEM');
+   while not GISdb[DBonTable].MyData.eof do begin
+      inc(i);
+      Area := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
+      Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+      wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' + Tile,true);
+      fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\GEDTMv1_2.tif';
+      fName2 := MDDef.DEMIX_BaseDir + Area + '\' + Tile +  '_ref_test_dem\ref_dtm_srtm.tif';
+      if FileExists(fName1) and FileExists(fName2) then begin
+          LoadNewDEM(DEM1,fName1,false);
+          StatsGEDTM;
+          zUnits := ElevUnitsAre(DEMglb[DEM1].DEMheader.ElevUnits);
+
+          LoadNewDEM(DEM2,fName2,false);
+          DEMglb[DEM2].DEMCenterPoint(Lat2,Long2);
+
+          DEMglb[DEM2].ElevationStatistics(DEMglb[DEM2].FullDEMGridLimits,Elev2,Std,NPts);
+          Slope2 := DEMglb[DEM2].AverageDEMslope;
+          Differences;
+
+
+          if (DistanceMeters > 5000) then begin
+              CloseSingleDEM(DEM1);
+              bb := DEMglb[2].DEMBoundBoxGeo;
+              fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif';
+              DEM1 := GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,false,fName1,fName1);
+              DEMGlb[DEM1].MultiplyGridByConstant(0.1);
+              DEMGlb[DEM1].SaveAsGeotiff(fName1);
+              StatsGEDTM;
+              Differences;
+          end
+          else if (abs(dElev) > 25) then begin
+              //this is in decimeters, but the Geotiff header does not have any units and meters were assumed when importing
+              DEMGlb[DEM1].MultiplyGridByConstant(0.1);
+              DEMGlb[DEM1].CheckMaxMinElev;
+              DEMGlb[DEM1].SaveAsGeotiff(fName1);
+              StatsGEDTM;
+              Differences;
+          end;
+
+          Findings.Add(Area + ',' + Tile + ',' + Zunits + ',' + RealToString(Elev2,-8,-2) + ',' + RealToString(Slope2,-8,-2) + ',' + DifferenceString );
+      end
+      else begin
+          Findings.Add(Area + ',' + Tile + Zunits + ',-9999,-9999,-9999,-9999,-9999,Missing DEM');
+      end;
+      CloseAllDEMs;
+      GISdb[DBonTable].MyData.Next;
+   end;
+*)
+
+   fName := MDTempDir + 'gedtm_tile_location_problems.dbf';
+   PetDBUtils.StringList2CSVtoDB(Findings,fName);
+   GISdb[dbOnTable].ShowStatus;
+   WantShowProgress := true;
+end;
+
+
+
+procedure DeleteCSV_FilesforArea(AreaName : shortstring);
+begin
+    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_fuv_results\' + AreaName + '_fuv_results.csv');
+    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_partials_results\' + AreaName + '_fuv_partials.csv');
+    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_curvatures_results\' + AreaName + '_fuv_curvatures.csv');
+    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_diff_dist_results\' + AreaName + '_diff_dist.csv');
+    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_tile_stats\' + AreaName + '_tile_stats.csv');
+end;
+
+
+
+procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
+begin
+    if Mode = fuvmMixed then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf';
+    if Mode = fuvmPartials then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_partials.dbf';
+    if Mode = fuvmCurves then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_curvatures.dbf';
+    if Mode = fuvmDiffDist then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_diff_dist.dbf';
+    FUVMode := Mode;
+end;
+
 
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 begin
-   if (db = 0) then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_fuv_parameters.dbf';
-   if not FileExists(DEMIX_criteria_tolerance_fName) then begin
-     if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then
-        DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_partials_criteria.dbf'
-     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then
-        DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_curvatures_criteria.dbf'
-     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'FUV') then
-        DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_fuv_parameters.dbf'
+   //if (db = 0) then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf';
+   //if not FileExists(DEMIX_criteria_tolerance_fName) then begin
+     if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then DEMIX_CriteriaToleranceFNameFromMode(fuvmPartials)
+     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then DEMIX_CriteriaToleranceFNameFromMode(fuvmCurves)
+     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'FUV') then DEMIX_CriteriaToleranceFNameFromMode(fuvmMixed)
+     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'DIFF_DIST') then DEMIX_CriteriaToleranceFNameFromMode(fuvmDiffDist)
      else begin
         DEMIX_criteria_tolerance_fName := '';
-        MessageToContinue('No file for criteria');
+        MessageToContinue('No defined file for criteria for ' + GISdb[db].dbName);
      end;
-   end;
+   //end;
+   //if not FileExists(DEMIX_criteria_tolerance_fName) then begin
+      //MessageToContinue('File for criteria missing: ' + DEMIX_criteria_tolerance_fName);
+   //end;
 end;
 
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
@@ -285,8 +473,8 @@ begin
       Table.Destroy;
    end
    else begin
-        MessageToContinue('Invalid file for criteria');
-        exit;
+      MessageToContinue('Invalid file for criteria');
+      exit;
    end;
 end;
 
@@ -300,7 +488,7 @@ begin
       db.ApplyFilter('CRITERION=' + QuotedStr(NoSuffixCriterion(Criterion)));
       if db.FiltRecsInDB = 1 then Result := db.GetFieldByNameAsFloat('TOLERANCE')
       else begin
-         MessageToContinue(Criterion + ' missing in ' + DEMIX_criteria_tolerance_fName);
+         MessageToContinue('Criterion "' + Criterion + '" missing in ' + DEMIX_criteria_tolerance_fName);
       end;
       db.Destroy;
    end
@@ -321,7 +509,6 @@ begin
    Result := Table.GetFieldByNameAsString('DEM_NAME');
    Table.Destroy;
 end;
-
 
 
 function GetListOfTestDEMsinUse(GeometricModel : shortstring = '') : tStringList;
@@ -499,8 +686,6 @@ begin {procedure LandCoverBreakdownPointCloud}
 end {procedure LandCoverBreakdownPointCloud};
 
 
-
-
 procedure PickDEMIXMode;
 var
   PickDEMIXmodeForm: TPickDEMIXmodeForm;
@@ -531,11 +716,12 @@ begin
 end;
 
 
-function DEMIXColorForCriterion(Criterion : shortstring) : tColor;
+function DEMIXColorForCriterion(Criterion : shortstring; fName : PathStr = '') : tColor;
 var
    Table : tMyData;
 begin
-   Table := tMyData.Create(DEMIX_criteria_dbName);
+   if FName = '' then fName := DEMIX_criteria_tolerance_fName;  //DEMIX_criteria_dbName;
+   Table := tMyData.Create(fName);
    Table.ApplyFilter('CRITERION=' + QuotedStr(Criterion));
    if (Table.FiltRecsInDB = 1) then Result := Table.TColorFromTable
    else begin
@@ -569,10 +755,6 @@ begin
          bb2.ymax := GISdb[DB].MyData.FindFieldMax('LAT_HI') + Fudge;
          bb2.ymin := GISdb[DB].MyData.FindFieldMin('LAT_LOW') - Fudge;
          {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, tile boundaries ' + sfBoundBoxToString(bb2,8)); {$EndIf}
-         //bb.xmax := Petmath.MinFloat(bb.xMax,bb2.xMax);
-         //bb.xmin := Petmath.MaxFloat(bb.xmin,bb2.xMin);
-         //bb.ymax := Petmath.MinFloat(bb.yMax,bb2.yMax);
-         //bb.ymin := Petmath.MaxFloat(bb.yMin,bb2.YMin);
          bb := IntersectionTwoGeoBoundBoxes(bb,bb2);
 
          {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
@@ -799,14 +981,12 @@ begin
 end;
 
 
-
 function DEMIXColorFromDEMName(DEMName : shortstring) : tPlatformColor;
 var
    i : integer;
    table : tMyData;
    fName : PathStr;
 begin
-   //DEMName := ExtractDEMIXDEMName(DEMName);
    Result := RGBtrip(185,185,185);
    if (DEMName = 'TIE') then Result := claBrown
    else begin
@@ -1060,7 +1240,7 @@ end;
 
 
 
-function DEMIXTestDEMLegend(Horizontal : boolean = true; DEMsUsed : tstringList = nil; MaxWide : integer = 9999) : tMyBitmap;
+function DEMIXTestDEMLegend(DEMsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
 var
    i,Left,Top,StartFontSize : integer;
 
@@ -1069,11 +1249,15 @@ var
             Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM));
             Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
             Result.Canvas.Brush.Style := bsSolid;
-            Result.Canvas.Rectangle(Left,Top,Left + 15,Top + 15);
+            Result.Canvas.Rectangle(Left,Top,Left + Result.Canvas.TextHeight(DEM),Top + Result.Canvas.TextHeight(DEM));
+            Left := Left + Result.Canvas.TextHeight(DEM) + 10;
             Result.Canvas.Brush.Style := bsClear;
-            Result.Canvas.TextOut(Left + 20,Top,DEM);
-            if Horizontal then Left := Left + 30 + Result.Canvas.TextWidth(DEM)
-            else Top := Top + 10 + Result.Canvas.TextHeight(DEM);
+            Result.Canvas.TextOut(Left,Top,DEM);
+            if Horizontal then Left := Left + Result.Canvas.TextWidth(DEM + '   ')
+            else begin
+               Top := Top + 10 + Result.Canvas.TextHeight(DEM);
+               Left := 15;
+            end;
          end;
 
 begin
@@ -1084,19 +1268,10 @@ begin
       CreateBitmap(Result,1500,900);
       LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
       Result.Canvas.Font.Size := StartFontSize;
-      Left := 25;
+      Left := 15;
       Top := 10;
-      if (DEMsUsed <> Nil) then begin
-         for i := 0 to pred(DEMsUsed.Count) do begin
-            AnEntry(DEMsUsed.Strings[i]);
-         end;
-      end
-      else begin
-         for i := 1 to NumDEMIXtestDEM do begin
-            //if NotRetiredDEMs[i] or MDDef.DEMIX_graph_Retired_DEMs then begin
-               AnEntry(DEMIXShort[i]);
-            //end;
-         end;
+      for i := 0 to pred(DEMsUsed.Count) do begin
+         AnEntry(DEMsUsed.Strings[i]);
       end;
       PutBitmapInBox(Result);
       Dec(StartFontSize);
@@ -1276,7 +1451,7 @@ begin
 
    DEMIXSettingsDir := ProgramRootDir + 'demix_settings\';
    DEMIX_area_dbName := DEMIXSettingsDir + 'demix_test_areas_v3.dbf';
-   DEMIX_criteria_dbName := DEMIXSettingsDir + 'demix_criteria.dbf';
+   //DEMIX_criteria_dbName := DEMIXSettingsDir + 'demix_criteria.dbf';
 
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
    DEMIX_Ref_Half_sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_0.5sec\';
@@ -1284,10 +1459,7 @@ begin
    DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
    DEMIX_distrib_graph_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_difference_distrib_graphs\';
    DEMIX_3DEP_Dir := DEMIX_Base_DB_Path + 'wine_contest_v2_3dep\';
-
-   //all_difference_results_dir := DEMIX_Base_DB_Path + 'all_difference_tile_stats\';
    DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
-   DEMIX_GIS_dbName := DEMIX_Base_DB_Path + 'wine_contest_database\demix_gis_db_v2.5.dbf';
 
    {$IfDef DEMIX_SAGA_channels}
       DEMIX_test_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_test_dems_no_sink\';
@@ -1311,6 +1483,7 @@ begin
    SafeMakeDir(wbt_out_test_dir);
    SafeMakeDir(saga_out_ref_dir);
    SafeMakeDir(saga_out_test_dir);
+
 
    DEMIX_final_DB_dir := DEMIX_Base_DB_Path + 'wine_contest_database\';
    SafeMakeDir(DEMIX_final_DB_dir);
@@ -1365,50 +1538,33 @@ begin
 end;
 
 
-function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
+function DEMIX_GetListOfAreas : tStringList;
 var
-   fName : PathStr;
-   PickedNum : integer;
+  i : integer;
+  AreaDir,TileDir : PathStr;
 begin
-   Result := tStringList.Create;
-   fName := AreaListFName;
-   if CanLimitAreas then begin
-      case ModeForAreaSelection of
-         1 : begin
-                Result.LoadFromFile(fName);
-             end;
-         2 : begin
-                Result.LoadFromFile(fName);
-                MultiSelectSingleColumnStringList(DEMIXModeName + ' Areas to process',PickedNum,Result,true,true);
-             end;
-         3 : begin
-               fName := DEMIXSettingsDir;
-               if GetExistingFileName('DEMIX areas','area*.txt',fName) then begin
-                  Result.LoadFromFile(fName);
-               end;
-             end;
-      end;
-   end
-   else begin
-      Result.LoadFromFile(fName);
+   Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
+   if (Result.Count = 0) then begin
+      GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
+      Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    end;
-
-
-(*
-
-   fName := AreaListFName;
-   if FileExists(fName) or GetExistingFileName('DEMIX areas','*.txt',fName) then begin
-      Result.LoadFromFile(fName);
-      if CanLimitAreas then MultiSelectSingleColumnStringList(DEMIX_mode_abbreviation(MDDef.DEMIX_mode) + ' Areas to process',PickedNum,Result,true,true);
+   for i := pred(Result.Count) downto 0 do begin
+      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm') then Result.Delete(i)
    end;
-*)
+   Result.Sort;
+end;
+
+
+function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
+begin
+  if CanLimitAreas then Result := ModeForAreaSelection
+  else Result := DEMIX_GetListOfAreas;
 end;
 
 
 function GetCountryForArea(Area : shortString) : shortstring;
 var
    Table : tMyData;
-   //Tile  : shortstring;
 begin
    if FileExists(DEMIX_area_dbName) then begin
      Table := tMyData.Create(DEMIX_area_dbName);
@@ -1472,19 +1628,6 @@ begin
 end;
 
 
-
-procedure OpenDEMIXDatabaseForAnalysis;
-begin
-   if not FileExists(DEMIX_GIS_dbName) then Petmar.GetExistingFileName('DEMIX db version','*.dbf',DEMIX_GIS_dbName);
-   OpenNumberedGISDataBase(DEMIX_DB,DEMIX_GIS_dbName,false);
-   if ValidDB(DEMIX_DB) then begin
-      GetDEMIXpaths(false,DEMIX_DB);
-      GISdb[DEMIX_DB].LayerIsOn := false;
-      DoDEMIXFilter(DEMIX_DB);
-   end;
-end;
-
-
 function GetWinnerBetweenTwoDEMs(dbOnTable : integer; DEM1,DEM2 : shortstring; Tolerance : float32) : shortstring;
 var
    eval1,eval2 : float32;
@@ -1495,9 +1638,6 @@ begin
    else if (eval2 + Tolerance < Eval1) then Result := DEM2
    else Result := 'TIE';
 end;
-
-
-
 
 
 procedure DoDEMIX_DifferenceMaps(AreaName,ShortName,LongName : shortString; var Graph1,Graph2 : tThisBaseGraph);
@@ -2103,7 +2243,7 @@ var
       begin
          {$IfDef RecordRangeScales} WriteLineToDebugFile('SaveAndOpenDB: ' + fName + '  Findings.Count=' + IntToStr(FUVFindings.Count)); {$EndIf}
          db := StringList2CSVtoDB(Findings,fName,true);
-         MainGraphOptions(db,Nil,Nil);
+         MainGraphOptions(db,0,Nil,Nil,Nil,Nil);
       end;
 
       procedure StartFindings;

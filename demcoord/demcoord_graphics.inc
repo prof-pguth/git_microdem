@@ -380,8 +380,8 @@ begin
                       ',"h":' + IntToStr(DEMheader.NumRow) +
                       ',"minz":' + RealToString(DEMheader.MinElev,-18,-1) +
                       ',"maxz":' + RealToString(DEMheader.MaxElev,-18,-1) +
-                      ',"llx":' + RealToString(DEMheader.DEMSWCornerX,-18,-6) +
-                      ',"lly":' + RealToString(DEMheader.DEMSWCornerY,-18,-6) +
+                      ',"llx":' + RealToString(DEMheader.SWCornerX,-18,-6) +
+                      ',"lly":' + RealToString(DEMheader.SWCornerY,-18,-6) +
                       ',"dx":' + RealToString(DEMheader.DEMxSpacing,-18,-6) +
                       ',"dy":' + RealToString(DEMheader.DEMySpacing,-18,-6) +
                       ',"proj":';

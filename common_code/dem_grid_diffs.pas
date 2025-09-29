@@ -30,6 +30,7 @@ type
     CheckBox5: TCheckBox;
     RadioGroup1: TRadioGroup;
     RadioGroup2: TRadioGroup;
+    CheckBox4: TCheckBox;
     procedure OKBtnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -60,6 +61,7 @@ begin
    GridDiffForm.CheckBox3.Checked := MDDef.ShowScatterplot;
    GridDiffForm.CheckBox2.Checked := MDDef.ShowGridDiffMap;
    GridDiffForm.CheckBox1.Checked := MDDef.ShowGridDiffHistogram;
+   GridDiffForm.CheckBox4.Checked := MDDef.ShowDiffDistStats;
    GridDiffForm.CheckBox5.Checked := MDDef.AutoMergeStartDEM;
    GridDiffForm.Edit1.Text := RealToString(abs(MDDef.TopCutLevel),-8,-2);
    GridDiffForm.Caption := 'Difference ' + DEMGlb[DEM1].AreaName + ' minus ' + DEMGlb[DEM2].AreaName;
@@ -78,6 +80,8 @@ begin
    MDDef.ShowGridDiffMap := CheckBox2.Checked;
    MDDef.ShowGridDiffHistogram := CheckBox1.Checked;
    MDDef.ShowScatterplot := CheckBox3.Checked;
+   MDDef.ShowDiffDistStats := CheckBox4.Checked;
+
    MDDef.AutoMergeStartDEM := CheckBox5.Checked;
 
    CheckEditString(Edit1.Text,MDDef.TopCutLevel);
