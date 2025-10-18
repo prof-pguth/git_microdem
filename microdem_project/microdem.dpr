@@ -240,7 +240,6 @@ uses
   monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
   pick_several_dems in '..\common_code\pick_several_dems.pas' {tPickGridsForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
-  demix_cop_alos in '..\demix\demix_cop_alos.pas',
   DEM_NLCD in '..\common_code\DEM_NLCD.pas',
   demix_definitions in '..\demix\demix_definitions.pas',
   demix_control in '..\demix\demix_control.pas',
@@ -354,7 +353,8 @@ uses
   demhandw in '..\microdem_open_source\demhandw.pas' {DemHandForm},
   BaseGraf in '..\microdem_open_source\BaseGraf.pas' {ThisBaseGraph},
   openness_choices in '..\ask_options\openness_choices.pas' {OpenOptForm},
-  dem_db_ops in '..\database\dem_db_ops.pas';
+  dem_db_ops in '..\database\dem_db_ops.pas',
+  diagonal_normalization in '..\ask_options\diagonal_normalization.pas' {PickDiagNormForm};
 
 {$R *.RES}
 

@@ -182,12 +182,12 @@ type
     AdminOptionsButton: TButton;
     BitBtn1: TBitBtn;
     PopupMenu2: TPopupMenu;
-    DP11: TMenuItem;
-    DP21: TMenuItem;
-    DP31: TMenuItem;
-    DP41: TMenuItem;
-    DP51: TMenuItem;
-    DP61: TMenuItem;
+    //DP11: TMenuItem;
+    //DP21: TMenuItem;
+    //DP31: TMenuItem;
+    //DP41: TMenuItem;
+    //DP51: TMenuItem;
+    //DP61: TMenuItem;
     KMLdelaysec1: TMenuItem;
     OpenGoogleEarth1: TMenuItem;
     Button1: TButton;
@@ -259,12 +259,12 @@ type
     procedure Edit23Change(Sender: TObject);
     procedure Edit6Change(Sender: TObject);
     procedure Edit8Change(Sender: TObject);
-    procedure DP11Click(Sender: TObject);
-    procedure DP21Click(Sender: TObject);
-    procedure DP31Click(Sender: TObject);
-    procedure DP41Click(Sender: TObject);
-    procedure DP51Click(Sender: TObject);
-    procedure DP61Click(Sender: TObject);
+    //procedure DP11Click(Sender: TObject);
+    //procedure DP21Click(Sender: TObject);
+    //procedure DP31Click(Sender: TObject);
+    //procedure DP41Click(Sender: TObject);
+    //procedure DP51Click(Sender: TObject);
+    //procedure DP61Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure KMLdelaysec1Click(Sender: TObject);
     procedure OpenGoogleEarth1Click(Sender: TObject);
@@ -336,6 +336,7 @@ uses
    {$Else}
       kml_creator,
    {$EndIf}
+   Nevadia_Main,
    Dragon_Plot_Init,
    DEM_Indexes,
    GetLatLn,
@@ -355,10 +356,12 @@ uses
    DEMOptions,
    BaseMap,
    Sun_position,
-   Nevadia_Main, map_overlays, //dem_browser,
+   map_overlays, //dem_browser,
    DataBaseCreate, DEMTiger;
 
 
+
+(*
 function IERunningEx : Boolean;
 var
    WinHandle : HWND;
@@ -393,7 +396,7 @@ begin
     end
    else Showmessage(ItsName + ' not found.');
 end;
-
+*)
 
 
 procedure LoadSatelliteImage;
@@ -637,7 +640,7 @@ begin
    Memo1.Lines.Add(Words);
 end;
 
-
+(*
 procedure TDragonPlotForm.DP11Click(Sender: TObject);
 begin
    OpenADP('DP-1.exe');
@@ -667,7 +670,7 @@ procedure TDragonPlotForm.DP61Click(Sender: TObject);
 begin
    OpenADP('DP-6');
 end;
-
+*)
 
 procedure TDragonPlotForm.ShowOnMaps(FoundPoint : boolean = true);
 begin
@@ -1040,10 +1043,10 @@ begin
    Depth := GISdb[TowerTable].MyData.GetFieldByNameAsFloat('SENSOR_RNG');
    Edit11.Text := RealToString(Depth,-18,0);
    AzTrue := Azimuth;
-   AzUTM := Azimuth-DEMglb[RegionalDEM].SelectionMap.MapDraw.GridTrueAngle;
+   AzUTM := Azimuth-DEMglb[RegionalDEM].SelectionMap.MapDraw.MapGridTrueAngle;
    MapAz := AzTrue;
 
-   DEMglb[RegionalDEM].SelectionMap.MapDraw.GridTrueAngle := DEMglb[RegionalDEM].SelectionMap.MapDraw.UTMGridToTrueNorthAngle(TowerLat,TowerLong);
+   DEMglb[RegionalDEM].SelectionMap.MapDraw.MapGridTrueAngle := DEMglb[RegionalDEM].SelectionMap.MapDraw.UTMGridToTrueNorthAngle(TowerLat,TowerLong);
 
    if (ShotMode = smCross) then begin
       DoCrossShot;
@@ -1225,7 +1228,7 @@ begin
       Edit9.Text := '-2';
    end;
 
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
    SettingUp := false;
 end;
 

@@ -535,7 +535,7 @@ begin
 end;
 
 
-function CreateNewGlobalGrid(GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
 var
    OK : boolean;
    NewHeader : tDEMheader;
@@ -543,9 +543,7 @@ begin
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGlobalGrid in'); {$EndIf}
    ZeroDEMHeader(NewHeader, false);
    NewHeader.DEMPrecision := Resolution;
-   if GreenwhichLeft then NewHeader.SWCornerX := 0
-   else NewHeader.SWCornerX := -180;
-   NewHeader.SWCornerY := -90;
+
    repeat
       if (Spacing < 0) then begin
          NewHeader.DEMxSpacing := 0.02;
@@ -562,16 +560,27 @@ begin
       OK := (NewHeader.NumRow <= MaxElevArraySize) and (NewHeader.NumCol <= DEMDefs.MaxColsInRAM);
       if not OK then MessageToContinue(ImpGridIncSpace);
     until OK;
+
+   if GreenwhichLeft then NewHeader.SWCornerX := 0
+   else NewHeader.SWCornerX := -180;
+   NewHeader.SWCornerY := -90;
+
+   if PixelIs = PixelIsPoint then begin
+      NewHeader.SWCornerX := NewHeader.SWCornerX + 0.5 * NewHeader.DEMxSpacing;
+      NewHeader.SWCornerY := NewHeader.SWCornerY + 0.5 * NewHeader.DEMySpacing;
+   end;
+
+
     ShowHourglassCursor;
     OpenAndZeroNewDEM(false,NewHeader,Result,'Global DEM',InitDEMmissing);
-    DEMGlb[Result].SetUpMap(false,MDDef.DefElevMap);
+    if OpenMap then DEMGlb[Result].SetUpMap(false,MDDef.DefElevMap);
 
     ShowDefaultCursor;
    {$IfDef RecordNewMaps} WriteLineToDebugFile('CreateNewGlobalGrid out'); {$EndIf}
 end;
 
 
-function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer) : integer;
+function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer; OpenMap : boolean = true) : integer;
 var
    NewHeadRecs : tDEMheader;
 begin
@@ -593,9 +602,11 @@ begin
    OpenAndZeroNewDEM(true,NewHeadRecs,Result,'',InitDEMmissing);
 
    {$IfDef VCL}
-      CreateDEMSelectionMap(Result,false,false,mtDEMBlank);
-      DEMGlb[Result].SelectionMap.N11view1Click(Nil);
-      DEMGlb[Result].SelectionMap.FormResize(Nil);
+      if OpenMap then begin
+         CreateDEMSelectionMap(Result,false,false,mtDEMBlank);
+         DEMGlb[Result].SelectionMap.N11view1Click(Nil);
+         DEMGlb[Result].SelectionMap.FormResize(Nil);
+      end;
    {$EndIf}
 end;
 

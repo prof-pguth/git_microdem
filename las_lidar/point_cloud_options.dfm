@@ -119,7 +119,7 @@ object pt_cloud_opts_fm: Tpt_cloud_opts_fm
     Top = 0
     Width = 581
     Height = 242
-    ActivePage = TabSheet6
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     OnChange = PageControl1Change

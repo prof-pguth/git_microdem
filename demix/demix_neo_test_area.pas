@@ -15,8 +15,8 @@ unit demix_neo_test_area;
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIXneo}
-   {$Define RecordLoadDEMIX}
+   //{$Define RecordDEMIXneo}
+   //{$Define RecordLoadDEMIX}
 {$EndIf}
 
 
@@ -226,7 +226,7 @@ var
       DEMFiles,DEMNames,TestDEMs : tStringList;
       Table : tMyData;
    begin {procedure MakeGraphDifferentDistributionsAllLandCover}
-      {$Define RecordDEMIXneo} WriteLineToDebugFile('MakeGraphDifferentDistributionsAllLandCover in');
+      {$IfDef RecordDEMIXneo} WriteLineToDebugFile('MakeGraphDifferentDistributionsAllLandCover in');  {$EndIf}
       GetDEMIXpaths;
       SetColorForProcessing;
       Area := 'oxnard';

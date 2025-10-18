@@ -61,41 +61,42 @@ var
             end;
          end;
 
+       {$IfDef IncludeCoastalDEMs}
+           procedure MaskAndTrimCoastalDEMs;
+           var
+              i : integer;
+           begin
+              if MDDef.DEMIX_mode in [dmU120] then begin
+                 for i := 1 to NumAreaDEMs do begin
+                     if (DEMGlb[AreaDEMs[i]].AreaName = 'COAST') then MaskDEM := AreaDEMs[i];
+                 end;
+              end;
+              if MDDef.DEMIX_mode in [dmU80] then begin
+                 for i := 1 to NumAreaDEMs do begin
+                     if (DEMGlb[AreaDEMs[i]].AreaName = 'DILUV') then MaskDEM := AreaDEMs[i];
+                 end;
+              end;
+              if MDDef.DEMIX_mode in [dmU10] then begin
+                 for i := 1 to NumPtDEMs do begin
+                     if (DEMGlb[PointDEMs[i]].AreaName = 'DILUV') then MaskDEM := PointDEMs[i];
+                 end;
+              end;
 
-       procedure MaskAndTrimCoastalDEMs;
-       var
-          i : integer;
-       begin
-          if MDDef.DEMIX_mode in [dmU120] then begin
-             for i := 1 to NumAreaDEMs do begin
-                 if (DEMGlb[AreaDEMs[i]].AreaName = 'COAST') then MaskDEM := AreaDEMs[i];
-             end;
-          end;
-          if MDDef.DEMIX_mode in [dmU80] then begin
-             for i := 1 to NumAreaDEMs do begin
-                 if (DEMGlb[AreaDEMs[i]].AreaName = 'DILUV') then MaskDEM := AreaDEMs[i];
-             end;
-          end;
-          if MDDef.DEMIX_mode in [dmU10] then begin
-             for i := 1 to NumPtDEMs do begin
-                 if (DEMGlb[PointDEMs[i]].AreaName = 'DILUV') then MaskDEM := PointDEMs[i];
-             end;
-          end;
+              if (NumFilledDEMIXtilesOnDEM(MaskDEM) = 0) then begin
+                 Result := false;
+                 {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
+              end;
+              if Result and ValidDEM(MaskDEM) then begin
+                 for i := dmxFirstPoint to NumPtDEMs do MaskToMatchUnderDEM(PointDEMs[i]);
+                 for i := dmxFirstArea to NumAreaDEMs do MaskToMatchUnderDEM(AreaDEMs[i]);
+                 {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
 
-          if (NumFilledDEMIXtilesOnDEM(MaskDEM) = 0) then begin
-             Result := false;
-             {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
-          end;
-          if Result and ValidDEM(MaskDEM) then begin
-             for i := dmxFirstPoint to NumPtDEMs do MaskToMatchUnderDEM(PointDEMs[i]);
-             for i := dmxFirstArea to NumAreaDEMs do MaskToMatchUnderDEM(AreaDEMs[i]);
-             {$IfDef ShowOpenBothPixelIsDEMs} wmdem.Tile; MessageToContinue('After masking'); {$EndIf};
-
-             for i := dmxFirstPoint to NumPtDEMs do TrimDEM(PointDEMs[i]);
-             for i := dmxFirstArea to NumAreaDEMs do TrimDEM(AreaDEMs[i]);
-             {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
-          end;
-       end;
+                 for i := dmxFirstPoint to NumPtDEMs do TrimDEM(PointDEMs[i]);
+                 for i := dmxFirstArea to NumAreaDEMs do TrimDEM(AreaDEMs[i]);
+                 {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After trimming'); {$EndIf};
+              end;
+           end;
+       {$EndIf}
 
    procedure OpenNeoMode;
    var
@@ -191,9 +192,11 @@ begin {function OpenBothPixelIsDEMs}
 
       {$IfDef ShowOpenBothPixelIsDEMs} if OpenMaps then wmdem.Tile; MessageToContinue('After loading'); {$EndIf};
 
-       if MDdef.DEMIX_AllowCoastal and (MDDef.DEMIX_mode in [dmU80,dmU10,dmU120]) then begin
-          MaskAndTrimCoastalDEMs;
-       end;
+       {$IfDef IncludeCoastalDEMs}
+           if MDdef.DEMIX_AllowCoastal and (MDDef.DEMIX_mode in [dmU80,dmU10,dmU120]) then begin
+              MaskAndTrimCoastalDEMs;
+           end;
+       {$EndIf}
 
        Result := true;
        {$If Defined(RecordDEMIXopenGrids)} WriteLineToDebugFile('OpenBothPixelIsDEMs for ' + Area + '  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
@@ -235,28 +238,29 @@ begin
    end;
 end;
 
+{$IfDef ExternalProgramsSaveCriteria}
+    procedure CompareConvergenceIndex(AreaName : ShortString);
 
-procedure CompareConvergenceIndex(AreaName : ShortString);
+          procedure TryToOpen(fName : PathStr; NewName : shortstring);
+          var
+             DEM : integer;
+          begin
+             DEM := OpenNewDEM(fName);
+             if ValidDEM(DEM) then begin
+                DEMglb[DEM].AreaName := NewName;
+                DEMglb[DEM].SelectionMap.Caption := NewName;
+             end;
+          end;
 
+    begin
+       GetDEMIXpaths(false);
+       TryToOpen(wbt_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif', 'wbt_ref_conin_'+ AreaName);
+       TryToOpen(wbt_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'wbt_COP_conin_'+ AreaName);
+       TryToOpen(saga_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif','saga_ref_conin_'+ AreaName);
+       TryToOpen(saga_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'saga_COP_conin_'+ AreaName);
+    end;
+{$EndIf}
 
-      procedure TryToOpen(fName : PathStr; NewName : shortstring);
-      var
-         DEM : integer;
-      begin
-         DEM := OpenNewDEM(fName);
-         if ValidDEM(DEM) then begin
-            DEMglb[DEM].AreaName := NewName;
-            DEMglb[DEM].SelectionMap.Caption := NewName;
-         end;
-      end;
-
-begin
-   GetDEMIXpaths(false);
-   TryToOpen(wbt_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif', 'wbt_ref_conin_'+ AreaName);
-   TryToOpen(wbt_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'wbt_COP_conin_'+ AreaName);
-   TryToOpen(saga_out_ref_dir + 'CONIN_' + AreaName + '_dtm' + Ref1SecPointStr + '.tif','saga_ref_conin_'+ AreaName);
-   TryToOpen(saga_out_test_dir + 'CONIN_' + AreaName + '_cop.tif', 'saga_COP_conin_'+ AreaName);
-end;
 
 
 procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
@@ -269,8 +273,7 @@ begin
       SkipMenuUpdating := false;
       Areas := DEMIX_AreasWanted;
       for I := 0 to pred(Areas.Count) do begin
-         if CopLand then LoadCopAndLancoverForDEMIXTile(Areas.Strings[i])
-         else CompareConvergenceIndex(Areas.Strings[i]);
+         if CopLand then LoadCopAndLancoverForDEMIXTile(Areas.Strings[i]);
       end;
    finally
       Areas.Destroy;

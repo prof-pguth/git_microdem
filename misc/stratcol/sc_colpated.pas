@@ -65,6 +65,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PETMAR,petmar_types,sc_ColLith, PETImage;
 
 
@@ -73,7 +74,7 @@ var
    Bitmap : tMyBitmap;
    i    : integer;
 begin
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
    PetImage.CreateBitmap(Bitmap,195,195);
    with Bitmap.Canvas do begin
       for i := 1 to 23 do begin

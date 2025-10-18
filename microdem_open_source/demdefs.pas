@@ -116,9 +116,11 @@ const
 const
    dmNotYetDefined = 0;
    dmFull = 1;
-   dmU120 = 2;
-   dmU80 = 3;
-   dmU10 = 4;
+   {$IfDef IncludeCoastalDEMs}
+      dmU120 = 2;
+      dmU80 = 3;
+      dmU10 = 4;
+   {$EndIf}
 
 
 type
@@ -855,6 +857,19 @@ const
    ResampleModeOneSec = 3;
    ResampleModeRange = 4;
 
+const
+   nmNone = 0;
+   nmEastWest = 1;
+   nmNorthSouth = 2;
+   nmAvgSpace = 3;
+   nmBilinearDiagonal = 4;
+   nmInterpolateDiagonal = 5;
+   nmInterpolate45 = 6;
+   nm30m = 7;
+   nmTRIK = 8;
+   nmRRI = 9;
+
+
 type
    tDigitizeDatum = byte;
 
@@ -1146,7 +1161,6 @@ type
       FanTargetMustBeGrid : boolean;
       FanCurvAlg : tVerticalCurvAlg;
       StraightAlgorithm : tStraightAlgorithm;
-      //ElevInterpolation : tElevInterpolation;
       MaskAreaInterval,
       MaskRaySpacingDeg,
       SmartSwitchOver,
@@ -1998,6 +2012,9 @@ type
       WBDenoiseElevDiff  : float32;
 
       ElevInterpolation : tElevInterpolation;
+      DiagonalNormalization : byte;
+      MAD2K_Dirs4,
+      MAD2K_StrengthDirection : boolean;
 
       DEMIX_std_filters,
       DEMIX_slope_filters,
@@ -2007,7 +2024,7 @@ type
       DEMIX_urban_filters,
       DEMIX_average_criteria,
       DEMIX_AllowCoastal,
-      DEMIX_Geo_Tiles     : boolean;
+      DEMIX_Geo_Tiles   : boolean;
       DEMIX_series_symbol,
       DEMIX_Mode,
       DEMIXsymsize,
@@ -2016,9 +2033,11 @@ type
       DEMIX_groupWonLost : byte;
       DEMIX_BaseDir,
       DEMIX_FullDBfName,
-      DEMIX_U120DBfName,
-      DEMIX_U80DBfName,
-      DEMIX_U10DBfName,
+      {$IfDef IncludeCoastalDEMs}
+         DEMIX_U120DBfName,
+         DEMIX_U80DBfName,
+         DEMIX_U10DBfName,
+      {$EndIf}
       DEMIX_base_dir,
       DEMIX_tile_chars_fname,
       DEMIX_criteria_fName,
@@ -2036,12 +2055,16 @@ type
       DEMIX_FUV_graph_width,
       DEMIX_xsize,DEMIX_ysize : integer;
       DEMIX_open_ref_DSM,
-      MakeCOP_ALOS_diffMaps,
-      MakeCOP_ALOS_Cat_Maps,
-      MakeCOP_FABDEM_diffMaps,
-      MakeCOP_ALOS_Best_Map,
-      MakeRGB_Best_Map,
-      RGBbestSeparates,
+
+      {$IfDef IncludeOldDEMIXgraphics}
+          MakeCOP_ALOS_diffMaps,
+          MakeCOP_ALOS_Cat_Maps,
+          MakeCOP_FABDEM_diffMaps,
+          MakeCOP_ALOS_Best_Map,
+          MakeRGB_Best_Map,
+          RGBbestSeparates,
+      {$EndIf}
+
       OpenSavedMapsFUVSSIM,
       DoSSIM,
       DoFUV,
@@ -2476,6 +2499,7 @@ type
        DrawRangeCircles,
        ShowContourNeighborhood,
        GraphicalCoordVerify,
+       ShowPieN,
        DrapeExactly,
        ReverseZFields,
        IgnoreHistogramZero,

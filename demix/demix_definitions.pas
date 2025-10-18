@@ -15,13 +15,13 @@ unit demix_definitions;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
-   {$Define TrackCriteriaList}
+   //{$Define TrackCriteriaList}
 
    //{$Define RecordNeoDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
    //{$Define RecordTestDEMstart}
-   {$Define RecordDEMIXFilters}
+   //{$Define RecordDEMIXFilters}
    //{$Define RecordDiluvium}
    //{$Define TrackAverageStats}
    //{$Define RecordDEMIX_CONIN}
@@ -153,7 +153,6 @@ var
    DEMIXDEMTypeName,                                           //name of folder with the DEMs, in case there are multiple versions
    DEMIXshort     : array[1..MaxDEMIXDEM] of shortstring;      //short name used to identify DEM (comparing of multiple versions not currently implemented)
    DEMIXDEMcolors : array[1..MaxDEMIXDEM] of tPlatformColor;
-   //NotRetiredDEMs : array[1..MaxDEMIXDEM] of boolean;
    CriteriaFamily : shortstring;
    DEMIXModeName : shortstring;
    DEMIXMode : integer;
@@ -231,32 +230,40 @@ var
    DEMIX_DB,HalfSecRefDTM,HalfSecRefDSM,HalfSecDTM,HalfSecALOS,HalfSecCOP,
    DEMIXRefDEM,RefDTMpoint,RefDTMarea,RefDSMpoint,RefDSMarea, COPRefDTM, COPRefDSM : integer;
 
+   DEMIX_Base_DB_Path,
    DEMIX_final_DB_dir,
+   DEMIX_GIS_dbName,
+
    DEMIX_criteria_tolerance_fName,
    SSIMresultsDir, FUVresultsDir, PartialsResultsDir,CurvaturesResultsDir,
 
-   MD_out_ref_dir,MD_out_test_dir,
-   wbt_out_ref_dir,wbt_out_test_dir,
-   saga_out_ref_dir,saga_out_test_dir,
-   Stream_valley_dir,
+   {$IfDef ExternalProgramsSaveCriteria}
+      MD_out_ref_dir,MD_out_test_dir,
+      wbt_out_ref_dir,wbt_out_test_dir,
+      saga_out_ref_dir,saga_out_test_dir,
+   {$EndIf}
    GeomorphonsDir,
-   ChannelMissesDir,DEMIX_diff_dist,
+   DEMIX_diff_dist,
+
+   {$IfDef IncludeVectorCriteria}
+      Stream_valley_dir,
+      ChannelMissesDir,
+   {$EndIf}
 
    DEMIX_Ref_1sec,DEMIX_Ref_dsm_1sec,DEMIX_test_dems,
    DEMIX_Under_ref_dtm,DEMIX_Under_test_dems,                //locations for the 1" DEMs used in comparison
-   DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //used for inventories, when mixing comparison modes
+
+   {$IfDef IncludeCoastalDEMs}
+      DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //used for inventories, when mixing comparison modes
+   {$EndIf}
 
    DEMIX_Ref_Half_sec,
-   DEMIX_Base_DB_Path,
    DEMIX_profile_test_dir,
-
 
    DEMIX_area_lc100,
 
    DEMIX_area_dbName,
-   //DEMIX_criteria_dbName,
    DEMIX_Ref_Merge,
-   DEMIX_GIS_dbName,
 
    AreaListFName,
 
@@ -278,13 +285,10 @@ var
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
-   //procedure CreateDEMIX_diff_dist_DB_by_transposing(Overwrite : boolean);
    procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
-   //procedure AddFieldsToDEMIXDB(DBonTable : integer; theFields : tStringList);
-   //procedure MakeWinsDB(DBonTable : integer; aField : shortstring);
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDiffDistDB;
@@ -326,8 +330,6 @@ var
 
    procedure TilesInEachElevRangeForTestAreas;
    procedure MaskWaterInReferenceAndTestDEMs;
-
-
 {$EndIf}
 
 
@@ -336,8 +338,6 @@ var
    procedure InventoryDBwithDSMandDTMbyArea;
    procedure InventoryDEMIXdifferenceStats;
    procedure CheckTestDEMs;
-   //procedure CheckReferenceDEMsAreEGMandPixelIs;
-   procedure CheckLowElevationAreas;
    procedure VerifyTestDEMcoverages;
    procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
    procedure InventoryDEMIX_SSIM_FUV_Stats;
@@ -352,15 +352,17 @@ var
    procedure PruneMisnamedReferenceDTMs;
    procedure InventoryAreasAndTilesByCountry(DB : integer);
    {$IfDef DEMIX_SAGA_channels} procedure InventoryChannelDataByArea; {$EndIf}
+   {$IfDef IncludeCoastalDEMs} procedure CheckLowElevationAreas; {$EndIf}
 
 
-procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
 
-
-//vector (channel network, ridges, valleys) comparisons
-   procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
-   procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
-   procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
+    {$IfDef IncludeVectorCriteria}
+    //vector (channel network, ridges, valleys) comparisons
+       procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
+       procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
+       procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
+       procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
+    {$EndIf}
 
    {$IfDef DEMIX_SAGA_channels}
       procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
@@ -377,7 +379,6 @@ procedure TrimReferenceDEMsToDEMIXtiles;
 function AreDEMIXscoresInDB(db : integer) : boolean;
 procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
 procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
-
 
 procedure CreateCopHeadToHeaddb(db : integer);
 procedure CriteriaInSSIM_FUV_db(db : integer);
@@ -429,6 +430,8 @@ uses
 
 {$include demix_clusters.inc}
 
+{$include demix_create_lsp_grids.inc}
+
 {$IfDef IncludeOldDEMIX_RefDEM_Create}
    {$include demix_create_ref_dems.inc}
    {$include demix_create_test_dems.inc}
@@ -437,10 +440,9 @@ uses
 
 {$include demix_inventory_check_dems.inc}
 
-{$include demix_channels.inc}
-
-{$include demix_create_lsp_grids.inc}
-
+{$IfDef IncludeVectorCriteria}
+   {$include demix_channels.inc}
+{$EndIf}
 
 
 function InsureFUVinLSPname(aName : shortstring) : shortstring;

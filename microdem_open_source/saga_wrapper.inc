@@ -25,7 +25,7 @@
  end;
 
 
- function SAGAMap(OpenMap : boolean; cmd : shortstring; OutName : shortstring; ZUnits : tElevUnit; MapType :tMapType = mtElevRainbow) : integer;
+ function SAGAMap(OpenMap : boolean; cmd : shortstring; OutName : shortstring; ZUnits : tElevUnit; MapType :tMapType = mtElevSpectrum) : integer;
  var
     tName : PathStr;
  begin
@@ -168,6 +168,7 @@ begin
    end;
 end;
 
+
 function SAGA_CurvatureClassification(OpenMap : boolean; DEMName : PathStr; CurvatureClassFName : PathStr = '') : integer;
 //https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_4.html
 //saga_cmd ta_morphometry 4 [-DEM <str>] [-CLASSES <str>]
@@ -229,6 +230,7 @@ begin
       {$If Defined(RecordSAGALS)} WriteLineToDebugFile('Saga curvature class  ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
    end;
 end;
+
 
 
 (*
@@ -631,52 +633,4 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
        Result := SAGAMap(OpenMap,cmd,outname,euUndefined);
     end;
 
-(*
-SAGA_valley_depth
-//https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_channels_7.html
- Usage: saga_cmd ta_channels 7 [-ELEVATION <str>] [-VALLEY_DEPTH <str>] [-RIDGE_LEVEL <str>] [-THRESHOLD <double>] [-MAXITER <num>] [-NOUNDERGROUND <str>] [-ORDER <num>]
-  -ELEVATION:<str>    	Elevation
-	Grid, input
-  -VALLEY_DEPTH:<str> 	Valley Depth
-	Grid, output
-  -RIDGE_LEVEL:<str>  	Ridge Level
-	Grid, output, optional
-  -THRESHOLD:<double> 	Tension Threshold
-	Floating point
-	Minimum: 0.000000
-	Default: 1.000000
-  -MAXITER:<num>      	Maximum Iterations
-	Integer
-	Minimum: 0
-	Default: 0
-  -NOUNDERGROUND:<str>	Keep Ridge Level above Surface
-	Boolean
-	Default: 1
-  -ORDER:<num>        	Ridge Detection Threshold
-	Integer
-	Minimum: 1
-	Maximum: 7
-	Default: 4
-
-
-SAGA_Convergence Index
-https://saga-gis.sourceforge.io/saga_tool_doc/8.2.1/ta_morphometry_1.html
-Usage: saga_cmd ta_morphometry 1 [-ELEVATION <str>] [-RESULT <str>] [-METHOD <str>] [-NEIGHBOURS <str>]
-  -ELEVATION:<str> 	Elevation
-	Grid, input
-  -RESULT:<str>    	Convergence Index
-	Grid, output
-  -METHOD:<str>    	Method
-	Choice
-	Available Choices:
-	[0] Aspect
-	[1] Gradient
-	Default: 0
-  -NEIGHBOURS:<str>	Gradient Calculation
-	Choice
-	Available Choices:
-	[0] 2 x 2
-	[1] 3 x 3
-	Default: 0
-*)
 

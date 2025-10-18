@@ -3489,6 +3489,125 @@ object wmdem: Twmdem
     object N56: TMenuItem
       Caption = '-'
     end
+    object UTMbasedtilescreation1: TMenuItem
+      Caption = 'UTM based tiles creation'
+      OnClick = UTMbasedtilescreation1Click
+    end
+    object UTMbasedFUVcalculations1: TMenuItem
+      Caption = 'UTM based FUV calculations'
+      OnClick = UTMbasedFUVcalculations1Click
+    end
+    object UTMbasedFUVpartialscalculations1: TMenuItem
+      Caption = 'UTM based, FUV partials calculations'
+      OnClick = UTMbasedFUVpartialscalculations1Click
+    end
+    object UTMbasedFUVcurvaturecalculations1: TMenuItem
+      Caption = 'UTM based, FUV curvature calculations'
+      OnClick = UTMbasedFUVcurvaturecalculations1Click
+    end
+    object UTMbaseddifferencedistributionstatistics1: TMenuItem
+      Caption = 'UTM based difference distribution statistics'
+      OnClick = UTMbaseddifferencedistributionstatistics1Click
+    end
+    object UTMbasedtilestatistics1: TMenuItem
+      Caption = 'UTM based tile statistics'
+      OnClick = UTMbasedtilestatistics1Click
+    end
+    object UTMbasedallareacomputations1: TMenuItem
+      Caption = 'UTM based, all area computations'
+      OnClick = UTMbasedallareacomputations1Click
+    end
+    object N15: TMenuItem
+      Caption = '-'
+    end
+    object DeleteresultsCSVforareas1: TMenuItem
+      Caption = 'Delete results CSV for areas to recompute'
+      OnClick = DeleteresultsCSVforareas1Click
+    end
+    object N25: TMenuItem
+      Caption = '-'
+    end
+    object UTMbasedmergeFUVresultsintoDB1: TMenuItem
+      Caption = 'UTM based, merge FUV results into DB'
+      OnClick = UTMbasedmergeFUVresultsintoDB1Click
+    end
+    object UTMbasedmergedifferencedistribution1: TMenuItem
+      Caption = 'UTM based, merge difference distribution into DB'
+      OnClick = UTMbasedmergedifferencedistribution1Click
+    end
+    object UTMbasedmergecurvaturesintoDB1: TMenuItem
+      Caption = 'UTM based, merge curvatures into DB'
+      OnClick = UTMbasedmergecurvaturesintoDB1Click
+    end
+    object UTMbasedmergepartialsintoDB1: TMenuItem
+      Caption = 'UTM based, merge partials into DB'
+      OnClick = UTMbasedmergepartialsintoDB1Click
+    end
+    object UTMbasedmergetilestatisiticsintoDB1: TMenuItem
+      Caption = 'UTM based, merge tile statisitics into DB'
+      OnClick = UTMbasedmergetilestatisiticsintoDB1Click
+    end
+    object UTMbasedmergeallDB1: TMenuItem
+      Caption = 'UTM based, merge all DB'
+      OnClick = UTMbasedmergeallDB1Click
+    end
+    object N44: TMenuItem
+      Caption = '-'
+    end
+    object UTMbaseaverageslopebygeometry1: TMenuItem
+      Caption = 'UTM based average tile elev/slope, reference and test DEMs'
+      OnClick = UTMbaseaverageslopebygeometry1Click
+    end
+    object UTMbasedCVSfilesbyarea1: TMenuItem
+      Caption = 'UTM based, CSV files by area report'
+      OnClick = UTMbasedCVSfilesbyarea1Click
+    end
+    object UTMbasedfilefillreport1: TMenuItem
+      Caption = 'UTM based file fill report'
+      OnClick = UTMbasedfilefillreport1Click
+    end
+    object Inventorysourcefiles1: TMenuItem
+      Caption = 'Inventory source files'
+      OnClick = Inventorysourcefiles1Click
+    end
+    object InventoryofLC10files1: TMenuItem
+      Caption = 'Inventory LC10 files'
+      OnClick = InventoryofLC10files1Click
+    end
+    object Compare10mand100mlandcover1: TMenuItem
+      Caption = 'Compare 10 m and 100 m landcover'
+      OnClick = Compare10mand100mlandcover1Click
+    end
+    object Averagetileslopemapgeneration1: TMenuItem
+      Caption = 'Average tile slope map generation'
+      OnClick = Averagetileslopemapgeneration1Click
+    end
+    object N49: TMenuItem
+      Caption = '-'
+    end
+    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
+      Caption = 'Moves tiles into 10 km UTM block directories'
+      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
+    end
+    object Download10x10kmblocks1: TMenuItem
+      Caption = 'Prep Download 10x10 km blocks'
+      OnClick = Download10x10kmblocks1Click
+    end
+    object MovemergedtilereferenceandtestDEMs1: TMenuItem
+      Caption = 'Move merged tile reference and test DEMs'
+      OnClick = MovemergedtilereferenceandtestDEMs1Click
+    end
+    object FixGEDTMlateadditonproblems1: TMenuItem
+      Caption = 'Fix  problems (hard coded for ONE problem)'
+      OnClick = FixGEDTMlateadditonproblems1Click
+    end
+    object CloneEXEformultithreading1: TMenuItem
+      Caption = 'Clone EXE (for multithreading)'
+      OnClick = CloneEXEformultithreading1Click
+    end
+    object N66: TMenuItem
+      Caption = '-'
+    end
     object Geotiles1: TMenuItem
       Caption = 'Geo tiles (not all recently tested)'
       object OpenDEMIXdatabase1: TMenuItem
@@ -3516,7 +3635,6 @@ object wmdem: Twmdem
       end
       object Compareconvergenceindexfortestarea1: TMenuItem
         Caption = 'Compare convergence index for test area'
-        OnClick = Compareconvergenceindexfortestarea1Click
       end
       object Processdifferencestatisticspertile1: TMenuItem
         Caption = 'Process difference distribution statistics per tile '
@@ -3673,12 +3791,10 @@ object wmdem: Twmdem
           end
           object CreatetestareaDEMSskipifexists1: TMenuItem
             Caption = 'Skip if exists'
-            OnClick = CreatetestareaDEMSskipifexists1Click
           end
         end
         object Createlandcovergrids1: TMenuItem
           Caption = 'Create land cover grids'
-          OnClick = Createlandcovergrids1Click
         end
         object EditreferenceandtestDEMs1: TMenuItem
           Caption = 'Edit reference and test DEMs'
@@ -3745,116 +3861,6 @@ object wmdem: Twmdem
         OnClick = MergeDEMIXtilestats1Click
       end
     end
-    object N52: TMenuItem
-      Caption = '-'
-    end
-    object UTMbasedtilescreation1: TMenuItem
-      Caption = 'UTM based tiles creation'
-      OnClick = UTMbasedtilescreation1Click
-    end
-    object UTMbasedFUVcalculations1: TMenuItem
-      Caption = 'UTM based FUV calculations'
-      OnClick = UTMbasedFUVcalculations1Click
-    end
-    object UTMbasedFUVpartialscalculations1: TMenuItem
-      Caption = 'UTM based, FUV partials calculations'
-      OnClick = UTMbasedFUVpartialscalculations1Click
-    end
-    object UTMbasedFUVcurvaturecalculations1: TMenuItem
-      Caption = 'UTM based, FUV curvature calculations'
-      OnClick = UTMbasedFUVcurvaturecalculations1Click
-    end
-    object UTMbaseddifferencedistributionstatistics1: TMenuItem
-      Caption = 'UTM based difference distribution statistics'
-      OnClick = UTMbaseddifferencedistributionstatistics1Click
-    end
-    object UTMbasedtilestatistics1: TMenuItem
-      Caption = 'UTM based tile statistics'
-      OnClick = UTMbasedtilestatistics1Click
-    end
-    object UTMbasedallareacomputations1: TMenuItem
-      Caption = 'UTM based, all area computations'
-      OnClick = UTMbasedallareacomputations1Click
-    end
-    object N15: TMenuItem
-      Caption = '-'
-    end
-    object DeleteresultsCSVforareas1: TMenuItem
-      Caption = 'Delete results CSV for areas to recompute'
-      OnClick = DeleteresultsCSVforareas1Click
-    end
-    object N25: TMenuItem
-      Caption = '-'
-    end
-    object UTMbasedmergeFUVresultsintoDB1: TMenuItem
-      Caption = 'UTM based, merge FUV results into DB'
-      OnClick = UTMbasedmergeFUVresultsintoDB1Click
-    end
-    object UTMbasedmergedifferencedistribution1: TMenuItem
-      Caption = 'UTM based, merge difference distribution into DB'
-      OnClick = UTMbasedmergedifferencedistribution1Click
-    end
-    object UTMbasedmergecurvaturesintoDB1: TMenuItem
-      Caption = 'UTM based, merge curvatures into DB'
-      OnClick = UTMbasedmergecurvaturesintoDB1Click
-    end
-    object UTMbasedmergepartialsintoDB1: TMenuItem
-      Caption = 'UTM based, merge partials into DB'
-      OnClick = UTMbasedmergepartialsintoDB1Click
-    end
-    object UTMbasedmergetilestatisiticsintoDB1: TMenuItem
-      Caption = 'UTM based, merge tile statisitics into DB'
-      OnClick = UTMbasedmergetilestatisiticsintoDB1Click
-    end
-    object UTMbasedmergeallDB1: TMenuItem
-      Caption = 'UTM based, merge all DB'
-      OnClick = UTMbasedmergeallDB1Click
-    end
-    object N44: TMenuItem
-      Caption = '-'
-    end
-    object UTMbaseaverageslopebygeometry1: TMenuItem
-      Caption = 'UTM based average tile elev/slope, reference and test DEMs'
-      OnClick = UTMbaseaverageslopebygeometry1Click
-    end
-    object UTMbasedCVSfilesbyarea1: TMenuItem
-      Caption = 'UTM based, CSV files by area report'
-      OnClick = UTMbasedCVSfilesbyarea1Click
-    end
-    object UTMbasedfilefillreport1: TMenuItem
-      Caption = 'UTM based file fill report'
-      OnClick = UTMbasedfilefillreport1Click
-    end
-    object InventoryofLC10files1: TMenuItem
-      Caption = 'Inventory LC10 files'
-      OnClick = InventoryofLC10files1Click
-    end
-    object N49: TMenuItem
-      Caption = '-'
-    end
-    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
-      Caption = 'Moves tiles into 10 km UTM block directories'
-      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
-    end
-    object Download10x10kmblocks1: TMenuItem
-      Caption = 'Prep Download 10x10 km blocks'
-      OnClick = Download10x10kmblocks1Click
-    end
-    object MovemergedtilereferenceandtestDEMs1: TMenuItem
-      Caption = 'Move merged tile reference and test DEMs'
-      OnClick = MovemergedtilereferenceandtestDEMs1Click
-    end
-    object FixGEDTMlateadditonproblems1: TMenuItem
-      Caption = 'Fix  problems (hard coded for ONE problem)'
-      OnClick = FixGEDTMlateadditonproblems1Click
-    end
-    object CloneEXEformultithreading1: TMenuItem
-      Caption = 'Clone EXE (for multithreading)'
-      OnClick = CloneEXEformultithreading1Click
-    end
-    object N66: TMenuItem
-      Caption = '-'
-    end
     object N58: TMenuItem
       Caption = 'Range scales, 0.15 to 1 sec (single test area, single test DEM)'
     end
@@ -3873,7 +3879,6 @@ object wmdem: Twmdem
       end
       object Inventory3DEPtiles1: TMenuItem
         Caption = 'Inventory 3DEP source DEM tiles'
-        OnClick = Inventory3DEPtiles1Click
       end
       object CheckreferenceDEMs1: TMenuItem
         Caption = 'Inventory reference DEMs (number DTM/DSM by area)'
@@ -4046,11 +4051,9 @@ object wmdem: Twmdem
       end
       object CreatehalfsecondreferenceDEMs1: TMenuItem
         Caption = 'Create half second reference DEMs'
-        OnClick = CreatehalfsecondreferenceDEMs1Click
       end
       object CreaterangereferenceDEMs1: TMenuItem
         Caption = 'Create  reference DEMs for range pixel sizes'
-        OnClick = CreaterangereferenceDEMs1Click
       end
       object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
         Caption = 'Summarize vertical datum shift for EGM96 test DEMs'

@@ -18,18 +18,18 @@ unit DEMStat;
    {$IfDef Debug }
       //{$Define NoParallelFor}
       {$Define RecordDEMIX}
-      {$Define RecordFUV}
-      {$Define RecordFUVcreate}
-      {$Define RecordFUVcreateFull}
+      //{$Define RecordFUV}
+      //{$Define RecordFUVcreate}
+      //{$Define RecordFUVcreateFull}
       //{$Define RecordFUVbb}
       //{$Define MultipleLSPFUV}
       //{$Define RecordSensitivity}
       //{$Define RecordDEMIX_colors}
       //{$Define RecordComparisons}
       //{$Define RecordSSIM}
-      {$Define TrackCovariance}
-      {$Define TrackCovarianceFull}
-      {$Define RecordCovarianceFail}
+      //{$Define TrackCovariance}
+      //{$Define TrackCovarianceFull}
+      //{$Define RecordCovarianceFail}
       //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
       //{$Define RecordDEMIXTimeCriterion}
@@ -848,6 +848,19 @@ var
              CreateBitmap(BigBitmap,NumGraphs * (PanelX + BetweenGraphs) + LeftMargin + 25,NumGraphs * (PanelY + BetweenGraphs) + TopMargin + 25);
              BigBitmap.Canvas.Font.Size := 24;
              BigBitmap.Canvas.Font.Style := [fsBold];
+
+             for i := 1 to MaxDEMDataSets do begin
+                if DEMsWanted[i] and ValidDEM(i) then begin
+                   LabelName := DEMglb[i].AreaName;
+                   if (RemoveName <> '') then LabelName := System.SysUtils.StringReplace(LabelName, RemoveName, '', [rfReplaceAll]);
+                   LabelName := RemoveUnderscores(LabelName);
+                   while BigBitmap.Canvas.TextWidth(LabelName) > PanelX do begin
+                      BigBitmap.Canvas.Font.Size := BigBitmap.Canvas.Font.Size - 1;
+                   end;
+                end;
+             end;
+
+
              j := 0;
              for i := 1 to MaxDEMDataSets do begin
                 if DEMsWanted[i] and ValidDEM(i) then begin
@@ -1066,7 +1079,10 @@ begin
    MaxR := -1;
    zMin := 99999;
    zMax := -99999;
-   if (CorrelationMatrix <> Nil) then CorrelationMatrix.Add('LAT,LONG,XSHIFT,YSHIFT,R2,INTERCEPT,SLOPE');
+   if (CorrelationMatrix = Nil) then begin
+      CorrelationMatrix := tStringList.Create;
+      CorrelationMatrix.Add('LAT,LONG,XSHIFT,YSHIFT,R2,INTERCEPT,SLOPE');
+   end;
 
    for xs := MDDef.ShiftLoX to MDDef.ShiftHighX do begin
       for ys := MDDef.ShiftLoY to MDDef.ShiftHighY do begin
@@ -1099,10 +1115,10 @@ begin
                BestA := a;
                BestB := b;
             end;
-            if (CorrelationMatrix <> Nil) then begin
+            //if (CorrelationMatrix = Nil) then begin
                DEMGLB[MainDEM].DEMGridToLatLongDegree(ColC+xs,RowC+ys,Lat,Long);
                CorrelationMatrix.Add(RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7) + ',' + IntToStr(xs) + ',' + IntToStr(ys) + ',' + RealToString(r,-12,-5) );
-            end;
+            //end;
             {$IfDef RecordFullLagProblems} WriteLineToDebugFile(IntToStr(xs) + ',' + IntToStr(ys) + ',' + RealToString(r,-8,-4) + ',' + RealToString(a,-8,-4) + ',' + RealToString(ba,-8,-4));  {$EndIf}
          end;
         if (xs = 0) and (ys = 0) then NoLagR := R;
@@ -3158,8 +3174,6 @@ begin
      CloseFile(rfile);
      CloseFile(rfile2);
      MenuStr := GetSlopeLabel(i);
-     //ThisGraph.GraphDraw.LegendList.Add(MenuStr);
-     //ThisGraph2.GraphDraw.LegendList.Add(MenuStr);
      RoseGraph[i] := AspectStats[i].CreateRose(MenuStr);
      fName := MDtempDir + 'aspect_' + IntToStr(i) + '.bmp';
      SaveImageAsBMP(RoseGraph[i].Image1,fName);
@@ -3254,9 +3268,11 @@ function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer;
 type
   tCorrs = array[1..MaxDEMDataSets,1..MaxDEMDataSets] of float64;
 var
+  r2,MeanDiff2,MeanAbsDiff2,
   r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64;
-  i,n,j : Integer;
+  i,n,j,xoffset,yoffset : Integer;
   NPts : int64;
+  Symmetrical : boolean;
   Findings : tStringList;
   MenuStr : ansistring;
   Corrs : ^tCorrs;
@@ -3287,6 +3303,8 @@ begin
          UpdateProgressBar(n/NumDEMDataSetsOpen);
          for j := i to NumDEM do begin
             if ValidDEM(DEMsOrdered[j]) then begin
+               //if the grids do not have points at the same locations, we will use each in turn to interpolate
+               Symmetrical := DEMglb[DEMsOrdered[i]].SecondGridJustOffset(DEMsOrdered[j],xoffset,yoffset);
                TStr := 'Compute Grids ' + IntToStr(DEMsOrdered[i]) + ' and ' + IntToStr(DEMsOrdered[J]);
                wmDEM.SetPanelText(1,TStr,true);
                if (i = j) then begin
@@ -3295,18 +3313,25 @@ begin
                end
                else begin
                   {$IfDef RecordGridCorrrelationsFull} WriteLineToDebugFile(TStr); {$EndIf}
+                  if (not Symmetrical) then CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[j]].FullDEMGridLimits,DEMsOrdered[j],DEMsOrdered[i],NPts,r2,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff2,MeanAbsDiff2);
                   if CovariancesFromTwoGrids(DEMGlb[DEMsOrdered[i]].FullDEMGridLimits,DEMsOrdered[i],DEMsOrdered[j],NPts,r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff) then begin
                      if (Which = gcmR) then begin
                         Corrs^[i,j] := r;
-                        Corrs^[j,i] := r;
+                        if Symmetrical then Corrs^[j,i] := r
+                        else begin
+                           Corrs^[j,i] := r2;
+                           WriteLineToDebugFile(DEMglb[DEMsOrdered[i]].AreaName + ',' + DEMglb[DEMsOrdered[j]].AreaName + ',' + RealToString(r,-12,-6) + ',' + RealToString(r2,-12,-6));
+                        end;
                      end
                      else if (Which = gcmMAbD) then begin
                         Corrs^[i,j] := MeanAbsDiff;
-                        Corrs^[j,i] := MeanAbsDiff;
+                        if Symmetrical then Corrs^[j,i] := MeanAbsDiff
+                        else Corrs^[j,i] := MeanAbsDiff2;
                      end
                      else begin
                         Corrs^[i,j] := MeanDiff;
-                        Corrs^[j,i] := -MeanDiff;
+                        if Symmetrical then Corrs^[j,i] := -MeanDiff
+                        else Corrs^[j,i] := MeanDiff2;
                      end;
                   end;
                end;
@@ -3337,6 +3362,7 @@ begin
 
    if (Which = gcmMAbD) then Result.LegUnits := 'MAbD'
    else if (Which = gcmMAvD) then Result.LegUnits := 'MAvD';
+   (*
    for i := 1 to NumDEM do begin
       if ValidDEM(DEMsOrdered[i]) then begin
          if (DEMGlb[DEMsOrdered[i]].DEMHeader.DEMUsed = ArcSecDEM) then begin
@@ -3347,6 +3373,7 @@ begin
          end;
       end;
    end;
+   *)
    wmDEM.SetPanelText(1,'Matrix',true);
    Result.BitBtn6Click(Nil);
 

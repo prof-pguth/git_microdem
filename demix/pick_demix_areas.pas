@@ -11,7 +11,7 @@ unit pick_demix_areas;
 {$I nevadia_defines.inc}
 
    {$IfDef RecordProblems}
-      {$Define RecordPickAreas}
+      //{$Define RecordPickAreas}
    {$EndIf}
 
 

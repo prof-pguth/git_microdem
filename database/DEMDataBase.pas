@@ -15,7 +15,7 @@
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordDEMIX}
-      {$Define RecordDBsort}
+      //{$Define RecordDBsort}
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
       //{$Define RecordCloseDB}
@@ -34,7 +34,7 @@
       //{$Define LogModuleCreate}
       //{$Define RecordIcesat}
       //{$Define RecordPlotFabric}
-      {$Define RecordHistogram}
+      //{$Define RecordHistogram}
 
       //{$Define RecordFieldStatistics}
       //{$Define RecordOpenDataBase}
@@ -543,7 +543,7 @@ type
      procedure PurgeDeletedRecords;
      procedure DeleteAllSelectedRecords(ImSure : boolean = false);
 
-     procedure GetPointArrayForDBField(FieldName : ShortString; var Values : bfarray32; var NPts : int64; Min : float64 = 1; Max : float64 = -1);
+     procedure GetPointArrayForDBField(FieldName : ShortString; var Values : bfarray32; var NPts : int64);
      procedure LinearInterpolateAcrossGap(yfield,zField : shortstring);
      procedure RemoveDuplicatePositions;
      procedure FillTrackVoids;
@@ -638,7 +638,7 @@ type
 
      //graphs
          procedure HistogramByCategory(WantXField,FilterField : shortstring; AutoRescale : boolean; Summary : tStringList = nil);
-         function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+         function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; BinSize : float64 = -99): TThisBaseGraph;
          function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean) : TThisBaseGraph; //MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
          function CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean) : TThisBaseGraph;
 
@@ -1466,7 +1466,7 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.GetPointArrayForDBField(FieldName : ShortString; var Values : bfarray32; var NPts : int64; Min : float64 = 1; Max : float64 = -1);
+procedure TGISdataBaseModule.GetPointArrayForDBField(FieldName : ShortString; var Values : bfarray32; var NPts : int64);
 var
   fv : float32;
   rc : integer;
@@ -1480,10 +1480,8 @@ begin
    repeat
      {$IfDef VCL} if WantShowProgress and (NPts mod 1000 = 0) then UpdateProgressBar(Npts/rc); {$EndIf}
      if GetFloat32FromTableLinkPossible(FieldName,fv) then begin
-        if (Min > Max) or ((fv >= Min) and (fv <= Max)) then begin
-           values[NPts] := fv;
-           inc(NPts);
-        end;
+        values[NPts] := fv;
+        inc(NPts);
      end;
      MyData.Next;
      if (NPts > bfArrayMaxSize) then break;

@@ -2836,7 +2836,6 @@ object dbtablef: Tdbtablef
     end
     object AddCopDEMaverageslopeinarea1: TMenuItem
       Caption = 'Add CopDEM average slope, relief, land cover  in area'
-      OnClick = AddCopDEMaverageslopeinarea1Click
     end
     object Satelliteaddreflectance1: TMenuItem
       Caption = 'Satellite, add reflectance'
@@ -3461,6 +3460,9 @@ object dbtablef: Tdbtablef
       Caption = 'Rose diagram'
       OnClick = Rosediagram3Click
     end
+    object N50: TMenuItem
+      Caption = '-'
+    end
     object Sum1: TMenuItem
       Caption = 'Sum'
       OnClick = Sum1Click
@@ -3468,6 +3470,21 @@ object dbtablef: Tdbtablef
     object RMSE1: TMenuItem
       Caption = 'RMSE'
       OnClick = RMSE1Click
+    end
+    object IQR1: TMenuItem
+      Caption = 'IQR'
+      OnClick = IQR1Click
+    end
+    object Fieldpercentiles1: TMenuItem
+      Caption = 'Field percentiles'
+      OnClick = Fieldpercentiles1Click
+    end
+    object Singlefieldarithmetic1: TMenuItem
+      Caption = 'Single field arithmetic'
+      OnClick = Singlefieldarithmetic1Click
+    end
+    object N53: TMenuItem
+      Caption = '-'
     end
     object Longeststring2: TMenuItem
       Caption = 'Longest string'
@@ -3499,10 +3516,6 @@ object dbtablef: Tdbtablef
         Caption = 'Descending'
         OnClick = Descending2Click
       end
-    end
-    object Fieldpercentiles1: TMenuItem
-      Caption = 'Field percentiles'
-      OnClick = Fieldpercentiles1Click
     end
     object EditField1: TMenuItem
       Caption = 'Edit field'
@@ -3602,6 +3615,10 @@ object dbtablef: Tdbtablef
           Caption = 'Alphabetize'
           OnClick = Alphabetize1Click
         end
+        object Capitalize1: TMenuItem
+          Caption = 'Capitalize'
+          OnClick = Capitalize1Click
+        end
         object Trimblanks1: TMenuItem
           Caption = 'Trim blanks'
           OnClick = Trimblanks1Click
@@ -3627,10 +3644,6 @@ object dbtablef: Tdbtablef
           OnClick = Flipbinnames1Click
         end
       end
-    end
-    object Singlefieldarithmetic1: TMenuItem
-      Caption = 'Single field arithmetic'
-      OnClick = Singlefieldarithmetic1Click
     end
     object Hide1: TMenuItem
       Caption = 'Hide'
@@ -3742,65 +3755,6 @@ object dbtablef: Tdbtablef
     object N58: TMenuItem
       Caption = '-'
     end
-    object Currenttest1: TMenuItem
-      Caption = 
-        'Graph by evaluation criteria, with tile names and parameter sort' +
-        's'
-      Enabled = False
-      OnClick = Currenttest1Click
-    end
-    object Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem
-      Caption = 'Graph by area, with average score for selected criteria'
-    end
-    object Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem
-      Caption = 'Graph by tile, with average score for selected criteria'
-    end
-    object GraphSSIMFUVbyclustermeans1: TMenuItem
-      Caption = 'Graph SSIM/FUV by cluster means'
-      OnClick = GraphSSIMFUVbyclustermeans1Click
-    end
-    object GraphSSIMFUVbyDEMmeans1: TMenuItem
-      Caption = 'Graph SSIM/FUV by DEM means'
-    end
-    object Graphofcriteriaforareaortile1: TMenuItem
-      Caption = 'Graph of criteria evaluations for area or tile'
-      OnClick = Graphofcriteriaforareaortile1Click
-    end
-    object Clusterdiversity1: TMenuItem
-      Caption = 'Graphs all SSIM/FUV range by DEMs and clusters (very slow)'
-      OnClick = Clusterdiversity1Click
-    end
-    object Clustersensitivity1: TMenuItem
-      Caption = 'Cluster sensitivity'
-      Enabled = False
-      OnClick = Clustersensitivity1Click
-    end
-    object GraphofPrimaryDataFractionbyClusters1: TMenuItem
-      Caption = 'Graph of Primary Data Fraction by Clusters'
-      OnClick = GraphofPrimaryDataFractionbyClusters1Click
-    end
-    object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
-      Caption = 'Cluster whisker plots for tile characteristics'
-      object Alltiles1: TMenuItem
-        Caption = 'All tiles'
-        OnClick = Alltiles1Click
-      end
-      object Byclusters1: TMenuItem
-        Caption = 'By clusters'
-        OnClick = Byclusters1Click
-      end
-      object Winlosstie1: TMenuItem
-        Caption = 'Win/loss/tie'
-        OnClick = Winlosstie1Click
-      end
-    end
-    object Areasinclusters1: TMenuItem
-      Caption = 'Areas in clusters'
-      OnClick = Areasinclusters1Click
-    end
-    object N51: TMenuItem
-      Caption = '-'
-    end
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
       object TransposeSSIMR2forclusters1: TMenuItem
@@ -3852,15 +3806,11 @@ object dbtablef: Tdbtablef
     object Modifythistable1: TMenuItem
       Caption = 'Modify this table'
       object Addmultiplefields1: TMenuItem
-        Caption = 'Add multiple fields'
+        Caption = 'Add multiple fields (tile stats + best eval)'
         OnClick = Addmultiplefields1Click
       end
       object N54: TMenuItem
         Caption = '-'
-      end
-      object RankDEMs1: TMenuItem
-        Caption = 'Rank DEMs (scores/opinions) and list best by criterion and tile'
-        OnClick = RankDEMs1Click
       end
       object Evaluationrangeforcriterion1: TMenuItem
         Caption = 'Add best evaluation and range (max - min) for criterion and tile'
@@ -3870,14 +3820,6 @@ object dbtablef: Tdbtablef
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
       end
-      object AddCOPALOSpercentprimarydata1: TMenuItem
-        Caption = 'Add COP/ALOS PDF (percent primary data fraction)'
-        OnClick = AddCOPALOSpercentprimarydata1Click
-      end
-      object AddIMAGEfieldfordifferencedistributiongraphs1: TMenuItem
-        Caption = 'Add IMAGE field for difference distribution graphs'
-        OnClick = AddIMAGEfieldfordifferencedistributiongraphs1Click
-      end
       object N57: TMenuItem
         Caption = '-'
       end
@@ -3885,11 +3827,18 @@ object dbtablef: Tdbtablef
         Caption = 'Remove rows missing any evaluations'
         OnClick = Removerowsmissinganyevaluations1Click
       end
-      object N50: TMenuItem
+      object N59: TMenuItem
         Caption = '-'
       end
-      object N53: TMenuItem
-        Caption = 'Coffee break--add everything'
+      object RankDEMs1: TMenuItem
+        Caption = 'Rank DEMs (scores/opinions) and list best by criterion and tile'
+        Enabled = False
+        OnClick = RankDEMs1Click
+      end
+      object AddCOPALOSpercentprimarydata1: TMenuItem
+        Caption = 'Add COP/ALOS PDF (percent primary data fraction)'
+        Enabled = False
+        OnClick = AddCOPALOSpercentprimarydata1Click
       end
     end
     object Filterthistable1: TMenuItem
@@ -3953,6 +3902,65 @@ object dbtablef: Tdbtablef
         OnClick = PercentilesforCOPbycriterionforeachtile1Click
       end
     end
+    object N51: TMenuItem
+      Caption = '-'
+    end
+    object Currenttest1: TMenuItem
+      Caption = 
+        'Graph by evaluation criteria, with tile names and parameter sort' +
+        's'
+      Enabled = False
+      OnClick = Currenttest1Click
+    end
+    object Graphbyareawithaveragescoreforselectedcriteria1: TMenuItem
+      Caption = 'Graph by area, with average score for selected criteria'
+    end
+    object Graphbytilewithaveragescoreforselectedcriteria1: TMenuItem
+      Caption = 'Graph by tile, with average score for selected criteria'
+    end
+    object GraphSSIMFUVbyclustermeans1: TMenuItem
+      Caption = 'Graph SSIM/FUV by cluster means'
+      OnClick = GraphSSIMFUVbyclustermeans1Click
+    end
+    object GraphSSIMFUVbyDEMmeans1: TMenuItem
+      Caption = 'Graph SSIM/FUV by DEM means'
+    end
+    object Graphofcriteriaforareaortile1: TMenuItem
+      Caption = 'Graph of criteria evaluations for area or tile'
+      OnClick = Graphofcriteriaforareaortile1Click
+    end
+    object Clusterdiversity1: TMenuItem
+      Caption = 'Graphs all SSIM/FUV range by DEMs and clusters (very slow)'
+      OnClick = Clusterdiversity1Click
+    end
+    object Clustersensitivity1: TMenuItem
+      Caption = 'Cluster sensitivity'
+      Enabled = False
+      OnClick = Clustersensitivity1Click
+    end
+    object GraphofPrimaryDataFractionbyClusters1: TMenuItem
+      Caption = 'Graph of Primary Data Fraction by Clusters'
+      OnClick = GraphofPrimaryDataFractionbyClusters1Click
+    end
+    object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
+      Caption = 'Cluster whisker plots for tile characteristics'
+      object Alltiles1: TMenuItem
+        Caption = 'All tiles'
+        OnClick = Alltiles1Click
+      end
+      object Byclusters1: TMenuItem
+        Caption = 'By clusters'
+        OnClick = Byclusters1Click
+      end
+      object Winlosstie1: TMenuItem
+        Caption = 'Win/loss/tie'
+        OnClick = Winlosstie1Click
+      end
+    end
+    object Areasinclusters1: TMenuItem
+      Caption = 'Areas in clusters'
+      OnClick = Areasinclusters1Click
+    end
     object N49: TMenuItem
       Caption = '-'
     end
@@ -3964,10 +3972,6 @@ object dbtablef: Tdbtablef
       Caption = 'Mode--standard deviation plots'
       OnClick = Modestandarddeviationplots1Click
     end
-    object Graphfilters1: TMenuItem
-      Caption = 'Graph filters'
-      OnClick = Graphfilters1Click
-    end
     object Bestbysortedgeomorphometry1: TMenuItem
       Caption = 'Best by sorted geomorphometry values'
       object Pointfilter1: TMenuItem
@@ -3976,9 +3980,6 @@ object dbtablef: Tdbtablef
       object Pointfilter2: TMenuItem
         Caption = 'ALL points'
       end
-    end
-    object BestDEMbycategory1: TMenuItem
-      Caption = 'Graph best DEM (average score) for criteria and filters '
     end
     object N55: TMenuItem
       Caption = '-'
@@ -3989,9 +3990,6 @@ object dbtablef: Tdbtablef
     end
     object N48: TMenuItem
       Caption = '-'
-    end
-    object Sumscores1: TMenuItem
-      Caption = 'Average scores based on active filters'
     end
     object Graphmeanmedianbyterraincategory1: TMenuItem
       Caption = 'Graphs with various filters (experimental, untested recently)'
@@ -4020,10 +4018,6 @@ object dbtablef: Tdbtablef
         Caption = 'Graph difference values by DEMIX tile'
         OnClick = N7Elevationdifferencecriteria1Click
       end
-    end
-    object FriedmanTest1: TMenuItem
-      Caption = 'Friedman Test'
-      Enabled = False
     end
     object N47: TMenuItem
       Caption = '-'
@@ -4083,6 +4077,7 @@ object dbtablef: Tdbtablef
     end
     object FindmisplacedGEDTMv12testDEMs1: TMenuItem
       Caption = 'Misplaced or bad elevation units GEDTM v1.2 test DEMs'
+      Enabled = False
       OnClick = FindmisplacedGEDTMv12testDEMs1Click
     end
   end

@@ -167,6 +167,7 @@ uses
    DEMCoord, DEMDef_routines,
    Make_tables;
 
+
 procedure OverlayPointClouds(inBaseMap : tMapForm; DirOpen : PathStr = '');
 var
    Paths : tStringList;
@@ -212,7 +213,6 @@ begin
    pt_cloud_opts_fm.InitialCloudDisplay := true;
    {$If Defined(RecordLASfiles) or Defined(RecordLASopen) or Defined(TrackPointCloud)} WriteLineToDebugFile('OverlayPointCloud out'); {$EndIf}
 end;
-
 
 
 
@@ -667,7 +667,6 @@ var
             Total := 0;
             for z := First to Last do Total := Total + int[z];
             if Total = 0 then exit;
-            //ThisGraph2.GraphDraw.LegendList.Add(LegendEntry);
             ThisGraph2.OpenDataFile(rfile,LegendEntry);
             for z := First to Last do begin
                v[1] := Int[z] /Total * succ(Last-First);

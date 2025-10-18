@@ -24,7 +24,7 @@ begin
 end;
 
 
-function ExecuteWBandOpenMap(OpenMap : boolean; cmd : ansistring; OutName : PathStr; TheElevUnits : tElevUnit; MapType :tMapType = mtElevRainbow) : integer;
+function ExecuteWBandOpenMap(OpenMap : boolean; cmd : ansistring; OutName : PathStr; TheElevUnits : tElevUnit; MapType : tMapType = mtElevSpectrum) : integer;
 var
    TStr : shortstring;
    NPts : int64;
@@ -50,6 +50,8 @@ begin
    end;
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap out'); {$EndIf}
 end;
+
+
 
 
 function WBT_breach_depression(DEMName : PathStr; var BreachName : PathStr) : integer;
@@ -81,7 +83,7 @@ begin
       if D8 then TStr2 := 'D8' else TStr2 := 'FD8';
       if (FlowAccName = '') then FlowAccName := MDTempDir + 'wbt_' + TStr4 + 'flow_accumulation_' + TStr2 + '_' + TStr + ExtractFileNameNoExt(DEMName) + '.tif';
       cmd := WhiteBoxfName +  WBNoCompress + '-r=' + TStr2 +'FlowAccumulation -v -dem=' + BreachName + ' -o=' + FlowAccName + ' --out_type=cells' + TStr3;
-      Result := ExecuteWBandOpenMap(OpenMap,cmd,FlowAccName,euUndefined,mtElevRainbow);
+      Result := ExecuteWBandOpenMap(OpenMap,cmd,FlowAccName,euUndefined,mtElevSpectrum);
    end;
 end;
 
@@ -101,7 +103,7 @@ begin
    end
    else begin
       cmd := WhiteBoxfName + WBNoCompress + '-r=ExtractStreams -v --flow_accum=' + FlowAccName + ' -o=' + StreamName + ' --threshold=' + RealToString(Threshhold,-8,1);  // + ' --zero_background=false';
-      Result := ExecuteWBandOpenMap(OpenMap,cmd,StreamName,euUndefined,mtElevRainbow);
+      Result := ExecuteWBandOpenMap(OpenMap,cmd,StreamName,euUndefined,mtElevSpectrum);
    end;
 end;
 
@@ -118,7 +120,7 @@ begin
       WBT_extract_streams(false,DEMName,BreachName,FlowAccumulationName,StreamName,Threshhold);
       if (HANDName = '') then HandName := MDTempDir + 'wbt_elev_above_stream_' + ExtractFileNameNoExt(DEMName) + '.tif';
       cmd := WhiteBoxfName + WBNoCompress + '-r=ElevationAboveStream -v --dem=' + BreachName + ' --streams=' + StreamName + ' -o=' + HANDName;
-      Result := ExecuteWBandOpenMap(OpenMap,cmd,HandName,euUndefined,mtElevRainbow);
+      Result := ExecuteWBandOpenMap(OpenMap,cmd,HandName,euUndefined,mtElevSpectrum);
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_ElevAboveStream out, ' + HandName); {$EndIf}
    end;
 end;
@@ -142,7 +144,7 @@ begin
 
       if (WetnessName = '') then WetnessName := MDTempDir + 'wbt_wetness_index_' + ExtractFileNameNoExt(DEMName) + '.tif';
       cmd := WhiteBoxfName + WBNoCompress + '-r=WetnessIndex -v --sca=' + FlowAccName + ' --slope=' + SlopeName + ' -o=' + WetnessName + ' --units="degrees"';
-      Result := ExecuteWBandOpenMap(OpenMap,cmd,WetnessName,euUndefined,mtElevRainbow);
+      Result := ExecuteWBandOpenMap(OpenMap,cmd,WetnessName,euUndefined,mtElevSpectrum);
       {$IfDef RecordWBT} WriteLineToDebugFile('WBT_WetnessIndex out, ' + WetnessName); {$EndIf}
    end;
 end;
@@ -189,16 +191,28 @@ begin
   end;
 end;
 
+function WBT_Gaussian(OpenMap : boolean; InName : PathStr; Sigma : float32 = 0.75; OutName : PathStr = ''; TheElevUnits : tElevUnit = euUndefined; MapType : tMapType = mtElevSpectrum) : integer;
+// https://www.whiteboxgeo.com/manual/wbt_book/available_tools/image_processing_tools_filters.html#GaussianFilter
+//  >>./whitebox_tools -r=GaussianFilter -v --wd="/path/to/data/" -i=image.tif -o=output.tif --sigma=2.0
+var
+   cmd : ansistring;
+begin
+    if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
+       if (OutName = '') then OutName := MDTempDir + 'wbt_gaussian_' + ExtractFileNameNoExt(InName) + '.tif';
+       cmd := WhiteBoxfName + WBNoCompress + '-r=GaussianFilter -v -i=' + InName + ' -o=' + OutName + ' --sigma=' + RealToString(Sigma,-8,-2);
+       Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,TheElevUnits,MapType);
+    end;
+end;
 
 
 function WBT_MultidirectionalHillshadeMap(OpenMap : boolean; DEM : integer; OutName : PathStr = '') : integer;
 //https://www.whiteboxgeo.com/manual/wbt_book/available_tools/geomorphometric_analysis.html#Hillshade
+//     >>./whitebox_tools -r=Hillshade -v --wd="/path/to/data/" -i=DEM.tif -o=output.tif --azimuth=315.0 --altitude=30.0
 var
    cmd : ansistring;
 begin
   if WhiteBoxPresent then begin
      if Outname = '' then OutName := MDTempDir + 'wbt_multi_hillshade_' + DEMGlb[DEM].AreaName + '.tif';
-//     >>./whitebox_tools -r=Hillshade -v --wd="/path/to/data/" -i=DEM.tif -o=output.tif --azimuth=315.0 --altitude=30.0
      cmd := WhiteBoxfName + WBNoCompress + '-r=MultidirectionalHillshade -v -i=' + DEMGlb[DEM].GeotiffDEMName + ' -o=' + OutName +
          ' --altitude=30' + ' --full_mode';
      Result := ExecuteWBandOpenMap(OpenMap,cmd,OutName,euUndefined,mtElevGray);
@@ -227,7 +241,7 @@ begin
   if WhiteBoxPresent and FileExistsErrorMessage(InName) then begin
      if (OutName = '') then OutName := MDTempDir + 'wbt_TRI_' + ExtractFileNameNoExt(InName) + '.tif';
      cmd := WhiteBoxfName + WBNoCompress + '-r=RuggednessIndex -v --dem=' + InName + ' -o=' + OutName;
-     Result := ExecuteWBandOpenMap(Openmap,cmd,OutName,euMeters,mtElevRainbow);
+     Result := ExecuteWBandOpenMap(Openmap,cmd,OutName,euMeters,mtElevSpectrum);
   end;
 end;
 

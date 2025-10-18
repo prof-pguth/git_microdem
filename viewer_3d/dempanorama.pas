@@ -47,6 +47,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PETMAR,DEMDefs;
 
 

@@ -672,8 +672,8 @@ end;
 
 
 procedure SafeMakeDir(DirName : PathStr);
-var
-   IntDirs : tStringList;
+//var
+   //IntDirs : tStringList;
    //i : integer;
 begin
    if (DirName = '') then begin
@@ -685,29 +685,6 @@ begin
      MkDir(DirName);
      {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir try made OK ' + DirName); {$EndIf}
    end;
-(*
-
-   and (not ValidPath(DirName)) then begin
-      IntDirs := ParsePath(DirName);
-      {$IfDef VCL}
-         {$IfDef RecordMakeDir}
-            WriteLineToDebugFile('Petmar.SafeMakeDir Desired path: ' + DirName);
-            WriteLineToDebugFile('Petmar.SafeMakeDir found base path: ' + IntDirs[0]);
-         {$EndIf}
-         DirName := IntDirs.Strings[0] + ':' + PathDelim;
-         for i := 1 to pred(IntDirs.Count) do begin
-            DirName := DirName + IntDirs.Strings[i];
-            if DirName[length(DirName)] <> PathDelim then DirName := DirName + PathDelim;
-            if (not ValidPath(DirName)) then begin
-               {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir ' + DirName); {$EndIf}
-               MkDir(DirName);
-            end;
-         end;
-      {$Else}
-         MkDir(DirName);
-      {$EndIf}
-   end;
-*)
 end;
 
 

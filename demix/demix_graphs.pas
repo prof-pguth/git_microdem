@@ -16,14 +16,14 @@ unit demix_graphs;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordDEMIX}
    //{$Define RecordDEMIX_OpenGraph}
-   {$Define RecordDEMIX_evaluations_graph}
-   {$Define TrackCriteriaList}
+   //{$Define RecordDEMIX_evaluations_graph}
+   //{$Define TrackCriteriaList}
    //{$Define RecordWinningPies}
    //{$Define RecordDEMIX_criteria_colors}
    //{$Define RecordDEMIXWins}
    //{$Define TrackColors}               //must also be set in BaseGraf unit
    //{$Define RecordAverageScoresGraph}
-   {$Define RecordDEMIXGraph}
+   //{$Define RecordDEMIXGraph}
    //{$Define RecordDEMIXGraphFull}
 {$EndIf}
 
@@ -481,6 +481,11 @@ const
                Graph.GraphDraw.MaxVertAxis := 1.05;
                Graph.GraphDraw.MinHorizAxis := 0.5;
                Graph.GraphDraw.MaxHorizAxis := UseLSPs.Count  + 0.5;
+               Graph.GraphDraw.SimpleYAxis := true;
+               Graph.GraphDraw.MinYLabels := 0;
+               Graph.GraphDraw.MaxYLabels := 1;
+               Graph.GraphDraw.YLabelIncr := 0.2;
+
                FinishGraph(Graph,Findings,AddLegend);
             end;
 
@@ -828,7 +833,7 @@ var
    Criteria2 : tStringList;
    Criterion : shortstring;
 begin {procedure MainGraphOptions}
-   if ValidDB(DBonTable) and TileCharacteristicsInDB(DBOnTable,true) then begin
+   if ValidDB(DBonTable) and  ((DesiredOption in [4]) or TileCharacteristicsInDB(DBOnTable,true)) then begin
       BaseFilter := GISdb[DBonTable].MyData.Filter;
       if (UseDEMs = Nil) then begin
          MessageToContinue('UseDEMs = Nil, should not be here');
@@ -1242,7 +1247,7 @@ var
          end;
 
 
-begin
+begin {function WinningPercentagesComparedToCOP}
      {$IfDef RecordDEMIXWins} WriteLineToDebugFile('WinningPercentagesComparedToCOP in, DEMs='+ IntToStr(inUseDEMs.Count)); {$EndIf};
      {$IfDef RecordDEMIXWins} WriteStringListToDebugFile(Criteria); {$EndIf};
       DEM1 := CompareDEM;
@@ -1324,18 +1329,8 @@ begin
       Result.Width := 500;
       Result.Height := 300 + 25 * succ(Criteria.Count) * (UseDEMs.Count);
 
-
-
       {$IfDef RecordDEMIXWns} WriteLineToDebugFile('Graph=' + IntToStr(Result.Width) + 'x' + IntToStr(Result.Height)); {$EndIf};
-      //AddTopLabelToGraph(Result,db);
-      Result.GraphDraw.LLcornerText := HLabel;
       GISdb[DB].EmpSource.Enabled := false;
-      (*
-      if (HLabel <> '') then begin
-         Result.GraphDraw.TopLabel := HLabel;
-         Result.GraphDraw.TopMargin := 45;
-      end;
-      *)
       Result.GraphDraw.BottomMargin := 85;
       Result.GraphDraw.HorizLabel := 'Win/tie/loss (percent)';
       Result.GraphDraw.MaxHorizAxis := 100;

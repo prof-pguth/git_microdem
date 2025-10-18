@@ -169,7 +169,7 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
 function ValidDEMExt(ext : extstr) : boolean;
 function ValidImageryExt(ext : extstr) : boolean;
 
-function GetLC100_fileName(Lat,Long : float32) : PathStr;
+//function GetLC100_fileName(Lat,Long : float32) : PathStr;
 function GetLC10_fileName(Lat,Long : float32) : PathStr;
 
 function WebExtractGEDTMorEDTM(aDEM : shortstring;  bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
@@ -324,7 +324,7 @@ end;
 {$EndIf}
 
 
-function TileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
+function LandCoverTileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
 var
    LatStr,LongStr : shortstring;
 begin
@@ -350,18 +350,6 @@ begin
 end;
 
 
-function GetLC100_fileName(Lat,Long : float32) : PathStr;
-const
-   TileSize = 20;
-var
-   TileName : shortstring;
-begin
-   Lat := Lat + TileSize;  //because tiles are named for the NW corner
-   TileName := TileBaseName(TileSize,False,Lat,Long);
-   Result :=  'J:\landcover\Copernicus_LC100\' + TileName + '_PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
-   FindDriveWithFile(Result);
-end;
-
 
 function GetLC10_fileName(Lat,Long : float32) : PathStr;
 const
@@ -369,7 +357,7 @@ const
 var
    TileName : shortstring;
 begin
-   TileName := TileBaseName(TileSize,True,Lat,Long);
+   TileName := LandCoverTileBaseName(TileSize,True,Lat,Long);
    Result :=  'J:\landcover\esa_world_cover_10m\ESA_WorldCover_10m_2021_v200_' + TileName + '_Map\ESA_WorldCover_10m_2021_v200_' + TileName + '_Map.tif';
    FindDriveWithFile(Result);
 end;

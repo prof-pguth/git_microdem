@@ -10,15 +10,43 @@
 
 
 function CreateSingleLSPGrid(OpenMaps : boolean; DEM : integer; Param : shortstring) : integer;
+var
+   Mean,Std : float32;
+   NPts : int64;
 begin
+   Param := UpperCase(Param);
    if (Param = 'SLOPE') then Result := CreateSlopeMap(DEM,OpenMaps)
    else if (Param = 'PLANC') then Result := WBT_PlanCurvature(OpenMaps,DEMGlb[DEM].GeotiffDEMName)
+   else if (Param = 'PROFC') then Result := WBT_ProfileCurvature(OpenMaps,DEMGlb[DEM].GeotiffDEMName)
+   else if (Param = 'TANGC') then Result := WBT_TangentialCurvature(OpenMaps,DEMGlb[DEM].GeotiffDEMName)
+   else if (Param = 'HAND') then Result := WBT_ElevAboveStream(OpenMaps,DEMGlb[DEM].GeotiffDEMName,'','','','')
+   else if (Param = 'VDEV') then Result := WBT_AvgNormVectAngDev(OpenMaps,DEMGlb[DEM].GeotiffDEMName,5)
+   else if (Param = 'SSTD') then Result := WBT_SphericalStdDevOfNormals(OpenMaps,DEMGlb[DEM].GeotiffDEMName,5)
+   else if (Param = 'MHILL') then Result := WBT_MultidirectionalHillshadeMap(OpenMaps,DEM)
+   else if (Param = 'WETIN') then Result := WBT_WetnessIndex(OpenMaps,true,DEMGlb[DEM].GeotiffDEMName,'')
+   else if (Param = 'KNSS') then Result := RUN_LSPcalculator(DEM,'--knss',OpenMaps)
+   else if (Param = 'KNCC') then Result := RUN_LSPcalculator(DEM,'--kncc',OpenMaps)
+   else if (Param = 'KNCS') then Result := RUN_LSPcalculator(DEM,'--kncs',OpenMaps)
+   else if (Param = 'KPS') then Result := RUN_LSPcalculator(DEM,'--kps',OpenMaps)
+   else if (Param = 'CONIN') then Result := SAGA_ConvergenceIndex(OpenMaps,DEMGlb[DEM].GeotiffDEMName)
    else if (Param = 'OPENU') then Result := CreateUpwardOpennessMap(OpenMaps,DEM,-99,MDDef.DEMIX_open_radials)
+   else if (Param = 'OPEND') then Result := CreateDownwardOpennessMap(OpenMaps,DEM,-99,MDDef.DEMIX_open_radials)
+   else if (Param = 'HILL') then Result := CreateHillshadeMap(OpenMaps,DEM)
+   else if (Param = 'SLOPE') then Result := CreateSlopeMap(DEM,OpenMaps)
+   else if (Param = 'RUFF') then begin
+      Result := CreateRoughnessSlopeStandardDeviationMap(DEM,MDDef.DEM_ruff_window,OpenMaps);
+      DEMglb[Result].ElevationStatistics(DEMglb[Result].FullDEMGridLimits,Mean,Std,NPts);
+      WriteLineToDebugFile(DEMglb[Result].AreaName + '   ' + RealToString(Mean,-12,-2));
+   end
+   else if (Param = 'TPI') then Result := BoxCarDetrendDEM(OpenMaps,DEM,3)
+   else if (Param = 'RRI') then Result := MakeRRIGrid(DEM,OpenMaps)
+   else if (Param = 'MAD2K') then Result := MakeMAD2KGrid(false,DEM)
    else begin
       Result := 0;
       MessageToContinue('Not yet implemented for ' + Param);
    end;
 end;
+
 
 procedure CreateLSPgrids(OpenMaps : boolean; Param,AreaName : shortstring; var PointGrids,AreaGrids : tDEM_int_array);
 

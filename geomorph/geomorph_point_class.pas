@@ -234,10 +234,14 @@ end;
 
 
 procedure TPointClassForm.BitBtn10Click(Sender: TObject);
+{$IfDef IncludeEarlyDEMIXmaps}
 var
    n1,n2 : integer;
 begin
    DEMIX_control.NumHighLowNeighborsMaps(CurDEM,MDDef.WoodRegionRadiusPixels,MDdef.MinDeltaZToClassify,n1,n2);
+{$Else}
+begin
+{$EndIf}
 end;
 
 
@@ -262,6 +266,7 @@ begin
 
    {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm.BitBtn1Click out (I&P grid)'); {$EndIf}
 end;
+
 
 procedure TPointClassForm.BitBtn2Click(Sender: TObject);
 var

@@ -32,9 +32,9 @@
           //{$Define RecordDEMIXDatumShift}
           //{$Define RecordDEMIXDatumShiftFull}
           //{$Define RecordFUVcreateFull}
-          //{$Define TrackOpenOneDEM}
+          {$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
-     //{$Define TrackVerticalDatum
+     {$Define TrackVerticalDatum
       //{$Define RecordDragonPlot}
       //{$Define RecordDEMIXLoops}
       //{$Define RecordDEMIXGridCompare}
@@ -498,7 +498,7 @@ type
     Subsetlarge3DEPareas1: TMenuItem;
     Create3DEP1secrefDEMs1: TMenuItem;
     Merge3DEPreferenceDEMsbyarea1: TMenuItem;
-    CreatehalfsecondreferenceDEMs1: TMenuItem;
+    //CreatehalfsecondreferenceDEMs1: TMenuItem;
     Merge1secreferenceDEMsfromVisioterra1: TMenuItem;
     Modesofdifferencedistributions1: TMenuItem;
     Advancedanalysis1: TMenuItem;
@@ -520,7 +520,7 @@ type
     CheckreferenceDEMs1: TMenuItem;
     ChecktestDEMs1: TMenuItem;
     //DiluviumDEMfortestareas1: TMenuItem;
-    CreaterangereferenceDEMs1: TMenuItem;
+    //CreaterangereferenceDEMs1: TMenuItem;
     Addprefixtoallfilesindirectory1: TMenuItem;
     Inventorydifferencestats1: TMenuItem;
     MergeDEMIXtilestats1: TMenuItem;
@@ -529,7 +529,7 @@ type
     SSIM2: TMenuItem;
     MergemultipleTXTCSVintoDB1: TMenuItem;
     Overwrite4: TMenuItem;
-    CreatetestareaDEMSskipifexists1: TMenuItem;
+    //CreatetestareaDEMSskipifexists1: TMenuItem;
     CreatetestareaDEMs1: TMenuItem;
     Overwriteifexits1: TMenuItem;
     Overwriteifexits2: TMenuItem;
@@ -541,7 +541,7 @@ type
     Skipifexits2: TMenuItem;
     Overwriteifexists1: TMenuItem;
     Overwriteifexists2: TMenuItem;
-    Inventory3DEPtiles1: TMenuItem;
+    //Inventory3DEPtiles1: TMenuItem;
     SSIMR21: TMenuItem;
     InventoryDILUVIUMbytestarea1: TMenuItem;
     Partialchannelnetworkprocessing1: TMenuItem;
@@ -588,7 +588,7 @@ type
     //GetrangesforSSIMhydro1: TMenuItem;
     OpenmapsforDEMIXtestarea1: TMenuItem;
     LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
-    Createlandcovergrids1: TMenuItem;
+    //Createlandcovergrids1: TMenuItem;
     Mergechannelnetworkevaluations1: TMenuItem;
     Changemode1: TMenuItem;
     DEMIXtilesperareaandcoastalsubset1: TMenuItem;
@@ -598,7 +598,6 @@ type
     Combineallcombinedimages1: TMenuItem;
     CoastalDEMfortestareas1: TMenuItem;
     OverwriteallthreecoastalDTMS1: TMenuItem;
-    N52: TMenuItem;
     N55: TMenuItem;
     Overwrite2: TMenuItem;
     Skipifpresent1: TMenuItem;
@@ -615,7 +614,7 @@ type
     Overwrite7: TMenuItem;
     Skipifpresent2: TMenuItem;
     N56: TMenuItem;
-    Compareconvergenceindexfortestarea1: TMenuItem;
+    //Compareconvergenceindexfortestarea1: TMenuItem;
     Open4elevationrangeDEMIXDBs1: TMenuItem;
     UTMprojection1: TMenuItem;
     AddEXIFtagsworkinprogress1: TMenuItem;
@@ -687,6 +686,9 @@ type
     N15: TMenuItem;
     N49: TMenuItem;
     CloneEXEformultithreading1: TMenuItem;
+    Inventorysourcefiles1: TMenuItem;
+    Compare10mand100mlandcover1: TMenuItem;
+    Averagetileslopemapgeneration1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -999,7 +1001,7 @@ type
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
     //procedure OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
     procedure Subsetlarge3DEPareas1Click(Sender: TObject);
-    procedure CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
+    //procedure CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
     procedure Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
     procedure Modesofdifferencedistributions1Click(Sender: TObject);
     procedure Advancedanalysis1Click(Sender: TObject);
@@ -1019,13 +1021,13 @@ type
     procedure CheckreferenceDEMs1Click(Sender: TObject);
     procedure ChecktestDEMs1Click(Sender: TObject);
     //procedure DiluviumDEMfortestareas1Click(Sender: TObject);
-    procedure CreaterangereferenceDEMs1Click(Sender: TObject);
+    //procedure CreaterangereferenceDEMs1Click(Sender: TObject);
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
     procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
     procedure Overwrite4Click(Sender: TObject);
-    procedure CreatetestareaDEMSskipifexists1Click(Sender: TObject);
+    //procedure CreatetestareaDEMSskipifexists1Click(Sender: TObject);
     procedure Overwriteifexits1Click(Sender: TObject);
     procedure Overwirteifexists1Click(Sender: TObject);
     procedure Overwriteifexits2Click(Sender: TObject);
@@ -1033,7 +1035,7 @@ type
     procedure Overwriteifexits3Click(Sender: TObject);
     procedure Overwriteifexists1Click(Sender: TObject);
     procedure Overwriteifexists2Click(Sender: TObject);
-    procedure Inventory3DEPtiles1Click(Sender: TObject);
+    //procedure Inventory3DEPtiles1Click(Sender: TObject);
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
     procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
     procedure ComputeDEMIXtilestats1Click(Sender: TObject);
@@ -1061,7 +1063,7 @@ type
     //procedure GetrangesforSSIMhydro1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
     procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
-    procedure Createlandcovergrids1Click(Sender: TObject);
+    //procedure Createlandcovergrids1Click(Sender: TObject);
     procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
     procedure Changemode1Click(Sender: TObject);
     procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
@@ -1082,7 +1084,7 @@ type
     procedure Mergeridgesandvalleys1Click(Sender: TObject);
     procedure Overwrite7Click(Sender: TObject);
     procedure Skipifpresent2Click(Sender: TObject);
-    procedure Compareconvergenceindexfortestarea1Click(Sender: TObject);
+    //procedure Compareconvergenceindexfortestarea1Click(Sender: TObject);
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
     procedure UTMprojection1Click(Sender: TObject);
     procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
@@ -1136,6 +1138,9 @@ type
     procedure SmallcloneEXEwindow1Click(Sender: TObject);
     procedure InventoryofLC10files1Click(Sender: TObject);
     procedure CloneEXEformultithreading1Click(Sender: TObject);
+    procedure Inventorysourcefiles1Click(Sender: TObject);
+    procedure Compare10mand100mlandcover1Click(Sender: TObject);
+    procedure Averagetileslopemapgeneration1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1165,6 +1170,10 @@ procedure SetColorForProcessing; inline
 procedure SetColorForWaiting; inline
 procedure SmallClonePlacement;
 function ClonedExe : boolean;
+procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
+         procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
+         procedure CheckFormPlacement(TheForm : Forms.tForm);
+         procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
 
 
 implementation
@@ -1369,16 +1378,14 @@ uses
    {$Else}
       demix_definitions,
       DEMIX_Control,
-      DEMIX_cop_alos,
+      //DEMIX_cop_alos,
       demix_evals_scores_graphs,
       ssim_fuv_control,
       demix_neo_test_area,
       DEMIX_filter,
    {$EndIf}
 
-      Las_files_grouping,
-
-
+   Las_files_grouping,
 
    ufrmMain,
    CCR.Exif,
@@ -1477,6 +1484,44 @@ procedure Twmdem.FormPlacementInCorner(TheForm : Forms.tForm; FormPosition :  by
 begin
    PlaceFormInCorner(Self,TheForm,FormPosition);
 end;
+
+         procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
+         begin
+            if (TheForm.Left < 50) then TheForm.Left := 50;
+            if (TheForm.Left > wmdem.Width - TheForm.Width) then TheForm.Left := wmdem.Width - TheForm.Width -25;
+            if (TheForm.Top < 50) then TheForm.Top := 50;
+            if (TheForm.Top + TheForm.Height) > wmdem.Height then TheForm.Top := WMDEM.Height - TheForm.Height - 50;
+         end;
+
+
+         procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
+         begin
+            TheForm.DefaultMonitor := dmMainForm;
+            if FormPosition = lpCenterMap then begin
+               TheForm.Left := (Owner.ClientWidth - TheForm.Width) div 2;
+               TheForm.Top := (Owner.ClientHeight - TheForm.Height) div 2;
+            end
+            else begin
+               if (FormPosition = lpNEMap) then TheForm.Top := 0
+               else TheForm.Top := Owner.ClientHeight - TheForm.Height - 25;
+               TheForm.Left := Owner.ClientWidth - TheForm.Width - 10;
+            end;
+            if (TheForm.Top < 0) then TheForm.Top := 10;
+            if (TheForm.Left < 0) then TheForm.Left := 10;
+         end;
+
+         procedure CheckFormPlacement(TheForm : Forms.tForm);
+         begin
+            PlaceFormInCorner(wmdem,TheForm,lpCenterMap);
+            {$IfDef TrackFormPlacement} WriteLineToDebugFile(TheForm.Caption + '  ' + FormSize(TheForm) +'  Placement: ' + IntToStr(TheForm.Left) + 'x' + IntToStr(TheForm.Top));  {$EndIf}
+         end;
+
+         procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
+         begin
+            TheForm.Top := Mouse.CursorPos.Y - TheForm.Height div 2;
+            TheForm.Left := Mouse.CursorPos.X - TheForm.Width div 2;
+            InsureFormIsOnScreen(TheForm);
+         end;
 
 
 
@@ -2138,6 +2183,7 @@ var
          SlopeOrCurveCompute : tSlopeCurveCompute;
          Upward,DownWard,Difference,BoxRadiusPixels,StartOnRadial,
          DEM,NewDEM,WhichCurvature : integer;
+         ScaleFactor : byte;
          FileList : tStringList;
          SlopeDegree : boolean;
          Action,xval,yval : shortstring;
@@ -2163,11 +2209,12 @@ var
          BoxRadiusPixels := 10;
          StartOnRadial := 1;
 
-         SlopeOrCurveCompute.AlgorithmName := smLSQ;
-         SlopeOrCurveCompute.LSQorder := 2;
-         SlopeOrCurveCompute.WindowRadius := 1;
-         SlopeOrCurveCompute.RequireFullWindow := true;
-         SlopeOrCurveCompute.UsePoints := UseAll;
+         //set program defaults; these will not be saved
+             SlopeOrCurveCompute.AlgorithmName := smLSQ;
+             SlopeOrCurveCompute.LSQorder := 2;
+             SlopeOrCurveCompute.WindowRadius := 1;
+             SlopeOrCurveCompute.RequireFullWindow := true;
+             SlopeOrCurveCompute.UsePoints := UseAll;
 
          while (CommandLine[1] = '?') do Delete(CommandLine,1,1);      //the question mark
          ReplaceCharacter(CommandLine,'+','&');
@@ -2189,6 +2236,7 @@ var
             if Key = 'INI' then ProcessIniFile(iniRead,'',Value);
             if Key = 'X' then xval := Value;
             if Key = 'Y' then yval := Value;
+            if Key = 'SCALEFactor' then ScaleFactor := StrToInt(Value);
             if Key = 'RAD' then MDDef.OpennessBoxRadiusMeters := StrToInt(Value);
             if Key = 'SLOPE_RAD' then SlopeOrCurveCompute.WindowRadius := StrToInt(Value);
             if Key = 'SLOPE_UNIT' then SlopeDegree := Value = 'DEGREE';
@@ -2197,12 +2245,10 @@ var
             if Key = 'BOXSIZE' then MDDef.GeomorphBoxSizeMeters := StrToInt(Value);
             if Key = 'RADIUS' then BoxRadiusPixels := StrToInt(Value);
             if Key = 'START' then StartOnRadial := StrToInt(Value);
+            if Key = 'CURVE_MODE' then WhichCurvature := CurveCodeFromName(Value);
             if Key = 'FILELIST' then begin
                FileList := tStringList.Create;
                FileList.LoadFromFile(Value)
-            end;
-            if Key = 'CURVE_MODE' then begin
-               WhichCurvature := CurveCodeFromName(Value);
             end;
             if Key = 'USE_PTS' then begin
                if Value = 'ALL' then SlopeOrCurveCompute.UsePoints := UseAll;
@@ -2260,9 +2306,9 @@ var
          if (Action = 'ASPECT_MAP') then begin
             if OpenADEM then begin
                {$IfDef RecordCommandLine} WriteLineToDebugFile('dem opened'); {$EndIf}
-               NewDEM := MakeAspectMap(false,DEM);
+               NewDEM := MakeAspectMap(false,DEM,outfile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('slope map created'); {$EndIf}
-               DEMGlb[NewDEM].SaveAsGeotiff(outfile);
+               //DEMGlb[NewDEM].SaveAsGeotiff(outfile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
             end;
          end;
@@ -2280,6 +2326,18 @@ var
                if (DownFile <> '') then DEMGlb[MomentDEMs[Downward]].SaveAsGeotiff(DownFile);
                if (DiffFile <> '') then DEMGlb[MomentDEMs[Difference]].SaveAsGeotiff(DiffFile);
                {$IfDef RecordCommandLine} WriteLineToDebugFile('geotiff saved'); {$EndIf}
+            end;
+         end;
+
+         if (Action = 'MAD2K_MAP') then begin
+            if OpenADEM then begin
+               MakeMAD2KGrid(false,DEM,outfile,ScaleFactor);
+            end;
+         end;
+
+         if (Action = 'IQRSLOPE_MAP') then begin
+            if OpenADEM then begin
+               CreateIQRSlopeMap(false,DEM,MDDef.GeomorphBoxSizeMeters,outfile);
             end;
          end;
 
@@ -2446,7 +2504,6 @@ begin
                   for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(i)));
                   ProcessCommandLine(TStr);
               end;
-             {$IfDef RecordProblems} WriteLineToDebugFile('Command line parameter ' + IntToStr(i) + '=' + TStr); {$EndIf}
           end;
        end;
     {$EndIf}
@@ -2536,6 +2593,7 @@ begin
    ProgramClosing := false;
    NoAutoOpen := false;
    Self.Visible := false;
+   {$IfDef IncludeCoastalDEMs} InventoryDILUVIUMbytestarea1.Visible := true; {$Else} InventoryDILUVIUMbytestarea1.Visible := false; {$EndIf}
    {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
 end;
 
@@ -2809,7 +2867,9 @@ end;
 
 procedure Twmdem.Overwrite2Click(Sender: TObject);
 begin
-   ClassificationAgreement(true);
+    {$IfDef IncludeVectorCriteria}
+       ClassificationAgreement(true);
+    {$EndIf}
 end;
 
 procedure Twmdem.Overwrite3Click(Sender: TObject);
@@ -2824,17 +2884,23 @@ end;
 
 procedure Twmdem.Overwrite5Click(Sender: TObject);
 begin
-   DEMIX_CreateGridsFromVectors(true);
+   {$IfDef IncludeVectorCriteria}
+      DEMIX_CreateGridsFromVectors(true);
+   {$EndIf}
 end;
 
 procedure Twmdem.Overwrite6Click(Sender: TObject);
 begin
-   DEMIX_CreateGridsFromVectors(false);
+   {$IfDef IncludeVectorCriteria}
+      DEMIX_CreateGridsFromVectors(false);
+   {$EndIf}
 end;
 
 procedure Twmdem.Overwrite7Click(Sender: TObject);
 begin
-   ChannelNetworkMissPercentages(True);
+   {$IfDef IncludeVectorCriteria}
+      ChannelNetworkMissPercentages(True);
+   {$EndIf}
 end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
@@ -3251,12 +3317,16 @@ end;
 
 procedure Twmdem.Skipifpresent1Click(Sender: TObject);
 begin
-   ClassificationAgreement(false);
+   {$IfDef IncludeVectorCriteria}
+      ClassificationAgreement(false);
+   {$EndIf}
 end;
 
 procedure Twmdem.Skipifpresent2Click(Sender: TObject);
 begin
-   ChannelNetworkMissPercentages(False);
+   {$IfDef IncludeVectorCriteria}
+      ChannelNetworkMissPercentages(False);
+   {$EndIf}
 end;
 
 procedure Twmdem.NewDEMButtonClick(Sender: TObject);
@@ -3268,12 +3338,12 @@ end;
 
 procedure Twmdem.NewglobalgridGreenwich1Click(Sender: TObject);
 begin
-   CreateNewGlobalGrid(true);
+   CreateNewGlobalGrid(PixelIsPoint,true,true);
 end;
 
 procedure Twmdem.NewglobalgridIDL1Click(Sender: TObject);
 begin
-   CreateNewGlobalGrid(false);
+   CreateNewGlobalGrid(PixelIsPoint,true,false);
 end;
 
 procedure Twmdem.NewSATButtonClick(Sender: TObject);
@@ -3564,26 +3634,6 @@ begin
    CreateFinalDiffDistDB;
 end;
 
-procedure Twmdem.CreatehalfsecondreferenceDEMs1Click(Sender: TObject);
-begin
-  //DEMIXCreateHalfSecRefDEMs;
-end;
-
-procedure Twmdem.Createlandcovergrids1Click(Sender: TObject);
-begin
-   //CreateLandCoverGrids;
-end;
-
-procedure Twmdem.CreaterangereferenceDEMs1Click(Sender: TObject);
-begin
-  //DEMIX_CreateReferenceDEMs(false,ResampleModeRange);
-end;
-
-procedure Twmdem.CreatetestareaDEMSskipifexists1Click(Sender: TObject);
-begin
-   //CreateDEMIXTestAreaDEMs(False);
-end;
-
 
 procedure Twmdem.InOutButtonClick(Sender: TObject);
 begin
@@ -3619,11 +3669,6 @@ begin
 end;
 
 
-procedure Twmdem.Inventory3DEPtiles1Click(Sender: TObject);
-begin
-    //Inventory3DEPtiles;
-end;
-
 procedure Twmdem.InventoryallDEMIXdatafiles1Click(Sender: TObject);
 begin
    InventoryAllDEMIXdata;
@@ -3642,12 +3687,17 @@ end;
 
 procedure Twmdem.InventoryDILUVIUMbytestarea1Click(Sender: TObject);
 begin
-   CheckLowElevationAreas;
+   {$IfDef IncludeCoastalDEMs} CheckLowElevationAreas; {$EndIf}
 end;
 
 procedure Twmdem.InventoryofLC10files1Click(Sender: TObject);
 begin
    MakeDBwithLC10FileInventory;
+end;
+
+procedure Twmdem.Inventorysourcefiles1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udSourceFileSurvey);
 end;
 
 procedure Twmdem.InventorySSIMFUVCSVfiles1Click(Sender: TObject);
@@ -4791,6 +4841,11 @@ begin
    {$IfDef IncludeGeologyLabs} Afar1Click(Sender); {$EndIf}
 end;
 
+
+procedure Twmdem.Averagetileslopemapgeneration1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udAverageSlopeMap);
+end;
 
 procedure Twmdem.ESRIshapefile1Click(Sender: TObject);
 begin
@@ -6138,9 +6193,9 @@ begin
 end;
 
 
-procedure Twmdem.Compareconvergenceindexfortestarea1Click(Sender: TObject);
+procedure Twmdem.Compare10mand100mlandcover1Click(Sender: TObject);
 begin
-   OpenCopDEMandLandcoverForArea(false);
+   DEMIX_UTM_based_processing(udCompareLandcover);
 end;
 
 procedure Twmdem.ComparelandcoverinpointcloudDTM1Click(Sender: TObject);

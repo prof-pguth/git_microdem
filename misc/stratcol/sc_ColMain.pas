@@ -297,6 +297,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    sc_ColEnter,sc_ColLabel,sc_ColHead,sc_Fossil,
    sc_ColOpts,sc_colpated,
    GetLatLn,Make_Tables,
@@ -1786,7 +1787,7 @@ begin
      SaveFiles1.Enabled := false;
      Present1.Checked := MDDef.ColDef.ShowAgeBar;
    end;
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
 end;
 
 

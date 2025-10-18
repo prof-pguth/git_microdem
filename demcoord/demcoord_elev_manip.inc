@@ -213,6 +213,11 @@ end;
 
 function tDEMDataSet.GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;
 {interpolate to get point elevation}
+const
+   zsw = 1;
+   zse = 2;
+   zne = 3;
+   znw = 4;
 var
    dSE,dSW,dNE,dNW,sum,XIncr,YIncr : float64;
    i,Num  : integer;
@@ -233,7 +238,6 @@ begin
    end
    else begin
      if (MDDef.ElevInterpolation = piBicubicVT) and InterpolateBiCubicVisioTerra(round(xgrid),round(ygrid),z) then begin
-     //if InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
 
      end
      else if (MDDef.ElevInterpolation = piBicubicNR) and InterpolateBiCubicNumericalRecipes(round(xgrid),round(ygrid),z) then begin
@@ -241,7 +245,7 @@ begin
      end
      else if GetElevSquareMeters(XGrid,YGrid,Elev) then begin {elevations surrounding a point: 1=SW, 2=SE, 3=NE, 4=NW, 5=1=SW}
           if MDDef.ElevInterpolation in [piBilinear] then begin
-             z := (  (1-XIncr) * (1-YIncr)  * Elev[1] + (1-XIncr) * YIncr * Elev[4] + XIncr * (1-YIncr) * Elev[2] + XIncr * YIncr * Elev[3]);
+             z := ( (1-XIncr) * (1-YIncr)  * Elev[zsw] + (1-XIncr) * YIncr * Elev[znw] + XIncr * (1-YIncr) * Elev[zse] + XIncr * YIncr * Elev[zne]);
           end
           else if MDDef.ElevInterpolation = piTriangle then begin
              if (Yincr < 1 - XIncr) then z := YIncr * Elev[4] + (1 - YIncr - XIncr) * Elev[1] + XIncr * Elev[2]

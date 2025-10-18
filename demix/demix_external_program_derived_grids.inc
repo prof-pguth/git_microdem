@@ -144,7 +144,6 @@ begin
 end;
 
 
-
 function CreateDEMIXDerivedGrids(Which : shortstring; AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
 var
    i : integer;
@@ -339,7 +338,6 @@ end;
        i : integer;
        BreachName,FlowAccumulationName,StreamName,HANDName  : PathStr;
     begin
-        //using Log, and using D8
         for i := dmxFirstPoint to NumPtDEMs do begin
           BreachName := '';
           FlowAccumulationName  := '';

@@ -9,7 +9,6 @@
 
 
 
-
 procedure CompareUpsampling(SlopeOption : boolean = false);
 var
    HRD_DEM,LowResDEM,
@@ -330,27 +329,33 @@ var
 
 
 begin
-   SetColorForProcessing;
-   SaveBackupDefaults;
-   Findings := tStringList.Create;
-   Findings.Add('NAME,SERIES,AVG_SPACE,AVG_SLOPE,STD_SLOPE');
+   if DEMGLb[DEM].DEMHeader.DEMused = ArcSecDEM then begin
+       MessageToContinue('Currently only works for UTM or UTM-like DEMs');
+   end
+   else begin
+       SetColorForProcessing;
+       SaveBackupDefaults;
+       Findings := tStringList.Create;
+       Findings.Add('RAD_PIXEL,SERIES,AVG_SPACE,AVG_SLOPE,STD_SLOPE');
 
-   DEMGLb[DEM].MarkBelowMissing(1.0,Fixed,false);
+       DEMGLb[DEM].MarkBelowMissing(1.0,Fixed,false);
 
-   for i := 1 to NumWin do begin
-      fName := 'window_' + IntToStr(Windows[i]) + '_m';
-      wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/' + IntToStr(NumWin));
-      MDDef.SlopeCompute.WindowRadius := Windows[i];
-      ProcessNewGrid;
+       for i := 1 to NumWin do begin
+          fName := 'window_' + IntToStr(Windows[i]) + '_m';
+          wmdem.SetPanelText(3,'utm ' + IntToStr(i) + '/' + IntToStr(NumWin));
+          MDDef.SlopeCompute.WindowRadius := Windows[i];
+          ProcessNewGrid;
+       end;
+
+       wmdem.SetPanelText(3,'');
+       SetColorForWaiting;
+
+       fName := NextFileNumber(MDtempDir,'slope_window_sampler_','.dbf');
+       Findings.SaveToFile(fName);
+       StringList2CSVtoDB(Findings,fName);
+       RestoreBackupDefaults;
    end;
-
-   wmdem.SetPanelText(3,'');
-   SetColorForWaiting;
-
-   fName := NextFileNumber(MDtempDir,'slope_window_sampler_','.dbf');
-   Findings.SaveToFile(fName);
-   StringList2CSVtoDB(Findings,fName);
-   RestoreBackupDefaults;
 end;
+
 
 

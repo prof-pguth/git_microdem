@@ -72,6 +72,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    DEMDefs,
    Petmar_types,
    Petmar_ini_file,
@@ -92,7 +93,7 @@ begin
   {$IfDef ExStratcol}
   {$Else}
    OKbtn.Caption := 'OK';
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 
     CheckBox1.Checked := MDDef.ColDef.AbsThickness;
     CheckBox2.Checked := MDDef.ColDef.RightSideThickness;

@@ -1029,9 +1029,11 @@ begin
    case Mode of
       1 : MergeCSVtoCreateFinalDB(FUVresultsDir,'_fuv_results.csv','_fuv_demix_db_');
       2 : MergeCSVtoCreateFinalDB(SSIMresultsDir,'_ssim_results.csv','_ssim_demix_db_');
-      3 : MergeCSVtoCreateFinalDB(ChannelMissesDir,'_Channel_Misses.csv','_channel_misses_' );
+      {$IfDef IncludeVectorCriteria}
+         3 : MergeCSVtoCreateFinalDB(ChannelMissesDir,'_Channel_Misses.csv','_channel_misses_' );
+         5 : MergeCSVtoCreateFinalDB(Stream_valley_dir,'_ridges_valleys.csv','_ridges_valleys_' );
+      {$EndIf}
       4 : MergeCSVtoCreateFinalDB(GeomorphonsDir,'_geomorphons.csv','_pt_class_demix_db_');
-      5 : MergeCSVtoCreateFinalDB(Stream_valley_dir,'_ridges_valleys.csv','_ridges_valleys_' );
       6 : MergeCSVtoCreateFinalDB(PartialsResultsDir,'_partials_results.csv','_partials_demix_db_');
       7 : MergeCSVtoCreateFinalDB(CurvaturesResultsDir,'_curvatures_results.csv','_curvatures_demix_db_');
    end;
@@ -1850,7 +1852,7 @@ procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
 var
    i,j : integer;
    Eval,MaxEval,MinEval : float32;
-   Criterion : shortstring;
+   Criterion,DEM : shortstring;
 begin
    if GISdb[DBonTable].MyData.FieldExists('EVAL_RANGE') and GISdb[DBonTable].MyData.FieldExists('BEST_EVAL') then begin
       if not AnswerIsYes('Redo') then exit;
@@ -1866,17 +1868,19 @@ begin
       inc(j);
       Criterion := GISdb[dbOnTable].MyData.GetFieldByNameAsString('CRITERION');
       if not IsDEMIX_signedCriterion(Criterion) then begin
+      //if (GISDb[DBonTable].MyData.GetFieldByNameAsString('EVAL_RANGE') = '') or (GISDb[DBonTable].MyData.GetFieldByNameAsString('BEST_EVAL') = '') then begin
          MaxEval := -99e39;
          MinEval := 99e39;
          for I := 1 to MaxDEMIXDEM do begin
-            if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[i]) then begin
-               Eval := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[i]);
-               if (Eval > 0.001) then PetMath.CompareValueToExtremes(Eval,MinEval,MaxEval);
+            DEM := DEMIXshort[i];
+            if GISdb[DBonTable].MyData.FieldExists(DEM) then begin
+               Eval := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEM);
+               if (Eval > 0.000001) then PetMath.CompareValueToExtremes(Eval,MinEval,MaxEval);
             end;
          end;
          GISDb[DBonTable].MyData.Edit;
-         GISDb[DBonTable].MyData.SetFieldByNameAsFloat('EVAL_RANGE',MaxEval-MinEval);
          GISDb[DBonTable].MyData.SetFieldByNameAsFloat('BEST_EVAL',MinEval);
+         GISDb[DBonTable].MyData.SetFieldByNameAsFloat('EVAL_RANGE',MaxEval-MinEval);
       end;
       GISDb[DBonTable].MyData.Next;
    end;

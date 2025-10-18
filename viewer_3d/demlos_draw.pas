@@ -381,8 +381,9 @@ var
 begin
     {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.RecalculateProfile in'); {$EndIf}
     ShowHourglassCursor;
+    SaveBackupDefaults;
     if LOSVariety in [losMagModel,losAllDEMs,losAllDEMDropDown,losSimpleMagModel,losSimpleOne] then begin
-       CalculatingEarthCurvature := false;
+       MDDef.EarthVertCurvAlg := vcNoCurvature;
     end;
 
     {$IfDef ExFresnel}
@@ -463,7 +464,7 @@ begin
    ObsGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
    GISdb[LOSProfileDB].MyData.Last;
    TargetGroundElev := GISdb[LOSProfileDB].MyData.GetFieldByNameAsFloat('ELEV_M');
-   CalculatingEarthCurvature := true;
+   RestoreBackupDefaults;
    {$If Defined(RecordLOS) or Defined(RecordLOSDraw)} WriteLineToDebugFile('tLOSdraw.RecalculateProfile out'); {$EndIf}
 end;
 

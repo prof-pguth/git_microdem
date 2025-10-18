@@ -15,6 +15,8 @@
 {**********************************************************************}
 unit FMXU.Math;
 
+{$include fmxu.inc}
+
 interface
 
 uses
@@ -31,8 +33,19 @@ type
       m41: 0; m42: 0; m43: 0; m44: 1;
     );
 
-    function SameMatrix(const m : TMatrix3D) : Boolean;
+    function IsSameMatrix(const m : TMatrix3D) : Boolean;
+    function ToString : String; inline;
   end;
+
+function Vector3DToString(const aVector : TVector3D) : String;
+function Matrix3DToString(const aMatrix : TMatrix3D) : String;
+
+function RoundSingle(const aValue : Single) : Int64; {$ifndef WIN64_ASM}inline;{$endif}
+
+const
+  cPoint3D_X : TPoint3D = (X: 1; Y: 0; Z: 0);
+  cPoint3D_Y : TPoint3D = (X: 0; Y: 1; Z: 0);
+  cPoint3D_Z : TPoint3D = (X: 0; Y: 0; Z: 1);
 
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -42,13 +55,44 @@ implementation
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
 
+// Vector3DToString
+//
+function Vector3DToString(const aVector : TVector3D) : String;
+begin
+   Result := Format('[ %f %f %f %f ]', [ aVector.X, aVector.Y, aVector.Z, aVector.W ]);
+end;
+
+// Matrix3DToString
+//
+function Matrix3DToString(const aMatrix : TMatrix3D) : String;
+begin
+   Result := '[ ' + Vector3DToString(aMatrix.M[0])
+                  + Vector3DToString(aMatrix.M[1])
+                  + Vector3DToString(aMatrix.M[2])
+                  + Vector3DToString(aMatrix.M[3]) + ' ]';
+end;
+
+// RoundSingle
+//
+function RoundSingle(const aValue : Single) : Int64;
+{$ifdef WIN64_ASM}
+asm
+  .NOFRAME
+  cvtss2si rax, xmm0
+end;
+{$else}
+begin
+  Result := Round(aValue);
+end;
+{$endif}
+
 // ------------------
 // ------------------ TMatrix3DHelper ------------------
 // ------------------
 
-// SameMatrix
+// IsSameMatrix
 //
-function TMatrix3DHelper.SameMatrix(const m : TMatrix3D) : Boolean;
+function TMatrix3DHelper.IsSameMatrix(const m : TMatrix3D) : Boolean;
 type
   T8Int64 = array [ 0 .. 7 ] of Int64;
   P8Int64 = ^T8Int64;
@@ -61,6 +105,13 @@ begin
             and (pSelf[2] = pOther[2]) and (pSelf[3] = pOther[3])
             and (pSelf[4] = pOther[4]) and (pSelf[5] = pOther[5])
             and (pSelf[6] = pOther[6]) and (pSelf[7] = pOther[7]);
+end;
+
+// ToString
+//
+function TMatrix3DHelper.ToString : String;
+begin
+   Result := Matrix3DToString(Self);
 end;
 
 end.

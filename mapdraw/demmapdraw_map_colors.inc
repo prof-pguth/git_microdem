@@ -167,7 +167,7 @@ begin
       end;
       {$IfDef VCL}
          TInterlocked.Increment(BMPMemory.NumDone);
-         if (CountInStrips mod 500 = 0) and ShowSatProgress then UpdateProgressBar(BMPMemory.NumDone/BMPMemory.NumToDo);
+         if (j mod 500 = 0) and ShowSatProgress then UpdateProgressBar(BMPMemory.NumDone/BMPMemory.NumToDo);
       {$EndIf}
    end {for j};
 end;
@@ -311,7 +311,7 @@ var
    GrayRange : integer;
    UpRange,
    Upward,Downward : float64;
-   PixelsNS,PixelsEW,PixelsDia : integer;
+   //PixelsNS,PixelsEW,PixelsDia : integer;
    Graph : tThisBaseGraph;
 begin
    GrayRange := MDDef.OpenMaxGray - MDDef.OpenMinGray;

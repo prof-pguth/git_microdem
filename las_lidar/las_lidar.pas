@@ -1366,7 +1366,7 @@ end;
 function tLAS_data.IsLASFileOnMap(BaseMapDraw : tMapDraw): boolean;
 begin
    //Result := {True or} BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_LatLong_Box,BaseMapDraw.MapCorners.BoundBoxGeo);
-   Result := BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_UTM_Box,BaseMapDraw.MapCorners.BoundBoxUTM);
+   Result := BaseMapDraw.AFullWorldMap or AtLeastPartOfBoxInAnotherBox(LAS_UTM_Box,BaseMapDraw.MapCorners.BoundBoxUTM) or AtLeastPartOfBoxInAnotherBox(LAS_LatLong_Box,BaseMapDraw.MapCorners.BoundBoxGeo);
    {$If Defined(RecordTilePlotSummary)} if (not Result) then writelineToDebugFile('tLAS_data.FileOnMap fail, LAS bb=' + sfBoundBoxToString(LAS_LatLong_Box,6) + ' map bb=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)); {$EndIf}
 end;
 

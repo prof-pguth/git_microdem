@@ -47,13 +47,12 @@ type
     Edit1: TEdit;
     Label1: TLabel;
     RadioGroup1: TRadioGroup;
+    CheckBox7: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
-    procedure HillshadeClick(Sender: TObject);
-    procedure HANDClick(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
   private
@@ -122,28 +121,6 @@ end;
 
 procedure Tfuv_ssim_control.FormCreate(Sender: TObject);
 begin
-   (*
-   CheckBox12.Checked := MDDef.SSIM_elev;
-   CheckBox13.Checked := MDDef.SSIM_slope;
-   CheckBox14.Checked := MDDef.SSIM_ruff;
-   CheckBox15.Checked := MDDef.SSIM_rri;
-   Hillshade.Checked := MDDef.SSIM_hill;
-   HAND.Checked := MDDef.SSIM_HAND;
-   CheckBox17.Checked := MDDef.SSIM_tpi;
-   CheckBox19.Checked := MDDef.SSIM_flow;
-   CheckBox20.Checked := MDDef.SSIM_wet;
-   CheckBox21.Checked := MDdef.SSIM_ls;
-   CheckBox22.Checked := MDDef.DoSSIM;
-   CheckBox24.Checked := MDDef.DoFUV;
-   CheckBox25.Checked := MDDef.OpenSavedMapsFUVSSIM;
-   CheckBox26.Checked := MDdef.SSIM_ProfC;
-   CheckBox27.Checked := MDdef.SSIM_PlanC;
-   CheckBox28.Checked := MDDef.SSIM_TangC;
-   CheckBox7.Checked := MDDef.SSIM_rotor;
-   CheckBox8.Checked := MDDef.SSIM_Openness;
-   CheckBox10.Checked := MDDef.SSIM_ConvergeIndex;
-   *)
-
     if MDDef.DoFUV then RadioGroup1.ItemIndex := 0
     else if MDDef.DoSSIM then RadioGroup1.ItemIndex := 1
     else if MDDef.DoPartials then RadioGroup1.ItemIndex := 2
@@ -151,6 +128,8 @@ begin
 
    CheckBox5.Checked := MDDef.DEMIX_overwrite_enabled;
    CheckBox6.Checked := MDDef.DEMIX_all_areas;
+
+   CheckBox7.Checked := MDDef.DEMIX_Geo_Tiles;
    CheckBox1.Checked := true;
    CheckBox9.Checked := MDDef.ProcessLoopsForward;
    CheckBox157.Checked := MDDef.ShowWinExec;
@@ -158,18 +137,11 @@ begin
    Edit1.Text := IntToStr(MDDef.DEMIX_Tile_Full);
    CheckBox22.Checked := MDDef.DoSSIM;
    CheckBox24.Checked := MDDef.DoFUV;
-   GroupBox1.Visible := MDdef.DEMIX_AllowCoastal;
-end;
-
-
-procedure Tfuv_ssim_control.HANDClick(Sender: TObject);
-begin
-   //MDDef.SSIM_HAND := HAND.Checked;
-end;
-
-procedure Tfuv_ssim_control.HillshadeClick(Sender: TObject);
-begin
-  // MDDef.SSIM_hill := Hillshade.Checked;
+   {$IfDef IncludeCoastalDEMs}
+      GroupBox1.Visible := MDdef.DEMIX_AllowCoastal;
+   {$Else}
+      GroupBox1.Visible := false;
+   {$EndIf}
 end;
 
 
@@ -209,11 +181,13 @@ begin
    ToggleShowProgress(false);
    Self.Visible := false;
    if CheckBox1.Checked then DoOne(dmFull);
-   if MDdef.DEMIX_AllowCoastal then begin
-       if CheckBox2.Checked then DoOne(dmU120);
-       if CheckBox3.Checked then DoOne(dmU80);
-       if CheckBox4.Checked then DoOne(dmU10);
-   end;
+   {$IfDef IncludeCoastalDEMs}
+       if MDdef.DEMIX_AllowCoastal then begin
+           if CheckBox2.Checked then DoOne(dmU120);
+           if CheckBox3.Checked then DoOne(dmU80);
+           if CheckBox4.Checked then DoOne(dmU10);
+       end;
+   {$EndIf}
    ToggleShowProgress(true);
    Self.Visible := true;
    {$IfDef RecordFUV_SSIM} WriteLineToDebugFile('Tfuv_ssim_control.BitBtn1Click out'); {$EndIf}
@@ -234,8 +208,9 @@ end;
 procedure Tfuv_ssim_control.BitBtn3Click(Sender: TObject);
 begin
    GetDEMIXpaths;
-   VerifyRecordsToUse(DemixSettingsDir + 'demix_fuv_parameters.dbf','CRITERION');
+   VerifyRecordsToUse(DEMIX_criteria_tolerance_fName,'CRITERION');
 end;
+
 
 procedure Tfuv_ssim_control.BitBtn5Click(Sender: TObject);
 begin
@@ -247,15 +222,19 @@ begin
    CheckEditString(Edit1.Text,MDDef.DEMIX_Tile_Full);
    MDDef.DoSSIM := CheckBox22.Checked;
    MDDef.DoFUV := CheckBox24.Checked;
-   //MDDef.DoPartials := CheckBox7.Checked;
 
    MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.DEMIX_overwrite_enabled := CheckBox5.Checked;
    MDDef.DEMIX_all_areas := CheckBox6.Checked;
+   MDDef.DEMIX_Geo_Tiles := CheckBox7.Checked;
+
    MDDef.OpenSavedMapsFUVSSIM := CheckBox25.Checked;
    MDDef.ShowWinExec := CheckBox157.Checked;
    MDDef.ProcessLoopsForward := CheckBox9.Checked;
 end;
+
+
+
 
 
 end.

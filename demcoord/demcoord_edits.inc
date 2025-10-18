@@ -340,8 +340,6 @@ var
       begin
          SearchRadiusX := SearchRadiusX div 2;
          SearchRadiusY := SearchRadiusY div 2;
-         //WriteLineToDebugFile('start div 2');
-
          for xn := 0 to pred(DEMGlb[Result].DEMHeader.NumCol) do begin
              for yn := 0 to pred(DEMGlb[Result].DEMHeader.NumRow) do begin
                 DEMGlb[Result].DEMGridToLatLongDegree(xn,yn,Lat,Long);
@@ -366,7 +364,6 @@ var
                 end;
              end;
          end;
-         //WriteLineToDebugFile('end div 2');
       end;
 
 
@@ -416,8 +413,6 @@ begin
    DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
    *)
 
-
-
    DEMGlb[Result].CheckMaxMinElev;
    if (SaveName <> '') then begin
       {$If Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
@@ -460,11 +455,9 @@ begin
    if (not ThreadsWorking) then StartProgress('Filtering ' + DEMGlb[NewDEM].AreaName);
 
    for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-      if (not ThreadsWorking) and (CountInStrips mod 50 = 0) and ShowSatProgress then begin
-         UpdateProgressBar(CountInStrips/DEMheader.NumRow);
+      if (not ThreadsWorking) and (Row mod 50 = 0) and ShowSatProgress then begin
+         UpdateProgressBar(Row/DEMheader.NumRow);
       end;
-      if ThreadsWorking then TInterlocked.Increment(CountInStrips)
-      else inc(CountInStrips);
       if MDdef.FilterGridsToEdge then Margin := 0
       else Margin := FilterLap;
       if (Row >= Margin) and (Row <= pred(DEMGlb[NewDEM].DEMheader.NumRow)-Margin) then begin
@@ -570,7 +563,7 @@ begin
    HalfSize := FilterSize div 2;
    Sum := 0;
    for x := -MaxRad to MaxRad do begin
-      for y := -MaxRad to MaxRad  do begin
+      for y := -MaxRad to MaxRad do begin
           Kernel[x,y] := 0;
       end;
    end;
@@ -603,20 +596,16 @@ begin
    if OpenMap then DEMGlb[Result].SetupMap(true,SelectionMap.MapDraw.MapType);
 end;
 
+
 function tDEMDataSet.FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
 const
    MaxSize = 1000;
 var
-   Title,BoxSizeStr         : Shortstring;
+   Title,BoxSizeStr  : Shortstring;
    NewHeadRecs   : tDEMheader;
    FilterLap,Sum : integer;
    Filter : FilterType;
    fName  : PathStr;
-   {$IfDef NoParallelFor}
-   {$Else}
-       //PartLimits : tGridLimitsArray;
-       //NewDEM1 : integer;
-   {$EndIf}
 begin
    {$IfDef RecordDEMEdits}  WriteLineToDebugFile('tDEMDataSet.FilterThisDEM in'); {$EndIf}
    SaveBackupDefaults;
@@ -669,25 +658,11 @@ begin
    ShowHourglassCursor;
 
    MDdef.FilterGridsToEdge := true;
-   CountInStrips := 0;
 
-   //{$IfDef NoParallelFor}
-       StartProgressAbortOption('Filter ' + DEMGlb[Result].AreaName);
-       ThreadsWorking := false;
-       FilterStrip(Result,Boxsize,FullDEMGridLimits,FilterCategory,Filter);
-       EndProgress;
-   (*
-   {$Else}
-      PartLimits := GetLimitsForParallelLoops(FullDEMGridLimits);
-      NewDEM1 := NewDEM;
-      TParallel.For(1,MDdef.MaxThreadsForPC,
-         procedure (Value: Integer)
-         begin
-           FilterStrip(NewDEM1,FilterLap,PartLimits[Value],FilterCategory,Filter);
-         end);
-      ThreadsWorking := false;
-   {$EndIf}
-   *)
+   StartProgressAbortOption('Filter ' + DEMGlb[Result].AreaName);
+   ThreadsWorking := false;
+   FilterStrip(Result,Boxsize,FullDEMGridLimits,FilterCategory,Filter);
+   EndProgress;
    DEMGlb[Result].CheckMaxMinElev;
    RestoreBackupDefaults;
 
@@ -697,7 +672,7 @@ begin
       DEMGlb[Result].WriteNewFormatDEM(fName);
    end;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM out'); {$EndIf}
-end;
+end {tDEMDataSet.FilterThisDEM};
 
 
 procedure tDEMDataSet.MultiplyGridByConstant(Aconst : float64);

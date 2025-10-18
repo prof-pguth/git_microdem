@@ -93,7 +93,6 @@ uses
 
 procedure InitializePetmar;
 procedure Delay(ms : Cardinal);
-function FileCanBeOpened(fName : PathStr) : boolean;
 
 procedure ShowHourglassCursor; inline;
 procedure ShowDefaultCursor; inline;
@@ -101,7 +100,6 @@ procedure ApplicationProcessMessages; inline;
 
 function RemoveUnderScores(LegendStr : ANSIString) : ANSIString;
 function SpacesToUnderScores(LegendStr : ANSIString) : ANSIString;
-procedure FixFileNameBackslashes(var fName : PathStr);
 
 function CreateHTML_href(fName,Display : ANSIString) : ANSIString;
 
@@ -118,8 +116,8 @@ var
       procedure EndThreadTimers;
       procedure StartSingleThreadTimer(Capt : ShortString = '');
 
-      procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
-      procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
+      //procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
+     // procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
 
       procedure HardwareOnLine;
       procedure PETMARAboutBox(ProgramName : ANSIstring; Modifier : ANSIstring = '');
@@ -166,8 +164,8 @@ var
            {angle measured in tenths degree, math convention: starts with east and runs counterclockwise}
 
       procedure DisplayNevadella(Canvas : TCanvas; xoff,yoff,size : integer; Color : TColor);
-      procedure CheckFormPlacement(TheForm : Forms.tForm); //MonitorDesired : integer = 0);
-      procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
+      //procedure CheckFormPlacement(TheForm : Forms.tForm); //MonitorDesired : integer = 0);
+      //procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
 
       function LocalIP: string;
 
@@ -276,6 +274,7 @@ var
 
 function AnswerIsYes(Prompt : ANSIstring) : boolean; overload;
 procedure MessageToContinue(Mess : ANSIstring; SaveOutPut : boolean = true);
+procedure StringListToContinue(SaveOut : boolean; Mess : tStringList);
 
 function CurrentTimeForFileName(IncludeHours : boolean = true) : PathStr;
 
@@ -332,6 +331,8 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
 
 
 //file routines, file name and path names
+   function FileCanBeOpened(fName : PathStr) : boolean;
+   procedure FixFileNameBackslashes(var fName : PathStr);
       function GetExistingFileName(Mess,Filters : ANSIstring; var FName : PathStr) : boolean;
       function GetFileNameDefaultExt(Mess,Filters : ANSIstring; var FName : PathStr; AppendOption : boolean = false) : boolean;
       function GetFileNameDefaultExtSaveExt(Mess,Filters : ANSIstring; var FName : PathStr; var  df : Integer; AppendOption : boolean = false) : boolean;
@@ -467,7 +468,6 @@ function FindFieldInStringList(Header : tStringList; FieldName : ANSIstring; Sep
 function FindIntegerFieldInStringList(Header : tStringList; FieldName : ANSIstring; SepChar : ANSIchar) : Integer;
 function FindFloatFieldInStringList(Header : tStringList; FieldName : ANSIstring; SepChar : ANSIchar) : float64;
 
-function UpdateRate(NumRecs : integer) : integer;
 function TrueOrFalse(BoolVar : boolean) : shortstring;
 function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
 
@@ -534,6 +534,7 @@ var
 
 {$I petmar_palettes_legends.inc}
 
+
 procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
 //delete temporary files in the string list, and clear it; optionanlly free the memory
 var
@@ -546,7 +547,6 @@ begin
       if Free then sl.Free;
    end;
 end;
-
 
 
 
@@ -715,18 +715,16 @@ var
     Handle : tHandle;
 begin
     SHGetSpecialFolderLocation(Handle, CSIDL_BITBUCKET, recycleBinPIDL);
-    //with execInfo do begin
-      execInfo.cbSize := Sizeof(execInfo) ;
-      execInfo.fMask := SEE_MASK_IDLIST;
-      execInfo.Wnd := Handle;
-      execInfo.lpVerb := nil;
-      execInfo.lpFile := nil;
-      execInfo.lpParameters := nil;
-      execInfo.lpDirectory := nil;
-      execInfo.nShow := SW_SHOWNORMAL;
-      execInfo.hInstApp:=0;
-      execInfo.lpIDList := recycleBinPIDL;
-    //end;
+    execInfo.cbSize := Sizeof(execInfo) ;
+    execInfo.fMask := SEE_MASK_IDLIST;
+    execInfo.Wnd := Handle;
+    execInfo.lpVerb := nil;
+    execInfo.lpFile := nil;
+    execInfo.lpParameters := nil;
+    execInfo.lpDirectory := nil;
+    execInfo.nShow := SW_SHOWNORMAL;
+    execInfo.hInstApp:=0;
+    execInfo.lpIDList := recycleBinPIDL;
     ShellExecuteEx(@execInfo) ;
 end;
 
@@ -789,44 +787,6 @@ begin
 end;
 
 {$IfDef VCL}
-
-         procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
-         begin
-            TheForm.DefaultMonitor := dmMainForm;
-            if FormPosition = lpCenterMap then begin
-               TheForm.Left := (Owner.ClientWidth - TheForm.Width) div 2;
-               TheForm.Top := (Owner.ClientHeight - TheForm.Height) div 2;
-            end
-            else begin
-               if (FormPosition = lpNEMap) then TheForm.Top := 0
-               else TheForm.Top := Owner.ClientHeight - TheForm.Height - 25;
-               TheForm.Left := Owner.ClientWidth - TheForm.Width - 10;
-            end;
-            if (TheForm.Top < 0) then TheForm.Top := 10;
-            if (TheForm.Left < 0) then TheForm.Left := 10;
-         end;
-
-         procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
-         begin
-            if (TheForm.Left < 50) then TheForm.Left := 50;
-            if (TheForm.Left > wmdem.Width - TheForm.Width) then TheForm.Left := wmdem.Width - TheForm.Width -25;
-            if (TheForm.Top < 50) then TheForm.Top := 50;
-            if (TheForm.Top + TheForm.Height) > wmdem.Height then TheForm.Top := WMDEM.Height - TheForm.Height - 50;
-         end;
-
-         procedure CheckFormPlacement(TheForm : Forms.tForm);
-         begin
-            PlaceFormInCorner(wmdem,TheForm,lpCenterMap);
-            {$IfDef TrackFormPlacement} WriteLineToDebugFile(TheForm.Caption + '  ' + FormSize(TheForm) +'  Placement: ' + IntToStr(TheForm.Left) + 'x' + IntToStr(TheForm.Top));  {$EndIf}
-         end;
-
-         procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
-         begin
-            TheForm.Top := Mouse.CursorPos.Y - TheForm.Height div 2;
-            TheForm.Left := Mouse.CursorPos.X - TheForm.Width div 2;
-            InsureFormIsOnScreen(TheForm);
-         end;
-
 
          procedure ShowInNotepadPlusPlus(inName : tStringList; Capt : shortstring = '');
          var
@@ -913,22 +873,10 @@ begin
 end;
 
 
-         function UpdateRate(NumRecs : integer) : integer;
-         begin
-             if NumRecs > 10000 then Result := 1000
-             else if NumRecs > 1000 then Result := 100
-             else if NumRecs > 100 then Result := 10
-             else Result := 1;
-         end;
-
-
-         function CreateHTML_href(fName,Display : ANSIString) : ANSIString;
-         begin
-            Result := '<a href="' + fName + '">' + Display + '</a>';
-         end;
-
-
-
+ function CreateHTML_href(fName,Display : ANSIString) : ANSIString;
+ begin
+    Result := '<a href="' + fName + '">' + Display + '</a>';
+ end;
 
 
 {$IfDef VCL}
@@ -1770,6 +1718,8 @@ end;
          end;
 
          procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
+         var
+           GetPointColor  : tPlatformColor;
          begin
             PickSymbolForm := TPickSymbolForm.Create(Application);
             with PickSymbolForm do begin
@@ -2457,8 +2407,8 @@ end;
 
 
 procedure InitializePetmar;
-var
-   i : integer;
+//var
+   //i : integer;
 begin
    //to avoid problems on international systems
    FormatSettings.DecimalSeparator := '.';
@@ -2694,152 +2644,6 @@ begin
 end;
 
 
-{$IfDef ExCompress}
-{$Else}
-
-         function SevenZipPresent : boolean;
-         begin
-            SevenZipfName := ProgramRootDir + '7z.exe';
-            Result := FileExists(SevenZipfName) and FileExists(ProgramRootDir + '7z.dll');
-         end;
-
-         procedure Missing7ZipMessage;
-         begin
-            MessageToContinue('Missing ' + SevenZipfName + ' and ' + ProgramRootDir + '7z.dll');
-         end;
-
-
-         function ZipMasterUnzip(ZipName,OutDir : ShortString) : boolean;
-         var
-           Zipfile : TZipFile;
-         begin
-            wmDEM.SetPanelText(0,'unzip ' + ExtractFileName(zipName));
-            ShowHourglassCursor;
-            if FileExists(zipName) then begin
-               ZipFile := TZipFile.Create;
-               try
-                 ZipFile.ExtractZipFile(ZipName,OutDir);
-               finally
-                 ZipFile.Free;
-               end;
-            end
-            else Result := false;
-            wmDEM.SetPanelText(0,'');
-            ShowDefaultCursor;
-         end;
-
-
-         procedure UnzipSingleFile(var fName : PathStr);
-         var
-            Dir : DirStr;
-            Ext : ExtStr;
-            fList : tstringList;
-         begin
-            Ext := UpperCase(ExtractFileExt(FName));
-            if (Ext = '.KMZ') or (Ext = '.LPK') or (Ext = '.SHZ') then begin
-               Dir := ExtractFilePath(fName) + SpacesToUnderScores(ExtractFileNameNoExt(fName)) + '\';
-               SafeMakeDir(Dir);
-               ZipMasterUnzip(fName,Dir);
-               if (Ext = '.SHZ') then begin
-                  Flist := Nil;
-                  Petmar.FindMatchingFiles(Dir,'*.shp',fList,2);
-                  fName := flist[0];
-                  fList.Free;
-               end;
-            end
-            else if (Ext = '.7Z') then begin
-               ChDir(ExtractFilePath(fName));
-               Main7Z(fName);
-            end
-            else begin
-               ZipMasterUnzip(fName,ExtractFilePath(fName));
-            end;
-         end;
-
-
-         function ZipMasterZipFiles(ZipName : PathStr; TheFiles : tStringList) : boolean;
-         var
-           Zipfile : TZipFile;
-           i : integer;
-         begin
-            {$IfDef RecordZip} WriteLineToDebugFile('ZipMasterZipFiles enter'); {$EndIf}
-            ZipFile := TZipFile.Create;
-            try
-               ZipFile.Open(ZipName,zmWrite);
-               for i := 0 to pred(TheFiles.Count) do begin
-                 if FileExists(TheFiles.Strings[i]) then begin
-                    ZipFile.Add(TheFiles.Strings[i]);
-                 end;
-               end;
-            finally
-              ZipFile.Close;
-              ZipFile.Free;
-            end;
-         end;
-
-
-         function Main7Z(var fName : PathStr; Switches : shortstring = '') : boolean;
-         var
-            cmd : ShortString;
-         begin
-            if SevenZipPresent then begin
-               {$IfDef RecordUnzips} WriteLineToDebugFile('Main72 for ' + fName); {$EndIf}
-               cmd := SevenZipfName + ' x ' + fname + Switches;
-               WinExecAndWait32(cmd);
-            end
-            else Missing7ZipMessage;
-         end;
-
-
-         function MainBZ2(var fName : PathStr; Outfile : PathStr = '') : boolean;
-         var
-            cmd : ShortString;
-         begin
-            if SevenZipPresent then begin
-               {$IfDef RecordUnzips} WriteLineToDebugFile('MainBZ2 for ' + fName); {$EndIf}
-               if (Outfile <> '') then ChDir(ExtractFilePath(OutFile))
-               else ChDir(ExtractFilePath(fName));
-               cmd := SevenZipfName + ' a -tbzip2 ' + fname + '.bz2 ' + fname;
-               WinExecAndWait32(cmd);
-            end
-            else Missing7ZipMessage;
-         end;
-
-
-         function MainGzip(var fName : PathStr; Outfile : PathStr = '') : boolean;
-         var
-            cmd : ShortString;
-         begin
-            if SevenZipPresent then begin
-               cmd := SevenZipfName + ' e ' + DoubleQuotedStr(fname);
-               if (Outfile <> '') then ChDir(ExtractFilePath(OutFile))
-               else ChDir(ExtractFilePath(fName));
-               WinExecAndWait32(cmd);
-               //if MDDef.DeleteTarGZ then File2Trash(fName);
-            end
-            else Missing7ZipMessage;
-         end;
-
-
-         function MainExtar(fName : PathStr; Outfile : PathStr = '') : boolean;
-         var
-            cmd : ShortString;
-         begin
-            if SevenZipPresent then begin
-               cmd := SevenZipfName + ' e ' + DoubleQuotedStr(fname);
-               if (Outfile <> '') then begin
-                  ChDir(ExtractFilePath(OutFile));
-                  cmd := cmd + ' -o' + DoubleQuotedStr(Outfile);
-               end
-               else ChDir(ExtractFilePath(fName));
-               WinExecAndWait32(cmd);
-               //if MDDef.DeleteTarGZ then File2Trash(fName);
-            end
-            else Missing7ZipMessage;
-         end;
-
-{$EndIf}
-
 
 procedure Int4Swap(var int : int32);
 var
@@ -2898,16 +2702,6 @@ begin
   result := ExpandFileName(path + '\..');
   if Result[length(Result)] <> '\' then Result := Result +  '\';
 end;
-
-(*
-function JustLastSubDir(Dir : AnsiString) : shortstring;
-var
-   ts : PathStr;
-begin
-   ts := LastSubDir(Dir);
-   Result := Copy(Dir,Length(ts),Length(Dir)-Length(ts) - 1);
-end;
-*)
 
 
 function LastSubDir(Dir : AnsiString) : PathStr;
@@ -3008,7 +2802,6 @@ end;
 procedure DeleteFileIfExists(fName : PathStr);
 begin
    {$IfDef TrackFileDeletion} WriteLineToDebugFile('Try to delete ' + fName);  MessageToContinue('Try to delete ' + fName); {$EndIf}
-
    if (fName <> '') then begin
       fName := ExpandFileName(fName);
       if FileExists(fName) then begin
@@ -3863,7 +3656,7 @@ function NextFilePath(Path : PathStr) : PathStr;
 var
    i : integer;
 begin
-   if ValidPath(Path) then begin
+   if not ValidPath(Path) then begin
       Result := Path;
    end
    else begin
@@ -4356,6 +4149,153 @@ begin
    until (tries > 5);
    Result := false;
 end {CopyFile};
+
+
+
+
+{$IfDef ExCompress}
+{$Else}
+
+         function SevenZipPresent : boolean;
+         begin
+            SevenZipfName := ProgramRootDir + '7z.exe';
+            Result := FileExists(SevenZipfName) and FileExists(ProgramRootDir + '7z.dll');
+         end;
+
+         procedure Missing7ZipMessage;
+         begin
+            MessageToContinue('Missing ' + SevenZipfName + ' and ' + ProgramRootDir + '7z.dll');
+         end;
+
+
+         function ZipMasterUnzip(ZipName,OutDir : ShortString) : boolean;
+         var
+           Zipfile : TZipFile;
+         begin
+            wmDEM.SetPanelText(0,'unzip ' + ExtractFileName(zipName));
+            ShowHourglassCursor;
+            if FileExists(zipName) then begin
+               ZipFile := TZipFile.Create;
+               try
+                 ZipFile.ExtractZipFile(ZipName,OutDir);
+               finally
+                 ZipFile.Free;
+               end;
+            end
+            else Result := false;
+            wmDEM.SetPanelText(0,'');
+            ShowDefaultCursor;
+         end;
+
+
+         procedure UnzipSingleFile(var fName : PathStr);
+         var
+            Dir : DirStr;
+            Ext : ExtStr;
+            fList : tstringList;
+         begin
+            Ext := UpperCase(ExtractFileExt(FName));
+            if (Ext = '.KMZ') or (Ext = '.LPK') or (Ext = '.SHZ') then begin
+               Dir := ExtractFilePath(fName) + SpacesToUnderScores(ExtractFileNameNoExt(fName)) + '\';
+               SafeMakeDir(Dir);
+               ZipMasterUnzip(fName,Dir);
+               if (Ext = '.SHZ') then begin
+                  Flist := Nil;
+                  Petmar.FindMatchingFiles(Dir,'*.shp',fList,2);
+                  fName := flist[0];
+                  fList.Free;
+               end;
+            end
+            else if (Ext = '.7Z') then begin
+               ChDir(ExtractFilePath(fName));
+               Main7Z(fName);
+            end
+            else begin
+               ZipMasterUnzip(fName,ExtractFilePath(fName));
+            end;
+         end;
+
+
+         function ZipMasterZipFiles(ZipName : PathStr; TheFiles : tStringList) : boolean;
+         var
+           Zipfile : TZipFile;
+           i : integer;
+         begin
+            {$IfDef RecordZip} WriteLineToDebugFile('ZipMasterZipFiles enter'); {$EndIf}
+            ZipFile := TZipFile.Create;
+            try
+               ZipFile.Open(ZipName,zmWrite);
+               for i := 0 to pred(TheFiles.Count) do begin
+                 if FileExists(TheFiles.Strings[i]) then begin
+                    ZipFile.Add(TheFiles.Strings[i]);
+                 end;
+               end;
+            finally
+              ZipFile.Close;
+              ZipFile.Free;
+            end;
+         end;
+
+
+         function Main7Z(var fName : PathStr; Switches : shortstring = '') : boolean;
+         var
+            cmd : ShortString;
+         begin
+            if SevenZipPresent then begin
+               {$IfDef RecordUnzips} WriteLineToDebugFile('Main72 for ' + fName); {$EndIf}
+               cmd := SevenZipfName + ' x ' + fname + Switches;
+               WinExecAndWait32(cmd);
+            end
+            else Missing7ZipMessage;
+         end;
+
+
+         function MainBZ2(var fName : PathStr; Outfile : PathStr = '') : boolean;
+         var
+            cmd : ShortString;
+         begin
+            if SevenZipPresent then begin
+               {$IfDef RecordUnzips} WriteLineToDebugFile('MainBZ2 for ' + fName); {$EndIf}
+               if (Outfile <> '') then ChDir(ExtractFilePath(OutFile))
+               else ChDir(ExtractFilePath(fName));
+               cmd := SevenZipfName + ' a -tbzip2 ' + fname + '.bz2 ' + fname;
+               WinExecAndWait32(cmd);
+            end
+            else Missing7ZipMessage;
+         end;
+
+
+         function MainGzip(var fName : PathStr; Outfile : PathStr = '') : boolean;
+         var
+            cmd : ShortString;
+         begin
+            if SevenZipPresent then begin
+               cmd := SevenZipfName + ' e ' + DoubleQuotedStr(fname);
+               if (Outfile <> '') then ChDir(ExtractFilePath(OutFile))
+               else ChDir(ExtractFilePath(fName));
+               WinExecAndWait32(cmd);
+            end
+            else Missing7ZipMessage;
+         end;
+
+
+         function MainExtar(fName : PathStr; Outfile : PathStr = '') : boolean;
+         var
+            cmd : ShortString;
+         begin
+            if SevenZipPresent then begin
+               cmd := SevenZipfName + ' e ' + DoubleQuotedStr(fname);
+               if (Outfile <> '') then begin
+                  ChDir(ExtractFilePath(OutFile));
+                  cmd := cmd + ' -o' + DoubleQuotedStr(Outfile);
+               end
+               else ChDir(ExtractFilePath(fName));
+               WinExecAndWait32(cmd);
+            end
+            else Missing7ZipMessage;
+         end;
+
+{$EndIf}
 
 
 

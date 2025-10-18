@@ -21,7 +21,7 @@
 {$WEAKLINKRTTI ON}
 
 
-{$Define July15Issue}    //internal error that was very hard to track down; it went away, but returned late August
+//{$Define July15Issue}    //internal error that was very hard to track down; it went away, but returned late August
 
 //{$Define ExFMX3D}
 //{$Define ExPointCloud}

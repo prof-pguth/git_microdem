@@ -391,7 +391,7 @@ end;
 procedure PickWinGraphColors;
 var
    db : tMyData;
-   i : integer;
+   //i : integer;
    dname : PathStr;
    Palettes : tStringList;
 begin
@@ -789,10 +789,12 @@ begin
          if LegendOnRight then begin
             if LegendEachGraph or (ThisGraph = NumGraphs) then begin
                 bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend;
-                x := Bitmap.Width + 10;
-                Bitmap.Width := x + bmp.Width;
-                Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
-                bmp.Free;
+                if bmp <> Nil then begin
+                   x := Bitmap.Width + 10;
+                   Bitmap.Width := x + bmp.Width;
+                   Bitmap.Canvas.Draw(x,Bitmap.Height - 10 - bmp.Height,bmp);
+                   bmp.Free;
+                end;
             end;
          end;
          Bitmap.Height := Bitmap.Height + BottomMargin;
@@ -2071,6 +2073,7 @@ initialization
 finalization
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
+
 
 
 

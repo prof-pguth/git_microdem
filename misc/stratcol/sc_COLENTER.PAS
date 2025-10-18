@@ -86,6 +86,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    Petmar_types,PETMar,PetImage,sc_COLMain,Zipatone;
 
 
@@ -250,7 +251,7 @@ begin
    BaseListBox.ItemIndex := 0;
    TopListBox.ItemIndex := 0;
    LithListBox.ItemIndex := 0;
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
 end;
 
 procedure TFullUnitEntryDlg.SpinButton1DownClick(Sender: TObject);

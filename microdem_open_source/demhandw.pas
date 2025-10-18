@@ -1274,7 +1274,7 @@ end;
 
 procedure TDemHandForm.DiluviumDEMreprot1Click(Sender: TObject);
 begin
-   DiluviumDEMIXtileReport;
+    {$IfDef IncludeCoastalDEMs} DiluviumDEMIXtileReport; {$EndIf}
 end;
 
 procedure TDemHandForm.GDALassignprojectionviaEPSG1Click(Sender: TObject);
@@ -1421,7 +1421,7 @@ end;
 
 procedure TDemHandForm.FormCreate(Sender: TObject);
 begin
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
    {$IfDef HideHelpButtons} Help1.Visible := false; {$EndIf}
    FileMode := 2;
 end;

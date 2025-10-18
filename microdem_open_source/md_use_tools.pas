@@ -16,7 +16,7 @@ unit md_use_tools;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordWBT}
+      //{$Define RecordWBT}
       //{$Define RecordLSPcalculator}
       //{$Define RecordSAGA}
       //{$Define RecordSAGARanges}
@@ -102,15 +102,6 @@ uses
    function WBT_TRI(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
    function WBT_AspectMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
 
-  //curvatures
-     function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-     function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-     function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-     function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-     function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-     function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-     function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
-
    function WBT_AvgNormVectAngDev(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
    function WBT_SphericalStdDevOfNormals(OpenMap : boolean; InName : PathStr; filtersize : integer) : integer;
 
@@ -130,6 +121,16 @@ uses
    procedure WBT_GeotiffMetadata(InName : PathStr);
    procedure WBT_MultiscaleRoughness(InName : PathStr);
    procedure WBT_KappaIndex(ClassifiedName,ReferenceName : PathStr; HTMLname : PathStr = '');
+   function WBT_Gaussian(OpenMap : boolean; InName : PathStr; Sigma : float32 = 0.75; OutName : PathStr = ''; TheElevUnits : tElevUnit = euUndefined; MapType : tMapType = mtElevSpectrum) : integer;
+
+  //curvatures
+     function WBT_ProfileCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_PlanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_TangentialCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
+     function WBT_MinimalCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_MaximalCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_MeanCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
+     function WBT_GaussianCurvature(OpenMap : boolean; InName : PathStr; OutName : PathStr = ''): integer;
 {$EndIf}
 
 

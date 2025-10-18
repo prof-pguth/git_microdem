@@ -288,31 +288,30 @@ type
          procedure SetNewDEM(var NewDEM : integer);
          procedure NilAllDEMPointers;
 
-      //strings describing aspects of the DEM
-         function TheShortDEMName : ShortString;
-         function SaveStatusString : shortstring;
-         function KeyParams(short : boolean = false) : ShortString;
-         function FullDEMParams : AnsiString;
-         function SWcornerString : ShortString;
-         function PixelIsString : AnsiString;
-         function DEMMapProjectionString : shortstring;
-         function HorizontalDEMSpacing(short : boolean = false) : ShortString;
-         function SimpleHorizontalDEMSpacing(BoxSize : integer) : ShortString;
-         function HorizontalDEMSpacingInMeters : ShortString;
-         function DEM_size_km : shortstring;
+         //strings describing aspects of the entire DEM
+             function TheShortDEMName : ShortString;
+             function SaveStatusString : shortstring;
+             function KeyParams(short : boolean = false) : ShortString;
+             function FullDEMParams : AnsiString;
+             function SWcornerString : ShortString;
+             function PixelIsString : AnsiString;
+             function DEMMapProjectionString : shortstring;
+             function HorizontalDEMSpacing(short : boolean = false) : ShortString;
+             function SimpleHorizontalDEMSpacing(BoxSize : integer) : ShortString;
+             function HorizontalDEMSpacingInMeters : ShortString;
+             function DEM_size_km : shortstring;
+             function GridDefinition : ShortString;
+             function DEMSizeString : shortstring;
+             function ColsRowsString : ShortString;
+             function ZRange : ShortString;
+             function GridCornerModel : shortstring;
+             function GridCornerModelAndPixelIsString : shortstring;
+             function GridPrecisionString : ShortString;
+             function DEMmodel : shortstring;
 
-
-         function GridDefinition : ShortString;
-         function DEMSizeString : shortstring;
-         function ColsRowsString : ShortString;
-         function ZRange : ShortString;
-         function GridCornerModel : shortstring;
-         function GridCornerModelAndPixelIsString : shortstring;
-         function GridPrecisionString : ShortString;
-         function DEMmodel : shortstring;
-
-         function DEMLocationString(XGrid,YGrid : float64) : ShortString;
-         function PixelSize(Col,Row : integer) : shortstring;
+         //strings describing aspects of a single poiont
+             function PixelSize(Col,Row : integer) : shortstring;
+             function DEMLocationString(XGrid,YGrid : float64) : ShortString;
 
          function PercentileOfPoint(xloc,yloc : integer; GridLimits: tGridLimits) : float64;
          function PercentileOfElevation(z : float64) : float64;
@@ -341,7 +340,6 @@ type
          function ImmediateNeighborsMissing(XGrid,YGrid : integer) :  integer;
          function ImmediateNeighborsSameCode(XGrid,YGrid : integer) :  integer;
          procedure DeleteMissingDataPoints(CheckMaxMin : boolean = true);
-         //procedure ComputeMissingDataPercentage(GridLimits : tGridLimits; var Missing : float64); //overload;
          function ComputeMissingDataPercentage(GridLimits : tGridLimits) : float64;
 
          function FilledGridBox(var GridLimits : tGridLimits) : boolean;
@@ -371,8 +369,8 @@ type
          function LatLongDegreeInDEM(Lat,Long : float64) : boolean;
          function LatLongNearestGridPointInDEM(Lat,Long : float64) : boolean;
 
-         function GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;  {overload;} {$IfDef NoCoordInline} {$Else} inline; {$EndIf}   {interpolates from grid coordinates in DEM to return elevation of a point}
-         function GetElevMetersOnGrid(x,y : int32; var z  : float32) : boolean; {overload;} {$IfDef NoCoordInline} {$Else} inline; {$EndIf}       {grid coordinates in DEM to return elevation of a point}
+         function GetElevMeters(XGrid,YGrid : float64; var z  : float32) : boolean;  {$IfDef NoCoordInline} {$Else} inline; {$EndIf} {interpolates from grid coordinates in DEM to return elevation of a point}
+         function GetElevMetersOnGrid(x,y : int32; var z  : float32) : boolean;      {$IfDef NoCoordInline} {$Else} inline; {$EndIf} {grid coordinates in DEM to return elevation of a point}
          function GetElevFromUTM(x,y : float64; var z : float32) : boolean;
          function GetElevFromLatLongDegree(Lat,Long : float64; var z : float32) : boolean;
 
@@ -490,7 +488,7 @@ type
             NeedSecondOrder : boolean = false) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
          function GetSlopeAndAspectFromLatLong(HowCompute : tSlopeCurveCompute; Lat,Long : float64; var SlopeAspectRec : tSlopeAspectRec) : boolean;
          function QuickEvansSlopeAndAspect(Col,Row : integer; var SlopeAsp : tSlopeAspectRec) : boolean; {$IfDef InlineReflectance} inline; {$EndIf}
-         function AverageDEMslope : float64;
+         function AverageDEMslope(GridLimits : tGridLimits) : float64;
 
          function SlopePercent(HowCompute : tSlopeCurveCompute; XGrid,YGrid : integer; var Slope : float64; Degrees : boolean = false) : boolean; inline;
          function SlopePercentFromLatLong(HowCompute : tSlopeCurveCompute; Lat,Long : float64) : float64;
@@ -754,38 +752,33 @@ function NewArea(TransformToNewDatum : boolean; var ImportingDEM : integer; DEMM
 procedure OpenDEMDataStructures(var WantedDEM : integer);
 function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
 
-function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer) : integer;
-
 procedure ReadASCIIArcGrid(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean; ReallyReadDEM : boolean);
 procedure ReadFusionDTM(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean);
 
-function CreateNewGlobalGrid(GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer; OpenMap : boolean = true) : integer;
+function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
 
 procedure ConvertUKOSDEMtoUTM(BigDEM : integer; ToUTM : boolean);
 function UK_OS_projection(fName : PathStr) : boolean;
 
-function ReadWorldFile(var MapProjection : tMapProjection; var DigitizeDatum : ShortString; FileName : PathStr; var RegVars : tRegVars) : boolean;
-function ReadWorldFileValues(FileName : PathStr; var DeltaX,Xrot,YRot,DeltaY,UpLeftX,UpLeftY : float64) : boolean;
-procedure SaveWorldFile(FName : PathStr; xPixelSize,yPixelSize,xutm,yutm : float64; DatumCode : ShortString; UTMZone : integer; SatLatHemi : AnsiChar);
-function CreateWorldFileStringList(xPixelSize,yPixelSize,xutm,yutm : float64) : tStringList;
-procedure GetDefaultWorldFile(var ReadFileName : PathStr);
-function FindExistingWorldFile(var ReadFileName : PathStr) : boolean;
-function ValidWorldFile(FileName : PathStr) : boolean;
+//world file routines
+    function ReadWorldFile(var MapProjection : tMapProjection; var DigitizeDatum : ShortString; FileName : PathStr; var RegVars : tRegVars) : boolean;
+    function ReadWorldFileValues(FileName : PathStr; var DeltaX,Xrot,YRot,DeltaY,UpLeftX,UpLeftY : float64) : boolean;
+    procedure SaveWorldFile(FName : PathStr; xPixelSize,yPixelSize,xutm,yutm : float64; DatumCode : ShortString; UTMZone : integer; SatLatHemi : AnsiChar);
+    function CreateWorldFileStringList(xPixelSize,yPixelSize,xutm,yutm : float64) : tStringList;
+    procedure GetDefaultWorldFile(var ReadFileName : PathStr);
+    function FindExistingWorldFile(var ReadFileName : PathStr) : boolean;
+    function ValidWorldFile(FileName : PathStr) : boolean;
 
 procedure MaskGridFromSecondGrid(GridToMask,GridToUseAsMask : integer; HowMask : tMaskGrid);
-
-
 procedure VerticalDatumShift(DEM : integer; vdShift : tvdShift);
-function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = 1;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
-
-
 procedure PerformSingleGridArithmetic(DEM : integer; How : tSingleGridArithmetic; var Invalid : integer; ShowInvalid : boolean = true);
 
-procedure ChangeDEMPixelFormatAndSaveDEM(DEM : integer; PixelFormat : integer; NoShift : boolean = false; NewName : Pathstr = '');
+//save DEM options
+    function SaveDEMtoDBF(DEM : integer; bbgeo : sfBoundBox; fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = 1;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
+    procedure ChangeDEMPixelFormatAndSaveDEM(DEM : integer; PixelFormat : integer; NoShift : boolean = false; NewName : Pathstr = '');
 
-
-//reports, in demcoord_reports.inc
-   {$IfDef SlopeWindowEdgeEffect} procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = ''); {$EndIf}
+//reports, code in demcoord_reports.inc
    procedure TrendSurfacePartialDerivatives(DEM,xp,yp : integer; Title : shortstring = '');
    procedure TrendSurfaceEquations(DEM,xp,yp : integer; Title : shortstring = '');
    procedure LocalTrendSurface(DEM,xp,yp : integer; Title : shortstring = '');
@@ -797,6 +790,7 @@ procedure ChangeDEMPixelFormatAndSaveDEM(DEM : integer; PixelFormat : integer; N
    procedure SlopeMethodsReport(DEM,xp,yp : integer; Title : shortstring = '');
    procedure SlopeMethodsReportFromLatLong(DEM : integer; lat,Long : float64; Title : shortstring = '');
    procedure DirectionalSlopesReport(DEM : integer; Lat,Long : float64);
+   {$IfDef SlopeWindowEdgeEffect} procedure LocalTrendSurfaceEdgeEffects(DEM,xp,yp : integer; Title : shortstring = ''); {$EndIf}
 
 
 
@@ -817,7 +811,7 @@ const
    DEMRequestBeyondDataString = 'DEM request beyond data';
 
 const
-   CalculatingEarthCurvature : boolean = true;
+   //CalculatingEarthCurvature : boolean = true;
    WeKnowItsUTMZone : int16 = -99;
    ExploreSingleGridSpacing : boolean = false;
    SingleSetSpacing : float32 = 30;
@@ -901,8 +895,8 @@ uses
    View3D_main,
    PetImage;
 
-var
-   CountInStrips : integer;
+//var
+   //CountInStrips : integer;
 
 {$I demcoord_vis.inc}
 {$I demcoord_straight.inc}
@@ -976,7 +970,7 @@ begin
    Result := RealToString(AverageXSpace * DEMheader.NumCol / 1000, -6,-2) + 'x' + RealToString(AverageYSpace * DEMheader.NumRow  / 1000, -6,-2) + ' km'
 end;
 
- function tDEMDataSet.AverageDEMslope : float64;
+ function tDEMDataSet.AverageDEMslope(GridLimits : tGridLimits) : float64;
  var
     Sum : float64;
     NPts,x,y : int64;
@@ -984,15 +978,16 @@ end;
  begin
     Sum := 0;
     NPts := 0;
-   for x := 0 to pred(DEMHeader.NumCol) do begin
-      for y := 0 to pred(DEMHeader.NumRow) do begin
+   for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+      for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
          if QuickEvansSlopeAndAspect(x,y,SlopeAsp) then begin
             Sum := Sum + SlopeAsp.SlopePercent;
             inc(NPts);
          end;
       end;
    end;
-   Result := Sum / Npts;
+   if (NPts = 0) then Result := -999
+   else Result := Sum / Npts;
  end;
 
 procedure tDEMDataSet.AssignVerticalDatum(NewVertDatumCode : integer);
@@ -1339,10 +1334,9 @@ begin
   {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
-      //DEMGlb[Result].AreaName := GridName;
       DEMGlb[Result].DEMMapProj.InitProjFomDEMHeader(DEMHeader,'DEM=' + IntToStr(Result));
       {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)}
-        WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, new ' + GridName + '  ' + DEMglb[Result].KeyParams(true));
+          WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, new ' + GridName + '  ' + DEMglb[Result].KeyParams(true));
       {$EndIf}
    end;
 end;
@@ -1562,7 +1556,6 @@ begin
    FillChar(HeadRecs,SizeOf(tDEMheader),0);
    HeadRecs.ElevUnits := euMeters;
    HeadRecs.DEMPrecision := FloatingPointDEM;
-   //Headrecs.aDigitizeDatum := WGS84d;
    HeadRecs.h_DatumCode := MDdef.PreferPrimaryDatum;
    Headrecs.UTMZone := MDdef.DefaultUTMZone;
    Headrecs.LatHemi := MDdef.DefaultLatHemi;
@@ -1575,7 +1568,7 @@ begin
       Headrecs.DataSpacing := SpaceDegrees;
    end;
    HeadRecs.VerticalCSTypeGeoKey := 0;
-   HeadRecs.RasterPixelIsGeoKey1025 := 0;
+   HeadRecs.RasterPixelIsGeoKey1025 := PixelIsPoint;
    HeadRecs.wktString := '';
 end;
 
@@ -3465,20 +3458,7 @@ begin
                    Result := RGBTrip(0,0,r);
                 end;
              end
-(*
-             else if (TintedReflectance = mt6ColorVAToverlay) then begin
-                if DEMglb[VATrelatedGrid].GetElevMeters(Col,Row,ZV) then begin
-                   zi := pred(round(zv));
-                   if zi in [3,4,5,6] then Red := 1 else Red := 0;
-                   if zi in [1,2,3] then Green := 1 else Green := 0;
-                   if zi in [0,1,5,6] then Blue := 1 else Blue := 0;
-                   Result := RGBTrip(r*Red,r*Green,r*Blue);
-                end
-                else Result := RGBTrip(r,r,r);
-             end
-*)
              else if (TintedReflectance = mt6ColorsReflect) then begin
-               // GetReflectanceRGB(TintedReflectance,zv,Red,Green,Blue);
                 zi := round(zv - RefMinElev) * 6 div round(RefMaxElev - RefMinElev);
                 { 0  : Blue}   { 1  : Cyan}  { 2  : Green} { 3  : Yellow}  { 4  : Red } { 5  : Magneta}
                 if zi in [3,4,5,6] then Red := 1 else Red := 0;
@@ -3549,14 +3529,22 @@ begin
 end;
 
 
+
+
 function tDEMDataSet.SurroundedPointElevs(Col,Row : integer; var znw,zw,zsw,zn,z,zs,zne,ze,zse : float32; RegionSize : integer = 1) : boolean;
 {determines if point can be safely interpolated, or used for focal operations, that it is surrounded by valid data points}
 begin
    Result := ((Col - RegionSize) >= 0) and ((Row - RegionSize) >= 0) and ((Col + RegionSize) < (DEMheader.NumCol-2)) and ((Row  + RegionSize) < (DEMheader.NumRow-2));
    if Result then begin
-      Result := GetElevMetersOnGrid((Col - RegionSize),(Row - RegionSize),zsw) and GetElevMetersOnGrid(Col,(Row - RegionSize),zs) and GetElevMetersOnGrid((Col + RegionSize),(Row - RegionSize),zse) and
-                GetElevMetersOnGrid((Col - RegionSize),Row,zw) and GetElevMetersOnGrid(Col,Row,z) and GetElevMetersOnGrid((Col + RegionSize),Row,ze) and
-                GetElevMetersOnGrid((Col - RegionSize),(Row + RegionSize),znw) and GetElevMetersOnGrid(Col,(Row + RegionSize),zn) and GetElevMetersOnGrid((Col + RegionSize),(Row + RegionSize),zne);
+      Result := GetElevMetersOnGrid((Col - RegionSize),(Row - RegionSize),zsw) and
+                GetElevMetersOnGrid(Col,(Row - RegionSize),zs) and
+                GetElevMetersOnGrid((Col + RegionSize),(Row - RegionSize),zse) and
+                GetElevMetersOnGrid((Col - RegionSize),Row,zw) and
+                GetElevMetersOnGrid(Col,Row,z) and
+                GetElevMetersOnGrid((Col + RegionSize),Row,ze) and
+                GetElevMetersOnGrid((Col - RegionSize),(Row + RegionSize),znw) and
+                GetElevMetersOnGrid(Col,(Row + RegionSize),zn) and
+                GetElevMetersOnGrid((Col + RegionSize),(Row + RegionSize),zne);
    end {if};
 end;
 
@@ -3598,11 +3586,11 @@ end;
 function DropEarthCurve(d : float64) : float64;
    {d and DropEarthCurve in meters}
 begin
-  DropEarthCurve := 0;
-  if CalculatingEarthCurvature then case MDDef.EarthVertCurvAlg of
+  case MDDef.EarthVertCurvAlg of
       vcTM5441 : DropEarthCurve := Sqr(0.001*d) * 0.0676; {from Army TM5-441 (Feb 70) p.2-12}
       vcRadioLineOfSight : DropEarthCurve := Sqr(0.001*d) / (MDDef.RadioK * 0.25 * 51);
       vcYoeli : DropEarthCurve := 0.87 * sqr(0.001 * d) / (2 * 6370) * 1e3;
+      vcNoCurvature : DropEarthCurve := 0;
    end;
 end;
 
@@ -3610,7 +3598,6 @@ end;
 procedure PickSlopeAspectMethod(aMessage : shortstring; var SlopeMethod : byte);
 var
    StringList : Classes.tStringList;
-   //s1         : integer;
    i          : integer;
 begin
    {$IfDef VCL}

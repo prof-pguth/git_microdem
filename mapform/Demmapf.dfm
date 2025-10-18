@@ -1517,7 +1517,7 @@ object MapForm: TMapForm
   end
   object MainMenu1: TMainMenu
     Left = 248
-    Top = 58
+    Top = 50
     object File1: TMenuItem
       Caption = '&File'
       object Open1: TMenuItem
@@ -4010,7 +4010,6 @@ object MapForm: TMapForm
         end
         object Minimumfilter1: TMenuItem
           Caption = 'Minimum filter'
-          OnClick = Minimumfilter1Click
         end
         object Maximumfilter1: TMenuItem
           Caption = 'Maximum filter'
@@ -4035,6 +4034,10 @@ object MapForm: TMapForm
         object Suminbox1: TMenuItem
           Caption = 'Sum in box'
           OnClick = Suminbox1Click
+        end
+        object IQRinbox1: TMenuItem
+          Caption = 'IQR in box'
+          OnClick = IQRinbox1Click
         end
         object Filledneighborhood1: TMenuItem
           Caption = 'Filled neighborhood'
@@ -4105,15 +4108,15 @@ object MapForm: TMapForm
           OnClick = DEMIX1secresamplebyaveraging1Click
         end
         object N1secand30mresamplesbyaveraging1: TMenuItem
-          Caption = '1 sec and 30 m resamples by averaging'
+          Caption = 'Aggregate this HRDEM to 1 sec and 30 m'
           OnClick = N1secand30mresamplesbyaveraging1Click
         end
         object CreateReferenceDEMtoMatchThis1: TMenuItem
-          Caption = 'Aggregate HRDEM to match this grid'
+          Caption = 'Aggregate HRDEM to match selected grids'
           OnClick = CreateReferenceDEMtoMatchThis1Click
         end
         object UpsampleDEMtomatchthisgrid1: TMenuItem
-          Caption = 'Upsample DEM to match this grid'
+          Caption = 'Upsample sekected  DEMs to match this grid'
           OnClick = UpsampleDEMtomatchthisgrid1Click
         end
         object Ressamplefor025to1secDTMs1: TMenuItem
@@ -4569,6 +4572,14 @@ object MapForm: TMapForm
         object SSOcountingradiuscomparison1: TMenuItem
           Caption = 'SSO counting radius comparison'
           OnClick = SSOcountingradiuscomparison1Click
+        end
+        object MAD2kforgeographicgrids1: TMenuItem
+          Caption = 'MAD2k for geographic grids'
+          OnClick = MAD2kforgeographicgrids1Click
+        end
+        object DiagonalinterpolationforNEneighbor1: TMenuItem
+          Caption = 'Diagonal interpolation for NE neighbor'
+          OnClick = DiagonalinterpolationforNEneighbor1Click
         end
       end
       object Experimental1: TMenuItem
@@ -5381,6 +5392,10 @@ object MapForm: TMapForm
       object PixelsinlowresDEMs1: TMenuItem
         Caption = 'Pixels in low-res DEMs'
         OnClick = PixelsinlowresDEMs1Click
+      end
+      object Exportelevationsin5x5window1: TMenuItem
+        Caption = 'Export elevations in 5x5 window'
+        OnClick = Exportelevationsin5x5window1Click
       end
     end
     object TIGER1: TMenuItem
@@ -6503,6 +6518,9 @@ object MapForm: TMapForm
         Caption = 'MAD2K'
         OnClick = MAD2K1Click
       end
+      object IRWQslope1: TMenuItem
+        Caption = 'IRQslope'
+      end
       object Normalizeeastwest1: TMenuItem
         Caption = 'TRI  normalize east-west'
         OnClick = Normalizeeastwest1Click
@@ -7364,6 +7382,10 @@ object MapForm: TMapForm
     object Whiteboxfeaturepreservingsmoothing1: TMenuItem
       Caption = 'Whitebox feature preserving smoothing'
       OnClick = Whiteboxfeaturepreservingsmoothing1Click
+    end
+    object WhiteboxGaussianfilter1: TMenuItem
+      Caption = 'Whitebox Gaussian filter'
+      OnClick = WhiteboxGaussianfilter1Click
     end
     object WhiteboxTRI1: TMenuItem
       Caption = 'Whitebox TRI'

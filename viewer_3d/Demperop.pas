@@ -255,6 +255,7 @@ uses
    {$Else}
       DEMEROS,
    {$EndIf}
+   Nevadia_Main,
    DEMRefOp,Demdef_routines,BaseMap,DEMCoord,demfanparams,
    GetLatLn,
    DEM_Manager,

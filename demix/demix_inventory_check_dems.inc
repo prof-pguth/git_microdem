@@ -113,7 +113,7 @@ end;
 
 procedure InventoryAllDEMIXdata;
 var
-   Areas,Results,SSIMareas,FUVareas,RefDEMs,TestDEMs,ChannelAreas,DiffDist : tStringList;
+   Areas,Results,SSIMareas,FUVareas,RefDEMs,TestDEMs,DiffDist : tStringList;
    aline,Area : shortstring;
    j : integer;
    fName : PathStr;
@@ -122,7 +122,7 @@ begin
       GetDEMIXPaths;
       Areas := DEMIX_AreasWanted;
       Results := tStringList.Create;
-      Results.Add('AREA,REF_DEM,TEST_DEM,FUV,SSIM,CHANNEL,DIFF_DIST');
+      Results.Add('AREA,REF_DEM,TEST_DEM,FUV,SSIM,DIFF_DIST');
 
       SSIMareas := tStringList.Create;
       FindMatchingFiles(SSIMresultsDir, '*.csv',SSIMareas,1);
@@ -137,8 +137,6 @@ begin
       FindMatchingFiles(DEMIX_Ref_1sec, '*.tif',REFDEMs,1);
       TestDEMs := tStringList.Create;
       FindMatchingFiles(DEMIX_test_dems, '*.tif',TestDEMs,1);
-      ChannelAreas := tStringList.Create;
-      FindMatchingFiles(ChannelMissesDir, '*.csv',Channelareas,1);
       DiffDist := tStringList.Create;
       FindMatchingFiles(Diff_dist_results_dir, '*.csv',DiffDist,1);
 
@@ -148,7 +146,6 @@ begin
                                IntToStr(NumberOfStringsWithSubstring(TestDEMs,Area)) + ',' +
                                IntToStr(NumberOfStringsWithSubstring(FUVareas,Area)) + ',' +
                                IntToStr(NumberOfStringsWithSubstring(SSIMareas,Area)) + ',' +
-                               IntToStr(NumberOfStringsWithSubstring(ChannelAreas,Area)) + ',' +
                                IntToStr(NumberOfStringsWithSubstring(DiffDist,Area));
          Results.Add(aline);
       end;
@@ -159,7 +156,6 @@ begin
      FUVareas.Destroy;
      RefDEMs.Destroy;
      TestDEMs.Destroy;
-     ChannelAreas.Destroy;
      DiffDist.Destroy;
    finally
       EndDEMIXProcessing;
@@ -525,14 +521,15 @@ begin
          ClearOutFolder(DEMIX_ref_DEMs_channel_grids);
       {$EndIf}
 
-      ClearOutFolder(MD_out_ref_dir);
-      ClearOutFolder(MD_out_test_dir);
-      ClearOutFolder(wbt_out_ref_dir);
-      ClearOutFolder(wbt_out_test_dir);
-      ClearOutFolder(saga_out_ref_dir);
-      ClearOutFolder(saga_out_test_dir);
+      {$IfDef ExternalProgramsSaveCriteria}
+          ClearOutFolder(MD_out_ref_dir);
+          ClearOutFolder(MD_out_test_dir);
+          ClearOutFolder(wbt_out_ref_dir);
+          ClearOutFolder(wbt_out_test_dir);
+          ClearOutFolder(saga_out_ref_dir);
+          ClearOutFolder(saga_out_test_dir);
+      {$EndIf}
 
-      ClearOutFolder(ChannelMissesDir);
 
       ClearOutFolder(SSIMresultsDir);
 
@@ -722,72 +719,72 @@ begin
    EndDEMIXProcessing;
 end;
 
+{$IfDef IncludeCoastalDEMs}
+    procedure CheckLowElevationAreas;
+    var
+       Areas,Results,RefDEMs,TestDEMs,
+       COASTAL,DILUVIUM,DELTA : tStringList;
+       Area : shortstring;
+       fName : PathStr;
+       i,db : Integer;
 
-procedure CheckLowElevationAreas;
-var
-   Areas,Results,RefDEMs,TestDEMs,
-   COASTAL,DILUVIUM,DELTA : tStringList;
-   Area : shortstring;
-   fName : PathStr;
-   i,db : Integer;
+             procedure WriteAreaFile(DEM,fName : Shortstring);
+             var
+                sl : tStringList;
+             begin
+                GISdb[db].ApplyGISFilter(DEM + '=1');
+                sl := GISdb[db].MyData.ListUniqueEntriesInDB('AREA');
+                sl.SaveToFile(DEMIXSettingsDir + fname);
+                sl.Destroy;
+             end;
 
-         procedure WriteAreaFile(DEM,fName : Shortstring);
-         var
-            sl : tStringList;
-         begin
-            GISdb[db].ApplyGISFilter(DEM + '=1');
-            sl := GISdb[db].MyData.ListUniqueEntriesInDB('AREA');
-            sl.SaveToFile(DEMIXSettingsDir + fname);
-            sl.Destroy;
-         end;
+    begin
+       GetDEMIXpaths(false);
+       Areas := tStringList.Create;
+       Areas.LoadFromFile(AreaListFName);
 
-begin
-   GetDEMIXpaths(false);
-   Areas := tStringList.Create;
-   Areas.LoadFromFile(AreaListFName);
+       COASTAL := tStringList.Create;
+       FindMatchingFiles(DEMIX_coastal_dtms,'*.tif',Coastal,1);
+       DILUVIUM := tStringList.Create;
+       FindMatchingFiles(DEMIX_diluvium_dtms,'*.tif',Diluvium,1);
+       DELTA := tStringList.Create;
+       FindMatchingFiles(DEMIX_delta_dtms,'*.tif',Delta,1);
+       RemoveFilesThatDoNotHaveString(Delta,'_DELTA');   //some areas have "DELTA" in area name
 
-   COASTAL := tStringList.Create;
-   FindMatchingFiles(DEMIX_coastal_dtms,'*.tif',Coastal,1);
-   DILUVIUM := tStringList.Create;
-   FindMatchingFiles(DEMIX_diluvium_dtms,'*.tif',Diluvium,1);
-   DELTA := tStringList.Create;
-   FindMatchingFiles(DEMIX_delta_dtms,'*.tif',Delta,1);
-   RemoveFilesThatDoNotHaveString(Delta,'_DELTA');   //some areas have "DELTA" in area name
+       RefDEMs := tStringList.Create;
+       FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',RefDEMs,1);
+       TestDEMs := tStringList.Create;
+       FindMatchingFiles(DEMIX_test_dems,'*.tif',TestDEMs,1);
 
-   RefDEMs := tStringList.Create;
-   FindMatchingFiles(DEMIX_Ref_1sec,'*.tif',RefDEMs,1);
-   TestDEMs := tStringList.Create;
-   FindMatchingFiles(DEMIX_test_dems,'*.tif',TestDEMs,1);
-
-   Results := tStringList.Create;
-   Results.Add('AREA,REF_DEMS,TEST_DEMs,COASTAL,DILUVIUM,DELTA_DEM');
-   for i := 0 to pred(Areas.Count) do begin
-      Area := Areas.Strings[i];
-      Results.Add(Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMs,Area)) + ',' +
-                                   IntToStr(NumberOfStringsWithSubstring(TestDEMs,Area)) + ',' +
-                                   IntToStr(NumberOfStringsWithSubstring(Coastal,Area)) + ',' +
-                                   IntToStr(NumberOfStringsWithSubstring(Diluvium,Area)) + ',' +
-                                   IntToStr(NumberOfStringsWithSubstring(Delta,Area)));
-   end;
+       Results := tStringList.Create;
+       Results.Add('AREA,REF_DEMS,TEST_DEMs,COASTAL,DILUVIUM,DELTA_DEM');
+       for i := 0 to pred(Areas.Count) do begin
+          Area := Areas.Strings[i];
+          Results.Add(Area + ',' + IntToStr(NumberOfStringsWithSubstring(RefDEMs,Area)) + ',' +
+                                       IntToStr(NumberOfStringsWithSubstring(TestDEMs,Area)) + ',' +
+                                       IntToStr(NumberOfStringsWithSubstring(Coastal,Area)) + ',' +
+                                       IntToStr(NumberOfStringsWithSubstring(Diluvium,Area)) + ',' +
+                                       IntToStr(NumberOfStringsWithSubstring(Delta,Area)));
+       end;
 
 
-   fName := NextFileNumber(MDTempDir,'area_dem_status_','.dbf');
-   db := PetdbUtils.StringList2CSVtoDB(Results,fName);
-   WriteAreaFile('COASTAL','areas_coastal.txt');
-   WriteAreaFile('DILUVIUM','areas_diluvium.txt');
-   WriteAreaFile('DELTA_DEM','areas_delta.txt');
-   GISdb[db].ClearGISFilter;
-   Areas.Free;
-   COASTAL.Free;
-   DILUVIUM.Free;
-   DELTA.Free;
-   RefDEMs.Free;
-   TestDEMs.Free;
+       fName := NextFileNumber(MDTempDir,'area_dem_status_','.dbf');
+       db := PetdbUtils.StringList2CSVtoDB(Results,fName);
+       WriteAreaFile('COASTAL','areas_coastal.txt');
+       WriteAreaFile('DILUVIUM','areas_diluvium.txt');
+       WriteAreaFile('DELTA_DEM','areas_delta.txt');
+       GISdb[db].ClearGISFilter;
+       Areas.Free;
+       COASTAL.Free;
+       DILUVIUM.Free;
+       DELTA.Free;
+       RefDEMs.Free;
+       TestDEMs.Free;
 
-   EndDEMIXProcessing;
-   GISdb[db].ShowStatus;
-end;
-
+       EndDEMIXProcessing;
+       GISdb[db].ShowStatus;
+    end;
+{$EndIf}
 
 
 function TestDEMsAllPresent(AreaName : shortstring; var DEMs : integer; var Missing : shortstring) : boolean;

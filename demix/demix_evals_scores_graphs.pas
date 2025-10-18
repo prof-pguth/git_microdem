@@ -17,10 +17,11 @@ unit demix_evals_scores_graphs;
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       {$Define RecordDEMIX}
-      {$Define RecordBoxPlots}
-      {$Define RecordChangeDB}
-      {$Define RecordDEMIXByLandCover
-      {$Define RecordGraphCaption}
+      //{$Define RecordBoxPlots}
+      //{$Define RecordChangeDB}
+      //{$Define RecordDEMIXByLandCover
+      //{$Define RecordGraphCaption}
+      //{$Define TrackCriteriaList}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -75,7 +76,7 @@ type
     Memo4: TMemo;
     Edit6: TEdit;
     Label6: TLabel;
-    RadioGroup8: TRadioGroup;
+    //RadioGroup8: TRadioGroup;
     RadioGroup9: TRadioGroup;
     BitBtn22: TBitBtn;
     GroupBox3: TGroupBox;
@@ -141,6 +142,8 @@ type
     BitBtn16: TBitBtn;
     BitBtn42: TBitBtn;
     BitBtn43: TBitBtn;
+    BitBtn44: TBitBtn;
+    CheckBox4: TCheckBox;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -175,7 +178,7 @@ type
     procedure BitBtn34Click(Sender: TObject);
     procedure BitBtn35Click(Sender: TObject);
     procedure Edit6Change(Sender: TObject);
-    procedure RadioGroup8Click(Sender: TObject);
+    //procedure RadioGroup8Click(Sender: TObject);
     procedure RadioGroup9Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn10Click(Sender: TObject);
@@ -216,6 +219,8 @@ type
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn42Click(Sender: TObject);
     procedure BitBtn43Click(Sender: TObject);
+    procedure BitBtn44Click(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -247,6 +252,7 @@ uses
    Petmar,Petmar_db,Petimage_form,PetImage,petdbutils, PetMath,
    DEMdataBase,
    Toggle_db_use,
+   MD_use_tools,
    DEMdefs,
    DEMdef_routines,
    DEMCoord,
@@ -396,7 +402,7 @@ begin
    Result := tStringList.Create;
    GISdb[db].DBFieldUniqueEntries('CRITERION',sl2);
    for j := 0 to pred(Memo1.Lines.Count) do begin
-      Criterion := Memo1.Lines[j];
+      Criterion := UpperCase(Memo1.Lines[j]);
       if (Criterion <> '') and (All or (sl2.IndexOf(Criterion) <> -1)) then begin
          Result.Add(NoSuffixCriterion(Criterion));
       end;
@@ -720,6 +726,7 @@ procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
 begin
    try
       Self.Visible := false;
+      //MDDef.ShowPieN := true;
       PiesBestByTwoLandTypes(db,RadioGroup10.ItemIndex,MakeCriteriaList,AssembleDEMList,ComboBox2.Text,ComboBox3.Text,ComboBox4.Text,ComboBox5.Text);
    finally
       Self.Visible := true;
@@ -822,12 +829,13 @@ begin
    GISdb[db].dbtablef.BringToFront;
 end;
 
+
 procedure Teval_scores_graph_form.BitBtn31Click(Sender: TObject);
 var
    DEMs,Criteria : tStringList;
    i,j,k,ref,rg,tg : integer;
    AreaName,Criterion,DEMIX_TILE : shortstring;
-   fName : PathStr;
+   fName,BaseDir : PathStr;
    OpenMaps : boolean;
    tests : array[0..15] of integer;
    gr : tGraphArray;
@@ -846,11 +854,23 @@ var
             gr[k].GraphDraw.MinVertAxis := 0;
             gr[k].GraphDraw.MaxVertAxis := 150;
          end;
+         if (Criterion = 'TPI') then begin
+            gr[k].GraphDraw.MinHorizAxis := -50;
+            gr[k].GraphDraw.MaxHorizAxis := 50;
+            gr[k].GraphDraw.MinVertAxis := -50;
+            gr[k].GraphDraw.MaxVertAxis := 50;
+         end;
          if (Criterion = 'OPENU') then begin
             gr[k].GraphDraw.MinHorizAxis := 50;
             gr[k].GraphDraw.MaxHorizAxis := 120;
             gr[k].GraphDraw.MinVertAxis := 50;
             gr[k].GraphDraw.MaxVertAxis := 120;
+         end;
+         if (Criterion = 'TANGC') then begin
+            gr[k].GraphDraw.MinHorizAxis := -0.04;
+            gr[k].GraphDraw.MaxHorizAxis := 0.04;
+            gr[k].GraphDraw.MinVertAxis := -0.04;
+            gr[k].GraphDraw.MaxVertAxis := 0.04;
          end;
          if (Criterion = 'PLANC') then begin
             gr[k].GraphDraw.MinHorizAxis := -0.4;
@@ -862,6 +882,7 @@ var
          gr[k].GraphDraw.BottomMargin := 50;
          gr[k].GraphDraw.XWindowSize := 500;
          gr[k].GraphDraw.YWindowSize := 400;
+         gr[k].Symbol.Size := 2;
          gr[k].RedrawDiagram11Click(Nil);
       end;
 
@@ -869,17 +890,19 @@ begin
    Self.Visible := false;
    GetDEMIXpaths(True);
    AreaName := 'state_line';
-   DEMIX_TILE := 'N35VW116G';
+   DEMIX_TILE := 'UTM_11N_x63y395';
    DEMs := AssembleDEMlist;
    Criteria := MakeCriteriaList;
+   BaseDir := MDDef.DEMIX_BaseDir + AreaName + '\' + DEMIX_Tile + '_ref_test_dem\';
    k := -1;
    MDdef.AddFUVtoR2 := true;
    OpenMaps := false;
-   fName := DEMIX_ref_1sec + AreaName + '_dtm' + Ref1SecPointStr + '.tif';
+   fName := BaseDir + 'ref_dtm_srtm.tif';
+   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Load ref dtm=' + fname); {$EndIf}
    LoadNewDEM(ref,fName,OpenMaps);
    DEMglb[ref].AreaName := 'Reference DTM ELEV';
    for i := 0 to pred(DEMs.Count) do begin
-      fName := DEMIX_test_dems + AreaName + '_' + DEMs.Strings[i] + '.tif';
+      fName := BaseDir + DEMs[i] + '.tif';
       LoadNewDEM(tests[i],fName,OpenMaps);
       DEMglb[Tests[i]].AreaName := DEMs.Strings[i] + ' ELEV';
    end;
@@ -889,19 +912,18 @@ begin
      for i := 0 to pred(Criteria.Count) do begin
         Criterion := NoSuffixCriterion(Criteria.Strings[i]);
         wmDEM.SetPanelText(2,Criterion ,true);
-
         if (Criterion = 'ELEV') then begin
            inc(k);
-           gr[k] := GridScatterGram(DEMglb[rg].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(DEMIX_TILE)),ref,Tests[j]);
+           gr[k] := GridScatterGram(DEMglb[ref].FullDEMGridLimits,ref,Tests[j]);
            RedrawGraph(k);
         end
         else begin
-            rg := CreateSingleLSPGrid(true,ref,Criterion);
+            rg := CreateSingleLSPGrid(OpenMaps,ref,Criterion);
             DEMglb[rg].AreaName := 'Reference DTM ' + Criterion;
-            tg := CreateSingleLSPGrid(true,tests[j],Criterion);
+            tg := CreateSingleLSPGrid(OpenMaps,tests[j],Criterion);
             DEMglb[tg].AreaName := DEMs.Strings[j] + ' ' + Criterion;
             inc(k);
-            gr[k] := GridScatterGram(DEMglb[rg].sfBoundBox2tGridLimits(DEMIXtileBoundingBox(DEMIX_TILE)),rg,Tg);
+            gr[k] := GridScatterGram(DEMglb[rg].FullDEMgridLimits,rg,Tg);
             RedrawGraph(k);
         end;
       end;
@@ -976,6 +998,7 @@ var
 begin
    Self.Visible := false;
    GetDEMIXpaths(True);
+   //MDDef.ShowPieN := false;
    if CheckBox7.Checked then begin
        GISdb[db].ApplyGISFilter('COUNTRY=' + QuotedStr('USA'));
        WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'USA tiles');
@@ -1216,6 +1239,93 @@ begin
 end;
 
 
+procedure Teval_scores_graph_form.BitBtn44Click(Sender: TObject);
+var
+   DEMs,Criteria,Results : tStringList;
+   i,j,k,ref,rg,tg,filtered : integer;
+   AreaName,Criterion,DEMIX_TILE,aLine : shortstring;
+   fName,BaseDir : PathStr;
+   OpenMaps : boolean;
+   tests : array[0..15] of integer;
+   gl : tGridLimits;
+begin
+   Self.Visible := false;
+   GetDEMIXpaths(True);
+   AreaName := 'state_line';
+   DEMIX_TILE := 'UTM_11N_x63y395';
+
+   AreaName := 'es_granada';
+   DEMIX_TILE := 'ES_HU30-0992-3';
+
+   DEMs := AssembleDEMlist;
+   Criteria := MakeCriteriaList;
+   BaseDir := MDDef.DEMIX_BaseDir + AreaName + '\' + DEMIX_Tile + '_ref_test_dem\';
+
+   OpenMaps := false;
+   filtered := 0;
+
+   fName := BaseDir + 'ref_dtm_srtm.tif';
+   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Load ref dtm=' + fname); {$EndIf}
+   LoadNewDEM(ref,fName,OpenMaps);
+
+   DEMglb[ref].AreaName := 'Reference_DTM_ELEV';
+   for i := 0 to pred(DEMs.Count) do begin
+      fName := BaseDir + DEMs[i] + '.tif';
+      LoadNewDEM(tests[i],fName,OpenMaps);
+   end;
+
+   for i := 0 to pred(DEMs.Count) do begin
+      if DEMs.Strings[i] = 'GEDTMV1_2' then begin
+         filtered := WBT_Gaussian(false,fName,0.75,MDTEMPdir + 'Gaussian_' + DEMs.Strings[i] + '.tif');
+      end;
+   end;
+   if ValidDEM(filtered) then begin
+      tests[DEMs.Count] := filtered;
+      DEMs.Add('GEDTM_filt');
+   end;
+
+
+   Results := tStringList.Create;
+   aLine := 'AREA,DEMIX_TILE,CRITERION';
+   for i := 0 to pred(DEMs.Count) do begin
+      Aline := aLine + ',' + DEMs.Strings[i];
+   end;
+   Results.Add(aline);
+
+   gl := DEMglb[Ref].FullDEMGridLimits;
+   for i := 0 to pred(Criteria.Count) do begin
+      Criterion := NoSuffixCriterion(Criteria.Strings[i]);
+      {$IfDef RecordDEMIX} WriteLineToDebugFile(Criterion); {$EndIf}
+      wmDEM.SetPanelText(2,Criterion ,true);
+      aline := AreaName + ',' + DEMIX_TILE + ',' + Criterion;
+      if (Criterion <> 'ELEV') then rg := CreateSingleLSPGrid(OpenMaps,ref,Criterion);
+      for j := 0 to pred(DEMs.Count) do begin
+        {$IfDef RecordDEMIX} WriteLineToDebugFile(DEMs[j]); {$EndIf}
+        wmDEM.SetPanelText(1,DEMs[j],true);
+        if (Criterion = 'ELEV') then begin
+           aline := aLine + ',' + RealToString(GetFUVForPairGrids(gl,Ref,Tests[j]),-12,-8);
+        end
+        else begin
+           tg := CreateSingleLSPGrid(OpenMaps,tests[j],Criterion);
+           aline := aLine + ',' + RealToString(GetFUVForPairGrids(gl,rg,tg),-12,-8);
+           CloseSingleDEM(tg);
+        end;
+     end;
+     {$IfDef RecordDEMIX} WriteLineToDebugFile(aline); {$EndIf}
+     Results.Add(aline);
+     CloseSingleDEM(rg);
+   end;
+   fName := NextFileNumber(MDtempDir,'GEDTM_filtering','.dbf');
+   PetDBUtils.StringList2CSVtoDB(Results,fName);
+   CloseAllDEMs;
+
+
+   EndDEMIXProcessing;
+   Self.Visible := true;
+end;
+
+
+
 procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 
    procedure TryOne(Which : shortString; var db_num : integer; var fName : PathStr);
@@ -1233,11 +1343,13 @@ procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 
 begin
    LastDataBase := DEMIX_final_DB_dir;
-   if MDdef.DEMIX_AllowCoastal then begin
-     TryOne('U10',db_U10,MDDef.DEMIX_U10DBfName);
-     TryOne('U80',db_U80,MDDef.DEMIX_U80DBfName);
-     TryOne('U120',db_U120,MDDef.DEMIX_U120DBfName);
-   end;
+   {$IfDef IncludeCoastalDEMs}
+       if MDdef.DEMIX_AllowCoastal then begin
+         TryOne('U10',db_U10,MDDef.DEMIX_U10DBfName);
+         TryOne('U80',db_U80,MDDef.DEMIX_U80DBfName);
+         TryOne('U120',db_U120,MDDef.DEMIX_U120DBfName);
+       end;
+   {$EndIf}
    TryOne('FULL',db_Full,MDDef.DEMIX_FullDBfName);
    db := db_Full;
    ChangeDBonForm(db_Full);
@@ -1342,6 +1454,11 @@ begin
    MovieByTestDEM := CheckBox3.Checked;
 end;
 
+procedure Teval_scores_graph_form.CheckBox4Click(Sender: TObject);
+begin
+   MDdef.ShowPieN := CheckBox4.Checked;
+end;
+
 procedure Teval_scores_graph_form.CheckBox5Click(Sender: TObject);
 begin
    MDDef.FUVExpandScales := CheckBox5.Checked;
@@ -1409,9 +1526,9 @@ begin
    CheckBox1.Checked := MDDef.DEMIX_combined_graph;
    CheckBox2.Checked := MDDef.PanelsByTestDEM;
    CheckBox3.Checked := MovieByTestDEM;
+   CheckBox4.Checked := MDdef.ShowPieN;
    CheckBox5.Checked := MDDef.FUVExpandScales;
    CheckBox6.Checked := MDdef.DEMIX_UseMedian;
-
 
    //CheckBox14.Checked := MDdef.DEMIX_std_filters;
    CheckBox8.Checked := MDdef.DEMIX_slope_filters;
@@ -1496,10 +1613,6 @@ begin
    MDDef.DEMIX_groupWonLost := RadioGroup7.ItemIndex;
 end;
 
-procedure Teval_scores_graph_form.RadioGroup8Click(Sender: TObject);
-begin
-   RadioGroup9Click(Sender);
-end;
 
 procedure Teval_scores_graph_form.RadioGroup9Click(Sender: TObject);
 var
@@ -1647,9 +1760,7 @@ var
 var
    Choice : integer;
 begin {Teval_scores_graph_form.RadioGroup9Click}
-    DoingRanks := (Sender = RadioGroup8);
-    if (Sender = RadioGroup8) then Choice := RadioGroup8.ItemIndex
-    else Choice := RadioGroup9.ItemIndex;
+   Choice := RadioGroup9.ItemIndex;
 
     TheDEMs := AssembleDEMList;
     Criteria := MakeCriteriaList;
@@ -1671,7 +1782,6 @@ begin {Teval_scores_graph_form.RadioGroup9Click}
            2 : if MDDef.DEMIX_average_criteria then MultipleAverageRanksOrEvaluations(true,Criteria) else MultipleByEachCriterion(Choice);
         end;
     finally
-      RadioGroup8.ItemIndex := -1;
       RadioGroup9.ItemIndex := -1;
       {$IfDef RecordDEMIX} HighlightLineToDebugFile('Exit Teval_scores_graph_form.RadioGroup9Click, choice=' + IntToStr(Choice) + ' DEMs=' + IntToStr(TheDEMs.Count)); {$EndIf}
       TheDEMs.Destroy;

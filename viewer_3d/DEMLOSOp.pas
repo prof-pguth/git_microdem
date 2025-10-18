@@ -228,6 +228,7 @@ uses
       demdatabase,
    {$EndIf}
 
+   Nevadia_Main,
    BaseGraf, PetImage,
    BaseMap,DEMOptions,DEMCoord,
    DEMDefs,DEMDef_routines,DEMCurvature, PETMath;

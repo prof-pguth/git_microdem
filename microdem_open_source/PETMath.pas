@@ -143,6 +143,8 @@ function Percentile(PC : float64; var x: array of float32; n : integer; AlreadyS
 
 function Quantile(QWant : integer; var x : array of float64; n: integer; AlreadySorted : boolean = false) : float64; overload;
 function Quantile(QWant : integer; var x : array of float32; n: integer; AlreadySorted : boolean = false) : float64; overload;
+function CalculateIQR(n: integer; var ra: array of float32) : float32;
+
 
 
 const
@@ -242,6 +244,139 @@ uses
 
 var
    LabelLength : integer;
+
+
+
+function CalculateIQR(n : integer; var ra : array of float32) : float32;
+//based on AI Overview in Chrome, Oct 2025
+//was based on integers, so changed to floats
+
+      // --- Quicksort Implementation ---
+      procedure Swap(var a, b: float32); inline;
+      var
+        Temp: Float32;
+      begin
+        Temp := a;
+        a := b;
+        b := Temp;
+      end;
+
+      procedure QuickSort(L, R: Integer);
+      var
+        i, j : Integer;
+        x, y : float32;
+      begin
+        i := L;
+        j := R;
+        x := ra[(L + R) div 2];
+        repeat
+          while ra[i] < x do i := i + 1;
+          while x < ra[j] do j := j - 1;
+          if not (i > j) then begin
+            Swap(ra[i], ra[j]);
+            i := i + 1;
+            j := j - 1;
+          end;
+        until i > j;
+        if (L < j) then QuickSort(L, j);
+        if (i < R) then QuickSort(i, R);
+      end;
+
+(*
+      // --- Median Calculation ---
+      function Median(const L, R: Integer): float32;
+      var
+        Count: Integer;
+      begin
+        Count := R - L + 1;
+        if Count <= 0 then begin
+          Median := 0;
+          Exit;
+        end;
+
+        if Count mod 2 = 1 then // Odd number of elements
+          Median := ra[L + (Count div 2)]
+        else // Even number of elements
+          Median := (ra[L + (Count div 2) - 1] + ra[L + (Count div 2)]) / 2;
+      end;
+*)
+
+      // --- QuartileINC function ---
+      // Calculates the specified quartile (1 for Q1, 3 for Q3) using the Excel inclusive method.
+      function QuartileINC(quart: Integer) : float32;
+      var
+        index_pos: float32;
+        low_index, high_index: Integer;
+      begin
+        if (n = 0) or (quart < 0) or (quart > 4) then
+        begin
+          // Handle error cases, e.g., return 0 or a special value
+          QuartileINC := 0;
+          Exit;
+        end;
+
+        // The position of the k-th percentile using the inclusive method is:
+        // L = k * (n - 1) / 100
+        // For quartiles, k is 25, 50, 75. So, for Q1 (k=25) it is 25 * (n-1)/100 = (n-1)/4
+        // For Q3 (k=75) it is 75 * (n-1)/100 = 3 * (n-1)/4
+        // This can be simplified to:
+        index_pos := (n - 1) * quart / 4.0;
+
+        // Integer part of the index
+        low_index := trunc(index_pos);
+
+        // Fractional part of the index
+        if (round(low_index - index_pos) < 0.001) then begin
+          // The position is an integer, so use that data point
+          QuartileINC := ra[low_index];
+        end
+        else
+        begin
+          // The position is not an integer, so interpolate
+          high_index := low_index + 1;
+          //QuartileINC := ra[low_index + 1] + (ra[high_index + 1] - ra[low_index + 1]) * (index_pos - low_index);
+          QuartileINC := ra[low_index] + (ra[high_index] - ra[low_index]) * (index_pos - low_index);
+        end;
+      end;
+
+
+var
+  Q1, Q3: float32;
+  LowerHalfEnd, UpperHalfStart: Integer;
+begin
+  if n < 4 then  begin
+    WriteLn('Dataset must have at least 4 elements to compute IQR.');
+    Result := 0;
+    Exit;
+  end;
+
+  // 1. Sort data
+  QuickSort(0, n - 1);
+
+
+(*
+  // Determine split points for quartiles
+  if n mod 2 = 1 then begin
+    LowerHalfEnd := n div 2 - 1;
+    UpperHalfStart := n div 2 + 1;
+  end
+  else begin
+    LowerHalfEnd := n div 2 - 1;
+    UpperHalfStart := n div 2;
+  end;
+
+  // 2. Find Q1 (Median of the lower half)
+  Q1 := Median(0, LowerHalfEnd);
+
+  // 3. Find Q3 (Median of the upper half)
+  Q3 := Median(UpperHalfStart, n - 1);
+
+  // 4. Calculate IQR
+  Result := Q3 - Q1;
+*)
+
+  Result := QuartileINC(3) - QuartileINC(1);
+end;
 
 
 function IsInfinity(const d : double): boolean;
@@ -1906,12 +2041,13 @@ function Median(var x: array of float64; n : integer; AlreadySorted : boolean = 
 VAR
    n2 : integer;
 BEGIN
-   if n = 1  then Result := x[0]
+   if n = 0 then Result := Nan
+   else if n = 1  then Result := x[0]
    else begin
       if (not AlreadySorted) then HeapSort(n,x);
       n2 := n div 2;
-      if odd(n2) then result := x[n2]
-      else result := 0.5*(x[n2-1]+x[n2]);
+      if odd(n) then result := x[n2]          //for n=25, you want the 13th value, which will be 12th i 0-based array, which is n2
+      else result := 0.5*(x[n2-1]+x[n2]);     //for n=24, you want the average of 12th and 13th, which is 11th and 12th in 0-based array, which in n2 and n2-1
    end;
 END;
 
@@ -1919,12 +2055,12 @@ function Median(var x: array of float32; n : integer; AlreadySorted : boolean = 
 VAR
    n2 : integer;
 BEGIN
-   if n = 0 then Result := Nan
-   else if n = 1 then Result := x[0]
+   if (n = 0) then Result := Nan
+   else if (n = 1) then Result := x[0]
    else begin
       if (not AlreadySorted) then HeapSort(n,x);
       n2 := n div 2;
-      if odd(n2) then result := x[n2]
+      if odd(n) then result := x[n2]
       else result := 0.5*(x[n2-1]+x[n2]);
    end;
 END;
@@ -1933,7 +2069,6 @@ END;
 function Mode(var x : array of float32; n: integer; binsize : float32) : float32;
 VAR
    i,MaxCount,Count : integer;
-   //v,
    bin1 : float32;
 BEGIN
    Result := Nan;

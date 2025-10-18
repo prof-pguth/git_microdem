@@ -86,6 +86,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    Zipatone,
    PetImage,
    sc_colpated;
@@ -143,7 +144,7 @@ begin
    ClientHeight := succ(succ(NumStandardPattern div PatPerLine) * RowSize) + StatusBar1.Height;
    NewColorMap;
    ChangedPatterns := false;
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
    ShowDefaultCursor;
 end;
 

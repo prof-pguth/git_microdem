@@ -197,14 +197,12 @@ begin
    FinalizeMap(Result,Hist,'');
    fName := NextFileNumber(MDtempDir,AName + '_rgb3_','.png');
    Bigimagewithallmaps(2,fName,Maps);
-   //Maps.Free;
    RestoreBackupDefaults;
-
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
 end;
 
 
-function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+unction BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
 var
    i,What : integer;
    RefZ,CopZ,ALOSZ : float32;
@@ -242,8 +240,6 @@ begin
    if (Hist[3] > 0) then Vat.add('3,ALOS best,' + IntToStr(Hist[3]) + ',Y,' + IntToStr(clBlue));
    if (Hist[2] > 0) then Vat.add('2,Both ± ' + RealToString(Tolerance,-5,1)  + ',' + IntToStr(Hist[2]) + ',Y,' + IntToStr(clYellow));
    if (Hist[1] > 0) then Vat.add('1,COP best,' + IntToStr(Hist[1]) + ',Y,' + IntToStr(clLime));
-   //AName := MDTempDir + AName + '.vat.dbf';
-   AName := Petmar.NextFileNumber(MDtempDir,AName +'_', '.vat.dbf');
    StringList2CSVtoDB(vat,AName,true);
    DEMGlb[Result].VATFileName := AName;
    DEMglb[Result].CheckMaxMinElev;
@@ -348,8 +344,6 @@ begin
       {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} HighlightLineToDebugFile('TwoDEMHighLowMap invalid input, ref=' + IntToStr(RefDEM) + ' cop=' + IntToStr(COP) + ' alos=' + IntToStr(ALOS)); {$EndIf}
    end;
 end;
-
-
 
 
 function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;

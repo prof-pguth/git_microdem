@@ -1679,6 +1679,11 @@ var
             AParameterShortFloat('Geomorph','MinWaveHeight',MinWaveHeight,10);
             AParameterShortFloat('Geomorph','FlatnessCutoff',FlatnessCutoff,12.0);
             AParameterShortFloat('Geomorph','OrganizationCutoff',OrganizationCutoff,1);
+
+            AParameter('Geomorph','DiagonalNormalization',DiagonalNormalization,nmAvgSpace);
+            AParameter('Geomorph','MAD2K_Dirs4',MAD2K_Dirs4,false);
+            AParameter('Geomorph','MAD2K_StrengthDirection',MAD2K_StrengthDirection,false);
+
             AParameter('Geomorph','IncludeFractalMeasures',IncludeFractalMeasures,false);
             AParameter('Geomorph','IncludeGammaMeasures',IncludeGammaMeasures,true);
             AParameter('Geomorph','IncludeProfCMeasures',IncludeProfCMeasures,true);
@@ -2469,8 +2474,6 @@ var
       with MDIniFile,MDDef do begin
          AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
          AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
-         //AParameter('DEMIX','TwoParameterVisualization',TwoParameterVisualization,0);
-         //AParameter('DEMIX','DEMIX_criterion_fName',DEMIX_criterion_fName,'');
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
@@ -2493,12 +2496,16 @@ var
          AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
          AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
          AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
-         AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
-         AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
-         AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
-         AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
-         AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
-         AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
+
+         {$IfDef IncludeCoastalDEMs}
+             AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
+             AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
+             AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
+             AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
+             AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
+             AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
+         {$EndIf}
+
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,50);
@@ -2507,13 +2514,11 @@ var
          AParameter('DEMIX','LoadRefDEMs',LoadRefDEMs,true);
          AParameter('DEMIX','LoadTestDEMs',LoadTestDEMs,true);
          AParameter('DEMIX','OpenSavedMapsFUVSSIM',OpenSavedMapsFUVSSIM,false);
-         //AParameter('DEMIX','DEMIX_graph_Retired_DEMs',DEMIX_graph_Retired_DEMs,false);
          AParameter('DEMIX','ProcessLoopsForward',ProcessLoopsForward,true);
          AParameter('DEMIX','DEMIX_AllowCoastal',DEMIX_AllowCoastal,false);
          AParameter('DEMIX','DEMIX_Geo_Tiles',DEMIX_Geo_Tiles,false);
          AParameter('DEMIX','DEMIX_UseMedian',DEMIX_UseMedian,false);
 
-         //AParameter('DEMIX','DEMIX_std_filters',DEMIX_std_filters,false);
          AParameter('DEMIX','DEMIX_slope_filters',DEMIX_slope_filters,false);
          AParameter('DEMIX','DEMIX_ruff_filters',DEMIX_ruff_filters,false);
          AParameter('DEMIX','DEMIX_barren_filters',DEMIX_barren_filters,false);
@@ -2534,12 +2539,14 @@ var
          AParameter('DEMIX','DEMIX_Base_DB_Path',DEMIX_Base_DB_Path,'');
          AParameter('DEMIX','DEMIXlegendFontSize',DEMIXlegendFontSize,18);
          AParameter('DEMIX','DEMIXUseBins',DEMIXUseBins,6);
-         AParameter('DEMIX','DEMIX_FullDBfName',DEMIX_FullDBfName,'');
-         AParameter('DEMIX','DEMIX_U120DBfName',DEMIX_U120DBfName,'');
-         AParameter('DEMIX','DEMIX_U80DBfName',DEMIX_U80DBfName,'');
-         AParameter('DEMIX','DEMIX_U10DBfName',DEMIX_U10DBfName,'');
-         AParameter('DEMIX',' DEMIX_BaseDir', DEMIX_BaseDir,'');
          AParameter('Slope','DEMIXSlopeCompute',DEMIXSlopeCompute.AlgorithmName,smEvansYoung);
+         AParameter('DEMIX','DEMIX_FullDBfName',DEMIX_FullDBfName,'');
+         {$IfDef IncludeCoastalDEMs}
+             AParameter('DEMIX','DEMIX_U120DBfName',DEMIX_U120DBfName,'');
+             AParameter('DEMIX','DEMIX_U80DBfName',DEMIX_U80DBfName,'');
+             AParameter('DEMIX','DEMIX_U10DBfName',DEMIX_U10DBfName,'');
+             AParameter('DEMIX',' DEMIX_BaseDir', DEMIX_BaseDir,'');
+         {$EndIf}
       end;
    end;
 
@@ -3725,6 +3732,7 @@ begin
       AParameter('Graph','GIFfileLabels',GIFfileLabels,false);
       AParameter('Graph','DefMarginLegend',DefMarginLegend,0);
       AParameter('Graph','NumGraphCols',NumGraphCols,3);
+      AParameter('Graph','ShowPieN',ShowPieN,true);
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);

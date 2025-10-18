@@ -21,7 +21,6 @@ unit demix_cop_alos;
    //{$Define StartCOPALOSmaps}
    //{$Define Differencemaps}
    //{$Define RecordDEMIXMovies}
-   //{$Define RecordFullDEMIX}
    //{$Define ShowDEMIXWhatsOpen}
 {$EndIf}
 
@@ -56,7 +55,6 @@ uses
     Petmar,Petmar_types,BaseGraf;
 
 {$IfDef CopALOSCompare}
-
    const
       caBest = 1;
       ca4cat = 2;

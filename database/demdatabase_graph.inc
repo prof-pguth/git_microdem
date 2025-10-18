@@ -651,8 +651,7 @@ begin
 end;
 
 
-function TGISdataBaseModule.OldCreateHistogramFromDataBase(RegHist: boolean; WantXField, WantYField, WantZField : shortString; AllDBs: boolean;
-     MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+function TGISdataBaseModule.OldCreateHistogramFromDataBase(RegHist: boolean; WantXField, WantYField, WantZField : shortString; AllDBs: boolean; BinSize : float64 = -99): TThisBaseGraph;
 var
    NumSeries,i,j : integer;
    NPts : int64;
@@ -696,7 +695,7 @@ begin
            for j := 1 to MaxDataBase do if (GISdb[j] <> Nil) then begin
               if MyData.FieldExists(TStr) then begin
                  New(Values);
-                 GISdb[j].GetPointArrayForDBField(TStr,Values^,NPts,MinUse,MaxUse);
+                 GISdb[j].GetPointArrayForDBField(TStr,Values^,NPts);
                  Save;
                  GISdb[j].EmpSource.Enabled := true;
                  LegendStr := RemoveUnderScores(GISdb[j].dbName);
@@ -709,13 +708,13 @@ begin
            TheDBName := ' (' + DBName + ')';
            New(Values);
            LegendList.Add(TStr);
-           GetPointArrayForDBField(TStr,Values^,NPts,MinUse,MaxUse);
+           GetPointArrayForDBField(TStr,Values^,NPts);
            Save;
         end;
      end;
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
 
-     Result := CreateMultipleHistogram(UseNumbers,FilesList,LegendList,MenuStr,'Histogram ' + MenuStr + TheDBName + ' ' + MyData.Filter,100,MinUse,MaxUse,BinSize);
+     Result := CreateMultipleHistogram(UseNumbers,FilesList,LegendList,MenuStr,'Histogram ' + MenuStr + TheDBName + ' ' + MyData.Filter,100,BinSize);
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 
@@ -741,7 +740,7 @@ var
             TheDBName := ' (' + DBName + ')';
             New(Values);
             LegendList.Add(RemoveUnderScores(Fields[pred(i)]));
-            GISDB[db].GetPointArrayForDBField(Fields[pred(i)],Values^,NPts); //,MinUse,MaxUse);
+            GISDB[db].GetPointArrayForDBField(Fields[pred(i)],Values^,NPts);
             HeapSort(Npts,Values^);
             Min := Values^[0];
             Max := Values^[pred(NPts)];
