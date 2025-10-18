@@ -130,6 +130,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    Demdef_routines;
 
 

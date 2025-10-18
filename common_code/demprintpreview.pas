@@ -62,6 +62,7 @@ implementation
 
 
 uses
+   Nevadia_Main,
    PetMath,DEMDefs,BaseMap, PETImage;
 
 
@@ -203,7 +204,7 @@ end;
 procedure TPrintPreviewForm.FormCreate(Sender: TObject);
 begin
    {$IfDef RecordPrint} WriteLineToDebugFile('TPrintPreviewForm.FormCreate in'); {$EndIf}
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    BitBtn5.Enabled := false;
    {$IfDef RecordPrint} WriteLineToDebugFile('TPrintPreviewForm.FormCreate out'); {$EndIf}
 end;

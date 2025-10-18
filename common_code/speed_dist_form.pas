@@ -38,6 +38,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    Petmar,DEMDefs;
 
 
@@ -49,7 +50,7 @@ begin
     CheckBox4.Checked := MDdef.AddCumDist;
     CheckBox5.Checked := MDdef.Add3DDist;
     if MDDef.UseMeters then RadioGroup1.ItemIndex := 0 else RadioGroup1.ItemIndex := 1;
-    Petmar.PlaceFormAtMousePosition(Self);
+    PlaceFormAtMousePosition(Self);
 end;
 
 

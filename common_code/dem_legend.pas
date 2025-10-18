@@ -91,6 +91,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    DEMDefs,DEMGrPik,
    DEMPrintPreview;
 
@@ -211,7 +212,7 @@ begin
    CheckBox3.Checked := MDDef.PrinterLegend.ShowScaleBar;
    CheckBox2.Checked := MDDef.PrinterLegend.ShowDeclinationDiagram;
    CheckBox1.Checked := MDDef.PrinterLegend.ShowColorLegend;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

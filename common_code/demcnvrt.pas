@@ -113,7 +113,7 @@ begin
    //InLat := 36;
    //InLong := -117;
 
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    InputMap := tMapProjection.Create;
    InputMap.pName := UTMellipsoidal;
    InputMap.h_DatumCode := MDDef.PreferPrimaryDatum;  //'WGS84';

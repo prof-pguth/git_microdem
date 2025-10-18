@@ -50,7 +50,7 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,petmar_types,DEMDefs,DEMCoord, nevadia_main;
+   Nevadia_Main,Petmar,petmar_types,DEMDefs,DEMCoord;
 
 
 procedure SetGridDiffernceProperties(DEM1,DEM2 : integer; var GridDefinition : integer; inAutoClose : boolean = true);
@@ -103,7 +103,7 @@ end;
 
 procedure TGridDiffForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup2.ItemIndex := MDDef.HighlightDiffMap;
 end;
 

@@ -65,6 +65,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    DEMDefs,PETMAR;
 
 
@@ -178,7 +179,7 @@ end;
 
 procedure TNetOptFm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

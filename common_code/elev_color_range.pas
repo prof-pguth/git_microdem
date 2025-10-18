@@ -74,6 +74,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    Petmar,Petmar_types,
    DEMDefs,
    DEMCoord;
@@ -246,7 +247,7 @@ begin
    ColorBitBtn(BitBtn2,MDdef.LowOffscaleColor);
    ColorBitBtn(BitBtn4,MDdef.MissingDataColor);
    CheckBox1.Checked := MDDef.ClipZColors;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

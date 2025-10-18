@@ -137,6 +137,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    Petmath,Petmar_types,Petmar_db,Petdbutils,DEMdefs,DEMstat;
 
 
@@ -407,7 +408,7 @@ end;
 procedure TGraphSettingsForm.FormCreate(Sender: TObject);
 begin
    OwningGraph := Nil;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 procedure TGraphSettingsForm.HelpBtnClick(Sender: TObject);

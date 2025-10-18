@@ -78,6 +78,7 @@ uses
    {$Else}
       Slicer_3D,
    {$EndIf}
+   Nevadia_Main,
    DEMMapf,
    BaseMap,
    DEMCoord,
@@ -177,7 +178,7 @@ end;
 procedure TDbaddRecForm.FormCreate(Sender: TObject);
 begin
    {$IfDef RecordAddRecProblems} WriteLineToDebugFile('TDbaddRecForm.FormCreate');  {$EndIf}
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
    LastFName := '';
 end;
 

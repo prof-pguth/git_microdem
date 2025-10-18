@@ -55,7 +55,7 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar,DEMDefs; 
+   Nevadia_main,Petmar,DEMDefs;
 
 procedure TDted_save_form.FullCellCheckBoxClick(Sender: TObject);
 begin
@@ -96,7 +96,7 @@ begin
       Cells[0,8] := 'Comment';          Cells[1,8] := 'NA';
       Cells[0,9] := 'Source';           Cells[1,9] := '';
    end;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

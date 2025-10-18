@@ -82,11 +82,11 @@ const
 
 function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
 function SimplifiedLandCoverFromGrid(LandCoverGrid : integer;  x,y : integer; var Value : float32) : integer;
+procedure SimplifiedLandCoverPercentages(LandCoverGrid : integer; var ForestPC,UrbanPC,BarrenPC,WaterPC : float32);
 
 procedure SimplifyLandCoverGrid(DEM : integer);
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
 procedure MarkWaterMissingInThisDEM(DEM : integer);
-function LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32) : boolean;
 
 
 implementation
@@ -154,52 +154,6 @@ begin
 end;
 
 
-
-function LandCoverPercentages(bb : sfBoundBox; var Forest,Barren,Urban,Water : float32) : boolean;
-//hard coded for a particular land cover data set, LC100 from Copernicus
-var
-   slc,Grid,x,y,
-   f,b,u,w,Total : integer;
-   GridLimits : tGridLimits;
-   z : float32;
-begin
-   Grid := LoadLC100LandCover('',bb,false);
-   Result := ValidDEM(Grid);
-   if Result then begin
-      SimplifyLandCoverGrid(Grid);
-      GridLimits := DEMGlb[Grid].sfBoundBox2tGridLimits(bb);
-      f := 0;
-      b := 0;
-      u := 0;
-      w := 0;
-      Total := 0;
-      for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-         for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-            if DEMGlb[Grid].GetElevMetersOnGrid(x,y,z) then begin
-               slc := round(z);
-               if slc = slcForest then inc(f)
-               else if slc = slcBarren then inc(b)
-               else if slc = slcUrban then inc(u)
-               else if slc = slcWater then inc(w);
-               inc(Total);
-            end;
-         end;
-      end;
-      if (Total = 0) then begin
-         Result := false;
-      end
-      else begin
-         Forest := 100 * f / Total;
-         Barren := 100 * b / Total;
-         Urban  := 100 * u / Total;
-         Water  := 100 * w / Total;
-      end;
-      CloseSingleDEM(Grid);
-   end;
-end;
-
-
-
 procedure SimplifyLandCoverGrid(DEM : integer);
 var
    x,y,Code : integer;
@@ -258,38 +212,106 @@ begin
    Result := slcUndefined;
    if ValidDEM(LandCoverGrid) and (DEMGlb[LandCoverGrid].DEMHeader.ElevUnits in [euGLCS_LC100,euWorldCover10m]) then begin
        if DEMGlb[LandCoverGrid].GetElevMetersOnGrid(x,y,Value) then begin
-          //if Value < 11 then begin
-             //Result := ReclassifyLandCover(LandCoverGrid,round(Value));
-          //end;
           Result := ReclassifyLandCover(LandCoverGrid,round(Value));
        end;
    end;
 end;
 
 
-function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
+procedure SimplifiedLandCoverPercentages(LandCoverGrid : integer; var ForestPC,UrbanPC,BarrenPC,WaterPC : float32);
 var
-   Lat,Long : float32;
+   slc,Col,Row : integer;
+   Value : float32;
+   NPts : int64;
+   UrbanMomentVar,ForestMomentVar,BarrenMomentVar,WaterMomentVar : tMomentVar;
 begin
-   Lat := 0.5 * (bb.YMax + bb.YMin);
-   Long := 0.5 * (bb.XMax + bb.XMin);
-   LandCoverFName := GetLC100_fileName(Lat,Long);
-   {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
-   if FileExists(LandCoverFName) then begin
-      Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
-      if ValidDEM(Result) then begin
-         DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
-         if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
-         DEMGlb[Result].SaveAsGeotiff(fName);
-      end
-      else begin
-         {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
-      end;
-   end
-   else begin
-      MessageToContinue('Missing land cover file ' + LandCoverFName);
+   ForestPC := -999;
+   UrbanPC := -999;
+   BarrenPC := -999;
+   WaterPC := -999;
+   NPts := 0;
+   if ValidDEM(LandCoverGrid) then begin
+       InitializeMomentVar(UrbanMomentVar);
+       InitializeMomentVar(ForestMomentVar);
+       InitializeMomentVar(BarrenMomentVar);
+       InitializeMomentVar(WaterMomentVar);
+       for Col := 0 to pred(DEMglb[LandCoverGrid].DEMheader.NumCol) do begin
+          for Row := 0 to pred(DEMglb[LandCoverGrid].DEMheader.NumRow) do begin
+             slc := SimplifiedLandCoverFromGrid(LandCoverGrid,Col,Row,Value);
+             if (slc <> slcUndefined) then begin
+                 if (slc = slcForest) then inc(ForestMomentVar.Npts)
+                 else if (slc = slcBarren) then inc(BarrenMomentVar.Npts)
+                 else if (slc = slcUrban) then inc(UrbanMomentVar.Npts)
+                 else if (slc = slcWater) then inc(WaterMomentVar.Npts);
+                 inc(NPts);
+             end;
+          end;
+       end;
+       if (Npts > 0) then begin
+          ForestPC := 100 * ForestMomentVar.Npts / NPts;
+          UrbanPC := 100 * UrbanMomentVar.Npts / NPts;
+          BarrenPC := 100 * BarrenMomentVar.Npts / NPts;
+          WaterPC := 100 * WaterMomentVar.Npts / NPts;
+       end;
    end;
 end;
+
+
+{$IfDef OldLC100}
+      function GetLC100_fileName(Lat,Long : float32) : PathStr;
+      const
+         TileSize = 20;
+      var
+         TileName : shortstring;
+      begin
+         Lat := Lat + TileSize;  //because tiles are named for the NW corner
+         TileName := TileBaseName(TileSize,False,Lat,Long);
+         Result :=  'J:\landcover\Copernicus_LC100\' + TileName + '_PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
+         FindDriveWithFile(Result);
+      end;
+
+
+      function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
+      var
+         Lat,Long : float32;
+      begin
+         Lat := 0.5 * (bb.YMax + bb.YMin);
+         Long := 0.5 * (bb.XMax + bb.XMin);
+         LandCoverFName := GetLC100_fileName(Lat,Long);
+         {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
+         if FileExists(LandCoverFName) then begin
+            Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
+            if ValidDEM(Result) then begin
+               DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
+               if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
+               DEMGlb[Result].SaveAsGeotiff(fName);
+            end
+            else begin
+               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+            end;
+         end
+         else begin
+            MessageToContinue('Missing land cover file ' + LandCoverFName);
+         end;
+      end;
+{$Else}
+
+      function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
+      var
+         LCName : PathStr;
+      begin
+           LCName := 'J:\monster_dems\PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
+           FindDriveWithFile(LCName);
+           Result := GDALsubsetGridAndOpen(bb,true,LCName,OpenMap);
+           if ValidDEM(Result) then begin
+               DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
+               if (fName = '') then fName := MDtempDir + 'lcc100_' + RealToString(bb.XMin,-12,-4) + '_' + RealToString(bb.YMin,-12,-4);
+               DEMGlb[Result].SaveAsGeotiff(fName);
+           end;
+      end;
+
+{$EndIf}
+
 
 
 function LoadLC10LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean; Silent : boolean = false) : integer;
@@ -362,7 +384,6 @@ begin
          if (Stats <> Nil) then begin
             if (Stats.Count = 1) then begin
                FirstLine := Stats.Strings[0];
-               //NameStr := Petmar_types.BeforeSpecifiedCharacterANSI(FirstLine,',',true,true);
                CatStr := FirstLine;
                FirstLine := 'NAME,' + CatStr + '_MAX,MAJOR_CAT,MAJOR_NAME';
                for x := 1 to MaxLandCoverCategories do if (DEMGlb[DEM].NLCDCats^[x].LongName <> '') then begin
@@ -397,7 +418,6 @@ begin
             Stats.Add(NextLine);
          end;
 
-         //Title := ElevUnitsAre(DEMGlb[DEM].DEMheader.ElevUnits) + '_' + DEMGlb[DEM].AreaName;
          fName := Petmar.NextFileNumber(MDTempDir, DEMGlb[DEM].AreaName + '_','.dbf');
          Result := StringList2CSVtoDB(Results,fName);
       end;

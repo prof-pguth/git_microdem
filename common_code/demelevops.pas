@@ -83,9 +83,10 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    {$IfDef ExSats}
    {$Else}
-   DEMSatMerge,
+      DEMSatMerge,
    {$EndIf}
    PetImage,
    Make_Tables,
@@ -281,7 +282,7 @@ end;
 procedure TElevOptionsForm.FormCreate(Sender: TObject);
 begin
   //Width := 320;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    //CheckBox1.Checked := MDDef.UseBigElevationColorTables;
    CheckBox6.Checked := MDDef.QuickMapRedraw;
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}

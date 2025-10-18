@@ -92,6 +92,7 @@ implementation
 {$R *.dfm}
 
 uses
+  Nevadia_Main,
   PETMAR,DEMDefs,DEM_PLSS,DEMDef_routines,Petmar_ini_file;
 
 
@@ -191,7 +192,7 @@ begin
       ColorLineWidthBitBtn(BitBtn2,PLSSSectionColor,PLSSSectionWidth);
       ColorLineWidthBitBtn(BitBtn3,PLSSTownColor,PLSSTownWidth);
    end;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

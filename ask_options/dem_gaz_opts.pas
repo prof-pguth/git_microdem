@@ -51,7 +51,8 @@ implementation
 {$R *.dfm}
 
 uses
-   DEMDefs,PETMAR, PetDBUtils, DEMDataBase,toggle_db_use,DEMDef_routines;
+   DEMDefs,PETMAR, PetDBUtils, DEMDataBase,toggle_db_use,DEMDef_routines,
+   Nevadia_Main;
 
 
 function GetGazFileName(var fName : PathStr) : boolean;
@@ -118,7 +119,7 @@ end;
 
 procedure TGazOptsForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    {$IfDef HideHelpButtons}
    HelpBtn.Visible := false;
    {$EndIf}

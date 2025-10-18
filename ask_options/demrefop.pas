@@ -109,6 +109,7 @@ uses
    {$Else}
       Petmar_geology,
    {$EndIf}
+   Nevadia_Main,
    DEMCoord,Demdef_routines,Elev_color_range, PETImage;
 
 
@@ -285,7 +286,7 @@ end;
 procedure TRefOptFM.FormCreate(Sender: TObject);
 begin
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    CanChange := false;
    Changed := false;
    TrackBar1.Position := MDDEF.MergeSat;

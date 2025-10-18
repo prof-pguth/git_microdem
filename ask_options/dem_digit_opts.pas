@@ -46,6 +46,7 @@ implementation
 
 
 uses
+   Nevadia_Main,
    Petmar,Petmar_types,DEMDefs;
 
 
@@ -61,7 +62,7 @@ end;
 
 procedure TDEMDigitOptions.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.DigitizeMode);
    Edit1.Text := IntToStr(MDDef.ContDigitizeSeparation);
    ColorLineWidthBitBtn(BitBtn1,MDDef.DigitizeColor,MDDef.DigitizeWidth);

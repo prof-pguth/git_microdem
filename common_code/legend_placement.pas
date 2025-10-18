@@ -70,7 +70,8 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar;
+   Petmar,
+   Nevadia_Main;
 
 
 procedure LegendOptions(inMapForm : tMapForm; WhatFor : string35; var TheFont : Petmar_types.tMyFont; var MapLegendParameters : tLegendParameters; LegendOption : byte);
@@ -146,7 +147,7 @@ end;
 
 procedure Tleg_opts_form.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 procedure Tleg_opts_form.HelpBtnClick(Sender: TObject);

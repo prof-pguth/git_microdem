@@ -60,6 +60,7 @@ uses
    {$Else}
       DEMSlpEd,
    {$EndIf}
+   Nevadia_Main,
    DEMCoord,Petmar_types,
    DEMMapDraw,
    Make_Grid,
@@ -103,7 +104,7 @@ end;
 
 procedure TGetSlopeAlgorithm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    SetUpDone := false;
    {$IfDef ExAdvancedGIS} BitBtn1.Visible := false; {$Endif}
    {$IfDef HideHelpButtons} HelpBtn.Visible := false; {$EndIf}

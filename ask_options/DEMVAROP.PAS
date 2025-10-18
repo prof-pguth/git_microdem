@@ -53,6 +53,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    Petmar;
 
 procedure TVariogramOptions.HelpBtnClick(Sender: TObject);
@@ -68,7 +69,7 @@ end;
 
 procedure TVariogramOptions.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    CheckBox6Click(Sender);
 end;
 

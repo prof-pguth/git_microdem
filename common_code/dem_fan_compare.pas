@@ -45,6 +45,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    PETMAR,
    DEMDefs,DEMDef_routines,
    Petmar_types,
@@ -64,7 +65,7 @@ procedure TFanCompareForm.FormCreate(Sender: TObject);
 var
    i : integer;
 begin
-   if (Sender <> Nil) then Petmar.CheckFormPlacement(Self);
+   if (Sender <> Nil) then CheckFormPlacement(Self);
    RadioGroup1.ItemIndex := pred(MDDef.MultipleFanAlgorithmsToUse);
    StringGrid1.RowCount := succ(MDDef.MultipleFanAlgorithmsToUse);
    StringGrid1.Cells[0,0] := 'Fan algorithm';

@@ -71,6 +71,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    DEMDefs,BaseMap,DEMmagvar;
 
 
@@ -94,7 +95,7 @@ end;
 
 procedure TCVSExportForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    fName := Petmar.NextFileNumber(MDTempDir, 'grid_','.csv');
    Label3.Caption := fName;
 end;

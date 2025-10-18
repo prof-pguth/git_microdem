@@ -70,6 +70,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    DEM_fan_algorithm,Demdef_routines;
 
 

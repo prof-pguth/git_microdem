@@ -146,6 +146,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    Petmar,petmar_db,DEMCoord,
    geomorph_point_class,
    PETImage, demdef_routines,DEMMapDraw,
@@ -661,7 +662,7 @@ begin
      Panel2.Visible := false;
      Panel6.Visible := false;
   {$EndIf}
-  Petmar.PlaceFormAtMousePosition(Self);
+  PlaceFormAtMousePosition(Self);
 end;
 
 procedure TMapMaskForm.HelpBtnClick(Sender: TObject);

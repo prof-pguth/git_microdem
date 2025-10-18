@@ -139,15 +139,6 @@ begin
        TStr2 := Tstr2 + MessLineBreak;
    end;
    TStr2 := TStr2 + MessLineBreak + 'Video card: ' + GetVideoCardName + MessLineBreak;
-
-(* //removed Jan 2024; we don't really use printers
-   try
-     if (Printer.Printers.Count = 0) then TStr3 := 'No default printer'
-     else TStr3 := 'Printer resolution: ' +  IntToStr(GetDeviceCaps(Printer.Handle,HorzRes)) + 'x' + IntToStr(GetDeviceCaps(Printer.Handle,VertRes)) + ' at ' + IntToStr(GetDeviceCaps(Printer.Handle,LogPixelsY)) + ' dpi';
-   except
-      TStr3 := 'Print detection error';
-   end;
-*)
    TStr3 := TStr3 + MessLineBreak;
    ch := UpCase(ProgramRootDir[1]);
    TStr4 := 'Computer name: ' + GetComputerNetName + MessLineBreak + 'Free disk space on ' + ch + ': ' + SmartMemorySizeBytes(DiskFree(ord(ch) - ord('A') + 1)) + MessLineBreak;

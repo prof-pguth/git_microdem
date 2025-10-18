@@ -186,10 +186,8 @@ implementation
 {$R *.dfm}
 
 uses
-   {$IfDef ExGIS}
-   {$Else}
+   Nevadia_Main,
    demdatabase,
-   {$EndIf}
    DEMCoord,Petmar,Petmar_types,demdef_routines,
    Mask_opts2,Make_grid,
    DEM_Manager,
@@ -1216,7 +1214,7 @@ begin
 
     if MDDef.GeomorphMapsFullDEM then RadioGroup1.ItemIndex := 0
     else RadioGroup1.ItemIndex := 1;
-    Petmar.CheckFormPlacement(Self);
+    CheckFormPlacement(Self);
 end;
 
 

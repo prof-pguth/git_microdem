@@ -59,6 +59,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    BaseMap;
 
 
@@ -97,7 +98,7 @@ end;
 
 procedure TPickDatumParams.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup2.ItemIndex := ord(MDDef.DEMZunits);
    ProjFName := '';
    GeoLatLong := false;

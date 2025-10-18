@@ -121,6 +121,7 @@ uses
    {$Else}
       Point_Cloud_Options,
    {$EndIf}
+   Nevadia_Main,
    PetImage, PetMath,petmar_db,
    DEMCoord,
    DEMDefs;
@@ -215,7 +216,7 @@ begin
    CheckBox7.Checked := MDDef.ShowMaskedToSat;
    CheckBox9.Checked := MDDef.DaylightDuration;
    Petmar.ColorLineWidthBitBtn(BitBtn1,MDDef.HorizonColor,MDDef.HorizonWidth);
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
 end;
 
 

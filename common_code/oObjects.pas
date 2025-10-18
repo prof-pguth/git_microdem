@@ -202,7 +202,7 @@ end;
 
 function TStrCollection.Compare(Key1, Key2 : Pointer): Integer;
 begin
-  Compare := ANSIStrComp(PANSICHar(Key1),PANSICHar(Key2));
+   Compare := ANSIStrComp(PANSICHar(Key1),PANSICHar(Key2));
 end;
 
 procedure TStrCollection.FreeItem(Item: Pointer);

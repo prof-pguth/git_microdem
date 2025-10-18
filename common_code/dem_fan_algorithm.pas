@@ -78,6 +78,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    DEMcurvature,Petmar_types,Demdef_routines;
 
 
@@ -186,7 +187,7 @@ end;
 
 procedure TFanAlgParams.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

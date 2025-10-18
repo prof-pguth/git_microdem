@@ -70,7 +70,8 @@ implementation
 {$R *.dfm}
 
 uses
-   Petmar, PETImage;
+   Petmar, PETImage,
+   Nevadia_Main;
 
 
 procedure GetColorValuesForDataBase(theDB : integer; vth : ShortString; AllowMinMax : boolean = true);
@@ -145,7 +146,7 @@ end;
 procedure TDBColorForm.FormCreate(Sender: TObject);
 begin
    CheckBox1.Checked := MDDef.QuickMapRedraw;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    DrawLegend;
 end;
 

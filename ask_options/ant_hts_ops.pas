@@ -55,6 +55,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    Petmar,Petmar_types,DEMDefs,DEMDef_routines,demcurvature;
 
 
@@ -110,7 +111,7 @@ begin
    CheckBox3.Checked := MDDef.DoLOSProfile;
    CheckBox4.Checked := MDDef.DoGrazingAngle;
    CheckBox5.Checked := MDDef.DoEarthCurvature;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 initialization

@@ -105,8 +105,9 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    DEMDataBase,PetImage, DEMdef_routines,petmar_ini_file,dem_manager,
-   DEMMapf,BaseMap,map_overlays, tissot, nevadia_main;
+   DEMMapf,BaseMap,map_overlays, tissot;
 
 
 procedure PickProjections(SimpleMode : integer = 0);
@@ -298,7 +299,7 @@ end;
 
 procedure TProjectionDemForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    CheckBox20.Checked := MDDef.OpenMultipleVectorMaps;
    CheckBox16.Checked := MDDef.DrawTissotDefault;
    Label5.Caption := VectorMapName;

@@ -43,7 +43,8 @@ implementation
 {$R *.dfm}
 
 uses
-  DEMDefs;
+   Nevadia_Main,
+   DEMDefs;
 
 
 procedure Tget_angle_form.Edit5Change(Sender: TObject);
@@ -62,7 +63,7 @@ end;
 
 procedure Tget_angle_form.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    Height := 157;
    Width := 184;
 end;

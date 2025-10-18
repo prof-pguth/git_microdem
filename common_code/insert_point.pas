@@ -49,6 +49,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    DEMDefs,DEMDef_Routines,Petmar;
 
 procedure TInsertPointForm.FormCreate(Sender: TObject);

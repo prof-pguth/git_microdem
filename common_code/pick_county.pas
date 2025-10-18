@@ -56,7 +56,7 @@ implementation
 
 
 uses
-   DEMTIGER,PetDBUtils,DEMDefs;
+   DEMTIGER,PetDBUtils,DEMDefs,Nevadia_Main;
 
 
 procedure Tpickcounty.OKBtnClick(Sender: TObject);
@@ -85,7 +85,7 @@ procedure Tpickcounty.FormCreate(Sender: TObject);
 begin
    Picked := false;
    TigerName := '';
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    Caption := 'Pick county';
    Table1 := tMyData.Create(DEMTiger.TigerIndex);
    Table1.ApplyFilter('ON_HAND = ' + QuotedStr('Y'));  // + SeriesString);

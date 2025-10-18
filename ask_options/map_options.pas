@@ -80,9 +80,10 @@ implementation
 uses
    {$IfDef ExSat}
    {$Else}
-   DEMSatMerge,
+      DEMSatMerge,
    {$EndIf}
 
+   Nevadia_Main,
    Elev_color_range,DEMDefs,
    DEMRefOp,DEMSlopeOpts,DEMElevOps,
    DEMCoord,DEM_Manager,
@@ -229,7 +230,7 @@ end;
 
 procedure TTMapOptsForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 procedure TTMapOptsForm.HelpBtnClick(Sender: TObject);

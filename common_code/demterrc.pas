@@ -156,6 +156,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PETMAR,Petmar_types,Petmar_db,PETMath,PetImage,
    DEMCoord, demdef_routines;
 
@@ -263,7 +264,7 @@ begin
        if (CatDoing in [tcNormal]) then begin
          inTerrainCategory := TerrainCategory;
        end;
-       Petmar.PlaceFormAtMousePosition(GetTerrC);
+       PlaceFormAtMousePosition(GetTerrC);
        GetTerrC.FormStyle := fsStayOnTop;
        GetTerrC.Show;
       {$IfDef RecordTerrCats} WriteLineToDebugFile('GetTerrainCategory out=' + DEMGlb[inDEM].TerrainCategoryLabel(TerrainCategory)); {$EndIf}
@@ -770,7 +771,7 @@ end;
 
 procedure TGetTerrC.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    CheckBox18.Checked := MDDef.TerrainCatLegend.DrawItem;
    UserChanging := false;
 end;

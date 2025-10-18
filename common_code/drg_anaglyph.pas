@@ -72,6 +72,7 @@ uses
    {$Else}
       stereo_viewer,
    {$EndIf}
+   Nevadia_Main,
    DEMCoord,DEMRefOp,Petmar_types,PetMar,
    DEM_Manager,DEMMapDraw,
    PetDBUtils, PETImage,BaseMap;
@@ -140,7 +141,7 @@ procedure TDRGAnaglyphForm.FormCreate(Sender: TObject);
 begin
    ClientWidth := 262;
    ClientHeight := 308;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MdDef.StereoMode);
    RadioGroup2.ItemIndex := ord(MDDef.ShadeOpts);
    CheckBox3.Checked := MDDef.EWAnaglyphShift;

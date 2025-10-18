@@ -17,7 +17,7 @@ unit petimage_form;
    //{$Define RecordImageLoadProblems}
    //{$Define RecordImageResize}
    //{$Define RecordChangeColumns}
-   {$Define RecordBigBitmap}
+   //{$Define RecordBigBitmap}
    //{$Define RecordBitmapEdit}
    //{$Define RecordBlendBitmaps}
    //{$Define RecordGetImagePartOfBitmap}
@@ -373,7 +373,7 @@ procedure AlphaMatchBitmaps(Bitmap,Bitmap2 : tMyBitmap);
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDispForm;
 procedure CombineAllPanelGraphs(Cols : integer = 1);
 
-procedure AddGraphToBigBitmap(ap : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
+procedure AddGraphToBigBitmap(GraphPosition : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
 procedure FinishBigBitMapWithLegend(var BigBitmap,LegendBMP : tMyBitmap; aName : PathStr; LegendBelow : boolean = true);
 
 
@@ -457,7 +457,8 @@ var
 
 
 
-procedure AddGraphToBigBitmap(ap : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
+procedure AddGraphToBigBitmap(GraphPosition : integer; GraphPanelsWide,GraphPanelsHigh : integer; gr : TThisBaseGraph; var BigBitmap : tMyBitmap);
+//GraphPosition 1 is upper left, increases to the right and then down
  var
     Bitmap : tMyBitmap;
     UseFullWidth,FullWidth,Top,Row,Col,i,LeftStart  : integer;
@@ -469,13 +470,13 @@ begin
       Bitmap.SaveToFile(fName);
    {$EndIf}
    UseFullWidth := Bitmap.Width - Gr.GraphDraw.LeftMargin;
-   if (ap = 1) then begin
-      FullWidth := Bitmap.Width + pred(GraphPanelsWide) * (UsefullWidth + 10) + 10;
-      CreateBitmap(BigBitmap,FullWidth, (Bitmap.Height + 10) * GraphPanelsHigh);
+   if (GraphPosition = 1) then begin
+      FullWidth := Bitmap.Width + pred(GraphPanelsWide) * (UsefullWidth + 10) + 15;
+      CreateBitmap(BigBitmap,FullWidth, (Bitmap.Height + 15) * GraphPanelsHigh);
    end;
    Col := 0;
    Row := 1;
-   for I := 1 to ap do begin
+   for I := 1 to GraphPosition do begin
       inc(Col);
       if (Col > GraphPanelsWide) then begin
          inc(Row);
@@ -483,9 +484,9 @@ begin
       end;
    end;
 
-   Top := pred(Row) * (Bitmap.Height + 10);
-   if (Col = 1) then LeftStart := 0
-   else LeftStart := (Bitmap.Width + 10) + (Col-2) * (UsefullWidth + 10);
+   Top := 2 + pred(Row) * (Bitmap.Height + 10);
+   if (Col = 1) then LeftStart := 2
+   else LeftStart := 2 + (Bitmap.Width + 10) + (Col-2) * (UsefullWidth + 10);
 
    {$IfDef RecordAddGraphToBigBitmap} WriteLineToDebugFile('ap=' + IntToStr(ap) + ' Row=' + IntToStr(Row) + ' col=' + IntToStr(Col) + ' top=' + IntToStr(Top) + ' left=' + IntToStr(LeftStart)); {$EndIf}
 
@@ -515,13 +516,13 @@ begin
          BigBitmap.Canvas.Draw((BigBitmap.Width div 2) - (LegWidth div 2), BigBitmap.Height - LegHt,LegendBMP);
       end
       else begin
-         BigBitmap.Width := BigBitmap.Width + 10 + LegWidth;
-         BigBitmap.Canvas.Draw(BigBitmap.Width + 10,BigBitmap.Height - LegHt - 5,LegendBMP);
+         BigBitmap.Width := BigBitmap.Width + 15 + LegWidth;
+         BigBitmap.Canvas.Draw(BigBitmap.Width - LegWidth - 2,BigBitmap.Height - LegHt - 5,LegendBMP);
       end;
    end;
    SaveBitmap(BigBitmap,aName);
    {$If Defined(RecordAddGraphToBigBitmap)} WriteLineToDebugFile('MultipleBestByParameters done graph=' + aName  + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
-   DisplayBitmap(BigBitmap,aname);
+   DisplayBitmap(BigBitmap,ExtractFileNameNoExt(aname));
    BigBitmap.Free;
    LegendBMP.Free;
 end;
@@ -581,9 +582,11 @@ begin
         end;
         if (Legend <> '') then begin
             LegBMP := LoadBitmapFromFile(Legend);
-            BigBmp.Height := BigBmp.Height + LegBMP.Height + 20;
-            y := BigBmp.Height - LegBMP.Height - 4;
-            x := (BigBmp.Width - LegBMP.Width) div 2;
+            if LegBMP.Height < 75 then begin
+               BigBmp.Height := BigBmp.Height + LegBMP.Height + 20;
+               y := BigBmp.Height - LegBMP.Height - 4;
+               x := (BigBmp.Width - LegBMP.Width) div 2;
+            end;
             BigBmp.Canvas.Draw(X,y,LegBmp);
             LegBMP.Free;
         end;

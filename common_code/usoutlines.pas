@@ -70,6 +70,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    DEMDefs,
    PETMAR,Petmar_types;
 
@@ -146,7 +147,7 @@ end;
 
 procedure TUSOutlineForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

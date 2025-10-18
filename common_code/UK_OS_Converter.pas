@@ -83,9 +83,10 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    PETMAR,PETMATH,GetLatLn;
 
-   
+
 procedure TCoordConvertForm.ShowParams;
 begin
    Edit5.Text := RealToString(This_projection.ProjMapScale,-18,-6);
@@ -99,7 +100,7 @@ end;
 
 procedure TCoordConvertForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.OutPutLatLongMethod);
    This_projection := CreateUKOSprojection;
    {$IfDef ShowProjection} This_projection.WriteProjectionParametersToDebugFile('TUKOSConvertForm.FormCreate');  {$EndIf}

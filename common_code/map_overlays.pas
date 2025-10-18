@@ -174,6 +174,7 @@ uses
      NE_outlines,
   {$EndIf}
 
+  Nevadia_Main,
   Petmar, DEMTigerOps,DEMDef_routines,db_display_options, dem_gaz_opts,DEMDataBase,
   dem_plss_op, petmar_types, Petmar_db,usoutlines,DEM_PLSS,
   BaseMap, DEM_indexes,DEMCoord;
@@ -425,7 +426,7 @@ end;
 
 procedure TMapOverlayForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    TrackBarringAllowed := false;   //turn off until form is ready
 end;
 

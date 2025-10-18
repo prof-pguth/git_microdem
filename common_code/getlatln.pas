@@ -88,6 +88,7 @@ implementation
 
 uses
    PetMath,
+   Nevadia_Main,
    DEMMapf;
 
 
@@ -371,7 +372,7 @@ end;
 procedure TGetLatLongDlg.FormCreate(Sender: TObject);
 begin
    //BitBtn1.Visible := DEMMapf.ClipBoard_Coords;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 initialization

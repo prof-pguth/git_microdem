@@ -103,6 +103,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    PETMath,
    DEM_Manager, DEMDef_routines,
    BaseMap,DEMCoord,GetLatLn;
@@ -239,7 +240,6 @@ begin
 end;
 
 
-
 procedure TDEMHeaderForm.UpdateChoices;
 begin
    BitBtn2.Enabled := Editable and (EditHeadRec.DEMUsed = ArcSecDEM);
@@ -301,7 +301,7 @@ end;
 procedure TDEMHeaderForm.FormCreate(Sender: TObject);
 begin
     Editable := true;
-    Petmar.PlaceFormAtMousePosition(Self);
+    PlaceFormAtMousePosition(Self);
    {$IfDef HideHelpButtons} HelpBitBtn8.Visible := false; {$EndIf}
 end;
 

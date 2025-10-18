@@ -622,6 +622,7 @@ uses
    {$EndIf}
 
 
+   Nevadia_Main,
    gdal_tools,
    PetEd32,
    PetImage,
@@ -636,9 +637,7 @@ uses
    USOutlines,
    PETMAR,PETMath,PETGraphColors, Petmar_ini_file,
    DEM_indexes,
-   compare_algorithms_options,
-   Nevadia_Main;
-
+   compare_algorithms_options;
 var
    MainMap,
    MapLib,
@@ -1289,7 +1288,7 @@ begin
    LabelDirectories;
    if (Sender <> Nil) then begin
       if Width > WMDEM.ClientWidth then Width := WMDEM.ClientWidth - 50;
-      Petmar.PlaceFormAtMousePosition(Self);
+      PlaceFormAtMousePosition(Self);
       PageControl1.ActivePage := TabSheet1;
    end;
    UserWorking := true;

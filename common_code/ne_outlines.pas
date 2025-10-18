@@ -80,6 +80,7 @@ implementation
 uses
    DEMDefs,DEMDataBase,
    DEM_Manager,
+   Nevadia_Main,
    PETMAR,Petmar_types;
 
 
@@ -117,7 +118,7 @@ end;
 
 procedure TNEOutlineForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

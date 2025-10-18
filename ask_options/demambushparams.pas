@@ -52,6 +52,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    DEMCoord,
    DEM_Fan_Algorithm,Demdef_routines,
    PETMath;
@@ -97,7 +98,7 @@ end;
 
 procedure TPickAmbushParams.FormCreate(Sender: TObject);
 begin
-   Petmar.CheckFormPlacement(Self);
+   CheckFormPlacement(Self);
 end;
 
 

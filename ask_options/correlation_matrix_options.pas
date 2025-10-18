@@ -33,6 +33,10 @@ type
     Edit1: TEdit;
     Edit2: TEdit;
     Label2: TLabel;
+    Memo1: TMemo;
+    BitBtn1: TBitBtn;
+    Label3: TLabel;
+    Edit3: TEdit;
     procedure RedrawSpeedButton12Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -40,6 +44,8 @@ type
     procedure RadioGroup3Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure Edit3Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -48,7 +54,7 @@ type
   end;
 
 
-procedure InteractiveCorrelativeMatrix(GridForm : tGridForm);
+procedure InteractiveCorrelativeMatrix(var GridForm : tGridForm);
 
 implementation
 
@@ -58,7 +64,7 @@ uses
    Petmar,DEMdefs,DEMdef_routines;
 
 
-procedure InteractiveCorrelativeMatrix(GridForm : tGridForm);
+procedure InteractiveCorrelativeMatrix(var GridForm : tGridForm);
 var
    CorrelationMatrixOptionsForm : TCorrelationMatrixOptionsForm;
 begin
@@ -70,6 +76,26 @@ begin
 end;
 
 
+procedure TCorrelationMatrixOptionsForm.BitBtn1Click(Sender: TObject);
+var
+   i,j,k : Integer;
+   aLabel,Drop : shortstring;
+begin
+   for k := 0 to pred(Memo1.Lines.Count) do begin
+     Drop := Memo1.Lines[k];
+     for i := DisplayGrid.FirstDataColumn to pred(DisplayGrid.StringGrid1.ColCount) do begin
+         aLabel := DisplayGrid.StringGrid1.Cells[i,0];
+         aLabel := StringReplace(aLabel,Drop, '', [rfReplaceAll]);
+         DisplayGrid.StringGrid1.Cells[i,0] := aLabel;
+     end;
+     for j := 1 to pred(DisplayGrid.StringGrid1.RowCount) do begin
+         aLabel := DisplayGrid.StringGrid1.Cells[0,j];
+         aLabel := StringReplace(aLabel,Drop, '', [rfReplaceAll]);
+         DisplayGrid.StringGrid1.Cells[0,j] := aLabel;
+     end;
+   end;
+end;
+
 procedure TCorrelationMatrixOptionsForm.Edit1Change(Sender: TObject);
 begin
    DisplayGrid.ULstring := Edit1.Text;
@@ -78,6 +104,11 @@ end;
 procedure TCorrelationMatrixOptionsForm.Edit2Change(Sender: TObject);
 begin
    CheckEditString(Edit2.Text,MDDef.PerfectR);
+end;
+
+procedure TCorrelationMatrixOptionsForm.Edit3Change(Sender: TObject);
+begin
+   DisplayGrid.URstring := Edit3.Text;
 end;
 
 procedure TCorrelationMatrixOptionsForm.FormCreate(Sender: TObject);

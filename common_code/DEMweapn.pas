@@ -100,8 +100,9 @@ implementation
 uses
    {$IfDef ExAmbush}
    {$Else}
-   DEMAmbushParams,
+      DEMAmbushParams,
    {$EndIf}
+   Nevadia_Main,
    DEMCoord,DEMRange,DEMCurvature,
    Demdef_routines,
    PETMath,petdbutils,
@@ -305,7 +306,7 @@ begin
    end;
    DefineColorTableValues(MDDef.ViewshedPaletteName,0,60,ColorDefTable);
    BitBtn5.Glyph := MakeColorScaleBitmap(60,14,MDDef.ViewshedColorScheme,ColorDefTable);
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 procedure TPickWeapon.RadioGroup2Click(Sender: TObject);

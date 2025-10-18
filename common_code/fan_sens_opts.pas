@@ -42,6 +42,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    Petmar;
 
 procedure Tfan_sens_form.HelpBtnClick(Sender: TObject);
@@ -57,7 +58,7 @@ end;
 
 procedure Tfan_sens_form.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

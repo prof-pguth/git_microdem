@@ -110,12 +110,13 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PETMAR, PetMath,PetImage,
    Petmar_geology,
    BaseGraf,
    DEMDataBase,DEM_indexes,
    DEMCoord,BaseMap,DEMStat,
-   Nevadia_Main, computations;
+   computations;
 
 
 procedure TTrendPick.OKBtnClick(Sender: TObject);
@@ -200,7 +201,7 @@ begin
    MDDef.GeoContactColor := LineColors10[CurrentColorNumber];
    ColorLineWidthBitBtn(BitBtn1,MDDef.GeoContactColor,MDDef.GeoContactWidth);
 
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    CheckBox1.Checked := MDDef.TrendDoGraph;
    CheckBox2.Checked := MDDef.TrendMapDev;
    CheckBox3.Checked := MDDef.TrendHistDev;

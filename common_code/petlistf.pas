@@ -43,6 +43,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PETMAR,Petmar_types;
 
 
@@ -90,7 +91,7 @@ procedure TPetList.FormCreate(Sender: TObject);
 begin
    Cancel := true;
    Width:= 400;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 initialization

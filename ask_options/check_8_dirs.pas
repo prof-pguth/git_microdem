@@ -50,6 +50,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PETMAR,Petmar_types,PETMath;
 
 function GetDirectionsToUse;
@@ -86,7 +87,7 @@ end;
 
 procedure TGetDir8.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

@@ -46,7 +46,7 @@ implementation
 {$R *.DFM}
 
 uses
-   PETMAR,Petmar_types,DEMDefs;
+   Nevadia_Main,PETMAR,Petmar_types,DEMDefs;
 
 
 procedure GetCurvAlg;
@@ -90,7 +90,7 @@ end;
 
 procedure TCurvatureForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

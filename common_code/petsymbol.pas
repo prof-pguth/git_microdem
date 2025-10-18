@@ -46,12 +46,13 @@ var
   PickSymbolForm : TPickSymbolForm;
   GetPointSymbol : tDrawingSymbol;
   GetPointSize   : integer;
-  GetPointColor  : tPlatformColor;
-
+  //GetPointColor  : tPlatformColor;
 
 implementation
 
-uses PETImage;
+uses
+   petimage,
+   nevadia_Main;
 
 {$R *.DFM}
 
@@ -104,7 +105,7 @@ end;
 
 procedure TPickSymbolForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 initialization

@@ -97,7 +97,7 @@ type
 function OpenCorrelationMatrix(Title : shortString; fName : PathStr) : DEMStringGrid.TGridForm;
 
 procedure SortGrid(Grid : TStringGrid; const SortCol : integer; const datatype : integer; const ascending : boolean);
-procedure DrawCorrelationDiagram(DisplayGrid : tGridForm);
+procedure DrawCorrelationDiagram(DisplayGrid : tGridForm; ShorteningList : tStringList = nil);
 
 
 implementation
@@ -111,7 +111,7 @@ uses
 
 
 
-procedure DrawCorrelationDiagram(DisplayGrid : tGridForm);
+procedure DrawCorrelationDiagram(DisplayGrid : tGridForm; ShorteningList : tStringList = nil);
 {$IfDef ExGeostats}
 begin
 {$Else}

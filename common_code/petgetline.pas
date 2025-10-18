@@ -45,6 +45,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    PetImage;
 
 procedure Tlineparamsform.ShowSymbols;
@@ -82,7 +83,7 @@ procedure Tlineparamsform.FormActivate(Sender: TObject);
 begin
    ShowSymbols;
    ColorBitBtn(BitBtn1,TheColor);
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 procedure Tlineparamsform.BitBtn1Click(Sender: TObject);
@@ -95,7 +96,7 @@ procedure Tlineparamsform.FormCreate(Sender: TObject);
 begin
    ClientWidth := 254;
    ClientHeight := 133;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 end.

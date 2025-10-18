@@ -51,6 +51,7 @@ implementation
 {$R *.dfm}
 
 uses
+   Nevadia_Main,
    Petmar,Petmath,DEMdefs,Petmar_types;
 
 procedure TSimpleContourOptions.BitBtn1Click(Sender: TObject);
@@ -74,7 +75,7 @@ begin
    ColorLineWidthBitBtn(BitBtn2,MDDef.ContourLineColor,MDDef.ContourLineWidth);
    ColorLineWidthBitBtn(BitBtn3,MDDef.DelaunayLineColor,MDDef.DelaunayLineThick);
    Edit2.Text := RealToString(MDDef.MaxTriSide,-12,-6);
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

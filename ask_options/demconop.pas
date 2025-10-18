@@ -91,6 +91,7 @@ implementation
 
 
 uses
+   Nevadia_Main,
    PETMAR,Petmar_types,DEMDefs,petdbutils, demdef_routines;
 
 
@@ -153,7 +154,7 @@ begin
    Label5.Enabled := CheckBox1.Checked;
    MapOwner := Nil;
 
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    SetupForm;
 end;
 

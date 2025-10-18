@@ -45,6 +45,7 @@ procedure GetDistance(var Dist : float64;  theCapt : ShortString = '');
 implementation
 
 uses
+   Nevadia_Main,
    DEMDefs,DEMDef_Routines,PETMath, PetDBUtils, toggle_db_use,Make_tables;
 
 {$R *.DFM}
@@ -119,7 +120,7 @@ end;
 
 procedure TRangeCircleForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.RangeCircleUnit);
 end;
 

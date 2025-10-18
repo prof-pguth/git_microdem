@@ -43,7 +43,9 @@ type
 implementation
 
 uses
+   Nevadia_Main,
    petmar;
+
 {$R *.dfm}
 
 
@@ -67,7 +69,7 @@ end;
 
 procedure TReportOptionsForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    tf := 1;
 end;
 

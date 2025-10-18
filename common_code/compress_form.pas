@@ -102,14 +102,11 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    DEM_indexes,
    DEMDef_routines,
    Make_Tables,
-   MD_Use_Tools,
-
-{Main program MDI window for different programs that use this module}
-   Nevadia_Main;
-{End of the MDI parent declaration}
+   MD_Use_Tools;
 
 
 const
@@ -141,7 +138,7 @@ begin
    ExpandTarFile1.Enabled := SevenZipPresent;
    BZIP21.Enabled := SevenZipPresent;
    Unixtargzfile1.Enabled := SevenZipPresent;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    FileMode := 2;
 end;
 

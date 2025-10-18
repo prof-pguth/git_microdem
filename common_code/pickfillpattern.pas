@@ -60,6 +60,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    Petmar,PetImage;
 
 
@@ -111,7 +112,7 @@ begin
    Pattern(bsSolid,12);
    Image1.Picture.Graphic := Bitmap;
    Bitmap.Free;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 

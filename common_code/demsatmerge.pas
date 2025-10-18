@@ -60,6 +60,7 @@ implementation
 
 
 uses
+   Nevadia_Main,
    PetImage;
 
 function GetIHSparameters(var I,H,S : SmallInt; HueSatOnly : boolean = false; BackBMP : tMyBitmap = Nil) : boolean;
@@ -187,7 +188,7 @@ end;
 
 procedure TIHSMergeForm.FormCreate(Sender: TObject);
 begin
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
 end;
 
 initialization

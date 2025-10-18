@@ -104,6 +104,7 @@ implementation
 
 
 uses
+  Nevadia_Main,
   DEMdefs,
   DEMCoord,
   Map_Overlays,BaseMap;
@@ -319,7 +320,7 @@ end;
 
 procedure TPickGrid.FormCreate(Sender: TObject);
 begin
-    Petmar.PlaceFormAtMousePosition(Self);
+    PlaceFormAtMousePosition(Self);
     CreatingForm := true;
     RadioGroup1.ItemIndex := ord(MDDef.MapTicks);
     CheckBox1.Checked := MDDef.ShowPrimaryGrid;

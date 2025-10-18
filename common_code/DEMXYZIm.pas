@@ -69,6 +69,7 @@ implementation
 {$R *.DFM}
 
 uses
+   Nevadia_Main,
    DEMDefs,BaseMap,
    PETMAR;
 
@@ -103,7 +104,7 @@ end;
 procedure TImportParamsDialog.FormCreate(Sender: TObject);
 begin
    inherited;
-   Petmar.PlaceFormAtMousePosition(Self);
+   PlaceFormAtMousePosition(Self);
    RadioGroup2.ItemIndex := ord(MDDef.XYZImport);
    RadioGroup3.ItemIndex := MDDef.XYZProduct;
    ZMult := 1;
