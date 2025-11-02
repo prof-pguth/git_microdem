@@ -79,7 +79,7 @@ const
    MaxContoursPerGrid = 25;
    MaxGraphSeries = 1024;
    MaxGridSize  = 100;
-   TickSize     = 10;
+   //TickSize     = 10;
    MaxCycles    = 100;
    MaxArraySize = 400;
    MaxPointsInBuffer = 64000;
@@ -117,7 +117,7 @@ type
 
          RegionXLo,RegionXHi,
          RegionYLo,RegionYHi,
-         XPixelSize,YPixelSize,VertExag,
+         XPixelSize,YPixelSize,VertExag,MaxPieCircle,
          MinHorizAxis,MaxHorizAxis,MinVertAxis,MaxVertAxis,MinVertAxis2,MaxVertAxis2 : float32;
          XWindowSize,YWindowSize,
          TopMargin,
@@ -167,6 +167,7 @@ type
          DrawInsideLines,
          GrayAllDataFilesFirst,
          LLcornerTextAtEdge,
+         PieRatio,
          SimpleYAxis : boolean;
          GraphDrawn     : boolean;
          InsideMarginLegend : byte;
@@ -932,11 +933,9 @@ procedure TThisBaseGraph.DrawScaledPieCharts(Bitmap : tMyBitmap);
 //GraphDraw.GraphType = gtScaledPieCharts
 var
    x,y,StartAngle,EndAngle,BinSize : float32;
-   //aMax : float64;
-   //Color : tPlatformColor;
    aColor : tColor;
    MaxSize,MaxSizeX,MaxSizeY,MinSize,MaxN,nPies,rad1,rad2,OldSize,
-   xi,yi,i,{n,}nt,size,  //bin,
+   xi,yi,i,nt,size,
    win,tie,loss : integer;
    sTable : tMyData;
    nCount : shortstring;
@@ -957,8 +956,6 @@ var
 
 
       procedure DrawArc(n : integer; Color : tColor; What : shortstring);
-      //var
-         //xi,yi,x3,y3,x4,y4 : integer;
       begin
          EndAngle := StartAngle + 360 * N / NT;
          ReallyDraw(StartAngle,EndAngle,Color);
@@ -974,11 +971,62 @@ var
          nt := sTable.GetFieldByNameAsInteger('NTOTAL');
       end;
 
+      procedure DEMIX_DB_representative;
+      const
+        V2_color = clRed;
+        V3_color = clMaroon;
+        V4_color = clLime;
+        World_color = clBlue;
+        //MultFactor = 2.5;
+      var
+         //Filter1,Filter2 : tStringList;
+         //i,j : integer;
+         v2,v3,v4,World,tf : float32;
+
+
+         procedure DoOne(value : float32; StartAngle,EndAngle : float32; color : tColor);
+         begin
+            if GraphDraw.PieRatio then tf := value/World/GraphDraw.MaxPieCircle
+            else tf := value/GraphDraw.MaxPieCircle;
+            if tf > 1 then tf := 1;
+            size := round(tf * rad1);
+            ReallyDraw(StartAngle,EndAngle,color);
+         end;
+
+      begin
+         MaxSizeX := round(0.45 * (GraphDraw.GraphX(2) - GraphDraw.GraphX(1)));
+         MaxSizeY := round(0.45 * (GraphDraw.GraphY(2) - GraphDraw.GraphY(1)));
+         if MaxSizeX > MaxSizeY then rad1 := MaxSizeY else rad1 := MaxSizeX;
+         while not sTable.eof do begin
+               v2 := sTable.GetFieldByNameAsFloat('DB_V2_PC');
+               v3 := sTable.GetFieldByNameAsFloat('DB_V3_PC');
+               v4 := sTable.GetFieldByNameAsFloat('DB_V4_PC');
+               World := sTable.GetFieldByNameAsFloat('WORLD_PC');
+               xi := GraphDraw.GraphX(sTable.GetFieldByNameAsFloat('X'));
+               yi := GraphDraw.GraphY(sTable.GetFieldByNameAsFloat('Y'));
+               Bitmap.Canvas.Pen.Color := clSilver;
+               Bitmap.Canvas.Brush.Style := bsClear;
+               Bitmap.Canvas.Ellipse(xi-rad1,yi-rad1,xi+rad1,yi+rad1);  //100% circle
+               Bitmap.Canvas.Ellipse(xi-rad2,yi-rad2,xi+rad2,yi+rad2);  //50% circle
+
+              DoOne(v2,0,90,v2_color);
+              DoOne(v3,90,180,v3_color);
+              DoOne(v4,180,270,v4_color);
+              DoOne(World,270,360,World_color);
+
+
+            stable.Next;
+         end;
+      end;
+
 
 begin {DrawScaledPieCharts}
    {$IfDef RecordGrafFromDB} WriteLineToDebugFile('TThisBaseGraph.DrawScaledPieCharts in'); {$EndIf}
    sTable := tMyData.Create(BarGraphDBName);
-   if sTable.FieldExists('WIN_0') then begin
+   if sTable.FieldExists('DB_V2_N') and sTable.FieldExists('DB_V4_N') then begin
+      DEMIX_DB_representative;
+   end
+   else if sTable.FieldExists('WIN_0') then begin
       nPies := 0;
       OldSize := Bitmap.Canvas.Font.Size;
       while sTable.FieldExists('WIN_' + IntToStr(nPies)) do inc(nPies);
@@ -990,8 +1038,6 @@ begin {DrawScaledPieCharts}
       rad1 := MaxSize;
       rad2 := rad1 div 2;
       while not sTable.eof do begin
-         //aMax := sTable.FindFieldMax('NTOTAL');
-         //MaxN := round(aMax);
          GetCoords;
          Bitmap.Canvas.Pen.Color := clSilver;
          Bitmap.Canvas.Brush.Style := bsClear;
@@ -1020,7 +1066,6 @@ begin {DrawScaledPieCharts}
      MaxSize := GraphDraw.GraphX(sTable.GetFieldByNameAsFloat('X_SIZE') / 1.3) - GraphDraw.GraphX(0);
      sTable.First;
      while not sTable.eof do begin
-        //aMax := );
         MaxN := round(sTable.FindFieldMax('NTOTAL'));
         GetCoords;
         if (nt > 0) then begin
@@ -2270,8 +2315,8 @@ var
                            if (i mod GraphDraw.FullLineFraction = 0) then Pixels[x,i] := GraphDraw.AxisColor;
                      end
                      else begin
-                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+TickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-TickSize);
-                        DrawLine(Bitmap,x,0,x,2*TickSize);
+                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+MDDef.GraphTickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                        DrawLine(Bitmap,x,0,x,2*MDDef.GraphTickSize);
                      end;
                   end;
                until (Year > GraphDraw.Year2);
@@ -2296,8 +2341,8 @@ var
                            if (i mod GraphDraw.FullLineFraction = 0) then Pixels[x,i] := GraphDraw.AxisColor;
                      end
                      else begin
-                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+TickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-TickSize);
-                        DrawLine(Bitmap,x,0,x,TickSize);
+                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+MDDef.GraphTickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                        DrawLine(Bitmap,x,0,x,MDDef.GraphTickSize);
                      end;
                   end;
                until (Year >= GraphDraw.Year2);
@@ -2314,8 +2359,8 @@ var
                            if (i mod GraphDraw.FullLineFraction = 0) then Pixels[x,i] := GraphDraw.AxisColor;
                      end
                      else begin
-                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+TickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-TickSize);
-                        DrawLine(Bitmap,x,0,x,TickSize);
+                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+MDDef.GraphTickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                        DrawLine(Bitmap,x,0,x,MDDef.GraphTickSize);
                      end;
                   end;
                   inc(Year,YearInc);
@@ -2326,8 +2371,8 @@ var
             if (Range < 100) then begin
                for Longx := Round(GraphDraw.MinHorizAxis) to round(GraphDraw.MaxHorizAxis) do begin
                   x := GraphDraw.GraphX(LongX);
-                  DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-TickSize);
-                  DrawLine(Bitmap,x,0,x,TickSize);
+                  DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                  DrawLine(Bitmap,x,0,x,MDDef.GraphTickSize);
                   CalDat(LongX,Month,Day,Year);
 
                   Modder := 0;
@@ -2345,9 +2390,9 @@ var
                      x := GraphDraw.GraphX(LongX + i /24);
                      if i in [6,12,18] then begin
                         BitmapTextOut(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin + 2,IntToStr(i));
-                        y := 2*TickSize;
+                        y := 2*MDDef.GraphTickSize;
                      end
-                     else y := TickSize;
+                     else y := MDDef.GraphTickSize;
                      DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-y);
                      DrawLine(Bitmap,x,0,x,y);
                   end;
@@ -2424,8 +2469,8 @@ var
                    if (x >= GraphDraw.LeftMargin) and (x <= GraphDraw.LeftMargin + GraphDraw.XWindowSize) then begin
                       if GraphDraw.GraphAxes in [FullGrid,XFullGridOnly] then DashLine(PerCen)
                       else begin
-                         DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-TickSize);
-                         DrawLine(Bitmap,x,GraphDraw.TopMargin,x,GraphDraw.TopMargin + TickSize);
+                         DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                         DrawLine(Bitmap,x,GraphDraw.TopMargin,x,GraphDraw.TopMargin + MDDef.GraphTickSize);
                       end;
                    end;
                    PerCen := PerCen + Inc;
@@ -2483,8 +2528,8 @@ var
                         if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[i,y] := GraphDraw.AxisColor;
                   end
                   else begin
-                     Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);  Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+TickSize,y);
-                     Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize,y);  Bitmap.Canvas.LineTo(GraphDraw.XWindowSize-TickSize,y);
+                     Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);  Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+MDDef.GraphTickSize,y);
+                     Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize,y);  Bitmap.Canvas.LineTo(GraphDraw.XWindowSize-MDDef.GraphTickSize,y);
                   end {if};
                   PerCen := PerCen + Inc;
                end {while};
@@ -2546,9 +2591,9 @@ var
       begin
          Bitmap.Canvas.Pen.Color := clBlack;
          Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);
-         Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+TickSize,y);
+         Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+MDDef.GraphTickSize,y);
          Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin,y);
-         Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin - TickSize,y);
+         Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin - MDDef.GraphTickSize,y);
       end;
 
 
@@ -2600,8 +2645,8 @@ begin {proc CreateGraphAxes}
        for I := 1 to GraphDraw.GraphBottomLabels.Count do begin
           TStr := RemoveUnderScores(GraphDraw.GraphBottomLabels.Strings[pred(i)]);
           x1 := GraphDraw.GraphX(StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true)));
-          DrawLine(Bitmap,x1,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x1,GraphDraw.YWindowSize-GraphDraw.BottomMargin-TickSize);
-          DrawLine(Bitmap,x1,GraphDraw.TopMargin,x1,GraphDraw.TopMargin + TickSize);
+          DrawLine(Bitmap,x1,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x1,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+          DrawLine(Bitmap,x1,GraphDraw.TopMargin,x1,GraphDraw.TopMargin + MDDef.GraphTickSize);
           if GraphDraw.VertGraphBottomLabels then begin
              x1 := x1-Bitmap.Canvas.TextHeight(TStr) div 2;
              y1 := Bitmap.Height - GraphDraw.BottomMargin + 5;
@@ -5907,7 +5952,6 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
           Result := TStr;
           if StrUtils.AnsiContainsText(UpperCase(Result),'BF-PET_') then Result := ''
           else if UseFileNames then begin
-             //Result := ExtractFileNameNoExt(Result);
              while Result[length(Result)] in ['0','9'] do Delete(Result,Length(Result),1);
              Delete(Result,Length(Result),1);
              Result := RemoveUnderScores(Result);
@@ -5921,11 +5965,8 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
 
          MaxLen := 0;
          NumF := 0;
-         //n := fList.Count;
-
          CreateBitmap(Result,1500,ItemHigh*fList.Count+4);
          ClearBitmap(Result,GraphDraw.GraphBackgroundColor);
-
          for i := 0 to pred(fList.Count) do begin
             Tstr := GetLabel(ExtractFileNameNoExt(flist.Strings[i]));
             if (TStr <> '') then begin

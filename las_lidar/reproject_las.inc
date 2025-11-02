@@ -42,14 +42,14 @@ var
    offsetsDone,NeedReprojection,NeedDatumShift : boolean;
    NewName : PathStr;
    OldDatum : tMapProjection;
-   NewLasProjection : tlasProjectionDefinition;
+   NewLasProjection : tMapProjection;
 begin
    {$IfDef RecordReprojectLAS} writeLineToDebugFile('ReprojectLasFileToUTM ' + fName + '   ' + StartDatum ); {$EndIf}
     OldDatum := tMapProjection.Create('reproject las, olddatum');
     Lf := Las_Lidar.tLAS_data.Create(fName);
     if (StartDatum = '') then begin
-       StartProjection := Lf.lasProjDef.LASProj;
-       StartDatum := Lf.lasProjDef.LasProj.H_DatumCode;
+       StartProjection := Lf.lasProj;
+       StartDatum := Lf.lasProj.H_DatumCode;
       {$IfDef RecordReprojectLAS}   WriteLineToDebugFile('LAS file start datum=' + StartDatum ); {$EndIf}
     end;
 
@@ -57,7 +57,7 @@ begin
     NeedReprojection := true;
     if WGSEquivalentDatum(StartDatum) then begin
        NeedDatumShift := true;
-       if (Lf.lasProjDef.LasProj.ProjectedCSTypeGeoKey = 26900 + UTMZone) then NeedReprojection := false;
+       if (Lf.lasProj.ProjectedCSTypeGeoKey3072 = 26900 + UTMZone) then NeedReprojection := false;
     end
     else NeedDatumShift := false;
 
@@ -67,11 +67,11 @@ begin
        WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,'N','LAS RedefineWGS84');
     end;
 
-    NewLasProjection.LasProj := tMapProjection.Create('reproject las, new');
-    NewLasProjection.LasProj.ThisIsUTMFile := true;
-    NewLasProjection.LasProj.ProjectedCSTypeGeoKey := 26900 + UTMZone;
-    NewLasProjection.LasProj.ProjLinearUnitsGeoKey := 9001;
-    NewLasProjection.LasProj.VerticalUnitsGeoKey := 9001;
+    NewLasProjection := tMapProjection.Create('reproject las, new');
+    NewLasProjection.ThisIsUTMFile := true;
+    NewLasProjection.ProjectedCSTypeGeoKey3072 := 26900 + UTMZone;
+    NewLasProjection.ProjLinearUnitsGeoKey := 9001;
+    NewLasProjection.VerticalUnitsGeoKey := 9001;
 
     NewName := ChangeFileExt(fName, '_utm.las');
     NewLas := tCreateLasFile.Create;
@@ -118,7 +118,7 @@ begin
     Lf.Destroy;
     NewLas.Destroy;
     OldDatum.Destroy;
-    NewLasProjection.LasProj.Destroy;
+    NewLasProjection.Destroy;
     AllowNoProjectionLAS := false;
    {$IfDef RecordReprojectLAS} writeLineToDebugFile('ReprojectLasFileToUTM out'); {$EndIf}
 end;

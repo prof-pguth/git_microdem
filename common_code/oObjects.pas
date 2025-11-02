@@ -61,7 +61,9 @@ type
 
 implementation
 
-uses SysUtils;
+uses
+   Winapi.windows,
+   ANSIstrings; //ysUtils;
 
 constructor TOCollection.Create(ACapacity: Integer);
 begin
@@ -207,7 +209,7 @@ end;
 
 procedure TStrCollection.FreeItem(Item: Pointer);
 begin
-   StrDispose(PANSICHar(Item));
+   ANSIstrings.StrDispose(PANSICHar(Item));
 end;
 
 end.

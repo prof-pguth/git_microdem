@@ -17,6 +17,7 @@ unit demix_graphs;
    //{$Define RecordDEMIX}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
+  {$Define PiesByLandType}
    //{$Define TrackCriteriaList}
    //{$Define RecordWinningPies}
    //{$Define RecordDEMIX_criteria_colors}
@@ -116,6 +117,8 @@ const
    ExpandLegend : boolean = false;
 
 function WinningPiesByCriteria(dbOnTable : integer; Criteria,DEMs : tStringList; LLtext : shortstring) : tThisBaseGraph;
+function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStringList; MaxPieCircle : float32; PieRatio : boolean; BottomLegendFName : PathStr) : tThisBaseGraph;
+
 
 
 implementation
@@ -946,8 +949,12 @@ end {procedure MainGraphOptions};
 
 
 function NumTilesString(DB : integer) : shortstring;
+var
+   nt : integer;
 begin
-   Result := ' (tiles=' + IntToStr(GISdb[DB].NumUniqueEntriesInDB('DEMIX_TILE')) + ')';
+   nt := (GISdb[DB].NumUniqueEntriesInDB('DEMIX_TILE'));
+   if (nt <= 1) then Result := ''
+   else Result := ' (tiles=' + IntToStr(GISdb[DB].NumUniqueEntriesInDB('DEMIX_TILE')) + ')';
 end;
 
 
@@ -1457,6 +1464,47 @@ begin
    {$IfDef RecordAverageScoresGraph} WriteLineToDebugFile('AverageScoresGraph out, Caption=' + Result.Caption); {$EndIf};
 end;
 
+function StartPieGraph(Criteria,Labels1 : tStringList) : tThisBaseGraph;
+var
+   j : integer;
+begin
+     Result := tThisBaseGraph.Create(Application);
+     Result.Width := 2500;
+     Result.Height := 700;
+     Result.GraphDraw.GraphType := gtScaledPieCharts;
+     Result.GraphDraw.ShowGraphLeftLabels  := true;
+     Result.GraphDraw.ShowGraphBottomLabels  := true;
+     Result.GraphDraw.GraphLeftLabels := tStringList.Create;
+     Result.GraphDraw.GraphBottomLabels := tStringList.Create;
+     Result.GraphDraw.MaxVertAxis := Labels1.Count + 0.5;
+     Result.GraphDraw.MinVertAxis := 0.5;
+     Result.GraphDraw.MinHorizAxis := 0.5;
+     Result.GraphDraw.MaxHorizAxis := Criteria.Count + 0.5;
+     Result.GraphDraw.VertLabel := '';
+     Result.GraphDraw.HorizLabel := '';
+     Result.GraphDraw.BottomMargin := 95;
+     Result.GraphDraw.LeftMargin := 250;
+     Result.GraphDraw.VertGraphBottomLabels := false;
+     for j := 0 to pred(Criteria.Count) do begin
+        Result.GraphDraw.GraphBottomLabels.Add(IntToStr(succ(j)) + ',' + NoSuffixCriterion(Criteria[j]));
+     end;
+     for j := 1 to Labels1.Count do begin
+        Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Labels1.Strings[pred(j)]);
+     end;
+end;
+
+
+
+function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStringList; MaxPieCircle : float32; PieRatio : boolean; BottomLegendFName : PathStr) : tThisBaseGraph;
+begin
+   Result := StartPieGraph(Label1s,Labels2);
+   Result.BarGraphDBName := GISdb[dbOnTable].dbFullName;
+   Result.GraphDraw.MaxPieCircle := MaxPieCircle;
+   Result.GraphDraw.PieRatio := PieRatio;
+   Result.GraphDraw.BottomLegendFName := BottomLegendFName;
+   Result.GraphDraw.LLcornerText := 'Max Circle=' + RealToString(MaxPieCircle,-8,-2) + '%';
+   Result.AutoScaleAndRedrawDiagram(false,false,false,false);
+end;
 
 
 function WinningPiesByCriteria(dbOnTable : integer; Criteria,DEMs : tStringList; LLtext : shortstring) : tThisBaseGraph;
@@ -1524,18 +1572,13 @@ begin {function WinningPiesByCriteria}
      if TileCharacteristicsInDB(DBonTable,true) then begin
          ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
          BaseFilter := GISdb[dbOnTable].MyData.Filter;
-         Result := tThisBaseGraph.Create(Application);
-         Result.Width := 2500;
-         Result.Height := 700;
+
+         Result := StartPieGraph(Criteria,Labels1);
+
          GraphData := tStringList.Create;
          LocStr := 'X,Y,X_SIZE,Y_SIZE,NTOTAL';
          for k := 0 to pred(DEMs.Count) do LocStr := LocStr + ',' + 'WIN_' + IntToStr(k) + ',' + 'COLOR_' + IntToStr(k);
          GraphData.Add(LocStr);
-         Result.GraphDraw.GraphType := gtScaledPieCharts;
-         Result.GraphDraw.ShowGraphLeftLabels  := true;
-         Result.GraphDraw.ShowGraphBottomLabels  := true;
-         Result.GraphDraw.GraphLeftLabels := tStringList.Create;
-         Result.GraphDraw.GraphBottomLabels := tStringList.Create;
 
          bmp := DEMIXTestDEMLegend(DEMs);
          fName := NextFileNumber(MDtempDir,'winning_pies_legend_','.bmp');
@@ -1544,11 +1587,9 @@ begin {function WinningPiesByCriteria}
          bmp.Destroy;
          Result.GraphDraw.BottomLegendFName := fname;
 
-         for j := 0 to pred(Criteria.Count) do begin
-            Result.GraphDraw.GraphBottomLabels.Add(IntToStr(succ(j)) + ',' + NoSuffixCriterion(Criteria[j]));
-         end;
 
          Row := Filters1.Count;
+         Result.GraphDraw.GraphLeftLabels.Clear;
          for I := 1 to Filters1.Count do begin
             GISdb[dbOnTable].ApplyGISfilter(Filters1.Strings[pred(i)]);
             GISdb[DBonTable].EmpSource.Enabled := false;
@@ -1562,18 +1603,9 @@ begin {function WinningPiesByCriteria}
          StringList2CSVtoDB(GraphData,fName,true,false,false);
          Result.BarGraphDBName := fName;
 
-         Result.GraphDraw.MaxVertAxis := Filters1.Count + 0.5;
-         Result.GraphDraw.MinVertAxis := 0.5;
-         Result.GraphDraw.MinHorizAxis := 0.5;
-         Result.GraphDraw.MaxHorizAxis := Criteria.Count + 0.5;
-         Result.GraphDraw.VertLabel := '';
-         Result.GraphDraw.HorizLabel := '';
-         Result.GraphDraw.BottomMargin := 95;
-         Result.GraphDraw.LeftMargin := 250;
-         Result.GraphDraw.VertGraphBottomLabels := false;
          Result.GraphDraw.LLCornerText := BaseFilter;
-         Result.Caption := 'Winning pies';
          Result.GraphDraw.LLCornerText  := LLtext;
+         Result.Caption := 'Winning pies';
          Result.AutoScaleAndRedrawDiagram(false,false,false,false);
          GISdb[dbOnTable].ApplyGISFilter(BaseFilter);
          {$IfDef RecordWinningPies} WriteLineToDebugFile(' WinningPiesByCriteria out'); {$EndIf};
@@ -1598,7 +1630,7 @@ procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tS
       end;
    var
       i,j,k,db : integer;
-      Rank,LocStr,ThisWinners,aDEM : shortString;
+      Rank,LocStr,ThisWinners,aDEM,BaseFilter : shortString;
       Color : tColor;
       rfile : file;
       fName : PathStr;
@@ -1614,6 +1646,8 @@ procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tS
          end;
 
    begin
+     BaseFilter := GISdb[DBonTable].MyData.Filter;
+
      if (MDDef.DEMIXUseBins > MaxPossBins) then MDDef.DEMIXUseBins := MaxPossBins;
      for I := 1 to MaxPossBins do begin
         for j := 1 to MaxPossBins do begin
@@ -1633,9 +1667,12 @@ procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tS
      Result.GraphDraw.VertLabel := 'Tile ' + Param2 + ' (%)';
      Result.GraphDraw.HorizLabel := 'Tile ' + Param1 +  ' (%)';
      Result.GraphDraw.BottomMargin := 85;
-     GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr(Criterion));
+     if (Param1 = 'FOREST_PC') then Result.GraphDraw.NormalCartesianX := false;
+
+     GISdb[DBonTable].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criterion));
      GISdb[DBonTable].EmpSource.Enabled := false;
      Tolerance := CriterionTieTolerance(Criterion);
+     {$If Defined(PiesByLandType)} WriteLineToDebugFile('n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' +  GISdb[DBonTable].MyData.Filter + '  compare=' + IntToStr(Compare)); {$EndIf}
 
      while not GISdb[DBonTable].MyData.eof do begin
         v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Param1);
@@ -1734,6 +1771,7 @@ procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tS
         StringList2CSVtoDB(GraphData,fName,true,false,false);
         Result.BarGraphDBName := fName;
         Result.AutoScaleAndRedrawDiagram(false,false,false,false);
+        GISdb[DBonTable].ApplyGISFilter(BaseFilter);
    end;
 
 var
@@ -1746,7 +1784,7 @@ var
 begin  {procedure  PiesBestByTwoLandTypes}
    if GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
       try
-         {$If Defined(RecordDEMIXGraph)} WriteLineToDebugFile('BestBySlopeRough in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
+         {$If Defined(RecordDEMIXGraph) or Defined(PiesByLandType)} WriteLineToDebugFile('PiesBestByTwoLandTypes in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
          GetDEMIXpaths(True);
          GISdb[DBonTable].EmpSource.Enabled := false;
          Graphs := tStringList.Create;
@@ -1766,7 +1804,7 @@ begin  {procedure  PiesBestByTwoLandTypes}
          FName := NextFileNumber(MDtempDir,'BestBySlopeRough','.png');
          MakeBigBitmap(Graphs,'',fName,MDDef.NumGraphCols,LegendFName);
       finally
-         EndDEMIXProcessing(dbOnTable);
+         EndDEMIXProcessing;
       end;
    end
    else begin

@@ -82,7 +82,7 @@
                   else begin
                      if (How = lasAssignGeo) then begin
                         lf := tLAS_data.Create(FName);
-                        if (lf.lasProjDef.lasProj.ModelType = LasLatLong) then begin
+                        if (lf.lasProj.ModelType = LasLatLong) then begin
                            MDDef.DefaultUTMZone := GetUTMZone(0.5 * (lf.LAS_LatLong_Box.xmax - lf.LAS_LatLong_Box.xmin));
                         end;
                         if (lf.LAS_LatLong_Box.ymax > 0) then MDDef.DefaultLatHemi := 'N' else MDDef.DefaultLatHemi := 'S';

@@ -23,30 +23,32 @@ object RGB_form: TRGB_form
     Height = 130
     Align = alBottom
     TabOrder = 0
+    ExplicitLeft = -1
+    ExplicitTop = 116
     object Label11: TLabel
-      Left = 277
-      Top = 69
+      Left = 273
+      Top = 52
       Width = 20
       Height = 13
       Caption = 'Max'
     end
     object Label10: TLabel
-      Left = 175
-      Top = 69
+      Left = 171
+      Top = 52
       Width = 16
       Height = 13
       Caption = 'Min'
     end
     object Edit8: TEdit
-      Left = 303
-      Top = 69
+      Left = 299
+      Top = 52
       Width = 65
       Height = 21
       TabOrder = 0
     end
     object Edit7: TEdit
-      Left = 197
-      Top = 69
+      Left = 193
+      Top = 52
       Width = 65
       Height = 21
       TabOrder = 1
@@ -84,7 +86,7 @@ object RGB_form: TRGB_form
     end
     object BitBtn1: TBitBtn
       Left = 8
-      Top = 99
+      Top = 91
       Width = 75
       Height = 25
       Caption = 'Plot'
@@ -93,7 +95,7 @@ object RGB_form: TRGB_form
     end
     object BitBtn2: TBitBtn
       Left = 89
-      Top = 96
+      Top = 91
       Width = 118
       Height = 25
       Caption = 'Color range'
@@ -129,15 +131,6 @@ object RGB_form: TRGB_form
       TabOrder = 7
       OnClick = HelpBtnClick
       IsControl = True
-    end
-    object CheckBox1: TCheckBox
-      Left = 327
-      Top = 24
-      Width = 115
-      Height = 17
-      Caption = 'Grayscale channels'
-      TabOrder = 8
-      OnClick = CheckBox1Click
     end
   end
   object Panel2: TPanel

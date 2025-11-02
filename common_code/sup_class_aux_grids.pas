@@ -366,7 +366,7 @@ begin
    StringGrid1.ColWidths[1] := 180;
 
    Use1.Visible := ClassDEMs[1] <> 0;
-   Use2.Visible := ClassDEMs[2] <> 0;;
+   Use2.Visible := ClassDEMs[2] <> 0;
    Use3.Visible := ClassDEMs[3] <> 0;
    Use4.Visible := ClassDEMs[4] <> 0;
    Use5.Visible := ClassDEMs[5] <> 0;
@@ -377,7 +377,7 @@ begin
    Use10.Visible := ClassDEMs[10] <> 0;
 
    Lock1.Visible := ClassDEMs[1] <> 0;
-   Lock2.Visible := ClassDEMs[2] <> 0;;
+   Lock2.Visible := ClassDEMs[2] <> 0;
    Lock3.Visible := ClassDEMs[3] <> 0;
    Lock4.Visible := ClassDEMs[4] <> 0;
    Lock5.Visible := ClassDEMs[5] <> 0;
@@ -388,7 +388,7 @@ begin
    Lock10.Visible := ClassDEMs[10] <> 0;
 
    Req1.Visible := ClassDEMs[1] <> 0;
-   Req2.Visible := ClassDEMs[2] <> 0;;
+   Req2.Visible := ClassDEMs[2] <> 0;
    Req3.Visible := ClassDEMs[3] <> 0;
    Req4.Visible := ClassDEMs[4] <> 0;
    Req5.Visible := ClassDEMs[5] <> 0;

@@ -351,18 +351,17 @@ var
    procedure InventoryAllDEMIXdata;
    procedure PruneMisnamedReferenceDTMs;
    procedure InventoryAreasAndTilesByCountry(DB : integer);
-   {$IfDef DEMIX_SAGA_channels} procedure InventoryChannelDataByArea; {$EndIf}
+
    {$IfDef IncludeCoastalDEMs} procedure CheckLowElevationAreas; {$EndIf}
 
 
-
-    {$IfDef IncludeVectorCriteria}
+   {$IfDef IncludeVectorCriteria}
     //vector (channel network, ridges, valleys) comparisons
        procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
        procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
        procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
        procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
-    {$EndIf}
+   {$EndIf}
 
    {$IfDef DEMIX_SAGA_channels}
       procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
@@ -370,6 +369,7 @@ var
       procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
       procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
       procedure MultistepChannelNetworks(Overwrite : boolean);
+      procedure InventoryChannelDataByArea;
    {$EndIf}
 
 procedure OneDegreeTilesToCoverTestAreas;
@@ -380,7 +380,7 @@ function AreDEMIXscoresInDB(db : integer) : boolean;
 procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
 procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
 
-procedure CreateCopHeadToHeaddb(db : integer);
+//procedure CreateCopHeadToHeaddb(db : integer);
 procedure CriteriaInSSIM_FUV_db(db : integer);
 
 function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
@@ -401,6 +401,7 @@ function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstrin
 function ID_DEMIX_DB_type(db : integer) : byte;
 procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; BinSize : integer = 0);
 procedure ImportLandParamFilters(fName : PathStr; var GeomorphFilters,Labels : tStringList);
+procedure ImportLandParamFiltersLong(fName : PathStr; var GeomorphFilters,Labels,Lowers,Uppers : tStringList);
 
 function ContinueExperimentalDEMIX : boolean;
 function NoSuffixCriterion(Criterion : shortstring) : shortstring;
@@ -494,6 +495,28 @@ begin
 end;
 
 
+procedure ImportLandParamFiltersLong(fName : PathStr; var GeomorphFilters,Labels,Lowers,Uppers : tStringList);
+//includes upper and lower cut points when they will be used
+var
+   Table : tMyData;
+begin
+   GeomorphFilters := tStringList.Create;
+   Labels := tStringList.Create;
+   Lowers := tStringList.Create;
+   Uppers := tStringList.Create;
+   Table := tMyData.Create(fName);
+   while not Table.Eof do begin
+      GeomorphFilters.Add(Table.GetFieldByNameAsString('FILTER'));
+      Labels.Add(Table.GetFieldByNameAsString('LABEL'));
+      Lowers.Add(Table.GetFieldByNameAsString('LOWER'));
+      Uppers.Add(Table.GetFieldByNameAsString('UPPER'));
+      Table.Next;
+   end;
+   Table.Destroy;
+end;
+
+
+
 procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; BinSize : integer = 0);
 var
    i,LowBin,HighBinBase,Value : integer;
@@ -534,10 +557,7 @@ begin
      GeomorphFilters.Add(LandParam + '>' + IntToStr(Value));
      Labels.Add(LandParam + '>' + IntToStr(Value) + '%');
   end;
-  {$IfDef RecordDEMIXFilters}
-     WriteLineToDebugFile('Labels'); WriteStringListToDebugFile(Labels);
-     WriteLineToDebugFile('GeomorphFilters'); WriteStringListToDebugFile(GeomorphFilters);
-  {$EndIf}
+  {$IfDef RecordDEMIXFilters} WriteLineToDebugFile('Labels'); WriteStringListToDebugFile(Labels); WriteLineToDebugFile('GeomorphFilters'); WriteStringListToDebugFile(GeomorphFilters);  {$EndIf}
 end;
 
 
@@ -580,13 +600,13 @@ var
    aFilter : shortstring;
    theFields : tStringList;
 
-   procedure CheckFieldForFilter(fName : shortstring);
-   begin
-      if GISdb[DBonTable].MyData.FieldExists(fName) then begin
-         if (length(aFilter) > 0) then aFilter := aFilter + ' OR ';
-         aFilter := aFilter + fname + anOperator + IntToStr(Value);
-      end;
-   end;
+       procedure CheckFieldForFilter(fName : shortstring);
+       begin
+          if GISdb[DBonTable].MyData.FieldExists(fName) then begin
+             if (length(aFilter) > 0) then aFilter := aFilter + ' OR ';
+             aFilter := aFilter + fname + anOperator + IntToStr(Value);
+          end;
+       end;
 
 begin
    aFilter := '';
@@ -610,77 +630,6 @@ end;
 function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
 begin
    Result := StrUtils.AnsiContainsText(Criterion,'_MEAN') or StrUtils.AnsiContainsText(Criterion,'_MED');
-end;
-
-
-
-procedure CreateCopHeadToHeaddb(db : integer);
-const
-   Outcomes : array[1..9] of shortstring = ('COP beats ALOS','COP ties ALOS','COP loses to ALOS',
-                                       'COP beats FABDEM','COP ties FABDEM','COP loses to FABDEM',
-                                       'COP beats TANDEM-X','COP ties TANDEM-X','COP loses to TANDEM-X');
-const
-   TheDEMs : array[1..9] of shortstring = ('ALOS','FABDEM','TANDEM','COAST','DILUV','DELTA','SRTM','NASA','ASTER');
-var
-   Counts : array[1..9,0..25] of integer;
-   Criteria,Results : tStringList;
-   aline,Criterion : shortstring;
-   i,j,theIndex : integer;
-   fName : PathStr;
-
-         procedure BoxScore(offset,TheIndex : integer; aField : shortstring);
-         var
-            Win : shortstring;
-         begin
-            Win := GISdb[DB].MyData.GetFieldByNameAsString(aField);
-            if Win = 'COP' then begin
-               inc(Counts[1 + Offset,Criteria.Count]);
-               inc(Counts[1 + Offset,theIndex]);
-            end
-            else if Win = 'TIE' then begin
-               inc(Counts[2 + Offset,Criteria.Count]);
-               inc(Counts[2 + Offset,theIndex]);
-            end
-            else begin
-               inc(Counts[3 + Offset,Criteria.Count]);
-               inc(Counts[3 + Offset,theIndex]);
-            end;
-         end;
-
-
-begin
-   if (not GISdb[DB].MyData.FieldExists('TOLERANCE')) then begin
-      if AnswerIsYes('Rank DEMs to get TOLERANCEs') then RankDEMS(DB,nil)
-      else exit;
-   end;
-   GISdb[DB].EmpSource.Enabled := false;
-   Criteria := GISdb[DB].MyData.ListUniqueEntriesInDB('CRITERION');
-   Results := tStringList.Create;
-   aLine := 'OUTCOME';
-   for i := 0 to pred(Criteria.Count) do aline := aline + ',' + Criteria.Strings[i];
-   Results.Add(aline + ',ALL');
-   for i := 1 to 9 do
-      for j := 0 to 25 do Counts[i,j] := 0;
-   GISdb[DB].EmpSource.Enabled := false;
-   GISdb[DB].MyData.First;
-   while not GISdb[DB].MyData.eof do begin
-      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
-      theIndex := Criteria.IndexOf(Criterion);
-      BoxScore(0,TheIndex,'COP_ALOS');
-      BoxScore(3,TheIndex,'COP_FABDEM');
-      BoxScore(6,TheIndex,'COP_TANDEM');
-      GISdb[DB].MyData.Next;
-   end;
-   for I := 1 to 9 do begin
-      aLine := Outcomes[i];
-      for j := 0 to Criteria.Count do begin
-         aline := aline + ',' + IntToStr(Counts[i,j])
-      end;
-      Results.Add(aline);
-   end;
-   fName := NextFileNumber(MDTempDir,'cop_boxscore_','.dbf');
-   PetdbUtils.StringList2CSVtoDB(Results,fName);
-   GISdb[DB].EmpSource.Enabled := true;
 end;
 
 

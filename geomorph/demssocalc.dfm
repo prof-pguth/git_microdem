@@ -223,7 +223,7 @@ inherited SSOCalcDlg: TSSOCalcDlg
         end
         object BitBtn1: TBitBtn
           Left = 6
-          Top = 270
+          Top = 272
           Width = 89
           Height = 25
           Caption = 'Fabric'

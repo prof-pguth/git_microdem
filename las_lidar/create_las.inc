@@ -196,10 +196,10 @@ begin
 end;
 
 
-procedure tCreateLasFile.CreateNewLASfile(fName : PathStr; NewLasProjectionDefinition : tlasProjectionDefinition; CopyLASHeader : tLASHeader);
+procedure tCreateLasFile.CreateNewLASfile(fName : PathStr; NewLasProjectionDefinition : tMapProjection; CopyLASHeader : tLASHeader);
 begin
     CreateNewLASfile(fName,NewlasProjectionDefinition,ord(CopyLASHeader.PointDataFormat));
-    if NewLasProjectionDefinition.LasProj.ThisIsUTMfile then begin
+    if NewLasProjectionDefinition.ThisIsUTMfile then begin
        NewLASHeader.Xoffset := CopyLasHeader.XOffset;
        NewLASHeader.Yoffset := CopyLasHeader.YOffset;
       {$IfDef RecordCreateLASfiles} WriteLineToDebugFile('tCreateLasFile.CreateNewLASfile with copy ' + AllFactorsString(NewLasHeader)); {$EndIf}
@@ -207,7 +207,7 @@ begin
 end;
 
 
-procedure tCreateLasFile.CreateNewLASfile(fName : PathStr; NewlasProjectionDefinition : tlasProjectionDefinition; PtType : byte);
+procedure tCreateLasFile.CreateNewLASfile(fName : PathStr; NewlasProjectionDefinition : tMapProjection; PtType : byte);
 
       procedure InitializeOutputBuffer;
       begin
@@ -257,13 +257,13 @@ begin
    else if (PtType = 8) then NewLasHeader.PointDataFormat := #8;
    NewLASHeader.PointDataRecLen := LidarPointTypeRecordBaseLength(PtType);
 
-   if (NewLasProjectionDefinition.LASProj.ModelType = LasLatLong) or NewlasProjectionDefinition.LasProj.ThisIsUTMFile then begin
+   if (NewLasProjectionDefinition.ModelType = LasLatLong) or NewlasProjectionDefinition.ThisIsUTMFile then begin
       NewLasHeader.NumVarLenRecs := 1;
       NewLASHeader.ZscaleFac := 0.01;
       NewLASHeader.Xoffset := 0;
       NewLASHeader.Yoffset := 0;
       NewLASHeader.Zoffset := 0;
-      if (NewLasProjectionDefinition.LASProj.ModelType = LasLatLong) then begin
+      if (NewLasProjectionDefinition.ModelType = LasLatLong) then begin
          NewLASHeader.XscaleFac := 0.000001;
          NewLASHeader.YscaleFac := 0.000001;
          NumKeys := 5;
@@ -271,16 +271,16 @@ begin
          FillGeoKey(2, 2048,0,1,4269);     //set NAD83
          FillGeoKey(3, 2054,0,1,9102);     //GeogAngularUnitsGeoKey
          FillGeoKey(4, 4096,0,1,5103);     //VerticalCSTypeGeoKey, NAVD88
-         FillGeoKey(5, 4099,0,1,9001) ;    //NewLasProjectionDefinition.LasProjection.VerticalUnitsGeoKey);     //VerticalUnitsGeoKey: Linear_Meter
+         FillGeoKey(5, 4099,0,1,9001) ;    //NewLasProjectionDefinitionection.VerticalUnitsGeoKey);     //VerticalUnitsGeoKey: Linear_Meter
       end
-      else if NewLasProjectionDefinition.LasProj.ThisIsUTMfile then begin
+      else if NewLASprojectionDefinition.ThisIsUTMfile then begin
          NewLASHeader.XscaleFac := 0.01;
          NewLASHeader.YscaleFac := 0.01;
          NumKeys := 4;
          FillGeoKey(1, 1024,0,1,1);        //set projection type as projected
-         FillGeoKey(2, 3072,0,1,NewLasProjectionDefinition.LasProj.ProjectedCSTypeGeoKey);
-         FillGeoKey(3, 3076,0,1,NewLasProjectionDefinition.LasProj.ProjLinearUnitsGeoKey);
-         FillGeoKey(4, 4099,0,1,NewLasProjectionDefinition.LasProj.VerticalUnitsGeoKey);
+         FillGeoKey(2, 3072,0,1,NewLasProjectionDefinition.ProjectedCSTypeGeoKey3072);
+         FillGeoKey(3, 3076,0,1,NewLasProjectionDefinition.ProjLinearUnitsGeoKey);
+         FillGeoKey(4, 4099,0,1,NewLasProjectionDefinition.VerticalUnitsGeoKey);
       end;
       VarSize := succ(NumKeys) * 8;
 
@@ -307,7 +307,7 @@ begin
    {$IfDef RecordLASheader}
       WriteLineToDebugFile('write new LAS header ' + NewLasFileName);
       //WriteLineToDebugFile('  header size= ' + IntToStr(SizeOf(NewLasHeader))  + '  ProjLinearUnitsGeoKey=' + IntToStr(NewLasProjectionDefinition.ProjLinearUnitsGeoKey));
-      if NewLasProjectionDefinition.LasProjection.ThisIsUTMfile then WriteLineToDebugFile('UTM file');
+      if NewLasProjectionDefinition.ThisIsUTMfile then WriteLineToDebugFile('UTM file');
       //if NewLasProjectionDefinition.LASLatLong then WriteLineToDebugFile('Lat/Long file');
    {$EndIf}
    {$IfDef RecordCreateLASfiles} WriteLineToDebugFile('tCreateLasFile.CreateNewLASfile ' + AllFactorsString(NewLasHeader)); {$EndIf}

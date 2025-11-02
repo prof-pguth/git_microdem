@@ -10,7 +10,6 @@ unit demix_neo_test_area;
 {$I nevadia_defines.inc}
 
 
-
 //{$Define DoOnlyThreeLandTypes}  //faster operation when tracking down errors
 
 
@@ -18,7 +17,6 @@ unit demix_neo_test_area;
    //{$Define RecordDEMIXneo}
    //{$Define RecordLoadDEMIX}
 {$EndIf}
-
 
 
 interface
@@ -110,10 +108,7 @@ var
             SlopeList[aSlope] := true;
          end;
       end;
-      {$IfDef RecordLoadDEMIX}
-         WriteDEMListToDebug('Elevation DEMs',DEMlist);
-         WriteDEMListToDebug('Slope grids',SlopeList);
-      {$EndIf}
+      {$IfDef RecordLoadDEMIX} WriteDEMListToDebug('Elevation DEMs',DEMlist); WriteDEMListToDebug('Slope grids',SlopeList); {$EndIf}
       ESA_LC10 := LoadLC10LandCover('',DEMGlb[1].DEMBoundBoxGeo,OpenMaps);
       {$IfDef RecordDEMIXneo} WriteLineToDebugFile('Loadeds DEMs and created slope maps, n=' + IntToStr(n)); {$EndIf}
    end;

@@ -172,7 +172,7 @@ end;
 
 procedure TpicklimitsForm.BitBtn6Click(Sender: TObject);
 var
-   Lat,Long,Bottom,Right : float64;
+   Lat,Long{,Bottom,Right} : float64;
 begin
    CheckEditString(Edit2.Text,GridLimits.YGridLow);
    CheckEditString(Edit4.Text,GridLimits.XGridHigh);

@@ -2048,6 +2048,7 @@ var
          AParameter('PointCloud','FirstReturnsOnly',ls.FirstReturnsOnly,false);
          AParameter('PointCloud','LastReturnsOnly',ls.LastReturnsOnly,false);
          AParameter('PointCloud','AssumeLAS14classes',ls.AssumeLAS14classes,true);
+         AParameter('PointCloud','LASautoThin',LASautothin,false);
          AParameter('PointCloud','DTMoption',DTMoption,2);
          AParameter('PointCloud','DefLidarElevMap',DefLidarElevMap,mtGrayReflect);
 
@@ -2783,7 +2784,7 @@ var
          AParameter('Misc','StayAwake',StayAwake,true);
          AParameter('Misc','ReverseZFields',ReverseZFields,false);
 
-         AParameter('Misc','GrayscaleChannels',GrayscaleChannels,false);
+         //AParameter('Misc','GrayscaleChannels',GrayscaleChannels,false);
          AParameter('Misc','MinRGBColor',MinRGBColor,50);
          AParameter('Misc','MaxRGBColor',MaxRGBColor,200);
          AParameter('Misc','RangeRGBColor',RangeRGBColor,150);
@@ -3733,6 +3734,8 @@ begin
       AParameter('Graph','DefMarginLegend',DefMarginLegend,0);
       AParameter('Graph','NumGraphCols',NumGraphCols,3);
       AParameter('Graph','ShowPieN',ShowPieN,true);
+      AParameter('Graph','GraphTickSize',GraphTickSize,15);
+
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);
@@ -3784,6 +3787,7 @@ begin
       AParameter('Horizon','SolarPathMap',SolarPathMap,true);
       AParameter('Horizon','SolarPathVectors',SolarPathVectors,true);
       AParameter('Horizon','ShowSolstices',ShowSolstices,true);
+      AParameter('Horizon','ShowToday',ShowToday,false);
 
       {$IfDef ExKML}
       {$Else}

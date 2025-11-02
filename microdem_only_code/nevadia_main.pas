@@ -29,12 +29,12 @@
           //{$Define RecordRefDTM}
           //{$Define RecordDEMIXMakeRef}
           //{$Define RecordDEMIXMakeRefFull}
-          //{$Define RecordDEMIXDatumShift}
-          //{$Define RecordDEMIXDatumShiftFull}
+          {$Define RecordDEMIXDatumShift}
+          {$Define RecordDEMIXDatumShiftFull}
           //{$Define RecordFUVcreateFull}
           {$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
-     {$Define TrackVerticalDatum
+     //{$Define TrackVerticalDatum
       //{$Define RecordDragonPlot}
       //{$Define RecordDEMIXLoops}
       //{$Define RecordDEMIXGridCompare}
@@ -471,16 +471,15 @@ type
     Bringslicecontroltofront1: TMenuItem;
     Bringpointcloudcontroltofront1: TMenuItem;
     Viewlastexectiondebuglog1: TMenuItem;
-    COPALOScomparetoreference1: TMenuItem;
+    //COPALOScomparetoreference1: TMenuItem;
     Pixelbypixelmapstatistics1: TMenuItem;
-    COPALOShighlowgeomorphometry1: TMenuItem;
+    //COPALOShighlowgeomorphometry1: TMenuItem;
     Metadata2: TMenuItem;
     N37: TMenuItem;
-    N38: TMenuItem;
-    Pickdatadirectory1: TMenuItem;
-    N3OpenDEMs1: TMenuItem;
+    //Pickdatadirectory1: TMenuItem;
+    //N3OpenDEMs1: TMenuItem;
     OpenandmergeDEMsgridsverylarge1: TMenuItem;
-    Creatediffrencemaps1: TMenuItem;
+    //Creatediffrencemaps1: TMenuItem;
     Mergesourcedatatiles1: TMenuItem;
     ProcessVDATUMshifts1: TMenuItem;
     Processdifferencestatisticspertile1: TMenuItem;
@@ -491,7 +490,7 @@ type
     DEMIXdbCreatePopupMenu: TPopupMenu;
     //Fullprocessingchain1: TMenuItem;
     Perpendicularshortprofilesthroughpoint1: TMenuItem;
-    N41: TMenuItem;
+    //N41: TMenuItem;
     SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
     GDALshiftFor3DEP1: TMenuItem;
     //OpenandmergeDEMswithfullDEMIXcoverage1: TMenuItem;
@@ -528,7 +527,7 @@ type
     Channelnetworkmisspercentagesbytile1: TMenuItem;
     SSIM2: TMenuItem;
     MergemultipleTXTCSVintoDB1: TMenuItem;
-    Overwrite4: TMenuItem;
+    //Overwrite4: TMenuItem;
     //CreatetestareaDEMSskipifexists1: TMenuItem;
     CreatetestareaDEMs1: TMenuItem;
     Overwriteifexits1: TMenuItem;
@@ -578,7 +577,7 @@ type
     N42: TMenuItem;
     N47: TMenuItem;
     DeltaDTMfortestareas1: TMenuItem;
-    Overwrite1: TMenuItem;
+    //Overwrite1: TMenuItem;
     Skipifexists3: TMenuItem;
     CreatefinalDB1: TMenuItem;
     N3DEPfileswithtag421121: TMenuItem;
@@ -592,26 +591,26 @@ type
     Mergechannelnetworkevaluations1: TMenuItem;
     Changemode1: TMenuItem;
     DEMIXtilesperareaandcoastalsubset1: TMenuItem;
-    Overwirte4: TMenuItem;
+    //Overwirte4: TMenuItem;
     Skiipifpresent1: TMenuItem;
     InventoryallDEMIXdatafiles1: TMenuItem;
     Combineallcombinedimages1: TMenuItem;
     CoastalDEMfortestareas1: TMenuItem;
     OverwriteallthreecoastalDTMS1: TMenuItem;
     N55: TMenuItem;
-    Overwrite2: TMenuItem;
+   // Overwrite2: TMenuItem;
     Skipifpresent1: TMenuItem;
     Mergegeomorphonevaluatioins1: TMenuItem;
-    Overwrite3: TMenuItem;
+    //Overwrite3: TMenuItem;
     Skipifdone1: TMenuItem;
     DeletereferenceDTMswithoutDTMinfilename1: TMenuItem;
     MovereferenceDSMs1: TMenuItem;
     DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem;
     Ridgesandvalleys1: TMenuItem;
-    Overwrite5: TMenuItem;
-    Overwrite6: TMenuItem;
+    //Overwrite5: TMenuItem;
+    //Overwrite6: TMenuItem;
     Mergeridgesandvalleys1: TMenuItem;
-    Overwrite7: TMenuItem;
+   //Overwrite7: TMenuItem;
     Skipifpresent2: TMenuItem;
     N56: TMenuItem;
     //Compareconvergenceindexfortestarea1: TMenuItem;
@@ -689,6 +688,8 @@ type
     Inventorysourcefiles1: TMenuItem;
     Compare10mand100mlandcover1: TMenuItem;
     Averagetileslopemapgeneration1: TMenuItem;
+    Percentlandcovercategories1: TMenuItem;
+    ilecharacterization1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -983,21 +984,21 @@ type
     procedure Bringslicecontroltofront1Click(Sender: TObject);
     procedure Bringpointcloudcontroltofront1Click(Sender: TObject);
     procedure Viewlastexectiondebuglog1Click(Sender: TObject);
-    procedure COPALOScomparetoreference1Click(Sender: TObject);
+    //procedure COPALOScomparetoreference1Click(Sender: TObject);
     procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
-    procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
+    //procedure COPALOShighlowgeomorphometry1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
-    procedure Pickdatadirectory1Click(Sender: TObject);
-    procedure N3OpenDEMs1Click(Sender: TObject);
+    //procedure Pickdatadirectory1Click(Sender: TObject);
+    //procedure N3OpenDEMs1Click(Sender: TObject);
     procedure OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
-    procedure Creatediffrencemaps1Click(Sender: TObject);
+    //procedure Creatediffrencemaps1Click(Sender: TObject);
     procedure Mergesourcedatatiles1Click(Sender: TObject);
     procedure ProcessVDATUMshifts1Click(Sender: TObject);
     //procedure VDATUMshiftinUSA1Click(Sender: TObject);
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
-    procedure N41Click(Sender: TObject);
+   // procedure N41Click(Sender: TObject);
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
     //procedure OpenandmergeDEMswithfullDEMIXcoverage1Click(Sender: TObject);
     procedure Subsetlarge3DEPareas1Click(Sender: TObject);
@@ -1026,7 +1027,7 @@ type
     procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
-    procedure Overwrite4Click(Sender: TObject);
+    //procedure Overwrite4Click(Sender: TObject);
     //procedure CreatetestareaDEMSskipifexists1Click(Sender: TObject);
     procedure Overwriteifexits1Click(Sender: TObject);
     procedure Overwirteifexists1Click(Sender: TObject);
@@ -1055,7 +1056,7 @@ type
     procedure InventorySSIMFUVCSVfiles1Click(Sender: TObject);
     procedure N42Click(Sender: TObject);
     procedure DeltaDTMfortestareas1Click(Sender: TObject);
-    procedure Overwrite1Click(Sender: TObject);
+    //procedure Overwrite1Click(Sender: TObject);
     procedure CreatefinalDB1Click(Sender: TObject);
     procedure N3DEPfileswithtag421121Click(Sender: TObject);
     procedure Fixtileswith42114foottag1Click(Sender: TObject);
@@ -1067,22 +1068,22 @@ type
     procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
     procedure Changemode1Click(Sender: TObject);
     procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
-    procedure Overwirte4Click(Sender: TObject);
+    //procedure Overwirte4Click(Sender: TObject);
     procedure InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
     procedure InventoryallDEMIXdatafiles1Click(Sender: TObject);
     procedure Combineallcombinedimages1Click(Sender: TObject);
     procedure CoastalDEMfortestareas1Click(Sender: TObject);
     procedure SSIMR21Click(Sender: TObject);
-    procedure Overwrite2Click(Sender: TObject);
+    //procedure Overwrite2Click(Sender: TObject);
     procedure Skipifpresent1Click(Sender: TObject);
     procedure Mergegeomorphonevaluatioins1Click(Sender: TObject);
-    procedure Overwrite3Click(Sender: TObject);
+    ///procedure Overwrite3Click(Sender: TObject);
     procedure DeletereferenceDTMswithoutDTMinfilename1Click(Sender: TObject);
     procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(Sender: TObject);
-    procedure Overwrite5Click(Sender: TObject);
-    procedure Overwrite6Click(Sender: TObject);
+    //procedure Overwrite5Click(Sender: TObject);
+    //procedure Overwrite6Click(Sender: TObject);
     procedure Mergeridgesandvalleys1Click(Sender: TObject);
-    procedure Overwrite7Click(Sender: TObject);
+    //procedure Overwrite7Click(Sender: TObject);
     procedure Skipifpresent2Click(Sender: TObject);
     //procedure Compareconvergenceindexfortestarea1Click(Sender: TObject);
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
@@ -1141,6 +1142,8 @@ type
     procedure Inventorysourcefiles1Click(Sender: TObject);
     procedure Compare10mand100mlandcover1Click(Sender: TObject);
     procedure Averagetileslopemapgeneration1Click(Sender: TObject);
+    procedure Percentlandcovercategories1Click(Sender: TObject);
+    procedure ilecharacterization1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1383,6 +1386,7 @@ uses
       ssim_fuv_control,
       demix_neo_test_area,
       DEMIX_filter,
+      DEMIX_graphs,
    {$EndIf}
 
    Las_files_grouping,
@@ -2005,11 +2009,11 @@ begin
 
    {$IfDef CopALOSCompare}
    {$Else}
-      N3OpenDEMs1.Visible := false;
-      COPALOScomparetoreference1.Visible := false;
-      COPALOShighlowgeomorphometry1.Visible := false;
-      Creatediffrencemaps1.Visible := false;
-      Pickdatadirectory1.Visible := false;
+      //N3OpenDEMs1.Visible := false;
+      //COPALOScomparetoreference1.Visible := false;
+      //COPALOShighlowgeomorphometry1.Visible := false;
+      //Creatediffrencemaps1.Visible := false;
+      //Pickdatadirectory1.Visible := false;
       Pixelbypixelmapstatistics1.Visible := false;
    {$EndIf}
 
@@ -2088,7 +2092,7 @@ begin
    OverwriteIfExits1.Enabled := MDDef.DEMIX_overwrite_enabled;
    //OverwriteIfExists2.Enabled := MDDef.DEMIX_overwrite_enabled;
    OverwriteIfExits3.Enabled := MDDef.DEMIX_overwrite_enabled;
-   Overwrite4.Enabled := MDDef.DEMIX_overwrite_enabled;
+   //Overwrite4.Enabled := MDDef.DEMIX_overwrite_enabled;
    //OverwriteIfExits2.Enabled := MDDef.DEMIX_overwrite_enabled;
    CoastalDEMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
    //DiluviumDEMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
@@ -2754,19 +2758,6 @@ begin
    FindFilesWith42112;
 end;
 
-procedure Twmdem.N3OpenDEMs1Click(Sender: TObject);
-begin
-   {$IfDef CopALOSCompare}
-      OpenHalfSecCopALOS(false);
-   {$EndIf}
-end;
-
-procedure Twmdem.N41Click(Sender: TObject);
-begin
-   {$IfDef Old3DEP}
-      SummarizeVDatumShifts;
-   {$EndIf}
-end;
 
 procedure Twmdem.N42Click(Sender: TObject);
 begin
@@ -2829,10 +2820,6 @@ var
 begin
    BasePath := 'J:\aaa_neo_eval\silver_peak_range\curvature\';
    for i := 1 to 4 do Paths[i] := BasePath + DEMs[i] + '_d3\';
-
-   //Path1 := BasePath := 'J:\aaa_neo_eval\silver_peak_range\curvature\COP_d3\';
-   //Path2 := 'J:\aaa_neo_eval\silver_peak_range\curvature\ref_dtm_d3\';
-
    Findings := tStringList.Create;
    aLine := 'CURVATURE';
    for j := 2 to 4 do aline := aline + ',' + 'FUV_' + Uppercase(DEMs[j]);
@@ -2860,48 +2847,6 @@ begin
    StringList2CSVtoDB(Findings,RefName);
 end;
 
-procedure Twmdem.Overwrite1Click(Sender: TObject);
-begin
-   //CreateDEMIX_diff_dist_DB_by_transposing(True);
-end;
-
-procedure Twmdem.Overwrite2Click(Sender: TObject);
-begin
-    {$IfDef IncludeVectorCriteria}
-       ClassificationAgreement(true);
-    {$EndIf}
-end;
-
-procedure Twmdem.Overwrite3Click(Sender: TObject);
-begin
-   //AllHallucinatingDTMsforCoastalAreas(true);
-end;
-
-procedure Twmdem.Overwrite4Click(Sender: TObject);
-begin
-   //CreateDEMIXTestAreaDEMs(True);
-end;
-
-procedure Twmdem.Overwrite5Click(Sender: TObject);
-begin
-   {$IfDef IncludeVectorCriteria}
-      DEMIX_CreateGridsFromVectors(true);
-   {$EndIf}
-end;
-
-procedure Twmdem.Overwrite6Click(Sender: TObject);
-begin
-   {$IfDef IncludeVectorCriteria}
-      DEMIX_CreateGridsFromVectors(false);
-   {$EndIf}
-end;
-
-procedure Twmdem.Overwrite7Click(Sender: TObject);
-begin
-   {$IfDef IncludeVectorCriteria}
-      ChannelNetworkMissPercentages(True);
-   {$EndIf}
-end;
 
 procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
 begin
@@ -3460,23 +3405,6 @@ begin
 end;
 
 
-procedure Twmdem.COPALOScomparetoreference1Click(Sender: TObject);
-begin
-   {$IfDef CopALOSCompare}
-      CopAlosCompareReference;
-   {$EndIf}
-
-end;
-
-
-procedure Twmdem.COPALOShighlowgeomorphometry1Click(Sender: TObject);
-begin
-   {$IfDef CopALOSCompare}
-      HighLowCopAlosGeomorphometry;
-   {$EndIf}
-end;
-
-
 procedure Twmdem.CopyDBFstoXML1Click(Sender: TObject);
 var
    inDir,fName: PathStr;
@@ -3528,17 +3456,11 @@ MessageToContinue('Check carefully; last time this did not work');
    for k := 0 to pred(ManyMerges.Count) do begin
        MergedDir := ManyMerges.Strings[k];
        AreaName := LastSubDir(MergedDir);
-
        Merges := GetSubDirsInDirectory(MergedDir);
        for I := 0 to pred(Merges.Count) do begin
-          //ThisDir := MergedDir + Merges.Strings[i] + '\';     // "G:\demix_utm_tiles\aa_hrd_merges\mx_mexico\mx_h11b11"
-          //Tiles := GetSubDirsInDirectory(ThisDir);
-          //for j := 0 to pred(Tiles.Count) do begin
-            TileDir := MergedDir + Merges.Strings[i] + '\' +  Merges.Strings[i] +  '_ref_test_dem';
-
+           TileDir := MergedDir + Merges.Strings[i] + '\' +  Merges.Strings[i] +  '_ref_test_dem';
            System.IOUtils.TDirectory.Move(TileDir,MergedDir);
            System.IOUtils.TDirectory.Delete(Dest + AreaName);
-          //end;
        end;
    end;
    ManyMerges.Destroy;
@@ -3618,14 +3540,6 @@ end;
 procedure Twmdem.CreateDEMsfromlidar1Click(Sender: TObject);
 begin
    CreateDEMsfromLidar;
-end;
-
-
-procedure Twmdem.Creatediffrencemaps1Click(Sender: TObject);
-begin
-   {$IfDef CopALOSCompare}
-      CreateDifferenceMaps;
-   {$EndIf}
 end;
 
 
@@ -3847,10 +3761,6 @@ begin
    ComputeDEMIX_Diff_Dist_tile_stats(false);
 end;
 
-procedure Twmdem.Overwirte4Click(Sender: TObject);
-begin
-   //DEMIX_MergeReferenceDEMs(true);
-end;
 
 procedure Twmdem.Overwirteifexists1Click(Sender: TObject);
 begin
@@ -4160,12 +4070,6 @@ begin
    GeographyPopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-procedure Twmdem.Pickdatadirectory1Click(Sender: TObject);
-begin
-   {$IfDef CopALOSCompare}
-      OpenHalfSecCopALOS(True);
-   {$EndIf}
-end;
 
 procedure Twmdem.PicktestDEMs1Click(Sender: TObject);
 begin
@@ -4178,6 +4082,11 @@ begin
    {$IfDef CopALOSCompare}
       PixelByPixelCopAlos;
    {$EndIf}
+end;
+
+procedure Twmdem.Percentlandcovercategories1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udLandcoverCats);
 end;
 
 procedure Twmdem.Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
@@ -4908,6 +4817,11 @@ begin
 end;
 
 
+
+procedure Twmdem.ilecharacterization1Click(Sender: TObject);
+begin
+   TileCharacterization;
+end;
 
 procedure Twmdem.Micronetquiz1Click(Sender: TObject);
 begin

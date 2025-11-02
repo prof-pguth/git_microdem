@@ -17,7 +17,6 @@ unit las_files_grouping;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordLASMemoryAlocations}
       //{$Define RecordLASfiles}
       //{$Define RecordLASplot}
       //{$Define RecordLASexport}
@@ -28,11 +27,6 @@ unit las_files_grouping;
       //{$Define RecordMergeLASfilesDetailed}
       //{$Define RecordMergeLASfiles}
       //{$Define TimeMergeLAS}
-      //{$Define RecordCreateLASfiles}
-      //{$Define RecordCreateEveryFile}
-      //{$Define RecordLASheader}
-      //{$Define RecordLASheaderKeys}
-      //{$Define RecordLASprojection}
       //{$Define RecordLASColors}
       //{$Define RemoveTiles}
       //{$Define RecordLASHist}
@@ -383,7 +377,7 @@ begin
                     if (MergeLas = mlRGBFilter) then begin
                        AddPt := not lf.ColorFilterOut(j);
                     end
-                    else if (MergeLas = mlThin) or (MergeLas = mlTranslate) or (MergeLas = mlScaleUp) or lf.lasProjDef.RawXYZFile then begin
+                    else if (MergeLas = mlThin) or (MergeLas = mlTranslate) or (MergeLas = mlScaleUp) or lf.lasProj.RawXYZFile then begin
                        AddPt := true;
                     end
                     else if (MergeLas = mlInBox) then begin
@@ -996,20 +990,10 @@ var
                     i : integer;
                     TStr : shortstring;
                  begin
-                    (*
-                    if (LowElev < theLowElev) or (HighElev > theHighElev) then begin
-                       MessageToContinue('Time for elevation Problem');
-                    end;
-                    *)
-                    First := theLowElev;
+                 First := theLowElev;
                     While (Elevs[First] = 0) and (First < theHighElev) do inc(First);
                     Last := theHighElev;
                     While (Elevs[Last] = 0) and  (Last > theLowElev) do dec(Last);
-                    (*
-                    if First >= Last then begin
-                       exit;
-                    end;
-                    *)
                     TStr := 'Elev range: ' + IntToStr(First) + ' to ' + IntToStr(Last);
                     Cats.Add(TStr);
                     {$IfDef RecordLASHistfull} WriteLineToDebugFile(ExtractFileNameNoExt(LasData.LasFileName) + '  ' + TStr); {$EndIf}
@@ -1337,7 +1321,7 @@ var
        Newname := OutPath + Title + CloudName + '.las';
        Creator := tCreateLasFile.Create;
        Creator.NewLasHeader := lf.LasHeader;
-       Creator.CreateNewLASfile(NewName,lf.lasProjDef,lf.lasheader);
+       Creator.CreateNewLASfile(NewName,lf.lasProj,lf.lasheader);
    end;
 
 
@@ -1418,7 +1402,7 @@ begin
 
        NewLas := tCreateLasFile.Create;
        NewLas.NewLasHeader := lf.LasHeader;
-       NewLAS.CreateNewLASfile(ExtractFilePath(fName) + Prefix + ExtractFileName(fName),lf.lasProjDef,lf.LidarPointType);
+       NewLAS.CreateNewLASfile(ExtractFilePath(fName) + Prefix + ExtractFileName(fName),lf.lasProj,lf.LidarPointType);
        Reads := lf.ReadsRequired;
 
        for i := 0 to Reads do begin
@@ -1467,7 +1451,7 @@ begin
        if (NewLAS = Nil) then begin
           NewLas := tCreateLasFile.Create;
           NewLas.NewLasHeader := lf.LasHeader;
-          NewLAS.CreateNewLASfile(NewName,lf.lasProjDef,lf.LidarPointType);
+          NewLAS.CreateNewLASfile(NewName,lf.lasProj,lf.LidarPointType);
        end;
        for i := 0 to lf.ReadsRequired do begin
           lf.ReadPoints(RecsRead);
@@ -1511,7 +1495,7 @@ begin
              {$IfDef RecordMergeLASfiles} WriteLineToDebugFile('Create new LAS file'); {$EndIf}
              NewLas := tCreateLasFile.Create;
              NewLas.NewLasHeader := lf.LasHeader;
-             NewLAS.CreateNewLASfile(NewName,lf.lasProjDef,lf.LasHeader);
+             NewLAS.CreateNewLASfile(NewName,lf.lasProj,lf.LasHeader);
           end;
           for i := 0 to lf.ReadsRequired do begin
              lf.ReadPoints(RecsRead);
@@ -1574,7 +1558,7 @@ begin
             Las_fNames.Delete(k);
          end
          else begin
-            UTMfiles := (lf.lasProjDef.LASProj.pName = UTMEllipsoidal);
+            UTMfiles := (lf.lasProj.pName = UTMEllipsoidal);
             ExtendBoundingBox(GeoBBox,lf.LAS_LatLong_Box);
             ExtendBoundingBox(UTMBBox,lf.LAS_UTM_Box);
             if (lf.SingleFilePointDensity > MaxPointDensity) then MaxPointDensity := lf.SingleFilePointDensity;
@@ -1584,9 +1568,9 @@ begin
             if (MinZ > lf.LasHeader.MinZ) then MinZ := lf.LasHeader.MinZ;
             if (MaxZ < lf.LasHeader.MaxZ) then MaxZ := lf.LasHeader.MaxZ;
             UTMZone := lf.UTMZone;
-            LatHemi := lf.lasProjDef.LASProj.LatHemi;
-            H_DatumCode := lf.lasProjDef.LASProj.H_DatumCode;
-            V_DatumCode := lf.lasProjDef.LASProj.V_DatumCode;
+            LatHemi := lf.lasProj.LatHemi;
+            H_DatumCode := lf.lasProj.H_DatumCode;
+            V_DatumCode := lf.lasProj.V_DatumCode;
             VersionMajor := lf.LASheader.VersionMajor;
             VersionMinor := lf.LASHeader.VersionMinor;
          end;

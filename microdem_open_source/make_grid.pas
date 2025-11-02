@@ -162,6 +162,7 @@ procedure PickAspectDifferenceMap(DEM,Window : integer);
 function MakeAdjustedStdDevElevRoughness(OpenMap : boolean; DEM : integer; Radius : integer = 3) : integer;
 function NormStr(Normalize : byte) : shortstring;
 
+function MakeSyntheticSurface(OpenMap : boolean; DEM : integer; Radius : integer = -99; fName : PathStr = '') : integer;
 
 
 {$IfDef ExPointCloud}
@@ -207,6 +208,43 @@ var
 {$Else}
     {$I ..\las_lidar\make_grids_from_lidar.inc}
 {$EndIf}
+
+
+
+function MakeSyntheticSurface(OpenMap : boolean; DEM : integer; Radius : integer = -99; fName : PathStr = '') : integer;
+var
+   x,y,xc,yc : integer;
+   xp,yp,z : float32;
+begin
+   if Radius < 1 then begin
+      Radius := round(DEMglb[DEM].DEMHeader.NumCol * DEMglb[DEM].AverageSpace * 0.5);
+      ReadDefault('Hemisphere radius',Radius);
+   end;
+   if (fName = '') then fName := MDtempDir + DEMglb[DEM].AreaName + '_hemisphere_' + IntToStr(Radius) + '_m.tif';
+   DEMGlb[DEM].SaveAsGeotiff(fName);
+   Result := OpenNewDEM(fName,false,'');
+   DEMGlb[Result].SetEntireGridMissing;
+   xc := DEMglb[Result].DEMHeader.NumCol div 2;
+   yc := DEMglb[Result].DEMHeader.NumRow div 2;
+
+   for x := 0 to pred(DEMglb[Result].DEMHeader.NumCol) do begin
+      xp := abs(x - xc) * DEMglb[Result].AverageXSpace;
+      for y := 0 to pred(DEMglb[Result].DEMHeader.NumRow) do begin
+         yp := abs(y - yc) * DEMglb[Result].AverageYSpace;
+         if sqr(xp) + sqr(yp) < sqr(Radius) then begin
+            z := sqrt(sqr(Radius) - (sqr(xp)+ sqr(yp)));
+            DEMglb[Result].SetGridElevation(x,y,z);
+         end;
+      end;
+   end;
+   DEMglb[Result].DEMHeader.ElevUnits := euMeters;
+   DEMglb[Result].CheckMaxMinElev;
+   DEMGlb[Result].WriteNewFormatDEM(fName);
+   if OpenMap then begin
+      CreateDEMSelectionMap(Result,true,MDDef.DefElevsPercentile,mtElevSpectrum);
+   end;
+end;
+
 
 
 function CreateIQRSlopeMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;

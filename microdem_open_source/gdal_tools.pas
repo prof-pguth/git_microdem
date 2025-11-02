@@ -25,7 +25,7 @@ unit gdal_tools;
       //{$Define RecordDatumShift}
       //{$Define RecordDEMIX}
       //{$Define RecordWKT}
-      //{$Define RecordDEMIXCompositeDatum}
+      {$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
       //{$Define RecordGDALOpen}
@@ -1219,7 +1219,6 @@ end;
              end;
 
       begin
-      //gdal_translate -of GTiff  C:\Users\pguth_2\Downloads\world_climate2_30sec\wc2.0_30s_tavg\wc2.0_30s_tavg_01.tif  c:\temp\subset.tif  -projwin -80 45 -70 30
          if IsGDALFilePresent(GDAL_program) then begin
             {$If Defined(RecordGDAL) or Defined(RecordSubsetGDAL)} WriteLineToDebugFile('GDALSubsetSatImageToMatchMap in ' + GDAL_program + '  ' + ExtractFilePath(SatImage[MapOwner.MapDraw.SATonMap].IndexFileName)); {$EndIf}
             OutPath := LastSatDir;
@@ -1785,7 +1784,6 @@ end;
        CompositeDatumShiftWithGDAL(fName,SaveName,s_SRSstring,t_srsstring);
     end;
  end;
-
 
 
 procedure CompositeDatumShiftWithGDAL(var InName,SaveName : PathStr; s_SRSstring,t_srsstring : shortstring);

@@ -165,7 +165,8 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
    function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
    procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
 
-procedure MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil);
+function MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil; FileNames : tStringList = nil; OutName : PathStr = '') : integer;
+
 
 function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
 
@@ -214,19 +215,22 @@ end;
 
 
 
-procedure MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil);
+function MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil; FileNames : tStringList = nil; OutName : PathStr = '') : integer;
 var
-   FileNames : tStringList;
    i,j : integer;
    DefFil : byte;
    fName : PathStr;
    s11,slt : tStringList;
    TStr : shortString;
 begin
-   FileNames := tStringList.Create;
-   FileNames.Add(LastDataBase);
-   DefFil := 1;
-   if GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then begin
+   if (FileNames = Nil) then begin
+      FileNames := tStringList.Create;
+      FileNames.Add(LastDataBase);
+      DefFil := 1;
+      if not GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then exit;
+   end;
+
+   //begin
       s11 := tStringList.Create;
       fName := FileNames.Strings[0];
       s11.LoadFromFile(fName);
@@ -243,13 +247,14 @@ begin
       end;
       fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
       s11.SaveToFile(MDtempDir + 'merged_csv_files.csv');
-      if GetFileNameDefaultExt('Merged CSV files','*.dbf',FName) then begin
-         if (BaseMap = Nil) then StringList2CSVtoDB(s11,fName,true)
-         else BaseMap.StringListToLoadedDatabase(s11,fName);
+
+      if (OutName <> '') or GetFileNameDefaultExt('Merged CSV files','*.dbf',OutName) then begin
+         if (BaseMap = Nil) then Result := StringList2CSVtoDB(s11,OutName,true)
+         else Result := BaseMap.StringListToLoadedDatabase(s11,OutName);
       end;
       LastDataBase := fName;
       wmDEM.SetPanelText(0,'');
-   end;
+   //end;
    FileNames.Free;
    EndProgress;
 end;
@@ -402,7 +407,7 @@ end;
       else begin
          Result := 0;
       end;
-      if (not SaveCSVFile) then File2Trash(fName2);
+      if (not SaveCSVFile) then DeleteFileIfExists(fName2);
    end;
 
 
@@ -917,7 +922,6 @@ begin
             DataThere.Sorted := true;
             DataThere.Duplicates := dupIgnore;
          end;
-        // {$IfDef VCL} if WantShowProgress then StartProgressAbortOption('Find field values: ' + FieldName); {$EndIf}
          rc := BaseTable.RecordCount;
          LastTStr := '';
          while not BaseTable.EOF do begin
@@ -928,12 +932,9 @@ begin
             BaseTable.Next;
             inc(Count);
             LastTStr := Tstr;
-            //{$IfDef VCL} if WantShowProgress and ((Count mod 500) = 0) then UpdateProgressBar(Count/rc); {$EndIf}
-            if WantOut then break;
          end;
       end;
    finally
-     //{$IfDef VCL} if WantShowProgress then EndProgress; {$EndIf}
    end;
    {$IfDef RecordRange} WriteLineToDebugFile('FindUniqueEntriesLinkPossible out'); {$EndIf}
 end;
@@ -959,10 +960,10 @@ end;
 
 function PointBoundBoxGeo(Lat,Long : float64) : sfBoundBox;
 begin
-   Result.xMax := Long + 0.001;
-   Result.xMin := Long -0.001;
-   Result.yMax := Lat + 0.001;
-   Result.yMin := Lat - 0.001;
+   Result.xMax := Long + 0.0001;
+   Result.xMin := Long -0.0001;
+   Result.yMax := Lat + 0.0001;
+   Result.yMin := Lat - 0.0001;
 end;
 
 

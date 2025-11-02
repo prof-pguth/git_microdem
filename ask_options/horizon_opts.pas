@@ -45,7 +45,6 @@ type
     Label5: TLabel;
     BitBtn2: TBitBtn;
     BitBtn3: TBitBtn;
-    BitBtn4: TBitBtn;
     Edit12: TEdit;
     Label12: TLabel;
     BitBtn5: TBitBtn;
@@ -71,6 +70,7 @@ type
     CheckBox2: TCheckBox;
     CheckBox9: TCheckBox;
     BitBtn10: TBitBtn;
+    CheckBox10: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
@@ -85,7 +85,6 @@ type
     procedure CheckBox4Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
-    procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
     procedure BitBtn6Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
@@ -134,7 +133,7 @@ begin
       HorizonBlockingGraph(MapOwner,Lat,Long,MDDef.HorizonVertAngleGraph,MDDef.HorizonDistanceGraph);
       MapOwner.DoFastMapRedraw;
    end;
-   if MDDef.DaylightDuration then SunRiseSunSet(Lat,Long,true,false);
+   if MDDef.DaylightDuration then SunRiseSunSet(Lat,Long,MDDef.ShowToday,false);
    NeedRedraw := false;
 end;
 
@@ -143,16 +142,6 @@ begin
    {$IfDef ExMICRONET}
    {$Else}
       MicronetOptions(Nil);
-   {$EndIf}
-end;
-
-procedure THorizonOptions.BitBtn4Click(Sender: TObject);
-begin
-   {$IfDef ExGeography}
-   {$Else}
-      CheckOptions;
-      Sun_Position.SunAndHorizon(MapOwner,MapOwner.MapDraw.DEMOnMap,Lat,Long);
-      NeedRedraw := false;
    {$EndIf}
 end;
 
@@ -329,8 +318,7 @@ begin
   MDDef.ShowMaskedToSat := CheckBox7.Checked;
   MDDef.ShowSolstices := CheckBox8.Checked;
   MDDef.DaylightDuration := CheckBox9.Checked;
-
-  Petmar.CheckEditString(Edit8.Text,MDDef.SingleJulianDay);
+  MDDef.ShowToday := CheckBox10.Checked;
 end;
 
 procedure THorizonOptions.Edit1Change(Sender: TObject);

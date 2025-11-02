@@ -12,7 +12,7 @@
 function tDEMDataSet.ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
 var
    Ext   : ExtStr;
-   TStr  : ANSIString;
+   //TStr  : ANSIString;
    Error : boolean;
 
 

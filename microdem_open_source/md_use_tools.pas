@@ -208,7 +208,7 @@ procedure ACOLITEprocessing(MapOwner : tMapForm; OpenMaps : boolean = true);
 procedure laslibReproject(ask : boolean);
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
-function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true) : integer;
+function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true; degree : integer = 3) : integer;
 
 procedure ExpandOutName(InName : PathStr; BaseName : shortString; var OutName : PathStr);
 
@@ -261,7 +261,7 @@ begin
 end;
 
 
-function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true) : integer;
+function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true; degree : integer = 3) : integer;
 var
    cmd : shortstring;
    OutName : PathStr;
@@ -270,24 +270,33 @@ begin
    lsp_calculator_fName := 'J:\gis_software\xiceph\lsp_calculator.exe';
    FindDriveWithFile(lsp_calculator_fName);
    if Not FileExists(lsp_calculator_fName) then begin
-      if not GetExistingFileName('lsp_calculator.exe','*.exe',lsp_calculator_fName) then exit;
+      if not GetExistingFileName('lsp_calculator.exe','*.exe',lsp_calculator_fName) then begin
+         {$IfDef RecordLSPcalculator} WriteLineToDebugFile('could not find lsp_calculator.exe'); {$EndIf}
+         exit;
+      end;
    end;
 
    if FileExists(lsp_calculator_fName) then begin
-     cmd := lsp_calculator_fName + ' -i ' + DEMGlb[DEM].GeotiffDEMName + ' -o ' + MDtempDir + DEMGlb[DEM].AreaName + ' ' + Options;
+     outname :=  MDtempDir + DEMGlb[DEM].AreaName;
+     OutName := OutName + '_d' + IntToStr(degree);
+     cmd := lsp_calculator_fName + ' -i ' + DEMGlb[DEM].GeotiffDEMName + ' -o ' + OutName + ' ' + Options;
+     if Degree = 4 then cmd := cmd + ' -d 4';
+
      {$IfDef RecordLSPcalculator} WriteLineToDebugFile(cmd); {$EndIf}
      WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
-     OutName := MDtempDir + DEMGlb[DEM].AreaName + Options + '.tif';
+     OutName := Outname + Options + '.tif';
      OutName := StringReplace(OutName,'--','_',[rfReplaceAll, rfIgnoreCase]);
+     {$IfDef RecordLSPcalculator} WriteLineToDebugFile(cmd); {$EndIf}
+     WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
      if FileExists(OutName) then begin
         Result := OpenNewDEM(OutName,false);
         DEMGlb[Result].DEMheader.ElevUnits := eucurv_kncc;
         DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
         if OpenMap then CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
+     end
+     else begin
+         {$IfDef RecordLSPcalculator} WriteLineToDebugFile('could not find ' + OutName); {$EndIf}
      end;
-   end
-   else begin
-      MessageToContinue('Missing lsp_calculator.exe');
    end;
 end;
 

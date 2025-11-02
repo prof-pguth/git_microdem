@@ -1264,10 +1264,10 @@ type
 var
    ThisGraph : tThisBaseGraph;
    SVArray,DistX : array[1..4] of SVArrayType;
-   Dist,MaxHoriz,n,Col,Row,i,j : integer;
+   Dist,MaxHoriz,{n,}Col,Row,i,j : integer;
    NumPts : array[1..4,0..MaxDist] of LongInt;
-   v1,v2,v3,MaxSemiVar,dFactor, a,b,r,EastWest,NorthSouth,NESW,NWSE,
-   SlopeEastWest,SlopeNorthSouth,SlopeNESW,SlopeNWSE : float32;
+   v1,v2,v3,MaxSemiVar,dFactor, {a,b,r,}EastWest,NorthSouth,NESW,NWSE,
+   //SlopeEastWest,SlopeNorthSouth,SlopeNESW,SlopeNWSE : float32;
    z,zp   : float32;
    Rfile  : file;
    v      : array[1..2] of float32;

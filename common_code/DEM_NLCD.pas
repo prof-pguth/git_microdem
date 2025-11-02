@@ -82,7 +82,7 @@ const
 
 function SimplifiedLandCover(LandCoverGrid : integer; Lat,Long : float32; var Value : float32) : integer;
 function SimplifiedLandCoverFromGrid(LandCoverGrid : integer;  x,y : integer; var Value : float32) : integer;
-procedure SimplifiedLandCoverPercentages(LandCoverGrid : integer; var ForestPC,UrbanPC,BarrenPC,WaterPC : float32);
+procedure SimplifiedLandCoverPercentages(LandCoverGrid : integer; GridLimits : tGridLimits; var ForestPC,UrbanPC,BarrenPC,WaterPC : float32);
 
 procedure SimplifyLandCoverGrid(DEM : integer);
 procedure MarkWaterMissingInAllOpenDEMs(DEM : integer; All : boolean = true);
@@ -218,7 +218,7 @@ begin
 end;
 
 
-procedure SimplifiedLandCoverPercentages(LandCoverGrid : integer; var ForestPC,UrbanPC,BarrenPC,WaterPC : float32);
+procedure SimplifiedLandCoverPercentages(LandCoverGrid : integer; GridLimits : tGridLimits; var ForestPC,UrbanPC,BarrenPC,WaterPC : float32);
 var
    slc,Col,Row : integer;
    Value : float32;
@@ -235,8 +235,8 @@ begin
        InitializeMomentVar(ForestMomentVar);
        InitializeMomentVar(BarrenMomentVar);
        InitializeMomentVar(WaterMomentVar);
-       for Col := 0 to pred(DEMglb[LandCoverGrid].DEMheader.NumCol) do begin
-          for Row := 0 to pred(DEMglb[LandCoverGrid].DEMheader.NumRow) do begin
+       for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
+          for Row := GridLimits.YGridLow to GridLimits.YGridHigh do begin
              slc := SimplifiedLandCoverFromGrid(LandCoverGrid,Col,Row,Value);
              if (slc <> slcUndefined) then begin
                  if (slc = slcForest) then inc(ForestMomentVar.Npts)
@@ -302,12 +302,15 @@ end;
       begin
            LCName := 'J:\monster_dems\PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
            FindDriveWithFile(LCName);
-           Result := GDALsubsetGridAndOpen(bb,true,LCName,OpenMap);
-           if ValidDEM(Result) then begin
-               DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
-               if (fName = '') then fName := MDtempDir + 'lcc100_' + RealToString(bb.XMin,-12,-4) + '_' + RealToString(bb.YMin,-12,-4);
-               DEMGlb[Result].SaveAsGeotiff(fName);
-           end;
+           if FileExists(LCName) then begin
+               Result := GDALsubsetGridAndOpen(bb,true,LCName,OpenMap);
+               if ValidDEM(Result) then begin
+                   DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
+                   if (fName = '') then fName := MDtempDir + 'lcc100_' + RealToString(bb.XMin,-12,-4) + '_' + RealToString(bb.YMin,-12,-4);
+                   DEMGlb[Result].SaveAsGeotiff(fName);
+               end;
+           end
+           else Result := 0;
       end;
 
 {$EndIf}

@@ -94,7 +94,7 @@ function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : t
        CheckDEM,
        Intensity,
        i,RecsRead : integer;
-       zShot{,zCrit}: float64;
+       zShot : float64;
        fName,OutDir : PathStr;
        Count : int64;
        Ext : ExtStr;
@@ -120,9 +120,6 @@ function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : t
          begin
              NewHeadRecs := DEMGlb[TempDEM].DEMheader;
              NewHeadRecs.RasterPixelIsGeoKey1025 := MDDef.LasDEMPixelIs;
-             //NewHeadRecs.DEMPrecision := LongWordDEM;
-             //NewHeadRecs.h_DatumCode := Edit35.Text;
-             //NewHeadRecs.VerticalCSTypeGeoKey := VertDatumCode(Edit36.Text);
              NewHeadRecs.h_DatumCode := HorizDatum;
              NewHeadRecs.VerticalCSTypeGeoKey := VertDatumCode(VertDatum);
 
@@ -277,7 +274,7 @@ function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : t
                                 LASclass := LasData.LASClassification(j);
                                 zShot := Lasdata.ExpandLAS_Z(j);
 
-                                if (PCGridMaker in [pcgmGrndPtDTM,pcgmCeilFloor,pcgmThreeDEMs]) then begin
+                                if (PCGridMaker in [pcgmGrndPtDTM,pcgmCeilFloor,pcgmThreeDEMs,pcgmGround]) then begin
                                      if LasData.GroundReturn(j) then begin
                                         if ValidDEM(NewGroundDensity) then DEMGlb[NewGroundDensity].IncrementGridValue(xgrid,ygrid);
                                         if ValidDEM(NewGroundMean) then begin

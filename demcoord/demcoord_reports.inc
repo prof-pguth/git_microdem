@@ -65,7 +65,7 @@ end;
 procedure TrendSurfaceEquations(DEM,xp,yp : integer; Title : shortstring = '');
 var
    Results : tStringList;
-   CurMethod : byte;
+   //CurMethod : byte;
    i,j,m : integer;
 begin
    try
@@ -98,14 +98,14 @@ end;
 procedure PointCurvatures(DEM,xp,yp : integer; Title : shortstring = '');
 var
    Results : tStringList;
-   CurveMethod : byte;
-   i,j,m : integer;
+   //CurveMethod : byte;
+   i,j : integer;
 
 
       procedure AddCurvatureAtPoint(var Results : tStringList; DEM,xp,yp : integer);
       var
-         k,Decs : integer;
-         SlopeAspectRec : tSlopeAspectRec;
+         //k,Decs : integer;
+         //SlopeAspectRec : tSlopeAspectRec;
          aLine : shortstring;
          PlanC,ProfC,TangC : float64;
       begin
@@ -194,12 +194,19 @@ end;
 
 procedure LocalTrendSurface(DEM,xp,yp : integer; Title : shortstring = '');
 var
-   CurMethod : byte;
-   i,j,m,x,y,NPts  : integer;
+   //CurMethod : byte;
+   //i,j,NPts,m,
+   x,y  : integer;
    SAR :  tSlopeAspectRec;
    Findings : tStringList;
    aline : Shortstring;
-   xf,yf : float64;
+   //xf,yf : float64;
+   //CMethod : byte;
+   //i,j,   m,
+   //x,ySlopeAspectRec;
+   //Findings : tStringList;
+   //aline : Shortstring;
+   //xf,yf : float64;
    z : float32;
    {$IfDef TrendSurfacePointClouds}
       Points : ^tPointXYZIArray;
@@ -421,7 +428,7 @@ var
    Results : tStringList;
    CurMethod : byte;
    i,j,k : integer;
-   aLine : shortString;
+   //aLine : shortString;
    SAR : tSlopeAspectRec;
 
    procedure DoOneMethod;

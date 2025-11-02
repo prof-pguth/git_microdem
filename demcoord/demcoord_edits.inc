@@ -290,7 +290,8 @@ end;
 function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 var
    SearchRadiusX,SearchRadiusY,
-   x,y,xi,yi,xn,yn,n,xp,yp : integer;
+   //x,y,xi,yi,xn,yn,
+   n,xp,yp : integer;
    Lat,Long,Sum : float64;
    z : float32;
    NewAreaName : shortstring;

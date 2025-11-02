@@ -530,10 +530,10 @@ procedure MakeMDcurvatures(OpenMap : boolean; DEM,Curvature : integer; var DEMLi
          Grid : integer;
       begin
          case Curvature of
-            eucurv_kns : Grid := CreateCurvatureMap(eucurv_kns,OpenMap,DEM,MD_made_string + Name + '_prof_curv');
-            eucurv_knc : Grid := CreateCurvatureMap(eucurv_knc,OpenMap,DEM,MD_made_string + Name + '_tang_curv');
-            eucurv_kpc : Grid := CreateCurvatureMap(eucurv_kpc,OpenMap,DEM,MD_made_string + Name + '_plan_curv');
-            eucurv_tc  : Grid := CreateCurvatureMap(eucurv_tc,OpenMap,DEM,MD_made_string + Name + '_cont_tors');
+            eucurv_kns : Grid := CreateCurvatureMap(eucurv_kns,OpenMap,DEM,MD_made_string + Name + '_kns_prof_curv');
+            eucurv_knc : Grid := CreateCurvatureMap(eucurv_knc,OpenMap,DEM,MD_made_string + Name + '_knc_tang_curv');
+            eucurv_kpc : Grid := CreateCurvatureMap(eucurv_kpc,OpenMap,DEM,MD_made_string + Name + '_kpc_plan_curv');
+            eucurv_tc  : Grid := CreateCurvatureMap(eucurv_tc,OpenMap,DEM,MD_made_string + Name + '_tc_cont_tors');
          end;
          DEMlist[Grid] := true;
          DEMGlb[Grid].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
@@ -543,13 +543,25 @@ begin
    SaveBackupDefaults;
    MDDef.EvansApproximationAllowed := false;
    SetCurvatureDefaults;
-   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
+   MDDef.CurveCompute.LSQorder := 2;
+   MDDef.CurveCompute.WindowRadius := 1;
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute,true));
    MDDef.CurveCompute.LSQorder := 2;
    MDDef.CurveCompute.WindowRadius := 2;
-   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute,true));
+   MDDef.CurveCompute.LSQorder := 2;
+   MDDef.CurveCompute.WindowRadius := 3;
+   MDDef.CurveCompute.LSQorder := 3;
+   MDDef.CurveCompute.WindowRadius := 2;
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute,true));
    MDDef.CurveCompute.LSQorder := 3;
    MDDef.CurveCompute.WindowRadius := 3;
-   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute));
+   MDDef.CurveCompute.LSQorder := 4;
+   MDDef.CurveCompute.WindowRadius := 2;
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute,true));
+   MDDef.CurveCompute.LSQorder := 4;
+   MDDef.CurveCompute.WindowRadius := 3;
+   MICRODEMCurvature(smlsq,SlopeMethodName(MDDef.CurveCompute,true));
    RestoreBackupDefaults;
 end;
 
@@ -859,7 +871,6 @@ end {procedure CompareSlopeMaps};
 procedure CompareProfileCurvatures(DEM : integer);
 var
    DEMList : tDEMBooleanArray;
-   i : int64;
    Grid : integer;
 begin
    {$IfDef RecordCompareLSPs} WriteLineToDebugFile('CompareProfileCurvatures in'); {$EndIf}
@@ -868,8 +879,15 @@ begin
 
    MakeMDcurvatures(MDDef.CompareShowMaps,DEM,eucurv_kns,DEMList);
 
-   Grid := WBT_ProfileCurvature(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'wbt_prof_curv.tif');
+   Grid := WBT_ProfileCurvature(MDDef.CompareShowMaps,DEMGlb[DEM].GeotiffDEMName,MDtempDir + 'wbt_prof_curv_' + DEMGlb[DEM].AreaName + '.tif');
    if ValidDEM(Grid) then DEMlist[Grid] := true;
+
+   Grid := RUN_LSPcalculator(DEM,'--kns',true,3);
+   if ValidDEM(Grid) then DEMlist[Grid] := true;
+
+   Grid := RUN_LSPcalculator(DEM,'--kns',true,4);
+   if ValidDEM(Grid) then DEMlist[Grid] := true;
+
 
    {$IfDef AllComparisons}
     if (MDDef.GDAL_SAGA_arcsec) or (DEMGlb[DEM].DEMheader.DEMUsed = UTMbasedDEM) then begin

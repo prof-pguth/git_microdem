@@ -15,6 +15,7 @@
 interface
 uses
    OObjects,
+   ANSIstrings,
    SysUtils;
 const
    MaxArg = 6;
@@ -24,8 +25,7 @@ const
 function isNan(const d:double):boolean;
 
 type
-  TVarType = (vtDouble, vtBoolean, vtString, vtLeftBracket, vtRightBracket,
-    vtComma);
+  TVarType = (vtDouble, vtBoolean, vtString, vtLeftBracket, vtRightBracket,vtComma);
   PDouble = ^Double;
   EParserException = class(Exception);
   PExpressionRec = ^TExpressionRec;
@@ -484,7 +484,7 @@ end;
 
 function TExpressList.Compare(Key1, Key2: Pointer): Integer;
 begin
-  Result := StrIComp(pANSIchar(Key1), pANSIchar(Key2));
+  Result := ANSIstrings.StrIComp(pANSIchar(Key1), pANSIchar(Key2));
 end;
 
 function TExpressList.KeyOf(Item: Pointer): Pointer;

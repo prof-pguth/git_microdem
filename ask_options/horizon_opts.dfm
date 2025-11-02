@@ -4,8 +4,8 @@ object HorizonOptions: THorizonOptions
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Horizon Options'
-  ClientHeight = 437
-  ClientWidth = 605
+  ClientHeight = 448
+  ClientWidth = 629
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -223,9 +223,9 @@ object HorizonOptions: THorizonOptions
     end
   end
   object BitBtn2: TBitBtn
-    Left = 478
+    Left = 472
     Top = 163
-    Width = 119
+    Width = 125
     Height = 25
     Caption = 'Horizon blocking graphs'
     TabOrder = 7
@@ -240,22 +240,13 @@ object HorizonOptions: THorizonOptions
     TabOrder = 8
     OnClick = BitBtn3Click
   end
-  object BitBtn4: TBitBtn
-    Left = 472
-    Top = 70
-    Width = 125
-    Height = 25
-    Caption = 'Horizon blocking'
-    TabOrder = 9
-    OnClick = BitBtn4Click
-  end
   object BitBtn5: TBitBtn
     Left = 472
     Top = 8
     Width = 125
     Height = 25
     Caption = 'Series sunlight maps'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = BitBtn5Click
   end
   object BitBtn6: TBitBtn
@@ -264,25 +255,25 @@ object HorizonOptions: THorizonOptions
     Width = 125
     Height = 25
     Caption = 'Single sunlight map'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = BitBtn6Click
   end
   object BitBtn7: TBitBtn
-    Left = 476
+    Left = 472
     Top = 101
-    Width = 121
+    Width = 125
     Height = 25
     Caption = 'Single day table'
-    TabOrder = 12
+    TabOrder = 11
     OnClick = BitBtn7Click
   end
   object BitBtn8: TBitBtn
-    Left = 476
+    Left = 472
     Top = 132
-    Width = 121
+    Width = 125
     Height = 25
     Caption = 'Annual table'
-    TabOrder = 13
+    TabOrder = 12
     OnClick = BitBtn8Click
   end
   object BitBtn9: TBitBtn
@@ -291,7 +282,7 @@ object HorizonOptions: THorizonOptions
     Width = 105
     Height = 25
     Caption = 'Grid options'
-    TabOrder = 14
+    TabOrder = 13
     OnClick = BitBtn9Click
   end
   object BitBtn11: TBitBtn
@@ -300,7 +291,7 @@ object HorizonOptions: THorizonOptions
     Width = 119
     Height = 25
     Caption = 'Geostationary satellite'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = BitBtn11Click
   end
   object GroupBox3: TGroupBox
@@ -309,7 +300,7 @@ object HorizonOptions: THorizonOptions
     Width = 265
     Height = 134
     Caption = 'Horizon calculation settings'
-    TabOrder = 16
+    TabOrder = 15
     object Label3: TLabel
       Left = 88
       Top = 94
@@ -377,7 +368,7 @@ object HorizonOptions: THorizonOptions
     Width = 249
     Height = 144
     Caption = 'Sunlight graphs'
-    TabOrder = 17
+    TabOrder = 16
     object CheckBox8: TCheckBox
       Left = 173
       Top = 76
@@ -430,6 +421,14 @@ object HorizonOptions: THorizonOptions
       Caption = 'Day Light Duration'
       TabOrder = 5
     end
+    object CheckBox10: TCheckBox
+      Left = 176
+      Top = 104
+      Width = 97
+      Height = 17
+      Caption = 'Today'
+      TabOrder = 6
+    end
   end
   object BitBtn10: TBitBtn
     Left = 478
@@ -437,7 +436,7 @@ object HorizonOptions: THorizonOptions
     Width = 125
     Height = 25
     Caption = 'Three sunlight map'
-    TabOrder = 18
+    TabOrder = 17
     OnClick = BitBtn10Click
   end
 end

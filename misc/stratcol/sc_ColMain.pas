@@ -1476,7 +1476,7 @@ begin
             if AnswerIsYes(IntegerToString(i,2) + ' Column ' + ColumnLabel + ' in ' + #10 +
                    ColumnFileName + ' has changed.  Save it') then begin
                if TimeLabelFile[i] then ColumnModified := not SaveCOTFile(NumColumns,ColumnFileName)
-               else ColumnModified := not SaveCOLFile(NumColumns,ColumnFileName);;
+               else ColumnModified := not SaveCOLFile(NumColumns,ColumnFileName);
             end;
          end;
       end;

@@ -11,7 +11,7 @@
 {$I nevadia_defines.inc}
 
 {$IFDEF DEBUG}
-  //{$Define NoParallelFor} //used to debug only
+   //{$Define NoParallelFor} //used to debug only
    {$IfDef RecordProblems}   //normally only defined for debugging specific problems
       //{$Define ShowDEMSSOCalc}
    {$EndIf}
@@ -270,7 +270,7 @@ procedure TSSOCalcDlg.CheckNewValues;
 var
    xsize,ysize,xpts,ypts : integer;
 begin
-    {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('TSSOCalcDlg.CheckNewValues in'); {$EndIf}
+    {$IfDef ShowDEMSSOCalcFull} WriteLineToDebugFile('TSSOCalcDlg.CheckNewValues in'); {$EndIf}
     CheckEditString(Edit1.Text,MDDef.PointSeparation);
     CheckEditString(Edit2.Text,MDDef.SSOBoxSizeMeters);
     CheckEditString(Edit3.Text,MDDef.GrainLengthMultiple);
@@ -305,7 +305,7 @@ begin
       Label9.Caption := IntToStr(round(MDdef.WavelengthCompDist / DEMGlb[theBaseMap.MapDraw.DEMonMap].AverageSpace)) + ' pts';
       NeedToDraw := true;
    end;
-   {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('TSSOCalcDlg.CheckNewValues out'); {$EndIf}
+   {$IfDef ShowDEMSSOCalcFull} WriteLineToDebugFile('TSSOCalcDlg.CheckNewValues out'); {$EndIf}
 end;
 
 procedure TSSOCalcDlg.ComboBox1Change(Sender: TObject);

@@ -2093,8 +2093,9 @@ end;
 function tDEMDataSet.GetSlopeAspectFromSecondDEM(Dem2,Col,Row : integer; var SlopeAspectRec : tSlopeAspectRec) : boolean;
 var
    Lat,Long,Colf,Rowf : float64;
+   xoff,yoff : integer;
 begin
-   if SecondGridIdentical(DEM2) then Result := DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAspectRec)
+   if SecondGridJustOffset(DEM2,xoff,yoff) then Result := DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col + xoff,Row+Yoff,SlopeAspectRec)
    else begin
       DEMGridToLatLongDegree(Col,Row,Lat,Long);
       DEMGlb[DEM2].LatLongDegreeToDEMGrid(Lat,Long,Colf,Rowf);

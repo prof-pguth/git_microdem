@@ -38,15 +38,14 @@ type
     { Public declarations }
     Bitmap : tMyBitmap;
     SymCount : integer;
+    GetPointSymbol : tDrawingSymbol;
+    GetPointSize   : integer;
+    GetPointColor  : tPlatformColor;
     procedure SampleSymbol;
   end;
 
+ procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
 
-var
-  PickSymbolForm : TPickSymbolForm;
-  GetPointSymbol : tDrawingSymbol;
-  GetPointSize   : integer;
-  //GetPointColor  : tPlatformColor;
 
 implementation
 
@@ -55,6 +54,30 @@ uses
    nevadia_Main;
 
 {$R *.DFM}
+
+
+ procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
+var
+  PickSymbolForm : TPickSymbolForm;
+ begin
+    PickSymbolForm := TPickSymbolForm.Create(Application);
+    with PickSymbolForm do begin
+       if (WhatFor <> '') then Caption := WhatFor;
+       GetPointColor := WantColor;
+       GetPointSymbol := DrSymbol;
+       GetPointSize := SymSize;
+       UpDown2.Position := GetPointSize;
+       SymCount := ord(GetPointSymbol);
+       SampleSymbol;
+       if (ShowModal <> idCancel) then begin
+          WantColor := GetPointColor;
+          DrSymbol := GetPointSymbol;
+          SymSize := GetPointSize;
+       end;
+       Free;
+    end;
+ end;
+
 
 procedure TPickSymbolForm.Button1Click(Sender: TObject);
 begin

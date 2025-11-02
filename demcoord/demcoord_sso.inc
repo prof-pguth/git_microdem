@@ -209,7 +209,7 @@ var
             i,NRot : integer;
             Dip,Strike,DipDirect : float32;
          begin
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('ComputeEigenVectors in'); {$EndIf}
+            {$IfDef ShowDEMSSOCalcFull} WriteLineToDebugFile('ComputeEigenVectors in'); {$EndIf}
             Result := true;
             Jacobi(M^,3,SSOVars.V,S^,NRot);
             Eigsrt(SSOVars.V,S^,3);
@@ -245,7 +245,7 @@ var
                SSOVars.TheDips[i] := Dip;
                SSOVars.TheDipDirs[i] := DipDirect;
             end {for i};
-            {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('ComputeEigenVectors out'); {$EndIf}
+            {$IfDef ShowDEMSSOCalcFull} WriteLineToDebugFile('ComputeEigenVectors out'); {$EndIf}
          end;
 
 

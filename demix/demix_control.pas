@@ -122,7 +122,6 @@ const
 
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
    function GetReferenceDEMforTestDEM(ThisTestDEM : integer; RefDEMs : tDEMIXindexes) : integer;
-   //procedure GetFilterAndHeader(i,j : integer; var aHeader,aFilter : shortString);
    function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
 
    function GetAreaNameForDEMIXTile(DB : integer; DemixTile : shortstring) : shortstring;
@@ -135,7 +134,6 @@ const
 
    function SymbolFromDEMName(DEMName : shortstring) : tFullSymbolDeclaration;
 
-   //procedure OpenDEMIXDatabaseForAnalysis;
    procedure RecognizeDEMIXVersion(DB : integer);
 
    function GetCountryForArea(Area : shortString) : shortstring;
@@ -1243,41 +1241,16 @@ end;
 
 function DEMIXTestDEMLegend(DEMsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
 var
-   i,Left,Top,StartFontSize : integer;
-
-         procedure AnEntry(DEM : shortString);
-         begin
-            Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM));
-            Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
-            Result.Canvas.Brush.Style := bsSolid;
-            Result.Canvas.Rectangle(Left,Top,Left + Result.Canvas.TextHeight(DEM),Top + Result.Canvas.TextHeight(DEM));
-            Left := Left + Result.Canvas.TextHeight(DEM) + 10;
-            Result.Canvas.Brush.Style := bsClear;
-            Result.Canvas.TextOut(Left,Top,DEM);
-            if Horizontal then Left := Left + Result.Canvas.TextWidth(DEM + '   ')
-            else begin
-               Top := Top + 10 + Result.Canvas.TextHeight(DEM);
-               Left := 15;
-            end;
-         end;
-
+   ColorsUsed : tStringList;
+   i : integer;
 begin
-   StartFontSize := MDDef.DEMIXlegendFontSize;
-   Result := Nil;
-   repeat
-      if (Result <> Nil) then Result.Destroy;
-      CreateBitmap(Result,1500,900);
-      LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
-      Result.Canvas.Font.Size := StartFontSize;
-      Left := 15;
-      Top := 10;
-      for i := 0 to pred(DEMsUsed.Count) do begin
-         AnEntry(DEMsUsed.Strings[i]);
-      end;
-      PutBitmapInBox(Result);
-      Dec(StartFontSize);
-   until Result.Width < MaxWide;
+   ColorsUsed := tStringList.Create;
+   for i := 0 to pred(DEMsUsed.Count) do begin
+      ColorsUsed.Add(IntToStr(ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMsUsed[i]))));
+   end;
+   Result := MakeLegend(DEMsUsed,ColorsUsed,Horizontal,MaxWide);
 end;
+
 
 
 procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);
@@ -1562,7 +1535,7 @@ begin
    for i := pred(Result.Count) downto 0 do begin
       if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm') then Result.Delete(i);
       //for now Canadian data is not supported
-      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'CA_') then Result.Delete(i);
+      //if (UpperCase(Copy(Result.Strings[i],1,3)) = 'CA_') then Result.Delete(i);
    end;
    Result.Sort;
 end;

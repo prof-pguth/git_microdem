@@ -672,9 +672,6 @@ end;
 
 
 procedure SafeMakeDir(DirName : PathStr);
-//var
-   //IntDirs : tStringList;
-   //i : integer;
 begin
    if (DirName = '') then begin
       {$IfDef RecordMakeDir} WriteLineToDebugFile('Petmar.SafeMakeDir called with empty directory name'); {$EndIf}

@@ -3361,11 +3361,9 @@ object wmdem: Twmdem
     end
     object COPALOScomparetoreference1: TMenuItem
       Caption = 'COP/ALOS compare to reference'
-      OnClick = COPALOScomparetoreference1Click
     end
     object COPALOShighlowgeomorphometry1: TMenuItem
       Caption = 'COP/ALOS high low geomorphometry'
-      OnClick = COPALOShighlowgeomorphometry1Click
     end
     object Pixelbypixelmapstatistics1: TMenuItem
       Caption = 'COP/ALOS Pixel by pixel map statistics'
@@ -3375,20 +3373,8 @@ object wmdem: Twmdem
       Caption = '-'
     end
     object Creatediffrencemaps1: TMenuItem
-      Caption = 'Create diference maps'
+      Caption = 'junk'
       Enabled = False
-      OnClick = Creatediffrencemaps1Click
-    end
-    object N38: TMenuItem
-      Caption = 'Load COP/ALOS map difference analysis'
-      object Pickdatadirectory1: TMenuItem
-        Caption = 'Pick data directory'
-        OnClick = Pickdatadirectory1Click
-      end
-      object N3OpenDEMs1: TMenuItem
-        Caption = '3 Open DEMs'
-        OnClick = N3OpenDEMs1Click
-      end
     end
     object N63: TMenuItem
       Caption = '-'
@@ -3567,7 +3553,7 @@ object wmdem: Twmdem
       OnClick = UTMbasedfilefillreport1Click
     end
     object Inventorysourcefiles1: TMenuItem
-      Caption = 'Inventory source files'
+      Caption = 'Inventory HRDEM source files'
       OnClick = Inventorysourcefiles1Click
     end
     object InventoryofLC10files1: TMenuItem
@@ -3581,6 +3567,14 @@ object wmdem: Twmdem
     object Averagetileslopemapgeneration1: TMenuItem
       Caption = 'Average tile slope map generation'
       OnClick = Averagetileslopemapgeneration1Click
+    end
+    object Percentlandcovercategories1: TMenuItem
+      Caption = 'Percent landcover categories'
+      OnClick = Percentlandcovercategories1Click
+    end
+    object ilecharacterization1: TMenuItem
+      Caption = 'Tile characterization'
+      OnClick = ilecharacterization1Click
     end
     object N49: TMenuItem
       Caption = '-'
@@ -3652,7 +3646,6 @@ object wmdem: Twmdem
         Enabled = False
         object Overwrite1: TMenuItem
           Caption = 'Overwrite'
-          OnClick = Overwrite1Click
         end
         object Skipifexists3: TMenuItem
           Caption = 'Skip if exists'
@@ -3704,7 +3697,6 @@ object wmdem: Twmdem
           Caption = 'Channel network miss percentages by tile'
           object Overwrite7: TMenuItem
             Caption = 'Overwrite'
-            OnClick = Overwrite7Click
           end
           object Skipifpresent2: TMenuItem
             Caption = 'Skip if present'
@@ -3720,11 +3712,9 @@ object wmdem: Twmdem
           Enabled = False
           object Overwrite5: TMenuItem
             Caption = 'Overwrite'
-            OnClick = Overwrite5Click
           end
           object Overwrite6: TMenuItem
             Caption = 'Skip if present'
-            OnClick = Overwrite6Click
           end
         end
         object Mergeridgesandvalleys1: TMenuItem
@@ -3739,7 +3729,6 @@ object wmdem: Twmdem
           Caption = 'Classification map agreement'
           object Overwrite2: TMenuItem
             Caption = 'Overwrite'
-            OnClick = Overwrite2Click
           end
           object Skipifpresent1: TMenuItem
             Caption = 'Skip if present'
@@ -3776,7 +3765,6 @@ object wmdem: Twmdem
             Caption = 'Merge 1 sec Reference DEMs'
             object Overwirte4: TMenuItem
               Caption = 'Overwrite'
-              OnClick = Overwirte4Click
             end
             object Skiipifpresent1: TMenuItem
               Caption = 'Skip if present'
@@ -3787,7 +3775,6 @@ object wmdem: Twmdem
           Caption = 'Create test area DEMs'
           object Overwrite4: TMenuItem
             Caption = 'Overwrite if exists'
-            OnClick = Overwrite4Click
           end
           object CreatetestareaDEMSskipifexists1: TMenuItem
             Caption = 'Skip if exists'
@@ -3845,7 +3832,6 @@ object wmdem: Twmdem
           Caption = 'Test DEM for all three coastal DTMS'
           object Overwrite3: TMenuItem
             Caption = 'Overwrite'
-            OnClick = Overwrite3Click
           end
           object Skipifdone1: TMenuItem
             Caption = 'Skip if done'
@@ -4047,7 +4033,6 @@ object wmdem: Twmdem
       object N41: TMenuItem
         Caption = 'Summarize VDATUM shift for US areas'
         Enabled = False
-        OnClick = N41Click
       end
       object CreatehalfsecondreferenceDEMs1: TMenuItem
         Caption = 'Create half second reference DEMs'

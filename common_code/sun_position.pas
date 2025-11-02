@@ -46,9 +46,7 @@ function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer; 
 function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
 
 
-
-{ from Montenbruck, O., and Pfleger, T., 1991, Astronomy on the personal computer: Springer-Verlag, 255 p.}
-
+//from Montenbruck, O., and Pfleger, T., 1991, Astronomy on the personal computer: Springer-Verlag, 255 p.
    procedure MP_MoonRise(stMonth,stDay,stYear,Duration : integer; Lat,Long : float64);
    function MP_DaysSinceFullMoon(stMonth,stDay,stYear : integer; Lat,Long : float64) : integer;
 
@@ -110,24 +108,6 @@ end;
 
 
 function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
-
-{
-0                <tr>
-1                    <td><strong>Time</strong></td>
-2                    <td><strong>Altitude</strong></td>
-3                    <td><strong>Azimuth (E&nbsp;of&nbsp;N)</strong></td>
-4                    <td><strong>Fraction Illuminated</strong></td>
-5                </tr>
-
-
-6                       <tr>
-                            <td>00:00</td>
-                            <td>69.4°</td>
-                            <td>134.6°</td>
-                            <td>1.00</td>
-                        </tr>
-}
-
 var
    aLine,fName2,HTML : PathStr;
    webpage,positions : tstringlist;
@@ -135,24 +115,24 @@ var
    Hour : float32;
    i,j : integer;
 
-   procedure CleanUpFile(var WebPage : tStringList);
-   var
-      NewList : tStringList;
-      i : integer;
-      aline : shortstring;
-   begin
-      NewList := tStringList.Create;
-      for i := 0 to pred(WebPage.Count) do begin
-         aLine := trim(WebPage.Strings[i]);
-         if (aline <> '') and (Copy(aline,1,4) = '<td>') {or (Copy(aline,1,4) = '<tr>'))} then begin
-            //ReplaceCharacter(aLine,'°',' ');
-            NewList.Add(aline);
-         end;
-      end;
-      WebPage.Clear;
-      for i := 0 to pred(NewList.Count) do WebPage.Add(Newlist.Strings[i]);
-      //WebPage.SaveToFile(MDTempDir + 'test.txt');
-   end;
+       procedure CleanUpFile(var WebPage : tStringList);
+       var
+          NewList : tStringList;
+          i : integer;
+          aline : shortstring;
+       begin
+          NewList := tStringList.Create;
+          for i := 0 to pred(WebPage.Count) do begin
+             aLine := trim(WebPage.Strings[i]);
+             if (aline <> '') and (Copy(aline,1,4) = '<td>') {or (Copy(aline,1,4) = '<tr>'))} then begin
+                //ReplaceCharacter(aLine,'°',' ');
+                NewList.Add(aline);
+             end;
+          end;
+          WebPage.Clear;
+          for i := 0 to pred(NewList.Count) do WebPage.Add(Newlist.Strings[i]);
+          //WebPage.SaveToFile(MDTempDir + 'test.txt');
+       end;
 
 var
    TimeStr,Alt,Az,Illum : shortstring;
@@ -611,6 +591,7 @@ begin
       GISdb[Result].dbOpts.LineColor := MDDef.HorizonColor;
       GISdb[Result].dbOpts.LineWidth := MDDef.HorizonWidth;
       GISdb[Result].RedrawLayerOnMap;
+      MapForm.MapDraw.MapSymbolAtLatLongDegree(MapForm.Image1.Canvas,Lat,Long,FilledBox,3,MDDef.HorizonColor);
    end
    else Result := StringList2CSVtoDB(Results,OutName,false,false,OpenDB);
 end;
@@ -639,7 +620,7 @@ var
                    Graph1.AddPointToDataBuffer(rfile,az,alt);
                end;
                hr := hr + 0.5;
-               if Sunrise > hr then hr := Sunrise;
+               if (Sunrise > hr) then hr := Sunrise;
             until (hr > 24);
             Graph1.ClosePointDataFile(rfile);
          end;
@@ -650,25 +631,28 @@ begin
    DEMGlb[MapForm.MapDraw.DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xdemg1,ydemg1);
    Location := DEMGlb[MapForm.MapDraw.DEMonMap].DEMLocationString(xdemg1,ydemg1);
 
-   {$IfDef RecordHorizon} WriteLineToDebugFile('TMapForm.DrawHorizonBlocking ' + DEMGlb[MapForm.MapDraw.DEMonMap].DEMLocationString(xdemg1,ydemg1)); {$EndIf}
+   {$IfDef RecordHorizon} WriteLineToDebugFile('HorizonBlockingGraph ' + DEMGlb[MapForm.MapDraw.DEMonMap].DEMLocationString(xdemg1,ydemg1)); {$EndIf}
 
     if MDDef.HorizonSkyMap then begin
        Result := Sun_Position.SunAndHorizon(MapForm,MapForm.MapDraw.DEMOnMap,Lat,Long,false,MDDef.ShowSolstices);
        Result.Caption := 'Horizon at ' + Location;
        Result.nd.LLcornerText := LatLongDegreeToString(Lat,Long);
        Lastxd := -999;
-      {$IfDef RecordHorizon} WriteLineToDebugFile('TMapForm.DrawHorizonBlocking sky map created'); {$EndIf}
+      {$IfDef RecordHorizon} WriteLineToDebugFile('HorizonBlockingGraph sky map created'); {$EndIf}
     end;
 
     db := HorizonDataBaseFromPoint(MapForm.MapDraw.DEMonMap,Lat,Long,MDDef.HorizonLength,MDDef.ObsAboveGround,'',true,MapForm);
 
     if MDDef.HorizonSkyMap then begin
+       {$IfDef RecordHorizon} WriteLineToDebugFile('HorizonBlockingGraph start skyline'); {$EndIf}
        GISdb[db].MyData.First;
-       Angle := GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH');
-       BlockAngle := GISdb[db].MyData.GetFieldByNameAsFloat('ELEV_DEG');
+       LastXD := -999;
+       Result.nd.Legend.Add(IntToStr(ConvertPlatformColorToTColor(MDDef.HorizonColor)) + ',' + 'Horizon');
        while not GISdb[db].MyData.eof do begin
+          Angle := GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH');
+          BlockAngle := GISdb[db].MyData.GetFieldByNameAsFloat('ELEV_DEG');
           if MDDef.InvertSkyline then BlockAngle := -BlockAngle + 30;
-          Result.nd.PlotPointOnNet(LinePlot,BlockAngle,Angle,ASymbol(Dot,MDDef.HorizonColor,MDDef.HorizonWidth),xd,yd);
+          Result.nd.PlotPointOnNet(LinePlot,BlockAngle,Angle,ASymbol(FilledBox,MDDef.HorizonColor,1),xd,yd);
           if (LastXD > -99) then begin
              Result.nd.WorkingBitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.HorizonColor);
              Result.nd.WorkingBitmap.Canvas.Pen.Width := MDDef.HorizonWidth;
@@ -682,14 +666,10 @@ begin
     end;
 
     if AngleGraph then begin
+       {$IfDef RecordHorizon} WriteLineToDebugFile('HorizonBlockingGraph start angle graph'); {$EndIf}
        Graph1 := GISdb[db].CreateScatterGram('Horizon','AZIMUTH','ELEV_DEG',clRed,true);
        Graph1.GraphDraw.FileColors256[1] := MDDef.HorizonColor;
        if MDDef.ShowSolstices then begin
-          //Graph1.GraphDraw.LegendList := tStringList.Create;
-          //Graph1.GraphDraw.LegendList.Add('Horizon');
-          //Graph1.GraphDraw.LegendList.Add('June solstice');
-          //Graph1.GraphDraw.LegendList.Add('Equinoxes');
-         // Graph1.GraphDraw.LegendList.Add('December solstice');
           AddToGraph('June solstice',AnnualJulianDay(2019,6,21));
           AddToGraph('Equinoxes',AnnualJulianDay(2019,9,21));
           AddToGraph('December solstice',AnnualJulianDay(2019,12,21));
@@ -698,7 +678,10 @@ begin
        Graph1.GraphDraw.SetShowAllPoints(false);
        Graph1.AutoScaleAndRedrawDiagram;
     end;
-    if RangeGraph then GISdb[db].CreateScatterGram('test','AZIMUTH','BLOCK_M',clRed,true);
+    if RangeGraph then begin
+       {$IfDef RecordHorizon} WriteLineToDebugFile('HorizonBlockingGraph start range graph'); {$EndIf}
+       GISdb[db].CreateScatterGram('test','AZIMUTH','BLOCK_M',clRed,true);
+    end;
 
     if MDDef.HorizonSkyMap then begin
        Result.UpdateDisplay;
@@ -706,7 +689,7 @@ begin
     end;
     ShowDefaultCursor;
    {$IfDef RecordHorizon} WriteLineToDebugFile('TMapForm.DrawHorizonBlocking horizon out'); {$EndIf}
-end;
+end {function HorizonBlockingGraph};
 
 
 procedure SunAtLocalNoon(BaseMap : tMapForm; Latitude,Longitude : float64);
@@ -992,9 +975,9 @@ var
          hr : integer;
          BlockAngle,BlockLength,BlockLat,BlockLong : float64;
       begin
-         {$IfDef RecordHorizon} WriteLineToDebugFile('Start JDay=' + IntToStr(Day)); {$EndIf}
-         //Inc(NumDay);
+         {$IfDef RecordHorizon} WriteLineToDebugFile('Start ComputeADay, JDay=' + IntToStr(Day)); {$EndIf}
          if MDDef.SolarPathMap then begin
+            {$IfDef RecordHorizon} WriteLineToDebugFile('Do solar path map'); {$EndIf}
             hrtime := 0;
             repeat
                Sun_Position.ComputeSunPosition(latitude,longitude,hrtime,tz,day,az,alt,sunrise,sunset);
@@ -1014,6 +997,7 @@ var
          end;
 
          if (SunResultsTable <> Nil) then begin
+            {$IfDef RecordHorizon} WriteLineToDebugFile('Do SunResultsTable'); {$EndIf}
             SunMasked := 0;
             SunUp := 0;
             hrtime := 0;
@@ -1038,6 +1022,7 @@ var
          end;
 
          if MDDef.SolarPathVectors then begin
+            {$IfDef RecordHorizon} WriteLineToDebugFile('Do MDDef.SolarPathVectors'); {$EndIf}
             hr := 0;
             repeat
                Sun_Position.ComputeSunPosition(latitude,longitude,hr,tz,day,az,alt,sunrise,sunset);
@@ -1057,6 +1042,11 @@ var
 
       procedure DoKeyDaze;
       begin
+         {$IfDef RecordHorizon} WriteLineToDebugFile('Do DoKeyDaze'); {$EndIf}
+         Result.nd.Legend.Add(IntToStr(ConvertPlatformColorToTColor(claBlue)) + ',June solstice');
+         Result.nd.Legend.Add(IntToStr(ConvertPlatformColorToTColor(claGreen)) + ',Equinoxes');
+         Result.nd.Legend.Add(IntToStr(ConvertPlatformColorToTColor(claLime)) + ',Dec solstice');
+
          ComputeADay(AnnualJulianDay(2024,3,21),claGreen);
          ComputeADay(AnnualJulianDay(2024,6,21),claBlue);
          ComputeADay(AnnualJulianDay(2024,12,21),claLime);
@@ -1064,7 +1054,7 @@ var
 
 var
   SaveHemi : tHemisphere;
-begin
+begin {function SunAndHorizon}
    {$IfDef RecordHorizon} WriteLineToDebugFile('SunAndHorizon in'); {$EndIf}
    SunResultsTable := Nil;
    SaveHemi := MDDef.NetDef.HemiSphereUsed;
@@ -1074,17 +1064,17 @@ begin
    Day := MDDef.SingleJulianDay;
    tz := round(Longitude / 15);
    if MDDef.VerifyTimeZone then ReadDefault('Time zone', tz);
-   //NumDay := 0;
 
    ShowHourglassCursor;
    if ValidDEM(DEM) then GetBlockAngles(DEM,0,Latitude,Longitude,BlockAngles);
 
    Result := TNetForm.Create(Application);
+   Result.nd.Legend := tStringList.Create;
    Result.Caption := 'Sun Position at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
 
    if MDDef.SolarPathVectors then begin
       Result.Caption := Result.Caption + '  ' + JulianDayToCalendarDate(Day);
-      Result.nd.LLcornerText := 'Sun: ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees) + ' ' + JulianDayToCalendarDate(Day);;
+      Result.nd.LLcornerText := 'Sun: ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees) + ' ' + JulianDayToCalendarDate(Day);
    end
    else Result.nd.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    Result.nd.NewNet;
@@ -1174,7 +1164,7 @@ begin
    ShowDefaultCursor;
    MDDef.NetDef.HemiSphereUsed := SaveHemi;
    {$IfDef RecordHorizon} WriteLineToDebugFile('SunAndHorizon out'); {$EndIf}
-end;
+end {function SunAndHorizon};
 
 
 initialization

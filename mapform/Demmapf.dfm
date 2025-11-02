@@ -51,6 +51,7 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitTop = -357
     object Image1: TImage
       Left = 3
       Top = -247
@@ -3678,15 +3679,14 @@ object MapForm: TMapForm
         end
         object Sunandsatellitevisibilityandblocking1: TMenuItem
           Caption = 'Sun and satellite visibility and blocking'
-          OnClick = Sunandsatellitevisibilityandblocking1Click
-        end
-        object Horizonblocking1: TMenuItem
-          Caption = 'Sun position and horizon blocking'
-          OnClick = Horizonblocking1Click
         end
         object Geostationarysatellitevisibility1: TMenuItem
           Caption = 'Geostationary satellite visibility'
           OnClick = Geostationarysatellitevisibility1Click
+        end
+        object Horizonblocking1: TMenuItem
+          Caption = 'Sun position and horizon blocking'
+          OnClick = Horizonblocking1Click
         end
         object Polarorbitersatellitevisibility1: TMenuItem
           Caption = 'Polar orbiter satellite visibility'
@@ -4341,6 +4341,13 @@ object MapForm: TMapForm
           object Allpartialderivatives1: TMenuItem
             Caption = 'All partial derivatives'
             OnClick = Allpartialderivatives1Click
+          end
+          object N54: TMenuItem
+            Caption = '-'
+          end
+          object kncprofilecurvature1: TMenuItem
+            Caption = 'kns (profile curvature)'
+            OnClick = kncprofilecurvature1Click
           end
           object N85: TMenuItem
             Caption = '-'
@@ -6628,6 +6635,13 @@ object MapForm: TMapForm
       Visible = False
       OnClick = Curvaturecategories1Click
     end
+    object N55: TMenuItem
+      Caption = '-'
+    end
+    object N88: TMenuItem
+      Caption = 'Synthetic surface (hemisphere)'
+      OnClick = N88Click
+    end
     object N5: TMenuItem
       Caption = '-'
     end
@@ -7033,7 +7047,6 @@ object MapForm: TMapForm
     end
     object Sunabovethehorizon2: TMenuItem
       Caption = 'Sun above the horizon'
-      OnClick = Sunabovethehorizon2Click
     end
   end
   object PopupMenu19: TPopupMenu

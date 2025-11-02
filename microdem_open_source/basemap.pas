@@ -18,8 +18,8 @@ unit basemap;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordWKTFull}
-      //{$Define RecordWKT}
+      {$Define RecordWKTFull}
+      {$Define RecordWKT}
       //{$Define RecordUKOS}
       //{$Define RecordDEMprojection}
       //{$Define TrackWKTstring}
@@ -136,6 +136,7 @@ type
          ProjectedCSTypeGeoKey3072 : int16;
 
          wktString : ANSIstring;
+         RawXYZFile,
          ThisIsUTMFile,
          FullWorld : boolean;
 
@@ -843,7 +844,7 @@ var
 begin
    Result := false;
    if FileExists(fName) then begin
-     {$IfDef RecordWKT} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromWKT in, ' + fName); {$EndIf}
+     {$IfDef RecordWKTFull} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromWKT in, ' + fName); {$EndIf}
       ProjData := tStringList.Create;
       ProjData.LoadFromFile(fName);
       {$IfDef RecordProjectionParameters} WriteLineToDebugFile('InitProjFromWKT, ' + ProjData.Strings[0]); {$EndIf}
@@ -1076,8 +1077,10 @@ begin
       else if  ParameterInString('USSURVEYFOOT') then VertFootFactor := FloatFromParameter(HorizWKT,'"USSURVEYFOOT"',0,']')
       else VertFootFactor := 1;
       if ParameterInString('NAVD88') then V_datumCode := 'NAVD88';
+      if ParameterInString('NEWZEALAND') then LatHemi := 'S';
+      if ParameterInString('NZGD2000') then V_datumCode := 'WGS84';
 
-      {$IfDef RecordWKT} ShortProjInfo('finished WKT read'); {$EndIf}
+      {$IfDef RecordWKTFull} ShortProjInfo('finished WKT read'); {$EndIf}
       GetProjectParameters;
       {$If Defined(RecordDEMprojection) or Defined(RecordWKT)} WriteProjectionSummaryToDebugFile('WKTProjectionFromString out, '); {$EndIf}
    end

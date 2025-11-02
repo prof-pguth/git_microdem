@@ -100,6 +100,8 @@ type
     Label13: TLabel;
     Label14: TLabel;
     Edit17: TEdit;
+    Edit18: TEdit;
+    Label15: TLabel;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -123,6 +125,7 @@ type
     procedure Edit17Change(Sender: TObject);
     procedure Edit7Change(Sender: TObject);
     procedure Edit9Change(Sender: TObject);
+    procedure Edit18Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -151,13 +154,10 @@ var
 begin
     with OwningGraph,GraphDraw do begin
          MarginsGood := true;
-         Edit11.Text := IntToStr(Width);
-         Edit12.Text := IntToStr(Height);
-         XLabelEdit.Text := HorizLabel;
-         YLabelEdit.Text := VertLabel;
          Edit13.Text := OwningGraph.GraphDraw.VertLabel2;
          ComboBox1.ItemIndex := ord(GraphAxes);
          ComboBox2.Visible := VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
+
          CheckBox1.Visible := GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
          CheckBox1.Checked := AnnualCycle;
          CheckBox2.Checked := not NormalCartesianY;
@@ -171,8 +171,16 @@ begin
          Edit8.Text := IntToStr(TopMargin);
          Edit9.Text := IntToStr(BottomMargin);
          Edit10.Text := LLcornerText;
+         Edit11.Text := IntToStr(Width);
+         Edit12.Text := IntToStr(Height);
          Edit16.Text := RealToString(OwningGraph.HistogramBinSize,-12,-3);
          Edit17.Text := RealToString(OwningGraph.HistogramNumBins,-12,-3);
+         Edit18.Text := IntToStr(MdDef.GraphTickSize);
+         XLabelEdit.Text := HorizLabel;
+         YLabelEdit.Text := VertLabel;
+         YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
+         YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
+
 
          if (DBFLineFilesPlotted <> Nil) and (DBFLineFilesPlotted.Count > 0) then begin
             ComboBox3.Visible := true;
@@ -217,8 +225,6 @@ begin
          if OwningGraph.GraphDraw.InsideMarginLegend = lpSEMap then RadioGroup1.ItemIndex := 4;
     end;
 
-    YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
-    YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
 
    if OwningGraph.GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
       XMinLabel.Caption := 'Ending';
@@ -419,7 +425,7 @@ end;
 
 procedure TGraphSettingsForm.RadioGroup1Click(Sender: TObject);
 begin
-   case RadioGroup1.ItemIndex of
+  case RadioGroup1.ItemIndex of
        0 : OwningGraph.GraphDraw.InsideMarginLegend := lpNone;
        1 : OwningGraph.GraphDraw.InsideMarginLegend := lpNWMap;
        2 : OwningGraph.GraphDraw.InsideMarginLegend := lpNEMap;
@@ -489,6 +495,11 @@ begin
 end;
 
 
+
+procedure TGraphSettingsForm.Edit18Change(Sender: TObject);
+begin
+   CheckEditString(Edit18.Text,MdDef.GraphTickSize);
+end;
 
 procedure TGraphSettingsForm.Edit7Change(Sender: TObject);
 begin

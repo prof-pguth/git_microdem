@@ -1601,7 +1601,7 @@ begin
          EmpSource.Enabled := false;
          i := 0;
          MyData.First;
-         StartProgress('Mark deletions');;
+         StartProgress('Mark deletions');
          while not MyData.eof do begin
             MyData.Edit;
             MyData.MarkRecordForDeletion;
@@ -1952,7 +1952,7 @@ begin
         Petmar.GetString('Elev field name',Result,true,DBaseFieldNameChars);
       end;
    end
-   else Petmar.GetString('Elev field name',Result,true,DBaseFieldNameChars);;
+   else Petmar.GetString('Elev field name',Result,true,DBaseFieldNameChars);
 end;
 
 

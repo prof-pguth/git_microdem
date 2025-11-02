@@ -136,7 +136,6 @@ var
       procedure GetDate(var Month,Day,Year : word);
       procedure GetDateAndDuration(var Month,Day,Year,Duration : word; ShowDuration : boolean = true);
 
-      procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
       procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  byte); overload;
       procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  float32); overload;
       procedure PickLineSizeAndColor(WhatFor : shortString; BitButton : tBitBtn; var LineColor : tPlatformColor; var LineSize :  integer); overload;
@@ -251,6 +250,8 @@ var
          function DefaultHorizontalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
          function DefaultVerticalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
          function VerticalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = '') : tMyBitmap;
+         function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
+
 
       //font routines
          procedure LoadMyFontIntoWindowsFont(MyFont : tMyFont; WindFont : tFont);
@@ -1717,27 +1718,6 @@ end;
             end;
          end;
 
-         procedure GetSymbol(var DrSymbol : tDrawingSymbol; var SymSize   : byte; var WantColor  : tPlatformColor; WhatFor : shortstring = '');
-         var
-           GetPointColor  : tPlatformColor;
-         begin
-            PickSymbolForm := TPickSymbolForm.Create(Application);
-            with PickSymbolForm do begin
-               if (WhatFor <> '') then Caption := WhatFor;
-               GetPointColor := WantColor;
-               GetPointSymbol := DrSymbol;
-               GetPointSize := SymSize;
-               UpDown2.Position := GetPointSize;
-               SymCount := ord(GetPointSymbol);
-               SampleSymbol;
-               if (ShowModal <> idCancel) then begin
-                  WantColor := GetPointColor;
-                  DrSymbol := GetPointSymbol;
-                  SymSize := GetPointSize;
-               end;
-               Free;
-            end;
-         end;
 
          procedure GetDate(var Month,Day,Year : word);
          var
@@ -3598,7 +3578,6 @@ procedure UpdateProgressBar(HowFar : float64);
 begin
    {$IfDef VCL}
       if WantShowProgress and (PETProgF <> Nil) and (not Math.IsNAN(HowFar)) and (not Math.IsInfinite(HowFar)) then begin
-         //ApplicationProcessMessages;
          PetProgF.Gauge1.Progress := round(100.0 * HowFar);
          if HeavyDutyProcessing then begin
             PetProgF.Top := 10;

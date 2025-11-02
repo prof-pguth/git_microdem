@@ -162,6 +162,13 @@ object NetForm: TNetForm
       Caption = 'Enter and plot'
       OnClick = Enterandplot1Click
     end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object Legand1: TMenuItem
+      Caption = 'Legand'
+      OnClick = Legand1Click
+    end
     object N1: TMenuItem
       Caption = '-'
     end

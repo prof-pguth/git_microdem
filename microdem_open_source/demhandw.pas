@@ -248,7 +248,7 @@ type
     OGRshapefilestoGKPG1: TMenuItem;
     ASCIIremovelineswithoutsubstring1: TMenuItem;
     VerticaldatumshiftoverwriteDEMgrid1: TMenuItem;
-    DiluviumDEMreprot1: TMenuItem;
+    //DiluviumDEMreprot1: TMenuItem;
     emplatedownload1: TMenuItem;
     MICRODEMformat1: TMenuItem;
     N8: TMenuItem;
@@ -404,7 +404,7 @@ type
     procedure CSVmergefiles1Click(Sender: TObject);
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
     procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
-    procedure DiluviumDEMreprot1Click(Sender: TObject);
+    //procedure DiluviumDEMreprot1Click(Sender: TObject);
     procedure emplatedownload1Click(Sender: TObject);
     procedure MICRODEMformat1Click(Sender: TObject);
     procedure Verifyfilesinmaplibrary1Click(Sender: TObject);
@@ -1271,11 +1271,6 @@ begin
    ConvertDEMtoLAZ(memo1);
 end;
 
-
-procedure TDemHandForm.DiluviumDEMreprot1Click(Sender: TObject);
-begin
-    {$IfDef IncludeCoastalDEMs} DiluviumDEMIXtileReport; {$EndIf}
-end;
 
 procedure TDemHandForm.GDALassignprojectionviaEPSG1Click(Sender: TObject);
 var

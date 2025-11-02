@@ -993,7 +993,7 @@ type
     GraphSSIMFUVbyDEMmeans1: TMenuItem;
     Filterfor999valuesinanyevaluation1: TMenuItem;
     //CiompareCOPtorivals1: TMenuItem;
-    CopHeadtoheadrecord1: TMenuItem;
+    //CopHeadtoheadrecord1: TMenuItem;
     InventoryFUVSSIMcriteriainDB1: TMenuItem;
     Copycolumntoclipboard1: TMenuItem;
     QuartilesinCLUSTERfieldbasedonsort1: TMenuItem;
@@ -1055,6 +1055,7 @@ type
     IQR1: TMenuItem;
     N50: TMenuItem;
     N53: TMenuItem;
+    Limitdeimalsinmultiplefields1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1813,7 +1814,7 @@ type
     //procedure AddsloperoughnessrelieftoDB1Click(Sender: TObject);
     procedure Filterfor999valuesinanyevaluation1Click(Sender: TObject);
     //procedure CiompareCOPtorivals1Click(Sender: TObject);
-    procedure CopHeadtoheadrecord1Click(Sender: TObject);
+    //procedure CopHeadtoheadrecord1Click(Sender: TObject);
     procedure InventoryFUVSSIMcriteriainDB1Click(Sender: TObject);
     procedure Copycolumntoclipboard1Click(Sender: TObject);
     procedure QuartilesinCLUSTERfieldbasedonsort1Click(Sender: TObject);
@@ -1869,6 +1870,7 @@ type
     procedure FindmisplacedGEDTMv12testDEMs1Click(Sender: TObject);
     procedure Capitalize1Click(Sender: TObject);
     procedure IQR1Click(Sender: TObject);
+    procedure Limitdeimalsinmultiplefields1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -1969,7 +1971,7 @@ uses
    demdatabase,
    Petimage_form,
    Petmar_ini_file,
-
+   PetSymbol,
    DEMESRIShapeFile,
    toggle_db_use,
    DEMEditW,
@@ -5221,9 +5223,10 @@ end;
 
 procedure Tdbtablef.AddDEMIXUTMtilename1Click(Sender: TObject);
 var
-   WantField,tName : shortstring;
+   //WantField,
+   tName : shortstring;
    Lat,Long : float64;
-   bb : sfBoundBox;
+   //bb : sfBoundBox;
 begin
    if GISdb[DBonTable].MyData.FieldExists('DEMIX_TILE') then GISdb[DBonTable].MyData.TrimField('DEMIX_TILE',20)
    else GISdb[DBonTable].AddFieldToDataBase(ftString,'DEMIX_TILE',20);
@@ -5656,7 +5659,7 @@ begin
       AddFieldToDataBase(ftFloat,'X_MERC',11,1);
       AddFieldToDataBase(ftFloat,'Y_MERC',12,1);
       AddFieldToDataBase(ftFloat,'MERC_H',6,3);
-      MercMap := tMapProjection.Create('dbtable, mercator');;
+      MercMap := tMapProjection.Create('dbtable, mercator');
       MercMap.PName := MercatorEllipsoid;
       SetUpDefaultNewProjection(MercMap);
       MercMap.GetProjectParameters;
@@ -5792,7 +5795,7 @@ end;
 procedure Tdbtablef.Addstringtoendofeachrecord1Click(Sender: TObject);
 var
    aString,ExtToAdd : ShortString;
-   Retain : integer;
+   //Retain : integer;
 begin
    with GISdb[DBonTable] do begin
       ShowHourglassCursor;
@@ -6385,7 +6388,7 @@ procedure Tdbtablef.Alltiles1Click(Sender: TObject);
 //Cluster whisker plots for tile characteristics, get all tiles by picking just one criterion
 var
    aFilter : shortstring;
-   Filters : tStringList;
+   //Filters : tStringList;
 begin
    aFilter := GISdb[DBonTable].MyData.Filter;
    GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr('ELEV_FUV'));
@@ -6704,7 +6707,7 @@ var
   i : integer;
   DataFiles,LegendFiles,
   sl : tStringList;
-  z: float32;
+  //z: float32;
   MaxY,MaxX,Min,Max  : float64;
   Hists : array[1..MaxDataBase] of TThisBaseGraph;
   Npts : int64;
@@ -7327,6 +7330,20 @@ begin
    GISdb[DBonTable].LimitFieldDecimals(SelectedColumn,NumDec);
 end;
 
+
+procedure Tdbtablef.Limitdeimalsinmultiplefields1Click(Sender: TObject);
+var
+   NumDec,i : integer;
+   theFields : tStringList;
+begin
+   NumDec := 3;
+   ReadDefault('decimals to retain',NumDec);
+   theFields := GISdb[DBonTable].GetMultipleNumericFields('limit decimals');
+   for I := 0 to pred(theFields.Count) do begin
+      GISdb[DBonTable].LimitFieldDecimals(theFields.Strings[i],NumDec);
+   end;
+   theFields.Destroy;
+end;
 
 procedure Tdbtablef.Linearinterpolateacrossgaps1Click(Sender: TObject);
 var
@@ -9885,14 +9902,9 @@ begin
 end;
 
 
-procedure Tdbtablef.CopHeadtoheadrecord1Click(Sender: TObject);
-begin
-   CreateCopHeadToHeaddb(dbOnTable);
-end;
-
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext1);
+   GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext1);
 end;
 
 
@@ -11037,7 +11049,7 @@ var
                       for i := pred(aShapeFile.CurrentPolyLineHeader.NumPoints) downto 0 do begin
                          if (I < pred(aShapeFile.CurrentPolyLineHeader.NumPoints)) and (i > 0) then begin
                             if z[i] > LastZ then z[i] := MaxInt
-                            else LastZ := z[i];;
+                            else LastZ := z[i];
                          end;
                       end
                    end
@@ -11994,7 +12006,7 @@ var
    Sym : tDrawingSymbol;
 begin
    Sym := FilledBox;
-   Petmar.GetSymbol(Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor,'Area centroids');
+   GetSymbol(Sym,GISdb[DBonTable].AreaRecordSize,GISdb[DBonTable].dbOpts.FillColor,'Area centroids');
    GISdb[DBonTable].EmpSource.Enabled := false;
    CopyImageToBitmap(GISdb[DBonTable].theMapOwner.Image1,BitMap);
    StartProgress('Centroids');
@@ -12513,7 +12525,7 @@ begin
                inc(j);
                UpdateProgressBar(j/GISdb[DBonTable].MyData.FiltRecsInDB);
                GridForm.StringGrid1.Cells[j,0] := GISdb[DBonTable].MyData.GetFieldByNameAsString(IDField);
-               GridForm.StringGrid1.Cells[0,j] := GISdb[DBonTable].MyData.GetFieldByNameAsString(IDField);;
+               GridForm.StringGrid1.Cells[0,j] := GISdb[DBonTable].MyData.GetFieldByNameAsString(IDField);
                for I := GISdb[DBonTable].MyData.RecNo to GISdb[DBonTable].MyData.RecordCount do begin
                   GISdb[NewGIS].aShapeFile.AreaAndCentroid(GISdb[DBonTable].TheMapOwner.MapDraw.PrimMapProj,i,Lat2,Long2);
                   VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,Dist,Az);
@@ -15027,7 +15039,7 @@ end;
 
 procedure Tdbtablef.PlotClick(Sender: TObject);
 begin
-     GISdb[DBonTable].MakeGraph(dbgtPlot);
+   GISdb[DBonTable].MakeGraph(dbgtPlot);
 end;
 
 

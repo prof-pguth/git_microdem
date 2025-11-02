@@ -1366,7 +1366,7 @@ begin {tTIFFImage.CreateTiffDEM}
                         z := z * TiffHeader.Factor;
                         WantDEM.SetGridElevation(Col,dRow,z);
                      end
-                     else WantDEM.SetGridMissing(Col,dRow);;
+                     else WantDEM.SetGridMissing(Col,dRow);
                   end;
                end
                else if (TiffHeader.BitsPerSample in [8]) then begin
@@ -2104,7 +2104,13 @@ var
                          else begin
                              TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm);
                              {$IfDef RecordProjProgress} WriteLineToDebugFile('In 34737 ' + TStr); {$EndIf}
-                             if StrUtils.AnsiContainsText(UpperCase(TStr),'PCS NAME =') then begin
+                             if StrUtils.AnsiContainsText(UpperCase(TStr),'UTM') then begin
+                                 //among possible others, this is for RDN2008, Italy one zone
+                                 {$IfDef RecordPlateCaree} WriteLineToDebugFile('UTM, from 34737'); {$EndIf}
+                                 ProcessASCIIstringForProjection(TStr);
+                                 ProjectionDefined := true;
+                             end
+                             else if StrUtils.AnsiContainsText(UpperCase(TStr),'PCS NAME =') then begin
                                 MapProjection.wktString := tstr;
                                 StripBlanks(MapProjection.wktString);
                                 if StrUtils.AnsiContainsText(UpperCase(MapProjection.wktString),'ESRIPESTRING') then begin
@@ -2125,12 +2131,6 @@ var
                              else if StrUtils.AnsiContainsText(UpperCase(TStr),'GCS_WGS_1984') then begin
                                  {$IfDef RecordPlateCaree} WriteLineToDebugFile('GCS, from 34737'); {$EndIf}
                                  DefineGCScoordinates;
-                                 ProjectionDefined := true;
-                             end
-                             else if StrUtils.AnsiContainsText(UpperCase(TStr),'UTM') then begin
-                                 //among possible others, this is for RDN2008, Italy one zone
-                                 {$IfDef RecordPlateCaree} WriteLineToDebugFile('UTM, from 34737'); {$EndIf}
-                                 ProcessASCIIstringForProjection(TStr);
                                  ProjectionDefined := true;
                              end
                              else ASCIIStr := TStr;
@@ -2337,7 +2337,7 @@ var
                                         ' RasterX=' + RealToString(TiffHeader.RasterX,-18,-6) + ' RasterY=' + RealToString(TiffHeader.RasterY,-18,-6) );
                                 {$EndIf}
                             end
-                            else MessageToContinue('Unknown linear units (' + IntToStr(TiffOffset) + '); Problems ahead');;
+                            else MessageToContinue('Unknown linear units (' + IntToStr(TiffOffset) + '); Problems ahead');
                          end;
                   3078 : MapProjection.Phi1 := SetADouble(TiffOffset,4) * DegToRad;
                   3079 : MapProjection.Phi2 := SetADouble(TiffOffset,4) * DegToRad;

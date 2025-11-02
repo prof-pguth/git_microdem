@@ -55,6 +55,7 @@ type
     LLcornerText,NetTitle : ShortString;
     NetOffset  : integer;
     MainDiagramSize : integer;
+    Legend : tStringList;
     WorkingBitmap : tMyBitmap;
       function XPlotCoord(xd : integer) : integer; overload;
       function YPlotCoord(yd : integer) : integer; overload;
@@ -106,6 +107,8 @@ type
     Enterandplot1: TMenuItem;
     Countourlimits1: TMenuItem;
     N1: TMenuItem;
+    N2: TMenuItem;
+    Legand1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Close1Click(Sender: TObject);
@@ -126,6 +129,7 @@ type
     procedure Enterandplot1Click(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Countourlimits1Click(Sender: TObject);
+    procedure Legand1Click(Sender: TObject);
   public
     { Public declarations }
     nd : tNetDraw;
@@ -141,6 +145,7 @@ implementation
 
 uses
    PetImage,
+   PetImage_Form,
    Petmar_geology,
    NetOpts,
    Net_entry,
@@ -417,8 +422,6 @@ end;
 
 
 procedure TNetForm.Contourinterval1Click(Sender: TObject);
-//var
-   //i,err : integer;
 begin
    if MDDef.NetDef.NetContourColors in [GrayScale,Spectrum,Terrain,Rainbow] then begin
       ReadDefault('max concentration',MDDef.NetDef.MaxContourConcentration);
@@ -469,6 +472,69 @@ begin
    Contourinterval1Click(Sender);
 end;
 
+procedure TNetForm.Legand1Click(Sender: TObject);
+var
+  i,TopY,HowHigh,Len,MaxLen : Integer;
+  Bitmap : tMyBitmap;
+  TStr : ANSIstring;
+begin
+  if (nd.Legend <> Nil) then begin
+     CreateBitmap(Bitmap,500,500);
+     TopY := 5;
+     Bitmap.Canvas.Font.Style := [fsBold];
+     Bitmap.Canvas.Font.Name := 'Verdana';
+     Bitmap.Canvas.Font.Size := 18;
+     for i := 0 to pred(nd.Legend.Count) do begin
+        TStr := nd.Legend.Strings[i];
+        Bitmap.Canvas.Brush.Color := StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true));
+        HowHigh := Bitmap.Canvas.TextHeight(TStr);
+        Bitmap.Canvas.Brush.Style := bsSolid;
+        Bitmap.Canvas.Rectangle(5,TopY,5 + HowHigh,TopY + HowHigh);
+        Bitmap.Canvas.Brush.Style := bsClear;
+        Bitmap.Canvas.TextOut(15 + HowHigh,TopY,TStr);
+        Len := Bitmap.Canvas.TextWidth(TStr);
+        if (Len > MaxLen) then MaxLen := Len;
+
+        TopY := TopY + HowHigh + 10;
+     end;
+(*
+         for i := 0 to pred(fList.Count) do begin
+            Tstr := GetLabel(ExtractFileNameNoExt(flist.Strings[i]));
+            if (TStr <> '') then begin
+                 inc(NumF);
+                 SetMyBitmapColors(Result,i);
+                 {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
+                 Result.Canvas.Font.Style := [fsBold];
+                 Result.Canvas.Font.Name := FontDialog1.Font.Name;
+                 Result.Canvas.Font.Size := FontDialog1.Font.Size;
+                 if GraphDraw.ShowLine[i] then begin
+                    Result.Canvas.MoveTo(5,pred(NumF) * ItemHigh + 12);
+                    Result.Canvas.LineTo(45,pred(NumF) * ItemHigh + 12);
+                 end;
+
+                 if GraphDraw.ShowPoints[i] then begin
+                    GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(Result.Canvas.Pen.Color);
+                    Petmar.ScreenSymbol(Result.Canvas,30,pred(NumF) * ItemHigh + 12,GraphDraw.Symbol[i]);
+                 end;
+                 Len := Result.Canvas.TextWidth(TStr);
+                 if (Len > MaxLen) then MaxLen := Len;
+                 Result.Canvas.Brush.Style := bsClear;
+                 Result.Canvas.Font.Color := clBlack;
+                 Result.Canvas.TextOut(50,pred(NumF) * ItemHigh, TStr);
+            end;
+         end;
+  *)
+         Bitmap.Width := 15 + 10 + HowHigh + MaxLen;
+         Bitmap.Height := TopY;
+         Bitmap.Canvas.Pen.Width := 1;
+         Bitmap.Canvas.Pen.Color := clBlack;
+         Bitmap.Canvas.Brush.Style := bsClear;
+         Bitmap.Canvas.Rectangle(0,0,pred(Bitmap.Width),pred(Bitmap.Height));
+         DisplayBitmap(Bitmap,'Legend',true);
+  end;
+end;
+
+
 procedure TNetForm.Line1Click(Sender: TObject);
 var
    Dip,DipDirect : float64;
@@ -500,6 +566,7 @@ begin
    ZeroPoleCount;
    NetColor := clBlack;
    LLcornerText := '';
+   Legend := nil;
    NewNet;
 end;
 

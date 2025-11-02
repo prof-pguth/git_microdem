@@ -264,7 +264,7 @@ function CalculateIQR(n : integer; var ra : array of float32) : float32;
       procedure QuickSort(L, R: Integer);
       var
         i, j : Integer;
-        x, y : float32;
+        x : float32;
       begin
         i := L;
         j := R;
@@ -340,9 +340,9 @@ function CalculateIQR(n : integer; var ra : array of float32) : float32;
       end;
 
 
-var
-  Q1, Q3: float32;
-  LowerHalfEnd, UpperHalfStart: Integer;
+//var
+  //Q1, Q3: float32;
+  //LowerHalfEnd, UpperHalfStart: Integer;
 begin
   if n < 4 then  begin
     WriteLn('Dataset must have at least 4 elements to compute IQR.');

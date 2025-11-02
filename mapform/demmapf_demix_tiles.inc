@@ -8,13 +8,13 @@
 {________________________________________}
 
 
-function DEMIX_SpecialCase(AreaName : shortstring) : boolean;
+function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
 var
    Starter : shortstring;
 begin
    Starter := UpperCase(Copy(AreaName,1,3));
    Result := (Starter = 'MX_') or (Starter = 'UK_') or (Starter = 'CH_') or (Starter = 'NL_') or (Starter = 'NZ_') or (Starter = 'FR_') or
-      (Starter = 'DE_') or (Starter = 'DK_') or (Starter = 'FI_') or (Starter = 'EE_')  or (Starter = 'GB_');
+      (Starter = 'DE_') or (Starter = 'DK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_');
 end;
 
 
@@ -33,10 +33,10 @@ var
    Starter : shortstring;
 begin
    Result := '';
-   if DEMIX_SpecialCase(AreaName) then begin
+   if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
       //Result := LastSubDir(ExtractFilePath(FileName));
       Starter := UpperCase(Copy(AreaName,1,3));
-      if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_')  or (Starter = 'GB_') or (Starter = 'DK_') then Result := AreaName;   //these use the map quad names
+      if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_') or (Starter = 'DK_') or (Starter = 'CA_') then Result := AreaName;   //these use the map quad names
 
       //German states
       if (UpperCase(Copy(AreaName,4,3)) = 'BV_') then Result := AreaName;
@@ -45,6 +45,14 @@ begin
          Result := 'DE_SX_' + copy(ExtractFileNameNoExt(FileName),1,9) + copy(ExtractFileNameNoExt(FileName),11,4);
          {dgm1_33327_5591_1_sn.tif  }
        end;
+   end;
+
+   if (UpperCase(Copy(AreaName,1,3)) = 'CA_') then begin
+      Result := ExtractFileNameNoExt(FileName);
+      Delete(Result,1,7);
+      Result := 'CA_' + Result;
+{
+dtm_1m_utm10_w_4_151.tif   }
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin

@@ -1747,7 +1747,7 @@ end;
                MDDef.MaxIntensity := pt_cloud_opts_fm.LasFiles[Cloud].INTEN_99;
                MDDef.MinIntensity := pt_cloud_opts_fm.LasFiles[Cloud].INTEN_1;
             end;
-            if MDDef.LasAutoThin then begin
+            if MDDef.LasAutoThin and (not Math.IsNAN(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity)) and (not Math.IsInfinite(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity)) then begin
                MDDef.CloudMapThinFactor := trunc(pt_cloud_opts_fm.LasFiles[Cloud].PointDensity * ScreenPixelSize / 2);
                if (MDDef.CloudMapThinFactor <= 0) then MDDef.CloudMapThinFactor := 1;
                if (MDDef.CloudMapThinFactor > 500) then MDDef.CloudMapThinFactor := 500;

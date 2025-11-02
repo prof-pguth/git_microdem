@@ -510,7 +510,7 @@ const
   eucurv_kncs = 123;
   eucurv_knss = 124;
 
-  CurvNamesShort : array[101..124] of shortstring = ('kns','knc','tc','zss','ts','zcc','kpc','pks','sin_sc','kd',
+  CurvNamesShort : array[101..124] of shortstring = ('kns-profc','knc-tangc','tc','zss','ts','zcc','kpc-planc','pks','sin_sc','kd',
               'ka','kr','khe','kve','k_max','k_min','k','el','ku','k_mean','kc','kncc','kncs','knss');
 
 type
@@ -699,7 +699,7 @@ type
         PickToBroadcast,RoamBroadcast,
         CalculateArea,CalculateVolume,GraphFilterDB,
         SubsetByOutline,SubsetLake,SubsetHole,ReplaceValuesByOutline,FillHolesByOutline,
-        IDDataBaseOne,IDDataBaseAll,LabelIDDataBase,GraphicalResizeWindow,GetPointSymbols,CornerEditBox,FindBlockHorizon, IDDBforAction,
+        IDDataBaseOne,IDDataBaseAll,LabelIDDataBase,GraphicalResizeWindow,GetPointSymbols,CornerEditBox,{FindBlockHorizon,} IDDBforAction,
         GetGreatCircleRoute, PlotNorthArrow,DeleteSingleDBRecs,DeleteMultipleDBRecs,DeleteMultipleRecsAllDBs,
         MovePointDBRecs,EditDBRecs,EditZDBRecs,
         {USCounty,}DigitizeContourPoint,DigitizeContourStream,PickCenterAndScale,PickDBRecsToMove);
@@ -2146,7 +2146,7 @@ type
        OpennessDirs : tDirToUse;
        DefaultQuadSize : float32;
        ShowSDonElevSlope : boolean;
-       GrayscaleChannels : boolean;
+       //GrayscaleChannels : boolean;
        MinRGBColor,MaxRGBColor,RangeRGBColor : byte;
        MinPercentile,MaxPercentile : float32;
        DefElevsPercentile : boolean;
@@ -2655,6 +2655,7 @@ type
       RecNumToShowDBProgress : int16;
       SummarySymbol,
       DefMarginLegend : byte;
+      GraphTickSize,
       DefaultGraphXSize,DefaultGraphYSize : int32;
       NoHistFreqLabels : boolean;
       FrameLineWidth : byte;
@@ -2892,6 +2893,7 @@ type
        VerifyTimeZone,
        SolarPathMap,
        SolarPathVectors,
+       ShowToday,
        ShowSolstices,
        PromptToSaveNewDEMs,
        DoReqFlyHigh,
@@ -2901,9 +2903,6 @@ type
        LogTCPcommands,
        LogTCPResults,
        MDRecordDebugLog : boolean;
-      // MaxDebugLinesToKeep,
-       //FinalLinesToKeep,
-       //InitialLinesToKeep : integer;
 
        FigureCoverageOfRoads : boolean;
        RangeCircleUnit   : tRangeCircleUnit;

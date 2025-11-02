@@ -584,7 +584,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Width = 152
       Height = 90
       Caption = 'Comparison'
-      ItemIndex = 0
+      ItemIndex = 1
       Items.Strings = (
         'Compare two DEMs'
         'Compare all DEMs'

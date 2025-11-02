@@ -549,3 +549,47 @@ end;
             Result := DoLegendOnBitmap(false,Colors,vals,Units,LegendTitle);
          end;
 
+
+
+function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
+var
+   i,Left,Top,StartFontSize : integer;
+   Color : tColor;
+
+         procedure AnEntry(DEM : shortString; Color : tColor);
+         begin
+            Result.Canvas.Pen.Color := Color;
+            Result.Canvas.Brush.Color := Result.Canvas.Pen.Color;
+            Result.Canvas.Brush.Style := bsSolid;
+            Result.Canvas.Rectangle(Left,Top,Left + Result.Canvas.TextHeight(DEM),Top + Result.Canvas.TextHeight(DEM));
+            Left := Left + Result.Canvas.TextHeight(DEM) + 10;
+            Result.Canvas.Brush.Style := bsClear;
+            Result.Canvas.TextOut(Left,Top,DEM);
+            if Horizontal then Left := Left + Result.Canvas.TextWidth(DEM + '   ')
+            else begin
+               Top := Top + 10 + Result.Canvas.TextHeight(DEM);
+               Left := 15;
+            end;
+         end;
+
+begin
+   StartFontSize := MDDef.DEMIXlegendFontSize;
+   Result := Nil;
+   repeat
+      if (Result <> Nil) then Result.Destroy;
+      CreateBitmap(Result,1500,900);
+      LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
+      Result.Canvas.Font.Size := StartFontSize;
+      Left := 15;
+      Top := 10;
+      for i := 0 to pred(DEMsUsed.Count) do begin
+         Color := StrToInt(ColorsUsed[i]);
+         AnEntry(DEMsUsed.Strings[i],Color);
+      end;
+      PutBitmapInBox(Result);
+      Dec(StartFontSize);
+   until Result.Width < MaxWide;
+end;
+
+
+

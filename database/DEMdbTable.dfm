@@ -3030,6 +3030,10 @@ object dbtablef: Tdbtablef
         OnClick = Addmaskfieldfromsubstringinmultiplefields1Click
       end
     end
+    object Limitdeimalsinmultiplefields1: TMenuItem
+      Caption = 'Limit deimals in multiple fields'
+      OnClick = Limitdeimalsinmultiplefields1Click
+    end
     object Fieldarithmetic1: TMenuItem
       Caption = 'Field arithmetic'
       object Copynumericfield1: TMenuItem
@@ -3790,7 +3794,6 @@ object dbtablef: Tdbtablef
       end
       object CopHeadtoheadrecord1: TMenuItem
         Caption = 'Cop Head to head record by criterion'
-        OnClick = CopHeadtoheadrecord1Click
       end
       object Evaluationrangebycriterion1: TMenuItem
         Caption = 'Evaluation range statistics by criterion'

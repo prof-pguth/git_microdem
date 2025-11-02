@@ -36,34 +36,8 @@ type
     SlopeSpeedButton: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure FormResize(Sender: TObject);
-    procedure Print1Click(Sender: TObject);
-    procedure Saveimage1Click(Sender: TObject);
-    procedure Editimage1Click(Sender: TObject);
-    procedure Graphsettings2Click(Sender: TObject);
-    procedure Graphparameters1Click(Sender: TObject);
-    procedure Font1Click(Sender: TObject);
-    procedure Image1DblClick(Sender: TObject);
-    procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
-    procedure None1Click(Sender: TObject);
-    procedure N3term1Click(Sender: TObject);
-    procedure N5term1Click(Sender: TObject);
-    procedure n7term1Click(Sender: TObject);
-    procedure N9term1Click(Sender: TObject);
-    procedure AlongXaxis1Click(Sender: TObject);
-    procedure AlongYaxis1Click(Sender: TObject);
-    procedure Scale1Click(Sender: TObject);
     procedure Changeparameters1Click(Sender: TObject);
     procedure SeekPeakButtonClick(Sender: TObject);
-    procedure RedrawDiagram11Click(Sender: TObject);
-    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure SpeedButton5Click(Sender: TObject);
-    procedure SpeedButton4Click(Sender: TObject);
-    procedure SpeedButton7Click(Sender: TObject);
-    procedure SpeedButton3Click(Sender: TObject);
-    procedure SpeedButton2Click(Sender: TObject);
-    procedure SpeedButton1Click(Sender: TObject);
     procedure fftbuttonClick(Sender: TObject);
     procedure SlopeSpeedButtonClick(Sender: TObject);
   private
@@ -327,18 +301,6 @@ begin
    inherited;
    DeleteFile(FFTfileName);
    DeleteFile(MDTempDir + 'Fourier.txt');
-end;
-
-
-procedure TFFTGraph.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-begin
-   inherited;;
-end;
-
-
-procedure TFFTGraph.FormResize(Sender: TObject);
-begin
-   inherited;;
 end;
 
 
@@ -687,88 +649,6 @@ begin
 end;
 
 
-procedure TFFTGraph.Print1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Saveimage1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Editimage1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Graphsettings2Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Graphparameters1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Font1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Image1DblClick(Sender: TObject);
-begin
-   inherited;;
-end;
-
-
-procedure TFFTGraph.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.None1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.N3term1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.N5term1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.n7term1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.N9term1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.AlongXaxis1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.AlongYaxis1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
-procedure TFFTGraph.Scale1Click(Sender: TObject);
-begin
-   inherited;;
-end;
-
 procedure TFFTGraph.Changeparameters1Click(Sender: TObject);
 var
    i : integer;
@@ -890,46 +770,6 @@ begin
       Results.Add('');
       Petmar.DisplayAndPurgeStringList(Results,'');
    end;
-end;
-
-procedure TFFTGraph.RedrawDiagram11Click(Sender: TObject);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.SpeedButton5Click(Sender: TObject);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.SpeedButton4Click(Sender: TObject);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.SpeedButton7Click(Sender: TObject);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.SpeedButton3Click(Sender: TObject);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.SpeedButton2Click(Sender: TObject);
-begin
-  inherited;;
-end;
-
-procedure TFFTGraph.SpeedButton1Click(Sender: TObject);
-begin
-  inherited;;
 end;
 
 procedure TFFTGraph.fftbuttonClick(Sender: TObject);

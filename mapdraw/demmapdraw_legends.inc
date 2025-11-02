@@ -325,14 +325,16 @@ begin
          end;
       end
       else begin
-         for i := 1 to 360 do begin
-            x := xc + round(Radius * SinDeg(i));
-            y := yc - round(Radius * CosDeg(i));
-            Color := ConvertPlatformColorToTColor(AspColor[i]);
+         angle := 0;
+         while Angle <= 360 do begin
+            x := xc + round(Radius * SinDeg(Angle));
+            y := yc - round(Radius * CosDeg(Angle));
+            Color := ConvertPlatformColorToTColor(AspColor[round(Angle)]);
             Result.Canvas.Pen.Color := Color;
             Result.Canvas.Pen.Width := 2;
             Result.Canvas.MoveTo(xc,yc);
             Result.Canvas.LineTo(x,y);
+            Angle := Angle + 1 / MDDef.GridLegendLocation.LegendSize;
          end;
       end;
       Result.Canvas.Brush.Color := ClWhite;

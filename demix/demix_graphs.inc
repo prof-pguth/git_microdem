@@ -649,7 +649,7 @@ var
                   Graph.GraphDraw.MinHorizAxis := 0;
                   Graph.GraphDraw.MaxHorizAxis := 1.1;
                end
-               else if Graph.GraphDraw.MinHorizAxis > 0 then Graph.GraphDraw.MinHorizAxis := 0;;
+               else if Graph.GraphDraw.MinHorizAxis > 0 then Graph.GraphDraw.MinHorizAxis := 0;
             end
             else if What in [dgAllValues] then begin
                Graph.GraphDraw.HorizLabel := ThisTile + ' Criterion Difference';
@@ -822,7 +822,7 @@ var
       GISdb[DBonTable].EmpSource.Enabled := false;
       if (aP = 1) then UseMax := 1.025 * GISdb[DBonTable].MyData.FindFieldMax(TheParameter);
       Gr := OnlyInTieForBestByParameterSorting(DBonTable,UseMax,TheParameter,TheCriteria,theDEM,LandType,HorizLabel,VertLabel);
-      AddGraphToBigBitmap(aP,{LeftStart,}GraphPanelsWide,1,gr,BigBitmap);
+      AddGraphToBigBitmap(aP,GraphPanelsWide,1,gr,BigBitmap);
       {$If Defined(RecordDEMIXSortGraph)} WriteLineToDebugFile('MakeGraph out, ap=' + IntToStr(ap) + '  LeftStart=' + IntToStr(LeftStart) + ' ' + BitmapSizeString(BigBitmap)); {$EndIf}
     end;
 
@@ -838,7 +838,7 @@ begin {procedure MultipleBestByParametersSortByValue}
    aline := 'GRAPH,REF_TYPE,LAND_TYPE,OPINIONS';
    for i := 1 to NumDEMIXtestDEM do aLine := aLine + ',' + DEMIXDEMTypeName[i];
    Statistics.Add(aLine);
-   Legend := DEMIXTestDEMLegend;
+   Legend := nil;  //DEMIXTestDEMLegend;
    if (Option = 0) then begin
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Graph option 0'); {$EndIf}
       for aTileParameter := 0 to pred(TileParameters.Count) do begin
@@ -871,8 +871,7 @@ begin {procedure MultipleBestByParametersSortByValue}
                inc(ap);
             end;
          end;
-         //FinishBigMap(BigBitmap,Legend,aName);
-      end
+      end;
    end
    else if (Option = 2) then begin
       for aTileParameter := 0 to pred(TileParameters.Count) do begin
@@ -886,7 +885,6 @@ begin {procedure MultipleBestByParametersSortByValue}
                   inc(ap);
                end;
             end;
-            //FinishBigMap(BigBitmap,Legend,aName);
          end;
       end
    end

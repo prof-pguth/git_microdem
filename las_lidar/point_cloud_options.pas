@@ -624,11 +624,11 @@ function FindDEMGridCellOfShot(LasData : Las_Lidar.tLAS_data; DEM,J : integer; v
 var
    xApp,yApp, xf,yf : float64;
 begin
-    if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
+    if (lasData.lasProj.pName = UTMellipsoidal) then begin
         LasData.GetShotCoordinatesUTM(j,xApp,yApp);
         DEMGlb[DEM].UTMToDEMGrid(xApp,yApp,xf,yf,Result);
     end
-    else if (MDDef.LidarGridProjection in [ArcSecDEM,WKTDEM]) then begin
+    else begin
        LasData.GetShotCoordinatesLatLong(j,yApp,xApp);
        DEMGlb[DEM].LatLongDegreeToDEMGrid(yApp,xApp,xf,yf);
        Result := DEMGlb[DEM].GridInDataSetFloat(xf,yf);

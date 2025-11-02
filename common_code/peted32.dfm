@@ -190,6 +190,7 @@ object PetEditf: TPetEditf
     PlainText = True
     ScrollBars = ssBoth
     TabOrder = 1
+    ExplicitHeight = 221
   end
   object MainMenu1: TMainMenu
     Left = 73

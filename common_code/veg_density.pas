@@ -462,7 +462,7 @@ begin
   lf := tLAS_data.Create(pt_cloud_opts_fm.LasFiles[1].LAS_fnames.Strings[0]);
   NewLas := tCreateLasFile.Create;
   NewLas.NewLasHeader := lf.LasHeader;
-  NewLAS.CreateNewLASfile(fName,lf.lasProjDef,lf.LASHeader);
+  NewLAS.CreateNewLASfile(fName,lf.lasProj,lf.LASHeader);
   lf.Destroy;
 
   with NewLas.NewLasHeader do begin

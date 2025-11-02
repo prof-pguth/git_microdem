@@ -24,6 +24,7 @@
 
    {$IFDEF DEBUG}
       //{$Define RecordFan}
+      //{$Define RecordDuplicate}
       //{$Define RecordBaseTitle}
       //{$Define RecordCreateReferenceDEM}
       //{$Define RecordScattergram}
@@ -988,7 +989,7 @@ type
     Ensembleclassification1: TMenuItem;
     Isolatedvalues1: TMenuItem;
     Removetoofewsimilarneighbors1: TMenuItem;
-    Sunabovethehorizon2: TMenuItem;
+    //Sunabovethehorizon2: TMenuItem;
     Magneticnorthlines1: TMenuItem;
     Northarrow1: TMenuItem;
     Contoursfromsecondgrid2: TMenuItem;
@@ -1269,7 +1270,7 @@ type
     hinaveragingcomparison1: TMenuItem;
     N45: TMenuItem;
     Mapdirectsolarillumination1: TMenuItem;
-    Sunandsatellitevisibilityandblocking1: TMenuItem;
+    //Sunandsatellitevisibilityandblocking1: TMenuItem;
     Geoid1: TMenuItem;
     Pixelsize1: TMenuItem;
     Cartographu1: TMenuItem;
@@ -1692,6 +1693,10 @@ type
     WhiteboxGaussianfilter1: TMenuItem;
     MAD2kforgeographicgrids1: TMenuItem;
     DiagonalinterpolationforNEneighbor1: TMenuItem;
+    N54: TMenuItem;
+    kncprofilecurvature1: TMenuItem;
+    N55: TMenuItem;
+    N88: TMenuItem;
     procedure Waverefraction1Click(Sender: TObject);
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
@@ -2339,7 +2344,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Lookatpoints1Click(Sender: TObject);
     procedure Ensembleclassification1Click(Sender: TObject);
     procedure Removetoofewsimilarneighbors1Click(Sender: TObject);
-    procedure Sunabovethehorizon2Click(Sender: TObject);
+    //procedure Sunabovethehorizon2Click(Sender: TObject);
     procedure Magneticnorthlines1Click(Sender: TObject);
     procedure Northarrow1Click(Sender: TObject);
     procedure Singlecontour1Click(Sender: TObject);
@@ -2553,7 +2558,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure ResampleDEMgridbyaveraging1Click(Sender: TObject);
     procedure hinaveragingcomparison1Click(Sender: TObject);
     procedure Annualsolarillumination1Click(Sender: TObject);
-    procedure Sunandsatellitevisibilityandblocking1Click(Sender: TObject);
+    //procedure Sunandsatellitevisibilityandblocking1Click(Sender: TObject);
     procedure Geoid1Click(Sender: TObject);
     procedure Mapdirectsolarillumination1Click(Sender: TObject);
     procedure Pixelsize1Click(Sender: TObject);
@@ -2906,6 +2911,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure WhiteboxGaussianfilter1Click(Sender: TObject);
     procedure MAD2kforgeographicgrids1Click(Sender: TObject);
     procedure DiagonalinterpolationforNEneighbor1Click(Sender: TObject);
+    procedure kncprofilecurvature1Click(Sender: TObject);
+    procedure N88Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3358,7 +3365,7 @@ function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : t
     function DEMIX_UTM_tileName(AreaName : shortstring; FileName : PathStr) : shortstring;
     function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
     function GetDEMIX_GeoTileName(inLat,inLong : float64) : shortstring;
-    function DEMIX_SpecialCase(AreaName : shortstring) : boolean;
+    function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
     function DEMIX_NoVerticalShift(AreaName : shortstring) : boolean;
 
 
@@ -5449,7 +5456,7 @@ begin
         {$IfDef ExGeology}{$Else} SeekingLeftSideMagModels,SeekingRightSideMagModels,ProjectFocalMechToSurface,SeekingFirstThreePoint,SeekingSecondThreePoint,SeekingThirdThreePoint,SeekingPlaneContact,{$EndIf}
         {$IfDef ExDrainage}{$Else} FloodBasin,{$EndIf}
         {$IfDef ExFresnel} {$Else} FirstFresnelPoint,SecondFresnelPoint, {$EndIf}
-        FindBlockHorizon,
+        //FindBlockHorizon,
         MultipleLOS,MultipleTopoProfileRight,SeekingTopoProfile,SimpleTopoProfileRight]);
 end;
 
@@ -5806,12 +5813,6 @@ begin
    if (DEMNowDoing = SecondPointSelectionAlgorithm) then begin
       CheckThisPoint(LastX,LastY,xDEMg2,yDEMg2,xSATg2,ySATg2,CheckReasonable);
       DrawMultipleIntervisible;
-   end;
-
-   if (DEMNowDoing = FindBlockHorizon) then begin
-      //CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
-      //ScreenSymbol(Image1.Canvas,LastX,LastY,Box,3,claRed);
-      GetHorizonBlockingOptions;
    end;
 end;
 
@@ -8043,7 +8044,7 @@ end;
 
 procedure TMapForm.Geostationarysatellitevisibility1Click(Sender: TObject);
 begin
-   SetHorizonOptions;
+    MessageToContinue('Right click on map at desired location');
 end;
 
 
@@ -9410,7 +9411,7 @@ begin
 
       Loadweaponsfans1.Visible := ExpertDEMVersion and MDDef.ShowIntervisibility;
       EditWeaponsFan1.Visible := (MDdef.ProgramOption = ExpertProgram) and (MapDraw.CurrentFansTable <> 0) and MDDef.ShowIntervisibility;
-      WeaponFanSpeedButton8.Visible := MDDef.ShowIntervisibility and ValidDEM(MapDraw.DEMonMap) and  (not (MDDef.ProgramOption in [GeologyProgram]));;
+      WeaponFanSpeedButton8.Visible := MDDef.ShowIntervisibility and ValidDEM(MapDraw.DEMonMap) and  (not (MDDef.ProgramOption in [GeologyProgram]));
       ViewShed2.Visible := MDDef.ShowIntervisibility and ValidDEM(MapDraw.DEMonMap) and (MDDef.ShowViews);
       Viewshed1.Visible := MDDef.ShowIntervisibility and ValidDEM(MapDraw.DEMonMap) and DEMGLB[MapDraw.DEMonMap].ElevationDEM;
 
@@ -11117,7 +11118,7 @@ begin
    Long := -999;
    if (MapDraw <> Nil) and (not SupplyLatLong) or (not UseAddress) then begin
       Lat := RightClickLat;
-      Long := RightClickLong;;
+      Long := RightClickLong;
    end;
 
    UseAddress := (Address <> '');
@@ -11630,15 +11631,6 @@ begin
           DEMGlb[MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z);
           MDDef.HorizonSkyMap := true;
           StartSatelliteTracking(Self,Lat,Long,Elev);
-(*
-          SatTractForm := TSatTractForm.Create(Application);
-          SatTractForm.MapOwner := Self;
-          SatTractForm.ObsLat := Lat;
-          SatTractForm.ObsLong := Long;
-          SatTractForm.ObsElev := z;
-          SatTractForm.BitBtn5Click(Nil);
-          SatTractForm.BitBtn4Click(Nil);
-*)
        end;
     {$EndIf}
 
@@ -14146,6 +14138,11 @@ end;
 procedure TMapForm.kncc2Click(Sender: TObject);
 begin
    RUN_LSPcalculator(MapDraw.DEMonMap,'--kncc');
+end;
+
+procedure TMapForm.kncprofilecurvature1Click(Sender: TObject);
+begin
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--knc');
 end;
 
 procedure TMapForm.kncs2Click(Sender: TObject);
@@ -16795,7 +16792,7 @@ procedure TMapForm.PickcornersMDDEM1Click(Sender: TObject);
 var
    GridLimits : tGridLimits;
 begin
-   GridLimits := MapDraw.MapAreaDEMGridLimits;;
+   GridLimits := MapDraw.MapAreaDEMGridLimits;
    PickLimits(DEMGlb[MapDraw.DEMonMap],Self,GridLimits);
    DEMGlb[MapDraw.DEMonMap].RectangleSubsetDEM(GridLimits);
 end;
@@ -17512,7 +17509,7 @@ begin
         PickCenterAndScale             : NewTitle := 'Center new map';
         DigitizeContourPoint           : NewTitle := 'Digitize single point';
         DigitizeContourStream          : NewTitle := 'Stream points on contour line';
-        FindBlockHorizon               : NewTitle := 'Point, horizon blocking';
+        //FindBlockHorizon               : NewTitle := 'Point, horizon blocking';
         PlottingPointElevations        : NewTitle := 'Point elevations';
         PickTrainingBox                : NewTitle := 'Training box';
         PickTrainingPoints             : NewTitle := 'Training points';
@@ -19336,15 +19333,14 @@ procedure TMapForm.Pointzvaluesallgrids1Click(Sender: TObject);
 var
    sl : tStringList;
    z : float32;
-   xg,yg : integer;
-  j: Integer;
-  k: Integer;
-  aLine : shortstring;
+   j, k: Integer;
+   aLine : shortstring;
 
    procedure Figure(What : integer);
    var
       i : integer;
       xgf,ygf : float64;
+      xg,yg : integer;
    begin
       if (What = 1) then begin
          DEMGlb[MapDraw.DEMonMap].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xgf,ygf);
@@ -19378,6 +19374,8 @@ var
       end;
    end;
 
+var
+  xg,yg : integer;
 begin
    sl := tStringList.Create;
    sl.Add('Point clicked  ' + LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod) + ' (Interpolated elevations)');
@@ -19502,8 +19500,8 @@ begin
    end;
    AssignImageToClipBoard(NetPlot.Image1);
    Pastefromclipboard1Click(Sender);
-
 end;
+
 
 procedure TMapForm.Abbreviations1Click(Sender: TObject);
 begin
@@ -20823,8 +20821,9 @@ end;
 
 procedure TMapForm.Horizonblocking1Click(Sender: TObject);
 begin
-   ChangeDEMNowDoing(FindBlockHorizon);
+   MessageToContinue('Right click on map at desired location');
 end;
+
 
 procedure TMapForm.Mapmarginalia1Click(Sender: TObject);
 begin
@@ -22412,7 +22411,7 @@ end;
 
 procedure TMapForm.Mapdirectsolarillumination1Click(Sender: TObject);
 begin
-   DEMOptions.SetHorizonOptions(Self,RightClickLat,RightClickLong);;
+   DEMOptions.SetHorizonOptions(Self,RightClickLat,RightClickLong);
 end;
 
 procedure TMapForm.USGSquadnames1Click(Sender: TObject);
@@ -23239,6 +23238,11 @@ begin
     WebExtractGEDTMorEDTM('GEDTMV0',bb,OutName,true);
     OutName := MDtempDir + 'EDTM.tif';
     WebExtractGEDTMorEDTM('EDTM',bb,OutName,true);
+end;
+
+procedure TMapForm.N88Click(Sender: TObject);
+begin
+   MakeSyntheticSurface(true,MapDraw.DEMonMap);
 end;
 
 procedure TMapForm.NAN1Click(Sender: TObject);
@@ -24164,19 +24168,6 @@ begin
   end;
   ChangeDEMNowDoing(DrainageArea);
 {$EndIf}
-end;
-
-procedure TMapForm.Sunabovethehorizon2Click(Sender: TObject);
-begin
-  {$IfDef ExGeography}
-  {$Else}
-     ChangeDEMNowDoing(FindBlockHorizon);
-  {$EndIf}
-end;
-
-procedure TMapForm.Sunandsatellitevisibilityandblocking1Click(Sender: TObject);
-begin
-   SetHorizonOptions(Self);
 end;
 
 procedure TMapForm.Sunrisesunsettimes1Click(Sender: TObject);
@@ -26098,15 +26089,12 @@ begin
 end;
 
 procedure TMapForm.RGBthreeparametermap1Click(Sender: TObject);
-{$IfDef ExSat}
-begin
-{$Else}
 var
-    NewMap : tMapForm;
+   NewMap : tMapForm;
 begin
-    NewMap := DuplicateMap(false);
-    ThreeGridRGBMap(NewMap);
-{$EndIf}
+   NewMap := DuplicateMap(false);
+   NewMap.Caption := 'RGB 3 parameter map';
+   ThreeGridRGBMap(NewMap);
 end;
 
 procedure TMapForm.RGBvalues1Click(Sender: TObject);
@@ -26207,7 +26195,6 @@ begin
       DrapeForm.MapDraw.MapOwner := moDrapeMap;
    end
    else DrapeForm.MapDraw.BaseTitle := 'Copy--' + MapDraw.BaseTitle;
-
    {$IfDef RecordDrape} WriteLineToDebugFile('TMapForm.CopyMap done'); {$EndIf}
 end;
 
@@ -26221,22 +26208,22 @@ end;
 
 function TMapForm.DuplicateMap(CopyOverlays : boolean; DrawIt : boolean = true; Invisible : boolean = false) : tMapForm;
 begin
+   {$IfDef RecordDuplicate} WriteLineToDebugFile('TMapForm.DuplicateMap in, currently maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   if Invisible then CreateHiddenMap := true;
    Result := Nil;
    CopyMap(Result,False,CopyOverlays,Invisible);
    if MapDraw.DEMMap then Result.MapDraw.MapOwner := moNone
-   else if (MapDraw.VectorIndex <> 0) then
+   else if (MapDraw.VectorIndex <> 0) then begin
+   end
    else begin
-     {$IfDef ExSat}
-     {$Else}
-        Result.MapDraw.SatView := Self.MapDraw.SatView;
-     {$EndIf}
+     Result.MapDraw.SatView := Self.MapDraw.SatView;
    end;
-   //Result.ADuplicateMap := true;
    if DrawIt then  begin
       Result.DoCompleteMapRedraw;
       Result.FullMapSpeedButton.Enabled := FullMapSpeedButton.Enabled;
    end
    else CheckProperTix;
+   {$IfDef RecordDuplicate} WriteLineToDebugFile('TMapForm.DuplicateMap out, currently maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 end;
 
 procedure TMapForm.oPrimeMeridian1Click(Sender: TObject);

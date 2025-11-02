@@ -45,7 +45,7 @@ object GraphSettingsForm: TGraphSettingsForm
   end
   object Label7: TLabel
     Left = 183
-    Top = 317
+    Top = 320
     Width = 81
     Height = 13
     Caption = 'Bottom margin'
@@ -73,6 +73,13 @@ object GraphSettingsForm: TGraphSettingsForm
     Width = 122
     Height = 13
     Caption = 'Lower left corner text'
+  end
+  object Label15: TLabel
+    Left = 275
+    Top = 320
+    Width = 52
+    Height = 13
+    Caption = 'Tick size'
   end
   object OKBtn: TBitBtn
     Left = 8
@@ -272,7 +279,7 @@ object GraphSettingsForm: TGraphSettingsForm
     end
   end
   object CheckBox7: TCheckBox
-    Left = 424
+    Left = 459
     Top = 336
     Width = 97
     Height = 17
@@ -290,7 +297,7 @@ object GraphSettingsForm: TGraphSettingsForm
   end
   object BitBtn3: TBitBtn
     Left = 315
-    Top = 225
+    Top = 221
     Width = 134
     Height = 25
     Caption = 'Bigger point symbols'
@@ -311,7 +318,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = HistogramTabSheet
+    ActivePage = TabSheet1
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -618,8 +625,8 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 23
   end
   object BitBtn5: TBitBtn
-    Left = 280
-    Top = 317
+    Left = 364
+    Top = 332
     Width = 89
     Height = 25
     Caption = 'Make default'
@@ -643,5 +650,14 @@ object GraphSettingsForm: TGraphSettingsForm
     Caption = 'Thinner lines'
     TabOrder = 26
     OnClick = BitBtn8Click
+  end
+  object Edit18: TEdit
+    Left = 272
+    Top = 336
+    Width = 73
+    Height = 21
+    TabOrder = 27
+    Text = 'Edit18'
+    OnChange = Edit18Change
   end
 end

@@ -706,12 +706,10 @@ end;
          HorizonOptions.Long := Long;
          if (Lat < -90) or (Long < -200) then begin
              HorizonOptions.BitBtn2.Enabled := false;
-             HorizonOptions.BitBtn4.Enabled := false;
+             //HorizonOptions.BitBtn4.Enabled := false;
              HorizonOptions.BitBtn7.Enabled := false;
              HorizonOptions.BitBtn8.Enabled := false;
          end;
-         //if (not DatesAllowed) then HorizonOptions.ClientWidth := 267;
-
          if (theMap = Nil) then begin
             HorizonOptions.ShowModal;
             HorizonOptions.Free;

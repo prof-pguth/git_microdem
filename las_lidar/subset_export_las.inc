@@ -57,7 +57,7 @@ begin
       end;
       fName[f] := Dir + bName + '-' + Code + Ext;
       NewLas[f].NewLasHeader := LasHeader;
-      NewLas[f].CreateNewLASfile(fName[f],lasProjDef,lasHeader);
+      NewLas[f].CreateNewLASfile(fName[f],lasProj,lasHeader);
    end;
 
     if (Method = 1) then begin
@@ -445,7 +445,7 @@ end;
         {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.ExportGeoJSON in'); {$EndIf}
          StartProgress('LAS2GeoJSON');
          FigureOffsets(false,true,xoff, yoff,zoff);
-         if lasProjDef.LASProj.ThisIsUTMFile then Decs := MDDef.GeoJSONP_xydec
+         if lasProj.ThisIsUTMFile then Decs := MDDef.GeoJSONP_xydec
          else Decs := 7;
 
          sl := tStringList.Create;
@@ -463,7 +463,7 @@ end;
                         ',"offz":' + RealToString(zoff,-18,-2) +
                         ',"proj":';
 
-         if lasProjDef.LASProj.ThisIsUTMFile then JSONString := JSONString + '"UTM"'
+         if lasProj.ThisIsUTMFile then JSONString := JSONString + '"UTM"'
          else JSONString :=  JSONString  + '"GCS"';
          JSONString := JSONString + ',"data":[';
          sl.Add(JSONstring);
