@@ -50,7 +50,7 @@ uses
 
 
   SysUtils, Windows, Classes, Graphics, Forms, Dialogs, Menus, Grids,  StrUtils,
-  System.Math,System.UITypes,
+  System.Math,System.UITypes,System.IOUtils,
   Vcl.ComCtrls, Vcl.Controls, Vcl.StdCtrls,
   BaseGraf,DEMdefs,Petmar_types,PETMAR,DEMmapf;
 
@@ -248,8 +248,6 @@ type
     OGRshapefilestoGKPG1: TMenuItem;
     ASCIIremovelineswithoutsubstring1: TMenuItem;
     VerticaldatumshiftoverwriteDEMgrid1: TMenuItem;
-    //DiluviumDEMreprot1: TMenuItem;
-    emplatedownload1: TMenuItem;
     MICRODEMformat1: TMenuItem;
     N8: TMenuItem;
     N9: TMenuItem;
@@ -405,7 +403,7 @@ type
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
     procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
     //procedure DiluviumDEMreprot1Click(Sender: TObject);
-    procedure emplatedownload1Click(Sender: TObject);
+    //procedure emplatedownload1Click(Sender: TObject);
     procedure MICRODEMformat1Click(Sender: TObject);
     procedure Verifyfilesinmaplibrary1Click(Sender: TObject);
     procedure GDALassignprojectionviaEPSG1Click(Sender: TObject);
@@ -2964,7 +2962,7 @@ begin
       inPut := '';
       DefFilter := 1;
       FilesWanted := tStringList.Create;
-      FilesWanted.Add(MainMapData);
+      FilesWanted.Add(System.IOUtils.TPath.GetDownloadsPath);
       if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
          for f := 0 to pred(FilesWanted.Count) do begin
             Runs := 1;
@@ -3411,38 +3409,41 @@ begin
 end;
 
 
-procedure TDemHandForm.emplatedownload1Click(Sender: TObject);
-//currently hardwired since we have only needed it one time
-var
-   fName1,fName2,workdir : PathStr;
-   sl1,sl2 : tStringList;
-   cmd,template : shortstring;
-  I: integer;
-begin
-   fName1 := 'G:\mapdata\indexed_data\dems\diluv\command_template.txt';
-   fName2 := 'G:\mapdata\indexed_data\dems\diluv\diluvium_5deg_grid.txt';
-   sl1 := tStringList.Create;
-   sl1.LoadFromFile(fName1);
-   sl2 := tStringList.Create;
-   sl2.LoadFromFile(fName2);
-   template := sl1.strings[0];
-   WorkDir := ExtractFilePath(fName1);
-   ChDir(WorkDir);
-   StartProgress('Download');
-   for I := 0 to sl2.Count do begin
-      UpDateProgressBar(i/sl2.Count);
-      if ValidPath(WorkDir + sl2.Strings[i]) then begin
-      end
-      else begin
-         cmd :=  StringReplace(Template,'XXX',sl2.Strings[i],[rfReplaceAll]);
-         WriteLineToDebugFile(cmd);
-         DownloadFileFromWeb(cmd,WorkDir + sl2.Strings[i] + '.zip');
+{$IfDef IncludeCoastalDEMs}
+
+      procedure TDemHandForm.emplatedownload1Click(Sender: TObject);
+      //currently hardwired since we have only needed it one time
+      var
+         fName1,fName2,workdir : PathStr;
+         sl1,sl2 : tStringList;
+         cmd,template : shortstring;
+        I: integer;
+      begin
+         fName1 := 'G:\mapdata\indexed_data\dems\diluv\command_template.txt';
+         fName2 := 'G:\mapdata\indexed_data\dems\diluv\diluvium_5deg_grid.txt';
+         sl1 := tStringList.Create;
+         sl1.LoadFromFile(fName1);
+         sl2 := tStringList.Create;
+         sl2.LoadFromFile(fName2);
+         template := sl1.strings[0];
+         WorkDir := ExtractFilePath(fName1);
+         ChDir(WorkDir);
+         StartProgress('Download');
+         for I := 0 to sl2.Count do begin
+            UpDateProgressBar(i/sl2.Count);
+            if ValidPath(WorkDir + sl2.Strings[i]) then begin
+            end
+            else begin
+               cmd :=  StringReplace(Template,'XXX',sl2.Strings[i],[rfReplaceAll]);
+               WriteLineToDebugFile(cmd);
+               DownloadFileFromWeb(cmd,WorkDir + sl2.Strings[i] + '.zip');
+            end;
+         end;
+         EndProgress;
+         sl1.Free;
+         sl2.Free;
       end;
-   end;
-   EndProgress;
-   sl1.Free;
-   sl2.Free;
-end;
+{$EndIf}
 
 
 procedure TDemHandForm.ENVIHDRIMG1Click(Sender: TObject);
@@ -3807,21 +3808,135 @@ end;
 
 procedure TDemHandForm.Chromelist1Click(Sender: TObject);
 var
-   FileList : tStringList;
-   i : Integer;
-   Input : PathStr;
-   pName : AnsiString;
-begin
-   inPut := '';
-   if GetFileFromDirectory('Files to download','*.txt;*.csv',InPut) then begin
-      FileList := tStringList.Create;
-      FileList.LoadFromFile(Input);
-      if (Sender = Chromelist1) then pName := 'chrome'
-      else pName := '"C:\Program Files (x86)\Internet Explorer\iexplore.exe"';
-      for i := 0 to pred(FileList.Count) do begin
-         ExecuteFile(pName,FileList.Strings[i]);
+   FileList,Inprogress : tStringList;
+   i,j,Onfile,Simultaneous,Count,TempLocation : Integer;
+   Input,fName,WaitName,FinalDir,DownLoadDirFName,FinalDirFName : PathStr;
+   pName,dName : AnsiString;
+   DefFilter : byte;
+   FilesWanted : tStringList;
+
+      function OutputName(j : integer) : ansistring;
+      begin
+         Result := FileList.Strings[j];
+         Result := Petmar_types.AfterSpecifiedStringANSI(Result,'FILENAME=');
+         Result := System.IOUtils.TPath.GetDownloadsPath + '\' + Result;
       end;
-      FileList.Free;
+
+      procedure MoveFilesToFinalDir;
+      var
+         i,Moved : integer;
+      begin
+          Moved := 0;
+          for i := pred(FileList.Count) downto 0 do begin
+             DownLoadDirFName := OutputName(i);
+             if FileExists(DownLoadDirFName) then begin
+                FinalDirFName := FinalDir + ExtractFileName(DownLoadDirFName);
+                MoveFile(DownLoadDirFName,FinalDirFName);
+                //DeleteFileIfExists()
+                inc(Moved);
+             end;
+          end;
+          WriteLineToDebugFile('Files moved to final directory: ' + IntToStr(Moved));
+      end;
+
+begin
+   DefFilter := 1;
+   FilesWanted := tStringList.Create;
+   FilesWanted.Add(System.IOUtils.TPath.GetDownloadsPath);
+   if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
+   //if GetFileFromDirectory('Files to download','*.txt;*.csv',InPut) then begin
+      wmdem.ClearStatusBarPanelText;
+      Memo1.Visible := true;
+      HeavyDutyProcessing := true;
+      for j := 0 to pred(FilesWanted.Count) do begin
+      Input := FilesWanted.Strings[j];
+
+        //delete interrupted downloads
+        InProgress := tStringList.Create;
+        Count := 0;
+        FindMatchingFiles(System.IOUtils.TPath.GetDownloadsPath,'*.crdownload',InProgress,1);
+        for i := 0 to pred(InProgress.Count) do begin
+           DeleteFileIfExists(InProgress.Strings[i]);
+           inc(Count);
+        end;
+        Inprogress.Free;
+        WriteLineToDebugFile('Interrupted downloads deleted: ' + IntToStr(Count));
+
+        //delete duplicate files which happen frequently
+        InProgress := tStringList.Create;
+        Count := 0;
+        FindMatchingFiles(System.IOUtils.TPath.GetDownloadsPath,'*.tif',InProgress,1);
+        for i := pred(InProgress.Count) downto 0 do begin
+           if StrUtils.AnsiContainsText(InProgress.Strings[i],'(1).tif') then begin
+              DeleteFileIfExists(InProgress.Strings[i]);
+              inc(Count);
+           end;
+        end;
+        Inprogress.Free;
+        WriteLineToDebugFile('Duplicate (1) files deleted: ' + IntToStr(Count));
+
+        FinalDir := System.IOUtils.TPath.GetDownloadsPath + '\' + ExtractFileNameNoExt(Input) + '\';
+        SafeMakeDir(FinalDir);
+
+        FileList := tStringList.Create;
+        FileList.LoadFromFile(Input);
+        Memo1.Lines.Add(TimeToStr(Now) + '  ' + Input + ' has ' + IntToStr(FileList.Count) + ' files');
+        WriteLineToDebugFile(Input + ' has ' + IntToStr(FileList.Count) + ' files');
+        MoveFilesToFinalDir;
+        for i := pred(FileList.Count) downto 0 do begin
+           DownLoadDirFName := OutputName(i);
+           FinalDirFName := FinalDir + ExtractFileName(DownLoadDirFName);
+           if FileExists(FinalDirFName) or FileExists(DownLoadDirFName) then begin
+              FileList.Delete(i);
+           end;
+
+           //if FileExists(FinalDirFName) or FileExists(DownLoadDirFName) then begin
+              //FileList.Delete(i);
+           //end;
+        end;
+        Memo1.Lines.Add(TimeToStr(Now) + '  Not yet downloaded ' + IntToStr(FileList.Count) + ' files');
+        WriteLineToDebugFile('Not yet downloaded ' + IntToStr(FileList.Count) + ' files');
+
+        if (FileList.Count > 0) then begin
+            if (Sender = Chromelist1) then begin
+               pName := '"C:\Program Files\Google\Chrome\Application\chrome.exe"';
+               Simultaneous := 5;
+            end
+            else begin
+               pName := '"C:\Program Files (x86)\Internet Explorer\iexplore.exe"';
+               Simultaneous := 1;
+            end;
+            Onfile := 0;
+            TempLocation := 0;
+            repeat
+               for i := 1 to Simultaneous do begin
+                  if (OnFile < FileList.Count) then begin
+                     if (FileList.Strings[OnFile] <> 'Downloading') then ExecuteFile(pName,FileList.Strings[OnFile]);
+                     FileList.Strings[OnFile] := 'Downloading';
+                     if (i=1) then WaitName := OutputName(OnFile);
+                     inc(OnFile);
+                     inc(TempLocation);
+                     delay(100);
+                  end;
+               end;
+               if (TempLocation > 50) then begin
+                  MoveFilesToFinalDir;
+                  TempLocation := 0;
+               end;
+              wmdem.StatusBar1.Panels[0].Text := TimeToStr(Now);
+              wmdem.StatusBar1.Panels[1].Text := 'Downloading ' + IntToStr(Onfile) + '/' + IntToStr(FileList.Count);
+              wmdem.StatusBar1.Panels[2].Text := 'Downloading ' + IntToStr(TempLocation) + '/' + IntToStr(50);
+              repeat
+                  Delay(5000);
+              until FileExists(WaitName);
+            until (Onfile >= FileList.Count);
+            MoveFilesToFinalDir;
+        end;
+        FileList.Free;
+        Memo1.Lines.Add(TimeToStr(Now) + '  downloads complete');
+      end;
+      wmdem.ClearStatusBarPanelText;
+      HeavyDutyProcessing := false;
    end;
 end;
 

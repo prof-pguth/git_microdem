@@ -147,7 +147,6 @@ uses
         fName : PathStr;
         Bitmap : tMyBitmap;
      begin
-        //{$IfDef TrackColors} Graph.GraphColorsRecord('FinishGraph enter'); {$EndIf}
         Graph.GraphDraw.ResetMargins := true;
         Graph.RedrawDiagram11Click(Nil);
         if AddLegends then Bitmap := Graph.AddLegendBesideGraph
@@ -599,7 +598,7 @@ const
                 Result.GraphDraw.ShowGraphBottomLabels := true;
                 Result.GraphDraw.LegendList := tStringList.Create;
                 Result.GraphDraw.LLcornerTextAtEdge := false;
-                Result.GraphDraw.VertGraphBottomLabels := (UseLSPs.Count > 15);
+                Result.GraphDraw.VertGraphBottomLabels := (UseLSPs.Count > MDDef.LSPsForVertLabels);
                 if Result.GraphDraw.VertGraphBottomLabels then Result.GraphDraw.BottomMargin := 110;
 
                 for j := 0 to pred(UseLSPs.Count) do begin
@@ -768,8 +767,6 @@ const
             Result.GraphDraw.GraphBottomLabels := tStringList.Create;
             Result.GraphDraw.ShowGraphBottomLabels := true;
             Result.GraphDraw.LLcornerTextAtEdge := false;
-            //Result.Width := 800;
-
             for i := 1 to NumDEMIXtestDEM do begin
                if GISdb[DBonTable].MyData.FieldExists(DEMIXShort[i]) then begin
                   {$If Defined(RecordDEMIXGraph)} writeLineToDebugFile(DEMIXShort[i]); {$EndIf}
@@ -910,15 +907,6 @@ begin {procedure MainGraphOptions}
              Resolutions := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('RESOLUTION');
              DoMultipleResolutionGraph;
              Areas.Destroy;
-          end
-          else if GISdb[DBonTable].MyData.FieldExists('CRITERION') then begin //this is FUV file
-             (*
-             Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
-             for Tile := 0 to pred(Tiles.Count) do begin
-                GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[Tile]));
-                DoFUVGraph(goOther);
-             end;
-             *)
           end
           else if GISdb[DBonTable].MyData.FieldExists('LANDCOVER') then begin //this is FUV file based on landcover
              DoFUVGraph(goLandcover);
@@ -1770,6 +1758,8 @@ procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tS
         fName := NextFileNumber(MDTempDir,Criterion + '_two_param_graph_','.dbf');
         StringList2CSVtoDB(GraphData,fName,true,false,false);
         Result.BarGraphDBName := fName;
+        if MDdef.ShowPieN then Result.GraphDraw.MinVertAxis := -4;
+
         Result.AutoScaleAndRedrawDiagram(false,false,false,false);
         GISdb[DBonTable].ApplyGISFilter(BaseFilter);
    end;

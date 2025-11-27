@@ -442,7 +442,6 @@ end {procedure ReadNEDBIL};
 {$EndIf}
 
 
-
       procedure TryOddball(var DEMFileName : PathStr);
       var
          ofName : PathStr;

@@ -144,6 +144,8 @@ type
     BitBtn43: TBitBtn;
     BitBtn44: TBitBtn;
     CheckBox4: TCheckBox;
+    Edit7: TEdit;
+    Label11: TLabel;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -221,6 +223,7 @@ type
     procedure BitBtn43Click(Sender: TObject);
     procedure BitBtn44Click(Sender: TObject);
     procedure CheckBox4Click(Sender: TObject);
+    procedure Edit7Change(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -998,7 +1001,6 @@ var
 begin
    Self.Visible := false;
    GetDEMIXpaths(True);
-   //MDDef.ShowPieN := false;
    if CheckBox7.Checked then begin
        GISdb[db].ApplyGISFilter('COUNTRY=' + QuotedStr('USA'));
        WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'USA tiles');
@@ -1514,6 +1516,12 @@ begin
    CheckEditString(Edit6.Text,MDDef.DefaultGraphFont.Size);
 end;
 
+procedure Teval_scores_graph_form.Edit7Change(Sender: TObject);
+begin
+   CheckEditString(Edit7.Text,MDDef.LSPsForVertLabels);
+
+end;
+
 procedure Teval_scores_graph_form.FormActivate(Sender: TObject);
 begin
    RecognizeDEMIXVersion(DB);
@@ -1545,6 +1553,7 @@ begin
    Edit4.Text := IntToStr(MDDef.DEMIXUseBins);
    Edit5.Text := IntToStr(MDDef.NumGraphCols);
    Edit6.Text := IntToStr(MDDef.DefaultGraphFont.Size);
+   Edit7.Text := IntToStr(MDDef.LSPsForVertLabels);
 
    RadioGroup5.ItemIndex := pred(MDDef.DemixSymSize);
 

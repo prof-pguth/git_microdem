@@ -13,7 +13,7 @@ unit dem_indexes;
   //{$Define WarnMapIndexes}
   {$IFDEF DEBUG}
      //{$Define RecordMultipleFilesInBoundingBox}
-     //{$Define RecordIndexProhlems}
+     //{$Define RecordIndexProblems}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
      //{$Define TrackPixelIs}
@@ -959,7 +959,7 @@ function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tSt
          fName : PathStr;
          IndexDataOnline : tMyData;
       begin
-         {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(RecordIndexProhlems)} WriteLineToDebugFile('GetDataInBoundingBox in DB filter: ' + theFilter); {$EndIf}
+         {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(RecordIndexProblems)} WriteLineToDebugFile('GetDataInBoundingBox in DB filter: ' + theFilter); {$EndIf}
          fName := MapLibraryFName;
          IndexDataOnline := tMyData.Create(fName);
          IndexDataOnline.ApplyFilter(theFilter);
@@ -1181,7 +1181,7 @@ var
      end;
 
 
-begin
+begin {function MergeMultipleDEMsHere}
    {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('arrive Merge for DEM, file count=' + IntToStr(DEMList.Count)); {$EndIf}
    SkipMenuUpdating := true;
    DEMMergeInProgress := true;
@@ -1194,7 +1194,7 @@ begin
       if GDALversion and GDALGridFormat(ExtractFileExt(aName),false) then begin
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL options for DEM'); {$EndIf}
          ProjName := '';
-         if FileExtEquals(aName,'.ASC') then begin //Spanish and Trento and French DEMs have no projection in the ASC files, and user must put WKT file in directory  (Spain now Geotiff)
+         if FileExtEquals(aName,'.ASC') then begin //Trento and French DEMs have no projection in the ASC files, and user must put WKT file in directory
             {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('ASC reprojection'); {$EndIf}
             ProjName := FindSingleWKTinDirectory(ExtractFilePath(aName));
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;

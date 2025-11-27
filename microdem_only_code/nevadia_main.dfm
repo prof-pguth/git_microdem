@@ -1712,7 +1712,6 @@ object wmdem: Twmdem
       object Data1: TMenuItem
         Caption = 'Data &Manipulation'
         GroupIndex = 6
-        OnClick = Data1Click
       end
       object N5: TMenuItem
         Caption = '-'
@@ -3369,13 +3368,6 @@ object wmdem: Twmdem
       Caption = 'COP/ALOS Pixel by pixel map statistics'
       OnClick = Pixelbypixelmapstatistics1Click
     end
-    object N37: TMenuItem
-      Caption = '-'
-    end
-    object Creatediffrencemaps1: TMenuItem
-      Caption = 'junk'
-      Enabled = False
-    end
     object N63: TMenuItem
       Caption = '-'
     end
@@ -3466,8 +3458,8 @@ object wmdem: Twmdem
     end
   end
   object DEMIXdbCreatePopupMenu: TPopupMenu
-    Left = 952
-    Top = 304
+    Left = 968
+    Top = 296
     object Graphevaluationandscores1: TMenuItem
       Caption = 'Open DEMIX database for graph evaluation and scores'
       OnClick = Graphevaluationandscores1Click
@@ -3556,9 +3548,21 @@ object wmdem: Twmdem
       Caption = 'Inventory HRDEM source files'
       OnClick = Inventorysourcefiles1Click
     end
+    object Inventoryfilesformerged10x10kmtile1: TMenuItem
+      Caption = 'Inventory files for merged 10x10 km tile'
+      OnClick = Inventoryfilesformerged10x10kmtile1Click
+    end
+    object Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem
+      Caption = 'Delete merged directories with small number of files'
+      OnClick = Deletemergeddirectorieswithsmallnumberoffiles1Click
+    end
     object InventoryofLC10files1: TMenuItem
       Caption = 'Inventory LC10 files'
       OnClick = InventoryofLC10files1Click
+    end
+    object estareaboundingboxes1: TMenuItem
+      Caption = 'Test tile bounding boxes'
+      OnClick = estareaboundingboxes1Click
     end
     object Compare10mand100mlandcover1: TMenuItem
       Caption = 'Compare 10 m and 100 m landcover'
@@ -3569,23 +3573,27 @@ object wmdem: Twmdem
       OnClick = Averagetileslopemapgeneration1Click
     end
     object Percentlandcovercategories1: TMenuItem
-      Caption = 'Percent landcover categories'
+      Caption = 'Create grids with percent landcover categories'
       OnClick = Percentlandcovercategories1Click
     end
     object ilecharacterization1: TMenuItem
-      Caption = 'Tile characterization'
+      Caption = 'Pie charts with tile characterization DB versions'
       OnClick = ilecharacterization1Click
     end
     object N49: TMenuItem
       Caption = '-'
     end
-    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
-      Caption = 'Moves tiles into 10 km UTM block directories'
-      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
-    end
     object Download10x10kmblocks1: TMenuItem
       Caption = 'Prep Download 10x10 km blocks'
       OnClick = Download10x10kmblocks1Click
+    end
+    object CleanupFrenchlistof1x1kmfiles1: TMenuItem
+      Caption = 'Clean up French list of 1x1 km files'
+      OnClick = CleanupFrenchlistof1x1kmfiles1Click
+    end
+    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
+      Caption = 'Moves tiles into 10 km UTM block directories'
+      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
     end
     object MovemergedtilereferenceandtestDEMs1: TMenuItem
       Caption = 'Move merged tile reference and test DEMs'
@@ -4023,7 +4031,6 @@ object wmdem: Twmdem
       object Subsetlarge3DEPareas1: TMenuItem
         Caption = 'Subset large 3DEP areas'
         Enabled = False
-        OnClick = Subsetlarge3DEPareas1Click
       end
       object ProcessVDATUMshifts1: TMenuItem
         Caption = 'Process 3DEP VDATUM shifts'

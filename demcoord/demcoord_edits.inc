@@ -289,9 +289,7 @@ end;
 
 function tDEMDataSet.ResampleByAveraging(OpenMap : boolean; SaveName : PathStr = ''; DEMalreadyCreated : integer = 0) : integer;
 var
-   SearchRadiusX,SearchRadiusY,
-   //x,y,xi,yi,xn,yn,
-   n,xp,yp : integer;
+   SearchRadiusX,SearchRadiusY, n,xp,yp : integer;
    Lat,Long,Sum : float64;
    z : float32;
    NewAreaName : shortstring;
@@ -333,8 +331,6 @@ var
          //WriteLineToDebugFile('end exhaustive');
       end;
 
-
-
       procedure NewMaskMethod;
       var
          xn,yn,x,y : integer;
@@ -357,7 +353,7 @@ var
                       end;
                    end;
                 end;
-                if (n > 0) and (Sum > 0) then begin
+                if (n > 0) then begin
                    DEMGlb[Result].SetGridElevation(xn,yn,Sum/n);
                 end
                 else begin
@@ -368,7 +364,6 @@ var
       end;
 
 
-
 begin
    {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging in, ' + AreaName + '  ' + KeyParams); {$EndIf}
     UTMzone := DEMMapProj.projUTMZone;
@@ -376,11 +371,11 @@ begin
     WGS84DatumConstants.DefineDatumFromUTMZone('WGS84',UTMZone,LatCh,'');
     if (SaveName <> '') then fName := ExtractFileNameNoExt(SaveName);
     ShowHourglassCursor;
-    if ValidDEM(DEMalreadyCreated) then begin
+    if ValidDEM(DEMalreadyCreated) then begin //this is the preferred method
        {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging DEM already created'); {$EndIf}
        Result := DEMalreadyCreated;
     end
-    else begin
+    else begin //avoid this method if possible
        if (MDDef.LidarGridProjection = UTMBasedDEM) then begin
           if (fName = '') then fName := AreaName + '_utm_resample';
           Result := CreateGridToMatchDEM(fName,ThisDEM,cgUTM,false,FloatingPointDEM,MDDef.DefLidarXGridSize,MDDef.DefLidarYGridSize,UTMZone,MDDef.LasDEMPixelIs);
@@ -400,26 +395,13 @@ begin
    SearchRadiusX := round(DEMGlb[Result].AverageXSpace / AverageXSpace) + 5;
    SearchRadiusY := round(DEMGlb[Result].AverageYSpace / AverageYSpace) + 5;
 
-   (*
-   OldExhaustiveMethod;
-   DEMGlb[Result].CheckMaxMinElev;
-   SaveName := 'c:\temp\oldmethod.tif';
-   DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
-   *)
+   //OldExhaustiveMethod;
 
    NewMaskMethod;
-   (*
-   DEMGlb[Result].CheckMaxMinElev;
-   SaveName := 'c:\temp\newmethod.tif';
-   DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
-   *)
-
    DEMGlb[Result].CheckMaxMinElev;
    if (SaveName <> '') then begin
       {$If Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging save=' + SaveName); {$EndIf}
-      //DEMGlb[Result].WriteNewFormatDEM(SaveName);
       DEMGlb[Result].SavePartOfDEMWithDataGeotiff(SaveName);
-      //{$IfDef RecordSaveAverageResampleDEMformat} SaveName := ChangeFileExt(SaveName,'.dem'); DEMGlb[Result].WriteNewFormatDEM(SaveName); {$EndIf}
    end;
    if OpenMap then begin
       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMIXResampleFull)} WriteLineToDebugFile('tDEMDataSet.ResampleByAveraging call SetUpMap'); {$EndIf}

@@ -2,8 +2,8 @@ object New_area_evals_form: TNew_area_evals_form
   Left = 0
   Top = 0
   Caption = 'New_area_evals_form'
-  ClientHeight = 441
-  ClientWidth = 624
+  ClientHeight = 197
+  ClientWidth = 437
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,8 +13,8 @@ object New_area_evals_form: TNew_area_evals_form
   FormStyle = fsStayOnTop
   TextHeight = 15
   object RadioGroup1: TRadioGroup
-    Left = 24
-    Top = 40
+    Left = 8
+    Top = 8
     Width = 185
     Height = 169
     Caption = 'Land surface parameter'
@@ -29,8 +29,8 @@ object New_area_evals_form: TNew_area_evals_form
     OnClick = RadioGroup1Click
   end
   object BitBtn1: TBitBtn
-    Left = 280
-    Top = 40
+    Left = 208
+    Top = 16
     Width = 201
     Height = 25
     Caption = 'Scatter plots compared to reference'
@@ -38,8 +38,8 @@ object New_area_evals_form: TNew_area_evals_form
     OnClick = BitBtn1Click
   end
   object BitBtn2: TBitBtn
-    Left = 280
-    Top = 80
+    Left = 208
+    Top = 56
     Width = 201
     Height = 25
     Caption = 'Histo'#8237'grams'
@@ -47,9 +47,9 @@ object New_area_evals_form: TNew_area_evals_form
     OnClick = BitBtn2Click
   end
   object BitBtn3: TBitBtn
-    Left = 280
-    Top = 120
-    Width = 193
+    Left = 208
+    Top = 96
+    Width = 201
     Height = 25
     Caption = 'Difference map to reference DTM'
     TabOrder = 3

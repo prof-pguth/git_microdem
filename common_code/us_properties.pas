@@ -31,7 +31,7 @@ uses
 
 {$IfDef VCL}
    function GetCounty(Lat,Long : float64; var GeoName : ShortString) : boolean;
-   function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
+   //function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
    //procedure FennemanOutlines(MapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap);
 {$EndIf}
 
@@ -48,7 +48,7 @@ var
    //PRISMModelPrecip,
    //ClimateDivisions,
    //FennemanProvince,
-   USGSQuadNames,
+   //USGSQuadNames,
    Highways,
    County,
    Rivers,
@@ -112,12 +112,13 @@ begin
 end;
 
 
+(*
 function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
 //kept for use in DragonPlot
 begin
    Result := GetUSPropertiesString(USGSQuadNames,'us\usgs_24K_quads\24kgrid' + DefaultDBExt,'NAME','STATE','',',  ','',Lat,Long,GeoName);
 end;
-
+*)
 
 function GetState(Lat,Long : float64; var GeoName : ShortString) : boolean;
 begin
@@ -156,7 +157,7 @@ begin
    CloseAndNilNumberedDB(Highways);
    CloseAndNilNumberedDB(States);
    //CloseAndNilNumberedDB(FennemanProvince);
-   CloseAndNilNumberedDB(USGSQuadNames);
+   //CloseAndNilNumberedDB(USGSQuadNames);
    {$IfDef RecordDBClosing} WriteLineToDebugFile('  exit CloseDataBases in US_properties'); {$EndIf}
 end;
 
@@ -171,7 +172,7 @@ initialization
    States := 0;
    Rivers := 0;
    //FennemanProvince := 0;
-   USGSQuadNames := 0;
+   //USGSQuadNames := 0;
 finalization
    CloseDataBases;
    {$IfDef USpropertiesTrack} WriteLineToDebugFile('USpropertiesTrack in US_properties'); {$EndIf}

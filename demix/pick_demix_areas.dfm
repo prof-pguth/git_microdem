@@ -45,12 +45,12 @@ object PickAreasForm: TPickAreasForm
     Top = 248
     Width = 66
     Height = 27
-    Enabled = False
     Kind = bkCancel
     Margin = 2
     NumGlyphs = 2
     Spacing = -1
     TabOrder = 3
+    OnClick = CancelBtnClick
     IsControl = True
   end
   object Memo1: TMemo
@@ -82,5 +82,14 @@ object PickAreasForm: TPickAreasForm
       'Last')
     TabOrder = 6
     OnClick = RadioGroup1Click
+  end
+  object BitBtn5: TBitBtn
+    Left = 272
+    Top = 248
+    Width = 113
+    Height = 25
+    Caption = 'Revise DEMs used'
+    TabOrder = 7
+    OnClick = BitBtn5Click
   end
 end

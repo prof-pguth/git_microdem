@@ -829,7 +829,7 @@ var
          DisplayMessage({'  ' +} title + '  ' + DEMglb[RegionalDEM].SelectionMap.MapDraw.PrimMapProj.h_DatumCode + '   ' + LatLongDegreeToString(ShotLat,ShotLong,MDDef.OutPutLatLongMethod) + '   ' + note );
          DisplayMessage('Elev: ' + RealToString(TargetZ,-8,1) + ' m  (' + RealToString(TargetZ/FeetToMeters,-8,1) + ' ft)');
 
-         if US_properties.GetUSGSQuadName(ShotLat,ShotLong,GeoName) then Memo1.Lines.Add('USGS 24K quad: ' + GeoName);
+         //if US_properties.GetUSGSQuadName(ShotLat,ShotLong,GeoName) then Memo1.Lines.Add('USGS 24K quad: ' + GeoName);
          {$IfDef RecordPostResults} WriteLineToDebugFile('Post results 3'); {$EndIf}
 
          if (PLSS[1] <> Nil) then begin

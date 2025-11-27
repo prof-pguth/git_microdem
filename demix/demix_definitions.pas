@@ -380,7 +380,6 @@ function AreDEMIXscoresInDB(db : integer) : boolean;
 procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
 procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
 
-//procedure CreateCopHeadToHeaddb(db : integer);
 procedure CriteriaInSSIM_FUV_db(db : integer);
 
 function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;

@@ -19,7 +19,7 @@
       //{$Define RecordLASprojection}
       //{$Define RecordTilePlotSummary}
       //{$Define RecordLASfiles}
-      {$Define RecordWKT}
+      //{$Define RecordWKT}
       //{$Define RecordVarLenRec}
       //{$Define RecordReadPoints}  //super slowdown
       //{$Define RecordFirstPulse}

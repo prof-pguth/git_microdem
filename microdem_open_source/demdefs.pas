@@ -1521,7 +1521,7 @@ type
            ShowOpenImagery,
            ShowTCPServer,
            ShowSHPButton,
-           ShowUSGSQuadNames,
+           //ShowUSGSQuadNames,
            ShowGlobalDEM,
            ShowBlueMarble,
            ShowMultigrids,
@@ -1640,14 +1640,13 @@ type
            OrganizationCutoff,
            FlatnessCutoff       : float32;
            LagCenterShift,
-           LagSearchRadius : int16;
-           PyramidLevels : byte;
+           LagSearchRadius,
+           LSPsForVertLabels,
            SSOSampleIncr: int16;
-
+           PyramidLevels,
            OpenStartRadialsAtPixel,
            OpenRadiusUnits : byte;
-           OpennessBoxRadiusPixels,OpennessBoxRadiusMeters : int32;
-
+           OpennessBoxRadiusPixels,OpennessBoxRadiusMeters,
            SSOGridBoxSize,SSOBoxSizeMeters,
            MomentsBoxSizeMeters,
            ReliefBoxSizeMeters,

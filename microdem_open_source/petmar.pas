@@ -250,7 +250,7 @@ var
          function DefaultHorizontalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
          function DefaultVerticalLegendOnBitmap(Min,Max : float64; Units,LegendTitle : shortstring; Legend : tLegendColors; ChloroplethScheme : shortstring = ''; Reverse : boolean = false) : tMyBitmap;
          function VerticalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = '') : tMyBitmap;
-         function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
+         function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 2400) : tMyBitmap;
 
 
       //font routines
@@ -2296,7 +2296,7 @@ end;
 
          function WinExecAndWait32(FileName : ANSIstring; Wait : boolean = true; Log : boolean = true) : integer;
          var
-           zAppName : array[0..1024] of char;  //[0..512] of char;
+           zAppName : array[0..1024] of char;
            zCurDir : array[0..1024] of char;
            WorkDir : ANSIstring;
            StartupInfo : TStartupInfo;
@@ -2339,7 +2339,7 @@ end;
 
          function ExecuteFile(const FileName : ANSIstring; Params : ANSIstring = ''; DefaultDir : ANSIstring = ''): THandle;
          var
-           zFileName, zParams, zDir: array[0..255] of char;
+           zFileName, zParams, zDir: array[0..2048] of char;
            tDir : ANSIstring;
            Len  : integer;
            ShowCmd : Integer;
@@ -4121,6 +4121,7 @@ begin
          {$IfDef VCL}
             Result := Windows.MoveFile(pchar(SourceFile),pchar(DestinationFile));
          {$EndIf}
+         DeleteFileIfExists(SourceFile);
          exit;
       except
          on Exception do inc(tries);

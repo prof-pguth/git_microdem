@@ -28,7 +28,6 @@ begin
       end;
       fName := NextFileNumber(MDTempDir,'country-areas-tiles','.dbf');
       PetdbUtils.StringList2CSVtoDB(Findings,fName);
-      //GISdb[db].EmpSource.Enabled := true;
       Countries.Destroy;
       GISdb[db].ApplyGISFilter(BaseFilter);
       GISdb[db].ShowStatus;
@@ -39,12 +38,9 @@ begin
 end;
 
 
-
-
 procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 var
    TestDEMs : tStringList;
-   //BoxSize,
    i,DEM,ad : integer;
    AreaName : shortstring;
    fName,fName2 : PathStr;
@@ -76,7 +72,7 @@ begin
              fName2 := ExternalProgramOutPutFile(DEMIndex,'MD','SLOPE_',AreaName,IsPoint);
              fName := ExternalProgramOutPutFile(DEMIndex,'MD','ROUGH_',AreaName,IsPoint);
              PointGrids[3] := 0;
-             PointGrids[2] := CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,5,PointGrids[3],false);
+             PointGrids[2] := CreateSlopeRoughnessSlopeStandardDeviationMap(false,DEM,5,PointGrids[3]);
              DEMglb[PointGrids[3]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[2]].SaveAsGeotiff(fName);
 
@@ -920,131 +916,6 @@ begin
    RefDEMfiles.Free;
    EndDEMIXProcessing;
 end;
-
-
-
-
-
-{$IfDef DEMIX_SAGA_channels}
-
-      procedure InventoryChannelDataByArea;
-      var
-         Areas,Results : tStringList;
-         AreaName : shortstring;
-         i : integer;
-         fName : PathStr;
-         FileList : array[1..7] of tStringList;
-
-            function CountOfFiles(ID : integer; AreaName : shortString) : integer;
-            var
-               j : integer;
-               fName : PathStr;
-            begin
-               Result := 0;
-               for j := 0 to pred(FileList[ID].Count) do begin
-                  fName := UpperCase(FileList[ID].Strings[j]);
-                  if (StrUtils.AnsiContainsText(fName,UpperCase(AreaName) )) then begin
-                     inc(Result);
-                  end;
-               end;
-            end;
-
-            procedure LoadFiles(ID : integer; Dir : PathStr; Ext : shortString);
-            begin
-               FileList[ID] := Nil;
-               FindMatchingFiles(Dir,Ext,FileList[ID]);
-               {$If Defined(RecordDEMIX)} WriteLineToDebugFile(Dir + '  ' + Ext + '  files=' + IntToStr(FileList[ID].Count)); {$EndIf}
-            end;
-
-
-      begin
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea in'); {$EndIf}
-         GetDEMIXPaths;
-         Areas := tStringList.Create;
-         Areas.LoadFromFile(AreaListFName);
-
-         Results := tStringList.Create;
-         Results.Add('AREA,REF_NOS,TEST_NOS,REF_SHP,TEST_SHP,REF_GRID,TEST_GRID,MISS_CSV');
-         LoadFiles(1,DEMIX_ref_DEMs_no_sink,'*.tif');
-         LoadFiles(2,DEMIX_test_DEMs_no_sink,'*.tif');
-         LoadFiles(3,DEMIX_ref_DEMs_channels,'*.shp');
-         LoadFiles(4,DEMIX_test_DEMs_channels,'*.shp');
-         LoadFiles(5,DEMIX_ref_DEMs_channel_grids,'*.tif');
-         LoadFiles(6,DEMIX_test_DEMs_channel_grids,'*.tif');
-         LoadFiles(7,ChannelMissesDir,'*.csv');
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea loaded'); {$EndIf}
-
-         for i := 0 to pred(Areas.Count) do begin
-            AreaName := Areas.Strings[i];
-            Results.Add(AreaName + ',' + IntToStr(CountOfFiles(1,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(2,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(3,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(4,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(5,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(6,AreaName)) + ',' +
-                                         IntToStr(CountOfFiles(7,AreaName)));
-         end;
-
-         Areas.Destroy;
-         fName := NextFileNumber(MDTempDir,'status_channel_files','.dbf');
-         PetdbUtils.StringList2CSVtoDB(Results,fName);
-         for i := 1 to 7 do FileList[i].Destroy;
-
-         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
-      end;
-{$EndIf}
-
-
-(*
-procedure VerifyAllMapsReadyForSSIM;
-//this was when Python did SSIM
-const
-   NCrits = 6;
-   Crits : array[1..NCrits] of shortstring = ('ELEV_','RRI_','SLOPE_','HILL_','RUFF_','TPI_');
-   NDEMs = 10;
-   DEMs : array[1..NDEMs] of shortstring = ('COP','FABDEM','TANDEM','NASA','SRTM','ASTER','ALOS','DILUV','dtm_ref_area','dtm_ref_point');
-var
-   Dirs,GoodTiles,BadTiles,TheFiles : tStringList;
-   i,j,k : Integer;
-   fName,fName2 : PathStr;
-   Error,Tile : shortstring;
-begin
-   Dirs := tStringList.Create;
-   GoodTiles := tStringList.Create;
-   BadTiles := tStringList.Create;
-   fName2 := 'C:\temp\ssim_global_norm\';
-   Dirs := GetSubDirsInDirectory(fName2);
-   StartProgress('Verify');
-   for i := 0 to pred(Dirs.Count) do begin
-      UpdateProgressBar(i/Dirs.Count);
-      Tile := Dirs[i];
-      if (Tile[1] = 'N') or (Tile[1] = 'S') then begin //in case other folders selected
-         Error := '';
-         TheFiles := Nil;
-         FindMatchingFiles(fName2 + Tile,'*.tif',TheFiles);
-         for k := 1 to NCrits do begin
-            for j := 1 to NDEMs do begin
-               fName := Crits[k] + DEMs[j] + '_norm.tif';
-               if TheFiles.IndexOf(fName2 + Tile + '\' + fName) < 0 then begin
-                  if (Error = '') then Error := 'files=' + IntToStr(TheFiles.Count) + '  ';
-                  Error := Error + fName + '  ';
-               end;
-            end;
-         end;
-         TheFiles.Free;
-         if (Error = '') then GoodTiles.Add(Tile)
-         else begin
-            BadTiles.Add(Tile + '  ' + Error);
-            WriteLineToDebugFile(Tile + '  ' + Error);
-         end;
-      end;
-   end;
-   EndProgress;
-   Dirs.Free;
-   DisplayAndPurgeStringList(GoodTiles,'Good tiles=' + IntToStr(GoodTiles.Count));
-   DisplayAndPurgeStringList(BadTiles,'Problem tiles=' + IntToStr(BadTiles.Count));
-end;
-*)
 
 
 

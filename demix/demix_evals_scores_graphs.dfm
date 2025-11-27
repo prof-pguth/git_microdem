@@ -190,9 +190,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup5Click
   end
   object BitBtn12: TBitBtn
-    Left = 599
+    Left = 592
     Top = 711
-    Width = 209
+    Width = 213
     Height = 25
     Caption = 'Whisker plots by parameter/criterion'
     TabOrder = 12
@@ -388,7 +388,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object BitBtn35: TBitBtn
     Left = 595
     Top = 618
-    Width = 185
+    Width = 209
     Height = 25
     Caption = 'Cluster maps'
     TabOrder = 24
@@ -452,7 +452,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Text = 'filters_avg_slope'
       OnChange = ComboBox6Change
       Items.Strings = (
-        'filters_avg_slope'
+        'filters_avg_slope_3_cat'
+        'filters_avg_slope_4_cat'
+        'filters_avg_slope_6_cat'
         'filters_forest_pc'
         'filters_barren_pc')
     end
@@ -465,9 +467,12 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Text = 'filters_barren_pc'
       OnChange = ComboBox7Change
       Items.Strings = (
-        'filters_avg_slope'
+        'filters_avg_slope_3_cat'
+        'filters_avg_slope_4_cat'
+        'filters_avg_slope_6_cat'
         'filters_forest_pc'
-        'filters_barren_pc')
+        'filters_barren_pc'
+        '')
     end
   end
   object GroupBox4: TGroupBox
@@ -645,9 +650,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox6Click
   end
   object BitBtn31: TBitBtn
-    Left = 595
-    Top = 773
-    Width = 193
+    Left = 592
+    Top = 757
+    Width = 212
     Height = 25
     Caption = 'Scatter plots, DEMs/criteria'
     TabOrder = 36
@@ -840,7 +845,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     object BitBtn39: TBitBtn
       Left = 16
       Top = 85
-      Width = 130
+      Width = 137
       Height = 25
       Caption = 'Panels multiple criteria'
       TabOrder = 0
@@ -849,7 +854,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     object BitBtn7: TBitBtn
       Left = 16
       Top = 23
-      Width = 130
+      Width = 137
       Height = 25
       Caption = 'Single mixed filter'
       TabOrder = 1
@@ -858,7 +863,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     object BitBtn25: TBitBtn
       Left = 16
       Top = 54
-      Width = 130
+      Width = 137
       Height = 25
       Caption = 'Standard landscape filters'
       TabOrder = 2
@@ -869,9 +874,16 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Left = 260
     Top = 688
     Width = 229
-    Height = 145
+    Height = 177
     Caption = 'Graphs of FUV versus criteria'
     TabOrder = 47
+    object Label11: TLabel
+      Left = 40
+      Top = 144
+      Width = 71
+      Height = 15
+      Caption = 'Vertical labels'
+    end
     object BitBtn26: TBitBtn
       Left = 20
       Top = 110
@@ -908,6 +920,15 @@ object eval_scores_graph_form: Teval_scores_graph_form
       TabOrder = 3
       OnClick = BitBtn14Click
     end
+    object Edit7: TEdit
+      Left = 117
+      Top = 141
+      Width = 65
+      Height = 23
+      TabOrder = 4
+      Text = 'Edit7'
+      OnChange = Edit7Change
+    end
   end
   object GroupBox11: TGroupBox
     Left = 167
@@ -921,8 +942,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Top = 24
       Width = 145
       Height = 23
+      ItemIndex = 0
       TabOrder = 0
-      Text = 'Tile average slope'
+      Text = 'Best evaluation'
       Items.Strings = (
         'Best evaluation'
         'Tile average slope'
@@ -989,8 +1011,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
   end
   object BitBtn44: TBitBtn
     Left = 592
-    Top = 800
-    Width = 196
+    Top = 788
+    Width = 212
     Height = 25
     Caption = 'GEDTM filtering'
     TabOrder = 50

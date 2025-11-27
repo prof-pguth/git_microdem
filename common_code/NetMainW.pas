@@ -860,7 +860,6 @@ end;
 //{$Define RecordMakeFilterTime}
 
 type
-   tCenteredCircularFilter =  array[-50..50,-50..50] of byte;
    tCircularFilter =  array[0..200,0..200] of byte;
 
 
@@ -878,7 +877,7 @@ begin
       for x := 0 to 200 do begin
          for y := 0 to 200 do begin
             if (x < (xc - Size)) or (x > (xc + Size))  or (y < (yc - Size)) or (y > (yc + Size)) then begin
-               Result[x,y] := 0;  //outside the corresponding box filter
+               Result[x,y] := 0;  //outside corresponding box filter
             end
             else if sqrt(sqr(xc-x) + sqr(yc-y)) > Size then begin
                Result[x,y] := 0;  //in the rounded corners of the corresponding box filter
@@ -893,31 +892,6 @@ begin
    end;
 end;
 
-
-function MakeCenteredCircularFilter(Size : integer; var NPts : integer) : tCenteredCircularFilter;
-//max radius=50, in a structure from -50..50
-var
-   x,y : integer;
-begin
-   if (Size <= 50) then begin
-      NPts := 0;
-      for x := -50 to 50 do begin
-         for y := -50 to 50 do begin
-            if (x < -Size) or (x > Size)  or (y < -Size) or (y > Size) then begin
-               Result[x,y] := 0;  //outside the corresponding box filter
-            end
-            else if sqrt(sqr(x) + sqr(y)) > Size then begin
-               Result[x,y] := 0;  //in the rounded corners of the corresponding box filter
-            end
-            else begin
-               Result[x,y] := 1;
-               inc(NPts);
-            end;
-         end;
-      end;
-      {$IfDef RecordPoints} WriteLineToDebugFile(IntToStr(Size) + ',' + IntToStr(NPts)); {$EndIf}
-   end;
-end;
 
 
 {$Define RecordConcentrations}

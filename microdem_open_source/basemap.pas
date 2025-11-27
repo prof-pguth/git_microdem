@@ -18,8 +18,8 @@ unit basemap;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordWKTFull}
-      {$Define RecordWKT}
+      //{$Define RecordWKTFull}
+      //{$Define RecordWKT}
       //{$Define RecordUKOS}
       //{$Define RecordDEMprojection}
       //{$Define TrackWKTstring}
@@ -85,7 +85,8 @@ uses
       Windows, Messages,
    {$EndIf}
 
-   SysUtils,StrUtils, classes,Math,
+   System.IOUtils,SysUtils,StrUtils,
+   classes,Math,
    PETMAR,PETMath,Petmar_types,DEMDefs;
 
 
@@ -492,7 +493,14 @@ var
    TheFiles : tStringList;
 begin
    TheFiles := tStringList.Create;
+
    FindMatchingFiles(thePath,'*.wkt',TheFiles,0);
+   if (TheFiles.Count = 0) then FindMatchingFiles(thePath,'*.prj',TheFiles,0);
+   Delete(ThePath,length(ThePath),1);
+   thePath := System.IOUtils.TDirectory.GetParent(thePath);
+   if (TheFiles.Count = 0) then FindMatchingFiles(thePath,'*.wkt',TheFiles,0);
+   if (TheFiles.Count = 0) then FindMatchingFiles(thePath,'*.prj',TheFiles,0);
+
    if (TheFiles.Count = 1) then Result := TheFiles.Strings[0]
    else Result := '';
    TheFiles.Free;
@@ -974,8 +982,8 @@ VERT_CS["NAVD88 height - Geoid12B (ftUS)",VERT_DATUM["North American Vertical Da
 var
    HorizWKT,VertWKT : ANSIstring;
    i : integer;
-begin
-   {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString: ' + TheProjectionString); {$EndIf}
+begin {function tMapProjection.InitProjFromWKTstring}
+   {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString in with: ' + TheProjectionString); {$EndIf}
    Result := StrUtils.AnsiContainsText(TheProjectionString,'PROJCS') or StrUtils.AnsiContainsText(TheProjectionString,'PROJCRS') or StrUtils.AnsiContainsText(TheProjectionString,'GEOGCRS') or StrUtils.AnsiContainsText(TheProjectionString,'GEOGGCS');
    if Result then begin
       WKTString := TheProjectionString;

@@ -30,13 +30,17 @@ type
     Memo1: TMemo;
     BitBtn4: TBitBtn;
     RadioGroup1: TRadioGroup;
+    BitBtn5: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
+    procedure CancelBtnClick(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
   private
     { Private declarations }
+    procedure LoadDEMs;
   public
     { Public declarations }
     Mode : integer;
@@ -54,6 +58,7 @@ uses
    Petmar,Petmar_types,
    nevadia_main,
    DEMdefs,
+   Toggle_DB_use,
    DEMIX_control,DEMIX_definitions;
 
 
@@ -62,21 +67,17 @@ var
   PickAreasForm : TPickAreasForm;
   fName : PathStr;
   i,PickedNum,aThird,First,Last : integer;
-  theDEMs : tStringList;
 begin
-   PickAreasForm := TPickAreasForm.Create(Application);
+    PickAreasForm := TPickAreasForm.Create(Application);
+    PickAreasForm.LoadDEMs;
 
-    theDEMs := GetListOfTestDEMsinUse;
-    for I := 0 to pred(theDEMs.Count) do begin
-       PickAreasForm.Memo1.Lines.Add(theDEMs.Strings[i]);
-    end;
-    theDEMs.Destroy;
    if ClonedEXE then PickAreasForm.Mode := 1
    else begin
       PickAreasForm.Mode := 0;
       PickAreasForm.ShowModal;
    end;
    case PickAreasForm.Mode of
+         0 : Result := tStringList.Create;
          1 : begin
                 Result := DEMIX_GetListOfAreas;
              end;
@@ -126,6 +127,18 @@ begin
    PickAreasForm.Close;
 end;
 
+procedure TPickAreasForm.LoadDEMs;
+var
+  theDEMs : tStringList;
+  i : integer;
+begin
+    theDEMs := GetListOfTestDEMsinUse;
+    Memo1.Clear;
+    for I := 0 to pred(theDEMs.Count) do begin
+       Memo1.Lines.Add(theDEMs.Strings[i]);
+    end;
+    theDEMs.Destroy;
+end;
 
 procedure TPickAreasForm.BitBtn1Click(Sender: TObject);
 begin
@@ -152,10 +165,23 @@ begin
    Close;
 end;
 
+procedure TPickAreasForm.BitBtn5Click(Sender: TObject);
+begin
+   VerifyRecordsToUse(DemixSettingsDir + 'demix_dems.dbf','SHORT_NAME');
+   LoadDEMs;
+end;
+
+procedure TPickAreasForm.CancelBtnClick(Sender: TObject);
+begin
+  Mode := 0;
+  Close;
+end;
+
 procedure TPickAreasForm.RadioGroup1Click(Sender: TObject);
 begin
    Mode := 5 + RadioGroup1.ItemIndex;
-   close;
+   Close;
 end;
+
 
 end.

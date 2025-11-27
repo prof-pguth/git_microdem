@@ -11,7 +11,7 @@ unit ssim_fuv_control;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordFUV_SSIM}
+      //{$Define RecordFUV_SSIM}
    {$ELSE}
    {$ENDIF}
 {$EndIf}

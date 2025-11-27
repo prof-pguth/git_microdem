@@ -350,17 +350,17 @@ begin
 
       DEM := MakeSingleNewDerivativeMap('g',CurDEM);  //rugosity
       SaveDEM(DEM);
-      DEM := CreateRoughnessMap(CurDEM);
+      DEM := CreateRoughnessMap(true,CurDEM);
       SaveDEM(DEM);
-      DEM := CreateRoughnessMap2(CurDEM,true,false);
+      DEM := CreateSTDslopeRoughnessMap(true,CurDEM,'',false);
       SaveDEM(DEM);
-      DEM := CreateRoughnessMapAvgVector(CurDEM,true);
+      DEM := CreateRoughnessMapAvgVector(true,CurDEM);
       SaveDEM(DEM);
       {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click singles done, start loop'); {$EndIf}
 
       for Radius := 1 to 4 do begin
          Box := succ(2*Radius);
-         DEM := CreateRoughnessSlopeStandardDeviationMap(CurDEM,Box);
+         DEM := CreateRoughnessSlopeStandardDeviationMap(true,CurDEM,Box);
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click CreateRoughnessSlopeStandardDeviationMap done'); {$EndIf}
          SaveDEM(DEM);
          {$IfDef RecordMapMaking} WriteLineToDebugFile('TPickGeoStat.BitBtn20Click DEM saved'); {$EndIf}

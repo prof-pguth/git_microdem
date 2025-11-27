@@ -550,7 +550,7 @@ type
          function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
          function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
-         function ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
+         function ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false{; Offset : integer = 0}) : integer;
          function HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 
          function FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
@@ -895,8 +895,6 @@ uses
    View3D_main,
    PetImage;
 
-//var
-   //CountInStrips : integer;
 
 {$I demcoord_vis.inc}
 {$I demcoord_straight.inc}
@@ -1210,7 +1208,7 @@ begin
 end;
 
 
-function tDEMDataSet.ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false; Offset : integer = 0) : integer;
+function tDEMDataSet.ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false{; Offset : integer = 0}) : integer;
 var
    Col,Row,x,y,Npts : integer;
    z : float32;

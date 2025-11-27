@@ -34,9 +34,9 @@ begin
    else if (Param = 'HILL') then Result := CreateHillshadeMap(OpenMaps,DEM)
    else if (Param = 'SLOPE') then Result := CreateSlopeMap(DEM,OpenMaps)
    else if (Param = 'RUFF') then begin
-      Result := CreateRoughnessSlopeStandardDeviationMap(DEM,MDDef.DEM_ruff_window,OpenMaps);
-      DEMglb[Result].ElevationStatistics(DEMglb[Result].FullDEMGridLimits,Mean,Std,NPts);
-      WriteLineToDebugFile(DEMglb[Result].AreaName + '   ' + RealToString(Mean,-12,-2));
+      Result := CreateRoughnessSlopeStandardDeviationMap(OpenMaps,DEM,MDDef.DEM_ruff_window);
+      //DEMglb[Result].ElevationStatistics(DEMglb[Result].FullDEMGridLimits,Mean,Std,NPts);
+      //WriteLineToDebugFile(DEMglb[Result].AreaName + '   ' + RealToString(Mean,-12,-2));
    end
    else if (Param = 'TPI') then Result := BoxCarDetrendDEM(OpenMaps,DEM,3)
    else if (Param = 'RRI') then Result := MakeRRIGrid(DEM,OpenMaps)
@@ -164,8 +164,8 @@ procedure CreateLSPgrids(OpenMaps : boolean; Param,AreaName : shortstring; var P
           end;
 
           if (Param = 'RUFF') then begin
-              for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := CreateRoughnessSlopeStandardDeviationMap(PointDEMs[i],MDDef.DEM_ruff_window,OpenMaps);
-              for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := CreateRoughnessSlopeStandardDeviationMap(AreaDEMs[i],MDDef.DEM_ruff_window,OpenMaps);
+              for i := dmxFirstPoint to NumPtDEMs do PointGrids[i] := CreateRoughnessSlopeStandardDeviationMap(OpenMaps,PointDEMs[i],MDDef.DEM_ruff_window);
+              for i := dmxFirstArea to NumAreaDEMs do AreaGrids[i] := CreateRoughnessSlopeStandardDeviationMap(OpenMaps,AreaDEMs[i],MDDef.DEM_ruff_window);
           end;
 
           if (Param = 'SLOPE') then begin

@@ -2219,6 +2219,10 @@ object dbtablef: Tdbtablef
         Caption = 'Load this DEM'
         OnClick = LoadthisDEM1Click
       end
+      object Create2: TMenuItem
+        Caption = 'Create DEM Mosaic'
+        OnClick = Create2Click
+      end
       object GDALsubsettomatchthisrecord1: TMenuItem
         Caption = 'GDAL subset to match this record'
         OnClick = GDALsubsettomatchthisrecord1Click

@@ -551,7 +551,7 @@ end;
 
 
 
-function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 9999) : tMyBitmap;
+function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 2400) : tMyBitmap;
 var
    i,Left,Top,StartFontSize : integer;
    Color : tColor;
@@ -577,7 +577,7 @@ begin
    Result := Nil;
    repeat
       if (Result <> Nil) then Result.Destroy;
-      CreateBitmap(Result,1500,900);
+      CreateBitmap(Result,MaxWide,900);
       LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
       Result.Canvas.Font.Size := StartFontSize;
       Left := 15;

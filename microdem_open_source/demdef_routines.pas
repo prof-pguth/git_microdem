@@ -1480,6 +1480,8 @@ var
             AParameter('Geomorph','TrendHistDev',TrendHistDev,true);
             AParameter('Geomorph','TrendText',TrendText,true);
             AParameter('Geomorph','ValleyRidgeThreshold',ValleyRidgeThreshold,7);
+            AParameter('Geomorph','LSPsForVertLabels',LSPsForVertLabels,12);
+
 
             AParameter('Geomorph','EvansApproximationAllowed',EvansApproximationAllowed,true);
 
@@ -3075,7 +3077,7 @@ var
          AParameter('Menus','ShowOpenImagery',ShowOpenImagery,true);
          AParameter('Menus','ShowTCPServer',ShowTCPServer,true);
          AParameter('Menus','ShowSHPButton',ShowSHPButton,true);
-         AParameter('Menus','ShowUSGSQuadNames',ShowUSGSQuadNames,true);
+         //AParameter('Menus','ShowUSGSQuadNames',ShowUSGSQuadNames,true);
          AParameter('Menus','US_Show_States',US_Show_States,true);
          AParameter('Menus','US_Show_Counties',US_Show_Counties,true);
          AParameter('Menus','US_Show_Roads',US_Show_Roads,true);
@@ -5396,6 +5398,7 @@ initialization
    AspColorN := RGBtrip(132,214,0);
 finalization
 end.
+
 
 
 

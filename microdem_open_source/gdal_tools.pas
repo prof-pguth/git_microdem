@@ -25,7 +25,8 @@ unit gdal_tools;
       //{$Define RecordDatumShift}
       //{$Define RecordDEMIX}
       //{$Define RecordWKT}
-      {$Define RecordDEMIXCompositeDatum}
+      //{$Define RecordProjectionStrings}
+      //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
       //{$Define RecordGDALOpen}
@@ -373,7 +374,7 @@ begin
       BatchFile.Add('REM create VRT');
       cmd := GDALtools_Dir + 'gdalbuildvrt ' + Added + ' -input_file_list ' + aName + ' ' + OutVRT;
       BatchFile.Add(cmd);
-      cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName;
+      cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName + ' ' + Added;
       BatchFile.Add(cmd);
 
       aName := Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
@@ -1779,8 +1780,10 @@ end;
           OutVert := '+3855';
           Vertcode := '+' + VertCode
        end;
+       if (Length(UTMzone) = 3) and (UTMZone[3] = 'S') then UTMZone :=  '327' + Copy(UTMzone,1,2)
+       else UTMZone := '326' + UTMzone;
        s_SRSstring := ' -s_srs EPSG:' + HorizCode + VertCode;
-       t_srsstring := ' -t_srs EPSG:' + '326' + UTMzone + OutVert;  //WGS84 + EGM2008
+       t_srsstring := ' -t_srs EPSG:' + UTMZone + OutVert;  //WGS84 + EGM2008
        CompositeDatumShiftWithGDAL(fName,SaveName,s_SRSstring,t_srsstring);
     end;
  end;
@@ -1797,6 +1800,7 @@ var
    aName : PathStr;
 begin
    if UpperCase(ExtractFileExt(inName)) = '.TIF' then begin
+      {$If Defined(RecordProjectionStrings)} WriteLineToDebugFile('CompositeDatumShiftWithGDAL ' + s_SRSstring + ' ' + t_srsstring); {$EndIf}
       StartGDALbatchFile(BatchFile);
       cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' +
           NoUnitShift + DoubleQuotedString(InName) + ' ' + DoubleQuotedString(SaveName) + s_SRSString + t_srsstring;

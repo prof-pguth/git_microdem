@@ -241,8 +241,6 @@ procedure DoSSIMandFUVForAnArea(AreaName : shortstring; Overwrite,AreasInsteadOf
 //July 2025, changed to only allow one mode at a time
 var
    DEMIXtileDB,i,OnCriterion : integer;
-   //ResultsSSIM,ResultsFUV,ResultsPartials,ResultsTheCriteria : tStringList;
-   //SavefNameSSIM,SavefNameFUV,SavefNamePartials,
    ResultsAnalysis,TheCriteria : tStringList;
    SavefNameAnalysis,WetnessName : PathStr;
    aLine,TileName : shortstring;
@@ -443,6 +441,58 @@ var
        wmdem.SetPanelText(3,DEMIXModeName + '  ' + IntToStr(Oncriterion)  + '/' + IntToStr(TheCriteria.Count) + ' ' + Criterion,true);
    end;
 
+
+          procedure PartialOrCurvature;
+          var
+             Choice : shortstring;
+             i,j : integer;
+             CritName : shortstring;
+             fName : PathStr;
+          begin
+             if MDDef.DoPartials then begin
+                Choice := ' -p';
+             end
+             else if MDDef.DoCurvatures then begin
+                Choice := ' -a'
+             end;
+
+             {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('RUN_LSPcalculator point DEMs'); {$EndIf}
+             for i := dmxFirstPoint to NumPtDEMs do begin
+                wmdem.SetPanelText(3,DEMGlb[PointDEMs[i]].AreaName,true);
+                RUN_LSPcalculator(PointDEMs[i],choice);
+             end;
+             {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('RUN_LSPcalculator area DEMs'); {$EndIf}
+             for i := dmxFirstArea to NumAreaDEMs do begin
+                wmdem.SetPanelText(3,DEMGlb[AreaDEMs[i]].AreaName,true);
+                RUN_LSPcalculator(AreaDEMs[i],Choice);
+             end;
+
+             for j := 0 to pred(TheCriteria.Count) do begin
+                 CritName := TheCriteria.Strings[j];
+                 UpdateCriteriaPanel(CritName);
+                 if CritName = 'ELEV' then begin
+                    DoCriterion('ELEV',PointDEMs,AreaDEMs);
+                 end
+                 else begin
+                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' open grids'); {$EndIf}
+                     for i := dmxFirstPoint to NumPtDEMs do begin
+                        fName := MDtempDir + DEMglb[PointDEMs[i]].AreaName + '_' + CritName + '.tif';
+                        {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(fName); {$EndIf}
+                        PointGrids[i] := OpenNewDEM(fName,false);
+                     end;
+                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' open area DEMs'); {$EndIf}
+                     for i := dmxFirstArea to NumAreaDEMs do begin
+                        fName := MDtempDir + DEMglb[AreaDEMs[i]].AreaName + '_' + CritName + '.tif';
+                        {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(fName); {$EndIf}
+                        AreaGrids[i] := OpenNewDEM(fName,false);
+                     end;
+                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' call DoCriterion'); {$EndIf}
+                     DoCriterion(CritName,PointGrids,AreaGrids);
+                 end;
+             end;
+          end;
+
+
 var
    Success : boolean;
    j : integer;
@@ -451,8 +501,8 @@ var
    FullTiles : tStringList;
 begin {procedure DoSSIMandFUVForAnArea}
     if DEMIXanalysismode in [DEMIXneo,DEMIXtraditional] then begin
-       if MDDef.DoSSIM then SaveFNameAnalysis := SSIMresultsDir + AreaName + '_ssim_results.csv';
        if MDDef.DoFUV then SaveFNameAnalysis := FUVresultsDir + AreaName + '_fuv_results.csv';
+       if MDDef.DoSSIM then SaveFNameAnalysis := SSIMresultsDir + AreaName + '_ssim_results.csv';
        if MDDef.DoPartials then SaveFNameAnalysis := PartialsresultsDir + AreaName + '_partials_results.csv';
        if MDDef.DoCurvatures then SaveFNameAnalysis := CurvaturesResultsDir + AreaName + '_curvatures_results.csv';
     end
@@ -521,47 +571,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           {$If Defined(RecordFUVcreate)} WriteLineToDebugFile(AreaName + ' num tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
 
           if MDDef.DoPartials or MDDef.DoCurvatures then begin
-             if MDDef.DoPartials then begin
-                Choice := ' -p';
-             end
-             else if MDDef.DoCurvatures then begin
-                Choice := ' -a'
-             end;
-
-             {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('RUN_LSPcalculator point DEMs'); {$EndIf}
-             for i := dmxFirstPoint to NumPtDEMs do begin
-                wmdem.SetPanelText(3,DEMGlb[PointDEMs[i]].AreaName,true);
-                RUN_LSPcalculator(PointDEMs[i],choice);
-             end;
-             {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('RUN_LSPcalculator area DEMs'); {$EndIf}
-             for i := dmxFirstArea to NumAreaDEMs do begin
-                wmdem.SetPanelText(3,DEMGlb[AreaDEMs[i]].AreaName,true);
-                RUN_LSPcalculator(AreaDEMs[i],Choice);
-             end;
-
-             for j := 0 to pred(TheCriteria.Count) do begin
-                 CritName := TheCriteria.Strings[j];
-                 UpdateCriteriaPanel(CritName);
-                 if CritName = 'ELEV' then begin
-                    DoCriterion('ELEV',PointDEMs,AreaDEMs);
-                 end
-                 else begin
-                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' open grids'); {$EndIf}
-                     for i := dmxFirstPoint to NumPtDEMs do begin
-                        fName := MDtempDir + DEMglb[PointDEMs[i]].AreaName + '_' + CritName + '.tif';
-                        {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(fName); {$EndIf}
-                        PointGrids[i] := OpenNewDEM(fName,false);
-                     end;
-                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' open area DEMs'); {$EndIf}
-                     for i := dmxFirstArea to NumAreaDEMs do begin
-                        fName := MDtempDir + DEMglb[AreaDEMs[i]].AreaName + '_' + CritName + '.tif';
-                        {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(fName); {$EndIf}
-                        AreaGrids[i] := OpenNewDEM(fName,false);
-                     end;
-                     {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile(CritName + ' call DoCriterion'); {$EndIf}
-                     DoCriterion(CritName,PointGrids,AreaGrids);
-                 end;
-             end;
+             PartialOrCurvature;
           end
           else begin
               for j := 0 to pred(TheCriteria.Count) do begin
@@ -598,23 +608,23 @@ end {procedure DoSSIMandFUVForAnArea};
 
 
 
-procedure AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles : boolean; Areas : tStringList = Nil);
+procedure AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles : boolean; Areas : tStringList);
 var
    Area  : shortstring;
    i     : integer;
-   LocalAreas : boolean;
 begin
    try
-      {$IfDef RecordDEMIXFull} WriteLineToDebugFile('AreaSSIMandFUVComputations in'); {$EndIf}
       GetDEMIXPaths(true);
-      {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Finished GetDEMIXPaths'); {$EndIf}
-      LocalAreas := (Areas = Nil);
-      if LocalAreas then Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
       {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations in, selected areas=' + IntToStr(Areas.Count)); {$EndIf}
-      if MDDef.DoSSIM then SafeMakeDir(SSIMresultsDir);
-      if MDDef.DoFUV then SafeMakeDir(FUVresultsDir);
-      if MDDef.DoPartials then SafeMakeDir(PartialsResultsDir);
-      if MDDef.DoCurvatures then SafeMakeDir(CurvaturesResultsDir);
+
+      if MDDef.DEMIX_Geo_Tiles then begin
+          if MDDef.DoFUV then SafeMakeDir(FUVresultsDir);
+          if MDDef.DoSSIM then SafeMakeDir(SSIMresultsDir);
+          if MDDef.DoPartials then SafeMakeDir(PartialsResultsDir);
+          if MDDef.DoCurvatures then SafeMakeDir(CurvaturesResultsDir);
+      end
+      else begin
+      end;
       LockStatusBar := true;
       wmdem.SetPanelText(0, 'Started ' + TimeToStr(Now),true);
       HeavyDutyProcessing := true;
@@ -633,7 +643,6 @@ begin
          end;
       end;
    finally
-      if LocalAreas then Areas.Free;
       EndDEMIXProcessing(0,true);
    end;
    {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations out'); {$EndIf}

@@ -114,7 +114,6 @@ type
       MinSampleValue,MaxSampleValue : array[1..MaxBands] of int32;
       SampleFormat : tSampleFormat;
       OffsetArray : ^tOffsetArray;
-      //TieBoundBox : sfBoundBox;
       FootDEM : boolean;
 
       //tGeoTiffHeader unique values
@@ -250,15 +249,13 @@ uses
 
 function Geotiff_UTMzone(fName : PathStr) : integer;
 var
-   success : boolean;
-   TiffImage : tTIFFImage;
+   Lat,Long : float64;
 begin
    Result := -99;
-   if FileExists(fName) then begin
-      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
-      Result := TiffImage.MapProjection.projUTMZone;
-      TiffImage.Destroy;
+   if GeotiffCentroidLatLong(fName,Lat,Long) then begin
+      Result := GetUTMZone(Long);
    end;
+   {$IfDef RecordUTM} WriteLineToDebugFile('Geotiff ' + ExtractFileName(fName) + '  UTM zone=' + IntToStr(Result)); {$EndIf}
 end;
 
 
@@ -379,7 +376,6 @@ begin
          TiffImage.MapProjection.InverseProjectDegrees(bb.xmin,bb.ymin,bb.ymin,bb.xmin);
          TiffImage.MapProjection.InverseProjectDegrees(bb.xmax,bb.ymax,bb.ymax,bb.xmax);
       end;
-
       TiffImage.Destroy;
    end;
 end;
@@ -2456,19 +2452,6 @@ var
    begin
       try
          FileRead(TiffHandle,B,4);
-
-         (*
-         if (B[1] = 0) and (B[2] = 0) and (B[3] = 0) and (B[4] = 0) then begin
-            b[1] := 73;
-            B[2] := 73;
-            B[3] := 42;
-            //Result := false;
-            {$If Defined(RecordGeotiff) or Defined(RecordGeotiffFailures)} WriteLineToDebugFile('ReadTiffFileHeader failure: ' + inFileName); {$EndIf}
-            //exit;
-         end;
-         *)
-
-
          if (B[3] = 43) or (B[4] = 43) then BigTiff := true
          else if ((B[3] = 42) or (B[4] = 42)) then BigTiff := false
          else begin
@@ -2511,7 +2494,8 @@ var
       end;
    end;
 
-
+var
+   Lat,Long : float64;
 begin
    Success := false;
    if (Not(FileExists(inFileName))) or (GetFileSize(inFileName) = 0) then begin
@@ -2693,6 +2677,10 @@ begin
    end;
 
    TemporaryNewGeotiff := true;
+   if (MapProjection.projUTMzone <= 0) then begin
+      MapProjection.InverseProjectDegrees(TiffHeader.ModelX,TiffHeader.ModelY,Lat,Long);
+      MapProjection.projUTMzone := GetUTMzone(long);
+   end;
 
    {$IfDef RecordDefineDatum}
       MapProjection.ShortProjInfo('Point 2, utm=');

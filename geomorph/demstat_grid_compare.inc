@@ -265,7 +265,7 @@ var
             7 : Result := CreateHillshadeMap(false,DEM);
             8 : Result := CreateCurvatureMap(eucurv_tang,false,DEM);
             9 : Result := CreateCurvatureMap(eucurv_plan,false,DEM);
-            10 : Result := CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,5,SlopeMap,false);
+            10 : Result := CreateSlopeRoughnessSlopeStandardDeviationMap(false,DEM,5,SlopeMap);
             11 : Result := WBT_WetnessIndex(false,true,DEMGlb[DEM].GeotiffDEMName);
             12 : Result := WBT_FlowAccumulation(false,True,false,DEMGlb[DEM].GeotiffDEMName,fName1,fName2);
             13,14 : CreateOpennessMap(false,DEMglb[DEM].FullDEMGridLimits,DEM,-99,Pixels,Upward,Result,Difference);

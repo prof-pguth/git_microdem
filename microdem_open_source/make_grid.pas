@@ -84,7 +84,7 @@ type
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 function CreateSlopeMapPercentAlgorithm(HowCompute : tSlopeCurveCompute; OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Degrees : boolean = false) : integer;
 
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; FilterRadius : integer = 2; Square : boolean = true; SaveName : PathStr = '') : integer;
 
 function ShortDerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
 function DerivativeMapName(ch : AnsiChar; SampleBoxSize : integer = 0) : ShortString;
@@ -97,9 +97,18 @@ function AspectDifferenceMap(WhichDEM,RegionRadius : integer; GridLimits : tGrid
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 
-function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
-function CreateIQRMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
-function CreateIQRSlopeMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
+
+function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSizeRadius : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
+function CreateIQRMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
+function CreateIQRslopeMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
+function CreateIQRresMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
+//function CreateSpecifiedRoughnessMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; SaveSlopeMap : boolean = true) : integer;
+function CreateRoughnessMap(OpenMap : boolean; WhichDEM : integer) : integer;
+function CreateSTDslopeRoughnessMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; SaveSlopeMap : boolean = true) : integer;
+function CreateRoughnessMapAvgVector(OpenMap : boolean; WhichDEM : integer) : integer;
+
+function CreateRoughnessSlopeStandardDeviationMap(OpenMap : boolean; DEM,DiameterMustBeOdd : integer; Square : boolean = true) : integer;
+function CreateSlopeRoughnessSlopeStandardDeviationMap(OpenMap : boolean; DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; Square : boolean = true) : integer;
 
 procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
 
@@ -110,14 +119,6 @@ function MakeSpecifiedTPIGrid(CurDEM : integer; GridLimits : tGridLimits; Normal
 function MakeMAD2KGrid(OpenMap : boolean; CurDEM : integer; SaveName : PathStr = ''; ScaleFactor : byte = nmAvgSpace) : integer;
 function MakeVRMGrid(CurDEM : integer; GridLimits : tGridLimits; OpenMap : boolean = true; WindowRadius : integer = 5; SaveName : PathStr = '') : integer;
 
-function CreateSpecifiedRoughnessMap(DEM : integer; GridLimits : tGridLimits;OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
-
-function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
-function CreateRoughnessMap2(DEM : integer; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
-function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
-
-function CreateRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; OpenMap : boolean = true) : integer;
-function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 
@@ -210,13 +211,103 @@ var
 {$EndIf}
 
 
+function CreateRoughnessSlopeStandardDeviationMap(OpenMap : boolean; DEM,DiameterMustBeOdd : integer; Square : boolean = true) : integer;
+var
+   SlopeMap : integer;
+begin
+   SlopeMap := -1;
+   Result := CreateSlopeRoughnessSlopeStandardDeviationMap(OpenMap,DEM,DiameterMustBeOdd,SlopeMap,Square);
+end;
+
+
+function CreateSTDslopeRoughnessMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; SaveSlopeMap : boolean = true) : integer;
+var
+   SlopeGrid,x,y : integer;
+   sl : array[1..9] of float32;
+   MomentVar : tMomentVar;
+   SaveFile : boolean;
+   //AreaName : shortstring;
+begin
+   SlopeGrid := CreateSlopeMap(DEM,OpenMap);
+   SaveFile := SaveName <> '';
+   if (SaveName = '')  then SaveName := MDTempDir + MD_Made_string + 'roughness_elev_std_3x3_' + DEMGlb[DEM].AreaName + '.tif';
+   //AreaName := ExtractFileNameNoExt(SaveName);
+
+   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,ExtractFileNameNoExt(SaveName),DEMGlb[DEM].DEMheader.ElevUnits);  //,false,1);
+   MomentVar.Npts := 9;
+   StartProgressAbortOption('roughness');
+   for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+      UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
+      for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
+         if DEMGlb[DEM].SurroundedPointElevs(x,y,sl[1],sl[2],sl[3],sl[4],sl[5],sl[6],sl[7],sl[8],sl[9]) then begin
+            moment(sl,MomentVar,msAfterStdDev);
+            DEMglb[Result].SetGridElevation(x,y,MomentVar.std_dev);
+         end;
+      end;
+   end;
+   DEMglb[Result].CheckMaxMinElev;
+   if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
+   if (not SaveSlopeMap) then CloseSingleDEM(SlopeGrid);
+   if SaveFile then DEMGlb[Result].WriteNewFormatDEM(SaveName);
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSpecifiedRoughnessMap out, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
+end;
+
+
+function CreateSlopeRoughnessSlopeStandardDeviationMap(OpenMap : boolean; DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; Square : boolean = true) : integer;
+//to return slope map, the input value should be 0; otherwise it will be destroyed here
+var
+   fName : PathStr;
+   ReturnSlopeMap : boolean;
+   {$If Defined(RecordMapSteps)} MapStopwatch : TStopwatch; {$EndIf}
+begin
+   ReturnSlopeMap := (SlopeMap = 0);
+   {$If Defined(RecordMapSteps)} MapStopwatch := TStopwatch.StartNew; {$EndIf}
+   SlopeMap := CreateEvansSlopeMapPercent(OpenMap, DEM);
+   {$If Defined(RecordMapSteps)} WriteLineToDebugFile('slope map created   ' + RealToString(MapStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+
+   {$If Defined(RecordMapSteps)} MapStopwatch := TStopwatch.StartNew; {$EndIf}
+   fName := MD_Made_string + 'ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
+   Result := CreateStandardDeviationMap(OpenMap,SlopeMap,(DiameterMustBeOdd div 2),Square,fName);
+   {$If Defined(RecordMapSteps)} WriteLineToDebugFile('ruff map created   ' + RealToString(MapStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+   if (not ReturnSlopeMap) then begin
+      CloseSingleDEM(SlopeMap);
+      SlopeMap := 0;
+   end;
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
+end;
+
+
+function CreateRoughnessMapAvgVector(OpenMap : boolean; WhichDEM : integer) : integer;
+begin
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMapAvgVector in'); {$EndIf}
+   SaveBackupDefaults;
+   SetAllOrganization(false);
+   MDDef.FabricCalcThin := 1;
+   MDDef.DoAvgVectStrength := true;
+   Result := CreateAnOrganizationMap(WhichDEM,OpenMap);
+   RestoreBackupDefaults;
+end;
+
+
+function CreateRoughnessMap(OpenMap : boolean; WhichDEM : integer) : integer;
+begin
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap in'); {$EndIf}
+   SaveBackupDefaults;
+   SetAllOrganization(false);
+   MDDef.DoRoughness := true;
+   MDDef.FabricCalcThin := 1;
+   Result := CreateAnOrganizationMap(WhichDEM,OpenMap);
+   RestoreBackupDefaults;
+end;
+
+
 
 function MakeSyntheticSurface(OpenMap : boolean; DEM : integer; Radius : integer = -99; fName : PathStr = '') : integer;
 var
    x,y,xc,yc : integer;
    xp,yp,z : float32;
 begin
-   if Radius < 1 then begin
+   if (Radius < 1) then begin
       Radius := round(DEMglb[DEM].DEMHeader.NumCol * DEMglb[DEM].AverageSpace * 0.5);
       ReadDefault('Hemisphere radius',Radius);
    end;
@@ -246,14 +337,23 @@ begin
 end;
 
 
-
-function CreateIQRSlopeMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
+function CreateIQRSlopeMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 var
   slope : integer;
 begin
-   Slope := CreateEvansSlopeMapPercent(OpenMap,DEM,'',false);
-   Result := CreateIQRMap(OpenMap,DEM,BoxSize,SaveName);
+   Slope := CreateEvansSlopeMapPercent(false,DEM,'',false);
+   Result := CreateIQRMap(OpenMap,DEM,BoxSizeDiameter,Square,SaveName);
    CloseSingleDEM(slope);
+end;
+
+
+function CreateIQRresMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
+var
+  residual : integer;
+begin
+   residual := BoxCarDetrendDEM(false,DEM,BoxSizeDiameter div 2,Square);
+   Result := CreateIQRMap(OpenMap,residual,BoxSizeDiameter,Square,SaveName);
+   CloseSingleDEM(residual);
 end;
 
 
@@ -749,20 +849,29 @@ begin
       DEMglb[Result[i]].CheckMaxMinElev;
       DEMglb[Result[i]].SetUpMap(false);
    end;
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateFirstSecondThirdOrderPartialDerivatives, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 
 
-
-function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; {GridLimits : tGridLimits;} FilterRadius : integer = 2; SaveName : PathStr = '') : integer;
+function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; FilterRadius : integer = 2; Square : boolean = true; SaveName : PathStr = '') : integer;
 var
-   x,y,xr,yr,n : integer;
+   x,y,xr,yr,n,NPts : integer;
    Sum,zt,z : float32;
+   TStr : shortstring;
+   FilterMask : tCenteredCircularFilter;
 begin
    if ValidDEM(DEM) then with DEMGlb[DEM] do begin
-      Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual',DEMHeader.ElevUnits);
       if (FilterRadius < 1) then ReadDefault('radius to filter (pixels)',FilterRadius);
+      if Square then begin
+         FillChar(FilterMask,SizeOf(FilterMask),1);
+         TStr := '_square';
+      end
+      else begin
+         FilterMask := MakeCenteredCircularFilter(FilterRadius,NPts);
+         TStr := '_circular';
+      end;
+      Result := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_detrend_residual_' + FilterSizeStr(succ(2 * FilterRadius)) + TStr,DEMHeader.ElevUnits);
       StartProgress('Detrend/residual ' + AreaName);
       for x := 0 to pred(DEMglb[DEM].DEMheader.NumCol) do begin
          if (x mod 50 = 0) then UpDateProgressBar(x/pred(DEMheader.NumCol));
@@ -770,9 +879,9 @@ begin
             Sum := 0;
             n := 0;
             if GetElevMetersOnGrid(x,y,zt) then begin
-               for xr := (x - FilterRadius) to (x + FilterRadius) do begin
-                  for yr := (y - FilterRadius) to (y + FilterRadius) do begin
-                     if GetElevMetersOnGrid(xr,yr,z) then begin
+               for xr := (-FilterRadius) to (FilterRadius) do begin
+                  for yr := (-FilterRadius) to (FilterRadius) do begin
+                     if (FilterMask[xr,yr] = 1) and GetElevMetersOnGrid(x-xr,y-yr,z) then begin
                         Sum := Sum + z;
                         inc(n);
                      end;
@@ -1142,27 +1251,18 @@ begin
 end;
 
 
-function CreateRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; OpenMap : boolean = true) : integer;
+function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSizeRadius : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 var
-   SlopeMap : integer;
-begin
-   SlopeMap := -1;
-   Result := CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd,SlopeMap,OpenMap);
-end;
-
-
-function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
-var
-   x,y,i,j,Radius,NPts : integer;
+   x,y,i,j,NPts : integer;
    sl : array[1..500] of float32;
    s,s2,svar,Mean,std_dev : float64;
    z : float32;
    TStr : shortstring;
 begin
-   if (SaveName = '') then Tstr := MD_Made_string + 'std_' + FilterSizeStr(BoxSize) + '_' + DEMGlb[DEM].AreaName
+   if (SaveName = '') then Tstr := MD_Made_string + 'std_' + FilterSizeStr(BoxSizeRadius) + '_' + DEMGlb[DEM].AreaName
    else TStr := ExtractFileNameNoExt(SaveName);
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,TStr,DEMGlb[DEM].DEMheader.ElevUnits);
-   Radius := BoxSize div 2;
+   //Radius := BoxSize div 2;
    if ShowSatProgress then StartProgressAbortOption('std dev grid');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -1170,8 +1270,8 @@ begin
          Npts := 0;
          s := 0;
          s2 := 0;
-         for I := x-Radius to x+Radius do begin
-            for J := y-Radius to y+Radius do begin
+         for I := x-BoxSizeRadius to x+BoxSizeRadius do begin
+            for J := y-BoxSizeRadius to y+BoxSizeRadius do begin
                if DEMGlb[DEM].GetElevMetersOnGrid(i,j,z) then begin
                   inc(Npts);
                   sl[Npts] := z;
@@ -1196,21 +1296,21 @@ begin
    if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
    if ShowSatProgress then EndProgress;
    if (SaveName <> '') then DEMGlb[Result].WriteNewFormatDEM(SaveName);
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
+   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateStandardDeviationMap, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
 
-function CreateIQRMap(OpenMap : boolean; DEM,BoxSize : integer; SaveName : PathStr = '') : integer;
+function CreateIQRMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 var
    x,y,i,j,k,Radius,NPts : integer;
    sl : array[0..500] of float32;
    z : float32;
    TStr : shortstring;
 begin
-   if (SaveName = '') then Tstr := MD_Made_string + 'iqr_' + FilterSizeStr(BoxSize) + '_' + DEMGlb[DEM].AreaName
+   if (SaveName = '') then Tstr := MD_Made_string + 'iqr_' + FilterSizeStr(BoxSizeDiameter) + '_' + DEMGlb[DEM].AreaName
    else TStr := ExtractFileNameNoExt(SaveName);
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,TStr,DEMGlb[DEM].DEMheader.ElevUnits);
-   Radius := BoxSize div 2;
+   Radius := BoxSizeDiameter div 2;
    if ShowSatProgress then StartProgressAbortOption('IQR grid');
    for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
       if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
@@ -1237,29 +1337,6 @@ begin
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
 
-
-function CreateSlopeRoughnessSlopeStandardDeviationMap(DEM,DiameterMustBeOdd : integer; var SlopeMap : integer; OpenMap : boolean = true) : integer;
-//to return slope map, the input value should be 0; otherwise it will be destroyed here
-var
-   fName : PathStr;
-   ReturnSlopeMap : boolean;
-   {$If Defined(RecordMapSteps)} MapStopwatch : TStopwatch; {$EndIf}
-begin
-   ReturnSlopeMap := (SlopeMap = 0);
-   {$If Defined(RecordMapSteps)} MapStopwatch := TStopwatch.StartNew; {$EndIf}
-   SlopeMap := CreateEvansSlopeMapPercent(OpenMap, DEM);
-   {$If Defined(RecordMapSteps)} WriteLineToDebugFile('slope map created   ' + RealToString(MapStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-
-   {$If Defined(RecordMapSteps)} MapStopwatch := TStopwatch.StartNew; {$EndIf}
-   fName := MD_Made_string + 'ruff_slope_std_' + FilterSizeStr(DiameterMustBeOdd) + '_' + DEMGlb[DEM].AreaName;
-   Result := CreateStandardDeviationMap(OpenMap,SlopeMap,DiameterMustBeOdd,fName);
-   {$If Defined(RecordMapSteps)} WriteLineToDebugFile('ruff map created   ' + RealToString(MapStopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-   if (not ReturnSlopeMap) then begin
-      CloseSingleDEM(SlopeMap);
-      SlopeMap := 0;
-   end;
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughnessMap2, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
-end;
 
 
 function MakeVRMGrid(CurDEM : integer; GridLimits : tGridLimits; OpenMap : boolean = true; WindowRadius : integer = 5; SaveName : PathStr = '') : integer;
@@ -1298,61 +1375,6 @@ begin
    if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
 end;
 
-
-function CreateRoughnessMapAvgVector(WhichDEM : integer; OpenMap : boolean = true) : integer;
-begin
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughness in'); {$EndIf}
-   SaveBackupDefaults;
-   SetAllOrganization(false);
-   MDDef.FabricCalcThin := 1;
-   MDDef.DoAvgVectStrength := true;
-   Result := CreateAnOrganizationMap(WhichDEM,OpenMap);
-   RestoreBackupDefaults;
-end;
-
-
-function CreateRoughnessMap(WhichDEM : integer; OpenMap : boolean = true) : integer;
-begin
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateRoughness in'); {$EndIf}
-   SaveBackupDefaults;
-   SetAllOrganization(false);
-   MDDef.FabricCalcThin := 1;
-   MDDef.DoRoughness := true;
-   Result := CreateAnOrganizationMap(WhichDEM,OpenMap);
-   RestoreBackupDefaults;
-end;
-
-
-function CreateRoughnessMap2(DEM : integer; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
-begin
-    Result := CreateSpecifiedRoughnessMap(DEM,DEMGlb[DEM].FullDEMGridLimits,OpenMap,SaveSlopeMap);
-end;
-
-
-function CreateSpecifiedRoughnessMap(DEM : integer; GridLimits : tGridLimits; OpenMap : boolean = true; SaveSlopeMap : boolean = true) : integer;
-var
-   SlopeGrid,x,y : integer;
-   sl : array[1..9] of float32;
-   MomentVar : tMomentVar;
-begin
-   SlopeGrid := CreateSlopeMap(DEM,OpenMap);
-   Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,MD_Made_string + 'roughness_elev_std_3x3_' + DEMGlb[DEM].AreaName,DEMGlb[DEM].DEMheader.ElevUnits);  //,false,1);
-   MomentVar.Npts := 9;
-   StartProgressAbortOption('roughness');
-   for x := GridLimits.XGridLow to GridLimits.XGridHigh do begin
-      UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
-      for y := GridLimits.YGridLow to GridLimits.YGridHigh do begin
-         if DEMGlb[DEM].SurroundedPointElevs(x,y,sl[1],sl[2],sl[3],sl[4],sl[5],sl[6],sl[7],sl[8],sl[9]) then begin
-            moment(sl,MomentVar,msAfterStdDev);
-            DEMglb[Result].SetGridElevation(x,y,MomentVar.std_dev);
-         end;
-      end;
-   end;
-   DEMglb[Result].CheckMaxMinElev;
-   if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
-   if (not SaveSlopeMap) then CloseSingleDEM(SlopeGrid);
-   {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateSpecifiedRoughnessMap out, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
-end;
 
 
 procedure ModeFilterDEM(DEM,BufferSize : integer; JustDoHoles : boolean);
@@ -1409,6 +1431,7 @@ begin
     end;
 end;
 
+
 function InterpolateElevs(CurDEM,Col,Row : integer; delta : float32; var znw,zne,zsw,zse : float32) : boolean; inline;
 begin
     Result := DEMGLB[CurDEM].GetElevMeters(Col-delta,Row+delta,znw) and DEMGLB[CurDEM].GetElevMeters(Col+delta,Row+delta,zne) and
@@ -1454,7 +1477,6 @@ begin
 end;
 
 
-
 function MakeSpecifiedTPIGrid(CurDEM : integer; GridLimits : tGridLimits; Normalize : byte; OpenMap : boolean = true) : integer;
 var
    Col,Row : integer;
@@ -1487,7 +1509,6 @@ begin
           end;
        end;
     end;
-
     DEMGlb[Result].CheckMaxMinElev;
     if ShowSatProgress then EndProgress;
     if OpenMap then DEMGlb[Result].SetupMap(false,mtElevSpectrum);
@@ -1621,8 +1642,6 @@ begin
    for i := 1 to 4 do
       DEMGlb[NewDEM[i]].SetUpMap(true,mtElevSpectrum);
 end;
-
-
 
 
 procedure MomentsGridStrip(CompLimits : tGridLimits; What : char; GridInc,XBoxGridSize,YBoxGridSize,CurDEM : integer; DEMs : tListOfDEMs);
@@ -2563,7 +2582,7 @@ var
    NSk2,NESWk2,EWk2,SENWk2 : array[1..25] of float32;
    NSk2median,NESWk2median,EWk2median,SENWk2median,
    znw,zw,zsw,zn,z,zs,zne,ze,zse,Median,MAD2K,FactorEW,FactorDiag,FactorNS : float32;
-   AreaName{,NormStr} : shortstring;
+   AreaName : shortstring;
    SumX,SumY,Dir : float64;
 begin
     {$IfDef RecordTimeGridCreate} Stopwatch1 := TStopwatch.StartNew; {$EndIf}

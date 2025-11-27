@@ -98,6 +98,7 @@ var
            end;
        {$EndIf}
 
+
    procedure OpenNeoMode;
    var
       DataDir : PathStr;
@@ -289,7 +290,6 @@ var
 begin
    {$If Defined(RecordDEMIXLoad)} writeLineToDebugFile('LoadDEMIXCandidateDEMs in; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
    Result := false;
-   //LoadDEMIXnames;
    for I := 1 to MaxDEMIXDEM do begin
       TestDEMs[i] := 0;
       TestSeries[i] := '';

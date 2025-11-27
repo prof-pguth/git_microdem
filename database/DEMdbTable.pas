@@ -1056,6 +1056,7 @@ type
     N50: TMenuItem;
     N53: TMenuItem;
     Limitdeimalsinmultiplefields1: TMenuItem;
+    Create2: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1871,6 +1872,7 @@ type
     procedure Capitalize1Click(Sender: TObject);
     procedure IQR1Click(Sender: TObject);
     procedure Limitdeimalsinmultiplefields1Click(Sender: TObject);
+    procedure Create2Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -12205,8 +12207,12 @@ begin
 end;
 
 procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
+var
+   fName : PathStr;
 begin
-   OpenNewDEM(GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME'));
+   fName := GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME');
+   if not FileExists(fName) then fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + fName;
+   OpenNewDEM(fName);
 end;
 
 procedure Tdbtablef.Logoffield1Click(Sender: TObject);
@@ -13927,6 +13933,56 @@ begin
 end;
 
 
+procedure Tdbtablef.Create2Click(Sender: TObject);
+var
+   fName : PathStr;
+   MonsterBitmap,bmp : tMyBitmap;
+   Col,Row,DEM,PixelsInThumbnails,NumberOfColumns : integer;
+   Lat,Long : float64;
+begin
+   SaveBackupDefaults;
+   MDDef.DBsOnAllMaps := false;
+
+   if not GISdb[DBonTable].MyData.FieldExists('LAT') then begin
+       GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'LAT',11,7);
+       GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'LONG',12,7);
+   end;
+
+   GISdb[DBonTable].MyData.First;
+   CreateBitmap(MonsterBitmap,4000,4000);
+   Col := 0;
+   Row := 0;
+   PixelsInThumbnails := 250;
+   ReadDefault('Pixel size of thumbnail', PixelsInThumbnails);
+   NumberOfColumns := 8;
+   ReadDefault('Number of thumbnail columns',NumberOfColumns);
+
+   while not GISdb[DBonTable].MyData.eof do begin
+      fName := GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME');
+      if not FileExists(fName) then fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + fName;
+      DEM := OpenNewDEM(fName);
+      CopyImageToBitmap(DEMglb[DEM].SelectionMap.Image1,bmp);
+      if not GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long) then begin
+          DEMglb[DEM].DEMCenterPoint(Lat,Long);
+          GISdb[DBonTable].MyData.Edit;
+          GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LAT',Lat);
+          GISdb[DBonTable].MyData.SetFieldByNameAsFloat('LONG',Long);
+      end;
+
+      CloseSingleDEM(DEM);
+      MonsterBitmap.Canvas.Draw(Col * (PixelsInThumbnails+5),Row * (PixelsInThumbnails+5),CreateThumbNailBMP(BMP,PixelsInThumbnails));
+      inc(Col);
+      if Col >= NumberOfColumns then begin
+         inc(Row);
+         Col := 0;
+     end;
+     GISdb[DBonTable].MyData.Next;
+   end;
+   GetImagePartOfBitmap(MonsterBitmap);
+   DisplayBitmap(MonsterBitmap,'Landform atlas');
+   RestoreBackupDefaults;
+end;
+
 procedure Tdbtablef.CreateDBwithcornersandcenterofeveryrecord1Click(Sender: TObject);
 var
    sl : tStringList;
@@ -14583,7 +14639,6 @@ begin
          UpdateProgressBar(Num/rc);
          inc(Num);
          GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long);
          GISdb[AreaDB].EmpSource.Enabled := false;
          GISdb[AreaDB].MyData.First;
          for i := 1 to GISdb[AreaDB].MyData.RecordCount do begin

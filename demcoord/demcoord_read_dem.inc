@@ -12,7 +12,6 @@
 function tDEMDataSet.ReadDEMNow(var tFile : PathStr; transformtoNewDatum : boolean) : boolean;
 var
    Ext   : ExtStr;
-   //TStr  : ANSIString;
    Error : boolean;
 
 
@@ -219,17 +218,6 @@ var
 
           TStr := UpperCase(ptCopy(AreaName,1,5));
 
-          (*
-          if MDdef.WrapETOPO and (UpperCase(ptCopy(AreaName,1,6)) = 'ETOPO5') then begin
-             if MDDef.DoubleEtopoImport then DEMheader.Numcol := 2 * DEMheader.NumCol
-             else DEMheader.NumCol := 5420;
-             DEMheader.DEMSWCornerX := DEMheader.DEMSWCornerX - 360;
-          end;
-          if (TStr = 'AGES_') then begin
-             if MDdef.WrapETOPO then DEMheader.NumCol := 4801;
-          end;
-          *)
-
           if ReallyReadDEM and AllocateDEMMemory(InitDEMNone) then begin
              NowShowprogress := WantShowProgress and ShowDEMReadingProgress and (DEMheader.NumCol > 4000);
              if NowShowProgress then StartProgress('Read DEM ' + AreaName);
@@ -266,12 +254,6 @@ var
                 CheckMaxMinElev;
              end;
           end;
-
-          (*
-          if MDdef.WrapETOPO and (UpperCase(ptCopy(AreaName,1,6)) = 'ETOPO5') then begin
-            for x := 4320 to pred(DEMheader.NumCol) do Move(SmallIntElevations[x-4320]^,SmallIntElevations[x]^,2*DEMheader.NumRow);
-          end;
-          *)
 
          Cleanup:;
           if NowShowProgress then EndProgress;
@@ -385,6 +367,7 @@ begin {tDEMDataSet.ReadDEMNow}
    WKTfile := FindSingleWKTinDirectory(ExtractFilePath(DEMFileName));
    if ExtEquals(Ext, '.DEM') then begin
       Error := not ReadNewMicroDEMFormat(DEMFileName);
+      if Error then Error := not TryGDAL(DEMFileName); //for USGS ASCII and maybe others
       if Error then begin
          {$If Defined(RecordReadDEM) or Defined(RecordProblems)} HighlightLineToDebugFile('Deleting broken file: ' +  DEMFileName); {$EndIf}
          File2Trash(DEMFileName);
@@ -405,8 +388,6 @@ begin {tDEMDataSet.ReadDEMNow}
       Error := not ReadTIFFDEM(DEMFileName);
       if Error then exit;
       {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tDEMDataSet.ReadDEMNow after ReadTIFFDEM, dem map proj WKT=' + IntToStr(Length(DEMMapProj.wktString)) + ' dem header WKT=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
-
-
       {$If Defined(RecordReadDEM)} WriteLineToDebugFile('Load Geotiff read ' + AreaName + ' ' + DEMmapProj.GetProjName); {$EndIf}
       {$If Defined(RecordUKOS)}
          if (DEMmapProj.pName = UK_OS) then begin

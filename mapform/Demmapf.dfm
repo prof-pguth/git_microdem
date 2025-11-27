@@ -51,7 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitTop = -357
     object Image1: TImage
       Left = 3
       Top = -247
@@ -3781,7 +3780,6 @@ object MapForm: TMapForm
         end
         object USGSquadnames1: TMenuItem
           Caption = 'USGS quad names'
-          OnClick = USGSquadnames1Click
         end
         object UScounty1: TMenuItem
           Caption = 'US county'
@@ -3908,6 +3906,10 @@ object MapForm: TMapForm
         object Elevationslopemoments1: TMenuItem
           Caption = 'Elevation and slope moments'
           OnClick = Elevationslopemoments1Click
+        end
+        object SlopeMoments2: TMenuItem
+          Caption = 'Slope Moments'
+          OnClick = SlopeMoments2Click
         end
         object N80: TMenuItem
           Caption = '-'
@@ -4091,6 +4093,10 @@ object MapForm: TMapForm
           Caption = 'Resample DEM/grid by averaging'
           OnClick = ResampleDEMgridbyaveraging1Click
         end
+        object Meanaggregationmultiplelevels1: TMenuItem
+          Caption = 'Mean aggregation multiple levels'
+          OnClick = Meanaggregationmultiplelevels1Click
+        end
         object hinaveragingcomparison1: TMenuItem
           Caption = 'Thin/averaging comparison'
           OnClick = hinaveragingcomparison1Click
@@ -4116,7 +4122,7 @@ object MapForm: TMapForm
           OnClick = CreateReferenceDEMtoMatchThis1Click
         end
         object UpsampleDEMtomatchthisgrid1: TMenuItem
-          Caption = 'Upsample sekected  DEMs to match this grid'
+          Caption = 'Upsample selected  DEMs to match this grid'
           OnClick = UpsampleDEMtomatchthisgrid1Click
         end
         object Ressamplefor025to1secDTMs1: TMenuItem
@@ -4131,7 +4137,6 @@ object MapForm: TMapForm
         object DEMIXhalfsecto2onesec1: TMenuItem
           Caption = 'DEMIX half sec to 2 one sec'
           Enabled = False
-          OnClick = DEMIXhalfsecto2onesec1Click
         end
         object ComapreUTMvsgeographic1: TMenuItem
           Caption = 'Comapre UTM vs geographic'
@@ -6526,7 +6531,12 @@ object MapForm: TMapForm
         OnClick = MAD2K1Click
       end
       object IRWQslope1: TMenuItem
-        Caption = 'IRQslope'
+        Caption = 'IQRslope'
+        OnClick = IRWQslope1Click
+      end
+      object IQRres1: TMenuItem
+        Caption = 'IQRres'
+        OnClick = IQRres1Click
       end
       object Normalizeeastwest1: TMenuItem
         Caption = 'TRI  normalize east-west'

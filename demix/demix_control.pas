@@ -186,11 +186,6 @@ procedure PickDEMIXMode;
 function DEMIXMomentStatsString(MomentVar : tMomentVar) : shortstring;
 function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
 
-   {$IfDef Old3DEP}
-      procedure SubsetLargeUS3DEParea(DEM : integer = 0);
-      procedure BatchSubset_3DEP_DEMs;
-   {$EndIf}
-
    {$IfDef OpenDEMIXAreaAndCompare}
       procedure OpenDEMIXArea(fName : PathStr = '');
    {$EndIf}
@@ -1533,7 +1528,7 @@ begin
       Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    end;
    for i := pred(Result.Count) downto 0 do begin
-      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm') then Result.Delete(i);
+      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm') or (Result.Strings[i] = 'merges') then Result.Delete(i);
       //for now Canadian data is not supported
       //if (UpperCase(Copy(Result.Strings[i],1,3)) = 'CA_') then Result.Delete(i);
    end;
@@ -1710,8 +1705,8 @@ begin {procedure DoDEMIX_DifferenceMaps}
             DTMGrid := CreateSlopeMap(UseDTM);
          end;
          if (ShortName = 'rufd') then begin
-            TestGrid := CreateRoughnessSlopeStandardDeviationMap(TestDEMs[i],3);
-            DTMGrid := CreateRoughnessSlopeStandardDeviationMap(UseDTM,3);
+            TestGrid := CreateRoughnessSlopeStandardDeviationMap(false,TestDEMs[i],3);
+            DTMGrid := CreateRoughnessSlopeStandardDeviationMap(false,UseDTM,3);
          end;
 
          {$IfDef RecordDEMIX} writeLineToDebugFile(Testseries[i] + ' DTMs ' + DEMGlb[DTMgrid].AreaName + '  ' + DEMGlb[Testgrid].AreaName + ' ' + IntToStr(DTMGrid) + '/' + IntToStr(TestGrid)); {$EndIf}
@@ -1726,7 +1721,7 @@ begin {procedure DoDEMIX_DifferenceMaps}
                DSMGrid := CreateSlopeMap(UseDSM);
             end;
             if (ShortName = 'rufd') then begin
-               DSMGrid := CreateRoughnessSlopeStandardDeviationMap(UseDSM,3);
+               DSMGrid := CreateRoughnessSlopeStandardDeviationMap(false,UseDSM,3);
             end;
             {$IfDef RecordDEMIX} writeLineToDebugFile(Testseries[i] + ' DSMs ' + DEMGlb[DSMgrid].AreaName + '  ' + DEMGlb[Testgrid].AreaName + ' ' + IntToStr(DSMGrid) + '/' + IntToStr(TestGrid)); {$EndIf}
             MakeDifferenceGrid(DSMGrid,'dsm',DSMLegendFiles,DSMElevFiles);

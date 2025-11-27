@@ -250,8 +250,8 @@ begin
    {$If Defined(RecordPointClass)} WriteLineToDebugFile('TPointClassForm.BitBtn1Click in (I&P grid)'); {$EndIf}
    CheckValues;
    if (RoughGrid = 0) then begin
-      if RadioGroup6.ItemIndex = 0 then RoughGrid := CreateRoughnessMap2(CurDEM,false,true)
-      else RoughGrid := CreateRoughnessMap(CurDEM,false);
+      if (RadioGroup6.ItemIndex = 0) then RoughGrid := CreateSTDslopeRoughnessMap(false,CurDEM,'',true)
+      else RoughGrid := CreateRoughnessMap(false,CurDEM);
    end;
    if not ValidDEM(ConvexGrid) then ConvexGrid := CreateCurvatureMap(1,false,CurDEM);
    if not ValidDEM(SlopeGrid) then SlopeGrid := CreateSlopeMap(CurDEM,false);

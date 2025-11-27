@@ -236,6 +236,14 @@ function EnoughPoints(MomentVar : tMomentVar) : boolean;
 procedure LoadBFarray32(fName : PathStr; var Values : bfarray32; var npts : integer);
 
 
+const
+   MaxCircularFilter = 15;
+type
+   tCenteredCircularFilter =  array[-MaxCircularFilter..MaxCircularFilter,-MaxCircularFilter..MaxCircularFilter] of byte;
+function MakeCenteredCircularFilter(Radius : integer; var NPts : integer) : tCenteredCircularFilter;
+
+
+
 implementation
 
 
@@ -244,6 +252,31 @@ uses
 
 var
    LabelLength : integer;
+
+
+function MakeCenteredCircularFilter(Radius : integer; var NPts : integer) : tCenteredCircularFilter;
+var
+   x,y : integer;
+begin
+   if (Radius <= MaxCircularFilter) then begin
+      NPts := 0;
+      for x := -MaxCircularFilter to MaxCircularFilter do begin
+         for y := -MaxCircularFilter to MaxCircularFilter do begin
+            if (x < -Radius) or (x > Radius)  or (y < -Radius) or (y > Radius) then begin
+               Result[x,y] := 0;  //outside the corresponding box filter
+            end
+            else if sqrt(sqr(x) + sqr(y)) > Radius then begin
+               Result[x,y] := 0;  //in the rounded corners of the corresponding box filter
+            end
+            else begin
+               Result[x,y] := 1;
+               inc(NPts);
+            end;
+         end;
+      end;
+      {$IfDef RecordPoints} WriteLineToDebugFile(IntToStr(Size) + ',' + IntToStr(NPts)); {$EndIf}
+   end;
+end;
 
 
 

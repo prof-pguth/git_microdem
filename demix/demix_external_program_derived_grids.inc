@@ -28,15 +28,6 @@ function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shorts
 var
   RefAreaDir,TestAreaDir : PathStr;
 begin
-   if DEMIXanalysismode = DEMIXneo then begin
-      if isPoint then begin
-         Result := MDtempDir  + Param + AreaName + '_' + DEMGlb[PointDEMs[i]].AreaName + '.tif';
-      end
-      else begin
-         Result := MDtempDir  + Param + AreaName + '_' + DEMGlb[AreaDEMs[i]].AreaName + '.tif';
-      end;
-   end
-   else begin
       RefAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_ref_areas\';
       TestAreaDir := DEMIX_Base_DB_Path + aProgram + '_out_test_areas\';
       if isPoint then begin
@@ -55,7 +46,6 @@ begin
              else Result := TestAreaDir + Param + AreaName + '_' + DEMGlb[AreaDEMs[i]].AreaName + '.tif';
           end;
       end;
-   end;
 end;
 
 
@@ -208,7 +198,7 @@ begin
           LoadNewDEM(PointGrids[i],fName,OpenMaps);
        end
        else begin
-          PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(PointDEMs[i],MDDef.DEM_ruff_window,PointGrids2[i],OpenMaps);
+          PointGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(OpenMaps,PointDEMs[i],MDDef.DEM_ruff_window,PointGrids2[i]);
           if SaveMaps then begin
              DEMglb[PointGrids2[i]].SaveAsGeotiff(fName2);
              DEMglb[PointGrids[i]].SaveAsGeotiff(fName);
@@ -225,7 +215,7 @@ begin
              LoadNewDEM(AreaGrids[i],fName,OpenMaps);
           end
           else begin
-             AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(AreaDEMs[i],MDDef.DEM_ruff_window,AreaGrids2[i],OpenMaps);
+             AreaGrids[i] := CreateSlopeRoughnessSlopeStandardDeviationMap(OpenMaps,AreaDEMs[i],MDDef.DEM_ruff_window,AreaGrids2[i]);
              if SaveMaps then begin
                 DEMglb[AreaGrids2[i]].SaveAsGeotiff(fName2);
                 DEMglb[AreaGrids[i]].SaveAsGeotiff(fName);

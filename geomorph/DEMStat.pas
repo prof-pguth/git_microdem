@@ -126,6 +126,7 @@ type
 
       procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; SamplingCheck : boolean = false; CurDEM : integer = 0; Memo1 : tMemo = Nil);
       procedure JustElevationMoments(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; Whiskers : boolean = true; StringGrid : boolean = false);
+      procedure JustSlopeMoments(DEMSWanted : tDEMbooleanArray; aTitle : shortstring);
       procedure ElevationAndSlopeMoments(DEMSWanted : tDEMbooleanArray; aTitle : shortstring);
 
       procedure AspectDistributionBySlope(WhichDEM : Integer; GridLimits : tGridLimits);
@@ -2828,6 +2829,17 @@ begin
    RestoreBackupDefaults;
 end;
 
+procedure JustSlopeMoments(DEMSWanted : tDEMbooleanArray; aTitle : shortstring);
+begin
+   SaveBackupDefaults;
+   MDDef.ElevMoments := false;
+   MDDef.GraphsOfMoments := false;
+   MDDef.SlopeMoments := true;
+   MDDef.RoughnessMoments := false;
+   MDDef.StringGridWithMoments := true;
+   ElevMomentReport(DEMSWanted,aTitle);
+   RestoreBackupDefaults;
+end;
 
 
 procedure ElevMomentReport(DEMSWanted : tDEMbooleanArray; aTitle : shortstring; SamplingCheck : boolean = false; CurDEM : integer = 0; Memo1 : tMemo = Nil);

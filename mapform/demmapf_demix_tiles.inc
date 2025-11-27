@@ -33,10 +33,11 @@ var
    Starter : shortstring;
 begin
    Result := '';
+   Starter := UpperCase(Copy(AreaName,1,3));
    if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
       //Result := LastSubDir(ExtractFilePath(FileName));
-      Starter := UpperCase(Copy(AreaName,1,3));
-      if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_') or (Starter = 'DK_') or (Starter = 'CA_') then Result := AreaName;   //these use the map quad names
+      if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_') or
+         (Starter = 'DK_') or (Starter = 'CA_') or (Starter = 'SL_') then Result := AreaName;   //these use the map quad names
 
       //German states
       if (UpperCase(Copy(AreaName,4,3)) = 'BV_') then Result := AreaName;
@@ -51,8 +52,7 @@ begin
       Result := ExtractFileNameNoExt(FileName);
       Delete(Result,1,7);
       Result := 'CA_' + Result;
-{
-dtm_1m_utm10_w_4_151.tif   }
+      {dtm_1m_utm10_w_4_151.tif   }
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
@@ -64,6 +64,14 @@ dtm_1m_utm10_w_4_151.tif   }
       Result := 'IC_' + copy(ExtractFileNameNoExt(FileName),16,11);
       {MDT02-REGCAN95-HU28-1105-2-COB2.tif  }
    end;
+
+   if (UpperCase(Copy(AreaName,1,3)) = 'NO_') then begin
+      Result := 'NO_' + ExtractFileNameNoExt(FileName);
+      {MDT02-REGCAN95-HU28-1105-2-COB2.tif  }
+   end;
+
+
+   if (Starter = 'SL_') then Result := AreaName;
 
    if StrUtils.AnsiContainsText(FileName,'USGS') then begin
        if StrUtils.AnsiContainsText(FileName,'USGS_1m_x') then begin

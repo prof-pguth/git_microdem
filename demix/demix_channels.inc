@@ -21,6 +21,7 @@ begin
     if (Result.ygridhigh > pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow)) then Result.ygridhigh := pred(DEMGlb[AreaDEMs[0]].DEMheader.NumRow);
 end;
 
+
 function ProcessDEMTile(Ref,Test,Buffer : integer; GridLimits : tGridLimits) : float32;
 var
    x,y,xl,yl,xoffset,yoffset : integer;
@@ -114,8 +115,6 @@ var
                DEMGlb[Result].SelectionMap.EditGridViaColor(emvcSetElevation,clBlack,1,false,false);
                DEMGlb[Result].SelectionMap.MaskFromSecondGrid(DEM, msSecondMissing);
                {$IfDef RecordGridFromVector} WriteLineToDebugFile('Map maskeded: ' + DEMGlb[Result].AreaName); {$EndIf}
-               //fName := 'c:\temp\' + AreaName + '.dem';
-               //DEMGlb[Result].WriteNewFormatDEM(fName);
                GISdb[db].LayerIsOn := false;
             end
             else begin
@@ -127,7 +126,6 @@ var
             {$IfDef RecordDEMIX} WriteLineToDebugFile('Missing ' + fName); {$EndIf}
             Result := 0;
          end;
-         //CloseSingleDEM(DEM);
       end;
 
 
@@ -141,7 +139,6 @@ var
              aLine := aline + ',' + RealToString(ProcessDEMTile(PointGrids[dmxFirstPoint],PointGrids[i],Buffer,GridLimits),-12,6);
           end;
           for i := 1 to NumAreaDEMs do aLine := aline + ',' + RealToString(ProcessDEMTile(AreaGrids[0],AreaGrids[i],Buffer,GridLimits),-12,6);
-          //aLine := aline + ',' + IntToStr(NumRef);
           Results.Add(aline);
        end;
 
@@ -268,7 +265,7 @@ begin {procedure CompareChannelNetworks}
           aline := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
           for i := 1 to NumPtDEMs do aLine := aline + ',' + DEMGlb[PointDEMs[i]].AreaName;
           for i := 1 to NumAreaDEMs do aLine := aline + ',' + DEMGlb[AreaDEMs[i]].AreaName;
-          Results.Add(aLine);   // + ',VECTOR_PIX');
+          Results.Add(aLine);
 
           DEMIXtileDB := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,true);
           GISdb[DEMIXtileDB].ApplyGISFilter(FilterForDEMIXtilesToUse);
@@ -433,7 +430,6 @@ begin {procedure CompareGeomorphons}
                 for i := 1 to 4 do alines[i] := aline + Cat + '_' + CName[i];
 
                 for i := 1 to NumPtDEMs do begin
-                   //UsingRef := RefGridForThisPointGrid(PointGrids,i);
                    GridLimits := DEMglb[PointGrids[dmxFirstPoint]].sfBoundBox2tGridLimits(bb);
                    GeomorphDifferences(PointGrids[dmxFirstPoint],PointGrids[i])
                 end;
@@ -489,10 +485,6 @@ end;
 
 {$IfDef DEMIX_SAGA_channels}
       procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
-
-
-      //should use bits 1-2-4-8-16-32 and then could compare multiple easily (except of course ALOS mode geometry)
-
       const
          MakeGrid = false;
          Color1 = clLime;   //Green: channel reference, not test
@@ -818,6 +810,72 @@ end;
 
 
 
+
+      procedure InventoryChannelDataByArea;
+      var
+         Areas,Results : tStringList;
+         AreaName : shortstring;
+         i : integer;
+         fName : PathStr;
+         FileList : array[1..7] of tStringList;
+
+            function CountOfFiles(ID : integer; AreaName : shortString) : integer;
+            var
+               j : integer;
+               fName : PathStr;
+            begin
+               Result := 0;
+               for j := 0 to pred(FileList[ID].Count) do begin
+                  fName := UpperCase(FileList[ID].Strings[j]);
+                  if (StrUtils.AnsiContainsText(fName,UpperCase(AreaName) )) then begin
+                     inc(Result);
+                  end;
+               end;
+            end;
+
+            procedure LoadFiles(ID : integer; Dir : PathStr; Ext : shortString);
+            begin
+               FileList[ID] := Nil;
+               FindMatchingFiles(Dir,Ext,FileList[ID]);
+               {$If Defined(RecordDEMIX)} WriteLineToDebugFile(Dir + '  ' + Ext + '  files=' + IntToStr(FileList[ID].Count)); {$EndIf}
+            end;
+
+
+      begin
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea in'); {$EndIf}
+         GetDEMIXPaths;
+         Areas := tStringList.Create;
+         Areas.LoadFromFile(AreaListFName);
+
+         Results := tStringList.Create;
+         Results.Add('AREA,REF_NOS,TEST_NOS,REF_SHP,TEST_SHP,REF_GRID,TEST_GRID,MISS_CSV');
+         LoadFiles(1,DEMIX_ref_DEMs_no_sink,'*.tif');
+         LoadFiles(2,DEMIX_test_DEMs_no_sink,'*.tif');
+         LoadFiles(3,DEMIX_ref_DEMs_channels,'*.shp');
+         LoadFiles(4,DEMIX_test_DEMs_channels,'*.shp');
+         LoadFiles(5,DEMIX_ref_DEMs_channel_grids,'*.tif');
+         LoadFiles(6,DEMIX_test_DEMs_channel_grids,'*.tif');
+         LoadFiles(7,ChannelMissesDir,'*.csv');
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea loaded'); {$EndIf}
+
+         for i := 0 to pred(Areas.Count) do begin
+            AreaName := Areas.Strings[i];
+            Results.Add(AreaName + ',' + IntToStr(CountOfFiles(1,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(2,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(3,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(4,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(5,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(6,AreaName)) + ',' +
+                                         IntToStr(CountOfFiles(7,AreaName)));
+         end;
+
+         Areas.Destroy;
+         fName := NextFileNumber(MDTempDir,'status_channel_files','.dbf');
+         PetdbUtils.StringList2CSVtoDB(Results,fName);
+         for i := 1 to 7 do FileList[i].Destroy;
+
+         {$If Defined(RecordDEMIX)} WriteLineToDebugFile('InventoryChannelDataByArea out'); {$EndIf}
+      end;
 {$EndIf}
 
 

@@ -767,12 +767,8 @@ object DemHandForm: TDemHandForm
         OnClick = Chromelist1Click
       end
       object IElist1: TMenuItem
-        Caption = 'IE list'
+        Caption = 'Edge list'
         OnClick = IElist1Click
-      end
-      object emplatedownload1: TMenuItem
-        Caption = 'Template download'
-        OnClick = emplatedownload1Click
       end
     end
     object Delete1: TMenuItem

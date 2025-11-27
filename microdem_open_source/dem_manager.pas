@@ -383,7 +383,7 @@ begin
       if FName[33] = 'W' then Long := -Long;
       Results.Add(IntToStr(Lat) + ',' + IntToStr(Long) + ',' + fName);
    end;
-   fName := MdtempDir + 'LC_10_files.dbf';
+   fName := MdtempDir + 'LC_10_files_sw_corner.dbf';
    PetDBUtils.StringList2CSVtoDB(Results,fName);
    TheFiles.Destroy;
 {

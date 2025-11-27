@@ -175,7 +175,7 @@ var
          TestRuff : integer;
       begin
         TestSlope := 0;
-        TestRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(TestElev,5,TestSlope,false);
+        TestRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(false,TestElev,5,TestSlope);
         fName := MDTempDir + 'slope_' + DEMGlb[TestElev].AreaName + '.dem';
         DEMGlb[TestSlope].WriteNewFormatDEM(fName);
         fName := MDTempDir + 'ruffslope_' + DEMGlb[TestElev].AreaName + '.dem';
@@ -269,7 +269,7 @@ var
         ESA_LC10 := LoadLC10LandCover('',DEMGlb[RefElev].DEMBoundBoxGeo,false);
 
         RefSlope := 0;
-        RefRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(RefElev,5,RefSlope,false);
+        RefRuff := CreateSlopeRoughnessSlopeStandardDeviationMap(false,RefElev,5,RefSlope);
         fName := MDTempDir + 'slope_' + DEMGlb[refElev].AreaName + '.dem';
         DEMGlb[refSlope].WriteNewFormatDEM(fName);
         fName := MDTempDir + 'ruff_' + DEMGlb[refElev].AreaName + '.dem';
@@ -437,27 +437,6 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
    {$IfDef RecordDEMIXneo} HighLightLineToDebugFile('Start CrossScaleDEMComparison, Mode=' + IntToStr(DEMIXNeoMode)); {$EndIf}
    DEMIXanalysismode := DEMIXneo;
    MDDef.DEMIX_mode := dmFull;
-
-(*
-   MDDef.SSIM_elev := true;
-   MDDef.SSIM_slope := true;
-   MDDef.SSIM_ruff := true;
-   MDDef.SSIM_rri := true;
-   MDDef.SSIM_hill := true;
-   MDDef.SSIM_tpi := true;
-   MDDef.SSIM_Openness := false;
-   MDDef.SSIM_PLANC := true;
-   MDDef.SSIM_PROFC := true;
-   MDDef.SSIM_TANGC := true;
-
-   MDDef.SSIM_Rotor := false;
-   MDDef.SSIM_ConvergeIndex := false;
-   MDDef.SSIM_flow := false;
-   MDDef.SSIM_LS := false;
-   MDDef.SSIM_Wet := false;
-   MDDef.SSIM_HAND := false;
-*)
-
    MDDef.DoSSIM := false;
    MDDef.DoFUV := true;
 
@@ -577,7 +556,6 @@ begin
    {$IfDef RecordDEMIXneo} WriteLineToDebugFile('TNew_area_evals_form.RadioGroup1Click=' + IntToStr(RadioGroup1.ItemIndex) + '  ' + AreaName); {$EndIf}
    if (RadioGroup1.ItemIndex <> 0) then ClearDerivedGrids;
    case RadioGroup1.ItemIndex of
-       //0 : CreateDEMIXSlopeRoughnessGrids(AreaName,true,true);
        1 : CreateDEMIXSlopeRoughnessGrids(AreaName,true,true);
        2 : CreateDEMIXDerivedGrids('HILL_',AreaName,true,false);
        3 : CreateDEMIXDerivedGrids('RRI_',AreaName,true,false);

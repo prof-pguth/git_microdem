@@ -365,8 +365,8 @@ var
             Param := 'slope';
          end
          else if (DiffType = RuffAll) then begin
-            RuffTest := CreateSlopeRoughnessSlopeStandardDeviationMap(TestDEMs[aTestDEM],5,SlopeTest,false);
-            RuffRef := CreateSlopeRoughnessSlopeStandardDeviationMap(RefDEMs[i],5,SlopeRef,false);
+            RuffTest := CreateSlopeRoughnessSlopeStandardDeviationMap(false,TestDEMs[aTestDEM],5,SlopeTest);
+            RuffRef := CreateSlopeRoughnessSlopeStandardDeviationMap(false,RefDEMs[i],5,SlopeRef);
             DEM1 := RuffTest;
             DEM2 := RuffRef;
             Param := 'roughness';
