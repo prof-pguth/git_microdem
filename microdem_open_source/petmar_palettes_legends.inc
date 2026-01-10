@@ -3,7 +3,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 {                                        }
 {   include file for petmar              }
@@ -577,7 +577,7 @@ begin
    Result := Nil;
    repeat
       if (Result <> Nil) then Result.Destroy;
-      CreateBitmap(Result,MaxWide,900);
+      CreateBitmap(Result,MaxWide,2000);
       LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
       Result.Canvas.Font.Size := StartFontSize;
       Left := 15;

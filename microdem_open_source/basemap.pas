@@ -769,6 +769,7 @@ function tMapProjection.ProcessTiff4096(TiffOffset : integer) : shortstring;
 begin
    VerticalCSTypeGeoKey := TiffOffset;
    case TiffOffSet of
+     4979,
      5030,
      5031 : Result := 'VertCS_WGS_84_ellipsoid';
      5032 : Result := 'VertCS_OSU86F_ellipsoid';
@@ -779,7 +780,7 @@ begin
      5714 : Result := 'msl';
      5773 : Result := 'Vert_CS_EGM96';
      3855 : Result := 'Vert_CS_EGM2008';
-     else Result := 'other 6.3.4.1 code (' + IntToStr(TiffOffset) + ')';
+     else Result := 'other ( code=' + IntToStr(TiffOffset) + ')';
    end;
 end;
 

@@ -242,7 +242,8 @@ var
 
    function ProcessOneDEM(DEM : integer) : integer;
    var
-      r,FUV : float64;
+      r : float32;
+      FUV : float64;
       Pixels : integer;
    begin
       if WhichDEMs[DEM] and ValidDEM(DEM) then begin
@@ -279,7 +280,7 @@ var
                   DEMglb[Result].AreaName := DEMglb[Result].AreaName + '_FUV_' + RealToString(FUV,-8,4);
                   {$IfDef MultipleLSPFUV} WriteLineToDebugFile('Ref=' + DEMglb[RefGrid].AreaName + '   test=' + DEMglb[Result].AreaName + '  FUV=' + RealToString(FUV,-8,4)); {$EndIf}
                end;
-               GridScatterGram(DEMglb[RefGrid].FullDEMGridLimits,RefGrid,Result);
+               GridScatterGram(DEMglb[RefGrid].FullDEMGridLimits,r,RefGrid,Result);
             end;
             if OpenMap then begin
                 if (Result <> DEM) then begin
@@ -317,7 +318,7 @@ begin {procedure LSP_gridMultipleDEMs}
 end {procedure LSP_gridMultipleDEMs};
 
 
-function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
+function GridScatterGram(GridLimits : tGridLimits; var r : float32; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
 var
    Incr,Col,Row,NPts,xoff,yoff : integer;
    Lat,Long : float64;
@@ -389,6 +390,7 @@ begin
          Result.GraphDraw.ResetMargins := true;
          Result.AutoScaleAndRedrawDiagram;
          Result.AddCorrelationToCorner;
+         r := Result.GraphComputedR;
       end
       else begin
          Result.Close;

@@ -585,7 +585,7 @@ function StartBoxPlot(DBonTable : integer; LLtext : shortstring = ''; HLabel : s
 function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 
 
-function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; Ncol : integer = 0) : PathStr;
+function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
 function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
 function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
 procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
@@ -703,14 +703,13 @@ begin
 end;
 
 
-function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; Ncol : integer = 0) : PathStr;
+function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
 var
-   i,StartX,{StartY,}DestX,PixWide : integer;
+   i,StartX,DestX,PixWide : integer;
    BigBitMap,Bitmap : tMyBitmap;
    Dest,Source : tRect;
 begin
    CopyImageToBitmap(Graphs[0].Image1,BigBitmap);
-   //StartY := 0;
    for i := 1 to pred(nGraphs) do begin
       CopyImageToBitmap(Graphs[i].Image1,Bitmap);
       if RemoveLeftLabels then begin
@@ -728,6 +727,7 @@ begin
       BigBitmap.Canvas.CopyRect(Dest,Bitmap.Canvas,Source);
       Bitmap.Destroy;
    end;
+   DrawLegendBelowBigBitmap(BigBitmap,LegendFName,LRtext);
    Result := NextFileNumber(MDtempdir,'Horiz_panel_','.bmp');
    SaveBitmap(BigBitmap,Result);
    BigBitMap.Destroy;
@@ -738,6 +738,7 @@ function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : tGraphArray; Remo
 var
    i,StartX,StartY,PixWide : integer;
    BigBitMap,Bitmap : tMyBitmap;
+   fName : PathStr;
 begin
    for i := 0 to pred(nGraphs) do begin
       CopyImageToBitmap(Graphs[i].Image1,Bitmap);
@@ -760,6 +761,10 @@ begin
       BigBitmap.Canvas.CopyRect(Rect(0,StartY,PixWide,StartY + BitMap.Height),Bitmap.Canvas,Rect(StartX,0,Bitmap.Width,Bitmap.Height));
       Bitmap.Destroy;
    end;
+   fName := NextFileNumber(MDtempDir,'legend_','.bmp');
+   BigBitmap.SaveToFile(fName);
+   DrawLegendBelowBigBitmap(BigBitmap,fName);
+
    GetImagePartOfBitmap(BigBitmap);
    if (Legend <> Nil) then begin
        BigBitMap.Height := BigBitMap.Height + 15 + Legend.Height;
@@ -5067,7 +5072,7 @@ end;
 
 procedure TThisBaseGraph.SpeedButton7Click(Sender: TObject);
 begin
-   AssignImageToClipBoard(Image1);
+   AssignImageToClipBoard(Image1,3);
 end;
 
 procedure TThisBaseGraph.ChangeGraphSettingsClick(Sender: TObject);
@@ -6082,7 +6087,7 @@ procedure TThisBaseGraph.Copytoclipboard2Click(Sender: TObject);
 begin
    //Copytoclipboard1Click(Sender);
    {$IfDef RecordClipboard} WritelineToDebugFile('TThisBaseGraph.Copytoclipboard2Click'); {$EndIf}
-   AssignImageToClipBoard(Image1);
+   AssignImageToClipBoard(Image1,3);
 end;
 
 

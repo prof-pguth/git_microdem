@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet10
+    ActivePage = TabSheet11
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -1809,66 +1809,13 @@ inherited OptionsForm: TOptionsForm
           TabOrder = 8
         end
       end
-      object GroupBox19: TGroupBox
-        Left = 584
-        Top = 256
-        Width = 185
-        Height = 105
-        Caption = 'DEMIX tolerances'
-        TabOrder = 17
-        object Label12: TLabel
-          Left = 8
-          Top = 24
-          Width = 70
-          Height = 15
-          Caption = 'Elevation (m)'
-        end
-        object Label27: TLabel
-          Left = 8
-          Top = 48
-          Width = 50
-          Height = 15
-          Caption = 'Slope (%)'
-        end
-        object Label35: TLabel
-          Left = 8
-          Top = 72
-          Width = 79
-          Height = 15
-          Caption = 'Roughness (%)'
-        end
-        object Edit3: TEdit
-          Left = 104
-          Top = 24
-          Width = 78
-          Height = 23
-          TabOrder = 0
-          Text = 'Edit3'
-        end
-        object Edit16: TEdit
-          Left = 104
-          Top = 48
-          Width = 78
-          Height = 23
-          TabOrder = 1
-          Text = 'Edit3'
-        end
-        object Edit30: TEdit
-          Left = 104
-          Top = 72
-          Width = 78
-          Height = 23
-          TabOrder = 2
-          Text = 'Edit3'
-        end
-      end
       object CheckBox161: TCheckBox
         Left = 584
         Top = 386
         Width = 153
         Height = 17
         Caption = 'Process loops forward'
-        TabOrder = 18
+        TabOrder = 17
       end
       object BitBtn39: TBitBtn
         Left = 10
@@ -1876,7 +1823,7 @@ inherited OptionsForm: TOptionsForm
         Width = 127
         Height = 25
         Caption = 'Curvature algorithm'
-        TabOrder = 19
+        TabOrder = 18
         OnClick = BitBtn39Click
       end
       object BitBtn43: TBitBtn
@@ -1885,7 +1832,7 @@ inherited OptionsForm: TOptionsForm
         Width = 127
         Height = 25
         Caption = 'Slope algorithm'
-        TabOrder = 20
+        TabOrder = 19
         OnClick = BitBtn43Click
       end
     end
@@ -3208,8 +3155,6 @@ inherited OptionsForm: TOptionsForm
     Height = 58
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 488
-    ExplicitWidth = 787
     object BitBtn3: TBitBtn
       Left = 178
       Top = 6

@@ -1149,6 +1149,7 @@ begin
     Result := MyData.FieldExists('H_CANOPY') and MyData.FieldExists('H_TE_BEST_') and MyData.FieldExists('H_TE_UNCER');
 end;
 
+
 procedure TGISdataBaseModule.CalculateAreaorCentroid(DoCentroid : boolean);
 var
    area,xcent,ycent : float64;
@@ -5147,14 +5148,19 @@ begin
           if ExtEquals(Ext,'.TCX') then begin
              sl := FitBitTCXtoStringList(FileWanted,ID);
              FileWanted := BasePath + ID + '.dbf';
-             i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
-             if MDDef.AddFitNav then begin
-                GISDB[i].AddNavFields;
-                GISDB[i].ApplyGISFilter('DIST_KM<0.0004');
-                GISDB[i].DeleteAllSelectedRecords;
-                {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
+             if FileExists(FileWanted) then begin
+             sl.Destroy;
+             end
+             else begin
+               i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
+               if MDDef.AddFitNav then begin
+                  GISDB[i].AddNavFields;
+                  GISDB[i].ApplyGISFilter('DIST_KM<0.0004');
+                  GISDB[i].DeleteAllSelectedRecords;
+                  {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
+               end;
+               CloseAndNilNumberedDB(i);
              end;
-             CloseAndNilNumberedDB(i);
           end
           else if ExtEquals(Ext,'.gpx') then begin
              {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}

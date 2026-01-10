@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 { include file for demcoord              }
 {________________________________________}
@@ -92,7 +92,7 @@ var
             end;
          end;
 
-begin
+begin {procedure tDEMDataSet.SaveAsUSGSASCII}
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('Start USGS ASCII save'); {$EndIf}
    if (SaveName = '') then begin
       SaveName := DEMDefs.WriteDEMDir;
@@ -244,7 +244,7 @@ begin
       EndProgress;
    end;
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('End USGS ASCII save'); {$EndIf}
-end;
+end {procedure tDEMDataSet.SaveAsUSGSASCII};
 
 
 procedure tDEMDataSet.Save16BitBSQ;

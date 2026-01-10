@@ -17,6 +17,7 @@ const
    udAverageSlopeMap = 39;
    udLandcoverCats = 40;
    udTileBoundingBoxes = 41;
+   udZipSourceFiles = 42;
 
 function AvailablePhysicalMemoryString : shortstring;
 var
@@ -24,6 +25,11 @@ var
 begin
   GlobalMemoryStatus( vGlobalMemoryStatus );
   Result := ' Available RAM: ' + SmartMemorySizeBytes(vGlobalMemoryStatus.dwAvailPhys);
+end;
+
+function SkipDEM(aDEM : shortstring) : boolean;
+begin
+   Result := (aDEM = 'GEDTMV0') or (aDEM = 'EDTM') or (aDEM = 'GEDTMV1_1');
 end;
 
 function WebExtractDEM(aDEm : shortstring) : boolean;
@@ -95,7 +101,7 @@ begin
           }
        end;
 
-       if (CountryCode = 'nz_') then begin
+       if (CountryCode = 'nz_') then begin //this is not yet running
           {
           DEM_BQ27_2025_1000_1701.tif
           //BQ27 is 1:50K map quad, which covers about 860 square km
@@ -733,7 +739,7 @@ var
     end;
 
 begin  {procedure MakeReferenceDEM}
-   if (aDEM = 'COP') or (aDEM= 'ALOS') or (aDEM = 'GEDTMV1_1') or (aDEM = 'FATHOM') then begin
+   if (aDEM = 'COP') or (aDEM= 'ALOS') or (aDEM = 'FATHOM') {or (aDEM = 'GEDTMV1_1')} then begin
       SecondMode := '';
       if (aDEM = 'FATHOM') then Mode := 'srtm'
       else if (aDEM = 'COP') then begin
@@ -748,7 +754,9 @@ begin  {procedure MakeReferenceDEM}
          SpacingArcSec := DEMGlb[TestDEM].DEMHeader.DEMxSpacing * 3600;
          if (SpacingArcSec > 1.5) then SecondMode := 'alos1';
       end
-      else if (aDEM = 'GEDTMV1_1') then mode := 'gedtm';
+      else begin
+         //if (aDEM = 'GEDTMV1_1') then mode := 'gedtm';
+      end;
 
       RefName := TestDir + 'ref_dtm_' + Mode + '.tif';
       if (not FileExists(RefName)) then begin
@@ -1320,65 +1328,95 @@ var
                  else if (DEMname = 'ALOS') then begin
                     if (xSpace > 1.01) then Result := 5 else Result := 2;
                  end
-                 else if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') then Result := 3
+                 //else if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') then Result := 3
                  else if (DEMname = 'GEDTMV1_2') or (DEMname = 'EDTM') or (DEMname = 'FATHOM') or (DEMname = 'FABDEM') then Result := 1
                  else MessageToContinue('Need to define reference DTM in code for ' + DEMGlb[DEM].AreaName);
                  {$If Defined(RecordRefDTM)} WriteLineToDebugFile('DEM: ' + DEMGlb[DEM].AreaName + '  reference: ' + DEMGlb[Result].AreaName); {$EndIf}
              end;
 
              procedure ProcessOne(Which : shortstring);
-             var
-                k : integer;
-             begin
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ','  + which + '_MEAN';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].Mean,-12,-2);
-                fuvResults.Add(aLine);
 
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + which + '_MED';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].Median,-12,-2);
-                fuvResults.Add(aLine);
+                procedure DoOneLine(Param : shortstring);
+                var
+                   k : integer;
+                begin
+                    aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ','  + which + Param;
+                    if Param = '_MEAN' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].Mean,-12,-2);
+                    if Param = '_MED' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].Median,-12,-2);
+                    if Param = '_RMSE' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].RMSE,-12,-2);
+                    if Param = '_LE90' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].LE90,-12,-2);
+                    if Param = '_MAE' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].MAE,-12,-2);
+                    if Param = '_AVD' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].avg_dev,-12,-2);
+                    if Param = '_STD' then for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].std_dev,-12,-2);
+                    fuvResults.Add(aLine);
+                end;
 
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + which + '_RMSE';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].RMSE,-12,-2);
-                fuvResults.Add(aLine);
-
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + which + '_LE90';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].LE90,-12,-2);
-                fuvResults.Add(aLine);
-
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + which + '_MAE';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].MAE,-12,-2);
-                fuvResults.Add(aLine);
-
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + which + '_AVD';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].avg_dev,-12,-2);
-                fuvResults.Add(aLine);
-
-                aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ',' + which + '_STD';
-                for k := 1 to theDEMs.Count do aline := aline + ',' + RealToString(MomentVar[k].std_dev,-12,-2);
-                fuvResults.Add(aLine);
-             end;
+             begin {procedure ProcessOne}
+                DoOneLine('_MEAN');
+                DoOneLine('_MED');
+                DoOneLine('_RMSE');
+                DoOneLine('_LE90');
+                DoOneLine('_MAE');
+                DoOneLine('_AVD');
+                DoOneLine('_STD');
+             end {procedure ProcessOne};
 
 
             procedure GetDifferenceDistributionStatistics;
             var
                k,Col,Row,xoffset,yoffset : integer;
                zs : ^bfarray32;
-               SlopeAsp1,SlopeAsp2 : tSlopeAspectRec;
-               Ruff1,Ruff2 : float32;
                SameGrid : boolean;
                DEMname : shortstring;
+
+
+               procedure DoOneDiffDist(which : shortstring);
+               var
+                  Col,Row,K : integer;
+               begin
+                    wmDEM.SetPanelText(3,Which,true);
+                    for k := 1 to theDEMs.Count do begin
+                      InitializeMomentVar(MomentVar[k]);
+                      DEMname := TheDEMs.Strings[pred(k)];
+                      if SkipDEM(DEMname) then begin
+                          aline := aLine + ',-9999';
+                      end
+                      else begin
+                         UseRef := RefDEMs[GetRefDTM(TestDEMs[k])];
+                         SameGrid := DEMGlb[UseRef].SecondGridJustOffset(TestDEMs[k],xoffset,yoffset);
+                         for Col := 0 to pred(DEMglb[UseRef].DEMheader.NumCol) do begin
+                            for Row := 0 to pred(DEMglb[UseRef].DEMheader.NumRow) do begin
+                               if ((Which = 'ELVD') and DEMGlb[UseRef].GetElevMetersOnGrid(col,row,zref) and DEMGlb[TestDEMs[k]].GetElevMetersOnGrid(Col+xoffset,Row+yoffset,z)) or
+                                  ((Which = 'SLPD') and DEMGlb[UseRef].GetElevMetersOnGrid(col,row,zref) and DEMGlb[TestDEMs[k]].GetElevMetersOnGrid(Col+xoffset,Row+yoffset,z)) or
+                                  ((Which = 'RUFD') and DEMGlb[UseRef].RoughnessFromSlopeSTD(Col,Row,5,zref) and DEMGlb[TestDEMs[k]].RoughnessFromSlopeSTD(Col+xoffset,Row+yoffset,5,z)) then begin
+                                  inc(MomentVar[k].NPts);
+                                  zs^[MomentVar[k].NPts] := z-zref;
+                               end;
+                            end;
+                         end;
+                         moment(zs^,MomentVar[k],msIncludeLE90);
+                      end;
+                    end;
+                    ProcessOne(Which);
+               end;
+
             begin
                New(zs);
                 if DEMIX_NoVerticalShift(AreaName) then begin
                    //not valid becasue unable to shift reference to EGM2008
                 end
                 else begin
+                   DoOneDiffDist('ELVD');
+                end;
+                DoOneDiffDist('SLPD');
+                DoOneDiffDist('RUFD');
+
+(*
                     wmDEM.SetPanelText(3,'ELVD',true);
                     for k := 1 to theDEMs.Count do begin
                       InitializeMomentVar(MomentVar[k]);
                       DEMname := TheDEMs.Strings[pred(k)];
-                      if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') or (DEMname = 'EDTM') then begin
+                      if SkipDEM(DEMname) then begin
                           aline := aLine + ',-9999';
                       end
                       else begin
@@ -1403,7 +1441,7 @@ var
                 for k := 1 to theDEMs.Count do begin
                    InitializeMomentVar(MomentVar[k]);
                    DEMname := TheDEMs.Strings[pred(k)];
-                   if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') or (DEMname = 'EDTM') then begin
+                   if SkipDEM(DEMname) then begin
                         aline := aLine + ',-9999';
                    end
                    else begin
@@ -1426,8 +1464,8 @@ var
                 for k := 1 to theDEMs.Count do begin
                    InitializeMomentVar(MomentVar[k]);
                    DEMname := TheDEMs.Strings[pred(k)];
-                   if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') or (DEMname = 'EDTM') then begin
-                        aline := aLine + ',-9999';
+                   if SkipDEM(DEMname) then begin
+                       aline := aLine + ',-9999';
                    end
                    else begin
                        UseRef := RefDEMs[GetRefDTM(TestDEMs[k])];
@@ -1444,6 +1482,7 @@ var
                    end;
                 end;
                 ProcessOne('RUFD');
+*)
                 Dispose(zs);
             end;
 
@@ -1495,7 +1534,7 @@ var
                     for k := 1 to theDEMs.Count do begin
                       {$IfDef DEMIXtrackFUV} IsNANproblem := false; {$EndIf}
                       DEMname := TheDEMs.Strings[pred(k)];
-                      if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') or (DEMname = 'EDTM') then begin
+                      if SkipDEM(DEMname) then begin
                           aline := aLine + ',-9999';
                       end
                       else begin
@@ -1519,21 +1558,6 @@ var
                                     if ValidDEM(TestLSPs[k]) then begin
                                         LSPvalue := GetFUVForPairGrids(gl,RefLSPs[UseRef],TestLSPs[k]);
                                         aline := aLine + ',' + RealToString(LSPvalue,-12,8);
-                                        {$IfDef DEMIXtrackFUV}
-                                            if (Criterion = 'RUFF') then begin
-                                               WriteLineToDebugFile('Ref:  ' + DEMglb[RefLSPs[UseRef]].FullDEMParams);
-                                               WriteLineToDebugFile('Test: ' + DEMglb[TestLSPs[k]].FullDEMParams);
-                                               WriteLineToDebugFile('LSP value=' + RealToString(LSPvalue,-12,9));
-                                               WriteLineToDebugFile('');
-                                            end;
-                                            if IsNAN(LSPvalue) then begin
-                                                HighLightLineToDebugFile(Criterion + '   LSPvalue=NAN  ' + UTM_Tile + '  ' + AreaName);
-                                                WriteLineToDebugFile('Ref:  ' + DEMglb[RefLSPs[UseRef]].FullDEMParams);
-                                                WriteLineToDebugFile('Test: ' + DEMglb[TestLSPs[k]].FullDEMParams);
-                                                IsNANproblem := true;
-                                                LSPvalue := GetFUVForPairGrids(gl,RefLSPs[UseRef],TestLSPs[k],true);
-                                            end;
-                                        {$EndIf}
                                     end
                                     else begin
                                        HighLightLineToDebugFile('Missing test LSP' + IntToStr(TestLSPs[k]) + '  criterion = ' + Criterion + '  ' + AreaName + '  ' + UTM_Tile );
@@ -1622,7 +1646,7 @@ begin {procedure UTMbasedFUV}
             end;
             for j := 1 to theDEMs.Count do begin
                 DEMName := theDEMs.Strings[pred(j)];
-                if (DEMname = 'GEDTMV1_1') or (DEMname = 'GEDTMV0') or (DEMname = 'EDTM') then begin
+                if SkipDEM(DEMname) then begin
                     aline := aline + ',-9999';
                     aline2 := aline2 + ',-9999';
                 end
@@ -1708,6 +1732,37 @@ end {procedure UTMbasedFUV};
        GISdb[db].ApplyGISfilter('FUV_CSV=' + QuotedStr('No') + ' OR ' + 'PART_CSV=' + QuotedStr('No') + ' OR ' + 'CURVE_CSV=' + QuotedStr('No') + ' OR ' +
            'DIFF_DIST=' + QuotedStr('No') + ' OR ' + 'STATS_CSV=' + QuotedStr('No') );
     end {procedure DEMIX_UTM_AreaTileSurvey};
+
+(*
+procedure DEMIX_ZipSource(theAreas : tStringList);
+//Option = udZipSourceFiles
+//this unfortunately give negligble compression after a long time
+var
+   i : integer;
+   cmd,AreaName : shortstring;
+begin
+   StartProgress('zipping');
+   for i := 0 to pred(theAreas.count) do begin
+      AreaName := theAreas.Strings[i];
+      MakeAreaDirectories(AreaName);
+      if ValidPath(SourceDir) then begin
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('zipping ' + SourceDir); {$EndIf};
+         UpDateProgressBar(succ(i)/TheAreas.Count);
+         cmd := 'tar -a -c -f ' + AreaDir + 'source.zip ' + AreaDir + 'source';
+         if WinExecAndWait32(cmd) = 0 the begin
+            {$IfDef RecordDEMIX} WriteLineToDebugFile('zip success ' + SourceDir); {$EndIf};
+            CleanOutDirectory(SourceDir);
+         end
+         else begin
+            {$IfDef RecordDEMIX} WriteLineToDebugFile('zip fail ' + SourceDir); {$EndIf};
+         end;
+      end
+      else begin
+         {$IfDef RecordDEMIX} WriteLineToDebugFile('missing ' + SourceDir); {$EndIf};
+      end;
+   end;
+end;
+*)
 
 
 procedure DEMIX_SourceFileSurvey(theAreas : tStringList);
@@ -2519,6 +2574,7 @@ begin
           else if (Option in [3,udCSVReportByArea]) then DEMIX_UTM_AreaTileSurvey(theAreas)
           else if (Option in [udSourceFileSurvey]) then DEMIX_SourceFileSurvey(theAreas)
           else if (Option in [udCompareLandCover]) then DEMIX_CompareLandcovers(theAreas)
+          //else if (Option in [udZipSourceFiles]) then DEMIX_ZipSource(theAreas)
           else if (Option in [udDeleteResultsCSVsForAreas]) then begin
              DEMIX_SelectivelyDeleteCSVresults(theAreas);
              if AnswerIsYes('Reprocess CSV files') then Option := 20;

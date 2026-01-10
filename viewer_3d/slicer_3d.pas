@@ -689,7 +689,8 @@ end;
 
 procedure TSlicerForm.BitBtn2Click(Sender: TObject);
 var
-  GeometryFName,ColorsFName : PathStr;
+  //GeometryFName,ColorsFName : PathStr;
+  FileList : tStringList;
 
 
       procedure ExportBinary;  //export to binary files for use in FMX viewer
@@ -698,6 +699,7 @@ var
          j,NPts : integer;
          Outf : file;
          zRange : float64;
+         GeometryFName : PathStr;
       begin
          {$IfDef SlicerOpenGL}
             WriteLinetoDebugFile('ExportBinary in, slice=' + IntToStr(CloudInUse));
@@ -725,14 +727,15 @@ var
          end;
 
          GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
-         if MDDef.SliceColorOpt = scoRGB then ColorsFName := FullPaletteBitmap
-         else ColorsFName := Palette256Bitmap(p256Terrain);
+         //if MDDef.SliceColorOpt = scoRGB then ColorsFName := FullPaletteBitmap
+         //else ColorsFName := Palette256Bitmap(p256Terrain);
 
          AssignFile(Outf,GeometryFName);
          rewrite(Outf,1);
          BlockWrite(OutF,Points^,NPTs * SizeOf(tPointXYZI));
          CloseFile(outf);
          Dispose(Points);
+         FileList.Add(GeometryFName);
 
          ShowDefaultCursor;
          {$IfDef SlicerOpenGL} WriteLinetoDebugFile('ExportBinary out, NPTs=' + IntToStr(NPTs)); {$EndIf}
@@ -741,15 +744,15 @@ var
 
 begin
    if (CloudInUse <> 0) then begin
-
       {$IfDef SlicerOpenGL} WriteLinetoDebugFile('TSlicerForm.BitBtn2Click (OpenGL) in, CloudInUse=' + IntToStr(CloudInUse) + '   OpenGLCloudThin=' + IntToStr(MDDef.CloudOpenGLThinFactor)); {$EndIf}
 
       {$IfDef ExOpenGL}
       {$Else}
+         FileList := tStringList.Create;
          DEMDefs.VasaProjectFName := ThisProject;
          ShowHourglassCursor;
          ExportBinary;
-         FMX3dViewer(True,GeometryFName,'','','','');
+         FMX3dViewer(True,FileList);
          ShowDefaultCursor;
       {$EndIf}
       {$IfDef SlicerOpenGL} WriteLinetoDebugFile('TSlicerForm.BitBtn2Click (OpenGL) out'); {$EndIf}

@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 {                                        }
 { include file for demmapf               }
@@ -184,10 +184,8 @@ begin
    v := (EulerOmega)* SphericalEarthAkm * SIN((ArcCOS(SIN(LAT)*SIN(EULERLAT)+COS(LAT)*COS(EULERLAT)*COS(EulerLong-Long))));
    Top := COS(EULERLAT)*SIN(EULERLONG-Long);
    Bottom := SIN(ArcCOS(SIN(LAT)*SIN(EULERLAT)+COS(LAT)*COS(EULERLAT)*COS(EULERLONG-Long)));
-
    if (Bearing > 90) and (Bearing < 270) then Azimuth := 270 - ArcSin(Top/Bottom) / Petmar_types.DegToRad
    else Azimuth := 90 + ArcSin(Top/Bottom) / Petmar_types.DegToRad;
-
    v := abs(v);
 end;
 

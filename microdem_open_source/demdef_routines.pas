@@ -211,7 +211,6 @@ function ClassBoxName : string;
 function ExpandIconFileName(var fName : PathStr) : boolean;
 
 
-
 //bounding box inclusion
    function PointInBoundingBox(Lat,Long : float64; BBox : sfBoundBox) : boolean;  inline;
    function AtLeastPartOfBoxInAnotherBox(BoxToTest,BoxAskingAbout : sfBoundBox) : boolean;
@@ -898,9 +897,10 @@ end;
 
 function ThisIsWGS84(Tstr : ANSIstring) : boolean;
 begin
-   Result := (StrUtils.AnsiContainsText(TStr,'WGS') and StrUtils.AnsiContainsText(TStr,'84')) or  StrUtils.AnsiContainsText(TStr,'GRS 1980') or StrUtils.AnsiContainsText(TStr,'GRS80')
-        or (StrUtils.AnsiContainsText(TStr,'SIRGAS-ROU98'));
+   Result := (StrUtils.AnsiContainsText(TStr,'WGS') and StrUtils.AnsiContainsText(TStr,'84')) or  StrUtils.AnsiContainsText(TStr,'GRS 1980') or
+       StrUtils.AnsiContainsText(TStr,'GRS80') or (StrUtils.AnsiContainsText(TStr,'SIRGAS-ROU98'));
 end;
+
 
 function ThisIsNAD83(Tstr : ANSIstring) : boolean;
 begin
@@ -919,18 +919,16 @@ begin
 end;
 
 
-{$IfDef ExOSM}
-{$Else}
-   function IsThisAnOSMshapefile(fName : PathStr) : boolean;
-   begin
-      fName := UpperCase(fName);
-      Result := FileExists(ChangeFileExt(fName,'.SHP')) and (StrUtils.AnsiContainsText(fName,'OPENSTREETMAP') or StrUtils.AnsiContainsText(fName,'OSM')or StrUtils.AnsiContainsText(fName,'PLANET_'));
-   end;
-{$EndIf}
+function IsThisAnOSMshapefile(fName : PathStr) : boolean;
+begin
+   fName := UpperCase(fName);
+   Result := FileExists(ChangeFileExt(fName,'.SHP')) and (StrUtils.AnsiContainsText(fName,'OPENSTREETMAP') or StrUtils.AnsiContainsText(fName,'OSM')or StrUtils.AnsiContainsText(fName,'PLANET_'));
+end;
+
 
 function CheckIfTigerOrOSM(fName : PathStr) : boolean;
 begin
-   Result := IsThisATIGERshapefile(fName) {$IfDef ExOSM}{$Else} or IsThisAnOSMshapefile(fName) {$EndIf};
+   Result := IsThisATIGERshapefile(fName) or IsThisAnOSMshapefile(fName);
 end;
 
 
@@ -2496,9 +2494,6 @@ var
          AParameter('DEMIX','DEMIX_open_radials',DEMIX_open_radials,5);
          AParameter('DEMIX','DEM_ruff_window',DEM_ruff_window,5);
          AParameter('DEMIX','DEMIXsaveLSPmaps',DEMIXsaveLSPmaps,false);
-         AParameterShortFloat('DEMIX','DEMIXSimpleTolerance',DEMIXSimpleTolerance,2.0);
-         AParameterShortFloat('DEMIX','DEMIXSlopeTolerance',DEMIXSlopeTolerance,2.0);
-         AParameterShortFloat('DEMIX','DEMIXRuffTolerance',DEMIXRuffTolerance,2.0);
 
          {$IfDef IncludeCoastalDEMs}
              AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
@@ -3766,8 +3761,8 @@ begin
       {$IfDef VCL}
          AParameterShortFloat('Hardware','PrinterScale',PrinterScale,50000);
          AParameter('Hardware','EnableGridNetworkComputing',EnableGridNetworkComputing,true);
-         AParameter('Hardware','DefaultServerIP',DefaultServerIP,'127.0.0.1');
-         AParameter('Hardware','DefaultServerPort',DefaultServerPort,7676);
+         //AParameter('Hardware','DefaultServerIP',DefaultServerIP,'127.0.0.1');
+         //AParameter('Hardware','DefaultServerPort',DefaultServerPort,7676);
          AParameter('Hardware','MaxThreadsForPC',MaxThreadsForPC,8);
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);

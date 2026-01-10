@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {   include file for demstat             }
 {________________________________________}
@@ -179,6 +179,7 @@ end;
       var
         Grid1,Grid2,Diff : integer;
         Graph : tThisBaseGraph;
+        r : float32;
       begin
          MDDef.SlopeCompute.LSQorder := Order;
          MDDef.SlopeCompute.WindowRadius := Window;
@@ -194,7 +195,7 @@ end;
 
          MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-65;
          MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-65;
-         Graph := GridScatterGram(DEMglb[Grid1].FullDEMGridLimits,Grid1,Grid2);
+         Graph := GridScatterGram(DEMglb[Grid1].FullDEMGridLimits,r,Grid1,Grid2);
          Graph.GraphDraw.MaxHorizAxis := 150;
          Graph.GraphDraw.MaxVertAxis := 150;
          Graph.GraphDraw.MinHorizAxis := 0;
@@ -242,6 +243,7 @@ var
     var
       Grid1,Diff : integer;
       Graph : tThisBaseGraph;
+      r : float32;
     begin
        MDDef.SlopeCompute.LSQorder := Order;
        MDDef.SlopeCompute.WindowRadius := Window;
@@ -252,7 +254,7 @@ var
 
        MDDef.DefaultGraphXSize := DEMGlb[Diff].SelectionMap.Width-65;
        MDDef.DefaultGraphYSize := DEMGlb[Diff].SelectionMap.Width-65;
-       Graph := GridScatterGram(DEMglb[Evans].FullDEMGridLimits,Grid1,Evans);
+       Graph := GridScatterGram(DEMglb[Evans].FullDEMGridLimits,r,Grid1,Evans);
        Graph.GraphDraw.MaxHorizAxis := 150;
        Graph.GraphDraw.MaxVertAxis := 150;
        Graph.GraphDraw.MinHorizAxis := 0;

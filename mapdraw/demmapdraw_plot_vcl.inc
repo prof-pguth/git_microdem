@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {     include file for demmapdraw        }
 {________________________________________}
@@ -716,13 +716,15 @@
                   Pen.Color := clBlack;
                   Font.Name := 'Arial';
                   Font.Size := 8;
-                  TextOut(95,yd+205,'GT:' + RealToString(-GridTrueAngle,5,2) + '°');
+                  TextOut(95,yd+205,'GT:' + RealToString(-MapGridTrueAngle,5,2) + '°');
                   TextOut(95,yd+220,'TM:' + RealToString(MapMagDec,5,2) + '°');
                   TextOut(95,yd+235,'GM:' + RealToString(GridMagAngle,5,2) + '°');
                end;
              end;
 
          begin
+            {$IfDef RecordAverageGridTrue} WriteLineToDebugFile('tMapDraw.DrawDeclinationDiagramOnBitmap MapGridTrueAngle=' + RealToString(MapGridTrueAngle,-8,-2)); {$EndIf}
+
             CreateBitmap(Bitmap,150,250);
             xd := 65;
             yd := 0;
@@ -731,7 +733,7 @@
 
             if DEMMap and (DEMGlb[DEMonMap].DEMheader.h_DatumCode = 'Sphere') then exit;
 
-            GridMagAngle := -GridTrueAngle+MapMagDec;
+            GridMagAngle := -MapGridTrueAngle+MapMagDec;
 
             if ( (VectorIndex <> 0) and (PrimMapProj.PName = UTMEllipsoidal)) or (DEMMap and (DEMGlb[DEMOnMap].DEMheader.DEMUsed = UTMBasedDEM))
                {$IfDef ExSat} {$Else} or (ValidSatOnMap and (SatImage[SatOnMap].ImageMapProjection.PName = UTMellipsoidal)) {$EndIf}
@@ -745,11 +747,11 @@
                y := yd + 250 - round(CosDeg(GridMagAngle) * 250);
                Bitmap.Canvas.MoveTo(xd+10,yd+250);  Bitmap.Canvas.LineTo(x,y);   Bitmap.Canvas.LineTo(x+5,y+15);
 
-               x := xd + 10 - round(sinDeg(GridTrueAngle) * 225);
-               y := yd + 250 - round(CosDeg(GridTrueAngle) * 225);
+               x := xd + 10 - round(sinDeg(MapGridTrueAngle) * 225);
+               y := yd + 250 - round(CosDeg(MapGridTrueAngle) * 225);
                Bitmap.Canvas.MoveTo(xd+10,yd+250);   Bitmap.Canvas.LineTo(x,y);
                Bitmap.Canvas.Font.Size := 12;
-               if (GridTrueAngle < 0) then Bitmap.Canvas.TextOut(x+8,y,'*') else Bitmap.Canvas.TextOut(x-12,y,'*');
+               if (MapGridTrueAngle < 0) then Bitmap.Canvas.TextOut(x+8,y,'*') else Bitmap.Canvas.TextOut(x-12,y,'*');
             end;
 
             if (DEMMap and (DEMGlb[DEMOnMap].DEMheader.DEMUsed = ArcSecDEM)) {$IfDef ExSat} {$Else} or (ValidSatOnMap and (SatImage[SatOnMap].ImageMapProjection.PName = PlateCaree)) {$EndIf}
@@ -767,12 +769,12 @@
                 Bitmap.Canvas.LineTo(x,y);
                 Bitmap.Canvas.LineTo(x+5,y+15);
 
-                x := xd + 10 + round(sinDeg(GridTrueAngle) * 225);
-                y := yd + 250 - round(CosDeg(GridTrueAngle) * 225);
+                x := xd + 10 + round(sinDeg(MapGridTrueAngle) * 225);
+                y := yd + 250 - round(CosDeg(MapGridTrueAngle) * 225);
                 Bitmap.Canvas.MoveTo(xd+10,yd+250);
                 Bitmap.Canvas.LineTo(x,y);
                 Bitmap.Canvas.Font.Size := 6;
-                if (GridTrueAngle > 0) then Bitmap.Canvas.TextOut(x+8,y,'GN') else Bitmap.Canvas.TextOut(x-16,y,'GN');
+                if (MapGridTrueAngle > 0) then Bitmap.Canvas.TextOut(x+8,y,'GN') else Bitmap.Canvas.TextOut(x-16,y,'GN');
             end;
             LabelAngles(GridMagAngle,MapMagDec);
          end;

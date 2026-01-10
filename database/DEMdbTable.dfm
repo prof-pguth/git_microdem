@@ -3755,7 +3755,7 @@ object dbtablef: Tdbtablef
   end
   object DEMIXPopupMenu1: TPopupMenu
     Left = 664
-    Top = 472
+    Top = 464
     object OpenDEMIXgraphs1: TMenuItem
       Caption = 'Open DEMIX graphs'
       OnClick = OpenDEMIXgraphs1Click
@@ -3826,6 +3826,10 @@ object dbtablef: Tdbtablef
       object Addtilecharacteristics1: TMenuItem
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
+      end
+      object AddDSMPCFORESTPCURBANPC1: TMenuItem
+        Caption = 'Add DSM_PC (FOREST_PC + URBAN_PC)'
+        OnClick = AddDSMPCFORESTPCURBANPC1Click
       end
       object N57: TMenuItem
         Caption = '-'

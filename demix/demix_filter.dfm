@@ -140,7 +140,6 @@ object DemixFilterForm: TDemixFilterForm
         Height = 25
         Caption = 'Redraw difference maps'
         TabOrder = 11
-        OnClick = BitBtn9Click
       end
       object BitBtn10: TBitBtn
         Left = 224
@@ -333,78 +332,13 @@ object DemixFilterForm: TDemixFilterForm
         Caption = 'All'
         TabOrder = 31
       end
-      object GroupBox7: TGroupBox
-        Left = 16
-        Top = 192
-        Width = 177
-        Height = 145
-        Caption = 'Tolerances'
-        TabOrder = 32
-        object Label6: TLabel
-          Left = 18
-          Top = 82
-          Width = 79
-          Height = 15
-          Caption = 'Roughness (%)'
-        end
-        object Label5: TLabel
-          Left = 16
-          Top = 53
-          Width = 50
-          Height = 15
-          Caption = 'Slope (%)'
-        end
-        object Label4: TLabel
-          Left = 16
-          Top = 21
-          Width = 73
-          Height = 15
-          Caption = 'Elevation  (m)'
-        end
-        object Edit5: TEdit
-          Left = 109
-          Top = 79
-          Width = 56
-          Height = 23
-          TabOrder = 0
-          Text = 'Edit5'
-          OnChange = Edit5Change
-        end
-        object Edit4: TEdit
-          Left = 108
-          Top = 50
-          Width = 57
-          Height = 23
-          TabOrder = 1
-          Text = 'Edit4'
-          OnChange = Edit4Change
-        end
-        object Edit3: TEdit
-          Left = 108
-          Top = 21
-          Width = 57
-          Height = 23
-          TabOrder = 2
-          Text = 'Edit3'
-          OnChange = Edit3Change
-        end
-        object BitBtn29: TBitBtn
-          Left = 64
-          Top = 112
-          Width = 91
-          Height = 25
-          Caption = 'Restore defaults'
-          TabOrder = 3
-          OnClick = BitBtn29Click
-        end
-      end
       object BitBtn32: TBitBtn
         Left = 167
         Top = 115
         Width = 129
         Height = 25
         Caption = 'Load areas from list'
-        TabOrder = 33
+        TabOrder = 32
         OnClick = BitBtn32Click
       end
       object BitBtn34: TBitBtn
@@ -413,7 +347,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 137
         Height = 25
         Caption = 'Load tile DEMs'
-        TabOrder = 34
+        TabOrder = 33
         OnClick = BitBtn34Click
       end
       object CheckBox4: TCheckBox
@@ -422,7 +356,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 17
         Caption = 'Test DEM maps'
-        TabOrder = 35
+        TabOrder = 34
         OnClick = CheckBox4Click
       end
       object CheckBox23: TCheckBox
@@ -431,7 +365,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 97
         Height = 17
         Caption = 'Ref DEM maps'
-        TabOrder = 36
+        TabOrder = 35
         OnClick = CheckBox23Click
       end
       object CheckBox16: TCheckBox
@@ -440,7 +374,7 @@ object DemixFilterForm: TDemixFilterForm
         Width = 113
         Height = 17
         Caption = 'Reference DSMs'
-        TabOrder = 37
+        TabOrder = 36
         OnClick = CheckBox16Click
       end
       object BitBtn40: TBitBtn
@@ -450,7 +384,7 @@ object DemixFilterForm: TDemixFilterForm
         Height = 25
         Caption = 'Load Geomorphons'
         Enabled = False
-        TabOrder = 38
+        TabOrder = 37
         OnClick = BitBtn40Click
       end
     end

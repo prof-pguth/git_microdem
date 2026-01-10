@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 {                                        }
 { include file for demdatabase           }
@@ -723,8 +723,8 @@ function TGISdataBaseModule.CreateHistogramFromDataBase(RegHist: boolean; Fields
 var
    j : integer;
    Min,Max : float64;
-   FilesList,
-   LegendList : tStringList;
+   XAxis : shortstring;
+   FilesList, LegendList : tStringList;
 
       procedure DoOneDB(db : integer);
       var
@@ -766,8 +766,9 @@ begin
   end;
 
    {$If Defined(RecordHistogram)} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep, range ' + RealToString(Min,-12,-2) + '---' + RealToString(Max,-12,-2)); {$EndIf}
+  if LegendList.Count = 1 then XAxis := LegendList.Strings[0] else XAxis := '';
 
-  Result := CreateMultipleHistogram(True,FilesList,LegendList,'','Histogram ' +  MyData.Filter,100,Min,Max,-99);
+  Result := CreateMultipleHistogram(True,FilesList,LegendList,XAxis,'Histogram ' +  MyData.Filter,100,Min,Max,-99);
   {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;
 

@@ -154,12 +154,10 @@ begin
        Check('VALUE',HeartStr);
        Check('DISTANCEMETERS',DistStr);
        if (str = '</TRACKPOINT>') then begin
-          //if (DistStr <> '0.0') then begin   //unclear what this means, but it can be here while driving
-             ReplaceCharacter(ID,':','_');
-             ElevStr := RealToString(StrToFloat(ElevStr),-12,2);
-             DecHours := DecimalHoursFromTimeStr(TimeStr);
-             Result.Add(LatStr + ',' + LongStr + ',' + TimeStr + ',' + ElevStr + ',' + HeartStr + ',' + RealToString(DecHours,-12,-6));
-          //end;
+          ReplaceCharacter(ID,':','_');
+          ElevStr := RealToString(StrToFloat(ElevStr),-12,2);
+          DecHours := DecimalHoursFromTimeStr(TimeStr);
+          Result.Add(LatStr + ',' + LongStr + ',' + TimeStr + ',' + ElevStr + ',' + HeartStr + ',' + RealToString(DecHours,-12,-6));
        end;
     end;
    FileInMemory.Destroy;

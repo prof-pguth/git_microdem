@@ -1057,6 +1057,7 @@ type
     N53: TMenuItem;
     Limitdeimalsinmultiplefields1: TMenuItem;
     Create2: TMenuItem;
+    AddDSMPCFORESTPCURBANPC1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1873,6 +1874,7 @@ type
     procedure IQR1Click(Sender: TObject);
     procedure Limitdeimalsinmultiplefields1Click(Sender: TObject);
     procedure Create2Click(Sender: TObject);
+    procedure AddDSMPCFORESTPCURBANPC1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -2126,16 +2128,16 @@ var
 
 procedure ThreeDGraph(DBOnTable : integer; NoVertExag : boolean);
 var
-  Mult,ThinFactor : integer;
+  Mult{,ThinFactor} : integer;
   MinColor,MaxColor : float64;
   StringColorField,NumericColorField : ShortString;
-  DataThere : tStringList;
+  DataThere,FileList : tStringList;
 
      procedure OpenNew3Dform;
      var
         Min,Max : float64;
         zRange : float64;
-        GeometryFName,ColorsFName : PathStr;
+        GeometryFName{,ColorsFName} : PathStr;
          Points : ^tPointXYZIArray;
          MemReq : int64;
          i,Mult : integer;
@@ -2173,15 +2175,16 @@ var
             GISdb[DBonTable].MyData.Next;
         end;
         GeometryFName := Petmar.NextFileNumber(MDTempDir, GISdb[DBonTable].DBName + '_','.xyzib');
-        ColorsFName := Palette256Bitmap(p256Spectrum);  //p256Terrain);
+        //ColorsFName := Palette256Bitmap(p256Spectrum);  //p256Terrain);
         AssignFile(Outf,GeometryFName);
         rewrite(Outf,1);
         BlockWrite(OutF,Points^,MemReq);
         CloseFile(outf);
         EndProgress;
         FreeMem(Points,MemReq);
+        FileList.Add(GeometryFName);
         {$IfDef RecordOpenGL} WriteLineToDebugFile('Export binary over, n=' + IntToStr(i)); {$EndIf}
-        FMX3dViewer(True,GeometryfName,'','','',''{, ColorsFName,'','','',''},NoVertExag);
+        FMX3dViewer(True,FileList,NoVertExag);
         {$IfDef RecordOpenGL} WriteLineToDebugFile('OpenNew3Dform out'); {$EndIf}
      end;
 
@@ -2189,19 +2192,16 @@ var
 begin
    {$IfDef RecordOpenGL} WriteLineToDebugFile('Tdbtablef.N3Dgraph1Click in'); {$EndIf}
    DataThere := Nil;
-
-   ThinFactor := 1;
+   FileList := tStringList.Create;
+   //ThinFactor := 1;
    GISdb[DBonTable].PickNumericFields(dbgtUnspecified,4,'X','Y','Z');
-
    {$IfDef RecordOpenGL} WriteLineToDebugFile('Tdbtablef.N3Dgraph1Click picked'); {$EndIf}
-
    ShowHourglassCursor;
    GISdb[DBonTable].EmpSource.Enabled := false;
    if (StringColorField <> '') then GISdb[DBonTable].DBFieldUniqueEntries(StringColorField,DataThere);
-   //ShowHourglassCursor;
    GISdb[DBonTable].EmpSource.Enabled := false;
    if (NumericColorField <> '') then GISdb[DBonTable].FieldRange(NumericColorField,MinColor,MaxColor);
-   if MDDef.ReverseZFields then Mult := -1 else Mult := 1;
+   //if MDDef.ReverseZFields then Mult := -1 else Mult := 1;
    OpenNew3Dform;
    DataThere.Free;
    GISdb[DBonTable].EmpSource.Enabled := true;
@@ -5269,6 +5269,26 @@ begin
    end;
 end;
 
+procedure Tdbtablef.AddDSMPCFORESTPCURBANPC1Click(Sender: TObject);
+var
+   Urban,Forest : float32;
+begin
+   SetColorForProcessing;
+   ShowHourglassCursor;
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'DSM_PC',8,2);
+   while not GISdb[DBonTable].MyData.eof do begin
+       GISdb[DBonTable].EmpSource.Enabled := false;
+       Urban := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('URBAN_PC');
+       Forest := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC');
+       GISdb[DBonTable].MyData.Edit;
+       GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DSM_PC',Urban+Forest);
+       GISdb[DBonTable].MyData.Next;
+   end;
+   ShowDefaultCursor;
+   SetColorForWaiting;
+end;
+
 procedure Tdbtablef.AddEGMfields1Click(Sender: TObject);
 begin
 {$IfDef ExIceSat}
@@ -5303,29 +5323,24 @@ var
    WantedDEM : integer;
    DEMSeries : ShortString;
 begin
-   with GISdb[DBonTable] do begin
+   //with GISdb[DBonTable] do begin
       PickDEMSeries(DEMSeries,'DEM series for elevations');
       ShowHourglassCursor;
       GISdb[DBonTable].ClearGISFilter;
-      FillFieldWithValue('ELEV_M','-9999');
+      GISdb[DBonTable].FillFieldWithValue('ELEV_M','-9999');
       {$IfDef RecordFillDEM} WriteLineToDebugFile('Tdbtablef.AddelevationfromDEMseries1Click  Total Records=' + IntToStr(GISDataBase[DBonTable].MyData.RecordCount)); {$EndIf}
       repeat
-         EmpSource.Enabled := false;
-         if ValidLatLongFromTable(Lat,Long) then begin
+         GISdb[DBonTable].EmpSource.Enabled := false;
+         if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
              WantedDEM := LoadMapLibraryPoint(true,Lat,Long,DEMSeries,false);
              if ValidDEM(WantedDEM) then begin
                 {$IfDef RecordFillDEM} WriteLineToDebugFile(DEMGlb[WantedDEM].AreaName); {$EndIf}
-                //th DEMGlb[WantedDEM] do begin
-                    GISdb[DBonTable].MyData.ApplyFilter(MakeGeoFilterFromBoundingBox(DEMGlb[WantedDEM].DEMBoundBoxGeo));
-
-                    //LatFieldName +  '<=' + RealToString(DEMBoundBoxGeo.YMax,-12,-6) + ' AND ' + LatFieldName +  '>=' + RealToString(DEMBoundBoxGeo.YMin,-12,-6) + ' AND ' +
-                                      //ngFieldName +  '<=' + RealToString(DEMBoundBoxGeo.XMax,-12,-6) + ' AND ' + LongFieldName +  '>=' + RealToString(DEMBoundBoxGeo.XMin,-12,-6));
-                //d;
+                GISdb[DBonTable].MyData.ApplyFilter(MakeGeoFilterFromBoundingBox(DEMGlb[WantedDEM].DEMBoundBoxGeo));
                 {$IfDef RecordFillDEM} WriteLineToDebugFile('Recs check=' + IntToStr(GISDataBase[DBonTable].MyData.RecordCount) + '  Filter=' +  GISDataBase[DBonTable].MyData.Filter); {$EndIf}
                 while not GISdb[DBonTable].MyData.eof do begin
-                   EmpSource.Enabled := false;
+                   GISdb[DBonTable].EmpSource.Enabled := false;
                    GISdb[DBonTable].MyData.Edit;
-                   if GetLatLongToRepresentRecord(Lat,Long) and DEMGlb[WantedDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
+                   if GISdb[DBonTable].GetLatLongToRepresentRecord(Lat,Long) and DEMGlb[WantedDEM].GetElevFromLatLongDegree(Lat,Long,z) then begin
                       GISdb[DBonTable].MyData.SetFieldByNameAsFloat('ELEV_M',z);
                    end
                    else GISdb[DBonTable].MyData.SetFieldByNameAsString('ELEV_M','');
@@ -5343,7 +5358,7 @@ begin
          {$IfDef RecordFillDEM} WriteLineToDebugFile('Records left=' + IntToStr(GISDataBase[DBonTable].MyData.RecordCount)); {$EndIf}
      until GISdb[DBonTable].MyData.RecordCount = 0;
      ShowStatus;
-   end;
+   //end;
 end;
 
 procedure Tdbtablef.AddfieldfromopenDB1Click(Sender: TObject);
@@ -12201,16 +12216,21 @@ begin
 {$EndIf}
 end;
 
+
 procedure Tdbtablef.LoadtestandreferenceDEMs1Click(Sender: TObject);
 begin
    LoadThisDEMIXTile(GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA'),GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
 end;
 
+
 procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
 var
    fName : PathStr;
 begin
-   fName := GISdb[DBonTable].MyData.GetFieldByNameAsString('FILENAME');
+   if GISdb[DBonTable].MyData.FieldExists('FILENAME') then fName := 'FILENAME'
+   else if GISdb[DBonTable].MyData.FieldExists('DEM_NAME') then fName := 'DEM_NAME'
+   else exit;
+   fName := GISdb[DBonTable].MyData.GetFieldByNameAsString(fName);
    if not FileExists(fName) then fName := ExtractFilePath(GISdb[DBonTable].dbFullName) + fName;
    OpenNewDEM(fName);
 end;

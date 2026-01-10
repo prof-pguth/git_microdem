@@ -13,6 +13,9 @@ unit demix_control;
 {$I nevadia_defines.inc}
 
 {$Define IncludeCurvatureLSPs}
+//{$Define OpenDEMIXAreaAndCompare}
+{$Define IncludeOldDEMopen}
+
 
 
 //{$Define FastOpenness}  //for debugging, since openness is the slowest grid to generate
@@ -114,12 +117,6 @@ const
    function DEMIX_GetListOfAreas : tStringList;
 
 //service functions and procedures
-   function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
-   function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
-   function LoadDEMIXCandidateDEMs(AreaName : ShortString;  OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
-   procedure LoadThisDEMIXTile(AreaName,TileName : shortstring; OpenMaps : boolean = true);
-   procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
-
    procedure GetReferenceDEMsForTestDEM(TestSeries : shortstring; var UseDSM,UseDTM : integer);
    function GetReferenceDEMforTestDEM(ThisTestDEM : integer; RefDEMs : tDEMIXindexes) : integer;
    function DEMIX_AreasWanted(CanLimitAreas : boolean = true) : tStringList;
@@ -170,29 +167,9 @@ function ExtraToSpreadDEMs(DEMName : shortString; Extra : float32) : float32;
 function PickWineContestDBLocation : boolean;
 procedure PickDEMIXMode;
 
-{$IfDef IncludeEarlyDEMIXmaps}
-    //demix maps
-       function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
-       function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr; ShowMap : boolean = true) : integer;
-       function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
-       function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
-       procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
-{$EndIf}
-
-{$IfDef FUV_RangeScales}
-   procedure FUVforRangeScales(LandCoverOption : boolean);
-{$EndIf}
 
 function DEMIXMomentStatsString(MomentVar : tMomentVar) : shortstring;
 function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
-
-   {$IfDef OpenDEMIXAreaAndCompare}
-      procedure OpenDEMIXArea(fName : PathStr = '');
-   {$EndIf}
-
-   {$IfDef OldDEMIXroutines}
-      procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
-   {$EndIf}
 
 
 var
@@ -217,6 +194,37 @@ procedure GEDTM_problems(dbOnTable : integer);
 procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
 
 
+{$IfDef IncludeEarlyDEMIXmaps}
+    //demix maps
+       function AirBallDirtBallMap(DEMonMap,DSM,DTM : integer; fName : PathStr = '') : integer;
+       function TwoDEMHighLowMap(RefDEM,ALOS,COP : integer; SimpleTolerance : float32; FourCats : boolean; fName2 : PathStr; ShowMap : boolean = true) : integer;
+       function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+       function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
+       procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
+{$EndIf}
+
+{$IfDef FUV_RangeScales}
+   procedure FUVforRangeScales(LandCoverOption : boolean);
+{$EndIf}
+
+   {$IfDef OpenDEMIXAreaAndCompare}
+      procedure OpenDEMIXArea(fName : PathStr = '');
+   {$EndIf}
+
+   {$IfDef OldDEMIXroutines}
+      procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
+   {$EndIf}
+
+   {$IfDef IncludeOldDEMopen}
+       function OpenBothPixelIsDEMs(Area,Prefix : shortstring; RefDir,TestDir : PathStr; OpenMaps : boolean) : boolean;
+       function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
+       function LoadDEMIXCandidateDEMs(AreaName : ShortString;  OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
+       procedure LoadThisDEMIXTile(AreaName,TileName : shortstring; OpenMaps : boolean = true);
+       procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
+   {$EndIf}
+
+
+
 implementation
 
 uses
@@ -232,16 +240,19 @@ uses
 var
    DoHorizontalShift : boolean;
 
+
+   {$IfDef IncludeOldDEMopen}
+      {$I demix_open_dems.inc}
+   {$EndIf}
+
+
    {$IfDef IncludeEarlyDEMIXmaps}
       {$I demix_maps.inc}
    {$EndIf}
 
-   {$I demix_open_dems.inc}
-
    {$IfDef Old3DEP}
       {$I old_demix_3dep_routines.inc}
    {$EndIf}
-
 
    {$If Defined(OldDEMIXroutines)}
       {$I experimental_demix_criteria.inc}
@@ -442,20 +453,16 @@ end;
 
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 begin
-   //if (db = 0) then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf';
-   //if not FileExists(DEMIX_criteria_tolerance_fName) then begin
-     if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then DEMIX_CriteriaToleranceFNameFromMode(fuvmPartials)
-     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then DEMIX_CriteriaToleranceFNameFromMode(fuvmCurves)
-     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'FUV') then DEMIX_CriteriaToleranceFNameFromMode(fuvmMixed)
-     else if ValidDB(db) and AnsiContainsText(UpperCase(GISdb[db].dbName),'DIFF_DIST') then DEMIX_CriteriaToleranceFNameFromMode(fuvmDiffDist)
-     else begin
-        DEMIX_criteria_tolerance_fName := '';
-        MessageToContinue('No defined file for criteria for ' + GISdb[db].dbName);
-     end;
-   //end;
-   //if not FileExists(DEMIX_criteria_tolerance_fName) then begin
-      //MessageToContinue('File for criteria missing: ' + DEMIX_criteria_tolerance_fName);
-   //end;
+   DEMIX_criteria_tolerance_fName := '';
+   if ValidDB(db) then begin
+      if AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then DEMIX_CriteriaToleranceFNameFromMode(fuvmPartials)
+      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then DEMIX_CriteriaToleranceFNameFromMode(fuvmCurves)
+      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'MIXED') then DEMIX_CriteriaToleranceFNameFromMode(fuvmMixed)
+      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'DIFF_DIST') then DEMIX_CriteriaToleranceFNameFromMode(fuvmDiffDist)
+      else begin
+         MessageToContinue('No defined file for criteria for ' + GISdb[db].dbName);
+      end;
+   end;
 end;
 
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
@@ -1296,14 +1303,14 @@ begin
 
 
    if (MDDef.DEMIX_mode = dmFull) then begin
-      NumPtDEMs := 6;
-      NumAreaDEMs := 1;
+      //NumPtDEMs := 6;
+      //NumAreaDEMs := 1;
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
       DEMIXModeName := 'FULL';
       DEMIX_Under_ref_dtm := '';
       DEMIX_Under_test_dems := '';
    end;
-   NumDEMIXtestDEM := NumPtDEMs + NumAreaDEMs;
+   //NumDEMIXtestDEM := NumPtDEMs + NumAreaDEMs;
 
    //DEMListFName := DEMIXSettingsDir + 'dems_' + DEMIXModeName + '.txt';
    if DEMIXanalysismode in [DEMIXtraditional] then begin

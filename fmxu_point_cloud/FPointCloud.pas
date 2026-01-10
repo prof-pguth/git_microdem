@@ -1,3 +1,11 @@
+{^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
+{ Part of MICRODEM GIS Program           }
+{ PETMAR Trilobite Breeding Ranch        }
+{ Released under the MIT Licences        }
+{ Copyright (c) 1986-2025 Peter L. Guth  }
+{________________________________________}
+
+
 {based on:       }
 {https://www.delphitools.info/2024/10/29/supporting-gpu-buffers-for-fmx/}
 {https://www.delphitools.info/2024/09/05/faster-3d-point-cloud-with-fmx/}
@@ -5,6 +13,7 @@
 {https://github.com/EricGrange}
 
 {$Define Recordfmxu_pointcloud}
+
 
 unit FPointCloud;
 
@@ -67,6 +76,7 @@ type
 
 procedure Startfmxu_point_cloud_viewer(FileList : tStringList);
 
+
 implementation
 
 {$R *.fmx}
@@ -75,13 +85,12 @@ uses
    Petmar,Petmar_types,DEMDefs;
 
 
-
 procedure Startfmxu_point_cloud_viewer(FileList : tStringList);
 var
    PointCloudForm : TPointCloudForm;
 begin
    {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('Startfmxu_point_cloud_viewer in'); {$EndIf}
-   RegisterDX11ContextU;  //has to be done before the form creation
+   RegisterDX11ContextU;  //has to be done before form creation
    {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('DLL registered'); {$EndIf}
    PointCloudForm := TPointCloudForm.Create(Application);
    PointCloudForm.LoadClouds(FileList);
@@ -98,6 +107,7 @@ begin
    BufferOffsetAndScale(Cloud.Points, -bary, factor);
    Cloud.UpdatePoints;
 end;
+
 
 procedure TPointCloudForm.LoadClouds(FileList : tStringList);
 
@@ -150,7 +160,6 @@ begin
    CBShapeChange(nil);
    {$IfDef Recordfmxu_pointcloud} WriteLineToDebugFile('TPointCloudForm.LoadClouds out'); {$EndIf}
 end;
-
 
 
 procedure TPointCloudForm.FormCreate(Sender: TObject);
@@ -257,6 +266,7 @@ procedure TPointCloudForm.Viewport3D1Painting(Sender: TObject; Canvas: TCanvas; 
 begin
    Inc(FRenderCount);
 end;
+
 
 
 end.

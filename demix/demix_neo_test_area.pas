@@ -497,16 +497,17 @@ end;
 procedure TNew_area_evals_form.BitBtn1Click(Sender: TObject);
 var
    i : integer;
+   r : float32;
 begin
    if (RadioGroup1.ItemIndex = 0) then begin
       for i := 1 to NumPtDEMs do begin
-          GridScatterGram(DEMglb[PointDEMs[0]].FullDEMGridLimits,PointDEMs[i],PointDEMs[0] );
+          GridScatterGram(DEMglb[PointDEMs[0]].FullDEMGridLimits,r,PointDEMs[i],PointDEMs[0] );
       end;
    end
    else begin
       for i := 1 to NumPtDEMs do begin
-          GridScatterGram(DEMglb[PointGrids[0]].FullDEMGridLimits,PointGrids[i],PointGrids[0] );
-          if RadioGroup1.ItemIndex = 3 then GridScatterGram(DEMglb[PointGrids2[0]].FullDEMGridLimits,PointGrids2[i],PointGrids2[0] );
+          GridScatterGram(DEMglb[PointGrids[0]].FullDEMGridLimits,r,PointGrids[i],PointGrids[0] );
+          if RadioGroup1.ItemIndex = 3 then GridScatterGram(DEMglb[PointGrids2[0]].FullDEMGridLimits,r,PointGrids2[i],PointGrids2[0] );
       end;
    end;
 end;

@@ -28,7 +28,7 @@ unit DEMStat;
       //{$Define RecordComparisons}
       //{$Define RecordSSIM}
       //{$Define TrackCovariance}
-      //{$Define TrackCovarianceFull}
+      {$Define TrackCovarianceFull}
       //{$Define RecordCovarianceFail}
       //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
@@ -38,7 +38,7 @@ unit DEMStat;
       //{$Define RecordGridCorrrelations}
       //{$Define RecordGridScatterGram}
       //{$Define RecordDEMMapProj}
-      //{$Define RecordSingleGridScatterGram}
+      {$Define RecordSingleGridScatterGram}
       //{$Define RecordFUVsteps}
       //{$Define TimeGridsForArea}
       //{$Define TimeOpenCreateGrids}
@@ -184,7 +184,7 @@ type
       {$EndIf}
 
       procedure MissingPointsInGrids(MapForm : tMapForm; DEM1 : integer = 0; DEM2 : integer = 0);
-      function GridScatterGram(GridLimits : tGridLimits; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
+      function GridScatterGram(GridLimits : tGridLimits; var r : float32; DEM1 : integer = 0; DEM2 : integer = 0) : TThisBaseGraph;
       procedure GridCoOccurrence(AutoFull : boolean = false; DEM1 : integer = 0; DEM2 : integer = 0; Percentages : boolean = true);
       procedure DBCoOccurrence(Table : tMyData; EmpSource: TDataSource; Field1,Field2 : ShortString; Percentages : boolean);
 
@@ -879,10 +879,11 @@ var
          function DrawScattergramAndGetGraphImage(i,j : integer) : tMyBitmap;
          var
             Graph : tThisBaseGraph;
+            r : float32;
          begin
              {$IfDef RecordGridScattergramFull} WriteLineToDebugFile('Start scattergram, Grids: ' + DEMGlb[i].AreaName + ' and  ' +  DEMGlb[j].AreaName); {$EndIf}
              Graph := Nil;
-             Graph := GridScatterGram(DEMGlb[i].FullDEMGridLimits,i,j);
+             Graph := GridScatterGram(DEMGlb[i].FullDEMGridLimits,r,i,j);
              if (Graph <> nil) then begin
                 Graph.GraphDraw.MaxHorizAxis := theMax;
                 Graph.GraphDraw.MaxVertAxis := theMax;
@@ -2481,6 +2482,7 @@ begin
                MatchPt := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2);
             end;
             if MatchPt then begin
+
                xs^[Npts] := z1;
                ys^[Npts] := z2;
                inc(NPts);

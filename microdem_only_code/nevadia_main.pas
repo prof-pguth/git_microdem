@@ -324,7 +324,7 @@ type
     Edit1: TMenuItem;
     EditDEMHeader1: TMenuItem;
     Timer2: TTimer;
-    Seismicviewing1: TMenuItem;
+    //Seismicviewing1: TMenuItem;
     RestorepreviousprogramEXE1: TMenuItem;
     DBFfile1: TMenuItem;
     GeoPDF1: TMenuItem;
@@ -399,7 +399,7 @@ type
     Platetectonics1: TMenuItem;
     Quickplatetectonicsmaps1: TMenuItem;
     N34: TMenuItem;
-    Seismicfencediagram1: TMenuItem;
+    //Seismicfencediagram1: TMenuItem;
     Slidesorter1: TMenuItem;
     Fileoperations1: TMenuItem;
     Movefileswithnamematch1: TMenuItem;
@@ -579,7 +579,7 @@ type
     CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
-    //DEMIXNeo1: TMenuItem;
+    DEMIXNeo1: TMenuItem;
     MultipleDEMsonearea015secscale1: TMenuItem;
     CorrelationsingleDEMtoreferencealllandcovers1: TMenuItem;
     CorrelationmatrixamongallDEMsforALLpixels1: TMenuItem;
@@ -828,7 +828,7 @@ type
     procedure SpeedButton6Click(Sender: TObject);
     procedure EditDEMHeader1Click(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
-    procedure Seismicviewing1Click(Sender: TObject);
+    //procedure Seismicviewing1Click(Sender: TObject);
     procedure RestorepreviousprogramEXE1Click(Sender: TObject);
     procedure DBFfile1Click(Sender: TObject);
     procedure GeoPDF1Click(Sender: TObject);
@@ -887,7 +887,7 @@ type
     procedure Geoid2Click(Sender: TObject);
     procedure Platetectonics1Click(Sender: TObject);
     procedure Quickplatetectonicsmaps1Click(Sender: TObject);
-    procedure Seismicfencediagram1Click(Sender: TObject);
+   //procedure Seismicfencediagram1Click(Sender: TObject);
     procedure Slidesorter1Click(Sender: TObject);
     procedure Movefileswithnamematch1Click(Sender: TObject);
     procedure RenameJPEGswithcreationtime1Click(Sender: TObject);
@@ -1280,7 +1280,7 @@ uses
 
    {$IfDef ExFMX3D}
    {$Else}
-      FPointCloud,
+      //FPointCloud,
    {$EndIf}
 
    {$IfDef ExMake_grid}
@@ -1300,7 +1300,9 @@ uses
       demix_evals_scores_graphs,
       ssim_fuv_control,
       demix_neo_test_area,
-      DEMIX_filter,
+      {$IfDef UseOldDEMIXFilter}
+          DEMIX_filter,
+      {$EndIf}
       DEMIX_graphs,
    {$EndIf}
 
@@ -1759,6 +1761,7 @@ begin
          if not MDDef.ShowMainToolbar then WriteLineToDebugFile('TWmDem.SetMenusForVersion, no main toolbar');
       end;
    {$EndIf}
+
    if (WmDEM = Nil) or (SkipMenuUpdating) or (ProgramClosing) then exit;
    FileMode := 2;
 
@@ -1778,11 +1781,28 @@ begin
       Mergemasp1.Visible := false;
    {$EndIf}
 
+   {$IfDef UseOldDEMIXFilter}
+      OpenDEMIXdatabase1.Visible := true;
+   {$else}
+      OpenDEMIXdatabase1.Visible := false;
+   {$EndIf}
+
+   {$IfDef CopALOSCompare}
+      Pixelbypixelmapstatistics1.Visible := true;
+   {$Else}
+      Pixelbypixelmapstatistics1.Visible := false;
+   {$EndIf}
+
+   {$IfDef ShowDEMIXNeo}
+      DEMIXNeo1.Visible := true;
+   {$Else}
+      DEMIXNeo1.Visible := false;
+   {$EndIf}
+
    Open1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
    Toolbar1.Visible := MDDef.ShowMainToolbar and (MDDef.ProgramOption <> DragonPlotProgram);
    Introductorytutorials1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
    Help1.Visible := (MDDef.ProgramOption <> DragonPlotProgram) or TrilobiteComputer;
-   //DEMIXNeo1.Visible := TrilobiteComputer;
 
    ExpertDEMVersion := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (NumDEMDataSetsOpen > 0);
    RemoteSensingLabs1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
@@ -2697,6 +2717,7 @@ begin
    VerifyRecordsToUse(DEMIX_criteria_tolerance_fName,'PARAMETER');
 end;
 
+
 procedure Twmdem.N62Click(Sender: TObject);
 var
    theDEMs : tStringList;
@@ -2738,7 +2759,6 @@ begin
         FName := Paths[j] + ExtractFileName(RefName);
         fName := StringReplace(fName,DEMs[1],DEMs[j],[rfReplaceAll, rfIgnoreCase]);
         LoadNewDEM(TheGrids[j],fName,false);
-
         aline := aline + ',' + RealToString(GetFUVForPairGrids(DEMglb[TheGrids[1]].FullDEMGridLimits,TheGrids[1],TheGrids[j]),-12,6);
       end;
       WriteLineToDebugFile(aLine);
@@ -3918,6 +3938,7 @@ end;
 
 procedure Twmdem.OpenDEMIXdatabase1Click(Sender: TObject);
 begin
+{$IfDef UseOldDEMIXFilter}
    if not FileExists(DEMIX_GIS_dbName) then Petmar.GetExistingFileName('DEMIX db version','*.dbf',DEMIX_GIS_dbName);
    OpenNumberedGISDataBase(DEMIX_DB,DEMIX_GIS_dbName,false);
    if ValidDB(DEMIX_DB) then begin
@@ -3925,6 +3946,7 @@ begin
       GISdb[DEMIX_DB].LayerIsOn := false;
       DoDEMIXFilter(DEMIX_DB);
    end;
+{$EndIf}
 end;
 
 procedure Twmdem.OpenDEMwithoutmap1Click(Sender: TObject);
@@ -4010,7 +4032,6 @@ procedure Twmdem.Slidesorter1Click(Sender: TObject);
 begin
    StartSlideSorter;
 end;
-
 
 
 procedure Twmdem.SmallcloneEXEwindow1Click(Sender: TObject);
@@ -4972,23 +4993,6 @@ begin
    {$EndIf}
 end;
 
-
-procedure Twmdem.Seismicfencediagram1Click(Sender: TObject);
-begin
-   {$IfDef ExFMX3D}
-   {$Else}
-       SeismicTo3DView;
-       DisplayHTMLTopic('html\fence_diagram.htm');
-   {$EndIf}
-end;
-
-procedure Twmdem.Seismicviewing1Click(Sender: TObject);
-begin
-   {$IfDef ExFMX3D}
-   {$Else}
-      SeismicTo3DView;
-   {$EndIf}
-end;
 
 procedure Twmdem.PredBathySpeedButtonClick(Sender: TObject);
 begin

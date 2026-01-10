@@ -1875,6 +1875,11 @@ object MapForm: TMapForm
         GroupIndex = 1
         OnClick = Saveproject1Click
       end
+      object QuickDEMindex1: TMenuItem
+        Caption = 'Quick DEM index'
+        GroupIndex = 1
+        OnClick = QuickDEMindex1Click
+      end
       object N18: TMenuItem
         Caption = '-'
         GroupIndex = 1
@@ -6282,7 +6287,6 @@ object MapForm: TMapForm
     object Seismicviewing1: TMenuItem
       Caption = 'Seismic fence diagram'
       GroupIndex = 1
-      OnClick = Seismicviewing1Click
     end
     object Focalplaneanalysis1: TMenuItem
       Caption = 'Focal plane analysis'

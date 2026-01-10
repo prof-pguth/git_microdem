@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {  include file for demix_definitions    }
 {________________________________________}
@@ -93,66 +93,11 @@ begin
 end;
 
 
+
+
 procedure ShiftDEMsto_UTM_WGS84_EGM2008;
 var
    AreaProjectionInfo : tMyData;
-
-         procedure ShiftAFile(fName : PathStr; VertCode,HorizCode,UTMzone : shortstring);
-         var
-            InName,SaveName : PathStr;
-            s_SRSstring,t_srsstring : shortstring;
-            zone : int16;
-
-                  procedure OpenAndCheck(Starter : shortstring);
-                  begin
-                     if (Starter = '') then PickUTMZone(Zone)
-                     else zone := Geotiff_UTMzone(fName);
-                     UTMZone := AddDayMonthLeadingZero(zone);
-                     if (Starter <> '') then HorizCode := Starter + UTMZone;
-                     AreaProjectionInfo.Edit;
-                     AreaProjectionInfo.SetFieldByNameAsString('UTM_ZONE',UTMzone);
-                     AreaProjectionInfo.Post;
-                  end;
-
-         begin
-            SaveName := ChangeFileExt(fName,'_egm2008.tif');
-            if (not FileExists(SaveName)) or Overwrite then begin
-               {$If Defined(Record3DEPX)} WriteLineToDebugFile('ShiftAFile=' + fName + '  horiz code=' + HorizCode); {$EndIf}
-               InName := fName;
-               if not FileExists(SaveName) then begin
-                  if HorizCode = 'NAD83' then begin
-                     if (UTMZone = '') then OpenAndCheck('269')
-                     else HorizCode := '269' + UTMZone;
-                  end
-                  else if HorizCode = 'WGS84' then begin
-                     if (UTMZone = '') then OpenAndCheck('268')
-                     else HorizCode := '269' + UTMZone;
-                  end
-                  else if HorizCode = 'ETRS89' then begin
-                     if (UTMZone = '') then OpenAndCheck('258')
-                     else HorizCode := '258' + UTMZone;
-                  end
-                  else if (HorizCode = 'GCS_WGS') then begin
-                     HorizCode := '4326'
-                  end
-                  else if (HorizCode = '') then begin
-                     {$If Defined(Record3DEPX)} HighlightLineToDebugFile('ShiftAFile=' + fName + ' undefined or unsupported ' + HorizCode); {$EndIf}
-                     exit;
-                  end
-                  else if (UTMZone = '') then begin
-                     OpenAndCheck('');
-                  end;
-               end;
-               s_SRSstring := HorizCode + '+' + VertCode;
-               t_srsstring := '326' + UTMzone + '+3855';          //WGS84 + EGM2008
-               CompositeDatumShiftWithGDAL(inName,SaveName,s_SRSstring,t_srsstring);
-            end
-            else begin
-               {$If Defined(Record3DEPXfull)} WriteLineToDebugFile('Already shifted=' + fName); {$EndIf}
-            end;
-         end;
-
-
 var
    VertCode,HorizCode,UTMzone : shortstring;
    Files : tStringList;
@@ -193,7 +138,7 @@ begin {ShiftDEMsto_UTM_WGS84_EGM2008}
                for j := 0 to pred(Files.Count) do begin
                    fName := Files.Strings[j];
                    wmdem.SetPanelText(2, 'File: ' + IntToStr(succ(j)) + '/' + IntToStr(Files.Count),true);
-                   ShiftAFile(Fname,VertCode,HorizCode,UTMzone);
+                   ShiftAFile_UTM_WGS84_EGM2008(Fname,ChangeFileExt(fName,'_egm2008.tif'),VertCode,HorizCode,UTMzone);
                end;
                Files.Free;
             end;

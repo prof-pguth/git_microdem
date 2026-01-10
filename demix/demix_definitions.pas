@@ -13,6 +13,10 @@ unit demix_definitions;
 
 {$I nevadia_defines.inc}
 
+
+{$Define IncludeDEMIX_external_programs}
+
+
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    //{$Define TrackCriteriaList}
@@ -166,46 +170,6 @@ const
    Ref1SecAreaStr =  '_ref_1sec_area';
    Ref1_5SecPointStr = '_ref_1.5x1sec_point';
 
-//this should be rolled into a DEMIX_grid object; for now it is global variables
-
-         //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
-         //-1 for the high latitude (currently none for area grid),
-         //0 for the 1" reference,
-         // >=1 for test DEMs
-         type
-            tDEM_int_array = array [-1..MaxDEMIXDEM] of integer; //-1 for high latitude ref DEM, 0 for ref DEMs, others for the test DEMs
-         var
-            NumPtDEMs,
-            NumAreaDEMs : integer;
-            PointDEMs,AreaDEMs,      //used for referenced and test DEMs
-            AreaGrids,PointGrids,    //used for derived parameters
-            AreaGrids2,PointGrids2,  //used for parameters created at the same time (slope/roughness, openness upward and downward
-            PtSSIMGrids, AreaSSIMGrids : tDEM_int_array;
-            dmxFirstPoint,dmxFirstArea : integer;
-
-         procedure InitializePointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
-         function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
-         procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
-
-         //grids created by MICRODEM
-         function CreateDEMIXDerivedGrids(Which : shortstring; AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
-         procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
-         function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
-
-         //links to grids created by other programs
-         function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
-         procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
-         procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
-         procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
-
-         procedure LSP_Calc_Grids(kwat : shortstring; OpenMaps : boolean = false);
-         function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
-
-         {$IfDef ExternalProgramFUV_SSIM}
-             function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
-         {$EndIf}
-
-         procedure CreateLSPgrids(OpenMaps : boolean; Param,AreaName : shortstring; var PointGrids,AreaGrids : tDEM_int_array);
 
 
 const
@@ -372,6 +336,55 @@ var
       procedure InventoryChannelDataByArea;
    {$EndIf}
 
+         {$IfDef ExternalProgramFUV_SSIM}
+             function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
+         {$EndIf}
+
+
+{$IfDef IncludeDEMIX_external_programs}
+   procedure ClearDerivedGrids;
+   function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shortstring; IsPoint : boolean) : PathStr;
+   //this should be rolled into a DEMIX_grid object; for now it is global variables
+
+         //the newer code using a set of arrays for the point and area DEMs, which can have corresponding array for derived grids like slope
+         //-1 for the high latitude (currently none for area grid),
+         //0 for the 1" reference,
+         // >=1 for test DEMs
+         type
+            tDEM_int_array = array [-1..MaxDEMIXDEM] of integer; //-1 for high latitude ref DEM, 0 for ref DEMs, others for the test DEMs
+         var
+            NumPtDEMs,
+            NumAreaDEMs : integer;
+            PointDEMs,AreaDEMs,      //used for referenced and test DEMs
+            AreaGrids,PointGrids,    //used for derived parameters
+            AreaGrids2,PointGrids2,  //used for parameters created at the same time (slope/roughness, openness upward and downward
+            PtSSIMGrids, AreaSSIMGrids : tDEM_int_array;
+            dmxFirstPoint,dmxFirstArea : integer;
+
+         procedure InitializePointAndAreaGrids(var PointGrids,AreaGrids : tDEM_int_array; InitValue : integer = 0);
+         function RefGridForThisPointGrid(WhatGroup : tDEM_int_array; i : integer) : integer;
+         procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_array);
+
+         //grids created by MICRODEM
+         function CreateDEMIXDerivedGrids(Which : shortstring; AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
+         procedure CreateDEMIXSlopeRoughnessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false);
+         function CreateDEMIXOpennessGrids(AreaName : shortstring; OpenMaps : boolean = false; SaveMaps : boolean = false) : shortstring;
+
+         //links to grids created by other programs
+         function OpenGridsCreatedByExternalProgram(OpenMaps : boolean; aProgram,AreaName,Param : shortString; var PointGrids,AreaGrids : tDEM_int_array) : boolean;
+         procedure WBT_CreateDEMIX_GeomorphonGrids(OpenMaps : boolean = false);
+         procedure WBT_CreateDEMIX_HANDGrids(OpenMaps : boolean = false);
+         procedure WBT_CreateDEMIX_Flow_AccumulationGrids(Log : boolean; OpenMaps : boolean = false);
+
+         procedure LSP_Calc_Grids(kwat : shortstring; OpenMaps : boolean = false);
+         function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
+         procedure CreateLSPgrids(OpenMaps : boolean; Param,AreaName : shortstring; var PointGrids,AreaGrids : tDEM_int_array);
+
+
+{$EndIf}
+
+
+
 procedure OneDegreeTilesToCoverTestAreas;
 
 procedure TrimReferenceDEMsToDEMIXtiles;
@@ -390,9 +403,6 @@ procedure AreasInClusters(DB : integer);
 
 procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');
 
-procedure ClearDerivedGrids;
-
-function ExternalProgramOutPutFile(i : integer; aProgram,Param,AreaName : shortstring; IsPoint : boolean) : PathStr;
 procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; IsPoint : boolean);
 
 function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstring; ClusterOption : boolean): tThisBaseGraph;
@@ -408,8 +418,6 @@ function TileCharacteristicsInDB(DB : integer; Warn : boolean = false) : boolean
 procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 
 function InsureFUVinLSPname(aName : shortstring) : shortstring;
-
-
 function CreateSingleLSPGrid(OpenMaps : boolean; DEM : integer; Param : shortstring) : integer;
 
 
@@ -426,19 +434,20 @@ uses
 
 {$include demix_create_database.inc}
 
-{$include demix_external_program_derived_grids.inc}
-
 {$include demix_clusters.inc}
 
 {$include demix_create_lsp_grids.inc}
+
+{$include demix_inventory_check_dems.inc}
+
+{$IfDef IncludeDEMIX_external_programs}
+   {$include demix_external_program_derived_grids.inc}
+{$EndIf}
 
 {$IfDef IncludeOldDEMIX_RefDEM_Create}
    {$include demix_create_ref_dems.inc}
    {$include demix_create_test_dems.inc}
 {$EndIf}
-
-
-{$include demix_inventory_check_dems.inc}
 
 {$IfDef IncludeVectorCriteria}
    {$include demix_channels.inc}
@@ -455,7 +464,6 @@ function NoSuffixCriterion(Criterion : shortstring) : shortstring;
 begin
    Result := StringReplace(Criterion,'_FUV','',[rfIgnoreCase]);
 end;
-
 
 
 function TileCharacteristicsInDB(DB : integer; Warn : boolean = false) : boolean;

@@ -881,7 +881,7 @@ uses
 
    {$IfDef ExFMX3D}
    {$Else}
-      fPointCloud,
+      //fPointCloud,
    {$EndIf}
 
    PETMath,

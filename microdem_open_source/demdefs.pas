@@ -2084,9 +2084,6 @@ type
       DEMIX_DoHalfSecDEMs,
       ProcessLoopsForward : boolean;
       DEMIXUseBins : byte;
-      DEMIXSimpleTolerance,
-      DEMIXSlopeTolerance,
-      DEMIXRuffTolerance : float32;
 
       HistElevBinSize,
       HistSlopeBinSize,
@@ -2719,9 +2716,9 @@ type
 
        SatMultiBandTrueColor,
        SatMultiBandNormalize : boolean;
-       FileHeader,
-       DefaultServerIP : ShortString;
-       DefaultServerPort : int16;
+       FileHeader : ShortString;
+       //DefaultServerIP : ShortString;
+       //DefaultServerPort : int16;
 
        GeoJSONG_zdec,GeoJSONP_zdec,GeoJSONP_xydec : byte;
        MaxPointsAddInBox : integer;

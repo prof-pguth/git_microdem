@@ -261,8 +261,8 @@ begin {procedure tDEMDataSet.WriteNewFormatDEMwithLimits}
 end {procedure tDEMDataSet.WriteNewFormatDEMwithLimits};
 
 
-   {$Define WriteSminSmax}
-   {$Define WriteMissing}
+   //{$Define ExcludeWriteSminSmax}
+   //{$Define ExcludeWriteMissing}
 
    procedure StreamLongInt(var TIFFFile : TBufferedFileStream; Value : LongInt);  inline;
    begin
@@ -387,12 +387,12 @@ begin
       FloatingPointDEM  : SF := 3;
    end;
 
-    NumEnt := 15;
-   {$IfDef WriteSminSmax}
-      NumEnt := NumEnt + 2;
+    NumEnt := 18;
+   {$IfDef ExludeWriteSminSmax}
+      NumEnt := NumEnt - 2;
    {$EndIf}
-   {$IfDef WriteMissing}
-      NumEnt := NumEnt + 1;
+   {$IfDef ExcludeWriteMissing}
+      NumEnt := NumEnt - 1;
    {$EndIf}
 
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff setup done'); {$EndIf}
@@ -444,7 +444,8 @@ begin
 
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff before smax/smin'); {$EndIf}
 
-   {$IfDef WriteSminSmax}
+   {$IfDef ExcludeWriteSminSmax}
+   {$Else}
       StreamFieldEntryIncrementOffset(TIFFFile,340,12,1,Offset);        //12
       StreamFieldEntryIncrementOffset(TIFFFile,341,12,1,Offset);        //13
    {$EndIf}
@@ -455,7 +456,8 @@ begin
    StreamFieldEntryIncrementOffset(TIFFFile,34735,3,4*GeoKeyEntries,Offset);  //16    Geotiff GeoKeyDirectoryOffset
    StreamFieldEntryIncrementOffset(TIFFFile,34737,2,ASCIIsize,Offset);  //17
 
-   {$IfDef WriteMissing}
+   {$IfDef ExcludeWriteMissing}
+   {$Else}
       StreamFieldEntryIncrementOffset(TIFFFile,42113,2,MissingSize,Offset);       //18   Missing Data
    {$EndIf}
    {end Geotiff}
@@ -466,7 +468,8 @@ begin
    WriteTheDEM;
    //{$IfDef GeotiffSave} WriteLineToDebugFile('done DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
 
-   {$IfDef WriteSminSmax}
+   {$IfDef ExcludeWriteSminSmax}
+   {$Else}
       BlockWriteDouble(DEMheader.MinElev);  //340
       BlockWriteDouble(DEMheader.MaxElev);  //341
    {$EndIf}
@@ -503,11 +506,10 @@ begin
 
    StreamWordFieldEntry(TIFFFile,4096,0,1,DEMheader.VerticalCSTypeGeoKey);
 
-   //{$IfDef GeotiffSave} WriteLineToDebugFile('start 34737 ASCII, ' + ASCIIstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    TiffFile.Write(AsciiStr[1],ASCIIsize);
 
-   {$IfDef WriteMissing}
-     // {$IfDef GeotiffSave} WriteLineToDebugFile('start 42113 ASCII, ' + Missingstr + '  filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
+   {$IfDef  ExcludeWriteMissing}
+   {$Else}
       TiffFile.Write(MissingStr[1],MissingSize);
    {$EndIf}
 

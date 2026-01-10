@@ -318,7 +318,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'

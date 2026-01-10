@@ -449,14 +449,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Width = 126
       Height = 23
       TabOrder = 0
-      Text = 'filters_avg_slope'
       OnChange = ComboBox6Change
-      Items.Strings = (
-        'filters_avg_slope_3_cat'
-        'filters_avg_slope_4_cat'
-        'filters_avg_slope_6_cat'
-        'filters_forest_pc'
-        'filters_barren_pc')
     end
     object ComboBox7: TComboBox
       Left = 3
@@ -464,15 +457,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Width = 126
       Height = 23
       TabOrder = 1
-      Text = 'filters_barren_pc'
       OnChange = ComboBox7Change
-      Items.Strings = (
-        'filters_avg_slope_3_cat'
-        'filters_avg_slope_4_cat'
-        'filters_avg_slope_6_cat'
-        'filters_forest_pc'
-        'filters_barren_pc'
-        '')
     end
   end
   object GroupBox4: TGroupBox
@@ -1016,6 +1001,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Height = 25
     Caption = 'GEDTM filtering'
     TabOrder = 50
+    Visible = False
     OnClick = BitBtn44Click
   end
   object CheckBox4: TCheckBox

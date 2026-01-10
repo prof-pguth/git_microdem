@@ -556,7 +556,7 @@ begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := nil;
    if (TheFiles <> Nil) and (TheFiles.Count > 0) then begin
-     if Cols < 0 then begin
+     if (Cols < 0) then begin
        if (TheFiles.Count = 1) then begin
           if (Legend = '') then exit;
           Cols := 1;
@@ -570,26 +570,18 @@ begin
      BigBMP := CombineBitmaps(Cols, theFiles, '');
      {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, bitmaps combined'); {$EndIf}
      if (BigBMP <> nil) then begin
+        DrawLegendBelowBigBitmap(BigBMP,Legend,Capt);
+(*
         if (Capt <> '') then begin
            Capt := RemoveUnderscores(Capt);
            BigBmp.Canvas.Font.Style := [fsBold];
            BigBmp.Canvas.Font.Size := 24;
            while (BigBmp.Canvas.TextWidth(Capt) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
-           BigBmp.Height := BigBmp.Height + 15 + BigBmp.Canvas.TextHeight(Capt);
            x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
            y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(Capt);
            BigBmp.Canvas.TextOut(x,y,Capt);
         end;
-        if (Legend <> '') then begin
-            LegBMP := LoadBitmapFromFile(Legend);
-            if LegBMP.Height < 75 then begin
-               BigBmp.Height := BigBmp.Height + LegBMP.Height + 20;
-               y := BigBmp.Height - LegBMP.Height - 4;
-               x := (BigBmp.Width - LegBMP.Width) div 2;
-            end;
-            BigBmp.Canvas.Draw(X,y,LegBmp);
-            LegBMP.Free;
-        end;
+*)
         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, legend/caption done'); {$EndIf}
 
          Result := TImageDispForm.Create(Application);

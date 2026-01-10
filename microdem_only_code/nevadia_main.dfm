@@ -29,6 +29,7 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
+    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -2293,7 +2294,6 @@ object wmdem: Twmdem
       object Seismicviewing1: TMenuItem
         Caption = 'Seismic fence diagram'
         GroupIndex = 4
-        OnClick = Seismicviewing1Click
       end
       object N29: TMenuItem
         Caption = '-'
@@ -3298,7 +3298,6 @@ object wmdem: Twmdem
     object Seismicfencediagram1: TMenuItem
       Caption = 'Seismic fence diagram'
       GroupIndex = 6
-      OnClick = Seismicfencediagram1Click
     end
     object GulfofMexicoGLORIA1: TMenuItem
       Caption = 'Gulf of Mexico GLORIA'
@@ -3357,12 +3356,6 @@ object wmdem: Twmdem
     object Landformcategorieslegends1: TMenuItem
       Caption = 'Landform categories legends'
       OnClick = Landformcategorieslegends1Click
-    end
-    object COPALOScomparetoreference1: TMenuItem
-      Caption = 'COP/ALOS compare to reference'
-    end
-    object COPALOShighlowgeomorphometry1: TMenuItem
-      Caption = 'COP/ALOS high low geomorphometry'
     end
     object Pixelbypixelmapstatistics1: TMenuItem
       Caption = 'COP/ALOS Pixel by pixel map statistics'

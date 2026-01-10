@@ -306,7 +306,7 @@ type
    end;
 
 const
-   bfArrayMaxSize = 13000000;
+   bfArrayMaxSize = 15000000;
    MaxFArrayPts = 25000;
    MaxLongWord = 4294967295;
    MaxWord16 = 65535;
@@ -569,19 +569,6 @@ begin
       for i := Low(TStr) to High(TStr) do values[i] := ord(TStr[i]);
    {$EndIf}
 end;
-
-(*
-function FullGetHomePath : PathStr;
-begin
-   Result := System.IOUtils.tPath.GetHomePath + PathDelim;
-end;
-
-
-function FullGetTempPath : PathStr;
-begin
-    Result := System.IOUtils.tPath.GetTempPath;
-end;
-*)
 
 
 function SQLTypeDefString(ft : tFieldType; len : integer) : shortString;

@@ -90,6 +90,7 @@ function PickMapIndexLocation : boolean;
 
 procedure CheckDEMFileForMapLibrary(TheTable : Petmar_db.tMyData; Series : PathStr; var fName : PathStr);
 procedure VerifyMapLibraryFilesExist(theTable : Petmar_db.tMyData; Memo1 : tMemo = Nil);
+function BoundingBoxFromFileName(fName : PathStr; var bb : sfBoundBox) : boolean;
 
 {$IfDef IncludeCoastalDEMs}
    procedure DiluviumDEMIXtileReport;

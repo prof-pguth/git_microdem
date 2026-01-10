@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {                                        }
 {   include file for demstat             }
@@ -591,6 +591,8 @@ end;
 
 {$EndIf}
 
+
+
 procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
 var
    g2 : tThisBaseGraph;
@@ -623,7 +625,7 @@ var
                end;
             end;
             if HistFields.Count > 0 then begin
-               g2 := GISdb[theDB].CreateHistogramFromDatabase(true,HistFields,false,-2,2,0.05);
+               g2 := GISdb[theDB].CreateHistogramFromDatabase(true,HistFields,false);  //,false,-2,2,0.05);
                HistFields.Destroy;
                g2.GraphDraw.VertLabel := 'Fraction';
                g2.GraphDraw.HorizLabel := TheTitle + '  ' + RemoveUnderscores(GISdb[thedb].dbName) + ' (n=' + IntToStr(GISdb[theDB].MyData.FiltRecsInDB) + ')';

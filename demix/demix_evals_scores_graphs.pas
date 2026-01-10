@@ -240,8 +240,8 @@ type
      UseDEMs : tStringList;
   end;
 
-var
-  eval_scores_graph_form : Teval_scores_graph_form;
+//var
+  //eval_scores_graph_form : Teval_scores_graph_form;
 
 
 procedure StartDEMIXgraphs(DB : integer);
@@ -266,6 +266,7 @@ uses
    DEMIX_graphs,
    DEMIX_control,
    DEMIX_definitions;
+
 
 procedure GetGraphHorizontalLimits(db : integer; Criterion : shortstring; theDEMs : tStringList; var MinHoriz,MaxHoriz : float64; var CriteriaNameAdd : shortstring);
 var
@@ -300,9 +301,7 @@ begin
 end;
 
 
-
-
-procedure StartDEMIXgraphs(DB : integer);
+ procedure StartDEMIXgraphs(DB : integer);
 var
   eval_scores_graph_form : Teval_scores_graph_form;
   i : integer;
@@ -352,12 +351,14 @@ begin
       Memo3.Clear;
       theDEMs := GetListOfTestDEMsinUse;
       for I := 0 to pred(theDEMs.Count) do begin
-         Memo3.Lines.Add(theDEMs.Strings[i]);
-         Combobox4.Items.Add(theDEMs.Strings[i]);
-         Combobox5.Items.Add(theDEMs.Strings[i]);
+         if GISdb[db].MyData.FieldExists(theDEMs.Strings[i]) then begin
+            Memo3.Lines.Add(theDEMs.Strings[i]);
+            Combobox4.Items.Add(theDEMs.Strings[i]);
+            Combobox5.Items.Add(theDEMs.Strings[i]);
+         end;
       end;
-      Combobox4.Text := theDEMs.Strings[0];
-      Combobox5.Text := theDEMs.Strings[1];
+      Combobox4.Text := Combobox4.Items[0];
+      Combobox5.Text := Combobox5.Items[1];
       theDEMs.Destroy;
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Teval_scores_graph_form.LoadDEMsInMem, show user DEMs=' + IntToStr(Memo3.Lines.Count)); {$EndIf}
    end;
@@ -586,57 +587,65 @@ var
    Panels : tStringList;
    BigBitmap,Bitmap,Legend : tMyBitmap;
    StartY : integer;
+   ListName : PathStr;
 begin {Teval_scores_graph_form.BitBtn13Click}
     {$IfDef RecordDEMIX} WriteLineToDebugFile('Teval_scores_graph_form.BitBtn13Click in'); {$EndIf}
-    BaseFilter := GISdb[db].MyData.Filter;
-    Self.Visible := false;
-    GetDEMIXpaths(True);
-    TheDEMs := AssembleDEMList;
-    Criteria := MakeCriteriaList;
+    ListName := DEMIXSettingsDir + 'DEMs_2.txt';
+    if FileExists(ListName) then begin
 
-    GISdb[DB].EmpSource.Enabled := false;
+        BaseFilter := GISdb[db].MyData.Filter;
+        Self.Visible := false;
+        GetDEMIXpaths(True);
+        TheDEMs := AssembleDEMList;
+        Criteria := MakeCriteriaList;
 
-    ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
+        GISdb[DB].EmpSource.Enabled := false;
 
-    DEMs2 := tStringList.Create;
-    DEMs2.LoadFromFile(DEMIXSettingsDir + 'DEMs_2.txt');
+        ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
 
-    GraphList := tStringList.Create;
-    Findings := tStringList.Create;
-    Panels := tStringList.Create;
-    for i := 0 to pred(Filters1.Count) do begin
-       {$IfDef RecordDEMIX} WriteLineToDebugFile('Filter=' + Filters1[i]); {$EndIf}
-       wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Filters1.Count) + '  ' + Filters1[i] ,true);
-       j := 0;
-       gr[j] := OneGraph(Filters1.Strings[i],Labels1.Strings[i],TheDEMs,'All test DEMs');
-       inc(j);
-       gr[j] := OneGraph(Filters1.Strings[i],Labels1.Strings[i],DEMs2,'Unrestricted test DEMs');
-       inc(j);
-       fName := MergeGraphPanelsHorizontal(j,gr,false);
-       Panels.Add(fName);
+        DEMs2 := tStringList.Create;
+        DEMs2.LoadFromFile(ListName);
+
+        GraphList := tStringList.Create;
+        Findings := tStringList.Create;
+        Panels := tStringList.Create;
+        for i := 0 to pred(Filters1.Count) do begin
+           {$IfDef RecordDEMIX} WriteLineToDebugFile('Filter=' + Filters1[i]); {$EndIf}
+           wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Filters1.Count) + '  ' + Filters1[i] ,true);
+           j := 0;
+           gr[j] := OneGraph(Filters1.Strings[i],Labels1.Strings[i],TheDEMs,'All test DEMs');
+           inc(j);
+           gr[j] := OneGraph(Filters1.Strings[i],Labels1.Strings[i],DEMs2,'Unrestricted test DEMs');
+           inc(j);
+           fName := MergeGraphPanelsHorizontal(j,gr,false,'');
+           Panels.Add(fName);
+        end;
+
+         BigBitmap := LoadBitmapFromFile(Panels[0]);
+         for i := 1 to pred(Panels.Count) do begin
+            Bitmap := LoadBitmapFromFile(Panels[i]);
+            StartY := BigBitmap.Height + 15;
+            BigBitmap.Height := StartY + Bitmap.Height;
+            Bigbitmap.Canvas.Draw(0,StartY,Bitmap);
+            BitMap.Destroy;
+         end;
+         BigBitmap.Height := BigBitmap.Height + 15;
+         Legend := DEMIXtestDEMLegend(theDEMs);
+         Fname := NextFileNumber(MDtempDir,'Winner_','.png');
+         FinishBigBitMapWithLegend(BigBitmap,Legend,fName);
+        TheDEMs.Destroy;
+        Criteria.Destroy;
+        Filters1.Destroy;
+        DEMs2.Destroy;
+        Panels.Destroy;
+
+        EndDEMIXProcessing;
+        Self.Visible := true;
+        GISdb[db].ApplyGISFilter(BaseFilter);
+    end
+    else begin
+       MessageToContinue('Option requires ' + ListName);
     end;
-
-     BigBitmap := LoadBitmapFromFile(Panels[0]);
-     for i := 1 to pred(Panels.Count) do begin
-        Bitmap := LoadBitmapFromFile(Panels[i]);
-        StartY := BigBitmap.Height + 15;
-        BigBitmap.Height := StartY + Bitmap.Height;
-        Bigbitmap.Canvas.Draw(0,StartY,Bitmap);
-        BitMap.Destroy;
-     end;
-     BigBitmap.Height := BigBitmap.Height + 15;
-     Legend := DEMIXtestDEMLegend(theDEMs);
-     Fname := NextFileNumber(MDtempDir,'Winner_','.png');
-     FinishBigBitMapWithLegend(BigBitmap,Legend,fName);
-    TheDEMs.Destroy;
-    Criteria.Destroy;
-    Filters1.Destroy;
-    DEMs2.Destroy;
-    Panels.Destroy;
-
-    EndDEMIXProcessing;
-    Self.Visible := true;
-    GISdb[db].ApplyGISFilter(BaseFilter);
 end {Teval_scores_graph_form.BitBtn13Click};
 
 
@@ -729,7 +738,6 @@ procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
 begin
    try
       Self.Visible := false;
-      //MDDef.ShowPieN := true;
       PiesBestByTwoLandTypes(db,RadioGroup10.ItemIndex,MakeCriteriaList,AssembleDEMList,ComboBox2.Text,ComboBox3.Text,ComboBox4.Text,ComboBox5.Text);
    finally
       Self.Visible := true;
@@ -837,6 +845,7 @@ procedure Teval_scores_graph_form.BitBtn31Click(Sender: TObject);
 var
    DEMs,Criteria : tStringList;
    i,j,k,ref,rg,tg : integer;
+   r : float32;
    AreaName,Criterion,DEMIX_TILE : shortstring;
    fName,BaseDir : PathStr;
    OpenMaps : boolean;
@@ -917,7 +926,7 @@ begin
         wmDEM.SetPanelText(2,Criterion ,true);
         if (Criterion = 'ELEV') then begin
            inc(k);
-           gr[k] := GridScatterGram(DEMglb[ref].FullDEMGridLimits,ref,Tests[j]);
+           gr[k] := GridScatterGram(DEMglb[ref].FullDEMGridLimits,r,ref,Tests[j]);
            RedrawGraph(k);
         end
         else begin
@@ -926,7 +935,7 @@ begin
             tg := CreateSingleLSPGrid(OpenMaps,tests[j],Criterion);
             DEMglb[tg].AreaName := DEMs.Strings[j] + ' ' + Criterion;
             inc(k);
-            gr[k] := GridScatterGram(DEMglb[rg].FullDEMgridLimits,rg,Tg);
+            gr[k] := GridScatterGram(DEMglb[rg].FullDEMgridLimits,r,rg,Tg);
             RedrawGraph(k);
         end;
       end;
@@ -995,29 +1004,37 @@ begin
    TheFilters.Destroy;
 end;
 
+
 procedure Teval_scores_graph_form.BitBtn36Click(Sender: TObject);
 var
    DEMs2 : tStringList;
+   ListName : PathStr;
 begin
-   Self.Visible := false;
-   GetDEMIXpaths(True);
-   if CheckBox7.Checked then begin
-       GISdb[db].ApplyGISFilter('COUNTRY=' + QuotedStr('USA'));
-       WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'USA tiles');
-       GISdb[db].ApplyGISFilter('COUNTRY<>' + QuotedStr('USA'));
-       WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'Non-US tiles');
+   ListName := DEMIXSettingsDir + 'DEMs_2.txt';
+   if FileExists(ListName) then begin
+       Self.Visible := false;
+       GetDEMIXpaths(True);
+       if CheckBox7.Checked then begin
+           GISdb[db].ApplyGISFilter('COUNTRY=' + QuotedStr('USA'));
+           WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'USA tiles');
+           GISdb[db].ApplyGISFilter('COUNTRY<>' + QuotedStr('USA'));
+           WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'Non-US tiles');
+       end
+       else if CheckBox9.Checked then begin
+           WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'Unrestricted DEM license');
+           if CheckBox2.Checked then begin
+              DEMs2 := tStringList.Create;
+              DEMs2.LoadFromFile(ListName);
+              WinningPiesByCriteria(db, MakeCriteriaList,DEMs2,'Restricted DEM license');
+           end;
+       end
+       else WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'');
+       EndDEMIXProcessing;
+       Self.Visible := true;
    end
-   else if CheckBox9.Checked then begin
-       WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'Unrestricted DEM license');
-       if CheckBox2.Checked then begin
-          DEMs2 := tStringList.Create;
-          DEMs2.LoadFromFile(DEMIXSettingsDir + 'DEMs_2.txt');
-          WinningPiesByCriteria(db, MakeCriteriaList,DEMs2,'Restricted DEM license');
-       end;
-   end
-   else WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'');
-   EndDEMIXProcessing;
-   Self.Visible := true;
+   else begin
+      MessageToContinue('Option requires ' + ListName);
+   end;
 end;
 
 
@@ -1047,13 +1064,9 @@ begin
        BaseFilter := GISdb[db].MyData.Filter;
        theDEMs := AssembleDEMList;
        ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
-
        ImportLandParamFilters(MDDef.DEMIX_filter2_fName,Filters2,Labels2);
-
        theCriteria := MakeCriteriaList;
-
        if (NumFilter = 2) then begin
-
            for j := 0 to pred(theCriteria.Count) do begin
               GetGraphHorizontalLimits(db,theCriteria[j],theDEMs,MinHoriz,MaxHoriz,CriteriaNameAdd);
               for n := 0 to pred(Filters2.Count) do begin
@@ -1242,6 +1255,8 @@ end;
 
 
 procedure Teval_scores_graph_form.BitBtn44Click(Sender: TObject);
+begin
+(*
 var
    DEMs,Criteria,Results : tStringList;
    i,j,k,ref,rg,tg,filtered : integer;
@@ -1253,6 +1268,7 @@ var
 begin
    Self.Visible := false;
    GetDEMIXpaths(True);
+
    AreaName := 'state_line';
    DEMIX_TILE := 'UTM_11N_x63y395';
 
@@ -1285,7 +1301,6 @@ begin
       tests[DEMs.Count] := filtered;
       DEMs.Add('GEDTM_filt');
    end;
-
 
    Results := tStringList.Create;
    aLine := 'AREA,DEMIX_TILE,CRITERION';
@@ -1320,10 +1335,9 @@ begin
    fName := NextFileNumber(MDtempDir,'GEDTM_filtering','.dbf');
    PetDBUtils.StringList2CSVtoDB(Results,fName);
    CloseAllDEMs;
-
-
    EndDEMIXProcessing;
    Self.Visible := true;
+*)
 end;
 
 
@@ -1530,6 +1544,9 @@ end;
 
 
 procedure Teval_scores_graph_form.FormCreate(Sender: TObject);
+var
+   DEMIXfilters : tStringList;
+   i : integer;
 begin
    CheckBox1.Checked := MDDef.DEMIX_combined_graph;
    CheckBox2.Checked := MDDef.PanelsByTestDEM;
@@ -1538,7 +1555,6 @@ begin
    CheckBox5.Checked := MDDef.FUVExpandScales;
    CheckBox6.Checked := MDdef.DEMIX_UseMedian;
 
-   //CheckBox14.Checked := MDdef.DEMIX_std_filters;
    CheckBox8.Checked := MDdef.DEMIX_slope_filters;
    CheckBox10.Checked := MDdef.DEMIX_ruff_filters;
    CheckBox11.Checked := MDdef.DEMIX_barren_filters;
@@ -1563,9 +1579,29 @@ begin
    RadioGroup7.ItemIndex := MDDef.DEMIX_groupWonLost;
    RadioGroup12.ItemIndex := pred(MDdef.DEMIX_Line_Width);
 
-   MDDef.DEMIX_filter1_fName := DEMIXsettingsDir + ComboBox6.Text + '.dbf';
-   MDDef.DEMIX_filter2_fName := DEMIXsettingsDir + ComboBox7.Text + '.dbf';
 
+   DEMIXfilters := tStringList.Create;
+   FindMatchingFiles(DEMIXsettingsDir,'filters_*.dbf',DEMIXFilters);
+   if (DEMIXfilters.Count > 0) then begin
+       for i := 0 to pred(DEMIXfilters.Count) do begin
+          ComboBox6.Items.Add(ExtractFileNameNoExt(DEMIXfilters.strings[i]));
+          ComboBox7.Items.Add(ExtractFileNameNoExt(DEMIXfilters.strings[i]));
+       end;
+
+       if FileExists(MDDef.DEMIX_filter1_fName) then ComboBox6.Text := ExtractFileNameNoExt(MDDef.DEMIX_filter1_fName)
+       else begin
+          ComboBox6.Text := ComboBox6.Items[0];
+          MDDef.DEMIX_filter1_fName := DEMIXsettingsDir + ComboBox6.Text + '.dbf';
+       end;
+       if FileExists(MDDef.DEMIX_filter2_fName) then ComboBox7.Text := ExtractFileNameNoExt(MDDef.DEMIX_filter2_fName)
+       else begin
+          ComboBox7.Text := ComboBox7.Items[pred(DEMIXfilters.Count)];
+          MDDef.DEMIX_filter2_fName := DEMIXsettingsDir + ComboBox7.Text + '.dbf';
+       end;
+   end
+   else begin
+      MessageToContinue('filter files missing');
+   end;
 
    db_U10 := 0;
    db_u80 := 0;

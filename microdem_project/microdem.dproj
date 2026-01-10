@@ -168,12 +168,12 @@
         <VerInfo_MajorVer>2025</VerInfo_MajorVer>
         <VerInfo_Release>27</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.11.27.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.11.27.14;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>14</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <Debugger_RunParams>-NOAUTOOPEN</Debugger_RunParams>
     </PropertyGroup>

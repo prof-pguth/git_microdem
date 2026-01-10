@@ -570,7 +570,6 @@ begin
 end;
 
 
-
 procedure TDemHandForm.LASGeotoUTM1Click(Sender: TObject);
 begin
    {$IfDef ExPointClouds}
@@ -585,7 +584,6 @@ begin
       RestoreBackupDefaults;
    {$EndIf}
 end;
-
 
 
 
@@ -614,7 +612,7 @@ begin
       NumCopied := 0;
       StartProgressAbortOption('Copy');
       Files := Nil;
-      Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,6);
+      Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,10);
       for I := 0 to pred(Files.Count) do begin
         UpdateProgressBar(i/Files.Count);
         SourceName := Files.Strings[i];

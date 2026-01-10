@@ -323,10 +323,11 @@ end;
 procedure THyperspectralForm.BitBtn14Click(Sender: TObject);
 var
    Band1,Band2 : integer;
+   r : float32;
 begin
-   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].FullDEMGridLimits,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[GreenBandNum]);
-   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].FullDEMGridLimits,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
-   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[GreenBandNum]].FullDEMGridLimits,MultiGridArray[MultiGridUsed].Grids[GreenBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
+   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].FullDEMGridLimits,r,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[GreenBandNum]);
+   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[RedBandNum]].FullDEMGridLimits,r,MultiGridArray[MultiGridUsed].Grids[RedBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
+   GridScatterGram(DEMGlb[MultiGridArray[MultiGridUsed].Grids[GreenBandNum]].FullDEMGridLimits,r,MultiGridArray[MultiGridUsed].Grids[GreenBandNum],MultiGridArray[MultiGridUsed].Grids[BlueBandNum]);
 end;
 
 procedure THyperspectralForm.BitBtn15Click(Sender: TObject);

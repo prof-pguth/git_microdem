@@ -100,7 +100,11 @@ type
          procedure DoSetContextState(AState: TContextState); override;
          procedure DoSetStencilOp(const aFail, aZFail, aZPass: TStencilOp); override;
          procedure DoSetStencilFunc(const aFunc : TStencilfunc; aRef, aMask : Cardinal); override;
+         {$IfDef Ver370}
          procedure DoSetScissorRect(const aScissorRect : TRect); override;
+         {$Else}
+         procedure DoSetScissorRect(const aScissorRect : TRect); override;
+         {$EndIf}
 
 
          procedure DoDrawPrimitivesBatch(
@@ -130,8 +134,11 @@ type
          procedure DoSetShaderVariable(const aName : String; const aTexture : TTexture); override;
          procedure DoSetShaderVariable(const aName : String; const matrix : TMatrix3D); override;
 
+         {$IfDef Ver370}
+         {$Else}
          constructor CreateFromWindow(const aParent : TWindowHandle; const aWidth, aHeight : Integer;
                                       const aMultisample : TMultisample; const aDepthStencil : Boolean); override;
+         {$EndIf}
          constructor CreateFromTexture(const aTexture : TTexture; const aMultisample : TMultisample;
                                        const aDepthStencil : Boolean); override;
 
@@ -338,6 +345,9 @@ end;
 
 // CreateFromWindow
 //
+{$IfDef Ver370}
+{$Else}
+
 constructor TFMXUContext3D_DX11.CreateFromWindow(
    const aParent : TWindowHandle; const aWidth, aHeight : Integer;
    const aMultisample : TMultisample; const aDepthStencil : Boolean
@@ -347,6 +357,10 @@ begin
    vStates := TDX11DeviceStates.Create;
    inherited CreateBuffer;
 end;
+
+{$EndIf}
+
+
 
 // CreateFromTexture
 //

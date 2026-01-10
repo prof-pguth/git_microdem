@@ -95,8 +95,8 @@ type
     GroupBox7: TGroupBox;
     Label31: TLabel;
     Label32: TLabel;
-    Edit13: TEdit;
-    Edit14: TEdit;
+    //Edit13: TEdit;
+    //Edit14: TEdit;
     CheckBox88: TCheckBox;
     Label33: TLabel;
     Edit23: TEdit;
@@ -389,13 +389,6 @@ type
     CheckBox25: TCheckBox;
     CheckBox44: TCheckBox;
     CheckBox181: TCheckBox;
-    GroupBox19: TGroupBox;
-    Label12: TLabel;
-    Label27: TLabel;
-    Label35: TLabel;
-    Edit3: TEdit;
-    Edit16: TEdit;
-    Edit30: TEdit;
     CheckBox89: TCheckBox;
     Label41: TLabel;
     Edit36: TEdit;
@@ -861,8 +854,8 @@ begin
    StringGrid1.ColWidths[0] := 120;
 
    GroupBox7.Enabled := CheckBox88.Checked;
-   Edit13.Enabled := CheckBox88.Checked;
-   Edit14.Enabled := CheckBox88.Checked;
+   //Edit13.Enabled := CheckBox88.Checked;
+   //Edit14.Enabled := CheckBox88.Checked;
    {$IfDef ShowDirectories} WriteLineToDebugFile('TOptionsForm.LabelDirectories MDdef.MainMapData= ' + MainMapData); {$EndIf}
 end;
 
@@ -980,8 +973,8 @@ begin
 
    CheckBox28.Checked := MDDef.ShowPLSS;
 
-   Edit13.Text := MDDef.DefaultServerIP;
-   Edit14.Text := IntToStr(MDdef.DefaultServerPort);
+   //Edit13.Text := MDDef.DefaultServerIP;
+   //Edit14.Text := IntToStr(MDdef.DefaultServerPort);
    Edit15.Text := IntToStr(MDdef.MaxMapSize);
 
    {$IfDef ExFly}
@@ -1008,9 +1001,6 @@ begin
    Edit34.Text := IntToStr(MDDef.GeoJSONP_xydec);
    Edit35.Text := IntToStr(MDDef.GeoJSONP_zdec);
 
-   Edit3.Text := RealToString(MDdef.DEMIXSimpleTolerance,-12,-2);
-   Edit16.Text := RealToString(MDdef.DEMIXSlopeTolerance,-12,-2);
-   Edit30.Text := RealToString(MDdef.DEMIXRuffTolerance,-12,-2);
 
    Label47.Caption := SlopeMethodName(MDDef.CurveCompute);
    Label49.Caption := SlopeMethodName(MDDef.SlopeCompute);
@@ -1608,12 +1598,9 @@ begin
    CheckEditString(Edit11.Text,MDDef.JPEGQuality);
    //CheckEditString(Edit12.Text,MDDef.DEMIX_full);
 
-   MDDef.DefaultServerIP := Edit13.Text;
-   MDDef.DefaultServerPort := StrToInt(Edit14.Text);
+   //MDDef.DefaultServerIP := Edit13.Text;
+   //MDDef.DefaultServerPort := StrToInt(Edit14.Text);
 
-   CheckEditString(Edit3.Text,MDdef.DEMIXSimpleTolerance);
-   CheckEditString(Edit16.Text,MDdef.DEMIXSlopeTolerance);
-   CheckEditString(Edit30.Text,MDdef.DEMIXRuffTolerance);
    CheckEditString(Edit15.Text,MDdef.MaxMapSize);
    CheckEditString(Edit18.Text,MDDef.MapSizeToVerify);
    CheckEditString(Edit20.Text,MDDef.MemoryPointCloudMaxPts);

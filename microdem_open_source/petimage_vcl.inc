@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {     include file for pet_image.pas     }
 {________________________________________}
@@ -321,9 +321,19 @@ begin
 end;
 
 
-procedure AssignImageToClipBoard(Image1 : tImage);
+procedure AssignImageToClipBoard(Image1 : tImage; Margins : byte = 0);
+var
+   bmp,bigbmp : tMyBitmap;
 begin
-   Clipboard.Assign(Image1.Picture);
+   if Margins = 0  then Clipboard.Assign(Image1.Picture)
+   else begin
+      CopyImageToBitmap(Image1,bmp);
+      CreateBitmap(bigbmp,bmp.width + 2 *margins, bmp.height + 2 * margins);
+      BigBmp.Canvas.Draw(Margins,Margins,bmp);
+      Clipboard.Assign(Bigbmp);
+      bigbmp.Free;
+      bmp.Free;
+   end;
 end;
 
 

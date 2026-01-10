@@ -59,6 +59,7 @@ end;
 procedure Tcompare_geo_utm_geomorphometry.OpenDEMs;
 var
    fName : PathStr;
+   r : float32;
 begin
     fName := 'J:\aa_new_zealand\qgis_utm_reprojection_ref_1sec_point.tif';
     GeoDEM := OpenNewDEM(fName);
@@ -67,8 +68,8 @@ begin
     UTMDEM := OpenNewDEM(fName);
     UTMslope := CreateSlopeMap(UTMDEM);
 
-    GridScatterGram(DEMglb[GeoDEM].FullDEMGridLimits,GeoSlope,UTMSlope);
-    GridScatterGram(DEMglb[UTMDEM].FullDEMGridLimits,UTMSlope,GeoSlope);
+    GridScatterGram(DEMglb[GeoDEM].FullDEMGridLimits,r,GeoSlope,UTMSlope);
+    GridScatterGram(DEMglb[UTMDEM].FullDEMGridLimits,r,UTMSlope,GeoSlope);
 end;
 
 

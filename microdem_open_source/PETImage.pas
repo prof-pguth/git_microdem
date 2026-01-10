@@ -194,7 +194,7 @@ function ExtractPartOfImage(var Image1 : tImage; Left,Right,Top,Bottom : integer
       procedure PlotDipSymbol(Bitmap : tMyBitmap; x,y,VectorSize,Dip,Strike,DipDirect : integer; ThisIs : tStructureType; LabelValues : boolean; PenColor : tPlatformColor; PenWidth : integer );
 
       procedure AssignBitmapToClipBoard(bm1 : tMyBitmap);
-      procedure AssignImageToClipBoard(Image1 : tImage);
+      procedure AssignImageToClipBoard(Image1 : tImage; Margins : byte = 0);
       procedure LoadFileToClipboard(fName : PathStr);
 
       function RotateBitmap(OriginalBitmap : tMyBitmap; Angle : float64; AntiAliasing: Boolean; WhiteBackground : boolean = true) : tMyBitmap;
@@ -305,6 +305,8 @@ function WinGraphColors(i : integer) : tColor;
 procedure LoadWinGraphColors;
 procedure PickWinGraphColors;
 
+procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
+
 
 implementation
 
@@ -381,6 +383,33 @@ type
    {$I petimage_vcl.inc}
 {$EndIf}
 
+procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
+var
+   LegBMP : tMyBitmap;
+   x,y : integer;
+begin
+    if (Legend <> '') then begin
+        LegBMP := LoadBitmapFromFile(Legend);
+        if (LegBMP.Height < 75) then begin
+           BigBmp.Height := BigBmp.Height + LegBMP.Height + 5;
+           y := BigBmp.Height - LegBMP.Height - 4;
+           x := (BigBmp.Width - LegBMP.Width) div 2;
+        end;
+        BigBmp.Canvas.Draw(X,y,LegBmp);
+        LegBMP.Free;
+    end;
+        if (LRText <> '') then begin
+           LRText := RemoveUnderscores(LRText);
+           BigBmp.Canvas.Font.Style := [fsBold];
+           BigBmp.Canvas.Font.Size := 24;
+           while (BigBmp.Canvas.TextWidth(LRText) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
+           x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(LRText);
+           y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(LRText);
+           BigBmp.Canvas.TextOut(x,y,LRText);
+        end;
+
+end;
+
 
 function WinGraphColors(i : integer) : tColor; inline;
 begin
@@ -391,7 +420,6 @@ end;
 procedure PickWinGraphColors;
 var
    db : tMyData;
-   //i : integer;
    dname : PathStr;
    Palettes : tStringList;
 begin
@@ -489,7 +517,7 @@ end;
           ScreenBitmap.Width := Screen.Width;
           ScreenBitmap.Height := Screen.Height;
           BitBlt(ScreenBitmap.Canvas.Handle, 0, 0,Screen.Width, Screen.Height, ScreenDC, 0, 0, SRCCOPY);
-          if fName = '' then Clipboard.Assign(ScreenBitmap)
+          if (fName = '') then Clipboard.Assign(ScreenBitmap)
           else ScreenBitmap.SaveToFile(fName);
         finally
           ScreenBitmap.Free

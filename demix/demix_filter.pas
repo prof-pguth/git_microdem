@@ -66,7 +66,7 @@ type
     ComboBox1: TComboBox;
     BitBtn7: TBitBtn;
     BitBtn8: TBitBtn;
-    BitBtn9: TBitBtn;
+    //BitBtn9: TBitBtn;
     BitBtn10: TBitBtn;
     BitBtn11: TBitBtn;
     BitBtn12: TBitBtn;
@@ -87,14 +87,6 @@ type
     BitBtn26: TBitBtn;
     BitBtn27: TBitBtn;
     BitBtn28: TBitBtn;
-    GroupBox7: TGroupBox;
-    Label6: TLabel;
-    Label5: TLabel;
-    Label4: TLabel;
-    Edit5: TEdit;
-    Edit4: TEdit;
-    Edit3: TEdit;
-    BitBtn29: TBitBtn;
     BitBtn32: TBitBtn;
     BitBtn34: TBitBtn;
     CheckBox4: TCheckBox;
@@ -157,13 +149,11 @@ type
     procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
     procedure BitBtn8Click(Sender: TObject);
-    procedure BitBtn9Click(Sender: TObject);
+    //procedure BitBtn9Click(Sender: TObject);
     procedure BitBtn10Click(Sender: TObject);
     procedure BitBtn11Click(Sender: TObject);
     procedure BitBtn12Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
-    //procedure BitBtn14Click(Sender: TObject);
-    procedure Edit3Change(Sender: TObject);
     procedure BitBtn15Click(Sender: TObject);
     procedure BitBtn16Click(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
@@ -175,8 +165,6 @@ type
     procedure BitBtn22Click(Sender: TObject);
     procedure BitBtn23Click(Sender: TObject);
     procedure BitBtn24Click(Sender: TObject);
-    procedure Edit4Change(Sender: TObject);
-    procedure Edit5Change(Sender: TObject);
     //procedure BitBtn25Click(Sender: TObject);
     procedure BitBtn26Click(Sender: TObject);
     procedure CheckBox2Click(Sender: TObject);
@@ -385,7 +373,7 @@ var
       end;
 
 
-   begin
+   begin {procedure GetRefDEMDifferenceMap}
       if ValidDEM(aTestDEM) then begin
          {$IfDef TrackOpenHandles} WriteOpenHandlestoDebugLog('GetRefDEMDifferenceMap in'); {$EndIf}
          for I := 1 to MaxDEMIXDEM do begin
@@ -404,12 +392,12 @@ var
          end;
          {$IfDef TrackOpenHandles} WriteOpenHandlestoDebugLog('GetRefDEMDifferenceMap out'); {$EndIf}
       end;
-   end;
+   end {procedure GetRefDEMDifferenceMap};
 
 var
    theRefDEMs : tDEMIXindexes;
    RefPointOrArea,SeriesName,AreaName : shortstring;
-begin
+begin {procedure TDemixFilterForm.MakeDifferenceMaps}
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('TDemixFilterForm.MakeDifferenceMaps in, type=' + IntToStr(WhatType)); {$EndIf}
    AreaName := ComboBox4.Text;
    LoadDEMsForCurrentArea(AreaName,true,true);  //needs hillshade maps for background on difference maps
@@ -444,7 +432,7 @@ begin
    MakeBigDiffferenceMapImage(Param);
    RestoreBackupDefaults;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn7Click out, DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  Maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-end;
+end {procedure TDemixFilterForm.MakeDifferenceMaps};
 
 
 procedure TDemixFilterForm.RadioGroup2Click(Sender: TObject);
@@ -542,9 +530,6 @@ end;
 
 procedure TDemixFilterForm.BitBtn29Click(Sender: TObject);
 begin
-   MDDef.TopCutLevel := 0.5;
-   MDDef.DEMIXSlopeTolerance := 0.5;
-   MDDef.DEMIXRuffTolerance := 0.2;
    FormCreate(nil);
 end;
 
@@ -603,9 +588,9 @@ var
    i,ng,ThisRefDEM : integer;
    GridLimits: tGridLimits;
    bb : sfBoundBox;
+   r : float32;
    fName : PathStr;
    Bitmap : tMyBitmap;
-   //Maps,
    AllGraphs : tStringList;
    Graphs : array[1..12] of tThisBaseGraph;
 begin
@@ -685,7 +670,7 @@ begin
             if ValidDEM(ThisRefDEM) then begin
                GridLimits := DEMGlb[i].sfBoundBox2tGridLimits(bb);
                inc(ng);
-               Graphs[ng] := DEMstat.GridScatterGram(GridLimits,i,ThisRefDEM);
+               Graphs[ng] := DEMstat.GridScatterGram(GridLimits,r,i,ThisRefDEM);
 
                CopyImageToBitmap(Graphs[ng].Image1,Bitmap);
                fName := NextFileNumber(MDtempDir,'scattergram_','.bmp');
@@ -802,18 +787,6 @@ begin
    BitBtn34.Enabled := true;
 end;
 
-procedure TDemixFilterForm.BitBtn9Click(Sender: TObject);
-var
-   i : integer;
-begin
-   CheckEditString(Edit3.Text,MDDef.TopCutLevel);
-   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
-   for i := 1 to 6 do begin
-      if ValidDEM(DiffDSMDEMs[i]) then DEMGlb[DiffDSMDEMs[i]].SelectionMap.DoCompleteMapRedraw;
-      if ValidDEM(DiffDTMDEMs[i]) then DEMGlb[DiffDTMDEMs[i]].SelectionMap.DoCompleteMapRedraw;
-   end;
-   MakeBigDiffferenceMapImage('Elev');
-end;
 
 procedure TDemixFilterForm.CheckBox10Click(Sender: TObject);
 begin
@@ -905,32 +878,12 @@ begin
    CheckEditString(Edit2.Text,MDDef.DEMIX_ysize);
 end;
 
-procedure TDemixFilterForm.Edit3Change(Sender: TObject);
-begin
-   CheckEditString(Edit3.Text,MDDef.TopCutLevel);
-   MDDef.BottomCutLevel := -MDDef.TopCutLevel;
-   MDDef.DEMIXSimpleTolerance := MDDef.TopCutLevel;
-end;
-
-procedure TDemixFilterForm.Edit4Change(Sender: TObject);
-begin
-   CheckEditString(Edit4.Text,MDDef.DEMIXSlopeTolerance);
-end;
-
-procedure TDemixFilterForm.Edit5Change(Sender: TObject);
-begin
-   CheckEditString(Edit5.Text,MDDef.DEMIXRuffTolerance);
-end;
-
 procedure TDemixFilterForm.FormCreate(Sender: TObject);
 var
    i : integer;
 begin
    Edit1.Text := IntToStr(MDDef.DEMIX_xsize);
    Edit2.Text := IntToStr(MDDef.DEMIX_ysize);
-   Edit3.Text := RealToString(MDDef.TopCutLevel,-8,-2);
-   Edit4.Text := RealToString(MDDef.DEMIXSlopeTolerance,-8,-2);
-   Edit5.Text := RealToString(MDDef.DEMIXRuffTolerance,-8,-2);
 
    {$IfDef IncludeOldDEMIXgraphics}
       CheckBox2.Checked := MDDef.MakeCOP_ALOS_diffMaps;
@@ -1328,6 +1281,7 @@ procedure TDemixFilterForm.LoadOneSecRefCheckBoxClick(Sender: TObject);
 begin
    MDDef.LoadRefDEMs := LoadOneSecRefCheckBox.Checked;
 end;
+
 
 initialization
 finalization

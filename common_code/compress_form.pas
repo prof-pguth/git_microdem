@@ -108,7 +108,6 @@ uses
    Make_Tables,
    MD_Use_Tools;
 
-
 const
    AFC = 'All files completed';
 
@@ -119,7 +118,7 @@ var
 begin
    Ext := UpperCase(ExtractFileExt(fName));
    Result := (Ext = '.TGZ') or (Ext = '.ZIP') or (Ext = '.TAR') or (Ext = '.GZ') or (Ext = '.LAZ');
-   if Result then  StartCompression('Decompress before opening: ' + fName);
+   if Result then StartCompression('Decompress before opening: ' + fName);
 end;
 
 procedure StartCompression(aMessage : shortstring = '');
