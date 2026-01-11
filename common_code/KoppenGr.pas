@@ -4,7 +4,7 @@ unit Koppengr;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -163,12 +163,13 @@ begin
    Result := '';
    if not ValidDB(KoppenGridDB) then OpenKoppenGridDB(Nil,False);
    if ValidDB(KoppenGridDB) then begin
+
       GisDB[KoppenGridDB].MyData.first;
       MinDist := 99999;
       while not GisDB[KoppenGridDB].MyData.eof do begin
           if GisDB[KoppenGridDB].GetLatLongToRepresentRecord(Lat1,Long1) then begin
              Dist := sqr(Lat-Lat1) + sqr(Long-Long1);
-             if Dist < MinDist then begin
+             if (Dist < MinDist) then begin
                 MinDist := Dist;
                 Result := GisDB[KoppenGridDB].MyData.GetFieldByNameAsString('CLASS');
                 if (MinDist < 0.5) then exit;

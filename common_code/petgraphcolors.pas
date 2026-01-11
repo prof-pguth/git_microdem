@@ -4,7 +4,7 @@ unit petgraphcolors;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -60,7 +60,6 @@ type
     procedure CheckBox2Click(Sender: TObject);
   private
     { Private declarations }
-    //procedure ShowSymbols;
     procedure ColorBitButton(Btn : tBitBtn; SymNum : integer);
     procedure GetSymbolization(Btn : tBitBtn; SymNum : integer);
   public
@@ -71,7 +70,6 @@ type
 
 
 procedure SetGraphColors(inTheGraph : tThisBaseGraph);
-//procedure DefaultGraphColors(var Symbol : tSymbols256; var FileColors : tPlatformColors256; var LineSize :  tBytes256);
 
 
 implementation
@@ -98,13 +96,6 @@ begin
    PetImage.GetImagePartOfBitmap(Bitmap);
    Btn.Glyph := Bitmap;
    FreeAndNil(Bitmap);
-   (*
-   if (TheGraph.GraphDraw.LegendList <> Nil) then begin
-      if (TheGraph.GraphDraw.LegendList.Count >= SymNum) then Btn.Caption := TheGraph.GraphDraw.LegendList.Strings[pred(SymNum)]
-      else Btn.Visible := false;
-   end
-   else Btn.Caption := '';
-   *)
 end;
 
 
