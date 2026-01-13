@@ -22,7 +22,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -36,8 +36,6 @@ interface
 {$I nevadia_defines.inc}
 
 uses
-//units for integration with MICRODEM
-  DEMMapF,Petmar_types, Petmar,Petmar_db,
 //needed for inline of the core DB functions
    Data.DB,
    {$IfDef UseFireDacSQLlite}
@@ -57,7 +55,9 @@ uses
   Buttons, StdCtrls, ExtCtrls, ComCtrls, ActnList, StdActns,
   System.Math,System.Actions,
   CCR.Exif.Demos,
-  JpegDumpOutputFrame;
+  JpegDumpOutputFrame,
+//units for integration with MICRODEM
+  DEMMapF,Petmar_types, Petmar,Petmar_db;
 
 type
   TNewfrmJpegDump = class(TForm)

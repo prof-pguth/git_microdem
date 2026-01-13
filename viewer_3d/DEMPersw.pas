@@ -5,7 +5,7 @@ unit dempersw;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -683,7 +683,7 @@ var
                ViewAzimuth := FlightAzimuth + ViewHeadingRelative;
                ViewAzimuth := CompassAngleInRangeFloat32(ViewAzimuth);
 
-               Az2 := FlightAzimuth - ViewHeadingRelative + DEMGlb[DEMonView].SelectionMap.MapDraw.GridTrueAngle;
+               Az2 := FlightAzimuth - ViewHeadingRelative + DEMGlb[DEMonView].SelectionMap.MapDraw.MapGridTrueAngle;
                Az2 := CompassAngleInRangeFloat32(Az2);
                Az3 := CompassAngleInRangeFloat32(Az2 + DEMGlb[DEMonView].SelectionMap.MapDraw.MapMagDec);
                FlightControlForm.Label2.Caption := RealToString(Az2,8,1) + '° True    ' + RealToString(Az3,8,1) + '° Mag';
