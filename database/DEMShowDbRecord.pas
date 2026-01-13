@@ -4,7 +4,7 @@ unit demshowdbrecord;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -171,7 +171,7 @@ var
 
 
 procedure DisplaySingleDataBaseRecord(TheDB : integer; CanEdit : boolean;  Title : shortString; j : integer; ShowItModal : boolean = true;
-    DelayTime : integer = -999; RecordInterval : integer = 1; inLabelField : ShortString = ''); //overload;
+    DelayTime : integer = -999; RecordInterval : integer = 1; inLabelField : ShortString = '');
 
 
 implementation
@@ -224,7 +224,7 @@ var
       begin
          with GISdb[theDB],MyData do begin
             WWWBtn1.Visible := (DBTableF <> Nil) and GISdb[DBTableF.DBonTable].WWWpresent and (WWWFieldName <> '') and (GetFieldByNameAsString(WWWFieldName) <> '');
-            if WWWFieldName = 'HYPERLINK'  then WWWBtn1.Caption := 'LINK'
+            if (WWWFieldName = 'HYPERLINK')  then WWWBtn1.Caption := 'LINK'
             else WWWBtn1.Caption := Copy(WWWFieldName,5,Length(WWWFieldName)-4);
          end;
       end;

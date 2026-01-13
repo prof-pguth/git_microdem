@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {     include file for demix_definitiions}
 {________________________________________}
@@ -101,7 +101,6 @@ procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFilteri
 //makes 7 graphs, one per tile characteristic, for all of the clusters
 //if no filtering, does for all the tiles in the DB
 var
-   //StringsToUse,
    GraphImages : tStringList;
    FieldWanted,BaseFilter : shortstring;
 
@@ -113,18 +112,17 @@ var
          fName : PathStr;
          aFilter : shortstring;
 
-         procedure DoOneCluster(aFilter : shortstring; ClusterName : shortstring);
-         begin
-            GISdb[DBonTable].ApplyGISFilter(aFilter);
-            GISdb[DBonTable].EmpSource.Enabled := false;
-            if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-               MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
-               Stats.Add(ClusterName + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
-            end;
-         end;
+             procedure DoOneCluster(aFilter : shortstring; ClusterName : shortstring);
+             begin
+                GISdb[DBonTable].ApplyGISFilter(aFilter);
+                GISdb[DBonTable].EmpSource.Enabled := false;
+                if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+                   MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
+                   Stats.Add(ClusterName + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
+                end;
+             end;
 
-
-      begin
+      begin {function OneGraph}
          if GISdb[DBonTable].MyData.FieldExists(Param) then begin
             BaseFilter := GISdb[DBonTable].MyData.Filter;
             Stats := tStringList.Create;
@@ -148,7 +146,7 @@ var
             GISdb[DBonTable].ApplyGISFilter(BaseFilter);
          end
          else Result := Nil;
-      end;
+      end {function OneGraph};
 
 var
    Graph : array[1..9] of tThisBaseGraph;
@@ -157,7 +155,7 @@ var
    fName : PathStr;
    GraphPanelsWide,GraphPanelsHigh : integer;
    BigBitmap,LegBMP : tMyBitmap;
-begin
+begin {procedure TileCharateristicsWhiskerPlotsByCluster}
    OverallBaseFilter := GISdb[DBonTable].MyData.Filter;
    if (not NoFilteringToGetAllTiles) then begin
       if GISdb[DBonTable].MyData.FieldExists('CLUSTER') then FieldWanted := 'CLUSTER'
@@ -184,7 +182,7 @@ begin
    fName := NextFileNumber(MDtempdir,'cluster_characteristics_','.png');
    FinishBigBitMapWithLegend(BigBitmap,LegBMP,fName);
    GISdb[DBonTable].ApplyGISFilter(OverallBaseFilter);
-end;
+end {procedure TileCharateristicsWhiskerPlotsByCluster};
 
 
 procedure DEMIX_clusters_per_tile(DBonTable : integer);

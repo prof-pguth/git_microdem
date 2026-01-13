@@ -2,7 +2,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {----------------------------------------}
 {                                        }
 {   include file for demdatabase         }
@@ -119,7 +119,7 @@ var
 begin
    {$IfDef RecordAddField} WriteLineToDebugFile('TGISdataBaseModule.AddFieldGroupToTable enter'); {$EndIf}
     if (MyData <> Nil) then begin
-       if FileExists(TableDefinitionsFileName) then begin
+       if System.SysUtils.FileExists(TableDefinitionsFileName) then begin
           Table := tMyData.Create(TableDefinitionsFileName);
           Table.ApplyFilter('TABLE_TYPE=' + QuotedStr(What));
           EmpSource.Enabled := false;
@@ -448,13 +448,12 @@ end;
             dbOpts.IconField := New;
             IconPresent := true;
             if Fill then begin
-
-            fName := MainMapData + 'Icons\';
-            if GetGraphicsFileName('',fName) then begin
-               {$IfDef RecordIcons} WriteLineToDebugFile('TGISdataBaseModule.AddIcon icon found'); {$EndIf}
-               fName := ExtractFileName(fName);
-               FillFieldWithValue(New,fName);
-            end;
+                fName := MainMapData + 'Icons\';
+                if GetGraphicsFileName('',fName) then begin
+                   {$IfDef RecordIcons} WriteLineToDebugFile('TGISdataBaseModule.AddIcon icon found'); {$EndIf}
+                   fName := ExtractFileName(fName);
+                   FillFieldWithValue(New,fName);
+                end;
             end;
             {$IfDef RecordIcons} WriteLineToDebugFile('TGISdataBaseModule.AddIcon out'); {$EndIf}
          end;
