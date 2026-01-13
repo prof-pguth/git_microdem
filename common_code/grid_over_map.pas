@@ -4,7 +4,7 @@ unit grid_over_map;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -625,7 +625,7 @@ begin
             Rough := GISdb[AtlasDataTable].MyData.GetFieldByNameAsFloat(RoughField);
             GISdb[AtlasDataTable].ValidLatLongFromTable(Lat,Long);
             BaseMap.MapDraw.LatLongDegreeToScreen(Lat,Long,xg,yg);
-            Petmar.ScreenSymbol(bmp.Canvas,xg,yg,FilledBox,GISdb[AtlasDataTable].dbOpts.Symbol.Size,IwashuriPikeColor(Slope,Convex,Rough,Cat));
+            Petmar.ScreenSymbol(bmp.Canvas,xg,yg,FilledBox,GISdb[AtlasDataTable].dbOpts.Symbol.Size,IwahashiiPikeColor(Slope,Convex,Rough,Cat));
             inc(Hist[Cat]);
             GISdb[AtlasDataTable].MyData.Next;
          until GISdb[AtlasDataTable].MyData.EOF;
