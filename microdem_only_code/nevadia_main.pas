@@ -650,6 +650,7 @@ type
     CleanupFrenchlistof1x1kmfiles1: TMenuItem;
     estareaboundingboxes1: TMenuItem;
     Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem;
+    extreplaceinallfilesindirectory1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1063,6 +1064,7 @@ type
     procedure estareaboundingboxes1Click(Sender: TObject);
     procedure Deletemergeddirectorieswithsmallnumberoffiles1Click(
       Sender: TObject);
+    procedure extreplaceinallfilesindirectory1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -3742,6 +3744,52 @@ begin
    end;
 end;
 
+
+procedure Twmdem.extreplaceinallfilesindirectory1Click(Sender: TObject);
+var
+   BaseDir : PathStr;
+   LookFor,ReplaceWith : shortstring;
+
+   procedure LookForOneFileExtension(Ext : ExtStr);
+   var
+      TheFiles,FileContent : tStringList;
+      i,j : integer;
+      fName : PathStr;
+      aLine : ANSIstring;
+      aChange : boolean;
+   begin
+      TheFiles := Nil;
+      Petmar.FindMatchingFiles(BaseDir,Ext,TheFiles,5);
+      for I := 0 to pred(TheFiles.Count) do begin
+         fName := TheFiles.Strings[i];
+         aChange := false;
+         FileContent := tStringList.Create;
+         FileContent.LoadFromFile(fName);
+         for j := 0 to pred(FileContent.Count) do begin
+             aLine := FileContent.Strings[j];
+             if StrUtils.AnsiContainsText(aLine,LookFor) then begin
+                aLine := StringReplace(aLine,LookFor,ReplaceWith,[rfReplaceAll, rfIgnoreCase]);
+                FileContent.Strings[j] := aLine;
+                aChange := true;
+             end;
+         end;
+         if aChange then begin
+            FileContent.SaveToFile(fName);
+         end;
+         FileContent.Destroy;
+      end;
+      TheFiles.Destroy;
+   end;
+
+begin
+   if AnswerIsYes('Continue with all parameters hard coded for MICRODEM copyright in 2026')  then begin
+       BaseDir := 'C:\turbo\monster_microdem\';
+       LookFor := '(c) 1986-2026';
+       ReplaceWith := '(c) 1986-2026';
+       LookForOneFileExtension('*.inc');
+       LookForOneFileExtension('*.pas');
+   end;
+end;
 
 procedure Twmdem.CloseallDBs1Click(Sender: TObject);
 begin

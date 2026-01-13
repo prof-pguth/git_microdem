@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -3014,6 +3013,10 @@ object wmdem: Twmdem
       object Addversionnumbertoallfilesinapath1: TMenuItem
         Caption = 'Add suffix to all files in a path'
         OnClick = Addversionnumbertoallfilesinapath1Click
+      end
+      object extreplaceinallfilesindirectory1: TMenuItem
+        Caption = 'Text replace in all files in directory'
+        OnClick = extreplaceinallfilesindirectory1Click
       end
       object MergemultipleTXTCSVintoDB1: TMenuItem
         Caption = 'Merge multiple TXT/CSV into DB'

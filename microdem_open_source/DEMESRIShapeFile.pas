@@ -2284,7 +2284,7 @@ begin
    else begin
      {$IfDef TimeDBPlot} writeLineToDebugFile('Line/area DB    Pen color: ' + IntToStr(Bitmap.Canvas.Pen.Color) + '  Pen width ' + IntToStr(Bitmap.Canvas.Pen.Width) + '  Brush color ' + IntToStr(Bitmap.Canvas.Brush.Color)); {$EndIf}
       nDrawn := 0;
-      Track:= UpdateRate(NumRecs);
+      //Track:= UpdateRate(NumRecs);
       MoveToStartShapefile;
       try
          ShapefileRandomAccess := false;
@@ -2296,7 +2296,7 @@ begin
              else begin
                  {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
              end;
-             if ShowSatProgress and (i mod Track = 0) and (not ThreadsWorking) then begin
+             if ShowSatProgress and {(i mod Track = 0) and} (not ThreadsWorking) then begin
                 {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
                 if WantOut then Break;
              end;
@@ -2311,7 +2311,6 @@ begin
    {$IfDef VCL} if ShowSatProgress and (not ThreadsWorking) then EndProgress; {$EndIf}
    {$If Defined(TimeShapefile) or Defined(TimeDBPlot)}  WriteLineToDebugFile('PlotAllRecords, n=' + IntToStr(nDrawn) + '  took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
 end;
-
 
 
 function tShapeFile.LineLength;

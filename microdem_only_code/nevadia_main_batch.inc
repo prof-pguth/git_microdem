@@ -158,6 +158,7 @@ begin
    end;
 end;
 
+
 procedure TileCharacterization;
 //hard coded for the three versions of the DEMIX DB
 const
@@ -208,7 +209,6 @@ var
    begin
        fName := Param1 + '_' + Param2;
        NewGrid := DEMglb[Grid1].CloneAndOpenGridSetMissing(ByteDEM, fName, euIntCode);
-
        for x := 0 to pred(DEMglb[Grid1].DEMheader.NumCol) do begin
           for y := 0 to pred(DEMglb[Grid1].DEMheader.NumRow) do begin
              if DEMglb[Grid1].GetElevMetersOnGrid(x,y,z1) then begin
@@ -223,11 +223,13 @@ var
        DEMglb[NewGrid].CheckMaxMinElev;
        fName := MDtempDir + fName + '.tif';
        DEMglb[NewGrid].SaveAsGeotiff(fName);
+       (*
        for x := 1 to Labels1.Count do begin
           for y := 1 to Labels2.Count do begin
              //Labels1[x] + ' and ' + Labels2[y];
           end;
        end;
+       *)
    end;
 
 var
@@ -238,7 +240,6 @@ var
    bmp : tMyBitmap;
    Findings,Colors,LegendEntries : tStringList;
 begin {procedure TileCharacterization;}
-
    ImportLandParamFiltersLong('C:\microdem\demix_settings\filters_avg_slope_3_cat.dbf',Filters1,Labels1,Lowers1,Uppers1);
 
    fName := 'J:\wine_contest\wine_contest_database\demix_database_diff_distrib_v2.dbf';
