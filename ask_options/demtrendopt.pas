@@ -630,7 +630,7 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
          PadAxis(ThisGraph.GraphDraw.MinVertAxis,ThisGraph.GraphDraw.MaxVertAxis);
          PadAxis(ThisGraph.GraphDraw.MinHorizAxis,ThisGraph.GraphDraw.MaxHorizAxis);
          ThisGraph.SetUpGraphForm;
-         ThisGraph.OpenPointSymbolFile(rfile,'trend',ThisGraph.Symbol);
+         ThisGraph.OpenPointSymbolFile(rfile,'trend',ThisGraph.MainSymbol);
 
          for Col := 0 to pred(DEMGlb[CurDEM].DEMheader.NumCol) do begin
             if (Col mod 25 = 0) then UpdateProgressBar(Col/DEMGlb[CurDEM].DEMheader.NumCol);
