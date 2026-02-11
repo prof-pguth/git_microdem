@@ -107,7 +107,7 @@ var
          //k,Decs : integer;
          //SlopeAspectRec : tSlopeAspectRec;
          aLine : shortstring;
-         PlanC,ProfC,TangC : float64;
+         PlanC,ProfC,TangC : float32;
       begin
          if ComputeLSQCurvature(DEM,eucurv_plan,xp,yp,PlanC) and ComputeLSQCurvature(DEM,eucurv_tang,xp,yp,TangC) and
             ComputeLSQCurvature(DEM,eucurv_tang,xp,yp,ProfC) then begin

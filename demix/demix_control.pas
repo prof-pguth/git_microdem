@@ -553,7 +553,7 @@ begin
          BestI := i;
       end;
    end;
-   Result := DEMs.strings[BestI];
+   Result := UpperCase(DEMs.strings[BestI]);
    for I := 0 to pred(DEMs.Count) do begin
       if (i <> BestI) and (Evals[i] <= Best + Tolerance) then begin
          Result := Result + '-' + DEMs.strings[I];
@@ -1527,7 +1527,7 @@ end;
 function DEMIX_GetListOfAreas : tStringList;
 var
   i : integer;
-  AreaDir,TileDir : PathStr;
+  //AreaDir,TileDir : PathStr;
 begin
    Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    if (Result.Count = 0) then begin
@@ -1536,8 +1536,6 @@ begin
    end;
    for i := pred(Result.Count) downto 0 do begin
       if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm') or (Result.Strings[i] = 'merges') then Result.Delete(i);
-      //for now Canadian data is not supported
-      //if (UpperCase(Copy(Result.Strings[i],1,3)) = 'CA_') then Result.Delete(i);
    end;
    Result.Sort;
 end;

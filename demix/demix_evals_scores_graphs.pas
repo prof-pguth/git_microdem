@@ -97,11 +97,6 @@ type
     BitBtn13: TBitBtn;
     CheckBox5: TCheckBox;
     CheckBox6: TCheckBox;
-    RadioGroup10: TRadioGroup;
-    ComboBox4: TComboBox;
-    ComboBox5: TComboBox;
-    Label9: TLabel;
-    Label10: TLabel;
     BitBtn31: TBitBtn;
     GroupBox6: TGroupBox;
     CheckBox9: TCheckBox;
@@ -146,6 +141,9 @@ type
     CheckBox4: TCheckBox;
     Edit7: TEdit;
     Label11: TLabel;
+    BitBtn45: TBitBtn;
+    BitBtn46: TBitBtn;
+    CheckBox14: TCheckBox;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -224,10 +222,12 @@ type
     procedure BitBtn44Click(Sender: TObject);
     procedure CheckBox4Click(Sender: TObject);
     procedure Edit7Change(Sender: TObject);
+    procedure BitBtn45Click(Sender: TObject);
+    procedure BitBtn46Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
-    function AssembleDEMlist : tStringList;
+    function MakeDEMlist : tStringList;
     function MakeCriteriaList(All : boolean = false) : tStringList;
     function GeomorphFiltersFromMixed1(var Labels : tStringList) : tStringList;
     function MakeCriteriaFilter(UseCriteria : tStringList) : ShortString;
@@ -325,6 +325,7 @@ begin
 
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('StartDEMIXgraphs after load, NumDEMIXtestDEM=' + IntToStr(NumDEMIXtestDEM)); {$EndIf}
    eval_scores_graph_form.LoadDEMsInMemo;
+   eval_scores_graph_form.CheckBox14.Checked := MDDef.DEMIX_IgnoreTies;
    eval_scores_graph_form.BitBtn9Click(nil);
 
    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('StartDEMIXgraphs after LoadDEMsInMemo, NumDEMIXtestDEM=' + IntToStr(NumDEMIXtestDEM)); {$EndIf}
@@ -353,12 +354,8 @@ begin
       for I := 0 to pred(theDEMs.Count) do begin
          if GISdb[db].MyData.FieldExists(theDEMs.Strings[i]) then begin
             Memo3.Lines.Add(theDEMs.Strings[i]);
-            Combobox4.Items.Add(theDEMs.Strings[i]);
-            Combobox5.Items.Add(theDEMs.Strings[i]);
          end;
       end;
-      Combobox4.Text := Combobox4.Items[0];
-      Combobox5.Text := Combobox5.Items[1];
       theDEMs.Destroy;
       {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Teval_scores_graph_form.LoadDEMsInMem, show user DEMs=' + IntToStr(Memo3.Lines.Count)); {$EndIf}
    end;
@@ -387,7 +384,7 @@ begin
 end;
 
 
-function Teval_scores_graph_form.AssembleDEMlist : tStringList;
+function Teval_scores_graph_form.MakeDEMlist : tStringList;
 var
    j : integer;
 begin
@@ -475,7 +472,7 @@ begin
    if TileCharacteristicsInDB(DB,true) then begin
       BitBtn4Click(Sender);   //If needed loads db_U10,db_U80,db_U120,db_Full))
       GeomorphFilters := GeomorphFiltersFromMixed1(Labels);
-      DEMList := AssembleDEMlist;
+      DEMList := MakeDEMlist;
       for i := 0 to pred(GeomorphFilters.Count) do begin
         {$IfDef RecordDEMIX} WriteLineToDebugFile('DEMs=' + IntToStr(DEMList.Count)); {$EndIf}
          for j := 0 to pred(DEMList.Count) do begin
@@ -596,7 +593,7 @@ begin {Teval_scores_graph_form.BitBtn13Click}
         BaseFilter := GISdb[db].MyData.Filter;
         Self.Visible := false;
         GetDEMIXpaths(True);
-        TheDEMs := AssembleDEMList;
+        TheDEMs := MakeDEMlist;
         Criteria := MakeCriteriaList;
 
         GISdb[DB].EmpSource.Enabled := false;
@@ -655,7 +652,7 @@ var
 begin
    Self.Visible := false;
    ImportLandParamFilters(MDDef.DEMIX_filter1_fName, Filters,Labels);
-   MainGraphOptions(DB,2,AssembleDEMList,MakeCriteriaList,Filters,Labels);
+   MainGraphOptions(DB,2,MakeDEMlist,MakeCriteriaList,Filters,Labels);
    Self.Visible := true;
 end;
 
@@ -665,7 +662,7 @@ var
 begin
    Self.Visible := false;
    ImportLandParamFilters(MDDef.DEMIX_filter1_fName, Filters,Labels);
-   MainGraphOptions(DB,1,AssembleDEMList,MakeCriteriaList,Filters,Labels);
+   MainGraphOptions(DB,1,MakeDEMlist,MakeCriteriaList,Filters,Labels);
    Self.Visible := true;
 end;
 
@@ -676,7 +673,7 @@ var
    i,NewDB : Integer;
 begin
    Self.Visible := false;
-   DEMs := AssembleDEMlist;
+   DEMs := MakeDEMlist;
    GeoFilters := GeomorphFiltersFromMixed1(Labels);
    for i := 0 to pred(DEMs.Count) do begin
       {$IfDef RecordDEMIX} WriteLineToDebugFile('Start sort: ' + DEMs.Strings[i]); {$EndIf}
@@ -738,7 +735,7 @@ procedure Teval_scores_graph_form.BitBtn1Click(Sender: TObject);
 begin
    try
       Self.Visible := false;
-      PiesBestByTwoLandTypes(db,RadioGroup10.ItemIndex,MakeCriteriaList,AssembleDEMList,ComboBox2.Text,ComboBox3.Text,ComboBox4.Text,ComboBox5.Text);
+      PiesBestByTwoLandTypes(db,True,MakeCriteriaList,MakeDEMlist,ComboBox2.Text,ComboBox3.Text);
    finally
       Self.Visible := true;
    end;
@@ -761,7 +758,7 @@ procedure Teval_scores_graph_form.BitBtn22Click(Sender: TObject);
 var
    bmp : tMyBitmap;
 begin
-   bmp := DEMIXTestDEMLegend(AssembleDEMList,true,1200);
+   bmp := DEMIXTestDEMLegend(MakeDEMlist,true,1200);
    AssignBitmapToClipBoard(bmp);
    DisplayBitmap(bmp);
 end;
@@ -777,7 +774,7 @@ var
 begin
    Self.Visible := false;
    ImportLandParamFilters(MDDef.DEMIX_filter1_fName, Filters,Labels);
-   MainGraphOptions(DB,3,AssembleDEMList,MakeCriteriaList,Filters,Labels);
+   MainGraphOptions(DB,3,MakeDEMlist,MakeCriteriaList,Filters,Labels);
    Self.Visible := true;
 end;
 
@@ -794,7 +791,7 @@ begin
    Self.Visible := false;
    bf := GISdb[db].MyData.Filter;
    ImportLandParamFilters(MDDef.DEMIX_filter1_fName, Filters,Labels);
-   MainGraphOptions(DB,4,AssembleDEMList,MakeCriteriaList,Filters,Labels);
+   MainGraphOptions(DB,4,MakeDEMlist,MakeCriteriaList,Filters,Labels);
    Self.Visible := true;
    GISdb[db].ApplyGISfilter(bf);
 end;
@@ -826,7 +823,7 @@ var
    GeoFilters,Labels : tStringList;
 begin
    GeoFilters := GeomorphFiltersFromMixed1(Labels);
-   WinningComparedToBaseDEM(db,ComboBox1.Text, GeoFilters,Labels,MakeCriteriaList,AssembleDEMList);
+   WinningComparedToBaseDEM(db,ComboBox1.Text, GeoFilters,Labels,MakeCriteriaList,MakeDEMlist);
 end;
 
 
@@ -894,7 +891,7 @@ var
          gr[k].GraphDraw.BottomMargin := 50;
          gr[k].GraphDraw.XWindowSize := 500;
          gr[k].GraphDraw.YWindowSize := 400;
-         gr[k].Symbol.Size := 2;
+         gr[k].MainSymbol.Size := 2;
          gr[k].RedrawDiagram11Click(Nil);
       end;
 
@@ -903,7 +900,7 @@ begin
    GetDEMIXpaths(True);
    AreaName := 'state_line';
    DEMIX_TILE := 'UTM_11N_x63y395';
-   DEMs := AssembleDEMlist;
+   DEMs := MakeDEMlist;
    Criteria := MakeCriteriaList;
    BaseDir := MDDef.DEMIX_BaseDir + AreaName + '\' + DEMIX_Tile + '_ref_test_dem\';
    k := -1;
@@ -958,9 +955,9 @@ begin
   if (ComboBox8.ItemIndex = 0) then begin
      MDcreatedCSV := true;
      NewDB := SortDataBase(db,true,false,'BEST_EVAL');
-     DEMIX_evaluations_graph(NewDB,ComboBox8.ItemIndex,AssembleDEMList,MakeCriteriaList,true);
+     DEMIX_evaluations_graph(NewDB,ComboBox8.ItemIndex,MakeDEMlist,MakeCriteriaList,true);
   end
-  else DEMIX_evaluations_graph(DB,ComboBox8.ItemIndex,AssembleDEMList,MakeCriteriaList,true);
+  else DEMIX_evaluations_graph(DB,ComboBox8.ItemIndex,MakeDEMlist,MakeCriteriaList,true);
   SetColorForWaiting;
   Self.Visible := true;
   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Exit Teval_scores_graph_form.RadioGroup1Click, choice=' + IntToStr(ComboBox8.ItemIndex)); {$EndIf}
@@ -1016,19 +1013,19 @@ begin
        GetDEMIXpaths(True);
        if CheckBox7.Checked then begin
            GISdb[db].ApplyGISFilter('COUNTRY=' + QuotedStr('USA'));
-           WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'USA tiles');
+           WinningPiesByCriteria(db, MakeCriteriaList, MakeDEMlist,'USA tiles');
            GISdb[db].ApplyGISFilter('COUNTRY<>' + QuotedStr('USA'));
-           WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'Non-US tiles');
+           WinningPiesByCriteria(db, MakeCriteriaList, MakeDEMlist,'Non-US tiles');
        end
        else if CheckBox9.Checked then begin
-           WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'Unrestricted DEM license');
+           WinningPiesByCriteria(db, MakeCriteriaList, MakeDEMlist,'Unrestricted DEM license');
            if CheckBox2.Checked then begin
               DEMs2 := tStringList.Create;
               DEMs2.LoadFromFile(ListName);
               WinningPiesByCriteria(db, MakeCriteriaList,DEMs2,'Restricted DEM license');
            end;
        end
-       else WinningPiesByCriteria(db, MakeCriteriaList, AssembleDEMList,'');
+       else WinningPiesByCriteria(db, MakeCriteriaList, MakeDEMlist,'');
        EndDEMIXProcessing;
        Self.Visible := true;
    end
@@ -1062,7 +1059,7 @@ begin
        SetColorForProcessing;
        Self.Visible := false;
        BaseFilter := GISdb[db].MyData.Filter;
-       theDEMs := AssembleDEMList;
+       theDEMs := MakeDEMlist;
        ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
        ImportLandParamFilters(MDDef.DEMIX_filter2_fName,Filters2,Labels2);
        theCriteria := MakeCriteriaList;
@@ -1104,7 +1101,6 @@ begin
               GetGraphHorizontalLimits(db,theCriteria[j],theDEMs,MinHoriz,MaxHoriz,CriteriaNameAdd);
               for k := 0 to pred(Filters1.Count) do begin
                   Stats := tStringList.Create;
-
                   Stats.Add(MomentStr + ',COLOR');
                   GISdb[db].ApplyGISFilter('CRITERION=' + QuotedStr(theCriteria[j]) + ' AND ' + Filters1.Strings[k]);
                   {$IfDef RecordBoxPlots} WriteLineToDebugFile(GISdb[db].MyData.Filter); {$EndIf}
@@ -1143,6 +1139,7 @@ begin
    end;
 end;
 
+
 procedure Teval_scores_graph_form.BitBtn38Click(Sender: TObject);
 begin
    SaveMDDefaults;
@@ -1173,7 +1170,7 @@ var
    fName : PathStr;
    AverageFUV,BestAvg,WorstAvg : float32;
 begin
-   DEMs := AssembleDEMList;
+   DEMs := MakeDEMlist;
    Criteria := MakeCriteriaList;
    bf := GISdb[DB].MyData.Filter;
 
@@ -1342,6 +1339,22 @@ end;
 
 
 
+procedure Teval_scores_graph_form.BitBtn45Click(Sender: TObject);
+begin
+   BestDEMonGraphTwoParameters(DB,MakeCriteriaList,MakeDEMlist);
+
+end;
+
+procedure Teval_scores_graph_form.BitBtn46Click(Sender: TObject);
+begin
+   try
+      Self.Visible := false;
+      PiesBestByTwoLandTypes(db,False,MakeCriteriaList,MakeDEMlist,ComboBox2.Text,ComboBox3.Text);
+   finally
+      Self.Visible := true;
+   end;
+end;
+
 procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 
    procedure TryOne(Which : shortString; var db_num : integer; var fName : PathStr);
@@ -1447,7 +1460,7 @@ end;
 
 procedure Teval_scores_graph_form.CheckBox14Click(Sender: TObject);
 begin
-   //MDdef.DEMIX_std_filters := CheckBox14.Checked;
+   MDdef.DEMIX_IgnoreTies := CheckBox14.Checked;
 end;
 
 procedure Teval_scores_graph_form.CheckBox15Click(Sender: TObject);
@@ -1622,10 +1635,10 @@ begin
   SetColorForProcessing;
   Self.Visible := false;
   Case RadioGroup2.ItemIndex of
-     0 : DEMIX_AreaAverageScores_graph(DB,AssembleDEMList);
-     1 : GraphAverageScoresByTile(DB,AssembleDEMList,Nil,Nil);
-     2 : DEMIX_AreaAverageScores_graph(DB,AssembleDEMList,false);
-     3 : DEMIX_Area_ind_criteria_graph(DB,AssembleDEMList);
+     0 : DEMIX_AreaAverageScores_graph(DB,MakeDEMlist);
+     1 : GraphAverageScoresByTile(DB,MakeDEMlist,Nil,Nil);
+     2 : DEMIX_AreaAverageScores_graph(DB,MakeDEMlist,false);
+     3 : DEMIX_Area_ind_criteria_graph(DB,MakeDEMlist);
   End;
    RadioGroup2.ItemIndex := -1;
    SetColorForWaiting;
@@ -1796,7 +1809,7 @@ var
             else if (Choice = 2) then MultipleAverageRanksOrEvaluations((i=0),CriteriaInFilter,Findings);
             CriteriaInFilter.Destroy;
          end;
-         Legend := DEMIXTestDEMLegend(AssembleDEMList);
+         Legend := DEMIXTestDEMLegend(MakeDEMlist);
          MergeVerticalPanels(Findings,Legend,'DEMIX');
          {$IfDef RecordDEMIX} WriteLineToDebugFile('Out MultipleAverageRanksOrEvaluations, Criteria=' + IntToStr(Criteria.Count)); {$EndIf}
       end;
@@ -1807,7 +1820,7 @@ var
 begin {Teval_scores_graph_form.RadioGroup9Click}
    Choice := RadioGroup9.ItemIndex;
 
-    TheDEMs := AssembleDEMList;
+    TheDEMs := MakeDEMlist;
     Criteria := MakeCriteriaList;
     BaseFilter := GISdb[DB].MyData.Filter;
 

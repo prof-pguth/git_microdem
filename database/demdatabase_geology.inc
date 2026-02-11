@@ -43,7 +43,7 @@
                begin
                     if (Mag < Min) then Mag := Min;
                     if (Mag > Max) then Mag := Max;
-                    Result := PlatformRainbowColorFunct(Mag,Min,Max);
+                    Result := RainbowRGBFunct(Mag,Min,Max);
                end;
 
       begin

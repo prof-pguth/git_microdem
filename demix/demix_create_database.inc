@@ -8,14 +8,12 @@
 {________________________________________}
 
 
-
 {$Define UseOldDifferenceDistributions}
 
 
 const
    DoLandTypes = false;
    DoDSM = false;
-
 
 
 procedure MakeDBForParamStats(Option,DBonTable : integer);
@@ -697,9 +695,8 @@ var
    label
       NoLandCover;
    var
-      Ser,i,j,UseDSM,UseDTM : integer;
+      i,j,UseDSM,UseDTM : integer;
       TStr : shortstring;
-      LandCoverFName : PathStr;
       CandidateBoundBoxGeo,bb : sfBoundBox;
    begin {ProcessDEMIXtestarea}
       {$If Defined(RecordDEMIXFull)} HighlightLineToDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
@@ -1194,7 +1191,7 @@ var
       begin
         {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('Process filter in, ' + aName + ' Filter matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
         if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-           aLine := aName + ',' + IntToStr(GISdb[DBonTable].NumUniqueEntriesInDB('DEMIX_TILE'));
+           aLine := aName + ',' + IntToStr(GISdb[DBonTable].NumUniqueEntriesInDBLinkPossible('DEMIX_TILE'));
            for DEM := 1 to DEMs.Count do begin
               Field := DEMs.strings[pred(DEM)] + Ext;
               {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(Field); {$EndIf}

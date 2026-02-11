@@ -14,17 +14,18 @@ unit demix_graphs;
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   //{$Define RecordDEMIX}
+   {$Define RecordDEMIX}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
-   {$Define PiesByLandType}
+   //{$Define PiesByLandType}
+   //{$Define RecordCompareDSMandDTM}
    //{$Define TrackCriteriaList}
    //{$Define RecordWinningPies}
    //{$Define RecordDEMIX_criteria_colors}
    //{$Define RecordDEMIXWins}
    //{$Define TrackColors}               //must also be set in BaseGraf unit
    //{$Define RecordAverageScoresGraph}
-   {$Define RecordDEMIXGraph}
+   //{$Define RecordDEMIXGraph}
    //{$Define RecordDEMIXGraphFull}
 {$EndIf}
 
@@ -70,7 +71,7 @@ function WinningPercentagesComparedToCOP(db : integer; CompareDEM : shortstring;
 
 procedure WhiskerPlotsByCluster(DB : integer; Criteria : tStringList);
 
-procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tStringList; Param1,Param2,DEM1,DEM2 : shortstring);
+procedure PiesBestByTwoLandTypes(dbOnTable : integer; Pies : boolean; Criteria,DEMs : tStringList; Param1,Param2 : shortstring);
 procedure MultipleScatterPlotsForCluster(dbOnTable : integer);
 procedure ScatterPlotForClusters(DBonTable : integer;  Field1,Field2 : shortstring);
 function AverageScoresGraph(db : integer; DEMs : tStringList; HL : shortstring; aDEMIXLegend : boolean; MinHoriz,MaxHoriz : float64) : tThisBaseGraph;
@@ -119,7 +120,15 @@ const
 function WinningPiesByCriteria(dbOnTable : integer; Criteria,DEMs : tStringList; LLtext : shortstring) : tThisBaseGraph;
 function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStringList; MaxPieCircle : float32; PieRatio : boolean; BottomLegendFName : PathStr) : tThisBaseGraph;
 
+procedure MakeDBtoCompareDSMandDTM(DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
+function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
+function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
+function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
+procedure GridOfCriterionForMultipleDEMcomparisons(DBonTable : integer; ColorBy : shortstring);
+procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion : shortstring; Comparisons : tStringList);
+procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer);
 
+procedure BestDEMonGraphTwoParameters(DB : integer; Criteria,DEMs : tstringList);
 
 implementation
 
@@ -129,6 +138,137 @@ uses
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
    DEMIX_control,DEMIX_Definitions;
+
+
+
+procedure SetHorizAxisForDEMIXscores(var Graph : tThisBaseGraph);
+begin
+    Graph.GraphDraw.MinHorizAxis := 0.5;
+    Graph.GraphDraw.MaxHorizAxis := NumDEMIXtestDEM + 0.5;
+end;
+
+
+procedure AddDemixLegend(var Graph :  tThisBaseGraph; DEMsUsed : tStringList = nil);
+var
+   bmp : tMyBitmap;
+begin
+   Graph.GraphDraw.BottomLegendFName := MDtempDir + 'DEM_DEM_Legend.bmp';
+   Graph.GraphDraw.BottomMargin := 125;
+   bmp := DEMIXTestDEMLegend(DEMsUsed,true,Graph.Width);
+   bmp.SaveToFile(Graph.GraphDraw.BottomLegendFName);
+   bmp.Destroy;
+end;
+
+
+function AdjustFilterForDTMandAll(DB : integer; Base : shortstring) : shortstring;
+begin
+   Result := Base;
+   if GISdb[DB].MyData.FieldExists('REF_TYPE') then Result:= Result + ' AND REF_TYPE=' + QuotedStr('DTM');
+   if GISdb[DB].MyData.FieldExists('LAND_TYPE') then Result:= Result + ' AND LAND_TYPE=' + QuotedStr('ALL');
+end;
+
+
+procedure SetHorizAxisForSSIM(dbOnTable : integer; var Graph : tThisBaseGraph; theCrit : shortstring);
+var
+   Table : tMyData;
+   fName : PathStr;
+   i : integer;
+   aMinVal,aMaxVal,Range : float64;
+begin
+   if StrUtils.AnsiContainsText(theCrit,'SSIM') then begin
+      fName := DEMIXSettingsDir + 'ssim_graph_limits.dbf';
+      Table := tMyData.Create(fName);
+      Table.ApplyFilter('CRITERION=' + QuotedStr(theCrit));
+      if (Table.FiltRecsInDB = 1) then begin
+         Graph.GraphDraw.MinHorizAxis := Table.GetFieldByNameAsFloat('X_MIN');
+         Graph.GraphDraw.MaxHorizAxis := Table.GetFieldByNameAsFloat('X_MAX');
+      end
+      else begin
+         Graph.GraphDraw.MinHorizAxis := 0;
+         Graph.GraphDraw.MaxHorizAxis := 1;
+      end;
+      Table.Destroy;
+   end
+   else begin
+      for i := 1 to NumDEMIXtestDEM do begin
+         if GISdb[DBonTable].MyData.FieldExists(DEMIXShort[i]) then begin
+            GISdb[DBonTable].EmpSource.Enabled := false;
+            GISdb[DBonTable].MyData.FindFieldRange(DEMIXShort[i],aMinVal,aMaxVal);
+            if (aminVal < Graph.GraphDraw.MinHorizAxis) then Graph.GraphDraw.MinHorizAxis := aMinVal;
+            if (amaxval > Graph.GraphDraw.MaxHorizAxis) then Graph.GraphDraw.MaxHorizAxis := aMaxVal;
+         end;
+      end;
+      Range := Graph.GraphDraw.MaxHorizAxis - Graph.GraphDraw.MinHorizAxis;
+      Graph.GraphDraw.MinHorizAxis := Graph.GraphDraw.MinHorizAxis - 0.05 * Range;
+      Graph.GraphDraw.MaxHorizAxis := Graph.GraphDraw.MaxHorizAxis + 0.05 * Range;
+   end;
+end;
+
+
+
+function OpenGraphForCriterionScoresOrEvaluations(DBonTable : integer; DEMs : tStringList; HorizAxisLabel,VertAxisField : shortstring;
+   GraphEvaluation : boolean; BestCriteria : boolean = true) : tThisBaseGraph;
+var
+   i : integer;
+   aMinVal,aMaxVal,Range : float64;
+begin
+   {$If Defined(RecordDEMIX_OpenGraph)} WriteLineToDebugFile('OpenGraphForCriterionScoresOrEvaluations, Criterion=' + HorizAxisLabel + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
+   HorizAxisLabel := RemoveUnderscores(HorizAxisLabel);
+   Result:= tThisBaseGraph.Create(Application);
+   Result.Width := MDDef.DEMIX_xsize;
+   Result.Height := MDDef.DEMIX_ysize;
+   Result.GraphDraw.ShowHorizAxis1 := true;
+   Result.GraphDraw.HorizLabel := HorizAxisLabel;
+   Result.Caption := GISdb[DBonTable].DBName + ' ' + HorizAxisLabel;
+   if (VertAxisField <> '') then begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      GISdb[DBonTable].MyData.FindFieldRange(VertAxisField,aMinVal,aMaxVal);
+      Result.GraphDraw.MinVertAxis := aMinVal;
+      Result.GraphDraw.MaxVertAxis := aMaxVal;
+   end
+   else begin
+      Result.GraphDraw.MinVertAxis := 0;
+      Result.GraphDraw.MaxVertAxis := 100;
+   end;
+
+   if BestCriteria then begin
+      Result.GraphDraw.MaxHorizAxis := 1;
+      Result.GraphDraw.MinHorizAxis := 0;
+      Result.GraphDraw.LeftMargin := 45;
+   end
+   else begin
+      AddDEMIXLegend(Result,DEMs);
+      Result.GraphDraw.MaxHorizAxis := -99999;
+      Result.GraphDraw.MinHorizAxis := 99999;
+      if GraphEvaluation then begin
+         SetHorizAxisForSSIM(dbOnTable,Result,HorizAxisLabel);
+         Result.GraphDraw.LeftMargin := 100;
+      end
+      else begin
+         Result.GraphDraw.MinHorizAxis := 0.5;
+         Result.GraphDraw.MaxHorizAxis := NumDEMIXtestDEM + 0.5;
+         if (GISdb[DBonTable].MyData.FiltRecsInDB > 200) then begin
+            Result.GraphDraw.LeftMargin := 45;
+            Result.GraphDraw.ShowGraphLeftLabels := false;
+         end
+         else begin
+            Result.GraphDraw.ShowGraphLeftLabels := true;
+            Result.GraphDraw.LeftMargin := 290;
+         end;
+      end;
+   end;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   {$If Defined(RecordDEMIX_OpenGraph)} WriteLineToDebugFile('OpenGraphForCriterionScoresOrEvaluations out ' + Result.GraphDraw.AxisRange); {$EndIf}
+end {function OpenGraphForCriterionScoresOrEvaluations};
+
+
+
+
+  {$I demix_graphs.inc}
+
+
+  {$I demix_graphs_dsm_dtm_compare.inc}
+
 
 
      procedure StartGraph(DBonTable : integer; var Graph : tThisBaseGraph; GraphWidth : integer = 700);
@@ -729,7 +869,6 @@ const
      begin {DoFUVgraph}
          {$If Defined(RecordDEMIXGraph)} writeLineToDebugFile('DoFUVGraph in, graphoption=' + IntToStr(GraphOption)); {$EndIf}
          if (GraphOption = goLandcover) then begin
-            //{$IfDef TrackColors} Graph.GraphColorsRecord('ItsLandcover start'); {$EndIf}
             GISdb[DBonTable].EmpSource.Enabled := false;
             if GISdb[DBonTable].MyData.FieldExists('LANDCOVER') then Landcovers := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('LANDCOVER');
             if GISdb[DBonTable].MyData.FieldExists('DEM') and (UseDEMs.Count > 1) then begin
@@ -825,7 +964,7 @@ const
                 lName := NextFileNumber(MDtempDir,'dem_legend_','.bmp');
                 bmp.SaveToFile(lName);
                 bmp.Destroy;
-                if BaseFilter = '' then TStr := ''
+                if (BaseFilter = '') then TStr := ''
                 else begin
                    GISdb[DBonTable].ApplyGISFilter(BaseFilter);
                    TStr := BaseFilter + '  ' + NumTilesString(DBonTable);
@@ -951,9 +1090,9 @@ function NumTilesString(DB : integer) : shortstring;
 var
    nt : integer;
 begin
-   nt := (GISdb[DB].NumUniqueEntriesInDB('DEMIX_TILE'));
+   nt := (GISdb[DB].NumUniqueEntriesInDBlinkPossible('DEMIX_TILE'));
    if (nt <= 1) then Result := ''
-   else Result := ' (tiles=' + IntToStr(GISdb[DB].NumUniqueEntriesInDB('DEMIX_TILE')) + ')';
+   else Result := ' (tiles=' + IntToStr(GISdb[DB].NumUniqueEntriesInDBlinkPossible('DEMIX_TILE')) + ')';
 end;
 
 
@@ -1059,32 +1198,6 @@ begin
 end;
 
 
-procedure AddDemixLegend(var Graph :  tThisBaseGraph; DEMsUsed : tStringList = nil);
-var
-   bmp : tMyBitmap;
-begin
-   Graph.GraphDraw.BottomLegendFName := MDtempDir + 'DEM_DEM_Legend.bmp';
-   Graph.GraphDraw.BottomMargin := 125;
-   bmp := DEMIXTestDEMLegend(DEMsUsed,true,Graph.Width);
-   bmp.SaveToFile(Graph.GraphDraw.BottomLegendFName);
-   bmp.Destroy;
-end;
-
-
-function AdjustFilterForDTMandAll(DB : integer; Base : shortstring) : shortstring;
-begin
-   Result := Base;
-   if GISdb[DB].MyData.FieldExists('REF_TYPE') then Result:= Result+  ' AND REF_TYPE=' + QuotedStr('DTM');
-   if GISdb[DB].MyData.FieldExists('LAND_TYPE') then Result:= Result+  ' AND LAND_TYPE=' + QuotedStr('ALL');
-end;
-
-
-procedure SetHorizAxisForDEMIXscores(var Graph : tThisBaseGraph);
-begin
-    Graph.GraphDraw.MinHorizAxis := 0.5;
-    Graph.GraphDraw.MaxHorizAxis := NumDEMIXtestDEM + 0.5;
-end;
-
 
 procedure DEMIX_SSIM_FUV_GraphSettings(var Graph : tThisBaseGraph; DBonTable : integer; lltext : shortstring; Ncrits : integer);
 begin
@@ -1097,98 +1210,6 @@ begin
    Graph.GraphDraw.SetShowAllLines(true);
    Graph.GraphDraw.LLcornerText := llText;
    AddTopLabelToGraph(Graph,DBonTable);
-end;
-
-procedure SetHorizAxisForSSIM(dbOnTable : integer; var Graph : tThisBaseGraph; theCrit : shortstring);
-var
-   Table : tMyData;
-   fName : PathStr;
-   i : integer;
-   aMinVal,aMaxVal,Range : float64;
-begin
-   if StrUtils.AnsiContainsText(theCrit,'SSIM') then begin
-      fName := DEMIXSettingsDir + 'ssim_graph_limits.dbf';
-      Table := tMyData.Create(fName);
-      Table.ApplyFilter('CRITERION=' + QuotedStr(theCrit));
-      if (Table.FiltRecsInDB = 1) then begin
-         Graph.GraphDraw.MinHorizAxis := Table.GetFieldByNameAsFloat('X_MIN');
-         Graph.GraphDraw.MaxHorizAxis := Table.GetFieldByNameAsFloat('X_MAX');
-      end
-      else begin
-         Graph.GraphDraw.MinHorizAxis := 0;
-         Graph.GraphDraw.MaxHorizAxis := 1;
-      end;
-      Table.Destroy;
-   end
-   else begin
-      for i := 1 to NumDEMIXtestDEM do begin
-         if GISdb[DBonTable].MyData.FieldExists(DEMIXShort[i]) then begin
-            GISdb[DBonTable].EmpSource.Enabled := false;
-            GISdb[DBonTable].MyData.FindFieldRange(DEMIXShort[i],aMinVal,aMaxVal);
-            if (aminVal < Graph.GraphDraw.MinHorizAxis) then Graph.GraphDraw.MinHorizAxis := aMinVal;
-            if (amaxval > Graph.GraphDraw.MaxHorizAxis) then Graph.GraphDraw.MaxHorizAxis := aMaxVal;
-         end;
-      end;
-      Range := Graph.GraphDraw.MaxHorizAxis - Graph.GraphDraw.MinHorizAxis;
-      Graph.GraphDraw.MinHorizAxis := Graph.GraphDraw.MinHorizAxis - 0.05 * Range;
-      Graph.GraphDraw.MaxHorizAxis := Graph.GraphDraw.MaxHorizAxis + 0.05 * Range;
-   end;
-end;
-
-
-function OpenGraphForCriterionScoresOrEvaluations(DBonTable : integer; DEMs : tStringList; HorizAxisLabel,VertAxisField : shortstring;
-   GraphEvaluation : boolean; BestCriteria : boolean = true) : tThisBaseGraph;
-var
-   i : integer;
-   aMinVal,aMaxVal,Range : float64;
-begin
-   {$If Defined(RecordDEMIX_OpenGraph)} WriteLineToDebugFile('OpenGraphForCriterionScoresOrEvaluations, Criterion=' + HorizAxisLabel + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
-   HorizAxisLabel := RemoveUnderscores(HorizAxisLabel);
-   Result:= tThisBaseGraph.Create(Application);
-   Result.Width := MDDef.DEMIX_xsize;
-   Result.Height := MDDef.DEMIX_ysize;
-   Result.GraphDraw.ShowHorizAxis1 := true;
-   Result.GraphDraw.HorizLabel := HorizAxisLabel;
-   Result.Caption := GISdb[DBonTable].DBName + ' ' + HorizAxisLabel;
-   if (VertAxisField <> '') then begin
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      GISdb[DBonTable].MyData.FindFieldRange(VertAxisField,aMinVal,aMaxVal);
-      Result.GraphDraw.MinVertAxis := aMinVal;
-      Result.GraphDraw.MaxVertAxis := aMaxVal;
-   end
-   else begin
-      Result.GraphDraw.MinVertAxis := 0;
-      Result.GraphDraw.MaxVertAxis := 100;
-   end;
-
-   if BestCriteria then begin
-      Result.GraphDraw.MaxHorizAxis := 1;
-      Result.GraphDraw.MinHorizAxis := 0;
-      Result.GraphDraw.LeftMargin := 45;
-   end
-   else begin
-      AddDEMIXLegend(Result,DEMs);
-      Result.GraphDraw.MaxHorizAxis := -99999;
-      Result.GraphDraw.MinHorizAxis := 99999;
-      if GraphEvaluation then begin
-         SetHorizAxisForSSIM(dbOnTable,Result,HorizAxisLabel);
-         Result.GraphDraw.LeftMargin := 100;
-      end
-      else begin
-         Result.GraphDraw.MinHorizAxis := 0.5;
-         Result.GraphDraw.MaxHorizAxis := NumDEMIXtestDEM + 0.5;
-         if (GISdb[DBonTable].MyData.FiltRecsInDB > 200) then begin
-            Result.GraphDraw.LeftMargin := 45;
-            Result.GraphDraw.ShowGraphLeftLabels := false;
-         end
-         else begin
-            Result.GraphDraw.ShowGraphLeftLabels := true;
-            Result.GraphDraw.LeftMargin := 290;
-         end;
-      end;
-   end;
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   {$If Defined(RecordDEMIX_OpenGraph)} WriteLineToDebugFile('OpenGraphForCriterionScoresOrEvaluations out ' + Result.GraphDraw.AxisRange); {$EndIf}
 end;
 
 
@@ -1264,7 +1285,7 @@ begin {function WinningPercentagesComparedToCOP}
          if GISdb[DB].MyData.FieldExists(inUseDEMs[i]) then UseDEMs.Add(InUseDEMs[i]);
      {$IfDef RecordDEMIXWins} WriteLineToDebugFile('WinningPercentagesComparedToCOP Checked, DEMs='+ IntToStr(UseDEMs.Count)); {$EndIf};
 
-      NumTiles := GISdb[DB].NumUniqueEntriesInDB('DEMIX_TILE');
+      NumTiles := GISdb[DB].NumUniqueEntriesInDBLinkPossible('DEMIX_TILE');
       for i := 0 to pred(Criteria.Count) do
          for j := 0 to pred(UseDEMs.Count) do
             for k := 1 to 3 do bfa[i,j,k] := 0;
@@ -1499,6 +1520,7 @@ begin
    Result.BarGraphDBName := GISdb[dbOnTable].dbFullName;
    Result.GraphDraw.MaxPieCircle := MaxPieCircle;
    Result.GraphDraw.PieRatio := PieRatio;
+   Result.GraphDraw.MinVertAxis := -0.1;
    Result.GraphDraw.BottomLegendFName := BottomLegendFName;
    Result.GraphDraw.LLcornerText := 'Max Circle=' + RealToString(MaxPieCircle,-8,-2) + '%';
    Result.AutoScaleAndRedrawDiagram(false,false,false,false);
@@ -1541,7 +1563,7 @@ var
             while not GISdb[dbOnTable].MyData.eof do begin
                 GISdb[DBonTable].EmpSource.Enabled := false;
                 inc(nt[i]);
-                ThisWinners := UpperCase(WinnerAndTies(DBonTable,DEMs,Tolerance));
+                ThisWinners := WinnerAndTies(DBonTable,DEMs,Tolerance);
                 for k := 0 to pred(DEMs.Count) do begin
                    aDEM := UpperCase(DEMs.Strings[k]);
                    if StrUtils.AnsiContainsText(ThisWinners,aDEM) then begin
@@ -1609,11 +1631,11 @@ end {function WinningPiesByCriteria};
 
 
 
-procedure PiesBestByTwoLandTypes(dbOnTable,Compare : integer; Criteria,DEMs : tStringList; Param1,Param2,DEM1,DEM2 : shortstring);
+procedure PiesBestByTwoLandTypes(dbOnTable : integer; Pies : boolean; Criteria,DEMs : tStringList; Param1,Param2 : shortstring);
 var
    BaseFilter : shortString;
 
-   function CreateGraph(Criterion,DEM1,DEM2 : shortstring) : tThisBaseGraph;
+   function CreateGraph(Criterion : shortstring) : tThisBaseGraph;
    const
       MaxPossBins = 10;
       PieRadiusFraction = 0.4;
@@ -1680,20 +1702,8 @@ var
         end
         else begin
            inc(Bins[i,j].n);
-           if (Compare = 0) then begin
-              Rank := GetWinnerBetweenTwoDEMs(dbOnTable,DEM1,DEM2,Tolerance);
-              if (Rank = DEM1) then begin
-                 inc(Bins[i,j].Win);
-              end
-              else if (Rank = 'TIE') then begin
-                 inc(Bins[i,j].Tie);
-              end
-              else begin
-                 inc(Bins[i,j].Loss);
-              end;
-           end
-           else if (Compare = 1) then begin
-              ThisWinners := UpperCase(WinnerAndTies(DBonTable,DEMs,Tolerance));
+           if Pies then begin
+              ThisWinners := WinnerAndTies(DBonTable,DEMs,Tolerance);
               for k := 0 to pred(DEMs.Count) do begin
                  aDEM := UpperCase(DEMs.Strings[k]);
                  if StrUtils.AnsiContainsText(ThisWinners,aDEM) then begin
@@ -1701,7 +1711,7 @@ var
                  end;
               end;
            end
-           else if (Compare = 2) then begin
+           else begin
               BestEval := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BEST_EVAL');
               Bins[i,j].avg := Bins[i,j].avg + BestEval;
            end;
@@ -1712,56 +1722,40 @@ var
      GraphData := tStringList.Create;
      xs := Result.GraphDraw.MaxHorizAxis / MDDef.DEMIXUseBins;
      ys := Result.GraphDraw.MaxVertAxis / MDDef.DEMIXUseBins;
-     if (Compare in [0,1]) then begin  //Pie charts
-          Result.GraphDraw.GraphType := gtScaledPieCharts;
-          if (Compare = 0) then begin
-             Result.GraphDraw.LLCornerText := DEM1 + ' compared to ' + DEM2 + '  ' + Criterion;
-             GraphData.Add('X,Y,X_SIZE,Y_SIZE,NTOTAL,WIN,TIE,LOSS,WIN_COLOR,TIE_COLOR,LOSS_COLOR');
-             for I := 1 to MDDef.DEMIXUseBins do begin
-                for j := 1 to MDDef.DEMIXUseBins do begin
-                   if (Bins[i,j].n > 0) then begin
-                     LocStr := PieGeometryString(i) + ',' + IntToStr(Bins[i,j].Win) + ','  + IntToStr(Bins[i,j].Tie) + ','  + IntToStr(Bins[i,j].Loss) + ',' +
-                          IntToStr(ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM1))) + ',' + IntToStr(clSilver) + ',' +
-                          IntToStr(ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEM2))) ;
-                     GraphData.Add(LocStr);
-                   end;
-                end;
-             end;
-          end
-          else if (Compare = 1) then begin
-             Result.GraphDraw.LLCornerText := 'Criterion: ' + Criterion;
-             Result.GraphDraw.LLcornerTextAtEdge := false;
-             LocStr := 'X,Y,X_SIZE,Y_SIZE,NTOTAL';
-             for k := 0 to pred(DEMs.Count) do LocStr := LocStr + ',' + 'WIN_' + IntToStr(k) + ',' + 'COLOR_' + IntToStr(k);
-             GraphData.Add(LocStr);
-             for I := 1 to MDDef.DEMIXUseBins do begin
-                for j := 1 to MDDef.DEMIXUseBins do begin
-                   if Bins[i,j].n > 0 then begin
-                      LocStr := PieGeometryString(i);
-                      for k := 0 to pred(DEMs.Count) do begin
-                         aDEM := UpperCase(DEMs.Strings[k]);
-                         LocStr := LocStr + ',' + IntToStr(Bins[i,j].ManyWins[k]) + ',' + IntToStr(ConvertPlatformColorToTColor(DEMIXColorFromDEMName(aDEM)));
-                      end;
-                      GraphData.Add(LocStr);
-                   end;
-                end;
-             end;
-          end;
-        end
-        else if (Compare = 2) then begin
-           Result.GraphDraw.LLCornerText := 'Best evaluation ' + Criterion;
-           GraphData.Add('X,Y,X_SIZE,Y_SIZE,N,AVG,COLOR');
-           for I := 1 to MDDef.DEMIXUseBins do begin
-              for j := 1 to MDDef.DEMIXUseBins do begin
-                 if (Bins[i,j].n > 0) then begin
-                   LocStr := PieGeometryString(i);
-                   Value := Bins[i,j].avg / Bins[i,j].n;
-                   GraphData.Add(LocStr + ',' + RealToString(Bins[i,j].avg ,-12,-4) + ','  + IntToStr(RainbowColorFunct(Value,0,1))  );
-                 end;
-              end;
-           end;
-           Result.GraphDraw.GraphType := gtScaledColorSymbols;
-        end;
+     if Pies then begin  //Pie charts
+         Result.GraphDraw.GraphType := gtScaledPieCharts;
+         Result.GraphDraw.LLCornerText := 'Criterion: ' + Criterion;
+         Result.GraphDraw.LLcornerTextAtEdge := false;
+         LocStr := 'X,Y,X_SIZE,Y_SIZE,NTOTAL';
+         for k := 0 to pred(DEMs.Count) do LocStr := LocStr + ',' + 'WIN_' + IntToStr(k) + ',' + 'COLOR_' + IntToStr(k);
+         GraphData.Add(LocStr);
+         for I := 1 to MDDef.DEMIXUseBins do begin
+            for j := 1 to MDDef.DEMIXUseBins do begin
+               if Bins[i,j].n > 0 then begin
+                  LocStr := PieGeometryString(i);
+                  for k := 0 to pred(DEMs.Count) do begin
+                     aDEM := UpperCase(DEMs.Strings[k]);
+                     LocStr := LocStr + ',' + IntToStr(Bins[i,j].ManyWins[k]) + ',' + IntToStr(ConvertPlatformColorToTColor(DEMIXColorFromDEMName(aDEM)));
+                  end;
+                  GraphData.Add(LocStr);
+               end;
+            end;
+         end;
+     end
+     else begin
+         Result.GraphDraw.GraphType := gtScaledColorSymbols;
+         Result.GraphDraw.LLCornerText := 'Best evaluation ' + Criterion;
+         GraphData.Add('X,Y,X_SIZE,Y_SIZE,N,AVG,COLOR');
+         for I := 1 to MDDef.DEMIXUseBins do begin
+            for j := 1 to MDDef.DEMIXUseBins do begin
+               if (Bins[i,j].n > 0) then begin
+                 LocStr := PieGeometryString(i);
+                 Value := Bins[i,j].avg / Bins[i,j].n;
+                 GraphData.Add(LocStr + ',' + RealToString(Bins[i,j].avg ,-12,-4) + ','  + IntToStr(RainbowColorFunct(Value,0,1))  );
+               end;
+            end;
+         end;
+     end;
         fName := NextFileNumber(MDTempDir,Criterion + '_two_param_graph_','.dbf');
         StringList2CSVtoDB(GraphData,fName,true,false,false);
         Result.BarGraphDBName := fName;
@@ -1785,11 +1779,11 @@ begin  {procedure  PiesBestByTwoLandTypes}
          GISdb[DBonTable].EmpSource.Enabled := false;
          Graphs := tStringList.Create;
          for i := 0 to pred(Criteria.Count) do begin
-            gr[i] := CreateGraph(Criteria.Strings[i],DEM1,DEM2);
+            gr[i] := CreateGraph(Criteria.Strings[i]);
             Graphs.Add(gr[i].SaveGraphName);
          end;
 
-         if (Compare = 2) then begin
+         if (not Pies) then begin
             Bitmap := DefaultHorizontalLegendOnBitmap(0,1,'','',LegRainbows);
          end
          else Bitmap := DEMIXTestDEMLegend(DEMs,true,MDDef.DEMIX_xsize);
@@ -1799,7 +1793,7 @@ begin  {procedure  PiesBestByTwoLandTypes}
          Bitmap.Destroy;
          GISdb[DBonTable].ApplyGISFilter(BaseFilter);
 
-         if BaseFilter = '' then TStr := ''
+         if (BaseFilter = '') then TStr := NumTilesString(DBonTable)
          else begin
             GISdb[DBonTable].ApplyGISFilter(BaseFilter);
             TStr := BaseFilter + '  ' + NumTilesString(DBonTable);
@@ -2281,8 +2275,6 @@ begin
    GISdb[DB].EmpSource.Enabled := true;
 end;
 
-
-  {$I demix_graphs.inc}
 
 
 procedure ScatterPlotForClusters(DBonTable : integer;  Field1,Field2 : shortstring);

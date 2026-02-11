@@ -41,7 +41,7 @@ var
        var
           i : integer;
        begin
-           Graf.OpenPointSymbolFile(rfile,'',Graf.Symbol);
+           Graf.OpenPointSymbolFile(rfile,'',Graf.MainSymbol);
            NPts := 500;
            VincentyPointAtDistanceBearing(inLat,inLong,Distance,Azimuth+90,Lat,Long);
            GetStraightRouteLatLongDegree(inLat,inLong,Lat,Long,saSmart,NPts,Lats,Longs,dists);

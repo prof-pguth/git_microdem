@@ -500,7 +500,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Top = 287
     Width = 406
     Height = 183
-    Caption = 'Pie charts for two land types'
+    Caption = 'Composite for two land types'
     TabOrder = 31
     object Label7: TLabel
       Left = 120
@@ -515,20 +515,6 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Width = 29
       Height = 15
       Caption = 'Y axis'
-    end
-    object Label9: TLabel
-      Left = 120
-      Top = 88
-      Width = 34
-      Height = 15
-      Caption = 'DEM 1'
-    end
-    object Label10: TLabel
-      Left = 119
-      Top = 120
-      Width = 34
-      Height = 15
-      Caption = 'DEM 2'
     end
     object ComboBox2: TComboBox
       Left = 16
@@ -548,10 +534,10 @@ object eval_scores_graph_form: Teval_scores_graph_form
     end
     object BitBtn1: TBitBtn
       Left = 16
-      Top = 141
-      Width = 97
+      Top = 133
+      Width = 129
       Height = 25
-      Caption = 'Pie Graphs'
+      Caption = 'Pie Graphs by bins'
       TabOrder = 2
       OnClick = BitBtn1Click
     end
@@ -568,34 +554,32 @@ object eval_scores_graph_form: Teval_scores_graph_form
       TabOrder = 3
       OnClick = RadioGroup3Click
     end
-    object RadioGroup10: TRadioGroup
-      Left = 233
-      Top = 79
-      Width = 152
-      Height = 90
-      Caption = 'Comparison'
-      ItemIndex = 1
-      Items.Strings = (
-        'Compare two DEMs'
-        'Compare all DEMs'
-        'Best evaluation')
+    object BitBtn45: TBitBtn
+      Left = 12
+      Top = 94
+      Width = 138
+      Height = 25
+      Caption = 'Graph showing all tiles'
       TabOrder = 4
+      OnClick = BitBtn45Click
     end
-    object ComboBox4: TComboBox
-      Left = 16
-      Top = 80
-      Width = 97
-      Height = 23
+    object BitBtn46: TBitBtn
+      Left = 168
+      Top = 96
+      Width = 105
+      Height = 25
+      Caption = 'Best evaluation'
       TabOrder = 5
-      Text = 'ComboBox4'
+      OnClick = BitBtn46Click
     end
-    object ComboBox5: TComboBox
-      Left = 16
-      Top = 112
+    object CheckBox14: TCheckBox
+      Left = 240
+      Top = 144
       Width = 97
-      Height = 23
+      Height = 17
+      Caption = 'Ignore ties'
       TabOrder = 6
-      Text = 'ComboBox5'
+      OnClick = CheckBox14Click
     end
   end
   object BitBtn38: TBitBtn

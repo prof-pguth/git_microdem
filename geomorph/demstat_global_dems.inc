@@ -323,8 +323,7 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
 
       function OnHorizontalDatum(d :  integer) : TThisbasegraph;
       var
-        i,j,k{,xLen,OnFile} : integer;
-        //TStr : ShortString;
+        i,j,k : integer;
         offset : float32;
         OK : boolean;
         rFiles : array[1..5] of file;
@@ -335,20 +334,17 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
            Result.SetUpGraphForm;
            GetFieldsAndLabels(DB);
            EmpSource.Enabled := false;
-           Result.Symbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
+           Result.MainSymbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
            for i := 1 to ns do begin
               case i of
-                  1 : Result.Symbol.Color := ConvertTColorToPlatformColor(clBrown);
-                  2 : Result.Symbol.Color := claGreen;
-                  else Result.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
+                  1 : Result.MainSymbol.Color := ConvertTColorToPlatformColor(clBrown);
+                  2 : Result.MainSymbol.Color := claGreen;
+                  else Result.MainSymbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
               end;
-              if i in [1,2] then Result.Symbol.Size := 3
-              else Result.Symbol.Size := 2;
-              Result.OpenPointSymbolFile(rfiles[i],LidarLabels[i],Result.Symbol);
+              if i in [1,2] then Result.MainSymbol.Size := 3
+              else Result.MainSymbol.Size := 2;
+              Result.OpenPointSymbolFile(rfiles[i],LidarLabels[i],Result.MainSymbol);
            end;
-
-           //Result.GraphDraw.LegendList := tStringList.Create;
-           //for i := 1 to ns do Result.GraphDraw.LegendList.Add(LidarLabels[i]);
 
            if (DirField = LatFieldName) then begin
               Result.GraphDraw.HorizLabel := 'Latitude';

@@ -135,6 +135,7 @@ type
       function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer;  var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;  inline;
       function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; TrackFailure : boolean = false) : float64;
       function GetFUVForPairGrids(RefGridLimits : tGridLimits; Grid1,Grid2 : integer; TrackFailure : boolean = false) : float64;
+      function GridDifferenceStatsTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; TrackFailure : boolean = false) : tMomentVar;
 
       procedure ElevationSlopePlot(WhichDEMs : tDEMbooleanArray; DesiredBinSize : integer = 1; Memo : tMemo = Nil);
       procedure MultipleElevationSlopePlots;
@@ -256,8 +257,6 @@ procedure LSP_gridMultipleDEMs(Which : integer; OpenMap : boolean = true);
 procedure OpennessSensitivity;
 procedure SlopeCurvatureSensitivityWindowSize(WhichLSP : integer);
 procedure Compare_one_dem_mult_windows(DEM : integer);
-
-
 
 
 const
@@ -2451,7 +2450,7 @@ end;
 function CorrelationTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; TrackFailure : boolean = false) : float64;
 //if the grids do not match exactly, DEM2 is reinterpolated to match DEM1
 var
-   Col,Row,xoff,yoff : integer;
+   Col,Row,xoff,yoff,incr : integer;
    NPts : int64;
    Lat,Long,a,b,siga,sigb : float64;
    z1,z2 : float32;
@@ -2468,6 +2467,8 @@ begin
          WriteLineToDebugFile('xoff=' + IntToStr(Xoff) + '   yoff=' + IntToStr(yoff));
       end;
    {$EndIf}
+   incr := 1;
+   while ((GridLimitsDEM1.XGridHigh - GridLimitsDEM1.XGridLow) div Incr) * ((GridLimitsDEM1.YGridHigh - GridLimitsDEM1.YGridLow) div Incr) > bfArrayMaxSize do inc(Incr);
 
    Col := GridLimitsDEM1.XGridLow;
    while (Col <= GridLimitsDEM1.XGridHigh) do begin
@@ -2482,15 +2483,14 @@ begin
                MatchPt := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2);
             end;
             if MatchPt then begin
-
                xs^[Npts] := z1;
                ys^[Npts] := z2;
                inc(NPts);
             end;
          end;
-         inc(row);
+         inc(row,Incr);
       end;
-      inc(Col);
+      inc(Col,Incr);
    end;
    {$IfDef TrackCovarianceFull} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids call fit, NPTs=' + IntToStr(NPts)); {$EndIf}
    if (NPts = 0) then Result := Nan
@@ -2499,6 +2499,51 @@ begin
    Dispose(ys);
    {$IfDef TrackCovariance} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
 end;
+
+function GridDifferenceStatsTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; TrackFailure : boolean = false) : tMomentVar;
+//if the grids do not match exactly, DEM2 is reinterpolated to match DEM1
+var
+   Col,Row,xoff,yoff,incr : integer;
+   NPts : int64;
+   Lat,Long,a,b,siga,sigb : float64;
+   z1,z2 : float32;
+   diffs : ^BfArray32;
+   IdenticalOffsetGrids,MatchPt : boolean;
+begin
+   {$IfDef TrackCovarianceFull} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids in, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName); {$EndIf}
+   New(diffs);
+   InitializeMomentVar(Result);
+   Result.NPts := 0;
+   IdenticalOffsetGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff,true);
+   incr := 1;
+   while ((GridLimitsDEM1.XGridHigh - GridLimitsDEM1.XGridLow) div Incr) * ((GridLimitsDEM1.YGridHigh - GridLimitsDEM1.YGridLow) div Incr) > bfArrayMaxSize do inc(Incr);
+
+   Col := GridLimitsDEM1.XGridLow;
+   while (Col <= GridLimitsDEM1.XGridHigh) do begin
+      Row := GridLimitsDEM1.YGridLow;
+      while (Row <= GridLimitsDEM1.YGridHigh) do begin
+         if DEMGlb[DEM1].GetElevMeters(Col,Row,z1) then begin
+            if IdenticalOffsetGrids then begin
+               MatchPt := DEMGlb[DEM2].GetElevMeters(Col+xoff,Row+yoff,z2);
+            end
+            else begin
+               DEMGlb[DEM1].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+               MatchPt := DEMGlb[DEM2].GetElevFromLatLongDegree(Lat,Long,z2);
+            end;
+            if MatchPt then begin
+               Diffs^[Result.Npts] := z1 -  z2;
+               inc(Result.NPts);
+            end;
+         end;
+         inc(row,Incr);
+      end;
+      inc(Col,Incr);
+   end;
+   moment(Diffs^,Result,msIncludeLE90);
+   Dispose(Diffs);
+   {$IfDef TrackCovariance} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
+end;
+
 
 
 function CovariancesFromTwoGrids(GridLimitsDEM1 : tGridLimits; DEM1,DEM2 : integer; var NPts : int64; var r,covar,Mean1,Mean2,StdDev1,StdDev2,MeanDiff,MeanAbsDiff : float64; NoteFailure : boolean = true) : boolean;

@@ -201,25 +201,11 @@ var
    DEMIX_criteria_tolerance_fName,
    SSIMresultsDir, FUVresultsDir, PartialsResultsDir,CurvaturesResultsDir,
 
-   {$IfDef ExternalProgramsSaveCriteria}
-      MD_out_ref_dir,MD_out_test_dir,
-      wbt_out_ref_dir,wbt_out_test_dir,
-      saga_out_ref_dir,saga_out_test_dir,
-   {$EndIf}
    GeomorphonsDir,
    DEMIX_diff_dist,
 
-   {$IfDef IncludeVectorCriteria}
-      Stream_valley_dir,
-      ChannelMissesDir,
-   {$EndIf}
-
    DEMIX_Ref_1sec,DEMIX_Ref_dsm_1sec,DEMIX_test_dems,
    DEMIX_Under_ref_dtm,DEMIX_Under_test_dems,                //locations for the 1" DEMs used in comparison
-
-   {$IfDef IncludeCoastalDEMs}
-      DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms,  //used for inventories, when mixing comparison modes
-   {$EndIf}
 
    DEMIX_Ref_Half_sec,
    DEMIX_profile_test_dir,
@@ -236,14 +222,6 @@ var
    GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,
    RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
-
-  {$IfDef DEMIX_SAGA_channels}
-      //directories for channel criterion calculations, currently replaced with Python WbW creation
-      DEMIX_test_DEMs_no_sink, DEMIX_ref_DEMs_no_sink,
-      DEMIX_test_DEMs_channels, DEMIX_ref_DEMs_channels,
-      DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids : PathStrl
-   {$EndIf}
-
 
 //create or edit database
    procedure MakeDBForParamStats(Option,DBonTable : integer);
@@ -268,35 +246,6 @@ var
    function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBaseGraph;
    function DEMIX_SSIM_FUV_clusters_graph(DBonTable : integer) : tThisBaseGraph;
 
-{$IfDef IncludeOldDEMIX_RefDEM_Create}
-//create reference DEMs
-   procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
-   procedure DEMIX_GDAL_Ref_DEM_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
-   procedure DEMIX_Ref_DEM_full_chain(overwrite : boolean);
-   procedure ShiftDEMsto_UTM_WGS84_EGM2008(Overwrite : boolean; DataDirs : tStringList = Nil);
-   procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
-   procedure CreateLandCoverGrids;
-   procedure MoveReferenceDSMs;
-
-
-//create reference DEMs, non-3DEP
-   procedure DEMIX_merge_source(Areas : tStringList = Nil);
-   procedure DEMIX_CreateReferenceDEMs(Overwrite : boolean; ResampleMode : byte; Areas : tStringList = Nil);
-   procedure DEMIXCreateHalfSecRefDEMs(AreaName : shortstring = '');
-   procedure ResampleForDEMIXOneSecDEMs(Overwrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
-//create test DEMs
-   procedure DiluviumDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
-   procedure DeltaDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
-   procedure CoastalDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
-   procedure CreateDEMIXTestAreaDEMs(Overwrite : boolean);
-   procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
-
-
-   procedure TilesInEachElevRangeForTestAreas;
-   procedure MaskWaterInReferenceAndTestDEMs;
-{$EndIf}
-
-
 
 //inventory and reports
    procedure InventoryDBwithDSMandDTMbyArea;
@@ -316,29 +265,6 @@ var
    procedure PruneMisnamedReferenceDTMs;
    procedure InventoryAreasAndTilesByCountry(DB : integer);
 
-   {$IfDef IncludeCoastalDEMs} procedure CheckLowElevationAreas; {$EndIf}
-
-
-   {$IfDef IncludeVectorCriteria}
-    //vector (channel network, ridges, valleys) comparisons
-       procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
-       procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
-       procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
-       procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
-   {$EndIf}
-
-   {$IfDef DEMIX_SAGA_channels}
-      procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
-      procedure BatchRemoveSinksInDEMIX_DEMS(Overwrite : boolean; AreasWanted : tstringlist = nil);
-      procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
-      procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
-      procedure MultistepChannelNetworks(Overwrite : boolean);
-      procedure InventoryChannelDataByArea;
-   {$EndIf}
-
-         {$IfDef ExternalProgramFUV_SSIM}
-             function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean;
-         {$EndIf}
 
 
 {$IfDef IncludeDEMIX_external_programs}
@@ -379,8 +305,6 @@ var
          procedure LSP_Calc_Grids(kwat : shortstring; OpenMaps : boolean = false);
          function SAGACreateDEMIX_ConIn_Grids(OpenMaps : boolean; AreaName,aParam : shortstring) : boolean;
          procedure CreateLSPgrids(OpenMaps : boolean; Param,AreaName : shortstring; var PointGrids,AreaGrids : tDEM_int_array);
-
-
 {$EndIf}
 
 
@@ -420,6 +344,79 @@ procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 function InsureFUVinLSPname(aName : shortstring) : shortstring;
 function CreateSingleLSPGrid(OpenMaps : boolean; DEM : integer; Param : shortstring) : integer;
 
+function GetDSMandDTMTileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
+function GetDSMandDTMFileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
+function IdentifyDEMIXtileAsDTMorDSM(Tile : shortString) : shortstring;
+function GeneralizeReferenceName(Name : shortstring) : shortstring;
+
+   {$IfDef ExternalProgramsSaveCriteria}
+      MD_out_ref_dir,MD_out_test_dir,
+      wbt_out_ref_dir,wbt_out_test_dir,
+      saga_out_ref_dir,saga_out_test_dir : PathStr;
+   {$EndIf}
+
+   {$IfDef IncludeVectorCriteria}
+      Stream_valley_dir,
+      ChannelMissesDir : PathStr;
+   {$EndIf}
+
+   {$IfDef IncludeVectorCriteria}
+    //vector (channel network, ridges, valleys) comparisons
+       procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
+       procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
+       procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
+       procedure DEMIX_CreateGridsFromVectors(Overwrite : boolean);
+   {$EndIf}
+
+     {$IfDef DEMIX_SAGA_channels}
+      //directories for channel criterion calculations, currently replaced with Python WbW creation
+      DEMIX_test_DEMs_no_sink, DEMIX_ref_DEMs_no_sink,
+      DEMIX_test_DEMs_channels, DEMIX_ref_DEMs_channels,
+      DEMIX_test_DEMs_channel_grids, DEMIX_ref_DEMs_channel_grids : PathStr;
+
+      procedure CreateChannelNetworkGridsFromVectors(Overwrite : boolean; AreasWanted : tstringlist = nil);
+      procedure BatchRemoveSinksInDEMIX_DEMS(Overwrite : boolean; AreasWanted : tstringlist = nil);
+      procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
+      procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
+      procedure MultistepChannelNetworks(Overwrite : boolean);
+      procedure InventoryChannelDataByArea;
+   {$EndIf}
+
+   {$IfDef ExternalProgramFUV_SSIM} function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean; {$EndIf}
+
+   {$IfDef IncludeCoastalDEMs}
+      DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms : PathStr;  //used for inventories, when mixing comparison modes
+   {$EndIf}
+
+   {$IfDef IncludeCoastalDEMs} procedure CheckLowElevationAreas; {$EndIf}
+
+
+{$IfDef IncludeOldDEMIX_RefDEM_Create}
+    //create reference DEMs
+       procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
+       procedure DEMIX_GDAL_Ref_DEM_datum_shift(Overwrite : boolean; DataDirs : tStringList = Nil);
+       procedure DEMIX_Ref_DEM_full_chain(overwrite : boolean);
+       procedure ShiftDEMsto_UTM_WGS84_EGM2008(Overwrite : boolean; DataDirs : tStringList = Nil);
+       procedure DEMIX_MergeReferenceDEMs(Overwrite : boolean; DataDirs : tStringList = Nil);
+       procedure CreateLandCoverGrids;
+       procedure MoveReferenceDSMs;
+
+    //create reference DEMs, non-3DEP
+       procedure DEMIX_merge_source(Areas : tStringList = Nil);
+       procedure DEMIX_CreateReferenceDEMs(Overwrite : boolean; ResampleMode : byte; Areas : tStringList = Nil);
+       procedure DEMIXCreateHalfSecRefDEMs(AreaName : shortstring = '');
+       procedure ResampleForDEMIXOneSecDEMs(Overwrite : boolean; CloseAfter : boolean; DEM : integer; OpenMap : boolean = false; OutPath : PathStr = ''; ResampleMode : byte = 1);
+    //create test DEMs
+       procedure DiluviumDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
+       procedure DeltaDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
+       procedure CoastalDTMforTestAreas(Overwrite : boolean; Areas : tStringList = Nil);
+       procedure CreateDEMIXTestAreaDEMs(Overwrite : boolean);
+       procedure AllHallucinatingDTMsforCoastalAreas(Overwrite : boolean);
+
+       procedure TilesInEachElevRangeForTestAreas;
+       procedure MaskWaterInReferenceAndTestDEMs;
+{$EndIf}
+
 
 implementation
 
@@ -452,6 +449,70 @@ uses
 {$IfDef IncludeVectorCriteria}
    {$include demix_channels.inc}
 {$EndIf}
+
+
+function GeneralizeReferenceName(Name : shortstring) : shortstring;
+begin
+   Result := StringReplace(Name, '_cop', '',[rfIgnoreCase]);
+   Result := StringReplace(Result, '_srtm', '',[rfIgnoreCase]);
+   Result := StringReplace(Result, '_alos', '',[rfIgnoreCase]);
+end;
+
+
+function IdentifyDEMIXtileAsDTMorDSM(Tile : shortString) : shortstring;
+begin
+   Result := '';
+   Tile := UpperCase(Tile);
+   if (Copy(Tile,1,3) = 'ES_') or (Copy(Tile,1,3) = 'IC_') then begin
+        if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
+        else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
+   end;
+   if (Copy(Tile,1,3) = 'CA_') then begin
+        if ANSIcontainsStr(Tile,'DSM') then Result := 'DSM'
+        else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
+   end;
+end;
+
+
+
+
+function GetDSMandDTMTileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
+var
+   TStr : shortstring;
+begin
+  if GISdb[DBonTable].MyData.FieldExists('CRITERION') then TStr := 'CRITERION=' + QuotedStr('SLOPE') + ' AND ' else TStr := '';
+  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.01));
+  if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
+     TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+     if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
+     GISdb[DBonTable].MyData.Next;
+     TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+     if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
+     Result := true;
+  end
+  else Result := false;
+end;
+
+
+function GetDSMandDTMFileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
+
+   function TileName : ShortString;
+   begin
+     TileName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+   end;
+
+begin
+  GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr('SLOPE') + ' AND ' + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.01));
+  if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
+     DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + '\source\' + TileName + '.tif';
+     GISdb[DBonTable].MyData.Next;
+     DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + '\source\' + TileName + '.tif';
+     Result := FileExists(DSMName) and FileExists(DTMName);
+  end
+  else Result := false;
+end;
+
+
 
 
 function InsureFUVinLSPname(aName : shortstring) : shortstring;
@@ -521,7 +582,6 @@ begin
    end;
    Table.Destroy;
 end;
-
 
 
 procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; BinSize : integer = 0);

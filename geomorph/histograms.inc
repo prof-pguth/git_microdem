@@ -431,17 +431,11 @@ var
                      ay := 2;
                   end;
                   for j := 0 to Histogram.HistogramNumBins do begin
-                     v[ax] := Histogram.GraphDraw.MinHorizAxis + ( j + 0.5) * Histogram.HistogramBinSize;
-                     if Histogram.HistogramGraphNumbers then v[ay] := Bins[j]
-                     else v[ay] := Bins[j] / NumVals * Histogram.HistogramNumBins;
-                     if v[ay] > MaxCount then MaxCount := v[ay];
-                     (*
-                     if StackedPercents then begin
-                        if First then Results.Add(RealToString(v[ax],-12,-4) + ',' + RealToString(v[ay],-12,-4))
-                        else Results.Strings[j] := Results.Strings[j] + ',' + RealToString(v[ay],-12,-4);
-                     end;
-                     *)
                      if (Bins[j] > 0) then begin
+                        v[ax] := Histogram.GraphDraw.MinHorizAxis + ( j + 0.5) * Histogram.HistogramBinSize;
+                        if Histogram.HistogramGraphNumbers then v[ay] := Bins[j]
+                        else v[ay] := Bins[j] / NumVals * Histogram.HistogramNumBins;
+                        if v[ay] > MaxCount then MaxCount := v[ay];
                         BlockWrite(rfile,v,1);
                      end;
                   end;
@@ -516,12 +510,12 @@ Label
 var
   i : integer;
   l1,l2 : shortstring;
-  StackedPercents : boolean;
+  //StackedPercents : boolean;
 begin
    {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms in ' + ParamName + '  ' + TitleBar); {$EndIf}
    Result := nil;
    if (FileList.Count > 0) then begin
-      StackedPercents := (FileList.Count > 1);
+      //StackedPercents := (FileList.Count > 1);
       Result := TThisBaseGraph.Create(Application);
       Result.GraphDraw.HistogramDistributionFileList := FileList;
       Result.GraphDraw.MinHorizAxis := Min;
@@ -563,9 +557,11 @@ begin
                Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
             end;
          end;
+         (*   removed Jan 2026
          for i := 0 to pred(TColorList.Count) do begin
             if (i <= 15) then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
          end;
+         *)
       end;
 
       {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}

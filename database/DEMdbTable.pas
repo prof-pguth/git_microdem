@@ -13,7 +13,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
-       //{$Define RecordDEMIX}
+       {$Define RecordDEMIX}
        //{$Define RecordDetailedDEMIX}
        //{$Define RecordCloseDB}
        //{$Define RecordDataBaseSaveFiles}
@@ -1058,6 +1058,20 @@ type
     Limitdeimalsinmultiplefields1: TMenuItem;
     Create2: TMenuItem;
     AddDSMPCFORESTPCURBANPC1: TMenuItem;
+    DTMDSMcomparison1: TMenuItem;
+    DTDSMcomparison1: TMenuItem;
+    AddDSMDTMpair1: TMenuItem;
+    IdentifyDSMandDTM1: TMenuItem;
+    N61: TMenuItem;
+    GraphscompringDSMDTMslopes1: TMenuItem;
+    GraphscompartingDSMDTMdifferencedistribtuions1: TMenuItem;
+    CompareDSMDTM1: TMenuItem;
+    DSMlessthanDTM1: TMenuItem;
+    DSMDTMcomparison1: TMenuItem;
+    N60: TMenuItem;
+    CompareCopDEMtoDSMDTMandaggregate1: TMenuItem;
+    N62: TMenuItem;
+    FUVgridtwoLSPs1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1875,6 +1889,19 @@ type
     procedure Limitdeimalsinmultiplefields1Click(Sender: TObject);
     procedure Create2Click(Sender: TObject);
     procedure AddDSMPCFORESTPCURBANPC1Click(Sender: TObject);
+    procedure DTDSMcomparison1Click(Sender: TObject);
+    procedure AddDSMDTMpair1Click(Sender: TObject);
+    procedure IdentifyDSMandDTM1Click(Sender: TObject);
+    procedure DTMDSMcomparison1Click(Sender: TObject);
+    procedure GraphscompringDSMDTMslopes1Click(Sender: TObject);
+    procedure GraphscompartingDSMDTMdifferencedistribtuions1Click(
+      Sender: TObject);
+    procedure CompareDSMDTM1Click(Sender: TObject);
+    procedure DSMlessthanDTM1Click(Sender: TObject);
+    procedure CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
+    procedure FUVgridtwoLSPs1Click(Sender: TObject);
+    //procedure DSMlessthanDTM1Click(Sender: TObject);
+    //procedure DSMDTMpairs1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
     //procedure Pointfilter1Click(Sender: TObject);
   private
@@ -1959,7 +1986,7 @@ uses
          sup_class_aux_grids,
       {$EndIf}
    {$EndIf}
-
+   dsm_dtm_compare,
    DEMMapf,DEMMapDraw,
    DEMCoord,
    DEMLOSW,
@@ -3497,6 +3524,7 @@ begin
       AddXYbox1.Visible := GISdb[DBonTable].MyData.FieldExists('X1') and GISdb[DBonTable].MyData.FieldExists('Y2') and GISdb[DBonTable].MyData.FieldExists('X3') and GISdb[DBonTable].MyData.FieldExists('Y4');
       LidarWaveform1.Visible := GISdb[DBonTable].MyData.FieldExists('RH99');
       DEMIX2.Visible := GISdb[DBonTable].MyData.FieldExists('DEMIX_TILE');
+      DTMDSMcomparison1.Visible := GISdb[dbOnTable].MyData.FieldExists('GRID_SIZE') and GISdb[dbOnTable].MyData.FieldExists('DSM_NAME') and GISdb[dbOnTable].MyData.FieldExists('DTM_NAME');
       GridCellPopupMenu6.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -3807,6 +3835,12 @@ begin
    end
    else DisplayAndPurgeStringList(Findings,SelectedColumn + ' non numeric values=' + IntToStr(Findings.Count));
 end;
+
+procedure Tdbtablef.FUVgridtwoLSPs1Click(Sender: TObject);
+begin
+   GridOfCriterionForMultipleDEMcomparisons(DBonTable,'ELVD_MAE');
+end;
+
 
 procedure Tdbtablef.BitBtn4Click(Sender: TObject);
 begin
@@ -4748,7 +4782,7 @@ begin
        Result.Caption := 'Profile ' + TStr;
        Result.OpenDataFile(rf,'');
 
-       if (Sender = CompareshapefileandDEMprofiles1) then Result.OpenPointSymbolFile(rf2,'',Result.Symbol);
+       if (Sender = CompareshapefileandDEMprofiles1) then Result.OpenPointSymbolFile(rf2,'',Result.MainSymbol);
 
       for i := 0 to pred(aShapeFile.CurrentPolyLineHeader.NumPoints) do begin
          Lat := aShapeFile.CurrentLineCoords^[i].Lat;
@@ -4847,13 +4881,14 @@ end;
 
 procedure Tdbtablef.N2Dgraph2series1Click(Sender: TObject);
 begin
-   GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2series1);
+   GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2series);
 end;
 
 procedure Tdbtablef.N2Dgraph2yaxes1Click(Sender: TObject);
 begin
    GISdb[DBonTable].MakeGraph(dbgtN2Dgraph2yaxes1);
 end;
+
 
 procedure Tdbtablef.N2Dgraphallopendatabases1Click(Sender: TObject);
 var
@@ -4866,7 +4901,6 @@ var
    Words : tStringList;
 begin
    {$IfDef RecordGraph} WriteLineToDebugFile('Tdbtablef.N2Dgraphallopendatabases1Click in'); {$EndIf}
-   //with GISdb[DBonTable] do begin
      if (Sender = N2Dgraphallopendatabases1) or (Sender = N2Dgraphallopendatabaseslines1) then begin
         GISdb[DBonTable].PickNumericFields(dbgtUnspecified,2,'X axis variable','Y axis variable','');
      end;
@@ -4878,20 +4912,18 @@ begin
      ThisGraph.GraphDraw.VertLabel := GISdb[DBonTable].dbOpts.YField;
      ThisGraph.Caption := GISdb[DBonTable].dbOpts.XField + ' vs ' + GISdb[DBonTable].dbOpts.YField;
      ThisGraph.SetUpGraphForm;
-     //ThisGraph.GraphDraw.LegendList := tStringList.Create;
      if (Sender = N2Dgraphallopendatabaseslines1) then begin
         for i := 1 to 255 do begin
            ThisGraph.GraphDraw.LineSize256[i] := 2;
            if (i < 15) then ThisGraph.GraphDraw.Symbol[i].Size := 0;
         end;
      end;
-   //end;
 
    Words := tStringList.Create;
    Words.Add('NAME,PLOT,GRAY,LINE_WIDTH,LINE_COLOR,FILENAME');
 
      ShowHourglassCursor;
-     for j := 1 to MaxDataBase do if (GISdb[j] <> Nil) then begin
+     for j := 1 to MaxDataBase do if ValidDB(j) then begin
         if GISdb[j].MyData.FieldExists(XF) and GISdb[j].MyData.FieldExists(YF) then begin
             {$IfDef RecordGraph} WriteLineToDebugFile(GISDB[j].DBName); {$EndIf}
             GISdb[j].MyData.First;
@@ -4903,9 +4935,9 @@ begin
                TStr := ThisGraph.GraphDraw.XYColorFilesPlotted.Strings[pred(ThisGraph.GraphDraw.XYColorFilesPlotted.Count)];
             end
             else if (Sender = N2Dgraphallopendatabases1) then begin
-               ThisGraph.Symbol.Color := GISdb[j].dbOpts.LineColor;
-               ThisGraph.Symbol.DrawingSymbol := GISdb[j].dbOpts.Symbol.DrawingSymbol;
-               ThisGraph.OpenPointSymbolFile(rfile,GISdb[j].dbName,ThisGraph.Symbol);
+               ThisGraph.MainSymbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j));  //GISdb[j].dbOpts.LineColor;
+               ThisGraph.MainSymbol.DrawingSymbol := GISdb[j].dbOpts.Symbol.DrawingSymbol;
+               ThisGraph.OpenPointSymbolFile(rfile,GISdb[j].dbName,ThisGraph.MainSymbol);
             end
             else if (Sender = N2Dgraphallopendatabaseslines1) then begin
                ThisGraph.OpenDataFile(rfile,GISdb[j].dbName,ConvertPlatformColorToTColor(GISdb[j].dbOpts.LineColor));
@@ -5268,6 +5300,53 @@ begin
       ShowStatus;
    end;
 end;
+
+procedure Tdbtablef.AddDSMDTMpair1Click(Sender: TObject);
+var
+   Lat,Long : float64;
+   DTMName,DSMName : PathStr;
+   Found : boolean;
+   fl : integer;
+   Tile : shortstring;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.AddDSMDTMpair1Click in'); {$EndIf}
+   IdentifyDSMandDTM1Click(nil);
+   SetColorForProcessing;
+   fl := GISdb[DBonTable].MyData.GetFieldLength('DEMIX_TILE');
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DEM_PAIR',3);
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DSM_NAME',fl+3);
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DTM_NAME',fl+3);
+   repeat
+       GISdb[DBonTable].EmpSource.Enabled := false;
+       GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
+       if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+           Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+           if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) and GetDSMandDTMTileNamesFromLatLong(DBonTable,Lat,Long,DTMName,DSMName) then begin
+              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DSMName));
+              GISdb[DBonTable].MyData.Edit;
+              GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME',DSMname);
+              GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME',DTMname);
+              GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_PAIR','YES');
+              GISdb[DBonTable].MyData.Post;
+              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DTMName));
+              GISdb[DBonTable].MyData.Edit;
+              GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_PAIR','YES');
+              GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME',DTMname);
+              GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME',DSMname);
+              GISdb[DBonTable].MyData.Post;
+           end
+           else begin
+              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
+              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
+           end;
+       end;
+   until GISdb[DBonTable].MyData.FiltRecsInDB = 0;
+
+   SetColorForWaiting;
+   GISdb[DBonTable].ClearGISFilter;
+   ShowStatus;
+end;
+
 
 procedure Tdbtablef.AddDSMPCFORESTPCURBANPC1Click(Sender: TObject);
 var
@@ -7736,6 +7815,122 @@ begin
    Symmetric1Click(Sender);
 end;
 
+
+procedure Tdbtablef.CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
+var
+   Areas,Results : tStringList;
+   AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
+   i,j : integer;
+   RefALOS_DSM,RefALOS_DTM,AlosName,
+   fName,DSMName,DTMName,CopNAME,FathomName,OldName,cName,tName : PathStr;
+begin
+  {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click in'); {$EndIf}
+   WantShowProgress := false;
+   if GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM') then begin
+       BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
+       GISdb[DBonTable].ApplyGISFilter(BaseFilter );
+       Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
+       for I := 0 to pred(Areas.Count) do begin
+          AreaName := Areas.Strings[i];
+          {$IfDef RecordDEMIX} WriteLineToDebugFile('Area=' + AreaName); {$EndIf}
+          wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName,true);
+          fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_cop_dsm_dtm\';
+          SafeMakeDir(fName);
+          fName := fName + AreaName + '_cop_compare_dsm_dtm.csv';
+          if not FileExists(fName) then begin
+              Results := nil;
+              theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
+              {$IfDef RecordDEMIX} WriteLineToDebugFile('filter=' + theFilter); {$EndIf}
+              GISdb[DBonTable].ApplyGISFilter(theFilter);
+              j := 0;
+              while not GISdb[DBonTable].MyData.eof do begin
+                  wmDEM.SetPanelText(0,TimeToStr(Now),true);
+                  inc(j);
+                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
+                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME');
+                  if UpperCase(copy(tname,1,3)) <> UpperCase(cName) then tName := cname + tName;
+                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_cop.tif';
+                  if not FileExists(DSMname) then DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_srtm.tif';
+                  RefALOS_DSM := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_alos.tif';
+
+(*
+                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
+                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME');
+
+                  OldName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_cop.tif';
+                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_cop.tif';
+                  if FileExists(OldName) then begin
+                     RenameFile(OldName,DSMname);
+                  end;
+
+                  OldName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_srtm.tif';
+                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_srtm.tif';
+                  if FileExists(OldName) then begin
+                     RenameFile(OldName,DSMname);
+                  end;
+
+                  OldName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_alos.tif';
+                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_alos.tif';
+                  if FileExists(OldName) then begin
+                     RenameFile(OldName,DSMname);
+                  end;
+*)
+                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
+                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME');
+                  if UpperCase(copy(tname,1,3)) <> UpperCase(cName) then tName := cname + tName;
+                  DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_cop.tif';
+                  if not FileExists(DTMname) then DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_srtm.tif';
+                  RefALOS_DTM := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_alos.tif';
+
+
+                  CopName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\cop.tif';
+                  ALOSname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\alos.tif';
+                  Fathomname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\fathom.tif';
+
+                  if FileExists(DSMName) and FileExists(DTMname) and FileExists(CopName) then begin
+                      TStr := IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
+                      wmDEM.SetPanelText(2,TStr,true);
+                      {$IfDef RecordDEMIX} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
+                      TileStats := RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
+                                   RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
+                                   RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
+                      MakeDBtoCompareDSMandDTM(CopName,DSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeDBtoCompareDSMandDTM(Copname,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeDBtoCompareDSMandDTM(FathomName,DSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeDBtoCompareDSMandDTM(FathomName,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeDBtoCompareDSMandDTM(DSMname,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeDBtoCompareDSMandDTM(ALOSName,RefALOS_DSM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeDBtoCompareDSMandDTM(ALOSName,RefALOS_DTM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                  end
+                  else begin
+                     MessageToContinue('File missing ' + DSMName + '   ' + DTMName + '   ' + CopName);
+                  end;
+
+
+                  GISdb[DBonTable].MyData.Next;
+              end;
+              if (Results <> nil) and (Results.Count > 1) then begin
+                 Results.SaveToFile(fName);
+                 Results.Destroy;
+              end;
+          end;
+       end;
+   end
+   else begin
+      MessageToContinue('DB requires fields DEM_PAIR and REF_DEM');
+   end;
+   wmDEM.ClearStatusBarPanelText;
+   GISdb[DBonTable].ClearGISFilter;
+   SetColorForWaiting;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click out'); {$EndIf}
+end;
+
+
+procedure Tdbtablef.CompareDSMDTM1Click(Sender: TObject);
+begin
+   StartDSMandDTMcomparison(DBonTable);
+end;
+
 procedure Tdbtablef.Comparerankingswithdifferentcriteria1Click(Sender: TObject);
 begin
    CompareRankings(DBonTable);
@@ -8837,7 +9032,7 @@ end;
 
 procedure Tdbtablef.N2Dgraphcolorcoded1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcoded1);
+   GISdb[DBonTable].MakeGraph(dbgtN2DgraphcolorNumericField);
 end;
 
 
@@ -9921,30 +10116,28 @@ end;
 
 procedure Tdbtablef.N2Dgraphcolorcodetext1Click(Sender: TObject);
 begin
-   GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext1);
+   GISdb[DBonTable].MakeGraph(dbgtN2Dgraphcolorcodetext);
 end;
 
 
 procedure Tdbtablef.N2DgraphCOLORfield1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield1);
+  GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield1);
 end;
 
 procedure Tdbtablef.N2Dgraphsimplelines1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].MakeGraph(dbgtN2Dgraphsimplelines1);
+  GISdb[DBonTable].MakeGraph(dbgtN2Dgraphsimplelines1);
 end;
 
 procedure Tdbtablef.Eachprofileseparately1Click(Sender: TObject);
 begin
-   with GISdb[DBonTable] do begin
-      if (MyData.RecordCount > 35) and (Not AnswerIsYes('Proceed with ' + IntToStr(MyData.RecordCount) + ' records')) then exit;
-      GISdb[DBonTable].MyData.First;
-      while not GISdb[DBonTable].MyData.eof do begin
-         N3Dshapefileprofile1Click(Sender);
-         GISdb[DBonTable].MyData.Next;
-      end;
-   end;
+    if (GISdb[DBonTable].MyData.RecordCount > 35) and (Not AnswerIsYes('Proceed with ' + IntToStr(GISdb[DBonTable].MyData.RecordCount) + ' records')) then exit;
+    GISdb[DBonTable].MyData.First;
+    while not GISdb[DBonTable].MyData.eof do begin
+       N3Dshapefileprofile1Click(Sender);
+       GISdb[DBonTable].MyData.Next;
+    end;
 end;
 
 procedure Tdbtablef.Earthquakefocalmechanisms3D1Click(Sender: TObject);
@@ -10261,7 +10454,7 @@ begin
    GISdb[DBonTable].dbOpts.XField := 'LAT';
    GISdb[DBonTable].dbOpts.YField := 'ICESAT_GRD';
    GISdb[DBonTable].dbOpts.StringColorField := 'DATE';
-   GISdb[DBonTable].ActuallyDrawGraph(dbgtN2Dgraphcolorcodetext1);
+   GISdb[DBonTable].ActuallyDrawGraph(dbgtN2Dgraphcolorcodetext);
 end;
 
 procedure Tdbtablef.Layersymbology1Click(Sender: TObject);
@@ -10423,6 +10616,36 @@ begin
    {$Else}
       DEMIX_graph_best_in_Tile(DBonTable,false);
    {$EndIf}
+end;
+
+procedure Tdbtablef.GraphscompartingDSMDTMdifferencedistribtuions1Click(Sender: TObject);
+var
+  theTiles : tStringList;
+  I : integer;
+begin
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    TheTiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DTM_NAME');
+    for I := 0 to pred(TheTiles.Count) do begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+       GraphDSMandDTMdifferences(DBonTable,TheTiles.Strings[i],'SLPD');
+    end;
+    TheTiles.Destroy;
+    ShowStatus;
+end;
+
+procedure Tdbtablef.GraphscompringDSMDTMslopes1Click(Sender: TObject);
+var
+  theTiles : tStringList;
+  I : integer;
+begin
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    TheTiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DTM_NAME');
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    for I := 0 to pred(TheTiles.Count) do begin
+       GraphCompareDSMandDTMslopes(DBonTable,TheTiles.Strings[i]);
+    end;
+    TheTiles.Destroy;
+    ShowStatus;
 end;
 
 procedure Tdbtablef.GraphSSIMFUVbycluster1Click(Sender: TObject);
@@ -11446,6 +11669,27 @@ begin
    ShowStatus;
 end;
 
+procedure Tdbtablef.IdentifyDSMandDTM1Click(Sender: TObject);
+var
+   Tile,TStr : shortstring;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('IdentifyDSMandDTM1Click in'); {$EndIf}
+   SetColorForProcessing;
+   ShowHourglassCursor;
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'REF_DEM',3);
+   GISdb[DBonTable].MyData.First;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   while not GISdb[DBonTable].MyData.eof do begin
+      Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+      GISdb[DBonTable].MyData.Edit;
+      GISdb[DBonTable].MyData.SetFieldByNameAsString('REF_DEM',IdentifyDEMIXtileAsDTMorDSM(Tile));
+      GISdb[DBonTable].MyData.Next;
+   end;
+   ShowStatus;
+   SetColorForWaiting;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('IdentifyDSMandDTM1Click out'); {$EndIf}
+end;
+
 
 procedure Tdbtablef.iesbyopinions1Click(Sender: TObject);
 var
@@ -11961,6 +12205,95 @@ begin
       Drift_model.LoadDriftModel(GISdb[DBonTable].theMapOwner,GISdb[DBonTable].DBNumber);
    {$EndIf}
 end;
+
+
+procedure Tdbtablef.DSMlessthanDTM1Click(Sender: TObject);
+var
+   TStr : shortstring;
+begin
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DSM_LT_DTM',3);
+   GISdb[DBonTable].ApplyGISFilter('GRID_SIZE=30');
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   while not GISdb[DBonTable].MyData.eof do begin
+      if GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DSM_SLOPE') < GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DTM_SLOPE') - 1 then TStr := 'YES' else TStr := 'NO';
+      GISdb[DBonTable].MyData.Edit;
+      GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_LT_DTM',TStr);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   GISdb[DBonTable].ClearGISFilter;
+   ShowStatus;
+end;
+
+procedure Tdbtablef.DTDSMcomparison1Click(Sender: TObject);
+begin
+    GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME'));
+end;
+
+function SourceFileNameFromTileName(theName : shortstring) : shortstring;
+var
+   al : integer;
+begin
+   al := length(theName);
+   Result := copy(theName,4,al-3);
+end;
+
+
+
+procedure Tdbtablef.DTMDSMcomparison1Click(Sender: TObject);
+var
+   Areas,Results : tStringList;
+   AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
+   i,j : integer;
+   fName,DSMName,DTMName: PathStr;
+begin
+  {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click in'); {$EndIf}
+   WantShowProgress := false;
+   if GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM') then begin
+       BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
+       GISdb[DBonTable].ApplyGISFilter(BaseFilter );
+       Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
+       for I := 0 to pred(Areas.Count) do begin
+          AreaName := Areas.Strings[i];
+          {$IfDef RecordDEMIX} WriteLineToDebugFile('Area=' + AreaName); {$EndIf}
+          wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName,true);
+          fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_dsm_dtm\';
+          SafeMakeDir(fName);
+          fName := fName + AreaName + '_compare_dsm_dtm.csv';
+          if not FileExists(fName) then begin
+              Results := nil;
+              theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
+              {$IfDef RecordDEMIX} WriteLineToDebugFile('filter=' + theFilter); {$EndIf}
+              GISdb[DBonTable].ApplyGISFilter(theFilter);
+              j := 0;
+              while not GISdb[DBonTable].MyData.eof do begin
+                  wmDEM.SetPanelText(0,TimeToStr(Now),true);
+                  inc(j);
+                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\source\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
+                  DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\source\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
+                  TStr := IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
+                  wmDEM.SetPanelText(2,TStr,true);
+                  {$IfDef RecordDEMIX} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
+                  TileStats := RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
+                               RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
+                               RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
+
+                  MakeDBtoCompareDSMandDTM(DSMname,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY'),TileStats,Results);
+                  GISdb[DBonTable].MyData.Next;
+              end;
+             Results.SaveToFile(fName);
+             Results.Destroy;
+          end;
+       end;
+   end
+   else begin
+      MessageToContinue('DB requires fields DEM_PAIR and REF_DEM');
+   end;
+   wmDEM.ClearStatusBarPanelText;
+   GISdb[DBonTable].ClearGISFilter;
+   SetColorForWaiting;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click out'); {$EndIf}
+end;
+
 
 procedure Tdbtablef.BackupDB1Click(Sender: TObject);
 begin
@@ -13810,33 +14143,29 @@ var
    WantedFieldName : ShortString;
    ft : tFieldType;
 begin
-   //with GISdb[DBonTable] do begin
-      WantedFieldName := SelectedColumn;
-      ft := GISdb[DBonTable].MyData.GetFieldType(WantedFieldName);
-      if (ft in [ftInteger,ftSmallInt,ftDate]) and AnswerIsYes('Confirm convert ' + WantedFieldName + ' to type string') then begin
-         GISdb[DBonTable].ChangeFieldType(WantedFieldName,'C');
-      end
-      else if (ft = ftString) then begin
-          if GISdb[DBonTable].MyData.GetFieldLength(WantedFieldName) > 12 then MessageToContinue('Field ' + WantedFieldName + ' too big to convert')
-          else begin
-             if AnswerIsYes('Confirm convert ' + WantedFieldName + ' to type integer') then
-               GISdb[DBonTable].ChangeFieldType(WantedFieldName,'N');
-          end;
-      end
-      else MessageToContinue('Cannot convert that field type');
-   //end;
-   ShowStatus;
+    WantedFieldName := SelectedColumn;
+    ft := GISdb[DBonTable].MyData.GetFieldType(WantedFieldName);
+    if (ft in [ftInteger,ftSmallInt,ftDate]) and AnswerIsYes('Confirm convert ' + WantedFieldName + ' to type string') then begin
+       GISdb[DBonTable].ChangeFieldType(WantedFieldName,'C');
+    end
+    else if (ft = ftString) then begin
+        if GISdb[DBonTable].MyData.GetFieldLength(WantedFieldName) > 12 then MessageToContinue('Field ' + WantedFieldName + ' too big to convert')
+        else begin
+           if AnswerIsYes('Confirm convert ' + WantedFieldName + ' to type integer') then
+             GISdb[DBonTable].ChangeFieldType(WantedFieldName,'N');
+        end;
+    end
+    else MessageToContinue('Cannot convert that field type');
+    ShowStatus;
 end;
 
 
 procedure Tdbtablef.Changelatlongfields1Click(Sender: TObject);
 begin
-   //with GISdb[DBonTable] do begin
-      GISdb[DBonTable].LatFieldName := GISdb[DBonTable].PickField('Latitude',[ftFloat]);
-      GISdb[DBonTable].LongFieldName := GISdb[DBonTable].PickField('Longitude',[ftFloat]);
-      GISdb[DBonTable].ItsAPointDB := GISdb[DBonTable].LatLongFieldsPresent;
-      ShowStatus;
-   //end;
+    GISdb[DBonTable].LatFieldName := GISdb[DBonTable].PickField('Latitude',[ftFloat]);
+    GISdb[DBonTable].LongFieldName := GISdb[DBonTable].PickField('Longitude',[ftFloat]);
+    GISdb[DBonTable].ItsAPointDB := GISdb[DBonTable].LatLongFieldsPresent;
+    ShowStatus;
 end;
 
 

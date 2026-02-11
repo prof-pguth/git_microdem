@@ -9,7 +9,7 @@
 
 
 
-function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float64) : boolean; {$IfDef CurvatureInline} inline; {$EndIf}
+function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float32) : boolean; {$IfDef CurvatureInline} inline; {$EndIf}
 //https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/PARAMETERS.md
 var
    SA : tSlopeAspectRec;
@@ -729,7 +729,7 @@ begin
          Moment(zs^,MomentVar,msAfterStdDev);
          Result := true;
          PCLower := 100 * NumLower / MomentVar.NPts;
-         TPI:= (zc - AvgElev);
+         TPI := (zc - AvgElev);
       end
       else Result := false;
       Dispose(zs);

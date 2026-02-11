@@ -267,9 +267,9 @@ var
    NCrit,NDEM : integer;
    rfile : file;
    fName : PathStr;
-   Clusters,DEMs : tStringList;
-   Color : tColor;
-   Graph : array[1..15] of tThisBaseGraph;
+   Clusters{,DEMs} : tStringList;
+   //Color : tColor;
+   //Graph : array[1..15] of tThisBaseGraph;
 
 (*
       procedure StartGraph(i : integer);

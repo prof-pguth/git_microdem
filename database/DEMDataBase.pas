@@ -35,6 +35,7 @@
       //{$Define RecordIcesat}
       //{$Define RecordPlotFabric}
       //{$Define RecordHistogram}
+      //{$Define TrackColors}
 
       //{$Define RecordFieldStatistics}
       //{$Define RecordOpenDataBase}
@@ -75,7 +76,7 @@
       //{$Define RecordMaskDEMShapeFile}
       //{$Define RecordZoomMap}
       //{$Define RecordIcons}
-      //{$Define RecordDBGraphs}
+      {$Define RecordDBGraphs}
       //{$Define RecordUnique}
       //{$Define RecordQuadFill
 
@@ -202,8 +203,10 @@ const
 type
   tHowRestrict = (resNone);
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt,adAvgElevInWindow);
-  tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,dbgtN2Dgraph2series1,
-     N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2Dgraphcolorcodetext1, dbgtN2Dgraphcolorcoded1,dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtN2DgraphCOLORfield1,dbgtPlot,dbgtUnspecified);
+  tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,
+     dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,
+     dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield1,
+     dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtPlot,dbgtUnspecified);
 
   tDBSaveOptions = record
      LinkFieldThisDB,LinkFieldOtherDB,
@@ -499,7 +502,6 @@ type
          procedure CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
 
 
-     function NumUniqueEntriesInDB(fName : shortstring) : integer;
 
      procedure DefineColorTable;
      function ComputeColorFromRecord(var Color : tColor) : boolean;
@@ -507,7 +509,7 @@ type
 
      function ImageForTable : boolean;
 
-      procedure PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false); overload;
+      procedure PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring); overload;
 
      procedure FindClosestRecord(Lat, Long: float64; var ClosestRecNo: integer; var MinD : float64);
 
@@ -521,6 +523,7 @@ type
      function GetFullImageName(var fName : PathStr) : boolean;
      function GetRotatedImage(var bmp : tMyBitmap; var fName : PathStr) : boolean;
 
+     function NumUniqueEntriesInDBlinkPossible(fName : shortstring) : integer;
      procedure DBFieldUniqueEntries(FieldName : shortstring; var FieldsInDB : tStringList);
 
      procedure MarkRecordsOnDEM(fName : shortstring; DEM : integer);
@@ -648,8 +651,8 @@ type
             H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
          procedure AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
          function Stationtimeseries : tThisBaseGraph;
-         function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
-         function ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
+         function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
+         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil) : TThisbasegraph;
          procedure MonthlyWindPlotCurrentPoint;
 
 
@@ -659,22 +662,6 @@ type
         procedure StartClimateDisplay(Mode : integer);
      {$EndIf}
 
-     {$IfDef ExRedistrict}
-     {$Else}
-        procedure SetRedistrictPattern(var Bitmap2 : tMyBitmap);
-     {$EndIf}
-
-     {$IfDef ExSidescan}
-     {$Else}
-        //procedure PlotSideScanCoverage(Bitmap : tMyBitmap);
-        //procedure PlotSingleSideScanLeg(Bitmap : tMyBitmap);
-     {$EndIf}
-
-     {$IfDef IncludeRiverNetworks}
-        procedure GetDrainageBasinStats(var StrahlerOrder : integer; var ThalwegLength,TotalLength : float64);
-        procedure GetDrainageBasinNetwork;
-        procedure FindDrainageBasinFromStreams;
-     {$EndIf}
 
      {$IfDef ExGeostats}
      {$Else}
@@ -699,6 +686,25 @@ type
         function DrawFocalMechanism(NetRadius : integer) : tMyBitmap;
         procedure PlotDipsAndStrikes(Bitmap : tMyBitmap);
     {$EndIf}
+
+     {$IfDef ExRedistrict}
+     {$Else}
+        procedure SetRedistrictPattern(var Bitmap2 : tMyBitmap);
+     {$EndIf}
+
+     {$IfDef ExSidescan}
+     {$Else}
+        //procedure PlotSideScanCoverage(Bitmap : tMyBitmap);
+        //procedure PlotSingleSideScanLeg(Bitmap : tMyBitmap);
+     {$EndIf}
+
+     {$IfDef IncludeRiverNetworks}
+        procedure GetDrainageBasinStats(var StrahlerOrder : integer; var ThalwegLength,TotalLength : float64);
+        procedure GetDrainageBasinNetwork;
+        procedure FindDrainageBasinFromStreams;
+     {$EndIf}
+
+
   end;
 
 procedure InitializeDEMdbs;
@@ -903,7 +909,7 @@ begin
 end;
 
 
-function TGISdataBaseModule.NumUniqueEntriesInDB(fName : shortstring) : integer;
+function TGISdataBaseModule.NumUniqueEntriesInDBlinkPossible(fName : shortstring) : integer;
 begin
    EmpSource.Enabled := false;
    Result := MyData.NumUniqueEntriesInDB(fName);
@@ -1374,7 +1380,7 @@ begin
 end;
 
 
-procedure TGISdataBaseModule.PickNumericFields(GraphType :  tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring; StringColor : boolean = false);
+procedure TGISdataBaseModule.PickNumericFields(GraphType : tdbGraphType; NFields : integer; l1 : shortstring; l2 : shortstring; l3 : shortstring);
 {$IfDef FMX}
 begin
 {$EndIf}
@@ -1412,10 +1418,15 @@ begin
       end;
       if (DbOpts.XField = '') then ComboBox1.Text := NumerFields.Strings[0] else ComboBox1.Text := DbOpts.XField;
       if (DbOpts.YField = '') then ComboBox2.Text := NumerFields.Strings[1] else ComboBox2.Text := DbOpts.YField;
-      if StringColor then begin
+      if GraphType in [dbgtN2Dgraphcolorcodetext] then begin
          PetdbUtils.GetFields(MyData,dbopts.VisCols,[ftString,ftInteger,ftSmallInt],StringIntFields);
+         for i := 0 to pred(StringIntFields.Count) do begin
+            ComboBox4.Items.Add(StringIntFields.Strings[i]);
+         end;
          if (DbOpts.StringColorField = '') then ComboBox4.Text := StringIntFields[0] else ComboBox4.Text := DbOpts.StringColorField;
          StringIntFields.Free;
+         Label5.Visible := true;
+         ComboBox3.Visible := false;
       end;
       ComboBox5.Text := DbOpts.NumericColorField;
       ComboBox6.Text := DbOpts.SizeField;
@@ -1426,29 +1437,21 @@ begin
          Label3.Visible := false;
       end
       else begin
-         if (NFields = 3) and StringColor then begin
-            Label5.Visible := true;
-            ComboBox4.Visible := true;
-            ComboBox3.Visible := false;
-            for i := 0 to pred(StringIntFields.Count) do ComboBox4.Items.Add(StringIntFields.Strings[i]);
-         end
-         else if (NFields = 3) and (DbOpts.ZField = '') then ComboBox3.Text := NumerFields.Strings[2] else ComboBox3.Text := DbOpts.ZField;
+         if (NFields = 3) and (DbOpts.ZField = '') then ComboBox3.Text := NumerFields.Strings[2] else ComboBox3.Text := DbOpts.ZField;
       end;
       NumerFields.Free;
 
       PetdbUtils.GetFields(LinkTable,dbOpts.VisCols,[ftString,ftInteger,ftSmallInt],NumerFields);
       for i := 0 to pred(NumerFields.Count) do ComboBox4.Items.Add(NumerFields.Strings[i]);
 
-      if (GraphType in [dbgtN2Dgraphcolorcodetext1,dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1]) then begin
-         ComboBox5.Visible := false;
+      ComboBox5.Visible := GraphType in [dbgtN2DgraphcolorNumericField];
+      ComboBox4.Visible := GraphType in [dbgtN2Dgraphcolorcodetext];
+      Label5.Visible := GraphType in [dbgtN2Dgraphcolorcodetext];
+
+      if (GraphType in [dbgtN2Dgraphcolorcodetext,dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1]) then begin
          ComboBox6.Visible := false;
          Label6.Visible := false;
          Label7.Visible := false;
-      end;
-
-      if (GraphType in [dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1]) then begin
-         ComboBox4.Visible := false;
-         Label5.Visible := false;
       end;
 
       ShowModal;
@@ -4690,12 +4693,11 @@ end;
 
 
 procedure TGISdataBaseModule.DBFieldUniqueEntries(FieldName : shortstring; var FieldsInDB : tStringList);
+
+      procedure UseCorrectTable(table : tMyData);
       var
          Count,rc : integer;
          TStr : ShortString;
-
-
-      procedure UseCorrectTable(table : tMyData);
       begin
          try
             FieldsInDB := tStringList.Create;
@@ -4724,8 +4726,11 @@ procedure TGISdataBaseModule.DBFieldUniqueEntries(FieldName : shortstring; var F
 begin
    //{$IfDef RecordUnique} WriteLineToDebugFile('TGISdataBaseModule.DBFieldUniqueEntries in'); {$EndIf}
    EmpSource.Enabled := false;
-   if (LinkTable <> Nil) and LinkedField(FieldName) then UseCorrectTable(LinkTable)
-   else UseCorrectTable(MyData);
+   //if (LinkTable <> Nil) and LinkedField(FieldName) then UseCorrectTable(LinkTable)
+   //else UseCorrectTable(MyData);
+   FieldsInDB := Nil;
+   if (LinkTable <> Nil) and LinkedField(FieldName) then FieldsInDB := LinkTable.ListUniqueEntriesInDB(FieldName)
+   else FieldsInDB := MyData.ListUniqueEntriesInDB(FieldName);
 end;
 
 

@@ -9,6 +9,114 @@
 
 
 
+procedure BestDEMonGraphTwoParameters(db : integer; Criteria,DEMs : tstringList);
+var
+   Compares,FileList : tStringList;
+   i : integer;
+   aDEM,Criterion,BaseFilter : shortstring;
+   fName,LegfName : PathStr;
+   gr : tThisBaseGraph;
+   Tolerance : float32;
+   bmp : tMyBitmap;
+
+   function DoGraph : tThisBaseGraph;
+   var
+      j,k,NumTies,NumSolo : integer;
+      rfile : array[0..10] of file;
+      v : array[1..3] of float32;
+      ThisWinners : shortstring;
+      NumWins : array[0..10] of integer;
+      Sym : tFullSymbolDeclaration;
+   begin
+      for j := 0 to 10 do NumWins[j] := 0;
+       GISdb[db].EmpSource.Enabled := false;
+       GISdb[db].MyData.First;
+       repeat
+          ThisWinners := WinnerAndTies(db,DEMs,Tolerance);
+          if MDdef.DEMIX_IgnoreTies and StrUtils.AnsiContainsText(ThisWinners,'-') then begin
+          end
+          else begin
+              for k := 0 to pred(DEMs.Count) do begin
+                 aDEM := UpperCase(DEMs.Strings[k]);
+                 if StrUtils.AnsiContainsText(ThisWinners,aDEM) then begin
+                    inc(NumWins[k]);
+                 end;
+              end;
+          end;
+          GISdb[db].MyData.Next;
+       until GISdb[db].MyData.eof;
+
+      Result := TThisbasegraph.Create(Application);
+           for k := 0 to pred(DEMs.Count) do begin
+              fName := UpperCase(DEMs.Strings[k]) + '_(n=' + IntToStr(NumWins[k]) + ')';
+              Result.OpenDataFile(rfile[k],fName);
+              Result.GraphDraw.ShowPoints[k] := true;
+              Result.GraphDraw.ShowLine[k] := false;
+              Result.GraphDraw.Symbol[k].DrawingSymbol := FilledBox;
+              Result.GraphDraw.Symbol[k].Size := 5;
+              Result.GraphDraw.Symbol[k].Color := DEMIXColorFromDEMName(DEMs.Strings[k]);
+           end;
+           GISdb[db].EmpSource.Enabled := false;
+           GISdb[db].MyData.First;
+           NumTies := 0;
+           NumSolo := 0;
+           GISdb[db].MyData.First;
+           repeat
+              if GISdb[db].GetFloat32FromTableLinkPossible(GISdb[db].dbOpts.XField,v[1]) and
+                  GISdb[db].GetFloat32FromTableLinkPossible(GISdb[db].dbOpts.YField,v[2]) then begin
+                ThisWinners := WinnerAndTies(db,DEMs,Tolerance);
+                if MDdef.DEMIX_IgnoreTies and StrUtils.AnsiContainsText(ThisWinners,'-') then begin
+
+                end
+                else begin
+                    for k := pred(DEMs.Count) downto 0 do begin
+                       aDEM := UpperCase(DEMs.Strings[k]);
+                       if StrUtils.AnsiContainsText(ThisWinners,aDEM) then begin
+                          BlockWrite(Rfile[k],v,1);
+                       end;
+                    end;
+                end;
+              end;
+              GISdb[db].MyData.Next;
+           until GISdb[db].MyData.eof;
+           for k := 0 to pred(DEMs.Count) do CloseFile(rfile[k]);
+           {$If Defined(RecordDEMIX)} WriteLineToDebugFile(Criterion + ' ties=' + IntToStr(NumTies) + ' solo=' + IntToStr(NumSolo)); {$EndIf}
+      //Result.GraphDraw.Symbol[0].Size := 8;
+      Result.GraphDraw.LRcornerText := GISdb[db].MyData.Filter + '  n=' + IntToStr(GISdb[db].MyData.FiltRecsInDB);
+      Result.GraphDraw.InsideMarginLegend := lpNWMap;
+      Result.GraphDraw.MinVertAxis := -2;
+      Result.GraphDraw.MaxVertAxis := 90;
+      Result.GraphDraw.MinHorizAxis := -2;
+      Result.GraphDraw.MaxHorizAxis := 70;
+      Result.GraphDraw.HorizLabel := GISdb[db].dbOpts.XField;
+      Result.GraphDraw.VertLabel := GISdb[db].dbOpts.YField;
+      Result.GraphDraw.BottomMargin := 75;
+      Result.GraphDraw.LeftMargin := 90;
+      //Result.GraphDraw.BottomLegendFName := Legfname;
+      Result.RedrawDiagram11Click(Nil);
+   end;
+
+begin  {procedure BestDEMonGraphTwoParameters}
+    BaseFilter := GISdb[db].MyData.Filter;
+    for I := 0 to pred(Criteria.Count) do begin
+       Criterion := Criteria.Strings[i];
+       GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'Criterion=' + QuotedStr(Criterion));
+       Tolerance := CriterionTieTolerance(Criterion);
+       GISdb[db].dbOpts.XField := 'BARREN_PC';
+       GISdb[db].dbOpts.YField := 'AVG_SLOPE';
+       GISdb[db].dbOpts.Symbol.Size := 8;
+       gr := DoGraph;
+          //fName := NextFileNumber(MDtempdir,'fuv_grid_','.bmp');
+          //SaveImageAsBMP(Gr[i].Image1,fName);
+          //FileList.Add(fName);
+    end;
+   //MakeBigBitmap(FileList,'',fName,2);
+   GISdb[db].ApplyGISFilter(BaseFilter);
+   GISdb[db].ShowStatus;
+end {procedure BestDEMonGraphTwoParameters};
+
+
+
 procedure DEMIXMeanMedianHistograms(db : integer);
 var
    Min,Max,BinSize : float32;
@@ -912,6 +1020,8 @@ end {procedure MultipleBestByParametersSortByValue};
 
 
 function DEMIX_SSIM_FUV_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
+begin
+(*
 var
    DEM : shortstring;
    i,j,k,NCrit,NDEM : integer;
@@ -1202,7 +1312,7 @@ var
    rfile : file;
    NumTies : integer;
    v : array[1..3] of float32;
-   SaveFilter,WinnerString : shortstring;
+   SaveFilter{,WinnerString} : shortstring;
    Scores : tDEMIXfloats;
 
       function Graph(Param : shortstring; theParams : tStringList) : tThisBaseGraph;
@@ -1210,7 +1320,7 @@ var
         y : float32;
         i,j : integer;
         fName : PathStr;
-        aline,TStr : shortstring;
+        aline{,TStr} : shortstring;
       begin
          Result := OpenGraphForCriterionScoresOrEvaluations(dbOnTable,DEMs,'','',false,false);
          Result.OpenXYColorFile(rfile,'area_evals_');

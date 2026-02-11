@@ -93,7 +93,7 @@ end;
            if ValidLatLongFromTable(Lat,Long) then begin
               TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,x,y);
               Len := round(MyData.GetFieldByNameAsFloat('S2S3')*MDDef.GrainLengthMultiple);
-              if MDDef.FabColorByField then PlotColor := Petmar.PlatformRainbowColorFunct(MyData.GetFieldByNameAsFloat(dbOpts.FloatColorField),MDDef.FabColorMin,MDDef.FabColorMax);
+              if MDDef.FabColorByField then PlotColor := Petmar.RainbowRGBFunct(MyData.GetFieldByNameAsFloat(dbOpts.FloatColorField),MDDef.FabColorMin,MDDef.FabColorMax);
               PlotOrientedLine(Bitmap,x,y,Len,MyData.GetFieldByNameAsFloat('FABRIC_DIR'),PlotColor,MDDef.GrainLineWidth);
            end;
            for i := 1 to MDDef.FabricCalcThin do MyData.Next;
@@ -106,11 +106,8 @@ end;
 
 
             procedure TGISdataBaseModule.RedrawLayerOnMap;
-            //var
-               //NoRedraw : boolean;
             begin
-               if (TheMapOwner <> Nil) {and dbPlotted} then begin
-                  //NoRedraw := {(theMapOwner <> Nil) and} theMapOwner.MapDraw.ClosingMapNow;
+               if (TheMapOwner <> Nil) then begin
                   if (not theMapOwner.MapDraw.ClosingMapNow) then begin
                      TheMapOwner.MapDraw.ClearGISLayer(DBNumber);
                      theMapOwner.DoFastMapRedraw;
@@ -327,7 +324,6 @@ end;
                       EmpSource.Enabled := false;
                       SetBitmapColorsForStringFieldPlot(Bitmap,I,pred(StringCategories.Count));
                       TStr := StringCategories.Strings[i];
-
                       if (MyData.GetFieldType(dbOpts.FloatColorField) = ftString) then TStr := QuotedStr(TStr);
                       MyData.ApplyFilter( PetDBUtils.AddAndIfNeeded(OldFilter) + dbOpts.FloatColorField + '=' + TStr);
 

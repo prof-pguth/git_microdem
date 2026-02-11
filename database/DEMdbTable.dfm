@@ -2,8 +2,8 @@ object dbtablef: Tdbtablef
   Left = 62
   Top = 306
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 981
-  ClientWidth = 1180
+  ClientHeight = 1496
+  ClientWidth = 2121
   Color = clBtnFace
   ParentFont = True
   FormStyle = fsMDIChild
@@ -17,8 +17,8 @@ object dbtablef: Tdbtablef
   TextHeight = 15
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 962
-    Width = 1180
+    Top = 1477
+    Width = 2121
     Height = 19
     Panels = <
       item
@@ -28,7 +28,7 @@ object dbtablef: Tdbtablef
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 1180
+    Width = 2121
     Height = 32
     Align = alTop
     TabOrder = 1
@@ -231,7 +231,7 @@ object dbtablef: Tdbtablef
   object Panel3: TPanel
     Left = 0
     Top = 73
-    Width = 1180
+    Width = 2121
     Height = 41
     Align = alTop
     TabOrder = 2
@@ -281,7 +281,7 @@ object dbtablef: Tdbtablef
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1180
+    Width = 2121
     Height = 41
     Align = alTop
     TabOrder = 4
@@ -543,7 +543,7 @@ object dbtablef: Tdbtablef
   object Panel7: TPanel
     Left = 0
     Top = 114
-    Width = 1180
+    Width = 2121
     Height = 41
     Align = alTop
     TabOrder = 3
@@ -567,8 +567,8 @@ object dbtablef: Tdbtablef
   object DBGrid1: TDBGrid
     Left = 0
     Top = 155
-    Width = 1180
-    Height = 807
+    Width = 2121
+    Height = 1322
     Align = alClient
     TabOrder = 5
     TitleFont.Charset = DEFAULT_CHARSET
@@ -1078,6 +1078,32 @@ object dbtablef: Tdbtablef
     object PlotallXYFiles1: TMenuItem
       Caption = 'Plot all XY Files'
       OnClick = PlotallXYFiles1Click
+    end
+    object DSMDTMcomparison1: TMenuItem
+      Caption = 'DSM/DTM comparison'
+      object CompareDSMDTM1: TMenuItem
+        Caption = 'Compare DSM/DTM'
+        OnClick = CompareDSMDTM1Click
+      end
+      object N62: TMenuItem
+        Caption = '-'
+      end
+      object FUVgridtwoLSPs1: TMenuItem
+        Caption = 'FUV-grid two LSPs'
+        OnClick = FUVgridtwoLSPs1Click
+      end
+      object GraphscompringDSMDTMslopes1: TMenuItem
+        Caption = 'Graphs comparing DSM/DTM slopes for all tiles'
+        OnClick = GraphscompringDSMDTMslopes1Click
+      end
+      object GraphscompartingDSMDTMdifferencedistribtuions1: TMenuItem
+        Caption = 'Graphs comparing DSM/DTM difference distributions for all tiles'
+        OnClick = GraphscompartingDSMDTMdifferencedistribtuions1Click
+      end
+      object DSMlessthanDTM1: TMenuItem
+        Caption = 'DSM < DTM'
+        OnClick = DSMlessthanDTM1Click
+      end
     end
     object ICESat21: TMenuItem
       Caption = 'ICESat-2'
@@ -2138,6 +2164,10 @@ object dbtablef: Tdbtablef
     object Lidarwaveform1: TMenuItem
       Caption = 'LVIS waveform'
       OnClick = Lidarwaveform1Click
+    end
+    object DTDSMcomparison1: TMenuItem
+      Caption = 'DTM/DSM graph comparison'
+      OnClick = DTDSMcomparison1Click
     end
     object DEMIX2: TMenuItem
       Caption = 'DEMIX'
@@ -3765,6 +3795,17 @@ object dbtablef: Tdbtablef
     end
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
+      object DTMDSMcomparison1: TMenuItem
+        Caption = 'Create DB for DTM/DSM comparison'
+        OnClick = DTMDSMcomparison1Click
+      end
+      object CompareCopDEMtoDSMDTMandaggregate1: TMenuItem
+        Caption = 'Create DB for  CopDEM to DSM/DTM and aggregate'
+        OnClick = CompareCopDEMtoDSMDTMandaggregate1Click
+      end
+      object N60: TMenuItem
+        Caption = '-'
+      end
       object TransposeSSIMR2forclusters1: TMenuItem
         Caption = 'Transpose SSIM/FUV for K-means cluster'
         OnClick = TransposeSSIMR2forclusters1Click
@@ -3830,6 +3871,17 @@ object dbtablef: Tdbtablef
       object AddDSMPCFORESTPCURBANPC1: TMenuItem
         Caption = 'Add DSM_PC (FOREST_PC + URBAN_PC)'
         OnClick = AddDSMPCFORESTPCURBANPC1Click
+      end
+      object N61: TMenuItem
+        Caption = '-'
+      end
+      object IdentifyDSMandDTM1: TMenuItem
+        Caption = 'Identify DSM and DTM'
+        OnClick = IdentifyDSMandDTM1Click
+      end
+      object AddDSMDTMpair1: TMenuItem
+        Caption = 'Identify DSM/DTM pair'
+        OnClick = AddDSMDTMpair1Click
       end
       object N57: TMenuItem
         Caption = '-'

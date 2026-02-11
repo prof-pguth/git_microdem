@@ -719,7 +719,7 @@ procedure GetSampleBoxSize(WhichDEM : integer; var BoxSize : integer);
 
 function RectSpacingFactor(DataSpacing : tSpacingUnit) : float64;
 
-function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float64) : boolean; {$IfDef CurvatureInline} inline; {$EndIf}
+function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float32) : boolean; {$IfDef CurvatureInline} inline; {$EndIf}
 
 procedure MaskGrid(Map : tMapForm; DEM : integer; MatchCriteria : boolean; OnlyMissing : boolean = false);
 
@@ -1208,7 +1208,7 @@ begin
 end;
 
 
-function tDEMDataSet.ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false{; Offset : integer = 0}) : integer;
+function tDEMDataSet.ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false) : integer;
 var
    Col,Row,x,y,Npts : integer;
    z : float32;

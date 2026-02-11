@@ -11,13 +11,13 @@
 {________________________________________}
 
 
-function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType) : TThisbasegraph;
+function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil) : TThisbasegraph;
 var
   i,j,k,TimeCount,OnFile : integer;
   Hist : array[0..1000] of integer;
   TStr : ShortString;
   rFile,rfile2 : file;
-  SubField : ShortString;
+  BaseFilter,SubField : ShortString;
   MultFiles,
   GoodPoint : boolean;
   aCapt : shortstring;
@@ -33,7 +33,7 @@ var
          Result.SetDataBaseOnGraph(DBNumber, dbOpts.XField,dbOpts.YField,MyData.Filter);
          Result.GraphDraw.UpperLeftText := aCapt;
          if (GraphType = dbgtN2Dgraphsimplelines1) then Result.OpenDataFile(rfile,'')
-         else Result.OpenPointSymbolFile(rfile,'',Result.Symbol);
+         else Result.OpenPointSymbolFile(rfile,'',Result.MainSymbol);
          TimeCount := 0;
          MyData.First;
          repeat
@@ -53,13 +53,16 @@ var
         if (GraphType = dbgtPlot) or (GraphType = dbgtPlot1series1) then begin
            Result.OpenPointSymbolFile(rfile,'',dbOpts.Symbol);
         end
-        else if (GraphType = dbgtN2Dgraph2series1) then begin
-           Result.Symbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
-           Result.OpenPointSymbolFile(rfile,dbOpts.YField,Result.Symbol);
-           Result.Symbol.Color := claLime;
-           Result.OpenPointSymbolFile(rfile2,dbOpts.ZField,Result.Symbol);
+        else if (GraphType = dbgtN2Dgraph2series) then begin
+           Result.MainSymbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
+           Result.OpenPointSymbolFile(rfile,dbOpts.YField,Result.MainSymbol);
+           Result.MainSymbol.Color := claLime;
+           Result.OpenPointSymbolFile(rfile2,dbOpts.ZField,Result.MainSymbol);
         end
-        else if (GraphType in[dbgtCluster1,dbgtN2DgraphCOLORfield1,dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2,dbgtN2Dgraphcolorcoded1,dbgtN2Dgraphcolorcodetext1]) then begin
+        else if (GraphType in[dbgtN2DgraphcolorNumericField]) then begin
+           Result.OpenXYZFile(rfile);
+        end
+        else if (GraphType in[dbgtCluster1,dbgtN2DgraphCOLORfield1,dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2,dbgtN2Dgraphcolorcodetext]) then begin
            Result.OpenXYColorFile(rfile);
            if (GraphType = dbgtByLatitude2) or ( GraphType = dbgtByLongitude2) then Result.GraphDraw.CorrectScaling := true;
         end
@@ -70,14 +73,16 @@ var
         end
         else if (GraphType = dbgtN2Dgraph2yaxes1) then Result.OpenXYZFile(rfile)
         else begin
-           Result.Symbol.Color := dbOpts.LineColor;
-           Result.Symbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
-           Result.Symbol.Size := 3;
-           Result.OpenPointSymbolFile(rfile,'',Result.Symbol);
+           Result.MainSymbol.Color := dbOpts.LineColor;
+           Result.MainSymbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
+           Result.MainSymbol.Size := 3;
+           Result.OpenPointSymbolFile(rfile,'',Result.MainSymbol);
         end;
      end;
 
      procedure DoSettingsForSpecialTypes;
+     var
+        i : integer;
      begin
         if (GraphType = dbgtCluster1) or ( GraphType = dbgtCluster1) or ( GraphType = dbgtMultiplegraphmatrix1) then begin
            Result.GraphDraw.MarginFreeboard := 25;
@@ -85,11 +90,9 @@ var
         else if ( GraphType = dbgtPlot1series1) then begin
            Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.XField);
         end
-        else if (GraphType = dbgtN2Dgraph2series1) then begin
+        else if (GraphType = dbgtN2Dgraph2series) then begin
+           Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
            Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.YField) + ' / ' + RemoveUnderscores(dbOpts.ZField);
-           //Result.GraphDraw.LegendList := tStringList.Create;
-           //Result.GraphDraw.LegendList.Add(RemoveUnderscores(dbOpts.YField));
-           //Result.GraphDraw.LegendList.Add(RemoveUnderscores(dbOpts.ZField));
         end
         else begin
            Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
@@ -104,13 +107,13 @@ var
      procedure CloseTheFiles;
      begin
         Result.ClosePointDataFile(rfile);
-        if ( GraphType = dbgtN2Dgraph2series1) then begin
+        if ( GraphType = dbgtN2Dgraph2series) then begin
            Result.ClosePointDataFile(rfile2);
         end;
      end;
 
 
-begin
+begin {function TGISdataBaseModule.ActuallyDrawGraph}
      {$IfDef RecordDBGraphs} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph in'); {$EndIf}
      EmpSource.Enabled := false;
      DataThere := nil;
@@ -119,9 +122,6 @@ begin
      if (GraphType = dbgtPlotforsubsamples1) then  begin
         SubField := PickField('subsampling',[ftString,ftInteger]);
         DBFieldUniqueEntries(SubField,SubVals);
-     end;
-     if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-        DBFieldUniqueEntries(dbOpts.StringColorField,DataThere);
      end;
      if (GraphType = dbgtPlotforsubsamples1) then  begin
         for I := 0 to pred(SubVals.Count) do begin
@@ -135,7 +135,6 @@ begin
      for i := 0 to 1000 do Hist[i] := 0;
      MultFiles := MyData.FieldExists('SEP_FILE');
      Result := TThisbasegraph.Create(Application);
-     //Result.GraphDraw.UpperLeftText := GraphUpperLeftText;
      if MDDef.StatGrafReverseYAxis then Result.GraphDraw.NormalCartesianY := false;
      if (GraphType = dbgtN2Dgraph2yaxes1) then begin
         Result.GraphDraw.GraphType := gtTwoVertAxes;
@@ -144,114 +143,188 @@ begin
         Result.GraphDraw.ShowLine[1] := true;
      end;
      if (GraphType = dbgtPlot1series1) then Result.Caption := RemoveUnderscores(dbOpts.XField) + ' time series from ' + dbName
-     else if (GraphType = dbgtN2Dgraph2series1) then begin
-        Result.Caption := RemoveUnderscores(dbOpts.XField) + ' vs ' + RemoveUnderscores(dbOpts.YField) + ' & ' +RemoveUnderscores(dbOpts.ZField) +  ' from ' + dbName + ' ' + dbOpts.MainFilter;
+     else if (GraphType = dbgtN2Dgraph2series) then begin
+        Result.Caption := RemoveUnderscores(dbOpts.XField) + ' vs ' + RemoveUnderscores(dbOpts.YField) + ' & ' + RemoveUnderscores(dbOpts.ZField) +  ' from ' + dbName + ' ' + dbOpts.MainFilter;
      end
      else begin
-        if (GraphType = dbgtN2Dgraphcolorcoded1) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.NumericColorField) + ') '
-        else if (GraphType = dbgtN2Dgraphcolorcodetext1) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.StringColorField) + ') '
-
+        if (GraphType = dbgtN2DgraphcolorNumericField) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.NumericColorField) + ') '
+        else if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.StringColorField) + ') '
         else TStr := '';
         Result.Caption := RemoveUnderscores(dbOpts.XField) + ' vs ' + RemoveUnderscores(dbOpts.YField) + TStr + ' from ' + dbName + ' ' + dbOpts.MainFilter;
         Result.GraphDraw.SetAllDrawingSymbols(FilledBox);
      end;
-     if ( GraphType = dbgtByLatitude1) or ( GraphType = dbgtByLongitude1) then begin
+     if (GraphType = dbgtByLatitude1) or ( GraphType = dbgtByLongitude1) then begin
         Result.GraphDraw.HardColors := true;
         Result.GraphDraw.NormalCartesianY := false;
      end;
 
+
      Result.SetDataBaseOnGraph(DBNumber,dbOpts.XField,dbOpts.YField,MyData.Filter);
-     Result.GraphDraw.RainBowColors := (GraphType = dbgtN2Dgraphcolorcoded1);
+     Result.GraphDraw.RainBowColors := (GraphType = dbgtN2DgraphcolorNumericField);
      Result.GraphDraw.RedGray := (DbTablef <> Nil) and dbtablef.RedGrayGraph;
      Result.SetUpGraphForm;
 
-     j := 0;
-     OnFile := 1;
-     repeat
-        EmpSource.Enabled := false;
-        ShowHourglassCursor;
-        if (j > 0) and (dbTablef <> Nil) then dbtablef.BitBtn4Click(nil);   //(Graphtype);
-        inc(j);
-        Result.GraphDraw.Symbol[j].Size := 1;
-        Result.GraphDraw.LineSize256[j] := 0;
+     {if (GraphType in [dbgtBestDEM2Params] then begin
+     end
+     else} if (GraphType in [dbgtN2DgraphMultSeries]) then begin
+        {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('(GraphType in [dbgtN2DgraphMultSeries]'); {$EndIf}
+         Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
+         Result.GraphDraw.VertLabel := MultSeries.Strings[0];
+         for i := 1 to pred(MultSeries.Count) do begin
+             Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
+         end;
 
-        OpenGraphFiles;
+        for j := 0 to pred(MultSeries.Count) do begin
+           Result.GraphDraw.Symbol[j].DrawingSymbol := FilledBox;
+           Result.GraphDraw.Symbol[j].Size := 5;
+           Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
+           Result.OpenPointSymbolFile(rfile,MultSeries.Strings[j],Result.GraphDraw.Symbol[j]);
+           Result.GraphDraw.FileColors256[j] := ConvertTColorToPlatformColor(WinGraphColors(j));
+           Result.GraphDraw.LineSize256[j] := 4;
+           Result.GraphDraw.ShowPoints[j] := true;
+           Result.GraphDraw.ShowLine[j] := true;
+
+           {$If Defined(TrackColors)} WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(j) + ' ' + MultSeries.Strings[j] +
+               ' line='+ ColorString(Result.GraphDraw.FileColors256[j]) + ' point='+ ColorString(Result.GraphDraw.Symbol[i].Color)); {$EndIf}
+
+           MyData.First;
+           k := 0;
+           repeat
+              if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(MultSeries.Strings[j],v[2]) then begin
+                 BlockWrite(Rfile,v,1);
+                 inc(k);
+              end;
+              MyData.Next;
+           until MyData.eof;
+           CloseFile(rfile);
+           {$If Defined(RecordDBGraphs)} WriteLineToDebugFile(MultSeries.Strings[j] + '   vals=' + IntToStr(k)); {$EndIf}
+        end;
+        {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
+        {$If Defined(TrackColors)} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
+     end
+     else if (GraphType = dbgtN2Dgraphcolorcodetext) then begin
+        DBFieldUniqueEntries(dbOpts.StringColorField,DataThere);
+        BaseFilter := MyData.Filter;
         DoSettingsForSpecialTypes;
+        for j := 0 to pred(DataThere.Count) do begin
+           TStr := DataThere.Strings[j];
+           if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := QuotedStr(TStr);
+           //else TStr := IntToStr(DataThere.Strings[j]);
+           TStr := PetDBUtils.AddAndIfNeeded(BaseFilter) + dbOpts.StringColorField + '=' + TStr;
+           MyData.ApplyFilter(TStr);
 
-        TimeCount := 0;
-        MyData.First;
-        repeat
-           if MultFiles then begin
-              if MyData.GetFieldByNameAsInteger('SEP_FILE') <> OnFile then begin
-                 CloseTheFiles;
-                 OpenGraphFiles;
-                 OnFile := MyData.GetFieldByNameAsInteger('SEP_FILE');
+           Result.GraphDraw.Symbol[j].DrawingSymbol := FilledBox;
+           Result.GraphDraw.Symbol[j].Size := 4;
+           Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
+           if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := DataThere.Strings[j]
+           else TStr := 'Code_' + DataThere.Strings[j];
+           TStr := TStr + '_(n=' + IntToStr(MyData.FiltRecsInDB) + ')';
+           Result.OpenPointSymbolFile(rfile,TStr,Result.GraphDraw.Symbol[j]);
+
+           while Not MyData.eof do begin
+              if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(dbOpts.YField,v[2]) then begin
+                 BlockWrite(Rfile,v,1);
               end;
+               MyData.Next;
            end;
-           if (GraphType = dbgtPlot1series1) then begin
-             if GetFloat32FromTableLinkPossible(dbOpts.XField,v[2]) then begin
-                inc(TimeCount);
-                v[1] := TimeCount;
-                BlockWrite(Rfile,v,1);
-             end;
-           end
-           else if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(dbOpts.YField,v[2]) then begin
-              if (GraphType = dbgtN2Dgraph2yaxes1) then begin
-                 GoodPoint := GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
-              end
-              else GoodPoint := true;
-              if GoodPoint then begin
-                 if (GraphType = dbgtCluster1) or ( GraphType = dbgtN2DgraphCOLORfield1) then v[3] := MyData.TColorFromTable;
-                 if (GraphType = dbgtN2Dgraphcolorcoded1) then begin
-                    if dbtablef.RedGrayGraph then begin
-                       if MyData.GetFieldByNameAsString(dbOpts.ZField) = 'Y' then v[3] := 1 else v[3] := 0;
-                    end
-                    else begin
-                       GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
-                    end;
+           CloseFile(rfile);
+         end;
+         ApplyGISFilter(BaseFilter);
+     end
+     else begin
+         j := 0;
+         OnFile := 1;
+         repeat
+            EmpSource.Enabled := false;
+            ShowHourglassCursor;
+            if (j > 0) and (dbTablef <> Nil) then dbtablef.BitBtn4Click(nil);   //(Graphtype);
+            Result.GraphDraw.Symbol[j].Size := 3;
+            Result.GraphDraw.LineSize256[j] := 0;
+            inc(j);
+
+            OpenGraphFiles;
+            DoSettingsForSpecialTypes;
+
+            TimeCount := 0;
+            MyData.First;
+            repeat
+               if MultFiles then begin
+                  if MyData.GetFieldByNameAsInteger('SEP_FILE') <> OnFile then begin
+                     CloseTheFiles;
+                     OpenGraphFiles;
+                     OnFile := MyData.GetFieldByNameAsInteger('SEP_FILE');
+                  end;
+               end;
+               if (GraphType = dbgtPlot1series1) then begin
+                 if GetFloat32FromTableLinkPossible(dbOpts.XField,v[2]) then begin
+                    inc(TimeCount);
+                    v[1] := TimeCount;
+                    BlockWrite(Rfile,v,1);
                  end;
-                 {$IfDef ExGeology}
-                 {$Else}
-                    if (GraphType = dbgtByLatitude1) or ( GraphType = dbgtByLongitude1) or ( GraphType = dbgtByLatitude2) or ( GraphType = dbgtByLongitude2) then begin
-                       v[3] := ConvertPlatformColorToTColor(FocalMechanismColor);
-                       if (GraphType = dbgtByLatitude2) then begin
-                           v[1] := (v[1] - xmin) * 111;
-                       end
-                       else if ( GraphType = dbgtByLongitude2) then begin
-                           v[1] := (v[1] - xmin) * 111 * cosDeg(MyData.GetFieldByNameAsFloat(LatFieldName));
-                       end
-                       else if (Result.XField = LongFieldName) then begin
-                           if (v[1] < TheMapOwner.MapDraw.LongLeftSide) then v[1] := v[1] + 360;
+               end
+               else if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(dbOpts.YField,v[2]) then begin
+                  if (GraphType = dbgtN2Dgraph2yaxes1) then begin
+                     GoodPoint := GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
+                  end
+                  else GoodPoint := true;
+                  if GoodPoint then begin
+                     if (GraphType = dbgtCluster1) or ( GraphType = dbgtN2DgraphCOLORfield1) then v[3] := MyData.TColorFromTable;
+                     (*
+                     if (GraphType = dbgtN2Dgraphcolorcoded1) then begin
+                        if dbtablef.RedGrayGraph then begin
+                           if MyData.GetFieldByNameAsString(dbOpts.ZField) = 'Y' then v[3] := 1 else v[3] := 0;
+                        end
+                        else begin
+                           GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
                         end;
-                    end;
-                 {$EndIf}
-                 if (GraphType = dbgtN2Dgraphcolorcoded1) or (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-                    TStr := '';
-                    if (GraphType = dbgtN2Dgraphcolorcodetext1) then TStr := GetStringFromTableLinkPossible(dbOpts.StringColorField);
-                    if (GraphType = dbgtN2Dgraphcolorcoded1) then TStr := GetStringFromTableLinkPossible(dbOpts.NumericColorField);
-                    GoodPoint := Tstr <> '';
-                    if GoodPoint then begin
-                       for k := 0 to pred(DataThere.Count) do
-                          if (DataThere.Strings[k] = TStr) then break;
-                        inc(Hist[k]);
-                        v[3] := ConvertPlatformColorToTColor(Result.GraphDraw.FileColors256[succ(k Mod 256)]);
-                    end;
-                 end;
-                 if (GraphType = dbgtN2Dgraphcolorcoded1) then begin
-                    GetFloat32FromTableLinkPossible(dbOpts.NumericColorField,v[3]);
-                 end;
-                 if GoodPoint then BlockWrite(Rfile,v,1);
-                 if (GraphType = dbgtN2Dgraph2series1) and GetFloat32FromTableLinkPossible(dbOpts.ZField,v[2]) then begin
-                    BlockWrite(Rfile2,v,1);
-                 end;
-              end;
-           end;
-           MyData.Next;
-        until MyData.EOF;
-        CloseTheFiles;
-     until (GraphType in [dbgtN2Dgraph2series1,dbgtByLatitude1,dbgtByLongitude1,dbgtMultiplegraphmatrix1,dbgtCluster1,dbgtPlot]) or (not MDDef.MultipleDBFiltersForGraphing) or (Not AnswerIsYes('Another data filter'));
+                     end;
+                     *)
+                     {$IfDef ExGeology}
+                     {$Else}
+                        if (GraphType = dbgtByLatitude1) or (GraphType = dbgtByLongitude1) or (GraphType = dbgtByLatitude2) or (GraphType = dbgtByLongitude2) then begin
+                           v[3] := ConvertPlatformColorToTColor(FocalMechanismColor);
+                           if (GraphType = dbgtByLatitude2) then begin
+                               v[1] := (v[1] - xmin) * 111;
+                           end
+                           else if ( GraphType = dbgtByLongitude2) then begin
+                               v[1] := (v[1] - xmin) * 111 * cosDeg(MyData.GetFieldByNameAsFloat(LatFieldName));
+                           end
+                           else if (Result.XField = LongFieldName) then begin
+                               if (v[1] < TheMapOwner.MapDraw.LongLeftSide) then v[1] := v[1] + 360;
+                            end;
+                        end;
+                     {$EndIf}
+                     (*
+                     if (GraphType = dbgtN2DgraphcolorNumericField) {or (GraphType = dbgtN2Dgraphcolorcodetext)} then begin
+                        TStr := '';
+                        //if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := GetStringFromTableLinkPossible(dbOpts.StringColorField);
+                        if (GraphType = dbgtN2DgraphcolorNumericField) then TStr := GetStringFromTableLinkPossible(dbOpts.NumericColorField);
+                        GoodPoint := Tstr <> '';
+                        if GoodPoint and (GraphType = dbgtN2Dgraphcolorcodetext) then begin
+                           for k := 0 to pred(DataThere.Count) do
+                              if (DataThere.Strings[k] = TStr) then break;
+                            inc(Hist[k]);
+                            v[3] := ConvertPlatformColorToTColor(Result.GraphDraw.FileColors256[succ(k Mod 256)]);
+                        end;
+                     end;
+                     *)
+                     if (GraphType = dbgtN2DgraphcolorNumericField) then begin
+                        GetFloat32FromTableLinkPossible(dbOpts.NumericColorField,v[3]);
+                        //GoodPoint := true;
+                     end;
+                     if GoodPoint then BlockWrite(Rfile,v,1);
+                     if (GraphType = dbgtN2Dgraph2series) and GetFloat32FromTableLinkPossible(dbOpts.ZField,v[2]) then begin
+                        BlockWrite(Rfile2,v,1);
+                     end;
+                  end;
+               end;
+               MyData.Next;
+            until MyData.EOF;
+            CloseTheFiles;
+         until (GraphType in [dbgtN2Dgraph2series,dbgtByLatitude1,dbgtByLongitude1,dbgtMultiplegraphmatrix1,dbgtCluster1,dbgtPlot]) or (not MDDef.MultipleDBFiltersForGraphing) or (Not AnswerIsYes('Another data filter'));
+    end;
 
-    {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph setup over'); {$EndIf}
+    {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('Graph setup over ' + Result.GraphDraw.AxisRange); {$EndIf}
      if (GraphType = dbgtMultiplegraphmatrix1) then begin
         Result.GraphDraw.MaxHorizAxis := dbtablef.ForceXMax;
         Result.GraphDraw.MaxVertAxis := dbtablef.ForceYMax;
@@ -260,19 +333,19 @@ begin
      end
      else begin
         if (dbTablef <> nil) and (dbTablef.BitBtn24.Enabled) then AddTopLabelToGraph(Result,DBnumber);
-
         Result.AutoScaleAndRedrawDiagram(true,true,false,false);
      end;
-    {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph draw over'); {$EndIf}
+    {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph draw over ' + Result.GraphDraw.AxisRange); {$EndIf}
 
-     if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
-        //Result.GraphDraw.LegendList := tStringList.Create;
+(*  removed Feb 2 2026
+     if (GraphType = dbgtN2Dgraphcolorcodetext) then begin
         for k := 0 to pred(DataThere.Count) do begin
            TStr := dbOpts.StringColorField + '=' + DataThere.Strings[k] + ' (n=' + IntToStr(Hist[k]) + ')';
            //Result.GraphDraw.LegendList.Add(Tstr);
         end;
         Result.SetMenus;
      end;
+*)
 
      if (GraphType = dbgtCluster1) or ( GraphType = dbgtMultiplegraphmatrix1) then begin
         CopyImageToBitmap(Result.Image1,bmp);
@@ -285,10 +358,11 @@ begin
      LastGraph := Result;
      LastGraphType := GraphType;
      {$IfDef RecordDBGraphs} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph out'); {$EndIf}
-end;
+     {$IfDef TrackColors} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph out'); {$EndIf}
+end  {function TGISdataBaseModule.ActuallyDrawGraph};
 
 
-function TGISdataBaseModule.MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true) : TThisbasegraph;
+function TGISdataBaseModule.MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
 var
     i : integer;
 begin
@@ -301,7 +375,7 @@ begin
       dbOpts.YField := 'DEPTH';
       dbOpts.ZField := 'MECH';
    end
-   else if (GraphType = dbgtN2Dgraph2series1) then begin
+   else if (GraphType = dbgtN2Dgraph2series) then begin
       if Ask then PickNumericFields(GraphType,3,'X axis variable','Y axis series 1','Y axis series 2')
    end
    else if (GraphType = dbgtN2Dgraph2yaxes1) then begin
@@ -310,16 +384,16 @@ begin
    else if (GraphType in [dbgtPlot1series1,dbgtPlotforsubsamples1]) then begin
       if Ask then PickNumericFields(GraphType,1,'time series variable','','');
    end
-   else if (GraphType = dbgtN2Dgraphcolorcodetext1) then begin
+   else if (GraphType = dbgtN2Dgraphcolorcodetext) then begin
       if Ask then begin
-         PickNumericFields(GraphType,3,'X axis variable','Y axis variable','',true);
+         PickNumericFields(GraphType,3,'X axis variable','Y axis variable','');
       end;
    end
    else begin
-      if (GraphType = dbgtN2Dgraphcolorcoded1) then i := 3 else i := 2;
-      if Ask then PickNumericFields(GraphType,i,'X axis variable','Y axis variable','color coding variable');
+      {if (GraphType = dbgtN2DgraphcolorNumericField) then i := 3 else} i := 2;
+      if Ask then PickNumericFields(GraphType,i,'X axis variable','Y axis variable','');
    end;
-   Result := ActuallyDrawGraph(Graphtype);
+   Result := ActuallyDrawGraph(Graphtype,MultSeries);
 end;
 
 
@@ -610,9 +684,9 @@ begin
       Graph.OpenDataFile(rfile,fName);
    end
    else begin
-      Graph.Symbol.Size := 3;
-      Graph.Symbol.Color := ConvertTColorToPlatformColor(Color);
-      Graph.OpenPointSymbolFile(rfile,'',Graph.Symbol);
+      Graph.MainSymbol.Size := 3;
+      Graph.MainSymbol.Color := ConvertTColorToPlatformColor(Color);
+      Graph.OpenPointSymbolFile(rfile,'',Graph.MainSymbol);
    end;
    MyData.First;
    repeat

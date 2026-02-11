@@ -24,7 +24,7 @@ begin
       Findings.Add('COUNTRY,AREAS,DEMIX_TILES');
       for i := 0 to pred(Countries.Count) do begin
          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'COUNTRY=' + QuotedStr(Countries[i]));
-         Findings.Add(Countries[i] + ',' + IntToStr(GISdb[db].NumUniqueEntriesInDB('AREA')) + ',' + IntToStr(GISdb[db].NumUniqueEntriesInDB('DEMIX_TILE')));
+         Findings.Add(Countries[i] + ',' + IntToStr(GISdb[db].NumUniqueEntriesInDBLinkPossible('AREA')) + ',' + IntToStr(GISdb[db].NumUniqueEntriesInDBLinkPossible('DEMIX_TILE')));
       end;
       fName := NextFileNumber(MDTempDir,'country-areas-tiles','.dbf');
       PetdbUtils.StringList2CSVtoDB(Findings,fName);
@@ -371,7 +371,7 @@ var
    Tag : shortstring;
    fName,fName2,{NewName,JustName,}BaseDir : PathStr;
    //Num1m,NumEGM,Num1secArea,Num1secPoint,
-   i,j,DTMs,DSMs,DEM : Integer;
+   i,j{,DTMs,DSMs,DEM} : Integer;
    Tag42112Offset,Tag42112Length : int64;
    TiffHandle : THandle;
    TStr : ansistring;
@@ -632,7 +632,7 @@ procedure InventoryDBwithDSMandDTMbyArea;
 var
    FilesWanted,Areas,Results : tStringList;
    AreaName : shortstring;
-   fName,NewName,JustName : PathStr;
+   fName,{NewName,}JustName : PathStr;
    i,j,DTMs,DSMs : Integer;
 begin
    GetDEMIXpaths(false);
@@ -752,9 +752,9 @@ end;
 procedure CheckTestDEMs;
 var
    ProblemAreas,FilesWanted,Areas,Results : tStringList;
-   AreaName,Missing,Found : shortstring;
-   fName,NewName,JustName : PathStr;
-   i,j,k,DEMs,Refs : Integer;
+   AreaName,Missing{,Found} : shortstring;
+   fName{,NewName,JustName} : PathStr;
+   i,{j,k,}DEMs,Refs : Integer;
 begin
    GetDEMIXpaths(false);
    ProblemAreas := tStringList.Create;
@@ -786,7 +786,7 @@ var
    Areas,Results : tStringList;
    AreaName : shortstring;
    fName : PathStr;
-   i,j,k,DEMs : Integer;
+   i,j,k{,DEMs} : Integer;
    Lat,Long,Lat0,long0,distance,Bearing : float64;
 begin
    GetDEMIXpaths(false);
@@ -823,11 +823,11 @@ end;
 
 procedure TrimReferenceDEMsToDEMIXtiles;
 var
-   Areas,Results : tStringList;
+   Areas{,Results} : tStringList;
    AreaName : shortstring;
-   fName : PathStr;
-   i,j,k,DEMs,DEM : Integer;
-   Lat,Long,Lat0,long0,distance,Bearing : float64;
+   //fName : PathStr;
+   i,j,{k,DEMs,}DEM : Integer;
+   //Lat,Long,Lat0,long0,distance,Bearing : float64;
 begin
    GetDEMIXpaths(false);
    Areas := DEMIX_AreasWanted;
@@ -853,7 +853,7 @@ procedure PruneMisnamedReferenceDTMs;
 var
    RefDEMfiles : tStringList;
    i,j : integer;
-   fName : PathStr;
+  // fName : PathStr;
 
 
    function GetTiffFiles(aDir : PathStr; Ref : boolean = false) : tStringList;
@@ -906,7 +906,6 @@ var
          end;
       end;
    end;
-
 
 begin
    SafeMakeDir(DEMIX_Ref_dsm_1sec);

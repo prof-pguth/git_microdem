@@ -353,7 +353,7 @@ begin
       else Result.GraphDraw.HorizLabel := RemoveUnderscores(DEMGlb[DEM1].ShortName);
       if DEMGlb[DEM2].ShortName = '' then Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].AreaName)
       else Result.GraphDraw.VertLabel := RemoveUnderscores(DEMGlb[DEM2].ShortName);
-      Result.OpenPointSymbolFile(rfile,'scattergram_' + DEMGlb[DEM1].AreaName + '_' + DEMGlb[DEM2].AreaName,Result.Symbol);
+      Result.OpenPointSymbolFile(rfile,'scattergram_' + DEMGlb[DEM1].AreaName + '_' + DEMGlb[DEM2].AreaName,Result.MainSymbol);
       Incr := 1;
       while ( (GridLimits.XGridHigh - GridLimits.XGridLow) div Incr) * ((GridLimits.YGridHigh - GridLimits.YGridLow) div Incr) > bfArrayMaxSize do inc(incr);
       NPts := 0;

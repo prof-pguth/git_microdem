@@ -21,10 +21,7 @@ unit dem_db_ops;
 {$EndIf}
 
 
-
-
 interface
-
 
 uses
 
