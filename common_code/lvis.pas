@@ -331,8 +331,8 @@ begin
    end;
    closeFile(lgwf);
    Graph.ClosePointDataFile(rfile);
-   Graph.Symbol.Color := claLime;
-   Graph.OpenPointSymbolFile(rfile,'lvis',Graph.Symbol);
+   Graph.MainSymbol.Color := claLime;
+   Graph.OpenPointSymbolFile(rfile,'lvis',Graph.MainSymbol);
    OpenLCEfile;
    seek(lcef,ReturnNumber);
    lce := ReadLCErecord;
@@ -345,8 +345,8 @@ begin
    closeFile(lgef);
    Graph.AddPointToDataBuffer(rfile,1,lge.zg);
    Graph.ClosePointDataFile(rfile);
-   Graph.Symbol.Color := claBlue;
-   Graph.OpenPointSymbolFile(rfile,'lvis',Graph.Symbol);
+   Graph.MainSymbol.Color := claBlue;
+   Graph.OpenPointSymbolFile(rfile,'lvis',Graph.MainSymbol);
    Graph.AddPointToDataBuffer(rfile,5,lge.zg + lge.rh25);
    Graph.AddPointToDataBuffer(rfile,5,lge.zg + lge.rh50);
    Graph.AddPointToDataBuffer(rfile,5,lge.zg + lge.rh75);
@@ -410,7 +410,7 @@ begin
       if (i mod 100 = 0) then UpDateprogressBar(i/NumRecs);
       lce := ReadLCErecord;
       MapOwner.MapDraw.LatLongDegreeToScreen(lce.tlat,lce.tlong,x,y);
-      Color := PetMar.PlatformRainbowColorFunct(lce.zt,CanopyZMin,CanopyZMax);
+      Color := PetMar.RainbowRGBFunct(lce.zt,CanopyZMin,CanopyZMax);
       Petmar.ScreenSymbol(MapOwner.Image1.Canvas,x,y,FilledBox,2,color);
    end;
    closeFile(lcef);
@@ -431,7 +431,7 @@ begin
       if i mod 100 = 0 then UpDateprogressBar(i/NumRecs);
       lge := ReadLGErecord;
       MapOwner.MapDraw.LatLongDegreeToScreen(lge.glat,lge.glon,x,y);
-      Color := PetMar.PlatformRainbowColorFunct(lge.zg,GroundZMin,GroundZMax);
+      Color := PetMar.RainbowRGBFunct(lge.zg,GroundZMin,GroundZMax);
       Petmar.ScreenSymbol(MapOwner.Image1.Canvas,x,y,FilledBox,2,color);
    end;
    closeFile(lgef);
