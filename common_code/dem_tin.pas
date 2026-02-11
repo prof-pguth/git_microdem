@@ -612,7 +612,7 @@ begin
                   {$IfDef ExTINGraph}
                   {$Else}
                      ScreenSymbol(Bitmap.Canvas,PlotForm2.GraphDraw.GraphX(long),Plotform2.GraphDraw.GraphY(lat),FilledBox,1,
-                         PlatformRainBowColorFunct(z,ContourData^.zmin,ContourData^.zmax));
+                         RainbowRGBFunct(z,ContourData^.zmin,ContourData^.zmax));
                   {$EndIf}
                   if GridInDataSetInteger(X,Y) then begin
                      SetGridElevation(x,y,z);

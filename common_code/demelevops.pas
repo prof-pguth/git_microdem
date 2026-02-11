@@ -33,7 +33,6 @@ type
     ComboBox1: TComboBox;
     Button2: TButton;
     RadioGroup3: TRadioGroup;
-    CheckBox4: TCheckBox;
     CheckBox5: TCheckBox;
     RedrawSpeedButton12: TSpeedButton;
     CheckBox6: TCheckBox;
@@ -119,7 +118,7 @@ begin
    ElevOptionsForm.CheckBox1.Checked := MDDef.NoDEMInterpolations;
    ElevOptionsForm.CheckBox2.Checked := MDdef.WaterCheck;
    ElevOptionsForm.CheckBox3.Checked := MDdef.LakeCheck;
-   ElevOptionsForm.CheckBox4.Checked := MDdef.InvertGrayScale;
+   //ElevOptionsForm.CheckBox4.Checked := MDdef.InvertGrayScale;
    ElevOptionsForm.CheckBox5.Checked := ElevOptionsForm.MapOwner.MapDraw.Log10Elev;
    ElevOptionsForm.ihsHue := Hue;
    ElevOptionsForm.ihsSat := Sat;
@@ -127,16 +126,16 @@ begin
    ElevOptionsForm.SettingUp := false;
 
    if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevTerrain then ElevOptionsForm.RadioGroup1.ItemIndex := 0
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGray    then ElevOptionsForm.RadioGroup1.ItemIndex := 1
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevBands   then ElevOptionsForm.RadioGroup1.ItemIndex := 2
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevIHS     then ElevOptionsForm.RadioGroup1.ItemIndex := 3
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevLandSea then ElevOptionsForm.RadioGroup1.ItemIndex := 4
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevSpectrum then ElevOptionsForm.RadioGroup1.ItemIndex := 5
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevRainbow  then ElevOptionsForm.RadioGroup1.ItemIndex := 6
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevFromTable then ElevOptionsForm.RadioGroup1.ItemIndex := 7
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevDefinedPalette then ElevOptionsForm.RadioGroup1.ItemIndex := 8
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevSpectrum then ElevOptionsForm.RadioGroup1.ItemIndex := 1
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevIHS     then ElevOptionsForm.RadioGroup1.ItemIndex := 2
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevRainbow  then ElevOptionsForm.RadioGroup1.ItemIndex := 3
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevFromTable then ElevOptionsForm.RadioGroup1.ItemIndex := 4
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevDefinedPalette then ElevOptionsForm.RadioGroup1.ItemIndex := 5
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGray    then ElevOptionsForm.RadioGroup1.ItemIndex := 6
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGrayReversed then ElevOptionsForm.RadioGroup1.ItemIndex := 7
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevLandSea then ElevOptionsForm.RadioGroup1.ItemIndex := 8
    else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevContrast then ElevOptionsForm.RadioGroup1.ItemIndex := 9
-   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevGrayReversed then ElevOptionsForm.RadioGroup1.ItemIndex := 10
+   else if ElevOptionsForm.MapOwner.MapDraw.MapType = mtElevBands   then ElevOptionsForm.RadioGroup1.ItemIndex := 10
    else begin
       ElevOptionsForm.RadioGroup1.ItemIndex := 1;
       ElevOptionsForm.MapOwner.DoFastMapRedraw;
@@ -188,22 +187,22 @@ begin
    if not SettingUp then begin
       case RadioGroup1.ItemIndex of
          0 : Result := mtElevTerrain;
-         1 : Result := mtElevGray;
-         2 : Result := mtElevBands;
-         3 : Result := mtElevIHS;
-         4 : Result := mtElevLandSea;
-         5 : Result := mtElevSpectrum;
-         6 : Result := mtElevRainbow;
-         7 : Result := mtElevFromTable;
-         8 : Result := mtElevDefinedPalette;
+         6 : Result := mtElevGray;
+         10 : Result := mtElevBands;
+         2 : Result := mtElevIHS;
+         8 : Result := mtElevLandSea;
+         1 : Result := mtElevSpectrum;
+         3 : Result := mtElevRainbow;
+         4 : Result := mtElevFromTable;
+         5 : Result := mtElevDefinedPalette;
          9 : Result := mtElevContrast;
-         10 : Result := mtElevGrayReversed;
+         7 : Result := mtElevGrayReversed;
       end;
-      CheckBox2.Enabled := RadioGroup1.ItemIndex <> 0;
-      CheckBox3.Enabled := RadioGroup1.ItemIndex <> 0;
-      CheckBox4.Enabled := RadioGroup1.ItemIndex = 2;
-      RadioGroup3.Enabled := RadioGroup1.ItemIndex = 1;
-      Button1.Enabled := RadioGroup1.ItemIndex = 5;
+      Button1.Enabled := RadioGroup1.ItemIndex = mtElevIHS;
+      ComboBox1.Enabled := Result in [mtElevDefinedPalette];
+      ComboBox2.Enabled := Result in [mtElevFromTable];
+      RadioGroup3.Enabled := Result in [mtElevGrayReversed,mtElevGray];
+      if (Result = mtElevBands) then ReadDefault('Contour interval (integer)',MapOwner.MapDraw.MapOverlays.ConInt);
       MapOwner.MapDraw.MapType := result;
       DrawPreview;
    end;
@@ -220,20 +219,12 @@ end;
 
 procedure TElevOptionsForm.OKBtnClick(Sender: TObject);
 begin
-  //inherited;
    {$IfDef RecordElevColorMapChanges} WriteLineToDebugFile('TElevOptionsForm.OKBtnClick'); {$EndIf}
    Close;
 end;
 
 procedure TElevOptionsForm.RadioGroup1Click(Sender: TObject);
 begin
-   CheckBox2.Enabled := RadioGroup1.ItemIndex <> 0;
-   CheckBox3.Enabled := RadioGroup1.ItemIndex <> 0;
-   Button1.Enabled := RadioGroup1.ItemIndex = 5;
-   ComboBox2.Enabled := RadioGroup1.ItemIndex in [7];
-   ComboBox1.Enabled := RadioGroup1.ItemIndex in [8];
-   RadioGroup3.Enabled := RadioGroup1.ItemIndex = 1;
-   if (RadioGroup1.ItemIndex = 2) then ReadDefault('Contour interval (integer)',MapOwner.MapDraw.MapOverlays.ConInt);
    MapOwner.MapDraw.MapType := SetMapType;
 end;
 
@@ -303,7 +294,7 @@ end;
 
 procedure TElevOptionsForm.CheckBox4Click(Sender: TObject);
 begin
-   MDdef.InvertGrayScale := CheckBox4.Checked;
+   //MDdef.InvertGrayScale := CheckBox4.Checked;
    SetMapType;
 end;
 

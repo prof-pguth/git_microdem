@@ -693,8 +693,8 @@ begin
    //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=1.33');
    //ThisGraph.GraphDraw.LegendList.Add('Radio,_k=10');
    for i := 1 to NumMods do begin
-      ThisGraph.Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
-      ThisGraph.OpenPointSymbolFile(rf[i],theNames[i],ThisGraph.Symbol);
+      ThisGraph.MainSymbol.Color := ConvertTColorToPlatformColor(WinGraphColors(i));
+      ThisGraph.OpenPointSymbolFile(rf[i],theNames[i],ThisGraph.MainSymbol);
    end;
    ca[1] := vcTM5441;
    ca[2] := vcYoeli;

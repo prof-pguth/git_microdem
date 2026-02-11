@@ -76,16 +76,16 @@ inherited ElevOptionsForm: TElevOptionsForm
     Caption = 'Display colors'
     Items.Strings = (
       'Terrain color scale'
-      'Gray scale (monochrome)'
-      'Alternate bands'
-      'IHS colors'
-      'Land/sea scales'
       'Spectrum colors'
+      'IHS colors'
       'Rainbow'
       'Fixed color palette'
       'Stretched color palette'
+      'Gray scale (monochrome)'
+      'Grayscale reversed'
+      'Land/sea scales'
       'Contrast'
-      'Grayscale reversed')
+      'Alternate bands')
     TabOrder = 3
     OnClick = RadioGroup1Click
   end
@@ -159,23 +159,13 @@ inherited ElevOptionsForm: TElevOptionsForm
     TabOrder = 10
     OnClick = RadioGroup3Click
   end
-  object CheckBox4: TCheckBox
-    Left = 256
-    Top = 367
-    Width = 66
-    Height = 17
-    Caption = 'Invert'
-    Enabled = False
-    TabOrder = 11
-    OnClick = CheckBox4Click
-  end
   object CheckBox5: TCheckBox
     Left = 256
     Top = 406
     Width = 66
     Height = 17
     Caption = 'Log10'
-    TabOrder = 12
+    TabOrder = 11
     OnClick = CheckBox5Click
   end
   object CheckBox6: TCheckBox
@@ -184,7 +174,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Width = 131
     Height = 17
     Caption = 'Immediate redraws'
-    TabOrder = 13
+    TabOrder = 12
     OnClick = CheckBox6Click
   end
   object ComboBox2: TComboBox
@@ -192,7 +182,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Top = 262
     Width = 281
     Height = 23
-    TabOrder = 14
+    TabOrder = 13
     OnChange = ComboBox2Change
   end
   object CheckBox1: TCheckBox
@@ -201,7 +191,7 @@ inherited ElevOptionsForm: TElevOptionsForm
     Width = 105
     Height = 17
     Caption = 'No interpolation'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = CheckBox1Click
   end
 end

@@ -207,6 +207,7 @@ begin
    end;
 end;
 
+
 function SimplifiedLandCoverFromGrid(LandCoverGrid : integer;  x,y : integer; var Value : float32) : integer;
 begin
    Result := slcUndefined;
@@ -257,64 +258,22 @@ begin
 end;
 
 
-{$IfDef OldLC100}
-      function GetLC100_fileName(Lat,Long : float32) : PathStr;
-      const
-         TileSize = 20;
-      var
-         TileName : shortstring;
-      begin
-         Lat := Lat + TileSize;  //because tiles are named for the NW corner
-         TileName := TileBaseName(TileSize,False,Lat,Long);
-         Result :=  'J:\landcover\Copernicus_LC100\' + TileName + '_PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
-         FindDriveWithFile(Result);
-      end;
-
-
-      function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
-      var
-         Lat,Long : float32;
-      begin
-         Lat := 0.5 * (bb.YMax + bb.YMin);
-         Long := 0.5 * (bb.XMax + bb.XMin);
-         LandCoverFName := GetLC100_fileName(Lat,Long);
-         {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
-         if FileExists(LandCoverFName) then begin
-            Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
-            if ValidDEM(Result) then begin
-               DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
-               if (fName = '') then fName := Petmar.NextFileNumber(MDtempDir,'lcc100_','.dem');
-               DEMGlb[Result].SaveAsGeotiff(fName);
-            end
-            else begin
-               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
-            end;
-         end
-         else begin
-            MessageToContinue('Missing land cover file ' + LandCoverFName);
+function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
+var
+   LCName : PathStr;
+begin
+     LCName := 'J:\monster_dems\PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
+     FindDriveWithFile(LCName);
+     if FileExists(LCName) then begin
+         Result := GDALsubsetGridAndOpen(bb,true,LCName,OpenMap);
+         if ValidDEM(Result) then begin
+             DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
+             if (fName = '') then fName := MDtempDir + 'lcc100_' + RealToString(bb.XMin,-12,-4) + '_' + RealToString(bb.YMin,-12,-4);
+             DEMGlb[Result].SaveAsGeotiff(fName);
          end;
-      end;
-{$Else}
-
-      function LoadLC100LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean) : integer;
-      var
-         LCName : PathStr;
-      begin
-           LCName := 'J:\monster_dems\PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif';
-           FindDriveWithFile(LCName);
-           if FileExists(LCName) then begin
-               Result := GDALsubsetGridAndOpen(bb,true,LCName,OpenMap);
-               if ValidDEM(Result) then begin
-                   DEMGlb[Result].DEMHeader.ElevUnits := euGLCS_LC100;
-                   if (fName = '') then fName := MDtempDir + 'lcc100_' + RealToString(bb.XMin,-12,-4) + '_' + RealToString(bb.YMin,-12,-4);
-                   DEMGlb[Result].SaveAsGeotiff(fName);
-               end;
-           end
-           else Result := 0;
-      end;
-
-{$EndIf}
-
+     end
+     else Result := 0;
+end;
 
 
 function LoadLC10LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean; Silent : boolean = false) : integer;
@@ -428,19 +387,20 @@ begin
    {$IfDef TrackNLCD} WriteLineToDebugFile('TMapForm.NLCDLegend1Click out'); {$EndIf}
 end;
 
+
 procedure LandCoverBarGraphLegends;
 var
    OutPath : PathStr;
    db : integer;
 
-   procedure ASeries(Name,Title : shortstring);
-   var
-     SaveName : PathStr;
-   begin
-      GISdb[db].ApplyGISFilter('SERIES=' + QuotedStr(Name));
-      SaveName := OutPath + Title + '.png';
-      GISdb[db].CreatePopupLegend(RemoveUnderscores(Title),SaveName);
-   end;
+       procedure ASeries(Name,Title : shortstring);
+       var
+         SaveName : PathStr;
+       begin
+          GISdb[db].ApplyGISFilter('SERIES=' + QuotedStr(Name));
+          SaveName := OutPath + Title + '.png';
+          GISdb[db].CreatePopupLegend(RemoveUnderscores(Title),SaveName);
+       end;
 
 begin
    try
@@ -472,7 +432,6 @@ const
 var
    dbName,outPath : PathStr;
    What : shortstring;
-
 
    procedure ASeries(LandCoverfName : PathStr; aTitle,ShortName : shortstring);
    var
@@ -553,7 +512,7 @@ var
       ItsDEMIX : boolean;
       i,RefDEM : integer;
       fName : PathStr;
-   begin
+   begin {procedure ASeries}
        {$If Defined(RecordBatch) or Defined(RecordDEMIX)} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
        NumDrawn := 0;
        for j := 0 to MaxLandCoverCategories do LandCoverCatsUsed[j] := false;
@@ -667,9 +626,9 @@ var
       DisplayBitmap(Bmp,What + '_' + ShortName + ' Land cover distribution');
       fName := OutPath + What + '_' + ShortName + '.dbf';
       StringList2CSVtoDB(SeriesStats,fName);
-   end;
+   end {procedure ASeries};
 
-begin
+begin {procedure LandCoverBarGraphs}
    {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs in'); {$EndIf}
    try
       GetDEMIXpaths;
@@ -687,8 +646,7 @@ begin
       EndDEMIXProcessing;
       {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
    end;
-end;
-
+end {procedure LandCoverBarGraphs};
 
 
 function IsThisLandCover(fName : PathStr;  var LandCover : integer) : boolean;
@@ -808,13 +766,13 @@ var
    end;
 
 
-begin
+begin {procedure SetUpNLCDCategories}
    {$IfDef RecordNLCDLegend} WriteLineToDebugFile('tLandCoverImage.SetUpCategories, Landcover=' + LandCover); {$EndIf}
    CatTable := tMyData.Create(LandCoverSeriesFName);
    SetCategories(Categories,LandCoverName(LandCover));
    CatTable.Destroy;
    {$IfDef RecordNLCDLegend} WriteLineToDebugFile('tLandCoverImage.SetUpCategories out'); {$EndIf}
-end;
+end {procedure SetUpNLCDCategories};
 
 initialization
 finalization
