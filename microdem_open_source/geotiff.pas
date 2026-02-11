@@ -21,7 +21,7 @@ unit GeoTiff;
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
-      {$Define RecordGeotiff}
+      //{$Define RecordGeotiff}
       //{$Define RecordGeotiffRewrite}
       //{$Define GeotiffSave}
       //{$Define RecordJustMetadata}
@@ -29,9 +29,9 @@ unit GeoTiff;
       //{$Define RecordFullGeotiff}
       //{$Define RecordUTM}
       //{$Define RecordWKT}
-      {$Define RecordProjProgress}
+      //{$Define RecordProjProgress}
       //{$Define TrackWKTstring}
-      {$Define RecordInitDEM}
+      //{$Define RecordInitDEM}
       //{$Define RecordInitDEMName}
       //{$Define Record_h_datum_code}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
@@ -41,9 +41,9 @@ unit GeoTiff;
       //{$Define RecordImageOffsets}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackVerticalDatum}
-      {$Define RecordDEMMapProj}
-      {$Define RecordGeotiffProjection}
-      {$Define RecordDefineDatum}
+      //{$Define RecordDEMMapProj}
+      //{$Define RecordGeotiffProjection}
+      //{$Define RecordDefineDatum}
       //{$Define RecordGeotiffDestroy}
       //{$Define RecordUKOS}
       //{$Define TrackProjection}
@@ -1173,9 +1173,6 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             WantDEM.DEMheader.VerticalCSTypeGeoKey := TiffHeader.VertDatum;
             {$IfDef TrackVerticalDatum} WriteLineToDebugFile('Geotiff read ' + WantDEM.AreaName + ' vdatum=' + IntToStr(WantDEM.DEMheader.VerticalCSTypeGeoKey)); {$EndIf}
 
-
-            //if (WantDEM.AreaName = 'GEDTMV1_2') then TiffHeader.MDZtype := euDecimeters;
-
             if TiffHeader.MDZtype = euCentimeters then begin
                TiffHeader.MDZtype := euMeters;
                TiffHeader.Factor := 0.01;
@@ -1216,6 +1213,8 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             if IsThisLandCover(TIFFFileName,LandCover) then begin
                NLCDOptions;
             end;
+
+            if ANSIcontainsText(UpperCase(OriginalFileName),'AST14DEM') then CurrentMissing := -9999;
 
             {$IfDef RecordInitDEM} WriteLineToDebugFile('Call define DEM variables ' + WantDEM.AreaName + '  ' + sfBoundBoxToString(WantDEM.DEMBoundBoxProjected,4)); {$EndIf}
             WantDEM.DefineDEMvariables(true);
@@ -2266,7 +2265,6 @@ var
                LengthIm := MakeWord;
                TiffOffset := MakeWord;
                TStr := '';
-               //{$If Defined(RecordDefineDatum) or Defined(RecordPlateCaree)} WriteLineToDebugFile('Key=' + IntToStr(i) + ', Tag=' + IntToStr(Tag) + '  Projection=' + MapProjection.GetProjName); {$EndIf}
                MapProjection.ProcessGeotiffKey(Tag,TiffOffset);
 
                case Tag of
@@ -2330,20 +2328,20 @@ var
                                     else Factor := 1;
                                  end;
                                  TStr := RealToString(Factor,-12,-6);
-                                {$If Defined(Record3076) or Defined(RecordInitDEM)}
+                                 {$If Defined(Record3076) or Defined(RecordInitDEM)}
                                    WriteLineToDebugFile('Got factor ScaleX=' + RealToString(TiffHeader.ScaleX,-18,-6) + ' ScaleY=' + RealToString(TiffHeader.ScaleY,-18,-6) +
                                         ' ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) +
                                         ' RasterX=' + RealToString(TiffHeader.RasterX,-18,-6) + ' RasterY=' + RealToString(TiffHeader.RasterY,-18,-6) );
-                                {$EndIf}
+                                 {$EndIf}
                                  TiffHeader.ScaleX := TiffHeader.ScaleX * Factor;
                                  TiffHeader.ScaleY := TiffHeader.ScaleY * Factor;
                                  TiffHeader.ModelX := TiffHeader.ModelX * Factor;
                                  TiffHeader.ModelY := TiffHeader.ModelY * Factor;
-                                {$If Defined(Record3076) or Defined(RecordInitDEM)}
+                                 {$If Defined(Record3076) or Defined(RecordInitDEM)}
                                     WriteLineToDebugFile('Used factor ScaleX=' + RealToString(TiffHeader.ScaleX,-18,-6) + ' ScaleY=' + RealToString(TiffHeader.ScaleY,-18,-6) +
                                         ' ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) +
                                         ' RasterX=' + RealToString(TiffHeader.RasterX,-18,-6) + ' RasterY=' + RealToString(TiffHeader.RasterY,-18,-6) );
-                                {$EndIf}
+                                 {$EndIf}
                             end
                             else MessageToContinue('Unknown linear units (' + IntToStr(TiffOffset) + '); Problems ahead');
                          end;
@@ -2362,7 +2360,7 @@ var
                          end;
                   5120 : begin
                             //Coordinate epoch is encoded in GeoTIFF GeoKey, CoordinateEpochGeoKey code 5120 type DOUBLE
-                            MessageToContinue('found CoordinateEpochGeoKey');
+                            MessageToContinue('found CoordinateEpochGeoKey, not used');
                          end;
                end;
                Aline := IntegerToString(tag,7) + '  ' + TIFFTypeName(FType) + IntegerToString(LengthIm,7) + IntegerToString(TiffOffset,8) + '  ' + GeoTiffTagName(Tag) + '   ' + TStr;
@@ -2707,7 +2705,7 @@ begin
    {$IfDef RecordUTM} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, UTM zone=' + IntToStr(MapProjection.projUTMzone)); {$EndIf}
    {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('Read done: '); {$EndIf}
 
-   if ShowHeader then begin
+   if ShowHeader and (not HeavyDutyProcessing) then begin
       ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
       {$If Defined(RecordJustMetadata)} WriteLineToDebugFile('ShowHeader done'); {$EndIf}
    end

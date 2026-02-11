@@ -1986,8 +1986,8 @@ type
        AutoMergeStartDEM,
        QuickSlopeSpacings    : boolean;
        MapTicks              : tMapTick;
-       New3Dviewer,
-       InvertGrayScale       : boolean;
+       New3Dviewer : boolean;
+       //InvertGrayScale       : boolean;
        HighlightDiffMap,
        MonochromeColor        : byte;
 
@@ -2074,6 +2074,8 @@ type
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
       DEMIX_UseMedian,
+      DEMIX_MultiGraphCommonScaling,
+      DEMIX_IgnoreTies,
       //DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoAirOrDirt,
@@ -2504,6 +2506,7 @@ type
        AmbushObserverNAP,
        AmbushTargetNAP,
        CumulativeGraph : boolean;
+       GraphZColorScheme : byte;
        LOSClHt,
        LOSClWid : Int16;
        VisPtSymbol,MaskPtSymbol : tFullSymbolDeclaration;

@@ -3824,6 +3824,9 @@ var
       var
          i,Moved : integer;
       begin
+
+      exit;
+
           Moved := 0;
           for i := pred(FileList.Count) downto 0 do begin
              DownLoadDirFName := OutputName(i);
@@ -3873,28 +3876,27 @@ begin
         Inprogress.Free;
         WriteLineToDebugFile('Duplicate (1) files deleted: ' + IntToStr(Count));
 
-        FinalDir := System.IOUtils.TPath.GetDownloadsPath + '\' + ExtractFileNameNoExt(Input) + '\';
-        SafeMakeDir(FinalDir);
-
+        //FinalDir := System.IOUtils.TPath.GetDownloadsPath + '\' + ExtractFileNameNoExt(Input) + '\';
+        //SafeMakeDir(FinalDir);
+        FinalDir := System.IOUtils.TPath.GetDownloadsPath + '\' ;
         FileList := tStringList.Create;
         FileList.LoadFromFile(Input);
         Memo1.Lines.Add(TimeToStr(Now) + '  ' + Input + ' has ' + IntToStr(FileList.Count) + ' files');
         WriteLineToDebugFile(Input + ' has ' + IntToStr(FileList.Count) + ' files');
+(*
         MoveFilesToFinalDir;
         for i := pred(FileList.Count) downto 0 do begin
-           DownLoadDirFName := OutputName(i);
-           FinalDirFName := FinalDir + ExtractFileName(DownLoadDirFName);
-           if FileExists(FinalDirFName) or FileExists(DownLoadDirFName) then begin
+           //DownLoadDirFName := OutputName(i);
+           FinalDirFName := FinalDir + ExtractFileName(FileList.Strings[i]);
+
+           //FinalDirFName := FinalDir + FileList.Strings[i];
+           if FileExists(FinalDirFName) {or FileExists(DownLoadDirFName)} then begin
               FileList.Delete(i);
            end;
-
-           //if FileExists(FinalDirFName) or FileExists(DownLoadDirFName) then begin
-              //FileList.Delete(i);
-           //end;
         end;
         Memo1.Lines.Add(TimeToStr(Now) + '  Not yet downloaded ' + IntToStr(FileList.Count) + ' files');
         WriteLineToDebugFile('Not yet downloaded ' + IntToStr(FileList.Count) + ' files');
-
+*)
         if (FileList.Count > 0) then begin
             if (Sender = Chromelist1) then begin
                pName := '"C:\Program Files\Google\Chrome\Application\chrome.exe"';
@@ -3924,9 +3926,11 @@ begin
               wmdem.StatusBar1.Panels[0].Text := TimeToStr(Now);
               wmdem.StatusBar1.Panels[1].Text := 'Downloading ' + IntToStr(Onfile) + '/' + IntToStr(FileList.Count);
               wmdem.StatusBar1.Panels[2].Text := 'Downloading ' + IntToStr(TempLocation) + '/' + IntToStr(50);
+              (*
               repeat
                   Delay(5000);
               until FileExists(WaitName);
+              *)
             until (Onfile >= FileList.Count);
             MoveFilesToFinalDir;
         end;

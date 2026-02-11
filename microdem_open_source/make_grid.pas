@@ -102,7 +102,6 @@ function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSizeRadius : integ
 function CreateIQRMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 function CreateIQRslopeMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 function CreateIQRresMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
-//function CreateSpecifiedRoughnessMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; SaveSlopeMap : boolean = true) : integer;
 function CreateRoughnessMap(OpenMap : boolean; WhichDEM : integer) : integer;
 function CreateSTDslopeRoughnessMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; SaveSlopeMap : boolean = true) : integer;
 function CreateRoughnessMapAvgVector(OpenMap : boolean; WhichDEM : integer) : integer;
@@ -172,7 +171,6 @@ function MakeSyntheticSurface(OpenMap : boolean; DEM : integer; Radius : integer
    function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : tPCGridMaker; BaseMap : tMapForm;  UsePC : tUsePC; LasFiles : tLasFiles;
         HorizDatum,VertDatum : shortstring; MaxAreaZ,MinAreaZ : float32; AutoSaveDir : PathStr; ShowMeanDensityGrid : boolean) : integer;
 {$EndIf}
-
 
 
 var
@@ -634,7 +632,7 @@ begin
             ThisGraph := TThisBaseGraph.Create(Application);
             ThisGraph.SetUpGraphForm;
             ThisGraph.Caption := 'Grid comparison';
-            ThisGraph.OpenPointSymbolFile(rfile,'grid_compare',ThisGraph.Symbol);
+            ThisGraph.OpenPointSymbolFile(rfile,'grid_compare',ThisGraph.MainSymbol);
             ThisGraph.GraphDraw.HorizLabel := DEMGlb[Map1].AreaName;
             ThisGraph.GraphDraw.VertLabel := DEMGlb[Map2].AreaName;
          end;
@@ -1029,7 +1027,7 @@ end;
 function CreateCurvatureMap(Which : integer; OpenMap : boolean; DEM : integer; Outname : PathStr = '') : integer;
 var
    x,y : integer;
-   Curvature : float64;
+   Curvature : float32;
    SaveEvans : boolean;
 begin
    if (MDDef.CurveCompute.AlgorithmName <> smLSQ) then begin
@@ -1494,7 +1492,6 @@ begin
        GetSpacingMultiples(CurDEM,Row,Normalize,FactorNS,FactorEW,FactorDiag);
        for Col := GridLimits.XGridLow to GridLimits.XGridHigh do begin
           if DEMGLB[CurDEM].SurroundedPointElevs(Col,Row,znw,zw,zsw,zn,z,zs,zne,ze,zse) then begin
-             //if (Normalize in [nmNorthSouth,nmEastWest,nm30m]) then begin
              //calculate the elevation in the direction of the neighbor, assuming linear slope in that direction
              znw := z + (zNW-z) * FactorDiag;
              zne := z + (zNE-z) * FactorDiag;
@@ -2049,7 +2046,7 @@ var
              end;
           end;
 
-begin
+begin {function MakeSingleNewDerivativeMap}
    {$IfDef RecordMakeNewMapProblems} WriteLineToDebugFile('MakeANewMap ' + DerivativeMapName(ch,SampleBoxSize)); {$EndIf}
    if not ValidDEM(CurDEM) then GetDEM(CurDEM);
    Result := 0;
@@ -2224,7 +2221,7 @@ begin
    if (DEMGlb[CurDEM].SelectionMap <> Nil) then DEMGlb[CurDEM].SelectionMap.CheckProperTix;
    ShowDEMReadingProgress := true;
    {$IfDef RecordMakeNewMapProblems} WriteLineToDebugFile('MakeANewMap out'); {$EndIf}
-end;
+end {function MakeSingleNewDerivativeMap};
 
 
 procedure AspectDifferenceMapStrip(WhichDEM,ResultDEM,RegionRadius : integer; GridLimits : tGridLimits);

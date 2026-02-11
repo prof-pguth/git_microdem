@@ -44,7 +44,7 @@ uses
   {$IfDef VCL}
      VCL.Graphics,
      Windows,   Messages, Classes,  Controls,
-     Forms, Dialogs, Menus, ExtCtrls,{Printers,}ClipBrd,  ExtDlgs, StdCtrls,
+     Forms, Dialogs, Menus, ExtCtrls,ClipBrd,  ExtDlgs, StdCtrls,
      Buttons, ToolWin, ComCtrls,DB,  JPEG,
   {$EndIf}
 
@@ -727,8 +727,6 @@ end;
 
 
 function CombineBitmaps(nc : integer; theFiles : tStringList; Capt : shortstring) : tMyBitmap;
-//const
-   //BetweenBitmaps = 15;
 var
    bmp : tMyBitmap;
    Left,Right,Top,Bottom,
@@ -2101,6 +2099,7 @@ initialization
 finalization
    {$IfDef MessageShutdownUnitProblems} MessageToContinue('Closing petimage'); {$EndIf}
 end.
+
 
 
 

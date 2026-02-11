@@ -174,7 +174,7 @@ object ThisBaseGraph: TThisBaseGraph
     object SpeedButton8: TSpeedButton
       Left = 100
       Top = 0
-      Width = 23
+      Width = 17
       Height = 22
       Hint = 'Force redraw'
       Glyph.Data = {
@@ -189,7 +189,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton8Click
     end
     object LegendSpeedButton: TSpeedButton
-      Left = 123
+      Left = 117
       Top = 0
       Width = 23
       Height = 22
@@ -210,7 +210,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = LegendSpeedButtonClick
     end
     object SpeedButton6: TSpeedButton
-      Left = 146
+      Left = 140
       Top = 0
       Width = 23
       Height = 22
@@ -229,7 +229,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton6Click
     end
     object SpeedButton9: TSpeedButton
-      Left = 169
+      Left = 163
       Top = 0
       Width = 23
       Height = 22
@@ -250,7 +250,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton9Click
     end
     object SpeedButton10: TSpeedButton
-      Left = 192
+      Left = 186
       Top = 0
       Width = 23
       Height = 22
@@ -270,7 +270,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton10Click
     end
     object IDSpeedButton: TSpeedButton
-      Left = 215
+      Left = 209
       Top = 0
       Width = 23
       Height = 22
@@ -280,7 +280,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = IDSpeedButtonClick
     end
     object SpeedButton11: TSpeedButton
-      Left = 238
+      Left = 232
       Top = 0
       Width = 23
       Height = 22
@@ -297,7 +297,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton11Click
     end
     object SpeedButton15: TSpeedButton
-      Left = 261
+      Left = 255
       Top = 0
       Width = 23
       Height = 22
@@ -314,7 +314,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton15Click
     end
     object SpeedButton12: TSpeedButton
-      Left = 284
+      Left = 278
       Top = 0
       Width = 23
       Height = 22
@@ -323,7 +323,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton12Click
     end
     object SpeedButton13: TSpeedButton
-      Left = 307
+      Left = 301
       Top = 0
       Width = 23
       Height = 22
@@ -333,7 +333,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton13Click
     end
     object SpeedButton14: TSpeedButton
-      Left = 330
+      Left = 324
       Top = 0
       Width = 23
       Height = 22

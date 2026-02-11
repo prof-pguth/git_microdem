@@ -308,7 +308,7 @@ const
    function CreateAndOpenTable(var TheData : tMyTable; fName : PathStr) : boolean;
 {$EndIf}
 
-function IsFieldVisible(db : integer; fName : ansistring; var VisCols :  Array100Boolean) : boolean;
+//function IsFieldVisible(db : integer; fName : ansistring; var VisCols :  Array100Boolean) : boolean;
 
 
 implementation
@@ -322,7 +322,7 @@ uses
    {$Else}
       DataBaseCreate,
       PETDBUtils,
-      DEMDatabase,
+      //DEMDatabase,
    {$EndIf}
 
    BaseMap,
@@ -330,7 +330,7 @@ uses
    DEMDef_routines,
    Petmar;
 
-
+(*
 function IsFieldVisible(db : integer; fName : ansistring; var VisCols :  Array100Boolean) : boolean;
 var
    ID : integer;
@@ -338,7 +338,7 @@ begin
    ID := GISdb[DB].MyData.GetFieldIndex(fName);
    Result := (ID in [0..100]) and (VisCols[ID]);
 end;
-
+*)
 
 function ftIsNumeric(ft : tFieldType) : boolean;
 begin
@@ -364,7 +364,6 @@ begin
         ftFloat : Result := 'float64';
     end;
 end;
-
 
 
 constructor tMyData.Create(var fName : PathStr; dbMode : tmydbMode = dbmyDefault);
@@ -413,12 +412,13 @@ begin
       if not GetFileFromDirectory('data base','*.dbf',fName) then exit;
    end;
 
+(*
    if FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
       OpenNumberedGISDataBase(i,fName,false);
       CloseAndNilNumberedDB(i);
       fName := ChangeFileExt(fName,'.dbf');
    end;
-
+*)
 
    if (FName <> '') and FileExists(fName) then begin
        CheckFileNameForSpaces(fName);
@@ -809,7 +809,7 @@ end;
 
 function TypeFromSQLiteString(TypeStr : shortstring) : tFieldType;
 begin
-   TypeStr  := UpperCase(TypeStr);
+   TypeStr := UpperCase(TypeStr);
    if (TypeStr = 'FLOAT') then Result := ftFloat
    else if (TypeStr = 'SMALLINT') then Result := ftSmallInt
    else if (Copy(TypeStr,1,7) = 'VARCHAR') or (TypeStr = 'TEXT') then Result := ftString
@@ -871,19 +871,6 @@ end;
 function tMyData.TColorFromTable : tColor;
 begin
    Result := ConvertPlatformColorToTColor(PlatformColorFromTable);
-(*
-var
-   i : integer;
-begin
-   Result := clRed;
-   if FieldExists('COLOR') and CarefullyGetFieldByNameAsInteger('COLOR',i) then begin
-      Result := i;
-   end
-   else if FieldExists('RED') then begin
-      if IsFloatField('RED') then Result := RGB(round(255 * GetFieldByNameAsFloat('RED')),round(255 *GetFieldByNameAsFloat('GREEN')),round(255 *GetFieldByNameAsFloat('BLUE')))
-      else Result := RGB(GetFieldByNameAsInteger('RED'),GetFieldByNameAsInteger('GREEN'),GetFieldByNameAsInteger('BLUE'));
-   end;
-*)
 end;
 
 
@@ -1589,6 +1576,7 @@ end;
 
 function tMyData.ListUniqueEntriesInDB(FieldName : ANSIString; Sort : boolean = true) : tStringList;
 begin
+   //Result := tStringList.Create;
    PetDBUtils.FindUniqueEntries(Self,FieldName,Result,sort);
 end;
 
@@ -2096,7 +2084,7 @@ var
       end;
       Next;
    until EOF;
-   if (Result.Npts > 1) then begin
+   if (Result.Npts >= 1) then begin
       moment(zs^,Result,msAll);
    end
    else InitializeMomentVar(Result);

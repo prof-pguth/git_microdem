@@ -2495,15 +2495,6 @@ var
          AParameter('DEMIX','DEM_ruff_window',DEM_ruff_window,5);
          AParameter('DEMIX','DEMIXsaveLSPmaps',DEMIXsaveLSPmaps,false);
 
-         {$IfDef IncludeCoastalDEMs}
-             AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
-             AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
-             AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
-             AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
-             AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
-             AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
-         {$EndIf}
-
          AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,50);
@@ -2516,7 +2507,7 @@ var
          AParameter('DEMIX','DEMIX_AllowCoastal',DEMIX_AllowCoastal,false);
          AParameter('DEMIX','DEMIX_Geo_Tiles',DEMIX_Geo_Tiles,false);
          AParameter('DEMIX','DEMIX_UseMedian',DEMIX_UseMedian,false);
-
+         AParameter('DEMIX','DEMIX_MultiGraphCommonScaling',DEMIX_MultiGraphCommonScaling,true);
          AParameter('DEMIX','DEMIX_slope_filters',DEMIX_slope_filters,false);
          AParameter('DEMIX','DEMIX_ruff_filters',DEMIX_ruff_filters,false);
          AParameter('DEMIX','DEMIX_barren_filters',DEMIX_barren_filters,false);
@@ -2539,7 +2530,17 @@ var
          AParameter('DEMIX','DEMIXUseBins',DEMIXUseBins,6);
          AParameter('Slope','DEMIXSlopeCompute',DEMIXSlopeCompute.AlgorithmName,smEvansYoung);
          AParameter('DEMIX','DEMIX_FullDBfName',DEMIX_FullDBfName,'');
+         AParameter('DEMIX','DEMIX_IgnoreTies',DEMIX_IgnoreTies,false);
+
+
+
          {$IfDef IncludeCoastalDEMs}
+             AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
+             AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);
+             AParameter('DEMIX','MakeCOP_FABDEM_diffMaps',MakeCOP_FABDEM_diffMaps,false);
+             AParameter('DEMIX','MakeCOP_ALOS_Best_Map',MakeCOP_ALOS_Best_Map,true);
+             AParameter('DEMIX','MakeRGB_Best_Map',MakeRGB_Best_Map,true);
+             AParameter('DEMIX','RGBbestSeparates',RGBbestSeparates,true);
              AParameter('DEMIX','DEMIX_U120DBfName',DEMIX_U120DBfName,'');
              AParameter('DEMIX','DEMIX_U80DBfName',DEMIX_U80DBfName,'');
              AParameter('DEMIX','DEMIX_U10DBfName',DEMIX_U10DBfName,'');
@@ -3345,7 +3346,7 @@ var
          AParameter('MapDraw','UTMGridLineWidth',UTMGridLineWidth,1);
          AParameter('MapDraw','PanOverlap',PanOverlap,2);
          AParameter('MapDraw','CartMovieSteps', CartMovieSteps,2);
-         AParameter('MapDraw','InvertGrayScale',InvertGrayScale,false);
+         //AParameter('MapDraw','InvertGrayScale',InvertGrayScale,false);
          AParameter('MapDraw','MonochromeColor',MonochromeColor,0);
          AParameter('MapDraw','LargeScaleWorldOutlinePixelSize',LargeScaleWorldOutlinePixelSize,250);
          AParameter('MapDraw','MedScaleWorldOutlinePixelSize',MedScaleWorldOutlinePixelSize,1500);
@@ -3732,7 +3733,7 @@ begin
       AParameter('Graph','NumGraphCols',NumGraphCols,3);
       AParameter('Graph','ShowPieN',ShowPieN,true);
       AParameter('Graph','GraphTickSize',GraphTickSize,15);
-
+      AParameter('Graph','GraphZColorScheme',GraphZColorScheme,LegSpectrum);
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);
@@ -3740,14 +3741,13 @@ begin
       AParameter('Graph','BigBM_nc',BigBM_nc,3);
       AParameter('Graph','BigBM_horizontal_space_between',BigBM_horizontal_space_between,15);
       AParameter('Graph','BigBM_vertical_space_between',BigBM_vertical_space_between,15);
-      AParameter('Graph',' AddFUVtoR2', AddFUVtoR2,false);
+      AParameter('Graph','AddFUVtoR2', AddFUVtoR2,false);
 
       AParameter('Graph','MapNameBelowComposite',MapNameBelowComposite,true);
 
       AParameter('Graph','NoHistFreqLabels',NoHistFreqLabels,false);
       AParameter('Graph','RoseBothEnds',RoseBothEnds,false);
       AParameter('Graph','DeliberateHistogram',AskHistogramBins,false);
-      //AParameter('Graph','CreateGraphHidden',CreateGraphHidden,vzle);
       AParameter('Graph','DetailRoseLegend',DetailRoseLegend,true);
       AParameter('Graph','PurgeBigGraphSubGraphs', PurgeBigGraphSubGraphs,true);
       AParameter('Graph','ImageDiffThreshhold', ImageDiffThreshhold,35);
@@ -3761,13 +3761,10 @@ begin
       {$IfDef VCL}
          AParameterShortFloat('Hardware','PrinterScale',PrinterScale,50000);
          AParameter('Hardware','EnableGridNetworkComputing',EnableGridNetworkComputing,true);
-         //AParameter('Hardware','DefaultServerIP',DefaultServerIP,'127.0.0.1');
-         //AParameter('Hardware','DefaultServerPort',DefaultServerPort,7676);
          AParameter('Hardware','MaxThreadsForPC',MaxThreadsForPC,8);
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);
          AParameter('Hardware','LogDOSoutput',LogDOSoutput,false);
-         //AParameter('Hardware','LogDOScommands',LogDOScommands,false);
       {$EndIf}
 
       AParameterShortFloat('Horizon','HorizonIncrement',HorizonIncrement,5);

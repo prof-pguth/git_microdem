@@ -22,7 +22,6 @@ begin
       {$IfDef ExTiff} {$Else} or ExtEquals(Ext, '.TIF') {$EndIf};
 end;
 
-
 function ValidImageFileName(fName : PathStr) : boolean; overload;
 begin
   Result := ValidImageFileExt(ExtractFileExt(fName));
@@ -31,9 +30,7 @@ end;
 
 function GraphicsFilters : shortstring;
 begin
-   Result := 'BMP|*.bmp|JPEG (quick)|*.jpg|JPEG (deliberate)|*.jpg'
-         {$IfDef ExGIF} {$Else} + '|GIF|*.gif' {$EndIf}
-         {$IfDef ExPNG} {$Else} + '|PNG|*.png' {$EndIf};
+   Result := 'BMP|*.bmp|JPEG (quick)|*.jpg|JPEG (deliberate)|*.jpg'  {$IfDef ExGIF} {$Else} + '|GIF|*.gif' {$EndIf} {$IfDef ExPNG} {$Else} + '|PNG|*.png' {$EndIf};
 end;
 
 function ThreeDeeGraphicsFilters : shortstring;
@@ -44,9 +41,7 @@ end;
 
 function AllowedGraphicsFilters : shortstring;
 begin
-   Result := 'Graphics files|*.bmp;*.jpg;*.jpeg;*.jpe;*.tif;*.tiff'
-         {$IfDef ExGIF} {$Else} + ';*.gif' {$EndIf}
-         {$IfDef ExPNG} {$Else} + ';*.png' {$EndIf};
+   Result := 'Graphics files|*.bmp;*.jpg;*.jpeg;*.jpe;*.tif;*.tiff' {$IfDef ExGIF} {$Else} + ';*.gif' {$EndIf} {$IfDef ExPNG} {$Else} + ';*.png' {$EndIf};
 end;
 
 

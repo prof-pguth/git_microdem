@@ -99,6 +99,11 @@ end;
 
 
 function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor;
+begin
+   Result := ConvertTColorToPlatformColor(RainbowColorFunct(z,MinV,MaxV));
+end;
+
+(*
 const
    ColorStep = 2;
    FirstColor = 136;
@@ -121,6 +126,7 @@ begin
       end;
    end;
 end {function};
+*)
 
          PROCEDURE WavelengthToRGB(CONST Wavelength :  float64;  VAR R,G,B:  BYTE);
          // Adapted from www.isc.tamu.edu/~astro/color.html
@@ -250,11 +256,12 @@ end;
             Result := RGB(r,g,b);
          end;
 
-
+         (*
          function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
          begin
             Result := ConvertTColorToPlatformColor(RainbowColorFunct(z,Min,Max));
          end;
+         *)
 
 
          function RainbowColorFunct(z,Min,Max : float64) : TColor;

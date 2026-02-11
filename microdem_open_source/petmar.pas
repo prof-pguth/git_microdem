@@ -212,7 +212,11 @@ var
          function TerrainTColor(z,aMin,aMax : float64) : TColor;
          function ColorToHtml(DColor : TColor) : ShortString;
 
-         function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
+         //function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
+         function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
+         function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
+         function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
+         function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor;
 
          procedure tColortoHLS(Color : tColor; var h,l,s : float64);
          function HLStoTcolor(H,L,S : float64) : tcolor;
@@ -221,10 +225,6 @@ var
          function MonthColor(i : integer) : TPlatformColor;
          function SameColor(c1,c2 : tPlatformColor) : boolean; inline;
 
-         function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
-         function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
-         function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
-         function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor;
 
          function RGBtripFromHSI(Hue,Sat,Int : float64) : tPlatformColor;
          procedure GetRGBfromTColor(Color : TColor; var r,g,b : byte);

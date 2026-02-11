@@ -200,7 +200,7 @@ type
 
 
 const
-   ValidDOSFileNameChars = ['a'..'z','A'..'Z','0'..'9',':','/','$','.','&','@','!','%','~',#39,'`','(',')','-','{','}','_','\'];
+   ValidDOSFileNameChars = ['a'..'z','A'..'Z','0'..'9',':','/','$','.','&','@','!','%','~',#39,'`','=','(',')','-','{','}','_','\'];
    ReasonableTextChars = [#32..#126,#224..#253];
    ReasonableNumericChars = ['0'..'9','-','d'..'f','D'..'F','.'];
    DBaseFieldNameChars = ['A'..'Z','0'..'9','_'];
@@ -261,7 +261,7 @@ type
 
 const
    LastSymbol = VertLine;
-   LegGrays =0;
+   LegGrays = 0;
    LegRainbows = 1;
    LegTerrain = 2;
    LegSpectrum = 3;

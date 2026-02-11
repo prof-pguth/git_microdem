@@ -195,7 +195,10 @@ uses
    procedure OTB_PickToConcatenateImages(SatOnMap : integer);
 {$EndIf}
 
-procedure RVTgrids(DEM : integer);
+{$IfDef ExRVT}
+{$Else}
+   procedure RVTgrids(DEM : integer);
+{$EndIf}
 
 procedure FusionTinCreate(InName,OutName : PathStr; GridSize : float64; GridZone : integer; HemiChar : ansichar);
 
@@ -208,6 +211,7 @@ procedure ACOLITEprocessing(MapOwner : tMapForm; OpenMaps : boolean = true);
 procedure laslibReproject(ask : boolean);
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
+
 function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true; degree : integer = 3) : integer;
 
 procedure ExpandOutName(InName : PathStr; BaseName : shortString; var OutName : PathStr);
@@ -731,33 +735,35 @@ begin
 end;
 
 
+{$IfDef ExRVT}
+{$Else}
 
+    procedure RVTgrids(DEM : integer);
+    {Relief Visualization Toolbox}
+    var
+       RVTEXE,NewDEMName,NewDir : PathStr;
+       bfile : tStringList;
+    begin
+       {$IfDef RecordSaveProblems} WriteLineToDebugFile('RVTgrids in'); {$EndIf}
 
-procedure RVTgrids(DEM : integer);
-{Relief Visualization Toolbox}
-var
-   RVTEXE,NewDEMName,NewDir : PathStr;
-   bfile : tStringList;
-begin
-   {$IfDef RecordSaveProblems} WriteLineToDebugFile('RVTgrids in'); {$EndIf}
-
-   RVTEXE := 'C:\microdem\rvt\RVT_1.3_Win64.exe';
-   if ValidPath(ExtractFilePath(RVTEXE)) then begin
-      NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'rvt\';
-      SafeMakeDir(NewDir);
-      NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';
-      DEMGlb[DEM].SaveAsGeotiff(NewDEMName);
-      bfile := TStringList.Create;
-      Bfile.add(NewDEMName);
-      bFile.SaveToFile(ExtractFilePath(RVTExe) + 'settings\process_files.txt');
-      bfile.Clear;
-      bfile.Add('cd ' + ExtractFilePath(RVTexe));
-      bFile.Add(RVTEXE);
-      EndBatchFile(MDTempDir + 'rvt.bat',bfile);
-   end
-   else MessageToContinue('Requires ' + RVTEXE);
-end;
-
+       RVTEXE := 'J:\gis_software\rvt\RVT_2.2.1_Win64.exe';
+       FindDriveWithFile(RVTEXE);
+       if ValidPath(ExtractFilePath(RVTEXE)) then begin
+          NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'rvt\';
+          SafeMakeDir(NewDir);
+          NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';
+          DEMGlb[DEM].SaveAsGeotiff(NewDEMName);
+          bfile := TStringList.Create;
+          Bfile.add(NewDEMName);
+          bFile.SaveToFile(ExtractFilePath(RVTExe) + 'settings\process_files.txt');
+          bfile.Clear;
+          bfile.Add('cd ' + ExtractFilePath(RVTexe));
+          bFile.Add(RVTEXE);
+          EndBatchFile(MDTempDir + 'rvt.bat',bfile);
+       end
+       else MessageToContinue('Requires ' + RVTEXE);
+    end;
+{$EndIf}
 
 
 {$IfDef ExOTB}
