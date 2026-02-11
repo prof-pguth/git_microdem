@@ -49,34 +49,35 @@ begin
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'CA_') then begin
-      Result := ExtractFileNameNoExt(FileName);
-      Delete(Result,1,7);
-      Result := 'CA_' + Result;
+      Result := 'CA_' + ExtractFileNameNoExt(FileName);
+      //Result := ExtractFileNameNoExt(FileName);
+      //Delete(Result,1,7);
+      //Result := 'CA_' + Result;
       {dtm_1m_utm10_w_4_151.tif   }
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
-      Result := 'ES_' + copy(ExtractFileNameNoExt(FileName),14,11);
+      //Result := 'ES_' + copy(ExtractFileNameNoExt(FileName),1,5) + '_' + copy(ExtractFileNameNoExt(FileName),14,11);
+      Result := 'ES_' + ExtractFileNameNoExt(FileName);
       {MDT02-ETRS89-HU29-0802-3-COB2.tif    }
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'IC_') then begin
-      Result := 'IC_' + copy(ExtractFileNameNoExt(FileName),16,11);
+      //Result := 'IC_' + copy(ExtractFileNameNoExt(FileName),1,5) + '_' + copy(ExtractFileNameNoExt(FileName),16,11);
+      Result := 'IC_' + ExtractFileNameNoExt(FileName);
       {MDT02-REGCAN95-HU28-1105-2-COB2.tif  }
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'NO_') then begin
       Result := 'NO_' + ExtractFileNameNoExt(FileName);
-      {MDT02-REGCAN95-HU28-1105-2-COB2.tif  }
    end;
-
 
    if (Starter = 'SL_') then Result := AreaName;
 
    if StrUtils.AnsiContainsText(FileName,'USGS') then begin
        if StrUtils.AnsiContainsText(FileName,'USGS_1m_x') then begin
          {USGS_1m_x13y202_PR_PRVI_D_2018.tif  }
-          Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),8,8)
+         Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),8,8)
        end
        else if StrUtils.AnsiContainsText(FileName,'USGS_1M_') then begin
           {USGS_1M_11_x43y414_NV_WestCentral_EarthMRI_2020_D20.tif  }

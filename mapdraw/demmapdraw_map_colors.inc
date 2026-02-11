@@ -663,7 +663,7 @@ end;
 
 procedure TMapDraw.SetUpElevationColorTable;
 var
-   i,tf : integer;
+   i,j,tf : integer;
    r,g,b : byte;
    ColorTable : tMyData;
 
@@ -766,11 +766,7 @@ begin
          {$IfDef RecordElevColorFromTable} WriteLineToDebugFile('Complete table'); {$EndIf}
       end;
    end
-   else if MapType in [mtElevGrayReversed] then begin
-      for i := 0 to 255 do pPal[i] := GrayRGBTrip(255-i);
-   end
-   else if MapType in [mtElevGray] then begin
-      for i := 0 to 255 do pPal[i] := GrayRGBTrip(i);
+   else if MapType in [mtElevGray,mtElevGrayReversed] then begin
       //0=gray
       //1=red
       //2=green
@@ -779,20 +775,11 @@ begin
       //5=yellow   red and green
       //6=magenta   red and blue
       for i := 0 to 255 do begin
-         if MDDef.MonochromeColor in [0,1,5,6] then begin
-            if MDDef.InvertGrayscale then r := 255 - i else r := i;
-         end
-         else r := 0;
-
-         if MDDef.MonochromeColor in [0,2,4,5] then begin
-            if MDDef.InvertGrayscale then g := 255 - i else g := i;
-         end
-         else g := 0;
-         if MDDef.MonochromeColor in [0,3,4,6] then begin
-            if MDDef.InvertGrayscale then b := 255 - i else b := i;
-         end
-         else b := 0;
-         pPal[i] := RGBtrip(r,g,b);
+         if MapType in [mtElevGrayReversed] then pPal[i] := GrayRGBTrip(255-i)
+         else pPal[i] := GrayRGBTrip(i);
+         if MDDef.MonochromeColor in [2,3,4] then pPal[i].rgbtRed := 0;
+         if MDDef.MonochromeColor in [1,3,6] then pPal[i].rgbtGreen := 0;
+         if MDDef.MonochromeColor in [1,2,5] then pPal[i].rgbtBlue := 0;
       end;
    end
    else if (MapType = mtElevContrast) then begin

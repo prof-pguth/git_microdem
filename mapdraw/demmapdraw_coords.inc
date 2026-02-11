@@ -19,21 +19,6 @@ begin
    end;
 end;
 
-(*
-procedure TMapDraw.LatLongDegreeToDataGrid(Lat,Long : float64; var xg,yg : float64);
-//var
-   //xg32,yg32 : float32;
-begin
-   if DEMMap then begin
-      DEMGlb[DEMonMap].LatLongDegreeToDEMGrid(Lat,Long,xg,yg);
-   end
-   else if ValidSatOnMap then begin
-      SatImage[SatOnMap].LatLongDegreeToSatGrid(SatImage[SatOnMap].BandForSize,Lat,Long,xg,yg);
-   end;
-   //xg := xg32;
-   //yg := yg32;
-end;
-*)
 
 procedure tMapDraw.LatLongDegreeToScreen(Lat,Long : float64; var XPic,YPic : integer);
 var

@@ -575,11 +575,11 @@ var
          v : array[1..2] of float32;
       begin
          if ValidDEM(DEM) and DEMGlb[DEM].GetElevFromLatLongDegree(Lat,Long,v[2]) then begin
-            Histogram.Symbol.Size := 4;
-            Histogram.Symbol.Color := Color;
-            Histogram.Symbol.DrawingSymbol := FilledBox;
-            ScreenSymbol(Histogram.Image1.Canvas, Histogram.GraphDraw.GraphX(0)+2, Histogram.GraphDraw.GraphY(v[2]),Histogram.Symbol);
-            Histogram.OpenPointSymbolFile(rfile,'',Histogram.Symbol);
+            Histogram.MainSymbol.Size := 4;
+            Histogram.MainSymbol.Color := Color;
+            Histogram.MainSymbol.DrawingSymbol := FilledBox;
+            ScreenSymbol(Histogram.Image1.Canvas, Histogram.GraphDraw.GraphX(0)+2, Histogram.GraphDraw.GraphY(v[2]),Histogram.MainSymbol);
+            Histogram.OpenPointSymbolFile(rfile,'',Histogram.MainSymbol);
             v[1] := 0;
             Blockwrite(rfile,v,1);
             CloseFile(rfile);

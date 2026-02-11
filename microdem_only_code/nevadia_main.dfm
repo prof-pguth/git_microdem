@@ -2148,6 +2148,10 @@ object wmdem: Twmdem
           Caption = 'ACOLITE all open satellite images'
           OnClick = ACOLITEallopensatelliteimages1Click
         end
+        object ASTERv4TimeSeries1: TMenuItem
+          Caption = 'ASTER v4 Time Series'
+          OnClick = ASTERv4TimeSeries1Click
+        end
         object N35: TMenuItem
           Caption = '-'
         end
@@ -3501,29 +3505,36 @@ object wmdem: Twmdem
     object N25: TMenuItem
       Caption = '-'
     end
-    object UTMbasedmergeFUVresultsintoDB1: TMenuItem
-      Caption = 'UTM based, merge FUV results into DB'
-      OnClick = UTMbasedmergeFUVresultsintoDB1Click
-    end
-    object UTMbasedmergedifferencedistribution1: TMenuItem
-      Caption = 'UTM based, merge difference distribution into DB'
-      OnClick = UTMbasedmergedifferencedistribution1Click
-    end
-    object UTMbasedmergecurvaturesintoDB1: TMenuItem
-      Caption = 'UTM based, merge curvatures into DB'
-      OnClick = UTMbasedmergecurvaturesintoDB1Click
-    end
-    object UTMbasedmergepartialsintoDB1: TMenuItem
-      Caption = 'UTM based, merge partials into DB'
-      OnClick = UTMbasedmergepartialsintoDB1Click
-    end
-    object UTMbasedmergetilestatisiticsintoDB1: TMenuItem
-      Caption = 'UTM based, merge tile statisitics into DB'
-      OnClick = UTMbasedmergetilestatisiticsintoDB1Click
-    end
-    object UTMbasedmergeallDB1: TMenuItem
-      Caption = 'UTM based, merge all DB'
-      OnClick = UTMbasedmergeallDB1Click
+    object MergeCSVresultsintosingleDB1: TMenuItem
+      Caption = 'Merge CSV results into single DB'
+      object UTMbasedmergeFUVresultsintoDB1: TMenuItem
+        Caption = 'FUV results into DB'
+        OnClick = UTMbasedmergeFUVresultsintoDB1Click
+      end
+      object UTMbasedmergedifferencedistribution1: TMenuItem
+        Caption = 'Difference distribution into DB'
+        OnClick = UTMbasedmergedifferencedistribution1Click
+      end
+      object UTMbasedmergecurvaturesintoDB1: TMenuItem
+        Caption = 'Curvatures into DB'
+        OnClick = UTMbasedmergecurvaturesintoDB1Click
+      end
+      object UTMbasedmergepartialsintoDB1: TMenuItem
+        Caption = 'Partials into DB'
+        OnClick = UTMbasedmergepartialsintoDB1Click
+      end
+      object UTMbasedmergetilestatisiticsintoDB1: TMenuItem
+        Caption = 'Tile statisitics into DB'
+        OnClick = UTMbasedmergetilestatisiticsintoDB1Click
+      end
+      object UTMbasedMergeDSMDTMcomparison1: TMenuItem
+        Caption = 'High resolution  DSM/DTM comparison'
+        OnClick = UTMbasedMergeDSMDTMcomparison1Click
+      end
+      object MergeCOPALOSDTMDSMcompare1: TMenuItem
+        Caption = 'COP/ALOS DTM/DSM compare'
+        OnClick = MergeCOPALOSDTMDSMcompare1Click
+      end
     end
     object N44: TMenuItem
       Caption = '-'
@@ -3571,6 +3582,10 @@ object wmdem: Twmdem
     object Percentlandcovercategories1: TMenuItem
       Caption = 'Create grids with percent landcover categories'
       OnClick = Percentlandcovercategories1Click
+    end
+    object Createtilecategorymap1: TMenuItem
+      Caption = 'Create tile category map'
+      OnClick = Createtilecategorymap1Click
     end
     object ilecharacterization1: TMenuItem
       Caption = 'Pie charts with tile characterization DB versions'

@@ -29,8 +29,8 @@
           //{$Define RecordRefDTM}
           {$Define RecordDEMIXMakeRef}
           //{$Define RecordDEMIXMakeRefFull}
-          //{$Define RecordDEMIXDatumShift}
-          //{$Define RecordDEMIXDatumShiftFull}
+          {$Define RecordDEMIXDatumShift}
+          {$Define RecordDEMIXDatumShiftFull}
           //{$Define RecordFUVcreateFull}
           //{$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
@@ -627,7 +627,6 @@ type
     MovemergedtilereferenceandtestDEMs1: TMenuItem;
     N25: TMenuItem;
     N44: TMenuItem;
-    UTMbasedmergeallDB1: TMenuItem;
     Download10x10kmblocks1: TMenuItem;
     UTMbasedfilefillreport1: TMenuItem;
     DeleteresultsCSVforareas1: TMenuItem;
@@ -651,6 +650,11 @@ type
     estareaboundingboxes1: TMenuItem;
     Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem;
     extreplaceinallfilesindirectory1: TMenuItem;
+    Createtilecategorymap1: TMenuItem;
+    ASTERv4TimeSeries1: TMenuItem;
+    UTMbasedMergeDSMDTMcomparison1: TMenuItem;
+    MergeCOPALOSDTMDSMcompare1: TMenuItem;
+    MergeCSVresultsintosingleDB1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1045,7 +1049,6 @@ type
     procedure UTMbasedCVSfilesbyarea1Click(Sender: TObject);
     procedure Mergesmalltilesinto10kmUTMblocks1Click(Sender: TObject);
     procedure MovemergedtilereferenceandtestDEMs1Click(Sender: TObject);
-    procedure UTMbasedmergeallDB1Click(Sender: TObject);
     procedure Download10x10kmblocks1Click(Sender: TObject);
     procedure UTMbasedfilefillreport1Click(Sender: TObject);
     procedure DeleteresultsCSVforareas1Click(Sender: TObject);
@@ -1065,6 +1068,10 @@ type
     procedure Deletemergeddirectorieswithsmallnumberoffiles1Click(
       Sender: TObject);
     procedure extreplaceinallfilesindirectory1Click(Sender: TObject);
+    procedure Createtilecategorymap1Click(Sender: TObject);
+    procedure ASTERv4TimeSeries1Click(Sender: TObject);
+    procedure UTMbasedMergeDSMDTMcomparison1Click(Sender: TObject);
+    procedure MergeCOPALOSDTMDSMcompare1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2664,6 +2671,55 @@ begin
 end;
 
 
+procedure Twmdem.ASTERv4TimeSeries1Click(Sender: TObject);
+var
+   fName,dName,AsterDir : PathStr;
+   TheFiles,Results : tStringList;
+   i,DEM,Year,Month,Day : integer;
+   z1,z2,z3,dy: float32;
+   Lat1,Long1,Lat2,Long2,Lat3,Long3 : float64;
+begin
+(*
+AST14DEM_00404232000151052_20250124110401.tif
+
+The file name begins with the Product Short Name (AST14DEM), followed by the 3-digit Version Number plus
+Date and Time of Acquisition designated as MMDDYYYYHHMMSS (00412112020183922),
+Date and Time of Processing designated as YYYYMMDDHHMMSS (20250912144703), and the Data Format (tif).
+*)
+    AsterDir := 'C:\Users\pguth\Downloads\escondida_mine_aster_time_series\';
+    long1 := -69.05077114696206;
+    lat1 := -24.21530338034604;
+    long2 := -69.0624438404476;
+    lat2 := -24.2467339850922;
+    long3 := -69.07100770772688;
+    lat3 := -24.27448320772023;
+    Results := tStringList.Create;
+    Results.Add('DEM_NAME,PIT_1,PIT_2,PIT3,YEAR,MONTH,DAY,DEC_YEAR');
+    TheFiles := Nil;
+    Petmar.FindMatchingFiles(ASTERDir,'*.tif',TheFiles,1);
+    StartProgress('ASTER v4');
+    for i := 0 to pred(TheFiles.Count) do begin
+        UpdateProgressBar(i / TheFiles.Count);
+        fName := TheFiles.Strings[i];
+        dName := ExtractFileName(fName);
+        DEM := OpenNewDEM(fName,false);
+        if DEMglb[DEM].GetElevFromLatLongDegree(lat1,long1,z1) and
+           DEMglb[DEM].GetElevFromLatLongDegree(lat2,long2,z2) and
+           DEMglb[DEM].GetElevFromLatLongDegree(lat3,long3,z3) then begin
+             Year := StrToInt(Copy(dname,17,4));
+             Month := StrToInt(Copy(dname,13,2));
+             Day := StrToInt(Copy(dname,15,2));
+             dy := Year + AnnualJulianDay(Year,Month,Day) / AnnualJulianDay(Year,12,31);
+             Results.Add(ExtractFileName(fName) + ',' + RealToString(z1,-8,-1) + ',' + RealToString(z2,-8,-1) + ',' + RealToString(z3,-8,-1) + ',' +
+                Copy(dname,17,4) + ',' + Copy(dName,13,2) + ',' + Copy(dName,15,2) + ',' + RealToString(dy,-12,-4));
+        end;
+        CloseSingleDEM(DEM);
+    end;
+    fName := AsterDir + 'aster_v4_files.dbf';
+    StringList2CSVtoDB(Results,fName);
+    EndProgress;
+end;
+
 procedure Twmdem.Bringpointcloudcontroltofront1Click(Sender: TObject);
 begin
    pt_cloud_opts_fm.BringToFront;
@@ -3468,6 +3524,11 @@ begin
    CreateFinalDiffDistDB;
 end;
 
+
+procedure Twmdem.Createtilecategorymap1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udTileCatBinMap);
+end;
 
 procedure Twmdem.InOutButtonClick(Sender: TObject);
 begin
@@ -4363,6 +4424,11 @@ begin
 end;
 
 
+procedure Twmdem.MergeCOPALOSDTMDSMcompare1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udMergeCopDTMDSMcompare);
+end;
+
 procedure Twmdem.MergeDEMIXtilestats1Click(Sender: TObject);
 begin
    MergeDEMIXtileStats;
@@ -4917,6 +4983,7 @@ begin
 end;
 
 
+
 procedure Twmdem.DTED1Click(Sender: TObject);
 {$IfDef ExDTED}
 begin
@@ -5296,11 +5363,6 @@ begin
    DEMIX_UTM_based_processing(9);
 end;
 
-procedure Twmdem.UTMbasedmergeallDB1Click(Sender: TObject);
-begin
-   DEMIX_UTM_based_processing(21);
-end;
-
 procedure Twmdem.UTMbasedmergecurvaturesintoDB1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(13);
@@ -5309,6 +5371,11 @@ end;
 procedure Twmdem.UTMbasedmergedifferencedistribution1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(12);
+end;
+
+procedure Twmdem.UTMbasedMergeDSMDTMcomparison1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udMergeDTMDSMcompare);
 end;
 
 procedure Twmdem.UTMbasedmergeFUVresultsintoDB1Click(Sender: TObject);

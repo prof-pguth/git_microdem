@@ -3057,7 +3057,6 @@ object MapForm: TMapForm
         end
         object CombinedMGRSpolygons1: TMenuItem
           Caption = 'Combined MGRS polygons'
-          OnClick = CombinedMGRSpolygons1Click
         end
         object USSPCS1: TMenuItem
           Caption = 'US SPCS'
