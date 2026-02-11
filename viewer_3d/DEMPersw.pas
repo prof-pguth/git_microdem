@@ -817,12 +817,12 @@ begin {proc PerspectiveView}
                AlongTrackGlide.GraphDraw.VertLabel := 'Altitude (m)';
                AlongTrackGlide.Top := Self.Height + 5;
                AlongTrackGlide.Left := Self.Width + 5;
-               AlongTrackGlide.Symbol.Color := ConverttColorToPlatformColor(clGreen);
-               AlongTrackGlide.OpenPointSymbolFile(rfile,'flight',AlongTrackGlide.Symbol);
-               AlongTrackGlide.Symbol.Color := ConverttColorToPlatformColor(clGray);
-               AlongTrackGlide.OpenPointSymbolFile(rfile2,'flight',AlongTrackGlide.Symbol);
-               AlongTrackGlide.Symbol.Color := ConverttColorToPlatformColor(clSilver);
-               AlongTrackGlide.OpenPointSymbolFile(rfile3,'flight',AlongTrackGlide.Symbol);
+               AlongTrackGlide.MainSymbol.Color := ConverttColorToPlatformColor(clGreen);
+               AlongTrackGlide.OpenPointSymbolFile(rfile,'flight',AlongTrackGlide.MainSymbol);
+               AlongTrackGlide.MainSymbol.Color := ConverttColorToPlatformColor(clGray);
+               AlongTrackGlide.OpenPointSymbolFile(rfile2,'flight',AlongTrackGlide.MainSymbol);
+               AlongTrackGlide.MainSymbol.Color := ConverttColorToPlatformColor(clSilver);
+               AlongTrackGlide.OpenPointSymbolFile(rfile3,'flight',AlongTrackGlide.MainSymbol);
                View3D.FlightRouteDB.First;
                while not View3D.FlightRouteDB.eof do begin
                   v[1] := View3D.FlightRouteDB.GetFieldByNameAsFloat('DISTANCE');

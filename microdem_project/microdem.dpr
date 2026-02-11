@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -354,7 +354,8 @@ uses
   BaseGraf in '..\microdem_open_source\BaseGraf.pas' {ThisBaseGraph},
   openness_choices in '..\ask_options\openness_choices.pas' {OpenOptForm},
   dem_db_ops in '..\database\dem_db_ops.pas',
-  diagonal_normalization in '..\ask_options\diagonal_normalization.pas' {PickDiagNormForm};
+  diagonal_normalization in '..\ask_options\diagonal_normalization.pas' {PickDiagNormForm},
+  dsm_dtm_compare in '..\demix\dsm_dtm_compare.pas' {CompareDSM_DTMform};
 
 {$R *.RES}
 
@@ -380,7 +381,7 @@ begin
          Application.Title := '';
          Application.HelpFile := 'microdem.chm';
          Application.CreateForm(Twmdem, wmdem);
-         Application.Run;
+  Application.Run;
       end;
     finally
        CloseHandle(FMutex);

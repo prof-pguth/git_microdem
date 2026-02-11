@@ -164,16 +164,16 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <VerInfo_MajorVer>2025</VerInfo_MajorVer>
-        <VerInfo_Release>27</VerInfo_Release>
+        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_MajorVer>2026</VerInfo_MajorVer>
+        <VerInfo_Release>15</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2025.11.27.15;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.1.15.17;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>15</VerInfo_Build>
+        <VerInfo_Build>17</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <Debugger_RunParams>-NOAUTOOPEN</Debugger_RunParams>
     </PropertyGroup>
@@ -963,6 +963,10 @@
             <Form>PickDiagNormForm</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="..\demix\dsm_dtm_compare.pas">
+            <Form>CompareDSM_DTMform</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>
@@ -1037,7 +1041,6 @@
         <None Include="..\database\demdatabase_drainage_basin.inc"/>
         <None Include="..\database\demdatabase_field_edits.inc"/>
         <None Include="..\database\demdatabase_geology.inc"/>
-        <None Include="..\database\DEMDataBase_grafs.inc"/>
         <None Include="..\database\demdatabase_graph.inc"/>
         <None Include="..\database\demdatabase_legend.inc"/>
         <None Include="..\database\demdatabase_maps.inc"/>
@@ -1053,6 +1056,7 @@
         <None Include="..\demcoord\demcoord_reports.inc"/>
         <None Include="..\geomorph\demstat_slope_algorithm_compare.inc"/>
         <None Include="..\demix\demix_create_lsp_grids.inc"/>
+        <None Include="..\demix\demix_graphs_dsm_dtm_compare.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1495,12 +1499,6 @@
                 </DeployFile>
                 <DeployFile LocalName="..\common_code\petmar_vcl.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\database\DEMDataBase_grafs.inc" Configuration="Debug" Class="ProjectFile"/>
-                <DeployFile LocalName="..\database\DEMDataBase_grafs.inc" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="..\database\demdatabase_drainage_basin.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\database\demdatabase_drainage_basin.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
@@ -1734,6 +1732,12 @@
                 </DeployFile>
                 <DeployFile LocalName="..\demix\demix_graphs.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\demix\demix_graphs.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\demix\demix_graphs_dsm_dtm_compare.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

@@ -8,6 +8,7 @@ unit new_petmar_movie;
 {________________________________________}
 
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Adpated from                                                               //
 // Project:	TGIFImage demo application.                                       //
@@ -135,12 +136,12 @@ begin
    Edit2.Text := IntToStr(MDDef.GifFontSize);
    CheckBox1.Checked := MDDef.GIFfileLabels;
 
-  // Enable GIF animation and transparency
-  GIFImageDefaultAnimate := True;
-  GIFImageDefaultTransparent := True;
+   // Enable GIF animation and transparency
+   GIFImageDefaultAnimate := True;
+   GIFImageDefaultTransparent := True;
 
-  // Avoid animation flickering by double buffering the TImage parent
-  PanelPreview.DoubleBuffered := True;
+   // Avoid animation flickering by double buffering the TImage parent
+   PanelPreview.DoubleBuffered := True;
 end;
 
 
@@ -196,7 +197,6 @@ begin
    FilesWanted.Destroy;
    ButtonAnimateClick(Nil);
 end;
-
 
 
 procedure TFormAnimate.ButtonAnimateClick(Sender: TObject);
@@ -275,7 +275,6 @@ var
               bmp.Free;
               AddBitmap(GIF,anImage.Picture.Graphic, false);
            end;
-
 
 var
   i,Frames: integer;
@@ -374,12 +373,12 @@ begin
    CheckEditString(Edit1.Text,MDDef.GIFDefaultDelay);
 end;
 
-
-
 procedure TFormAnimate.Edit2Change(Sender: TObject);
 begin
    CheckEditString(Edit2.Text,MDDef.GifFontSize);
 end;
+
+
 
 end.
 

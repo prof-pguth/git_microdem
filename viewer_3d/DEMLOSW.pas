@@ -895,7 +895,7 @@ var
            rFile : file;
            v : tFloatPoint;
         begin
-          CrossTrackProfile.OpenPointSymbolFile(rfile,'fresnel',CrossTrackProfile.Symbol);
+          CrossTrackProfile.OpenPointSymbolFile(rfile,'fresnel',CrossTrackProfile.MainSymbol);
           for I := 0 to 360 do begin
              v[1] := SinDeg(i) * Rad;
              v[2] := Ht + CosDeg(i) * Rad;

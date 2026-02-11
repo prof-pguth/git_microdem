@@ -30,6 +30,7 @@
 
 {$Define ExcludeDirtAirShots}
 {$Define ExIceSat}
+{$Define ExRVT}
 //{$Define ExVegDensity}
 
 
