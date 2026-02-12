@@ -5,7 +5,7 @@ object MaskOptsForm: TMaskOptsForm
   BorderStyle = bsDialog
   Caption = 'Masking Options'
   ClientHeight = 268
-  ClientWidth = 201
+  ClientWidth = 214
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

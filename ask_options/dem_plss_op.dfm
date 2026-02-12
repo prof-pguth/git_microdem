@@ -4,8 +4,8 @@ object PLSSform: TPLSSform
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'PLSS display options'
-  ClientHeight = 362
-  ClientWidth = 316
+  ClientHeight = 367
+  ClientWidth = 335
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

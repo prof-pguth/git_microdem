@@ -3964,7 +3964,7 @@ begin
          AColorParameter('StateCountyMaps','US_CountyOutline_Color',US_CountyOutline_Color,claBlack);
          AParameter('StateCountyMaps','US_CountyOutline_Width',US_CountyOutline_Width,1);
          AColorParameter('StateCountyMaps','US_FennemanColor',US_FennemanColor,claBlack);
-         AParameter('StateCountyMaps','US_FennemanWidth',US_FennemanWidth,1);
+         //AParameter('StateCountyMaps','US_FennemanWidth',US_FennemanWidth,1);
          AParameter('StateCountyMaps','US_Highway_Width',US_Highway_Width,2);
          AColorParameter('StateCountyMaps','US_Highway_Color',US_Highway_Color,claRed);
          AColorParameter('StateCountyMaps','US_River_Color',US_River_Color,claBlue);

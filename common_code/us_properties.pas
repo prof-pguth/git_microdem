@@ -31,11 +31,7 @@ uses
 
 {$IfDef VCL}
    function GetCounty(Lat,Long : float64; var GeoName : ShortString) : boolean;
-   //function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
-   //procedure FennemanOutlines(MapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap);
 {$EndIf}
-
-//function FennemanGISFileName : PathStr;
 
 
 implementation
@@ -44,22 +40,11 @@ uses
    DEMDefs;
 
 var
-   //Precip,
-   //PRISMModelPrecip,
-   //ClimateDivisions,
-   //FennemanProvince,
-   //USGSQuadNames,
    Highways,
    County,
    Rivers,
    States : integer;
 
-(*
-function FennemanGISFileName : PathStr;
-begin
-   Result := DBDir + 'us\fennprov\fennprov' + DefaultDBExt;
-end;
-*)
 
 procedure DrawOutlines(var db : integer; fName : PathStr; dbMapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap;  Color : tPlatformColor; Width : integer; FloodFill : boolean = false);
 begin
@@ -84,12 +69,6 @@ begin
    end;
 end;
 
-(*
-procedure FennemanOutlines(MapOwner : DEMMapF.tMapForm; var Bitmap : tMyBitmap);
-begin
-   DrawOutlines(County,FennemanGISFileName,MapOwner,Bitmap,MDDef.US_FennemanColor,MDDef.US_FennemanWidth);
-end;
-*)
 
 {$IfDef VCL}
 function GetUSPropertiesString(var db :integer; fName : PathStr; Field1,Field2,Field3 : ShortString; Label1,Label2 : ShortString; Lat,Long : float64; var USName : ShortString) : boolean;
@@ -111,14 +90,6 @@ begin
    {$IfDef USpropertiesTrack} WriteLineToDebugFile('GetUSPropertiesString got ' + USName); {$EndIf}
 end;
 
-
-(*
-function GetUSGSQuadName(Lat,Long : float64; var GeoName : ShortString) : boolean;
-//kept for use in DragonPlot
-begin
-   Result := GetUSPropertiesString(USGSQuadNames,'us\usgs_24K_quads\24kgrid' + DefaultDBExt,'NAME','STATE','',',  ','',Lat,Long,GeoName);
-end;
-*)
 
 function GetState(Lat,Long : float64; var GeoName : ShortString) : boolean;
 begin
@@ -147,32 +118,18 @@ end;
 procedure CloseDataBases;
 begin
    {$IfDef RecordDBClosing} WriteLineToDebugFile('Enter CloseDataBases in US_properties');{$EndIf}
-   //CloseAndNilNumberedDB(KingGeology);
-   //CloseAndNilNumberedDB(NatAtlasGeology);
-   //CloseAndNilNumberedDB(Precip);
-   //CloseAndNilNumberedDB(ClimateDivisions);
-   //CloseAndNilNumberedDB(PRISMModelPrecip);
    CloseAndNilNumberedDB(County);
    CloseAndNilNumberedDB(Rivers);
    CloseAndNilNumberedDB(Highways);
    CloseAndNilNumberedDB(States);
-   //CloseAndNilNumberedDB(FennemanProvince);
-   //CloseAndNilNumberedDB(USGSQuadNames);
    {$IfDef RecordDBClosing} WriteLineToDebugFile('  exit CloseDataBases in US_properties'); {$EndIf}
 end;
 
 
 initialization
-   //KingGeology := 0;
-   //NatAtlasGeology := 0;
-   //Precip := 0;
-   //ClimateDivisions := 0;
-   //PRISMModelPrecip := 0;
    County := 0;
    States := 0;
    Rivers := 0;
-   //FennemanProvince := 0;
-   //USGSQuadNames := 0;
 finalization
    CloseDataBases;
    {$IfDef USpropertiesTrack} WriteLineToDebugFile('USpropertiesTrack in US_properties'); {$EndIf}

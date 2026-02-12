@@ -3,8 +3,8 @@ object dbFilterCreation: TdbFilterCreation
   Top = 207
   BorderIcons = []
   Caption = 'Data Base Filter'
-  ClientHeight = 360
-  ClientWidth = 564
+  ClientHeight = 371
+  ClientWidth = 579
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,11 +17,13 @@ object dbFilterCreation: TdbFilterCreation
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 257
-    Width = 564
+    Top = 268
+    Width = 579
     Height = 103
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 257
+    ExplicitWidth = 564
     object BitBtn8: TBitBtn
       Left = 120
       Top = 38
@@ -139,20 +141,23 @@ object dbFilterCreation: TdbFilterCreation
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 564
-    Height = 257
+    Width = 579
+    Height = 268
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 564
+    ExplicitHeight = 257
     object TabSheet1: TTabSheet
       Caption = 'Main filter'
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 556
+        Width = 571
         Height = 90
         Align = alTop
         TabOrder = 0
+        ExplicitWidth = 556
         object Label2: TLabel
           Left = 208
           Top = 20
@@ -296,12 +301,13 @@ object dbFilterCreation: TdbFilterCreation
       object Memo1: TMemo
         Left = 0
         Top = 90
-        Width = 556
+        Width = 571
         Height = 88
         Align = alTop
         TabOrder = 1
         WordWrap = False
         OnChange = Memo1Change
+        ExplicitWidth = 556
       end
       object CheckBox1: TCheckBox
         Left = 3

@@ -94,7 +94,6 @@ type
   end;
 
 var
-   //KoppenGraph: TKoppenGraph;
    ClimographDB : tMyData;
 
 function OpenKoppenGraph(Width, Height : integer) : TKoppenGraph;  overload;

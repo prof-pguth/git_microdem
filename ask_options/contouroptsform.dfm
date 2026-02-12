@@ -2,8 +2,8 @@ object SimpleContourOptions: TSimpleContourOptions
   Left = 725
   Top = 447
   Caption = 'Contour options'
-  ClientHeight = 268
-  ClientWidth = 222
+  ClientHeight = 274
+  ClientWidth = 221
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

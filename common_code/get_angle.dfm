@@ -2,8 +2,8 @@ object get_angle_form: Tget_angle_form
   Left = 306
   Top = 174
   Caption = 'GMT gridding options'
-  ClientHeight = 116
-  ClientWidth = 160
+  ClientHeight = 123
+  ClientWidth = 164
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

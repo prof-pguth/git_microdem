@@ -3,8 +3,8 @@ object OKBottomDlg: TOKBottomDlg
   Top = 83
   BorderStyle = bsDialog
   Caption = 'Dialog'
-  ClientHeight = 120
-  ClientWidth = 237
+  ClientHeight = 135
+  ClientWidth = 255
   Color = clBtnFace
   ParentFont = True
   Position = poScreenCenter

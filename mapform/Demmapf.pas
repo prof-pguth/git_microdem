@@ -3681,7 +3681,6 @@ uses
    DEMcoord,
    compare_programs_algorithms,
 
-   pick_several_dems ,
    Monitor_Change_Form,
    DEM_sat_Header,
    ufrmMain,

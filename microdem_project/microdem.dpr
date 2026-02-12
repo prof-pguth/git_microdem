@@ -238,7 +238,6 @@ uses
   ufrmMain in '..\misc\FireMonkey3DGlobalRotate\ufrmMain.pas' {frmMain},
   demix_filter in '..\demix\demix_filter.pas' {DemixFilterForm},
   monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
-  pick_several_dems in '..\common_code\pick_several_dems.pas' {tPickGridsForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
   DEM_NLCD in '..\common_code\DEM_NLCD.pas',
   demix_definitions in '..\demix\demix_definitions.pas',

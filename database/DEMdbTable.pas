@@ -5321,8 +5321,17 @@ begin
        GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
        if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
            Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+           {$IfDef RecordDEMIX} WriteLineToDebugFile(Tile + '  Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
            if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) and GetDSMandDTMTileNamesFromLatLong(DBonTable,Lat,Long,DTMName,DSMName) then begin
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DSMName));
+              GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname);
+              GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname);
+              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES');
+              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DTMName));
+              GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname);
+              GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname);
+              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES');
+              (*
               GISdb[DBonTable].MyData.Edit;
               GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME',DSMname);
               GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME',DTMname);
@@ -5334,13 +5343,19 @@ begin
               GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME',DTMname);
               GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME',DSMname);
               GISdb[DBonTable].MyData.Post;
+              *)
            end
            else begin
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
               GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
+              (*
+              GISdb[DBonTable].MyData.Edit;
+              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
+              GISdb[DBonTable].MyData.Post;
+              *)
            end;
        end;
-   until GISdb[DBonTable].MyData.FiltRecsInDB = 0;
+   until (GISdb[DBonTable].MyData.FiltRecsInDB = 0);
 
    SetColorForWaiting;
    GISdb[DBonTable].ClearGISFilter;

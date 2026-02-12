@@ -15,7 +15,7 @@ object KML_over_opts: TKML_over_opts
   OnCreate = FormCreate
   TextHeight = 13
   object OKBtn: TBitBtn
-    Left = 129
+    Left = 111
     Top = 414
     Width = 77
     Height = 27
@@ -47,7 +47,7 @@ object KML_over_opts: TKML_over_opts
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 225
+    Left = 209
     Top = 414
     Width = 77
     Height = 27

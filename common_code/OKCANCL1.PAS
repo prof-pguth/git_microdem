@@ -2,8 +2,7 @@ unit OKCANCL1;
 
 interface
 
-uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls, 
-  Buttons, ExtCtrls;
+uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls, Buttons, ExtCtrls;
 
 type
   TOKBottomDlg = class(TForm)
@@ -22,5 +21,6 @@ var
 implementation
 
 {$R *.dfm}
+
 
 end.

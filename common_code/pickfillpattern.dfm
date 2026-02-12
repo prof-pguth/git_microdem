@@ -4,8 +4,8 @@ object PickFillForm: TPickFillForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Pick Fill '
-  ClientHeight = 216
-  ClientWidth = 344
+  ClientHeight = 223
+  ClientWidth = 346
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

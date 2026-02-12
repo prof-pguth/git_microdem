@@ -4,8 +4,8 @@ object TissotOpts: TTissotOpts
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Tissot Indicatrix Options'
-  ClientHeight = 247
-  ClientWidth = 325
+  ClientHeight = 248
+  ClientWidth = 340
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

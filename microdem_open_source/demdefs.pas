@@ -2787,7 +2787,7 @@ type
        US_River_Color : tPlatformColor;
        US_River_Width : byte;
        US_FennemanColor : tPlatformColor;
-       US_FennemanWidth : byte;
+       //US_FennemanWidth : byte;
 
        XYZImport : tXYZImport;
        XYZProduct : byte;

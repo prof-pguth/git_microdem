@@ -5,7 +5,7 @@ object NewFieldForm: TNewFieldForm
   BorderStyle = bsDialog
   Caption = 'Set Data Base Fields'
   ClientHeight = 234
-  ClientWidth = 210
+  ClientWidth = 221
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

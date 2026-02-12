@@ -2,7 +2,7 @@ object NetEntryForm: TNetEntryForm
   Left = 0
   Top = 0
   Caption = 'Stereo net entry'
-  ClientHeight = 219
+  ClientHeight = 202
   ClientWidth = 354
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

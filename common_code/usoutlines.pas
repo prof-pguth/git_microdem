@@ -4,7 +4,7 @@ unit usoutlines;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -25,8 +25,6 @@ type
     Edit3: TEdit;
     BitBtn2: TBitBtn;
     BitBtn3: TBitBtn;
-    BitBtn4: TBitBtn;
-    Label4: TLabel;
     BitBtn5: TBitBtn;
     CheckBox5: TCheckBox;
     CheckBox6: TCheckBox;
@@ -49,7 +47,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
-    procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn6Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
     procedure BitBtn8Click(Sender: TObject);
@@ -87,7 +84,7 @@ begin
       CheckBox2.Checked := MDDef.USOutlinesOnImagery;
       ColorLineWidthBitBtn(BitBtn2,MDDef.US_CountyOutline_Color,MDDef.US_CountyOutline_Width);
       ColorLineWidthBitBtn(BitBtn3,MDDef.US_StateOutline_Color,MDDef.US_StateOutline_Width);
-      ColorLineWidthBitBtn(BitBtn4,MDDef.US_FennemanColor,MDDef.US_FennemanWidth);
+      //ColorLineWidthBitBtn(BitBtn4,MDDef.US_FennemanColor,MDDef.US_FennemanWidth);
       ColorLineWidthBitBtn(BitBtn6,MDDef.US_Highway_Color,MDDef.US_Highway_Width);
       ColorLineWidthBitBtn(BitBtn7,MDDef.US_River_Color,MDDef.US_River_Width);
 
@@ -138,12 +135,6 @@ procedure TUSOutlineForm.BitBtn3Click(Sender: TObject);
 begin
    PickLineSizeAndColor('State outlines',BitBtn3,MDDef.US_StateOutline_Color,MDDef.US_StateOutline_Width);
 end;
-
-procedure TUSOutlineForm.BitBtn4Click(Sender: TObject);
-begin
-   PickLineSizeAndColor('Fenneman provinces',BitBtn4,MDDef.US_FennemanColor,MDDef.US_FennemanWidth);
-end;
-
 
 procedure TUSOutlineForm.FormCreate(Sender: TObject);
 begin

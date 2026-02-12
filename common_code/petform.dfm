@@ -4,8 +4,8 @@ object PETMARCommonForm: TPETMARCommonForm
   ActiveControl = Edit1
   BorderIcons = []
   Caption = 'G'
-  ClientHeight = 179
-  ClientWidth = 484
+  ClientHeight = 181
+  ClientWidth = 497
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,11 +18,11 @@ object PETMARCommonForm: TPETMARCommonForm
   object Edit1: TEdit
     Left = 0
     Top = 41
-    Width = 484
-    Height = 28
+    Width = 497
+    Height = 24
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 353
+    ExplicitWidth = 484
   end
   object OKBtn: TBitBtn
     Left = 24
@@ -40,12 +40,12 @@ object PETMARCommonForm: TPETMARCommonForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 484
+    Width = 497
     Height = 41
     Align = alTop
     Caption = 'Panel1'
     TabOrder = 2
-    ExplicitWidth = 353
+    ExplicitWidth = 484
   end
   object OpenDialog1: TOpenDialog
     Options = [ofEnableSizing]

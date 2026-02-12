@@ -4,8 +4,8 @@ object PickSymbolForm: TPickSymbolForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Plotting Symbol Selection'
-  ClientHeight = 160
-  ClientWidth = 197
+  ClientHeight = 169
+  ClientWidth = 203
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
