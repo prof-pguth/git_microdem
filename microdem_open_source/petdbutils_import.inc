@@ -96,7 +96,7 @@ begin
          GISDB[GisNUM].AddNavFields;
          {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
       end;
-      CloseAndNilNumberedDB(GISnum);
+      CloseSingleDB(GISnum);
 
       FileInMemory.Destroy;
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, out for ' + outName); {$EndIf}

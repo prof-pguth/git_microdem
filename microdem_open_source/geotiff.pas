@@ -1641,7 +1641,7 @@ var
                TiffImageColor[i].rgbtGreen := ColorTable[2*ColorTableEntries + succ(i*2)];
                TiffImageColor[i].rgbtBlue  := ColorTable[4*ColorTableEntries + succ(i*2)];
             end;
-            {$IfDef RecordGeotiffPalette} WriteLineToDebugFile(IntegerToString(i,3) + '  ' + ColorStringFromPlatformColor(TiffImageColor[i])); {$EndIf}
+            {$IfDef RecordGeotiffPalette} WriteLineToDebugFile(IntegerToString(i,3) + '  ' + ColorString(TiffImageColor[i])); {$EndIf}
          end;
          AllGray := true;
          for i := 0 to pred(ColorTableEntries) do begin

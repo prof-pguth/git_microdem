@@ -205,7 +205,7 @@ end;
 
 procedure TXYZDisplayForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   CloseAndNilNumberedDB(XYZTableGIS);
+   CloseSingleDB(XYZTableGIS);
    GISdb[XYZTableGIS].theMapOwner.BackToWandering;
    Self := Nil;
 end;

@@ -79,7 +79,6 @@ function PointKMLtoStringList(fName : PathStr) : tStringList;
 procedure LineKMLtoStringList(fName : PathStr);
 function FitBitTCXtoStringList(fName : PathStr; var ID : shortstring) : tStringList;
 
-
 function DBtableFieldToDropDown(Table : tMyData; fName,WantName : ShortString) : AnsiString;
 function SingleRecordToHTMLTable(Table : tMyData; VisCols : Array100Boolean; ThumbNailDir : PathStr = '') : AnsiString;
 function HTMLTableCell(Contents : AnsiString) : AnsiString;
@@ -112,14 +111,13 @@ procedure SafeAdjustGeoBoundBoxForPixelIsArea(var bb : sfBoundBox);
 function IntersectionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
 function UnionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
 
-
 procedure ZeroTable(fName : PathStr);  overload;
 procedure ZeroTable(var TheTable : tMyData); overload;
 
-procedure FindUniqueEntries(Table : tMyData; FieldName : ShortString; var DataThere : tStringList; Sort : boolean = true); overload;
+function FindUniqueEntries(Table : tMyData; FieldName : ShortString; Sort : boolean = true) : tStringList; overload;
 function NumberUniqueEntries(Table : tMyData; FieldName : ShortString) : integer; overload;
 
-procedure FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; var DataThere : tStringList; Sort : boolean = true); overload;
+function FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList; overload;
 
 function DefineColorTableValues(Palette : shortstring; Min,Max : float64; var ZColorTable : tColorTableDefinitions; Reverse : boolean = false) : boolean;
 
@@ -251,6 +249,8 @@ begin
       if (OutName <> '') or GetFileNameDefaultExt('Merged CSV files','*.dbf',OutName) then begin
          if (BaseMap = Nil) then Result := StringList2CSVtoDB(s11,OutName,true)
          else Result := BaseMap.StringListToLoadedDatabase(s11,OutName);
+         CloseSingleDB(Result);
+         OpenNumberedGISDataBase(Result,OutName);
       end;
       LastDataBase := fName;
       wmDEM.SetPanelText(0,'');
@@ -328,7 +328,7 @@ begin
     if OpenNumberedGISDataBase(db,fName) then begin
         GISdb[db].CreateScatterGram('Test',xf,yf,clRed,false,Capt);
     end;
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
    sl.Destroy;
 end;
 
@@ -396,7 +396,7 @@ end;
          Results.Free;
          OpenNumberedGISDataBase(Result,fName,OpenTable);
          if CloseFile then begin
-            CloseAndNilNumberedDB(Result);
+            CloseSingleDB(Result);
             Result := 0;
          end
          else begin
@@ -904,7 +904,7 @@ begin
 end;
 
 
-procedure FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; var DataThere : tStringList; Sort : boolean = true);
+function FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList;
 var
    Count,rc : integer;
    BaseTable : tMyData;
@@ -914,20 +914,20 @@ begin
    try
       BaseTable := Table;
       if (LinkData <> Nil) and LinkedField(FieldName) then BaseTable := LinkData;
-      DataThere := tStringList.Create;
+      Result := tStringList.Create;
       BaseTable.First;
       Count := 0;
       if (BaseTable.RecordCount > 0) then begin
          if Sort then begin
-            DataThere.Sorted := true;
-            DataThere.Duplicates := dupIgnore;
+            Result.Sorted := true;
+            Result.Duplicates := dupIgnore;
          end;
          rc := BaseTable.RecordCount;
          LastTStr := '';
          while not BaseTable.EOF do begin
             TStr := ptTrim(BaseTable.GetFieldByNameAsString(FieldName));
             if (TStr <> '') and (TStr <> LastTStr) then begin
-               DataThere.Add(TStr);
+               Result.Add(TStr);
             end;
             BaseTable.Next;
             inc(Count);
@@ -940,9 +940,9 @@ begin
 end;
 
 
-procedure FindUniqueEntries(Table : tMyData; FieldName : ShortString; var DataThere : tStringList; Sort : boolean = true);
+function FindUniqueEntries(Table : tMyData; FieldName : ShortString; Sort : boolean = true) : tStringList;
 begin
-   FindUniqueEntriesLinkPossible(Table,Nil,'','',FieldName,DataThere,Sort);
+   Result := FindUniqueEntriesLinkPossible(Table,Nil,'','',FieldName,Sort);
 end;
 
 

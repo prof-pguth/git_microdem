@@ -129,7 +129,7 @@ begin
                      GISdb[GISNum].aShapefile.AddFields(afBoundingBox,GISdb[GISNum].MyData);
                   end;
                   bBox := GISdb[GISNum].aShapefile.MainFileHeader.BoundBox;
-                  CloseAndNilNumberedDB(GISNum);
+                  CloseSingleDB(GISNum);
                   inc(Count);
                   GISdb[IndexNum].MyData.SetFieldByNameAsString('ON_HAND',TStr);
                   GISdb[IndexNum].MyData.SetFieldByNameAsString('FILENAME',fName);
@@ -140,7 +140,7 @@ begin
          end;
          GISdb[IndexNum].MyData.Next;
       end;
-      CloseAndNilNumberedDB(IndexNum);
+      CloseSingleDB(IndexNum);
    end
    else MessageToContinue('No Tiger index: ' + TigerIndex);
    EndProgress;
@@ -341,7 +341,7 @@ begin
             end;
        end;
    end;
-   CloseAndNilNumberedDB(GISNum);
+   CloseSingleDB(GISNum);
    {$IfDef RecordRedistrict} WriteLineToDebugFile('RedistrictTigerFiles Out'); {$EndIf}
 end;
 
@@ -436,7 +436,7 @@ begin
          end;
          GISdb[TigerDB].MyData.Next;
       end;
-      CloseAndNilNumberedDB(TigerDB);
+      CloseSingleDB(TigerDB);
    end
    else begin
       MessageToContinue('No Tiger index ' + TigerIndex);

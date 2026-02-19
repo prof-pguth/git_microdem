@@ -16,6 +16,9 @@
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
       //{$Define RecordDEMIX}
       //{$Define RecordDBsort}
+      //{$Define LegendColors}
+      {$Define GraphLineWidth}
+
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
       //{$Define RecordCloseDB}
@@ -204,7 +207,7 @@ type
   tHowRestrict = (resNone);
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt,adAvgElevInWindow);
   tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,
-     dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,N2Dgraph2yaxes1,dbgtPlot1series1,dbgtPlotforsubsamples1,
+     dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,{dgbtN2Dgraph2yaxes,}dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2DgraphMultDEMs,
      dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield1,
      dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtPlot,dbgtUnspecified);
 
@@ -652,7 +655,7 @@ type
          procedure AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
-         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil) : TThisbasegraph;
+         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil) : TThisbasegraph;
          procedure MonthlyWindPlotCurrentPoint;
 
 
@@ -733,7 +736,7 @@ procedure InitializeDEMdbs;
 
 function FindOpenDataBase(var db : integer) : boolean;
 
-procedure CloseAndNilNumberedDB(var i : integer);
+procedure CloseSingleDB(var i : integer);
 function NumOpenDB : integer;
 function ValidDB(theDB : integer) : boolean;
 function ValidDBfName(fName : PathStr) : boolean;
@@ -984,7 +987,7 @@ var
 begin
    NewDB := SortDataBase(DBOnTable,Ascending,true,aField);  //,OutputDir);
    SortedFName := GISdb[NewDB].DBfullName;
-   CloseAndNilNumberedDB(NewDB);
+   CloseSingleDB(NewDB);
    GISdb[DBonTable].BackupDB;
    DeleteFileIfExists(GISdb[DBonTable].DBfullName);
    MoveFile(SortedFName,GISdb[DBonTable].DBfullName);
@@ -2944,7 +2947,7 @@ end;
                if FileExists(fName) then begin
                   OpenNumberedGISDataBase(DBonTable,fName,false,false,MapOwner);
                   KML_opts.ConvertToKML(DBonTable,'');
-                  CloseAndNilNumberedDB(DBonTable);
+                  CloseSingleDB(DBonTable);
                end;
             end;
 
@@ -3835,7 +3838,7 @@ begin
 end;
 
 
-procedure CloseAndNilNumberedDB(var i : integer);
+procedure CloseSingleDB(var i : integer);
 var
   ClosingDB : integer;
 begin
@@ -5164,7 +5167,7 @@ begin
                   GISDB[i].DeleteAllSelectedRecords;
                   {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
                end;
-               CloseAndNilNumberedDB(i);
+               CloseSingleDB(i);
              end;
           end
           else if ExtEquals(Ext,'.gpx') then begin

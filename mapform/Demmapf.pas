@@ -9592,7 +9592,7 @@ begin {procedure TMapForm.MakeHeatMap}
            UpdateProgressBar(i/FileNames.Count);
            OpenNumberedGISDataBase(db,FileNames.Strings[i]);
            ProcessDB(HeatGrid,db);
-           CloseAndNilNumberedDB(db);
+           CloseSingleDB(db);
         end;
         EndProgress;
         {$IfDef RecordHeatMap} WriteLineToDebugFile('TMapForm.MakeHeatMap, done files=' + IntToStr(FileNames.Count)); {$EndIf}
@@ -10529,7 +10529,7 @@ var
 
    procedure CloseIt(j : integer);
    begin
-      DEMDataBase.CloseAndNilNumberedDB(j);
+      DEMDataBase.CloseSingleDB(j);
    end;
 
 begin
@@ -14312,7 +14312,7 @@ begin
          GISdb[db].MyData.SetFieldByNameAsInteger('COLOR',WinGraphColors(Code)) ;
          GISdb[db].MyData.Next;
       end;
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
 
    DEMGlb[NewDEM].SetUpMap(true);
    EndProgress;
@@ -17373,7 +17373,7 @@ var
    NewTitle : ShortString;
 begin
    if LocalEdit and (DEMNowDoing in [PickDBRecsToMove]) and (WhatTo <> PickDBRecsToMove) then begin
-      CloseAndNilNumberedDB(DBEditting);
+      CloseSingleDB(DBEditting);
       LocalEdit := false;
    end;
    {$IfDef ExGeology}
@@ -20588,7 +20588,7 @@ begin
       LastFanTable := fName;
    end;
    {$IfDef RecordFan} WriteLineToDebugFile('TMapForm.Loadweaponsfans1Click ' + fName); {$EndIf}
-   CloseAndNilNumberedDB(MapDraw.CurrentFansTable);
+   CloseSingleDB(MapDraw.CurrentFansTable);
 
    OpenNumberedGISDataBase(MapDraw.CurrentFansTable,fName,false,false,Self);
 
@@ -21641,7 +21641,7 @@ begin
             end;
          end;
       end;
-      CloseAndNilNumberedDB(tn);
+      CloseSingleDB(tn);
       RespondToChangedDEM;
       MessageToContinue(IntToStr(NPts) + ' points reclassified');
    end;

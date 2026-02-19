@@ -304,7 +304,7 @@ end;
 procedure TThreePointer.DataBaseSpeedButton28Click(Sender: TObject);
 begin
    {$IfDef RecordThreePoint} WriteLinetoDebugFile('TThreePointer.DataBaseSpeedButton28Click in'); {$EndIf}
-   if (LocalContactDB <> 0) then CloseAndNilNumberedDB(LocalContactDB);
+   if (LocalContactDB <> 0) then CloseSingleDB(LocalContactDB);
    LocalContactDB := aMapOwner.OpenDBonMap('Contact','',true);
    if GISdb[LocalContactDB].ItsAPointDB then begin
       PointUpdate := false;
@@ -314,7 +314,7 @@ begin
    end
    else begin
       MessageToContinue('Requires a points DB');
-      CloseAndNilNumberedDB(LocalContactDB);
+      CloseSingleDB(LocalContactDB);
    end;
    {$IfDef RecordThreePoint} WriteLinetoDebugFile('TThreePointer.DataBaseSpeedButton28Click out'); {$EndIf}
 end;

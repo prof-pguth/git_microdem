@@ -182,8 +182,8 @@ begin
          GISdb[GISstart].MyData.Next;
       end;
 
-      CloseAndNilNumberedDB(GISstart);
-      CloseAndNilNumberedDB(GISend);
+      CloseSingleDB(GISstart);
+      CloseSingleDB(GISend);
       StatusBar1.Panels[0].Text := '';
    end;
    {$IfDef RecordLCP} WritelineToDebugFile('Exit TLCP_form.CreateRouteCostBitBtn7Click'); {$EndIf}
@@ -258,7 +258,7 @@ begin
          LeastCostFromCurrentRecord(GISNum);
          GISdb[GISnum].MyData.Next;
       end;
-      CloseAndNilNumberedDB(GISnum);
+      CloseSingleDB(GISnum);
       StatusBar1.Panels[0].Text := '';
    end;
    {$IfDef RecordLCP} WritelineToDebugFile('Exit TLCP_form.CreatePathSurfaceBitBtn5Click'); {$EndIf}

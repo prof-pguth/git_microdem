@@ -44,7 +44,7 @@ end;
 procedure Get3DEPDataDirs(var DataDirs : tStringList);
 begin
    DataDirs := tStringList.Create;
-   DataDirs.Add(DEMIX_3DEP_Dir);
+   //DataDirs.Add(DEMIX_3DEP_Dir);
    GetMultipleDirectories('3DEP DEMs', DataDirs);
 end;
 

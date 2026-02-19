@@ -3,9 +3,11 @@ var
    AreaDir,SourceDir,WGS_EGMdir,MergesDirFName : PathStr;
    AreaProgress : shortstring;
 const
+   udCreateTiles = 1;
    udFUVCalc = 2;
    udPixelGeometrySlope = 4;
    udTileStats = 5;
+   udMergeTileStats = 8;
    udFileFillReport = 31;
    udDeleteResultsCSVsForAreas = 32;
    udInvalidTiles = 33;
@@ -30,10 +32,12 @@ begin
   Result := ' Available RAM: ' + SmartMemorySizeBytes(vGlobalMemoryStatus.dwAvailPhys);
 end;
 
+(*
 function SkipDEM(aDEM : shortstring) : boolean;
 begin
    Result := (aDEM = 'GEDTMV0') or (aDEM = 'EDTM') or (aDEM = 'GEDTMV1_1');
 end;
+*)
 
 function WebExtractDEM(aDEm : shortstring) : boolean;
 begin
@@ -121,6 +125,17 @@ begin
 end;
 
 
+function DEMIX_GetListOfPossibleAreas(AreaName : shortstring) : tStringList;
+var
+   i : integer;
+begin
+   AreaDirectoryNames(AreaName);
+   Result := GetSubDirsInDirectory(AreaDir);
+   for I := pred(Result.Count) downto 0 do
+      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or  (UpperCase(Copy(Result.Strings[i],1,3)) = 'DB_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm')
+         or (Result.Strings[i] = 'merges') then Result.Delete(i);
+
+end;
 
 function DEMIX_GetListOfTileSubDirsInArea(AreaName : shortstring; ShouldHaveBeenCreated : boolean = true) : tStringList;
 //these have '_ref_test_dem' plus the tile name
@@ -129,12 +144,11 @@ var
   TiffsThere : tStringList;
   TileDir : PathStr;
 begin
-   AreaDirectoryNames(AreaName);
-   Result := GetSubDirsInDirectory(AreaDir);
+   //AreaDirectoryNames(AreaName);
+   Result := DEMIX_GetListOfPossibleAreas(AreaName);
    TiffsThere := tStringList.Create;
    for i := pred(Result.Count) downto 0 do begin
-      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or  (UpperCase(Copy(Result.Strings[i],1,3)) = 'DB_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm')  or (Result.Strings[i] = 'merges') then Result.Delete(i)
-      else if ShouldHaveBeenCreated then begin
+      if ShouldHaveBeenCreated then begin
          //this is due to some data directories requiring admin permission to delete, and Windows won't allow that
          TileDir := AreaDir + Result.Strings[i];
          Petmar.FindMatchingFiles(TileDir,'*.tif',TiffsThere,1);
@@ -236,7 +250,7 @@ var
    bmp : tMyBitmap;
    Findings,Colors,LegendEntries : tStringList;
 begin {procedure TileCharacterization;}
-   ImportLandParamFiltersLong('C:\microdem\demix_settings\filters_avg_slope_6_cat.dbf',Filters1,Labels1,Lowers1,Uppers1);
+   ImportLandParamFiltersLong(DEMIXSettingsDir + 'filters_avg_slope_6_cat.dbf',Filters1,Labels1,Lowers1,Uppers1);
 
    if IncludeDBVersions then begin
        fName := 'J:\wine_contest\wine_contest_database\demix_database_diff_distrib_v2.dbf';
@@ -267,17 +281,17 @@ begin {procedure TileCharacterization;}
        if (lc = 2)  then begin
           Param2 := 'BARREN_PC';
           fName := 'J:\wine_contest\wine_contest_database\barren_percent.tif';
-          ImportLandParamFiltersLong('C:\microdem\demix_settings\filters_barren_pc.dbf',Filters2,Labels2,Lowers2,Uppers2);
+          ImportLandParamFiltersLong(DEMIXSettingsDir + 'filters_barren_pc.dbf',Filters2,Labels2,Lowers2,Uppers2);
        end
        else if (lc = 3)  then begin
           Param2 := 'FOREST_PC';
           fName := 'J:\wine_contest\wine_contest_database\forest_percent.tif';
-          ImportLandParamFiltersLong('C:\microdem\demix_settings\filters_forest_pc.dbf',Filters2,Labels2,Lowers2,Uppers2);
+          ImportLandParamFiltersLong(DEMIXSettingsDir + 'filters_forest_pc.dbf',Filters2,Labels2,Lowers2,Uppers2);
        end
        else if (lc = 4)  then begin
           Param2 := 'URBAN_PC';
           fName := 'J:\wine_contest\wine_contest_database\urban_percent.tif';
-          ImportLandParamFiltersLong('C:\microdem\demix_settings\filters_urban_pc.dbf',Filters2,Labels2,Lowers2,Uppers2);
+          ImportLandParamFiltersLong(DEMIXSettingsDir + 'filters_urban_pc.dbf',Filters2,Labels2,Lowers2,Uppers2);
        end;
 
        grid_lc := OpenNewDEM(fName,false);
@@ -313,12 +327,6 @@ begin {procedure TileCharacterization;}
            end;
         end;
 
-        Colors := tStringList.Create;
-        Colors.Add(IntToStr(clBlue));
-        Colors.Add(IntToStr(clRed));
-        Colors.Add(IntToStr(clMaroon));
-        Colors.Add(IntToStr(clLime));
-
         LegendEntries := tStringList.Create;
         LegendEntries.Add('World land area (n=~1.5 million)');
         if IncludeDBVersions then begin
@@ -327,9 +335,15 @@ begin {procedure TileCharacterization;}
            LegendEntries.Add('DEMIX DB v4 (n=1510)');
         end;
 
+        Colors := tStringList.Create;
+        Colors.Add(IntToStr(clBlue));
+        Colors.Add(IntToStr(clRed));
+        Colors.Add(IntToStr(clMaroon));
+        Colors.Add(IntToStr(clLime));
+
         bmp := MakeLegend(LegendEntries,Colors);
         BottomLegendFName := MDTempDir + 'tile_characteristics.bmp';
-        SaveBitmap(bmp, BottomLegendFName);
+        SaveBitmap(bmp,BottomLegendFName);
 
         fName := MDTempDir + Param2 + 'Tile_characteristics.dbf';
         db := PetDBUtils.StringList2CSVtoDB(Findings,fName);
@@ -755,7 +769,7 @@ var
     end;
 
 begin  {procedure MakeReferenceDEM}
-   if (aDEM = 'COP') or (aDEM= 'ALOS') or (aDEM = 'FATHOM') {or (aDEM = 'GEDTMV1_1')} then begin
+   if (aDEM = 'COP') or (aDEM= 'ALOS') or (aDEM = 'FATHOM') then begin
       SecondMode := '';
       if (aDEM = 'FATHOM') then Mode := 'srtm'
       else if (aDEM = 'COP') then begin
@@ -774,7 +788,7 @@ begin  {procedure MakeReferenceDEM}
          //if (aDEM = 'GEDTMV1_1') then mode := 'gedtm';
       end;
 
-      RefName := TestDir + 'ref_dtm_' + Mode + '.tif';
+      RefName := TestDir + 'ref_' + IdentifyDEMIXtileAsDTMorDSM(SourceEGMName) + '_' + Mode + '.tif';
       if (not FileExists(RefName)) then begin
           {$If Defined(TimeMakeMaps)} Stopwatch := TStopwatch.StartNew; {$EndIf}
           if not InsureTestDEMOpen then exit;
@@ -799,11 +813,11 @@ begin  {procedure MakeReferenceDEM}
                  NewHeader.DEMxSpacing := 0.5 * NewHeader.DEMxSpacing;
                  RefName := TestDir + 'ref_dtm_' + SecondMode + '.tif';
                  OpenAndZeroNewDEM(true,NewHeader,TestDEM,'ALOS_geometry_1sec',InitDEMmissing);
-                 MakeThisReferenceDEM;
-              end
-              else begin
-                 MakeThisReferenceDEM;
+                 //MakeThisReferenceDEM;
               end;
+              //else begin
+                 MakeThisReferenceDEM;
+              //end;
           end
           else begin
              {$IfDef RecordDEMIXMakeRef} if not ValidDEM(SourceDEM) then  WriteLineToDebugFile('Ref DEM creation, missing' + SourceEGMName); {$EndIf};
@@ -817,6 +831,7 @@ end {procedure MakeReferenceDEM};
 
 
 procedure UTMbasedtilescreation(AreaName : shortstring; MissingLandCover : tStringList);
+// (Option = udCreateTiles
 var
    TestDir,SourceEGMName,fName,TestName,LCname,RefName : PathStr;
    UTM_Tile,aDEM,TStr,DEMProgress : shortstring;
@@ -831,12 +846,14 @@ var
    var
       i : integer;
       fName : PathStr;
-      TileSubDirs : tStringList;
+      TileSubDirs,TheTiles : tStringList;
    begin
        TileSubDirs := DEMIX_GetListOfTileSubDirsInArea(AreaName);
        if (TileSubDirs.Count = 0) then begin
+          if not(ValidPath(SourceDir)) then begin
+
            {$IfDef RecordDEMIX} WriteLineToDebugFile('Start file movement for ' + AreaName); {$EndIf};
-           if not(ValidPath(SourceDir)) then begin
+
               //to make it easier to download data, it does not have to be manually put into SourceDir, just into the AreaDir
               //only works if the files are close to the 10x10 km target size for tiles
               AreaDirectoryNames(AreaName);
@@ -1139,7 +1156,6 @@ begin {procedure UTMbasedtilescreation}
 end {procedure UTMbasedtilescreation};
 
 
-
 procedure DEMIX_tile_statistics(AreaName : shortstring);
 //Option = udTileStats
 var
@@ -1266,7 +1282,6 @@ var
    i,j,k,UseRef{,RefDEM} : integer;
    NPts,Fixed: int64;
    Lat,Long : float64;
-   //z,zref : float32;
    LCGrid : integer;
    gl : tGridLimits;
    RefPresent,
@@ -1415,10 +1430,12 @@ var
                     for k := 1 to theDEMs.Count do begin
                       InitializeMomentVar(MomentVar[k]);
                       DEMname := TheDEMs.Strings[pred(k)];
+                      (*
                       if SkipDEM(DEMname) then begin
                           aline := aLine + ',-9999';
                       end
-                      else begin
+                      else *)
+                      begin
                          UseRef := RefDEMs[GetRefDTM(TestDEMs[k])];
                          SameGrid := DEMGlb[UseRef].SecondGridJustOffset(TestDEMs[k],xoffset,yoffset);
                          for Col := 0 to pred(DEMglb[UseRef].DEMheader.NumCol) do begin
@@ -1501,11 +1518,7 @@ var
                     for k := 1 to theDEMs.Count do begin
                       {$IfDef DEMIXtrackFUV} IsNANproblem := false; {$EndIf}
                       DEMname := TheDEMs.Strings[pred(k)];
-                      if SkipDEM(DEMname) then begin
-                          aline := aLine + ',-9999';
-                      end
-                      else begin
-                         if ValidDEM(TestDEMs[k]) then begin
+                           if ValidDEM(TestDEMs[k]) then begin
                              UseRef := GetRefDTM(TestDEMs[k]);
                              if (Criterion = 'ELEV') or ValidDEM(RefLSPs[UseRef]) then begin
                                  {$If Defined(RecordFUVcreateFull)} WriteLineToDebugFile('Start ' + DEMGlb[TestDEMs[k]].AreaName + '  Ref=' + DEMGlb[TestDEMs[UseRef]].AreaName); {$EndIf}
@@ -1542,7 +1555,6 @@ var
                             goto MissingData;
                          end;
                       end;
-                    end;
                     fuvResults.Add(aLine);
                 end;
                 MissingData:;
@@ -1613,15 +1625,9 @@ begin {procedure UTMbasedFUV}
             end;
             for j := 1 to theDEMs.Count do begin
                 DEMName := theDEMs.Strings[pred(j)];
-                if SkipDEM(DEMname) then begin
-                    aline := aline + ',-9999';
-                    aline2 := aline2 + ',-9999';
-                end
-                else begin
-                    aline := aline + ',' + RealToString(DEMglb[TestDEMs[j]].AverageDEMslope(DEMglb[TestDEMs[j]].FullDEMGridLimits),-8,-2);
-                    DEMglb[TestDEMs[j]].ElevationStatistics(DEMglb[TestDEMs[j]].FullDEMGridLimits,Mean,Std,NPts);
-                    aline2 := aline2 + ',' + RealToString(Mean,-8,-2);
-                end;
+                aline := aline + ',' + RealToString(DEMglb[TestDEMs[j]].AverageDEMslope(DEMglb[TestDEMs[j]].FullDEMGridLimits),-8,-2);
+                DEMglb[TestDEMs[j]].ElevationStatistics(DEMglb[TestDEMs[j]].FullDEMGridLimits,Mean,Std,NPts);
+                aline2 := aline2 + ',' + RealToString(Mean,-8,-2);
             end;
             DoAverageSlopeRefDTMs.Add(aline);
             DoAverageElevRefDTMs.Add(aline2);
@@ -1699,37 +1705,6 @@ end {procedure UTMbasedFUV};
        GISdb[db].ApplyGISfilter('FUV_CSV=' + QuotedStr('No') + ' OR ' + 'PART_CSV=' + QuotedStr('No') + ' OR ' + 'CURVE_CSV=' + QuotedStr('No') + ' OR ' +
            'DIFF_DIST=' + QuotedStr('No') + ' OR ' + 'STATS_CSV=' + QuotedStr('No') );
     end {procedure DEMIX_UTM_AreaTileSurvey};
-
-(*
-procedure DEMIX_ZipSource(theAreas : tStringList);
-//Option = udZipSourceFiles
-//this unfortunately give negligble compression after a long time
-var
-   i : integer;
-   cmd,AreaName : shortstring;
-begin
-   StartProgress('zipping');
-   for i := 0 to pred(theAreas.count) do begin
-      AreaName := theAreas.Strings[i];
-      AreaDirectoryNames(AreaName);
-      if ValidPath(SourceDir) then begin
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('zipping ' + SourceDir); {$EndIf};
-         UpDateProgressBar(succ(i)/TheAreas.Count);
-         cmd := 'tar -a -c -f ' + AreaDir + 'source.zip ' + AreaDir + 'source';
-         if WinExecAndWait32(cmd) = 0 the begin
-            {$IfDef RecordDEMIX} WriteLineToDebugFile('zip success ' + SourceDir); {$EndIf};
-            CleanOutDirectory(SourceDir);
-         end
-         else begin
-            {$IfDef RecordDEMIX} WriteLineToDebugFile('zip fail ' + SourceDir); {$EndIf};
-         end;
-      end
-      else begin
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('missing ' + SourceDir); {$EndIf};
-      end;
-   end;
-end;
-*)
 
 
 procedure DEMIX_SourceFileSurvey(theAreas : tStringList);
@@ -2119,37 +2094,6 @@ begin {procedure TakeCareOfInvalidTiles}
 
 (*
 
-   WriteLineToDebugFile('Fix GEDTM elevations off by factor 10');
-   Done := 0;
-   for i := 0 to pred(theAreas.Count) do begin
-      AreaName := theAreas.Strings[i];
-      wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(theAreas.Count) + '  ' + AreaName,true);
-      TileDirs := DEMIX_GetListOfTileNamesInArea(AreaName);
-      for j := 0 to pred(TileDirs.Count) do begin
-         TileDirName := MDDef.DEMIX_BaseDir + AreaName + '\' + TileDirs.Strings[j] + '_ref_test_dem\';
-         wmDEM.SetPanelText(2,IntToStr(j) + '/' + IntToStr(TileDirs.Count) + '  ' + TileDirs.strings[j],true);
-
-         fName := TileDirName + 'cop.tif';
-         fName2 := TileDirName + 'gedtmv1_2.tif';
-
-         if FileExists(fName) and FileExists(fName2) then begin
-            LoadNewDEM(COP,fName,false);
-            LoadNewDEM(GEDTM,fName2,false);
-            if DEMglb[Cop].DEMHeader.MaxElev / DEMglb[GEDTM].DEMHeader.MaxElev > 5 then begin
-               DEMglb[GEDTM].MultiplyGridByConstant(10);
-               DEMglb[GEDTM].CheckMaxMinElev;
-               DEMglb[GEDTM].SaveAsGeotiff(fName2);
-               inc(Done);
-               wmDEM.SetPanelText(3,'Fixed=' + IntToStr(Done),true);
-            end;
-            CloseSingleDEM(Cop);
-            CloseSingleDEM(GEDTM);
-         end;
-      end;
-   end;
-
-
-
    WriteLineToDebugFile('Fix alos file sizes');
    Done := 0;
    for i := 0 to pred(theAreas.Count) do begin
@@ -2412,12 +2356,8 @@ begin
    MDDef.ShowWinExec := false;
    WantShowProgress := false;
 
-   MDDef.DEMIX_filter1_fName:= 'C:\microdem\demix_settings\filters_avg_slope_6_cat.dbf';
-   MDDef.DEMIX_filter2_fName:= 'C:\microdem\demix_settings\filters_barren_pc.dbf';
-
    ImportLandParamFiltersLong(MDDef.DEMIX_filter1_fName,Filters1,Labels1,Lowers1,Uppers1);
    ImportLandParamFiltersLong(MDDef.DEMIX_filter2_fName,Filters2,Labels2,Lowers2,Uppers2);
-
 
    SlopeName := DEMIX_final_DB_dir + 'average_tile_slope.tif';
    BarrenName :=  DEMIX_final_DB_dir + 'barren_percent.tif';
@@ -2478,52 +2418,6 @@ begin
 
    DEMglb[BinMap].SetUpMap(false);
 end;
-
-(*
-type
-   tHist = array[0..8] of int64;
-const
-   Colors : array[0..8] of tColor = (clBlue,clGreen,clAqua,
-                                           clYellow,clLime,clTeal,
-                                           clPurple,clFuchsia,clBrown);
- var
-   i,Higher,Lower : integer;
-   x,y : integer;
-   HighHist,LowHist : tHist;
-
-
-         procedure Finalize(Neigh : integer; Hist : tHist; aLabel : shortstring; ReverseColors : boolean);
-         var
-            VAT : tStringList;
-            fName2 : PathStr;
-            i : integer;
-            aColor : tColor;
-         begin
-            Vat := tStringList.Create;
-            Vat.add('VALUE,NAME,N,USE,COLOR');
-            for i := 8 downto 0 do if (Hist[i] > 0) then begin
-               if ReverseColors then aColor := Colors[8-i] else aColor := Colors[i];
-               Vat.add(IntToStr(i) + ',' + IntToStr(i) + aLabel + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(aColor));
-            end;
-            fName2 := NextFileNumber(MDTempDir,DEMGlb[Neigh].AreaName,'.vat.dbf');
-            StringList2CSVtoDB(vat,fName2,true);
-            DEMGlb[Neigh].VATFileName := fName2;
-            DEMglb[Neigh].CheckMaxMinElev;
-            DEMglb[Neigh].SetUpMap(true,mtDEMVATTable);
-         end;
-
-
-begin
-   {$If Defined(RecordDEMCompare) or Defined(NewVATgrids)} WriteLineToDebugFile('TwoDEMHighLowMap in, DEM=' + IntToStr(DEM)); {$EndIf}
-   if ValidDEM(DEM)then begin
-      for i := 0 to 8 do begin
-          HighHist[i] := 0;
-          LowHist[i] := 0;
-      end;
-      HighNeigh := DEMGlb[DEM].CloneAndOpenGridSetMissing(ByteDEM,'higher_neighors_' + DEMGlb[DEM].AreaName + '_rad='+ IntToStr(Radius) + '_tol=' + RealToString(Tolerance,-4,-1),euIntCode);
-      LowNeigh := DEMGlb[DEM].CloneAndOpenGridSetMissing(ByteDEM,'lower_neighors_' + DEMGlb[DEM].AreaName+ '_rad='+ IntToStr(Radius) + '_tol=' + RealToString(Tolerance,-4,-1),euIntCode);
-      StartProgressAbortOption('High/low neighbors');
-*)
 
 
 procedure CreateAverageSlopeMapInDEMIXTiles;
@@ -2621,7 +2515,7 @@ procedure DEMIX_UTM_based_processing(Option : integer);
 var
    fName,AreaLock : PathStr;
    AreaName,aLine : ShortString;
-   theFiles,theDEMs,MissingLandCover,TheAreas,Report,Report2 : tStringList;
+   theFiles,theDEMs,MissingLandCover,TheAreas,Report,Report2,TheTiles : tStringList;
    I,j,db : Integer;
    CanLimitAreas : boolean;
 begin
@@ -2636,38 +2530,43 @@ begin
 
    if (Option in [6,8,12,13,14,udMergeDTMDSMcompare,udMergeCopDTMDSMcompare]) then begin
        if (Option in [udMergeDTMDSMcompare]) then begin
-           MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'DSM_DTM_compare_DB_' + CurrentTimeForFileName(false) + '.dbf';
+           MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'HRDEM_DSM_DTM_compare_DB_' + CurrentTimeForFileName(false) + '.dbf';
            theFiles := nil;
            Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_dsm_dtm\','*.csv',TheFiles,2);
            MergeMultipleCSVorTextFiles(nil,theFiles,MDdef.DEMIX_tile_chars_fname);
        end;
        if (Option in [udMergeCopDTMDSMcompare]) then begin
-           MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'COP_DSM_DTM_compare_DB_' + CurrentTimeForFileName(false) + '.dbf';
+           MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'GDEM_DSM_DTM_compare_DB_' + CurrentTimeForFileName(false) + '.dbf';
            theFiles := nil;
            Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_cop_dsm_dtm\','*.csv',TheFiles,2);
            MergeMultipleCSVorTextFiles(nil,theFiles,MDdef.DEMIX_tile_chars_fname);
        end;
-       if (Option in [8]) then begin
-           MDdef.DEMIX_tile_chars_fname := DEMIX_final_DB_dir + 'UTM_tile_stats_DB_' + CurrentTimeForFileName(false) + '.dbf';
-           MergeMultipleCSVorTextFiles(nil,GetFUVresultsSpreadAcrossHardDrives('aa_tile_stats'),MDdef.DEMIX_tile_chars_fname);
+       if (Option in [udMergeTileStats]) then begin
+           MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'Tile_stats_DB_' + CurrentTimeForFileName(false) + '.dbf';
+           Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_tile_stats\','*.csv',TheFiles,2);
+           MergeMultipleCSVorTextFiles(nil,TheFiles,MDdef.DEMIX_tile_chars_fname);
        end;
        if (Option in [6]) then begin
            fName := DEMIX_final_DB_dir + 'UTM_FUV_DB_' + CurrentTimeForFileName(false) + '.dbf';
-           db := MergeMultipleCSVorTextFiles(nil,GetFUVresultsSpreadAcrossHardDrives('aa_fuv_results'),fName);
+           Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_fuv_results\','*.csv',TheFiles,2);
+           db := MergeMultipleCSVorTextFiles(nil,TheFiles,fName);
            if ValidDB(db) then AddTileCharacteristicsToDB(db);
        end;
        if (Option in [12]) then begin
            fName := DEMIX_final_DB_dir + 'UTM_diff_distrib_DB_' + CurrentTimeForFileName(false) + '.dbf';
-           db := MergeMultipleCSVorTextFiles(nil,GetFUVresultsSpreadAcrossHardDrives('aa_diff_dist_results'),fName);
+           Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_diff_dist_results\','*.csv',TheFiles,2);
+           db := MergeMultipleCSVorTextFiles(nil,TheFiles,fName);
            if ValidDB(db) then AddTileCharacteristicsToDB(db);
        end;
        if (Option in [13]) then begin
            fName := DEMIX_final_DB_dir + 'UTM_curvatures_DEMIX_DB_' + CurrentTimeForFileName(false) + '.dbf';
-           db := MergeMultipleCSVorTextFiles(nil,GetFUVresultsSpreadAcrossHardDrives('aa_curvatures_results'),fName);
+           Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_curvatures\','*.csv',TheFiles,2);
+           db := MergeMultipleCSVorTextFiles(nil,TheFiles,fName);
        end;
        if (Option in [14]) then begin
            fName := DEMIX_final_DB_dir + 'UTM_partials_DEMIX_DB_' + CurrentTimeForFileName(false) + '.dbf';
-           db := MergeMultipleCSVorTextFiles(nil,GetFUVresultsSpreadAcrossHardDrives('aa_partials_results'),fName);
+           Petmar.FindMatchingFiles(MDDef.DEMIX_BaseDir + 'aa_partials_results\','*.csv',TheFiles,2);
+           db := MergeMultipleCSVorTextFiles(nil,TheFiles,fName);
        end;
    end
    else if (Option = udAverageSlopeMap) then begin
@@ -2684,8 +2583,16 @@ begin
       theAreas := DEMIX_AreasWanted(CanLimitAreas);
       if (TheAreas.Count = 0) then begin
           {$IfDef RecordDEMIX} WriteLineToDebugFile('No Selected areas='); {$EndIf}
-      end
-      else begin
+           if (ValidPath(MDDef.DEMIX_BaseDir + AreaName + '\merges\')) then begin
+              {$IfDef RecordDEMIX} WriteLineToDebugFile('Make tile files for ' + AreaName); {$EndIf};
+              TheTiles := GetSubDirsInDirectory(SourceDir + 'merges\');
+              for i := 0 to pred(TheTiles.Count) do begin
+                 SafeMakeDir(MDDef.DEMIX_BaseDir + AreaName + '\merges\' + TheTiles.Strings[i] + 'ref_test_dem');
+              end;
+              theAreas := DEMIX_AreasWanted(CanLimitAreas);
+           end;
+      end;
+      if (TheAreas.Count > 0) then begin
           {$IfDef RecordDEMIX} WriteLineToDebugFile('Selected areas=' + IntToStr(theAreas.Count)); {$EndIf}
           if (Option in [udFileFillReport]) then DEMIX_FileFill(theAreas)
           else if (Option = udTileBoundingBoxes) then DEMIX_Tile_BoundingBox(theAreas)
@@ -2695,7 +2602,7 @@ begin
           else if (Option in [udCompareLandCover]) then DEMIX_CompareLandcovers(theAreas)
           else if (Option in [udDeleteResultsCSVsForAreas]) then begin
              DEMIX_SelectivelyDeleteCSVresults(theAreas);
-             if AnswerIsYes('Reprocess CSV files') then Option := 20;
+             //if AnswerIsYes('Reprocess CSV files') then Option := 20;
           end;
           Report := nil;
           Report2 := Nil;
@@ -2722,13 +2629,13 @@ begin
             end
             else begin
                 theAreas.SaveToFile(AreaLock);
-                if (Option in [1]) then UTMbasedtilescreation(AreaName,MissingLandCover);
-                if (Option in [udFUVCalc,20]) then UTMbasedFUV(fuvmMixed,AreaName);
-                if (Option in [9,20]) then UTMbasedFUV(fuvmPartials,AreaName);
-                if (Option in [10,20]) then UTMbasedFUV(fuvmCurves,AreaName);
-                if (Option in [11,20]) then UTMbasedFUV(fuvmDiffDist,AreaName);
+                if (Option in [udCreateTiles]) then UTMbasedtilescreation(AreaName,MissingLandCover);
+                if (Option in [udFUVCalc]) then UTMbasedFUV(fuvmMixed,AreaName);
+                if (Option in [9]) then UTMbasedFUV(fuvmPartials,AreaName);
+                if (Option in [10]) then UTMbasedFUV(fuvmCurves,AreaName);
+                if (Option in [11]) then UTMbasedFUV(fuvmDiffDist,AreaName);
                 if (Option in [udPixelGeometrySlope,udAverageTileElevations]) then UTMbasedFUV(0,AreaName,Report,Report2,Option);
-                if (Option in [udTileStats,20]) then DEMIX_tile_statistics(AreaName);
+                if (Option in [udTileStats]) then DEMIX_tile_statistics(AreaName);
                 DeleteFileIfExists(AreaLock);
              end;
           end;

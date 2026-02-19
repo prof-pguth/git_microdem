@@ -827,7 +827,7 @@ begin
       end;
    end;
    {$IfDef RecordColorPalette}
-      for i := 0 to 255 do WriteLineToDebugFile( IntegerToString(i,3) + '  ' + ColorStringFromPlatformColor(ppal[i]);
+      for i := 0 to 255 do WriteLineToDebugFile( IntegerToString(i,3) + '  ' + ColorString(ppal[i]);
    {$EndIf}
 end;
 

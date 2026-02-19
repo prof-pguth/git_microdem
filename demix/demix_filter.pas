@@ -484,7 +484,7 @@ begin
          theFiles.Add(fName);
       end;
    end;
-   fName := NextFileNumber(DEMIX_diff_maps_dir,Param + '_' + ComboBox4.Text + '_difference_maps_','.png');
+   fName := NextFileNumber(MDtempDir,Param + '_' + ComboBox4.Text + '_difference_maps_','.png');
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.MakeBigDiffferenceMapImage ' + fName + '  n=' + IntToStr(theFiles.Count)); {$EndIf}
    MakeBigBitmap(theFiles,'Difference maps',fName,3);
 end;
@@ -1059,7 +1059,7 @@ begin
          end;
       end;
    end;
-   fName := NextFileNumber(DEMIX_distrib_graph_dir,ComboBox1.Text + '_difference_distrib_graphs_','.png');
+   fName := NextFileNumber(MDtempDir,ComboBox1.Text + '_difference_distrib_graphs_','.png');
    MakeBigBitmap(FileList,'',fName,3);
 {$EndIf}
 end;
@@ -1091,7 +1091,7 @@ begin
          wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(ComboBox1.Items.Count));
          ComboBox1.Text := ComboBox1.Items[i];
          ComboBox1.ItemIndex := i;
-         if not FileExists(DEMIX_distrib_graph_dir + ComboBox1.Text + '_difference_distrib_graphs_1.png') then begin
+         if not FileExists(MDtempDir + ComboBox1.Text + '_difference_distrib_graphs_1.png') then begin
             BitBtn16Click(Sender);
             wmdem.Closeallgraphs1Click(Sender);
             wmdem.Closeallpictureviewwindows1Click(Sender);

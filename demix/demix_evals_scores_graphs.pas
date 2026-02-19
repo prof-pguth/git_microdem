@@ -1342,7 +1342,6 @@ end;
 procedure Teval_scores_graph_form.BitBtn45Click(Sender: TObject);
 begin
    BestDEMonGraphTwoParameters(DB,MakeCriteriaList,MakeDEMlist);
-
 end;
 
 procedure Teval_scores_graph_form.BitBtn46Click(Sender: TObject);
@@ -1480,7 +1479,7 @@ end;
 
 procedure Teval_scores_graph_form.CheckBox3Click(Sender: TObject);
 begin
-   MovieByTestDEM := CheckBox3.Checked;
+   //MovieByTestDEM := CheckBox3.Checked;
 end;
 
 procedure Teval_scores_graph_form.CheckBox4Click(Sender: TObject);
@@ -1563,7 +1562,7 @@ var
 begin
    CheckBox1.Checked := MDDef.DEMIX_combined_graph;
    CheckBox2.Checked := MDDef.PanelsByTestDEM;
-   CheckBox3.Checked := MovieByTestDEM;
+   //CheckBox3.Checked := MovieByTestDEM;
    CheckBox4.Checked := MDdef.ShowPieN;
    CheckBox5.Checked := MDDef.FUVExpandScales;
    CheckBox6.Checked := MDdef.DEMIX_UseMedian;

@@ -175,7 +175,7 @@
       end;
       DrawAndDeleteOverlay(inBitmap,GazOverlay,100,0,0,true);
       if TempDB then begin
-         CloseAndNilNumberedDB(MapGazDB);
+         CloseSingleDB(MapGazDB);
       end;
       {$IfDef RecordGazLabel} WriteLineToDebugFile('TMapDraw.LabelGazetteerFeatures out'); {$EndIf}
    end;

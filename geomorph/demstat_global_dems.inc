@@ -104,7 +104,7 @@ begin
       ReadDefault('Min number in category to plot',PtsNeeded);
       FieldName := GISdb[DB].PickField('field for graphs',[ftString,ftInteger,ftSmallInt]);
       GISdb[DB].EmpSource.Enabled := false;
-      FindUniqueEntries(GISdb[DB].MyData,FieldName,DataThere);
+      DataThere := FindUniqueEntries(GISdb[DB].MyData,FieldName);
       AddOne('','All');
       for j := 0 to pred(DataThere.Count) do begin
          AddOne(FieldName + '=' + DataThere[j],FieldName + '=' + DataThere[j]);
@@ -749,7 +749,7 @@ exit;
    else begin
       FieldName := GISdb[DB].PickField('field for graphs',[ftString,ftInteger,ftSmallInt]);
       GISdb[DB].EmpSource.Enabled := false;
-      FindUniqueEntries(GISdb[DB].MyData,FieldName,DataThere);
+      DataThere := FindUniqueEntries(GISdb[DB].MyData,FieldName);
       for j := 0 to pred(DataThere.Count) do begin
          GISdb[DB].MyData.ApplyFilter(FieldName + '=' + DataThere[j]);
          DoOne(DB);

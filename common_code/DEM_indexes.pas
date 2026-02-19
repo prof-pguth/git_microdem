@@ -884,7 +884,7 @@ begin
              end;
              TheGroupingIndex.Post;
           end;
-          CloseAndNilNumberedDB(db);
+          CloseSingleDB(db);
        end;
     end;
     TheGroupingIndex.Destroy;

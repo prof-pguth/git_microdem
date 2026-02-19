@@ -67,7 +67,7 @@ begin
       end;
 
       {$IfDef FMX} Bitmap.Canvas.EndScene; {$EndIf}
-      CloseAndNilNumberedDB(GISNum);
+      CloseSingleDB(GISNum);
    end;
 end;
 
@@ -331,7 +331,7 @@ begin
                      else begin
                         {$IfDef RecordFullShapeFileGroup} WriteLineToDebugFile('File does not plot at this scale'); {$EndIf}
                      end;
-                     CloseAndNilNumberedDB(GISNum);
+                     CloseSingleDB(GISNum);
                  end
                  else begin
                     {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('File was not OK'); {$EndIf}
@@ -374,7 +374,7 @@ end;
                if Layer = 3 then HighlightOSMBridges := true;
 
                PlotDBOnMapFromRules(adb,Bitmap,OSMRoadRules);
-               CloseAndNilNumberedDB(adb);
+               CloseSingleDB(adb);
             end;
          end;
       end;
@@ -388,7 +388,7 @@ begin
    {$IfDef RecordTiger} WriteLineToDebugFile('PlotTIGERShapeFileOnMap ' + fName); {$EndIf}
    if OpenNumberedGISDataBase(GISNum,fName) then begin
       PlotTigerShapeFileOnMap(GISNum,Bitmap,RoadsOnly,MaskSize,StreamsOnly);
-      CloseAndNilNumberedDB(GISNum);
+      CloseSingleDB(GISNum);
    end;
 end;
 

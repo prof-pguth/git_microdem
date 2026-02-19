@@ -346,7 +346,7 @@ begin
    end;
 
    if Quick then begin
-      CloseAndNilNumberedDB(theDB);
+      CloseSingleDB(theDB);
    end
    else begin
       if MDDef.ShowCumulativeHistogram then GISDB[theDB].CreateScatterGram('test','CUM_PC','Z',clRed,true,DEMGlb[WhichDEM].AreaName +  ' Cumulative Elevation Distribution',

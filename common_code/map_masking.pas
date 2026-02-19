@@ -437,7 +437,7 @@ var
                MaskingDistance := MDDef.ShapePointBufferDist;
             end;
             MapUsed.MapDraw.AddDatabaseToMask(GISNUM,Result,true,MaskIn,MaskingDistance,MDDef.MapMaskColor);
-            CloseAndNilNumberedDB(GISNum);
+            CloseSingleDB(GISNum);
             DoneOne := true;
          end;
       end;

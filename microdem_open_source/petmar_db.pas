@@ -1576,8 +1576,7 @@ end;
 
 function tMyData.ListUniqueEntriesInDB(FieldName : ANSIString; Sort : boolean = true) : tStringList;
 begin
-   //Result := tStringList.Create;
-   PetDBUtils.FindUniqueEntries(Self,FieldName,Result,sort);
+   Result := PetDBUtils.FindUniqueEntries(Self,FieldName,sort);
 end;
 
 

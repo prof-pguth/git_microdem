@@ -287,7 +287,7 @@ begin
          for I := 0 to pred(Paths.Count) do begin
             fName := Paths.Strings[i];
             {$If Defined(RecordSentinel1)} WriteLineToDebugFile('Path=' + fName); {$EndIf}
-            Tiffs := Nil;
+            //Tiffs := Nil;
             RenameAndDelete := false;
             if StrUtils.AnsiContainsText(UpperCase(fName),'OPERA') then begin
                FindMatchingFiles(fName,'*.tif',Tiffs,6);
@@ -296,12 +296,12 @@ begin
                FindMatchingFiles(fName,'*.dem',Tiffs,6);
                if (Tiffs.Count = 0) then begin
                   {$If Defined(RecordMultiGrids) or Defined(RecordSentinel1)} WriteLineToDebugFile('No DEMs'); {$EndIf}
-                  FreeAndNil(Tiffs);
+                  //FreeAndNil(Tiffs);
                   FindMatchingFiles(fName,'*.tiff',Tiffs,6);
                   if (Tiffs.Count > 0) then begin
                      {$If Defined(RecordSentinel1)} WriteLineToDebugFile('No tifs, call ResampleSentinel_1 ' + fName); {$EndIf}
                      ResampleSentinel_1(fName);
-                     FreeAndNil(Tiffs);
+                     //FreeAndNil(Tiffs);
                      FindMatchingFiles(fName,'*.tif',Tiffs,6);
                      RenameAndDelete := true;
                   end;
@@ -866,7 +866,7 @@ begin
       Result.GraphDraw.ShowLine[1] := true;
       Result.RedrawDiagram11Click(Nil);
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph scattergram created'); {$EndIf}
-      CloseAndNilNumberedDB(db);
+      CloseSingleDB(db);
    end
    else begin
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph pts not found'); {$EndIf}

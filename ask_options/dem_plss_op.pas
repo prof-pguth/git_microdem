@@ -117,9 +117,9 @@ procedure TPLSSform.ShowSettings;
 begin
   with MDDef.PLSSDef do begin
     {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.ShowSettings, town font: ' + MyFontToString(MDDef.PLSSDef.TownFont)); {$EndIf}
-    {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.ShowSettings, town color: ' + ColorStringFromPlatformColor(MDDef.PLSSDef.PLSSTownColor)); {$EndIf}
+    {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.ShowSettings, town color: ' + ColorString(MDDef.PLSSDef.PLSSTownColor)); {$EndIf}
     {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.ShowSettings, sect font: ' +  MyFontToString(MDDef.PLSSDef.SectFont)); {$EndIf}
-    {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.ShowSettings, sect color: ' + ColorStringFromPlatformColor(MDDef.PLSSDef.PLSSSectionColor)); {$EndIf}
+    {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.ShowSettings, sect color: ' + ColorString(MDDef.PLSSDef.PLSSSectionColor)); {$EndIf}
      CheckBox1.Checked := PLSSShowQuarters;
      CheckBox2.Checked := PLSSShowSections;
      CheckBox3.Checked := PLSSShowTowns;
@@ -211,9 +211,9 @@ end;
 procedure TPLSSform.BitBtn12Click(Sender: TObject);
 begin
    {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.BitBtn12Click, town font: ' + MyFontToString(MDDef.PLSSDef.TownFont)); {$EndIf}
-   {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.BitBtn12Click, town color: ' + ColorStringFromPlatformColor(MDDef.PLSSDef.PLSSTownColor)); {$EndIf}
+   {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.BitBtn12Click, town color: ' + ColorString(MDDef.PLSSDef.PLSSTownColor)); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.BitBtn12Click, sect font: ' +  MyFontToString(MDDef.PLSSDef.SectFont)); {$EndIf}
-   {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.BitBtn12Click, sect color: ' + ColorStringFromPlatformColor(MDDef.PLSSDef.PLSSSectionColor)); {$EndIf}
+   {$IfDef RecordFont} WriteLineToDebugFile('TPLSSform.BitBtn12Click, sect color: ' + ColorString(MDDef.PLSSDef.PLSSSectionColor)); {$EndIf}
 
    ProcessIniFile(iniInit,'PLSS');
    ShowSettings;

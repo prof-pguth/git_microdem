@@ -279,6 +279,7 @@ end;
 function LoadLC10LandCover(fName : PathStr; bb : sfboundbox; OpenMap : boolean; Silent : boolean = false) : integer;
 var
    Lat,Long : float32;
+   LandCoverFName : PathStr;
 begin
    Result := 0;
    Lat := 0.5 * (bb.YMax + bb.YMin);
@@ -473,7 +474,7 @@ var
                   Result := false;
                end;
             finally
-               CloseAndNilNumberedDB(NewDB);
+               CloseSingleDB(NewDB);
                DeleteFileIfExists(fName);
                CloseSingleDEM(NewDEM);
                {$IfDef RecordBarGraphsDetailed} WriteLineToDebugFile('Do One Out'); {$EndIf}
@@ -759,7 +760,7 @@ var
          until CatTable.eof;
       end
       else begin
-          TStr := 'Land cover code=' + IntToStr(LandCover) + ' missing in ' + LandCoverFName + ' ' + LandCoverName;
+          TStr := 'Land cover code=' + IntToStr(LandCover) + ' missing in ' + ' ' + LandCoverName;
           MessageToContinue(TStr);
           {$IfDef RecordProblems} WriteLineToDebugFile(TStr); {$EndIf}
       end;

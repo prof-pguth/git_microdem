@@ -1410,7 +1410,7 @@ begin
    for i := 1 to MaxDataBase do begin
       j := i;
       if ValidDB(j) then begin
-         CloseAndNilNumberedDB(j);
+         CloseSingleDB(j);
       end;
    end;
 

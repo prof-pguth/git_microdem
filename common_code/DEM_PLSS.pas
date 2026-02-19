@@ -289,7 +289,7 @@ begin
       else begin
          {$IfDef RecordPLSSDraw} WriteLineToDebugFile('+++++ tPLSSDataBase.DrawPLSS do sections'); {$EndIf}
          {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.DrawPLSS, sect font: ' + MyFontToString(GISdb[SectionDB].dbOpts.GisLabelFont1)); {$EndIf}
-         {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.DrawPLSS, sect color: ' + ColorStringFromPlatformColor(GISdb[SectionDB].dbOpts.LineColor)); {$EndIf}
+         {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.DrawPLSS, sect color: ' + ColorString(GISdb[SectionDB].dbOpts.LineColor)); {$EndIf}
          if GeofilterForPLSS then GISdb[SectionDB].QueryBox(MapDraw,0,0,MapDraw.MapXSize,MapDraw.MapYSize,true);
          MapDraw.PlotDataBase(GISdb[SectionDB].DBNumber,Bitmap);
          if MDDef.PLSSDef.PLSSLabelSections then GISdb[SectionDB].LabelRecordsOnMap(Bitmap);
@@ -321,9 +321,9 @@ end;
 procedure tPLSSDataBase.SetPLSSDBoptions;
 begin
    {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.SetPLSSDBoptions, town font: ' + MyFontToString(MDDef.PLSSDef.TownFont)); {$EndIf}
-   {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.SetPLSSDBoptions, town color: ' + ColorStringFromPlatformColor(MDDef.PLSSDef.PLSSTownColor)); {$EndIf}
+   {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.SetPLSSDBoptions, town color: ' + ColorString(MDDef.PLSSDef.PLSSTownColor)); {$EndIf}
    {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.SetPLSSDBoptions, sect font: ' +  MyFontToString(MDDef.PLSSDef.SectFont)); {$EndIf}
-   {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.SetPLSSDBoptions, sect color: ' + ColorStringFromPlatformColor(MDDef.PLSSDef.PLSSSectionColor)); {$EndIf}
+   {$IfDef RecordFont} WriteLineToDebugFile('tPLSSDataBase.SetPLSSDBoptions, sect color: ' + ColorString(MDDef.PLSSDef.PLSSSectionColor)); {$EndIf}
 
     if QuarterDB <> 0 then begin
        GISdb[QuarterDB].DoNotTrackDBSettings := true;
@@ -442,11 +442,11 @@ end;
 procedure tPLSSDataBase.CloseFiles;
 begin
    {$If Defined(RecordPLSS) or Defined(PLSSClosing)} WriteLineToDebugFile('tPLSSDataBase.CloseFiles'); {$EndIf}
-   CloseAndNilNumberedDB(TownshipDB);
+   CloseSingleDB(TownshipDB);
    {$If Defined(RecordPLSS) or Defined(PLSSClosing)} WriteLineToDebugFile('Done towns'); {$EndIf}
-   CloseAndNilNumberedDB(SectionDB);
+   CloseSingleDB(SectionDB);
    {$If Defined(RecordPLSS) or Defined(PLSSClosing)} WriteLineToDebugFile('Done Section'); {$EndIf}
-   CloseAndNilNumberedDB(QuarterDB);
+   CloseSingleDB(QuarterDB);
    {$If Defined(RecordPLSS) or Defined(PLSSClosing)} WriteLineToDebugFile('Done Quarter'); {$EndIf}
 end;
 
@@ -527,7 +527,7 @@ var
       begin
          if OpenNumberedGISDataBase(GISNum,fName) then begin
             GISdb[GISNum].aShapeFile.AddFields(afBoundingBox,GISdb[GISNum].MyData);
-            CloseAndNilNumberedDB(GISNum);
+            CloseSingleDB(GISNum);
          end;
       end;
 

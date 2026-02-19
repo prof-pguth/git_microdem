@@ -2,8 +2,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
   Left = 0
   Top = 0
   Caption = 'DSM DTM compare'
-  ClientHeight = 441
-  ClientWidth = 624
+  ClientHeight = 545
+  ClientWidth = 638
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,8 +14,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
   Menu = MainMenu1
   TextHeight = 15
   object BitBtn1: TBitBtn
-    Left = 40
-    Top = 104
+    Left = 170
+    Top = 24
     Width = 75
     Height = 25
     Caption = 'Next'
@@ -23,8 +23,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn1Click
   end
   object BitBtn2: TBitBtn
-    Left = 192
-    Top = 168
+    Left = 8
+    Top = 88
     Width = 97
     Height = 25
     Caption = 'Load HRDEMs'
@@ -32,7 +32,7 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn2Click
   end
   object RadioGroup1: TRadioGroup
-    Left = 296
+    Left = 360
     Top = 24
     Width = 185
     Height = 105
@@ -46,8 +46,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = RadioGroup1Click
   end
   object BitBtn3: TBitBtn
-    Left = 40
-    Top = 168
+    Left = 89
+    Top = 24
     Width = 75
     Height = 25
     Caption = 'Previous'
@@ -55,8 +55,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn3Click
   end
   object BitBtn4: TBitBtn
-    Left = 48
-    Top = 199
+    Left = 8
+    Top = 24
     Width = 75
     Height = 25
     Caption = 'First'
@@ -64,8 +64,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn4Click
   end
   object BitBtn5: TBitBtn
-    Left = 48
-    Top = 256
+    Left = 251
+    Top = 24
     Width = 75
     Height = 25
     Caption = 'Last'
@@ -73,8 +73,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn5Click
   end
   object BitBtn6: TBitBtn
-    Left = 192
-    Top = 199
+    Left = 120
+    Top = 88
     Width = 97
     Height = 25
     Caption = 'Load 1" DEMs'
@@ -82,8 +82,8 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn6Click
   end
   object BitBtn7: TBitBtn
-    Left = 192
-    Top = 256
+    Left = 223
+    Top = 88
     Width = 97
     Height = 25
     Caption = 'SlopeMaps'
@@ -91,11 +91,11 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = BitBtn7Click
   end
   object BitBtn8: TBitBtn
-    Left = 352
+    Left = 159
     Top = 176
-    Width = 145
+    Width = 250
     Height = 25
-    Caption = 'Two factor FUV grid'
+    Caption = 'Grid for median or mean for all criteria'
     TabOrder = 8
     OnClick = BitBtn8Click
   end
@@ -133,13 +133,42 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     OnClick = RadioGroup3Click
   end
   object Memo1: TMemo
-    Left = 40
+    Left = 32
     Top = 344
-    Width = 113
+    Width = 121
     Height = 177
     Lines.Strings = (
       'Memo1')
+    ScrollBars = ssVertical
     TabOrder = 12
+  end
+  object BitBtn10: TBitBtn
+    Left = 159
+    Top = 135
+    Width = 250
+    Height = 25
+    Caption = 'Gird for all DEM pairs for one criterion'
+    TabOrder = 13
+    OnClick = BitBtn10Click
+  end
+  object Memo2: TMemo
+    Left = 32
+    Top = 136
+    Width = 121
+    Height = 185
+    Lines.Strings = (
+      'Memo2')
+    ScrollBars = ssVertical
+    TabOrder = 14
+  end
+  object ComboBox1: TComboBox
+    Left = 208
+    Top = 480
+    Width = 145
+    Height = 23
+    TabOrder = 15
+    Text = 'ComboBox1'
+    OnChange = ComboBox1Change
   end
   object MainMenu1: TMainMenu
     Left = 304

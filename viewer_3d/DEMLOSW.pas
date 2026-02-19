@@ -355,7 +355,7 @@ begin
    DrawProfile(270,90);
    DrawProfile(0,180);
 
-   fName := NextFileNumber(DEMIX_profile_test_dir,DEMGlb[DEM].AreaName + '_profiles_','.png');
+   fName := NextFileNumber(MDtempdir,DEMGlb[DEM].AreaName + '_profiles_','.png');
    MakeBigBitmap(theFiles,'Profiles through peak',fName,1);
    {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn12Click out'); {$EndIf}
 end;
@@ -565,7 +565,7 @@ begin
       ClearProtractorTool;
       if (LOSdraw.LOSProfileDB <> 0) then begin
          {$IfDef RecordClosing} WriteLineToDebugFile('Close Fresnel DB ' + IntToStr(LOSdraw.LOSProfileDB)); {$EndIf}
-         CloseAndNilNumberedDB(LOSdraw.LOSProfileDB);
+         CloseSingleDB(LOSdraw.LOSProfileDB);
       end
       else begin
          {$IfDef RecordClosing} WriteLineToDebugFile('No Fresnel DB'); {$EndIf}
@@ -1327,7 +1327,7 @@ procedure TDEMLOSF.WaveLengthHeight1Click(Sender: TObject);
 begin
    {$IfDef ExFresnel}
    {$Else}
-      CloseAndNilNumberedDB(LOSDraw.LOSProfileDB);
+      CloseSingleDB(LOSDraw.LOSProfileDB);
       FormResize(Nil);
       DEMSSOCalc.DrawTopoGrainOverlay(Nil,Self,false,2);
    {$EndIf}
@@ -1342,7 +1342,7 @@ begin
    VincentyPointAtDistanceBearing(LOSDraw.LatLeft,LOSDraw.LongLeft,LOSDraw.FormSectLenMeters,LOSDraw.LOSAzimuth,LOSDraw.LatRight,LOSDraw.LongRight);
    LOSDraw.LOSExtremeElevationsAndScreenCoordinates(false);   //(DEMonView);
    if (BaseMap <> Nil) then BaseMap.DoFastMapRedraw;
-   CloseAndNilNumberedDB(LOSDraw.LOSProfileDB);
+   CloseSingleDB(LOSDraw.LOSProfileDB);
    FormResize(Nil);
    ShowOnMap;
 end;
@@ -1676,7 +1676,7 @@ end;
       with LOSdraw do begin
          if (Point_Cloud_Options.pt_cloud_opts_fm <> Nil) then begin
             if (LOSMemoryPointCloud[PtCldInUse] = Nil) then begin
-               CloseAndNilNumberedDB(LOSProfileDB);
+               CloseSingleDB(LOSProfileDB);
                CloneImageToBitmap(BaseMap.Image1,Bitmap);
                PointsInPolyLine := 5;
 

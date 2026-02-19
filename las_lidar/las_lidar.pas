@@ -213,13 +213,6 @@ type
       wKeyID,wValueOffset : word;
    end;
 
-(*
-   tlasProjectionDefinition = record
-       RawXYZFile : boolean;
-       LASProj : tMapProjection;
-   end;
-*)
-
    tLidarPoints0 = array[1..MaxLASPtsToRead] of tLidarPointType0;
    tLidarPoints1 = array[1..MaxLASPtsToRead] of tLidarPointType1;
    tLidarPoints2 = array[1..MaxLASPtsToRead] of tLidarPointType2;
@@ -453,7 +446,6 @@ uses
    DEMCoord, DEMDef_routines,
    GeoTiff,
    Make_tables;
-
 
 {$I ..\las_lidar\create_las.inc}
 {$I ..\las_lidar\subset_export_las.inc}
@@ -760,7 +752,6 @@ begin
 end;
 
 
-
 procedure CreateNewLasFromOldHeader(NewName : PathStr; var NewLas : tCreateLasFile; lf : tLAS_data);
 begin
     {$IfDef RecordLASheader} writeLineToDebugFile('CreateNewLasFromOldHeadder in, ' + NewName); {$EndIf}
@@ -866,12 +857,12 @@ begin
 end;
 
 
-
 procedure tLAS_data.SetLASClassification(ShotNumber : integer; TheClass : byte);
 begin
    if (LidarPointType in [0..5]) then LidarPoints0^[ShotNumber].Classification := (LidarPoints0^[ShotNumber].Classification div 32) * 32;
    if (LidarPointType in [6..8]) then LidarPoints6^[ShotNumber].Classification := 0;
 end;
+
 
 function tLAS_data.OverlapPoint(ShotNumber : integer) : boolean;
 begin
@@ -999,8 +990,6 @@ var
 
                if (LAS_LatLong_Box.ymin > 0) or StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD') then lasProj.LatHemi := 'N'
                else lasProj.LatHemi := 'S';
-
-               //if StrUtils.AnsiContainsText(ASCIIProjectionData,'NAD83') then lasProj.h_datumcode := 'NAD83';
 
                Area := (LasHeader.MaxX - LasHeader.MinX) * (LasHeader.MaxY - LasHeader.MinY);
             end;

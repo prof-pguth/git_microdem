@@ -576,7 +576,7 @@ type
     UTMprojection1: TMenuItem;
     AddEXIFtagsworkinprogress1: TMenuItem;
     N57: TMenuItem;
-    CompareUTMandgeographicslopes1: TMenuItem;
+    //CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
     DEMIXNeo1: TMenuItem;
@@ -621,7 +621,6 @@ type
     UTMbasedmergedifferencedistribution1: TMenuItem;
     UTMbasedmergecurvaturesintoDB1: TMenuItem;
     UTMbasedmergepartialsintoDB1: TMenuItem;
-    UTMbasedallareacomputations1: TMenuItem;
     UTMbasedCVSfilesbyarea1: TMenuItem;
     Mergesmalltilesinto10kmUTMblocks1: TMenuItem;
     MovemergedtilereferenceandtestDEMs1: TMenuItem;
@@ -655,6 +654,9 @@ type
     UTMbasedMergeDSMDTMcomparison1: TMenuItem;
     MergeCOPALOSDTMDSMcompare1: TMenuItem;
     MergeCSVresultsintosingleDB1: TMenuItem;
+    CreateCSVresultsfortestareas1: TMenuItem;
+    N37: TMenuItem;
+    N38: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1012,7 +1014,7 @@ type
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
     procedure UTMprojection1Click(Sender: TObject);
     procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
-    procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
+    //procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
     procedure MultipleDEMsonearea015secscale1Click(Sender: TObject);
@@ -1045,7 +1047,6 @@ type
     procedure UTMbasedmergedifferencedistribution1Click(Sender: TObject);
     procedure UTMbasedmergecurvaturesintoDB1Click(Sender: TObject);
     procedure UTMbasedmergepartialsintoDB1Click(Sender: TObject);
-    procedure UTMbasedallareacomputations1Click(Sender: TObject);
     procedure UTMbasedCVSfilesbyarea1Click(Sender: TObject);
     procedure Mergesmalltilesinto10kmUTMblocks1Click(Sender: TObject);
     procedure MovemergedtilereferenceandtestDEMs1Click(Sender: TObject);
@@ -1324,7 +1325,7 @@ uses
    Slider_sorter_form,
    NyqGraph,
    gdal_tools,
-   compare_geo_utm,
+   //compare_geo_utm,
 
    PetImage_Form,
    TerSplsh,
@@ -3396,7 +3397,7 @@ begin
       if OpenNumberedGISDataBase(GISNum,fName) then begin
          fName := fName + '.xml';
          GISdb[GISNum].ExportToXML(fName);
-         CloseAndNilNumberedDB(GISNum);
+         CloseSingleDB(GISNum);
       end;
    end;
    TheFiles.Free;
@@ -5182,7 +5183,7 @@ begin
 
    db := OpenMultipleDataBases('training set points');
    dbName := GISdb[db].dbFullName;
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
 
    TheFiles := Nil;
    if Sender = Addnormaliziedstatsforblockgridstotrainingset1 then GridDir := GridDir + 'NORMALIZED\';
@@ -5328,11 +5329,6 @@ begin
    DEMIX_UTM_based_processing(udPixelGeometrySlope);
 end;
 
-procedure Twmdem.UTMbasedallareacomputations1Click(Sender: TObject);
-begin
-   DEMIX_UTM_based_processing(20);
-end;
-
 procedure Twmdem.UTMbasedCVSfilesbyarea1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(udCSVReportByArea);
@@ -5390,12 +5386,12 @@ end;
 
 procedure Twmdem.UTMbasedmergetilestatisiticsintoDB1Click(Sender: TObject);
 begin
-   DEMIX_UTM_based_processing(8);
+   DEMIX_UTM_based_processing(udMergeTileStats);
 end;
 
 procedure Twmdem.UTMbasedtilescreation1Click(Sender: TObject);
 begin
-   DEMIX_UTM_based_processing(1);
+   DEMIX_UTM_based_processing(udCreateTiles);
 end;
 
 procedure Twmdem.UTMbasedtilestatistics1Click(Sender: TObject);
@@ -6145,10 +6141,6 @@ begin
    LandCoverBreakdowPointCloud;
 end;
 
-procedure Twmdem.CompareUTMandgeographicslopes1Click(Sender: TObject);
-begin
-   CompareGeoUTM;
-end;
 
 procedure Twmdem.CompressDecompress1Click(Sender: TObject);
 begin

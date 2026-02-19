@@ -258,7 +258,7 @@ uses
   SGP4SDP4 in '..\misc\sgp\SGP4SDP4.PAS',
   SGP_Support in '..\misc\sgp\SGP_Support.pas',
   edit_exif_fields in '..\common_code\edit_exif_fields.pas' {Form1},
-  compare_geo_utm in '..\common_code\compare_geo_utm.pas' {compare_geo_utm_geomorphometry},
+  //compare_geo_utm in '..\common_code\compare_geo_utm.pas' {compare_geo_utm_geomorphometry},
   demmapdraw in '..\mapdraw\demmapdraw.pas',
   demcoord in '..\demcoord\demcoord.pas',
   Demmapf in '..\mapform\Demmapf.pas' {MapForm},

@@ -206,7 +206,7 @@ var
    fName : PathStr;
 begin
    {$IfDef RecordPitsSpires} WriteLineToDebugFile('TMapForm.DrawWalls in'); {$EndIf}
-      if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(WallDB);
+      if MDDef.OverWriteFeatureDBs then CloseSingleDB(WallDB);
       WallResults := tStringList.Create;
       WallResults.Add('LAT,LONG');
 
@@ -423,7 +423,7 @@ begin
    if (AspectGrid = 0) then AspectGrid := MakeSingleNewDerivativeMap('A',MapOwner.MapDraw.DEMonMap,0,false);
 
    if MDDef.OverWriteFeatureDBs then begin
-      CloseAndNilNumberedDB(PeakedDB);
+      CloseSingleDB(PeakedDB);
       if (PeakRoofGrid <> 0) then CloseSingleDEM(PeakRoofGrid);
    end;
 
@@ -531,7 +531,7 @@ var
 begin
    {$IfDef RecordPitsSpires} WriteLineToDebugFile('TPitSpireForm.BitBtn15Click in (corners)');{$EndIf}
       UpdateValues;
-      if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(SpiresDB);
+      if MDDef.OverWriteFeatureDBs then CloseSingleDB(SpiresDB);
       SpireResults := tStringList.Create;
       SpireResults.Add('LAT,LONG,HEIGHT,CORNER');
       OnMap := 0;
@@ -631,7 +631,7 @@ var
 begin
    {$IfDef RecordPitsSpires} WriteLineToDebugFile('TPitSpireForm.BitBtn1Click in (spires)'); {$EndIf}
    UpdateValues;
-   if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(SpiresDB);
+   if MDDef.OverWriteFeatureDBs then CloseSingleDB(SpiresDB);
    SpireResults := tStringList.Create;
    SpireResults.Add('LAT,LONG,HEIGHT,RADIUS_M,NUM_LOWER');
 
@@ -948,7 +948,7 @@ begin
       MessageToContinue('NS done');
    end
    else begin
-       if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(RoofDB);
+       if MDDef.OverWriteFeatureDBs then CloseSingleDB(RoofDB);
        SpireResults := tStringList.Create;
 
        if RadioGroup2.ItemIndex = 0 then TStr := 'RADIUS_M'
@@ -1065,7 +1065,7 @@ begin
    SpireResults.Add('LAT,LONG,NUM_LOWER');
 
    with MapOwner,MapDraw,DEMGlb[DEMonMap] do begin
-      if MDDef.OverWriteFeatureDBs then CloseAndNilNumberedDB(EdgeDB);
+      if MDDef.OverWriteFeatureDBs then CloseSingleDB(EdgeDB);
 
       PointsFound := 0;
       StartProgressAbortOption('Buidling edges');

@@ -105,11 +105,6 @@ type
         LOSProfileDB,FirstX,FirstY,MinAreaZ,MaxAreaZ : integer;
         ZoomedDiagram,CompareDensityAlongProfile,ShowSeaLevel,
         EnvelopeDone,FirstDraw   : boolean;
-        (*
-        LOSSymbol : tSymbols256;
-        LOSLineColors256 : tPlatformColors256;
-        LOSLineSize256 :  tbytes256;
-        *)
         ProfLats,ProfLongs : bfarray32;
         ShowProfile : tDEMbooleanArray;
         ProfileName : array[1..MaxDEMDataSets] of ShortString;
@@ -267,7 +262,7 @@ begin
                   ShowHourglassCursor;
                   RecalculateProfile;
                   MultipleProfilesToShow.Add(GISdb[LOSProfileDB].DBFullName);
-                  CloseAndNilNumberedDB(LOSProfileDB);
+                  CloseSingleDB(LOSProfileDB);
               end;
            end;
         end;
@@ -285,7 +280,7 @@ begin
                     OpenNumberedGISDataBase(LOSProfileDB,fName);
                     ShowHourglassCursor;
                     DrawTheProfile(Bitmap,'ELEV_M',WinGraphColors(i),2);
-                    CloseAndNilNumberedDB(LOSProfileDB);
+                    CloseSingleDB(LOSProfileDB);
                  end;
               end;
            end;
@@ -404,7 +399,7 @@ begin
 
       if ValidDB(LOSProfileDB) then begin
          {$IfDef RecordLOS} WriteLineToDebugFile('Closing ProfileDB'); {$EndIf}
-         CloseAndNilNumberedDB(LOSProfileDB);
+         CloseSingleDB(LOSProfileDB);
       end;
       LOSProfileDB := 0;
 

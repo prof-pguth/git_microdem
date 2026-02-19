@@ -328,7 +328,7 @@ begin
    end;
 
    if LOSFormMustRecalculate and (theLOSForm.LOSdraw.LOSProfileDB <> 0) then begin
-      CloseAndNilNumberedDB(theLOSForm.LOSdraw.LOSProfileDB);
+      CloseSingleDB(theLOSForm.LOSdraw.LOSProfileDB);
    end;
 end;
 

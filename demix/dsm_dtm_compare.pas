@@ -67,6 +67,9 @@ type
     RadioGroup3: TRadioGroup;
     MainMenu1: TMainMenu;
     Memo1: TMemo;
+    BitBtn10: TBitBtn;
+    Memo2: TMemo;
+    ComboBox1: TComboBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -79,17 +82,20 @@ type
     procedure BitBtn9Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
+    procedure BitBtn10Click(Sender: TObject);
+    procedure ComboBox1Change(Sender: TObject);
   private
     { Private declarations }
     procedure GraphsCurrentRec;
     procedure LoadMemo1;
-    function Comparing : tStringList;
+    function ComparingList : tStringList;
+    function ComparingSeries: tStringList;
   public
     { Public declarations }
      db,OnRec,DTM_1sec,DSM_1sec,HRDTM,HRDSM,LCgrid : integer;
      theDTMs : tstringlist;
      DEMIX_scale_compare : boolean;
-     BaseFilter,Criterion : shortstring;
+     BaseFilter,DEMIXtileFieldName : shortstring;
   end;
 
 
@@ -114,54 +120,108 @@ procedure StartDSMandDTMcomparison(inDB : integer);
 var
   CompareDSM_DTMform: TCompareDSM_DTMform;
 begin
-  MDdef.DBsOnAllMaps := false;
-  MDDef.CountHistograms := false;
-  CompareDSM_DTMform := TCompareDSM_DTMform.Create(Application);
-  CompareDSM_DTMform.db := inDB;
-  CompareDSM_DTMform.BaseFilter := GISdb[inDB].MyData.Filter;
-  CompareDSM_DTMform.OnRec := 0;
-  CompareDSM_DTMform.DTM_1sec := 0;
-  CompareDSM_DTMform.DSM_1sec := 0;
-  CompareDSM_DTMform.HRDTM := 0;
-  CompareDSM_DTMform.HRDSM := 0;
-  CompareDSM_DTMform.LCgrid := 0;
-  CompareDSM_DTMform.Criterion := 'SLPD_FUV';
-  if MDDEF.DEMIX_UseMedian then CompareDSM_DTMform.RadioGroup2.ItemIndex := 1 else CompareDSM_DTMform.RadioGroup2.ItemIndex := 0;
-  if MDDef.DEMIX_MultiGraphCommonScaling then CompareDSM_DTMform.RadioGroup3.ItemIndex := 0 else CompareDSM_DTMform.RadioGroup3.ItemIndex := 1;
+  if TileCharacteristicsInDB(inDB,true) then begin
+      MDdef.DBsOnAllMaps := false;
+      MDDef.CountHistograms := false;
+      MDDef.DEMIX_filter1_fName:= DEMIXSettingsDir + 'filters_avg_slope_6_cat.dbf';
+      MDDef.DEMIX_filter2_fName:= DEMIXSettingsDir + 'filters_barren_pc.dbf';
 
-  GISdb[inDB].EmpSource.Enabled := false;
-  CompareDSM_DTMform.DEMIX_scale_compare := GISdb[inDB].MyData.FieldExists('DEM_1') and GISdb[inDB].MyData.FieldExists('DEM_2');
-  CompareDSM_DTMform.LoadMemo1;
+      CompareDSM_DTMform := TCompareDSM_DTMform.Create(Application);
+      CompareDSM_DTMform.db := inDB;
+      CompareDSM_DTMform.BaseFilter := GISdb[inDB].MyData.Filter;
+      CompareDSM_DTMform.OnRec := 0;
+      CompareDSM_DTMform.DTM_1sec := 0;
+      CompareDSM_DTMform.DSM_1sec := 0;
+      CompareDSM_DTMform.HRDTM := 0;
+      CompareDSM_DTMform.HRDSM := 0;
+      CompareDSM_DTMform.LCgrid := 0;
+      CompareDSM_DTMform.ComboBox1.Text := MDDef.DEMIX_SingleCriterion;
 
-  if CompareDSM_DTMform.DEMIX_scale_compare then begin
-     CompareDSM_DTMform.theDTMs := GISdb[CompareDSM_DTMform.db].MyData.ListUniqueEntriesInDB('TILE');
-  end
-  else begin
-     CompareDSM_DTMform.theDTMs := GISdb[CompareDSM_DTMform.db].MyData.ListUniqueEntriesInDB('DTM_NAME');
+      MDDef.DEMIX_xsize := 725;
+      MDDef.DEMIX_ysize := 525;
+
+
+      if MDDEF.DEMIX_UseMedian then CompareDSM_DTMform.RadioGroup2.ItemIndex := 1 else CompareDSM_DTMform.RadioGroup2.ItemIndex := 0;
+      if MDDef.DEMIX_MultiGraphCommonScaling then CompareDSM_DTMform.RadioGroup3.ItemIndex := 0 else CompareDSM_DTMform.RadioGroup3.ItemIndex := 1;
+
+      GISdb[inDB].EmpSource.Enabled := false;
+      CompareDSM_DTMform.DEMIX_scale_compare := GISdb[inDB].MyData.FieldExists('DEM_1') and GISdb[inDB].MyData.FieldExists('DEM_2');
+      CompareDSM_DTMform.LoadMemo1;
+
+      if CompareDSM_DTMform.DEMIX_scale_compare then begin
+         if not GISdb[inDB].MyData.FieldExists('COMPARE') then begin
+             GISdb[inDB].MyData.InsureFieldPresentAndAdded(ftString,'COMPARE',35);
+             GISdb[inDB].MyData.First;
+             while Not GISdb[inDB].MyData.eof do begin
+                GISdb[inDB].MyData.Edit;
+                GISdb[inDB].MyData.SetFieldByNameAsString('COMPARE',GISdb[inDB].MyData.GetFieldByNameAsString('DEM1') + '_to_' + GISdb[inDB].MyData.GetFieldByNameAsString('DEM2'));
+                GISdb[inDB].MyData.Next;
+             end;
+         end;
+         CompareDSM_DTMform.DEMIXtileFieldName := 'DEMIX_TILE';
+      end
+      else begin
+         CompareDSM_DTMform.DEMIXtileFieldName := 'DTM_NAME';
+      end;
+      CompareDSM_DTMform.theDTMs := GISdb[CompareDSM_DTMform.db].MyData.ListUniqueEntriesInDB(CompareDSM_DTMform.DEMIXtileFieldName);
+      GISdb[inDB].ClearGISFilter;
+      CompareDSM_DTMform.Show;
   end;
-  GISdb[inDB].ClearGISFilter;
-  //CompareDSM_DTMform.GraphsCurrentRec;
-  CompareDSM_DTMform.Show;
 end;
 
-function TCompareDSM_DTMform.Comparing : tStringList;
+procedure TCompareDSM_DTMform.ComboBox1Change(Sender: TObject);
+begin
+  MDDef.DEMIX_SingleCriterion := ComboBox1.Text;
+end;
+
+function TCompareDSM_DTMform.ComparingList : tStringList;
 var
    i : integer;
 begin
    Result := tStringList.Create;
-   for i := 0 to pred(Memo1.Lines.Count) do
-      Result.Add(Memo1.Lines[i]);
+   for i := 0 to pred(Memo1.Lines.Count) do begin
+      if GISdb[DB].MyData.FieldExists(Memo1.Lines[i]) then
+         Result.Add(Memo1.Lines[i]);
+   end;
 end;
+
+
+function TCompareDSM_DTMform.ComparingSeries : tStringList;
+var
+   i : integer;
+begin
+   Result := tStringList.Create;
+   for i := 0 to pred(Memo2.Lines.Count) do
+      Result.Add(Memo2.Lines[i]);
+end;
+
 
 procedure TCompareDSM_DTMform.LoadMemo1;
 var
-   Comparisons : tStringList;
+   Comparisons,MultSeries : tStringList;
    i : integer;
 begin
    Memo1.Lines.Clear;
    Comparisons := GISdb[db].MyData.ListUniqueEntriesInDB('COMPARE');
+   RemoveInvalidCriterion(Comparisons);
+
    for i := 0 to pred(Comparisons.Count) do
        Memo1.Lines.Add(Comparisons[i]);
+   Comparisons.Destroy;
+
+   Memo2.Lines.Clear;
+   PetDBUtils.GetFields(GISdb[db].MyData,GISdb[db].dbOpts.VisCols,NumericFieldTypes,MultSeries);
+   RemoveInvalidCriterion(MultSeries);
+   for i := 0 to pred(MultSeries.Count) do begin
+       Memo2.Lines.Add(MultSeries[i]);
+       ComboBox1.Items.Add(MultSeries[i]);
+   end;
+   MultSeries.Destroy;
+end;
+
+procedure TCompareDSM_DTMform.BitBtn10Click(Sender: TObject);
+begin
+   GraphTwoParameterGridsByAverageSlopeAndResolution(db,DEMIXtileFieldName,ComparingSeries);
 end;
 
 procedure TCompareDSM_DTMform.BitBtn1Click(Sender: TObject);
@@ -241,16 +301,16 @@ end;
 
 procedure TCompareDSM_DTMform.BitBtn8Click(Sender: TObject);
 begin
-   if GISdb[db].MyData.FieldExists(Criterion) then begin
-      GraphTwoParameterGridsByDEMresolution(db,Criterion,Comparing);
+   if GISdb[db].MyData.FieldExists(MDDef.DEMIX_SingleCriterion) then begin
+      GraphTwoParameterGridsByDEMresolution(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName,ComparingList);
    end
-   else MessageToContinue('Missing criterion: ' + Criterion);
+   else MessageToContinue('Missing criterion: ' + MDDef.DEMIX_SingleCriterion);
 end;
 
 
 procedure TCompareDSM_DTMform.BitBtn9Click(Sender: TObject);
 begin
-   MakeGraphComparingFUVandArcSecondSpacing(db);
+   MakeGraphComparingFUVandArcSecondSpacing(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName);
 end;
 
 
@@ -270,18 +330,22 @@ begin
    else begin
        gr1 := GraphCompareDSMandDTMslopes(DB,TheDTMs.Strings[onRec]);
        gr2 := GraphDSMandDTMdifferences(DB,TheDTMs.Strings[OnRec],RadioGroup1.Items[RadioGroup1.ItemIndex]);
-       gr2.Left := 1200;
-       gr2.Top := 50;
+       if gr2 <> nil then begin
+          gr2.Left := 1200;
+          gr2.Top := 50;
+       end;
    end;
-   gr1.Left := 1;
-   gr1.Top := 50;
+   if gr1 <> nil then begin
+      gr1.Left := 1;
+      gr1.Top := 50;
+   end;
 end;
 
 
 procedure TCompareDSM_DTMform.RadioGroup1Click(Sender: TObject);
 begin
    //GraphsCurrentRec;
-   Criterion := RadioGroup1.Items[RadioGroup1.ItemIndex];
+   MDDef.DEMIX_SingleCriterion := RadioGroup1.Items[RadioGroup1.ItemIndex];
 end;
 
 

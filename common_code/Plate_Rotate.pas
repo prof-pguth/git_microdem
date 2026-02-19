@@ -301,8 +301,8 @@ end;
 
 procedure TPickRotationForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-   CloseAndNilNumberedDB(MotionTable);
-   CloseAndNilNumberedDB(PoleTable);
+   CloseSingleDB(MotionTable);
+   CloseSingleDB(PoleTable);
 
    if (MapForm <> Nil) then begin
       MapForm.Closable := true;

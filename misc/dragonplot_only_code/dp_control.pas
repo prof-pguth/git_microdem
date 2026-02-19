@@ -1344,7 +1344,7 @@ end;
 
 procedure TDragonPlotForm.BitBtn8Click(Sender: TObject);
 begin
-   CloseAndNilNumberedDB(LightningTable);
+   CloseSingleDB(LightningTable);
    SetTabSheets;
 end;
 
@@ -1417,7 +1417,7 @@ begin
    csv.Add(Name + ',' + RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7));
    db := UseMap.StringListToLoadedDatabase(csv,MDTempDir + 'Shot_Location.dbf',false,true,false);
    GISdb[db].ExportToKML(false,true);
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
    {$IfDef RecordKML} WriteLineToDebugFile('PushPinInGoogleEarth out'); {$EndIf}
 end;
 
@@ -2024,7 +2024,7 @@ var
 begin
    {$IfDef RecordLightning} WriteLineToDebugFile('TDragonPlotForm.BitBtn17Click in (import lighthing file)'); {$EndIf}
     FName := LightningDirectory;
-    if (LightningTable <> 0) then CloseAndNilNumberedDB(LightningTable);
+    if (LightningTable <> 0) then CloseSingleDB(LightningTable);
     if Petmar.GetFileFromDirectory('Lightning data','*.dbf;*.csv;*.txt',fName) then begin
       {$IfDef RecordLightning} WriteLineToDebugFile('lightning file=' + ExtractFileName(fName)); {$EndIf}
        if OpenNumberedGISDataBase(LightningTable,fName,true,false,DEMglb[RegionalDEM].SelectionMap) then begin

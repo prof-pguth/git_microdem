@@ -23,7 +23,7 @@ unit demix_definitions;
 
    //{$Define RecordNeoDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
-   //{$Define RecordDEMIXLoad}
+   {$Define RecordDEMIXLoad}
    //{$Define RecordTestDEMstart}
    //{$Define RecordDEMIXFilters}
    //{$Define RecordDiluvium}
@@ -161,7 +161,7 @@ var
    DEMIXModeName : shortstring;
    DEMIXMode : integer;
 
-   type
+type
    tDEMIXindexes = array[1..MaxDEMIXDEM] of integer;
    tDEMIXfloats = array[1..MaxDEMIXDEM] of float32;
 
@@ -169,7 +169,6 @@ const
    Ref1SecPointStr = '_ref_1sec_point';
    Ref1SecAreaStr =  '_ref_1sec_area';
    Ref1_5SecPointStr = '_ref_1.5x1sec_point';
-
 
 
 const
@@ -181,7 +180,7 @@ const
    yasForest = 5;
    yasLatitude = 6;
    yasBestEvalColoredBySlope = 7;
-   MovieByTestDEM : boolean = false;
+   //MovieByTestDEM : boolean = false;
 
 var
    RefDEMs,TestDEMs,
@@ -208,18 +207,13 @@ var
    DEMIX_Under_ref_dtm,DEMIX_Under_test_dems,                //locations for the 1" DEMs used in comparison
 
    DEMIX_Ref_Half_sec,
-   DEMIX_profile_test_dir,
-
    DEMIX_area_lc100,
-
    DEMIX_area_dbName,
    DEMIX_Ref_Merge,
 
    AreaListFName,
+    //GeodeticFName,IceSatFName,LandCoverFName,DEMIX_3DEP_Dir,DEMIX_diff_maps_dir,DEMIX_distrib_graph_dir,DEMIX_profile_test_dir,
 
-   DEMIX_distrib_graph_dir,DEMIX_diff_maps_dir,DEMIX_3DEP_Dir,
-
-   GeodeticFName, IceSatFName, LandCoverFName,
    LocalDatumAddFName,LocalDatumSubFName,
    RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
 
@@ -418,6 +412,14 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
 {$EndIf}
 
 
+procedure MakeCSVforComparingDSMandDTMbyScale(DB : integer);
+procedure MakeCSVforGDEMcompareDSMtoDTM(DBonTable : integer);
+
+function RemoveCountryFromTileName(Tile : shortString) : shortstring;
+procedure RemoveInvalidCriterion(var sl : TStringList);
+
+
+
 implementation
 
 uses
@@ -451,11 +453,43 @@ uses
 {$EndIf}
 
 
+procedure RemoveInvalidCriterion(var sl : TStringList);
+var
+   BadCriteria : tStringList;
+   fName : PathStr;
+   s : shortstring;
+   i,bc : integer;
+begin
+   fName := DEMIXSettingsDir + 'invalid_criteria.txt';
+   if FileExists(fName) then begin
+      BadCriteria := tStringList.Create;
+      BadCriteria.LoadFromFile(fName);
+      for I := pred(sl.count) downto 0 do begin
+          s := UpperCase(sl.strings[i]);
+          bc := BadCriteria.IndexOf(s);
+          if (bc <> -1) then begin
+             sl.Delete(i);
+          end;
+      end;
+      BadCriteria.Destroy;
+   end;
+end;
+
+
 function GeneralizeReferenceName(Name : shortstring) : shortstring;
 begin
    Result := StringReplace(Name, '_cop', '',[rfIgnoreCase]);
    Result := StringReplace(Result, '_srtm', '',[rfIgnoreCase]);
    Result := StringReplace(Result, '_alos', '',[rfIgnoreCase]);
+end;
+
+
+function RemoveCountryFromTileName(Tile : shortString) : shortstring;
+begin
+   Result := Tile;
+   if (Result[3] = '_') then begin
+      Delete(Result,1,3);
+   end;
 end;
 
 
@@ -467,12 +501,11 @@ begin
         if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
         else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
    end;
-   if (Copy(Tile,1,3) = 'CA_') then begin
+   if (Copy(Tile,1,3) = 'CA_') or (Copy(Tile,1,3) = 'UK_') then begin
         if ANSIcontainsStr(Tile,'DSM') then Result := 'DSM'
         else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
    end;
 end;
-
 
 
 
@@ -481,7 +514,7 @@ var
    TStr : shortstring;
 begin
   if GISdb[DBonTable].MyData.FieldExists('CRITERION') then TStr := 'CRITERION=' + QuotedStr('SLOPE') + ' AND ' else TStr := '';
-  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.01));
+  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.025));
   if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
      TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
      if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
@@ -511,8 +544,6 @@ begin
   end
   else Result := false;
 end;
-
-
 
 
 function InsureFUVinLSPname(aName : shortstring) : shortstring;

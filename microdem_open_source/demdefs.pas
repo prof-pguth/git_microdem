@@ -2023,7 +2023,13 @@ type
       DEMIX_urban_filters,
       DEMIX_average_criteria,
       DEMIX_AllowCoastal,
-      DEMIX_Geo_Tiles   : boolean;
+      DEMIX_Geo_Tiles,
+      DEMIX_combined_graph,
+      PanelsByTestDEM,
+      DEMIXsaveLSPmaps,
+      DEMIX_overwrite_enabled,
+      DEMIX_highlat,
+      DEMIX_default_half_sec_ref : boolean;
       DEMIX_series_symbol,
       DEMIX_Mode,
       DEMIXsymsize,
@@ -2032,38 +2038,19 @@ type
       DEMIX_groupWonLost : byte;
       DEMIX_BaseDir,
       DEMIX_FullDBfName,
-      {$IfDef IncludeCoastalDEMs}
-         DEMIX_U120DBfName,
-         DEMIX_U80DBfName,
-         DEMIX_U10DBfName,
-      {$EndIf}
       DEMIX_base_dir,
       DEMIX_tile_chars_fname,
       DEMIX_criteria_fName,
       DEMIX_filter1_fName,
       DEMIX_filter2_fName : PathStr;
+      DEMIX_SingleCriterion,
       DEMIX_default_area,
       DEMIX_default_tile   : shortstring;
-      DEMIX_combined_graph,
-      PanelsByTestDEM,
-      DEMIXsaveLSPmaps,
-      DEMIX_overwrite_enabled,
-      DEMIX_highlat,
-      DEMIX_default_half_sec_ref : boolean;
       DEMIXlegendFontSize,
       DEMIX_FUV_graph_width,
       DEMIX_xsize,DEMIX_ysize : integer;
+
       DEMIX_open_ref_DSM,
-
-      {$IfDef IncludeOldDEMIXgraphics}
-          MakeCOP_ALOS_diffMaps,
-          MakeCOP_ALOS_Cat_Maps,
-          MakeCOP_FABDEM_diffMaps,
-          MakeCOP_ALOS_Best_Map,
-          MakeRGB_Best_Map,
-          RGBbestSeparates,
-      {$EndIf}
-
       OpenSavedMapsFUVSSIM,
       DoSSIM,
       DoFUV,
@@ -2086,6 +2073,20 @@ type
       DEMIX_DoHalfSecDEMs,
       ProcessLoopsForward : boolean;
       DEMIXUseBins : byte;
+
+      {$IfDef IncludeCoastalDEMs}
+         DEMIX_U120DBfName,
+         DEMIX_U80DBfName,
+         DEMIX_U10DBfName : PathStr;
+      {$EndIf}
+      {$IfDef IncludeOldDEMIXgraphics}
+          MakeCOP_ALOS_diffMaps,
+          MakeCOP_ALOS_Cat_Maps,
+          MakeCOP_FABDEM_diffMaps,
+          MakeCOP_ALOS_Best_Map,
+          MakeRGB_Best_Map,
+          RGBbestSeparates : boolean;
+      {$EndIf}
 
       HistElevBinSize,
       HistSlopeBinSize,

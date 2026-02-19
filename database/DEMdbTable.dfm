@@ -1079,21 +1079,14 @@ object dbtablef: Tdbtablef
       Caption = 'Plot all XY Files'
       OnClick = PlotallXYFiles1Click
     end
+    object CompareDSMDTM1: TMenuItem
+      Caption = 'Compare DSM/DTM'
+      OnClick = CompareDSMDTM1Click
+    end
     object DSMDTMcomparison1: TMenuItem
-      Caption = 'DSM/DTM comparison'
-      object CompareDSMDTM1: TMenuItem
-        Caption = 'Compare DSM/DTM'
-        OnClick = CompareDSMDTM1Click
-      end
-      object N62: TMenuItem
-        Caption = '-'
-      end
-      object FUVgridtwoLSPs1: TMenuItem
-        Caption = 'FUV-grid two LSPs'
-        OnClick = FUVgridtwoLSPs1Click
-      end
+      Caption = 'Less useful DSM/DTM comparison'
       object GraphscompringDSMDTMslopes1: TMenuItem
-        Caption = 'Graphs comparing DSM/DTM slopes for all tiles'
+        Caption = 'Separate graphs comparing DSM/DTM slopes for all tiles'
         OnClick = GraphscompringDSMDTMslopes1Click
       end
       object GraphscompartingDSMDTMdifferencedistribtuions1: TMenuItem
@@ -2337,7 +2330,7 @@ object dbtablef: Tdbtablef
   end
   object EditPopupMenu8: TPopupMenu
     Left = 208
-    Top = 400
+    Top = 408
     object Color1: TMenuItem
       Caption = 'Color'
       object Insertcolorfield1: TMenuItem
@@ -3065,7 +3058,7 @@ object dbtablef: Tdbtablef
       end
     end
     object Limitdeimalsinmultiplefields1: TMenuItem
-      Caption = 'Limit deimals in multiple fields'
+      Caption = 'Limit decimals in multiple fields'
       OnClick = Limitdeimalsinmultiplefields1Click
     end
     object Fieldarithmetic1: TMenuItem
@@ -3784,7 +3777,7 @@ object dbtablef: Tdbtablef
     end
   end
   object DEMIXPopupMenu1: TPopupMenu
-    Left = 664
+    Left = 672
     Top = 464
     object OpenDEMIXgraphs1: TMenuItem
       Caption = 'Open DEMIX graphs'
@@ -3796,11 +3789,11 @@ object dbtablef: Tdbtablef
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
       object DTMDSMcomparison1: TMenuItem
-        Caption = 'Create DB for DTM/DSM comparison'
+        Caption = 'Create DB for HRDEM DTM/DSM comparison'
         OnClick = DTMDSMcomparison1Click
       end
       object CompareCopDEMtoDSMDTMandaggregate1: TMenuItem
-        Caption = 'Create DB for  CopDEM to DSM/DTM and aggregate'
+        Caption = 'Create DB for GDEM comparision ref DSM/DTM '
         OnClick = CompareCopDEMtoDSMDTMandaggregate1Click
       end
       object N60: TMenuItem

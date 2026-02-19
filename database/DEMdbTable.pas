@@ -1070,8 +1070,6 @@ type
     DSMDTMcomparison1: TMenuItem;
     N60: TMenuItem;
     CompareCopDEMtoDSMDTMandaggregate1: TMenuItem;
-    N62: TMenuItem;
-    FUVgridtwoLSPs1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1899,7 +1897,6 @@ type
     procedure CompareDSMDTM1Click(Sender: TObject);
     procedure DSMlessthanDTM1Click(Sender: TObject);
     procedure CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
-    procedure FUVgridtwoLSPs1Click(Sender: TObject);
     //procedure DSMlessthanDTM1Click(Sender: TObject);
     //procedure DSMDTMpairs1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
@@ -3524,7 +3521,7 @@ begin
       AddXYbox1.Visible := GISdb[DBonTable].MyData.FieldExists('X1') and GISdb[DBonTable].MyData.FieldExists('Y2') and GISdb[DBonTable].MyData.FieldExists('X3') and GISdb[DBonTable].MyData.FieldExists('Y4');
       LidarWaveform1.Visible := GISdb[DBonTable].MyData.FieldExists('RH99');
       DEMIX2.Visible := GISdb[DBonTable].MyData.FieldExists('DEMIX_TILE');
-      DTMDSMcomparison1.Visible := GISdb[dbOnTable].MyData.FieldExists('GRID_SIZE') and GISdb[dbOnTable].MyData.FieldExists('DSM_NAME') and GISdb[dbOnTable].MyData.FieldExists('DTM_NAME');
+      DTMDSMcomparison1.Visible := GISdb[dbOnTable].MyData.FieldExists('GRID_THIN') and GISdb[dbOnTable].MyData.FieldExists('DSM_NAME') and GISdb[dbOnTable].MyData.FieldExists('DTM_NAME');
       GridCellPopupMenu6.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -3836,12 +3833,6 @@ begin
    else DisplayAndPurgeStringList(Findings,SelectedColumn + ' non numeric values=' + IntToStr(Findings.Count));
 end;
 
-procedure Tdbtablef.FUVgridtwoLSPs1Click(Sender: TObject);
-begin
-   GridOfCriterionForMultipleDEMcomparisons(DBonTable,'ELVD_MAE');
-end;
-
-
 procedure Tdbtablef.BitBtn4Click(Sender: TObject);
 begin
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn4Click--DB filter selected'); {$EndIf}
@@ -3871,7 +3862,7 @@ begin
          CanClose := CanCloseIt;
          if CanClose then begin
             {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery call CloseAndNilNumberedDB'); {$EndIf}
-            CloseAndNilNumberedDB(DBonTable);
+            CloseSingleDB(DBonTable);
             {$IfDef RecordCloseDB} WriteLineToDebugFile('Tdbtablef.FormCloseQuery closed'); {$EndIf}
          end;
       end;
@@ -5311,6 +5302,7 @@ var
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.AddDSMDTMpair1Click in'); {$EndIf}
    IdentifyDSMandDTM1Click(nil);
+   GISdb[DBonTable].ClearGISFilter;
    SetColorForProcessing;
    fl := GISdb[DBonTable].MyData.GetFieldLength('DEMIX_TILE');
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DEM_PAIR',3);
@@ -5331,32 +5323,13 @@ begin
               GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname);
               GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname);
               GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES');
-              (*
-              GISdb[DBonTable].MyData.Edit;
-              GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME',DSMname);
-              GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME',DTMname);
-              GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_PAIR','YES');
-              GISdb[DBonTable].MyData.Post;
-              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DTMName));
-              GISdb[DBonTable].MyData.Edit;
-              GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_PAIR','YES');
-              GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME',DTMname);
-              GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME',DSMname);
-              GISdb[DBonTable].MyData.Post;
-              *)
            end
            else begin
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
               GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
-              (*
-              GISdb[DBonTable].MyData.Edit;
-              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
-              GISdb[DBonTable].MyData.Post;
-              *)
            end;
        end;
    until (GISdb[DBonTable].MyData.FiltRecsInDB = 0);
-
    SetColorForWaiting;
    GISdb[DBonTable].ClearGISFilter;
    ShowStatus;
@@ -7832,114 +7805,9 @@ end;
 
 
 procedure Tdbtablef.CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
-var
-   Areas,Results : tStringList;
-   AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
-   i,j : integer;
-   RefALOS_DSM,RefALOS_DTM,AlosName,
-   fName,DSMName,DTMName,CopNAME,FathomName,OldName,cName,tName : PathStr;
 begin
-  {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click in'); {$EndIf}
-   WantShowProgress := false;
-   if GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM') then begin
-       BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
-       GISdb[DBonTable].ApplyGISFilter(BaseFilter );
-       Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
-       for I := 0 to pred(Areas.Count) do begin
-          AreaName := Areas.Strings[i];
-          {$IfDef RecordDEMIX} WriteLineToDebugFile('Area=' + AreaName); {$EndIf}
-          wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName,true);
-          fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_cop_dsm_dtm\';
-          SafeMakeDir(fName);
-          fName := fName + AreaName + '_cop_compare_dsm_dtm.csv';
-          if not FileExists(fName) then begin
-              Results := nil;
-              theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
-              {$IfDef RecordDEMIX} WriteLineToDebugFile('filter=' + theFilter); {$EndIf}
-              GISdb[DBonTable].ApplyGISFilter(theFilter);
-              j := 0;
-              while not GISdb[DBonTable].MyData.eof do begin
-                  wmDEM.SetPanelText(0,TimeToStr(Now),true);
-                  inc(j);
-                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
-                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME');
-                  if UpperCase(copy(tname,1,3)) <> UpperCase(cName) then tName := cname + tName;
-                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_cop.tif';
-                  if not FileExists(DSMname) then DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_srtm.tif';
-                  RefALOS_DSM := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_alos.tif';
-
-(*
-                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
-                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME');
-
-                  OldName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_cop.tif';
-                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_cop.tif';
-                  if FileExists(OldName) then begin
-                     RenameFile(OldName,DSMname);
-                  end;
-
-                  OldName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_srtm.tif';
-                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_srtm.tif';
-                  if FileExists(OldName) then begin
-                     RenameFile(OldName,DSMname);
-                  end;
-
-                  OldName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_alos.tif';
-                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dsm_alos.tif';
-                  if FileExists(OldName) then begin
-                     RenameFile(OldName,DSMname);
-                  end;
-*)
-                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
-                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME');
-                  if UpperCase(copy(tname,1,3)) <> UpperCase(cName) then tName := cname + tName;
-                  DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_cop.tif';
-                  if not FileExists(DTMname) then DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_srtm.tif';
-                  RefALOS_DTM := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\ref_dtm_alos.tif';
-
-
-                  CopName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\cop.tif';
-                  ALOSname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\alos.tif';
-                  Fathomname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + '_ref_test_dem\fathom.tif';
-
-                  if FileExists(DSMName) and FileExists(DTMname) and FileExists(CopName) then begin
-                      TStr := IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
-                      wmDEM.SetPanelText(2,TStr,true);
-                      {$IfDef RecordDEMIX} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
-                      TileStats := RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
-                                   RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
-                                   RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
-                      MakeDBtoCompareDSMandDTM(CopName,DSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                      MakeDBtoCompareDSMandDTM(Copname,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                      MakeDBtoCompareDSMandDTM(FathomName,DSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                      MakeDBtoCompareDSMandDTM(FathomName,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                      MakeDBtoCompareDSMandDTM(DSMname,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                      MakeDBtoCompareDSMandDTM(ALOSName,RefALOS_DSM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                      MakeDBtoCompareDSMandDTM(ALOSName,RefALOS_DTM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
-                  end
-                  else begin
-                     MessageToContinue('File missing ' + DSMName + '   ' + DTMName + '   ' + CopName);
-                  end;
-
-
-                  GISdb[DBonTable].MyData.Next;
-              end;
-              if (Results <> nil) and (Results.Count > 1) then begin
-                 Results.SaveToFile(fName);
-                 Results.Destroy;
-              end;
-          end;
-       end;
-   end
-   else begin
-      MessageToContinue('DB requires fields DEM_PAIR and REF_DEM');
-   end;
-   wmDEM.ClearStatusBarPanelText;
-   GISdb[DBonTable].ClearGISFilter;
-   SetColorForWaiting;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click out'); {$EndIf}
+   MakeCSVforGDEMcompareDSMtoDTM(DBonTable);
 end;
-
 
 procedure Tdbtablef.CompareDSMDTM1Click(Sender: TObject);
 begin
@@ -8510,7 +8378,7 @@ begin
             end;
             GISdb[DBonTable].MyData.Next;
          end;
-         CloseAndNilNumberedDB(NewGIS);
+         CloseSingleDB(NewGIS);
          ShowStatus;
       end;
       {$IfDef AverageNeighbors} WriteLineRoDebugFile('Tdbtablef.Averageofneighbors1Click out'); {$EndIf}
@@ -10641,12 +10509,13 @@ begin
     GISdb[DBonTable].EmpSource.Enabled := false;
     TheTiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DTM_NAME');
     for I := 0 to pred(TheTiles.Count) do begin
-      GISdb[DBonTable].EmpSource.Enabled := false;
+       GISdb[DBonTable].EmpSource.Enabled := false;
        GraphDSMandDTMdifferences(DBonTable,TheTiles.Strings[i],'SLPD');
     end;
     TheTiles.Destroy;
     ShowStatus;
 end;
+
 
 procedure Tdbtablef.GraphscompringDSMDTMslopes1Click(Sender: TObject);
 var
@@ -11691,6 +11560,7 @@ begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('IdentifyDSMandDTM1Click in'); {$EndIf}
    SetColorForProcessing;
    ShowHourglassCursor;
+   GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'REF_DEM',3);
    GISdb[DBonTable].MyData.First;
    GISdb[DBonTable].EmpSource.Enabled := false;
@@ -11700,8 +11570,8 @@ begin
       GISdb[DBonTable].MyData.SetFieldByNameAsString('REF_DEM',IdentifyDEMIXtileAsDTMorDSM(Tile));
       GISdb[DBonTable].MyData.Next;
    end;
-   ShowStatus;
    SetColorForWaiting;
+   ShowStatus;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('IdentifyDSMandDTM1Click out'); {$EndIf}
 end;
 
@@ -12255,60 +12125,9 @@ end;
 
 
 procedure Tdbtablef.DTMDSMcomparison1Click(Sender: TObject);
-var
-   Areas,Results : tStringList;
-   AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
-   i,j : integer;
-   fName,DSMName,DTMName: PathStr;
 begin
-  {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click in'); {$EndIf}
-   WantShowProgress := false;
-   if GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM') then begin
-       BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
-       GISdb[DBonTable].ApplyGISFilter(BaseFilter );
-       Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
-       for I := 0 to pred(Areas.Count) do begin
-          AreaName := Areas.Strings[i];
-          {$IfDef RecordDEMIX} WriteLineToDebugFile('Area=' + AreaName); {$EndIf}
-          wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName,true);
-          fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_dsm_dtm\';
-          SafeMakeDir(fName);
-          fName := fName + AreaName + '_compare_dsm_dtm.csv';
-          if not FileExists(fName) then begin
-              Results := nil;
-              theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
-              {$IfDef RecordDEMIX} WriteLineToDebugFile('filter=' + theFilter); {$EndIf}
-              GISdb[DBonTable].ApplyGISFilter(theFilter);
-              j := 0;
-              while not GISdb[DBonTable].MyData.eof do begin
-                  wmDEM.SetPanelText(0,TimeToStr(Now),true);
-                  inc(j);
-                  DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\source\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
-                  DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\source\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
-                  TStr := IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
-                  wmDEM.SetPanelText(2,TStr,true);
-                  {$IfDef RecordDEMIX} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
-                  TileStats := RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
-                               RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
-                               RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
-
-                  MakeDBtoCompareDSMandDTM(DSMname,DTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY'),TileStats,Results);
-                  GISdb[DBonTable].MyData.Next;
-              end;
-             Results.SaveToFile(fName);
-             Results.Destroy;
-          end;
-       end;
-   end
-   else begin
-      MessageToContinue('DB requires fields DEM_PAIR and REF_DEM');
-   end;
-   wmDEM.ClearStatusBarPanelText;
-   GISdb[DBonTable].ClearGISFilter;
-   SetColorForWaiting;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.DTMDSMcomparison1Click out'); {$EndIf}
+   MakeCSVforComparingDSMandDTMbyScale(DBonTable);
 end;
-
 
 procedure Tdbtablef.BackupDB1Click(Sender: TObject);
 begin
@@ -13034,7 +12853,7 @@ begin
 
         ShowStatus;
         GISdb[DBonTable].ClearGISFilter;
-        CloseAndNilNumberedDB(NewGIS);
+        CloseSingleDB(NewGIS);
    end;
    {$IfDef FindNeighbors} WriteLineRoDebugFile('Tdbtablef.Centr1Click out'); {$EndIf}
 end;
@@ -13593,7 +13412,7 @@ begin
                 end;
                 GISdb[GISNum].MyData.Next;
             end;
-            CloseAndNilNumberedDB(GISNum);
+            CloseSingleDB(GISNum);
          end;
       end;
    end
@@ -14246,7 +14065,7 @@ begin
          GISdb[ArcShape].RenameField('MAX_VERT','VERT1');
          GISdb[ArcShape].RenameField('MIN_VERT','VERT2');
          GISdb[ArcShape].SavePointShapeFile;
-         CloseAndNilNumberedDB(ArcShape);
+         CloseSingleDB(ArcShape);
       end;
    end;
 end;
@@ -14811,7 +14630,7 @@ begin
       RestoreBackupDefaults;
       Petmar.CopyFile(fName,MDTempDir + ExtractFileName(fName));
       //ZipShapefile(DB,false,false);     //this won't work on the USGS web sites, which was the whole point of creating it
-      CloseAndNilNumberedDB(db);
+      CloseSingleDB(db);
       GISdb[DBonTable].MyData.Next;
    end;
 end;

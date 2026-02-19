@@ -719,7 +719,7 @@ begin
    TheGraph.SettingsChanged := true;
    TheGraph.GraphDraw.LLcornerText := LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees);
    TheGraph.RedrawDiagram11Click(Nil);
-   if (MDdef.ProgramOption <> ExpertProgram) then CloseAndNilNumberedDB(db);
+   if (MDdef.ProgramOption <> ExpertProgram) then CloseSingleDB(db);
 end;
 
 
@@ -951,7 +951,7 @@ begin
       //TheGraph.GraphDraw.LegendList.Add('Time of sunset');
    end;
    if (MDdef.ProgramOption = ExpertProgram) then GISDB[db].dbtablef.ShowStatus
-   else CloseAndNilNumberedDB(db);
+   else CloseSingleDB(db);
    ShowDefaultCursor;
 end;
 

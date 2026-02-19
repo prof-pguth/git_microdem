@@ -412,7 +412,7 @@ begin
          end;
          GISdb[db].MyData.Next;
       end;
-      CloseAndNilNumberedDB(db);
+      CloseSingleDB(db);
    end;
 end;
 
@@ -425,7 +425,7 @@ begin
       db := DEMIXtileFill(DEM,DEMGlb[DEM].DEMBoundBoxGeo,False);
       GISdb[DB].ApplyGISFilter('GRID_FULL >' + IntToStr(MDDef.DEMIX_Tile_Full));
       Result := GISdb[db].MyData.FiltRecsInDB;
-      CloseAndNilNumberedDB(db);
+      CloseSingleDB(db);
    end
    else Result := 0;
 end;
@@ -458,7 +458,7 @@ begin
       end;
       GISdb[db].MyData.Next;
    end;
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
 end;
 
 

@@ -200,10 +200,11 @@ var
       procedure GetAngle(Mess : shortstring; var theAngle : float64; var AngleMeasure : tAngleMeasure);
 
       //color routines
-         function ColorString(Color : tRGBTriple) : shortString; overload;
+         function ColorString(Color : tPlatformColor) : shortString; overload;
+         //function ColorString(Color : tRGBTriple) : shortString; overload;
          function ColorString(Color : tColor) : shortString; overload;
+
          function RGBString(r,g,b : SmallInt; IncludeGray : boolean = false) : ShortString;
-         function ColorStringFromPlatformColor(Color : tPlatformColor) : shortString;
 
          function GrayColorFunct(i : integer) : TColor;  overload;
          function GrayColorFunct(z,Min,Max : float64) : TColor; overload; inline;
@@ -1299,10 +1300,29 @@ end;
             MyFont.Underline := false;
          end;
 
+         (*
          function ColorString(Color : tRGBTriple) : shortString;
          begin
             Result := RGBString(Color.rgbtRed,Color.rgbtGreen,Color.rgbtBlue) + ' gray=' + IntToStr(round(0.3 * Color.rgbtRed  + 0.59 * Color.rgbtGreen  + 0.11 * Color.rgbtBlue ));
          end;
+         *)
+
+        function ColorString(Color : tColor) : shortString;
+        var
+           r,g,b : byte;
+        begin
+           GetRGBfromTColor(Color,r,g,b);
+           Result := RGBString(r,g,b);
+        end;
+
+
+        function ColorString(Color : tPlatformColor) : shortString;
+        begin
+           {$IfDef VCL}
+              Result := RGBString(Color.rgbtRed, Color.rgbtGreen, Color.rgbtBlue);
+           {$EndIf}
+        end;
+
 
 
          function SameColor(c1,c2 : tPlatformColor) : boolean;
@@ -3065,21 +3085,6 @@ begin
    if IncludeGray then Result := Result +  '  gray=' + IntToStr(RGBtoGrayscale(r,g,b));
 end;
 
-
-function ColorString(Color : tColor) : shortString;
-var
-   r,g,b : byte;
-begin
-   GetRGBfromTColor(Color,r,g,b);
-   Result := RGBString(r,g,b);
-end;
-
-function ColorStringFromPlatformColor(Color : tPlatformColor) : shortString;
-begin
-   {$IfDef VCL}
-      Result := RGBString(Color.rgbtRed, Color.rgbtGreen, Color.rgbtBlue);
-   {$EndIf}
-end;
 
 
 

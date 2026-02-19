@@ -561,7 +561,6 @@ end;
 function MakeLegend(DEMsUsed,ColorsUsed : tstringList; Horizontal : boolean = true; MaxWide : integer = 2400) : tMyBitmap;
 var
    i,Left,Top,StartFontSize : integer;
-   Color : tColor;
 
          procedure AnEntry(DEM : shortString; Color : tColor);
          begin
@@ -590,12 +589,11 @@ begin
       Left := 15;
       Top := 10;
       for i := 0 to pred(DEMsUsed.Count) do begin
-         Color := StrToInt(ColorsUsed[i]);
-         AnEntry(DEMsUsed.Strings[i],Color);
+         AnEntry(DEMsUsed.Strings[i],StrToInt(ColorsUsed[i]));
       end;
       PutBitmapInBox(Result);
       Dec(StartFontSize);
-   until Result.Width < MaxWide;
+   until (Result.Width < MaxWide);
 end;
 
 

@@ -2,7 +2,7 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1253
+  ClientHeight = 1293
   ClientWidth = 2418
   Color = clScrollBar
   DefaultMonitor = dmDesktop
@@ -1675,7 +1675,7 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1234
+    Top = 1274
     Width = 2418
     Height = 19
     Panels = <
@@ -2038,7 +2038,6 @@ object wmdem: Twmdem
       end
       object CompareUTMandgeographicslopes1: TMenuItem
         Caption = 'Compare UTM and geographic slopes'
-        OnClick = CompareUTMandgeographicslopes1Click
       end
       object MetaData1: TMenuItem
         Caption = 'File metadata'
@@ -3458,7 +3457,7 @@ object wmdem: Twmdem
     end
   end
   object DEMIXdbCreatePopupMenu: TPopupMenu
-    Left = 968
+    Left = 976
     Top = 296
     object Graphevaluationandscores1: TMenuItem
       Caption = 'Open DEMIX database for graph evaluation and scores'
@@ -3467,42 +3466,37 @@ object wmdem: Twmdem
     object N56: TMenuItem
       Caption = '-'
     end
-    object UTMbasedtilescreation1: TMenuItem
-      Caption = 'UTM based tiles creation'
-      OnClick = UTMbasedtilescreation1Click
-    end
-    object UTMbasedFUVcalculations1: TMenuItem
-      Caption = 'UTM based FUV calculations'
-      OnClick = UTMbasedFUVcalculations1Click
-    end
-    object UTMbasedFUVpartialscalculations1: TMenuItem
-      Caption = 'UTM based, FUV partials calculations'
-      OnClick = UTMbasedFUVpartialscalculations1Click
-    end
-    object UTMbasedFUVcurvaturecalculations1: TMenuItem
-      Caption = 'UTM based, FUV curvature calculations'
-      OnClick = UTMbasedFUVcurvaturecalculations1Click
-    end
-    object UTMbaseddifferencedistributionstatistics1: TMenuItem
-      Caption = 'UTM based difference distribution statistics'
-      OnClick = UTMbaseddifferencedistributionstatistics1Click
-    end
-    object UTMbasedtilestatistics1: TMenuItem
-      Caption = 'UTM based tile statistics'
-      OnClick = UTMbasedtilestatistics1Click
-    end
-    object UTMbasedallareacomputations1: TMenuItem
-      Caption = 'UTM based, all area computations'
-      OnClick = UTMbasedallareacomputations1Click
+    object CreateCSVresultsfortestareas1: TMenuItem
+      Caption = 'Create CSV results for test areas'
+      object UTMbasedtilescreation1: TMenuItem
+        Caption = 'Tiles creation'
+        OnClick = UTMbasedtilescreation1Click
+      end
+      object N38: TMenuItem
+        Caption = '-'
+      end
+      object UTMbasedFUVcalculations1: TMenuItem
+        Caption = 'Mixed FUV calculations'
+        OnClick = UTMbasedFUVcalculations1Click
+      end
+      object UTMbasedFUVpartialscalculations1: TMenuItem
+        Caption = 'FUV partials calculations'
+        OnClick = UTMbasedFUVpartialscalculations1Click
+      end
+      object UTMbasedFUVcurvaturecalculations1: TMenuItem
+        Caption = 'FUV curvature calculations'
+        OnClick = UTMbasedFUVcurvaturecalculations1Click
+      end
+      object UTMbaseddifferencedistributionstatistics1: TMenuItem
+        Caption = 'Difference distribution statistics'
+        OnClick = UTMbaseddifferencedistributionstatistics1Click
+      end
+      object UTMbasedtilestatistics1: TMenuItem
+        Caption = 'Tile statistics'
+        OnClick = UTMbasedtilestatistics1Click
+      end
     end
     object N15: TMenuItem
-      Caption = '-'
-    end
-    object DeleteresultsCSVforareas1: TMenuItem
-      Caption = 'Delete results CSV for areas to recompute'
-      OnClick = DeleteresultsCSVforareas1Click
-    end
-    object N25: TMenuItem
       Caption = '-'
     end
     object MergeCSVresultsintosingleDB1: TMenuItem
@@ -3527,6 +3521,9 @@ object wmdem: Twmdem
         Caption = 'Tile statisitics into DB'
         OnClick = UTMbasedmergetilestatisiticsintoDB1Click
       end
+      object N37: TMenuItem
+        Caption = '-'
+      end
       object UTMbasedMergeDSMDTMcomparison1: TMenuItem
         Caption = 'High resolution  DSM/DTM comparison'
         OnClick = UTMbasedMergeDSMDTMcomparison1Click
@@ -3535,6 +3532,13 @@ object wmdem: Twmdem
         Caption = 'COP/ALOS DTM/DSM compare'
         OnClick = MergeCOPALOSDTMDSMcompare1Click
       end
+    end
+    object N25: TMenuItem
+      Caption = '-'
+    end
+    object DeleteresultsCSVforareas1: TMenuItem
+      Caption = 'Delete results CSV for areas to recompute'
+      OnClick = DeleteresultsCSVforareas1Click
     end
     object N44: TMenuItem
       Caption = '-'

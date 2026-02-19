@@ -15,6 +15,9 @@ unit demix_graphs;
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
+   {$Define RecordDSM_DTM_Compare}
+   {$Define RecordCompareDSMandDTM}
+   {$Define RecordDSM_DTM_CompareFull}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
    //{$Define PiesByLandType}
@@ -39,11 +42,9 @@ uses
 
    {$IfDef UseFireDacSQLlite}
       FireDAC.Stan.ExprFuncs,
-      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
-      FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
-      FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
-      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,
-      FireDAC.Phys.SQLite, FireDAC.Comp.UI,
+      FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,FireDAC.Stan.Error, FireDAC.DatS,
+      FireDAC.Phys.Intf, FireDAC.DApt.Intf,FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def,
+      FireDAC.Stan.Pool, FireDAC.Phys, FireDAC.Comp.Client, FireDAC.Comp.DataSet,FireDAC.Phys.SQLite, FireDAC.Comp.UI,
    {$EndIf}
 
    {$IfDef UseTDBF}
@@ -95,9 +96,7 @@ function NumTilesString(DB : integer) : shortstring;
    function MakeHistogramOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThisBaseGraph;
    function GraphAverageScoresByTile(DB : integer; DEMs,TileList,CriteriaList : tStringList): tThisBaseGraph;
    procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
-   //procedure BestDEMSbyCategory(DBonTable : integer);
    function DEMIX_SSIM_FUV_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
-   //function DEMIXwineContestScoresGraph(DBonTable : integer; XScalelabel : shortstring; MinHoriz : float32 = 0.5; MaxHoriz : float32 = 5.5) : tThisBaseGraph;
 
    procedure DEMIXMeanMedianHistograms(db : integer);
    procedure DEMIX_graph_best_in_Tile(DBonTable : integer; SortByArea : boolean);
@@ -120,15 +119,17 @@ const
 function WinningPiesByCriteria(dbOnTable : integer; Criteria,DEMs : tStringList; LLtext : shortstring) : tThisBaseGraph;
 function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStringList; MaxPieCircle : float32; PieRatio : boolean; BottomLegendFName : PathStr) : tThisBaseGraph;
 
-procedure MakeDBtoCompareDSMandDTM(DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
+procedure MakeDBtoCompareDSMandDTM(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
 procedure GridOfCriterionForMultipleDEMcomparisons(DBonTable : integer; ColorBy : shortstring);
-procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion : shortstring; Comparisons : tStringList);
-procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer);
+procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Comparisons : tStringList);
+procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
 procedure BestDEMonGraphTwoParameters(DB : integer; Criteria,DEMs : tstringList);
+procedure GraphTwoParameterGridsByAverageSlopeAndResolution(db : integer; DEMIXtileFieldName : shortstring; MultSeries : tStringList);
+
 
 implementation
 
@@ -152,7 +153,7 @@ procedure AddDemixLegend(var Graph :  tThisBaseGraph; DEMsUsed : tStringList = n
 var
    bmp : tMyBitmap;
 begin
-   Graph.GraphDraw.BottomLegendFName := MDtempDir + 'DEM_DEM_Legend.bmp';
+   Graph.GraphDraw.BottomLegendFName := MDtempDir + 'DEM_Legend.bmp';
    Graph.GraphDraw.BottomMargin := 125;
    bmp := DEMIXTestDEMLegend(DEMsUsed,true,Graph.Width);
    bmp.SaveToFile(Graph.GraphDraw.BottomLegendFName);
@@ -1771,7 +1772,7 @@ var
    LegendFName,fName : PathStr;
    TStr : shortstring;
 begin  {procedure  PiesBestByTwoLandTypes}
-   if GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
+   if TileCharacteristicsInDB(DBonTable,true) and GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
       try
          {$If Defined(RecordDEMIXGraph) or Defined(PiesByLandType)} WriteLineToDebugFile('PiesBestByTwoLandTypes in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' DEMs=' + IntToStr(DEMs.Count)); {$EndIf}
          BaseFilter := GISdb[DBonTable].MyData.Filter;
@@ -2317,3 +2318,4 @@ end;
 
 
 end.
+

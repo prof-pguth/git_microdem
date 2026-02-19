@@ -1154,7 +1154,7 @@ begin
                end;
                SavePointShapeFile;
             end;
-            CloseAndNilNumberedDB(GISnum);
+            CloseSingleDB(GISnum);
          end;
       end
       else if (FileExtEquals(FileName,DefaultDBExt)) then MessageToContinue('Convert ' + FileName + ' to shapefile first')
@@ -4087,7 +4087,7 @@ begin
       for i := 0 to pred(FileNames.Count) do begin
          if OpenNumberedGISDataBase(GISNum,FileNames.Strings[i]) then begin
             GISdb[GISnum].SavePointShapeFile(false);
-            CloseAndNilNumberedDB(GISnum);
+            CloseSingleDB(GISnum);
          end;
       end;
    end;

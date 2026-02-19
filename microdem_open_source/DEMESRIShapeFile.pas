@@ -449,7 +449,7 @@ begin
          if not GISdb[Result].LatLongFieldsPresent then GISdb[Result].aShapefile.AddFields(afLatLong,GISdb[Result].MyData);
       end;
       if Trim then GISdb[Result].TrimAllStringFields;
-      CloseAndNilNumberedDB(Result);
+      CloseSingleDB(Result);
    end;
 end;
 

@@ -155,7 +155,7 @@ begin
       PutBitmapInBox(Result);
    end;
    ShowDefaultCursor;
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
    {$IfDef RecordVAT} WriteLineToDebugFile('tMapDraw.MakeVATLegend out=' + fName); {$EndIf}
 end;
 
@@ -256,7 +256,7 @@ begin
          if OpenNumberedGISDataBase(LegendGIS,HardLimitColorPaletteFName) then begin
             GISDB[LegendGIS].MyData.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));
             Result := GISDB[LegendGIS].CreateDataBaseLegend(true);
-            CloseAndNilNumberedDB(LegendGIS);
+            CloseSingleDB(LegendGIS);
          end;
       end
       else begin

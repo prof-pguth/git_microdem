@@ -118,10 +118,10 @@ end;
 procedure CloseDataBases;
 begin
    {$IfDef RecordDBClosing} WriteLineToDebugFile('Enter CloseDataBases in US_properties');{$EndIf}
-   CloseAndNilNumberedDB(County);
-   CloseAndNilNumberedDB(Rivers);
-   CloseAndNilNumberedDB(Highways);
-   CloseAndNilNumberedDB(States);
+   CloseSingleDB(County);
+   CloseSingleDB(Rivers);
+   CloseSingleDB(Highways);
+   CloseSingleDB(States);
    {$IfDef RecordDBClosing} WriteLineToDebugFile('  exit CloseDataBases in US_properties'); {$EndIf}
 end;
 

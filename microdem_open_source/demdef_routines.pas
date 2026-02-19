@@ -1120,6 +1120,7 @@ begin
         ProgramRootDir := UpperCase(ExtractFilePath(ParamStr(0)));
         ChDir(ProgramRootDir);
         TrilobiteComputer := FileExists('olenellus.txt');
+        DEMIXSettingsDir := ProgramRootDir + 'demix_settings\';
      {$EndIf}
 
      InitializePetmar;
@@ -2477,6 +2478,7 @@ var
          AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
          AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
+         AParameter('DEMIX','DEMIX_SingleCriterion',DEMIX_SingleCriterion,'SLPD_FUV');
          AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
          AParameter('DEMIX','DEMIX_groupWonLost',DEMIX_groupWonLost,0);
          AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);

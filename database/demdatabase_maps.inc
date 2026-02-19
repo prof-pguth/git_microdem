@@ -309,7 +309,7 @@ end;
                if UseLink or MyData.IsStringField(dbOpts.FloatColorField) or MyData.IsIntegerField(dbOpts.FloatColorField) then begin
                   EmpSource.Enabled := false;
                   if (StringCategories = Nil) then begin
-                     PetDBUtils.FindUniqueEntriesLinkPossible(MyData,LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField,StringCategories);
+                     StringCategories := PetDBUtils.FindUniqueEntriesLinkPossible(MyData,LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
                   end;
                   {$IfDef RecordDBPlot} WriteLineToDebugFile('strings in field=' + IntToStr(StringCategories.Count)); {$EndIf}
 

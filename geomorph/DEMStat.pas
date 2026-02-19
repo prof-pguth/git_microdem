@@ -469,7 +469,7 @@ var
                if DoingDEMIXnow then begin
                   LoadDEMIXnames;
                   Result.GraphDraw.FileColors256[CurDEM] := DEMIXColorFromDEMName(DEMGlb[CurDEM].AreaName);
-                  {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorStringFromPlatformColor(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
+                  {$IfDef RecordDEMIX_colors} WriteLineToDebugFile('DEMStat ' + DEMGlb[CurDEM].AreaName + '  ' + ColorString(Result.GraphDraw.FileColors256[CurDEM])); {$EndIf}
                end;
 
                if (Graph in [ElevSlope,ElevSlopeDeg,ElevRuff])  then begin
@@ -813,7 +813,7 @@ begin
       end;
       {$IfDef RecordSSO} WriteLineToDebugFile('SSOforVATgrid, BigBitmap Features=' + IntToStr(NetSL.Count)); {$EndIf}
       MakeBigBitmap(NetSL,Copy(GISdb[FeaturesDB].DBName,1,length(GISdb[FeaturesDB].DBName)-6),'',2);
-      if CloseIt then CloseAndNilNumberedDB(FeaturesDB);
+      if CloseIt then CloseSingleDB(FeaturesDB);
   end;
 end;
 
@@ -3029,7 +3029,7 @@ begin {procedure ElevMomentReport}
          if MDDef.GraphsOfMoments then CreateMultipleHistogram(MDDef.CountHistograms,SlopeFiles,LegendFiles,'Slope (%)','Slope distribution',200,0,Trunc(MaxSlope + 0.99),MDDef.SlopeHistBinSize);
          db := StringList2CSVtoDB(SlopeDist,NextFileNumber(MDTempDir,'slope_','.dbf'));
          DB2 := SortDataBase(db,false,true,'STD_DEV');
-         CloseAndNilNumberedDB(db);
+         CloseSingleDB(db);
          gr := StartBoxPlot(DB2,'','Slope (%)');
          SaveImageAsBMP(Gr.Image1,NextFileNumber(MDTempDir,aTitle + '_boxplot_','.png'));
       end
@@ -3039,7 +3039,7 @@ begin {procedure ElevMomentReport}
          if MDDef.GraphsOfMoments then CreateMultipleHistogram(MDDef.CountHistograms,ElevFiles,LegendFiles,'Elevation/grid','Elevation/grid distribution',200,MinElev,MaxElev,MDDef.ElevHistBinSize);
          db := StringList2CSVtoDB(ElevDist,NextFileNumber(MDTempDir,aTitle + '_','.dbf'));
          DB2 := SortDataBase(db,false,true,'STD_DEV');
-         CloseAndNilNumberedDB(db);
+         CloseSingleDB(db);
          gr := StartBoxPlot(DB2,'','Elevation (m)');
          SaveImageAsBMP(Gr.Image1,NextFileNumber(MDTempDir,aTitle + '_boxplot_','.png'));
       end

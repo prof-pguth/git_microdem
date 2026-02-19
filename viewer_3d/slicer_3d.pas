@@ -280,7 +280,7 @@ var
                fName := ChangeFileExt(SlicerForm.ThisProject,'.shp');
                if not FileExists(fname) then GISdb[GISNum].SavePointShapeFile;
                DEMDefs.VasaProjectFName := fName;
-               CloseAndNilNumberedDB(GISNum);
+               CloseSingleDB(GISNum);
                SlicerForm.BitBtn2Click(Nil);
                SlicerForm.Close;
             end;
@@ -1036,7 +1036,7 @@ var
   i: Integer;
 begin
    {$IfDef CloseSlicer} WriteLinetoDebugFile('TSlicerForm.FormClose in'); {$EndIf}
-   CloseAndNilNumberedDB(XYZGIS);
+   CloseSingleDB(XYZGIS);
    {$IfDef IncludeVASAgis}
       CloseAndNilNumberedDB(BoxOutlineGIS);
    {$EndIf}

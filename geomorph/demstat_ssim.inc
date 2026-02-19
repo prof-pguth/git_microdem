@@ -595,7 +595,7 @@ begin {procedure DoSSIMandFUVForAnArea}
            ResultsAnalysis.Free;
 
           if (not MDDef.OpenSavedMapsFUVSSIM) then CloseAllDEMs;
-          CloseAndNilNumberedDB(DEMIXtileDB);
+          CloseSingleDB(DEMIXtileDB);
           CleanUpTempDirectory;  //lot of files created by SAGA and WBT
        end
        else begin

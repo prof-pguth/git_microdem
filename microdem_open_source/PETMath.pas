@@ -1967,6 +1967,23 @@ begin
 end;
 
 
+(*
+function NumericallySortStringList(sl : tStringList) : tStringList;
+var
+   v1 : array[0..1000] of float32;
+   i : integer;
+begin
+   for I := 0 to pred(sl.Count) do begin
+      v1[i] := StrToFloat(sl.strings[i]);
+   end;
+   Petmath.HeapSort(sl.count,v1);
+   Result := tStringList.Create;
+   for I := 0 to pred(sl.Count) do begin
+      Result.Add(RealToString(v1[i],-12,-8));
+   end;
+end;
+*)
+
 PROCEDURE HeapSort(n: integer; var ra: array of float32);  {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
 VAR
    l,j,ir,i: integer;

@@ -485,7 +485,7 @@ begin
    if NeedToDraw and (TheBaseMap <> Nil) then begin
       SetColorForProcessing;
       {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tSSOCalcDlg.DrawOverlays in and drawing'); {$EndIf}
-      CloseAndNilNumberedDB(ResultsGIS);
+      CloseSingleDB(ResultsGIS);
       fName := NextFileNumber(MDTempDir,ptTrim(DEMGLB[theBaseMap.MapDraw.DEMOnMap].AreaName) + '_fabric_'  + MDDef.SSOBoxSizeMeters.ToString + '_', DefaultDBExt);
       ResultsGIS := DEMGlb[theBaseMap.MapDraw.DEMonMap].OrientationTable(fName,theBaseMap);
       AddOverlay(theBaseMap,ovoDatabases);

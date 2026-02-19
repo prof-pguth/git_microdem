@@ -1463,7 +1463,7 @@ begin
             fName := ChangeFileExt(LasFiles[Cloud].LAS_fnames.Strings[0],DefaultDBExt);
             if OpenNumberedGISDataBase(GISNum,fName) then  begin
                DEMDBFilter.GetFilterString(GISNum,TheFilter,ChangeUse);
-               CloseAndNilNumberedDB(GISNum);
+               CloseSingleDB(GISNum);
             end;
          end;
          Results := tStringList.Create;
@@ -2237,7 +2237,7 @@ begin
                 GISdb[db].SaveCurrentDBaseSubset(fName,1,true);
                 Filenames.Add(FName);
              end;
-             CloseAndNilNumberedDB(db);
+             CloseSingleDB(db);
           end;
        end;
 
@@ -2249,7 +2249,7 @@ begin
           GISdb[db].MyData.ApplyFilter('');
           GISdb[db].SavePointShapeFile;
           fName := GISdb[db].dbFullName;
-          CloseAndNilNumberedDB(db);
+          CloseSingleDB(db);
           DEMESRIShapeFile.CopyShapeFile(Name,OutName);
        end;
        FileNames.Free;

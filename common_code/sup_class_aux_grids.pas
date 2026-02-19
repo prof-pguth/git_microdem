@@ -842,7 +842,7 @@ begin
       {$IfDef SupClassAuxGrids} WriteLineToDebugFile('save, fname=' + fName);   {$EndIf}
       db := BaseMap.StringListToLoadedDatabase(sl,fname);
       GISdb[db].MyData.TrimAllStringFields;
-      CloseAndNilNumberedDB(db);
+      CloseSingleDB(db);
    end
    else SL.Destroy;
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn5Click out'); {$EndIf}
@@ -891,7 +891,7 @@ begin
          GISdb[db].MyData.Next;
       end;
    end;
-   CloseAndNilNumberedDB(db);
+   CloseSingleDB(db);
    FinishGridSetup;
 end;
 

@@ -1355,7 +1355,7 @@ begin
       GISdb[theDB].StringCategories := Nil;
    end;
    GISdb[theDB].EmpSource.Enabled := false;
-   PetDBUtils.FindUniqueEntriesLinkPossible(GISdb[theDB].MyData,GISdb[theDB].LinkTable,GISdb[theDB].dbOpts.LinkFieldThisDB,GISdb[theDB].dbOpts.LinkFieldOtherDB,StringsComboBox2.Text,GISdb[theDB].StringCategories);
+   GISdb[theDB].StringCategories := PetDBUtils.FindUniqueEntriesLinkPossible(GISdb[theDB].MyData,GISdb[theDB].LinkTable,GISdb[theDB].dbOpts.LinkFieldThisDB,GISdb[theDB].dbOpts.LinkFieldOtherDB,StringsComboBox2.Text);
    GISdb[theDB].EmpSource.Enabled := true;
    Label6.Caption := 'Categories: ' + IntToStr(GISdb[theDB].StringCategories.Count);
    Edit19.Text := GISdb[theDB].dbOpts.FloatColorField;

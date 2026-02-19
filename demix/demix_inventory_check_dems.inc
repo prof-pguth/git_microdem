@@ -498,15 +498,9 @@ begin
          ClearOutFolder(DEMIX_area_lc100);
          ClearOutFolder(DEMIX_Ref_1sec);
          ClearOutFolder(DEMIX_test_dems);
-         //ClearOutFolder(DEMIX_diluvium_dems);
-         //ClearOutFolder(DEMIX_delta_dems);
-         //ClearOutFolder(DEMIX_coastal_dems);
       end;
       ClearOutFolder(Diff_dist_results_dir);
       ClearOutFolder(DEMIX_diff_dist);
-      ClearOutFolder(DEMIX_diff_maps_dir);
-      ClearOutFolder(DEMIX_profile_test_dir);
-      ClearOutFolder(DEMIX_distrib_graph_dir);
 
       {$IfDef DEMIX_SAGA_channels}
          ClearOutFolder(DEMIX_test_DEMs_no_sink);
@@ -526,9 +520,7 @@ begin
           ClearOutFolder(saga_out_test_dir);
       {$EndIf}
 
-
       ClearOutFolder(SSIMresultsDir);
-
       ClearOutFolder(FUVresultsDir);
       ClearOutFolder(PartialsResultsDir);
       ClearOutFolder(CurvaturesResultsDir);
