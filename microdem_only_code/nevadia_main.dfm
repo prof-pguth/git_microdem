@@ -1791,6 +1791,11 @@ object wmdem: Twmdem
         GroupIndex = 6
         OnClick = Tools1Click
       end
+      object EndclonedEXE1: TMenuItem
+        Caption = 'End cloned EXE'
+        GroupIndex = 6
+        OnClick = EndclonedEXE1Click
+      end
       object N9: TMenuItem
         Caption = '-'
         GroupIndex = 6
@@ -3475,6 +3480,10 @@ object wmdem: Twmdem
       object N38: TMenuItem
         Caption = '-'
       end
+      object UTMbasedtilestatistics1: TMenuItem
+        Caption = 'Tile statistics'
+        OnClick = UTMbasedtilestatistics1Click
+      end
       object UTMbasedFUVcalculations1: TMenuItem
         Caption = 'Mixed FUV calculations'
         OnClick = UTMbasedFUVcalculations1Click
@@ -3491,16 +3500,16 @@ object wmdem: Twmdem
         Caption = 'Difference distribution statistics'
         OnClick = UTMbaseddifferencedistributionstatistics1Click
       end
-      object UTMbasedtilestatistics1: TMenuItem
-        Caption = 'Tile statistics'
-        OnClick = UTMbasedtilestatistics1Click
-      end
     end
     object N15: TMenuItem
       Caption = '-'
     end
     object MergeCSVresultsintosingleDB1: TMenuItem
       Caption = 'Merge CSV results into single DB'
+      object UTMbasedmergetilestatisiticsintoDB1: TMenuItem
+        Caption = 'Tile statisitics into DB'
+        OnClick = UTMbasedmergetilestatisiticsintoDB1Click
+      end
       object UTMbasedmergeFUVresultsintoDB1: TMenuItem
         Caption = 'FUV results into DB'
         OnClick = UTMbasedmergeFUVresultsintoDB1Click
@@ -3517,19 +3526,15 @@ object wmdem: Twmdem
         Caption = 'Partials into DB'
         OnClick = UTMbasedmergepartialsintoDB1Click
       end
-      object UTMbasedmergetilestatisiticsintoDB1: TMenuItem
-        Caption = 'Tile statisitics into DB'
-        OnClick = UTMbasedmergetilestatisiticsintoDB1Click
-      end
       object N37: TMenuItem
         Caption = '-'
       end
       object UTMbasedMergeDSMDTMcomparison1: TMenuItem
-        Caption = 'High resolution  DSM/DTM comparison'
+        Caption = 'HRDEM DSM/DTM comparison'
         OnClick = UTMbasedMergeDSMDTMcomparison1Click
       end
       object MergeCOPALOSDTMDSMcompare1: TMenuItem
-        Caption = 'COP/ALOS DTM/DSM compare'
+        Caption = 'GDEM DTM/DSM compare'
         OnClick = MergeCOPALOSDTMDSMcompare1Click
       end
     end

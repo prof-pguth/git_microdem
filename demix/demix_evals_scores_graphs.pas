@@ -1504,12 +1504,12 @@ end;
 
 procedure Teval_scores_graph_form.ComboBox6Change(Sender: TObject);
 begin
-   MDDef.DEMIX_filter1_fName := DEMIXsettingsDir + ComboBox6.Text + '.dbf';
+   MDDef.DEMIX_filter1_fName := ExpandFullFilterName(ComboBox6.Text);
 end;
 
 procedure Teval_scores_graph_form.ComboBox7Change(Sender: TObject);
 begin
-   MDDef.DEMIX_filter2_fName := DEMIXsettingsDir + ComboBox7.Text + '.dbf';
+   MDDef.DEMIX_filter2_fName := ExpandFullFilterName(ComboBox7.Text);
 end;
 
 procedure Teval_scores_graph_form.Edit1Change(Sender: TObject);
@@ -1590,30 +1590,7 @@ begin
 
    RadioGroup7.ItemIndex := MDDef.DEMIX_groupWonLost;
    RadioGroup12.ItemIndex := pred(MDdef.DEMIX_Line_Width);
-
-
-   DEMIXfilters := tStringList.Create;
-   FindMatchingFiles(DEMIXsettingsDir,'filters_*.dbf',DEMIXFilters);
-   if (DEMIXfilters.Count > 0) then begin
-       for i := 0 to pred(DEMIXfilters.Count) do begin
-          ComboBox6.Items.Add(ExtractFileNameNoExt(DEMIXfilters.strings[i]));
-          ComboBox7.Items.Add(ExtractFileNameNoExt(DEMIXfilters.strings[i]));
-       end;
-
-       if FileExists(MDDef.DEMIX_filter1_fName) then ComboBox6.Text := ExtractFileNameNoExt(MDDef.DEMIX_filter1_fName)
-       else begin
-          ComboBox6.Text := ComboBox6.Items[0];
-          MDDef.DEMIX_filter1_fName := DEMIXsettingsDir + ComboBox6.Text + '.dbf';
-       end;
-       if FileExists(MDDef.DEMIX_filter2_fName) then ComboBox7.Text := ExtractFileNameNoExt(MDDef.DEMIX_filter2_fName)
-       else begin
-          ComboBox7.Text := ComboBox7.Items[pred(DEMIXfilters.Count)];
-          MDDef.DEMIX_filter2_fName := DEMIXsettingsDir + ComboBox7.Text + '.dbf';
-       end;
-   end
-   else begin
-      MessageToContinue('filter files missing');
-   end;
+   LoadTwoDEMIXfilters(ComboBox6,ComboBox7);
 
    db_U10 := 0;
    db_u80 := 0;

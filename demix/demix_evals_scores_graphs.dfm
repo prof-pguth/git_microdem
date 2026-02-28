@@ -99,7 +99,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox3Click
   end
   object BitBtn3: TBitBtn
-    Left = 280
+    Left = 287
     Top = 598
     Width = 161
     Height = 25
@@ -444,7 +444,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Mixed Filters'
     TabOrder = 29
     object ComboBox6: TComboBox
-      Left = 3
+      Left = 11
       Top = 26
       Width = 126
       Height = 23
@@ -452,7 +452,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
       OnChange = ComboBox6Change
     end
     object ComboBox7: TComboBox
-      Left = 3
+      Left = 11
       Top = 55
       Width = 126
       Height = 23
@@ -583,7 +583,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     end
   end
   object BitBtn38: TBitBtn
-    Left = 8
+    Left = 15
     Top = 629
     Width = 113
     Height = 29

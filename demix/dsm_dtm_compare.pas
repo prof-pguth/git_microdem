@@ -55,7 +55,6 @@ type
   TCompareDSM_DTMform = class(TForm)
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
-    RadioGroup1: TRadioGroup;
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
     BitBtn5: TBitBtn;
@@ -67,12 +66,20 @@ type
     RadioGroup3: TRadioGroup;
     MainMenu1: TMainMenu;
     Memo1: TMemo;
-    BitBtn10: TBitBtn;
     Memo2: TMemo;
     ComboBox1: TComboBox;
+    GroupBox3: TGroupBox;
+    ComboBox6: TComboBox;
+    ComboBox7: TComboBox;
+    BitBtn10: TBitBtn;
+    BitBtn11: TBitBtn;
+    BitBtn38: TBitBtn;
+    BitBtn12: TBitBtn;
+    BitBtn13: TBitBtn;
+    Label1: TLabel;
+    Edit1: TEdit;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
-    procedure RadioGroup1Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
@@ -82,14 +89,22 @@ type
     procedure BitBtn9Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure RadioGroup3Click(Sender: TObject);
-    procedure BitBtn10Click(Sender: TObject);
+    //procedure BitBtn10Click(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
+    procedure ComboBox6Change(Sender: TObject);
+    procedure ComboBox7Change(Sender: TObject);
+    procedure BitBtn10Click(Sender: TObject);
+    procedure BitBtn11Click(Sender: TObject);
+    procedure BitBtn13Click(Sender: TObject);
+    procedure BitBtn12Click(Sender: TObject);
+    procedure BitBtn38Click(Sender: TObject);
+    procedure Edit1Change(Sender: TObject);
   private
     { Private declarations }
     procedure GraphsCurrentRec;
     procedure LoadMemo1;
-    function ComparingList : tStringList;
-    function ComparingSeries: tStringList;
+    function DEMComparingList : tStringList;
+    function ComparingCriteriaList: tStringList;
   public
     { Public declarations }
      db,OnRec,DTM_1sec,DSM_1sec,HRDTM,HRDSM,LCgrid : integer;
@@ -108,7 +123,7 @@ implementation
 
 uses
    DEMDataBase,DEMIX_graphs,DEMIX_definitions,
-   DEMdefs,
+   DEMdefs, DEMdef_routines,
    Make_grid,
    DEM_manager, DEM_NLCD, DEMcoord,
    Petmar,Petmar_Types, PetDBUtils,PETImage,PetImage_form,
@@ -123,9 +138,6 @@ begin
   if TileCharacteristicsInDB(inDB,true) then begin
       MDdef.DBsOnAllMaps := false;
       MDDef.CountHistograms := false;
-      MDDef.DEMIX_filter1_fName:= DEMIXSettingsDir + 'filters_avg_slope_6_cat.dbf';
-      MDDef.DEMIX_filter2_fName:= DEMIXSettingsDir + 'filters_barren_pc.dbf';
-
       CompareDSM_DTMform := TCompareDSM_DTMform.Create(Application);
       CompareDSM_DTMform.db := inDB;
       CompareDSM_DTMform.BaseFilter := GISdb[inDB].MyData.Filter;
@@ -135,11 +147,13 @@ begin
       CompareDSM_DTMform.HRDTM := 0;
       CompareDSM_DTMform.HRDSM := 0;
       CompareDSM_DTMform.LCgrid := 0;
-      CompareDSM_DTMform.ComboBox1.Text := MDDef.DEMIX_SingleCriterion;
+      CompareDSM_DTMform.Edit1.Text := IntToStr(MDdef.DEMIX_MaxTilesInLegend);
 
       MDDef.DEMIX_xsize := 725;
       MDDef.DEMIX_ysize := 525;
+      CompareDSM_DTMform.BitBtn11.Caption := 'Graph size: ' + IntToStr(MDDef.DEMIX_xsize) + ' by ' + IntToStr(MDDef.DEMIX_ysize);
 
+      LoadTwoDEMIXfilters(CompareDSM_DTMform.ComboBox6,CompareDSM_DTMform.ComboBox7);
 
       if MDDEF.DEMIX_UseMedian then CompareDSM_DTMform.RadioGroup2.ItemIndex := 1 else CompareDSM_DTMform.RadioGroup2.ItemIndex := 0;
       if MDDef.DEMIX_MultiGraphCommonScaling then CompareDSM_DTMform.RadioGroup3.ItemIndex := 0 else CompareDSM_DTMform.RadioGroup3.ItemIndex := 1;
@@ -147,6 +161,8 @@ begin
       GISdb[inDB].EmpSource.Enabled := false;
       CompareDSM_DTMform.DEMIX_scale_compare := GISdb[inDB].MyData.FieldExists('DEM_1') and GISdb[inDB].MyData.FieldExists('DEM_2');
       CompareDSM_DTMform.LoadMemo1;
+      if not GISdb[inDB].MyData.FieldExists(MDDef.DEMIX_SingleCriterion) then MDDef.DEMIX_SingleCriterion := CompareDSM_DTMform.ComboBox1.Items[0];
+      CompareDSM_DTMform.ComboBox1.Text := MDDef.DEMIX_SingleCriterion;
 
       if CompareDSM_DTMform.DEMIX_scale_compare then begin
          if not GISdb[inDB].MyData.FieldExists('COMPARE') then begin
@@ -174,19 +190,35 @@ begin
   MDDef.DEMIX_SingleCriterion := ComboBox1.Text;
 end;
 
-function TCompareDSM_DTMform.ComparingList : tStringList;
+procedure TCompareDSM_DTMform.ComboBox6Change(Sender: TObject);
+begin
+   MDDef.DEMIX_filter1_fName := ExpandFullFilterName(ComboBox6.Text);
+end;
+
+procedure TCompareDSM_DTMform.ComboBox7Change(Sender: TObject);
+begin
+   MDDef.DEMIX_filter2_fName := ExpandFullFilterName(ComboBox7.Text);
+end;
+
+
+function TCompareDSM_DTMform.DEMComparingList : tStringList;
 var
    i : integer;
 begin
    Result := tStringList.Create;
    for i := 0 to pred(Memo1.Lines.Count) do begin
-      if GISdb[DB].MyData.FieldExists(Memo1.Lines[i]) then
+      //if GISdb[DB].MyData.FieldExists(Memo1.Lines[i]) then
          Result.Add(Memo1.Lines[i]);
    end;
 end;
 
 
-function TCompareDSM_DTMform.ComparingSeries : tStringList;
+procedure TCompareDSM_DTMform.Edit1Change(Sender: TObject);
+begin
+   CheckEditString(Edit1.Text,MDdef.DEMIX_MaxTilesInLegend);
+end;
+
+function TCompareDSM_DTMform.ComparingCriteriaList : tStringList;
 var
    i : integer;
 begin
@@ -207,6 +239,10 @@ begin
 
    for i := 0 to pred(Comparisons.Count) do
        Memo1.Lines.Add(Comparisons[i]);
+   if Comparisons.Count < 2 then begin
+      Memo1.Enabled := false;
+      BitBtn10.Enabled := false;
+   end;
    Comparisons.Destroy;
 
    Memo2.Lines.Clear;
@@ -219,9 +255,27 @@ begin
    MultSeries.Destroy;
 end;
 
+
 procedure TCompareDSM_DTMform.BitBtn10Click(Sender: TObject);
 begin
-   GraphTwoParameterGridsByAverageSlopeAndResolution(db,DEMIXtileFieldName,ComparingSeries);
+   GraphTwoParameterGridsByDEMresolution(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName,DEMComparingList);
+end;
+
+procedure TCompareDSM_DTMform.BitBtn11Click(Sender: TObject);
+begin
+   if GetNewBMPSize(MDDef.DEMIX_xsize,MDDef.DEMIX_ysize,'DEM comparison graphs') then begin
+      BitBtn11.Caption := 'Graph size: ' + IntToStr(MDDef.DEMIX_xsize) + ' by ' + IntToStr(MDDef.DEMIX_ysize);
+   end;
+end;
+
+procedure TCompareDSM_DTMform.BitBtn12Click(Sender: TObject);
+begin
+   wmdem.Closeallpictureviewwindows1Click(Sender);
+end;
+
+procedure TCompareDSM_DTMform.BitBtn13Click(Sender: TObject);
+begin
+   wmdem.Closeallgraphs1Click(Sender);
 end;
 
 procedure TCompareDSM_DTMform.BitBtn1Click(Sender: TObject);
@@ -246,6 +300,11 @@ begin
    if not ValidDEM(LCgrid) then LCgrid := LoadLC10LandCover('',DEMglb[HRDTM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
 end;
 
+
+procedure TCompareDSM_DTMform.BitBtn38Click(Sender: TObject);
+begin
+   SaveMDDefaults;
+end;
 
 procedure TCompareDSM_DTMform.BitBtn3Click(Sender: TObject);
 begin
@@ -301,16 +360,14 @@ end;
 
 procedure TCompareDSM_DTMform.BitBtn8Click(Sender: TObject);
 begin
-   if GISdb[db].MyData.FieldExists(MDDef.DEMIX_SingleCriterion) then begin
-      GraphTwoParameterGridsByDEMresolution(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName,ComparingList);
-   end
-   else MessageToContinue('Missing criterion: ' + MDDef.DEMIX_SingleCriterion);
+   GraphTwoParameterGridsByAverageSlopeAndResolution(db,DEMIXtileFieldName,ComparingCriteriaList);
 end;
+
 
 
 procedure TCompareDSM_DTMform.BitBtn9Click(Sender: TObject);
 begin
-   MakeGraphComparingFUVandArcSecondSpacing(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName);
+   GraphTwoParameterGridsByAverageSlopeAndResolution(db,DEMIXtileFieldName,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),true);
 end;
 
 
@@ -329,7 +386,7 @@ begin
    end
    else begin
        gr1 := GraphCompareDSMandDTMslopes(DB,TheDTMs.Strings[onRec]);
-       gr2 := GraphDSMandDTMdifferences(DB,TheDTMs.Strings[OnRec],RadioGroup1.Items[RadioGroup1.ItemIndex]);
+       gr2 := GraphDSMandDTMdifferences(DB,TheDTMs.Strings[OnRec],MDDef.DEMIX_SingleCriterion);
        if gr2 <> nil then begin
           gr2.Left := 1200;
           gr2.Top := 50;
@@ -339,13 +396,6 @@ begin
       gr1.Left := 1;
       gr1.Top := 50;
    end;
-end;
-
-
-procedure TCompareDSM_DTMform.RadioGroup1Click(Sender: TObject);
-begin
-   //GraphsCurrentRec;
-   MDDef.DEMIX_SingleCriterion := RadioGroup1.Items[RadioGroup1.ItemIndex];
 end;
 
 

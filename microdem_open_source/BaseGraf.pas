@@ -14,13 +14,13 @@ unit BaseGraf;
    {$IFDEF DEBUG}
        //{$Define NoInLine}
        //{$Define SavePlotFileProgress}
-       {$Define GraphLineWidth}
+       //{$Define GraphLineWidth}
        //{$Define TrackFormCreate}     //28 Oct 2024, attempt to track down creation of hidden graph form, but it locks up
        //{$Define RecordAnimateGraph}
        //{$Define RecordGraphMemoryAlocations}
        //{$Define RecordGrafProblems}
        //{$Define RecordScaling}
-       //{$Define RecordGrafSize}
+       {$Define RecordGrafSize}
        //{$Define RecordGrafAxis}
        //{$Define RecordFormResize}
        //{$Define InitTrackColors}
@@ -438,6 +438,8 @@ type
      procedure DrawScaledColoredSymbols(Bitmap : tMyBitmap);
      procedure DrawScaledPieCharts(Bitmap : tMyBitmap);
      procedure GraphLabels(var Bitmap : tMyBitmap);
+     function GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
+
   public
     { Public declarations }
      GraphDraw : tGraphDraw;
@@ -484,6 +486,8 @@ type
      HistogramNumBins : integer;
      HistogramGraphNumbers : boolean;
      PointDataBuffer : ^tPointDataBuffer;
+     DefaultClientHeight,
+     DefaultClientWidth : Int32;
 
      function OpenDataFile(var rfile : file; fName : shortstring; Color : tColor = -1) : integer;
      function OpenPointSymbolFile(var rfile : file; fName : shortstring; Symbol : tFullSymbolDeclaration; LineSize : integer = 3) : integer;
@@ -548,8 +552,6 @@ type
 
 var
    ForceCycleSize,ForceTickIncr : float32;
-   DefaultClientHeight,
-   DefaultClientWidth : Int32;
    FittedSlope : float32;
    GraphDoing : tGraphDoing;
    CreateSmallGraph : boolean;
@@ -560,6 +562,8 @@ const
    DefMaxHorizAxis : float32 = 100;
 type
    tGraphArray = array[0..35] of tThisBaseGraph;
+   t2Dgrapharray = array[0..10,0..10] of tThisBaseGraph;
+
 
 
 procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas;  GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
@@ -587,6 +591,8 @@ function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; Re
 function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
 function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
 procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
+
+
 
 
 implementation
@@ -785,28 +791,40 @@ begin
    BigBitMap.Destroy;
 end;
 
-     procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
-      var
-         BigBitmap,Bitmap : tMyBitmap;
-         i : integer;
-      begin
-         Bigbitmap := tMyBitmap.Create;
-         Bigbitmap.LoadFromFile(Findings.strings[0]);
+ procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
+  var
+     BigBitmap,Bitmap : tMyBitmap;
+     i : integer;
+  begin
+     Bigbitmap := tMyBitmap.Create;
+     Bigbitmap.LoadFromFile(Findings.strings[0]);
 
-         for I := 1 to pred(Findings.Count) do begin
-            bitmap := tMyBitmap.Create;
-            bitmap.LoadFromFile(Findings.strings[i]);
-            BigBitmap.Width :=  BigBitmap.Width + 15 + Bitmap.Width;
-            BigBitmap.Canvas.Draw(BigBitmap.Width - Bitmap.Width, 0, Bitmap);
-            Bitmap.Destroy;
-         end;
-         if (Legend <> Nil) then begin
-             BigBitMap.Height := BigBitMap.Height + 15 + Legend.Height;
-             BigBitmap.Canvas.Draw((BigBitmap.Width - Legend.Width) div 2,BigBitmap.Height - Legend.Height,Legend);
-             Legend.Destroy;
-         end;
-         DisplayBitmap(BigBitmap,PanelName);
-         Findings.Destroy;
+     for I := 1 to pred(Findings.Count) do begin
+        bitmap := tMyBitmap.Create;
+        bitmap.LoadFromFile(Findings.strings[i]);
+        BigBitmap.Width :=  BigBitmap.Width + 15 + Bitmap.Width;
+        BigBitmap.Canvas.Draw(BigBitmap.Width - Bitmap.Width, 0, Bitmap);
+        Bitmap.Destroy;
+     end;
+     if (Legend <> Nil) then begin
+         BigBitMap.Height := BigBitMap.Height + 15 + Legend.Height;
+         BigBitmap.Canvas.Draw((BigBitmap.Width - Legend.Width) div 2,BigBitmap.Height - Legend.Height,Legend);
+         Legend.Destroy;
+     end;
+     DisplayBitmap(BigBitmap,PanelName);
+     Findings.Destroy;
+  end;
+
+
+      function TThisBaseGraph.GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
+      begin
+          Result := TStr;
+          if StrUtils.AnsiContainsText(UpperCase(Result),'BF-PET_') then Result := ''
+          else if UseFileNames then begin
+             while Result[length(Result)] in ['0','9'] do Delete(Result,Length(Result),1);
+             Delete(Result,Length(Result),1);
+             Result := RemoveUnderScores(Result);
+          end;
       end;
 
 
@@ -3240,7 +3258,7 @@ begin
             LastX := x;
          end
          else begin
-           if not GraphDraw.PtOnGraph(x,y) then begin  //(Coords^[2*i] > pred(MaxInt)) or (x < GraphDraw.LeftMargin) then begin     xx
+           if not GraphDraw.PtOnGraph(x,y) then begin  //(Coords^[2*i] > pred(MaxInt)) or (x < GraphDraw.LeftMargin) then begin
               First := true;
            end
            else begin
@@ -4349,6 +4367,7 @@ begin
    end;
    for j := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
       DataPlotsVisible[j] := true;
+      GraphDraw.LRcornerText := GetLegendLabelFromFileName(true,ExtractFileNameNoExt(GraphDraw.DataFilesPlotted.Strings[j]));
       RedrawDiagram11Click(Nil);
       DataPlotsVisible[j] := false;
       CopyImageToBitmap(Image1,Bitmap);
@@ -5353,7 +5372,7 @@ end;
           end;
           if (GraphDraw.LRcornerText <> '') then begin
              Bitmap.Canvas.Font.Color := clBlack;
-             Bitmap.Canvas.TextOut(Bitmap.Width - 3 - Bitmap.Canvas.TextWidth(GraphDraw.LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LRcornerText), RemoveUnderScores(GraphDraw.LRcornerText));
+             Bitmap.Canvas.TextOut(Bitmap.Width - 1 - Bitmap.Canvas.TextWidth(GraphDraw.LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LRcornerText), RemoveUnderScores(GraphDraw.LRcornerText));
           end;
 
           if GraphDraw.LLlegend or (GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap,lpNEMap,lpNWMap]) then begin
@@ -5978,29 +5997,16 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
    var
       MaxLen,Len,i,NumF : integer;
       TStr : shortString;
-
-      function GetLabel(TStr : shortstring) : shortstring;
-      begin
-          Result := TStr;
-          if StrUtils.AnsiContainsText(UpperCase(Result),'BF-PET_') then Result := ''
-          else if UseFileNames then begin
-             while Result[length(Result)] in ['0','9'] do Delete(Result,Length(Result),1);
-             Delete(Result,Length(Result),1);
-             Result := RemoveUnderScores(Result);
-          end;
-      end;
-
    begin
       Result := nil;
       if (Flist.Count > 0) then begin
          {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
-
          MaxLen := 0;
          NumF := 0;
          CreateBitmap(Result,1500,ItemHigh*fList.Count+4);
          ClearBitmap(Result,GraphDraw.GraphBackgroundColor);
          for i := pred(fList.Count) downto 0 do begin
-            Tstr := GetLabel(ExtractFileNameNoExt(flist.Strings[i]));
+            Tstr := GetLegendLabelFromFileName(UseFileNames,ExtractFileNameNoExt(flist.Strings[i]));
             if (TStr <> '') and DataPlotsVisible[i] then begin
                  inc(NumF);
                  SetMyBitmapColors(Result,i);
@@ -6014,7 +6020,6 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
                  end;
 
                  if GraphDraw.ShowPoints[i] then begin
-                    //GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(Result.Canvas.Pen.Color);
                     Petmar.ScreenSymbol(Result.Canvas,30,pred(NumF) * ItemHigh + 12,GraphDraw.Symbol[i]);
                  end;
                  Len := Result.Canvas.TextWidth(TStr);
@@ -6177,8 +6182,8 @@ procedure InitializeBaseGraf;
 begin
    {$IfDef MessageStartupUnit}  MessageToContinue('Startup BaseGraf'); {$EndIf}
    FilterTerms := 11;
-   DefaultClientWidth := 600;
-   DefaultClientHeight := 400;
+   //DefaultClientWidth := 600;
+   //DefaultClientHeight := 400;
    TernaryScreenMult := 2;
    BestFitLineColor := claBlack;
    BestFitLineWidth := 3;

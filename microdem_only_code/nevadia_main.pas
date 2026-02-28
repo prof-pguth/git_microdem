@@ -20,17 +20,18 @@
       //{$Define RecordCommandLine}
       //DEMIX conditionals
           {$Define RecordDEMIX}
+          {$Define RecordDEMIX_TileStats}
+          {$Define RecordDEMIXMakeRef}
           //{$Define RecordDEMIXFull}
-          //{$Define RecordDEMIXMakeTest}
+          {$Define RecordDEMIXMakeTest}
           //{$Define TimeMakeMaps}
           //{$Define RecordGridOpenProblems}
           //{$Define DEMIXtrackFUV}
           //{$Define TrackMissingPercentages}
           //{$Define RecordRefDTM}
-          {$Define RecordDEMIXMakeRef}
           //{$Define RecordDEMIXMakeRefFull}
           {$Define RecordDEMIXDatumShift}
-          {$Define RecordDEMIXDatumShiftFull}
+          //{$Define RecordDEMIXDatumShiftFull}
           //{$Define RecordFUVcreateFull}
           //{$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
@@ -657,6 +658,7 @@ type
     CreateCSVresultsfortestareas1: TMenuItem;
     N37: TMenuItem;
     N38: TMenuItem;
+    EndclonedEXE1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1073,6 +1075,7 @@ type
     procedure ASTERv4TimeSeries1Click(Sender: TObject);
     procedure UTMbasedMergeDSMDTMcomparison1Click(Sender: TObject);
     procedure MergeCOPALOSDTMDSMcompare1Click(Sender: TObject);
+    procedure EndclonedEXE1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1359,15 +1362,20 @@ uses
    db_display_options,
    toggle_db_use, map_overlays, U_SolarPos2;
 
-
 {$I nevadia_main_batch.inc}
+
+const
+   EndClonedEXE : boolean = false;
 
 function ClonedEXE : boolean;
 var
    ShortEXE : shortString;
 begin
-    ShortExe := UpperCase(ExtractFileNameNoExt(Application.ExeName));
-    Result := (Length(ShortExe) = 3) and (copy(ShortExe,1,2) = 'MD');
+    if EndClonedEXE then result := false
+    else begin
+       ShortExe := UpperCase(ExtractFileNameNoExt(Application.ExeName));
+       Result := (Length(ShortExe) = 3) and (copy(ShortExe,1,2) = 'MD');
+    end;
 end;
 
 
@@ -1817,6 +1825,7 @@ begin
    ExpertDEMVersion := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (NumDEMDataSetsOpen > 0);
    RemoteSensingLabs1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
    SpeedButton6.Visible := (MDDef.ProgramOption in [ExpertProgram]);
+   EndclonedEXE1.Visible := ClonedEXE;
 
    SpeedButton2.Visible := MDDef.ShowSHPButton;
    SpeedButton4.Visible := MDDef.ShowDBonly;
@@ -2887,6 +2896,11 @@ begin
    DoElevationHistograms;
 end;
 
+
+procedure Twmdem.EndclonedEXE1Click(Sender: TObject);
+begin
+   EndClonedEXE := true;
+end;
 
 procedure Twmdem.Equinox1Click(Sender: TObject);
 begin

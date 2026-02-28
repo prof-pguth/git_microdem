@@ -9,7 +9,7 @@
 {________________________________________}
 
 
-function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil) : TThisbasegraph;
+function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil; FigureLabel : shortString = '') : TThisbasegraph;
 var
   i,j,k,TimeCount,OnFile : integer;
   Hist : array[0..1000] of integer;
@@ -158,80 +158,17 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
         Result.GraphDraw.NormalCartesianY := false;
      end;
 
-
      Result.SetDataBaseOnGraph(DBNumber,dbOpts.XField,dbOpts.YField,MyData.Filter);
      Result.GraphDraw.RainBowColors := (GraphType = dbgtN2DgraphcolorNumericField);
      Result.GraphDraw.RedGray := (DbTablef <> Nil) and dbtablef.RedGrayGraph;
      Result.SetUpGraphForm;
 
-     if (GraphType in [dbgtN2DgraphMultDEMs]) then begin
-        {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('(GraphType in [dbgtN2DgraphMultSeries]'); {$EndIf}
-        BaseFilter := MyData.Filter;
-         //Result.GraphDraw.HorizLabel := dbOpts.XField;
-
-         if (dbOpts.XField = 'GRID_SEC') then TStr := 'arc second' else TStr := 'meters';
-         Result.GraphDraw.HorizLabel := 'Grid spacing (' + TStr + ')';
-
-         Result.GraphDraw.VertLabel := MultSeries.Strings[0];
-         for i := 1 to pred(MultSeries.Count) do begin
-             Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
-         end;
-         Result.GraphDraw.LRCornerText := BaseFilter + ' (n=' + IntToStr(MultTiles.Count) + ')';
-
-        LegendEntries := tStringList.Create;
-        Colors := tStringList.Create;
-        for j := 0 to pred(MultSeries.Count) do begin
-           LegendEntries.Add(MultSeries.Strings[j]);
-           Colors.Add(IntToStr(WinGraphColors(j)));
-           {$If Defined(LegendColors)} WriteLineToDebugFile('Legend:  ' + IntToStr(j) + '  ' + MultSeries.Strings[j] + '  ' + ColorToString(WinGraphColors(j))); {$EndIf}
-        end;
-        MDDef.DEMIXlegendFontSize := 12;
-        bmp := MakeLegend(LegendEntries,Colors);
-        Result.GraphDraw.BottomLegendFName := NextFileNumber(MDTempDir,'series_label_','.bmp');
-        SaveBitmap(bmp,Result.GraphDraw.BottomLegendFName);
-        Colors.Destroy;
-        LegendEntries.Destroy;
-        bmp.Destroy;
-        Result.GraphDraw.InsideMarginLegend := lpNEMap;
-
-         ApplyGISFilter(BaseFilter);
-         EmpSource.Enabled := false;
-         for j := 0 to pred(MultSeries.Count) do begin
-           for k := 0 to pred(MultTiles.Count) do begin
-             Symbol.DrawingSymbol := FilledBox;
-             Symbol.Size := 5;
-             Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j));
-             EmpSource.Enabled := false;
-             ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(MultTiles.Strings[k]));
-             OnFile := Result.OpenPointSymbolFile(rfile,MultTiles.Strings[k],Symbol,4);
-             {$If Defined(LegendColors)} WriteLineToDebugFile('File:  ' + IntToStr(OnFile) + '  ' + MultSeries.Strings[j] + '  ' +
-                  ColorString(WinGraphColors(j)) + ' line width=' + IntToStr(Result.GraphDraw.LineSize256[OnFile])); {$EndIf}
-
-             MyData.First;
-             repeat
-                if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(MultSeries.Strings[j],v[2]) then begin
-                   BlockWrite(Rfile,v,1);
-                end;
-                MyData.Next;
-             until MyData.eof;
-             CloseFile(rfile);
-           end;
-
-           ApplyGISFilter(BaseFilter);
-           Empsource.Enabled := true;
-           Result.GraphDraw.SetShowAllPoints(false);
-           Result.GraphDraw.SetShowAllLines(true,4);
-           Result.GraphDraw.BottomMargin := 90;
-           {$If Defined(RecordDBGraphs)} WriteLineToDebugFile(MultSeries.Strings[j] + '  vals=' + IntToStr(k)); {$EndIf}
-           {$If Defined(GraphLineWidth)} Result.RecordLineWidths('ActuallyDrawGraph point 1'); {$EndIf}
-        end;
-        {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
-        {$If Defined(TrackColors)} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
-     end
-     else if (GraphType in [dbgtN2DgraphMultSeries]) then begin
+     if (GraphType in [dbgtN2DgraphMultSeries]) then begin
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('(GraphType in [dbgtN2DgraphMultSeries]'); {$EndIf}
          Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
          Result.GraphDraw.VertLabel := MultSeries.Strings[0];
+         Result.GraphDraw.XWindowSize := MDDef.DEMIX_xsize;
+         Result.GraphDraw.YWindowSize := MDDef.DEMIX_ysize;
          for i := 1 to pred(MultSeries.Count) do begin
              Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
          end;
@@ -240,18 +177,14 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
            Result.GraphDraw.Symbol[j].Size := 5;
            Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
            OnFile := Result.OpenPointSymbolFile(rfile,MultSeries.Strings[j],Result.GraphDraw.Symbol[j]);
-           //Result.GraphDraw.FileColors256[j] := ConvertTColorToPlatformColor(WinGraphColors(j),4);
-           //Result.GraphDraw.LineSize256[j] := 4;
            Result.GraphDraw.ShowPoints[OnFile] := true;
            Result.GraphDraw.ShowLine[OnFile] := true;
            {$If Defined(TrackColors)} WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(j) + ' ' + MultSeries.Strings[j] +
                ' line='+ ColorString(Result.GraphDraw.FileColors256[j]) + ' point='+ ColorString(Result.GraphDraw.Symbol[i].Color)); {$EndIf}
            MyData.First;
-           //k := 0;
            repeat
               if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(MultSeries.Strings[j],v[2]) then begin
                  BlockWrite(Rfile,v,1);
-                 //inc(k);
               end;
               MyData.Next;
            until MyData.eof;
@@ -268,7 +201,6 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
         for j := 0 to pred(DataThere.Count) do begin
            TStr := DataThere.Strings[j];
            if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := QuotedStr(TStr);
-           //else TStr := IntToStr(DataThere.Strings[j]);
            TStr := PetDBUtils.AddAndIfNeeded(BaseFilter) + dbOpts.StringColorField + '=' + TStr;
            MyData.ApplyFilter(TStr);
 

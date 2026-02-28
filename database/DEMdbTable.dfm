@@ -3789,11 +3789,11 @@ object dbtablef: Tdbtablef
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
       object DTMDSMcomparison1: TMenuItem
-        Caption = 'Create DB for HRDEM DTM/DSM comparison'
+        Caption = 'HRDEM DTM/DSM comparison'
         OnClick = DTMDSMcomparison1Click
       end
       object CompareCopDEMtoDSMDTMandaggregate1: TMenuItem
-        Caption = 'Create DB for GDEM comparision ref DSM/DTM '
+        Caption = 'GDEM comparision ref DSM/DTM '
         OnClick = CompareCopDEMtoDSMDTMandaggregate1Click
       end
       object N60: TMenuItem
@@ -3870,6 +3870,7 @@ object dbtablef: Tdbtablef
       end
       object IdentifyDSMandDTM1: TMenuItem
         Caption = 'Identify DSM and DTM'
+        Enabled = False
         OnClick = IdentifyDSMandDTM1Click
       end
       object AddDSMDTMpair1: TMenuItem

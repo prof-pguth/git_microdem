@@ -119,7 +119,7 @@ const
 function WinningPiesByCriteria(dbOnTable : integer; Criteria,DEMs : tStringList; LLtext : shortstring) : tThisBaseGraph;
 function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStringList; MaxPieCircle : float32; PieRatio : boolean; BottomLegendFName : PathStr) : tThisBaseGraph;
 
-procedure MakeDBtoCompareDSMandDTM(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
+procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
@@ -128,7 +128,7 @@ procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion,DEMIXtil
 procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
 procedure BestDEMonGraphTwoParameters(DB : integer; Criteria,DEMs : tstringList);
-procedure GraphTwoParameterGridsByAverageSlopeAndResolution(db : integer; DEMIXtileFieldName : shortstring; MultSeries : tStringList);
+procedure GraphTwoParameterGridsByAverageSlopeAndResolution(db : integer; DEMIXtileFieldName : shortstring; MultSeries : tStringList; AllTiles : boolean = false);
 
 
 implementation
@@ -1678,8 +1678,8 @@ var
      end;
      ShowHourglassCursor;
      Result := tThisBaseGraph.Create(Application);
-     Result.Width := 800; //MDDef.DEMIX_xsize;
-     Result.Height := 800;  //MDDef.DEMIX_ysize;
+     Result.Width := MDDef.DEMIX_xsize;
+     Result.Height := MDDef.DEMIX_ysize;
      Result.GraphDraw.MaxVertAxis := 80;
      Result.GraphDraw.VertLabel := 'Tile ' + Param2 + ' (%)';
      Result.GraphDraw.HorizLabel := 'Tile ' + Param1 +  ' (%)';
@@ -1689,7 +1689,7 @@ var
      GISdb[DBonTable].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criterion));
      GISdb[DBonTable].EmpSource.Enabled := false;
      Tolerance := CriterionTieTolerance(Criterion);
-     {$If Defined(PiesByLandType)} WriteLineToDebugFile('n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' +  GISdb[DBonTable].MyData.Filter + '  compare=' + IntToStr(Compare)); {$EndIf}
+     {$If Defined(PiesByLandType)} WriteLineToDebugFile('n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' +  GISdb[DBonTable].MyData.Filter); {$EndIf}
 
      while not GISdb[DBonTable].MyData.eof do begin
         v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Param1);

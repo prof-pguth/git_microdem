@@ -2533,8 +2533,9 @@ var
          AParameter('Slope','DEMIXSlopeCompute',DEMIXSlopeCompute.AlgorithmName,smEvansYoung);
          AParameter('DEMIX','DEMIX_FullDBfName',DEMIX_FullDBfName,'');
          AParameter('DEMIX','DEMIX_IgnoreTies',DEMIX_IgnoreTies,false);
-
-
+         AParameter('DEMIX','DEMIX_filter1_fName',DEMIX_filter1_fName,'');
+         AParameter('DEMIX','DEMIX_filter2_fName',DEMIX_filter2_fName,'');
+         AParameter('DEMIX','DEMIX_MaxTilesInLegend',DEMIX_MaxTilesInLegend,4);
 
          {$IfDef IncludeCoastalDEMs}
              AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);

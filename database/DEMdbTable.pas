@@ -5301,13 +5301,16 @@ var
    Tile : shortstring;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.AddDSMDTMpair1Click in'); {$EndIf}
-   IdentifyDSMandDTM1Click(nil);
+   //IdentifyDSMandDTM1Click(nil);
    GISdb[DBonTable].ClearGISFilter;
    SetColorForProcessing;
    fl := GISdb[DBonTable].MyData.GetFieldLength('DEMIX_TILE');
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DEM_PAIR',3);
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DSM_NAME',fl+3);
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DTM_NAME',fl+3);
+   GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr('NO'));
+   GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','');
+
    repeat
        GISdb[DBonTable].EmpSource.Enabled := false;
        GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
@@ -5328,6 +5331,9 @@ begin
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
               GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
            end;
+       end
+       else begin
+           {$IfDef RecordDEMIX} WriteLineToDebugFile('All tiles now paired'); {$EndIf}
        end;
    until (GISdb[DBonTable].MyData.FiltRecsInDB = 0);
    SetColorForWaiting;
@@ -12126,7 +12132,7 @@ end;
 
 procedure Tdbtablef.DTMDSMcomparison1Click(Sender: TObject);
 begin
-   MakeCSVforComparingDSMandDTMbyScale(DBonTable);
+   MakeCSVforHRDEMComparison(DBonTable);
 end;
 
 procedure Tdbtablef.BackupDB1Click(Sender: TObject);

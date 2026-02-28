@@ -305,7 +305,9 @@ function WinGraphColors(i : integer) : tColor;
 procedure LoadWinGraphColors;
 procedure PickWinGraphColors;
 
+
 procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
+
 
 
 implementation
@@ -383,6 +385,7 @@ type
    {$I petimage_vcl.inc}
 {$EndIf}
 
+
 procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
 var
    LegBMP : tMyBitmap;
@@ -398,17 +401,17 @@ begin
         BigBmp.Canvas.Draw(X,y,LegBmp);
         LegBMP.Free;
     end;
-        if (LRText <> '') then begin
-           LRText := RemoveUnderscores(LRText);
-           BigBmp.Canvas.Font.Style := [fsBold];
-           BigBmp.Canvas.Font.Size := 24;
-           while (BigBmp.Canvas.TextWidth(LRText) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
-           x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(LRText);
-           y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(LRText);
-           BigBmp.Canvas.TextOut(x,y,LRText);
-        end;
-
+    if (LRText <> '') then begin
+       LRText := RemoveUnderscores(LRText);
+       BigBmp.Canvas.Font.Style := [fsBold];
+       BigBmp.Canvas.Font.Size := 24;
+       while (BigBmp.Canvas.TextWidth(LRText) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
+       x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(LRText);
+       y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(LRText);
+       BigBmp.Canvas.TextOut(x,y,LRText);
+    end;
 end;
+
 
 
 function WinGraphColors(i : integer) : tColor; inline;
@@ -432,6 +435,7 @@ begin
    LoadWinGraphColors;
 end;
 
+
 procedure LoadWinGraphColors;
 var
    db : tMyData;
@@ -440,13 +444,13 @@ var
 begin
    dName := ProgramRootDir + 'graph_colors.dbf';
    db := tMyData.Create(dName);
-     db.ApplyFilter('NAME=' + QuotedStr(MDDef.WinGraphColors));
-     NumWinGraphColors := db.FiltRecsInDB;
-     for i := 1 to NumWinGraphColors do begin
-        WinGraphColorArray[i] := db.TColorFromTable;
-        db.Next;
-     end;
-     db.Destroy;
+   db.ApplyFilter('NAME=' + QuotedStr(MDDef.WinGraphColors));
+   NumWinGraphColors := db.FiltRecsInDB;
+   for i := 1 to NumWinGraphColors do begin
+      WinGraphColorArray[i] := db.TColorFromTable;
+      db.Next;
+   end;
+   db.Destroy;
 end;
 
 

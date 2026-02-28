@@ -20,7 +20,7 @@ unit demix_definitions;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$Define RecordDEMIX}
    //{$Define TrackCriteriaList}
-
+   {$Define RecordDSM_DTMpairs}
    //{$Define RecordNeoDEMIX}
    //{$Define RecordOpenExternalProgramGrids}
    {$Define RecordDEMIXLoad}
@@ -412,11 +412,16 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
 {$EndIf}
 
 
-procedure MakeCSVforComparingDSMandDTMbyScale(DB : integer);
+procedure MakeCSVforHRDEMComparison(DB : integer);
 procedure MakeCSVforGDEMcompareDSMtoDTM(DBonTable : integer);
 
 function RemoveCountryFromTileName(Tile : shortString) : shortstring;
 procedure RemoveInvalidCriterion(var sl : TStringList);
+
+procedure LoadTwoDEMIXfilters(var ComboBox6,ComboBox7 : tComboBox);
+function ExtractKeyFilterName(fName : shortstring) : shortstring;
+function ExpandFullFilterName(fName : shortstring) : PathStr;
+
 
 
 
@@ -451,6 +456,52 @@ uses
 {$IfDef IncludeVectorCriteria}
    {$include demix_channels.inc}
 {$EndIf}
+
+
+function ExtractKeyFilterName(fName : shortstring) : shortstring;
+begin
+   Result := StringReplace(fName, 'filters_', '',[rfIgnoreCase]);
+   Result := StringReplace(Result, '.dbf', '',[rfIgnoreCase]);
+end;
+
+function ExpandFullFilterName(fName : shortstring) : PathStr;
+begin
+   Result := DEMIXsettingsDir + 'filters_' + fName + '.dbf';
+end;
+
+procedure LoadTwoDEMIXfilters(var ComboBox6,ComboBox7 : tComboBox);
+var
+   DEMIXFilters : tStringList;
+   i : integer;
+   Entry : shortstring;
+begin
+   DEMIXfilters := tStringList.Create;
+   FindMatchingFiles(DEMIXsettingsDir,'filters_*.dbf',DEMIXFilters);
+   if (DEMIXfilters.Count > 0) then begin
+       for i := 0 to pred(DEMIXfilters.Count) do begin
+          Entry := ExtractFileNameNoExt(DEMIXfilters.strings[i]);
+          Entry := ExtractKeyFilterName(Entry);
+          ComboBox6.Items.Add(Entry);
+          ComboBox7.Items.Add(Entry);
+       end;
+
+       if FileExists(MDDef.DEMIX_filter1_fName) then ComboBox6.Text := ExtractKeyFilterName(ExtractFileNameNoExt(MDDef.DEMIX_filter1_fName))
+       else begin
+          ComboBox6.Text := ComboBox6.Items[0];
+          MDDef.DEMIX_filter1_fName := ExpandFullFilterName(ComboBox6.Text);
+       end;
+       if FileExists(MDDef.DEMIX_filter2_fName) then ComboBox7.Text := ExtractKeyFilterName(ExtractFileNameNoExt(MDDef.DEMIX_filter2_fName))
+       else begin
+          ComboBox7.Text := ComboBox7.Items[pred(DEMIXfilters.Count)];
+          MDDef.DEMIX_filter2_fName := ExpandFullFilterName(ComboBox7.Text);
+       end;
+   end
+   else begin
+      MessageToContinue('filter files missing');
+   end;
+   DEMIXFilters.Destroy;
+end;
+
 
 
 procedure RemoveInvalidCriterion(var sl : TStringList);
@@ -494,27 +545,30 @@ end;
 
 
 function IdentifyDEMIXtileAsDTMorDSM(Tile : shortString) : shortstring;
+var
+   Country : shortstring;
 begin
    Result := '';
    Tile := UpperCase(Tile);
-   if (Copy(Tile,1,3) = 'ES_') or (Copy(Tile,1,3) = 'IC_') then begin
+   Country := Copy(Tile,1,3);
+   if (Country  = 'ES_') or (Country  = 'IC_') then begin
         if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
         else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
    end;
-   if (Copy(Tile,1,3) = 'CA_') or (Copy(Tile,1,3) = 'UK_') then begin
+   if (Country = 'CA_') or (Country = 'UK_') then begin
         if ANSIcontainsStr(Tile,'DSM') then Result := 'DSM'
         else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
    end;
 end;
-
-
 
 function GetDSMandDTMTileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
 var
    TStr : shortstring;
 begin
   if GISdb[DBonTable].MyData.FieldExists('CRITERION') then TStr := 'CRITERION=' + QuotedStr('SLOPE') + ' AND ' else TStr := '';
-  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.025));
+  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.05));
+  {$IfDef RecordDSM_DTMpairs} WriteLineToDebugFile(GISdb[DBonTable].MyData.Filter + '  matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));  {$EndIf}
+
   if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
      TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
      if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
@@ -523,6 +577,12 @@ begin
      if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
      Result := true;
   end
+  {$IfDef RecordDSM_DTMpairs}
+     else if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
+        Result := false;
+        WriteLineToDebugFile('Too many matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
+     end
+  {$EndIf}
   else Result := false;
 end;
 

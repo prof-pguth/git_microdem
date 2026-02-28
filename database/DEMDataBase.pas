@@ -17,7 +17,7 @@
       //{$Define RecordDEMIX}
       //{$Define RecordDBsort}
       //{$Define LegendColors}
-      {$Define GraphLineWidth}
+      //{$Define GraphLineWidth}
 
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
@@ -207,7 +207,7 @@ type
   tHowRestrict = (resNone);
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt,adAvgElevInWindow);
   tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,
-     dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,{dgbtN2Dgraph2yaxes,}dbgtPlot1series1,dbgtPlotforsubsamples1,dbgtN2DgraphMultDEMs,
+     dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,{dgbtN2Dgraph2yaxes,}dbgtPlot1series1,dbgtPlotforsubsamples1,
      dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield1,
      dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtPlot,dbgtUnspecified);
 
@@ -655,7 +655,8 @@ type
          procedure AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
-         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil) : TThisbasegraph;
+         //function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil) : TThisbasegraph;
+         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil; FigureLabel : shortString = '') : TThisbasegraph;
          procedure MonthlyWindPlotCurrentPoint;
 
 

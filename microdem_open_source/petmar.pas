@@ -98,7 +98,7 @@ procedure ShowHourglassCursor; inline;
 procedure ShowDefaultCursor; inline;
 procedure ApplicationProcessMessages; inline;
 
-function RemoveUnderScores(LegendStr : ANSIString) : ANSIString;
+function RemoveUnderScores(LegendStr : ANSIString; AlsoFileNextNumber : boolean = true) : ANSIString;
 function SpacesToUnderScores(LegendStr : ANSIString) : ANSIString;
 
 function CreateHTML_href(fName,Display : ANSIString) : ANSIString;
@@ -460,6 +460,8 @@ var
    {$EndIf}
 
 
+function MakeStringListFromString(theString : shortstring) : tStringList;
+
 procedure RemoveASCII0FromFile(fName : PathStr);
 
 function FindDriveWithFile(var fName : PathStr) : boolean;
@@ -535,6 +537,12 @@ var
 
 
 {$I petmar_palettes_legends.inc}
+
+function MakeStringListFromString(theString : shortstring) : tStringList;
+begin
+   Result := tStringList.Create;
+   Result.Add(theString);
+end;
 
 
 procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
@@ -2534,10 +2542,12 @@ begin
    {$EndIf}
 end;
 
-function RemoveUnderScores(LegendStr : ANSIString) : ANSIString;
+function RemoveUnderScores(LegendStr : ANSIString; AlsoFileNextNumber : boolean = true) : ANSIString;
 begin
+   Result := '';
    if (LegendStr <> '') then begin
       Result := LegendStr;
+      if AlsoFileNextNumber and (Result[length(Result)-1] = '_') then Delete(Result,length(Result)-1,2);
       ReplaceCharacter(Result,'_',' ');
    end;
 end;

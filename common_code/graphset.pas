@@ -152,46 +152,45 @@ var
    fName : PathStr;
    VisCols : Array100Boolean;
 begin
-    with OwningGraph,GraphDraw do begin
-         MarginsGood := true;
+    with OwningGraph do begin
+         GraphDraw.MarginsGood := true;
          Edit13.Text := OwningGraph.GraphDraw.VertLabel2;
-         ComboBox1.ItemIndex := ord(GraphAxes);
-         ComboBox2.Visible := VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
+         ComboBox1.ItemIndex := ord(GraphDraw.GraphAxes);
+         ComboBox2.Visible := GraphDraw.VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
 
-         CheckBox1.Visible := GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
-         CheckBox1.Checked := AnnualCycle;
-         CheckBox2.Checked := not NormalCartesianY;
-         CheckBox3.Checked := Draw1to1Line;
-         CheckBox5.Checked := not NormalCartesianX;
-         CheckBox6.Checked := CorrectScaling;
+         CheckBox1.Visible := GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
+         CheckBox1.Checked := GraphDraw.AnnualCycle;
+         CheckBox2.Checked := not GraphDraw.NormalCartesianY;
+         CheckBox3.Checked := GraphDraw.Draw1to1Line;
+         CheckBox5.Checked := not GraphDraw.NormalCartesianX;
+         CheckBox6.Checked := GraphDraw.CorrectScaling;
 
          CheckBox8.Checked := OwningGraph.GraphDraw.ShowGraphLeftLabels;
 
-         Edit7.Text := IntToStr(LeftMargin);
-         Edit8.Text := IntToStr(TopMargin);
-         Edit9.Text := IntToStr(BottomMargin);
-         Edit10.Text := LLcornerText;
+         Edit7.Text := IntToStr(GraphDraw.LeftMargin);
+         Edit8.Text := IntToStr(GraphDraw.TopMargin);
+         Edit9.Text := IntToStr(GraphDraw.BottomMargin);
+         Edit10.Text := GraphDraw.LLcornerText;
          Edit11.Text := IntToStr(Width);
          Edit12.Text := IntToStr(Height);
          Edit16.Text := RealToString(OwningGraph.HistogramBinSize,-12,-3);
          Edit17.Text := RealToString(OwningGraph.HistogramNumBins,-12,-3);
          Edit18.Text := IntToStr(MdDef.GraphTickSize);
-         XLabelEdit.Text := HorizLabel;
-         YLabelEdit.Text := VertLabel;
+         XLabelEdit.Text := GraphDraw.HorizLabel;
+         YLabelEdit.Text := GraphDraw.VertLabel;
          YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
          YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
 
-
-         if (DBFLineFilesPlotted <> Nil) and (DBFLineFilesPlotted.Count > 0) then begin
+         if (GraphDraw.DBFLineFilesPlotted <> Nil) and (GraphDraw.DBFLineFilesPlotted.Count > 0) then begin
             ComboBox3.Visible := true;
-            fName := DBFLineFilesPlotted.Strings[0];
+            fName := GraphDraw.DBFLineFilesPlotted.Strings[0];
             MyTable := tMyData.Create(fName);
             PetdbUtils.GetFields(MyTable,VisCols,NumericFieldTypes,FieldsInDB,true);
             for i := 0 to pred(FieldsInDB.Count) do ComboBox3.Items.Add(FieldsInDB.Strings[i]);
             ComboBox3.Text := '';
             MyTable.Destroy;
          end;
-         if (XYZFilesPlotted <> Nil) and (XYZFilesPlotted.Count > 0) then begin
+         if (GraphDraw.XYZFilesPlotted <> Nil) and (GraphDraw.XYZFilesPlotted.Count > 0) then begin
             Label1.Visible := true;
             Label4.Visible := true;
             Edit5.Visible := true;
@@ -200,7 +199,7 @@ begin
             Edit6.Text := RealToString(MaxZ,-12,-6);
          end;
          if ComboBox2.Visible then begin
-            case VertAxisFunctionType of
+            case GraphDraw.VertAxisFunctionType of
                ShortCumNormalAxis : ComboBox2.ItemIndex := 0;
                CumulativeNormalAxis: ComboBox2.ItemIndex := 1;
                LongCumulativeNormalAxis : ComboBox2.ItemIndex := 2;

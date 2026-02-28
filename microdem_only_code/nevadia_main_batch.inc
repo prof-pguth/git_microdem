@@ -128,14 +128,16 @@ end;
 function DEMIX_GetListOfPossibleAreas(AreaName : shortstring) : tStringList;
 var
    i : integer;
+   sd : shortstring;
 begin
    AreaDirectoryNames(AreaName);
    Result := GetSubDirsInDirectory(AreaDir);
-   for I := pred(Result.Count) downto 0 do
-      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or  (UpperCase(Copy(Result.Strings[i],1,3)) = 'DB_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm')
-         or (Result.Strings[i] = 'merges') then Result.Delete(i);
-
+   for I := pred(Result.Count) downto 0 do begin
+      sd := UpperCase(Result.Strings[i]);
+      if (Copy(sd,1,3) = 'AA_') or (Copy(sd,1,3) = 'DB_') or (sd = 'SOURCE') or (sd = 'WGS_EGM') or (sd = 'MERGES') then Result.Delete(i);
+   end;
 end;
+
 
 function DEMIX_GetListOfTileSubDirsInArea(AreaName : shortstring; ShouldHaveBeenCreated : boolean = true) : tStringList;
 //these have '_ref_test_dem' plus the tile name
@@ -783,12 +785,16 @@ begin  {procedure MakeReferenceDEM}
          if not InsureTestDEMOpen then exit;
          SpacingArcSec := DEMGlb[TestDEM].DEMHeader.DEMxSpacing * 3600;
          if (SpacingArcSec > 1.5) then SecondMode := 'alos1';
-      end
-      else begin
-         //if (aDEM = 'GEDTMV1_1') then mode := 'gedtm';
       end;
-
-      RefName := TestDir + 'ref_' + IdentifyDEMIXtileAsDTMorDSM(SourceEGMName) + '_' + Mode + '.tif';
+      RefName := TestDir + 'ref__' + Mode + '.tif';
+      if FileExists(RefName) then begin
+         DeleteFileIfExists(RefName);
+      end;
+      RefName := IdentifyDEMIXtileAsDTMorDSM(ExtractFileNameNoExt(SourceEGMName));
+      if RefName = '' then begin
+         MessageToContinue('ID fail');
+      end;
+      RefName := TestDir + 'ref_' + RefName + '_' + Mode + '.tif';
       if (not FileExists(RefName)) then begin
           {$If Defined(TimeMakeMaps)} Stopwatch := TStopwatch.StartNew; {$EndIf}
           if not InsureTestDEMOpen then exit;
@@ -851,13 +857,10 @@ var
        TileSubDirs := DEMIX_GetListOfTileSubDirsInArea(AreaName);
        if (TileSubDirs.Count = 0) then begin
           if not(ValidPath(SourceDir)) then begin
-
-           {$IfDef RecordDEMIX} WriteLineToDebugFile('Start file movement for ' + AreaName); {$EndIf};
-
+             {$IfDef RecordDEMIX} WriteLineToDebugFile('Start file movement for ' + AreaName); {$EndIf}
               //to make it easier to download data, it does not have to be manually put into SourceDir, just into the AreaDir
               //only works if the files are close to the 10x10 km target size for tiles
               AreaDirectoryNames(AreaName);
-
               theFiles := TstringList.Create;
               Petmar.FindMatchingFiles(AreaDir,'*.tif',TheFiles,1);
               if (theFiles.Count > 0) then begin
@@ -879,8 +882,7 @@ var
            TheFiles := nil;
            Petmar.FindMatchingFiles(AreaDir + 'source\','*.tif',TheFiles,1);
            if (theFiles.Count = 0) then begin
-              MessageToContinue('UTMbasedtilescreation, No TIF files in ' + AreaDir + 'source\');
-              exit;
+              {$IfDef RecordDEMIX} WriteLineToDebugFile('UTMbasedtilescreation, No TIF files in ' + AreaDir + 'source\'); {$EndIf}
            end;
            TheFiles.Destroy;
        end
@@ -1044,7 +1046,7 @@ var
                  else begin
                      wmDEM.SetPanelText(3,'Datum shift source ref DEM',true);
                      fName := TheFiles.strings[i];
-                     {$IfDef RecordDEMIXDatumShift} if (TilesInArea > 1) then WriteLineToDebugFile('Datum shift source DTM ' + ExtractFileNameNoExt(fName)); {$EndIf};
+                     {$IfDef RecordDEMIXDatumShiftFull} if (TilesInArea > 1) then WriteLineToDebugFile('Datum shift source DTM ' + ExtractFileNameNoExt(fName)); {$EndIf};
                      if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
                         ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName, '5782','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(fName)));
                      end
@@ -1099,24 +1101,15 @@ var
         end;
 
 
-
-begin {procedure UTMbasedtilescreation}
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('UTMbasedtilescreation Start: ' + AreaName); {$EndIf};
-   HeavyDutyProcessing := true;
-   NoDBPlots := true;
-   theDEMs := GetListOfTestDEMsinUse;
-   AreaDirectoryNames(AreaName);
-   MakeSourceHRDEM_WGS84_EGM2008;
-
-     if ValidPath(SourceDir) then begin
-        MissingLandCover := tStringList.Create;
-     end;
-
+    procedure MakeTestAndReferenceDEMs;
+    var
+       i,j : integer;
+    begin
      if ((TilesInArea = 1) or ValidPath(WGS_EGMdir)) and FileExists(MapLibraryFName) then begin  //in case using second computer just to do hard part of work, like datum shift
          TileSubDirs := DEMIX_GetListOfTileSubDirsInArea(AreaName,false);
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('Start test/ref for ' + AreaName +  '  tiles=' + IntToStr(TileSubDirs.Count)); {$EndIf};
+         {$IfDef RecordDEMIXMakeTest} WriteLineToDebugFile('Start test/ref for ' + AreaName +  ' tiles=' + IntToStr(TileSubDirs.Count)); {$EndIf};
          for i := 0 to pred(TileSubDirs.Count) do begin
-            {$IfDef RecordDEMIXFull} WriteLineToDebugFile(TileSubDirs.Strings[i]); {$EndIf};
+            {$IfDef RecordDEMIXMakeTest} WriteLineToDebugFile(TileSubDirs.Strings[i]); {$EndIf};
             UTM_Tile := DEMIX_TileNameFromSubDir(TileSubDirs.Strings[i]);
             TestDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileSubDirs.Strings[i] + '\';
             SafeMakeDir(TestDir);
@@ -1127,7 +1120,7 @@ begin {procedure UTMbasedtilescreation}
                 for j := 0 to pred(TheDEMs.Count) do begin
                    HeavyDutyProcessing := true;
                    aDEM := TheDEMs.strings[j];
-                   {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Start test/ref for ' + aDEM); {$EndIf};
+                   {$IfDef RecordDEMIXMakeTest} WriteLineToDebugFile('Start test/ref for ' + aDEM); {$EndIf};
                    RefDEM := 0;
                    TestDEM := 0;
                    TestName := TestDir + aDEM + '.tif';
@@ -1149,6 +1142,22 @@ begin {procedure UTMbasedtilescreation}
          end;
          TileSubDirs.Destroy;
       end;
+    end {procedure MakeTestAndReferenceDEM};
+
+
+begin {procedure UTMbasedtilescreation}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('UTMbasedtilescreation Start: ' + AreaName); {$EndIf};
+   HeavyDutyProcessing := true;
+   NoDBPlots := true;
+   theDEMs := GetListOfTestDEMsinUse;
+   AreaDirectoryNames(AreaName);
+   MakeSourceHRDEM_WGS84_EGM2008;
+
+     if ValidPath(SourceDir) then begin
+        MissingLandCover := tStringList.Create;
+     end;
+
+      MakeTestAndReferenceDEMs;
       MakeLandCoverGridForTile;
       CloseAllDEMs;
       wmDEM.ClearStatusBarPanelText;
@@ -1239,14 +1248,16 @@ begin {procedure DEMIX_tile_statistics}
     else begin
       InitializeStringLists;
       TileList := DEMIX_GetListOfTileSubdirsInArea(AreaName);
+      {$IfDef RecordDEMIX_TileStats} HighlightLineToDebugFile(AreaName); {$EndIf}
       for k := 0 to pred(TileList.count) do begin
          DEMIX_tile := TileList.Strings[k];
+         {$IfDef RecordDEMIX_TileStats} WriteLineToDebugFile(DEMIX_tile); {$EndIf}
          wmDEM.SetPanelText(2,IntToStr(succ(k)) + '/' + IntToStr(TileList.Count) + ' ' + DEMIX_tile,true);
          TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + DEMIX_tile + '\';
          fname := TileDir + 'landcover.tif';
          if FileExists(fName) then begin
             LC := OpenNewDEM(fName,false);
-            fname := TileDir + 'ref_dtm_srtm.tif';
+            fname := TileDir + 'ref_' + IdentifyDEMIXtileAsDTMorDSM(DEMIX_Tile) + '_srtm.tif';
             if FileExists(fName) then begin
                RefDTM := OpenNewDEM(fName,false);
                GetTileStatistics(RefDTM,LC);

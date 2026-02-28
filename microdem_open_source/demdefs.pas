@@ -2072,6 +2072,7 @@ type
       DEMIX_DoElevParamGraphs,
       DEMIX_DoHalfSecDEMs,
       ProcessLoopsForward : boolean;
+      DEMIX_MaxTilesInLegend,
       DEMIXUseBins : byte;
 
       {$IfDef IncludeCoastalDEMs}

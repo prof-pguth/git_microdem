@@ -1528,6 +1528,7 @@ function DEMIX_GetListOfAreas : tStringList;
 var
   i : integer;
   //AreaDir,TileDir : PathStr;
+  Area : shortstring;
 begin
    Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    if (Result.Count = 0) then begin
@@ -1535,7 +1536,8 @@ begin
       Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    end;
    for i := pred(Result.Count) downto 0 do begin
-      if (UpperCase(Copy(Result.Strings[i],1,3)) = 'AA_') or (Result.Strings[i] = 'source') or (Result.Strings[i] = 'wgs_egm') or (Result.Strings[i] = 'merges') then Result.Delete(i);
+      Area := UpperCase(Result.Strings[i]);
+      if (Copy(Area,1,3) = 'AA_') or (Copy(Area,1,3) = 'DB_') or (Area = 'SOURCE') or (Area = 'WGS_EGM') or (Area = 'MERGES') then Result.Delete(i);
    end;
    Result.Sort;
 end;

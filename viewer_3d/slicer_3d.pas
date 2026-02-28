@@ -1354,17 +1354,19 @@ begin
 
    CheckEditString(Edit2.Text,MDDef.ClouderXSize);
    CheckEditString(Edit4.Text,MDDef.ClouderYSize);
-   if true or MatchMapSize then begin
-      DefaultClientHeight := 400;
-      DefaultClientWidth := SlicerMapOwner.MapDraw.MapXSize;
-   end
-   else begin
-      DefaultClientHeight := MDDef.ClouderYSize;
-      DefaultClientWidth := MDDef.ClouderXSize;
-   end;
    if (SliceGraph[CurSlice].GISGraf = Nil) then begin
       {$IfDef SlicerDetailedDraw} WriteLineToDebugFile('BitBtn1Click create new graph'); {$EndIf}
       CreateNewGraph;
+
+      if true or MatchMapSize then begin
+         SliceGraph[CurSlice].GISGraf.DefaultClientHeight := 400;
+         SliceGraph[CurSlice].GISGraf.DefaultClientWidth := SlicerMapOwner.MapDraw.MapXSize;
+      end
+      else begin
+         SliceGraph[CurSlice].GISGraf.DefaultClientHeight := MDDef.ClouderYSize;
+         SliceGraph[CurSlice].GISGraf.DefaultClientWidth := MDDef.ClouderXSize;
+      end;
+
       SliceGraph[CurSlice].GISGraf.SlicerOverlay := true;
       SliceGraph[CurSlice].GISGraf.GraphDraw.MinHorizAxis := SliceGraph[CurSlice].gxlo;
       SliceGraph[CurSlice].GISGraf.GraphDraw.MaxHorizAxis := SliceGraph[CurSlice].gxhi;
