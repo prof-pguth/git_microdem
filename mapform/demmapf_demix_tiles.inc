@@ -31,29 +31,29 @@ function DEMIX_UTM_TileName(AreaName : shortstring; FileName : PathStr) : shorts
 var
    Northing : integer;
    Starter : shortstring;
+   TileMerges : tStringList;
 begin
    Result := '';
    Starter := UpperCase(Copy(AreaName,1,3));
    if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
+      (*
       //Result := LastSubDir(ExtractFilePath(FileName));
       if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_') or
-         (Starter = 'DK_') or (Starter = 'CA_') or (Starter = 'SL_') then Result := AreaName;   //these use the map quad names
+         (Starter = 'DK_') or (Starter = 'CA_') or (Starter = 'SL_') then Result := AreaName;   //use the map quad names
 
       //German states
       if (UpperCase(Copy(AreaName,4,3)) = 'BV_') then Result := AreaName;
       if (UpperCase(Copy(AreaName,4,3)) = 'RH_') then Result := AreaName;
-      if (UpperCase(Copy(AreaName,4,3)) = 'SX_') then begin    //Saxony
-         Result := 'DE_SX_' + copy(ExtractFileNameNoExt(FileName),1,9) + copy(ExtractFileNameNoExt(FileName),11,4);
-         {dgm1_33327_5591_1_sn.tif  }
-       end;
+      if (UpperCase(Copy(AreaName,4,3)) = 'SX_') then Result := AreaName;
+      *)
+      TileMerges := Nil;
+      FindMatchingFiles(FileName,'*.tif',TileMerges,2);
+      Result := AreaName + '_' + ExtractFileNameNoExt(TileMerges.Strings[0]);
+      TileMerges.Destroy;
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'CA_') then begin
       Result := 'CA_' + ExtractFileNameNoExt(FileName);
-      //Result := ExtractFileNameNoExt(FileName);
-      //Delete(Result,1,7);
-      //Result := 'CA_' + Result;
-      {dtm_1m_utm10_w_4_151.tif   }
    end;
 
    if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
@@ -72,9 +72,11 @@ begin
       Result := 'NO_' + ExtractFileNameNoExt(FileName);
    end;
 
-   if (Starter = 'SL_') then Result := AreaName;
+   if (Starter = 'SL_') then Result := ExtractFileNameNoExt(FileName);
 
    if StrUtils.AnsiContainsText(FileName,'USGS') then begin
+       Result := 'US_' + ExtractFileNameNoExt(FileName);
+       (*
        if StrUtils.AnsiContainsText(FileName,'USGS_1m_x') then begin
          {USGS_1m_x13y202_PR_PRVI_D_2018.tif  }
          Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),8,8)
@@ -101,6 +103,7 @@ begin
        Northing := Northing - 1;
        Delete(Result,13,3);
        Insert(IntToStr(Northing),Result,13);
+       *)
    end;
    if (Result = '') then begin
        Result := 'Unknown';

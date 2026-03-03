@@ -846,7 +846,7 @@ begin
       while not MyData.EOF do begin
          inc(i);
          UpdateProgressBar(i/MyData.RecordCount);
-         if GetFloat32FromTableLinkPossible(dbOpts.RedField,v[1]) and GetFloat32FromTableLinkPossible(dbOpts.GreenField,v[2]) then begin
+         if GetFloat32FromTableLink(dbOpts.RedField,v[1]) and GetFloat32FromTableLink(dbOpts.GreenField,v[2]) then begin
             v[3] := GISdb[theDB].RGBColorFromThreeNumericFields;
             BlockWrite(rfile,v,1);
          end;

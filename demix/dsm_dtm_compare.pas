@@ -78,6 +78,7 @@ type
     BitBtn13: TBitBtn;
     Label1: TLabel;
     Edit1: TEdit;
+    BitBtn14: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -99,6 +100,7 @@ type
     procedure BitBtn12Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
+    procedure BitBtn14Click(Sender: TObject);
   private
     { Private declarations }
     procedure GraphsCurrentRec;
@@ -204,11 +206,12 @@ end;
 function TCompareDSM_DTMform.DEMComparingList : tStringList;
 var
    i : integer;
+   TStr : shortstring;
 begin
    Result := tStringList.Create;
    for i := 0 to pred(Memo1.Lines.Count) do begin
-      //if GISdb[DB].MyData.FieldExists(Memo1.Lines[i]) then
-         Result.Add(Memo1.Lines[i]);
+      TStr := trim(Memo1.Lines[i]);
+      if (TStr <> '') then Result.Add(TStr);
    end;
 end;
 
@@ -221,10 +224,13 @@ end;
 function TCompareDSM_DTMform.ComparingCriteriaList : tStringList;
 var
    i : integer;
+   TStr : shortstring;
 begin
    Result := tStringList.Create;
-   for i := 0 to pred(Memo2.Lines.Count) do
-      Result.Add(Memo2.Lines[i]);
+   for i := 0 to pred(Memo2.Lines.Count) do begin
+      TStr := trim(Memo2.Lines[i]);
+      if (TStr <> '') then Result.Add(TStr);
+   end;
 end;
 
 
@@ -278,6 +284,12 @@ begin
    wmdem.Closeallgraphs1Click(Sender);
 end;
 
+procedure TCompareDSM_DTMform.BitBtn14Click(Sender: TObject);
+begin
+   GridOfTerrainScatterPlots(DB,ComparingCriteriaList,DEMComparingList);
+end;
+
+
 procedure TCompareDSM_DTMform.BitBtn1Click(Sender: TObject);
 begin
    if (OnRec < pred(theDTMs.Count)) then begin
@@ -292,7 +304,7 @@ var
    DSMname,DTMname : PathStr;
    AreaName : shortstring;
 begin
-   AreaName :=  GISdb[DB].MyData.GetFieldByNameAsString('AREA');
+   AreaName := GISdb[DB].MyData.GetFieldByNameAsString('AREA');
    DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + '\source\' + GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
    DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + '\source\' + GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
    HRDTM := OpenNewDEM(DTMName);

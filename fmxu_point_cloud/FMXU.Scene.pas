@@ -13,6 +13,7 @@
 {    Scene related utilities                                           }
 {                                                                      }
 {**********************************************************************}
+
 unit FMXU.Scene;
 
 {$i fmxu.inc}
@@ -41,10 +42,7 @@ implementation
 
 //  MoveControl3DAroundTarget
 //
-procedure MoveControl3DAroundTarget(
-   anObject, aTarget : TControl3D;
-   pitchDelta, turnDelta : Single   // pitch & turn angles in degrees
-   );
+procedure MoveControl3DAroundTarget(anObject, aTarget : TControl3D; pitchDelta, turnDelta : Single);   // pitch & turn angles in degrees);
 begin
    // normalT2C points away from the direction the camera is looking
    var originalT2C := TPoint3D(anObject.AbsolutePosition - aTarget.AbsolutePosition);

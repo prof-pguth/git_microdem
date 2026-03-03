@@ -659,6 +659,8 @@ type
     N37: TMenuItem;
     N38: TMenuItem;
     EndclonedEXE1: TMenuItem;
+    Cleararealocks1: TMenuItem;
+    Batchchangefoldernames1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1076,6 +1078,8 @@ type
     procedure UTMbasedMergeDSMDTMcomparison1Click(Sender: TObject);
     procedure MergeCOPALOSDTMDSMcompare1Click(Sender: TObject);
     procedure EndclonedEXE1Click(Sender: TObject);
+    procedure Cleararealocks1Click(Sender: TObject);
+    procedure Batchchangefoldernames1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1467,6 +1471,11 @@ end;
 procedure Twmdem.CleanupFrenchlistof1x1kmfiles1Click(Sender: TObject);
 begin
    RemovePartialTilesBefore10kMergesDownload;
+end;
+
+procedure Twmdem.Cleararealocks1Click(Sender: TObject);
+begin
+    DEMIX_UTM_based_processing(udClearAreaLocks);
 end;
 
 procedure Twmdem.ClearStatusBarPanelText;
@@ -5653,24 +5662,29 @@ begin
    BackupProgramEXE;
 end;
 
+procedure Twmdem.Batchchangefoldernames1Click(Sender: TObject);
+begin
+   Batchchangepartoffilenames1Click(Sender)
+end;
+
 procedure Twmdem.Batchchangepartoffilenames1Click(Sender: TObject);
+const
+   NameContains : shortstring = 'DSC_';
+   ChangeTo : shortstring = 'NEW_';
 var
    fName,NewName,BaseName : PathStr;
    i,Changed : integer;
-   NameContains,ChangeTo : shortString;
    FilesWanted : TStringList;
    DefaultFilter : byte;
 begin
    DefaultFilter := 1;
-   NameContains := 'DSC_';
-   ChangeTo := 'NEW_';
    BaseName := '';
-
    repeat
       FilesWanted := tStringList.Create;
       FilesWanted.Add(BaseName);
       Changed := 0;
-      if GetMultipleFiles('Change file name','AnyFile|*.*',FilesWanted, DefaultFilter) then begin
+      if ((Sender = Batchchangefoldernames1) and GetMultipleDirectories('change folder name',FilesWanted)) or
+          GetMultipleFiles('Change file name','AnyFile|*.*',FilesWanted, DefaultFilter) then begin
          Petmar.GetString('phrase to replace',NameContains,false,ValidDosFileNameChars);
          Petmar.GetString('replacement phrase',ChangeTo,false,ValidDosFileNameChars);
          ShowHourglassCursor;
@@ -5678,15 +5692,21 @@ begin
          for i := 0 to pred(FilesWanted.Count) do begin
             fName := FilesWanted.Strings[i];
             if StrUtils.AnsiContainsText(fName,NameContains) then begin
-            inc(Changed);
-               NewName := BaseName + StringReplace(ExtractFileName(fName),NameContains,ChangeTo,[rfReplaceAll, rfIgnoreCase]);
+               inc(Changed);
+               if (Sender = Batchchangefoldernames1) then begin
+                  NewName := StringReplace(fName,NameContains,ChangeTo,[rfReplaceAll, rfIgnoreCase]);
+               end
+               else begin
+                  NewName := StringReplace(ExtractFileName(fName),NameContains,ChangeTo,[rfReplaceAll, rfIgnoreCase]);
+                  NewName := BaseName + NewName;
+               end;
                RenameFile(fName,NewName);
             end;
          end;
       end;
       FilesWanted.Free;
       ShowDefaultCursor;
-   until not AnswerIsYes('Changed ' + IntToStr(Changed) + ' file names.  Change more files');
+   until not AnswerIsYes('Changed ' + IntToStr(Changed) + ' names.  Change more');
 end;
 
 

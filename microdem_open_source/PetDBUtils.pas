@@ -228,33 +228,30 @@ begin
       if not GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then exit;
    end;
 
-   //begin
-      s11 := tStringList.Create;
-      fName := FileNames.Strings[0];
-      s11.LoadFromFile(fName);
-      //fName := ChangeFileExt(FileNames.Strings[0],'.dbf');
-      for i := 1 to pred(FileNames.Count) do begin
-          wmDEM.SetPanelText(0,TimeToStr(now) + '  ' + IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + ExtractFileName(FileNames.Strings[i]));
-          slt := tStringList.Create;
-          slt.LoadFromFile(FileNames.Strings[i]);
-          for j := 1 to pred(slt.Count) do begin
-             TStr := trim(slt.Strings[j]);
-             if (TStr <> '') then s11.Add(TStr);
-          end;
-          slt.Free;
-      end;
-      fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
-      s11.SaveToFile(MDtempDir + 'merged_csv_files.csv');
+    s11 := tStringList.Create;
+    fName := FileNames.Strings[0];
+    s11.LoadFromFile(fName);
+    for i := 1 to pred(FileNames.Count) do begin
+        wmDEM.SetPanelText(0,TimeToStr(now) + '  ' + IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + ExtractFileName(FileNames.Strings[i]));
+        slt := tStringList.Create;
+        slt.LoadFromFile(FileNames.Strings[i]);
+        for j := 1 to pred(slt.Count) do begin
+           TStr := trim(slt.Strings[j]);
+           if (TStr <> '') then s11.Add(TStr);
+        end;
+        slt.Free;
+    end;
+    fName := ExtractFilePath(fname) + 'merge_' + ExtractFileNameNoExt(fName) + '.dbf';
+    s11.SaveToFile(MDtempDir + 'merged_csv_files.csv');
 
-      if (OutName <> '') or GetFileNameDefaultExt('Merged CSV files','*.dbf',OutName) then begin
-         if (BaseMap = Nil) then Result := StringList2CSVtoDB(s11,OutName,true)
-         else Result := BaseMap.StringListToLoadedDatabase(s11,OutName);
-         CloseSingleDB(Result);
-         OpenNumberedGISDataBase(Result,OutName);
-      end;
-      LastDataBase := fName;
-      wmDEM.SetPanelText(0,'');
-   //end;
+    if (OutName <> '') or GetFileNameDefaultExt('Merged CSV files','*.dbf',OutName) then begin
+       if (BaseMap = Nil) then Result := StringList2CSVtoDB(s11,OutName,true)
+       else Result := BaseMap.StringListToLoadedDatabase(s11,OutName);
+       CloseSingleDB(Result);
+       OpenNumberedGISDataBase(Result,OutName,true);
+    end;
+    LastDataBase := fName;
+    wmDEM.SetPanelText(0,'');
    FileNames.Free;
    EndProgress;
 end;

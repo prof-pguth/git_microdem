@@ -2199,7 +2199,6 @@ var
             GISdb[DBonTable].MyData.Next;
         end;
         GeometryFName := Petmar.NextFileNumber(MDTempDir, GISdb[DBonTable].DBName + '_','.xyzib');
-        //ColorsFName := Palette256Bitmap(p256Spectrum);  //p256Terrain);
         AssignFile(Outf,GeometryFName);
         rewrite(Outf,1);
         BlockWrite(OutF,Points^,MemReq);
@@ -2301,7 +2300,7 @@ begin
        end;
        inc(i);
        GISdb[DBonTable].MyData.Edit;
-       if GISdb[DBonTable].GetFloat32FromTableLinkPossible(CheckField,Value) then begin
+       if GISdb[DBonTable].GetFloat32FromTableLink(CheckField,Value) then begin
           if (Operation = sfaMult) or (Operation = sfaDiv) then Value := Value * Mult
           else Value := Value + Mult;
           if ItsFloatField then GISdb[DBonTable].MyData.SetFieldByNameAsFloat(CheckField,Value)
@@ -3557,7 +3556,7 @@ var
       CreateBitmap(bitmap,bmpWidth,bmpWidth);
    end;
 
-begin
+begin {Tdbtablef.DBGrid1DrawColumnCell}
    {$IfDef RecordDBGrid1DrawColumnCell} WriteLineToDebugFile('Tdbtablef.DBGrid1DrawColumnCell'); {$Endif}
    if (DBonTable = 0) then exit;
    fixRect := Rect;
@@ -3615,7 +3614,7 @@ begin
      end;
    end;
    DBGrid1.DefaultDrawColumnCell(fixRect,DataCol,Column,State);
-end;
+end {Tdbtablef.DBGrid1DrawColumnCell};
 
 
 procedure Tdbtablef.DBGrid1TitleClick(Column: TColumn);
@@ -4438,8 +4437,8 @@ begin
           end;
           inc(i);
           GISdb[DBonTable].MyData.Edit;
-          if GetFloat32FromTableLinkPossible(dbOpts.XField,x) and
-             ((Sender = LogOfField1) or (Sender = SinOfField1) or (Sender = CosOfField1) or GetFloat32FromTableLinkPossible(dbOpts.YField,y)) then begin
+          if GetFloat32FromTableLink(dbOpts.XField,x) and
+             ((Sender = LogOfField1) or (Sender = SinOfField1) or (Sender = CosOfField1) or GetFloat32FromTableLink(dbOpts.YField,y)) then begin
                 if (Sender = LogOfField1) then begin
                    if (x > 0) then GISdb[DBonTable].MyData.SetFieldByNameAsFloat(SumName,Log10(x));
                 end
@@ -4941,8 +4940,8 @@ begin
 
             n := 0;
             repeat
-               if GISdb[j].GetFloat32FromTableLinkPossible(XF,v[1]) and
-                    GISdb[j].GetFloat32FromTableLinkPossible(YF,v[2]) then begin
+               if GISdb[j].GetFloat32FromTableLink(XF,v[1]) and
+                    GISdb[j].GetFloat32FromTableLink(YF,v[2]) then begin
                     BlockWrite(Rfile,v,1);
                     inc(n);
                end;
@@ -5301,7 +5300,7 @@ var
    Tile : shortstring;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.AddDSMDTMpair1Click in'); {$EndIf}
-   //IdentifyDSMandDTM1Click(nil);
+   IdentifyDSMandDTM1Click(nil);
    GISdb[DBonTable].ClearGISFilter;
    SetColorForProcessing;
    fl := GISdb[DBonTable].MyData.GetFieldLength('DEMIX_TILE');
@@ -5309,27 +5308,38 @@ begin
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DSM_NAME',fl+3);
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DTM_NAME',fl+3);
    GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr('NO'));
-   GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','');
+   GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','',false);
 
    repeat
        GISdb[DBonTable].EmpSource.Enabled := false;
        GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
        if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
            Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+           wmdem.SetPanelText(1,'Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
            {$IfDef RecordDEMIX} WriteLineToDebugFile(Tile + '  Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
            if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) and GetDSMandDTMTileNamesFromLatLong(DBonTable,Lat,Long,DTMName,DSMName) then begin
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DSMName));
-              GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname);
-              GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname);
-              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES');
+              if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+                 GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES',false);
+                 GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname,false);
+                 GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname,false);
+              end
+              else begin
+                 MessageToContinue('Problem for DEMIX_TILE=' + QuotedStr(DSMName) + ' n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
+              end;
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DTMName));
-              GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname);
-              GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname);
-              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES');
+              if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
+                 GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES',false);
+                 GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname,false);
+                 GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname,false);
+              end
+              else begin
+                 MessageToContinue('Problem for DEMIX_TILE=' + QuotedStr(DSMName) + ' n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
+              end;
            end
            else begin
               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
-              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO');
+              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO',false);
            end;
        end
        else begin
@@ -8371,7 +8381,7 @@ begin
                   {$IfDef AverageNeighborsFull} WriteLineRoDebugFile('Neighbor: ' + LinkValue); {$EndIf}
                   GISdb[NewGIS].MyData.ApplyFilter(NeighborLinkField + '=' + QuotedStr(LinkValue));
 
-                  if GISdb[NewGIS].GetFloat32FromTableLinkPossible(AvField,x) then begin
+                  if GISdb[NewGIS].GetFloat32FromTableLink(AvField,x) then begin
                      inc(n);
                      Sum := Sum + x;
                   end;

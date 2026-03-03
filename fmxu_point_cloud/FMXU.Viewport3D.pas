@@ -43,7 +43,6 @@ type
       public
          // Number of seconds the last Paint took - hopefully fractions of seconds :)
          property LastPaintSeconds : Single read FLastPaintSeconds;
-
          property OnBeforePaint : TNotifyEvent read FOnBeforePaint write FOnBeforePaint;
          property OnAfterPaint : TNotifyEvent read FOnAfterPaint write FOnAfterPaint;
    end;

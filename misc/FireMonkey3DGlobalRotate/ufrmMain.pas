@@ -61,7 +61,6 @@ type
   end;
 
 
-
 procedure StartEarthRotation(fName : PathStr);
 
 var
@@ -75,7 +74,7 @@ implementation
 procedure StartEarthRotation(fName : PathStr);
 begin
    frmMain := TfrmMain.Create(Nil);
-   frmMain.TextureMaterialSource1.Texture.LoadFromFile(fName);   //'c:\mapdata\nasa\blue_marble.png');
+   frmMain.TextureMaterialSource1.Texture.LoadFromFile(fName);
    frmMain.Visible := true;
 end;
 

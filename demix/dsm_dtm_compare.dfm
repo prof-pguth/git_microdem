@@ -232,6 +232,15 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     Text = 'Edit1'
     OnChange = Edit1Change
   end
+  object BitBtn14: TBitBtn
+    Left = 183
+    Top = 240
+    Width = 155
+    Height = 25
+    Caption = 'Grid ot terrain scatterplots'
+    TabOrder = 21
+    OnClick = BitBtn14Click
+  end
   object MainMenu1: TMainMenu
     Left = 568
     Top = 16

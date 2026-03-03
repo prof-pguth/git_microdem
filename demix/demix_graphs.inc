@@ -9,7 +9,7 @@
 
 
 
-procedure BestDEMonGraphTwoParameters(db : integer; Criteria,DEMs : tstringList);
+procedure BestDEMonScatterPlotTwoParameters(db : integer; Criteria,DEMs : tstringList);
 var
    Compares,FileList : tStringList;
    i : integer;
@@ -62,8 +62,8 @@ var
            NumSolo := 0;
            GISdb[db].MyData.First;
            repeat
-              if GISdb[db].GetFloat32FromTableLinkPossible(GISdb[db].dbOpts.XField,v[1]) and
-                  GISdb[db].GetFloat32FromTableLinkPossible(GISdb[db].dbOpts.YField,v[2]) then begin
+              if GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.XField,v[1]) and
+                  GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.YField,v[2]) then begin
                 ThisWinners := WinnerAndTies(db,DEMs,Tolerance);
                 if MDdef.DEMIX_IgnoreTies and StrUtils.AnsiContainsText(ThisWinners,'-') then begin
 
@@ -92,28 +92,26 @@ var
       Result.GraphDraw.VertLabel := GISdb[db].dbOpts.YField;
       Result.GraphDraw.BottomMargin := 75;
       Result.GraphDraw.LeftMargin := 90;
-      //Result.GraphDraw.BottomLegendFName := Legfname;
       Result.RedrawDiagram11Click(Nil);
    end;
 
-begin  {procedure BestDEMonGraphTwoParameters}
-    BaseFilter := GISdb[db].MyData.Filter;
-    for I := 0 to pred(Criteria.Count) do begin
-       Criterion := Criteria.Strings[i];
-       GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'Criterion=' + QuotedStr(Criterion));
-       Tolerance := CriterionTieTolerance(Criterion);
-       GISdb[db].dbOpts.XField := 'BARREN_PC';
-       GISdb[db].dbOpts.YField := 'AVG_SLOPE';
-       GISdb[db].dbOpts.Symbol.Size := 8;
-       gr := DoGraph;
-          //fName := NextFileNumber(MDtempdir,'fuv_grid_','.bmp');
-          //SaveImageAsBMP(Gr[i].Image1,fName);
-          //FileList.Add(fName);
-    end;
-   //MakeBigBitmap(FileList,'',fName,2);
-   GISdb[db].ApplyGISFilter(BaseFilter);
-   GISdb[db].ShowStatus;
-end {procedure BestDEMonGraphTwoParameters};
+begin  {procedure BestDEMonScatterPlotTwoParameter}
+   if TileCharacteristicsInDB(DB,true) then begin
+      BaseFilter := GISdb[db].MyData.Filter;
+      for I := 0 to pred(Criteria.Count) do begin
+         Criterion := Criteria.Strings[i];
+         GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'Criterion=' + QuotedStr(Criterion));
+         Tolerance := CriterionTieTolerance(Criterion);
+         GISdb[db].dbOpts.XField := 'BARREN_PC';
+         GISdb[db].dbOpts.YField := 'AVG_SLOPE';
+         GISdb[db].dbOpts.Symbol.Size := 8;
+         gr := DoGraph;
+      end;
+     //MakeBigBitmap(FileList,'',fName,2);
+     GISdb[db].ApplyGISFilter(BaseFilter);
+     GISdb[db].ShowStatus;
+  end;
+end {procedure BestDEMonScatterPlotTwoParameter};
 
 
 

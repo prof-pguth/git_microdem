@@ -20,7 +20,7 @@ unit BaseGraf;
        //{$Define RecordGraphMemoryAlocations}
        //{$Define RecordGrafProblems}
        //{$Define RecordScaling}
-       {$Define RecordGrafSize}
+       //{$Define RecordGrafSize}
        //{$Define RecordGrafAxis}
        //{$Define RecordFormResize}
        //{$Define InitTrackColors}

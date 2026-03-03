@@ -382,7 +382,6 @@ begin
          exit;
       end;
 
-
       if StrUtils.AnsiContainsText(WorkName,'ASTGTMV003_') then begin  //aster ASTGTMV003_N18W156_dem
          WorkingString := Copy(WorkName,11,7);
          Result := decode;

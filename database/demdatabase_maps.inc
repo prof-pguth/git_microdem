@@ -139,7 +139,7 @@ end;
                    inc(n);
                    if ValidLatLongFromTable(Lat,Long) and ValidLat2Long2FromTable(Lat2,Long2) then begin
                       if (MDDef.ConnectRecordColoring) then begin
-                         if GetFloat32FromTableLinkPossible(dbOpts.SymSizeField,Value) then begin
+                         if GetFloat32FromTableLink(dbOpts.SymSizeField,Value) then begin
                             if (Value > MaxComboBox1) then Value := MaxComboBox1;
                             Bitmap.Canvas.Pen.Width := round(dbOpts.ScaledSymMinSize + (dbOpts.ScaledSymMaxSize - dbOpts.ScaledSymMinSize) * ((Value-MinComboBox1)/(MaxComboBox1-MinComboBox1)));
                          end;
@@ -839,7 +839,7 @@ end;
                       UpdateProgressBar(Recs/MyData.FiltRecsInDB);
                       EmpSource.Enabled := false;
                    end;
-                   if (dbOpts.ConstantSymSize) or GetFloat32FromTableLinkPossible(dbOpts.SymSizeField,z) then begin
+                   if (dbOpts.ConstantSymSize) or GetFloat32FromTableLink(dbOpts.SymSizeField,z) then begin
                       if LineOrAreaShapeFile(ShapeFileType) then aShapeFile.AreaAndCentroid(TheMapOwner.MapDraw.PrimMapProj,MyData.RecNo,YCent,XCent)
                       else begin
                          XCent := MyData.GetFieldByNameAsFloat(LongFieldName);
@@ -848,7 +848,7 @@ end;
                       TheMapOwner.MapDraw.LatLongDegreeToScreen(YCent,XCent,x,y);
                       if TheMapOwner.MapDraw.OnScreen(x,y) then begin
                          if (dbOpts.FloatColorField <> '') and (dbOpts.dbColorMode <> 4) then begin
-                            if GetFloat32FromTableLinkPossible(dbOpts.FloatColorField,z) then begin
+                            if GetFloat32FromTableLink(dbOpts.FloatColorField,z) then begin
                                Color := GetCorrectColor(z);
                             end
                             else begin
@@ -869,7 +869,7 @@ end;
                              Radius := dbOpts.ScaledSymMaxSize;
                          end
                          else begin
-                            if GetFloat32FromTableLinkPossible(dbOpts.SymSizeField,Value) then begin
+                            if GetFloat32FromTableLink(dbOpts.SymSizeField,Value) then begin
                                PetMath.ValueInRange(Value,dbOpts.SizeMin,dbOpts.SizeMax);
                                Radius := round(dbOpts.ScaledSymMinSize + (dbOpts.ScaledSymMaxSize-dbOpts.ScaledSymMinSize) * sqrt((Value-dbOpts.SizeMin)/(dbOpts.SizeMax-dbOpts.SizeMin)));
                             end

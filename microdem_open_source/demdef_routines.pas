@@ -4089,7 +4089,6 @@ end;
                CheckFile(ExtractFileName(GT_Datum_fName));
                CheckFile(ExtractFileName(GT_Ellipse_fName));
                CheckFile(ExtractFileName(ColorBrewerName));
-               CheckFile(ExtractFileName(HardLimitColorPaletteFName));
                CheckFile(ExtractFileName(LandCoverSeriesFName));
 
                CheckFile('KeyHH.exe');
@@ -4624,7 +4623,7 @@ begin
     TM_RGB_fname := ProgramRootDir + 'tm_rgb_v3' + DefaultDBExt;
     CSVImportRulesFName := ProgramRootDir + 'CSV_IMPORT_RULES_v4'+ DefaultDBExt;
     SatBandNames := ProgramRootDir + 'sat_band_names_v20' + DefaultDBExt;
-    ColorBrewerName := ProgramRootDir + 'color_palettes_v12' + DefaultDBExt;
+    ColorBrewerName := ProgramRootDir + 'color_palettes_v13' + DefaultDBExt;
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;

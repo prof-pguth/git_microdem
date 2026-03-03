@@ -220,7 +220,6 @@ type
      procedure ScaleViewToMapExtent(MapDraw : tMapDraw);
      procedure AddMap(aMapDraw : tMapDraw);
      procedure AddLayer(GridName : PathStr);
-     //procedure LayersComplete;
   end;
 
 
@@ -232,8 +231,6 @@ var
 
 
 function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
-
-//function SeismicTo3DView : TView3DForm;
 
 procedure FMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true);
 
@@ -287,35 +284,6 @@ begin
    FileList.Destroy;
    {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
 end;
-
-(*
-procedure Old_FMX3dViewer(ViewSeveral : boolean; GridName1,GridName2,GridName3,GridName4,GridName5 : PathStr; LinkZScaling : boolean = true);
-var
-   FileList : tStringList;
-begin
-   if MDDef.New3Dviewer then begin
-      FileList := tStringList.Create;
-      if GridName1 <> '' then FileList.Add(GridName1);
-      if GridName2 <> '' then FileList.Add(GridName2);
-      if GridName3 <> '' then FileList.Add(GridName3);
-      if GridName4 <> '' then FileList.Add(GridName4);
-      if GridName5 <> '' then FileList.Add(GridName5);
-      Startfmxu_point_cloud_viewer(FileList);
-      FileList.Destroy;
-   end
-   else begin
-      {$If Defined(Start3DView)} writeLineToDebugFile('FMX3dViewer in ' + ExtractFileName(GridName1)); {$EndIf}
-      View3DForm := StartFMX3dViewer(ViewSeveral,LinkZScaling);
-      View3DForm.AddLayer(GridName1);
-      View3DForm.AddLayer(GridName2);
-      View3DForm.AddLayer(GridName3);
-      View3DForm.AddLayer(GridName4);
-      View3DForm.AddLayer(GridName5);
-      View3DForm.LayersComplete;
-      {$If Defined(Start3DView)} WriteLineToDebugFile('FMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
-   end;
-end;
-*)
 
 
 procedure TView3DForm.AddMap(aMapDraw : tMapDraw);

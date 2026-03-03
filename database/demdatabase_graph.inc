@@ -37,7 +37,7 @@ var
          TimeCount := 0;
          MyData.First;
          repeat
-             if GetFloat32FromTableLinkPossible(dbOpts.XField,v[2]) then begin
+             if GetFloat32FromTableLink(dbOpts.XField,v[2]) then begin
                 inc(TimeCount);
                 v[1] := TimeCount;
                 BlockWrite(Rfile,v,1);
@@ -183,7 +183,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                ' line='+ ColorString(Result.GraphDraw.FileColors256[j]) + ' point='+ ColorString(Result.GraphDraw.Symbol[i].Color)); {$EndIf}
            MyData.First;
            repeat
-              if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(MultSeries.Strings[j],v[2]) then begin
+              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(MultSeries.Strings[j],v[2]) then begin
                  BlockWrite(Rfile,v,1);
               end;
               MyData.Next;
@@ -213,7 +213,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
            Result.OpenPointSymbolFile(rfile,TStr,Result.GraphDraw.Symbol[j]);
 
            while Not MyData.eof do begin
-              if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(dbOpts.YField,v[2]) then begin
+              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(dbOpts.YField,v[2]) then begin
                  BlockWrite(Rfile,v,1);
               end;
                MyData.Next;
@@ -247,15 +247,15 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                   end;
                end;
                if (GraphType = dbgtPlot1series1) then begin
-                 if GetFloat32FromTableLinkPossible(dbOpts.XField,v[2]) then begin
+                 if GetFloat32FromTableLink(dbOpts.XField,v[2]) then begin
                     inc(TimeCount);
                     v[1] := TimeCount;
                     BlockWrite(Rfile,v,1);
                  end;
                end
-               else if GetFloat32FromTableLinkPossible(dbOpts.XField,v[1]) and GetFloat32FromTableLinkPossible(dbOpts.YField,v[2]) then begin
+               else if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(dbOpts.YField,v[2]) then begin
                   if (GraphType = dbgtN2Dgraph2yaxes1) then begin
-                     GoodPoint := GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
+                     GoodPoint := GetFloat32FromTableLink(dbOpts.ZField,v[3]);
                   end
                   else GoodPoint := true;
                   if GoodPoint then begin
@@ -266,7 +266,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                            if MyData.GetFieldByNameAsString(dbOpts.ZField) = 'Y' then v[3] := 1 else v[3] := 0;
                         end
                         else begin
-                           GetFloat32FromTableLinkPossible(dbOpts.ZField,v[3]);
+                           GetFloat32FromTableLink(dbOpts.ZField,v[3]);
                         end;
                      end;
                      *)
@@ -300,11 +300,11 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                      end;
                      *)
                      if (GraphType = dbgtN2DgraphcolorNumericField) then begin
-                        GetFloat32FromTableLinkPossible(dbOpts.NumericColorField,v[3]);
+                        GetFloat32FromTableLink(dbOpts.NumericColorField,v[3]);
                         //GoodPoint := true;
                      end;
                      if GoodPoint then BlockWrite(Rfile,v,1);
-                     if (GraphType = dbgtN2Dgraph2series) and GetFloat32FromTableLinkPossible(dbOpts.ZField,v[2]) then begin
+                     if (GraphType = dbgtN2Dgraph2series) and GetFloat32FromTableLink(dbOpts.ZField,v[2]) then begin
                         BlockWrite(Rfile2,v,1);
                      end;
                   end;
@@ -683,7 +683,7 @@ begin
    end;
    MyData.First;
    repeat
-      if GetFloat32FromTableLinkPossible(anXField,v[1]) and GetFloat32FromTableLinkPossible(anYField,v[2]) then begin
+      if GetFloat32FromTableLink(anXField,v[1]) and GetFloat32FromTableLink(anYField,v[2]) then begin
          BlockWrite(Rfile,v,1);
       end;
       MyData.Next;

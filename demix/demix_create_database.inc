@@ -17,7 +17,7 @@ var
    AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
    i,j : integer;
    RefALOS_DSM,RefALOS_DTM,AlosName,
-   fName,RefDSMName,RefDTMName,CopNAME,FathomName,OldName,cName,tName : PathStr;
+   fName,RefDSMName,RefDTMName,CopNAME,FathomName,cName,tName : PathStr;
 begin
   {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM in'); {$EndIf}
    WantShowProgress := false;
@@ -144,9 +144,20 @@ begin
                   //if (GISdb[db].MyData.GetFieldByNameAsFloat('DSM_SLOPE') - GISdb[db].MyData.GetFieldByNameAsFloat('DTM_SLOPE') > -1) then begin
                       inc(j);
                       Country := UpperCase(GISdb[db].MyData.GetFieldByNameAsString('COUNTRY'));
-                      Common := ExtractFilePath(GISdb[db].DBFullName) + AreaName + '\source\';
-                      DSMName := Common + RemoveCountryFromTileName(GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME')) + '.tif';
-                      DTMName := Common + RemoveCountryFromTileName(GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME')) + '.tif';
+                      if AreaWithMergingFiles(AreaName) then begin
+                         Common := ExtractFilePath(GISdb[db].DBFullName) + AreaName + '\merges\';
+                         DSMName := GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME');
+                         DSMName := Common + DSMName + '\' + RemoveAreaFromTileName(AreaName,DSMName) + '.tif';
+
+                         DTMName := GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME');
+                         DTMName := Common + DTMName + '\' + RemoveAreaFromTileName(AreaName,DTMName) + '.tif';
+                         {$IfDef RecordDEMIX} WriteLineToDebugFile(DSMname + DTMName); {$EndIf}
+                      end
+                      else begin
+                         Common := ExtractFilePath(GISdb[db].DBFullName) + AreaName + '\source\';
+                         DSMName := Common + RemoveCountryFromTileName(GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME')) + '.tif';
+                         DTMName := Common + RemoveCountryFromTileName(GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME')) + '.tif';
+                      end;
                       TStr := IntToStr(j) + '/' + IntToStr(GISdb[db].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
                       wmDEM.SetPanelText(2,TStr,true);
                       {$IfDef RecordDEMIX} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}

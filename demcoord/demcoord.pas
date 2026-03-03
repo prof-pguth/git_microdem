@@ -699,9 +699,7 @@ type
                procedure VariogramGamma(GridLimits: tGridLimits; var EastWest,NorthSouth,NESW,NWSE : float32);
             {$EndIf}
         {$EndIf}
-        {$IfDef TrackElevationPointers}
-           function ElevationStructuresAllocated : boolean;
-        {$EndIf}
+        {$IfDef TrackElevationPointers}  function ElevationStructuresAllocated : boolean; {$EndIf}
    end;
 
 

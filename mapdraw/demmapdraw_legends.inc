@@ -253,7 +253,7 @@ begin
 
    if isElevationMap(MapType) or (MapType in [mtIHSReflect,mtCurvature,mtDifferenceDiverge]) then begin
       if (MapType = mtElevFromTable) then begin
-         if OpenNumberedGISDataBase(LegendGIS,HardLimitColorPaletteFName) then begin
+         if OpenNumberedGISDataBase(LegendGIS,ColorBrewerName) then begin
             GISDB[LegendGIS].MyData.ApplyFilter('PALETTE=' + QuotedStr(ElevationFixedPalette));
             Result := GISDB[LegendGIS].CreateDataBaseLegend(true);
             CloseSingleDB(LegendGIS);

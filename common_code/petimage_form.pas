@@ -316,13 +316,13 @@ type
   private
     { Private declarations }
      BaseTopBitmap,TopBitmap : tMyBitmap;  //need two, one to modify and the other as the original
-     procedure Recolor(Method : RecolorMethod);
+     procedure Recolor(Method : tRecolorMethod);
      procedure RotateBitmapByAngle(Angle : float64; WhiteBackground : boolean = true);
      procedure ShiftAlphaBlending;
      procedure SetBlendingButtons(Setting : boolean);
      procedure RotateImage(Angle: int16);
      procedure SolidToEdge(StartX,StartY,EndX,EndY : integer);
-     procedure MakeNewImageForm(Method : RecolorMethod; fName : PathStr);
+     procedure MakeNewImageForm(Method : tRecolorMethod; fName : PathStr);
   public
     { Public declarations }
      ShiftImageX,ShiftImageY,LocationInFilesInDir,
@@ -548,10 +548,10 @@ end;
 
 function MakeBigBitmap(var theFiles : tStringList; Capt : shortstring; SaveName : PathStr = ''; Cols : integer = -1; Legend : PathStr ='') : TImageDispForm;
 var
-   bigbmp,LegBMP : tMyBitmap;
+   bigbmp{,LegBMP} : tMyBitmap;
    fName : PathStr;
    AskCols : boolean;
-   x,y : integer;
+  // x,y : integer;
 begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap in'); {$EndIf}
    Result := nil;
@@ -571,17 +571,6 @@ begin
      {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, bitmaps combined'); {$EndIf}
      if (BigBMP <> nil) then begin
         DrawLegendBelowBigBitmap(BigBMP,Legend,Capt);
-(*
-        if (Capt <> '') then begin
-           Capt := RemoveUnderscores(Capt);
-           BigBmp.Canvas.Font.Style := [fsBold];
-           BigBmp.Canvas.Font.Size := 24;
-           while (BigBmp.Canvas.TextWidth(Capt) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
-           x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(Capt);
-           y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(Capt);
-           BigBmp.Canvas.TextOut(x,y,Capt);
-        end;
-*)
         {$IfDef RecordBigBitmap} WriteLineToDebugFile('MakeBigBitmap, legend/caption done'); {$EndIf}
 
          Result := TImageDispForm.Create(Application);
@@ -1640,7 +1629,7 @@ begin
    end;
 end;
 
-procedure TImageDispForm.Recolor(Method : RecolorMethod);
+procedure TImageDispForm.Recolor(Method : tRecolorMethod);
 var
    x,y : integer;
    r,g,b : byte;
@@ -2620,7 +2609,7 @@ begin
    ShiftAlphaBlending;
 end;
 
-procedure TImageDispForm.MakeNewImageForm(Method : RecolorMethod; fName : PathStr);
+procedure TImageDispForm.MakeNewImageForm(Method : tRecolorMethod; fName : PathStr);
 var
    NewImageForm : TImageDispForm;
 begin

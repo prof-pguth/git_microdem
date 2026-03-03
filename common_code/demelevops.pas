@@ -110,7 +110,7 @@ begin
    FillComboBoxWithColorPalettes(ColorBrewerName,ElevOptionsForm.ComboBox1);
    if (MDDef.ElevPalName = '') then ElevOptionsForm.ComboBox1.Text := ElevOptionsForm.ComboBox1.Items[0]
    else ElevOptionsForm.ComboBox1.Text := MDDef.ElevPalName;
-   FillComboBoxWithColorPalettes(HardLimitColorPaletteFName,ElevOptionsForm.ComboBox2);
+   FillComboBoxWithColorPalettes(HardLimitColorPalettefName,ElevOptionsForm.ComboBox2);
    if (ElevationFixedPalette = '') then ElevOptionsForm.ComboBox2.Text := ElevOptionsForm.ComboBox2.Items[0]
    else ElevOptionsForm.ComboBox2.Text := ElevationFixedPalette;
    ElevOptionsForm.Button2.Visible := (ElevOptionsForm.MapOwner <> Nil);

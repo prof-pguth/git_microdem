@@ -416,11 +416,13 @@ procedure MakeCSVforHRDEMComparison(DB : integer);
 procedure MakeCSVforGDEMcompareDSMtoDTM(DBonTable : integer);
 
 function RemoveCountryFromTileName(Tile : shortString) : shortstring;
+function RemoveAreaFromTileName(Area,Tile : shortString) : shortstring;
 procedure RemoveInvalidCriterion(var sl : TStringList);
 
 procedure LoadTwoDEMIXfilters(var ComboBox6,ComboBox7 : tComboBox);
 function ExtractKeyFilterName(fName : shortstring) : shortstring;
 function ExpandFullFilterName(fName : shortstring) : PathStr;
+function AreaWithMergingFiles(AreaName : shortstring) : boolean;
 
 
 
@@ -456,6 +458,17 @@ uses
 {$IfDef IncludeVectorCriteria}
    {$include demix_channels.inc}
 {$EndIf}
+
+
+
+function AreaWithMergingFiles(AreaName : shortstring) : boolean;
+var
+   CountryCode : shortstring;
+begin
+   CountryCode := UpperCase(copy(AreaName,1,3));
+   Result := (CountryCode = 'CH_') or (CountryCode = 'FR_') or (CountryCode = 'NZ_') or (CountryCode = 'UK_');
+end;
+
 
 
 function ExtractKeyFilterName(fName : shortstring) : shortstring;
@@ -544,6 +557,13 @@ begin
 end;
 
 
+function RemoveAreaFromTileName(Area,Tile : shortString) : shortstring;
+begin
+   Result := Tile;
+   Delete(Result,1,succ(Length(Area)));
+end;
+
+
 function IdentifyDEMIXtileAsDTMorDSM(Tile : shortString) : shortstring;
 var
    Country : shortstring;
@@ -551,15 +571,23 @@ begin
    Result := '';
    Tile := UpperCase(Tile);
    Country := Copy(Tile,1,3);
-   if (Country  = 'ES_') or (Country  = 'IC_') then begin
-        if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
-        else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
+   if (Tile[3] <> '_') or (Country = 'US_') then begin
+      //US data, no country encoded
+      Result := 'DTM';
+   end
+   else begin
+       if (Country  = 'ES_') or (Country  = 'IC_') then begin
+            if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
+            else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
+       end;
+       if (Country = 'CA_') or (Country = 'UK_') then begin
+            if ANSIcontainsStr(Tile,'DSM') then Result := 'DSM'
+            else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
+       end;
    end;
-   if (Country = 'CA_') or (Country = 'UK_') then begin
-        if ANSIcontainsStr(Tile,'DSM') then Result := 'DSM'
-        else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
-   end;
+   if (Result = '') then Result := 'DTM';
 end;
+
 
 function GetDSMandDTMTileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
 var

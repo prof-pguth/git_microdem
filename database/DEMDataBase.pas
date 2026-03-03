@@ -450,7 +450,7 @@ type
         procedure FieldRange(Field : shortstring; var Min,Max : float64; Filtered : boolean = false; ForceCompute : boolean = false);
         procedure FieldRange32(Field : shortstring; var Min,Max : float32; Filtered : boolean = false; ForceCompute : boolean = false);
         procedure ClearFieldRange(aField: shortstring);
-        function GetFloat32FromTableLinkPossible(FieldDesired : shortstring; var Value : float32) : boolean;
+        function GetFloat32FromTableLink(FieldDesired : shortstring; var Value : float32) : boolean;
         function GetStringFromTableLink(FieldDesired : ShortString) : ShortString;
         function GetStringFromTableLinkPossible(FieldDesired : ShortString) : ShortString;
 
@@ -1325,7 +1325,8 @@ begin
    {$IfDef RecordRange} WriteLineToDebugFile('FindFieldRangeLinkPossible out, range=' + RealToString(aMinVal,-12,-2) + ' to ' + RealToString(aMaxVal,-12,-2)); {$EndIf}
 end;
 
-function TGISdataBaseModule.GetFloat32FromTableLinkPossible(FieldDesired : shortstring; var Value : float32) : boolean;
+
+function TGISdataBaseModule.GetFloat32FromTableLink(FieldDesired : shortstring; var Value : float32) : boolean;
 var
    TStr : shortstring;
 begin
@@ -1487,7 +1488,7 @@ begin
    rc := MyData.RecordCount;
    repeat
      {$IfDef VCL} if WantShowProgress and (NPts mod 1000 = 0) then UpdateProgressBar(Npts/rc); {$EndIf}
-     if GetFloat32FromTableLinkPossible(FieldName,fv) then begin
+     if GetFloat32FromTableLink(FieldName,fv) then begin
         values[NPts] := fv;
         inc(NPts);
      end;
@@ -2116,11 +2117,11 @@ end;
             Color1Val := 0;
             Color2Val := 0;
             Color3Val := 0;
-            if (dbOpts.RedField <> '') then GetFloat32FromTableLinkPossible(dbOpts.RedField,Color1Val);
-            if (dbOpts.GreenField <> '')then GetFloat32FromTableLinkPossible(dbOpts.GreenField,Color2Val);
+            if (dbOpts.RedField <> '') then GetFloat32FromTableLink(dbOpts.RedField,Color1Val);
+            if (dbOpts.GreenField <> '')then GetFloat32FromTableLink(dbOpts.GreenField,Color2Val);
             if (dbOpts.BlueField = '') then Result := rgb_colors_three_params.tColorFromRedGreen(Color1Val,Color2Val)
             else begin
-               GetFloat32FromTableLinkPossible(dbOpts.BlueField,Color3Val);
+               GetFloat32FromTableLink(dbOpts.BlueField,Color3Val);
                Result := rgb_colors_three_params.tColorFromRedGreenBlue(Color1Val,Color2Val,Color3Val);
             end;
          end;
@@ -4890,7 +4891,7 @@ begin
    Result := 0;
    MyData.First;
    repeat
-      if GetFloat32FromTableLinkPossible(FieldDesired,z) then
+      if GetFloat32FromTableLink(FieldDesired,z) then
          Result := Result + z;
       MyData.Next;
    until MyData.EOF;

@@ -359,14 +359,14 @@ function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : 
            Result.Caption := Result.GraphDraw.LLcornerText;
            MyData.First;
            while not MyData.eof do begin
-              if GetFloat32FromTableLinkPossible(DirField,v[1]) then begin
+              if GetFloat32FromTableLink(DirField,v[1]) then begin
                   OK := true;
                   if (d = 0) then Offset := 0
                   else begin
-                      OK := GetFloat32FromTableLinkPossible(LidarFields[d],Offset);
+                      OK := GetFloat32FromTableLink(LidarFields[d],Offset);
                   end;
                   if OK then for i := 1 to ns do begin
-                     if GetFloat32FromTableLinkPossible(LidarFields[i],v[2]) then begin
+                     if GetFloat32FromTableLink(LidarFields[i],v[2]) then begin
                         v[2] := v[2] - Offset;
                         BlockWrite(Rfiles[i],v,1);
                      end;

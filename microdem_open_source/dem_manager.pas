@@ -157,12 +157,6 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    {$Else}
       procedure AutoOpenOptions;
    {$EndIf}
-
-{$EndIf}
-
-
-{$IfDef TrackElevationPointers}
-   function DEMArrayElevationPointersDefined(Report : shortstring; DEMsWanted : tDEMbooleanArray) : boolean;
 {$EndIf}
 
 
@@ -173,6 +167,7 @@ function ValidImageryExt(ext : extstr) : boolean;
 function GetLC10_fileName(Lat,Long : float32) : PathStr;
 
 function WebExtractGEDTMorEDTM(aDEM : shortstring;  bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
+function IsThisWebExtractDEM(aDEm : shortstring) : boolean;
 
 
 const
@@ -278,6 +273,14 @@ uses
    BaseMap;
 
 
+
+function IsThisWebExtractDEM(aDEm : shortstring) : boolean;
+begin
+   Result := (aDEM = 'GEDTMV0') or (aDEM = 'EDTM') or (aDEM = 'GEDTMV1_1') or (aDEM = 'GEDTMV1_2');
+end;
+
+
+
 function WebExtractGEDTMorEDTM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
 var
    fName : PathStr;
@@ -297,31 +300,9 @@ begin
        //if (aDEM = 'GEDTMV1_2') then DEMGlb[Result].MultiplyGridByConstant(0.1);   //because it lacks any indication it is decimeters
        SaveGEDTMFamilyDEM(Result,SaveName);  //with EGM2008 code added, MD elevation code for meters, and kill ASCII tag 42112
     end
-    else MessageToContinue('At it again; download link broken');
+    else MessageToContinue('At it again; GEDTM download failure');
 end;
 
-
-
-
-{$IfDef TrackElevationPointers}
-   function DEMArrayElevationPointersDefined(Report : shortstring; DEMsWanted : tDEMbooleanArray) : boolean;
-   var
-      j : integer;
-   begin
-      Result := true;
-      for j := 1 to MaxDEMDataSets do begin
-         if ValidDEM(j) then begin
-            if not DEMglb[j].ElevationStructuresAllocated then Result := false
-         end;
-      end;
-      if Result then begin
-         WriteLineToDebugFile(Report + ' DEM structure allocated');
-      end
-      else begin
-         HighlightLineToDebugFile(Report + ' DEM structure not allocated');
-      end;
-   end;
-{$EndIf}
 
 
 function LandCoverTileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;

@@ -307,7 +307,6 @@ type
     RadioGroup34: TRadioGroup;
     RadioGroup35: TRadioGroup;
     BitBtn11: TBitBtn;
-    GDAL: TBitBtn;
     CheckBox38: TCheckBox;
     CheckBox95: TCheckBox;
     Button4: TButton;
@@ -403,6 +402,7 @@ type
     Label47: TLabel;
     Label49: TLabel;
     BitBtn38: TBitBtn;
+    BitBtn44: TBitBtn;
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn13Click(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -453,7 +453,6 @@ type
     procedure BitBtn36Click(Sender: TObject);
     procedure RadioGroup7Click(Sender: TObject);
     procedure BitBtn11Click(Sender: TObject);
-    procedure GDALClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
     procedure BitBtn37Click(Sender: TObject);
@@ -470,6 +469,7 @@ type
     procedure BitBtn42Click(Sender: TObject);
     procedure BitBtn43Click(Sender: TObject);
     procedure BitBtn39Click(Sender: TObject);
+    procedure BitBtn44Click(Sender: TObject);
     //procedure CheckBox106Click(Sender: TObject);
   private
     { Private declarations }
@@ -1292,15 +1292,6 @@ begin
 end;
 
 
-procedure TOptionsForm.GDALClick(Sender: TObject);
-begin
-   {$IfDef ExGDAL}
-   {$Else}
-      MDDef.DontBugMeAboutGDAL := false;
-      GetGDALFileNames;
-   {$EndIf}
-end;
-
 procedure TOptionsForm.GraphClick(Sender: TObject);
 begin
     GetNewBMPSize(MDDef.DefaultGraphXSize,MDDef.DefaultGraphYSize,'Graph size');
@@ -2037,7 +2028,6 @@ end;
 
 procedure TOptionsForm.BitBtn37Click(Sender: TObject);
 begin
-   //QuickOpenEditWindow(IniFileName,ShortEXEName + '.ini file');
    ShowInNotepadPlusPlus(IniFileName,ShortEXEName + '.ini file');
 end;
 
@@ -2074,6 +2064,11 @@ procedure TOptionsForm.BitBtn43Click(Sender: TObject);
 begin
    Get_Users_Slope_Algorithm(MDDef.SlopeCompute);
    Label49.Caption := SlopeMethodName(MDDef.SlopeCompute);
+end;
+
+procedure TOptionsForm.BitBtn44Click(Sender: TObject);
+begin
+   CreatePaletteSampleTable;
 end;
 
 procedure TOptionsForm.BitBtn4Click(Sender: TObject);

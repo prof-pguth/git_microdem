@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet15
+    ActivePage = TabSheet21
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -1100,22 +1100,13 @@ inherited OptionsForm: TOptionsForm
         Caption = 'GDAL for Geotiff export'
         TabOrder = 14
       end
-      object GDAL: TBitBtn
-        Left = 24
-        Top = 333
-        Width = 75
-        Height = 25
-        Caption = 'GDAL'
-        TabOrder = 15
-        OnClick = GDALClick
-      end
       object Button6: TButton
         Left = 24
         Top = 368
-        Width = 75
+        Width = 112
         Height = 25
         Caption = 'Nav Opts'
-        TabOrder = 16
+        TabOrder = 15
         OnClick = Button6Click
       end
       object CheckBox36: TCheckBox
@@ -1124,7 +1115,7 @@ inherited OptionsForm: TOptionsForm
         Width = 136
         Height = 17
         Caption = 'Nav with FIT loading'
-        TabOrder = 17
+        TabOrder = 16
       end
       object CheckBox79: TCheckBox
         Left = 536
@@ -1132,7 +1123,7 @@ inherited OptionsForm: TOptionsForm
         Width = 209
         Height = 17
         Caption = 'Delete FIT files after import'
-        TabOrder = 18
+        TabOrder = 17
       end
       object CheckBox54: TCheckBox
         Left = 279
@@ -1140,15 +1131,15 @@ inherited OptionsForm: TOptionsForm
         Width = 148
         Height = 17
         Caption = 'Assume -32767 missing'
-        TabOrder = 19
+        TabOrder = 18
       end
       object BitBtn29: TBitBtn
-        Left = 105
-        Top = 333
+        Left = 24
+        Top = 335
         Width = 112
         Height = 25
         Caption = 'Output grids'
-        TabOrder = 20
+        TabOrder = 19
         OnClick = BitBtn29Click
       end
       object CheckBox300: TCheckBox
@@ -1157,7 +1148,7 @@ inherited OptionsForm: TOptionsForm
         Width = 273
         Height = 17
         Caption = 'Sea level to missing on import'
-        TabOrder = 21
+        TabOrder = 20
       end
       object GroupBox16: TGroupBox
         Left = 544
@@ -1165,7 +1156,7 @@ inherited OptionsForm: TOptionsForm
         Width = 249
         Height = 105
         Caption = 'Hole filling'
-        TabOrder = 22
+        TabOrder = 21
         object Label24: TLabel
           Left = 29
           Top = 69
@@ -1203,7 +1194,7 @@ inherited OptionsForm: TOptionsForm
         Width = 289
         Height = 17
         Caption = 'Delete metadada Geotiff DEM files'
-        TabOrder = 23
+        TabOrder = 22
       end
     end
     object TabSheet9: TTabSheet
@@ -3145,6 +3136,15 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Graph colors'
         TabOrder = 13
         OnClick = BitBtn38Click
+      end
+      object BitBtn44: TBitBtn
+        Left = 528
+        Top = 216
+        Width = 121
+        Height = 25
+        Caption = 'Create palette picker'
+        TabOrder = 14
+        OnClick = BitBtn44Click
       end
     end
   end

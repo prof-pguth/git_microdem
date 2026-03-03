@@ -72,10 +72,8 @@ type
    tImageDoingWhat = (imDoingNothing,AddingText,DoingFloodFill,imFirstDistancePoint,imSecondDistancePoint,FirstVerticalRotate,
         {$IfDef RegisterPhoto} PickRegistrationPoint,DigitizeOnPhoto,LocatePoints, {$EndIf}
         SecondVerticalRotate,FirstHorizontalRotate,SecondHorizontalRotate,DraggingBMP,ColorCrossSection,imPickingBox);
-
-   RecolorMethod = (NegativeMethod,NonBlackToWhite,NonWhiteToBlack,PickedColors,NoGrays,LeaveSingle,TurnRed,TurnGreen,TurnBlue,MakeGrayscale,TurnCyan,TurnMagenta,TurnYellow,StretchGrayscale,
+   tRecolorMethod = (NegativeMethod,NonBlackToWhite,NonWhiteToBlack,PickedColors,NoGrays,LeaveSingle,TurnRed,TurnGreen,TurnBlue,MakeGrayscale,TurnCyan,TurnMagenta,TurnYellow,StretchGrayscale,
                        MakeSubdued,DilateImage,ErodeImage,NoNonGrays,WhiteToNearWhite,SmoothFilterImage, BlueGrayscale,RedGrayscale,GreenGrayscale,TurnHLS_light,TurnHLS_sat,TurnHLS_hue);
-
 type
 
 tBMPMemory = class
@@ -298,13 +296,13 @@ const
 
 var
    NumWinGraphColors : integer;
-   WinGraphColorArray : array[0..64] of tColor;
+   WinGraphColorArray : array[0..255] of tColor;
 
 function WinGraphColors(i : integer) : tColor;
 
 procedure LoadWinGraphColors;
 procedure PickWinGraphColors;
-
+procedure CreatePaletteSampleTable;
 
 procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
 
@@ -423,12 +421,10 @@ end;
 procedure PickWinGraphColors;
 var
    db : tMyData;
-   dname : PathStr;
    Palettes : tStringList;
 begin
-   dName := ProgramRootDir + 'graph_colors.dbf';
-   db := tMyData.Create(dName);
-   Palettes := db.ListUniqueEntriesInDB('NAME');
+   db := tMyData.Create(ColorBrewerName);
+   Palettes := db.ListUniqueEntriesInDB('PALETTE');
    MDDef.WinGraphColors := GetFromList('Graph colors',Palettes);
    db.Destroy;
    Palettes.Destroy;
@@ -440,18 +436,43 @@ procedure LoadWinGraphColors;
 var
    db : tMyData;
    i : integer;
-   dname : PathStr;
 begin
-   dName := ProgramRootDir + 'graph_colors.dbf';
-   db := tMyData.Create(dName);
-   db.ApplyFilter('NAME=' + QuotedStr(MDDef.WinGraphColors));
+   db := tMyData.Create(ColorBrewerName);
+   db.ApplyFilter('PALETTE=' + QuotedStr(MDDef.WinGraphColors));
    NumWinGraphColors := db.FiltRecsInDB;
-   for i := 1 to NumWinGraphColors do begin
+   for i := 0 to pred(NumWinGraphColors) do begin
       WinGraphColorArray[i] := db.TColorFromTable;
       db.Next;
    end;
+   for i := NumWinGraphColors to 255 do begin
+      WinGraphColorArray[i] := WinGraphColorArray[i mod NumWinGraphColors];
+   end;
    db.Destroy;
 end;
+
+procedure CreatePaletteSampleTable;
+var
+   db : tMyData;
+   i : integer;
+   fName : PathStr;
+   Palettes,Samples : tStringList;
+begin
+   db := tMyData.Create(ColorBrewerName);
+   Palettes := db.ListUniqueEntriesInDB('PALETTE');
+   SafeMakeDir(ProgramRootDir + 'palettes\');
+   Samples := tStringList.Create;
+   Samples.Add('PALETTE,N');   //,ICON');
+   for i := 0 to pred(Palettes.Count) do begin
+      db.ApplyFilter('PALETTE=' + QuotedStr(Palettes.strings[i]));
+
+
+      Samples.Add(Palettes.strings[i] + ',' + IntToStr(db.FiltRecsInDB) );  //+ ',' + ProgramRootDir + 'palettes\' + Palettes.strings[i] + '.png');
+   end;
+
+   fName := ProgramRootDir + 'palettes\PalettePicker.dbf';
+   StringList2CSVtoDB(samples,fName);
+end;
+
 
 
 function PixelsWithThisColor(var Bitmap : tMyBitmap; TestColor : tPlatformColor) : int64;
@@ -543,47 +564,6 @@ end;
 
 
 {$EndIf}
-
-(*
-procedure AdjustContrastAndBrightness(ABitmap: TMyBitmap; AContrast,ABrightness: integer);
-// AContrast given as a percentage adjustment
-var
-   Map: array[0..255] of byte;
-   Stride,i,w,h,x,y : integer;
-   PS, P: Pbyte;
-
-   function Clamp(V: integer): integer;
-   begin
-      if V < 0 then Result := 0
-      else if V>255 then Result := 255
-      else Result := V;
-   end;
-
-begin
-   // First setup map
-   for i := 0 to 255 do
-   Map[i] := Clamp(round((i - 127) * AContrast / 100) + 127 + ABrightness);
-   // Make sure we have 24bit colors
-   ABitmap.PixelFormat := pf24bit;
-   // Width, Height, Scanstride
-   W := ABitmap.Width;
-   H := ABitmap.Height;
-   if H = 0 then exit;
-   Stride := 0;
-   if H>= 2 then Stride := integer(ABitmap.ScanLine[1]) - integer(ABitmap.ScanLine[0]);
-   // PS points to current scanline
-   PS := ABitmap.ScanLine[0];
-   for y := 0 to H - 1 do begin
-      P := PS;
-      for x := 0 to W * 3 - 1 do begin
-         P^ := Map[P^];
-         inc(P);
-      end;
-      inc(PS, Stride);
-   end;
-end;
-*)
-
 
 
 procedure HSIfromRGBTrip(RGB : tPlatformColor; var H,S,I : float32);

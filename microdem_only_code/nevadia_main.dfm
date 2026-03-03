@@ -3014,6 +3014,10 @@ object wmdem: Twmdem
         Caption = 'Batch change part of file names'
         OnClick = Batchchangepartoffilenames1Click
       end
+      object Batchchangefoldernames1: TMenuItem
+        Caption = 'Batch change folder names'
+        OnClick = Batchchangefoldernames1Click
+      end
       object Addprefixtoallfilesindirectory1: TMenuItem
         Caption = 'Add prefix to all files in a path'
         OnClick = Addprefixtoallfilesindirectory1Click
@@ -3462,8 +3466,8 @@ object wmdem: Twmdem
     end
   end
   object DEMIXdbCreatePopupMenu: TPopupMenu
-    Left = 976
-    Top = 296
+    Left = 984
+    Top = 288
     object Graphevaluationandscores1: TMenuItem
       Caption = 'Open DEMIX database for graph evaluation and scores'
       OnClick = Graphevaluationandscores1Click
@@ -3622,6 +3626,10 @@ object wmdem: Twmdem
     object FixGEDTMlateadditonproblems1: TMenuItem
       Caption = 'Fix  problems (hard coded for ONE problem)'
       OnClick = FixGEDTMlateadditonproblems1Click
+    end
+    object Cleararealocks1: TMenuItem
+      Caption = 'Clear area locks'
+      OnClick = Cleararealocks1Click
     end
     object CloneEXEformultithreading1: TMenuItem
       Caption = 'Clone EXE (for multithreading)'

@@ -123,11 +123,11 @@ procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutNam
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
-procedure GridOfCriterionForMultipleDEMcomparisons(DBonTable : integer; ColorBy : shortstring);
+procedure GridOfTerrainScatterPlots(DB : integer; ColorBy,Compares : tStringList);
 procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Comparisons : tStringList);
 procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
-procedure BestDEMonGraphTwoParameters(DB : integer; Criteria,DEMs : tstringList);
+procedure BestDEMonScatterPlotTwoParameters(DB : integer; Criteria,DEMs : tstringList);
 procedure GraphTwoParameterGridsByAverageSlopeAndResolution(db : integer; DEMIXtileFieldName : shortstring; MultSeries : tStringList; AllTiles : boolean = false);
 
 

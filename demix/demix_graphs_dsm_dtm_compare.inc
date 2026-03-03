@@ -140,29 +140,6 @@ var
       Symbol : tFullSymbolDeclaration;
    begin
       Result := StartIndividualGraph(db);
-      (*
-      Result := tThisBaseGraph.Create(Application);
-         if (GISdb[db].dbOpts.XField = 'GRID_SEC') then begin
-            TStr := 'arc second';
-            Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(ResString) + 2;
-         end
-         else begin
-            TStr := 'meters';
-            Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(ResString) + 5;
-         end;
-         Result.GraphDraw.HorizLabel := 'Grid spacing (' + TStr + ')';
-
-         Result.GraphDraw.MaxVertAxis := -99e38;
-         Result.GraphDraw.MinVertAxis :=  99e38;
-      *)
-         (*
-         for k := 0 to pred(MultSeries.Count) do begin
-            GISdb[db].MyData.FindFieldRange(MultSeries.Strings[k],aMin,aMax);
-            if amin < Result.GraphDraw.MinVertAxis then Result.GraphDraw.MinVertAxis := amin;
-            if amax > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := amax;
-         end;
-         *)
-
          if MDDEF.DEMIX_UseMedian then TStr := 'Median' else TStr := 'Mean';
          Result.GraphDraw.VertLabel := TStr + ' ' + MultSeries.Strings[0];
          for i := 1 to pred(MultSeries.Count) do begin
@@ -183,9 +160,10 @@ var
              OnFile := Result.OpenPointSymbolFile(rfile,MultTiles.Strings[k],Symbol,4);
              GISdb[db].MyData.First;
              repeat
-                if GISdb[db].GetFloat32FromTableLinkPossible(GISdb[db].dbOpts.XField,v[1]) and GISdb[db].GetFloat32FromTableLinkPossible(MultSeries.Strings[0],v[2]) then begin
-                   if v[2] < Result.GraphDraw.MinVertAxis then Result.GraphDraw.MinVertAxis := v[2];
-                   if v[2] > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := v[2];
+                if GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.XField,v[1]) and GISdb[db].GetFloat32FromTableLink(MultSeries.Strings[0],v[2]) then begin
+                   //if v[2] < Result.GraphDraw.MinVertAxis then Result.GraphDraw.MinVertAxis := v[2];
+                   //if v[2] > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := v[2];
+                   CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
                    BlockWrite(Rfile,v,1);
                 end;
                 GISdb[db].MyData.Next;
@@ -243,20 +221,8 @@ var
              CloseFile(rfile);
          end;
        end;
-
-        {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('MakeGraph, data files created '+ Result.GraphDraw.AxisRange); {$EndIf}
-
-       //Result.GraphDraw.LLlegend := false;
+       {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('MakeGraph, data files created '+ Result.GraphDraw.AxisRange); {$EndIf}
        EndSingleGraph(result);
-       (*
-       Result.GraphDraw.SetShowAllPoints(false);
-       Result.GraphDraw.SetShowAllLines(true,4);
-       Result.AutoScaleAndRedrawDiagram(false,false,false);
-       Result.DefaultClientWidth := MDDef.DEMIX_xsize;
-       Result.DefaultClientHeight := MDDef.DEMIX_ysize;
-       Result.GraphDraw.ForceNewSize := true;
-       Result.FormResize(Nil);
-       *)
    end {function MakeGraph};
 
 
@@ -307,27 +273,6 @@ var
       v : array[1..2] of float32;
    begin
       Result := StartIndividualGraph(db);
-(*
-      Result := tThisBaseGraph.Create(Application);
-      GISdb[db].EmpSource.Enabled := false;
-
-      if MDDEF.DEMIX_UseMedian then TStr := 'Median' else TStr := 'Mean';
-      Result.GraphDraw.VertLabel := TStr + ' ' + Criterion;
-
-       if (GISdb[db].dbOpts.XField = 'GRID_SEC') then begin
-          TStr := 'arc second';
-          Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(ResString) + 2;
-       end
-       else begin
-          TStr := 'meters';
-          Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(ResString) + 5;
-       end;
-       Result.GraphDraw.HorizLabel := 'Grid spacing (' + TStr + ')';
-
-         Result.GraphDraw.MaxVertAxis := -99e38;
-         Result.GraphDraw.MinVertAxis :=  99e38;
-*)
-
       Result.GraphDraw.LRcornerText := FigureLabel;
       {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile(Result.GraphDraw.LRcornerText); {$EndIf}
       for i := 0 to pred(Comparisons.Count) do begin
@@ -335,10 +280,7 @@ var
          Result.GraphDraw.Symbol[i].DrawingSymbol := FilledBox;
          Result.GraphDraw.Symbol[i].Size := 4;
          Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(WinGraphColors(i));
-         //Result.GraphDraw.LineSize256[i] := 3;
          Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(WinGraphColors(i));
-         //Result.GraphDraw.ShowLine[i] := true;
-         //Result.GraphDraw.ShowPoints[i] := false;
 
          for k := 0 to pred(Resolutions.Count) do begin
             SeriesFilter := TheFigureFilter + ' AND ' + ResString + '=' + Resolutions.Strings[k] + ' AND COMPARE=' + QuotedStr(Comparisons.Strings[i]);
@@ -353,26 +295,17 @@ var
                if MDDEF.DEMIX_UseMedian then v[2] := GISdb[db].MyData.FieldMedian(Criterion)
                else v[2] := GISdb[db].MyData.FieldAverage(Criterion);
             end;
-            if v[2] < Result.GraphDraw.MinVertAxis then Result.GraphDraw.MinVertAxis := v[2];
-            if v[2] > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := v[2];
-
+            //if v[2] < Result.GraphDraw.MinVertAxis then Result.GraphDraw.MinVertAxis := v[2];
+            //if v[2] > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := v[2];
+            CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
             BlockWrite(Rfile,v,1);
             GISdb[db].MyData.Next;
          end;
          CloseFile(rfile);
       end;
-       //Result.GraphDraw.LeftMargin := 100;
-       //Result.GraphDraw.BottomMargin := 90;
        Result.GraphDraw.LLlegend := false;
        Result.GraphDraw.InsideMarginLegend := lpNEMap;
        EndSingleGraph(Result);
-       (*
-       Result.AutoScaleAndRedrawDiagram(false,false,false,false);
-       Result.DefaultClientWidth := MDDef.DEMIX_xsize;
-       Result.DefaultClientHeight := MDDef.DEMIX_ysize;
-       Result.GraphDraw.ForceNewSize := true;
-       Result.FormResize(Nil);
-       *)
    end;
 
 
@@ -403,46 +336,90 @@ end {procedure GraphTwoParameterGridsByDEMresolution};
 
 
 
-procedure GridOfCriterionForMultipleDEMcomparisons(DBonTable : integer; ColorBy : shortstring);
+procedure GridOfTerrainScatterPlots(DB : integer; ColorBy,Compares : tStringList);
 var
-   Compares,FileList : tStringList;
-   i : integer;
+   FileList : tStringList;
+   i,j : integer;
    fName : PathStr;
-   gr : array[0..10] of tThisBaseGraph;
-begin
-   GISdb[DBonTable].ApplyGISFilter('GRID_SEC=1');
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   Compares := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('COMPARE');
-   GISdb[DBonTable].dbOpts.XField := 'BARREN_PC';
-   GISdb[DBonTable].dbOpts.YField := 'AVG_SLOPE';
-   GISdb[DBonTable].dbOpts.NumericColorField := ColorBy;
-   FileList := tStringList.Create;
-   GISdb[DBonTable].dbOpts.Symbol.Size := 8;
-   for I := 0 to pred(Compares.Count) do begin
-      GISdb[DBonTable].ApplyGISFilter('GRID_SEC=1' + ' AND COMPARE=' + QuotedStr(Compares.Strings[i]));
-      gr[i] := GISdb[DBonTable].MakeGraph(dbgtN2DgraphcolorNumericField,false);
-      gr[i].GraphDraw.Symbol[0].Size := 8;
-      gr[i].GraphDraw.LRcornerText := Compares.Strings[i];
-      gr[i].GraphDraw.InsideMarginLegend := lpNWMap;
-      if StrUtils.AnsiContainsText(ColorBy,'_FUV') then begin
-         gr[i].MinZ := 0;
-         gr[i].MaxZ := 0.5;
-      end;
-      gr[i].GraphDraw.MinVertAxis := -2;
-      gr[i].GraphDraw.MaxVertAxis := 90;
-      gr[i].GraphDraw.MinHorizAxis := -2;
-      gr[i].GraphDraw.MaxHorizAxis := 70;
-      gr[i].ZUnits := GISdb[DBonTable].dbOpts.NumericColorField;
-      gr[i].RedrawDiagram11Click(Nil);
-      fName := NextFileNumber(MDtempdir,'fuv_grid_','.bmp');
-      SaveImageAsBMP(Gr[i].Image1,fName);
-      FileList.Add(fName);
+   BaseFilter,SpaceFilter : shortstring;
+   gr : t2Dgrapharray;
+
+   function CreateGraph(LRText : shortstring) : tThisBaseGraph;
+   var
+      rfile : file;
+      v : array[1..3] of float32;
+   begin
+          Result := tThisBaseGraph.Create(Application);
+          Result.GraphDraw.RainBowColors := true;
+          Result.GraphDraw.MinVertAxis := -2;
+          Result.GraphDraw.MaxVertAxis := 90;
+          Result.GraphDraw.MinHorizAxis := -2;
+          Result.GraphDraw.MaxHorizAxis := 70;
+          Result.GraphDraw.HorizLabel := GISdb[DB].dbOpts.XField;
+          Result.GraphDraw.VertLabel := GISdb[DB].dbOpts.YField;
+          Result.OpenXYZFile(rfile);
+          Result.ZUnits := GISdb[DB].dbOpts.NumericColorField;  //GISdb[DB].dbOpts.NumericColorField;
+
+          Result.MinZ := 99e38;
+          Result.MaxZ := -99e38;
+
+          while not GISdb[DB].MyData.eof  do begin
+              if GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.XField,v[1]) and GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.YField,v[2]) and GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.NumericColorField,v[3]) then begin
+                 BlockWrite(Rfile,v,1);
+                 CompareValueToExtremes(v[3],Result.MinZ, Result.MaxZ);
+              end;
+              GISdb[DB].MyData.Next;
+          end;
+          closeFile(rFile);
+          {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('coloring from '+ RealToString(Result.Minz,-12,-2) + ' to ' + RealToString(Result.Maxz,-12,-2) ); {$EndIf}
+          Result.GraphDraw.LeftMargin := 100;
+          Result.GraphDraw.BottomMargin := 90;
+          Result.GraphDraw.Symbol[0].Size := 5;
+          Result.GraphDraw.LRcornerText := LRText;
+          Result.GraphDraw.InsideMarginLegend := lpNEMap;
+(*
+          if StrUtils.AnsiContainsText(GISdb[DB].dbOpts.NumericColorField,'_FUV') then begin
+             Result.MinZ := 0;
+             Result.MaxZ := 0.5;
+          end;
+*)
+          Result.RedrawDiagram11Click(Nil);
+          fName := NextFileNumber(MDtempdir,'fuv_grid_','.bmp');
+          SaveImageAsBMP(Result.Image1,fName);
+          FileList.Add(fName);
    end;
-   MakeBigBitmap(FileList,'',fName,2);
-   GISdb[DBonTable].ClearGISFilter;
-   Compares.Destroy;
-   GISdb[DBonTable].ShowStatus;
-end;
+
+begin {procedure GridOfTerrainScatterPlot}
+   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GridOfCriterionForMultipleDEMcomparisons in'); {$EndIf}
+   BaseFilter := GISdb[DB].MyData.Filter;
+   if GISdb[DB].MyData.FieldExists('GRID_SEC') then SpaceFilter := 'GRID_SEC=1'
+   else if GISdb[DB].MyData.FieldExists('GRID_M') then SpaceFilter := 'GRID_M=30'
+   else begin
+       SpaceFilter := '';
+   end;
+   GISdb[DB].EmpSource.Enabled := false;
+   GISdb[DB].dbOpts.XField := 'BARREN_PC';
+   GISdb[DB].dbOpts.YField := 'AVG_SLOPE';
+   FileList := tStringList.Create;
+    for j := 0 to pred(ColorBy.Count) do begin
+       GISdb[DB].dbOpts.NumericColorField := ColorBy.Strings[j];
+       {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('color=' + GISdb[DB].dbOpts.NumericColorField); {$EndIf}
+       if Compares = Nil then begin
+          gr[j,0] := CreateGraph(Compares.Strings[i]);
+       end
+       else begin
+           for I := 0 to pred(Compares.Count) do begin
+              GISdb[DB].ApplyGISFilter(AddAndIfNeeded(SpaceFilter) + 'COMPARE=' + QuotedStr(Compares.Strings[i]));
+              {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
+              gr[j,i] := CreateGraph(Compares.Strings[i]);
+           end;
+       end;
+    end;
+    MakeBigBitmap(FileList,'',fName,Compares.Count);
+    GISdb[DB].ApplyGISFilter(BaseFilter);
+    Compares.Destroy;
+    GISdb[DB].ShowStatus;
+end {procedure GridOfTerrainScatterPlot};
 
 
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
@@ -459,26 +436,9 @@ begin
     GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'TILE=' + QuotedStr(DEMIX_tile));
     if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
       Result := StartIndividualGraph(db);
-
-      (*
-      Result := tThisBaseGraph.Create(Application);
-      if GISdb[db].MyData.FieldExists('GRID_SEC') then begin
-         XField := 'GRID_SEC';
-         Result.GraphDraw.HorizLabel := 'Grid spacing (arc second)';
-      end
-      else begin
-         XField := 'GRID_M';
-         Result.GraphDraw.HorizLabel := 'Average Grid spacing (m)';
-      end;
-      Result.GraphDraw.SetShowAllLines(true,3);
-      Result.GraphDraw.SetShowAllPoints(false);
-      *)
-
       Result.GraphDraw.LRcornerText := DEMIX_tile;
       Result.GraphDraw.LLcornerText := TileStats;
       Result.GraphDraw.VertLabel := 'Slope difference FUV';
-
-
       Comparisons := Nil;
       Comparisons := GISdb[db].MyData.ListUniqueEntriesInDB('COMPARE');
       for i := 0 to pred(Comparisons.Count) do begin
@@ -520,13 +480,13 @@ begin
           MultSeries.Add('DSM_SLOPE');
           MultSeries.Add('DTM_SLOPE');
           Result := GISdb[db].ActuallyDrawGraph(dbgtN2DgraphMultSeries,MultSeries);
-            Result.GraphDraw.MinHorizAxis := 0;
-            Result.GraphDraw.MinVertAxis := 0;
-            Result.GraphDraw.LeftMargin := 90;
-            Result.GraphDraw.BottomMargin := 80;
-            Result.GraphDraw.InsideMarginLegend := lpNEMap;
-            Result.GraphDraw.LRcornerText := DTMName;
-            Result.RedrawDiagram11Click(Nil);
+          Result.GraphDraw.MinHorizAxis := 0;
+          Result.GraphDraw.MinVertAxis := 0;
+          Result.GraphDraw.LeftMargin := 90;
+          Result.GraphDraw.BottomMargin := 80;
+          Result.GraphDraw.InsideMarginLegend := lpNEMap;
+          Result.GraphDraw.LRcornerText := DTMName;
+          Result.RedrawDiagram11Click(Nil);
       end;
       GISdb[db].ApplyGISFilter(BaseFilter);
   end
