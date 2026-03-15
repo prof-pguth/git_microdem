@@ -212,6 +212,46 @@ begin
 end;
 
 
+procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
+var
+   Tstrl,OutPut : tStringList;
+   Header1,Header : shortstring;
+   fName : PathStr;
+   i,j : integer;
+begin
+   Output := tStringList.Create;
+   if (OutName = '') then GetFileNameDefaultExt('Merged CSV file','*.csv',fName);
+   {$IfDef RecordCSVMerge} writelinetoDebugFile('MergeCSVFiles, files=' + IntToStr(fNames.Count)); {$Endif}
+   for I := 0 to pred(fNames.Count) do begin
+      fName := fNames.Strings[i];
+      if  FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
+         Tstrl := tStringList.Create;
+         TStrl.LoadFromFile(fName);
+         if TStrl.Count > 0 then begin
+            {$IfDef RecordCSVMerge} writelinetoDebugFile(IntegerToString(pred(Tstrl.count),12) + ' lines in  ' + fname); {$Endif}
+            if (i = 0) then begin
+               Header1 := tstrl.strings[0];
+               for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+            end
+            else begin
+               Header := tstrl.strings[0];
+               if (Uppercase(Header) <> UpperCase(Header1)) then begin
+                  {$IfDef RecordCSVMerge} writelinetoDebugFile('Header mismatch, ' + Header + ' and '+ Header1); {$Endif}
+               end
+               else begin
+                  for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
+               end;
+            end;
+         end;
+         TStrl.Free;
+      end;
+   end;
+   Output.SaveToFile(OutName);
+   {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(pred(Output.count),8) + ' lines in merge ' + OutName); writelinetoDebugFile(''); {$Endif}
+   Output.Free;
+end;
+
+
 
 function MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil; FileNames : tStringList = nil; OutName : PathStr = '') : integer;
 var
@@ -227,6 +267,7 @@ begin
       DefFil := 1;
       if not GetMultipleFiles('CSV/TXT files to merge','files|*.txt;*.csv' ,FileNames,DefFil) then exit;
    end;
+    {$IfDef RecordCSVMerge} writelinetoDebugFile('MergeMultipleCSVorTextFiles, files=' + IntToStr(fNames.Count)); {$Endif}
 
     s11 := tStringList.Create;
     fName := FileNames.Strings[0];
@@ -273,46 +314,6 @@ begin
    Result.yMax := Petmath.MaxFloat(bb1.YMax,bb2.YMaX);
 end;
 
-
-procedure MergeCSVFiles(var Fnames : tstringList; OutName : PathStr);
-var
-   Tstrl,OutPut : tStringList;
-   Header1,Header : shortstring;
-   fName : PathStr;
-   i,j : integer;
-begin
-   {$IfDef RecordCSVMerge} writelinetoDebugFile(''); {$Endif}
-   Output := tStringList.Create;
-   if (OutName = '') then GetFileNameDefaultExt('Merged CSV file','*.csv',fName);
-   {$IfDef RecordCSVMerge} writelinetoDebugFile('MergeCSVFiles, files=' + IntToStr(fNames.Count)); {$Endif}
-   for I := 0 to pred(fNames.Count) do begin
-      fName := fNames.Strings[i];
-      if  FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
-         Tstrl := tStringList.Create;
-         TStrl.LoadFromFile(fName);
-         if TStrl.Count > 0 then begin
-            {$IfDef RecordCSVMerge} writelinetoDebugFile(IntegerToString(pred(Tstrl.count),12) + ' lines in  ' + fname); {$Endif}
-            if (i = 0) then begin
-               Header1 := tstrl.strings[0];
-               for j := 0 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
-            end
-            else begin
-               Header := tstrl.strings[0];
-               if (Uppercase(Header) <> UpperCase(Header1)) then begin
-                  {$IfDef RecordCSVMerge} writelinetoDebugFile('Header mismatch, ' + Header + ' and '+ Header1); {$Endif}
-               end
-               else begin
-                  for j := 1 to pred(TStrl.Count) do Output.Add(TStrl.Strings[j]);
-               end;
-            end;
-         end;
-         TStrl.Free;
-      end;
-   end;
-   Output.SaveToFile(OutName);
-   {$IfDef RecordCSVMerge}  writelinetoDebugFile(IntegerToString(pred(Output.count),8) + ' lines in merge ' + OutName); writelinetoDebugFile(''); {$Endif}
-   Output.Free;
-end;
 
 
 procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstring);

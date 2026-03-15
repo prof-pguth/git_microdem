@@ -130,6 +130,7 @@ const
    procedure GDAL_Raster_Calculator(Expression : shortstring);
 
    function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
+   function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
 
 
    function GDAL_DEM_command(OpenMap : boolean; InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
@@ -192,8 +193,6 @@ const
       procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
    {$EndIf}
 
-
-    function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
 
 
 implementation
@@ -362,10 +361,14 @@ var
    aName : PathStr;
    cmd : shortstring;
    BatchFile : tStringList;
+   NoProgress : boolean;
 begin
    try
-      ShowHourglassCursor;
-      HeavyDutyProcessing := true;
+      NoProgress := HeavyDutyProcessing;
+      if not NoProgress then begin
+         ShowHourglassCursor;
+         HeavyDutyProcessing := true;
+      end;
       aName := Petmar.NextFileNumber(MDTempDir, 'gdal_merge_file_list_','.txt');
       OutNames.SaveToFile(aName);
       OutVRT := Petmar.NextFileNumber(MDTempDir, 'gdal_vrt_','.vrt');
@@ -376,12 +379,13 @@ begin
       BatchFile.Add(cmd);
       cmd := GDALtools_Dir + 'gdal_translate -of GTiff ' + OutVrt + ' ' + MergefName + ' ' + Added;
       BatchFile.Add(cmd);
-
       aName := Petmar.NextFileNumber(MDTempDir, 'vrt2merge_','.bat');
       EndBatchFile(aName,BatchFile);
    finally
-      ShowDefaultCursor;
-      HeavyDutyProcessing := false;
+      if not NoProgress then begin
+         ShowDefaultCursor;
+         HeavyDutyProcessing := false;
+      end;
    end;
 end;
 
@@ -1261,10 +1265,7 @@ end;
             OutPath := NextFilePath(BaseOutPath  {ExtractFileNameNoExt(fName)} + 'extract_subset');
             SafeMakeDir(OutPath);
             OutName := OutPath + ExtractFileName(fName);
-
-
             {$IfDef RecordSubsetOpen} WriteLineToDebugFile('GDALsubsetGridAndOpen ' + ExtractFileName(fname) + ' want out ' + sfBoundBoxToString(BB,4)); {$EndIf}
-
             Ext := UpperCase(ExtractFileExt(fName));
             GeotiffBoundingBoxProj(fName,Imagebb);
             if GeotiffRegVars(fName, RegVars) then begin

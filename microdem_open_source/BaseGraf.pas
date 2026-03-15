@@ -439,7 +439,6 @@ type
      procedure DrawScaledPieCharts(Bitmap : tMyBitmap);
      procedure GraphLabels(var Bitmap : tMyBitmap);
      function GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
-
   public
     { Public declarations }
      GraphDraw : tGraphDraw;

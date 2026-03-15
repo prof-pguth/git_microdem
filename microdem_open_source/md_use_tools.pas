@@ -281,10 +281,11 @@ begin
    end;
 
    if FileExists(lsp_calculator_fName) then begin
-     outname :=  MDtempDir + DEMGlb[DEM].AreaName;
-     OutName := OutName + '_d' + IntToStr(degree);
+     outname :=  MDtempDir + 'LSP_C_' + DEMGlb[DEM].AreaName;
+     OutName := OutName + '_deg' + IntToStr(degree);
+
      cmd := lsp_calculator_fName + ' -i ' + DEMGlb[DEM].GeotiffDEMName + ' -o ' + OutName + ' ' + Options;
-     if Degree = 4 then cmd := cmd + ' -d 4';
+     if (Degree = 4) then cmd := cmd + ' -d 4';
 
      {$IfDef RecordLSPcalculator} WriteLineToDebugFile(cmd); {$EndIf}
      WinExecAndWait32(cmd,true,MDdef.ShowWinExec);

@@ -144,6 +144,7 @@ type
     BitBtn45: TBitBtn;
     BitBtn46: TBitBtn;
     CheckBox14: TCheckBox;
+    BitBtn47: TBitBtn;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -224,6 +225,7 @@ type
     procedure Edit7Change(Sender: TObject);
     procedure BitBtn45Click(Sender: TObject);
     procedure BitBtn46Click(Sender: TObject);
+    procedure BitBtn47Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -237,11 +239,8 @@ type
     { Public declarations }
      db_U10,db_u80,db_u120,db_Full,
      db : integer;
-     UseDEMs : tStringList;
+     //UseDEMs : tStringList;
   end;
-
-//var
-  //eval_scores_graph_form : Teval_scores_graph_form;
 
 
 procedure StartDEMIXgraphs(DB : integer);
@@ -401,6 +400,10 @@ var
    sl2 : tStringList;
 begin
    Result := tStringList.Create;
+   for j := 0 to pred(Memo1.Lines.Count) do begin
+      if (Memo1.Lines[j] <> '') then Result.Add(Memo1.Lines[j]);
+   end;
+(*
    GISdb[db].DBFieldUniqueEntries('CRITERION',sl2);
    for j := 0 to pred(Memo1.Lines.Count) do begin
       Criterion := UpperCase(Memo1.Lines[j]);
@@ -409,6 +412,7 @@ begin
       end;
    end;
    sl2.Destroy;
+*)
    {$IfDef TrackCriteriaList}TrackCriteriaList(Result,'MakeCriteriaList'); {$EndIf}
 end;
 
@@ -839,6 +843,9 @@ end;
 
 
 procedure Teval_scores_graph_form.BitBtn31Click(Sender: TObject);
+begin
+//March 2026, removed since it was hard coded for a single DEMIX tile
+(*
 var
    DEMs,Criteria : tStringList;
    i,j,k,ref,rg,tg : integer;
@@ -942,6 +949,7 @@ begin
    Self.Visible := true;
    MDdef.AddFUVtoR2 := false;
    CloseAllDEMs;
+*)
 end;
 
 
@@ -1253,6 +1261,7 @@ end;
 
 procedure Teval_scores_graph_form.BitBtn44Click(Sender: TObject);
 begin
+//removed since it was hard coded for two DEMs
 (*
 var
    DEMs,Criteria,Results : tStringList;
@@ -1341,7 +1350,7 @@ end;
 
 procedure Teval_scores_graph_form.BitBtn45Click(Sender: TObject);
 begin
-   BestDEMonGraphTwoParameters(DB,MakeCriteriaList,MakeDEMlist);
+   BestDEMonScatterPlotTwoParameters(DB,MakeCriteriaList,MakeDEMlist);
 end;
 
 procedure Teval_scores_graph_form.BitBtn46Click(Sender: TObject);
@@ -1353,6 +1362,12 @@ begin
       Self.Visible := true;
    end;
 end;
+
+procedure Teval_scores_graph_form.BitBtn47Click(Sender: TObject);
+begin
+   GridOfTerrainScatterPlots(DB,MakeCriteriaList,Nil,MakeDEMList);
+end;
+
 
 procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 

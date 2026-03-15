@@ -97,6 +97,8 @@ function AspectDifferenceMap(WhichDEM,RegionRadius : integer; GridLimits : tGrid
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 
+function MakeCasoratiCurvatureGrid(OpenMap : boolean; OutName : shortstring; MeanGrid,GaussGrid : integer) : integer;
+
 
 function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSizeRadius : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 function CreateIQRMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
@@ -224,13 +226,10 @@ var
    sl : array[1..9] of float32;
    MomentVar : tMomentVar;
    SaveFile : boolean;
-   //AreaName : shortstring;
 begin
    SlopeGrid := CreateSlopeMap(DEM,OpenMap);
    SaveFile := SaveName <> '';
    if (SaveName = '')  then SaveName := MDTempDir + MD_Made_string + 'roughness_elev_std_3x3_' + DEMGlb[DEM].AreaName + '.tif';
-   //AreaName := ExtractFileNameNoExt(SaveName);
-
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,ExtractFileNameNoExt(SaveName),DEMGlb[DEM].DEMheader.ElevUnits);  //,false,1);
    MomentVar.Npts := 9;
    StartProgressAbortOption('roughness');
@@ -297,7 +296,6 @@ begin
    Result := CreateAnOrganizationMap(WhichDEM,OpenMap);
    RestoreBackupDefaults;
 end;
-
 
 
 function MakeSyntheticSurface(OpenMap : boolean; DEM : integer; Radius : integer = -99; fName : PathStr = '') : integer;
@@ -397,7 +395,6 @@ begin
 end;
 
 
-
 function UpsampleDEM(OpenMap : boolean; DEMforTemplate,DEMtoUpscale : integer; fName : PathStr = '') : integer;
 begin
    if (fName = '') then fName := MDtempDir + 'upsample_' + DEMGlb[DEMtoUpscale].AreaName + '.tif';
@@ -438,7 +435,6 @@ begin
    ThisCompute.RequireFullWindow := true;
    ThisCompute.UsePoints := useAll;
    MDDef.EvansApproximationAllowed := false;
-   //New(zs);
    for x := 0 to pred(DEMglb[DEM].DEMHeader.NumCol) do begin
       for y := 0 to pred(DEMglb[DEM].DEMHeader.NumRow) do begin
           if DEMglb[DEM].GetSlopeAndAspect(ThisCompute,x,y,SAR) then begin
@@ -469,7 +465,6 @@ begin
    DEMglb[Result].CheckMaxMinElev;
    if OpenMap then DEMglb[Result].SetupMap(false,mtElevSpectrum);
 end;
-
 
 
 procedure GridDfferenceStats(DEM : integer);
@@ -506,7 +501,6 @@ begin
    fName := NextFileNumber(MDtempDir,DEMGlb[DEM].AreaName,'.dbf');
    StringList2CSVtoDB(Findings,fName);
 end;
-
 
 
 function GridDiffernces(PercentDifference : boolean = false) : integer;
@@ -565,7 +559,6 @@ begin
      end;
    end;
 end;
-
 
 
 function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = ''; PercentDifference : boolean = false) : integer;
@@ -702,7 +695,6 @@ begin
       {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion called with invalid grid'); {$EndIf}
    end;
 end;
-
 
 
 function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; NeighborhoodRadius : integer) : integer;
@@ -849,7 +841,6 @@ begin
    end;
    {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('CreateFirstSecondThirdOrderPartialDerivatives, NewGrid=' + IntToStr(Result) + '  proj=' + DEMGlb[Result].DEMMapProj.ProjDebugName); {$EndIf}
 end;
-
 
 
 function BoxCarDetrendDEM(OpenMap : boolean; DEM : integer; FilterRadius : integer = 2; Square : boolean = true; SaveName : PathStr = '') : integer;
@@ -1021,6 +1012,26 @@ begin
       DEMglb[Result].CheckMaxMinElev;
       if OpenMap then DEMglb[Result].SetupMap(false,mtDEMVATTable);
    end;
+end;
+
+
+function MakeCasoratiCurvatureGrid(OpenMap : boolean; OutName : shortstring; MeanGrid,GaussGrid : integer) : integer;
+var
+   x,y : integer;
+   z,zm,zg : float32;
+begin
+     {$If Defined(CreateCurvature)} WriteLineToDebugFile('Create ' + Outname); {$EndIf}
+     Result := DEMGlb[MeanGrid].CloneAndOpenGridSetMissing(FloatingPointDEM,OutName,euPerMeter);
+     for x := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
+        for y := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
+           if DEMglb[MeanGrid].GetElevMetersOnGrid(x,y,zm) and DEMglb[GaussGrid].GetElevMetersOnGrid(x,y,zg) then begin
+              z := sqrt(2 * sqr(zm) - zg);
+              DEMGlb[Result].SetGridElevation(x,y,z);
+           end;
+        end;
+     end;
+     DEMglb[Result].CheckMaxMinElev;
+     if OpenMap then DEMglb[Result].SetupMap(false,MDDef.DefCurveMap);
 end;
 
 

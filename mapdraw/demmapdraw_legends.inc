@@ -221,7 +221,7 @@ begin
    {$If Defined(RecordMapDraw) or Defined(RecordMapType)} WriteLineToDebugFile('TMapDraw.DrawLegendOnBitmap in, maptype='+ IntToStr(MapType)); {$EndIf}
 
    Result := Nil;
-   if ((MaxMapElev - MinMapElev) < 0.0001) and (MapType <> mtDEMVATTable) then exit;
+   if ((MaxMapElev - MinMapElev) < 0.00001) and (MapType <> mtDEMVATTable) then exit;
 
    if (MapMerge in [mmElevation]) then begin
       if (not DEMMap) then ScaleMapElevationsToDEM;

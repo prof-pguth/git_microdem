@@ -2532,9 +2532,20 @@ object dbtablef: Tdbtablef
     end
     object Mapcoordinates1: TMenuItem
       Caption = 'Map coordinates'
-      object AddLatlong1: TMenuItem
-        Caption = 'Add Lat/long'
-        OnClick = AddLatlong1Click
+      object Addlatlong2: TMenuItem
+        Caption = 'Add lat/long'
+        object AddLatlong1: TMenuItem
+          Caption = 'Add fields but do not populate'
+          OnClick = AddLatlong1Click
+        end
+        object Addlatlongfromshpfile1: TMenuItem
+          Caption = 'Add lat/long from shp file'
+          OnClick = Addlatlongfromshpfile1Click
+        end
+        object Addlatlongfromlinkeddatabase1: TMenuItem
+          Caption = 'Add lat/long from joined database'
+          OnClick = Addlatlongfromlinkeddatabase1Click
+        end
       end
       object AddDEMIXtilecentroid1: TMenuItem
         Caption = 'Add DEMIX tile centroid'
@@ -2564,13 +2575,16 @@ object dbtablef: Tdbtablef
         Caption = 'Add MGRS bounding box'
         OnClick = AddMGRSboundingbox1Click
       end
-      object AddMercator1: TMenuItem
-        Caption = 'Add Mercator'
-        OnClick = AddMercator1Click
-      end
-      object Addprojectedcoordinates1: TMenuItem
+      object Addprojectedcoordinates2: TMenuItem
         Caption = 'Add projected coordinates'
-        OnClick = Addprojectedcoordinates1Click
+        object AddMercator1: TMenuItem
+          Caption = 'Add Mercator'
+          OnClick = AddMercator1Click
+        end
+        object Addprojectedcoordinates1: TMenuItem
+          Caption = 'Add projected coordinates'
+          OnClick = Addprojectedcoordinates1Click
+        end
       end
       object Adddecimalsecondsstring1: TMenuItem
         Caption = 'Add decimal seconds string'
@@ -2587,14 +2601,6 @@ object dbtablef: Tdbtablef
       object Fix360longs1: TMenuItem
         Caption = 'Fix 360 longs'
         OnClick = Fix360longs1Click
-      end
-      object Addlatlongfromshpfile1: TMenuItem
-        Caption = 'Add lat/long from shp file'
-        OnClick = Addlatlongfromshpfile1Click
-      end
-      object Addlatlongfromlinkeddatabase1: TMenuItem
-        Caption = 'Add lat/long from joined database'
-        OnClick = Addlatlongfromlinkeddatabase1Click
       end
       object Addboundingbox1: TMenuItem
         Caption = 'Add bounding box'
@@ -3958,6 +3964,10 @@ object dbtablef: Tdbtablef
         Caption = 'Percentiles for COP by criterion for each tile'
         OnClick = PercentilesforCOPbycriterionforeachtile1Click
       end
+    end
+    object DownloadextractDEMIXtilesfromCOGDEMs1: TMenuItem
+      Caption = 'Download/extract DEMIX tiles from COG DEMs'
+      OnClick = DownloadextractDEMIXtilesfromCOGDEMs1Click
     end
     object N51: TMenuItem
       Caption = '-'

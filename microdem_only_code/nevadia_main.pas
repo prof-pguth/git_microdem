@@ -22,6 +22,7 @@
           {$Define RecordDEMIX}
           {$Define RecordDEMIX_TileStats}
           {$Define RecordDEMIXMakeRef}
+          {$Define RecordDEMIXMemory}
           //{$Define RecordDEMIXFull}
           {$Define RecordDEMIXMakeTest}
           //{$Define TimeMakeMaps}
@@ -31,7 +32,8 @@
           //{$Define RecordRefDTM}
           //{$Define RecordDEMIXMakeRefFull}
           {$Define RecordDEMIXDatumShift}
-          //{$Define RecordDEMIXDatumShiftFull}
+          {$Define RecordDEMIXDatumShiftFull}
+          {$Define RecordDEMIXMakeTestEvereyDEM}
           //{$Define RecordFUVcreateFull}
           //{$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
@@ -661,6 +663,7 @@ type
     EndclonedEXE1: TMenuItem;
     Cleararealocks1: TMenuItem;
     Batchchangefoldernames1: TMenuItem;
+    ChangeDEMIXbasedirectory1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1080,6 +1083,7 @@ type
     procedure EndclonedEXE1Click(Sender: TObject);
     procedure Cleararealocks1Click(Sender: TObject);
     procedure Batchchangefoldernames1Click(Sender: TObject);
+    procedure ChangeDEMIXbasedirectory1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1587,6 +1591,12 @@ begin
    LandCoverBarGraphs(true,false,false);
 end;
 
+
+procedure Twmdem.ChangeDEMIXbasedirectory1Click(Sender: TObject);
+begin
+   GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
+   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.ChangeDEMIXbasedirectory1Click, now DEMIX_baseDir=' + MDDef.DEMIX_BaseDir); {$EndIf}
+end;
 
 procedure Twmdem.Changemode1Click(Sender: TObject);
 begin
@@ -2416,12 +2426,16 @@ var
 
 begin
    {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('start Twmdem.FormActivate, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
-   {$If Defined(RecordFormResize) or Defined(RecordFormActivate)} WriteLineToDebugFile('Twmdem.FormActivate in, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
+   {$If Defined(RecordFormResize) or Defined(RecordFormActivate)}
+      WriteLineToDebugFile('Twmdem.FormActivate in, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height) + '  ' + AvailablePhysicalMemoryString);
+   {$EndIf}
 
    if FirstRun then begin
      InitializeMICRODEM;
      FirstRun := false;
-     {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over'); {$EndIf}
+     {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over ' + AvailablePhysicalMemoryString); {$EndIf}
+     {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.FormActivate, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir); {$EndIf}
+
 
       if (not MDDef.RunOddballLocation) then begin
          if (Copy(UpperCase(ProgramRootDir),2,11) <> ':\MICRODEM\') then begin
@@ -2454,19 +2468,6 @@ begin
     {$Else}
        if (ParamCount <> 0) then begin
           TStr := UpperCase(ptTrim(ParamStr(1)));
-          (*
-             if (TStr = '-FUVSSIM') then begin
-                Self.Width := 750;
-                Self.Height := 450;
-                Self.Top := 100;
-                Self.Left := 100;
-                {$IfDef RecordProblems} WriteLineToDebugFile('Call FUV_SSIM_Processing'); {$EndIf}
-                FUV_SSIM_Processing(dmFull,false,false);
-                {$IfDef RecordProblems} WriteLineToDebugFile('Done FUV_SSIM_Processing, halting'); {$EndIf}
-                Halt;
-                exit;
-             end;
-          *)
           if not SetProgramOptions(TStr) then begin
               if (ParamCount = 1) and (TStr[1] = '?') then begin
                  ProcessCommandLine(TStr);
@@ -2501,8 +2502,7 @@ begin
 
      {$IfDef RecordProblems} WriteLineToDebugFile('MDdef.AutoOpen completed, Twmdem.FormActivate wsMaximized, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 
-     //if (UpperCase(ptTrim(ParamStr(1))) = '-DataManip') then Data1Click(Sender);
-     {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time'); {$EndIf}
+     {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time ' + AvailablePhysicalMemoryString); {$EndIf}
      {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate ending first time'); {$EndIf}
    end;
 

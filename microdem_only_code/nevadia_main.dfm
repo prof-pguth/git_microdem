@@ -3466,7 +3466,7 @@ object wmdem: Twmdem
     end
   end
   object DEMIXdbCreatePopupMenu: TPopupMenu
-    Left = 984
+    Left = 1000
     Top = 288
     object Graphevaluationandscores1: TMenuItem
       Caption = 'Open DEMIX database for graph evaluation and scores'
@@ -3612,11 +3612,12 @@ object wmdem: Twmdem
       OnClick = Download10x10kmblocks1Click
     end
     object CleanupFrenchlistof1x1kmfiles1: TMenuItem
-      Caption = 'Clean up French list of 1x1 km files'
+      Caption = 'Subset download list of 1x1 km files into 10x10 tiles'
       OnClick = CleanupFrenchlistof1x1kmfiles1Click
     end
     object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
       Caption = 'Moves tiles into 10 km UTM block directories'
+      Enabled = False
       OnClick = Mergesmalltilesinto10kmUTMblocks1Click
     end
     object MovemergedtilereferenceandtestDEMs1: TMenuItem
@@ -3626,6 +3627,10 @@ object wmdem: Twmdem
     object FixGEDTMlateadditonproblems1: TMenuItem
       Caption = 'Fix  problems (hard coded for ONE problem)'
       OnClick = FixGEDTMlateadditonproblems1Click
+    end
+    object ChangeDEMIXbasedirectory1: TMenuItem
+      Caption = 'Change DEMIX base directory'
+      OnClick = ChangeDEMIXbasedirectory1Click
     end
     object Cleararealocks1: TMenuItem
       Caption = 'Clear area locks'

@@ -43,6 +43,12 @@ object DemHandForm: TDemHandForm
       end
       item
         Width = 250
+      end
+      item
+        Width = 50
+      end
+      item
+        Width = 50
       end>
   end
   object MainMenu1: TMainMenu

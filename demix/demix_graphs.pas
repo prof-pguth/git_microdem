@@ -123,7 +123,7 @@ procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutNam
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
-procedure GridOfTerrainScatterPlots(DB : integer; ColorBy,Compares : tStringList);
+procedure GridOfTerrainScatterPlots(DB : integer; ColorBy,Compares,DEMs : tStringList);
 procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Comparisons : tStringList);
 procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
@@ -140,6 +140,14 @@ uses
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
    DEMIX_control,DEMIX_Definitions;
 
+function NumTilesString(DB : integer) : shortstring;
+var
+   nt : integer;
+begin
+   nt := (GISdb[DB].NumUniqueEntriesInDBlinkPossible('DEMIX_TILE'));
+   if (nt <= 1) then Result := ''
+   else Result := ' (tiles=' + IntToStr(GISdb[DB].NumUniqueEntriesInDBlinkPossible('DEMIX_TILE')) + ')';
+end;
 
 
 procedure SetHorizAxisForDEMIXscores(var Graph : tThisBaseGraph);
@@ -264,12 +272,11 @@ end {function OpenGraphForCriterionScoresOrEvaluations};
 
 
 
-
   {$I demix_graphs.inc}
-
 
   {$I demix_graphs_dsm_dtm_compare.inc}
 
+  {$I demix_graphs_terrain_scatter_plots.inc}
 
 
      procedure StartGraph(DBonTable : integer; var Graph : tThisBaseGraph; GraphWidth : integer = 700);
@@ -805,6 +812,8 @@ const
                    gr[i] := GraphForOneLandTypeFilter(Filters.strings[i],Labels[i],Nil);
                 end;
                 Findings.Add(MergeGraphPanelsHorizontal(Filters.Count,gr,true,''));
+                Filters.Destroy;
+                Labels.Destroy;
             end
             else if (DesiredOption = 3) then begin
                ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
@@ -907,7 +916,6 @@ const
                 EndThisFUVGraph(Result,Findings);
             end;
             LandCovers.Destroy;
-            //{$IfDef TrackColors} Graph.GraphColorsRecord('ItsLandcover done'); {$EndIf}
          end
          else if (GraphOption = goOther) then begin
             StartGraph(DBonTable,Result,MDdef.DEMIX_FUV_graph_width);
@@ -1085,16 +1093,6 @@ begin {procedure MainGraphOptions}
    UseLSPs.Destroy;
 end {procedure MainGraphOptions};
 
-
-
-function NumTilesString(DB : integer) : shortstring;
-var
-   nt : integer;
-begin
-   nt := (GISdb[DB].NumUniqueEntriesInDBlinkPossible('DEMIX_TILE'));
-   if (nt <= 1) then Result := ''
-   else Result := ' (tiles=' + IntToStr(GISdb[DB].NumUniqueEntriesInDBlinkPossible('DEMIX_TILE')) + ')';
-end;
 
 
 procedure AddTopLabelToGraph(var Graph : tThisBaseGraph; DBonTable : integer);
@@ -1771,7 +1769,7 @@ var
    gr : tGraphArray;
    LegendFName,fName : PathStr;
    TStr : shortstring;
-begin  {procedure  PiesBestByTwoLandTypes}
+begin  {procedure PiesBestByTwoLandTypes}
    if TileCharacteristicsInDB(DBonTable,true) and GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
       try
          {$If Defined(RecordDEMIXGraph) or Defined(PiesByLandType)} WriteLineToDebugFile('PiesBestByTwoLandTypes in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' DEMs=' + IntToStr(DEMs.Count)); {$EndIf}
@@ -1789,7 +1787,6 @@ begin  {procedure  PiesBestByTwoLandTypes}
          end
          else Bitmap := DEMIXTestDEMLegend(DEMs,true,MDDef.DEMIX_xsize);
          LegendFName := NextFileNumber(MDtempDir,'Legend_BestBySlopeRough','.png');
-         //bmp := DEMIXTestDEMLegend(AssembleDEMList,true,1200);
          SaveBitmap(Bitmap,LegendFName);
          Bitmap.Destroy;
          GISdb[DBonTable].ApplyGISFilter(BaseFilter);
@@ -1821,21 +1818,21 @@ procedure AddDEM_DrawingLayers(DBonTable : integer; DEMs : tStringList; Graph : 
 var
    NPts,i,j,TileID : integer;
    v : array[1..2] of float32;
-   Tile : shortstring;
+   //Tile : shortstring;
    Tiles : tStringList;
    val,y,Max : float32;
 begin
    if (DEMs <> Nil) then begin
       y := 0;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
+      //Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
       OpenGraphDEMIXDEMColorFiles(Graph,DEMs,'eval');
-      StartProgress('Graph');
+      //StartProgress('Graph');
       GISdb[DBonTable].MyData.First;
       NPts := 0;
       Max := 0;
       while not GISdb[DBonTable].MyData.eof do begin
-         if (NPts mod 25 = 0) then UpdateProgressBar(j/Tiles.Count);
+         //if (NPts mod 25 = 0) then UpdateProgressBar(j/Tiles.Count);
          inc(NPts);
          GISdb[DBonTable].EmpSource.Enabled := false;
          for i := 0 to pred(DEMs.Count) do begin
@@ -1848,14 +1845,14 @@ begin
          GISdb[DBonTable].MyData.Next;
       end;
       for i := 0 to pred(DEMs.Count) do CloseFile(rfile[i]);
-      if Max > 1  then begin
+      if (Max > 1)  then begin
          Graph.GraphDraw.MaxHorizAxis := Max;
          Graph.GraphDraw.ShowHorizAxis1 := false;
       end;
 
       Graph.RedrawDiagram11Click(Nil);
-      Tiles.Destroy;
-      EndProgress;
+      //Tiles.Destroy;
+      //EndProgress;
       GISdb[DBonTable].EmpSource.Enabled := true;
       Graph.GraphDraw.HorizLabel := RemoveUnderscores(Graph.GraphDraw.HorizLabel) +  '  (n=' + IntToStr(NPts) + ')';
    end;

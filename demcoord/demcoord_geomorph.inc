@@ -161,6 +161,31 @@ var
             with SA do Result := zx * zy * H(SA) + zxy * G(SA);
          end;
 
+         function kns_profile(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := -(SA.zxx * sqr(SA.zx) + 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator1(SA);
+         end;
+
+         function knc_tangential(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zx) ) / Denominator1(SA);
+         end;
+
+         function tc_contour_torsion(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * sqr(SA.zx) * sqr(SA.zy) ) / Denominator1(SA);
+         end;
+
+         function k_gaussian(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := knc_tangential(SA) * kns_profile(SA) - sqr(tc_contour_torsion(SA));
+         end;
+
+         function k_mean(SA : tSlopeAspectRec) : float64; inline;
+         begin
+            Result := 0.5 * (kns_profile(SA) + knc_tangential(SA));
+         end;
+
 begin
 //https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/src/lsp.rs
    Result := DEMGlb[DEM].GetSlopeAndAspect(MDDef.CurveCompute,x,y,SA,false,true);
@@ -178,16 +203,16 @@ begin
       {$EndIf}
 
        case CurveType of
-           eucurv_kns : Curvature := -(SA.zxx * sqr(SA.zx) + 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator1(SA);    //Profile
-           eucurv_knc : Curvature := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zx) ) / Denominator1(SA);    //Tangential
+           eucurv_kns : Curvature := kns_profile(SA);   //Profile
+           eucurv_knc : Curvature := knc_tangential(SA);    //Tangential
            eucurv_kpc : Curvature := -(SA.zxx * sqr(SA.zy) - 2 * SA.zxy * SA.zx * SA.zy + SA.zyy * sqr(SA.zy) ) / Denominator2(SA);    //Plan
            eucurv_kps : Curvature := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * (sqr(SA.zx) - sqr(SA.zy) ) ) / Denominator2(SA);    //flow line
-           eucurv_tc  : Curvature := (SA.zx * SA.zy * (SA.zxx - SA.zyy) - SA.zxy * sqr(SA.zx) * sqr(SA.zy) ) / Denominator1(SA);       //contour torsion
-           eucurv_k_max : Curvature := MaxCurve(SA);                                               //maximal curvature, kmax
-           eucurv_k_min : Curvature := MinCurve(SA);                                               //minimal curvature, kmin
-           eucurv_k : Curvature := MaxCurve(SA) * MinCurve(SA);                          //Gaussian
-           eucurv_k_mean : Curvature := Part1MinMax(SA);   //0.5 * (MinCurve(SA) + MaxCurve(SA));  //Mean    check if this is in fact correct
-           eucurv_kc : Curvature := sqrt(0.5 * (sqr(MaxCurve(SA)) + sqr(MinCurve(SA))));   //Casorati
+           eucurv_tc  : Curvature := tc_contour_torsion(SA);                                                                           //contour torsion
+           eucurv_k_max : Curvature := MaxCurve(SA);                                                                                   //maximal curvature, kmax
+           eucurv_k_min : Curvature := MinCurve(SA);                                                                                   //minimal curvature, kmin
+           eucurv_k : Curvature := k_gaussian(SA);                                                                                     //Gaussian
+           eucurv_k_mean : Curvature := 0.5 * (kns_profile(SA) + knc_tangential(SA));                                                  //Mean
+           eucurv_kc : Curvature := sqrt(2 * sqr(k_mean(SA)) - k_gaussian(SA));                                                         //Casorati
            eucurv_kncc : Curvature := (SA.zy * (B(SA) * M(SA) * P(SA) - K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
                               SA.zx * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
                               (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
@@ -199,8 +224,6 @@ begin
        end;
     end;
 end;
-
-
 
 
 function tDEMDataSet.RoughnessFromSlopeSTD(x,y,Radius : integer; var Roughness : float32) : boolean;

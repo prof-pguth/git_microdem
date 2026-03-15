@@ -342,7 +342,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Test DEMs'
     TabOrder = 21
     object Memo3: TMemo
-      Left = 3
+      Left = 4
       Top = 20
       Width = 102
       Height = 193
@@ -624,6 +624,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Width = 212
     Height = 25
     Caption = 'Scatter plots, DEMs/criteria'
+    Enabled = False
     TabOrder = 36
     OnClick = BitBtn31Click
   end
@@ -996,5 +997,14 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Pie diagrams show n='
     TabOrder = 51
     OnClick = CheckBox4Click
+  end
+  object BitBtn47: TBitBtn
+    Left = 588
+    Top = 819
+    Width = 212
+    Height = 25
+    Caption = 'Grid of terrain scatterplots'
+    TabOrder = 52
+    OnClick = BitBtn47Click
   end
 end

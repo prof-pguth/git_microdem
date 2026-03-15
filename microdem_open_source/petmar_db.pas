@@ -221,6 +221,8 @@ type
         function FindFieldMin(FieldDesired : shortString) : float64;
         function FieldStdDev(FieldDesired : shortstring) : float64;
         function FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;
+        procedure FindMultipleFieldsRange(DEMs : tStringList; var RowMinZ,RowMaxZ : float64);
+
         function GetFieldStatistics(FieldDesired : ShortString) : tMomentVar;
 
         function MakeImageTag(ThumbnailDir : PathStr; FieldName : ANSIString) : ANSIString;
@@ -667,6 +669,21 @@ begin
       {$EndIf}
    end;
    {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded out,  recs=' + IntToStr(RecordCount)); {$EndIf}
+end;
+
+
+procedure tMyData.FindMultipleFieldsRange(DEMs : tStringList; var RowMinZ,RowMaxZ : float64);
+var
+   tMax,tMin : float64;
+   i : integer;
+begin
+     RowMinZ := 99e38;
+     RowMaxZ := -99e38;
+     for I := 0 to pred(DEMs.Count) do begin
+         FindFieldRange(DEMs.Strings[i], tMin,tMax);
+         if tMax > RowMaxz then RowMaxZ := tMax;
+         if tMin < RowMinz then RowMinZ := tMin;
+     end;
 end;
 
 

@@ -478,19 +478,14 @@ type
    end;
 
 const
-  eucurv_kns = 101;
-  eucurv_prof = 101;
-  eucurv_knc = 102;
-  eucurv_tang = 102;
-  eucurv_tc = 103;
-  eucurv_cont_tors = 103;
+  eucurv_kns = 101;      eucurv_prof = 101;
+  eucurv_knc = 102;      eucurv_tang = 102;
+  eucurv_tc = 103;       eucurv_cont_tors = 103;
   eucurv_zss = 104;
   eucurv_ts = 105;
   eucurv_zcc = 106;
-  eucurv_kpc = 107;
-  eucurv_plan = 107;
-  eucurv_kps = 108;
-  eucurv_flow = 108;
+  eucurv_kpc = 107;      eucurv_plan = 107;
+  eucurv_kps = 108;      eucurv_flow = 108;
   eucurv_sin_sc = 109;
   eucurv_kd = 110;
   eucurv_ka = 111;
@@ -499,19 +494,17 @@ const
   eucurv_kve = 114;
   eucurv_k_max = 115;
   eucurv_k_min = 116;
-  eucurv_k = 117;
-  eucurv_gauss = 117;
+  eucurv_k = 117;        eucurv_gauss = 117;
   eucurv_el = 118;
   eucurv_ku = 119;
   eucurv_k_mean = 120;
-  eucurv_kc = 121;
-  eucurv_casorati = 121;
+  eucurv_kc = 121;       eucurv_casorati = 121;
   eucurv_kncc = 122;
   eucurv_kncs = 123;
   eucurv_knss = 124;
 
-  CurvNamesShort : array[101..124] of shortstring = ('kns-profc','knc-tangc','tc','zss','ts','zcc','kpc-planc','pks','sin_sc','kd',
-              'ka','kr','khe','kve','k_max','k_min','k','el','ku','k_mean','kc','kncc','kncs','knss');
+  CurvNamesShort : array[101..124] of shortstring = ('kns-profc','knc-tangc','tc-torsion','zss','ts','zcc','kpc-planc','pks','sin_sc','kd',
+              'ka','kr','khe','kve','k_max','k_min','k-gaussian','el','ku','k_mean','kc-Casorati','kncc','kncs','knss');
 
 type
    tCanEditGIS = (egisNever,egisSometimes,egisAlways);

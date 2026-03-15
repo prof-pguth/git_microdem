@@ -498,6 +498,7 @@ function DoubleQuotedString(str : ANSIString) : ANSIstring;
 function NumberOfStringsWithSubstring(var sl : tStringList; ss : shortstring) : integer;
 
 procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
+function AvailablePhysicalMemoryString : shortstring;
 
 
 implementation
@@ -537,6 +538,16 @@ var
 
 
 {$I petmar_palettes_legends.inc}
+
+
+function AvailablePhysicalMemoryString : shortstring;
+var
+  vGlobalMemoryStatus : TMemoryStatus;
+begin
+  GlobalMemoryStatus( vGlobalMemoryStatus );
+  Result := ' Available RAM: ' + SmartMemorySizeBytes(vGlobalMemoryStatus.dwAvailPhys);
+end;
+
 
 function MakeStringListFromString(theString : shortstring) : tStringList;
 begin
@@ -2545,7 +2556,7 @@ end;
 function RemoveUnderScores(LegendStr : ANSIString; AlsoFileNextNumber : boolean = true) : ANSIString;
 begin
    Result := '';
-   if (LegendStr <> '') then begin
+   if (LegendStr <> '') and (Length(LegendStr) > 1) then begin
       Result := LegendStr;
       if AlsoFileNextNumber and (Result[length(Result)-1] = '_') then Delete(Result,length(Result)-1,2);
       ReplaceCharacter(Result,'_',' ');

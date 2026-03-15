@@ -286,7 +286,7 @@ end;
 
 procedure TCompareDSM_DTMform.BitBtn14Click(Sender: TObject);
 begin
-   GridOfTerrainScatterPlots(DB,ComparingCriteriaList,DEMComparingList);
+   GridOfTerrainScatterPlots(DB,ComparingCriteriaList,DEMComparingList,Nil);
 end;
 
 

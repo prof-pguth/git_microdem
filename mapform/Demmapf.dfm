@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1061
+  ClientHeight = 1081
   ClientWidth = 2404
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 2404
-    Height = 1034
+    Height = 1054
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -51,6 +51,9 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
+    ExplicitLeft = 8
+    ExplicitTop = -333
+    ExplicitHeight = 1034
     object Image1: TImage
       Left = 3
       Top = -247
@@ -207,11 +210,12 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 989
+      Top = 1009
       Width = 2400
       Height = 41
       Align = alBottom
       TabOrder = 8
+      ExplicitTop = 989
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -3559,7 +3563,6 @@ object MapForm: TMapForm
         GroupIndex = 1
         object Waverefraction1: TMenuItem
           Caption = 'Wave refraction'
-          OnClick = Waverefraction1Click
         end
         object suanamitravel1: TMenuItem
           Caption = 'Tsuanami travel'
@@ -3931,6 +3934,236 @@ object MapForm: TMapForm
         Caption = 'Create derivative grid'
         OnClick = Derivativegrid2Click
       end
+      object Externaltools1: TMenuItem
+        Caption = 'External tool derivative grids'
+        object Whiteboxoptions1: TMenuItem
+          Caption = 'Whitebox options'
+          OnClick = Whiteboxoptions1Click
+        end
+        object N50: TMenuItem
+          Caption = '-'
+        end
+        object GRASSoptions1: TMenuItem
+          Caption = 'GRASS options'
+          OnClick = GRASSoptions1Click
+        end
+        object N45: TMenuItem
+          Caption = '-'
+        end
+        object GDALupsampling1: TMenuItem
+          Caption = 'GDAL upsampling'
+          object Bilinnear1: TMenuItem
+            Caption = 'Bilinear'
+            OnClick = Bilinnear1Click
+          end
+          object Bicubic2: TMenuItem
+            Caption = 'Biculbic'
+            OnClick = Bicubic2Click
+          end
+        end
+        object GDALslope1: TMenuItem
+          Caption = 'GDAL slope'
+          object GDALslopemap1: TMenuItem
+            Caption = 'Zevenbergen -Thorne'
+            OnClick = GDALslopemap1Click
+          end
+          object GDALslopemapHorn1: TMenuItem
+            Caption = 'Horn'
+            OnClick = GDALslopemapHorn1Click
+          end
+        end
+        object GDALaspectmap1: TMenuItem
+          Caption = 'GDAL aspect map'
+          object GDALaspectmapZevenbergenThorne1: TMenuItem
+            Caption = 'Zevenbergen - Thorne'
+            OnClick = GDALaspectmapZevenbergenThorne1Click
+          end
+          object GDALaspectmapHorn1: TMenuItem
+            Caption = 'Horn'
+            OnClick = GDALaspectmapHorn1Click
+          end
+        end
+        object GDALhillshadeHorn1: TMenuItem
+          Caption = 'GDAL hillshade (Horn)'
+        end
+        object GDALTRI1: TMenuItem
+          Caption = 'GDAL TRI'
+          object GDALTRIWilsonbathymetric1: TMenuItem
+            Caption = 'Wilson, bathymetric'
+            OnClick = GDALTRIWilsonbathymetric1Click
+          end
+          object GDALTRIRileyterrestrial1: TMenuItem
+            Caption = 'Riley, terrestrial'
+          end
+        end
+        object GDALTPI1: TMenuItem
+          Caption = 'GDAL TPI'
+        end
+        object GDALroughness1: TMenuItem
+          Caption = 'GDAL roughness'
+        end
+        object GDALcontourshapefile1: TMenuItem
+          Caption = 'GDAL contour shapefile'
+          OnClick = GDALcontourshapefile1Click
+        end
+        object GDALrasterizehapfiels1: TMenuItem
+          Caption = 'GDAL rasterize shapefiles'
+          OnClick = GDALrasterizehapfiels1Click
+        end
+        object N47: TMenuItem
+          Caption = '-'
+        end
+        object SAGAaspectmap1: TMenuItem
+          Caption = 'SAGA aspect map'
+          OnClick = SAGAaspectmap1Click
+        end
+        object N51: TMenuItem
+          Caption = 'SAGA TRI map'
+          OnClick = N51Click
+        end
+        object SAGATPImap1: TMenuItem
+          Caption = 'SAGA TPI map'
+          OnClick = SAGATPImap1Click
+        end
+        object SAGAVRMmapvectorruggedness1: TMenuItem
+          Caption = 'SAGA VRM map (vector ruggedness)'
+          OnClick = SAGAVRMmapvectorruggedness1Click
+        end
+        object SAGAremovesinks1: TMenuItem
+          Caption = 'SAGA remove sinks'
+          OnClick = SAGAremovesinks1Click
+        end
+        object SAGAedgecontaminationmap1: TMenuItem
+          Caption = 'SAGA edge contamination map'
+          OnClick = SAGAedgecontaminationmap1Click
+        end
+        object SAGAchannelsnetwork1: TMenuItem
+          Caption = 'SAGA channels network'
+          object SAGAChannelNetworkandBasins1: TMenuItem
+            Caption = 'Shapfile'
+            OnClick = SAGAChannelNetworkandBasins1Click
+          end
+          object SAGAchannelsgridandshapefile1: TMenuItem
+            Caption = 'Grid'
+            OnClick = SAGAchannelsgridandshapefile1Click
+          end
+        end
+        object SAGADrainagebasins1: TMenuItem
+          Caption = 'SAGA Drainage basins'
+          OnClick = SAGADrainagebasins1Click
+        end
+        object SAGAflowaccumulationParallelizable1: TMenuItem
+          Caption = 'SAGA flow accumulation (Parallelizable)'
+          OnClick = SAGAflowaccumulationParallelizable1Click
+        end
+        object SAGAwatershedbasinsWangLiu1: TMenuItem
+          Caption = 'SAGA watershed basins (Wang and Liu)'
+          OnClick = SAGAwatershedbasinsWangLiu1Click
+        end
+        object SAGAStrahlerordergrid1: TMenuItem
+          Caption = 'SAGA Strahler order grid'
+          OnClick = SAGAStrahlerordergrid1Click
+        end
+        object SAGALSfactor1: TMenuItem
+          Caption = 'SAGA LS factor'
+          OnClick = SAGALSfactor1Click
+        end
+        object SAGAcurvatures1: TMenuItem
+          Caption = 'SAGA curvatures'
+          object SAGAprofilecurvature1: TMenuItem
+            Caption = 'SAGA profile curvature'
+            OnClick = SAGAprofilecurvature1Click
+          end
+          object SAGAplancurvature1: TMenuItem
+            Caption = 'SAGA plan curvature'
+            OnClick = SAGAplancurvature1Click
+          end
+          object SAGAcurvatureclassification1: TMenuItem
+            Caption = 'SAGA curvature classification'
+            OnClick = SAGAcurvatureclassification1Click
+          end
+        end
+        object SAGApointclassifications1: TMenuItem
+          Caption = 'SAGA point classifications'
+          object SAGAIwahashiandPikeclassification1: TMenuItem
+            Caption = 'SAGA Iwahashi and Pike classification'
+            OnClick = SAGAIwahashiandPikeclassification1Click
+          end
+          object SAGAgeomorphons1: TMenuItem
+            Caption = 'SAGA geomorphons'
+            OnClick = SAGAgeomorphons1Click
+          end
+        end
+        object SAGAconvergenceindex1: TMenuItem
+          Caption = 'SAGA convergence index'
+          OnClick = SAGAconvergenceindex1Click
+        end
+        object SAGAtophatvalleyridgedetection1: TMenuItem
+          Caption = 'SAGA top hat valley ridge detection'
+          OnClick = SAGAtophatvalleyridgedetection1Click
+        end
+        object N63: TMenuItem
+          Caption = '-'
+        end
+        object LSPcalculator1: TMenuItem
+          Caption = 'LSP_calculator'
+          object AllLSPs1: TMenuItem
+            Caption = 'All LSPs'
+            RadioItem = True
+            OnClick = AllLSPs1Click
+          end
+          object Allpartialderivatives1: TMenuItem
+            Caption = 'All partial derivatives'
+            OnClick = Allpartialderivatives1Click
+          end
+          object N54: TMenuItem
+            Caption = '-'
+          end
+          object kncprofilecurvature1: TMenuItem
+            Caption = 'kns (profile curvature)'
+            OnClick = kncprofilecurvature1Click
+          end
+          object kcCasoraticurvature1: TMenuItem
+            Caption = 'kc (Casorati curvature)'
+            OnClick = kcCasoraticurvature1Click
+          end
+          object Gaussaincurvature1: TMenuItem
+            Caption = 'k (Gaussain curvature)'
+            OnClick = Gaussaincurvature1Click
+          end
+          object Meancurvature2: TMenuItem
+            Caption = 'k_mean (Mean curvature)'
+            OnClick = Meancurvature2Click
+          end
+          object N85: TMenuItem
+            Caption = '-'
+          end
+          object kncc2: TMenuItem
+            Caption = 'kncc'
+            OnClick = kncc2Click
+          end
+          object kncs2: TMenuItem
+            Caption = 'kncs'
+            OnClick = kncs2Click
+          end
+          object knss2: TMenuItem
+            Caption = 'knss'
+            OnClick = knss2Click
+          end
+        end
+        object LinedetectionHoughtransform1: TMenuItem
+          Caption = 'Line detection (Hough transform)'
+          OnClick = LinedetectionHoughtransform1Click
+        end
+        object Rastertovector1: TMenuItem
+          Caption = 'Raster to vector'
+          OnClick = Rastertovector1Click
+        end
+        object RVTgridcreation1: TMenuItem
+          Caption = 'RVT grid creation'
+          OnClick = RVTgridcreation1Click
+        end
+      end
       object Multiplegridarithmetic1: TMenuItem
         Caption = 'Multiple grid arithmetic (map algebra)'
         object Differencebetweentwogrids2: TMenuItem
@@ -4165,227 +4398,6 @@ object MapForm: TMapForm
       object Heatmap1: TMenuItem
         Caption = 'Heat map'
         OnClick = Heatmap1Click
-      end
-      object Externaltools1: TMenuItem
-        Caption = 'External tools'
-        object Whiteboxoptions1: TMenuItem
-          Caption = 'Whitebox options'
-          OnClick = Whiteboxoptions1Click
-        end
-        object N50: TMenuItem
-          Caption = '-'
-        end
-        object GRASSoptions1: TMenuItem
-          Caption = 'GRASS options'
-          OnClick = GRASSoptions1Click
-        end
-        object N45: TMenuItem
-          Caption = '-'
-        end
-        object GDALupsampling1: TMenuItem
-          Caption = 'GDAL upsampling'
-          object Bilinnear1: TMenuItem
-            Caption = 'Bilinear'
-            OnClick = Bilinnear1Click
-          end
-          object Bicubic2: TMenuItem
-            Caption = 'Biculbic'
-            OnClick = Bicubic2Click
-          end
-        end
-        object GDALslope1: TMenuItem
-          Caption = 'GDAL slope'
-          object GDALslopemap1: TMenuItem
-            Caption = 'Zevenbergen -Thorne'
-            OnClick = GDALslopemap1Click
-          end
-          object GDALslopemapHorn1: TMenuItem
-            Caption = 'Horn'
-            OnClick = GDALslopemapHorn1Click
-          end
-        end
-        object GDALaspectmap1: TMenuItem
-          Caption = 'GDAL aspect map'
-          object GDALaspectmapZevenbergenThorne1: TMenuItem
-            Caption = 'Zevenbergen - Thorne'
-            OnClick = GDALaspectmapZevenbergenThorne1Click
-          end
-          object GDALaspectmapHorn1: TMenuItem
-            Caption = 'Horn'
-            OnClick = GDALaspectmapHorn1Click
-          end
-        end
-        object GDALhillshadeHorn1: TMenuItem
-          Caption = 'GDAL hillshade (Horn)'
-        end
-        object GDALTRI1: TMenuItem
-          Caption = 'GDAL TRI'
-          object GDALTRIWilsonbathymetric1: TMenuItem
-            Caption = 'Wilson, bathymetric'
-            OnClick = GDALTRIWilsonbathymetric1Click
-          end
-          object GDALTRIRileyterrestrial1: TMenuItem
-            Caption = 'Riley, terrestrial'
-          end
-        end
-        object GDALTPI1: TMenuItem
-          Caption = 'GDAL TPI'
-        end
-        object GDALroughness1: TMenuItem
-          Caption = 'GDAL roughness'
-        end
-        object GDALcontourshapefile1: TMenuItem
-          Caption = 'GDAL contour shapefile'
-          OnClick = GDALcontourshapefile1Click
-        end
-        object GDALrasterizehapfiels1: TMenuItem
-          Caption = 'GDAL rasterize shapefiles'
-          OnClick = GDALrasterizehapfiels1Click
-        end
-        object N47: TMenuItem
-          Caption = '-'
-        end
-        object SAGAaspectmap1: TMenuItem
-          Caption = 'SAGA aspect map'
-          OnClick = SAGAaspectmap1Click
-        end
-        object N51: TMenuItem
-          Caption = 'SAGA TRI map'
-          OnClick = N51Click
-        end
-        object SAGATPImap1: TMenuItem
-          Caption = 'SAGA TPI map'
-          OnClick = SAGATPImap1Click
-        end
-        object SAGAVRMmapvectorruggedness1: TMenuItem
-          Caption = 'SAGA VRM map (vector ruggedness)'
-          OnClick = SAGAVRMmapvectorruggedness1Click
-        end
-        object SAGAremovesinks1: TMenuItem
-          Caption = 'SAGA remove sinks'
-          OnClick = SAGAremovesinks1Click
-        end
-        object SAGAedgecontaminationmap1: TMenuItem
-          Caption = 'SAGA edge contamination map'
-          OnClick = SAGAedgecontaminationmap1Click
-        end
-        object SAGAchannelsnetwork1: TMenuItem
-          Caption = 'SAGA channels network'
-          object SAGAChannelNetworkandBasins1: TMenuItem
-            Caption = 'Shapfile'
-            OnClick = SAGAChannelNetworkandBasins1Click
-          end
-          object SAGAchannelsgridandshapefile1: TMenuItem
-            Caption = 'Grid'
-            OnClick = SAGAchannelsgridandshapefile1Click
-          end
-        end
-        object SAGADrainagebasins1: TMenuItem
-          Caption = 'SAGA Drainage basins'
-          OnClick = SAGADrainagebasins1Click
-        end
-        object SAGAflowaccumulationParallelizable1: TMenuItem
-          Caption = 'SAGA flow accumulation (Parallelizable)'
-          OnClick = SAGAflowaccumulationParallelizable1Click
-        end
-        object SAGAwatershedbasinsWangLiu1: TMenuItem
-          Caption = 'SAGA watershed basins (Wang and Liu)'
-          OnClick = SAGAwatershedbasinsWangLiu1Click
-        end
-        object SAGAStrahlerordergrid1: TMenuItem
-          Caption = 'SAGA Strahler order grid'
-          OnClick = SAGAStrahlerordergrid1Click
-        end
-        object SAGALSfactor1: TMenuItem
-          Caption = 'SAGA LS factor'
-          OnClick = SAGALSfactor1Click
-        end
-        object SAGAcurvatures1: TMenuItem
-          Caption = 'SAGA curvatures'
-          object SAGAmultliplecurvatures1: TMenuItem
-            Caption = 'SAGA multliple curvatures'
-          end
-          object SAGAprofilecurvature1: TMenuItem
-            Caption = 'SAGA profile curvature'
-            OnClick = SAGAprofilecurvature1Click
-          end
-          object SAGAplancurvature1: TMenuItem
-            Caption = 'SAGA plan curvature'
-            OnClick = SAGAplancurvature1Click
-          end
-          object SAGAcurvatureclassification1: TMenuItem
-            Caption = 'SAGA curvature classification'
-            OnClick = SAGAcurvatureclassification1Click
-          end
-        end
-        object SAGApointclassifications1: TMenuItem
-          Caption = 'SAGA point classifications'
-          object SAGAIwahashiandPikeclassification1: TMenuItem
-            Caption = 'SAGA Iwahashi and Pike classification'
-            OnClick = SAGAIwahashiandPikeclassification1Click
-          end
-          object SAGAgeomorphons1: TMenuItem
-            Caption = 'SAGA geomorphons'
-            OnClick = SAGAgeomorphons1Click
-          end
-        end
-        object SAGAconvergenceindex1: TMenuItem
-          Caption = 'SAGA convergence index'
-          OnClick = SAGAconvergenceindex1Click
-        end
-        object SAGAtophatvalleyridgedetection1: TMenuItem
-          Caption = 'SAGA top hat valley ridge detection'
-          OnClick = SAGAtophatvalleyridgedetection1Click
-        end
-        object N63: TMenuItem
-          Caption = '-'
-        end
-        object LSPcalculator1: TMenuItem
-          Caption = 'LSP_calculator'
-          object AllLSPs1: TMenuItem
-            Caption = 'All LSPs'
-            RadioItem = True
-            OnClick = AllLSPs1Click
-          end
-          object Allpartialderivatives1: TMenuItem
-            Caption = 'All partial derivatives'
-            OnClick = Allpartialderivatives1Click
-          end
-          object N54: TMenuItem
-            Caption = '-'
-          end
-          object kncprofilecurvature1: TMenuItem
-            Caption = 'kns (profile curvature)'
-            OnClick = kncprofilecurvature1Click
-          end
-          object N85: TMenuItem
-            Caption = '-'
-          end
-          object kncc2: TMenuItem
-            Caption = 'kncc'
-            OnClick = kncc2Click
-          end
-          object kncs2: TMenuItem
-            Caption = 'kncs'
-            OnClick = kncs2Click
-          end
-          object knss2: TMenuItem
-            Caption = 'knss'
-            OnClick = knss2Click
-          end
-        end
-        object LinedetectionHoughtransform1: TMenuItem
-          Caption = 'Line detection (Hough transform)'
-          OnClick = LinedetectionHoughtransform1Click
-        end
-        object Rastertovector1: TMenuItem
-          Caption = 'Raster to vector'
-          OnClick = Rastertovector1Click
-        end
-        object RVTgridcreation1: TMenuItem
-          Caption = 'RVT grid creation'
-          OnClick = RVTgridcreation1Click
-        end
       end
       object Comparemultiplegridstothisone1: TMenuItem
         Caption = 'Compare multiple grids'
@@ -6469,9 +6481,6 @@ object MapForm: TMapForm
         Caption = 'Partial derivatives'
         OnClick = Curvature3Click
       end
-      object Profllecurvaturekns1: TMenuItem
-        Caption = 'Proflle curvature (kns)'
-      end
     end
     object Relief2: TMenuItem
       Caption = 'Relief'
@@ -7228,6 +7237,9 @@ object MapForm: TMapForm
       Caption = 'Compare aspect maps'
       OnClick = Compareaspectmaps1Click
     end
+    object N90: TMenuItem
+      Caption = '-'
+    end
     object CompareProfileCurvature1: TMenuItem
       Caption = 'Compare profile curvature'
       OnClick = CompareProfileCurvature1Click
@@ -7243,6 +7255,18 @@ object MapForm: TMapForm
     object Comparecontourtorsion1: TMenuItem
       Caption = 'Compare contour torsion'
       OnClick = Comparecontourtorsion1Click
+    end
+    object Comparemeancurvature1: TMenuItem
+      Caption = 'Compare mean curvature'
+      OnClick = Comparemeancurvature1Click
+    end
+    object CompareCasoraticurvature1: TMenuItem
+      Caption = 'Compare Casorati curvature'
+      OnClick = CompareCasoraticurvature1Click
+    end
+    object CompareGaussiancurvature1: TMenuItem
+      Caption = 'Compare Gaussian curvature'
+      OnClick = CompareGaussiancurvature1Click
     end
     object N69: TMenuItem
       Caption = '-'
@@ -7399,6 +7423,10 @@ object MapForm: TMapForm
       object Gaussian1: TMenuItem
         Caption = 'Gaussian'
         OnClick = Gaussian1Click
+      end
+      object Casorati1: TMenuItem
+        Caption = 'Casorati'
+        OnClick = Casorati1Click
       end
     end
     object Whiteboxfillholes2: TMenuItem

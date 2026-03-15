@@ -916,10 +916,6 @@ end;
 
 
 procedure ComparePlanCurvatures(DEM : integer);
-{$IfDef July15Issue}
-begin
-{$Else}
-
 var
    DEMList : tDEMBooleanArray;
    i : int64;
@@ -948,7 +944,6 @@ begin
       LoadArcGrids(MDDef.CompareShowMaps,false,DEMlist,'plan_curv');
    end;
    EndComparison(DEM,DEMList,'plan_curv');
-{$EndIf}
 end;
 
 

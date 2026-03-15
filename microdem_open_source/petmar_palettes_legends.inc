@@ -408,7 +408,9 @@ end;
 
                Range := Max - Min;
                Tick := PetMath.GetTickInt(256,25,Range);
-               if (Range < 0.002) or (abs(Max) < 0.002) then Dec := 4
+               if (Range < 0.00002) or (abs(Max) < 0.002) then Dec := 6
+               else if (Range < 0.0002) or (abs(Max) < 0.002) then Dec := 5
+               else if (Range < 0.002) or (abs(Max) < 0.002) then Dec := 4
                else if (Range < 0.02) or (abs(Max) < 0.02) then Dec := 3
                else Dec := 2;
 

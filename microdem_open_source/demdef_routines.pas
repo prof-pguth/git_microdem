@@ -339,6 +339,8 @@ function MD_Made_string : shortstring;
 var
    VegDenstColors : array[0..255] of tPlatformColor;
 
+   function TheOutputName(OutPath,InName : PathStr; RemoveExt : boolean) : PathStr;
+
 
 implementation
 
@@ -386,6 +388,28 @@ begin
    if GiveMICRODEM_credit then Result := 'md_'
    else Result := '';
 end;
+
+
+
+   function TheOutputName(OutPath,InName : PathStr; RemoveExt : boolean) : PathStr;
+   //takes a web address to download a file, and gets just the name of the file
+   var
+      TStr : shortstring;
+      j : integer;
+   begin
+       if StrUtils.AnsiContainsText(InName,'FILENAME=') then begin
+          Result := AfterSpecifiedStringANSI(InName,'FILENAME=');
+       end
+       else begin
+           j := length(InName);
+           repeat
+              dec(j)
+           until InName[j] = '/';
+           Result := Copy(InName,j+1,Length(InName)-j);
+       end;
+       if RemoveExt then ExtractFileNameNoExt(Result);
+       Result := OutPath + Result;
+    end;
 
 
 function PossibleElevationUnits(What : byte) : boolean;
@@ -4667,8 +4691,8 @@ procedure SetDefaultDirectories;
 begin
    {$IfDef  RecordInitialization} WriteLineToDebugFile('SetDefaultDirectories in, MainMapData=' + MainMapData); {$EndIf}
    {$IfDef VCL}
-   MovieDir := MainMapData + 'MOVIES\';
-   ImageDir := MainMapData + 'IMAGES\';
+      MovieDir := MainMapData + 'MOVIES\';
+      ImageDir := MainMapData + 'IMAGES\';
    {$EndIf}
 
    {$IfDef ExGazetteer}
@@ -4702,7 +4726,6 @@ begin
       SafeMakeDir(DBDir + 'Groups');
       SafeMakeDir(MainMapData + 'icons');
       SafeMakeDir(MainMapData + 'tiger_shapes');
-      //SafeMakeDir(MainMapData + 'temp');
       SafeMakeDir(ProjectDir + 'Map_Layers');
 
       {$IfDef ExGazetteer}
@@ -4763,9 +4786,6 @@ begin
    BlueMarbleFName := MainMapData + 'nasa\world.topo.200410.3x5400x2700.png';
    CoastLineFile := DBDir + 'natural_earth_vector\50m_physical\ne_50m_coastline' + DefaultDBExt;
    RiversFile := DBDir + 'natural_earth_vector\50m_physical\ne_50m_rivers_lake_centerlines' + DefaultDBExt;
-
-   MDDef.DEMIX_BaseDir := 'g:\demix_utm_tiles\';
-   if (not ValidPath(MDDef.DEMIX_BaseDir)) then if (not FindPath('DEMIX UTM tiles',':\demix_utm_tiles\',MDDef.DEMIX_BaseDir)) then exit;
 
    //needed if map library is on an external drive and has changed
    if (MapLibDir <> '') and (not ValidPath(MapLibDir)) then PickMapIndexLocation;

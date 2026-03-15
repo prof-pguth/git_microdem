@@ -29,10 +29,13 @@ begin
           AreaName := Areas.Strings[i];
           TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
           wmDEM.SetPanelText(1,TStr,true);
-          fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_cop_dsm_dtm\';
+          fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_gdem_compare_dsm_dtm\';
           SafeMakeDir(fName);
           fName := fName + AreaName + '_cop_compare_dsm_dtm.csv';
-          if not FileExists(fName) then begin
+          if FileExists(fName) then begin
+              {$IfDef RecordDEMIX} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName + '  exists already'); {$EndIf}
+          end
+          else begin
               Results := nil;
               theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
               {$IfDef RecordDEMIX} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName + '  filter=' + theFilter); {$EndIf}
@@ -117,24 +120,33 @@ var
    Areas,Results : tStringList;
    AreaName,BaseFilter,TStr,theFilter,TileStats,Common,Country : shortstring;
    i,j : integer;
-   fName,DSMName,DTMName: PathStr;
+   fName,DSMName,DTMName,AreaLock : PathStr;
 begin
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforComparingDSMandDTMbyScale in'); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforHRDEMComparison in'); {$EndIf}
    if GISdb[db].MyData.FieldExists('DEM_PAIR') and GISdb[db].MyData.FieldExists('REF_DEM') then begin
+      if (MDDef.DEMIX_BaseDir = '') or (Not ValidPath(MDDef.DEMIX_BaseDir)) then begin
+         GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
+      end;
        WantShowProgress := false;
+       HeavyDutyProcessing := true;
        SetColorForProcessing;
        BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
        GISdb[db].ApplyGISFilter(BaseFilter );
        Areas := GISdb[db].MyData.ListUniqueEntriesInDB('AREA');
        for I := 0 to pred(Areas.Count) do begin
           AreaName := Areas.Strings[i];
-          TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
-          {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr); {$EndIf}
-          wmDEM.SetPanelText(1,TStr,true);
-          fName := ExtractFilePath(GISdb[db].DBFullName) + 'aa_dsm_dtm\';
+          fName := ExtractFilePath(GISdb[db].DBFullName) + 'aa_hrdem_compare_dsm_dtm\';
           SafeMakeDir(fName);
           fName := fName + AreaName + '_compare_dsm_dtm.csv';
-          if not FileExists(fName) then begin
+          if FileExists(fName) then begin
+             {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr + '  already exists'); {$EndIf}
+          end
+          else begin
+              AreaLock := MDDef.DEMIX_BaseDir + AreaName + '\aa_arealocked.txt';
+              TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
+              wmDEM.SetPanelText(1,TStr,true);
+              {$IfDef RecordDEMIX} WriteLineToDebugFile(TStr + '  creating'); {$EndIf}
+              Areas.SaveToFile(AreaLock);
               Results := nil;
               theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
               GISdb[db].ApplyGISFilter(theFilter);
@@ -167,14 +179,16 @@ begin
                       MakeSingleAreaDSMDTMcomparison(true,DSMname,DTMName,'',AreaName,Country,TileStats,Results);
                   //end;
                   GISdb[db].MyData.Next;
-              end;
+              end {while};
              Results.SaveToFile(fName);
              Results.Destroy;
+             DeleteFileIfExists(AreaLock);
           end;
        end;
        wmDEM.ClearStatusBarPanelText;
        GISdb[db].ClearGISFilter;
        SetColorForWaiting;
+       HeavyDutyProcessing := true;
    end
    else begin
       MessageToContinue('DB requires fields DEM_PAIR and REF_DEM');

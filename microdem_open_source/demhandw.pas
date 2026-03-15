@@ -1413,6 +1413,7 @@ end;
 procedure TDemHandForm.FormCreate(Sender: TObject);
 begin
    CheckFormPlacement(Self);
+   Caption := ShortEXEname + ' Data Manipulation';
    {$IfDef HideHelpButtons} Help1.Visible := false; {$EndIf}
    FileMode := 2;
 end;
@@ -2941,28 +2942,32 @@ end;
 procedure TDemHandForm.OpenTopography1Click(Sender: TObject);
 var
    FileList,FilesWanted : tStringList;
-   NumSucc,NumFail, i,j,f,NumAlreadyDone,runs : Integer;
+   NumSucc,NumFail, i,j,f,runs : Integer;
    Input,OutPath : PathStr;
    TStr,inName,OutName : AnsiString;
    DefFilter : byte;
 
    function FileAlreadyDownLoaded(fName : PathStr) : boolean;
-   //might already have extracted las, or reprojected
+   //might already have extracted from laz to las, or reprojected las
    begin
       Result := FileExists(fName) or FileExists(ChangeFileExt(FName,'.las')) or FileExists(ChangeFileExt(FName,'_utm.las'));
    end;
 
+
 begin
    try
       WMdem.Color := clInactiveCaption;
-      Top := 25;
-      Left := 25;
+      Top := WMDEM.Top + 25;
+      Left := WMDEM.Left + 25;
       inPut := '';
       DefFilter := 1;
       FilesWanted := tStringList.Create;
       FilesWanted.Add(System.IOUtils.TPath.GetDownloadsPath);
-      if GetMultipleFiles('Files to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
+      if GetMultipleFiles(' to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
          for f := 0 to pred(FilesWanted.Count) do begin
+            TStr := IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count);
+            wmdem.SetPanelText(3,TStr,true);
+            StatusBar1.Panels[3].Text := tStr;
             Runs := 1;
             Input := FilesWanted.Strings[f];
             Memo1.Visible := true;
@@ -2974,35 +2979,41 @@ begin
                OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
                SafeMakeDir(OutPath);
                Memo1.Visible := true;
-               Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
-               wmdem.SetPanelText(3,'Started: ' + TimeToStr(Now));
+               Memo1.Lines.Add(TimeToStr(Now) + ' Check for files already downloaded, files= ' + IntToStr(FileList.Count));
+               TStr := 'Started: ' + TimeToStr(Now);
+               wmdem.SetPanelText(1,TStr,true);
+               StatusBar1.Panels[1].Text := TStr;
                repeat
                  NumSucc := 0;
                  NumFail := 0;
-                 NumAlreadyDone := 0;
-                 StartProgressAbortOption('Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count),5,5);
+                 for i := pred(FileList.Count) downto 0 do begin
+                    InName := FileList.Strings[i];
+                    if FileAlreadyDownloaded(TheOutputName(OutPath,InName,false)) then begin
+                       FileList.Delete(i);
+                    end;
+                 end;
+                 Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
+
                  for i := 0 to pred(FileList.Count) do begin
-                    UpdateProgressBar(i/FileList.Count);
-                    wmdem.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(FileList.Count));
-                    TStr := FileList.Strings[i];
-                    InName := TStr;
+                    TStr := IntToStr(succ(i)) + '/' + IntToStr(FileList.Count) + '  (' + RealToString(100*succ(i)/ FileList.Count,-8,1) + '%)';
+                    wmdem.SetPanelText(2,TStr);
+                    StatusBar1.Panels[2].Text := tStr;
+
+                    //https://data.geopf.fr/wms-r?SERVICE=WMS&VERSION=1.3.0&EXCEPTIONS=text/xml&REQUEST=GetMap&LAYERS=IGNF_LIDAR-HD_MNS_ELEVATION.ELEVATIONGRIDCOVERAGE.LAMB93&FORMAT=image/geotiff&STYLES=&CRS=EPSG:2154&BBOX=1008999.75,6499000.25,1009999.75,6500000.25&WIDTH=2000&HEIGHT=2000&FILENAME=LHD_FXX_1009_6500_MNS_O_0M50_LAMB93_IGN69.tif
+
+                    InName := FileList.Strings[i];
                     if (InName <> '') then begin
-                       j := length(TStr);
-                       repeat
-                          dec(j)
-                       until TStr[j] = '/';
-                       OutName := OutPath + Copy(TStr,j+1,Length(TStr)-j);
+                       OutName := TheOutputName(OutPath,InName,false);
                        if FileAlreadyDownloaded(OutName) then begin
-                          inc(NumAlreadyDone);
                        end
                        else begin
-                          TStr := ExtractFileName(Tstr);
+                          TStr := ExtractFileNameNoExt(OutName);
                           if DownloadFileFromWeb(InName,OutName,false) then begin
                              TStr := TStr + '  ' + SmartMemorySizeBytes(GetFileSize(OutName)) +  ' success';
                              inc(NumSucc);
                           end
                           else begin
-                             TStr := '***** failure downoload' + TStr + ' failure *****';
+                             TStr := '***** failure ' + TStr + ' failure *****';
                              inc(NumFail);
                           end;
                           Memo1.Lines.Add(IntToStr(succ(I)) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
@@ -3013,11 +3024,10 @@ begin
                        break;
                     end;
                  end;
-                 EndProgress;
-                 Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail) + '  already done=' + IntToStr(NumAlreadyDone));
+                 Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail));
                  Memo1.Lines.Add('');
                  Memo1.Lines.Add('');
-                 if (NumFail = 0) then File2Trash(InName);
+                 if (NumFail = 0) then DeleteFileIfExists(Input);
                  inc(Runs);
                until Wantout or (NumFail = 0) or (Runs > 5);
                FileList.Free;
@@ -3027,8 +3037,7 @@ begin
       FilesWanted.Free;
    finally
       WMdem.Color := clScrollBar;
-      wmdem.SetPanelText(3,'');
-      wmdem.SetPanelText(2,'');
+      wmdem.ClearStatusBarPanelText;
    end;
 end;
 

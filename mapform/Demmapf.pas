@@ -1515,7 +1515,6 @@ type
     Compareplancurvature1: TMenuItem;
     Comparetangentialcurvature1: TMenuItem;
     MAD2K1: TMenuItem;
-    SAGAmultliplecurvatures1: TMenuItem;
     USWeatherForecast1: TMenuItem;
     CompareTRI1: TMenuItem;
     N65: TMenuItem;
@@ -1700,7 +1699,14 @@ type
     SlopeMoments2: TMenuItem;
     IQRres1: TMenuItem;
     QuickDEMindex1: TMenuItem;
-    procedure Waverefraction1Click(Sender: TObject);
+    kcCasoraticurvature1: TMenuItem;
+    Casorati1: TMenuItem;
+    Gaussaincurvature1: TMenuItem;
+    Meancurvature2: TMenuItem;
+    Comparemeancurvature1: TMenuItem;
+    CompareCasoraticurvature1: TMenuItem;
+    CompareGaussiancurvature1: TMenuItem;
+    N90: TMenuItem;
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
     procedure Smallcirclethroughpoint1Click(Sender: TObject);
@@ -2920,6 +2926,13 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure IRWQslope1Click(Sender: TObject);
     procedure IQRres1Click(Sender: TObject);
     procedure QuickDEMindex1Click(Sender: TObject);
+    procedure kcCasoraticurvature1Click(Sender: TObject);
+    procedure Casorati1Click(Sender: TObject);
+    procedure Meancurvature2Click(Sender: TObject);
+    procedure Gaussaincurvature1Click(Sender: TObject);
+    procedure Comparemeancurvature1Click(Sender: TObject);
+    procedure CompareCasoraticurvature1Click(Sender: TObject);
+    procedure CompareGaussiancurvature1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -4073,6 +4086,13 @@ begin
    end;
 end;
 
+
+procedure TMapForm.CompareGaussiancurvature1Click(Sender: TObject);
+begin
+   WBT_GaussianCurvature(true,GeotiffDEMNameOfMap);
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--k');
+   CreateCurvatureMap(eucurv_k,true,MapDraw.DEMonMap);
+end;
 
 procedure TMapForm.CompareGDALslopespacingapproximations1Click(Sender: TObject);
 begin
@@ -5833,6 +5853,13 @@ begin
    CompareAspectMaps(MapDraw.DEMonMap);
 end;
 
+procedure TMapForm.CompareCasoraticurvature1Click(Sender: TObject);
+begin
+   Casorati1Click(Sender);
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--kc');
+   CreateCurvatureMap(eucurv_kc,true,MapDraw.DEMonMap);
+end;
+
 procedure TMapForm.Comparecontourtorsion1Click(Sender: TObject);
 begin
    CompareContourTorsion(MapDraw.DEMonMap);
@@ -5963,6 +5990,13 @@ begin
 end;
 
 
+
+procedure TMapForm.Comparemeancurvature1Click(Sender: TObject);
+begin
+    WBT_MeanCurvature(true,GeotiffDEMNameOfMap);
+    RUN_LSPcalculator(MapDraw.DEMonMap,'--kmean');
+    CreateCurvatureMap(eucurv_k_mean,true,MapDraw.DEMonMap);
+end;
 
 procedure TMapForm.Comparemultiplegridstothisone2Click(Sender: TObject);
 begin
@@ -6382,7 +6416,7 @@ begin
    Dispose(dists);
    Dispose(NeedZ);
 
-   {$IfDef RecordReqAnt} WriteLineToDebugFile(' MakeRequiredAntennaMap out'); {$EndIf}
+   {$IfDef RecordReqAnt} WriteLineToDebugFile('MakeRequiredAntennaMap out'); {$EndIf}
 end;
 
 
@@ -12334,6 +12368,11 @@ begin
 end;
 
 
+procedure TMapForm.kcCasoraticurvature1Click(Sender: TObject);
+begin
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--kc');
+end;
+
 procedure TMapForm.SetMapOverlays;
 begin
    if MDDef.DBsOnAllMaps and (NumOpenDB > 0) then begin
@@ -16460,6 +16499,11 @@ begin
    CreateCurvatureMap(eucurv_k_mean,true,MapDraw.DEMonMap);
 end;
 
+procedure TMapForm.Meancurvature2Click(Sender: TObject);
+begin
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--kmean');
+end;
+
 procedure TMapForm.Meanfilter1Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcMean);
@@ -16958,23 +17002,17 @@ begin
 end;
 
 procedure TMapForm.Grasstangentialcurvature1Click(Sender: TObject);
-//var
-   //NewGrid : integer;
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       //NewGrid := GRASSTangentialCurvatureMap(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(GRASSTangentialCurvatureMap(GeotiffDEMNameOfMap),MapDraw.DEMonMap);
    {$EndIf}
 end;
 
 procedure TMapForm.GRASSTPI1Click(Sender: TObject);
-//var
-   //NewGrid : integer;
 begin
    {$IfDef NoExternalPrograms}
    {$Else}
-       //NewGrid := GRASSTPIMap(GeotiffDEMNameOfMap);
        MatchAnotherDEMMap(GRASSTPIMap(GeotiffDEMNameOfMap),MapDraw.DEMonMap);
    {$EndIf}
 end;
@@ -18801,14 +18839,6 @@ begin
       MessageToContinue('Disabled while rewriting for collection 2');
    {$Else}
       SatImage[Mapdraw.SATonMap].GetLandsatQAMap('Water', SatImage[Mapdraw.SATonMap].OriginalFileName,4,5);
-   {$EndIf}
-end;
-
-procedure TMapForm.Waverefraction1Click(Sender: TObject);
-begin
-   {$IfDef ExWaveRefraction}
-   {$Else}
-      //Refraction_model.CreateWaveRefraction(self);
    {$EndIf}
 end;
 
@@ -21214,6 +21244,11 @@ begin
    BoxSize := 10;
    ReadDefault('Box size (pixels)',BoxSize);
    MakeGammaGrids(MapDraw.DEMonMap,BoxSize);
+end;
+
+procedure TMapForm.Gaussaincurvature1Click(Sender: TObject);
+begin
+   RUN_LSPcalculator(MapDraw.DEMonMap,'--k');
 end;
 
 procedure TMapForm.Gaussian1Click(Sender: TObject);
@@ -25328,6 +25363,21 @@ begin
    LegendFromShapeFileGroup(Self,MapDraw.CartoGroupShapesUp);
 end;
 
+
+
+procedure TMapForm.Casorati1Click(Sender: TObject);
+var
+   Mean,Gauss : integer;
+begin
+   Mean := WBT_MeanCurvature(false,GeotiffDEMNameOfMap);
+   Gauss := WBT_GaussianCurvature(false,GeotiffDEMNameOfMap);
+   MakeCasoratiCurvatureGrid(true,'WBT_Casorati_curvature', Mean,Gauss);
+   CloseSingleDEM(Mean);
+   CloseSingleDEM(Gauss);
+end;
+
+
+
 procedure TMapForm.ChangeElevUnits(Units : tElevUnit);
 begin
    {$IfDef ExSat}
@@ -25345,16 +25395,6 @@ procedure TMapForm.CCAP1Click(Sender: TObject);
 begin
    ChangeElevUnits(euCCAP);
 end;
-
-
-
-(*
-function TMapForm.CenterMapOnLatLong(Lat, Long: float64;
-  HowZoom: tHowZoom): boolean;
-begin
-
-end;
-*)
 
 
 procedure TMapForm.CenterpointsofallDBs1Click(Sender: TObject);

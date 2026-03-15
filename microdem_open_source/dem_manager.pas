@@ -285,20 +285,13 @@ function WebExtractGEDTMorEDTM(aDEM : shortstring; bb : sfBoundBox; SaveName : P
 var
    fName : PathStr;
 begin
-(*
-    if (aDEM = 'GEDTMV1_2w') then      fName := 'https://s3.opengeohub.org/global/dtm/v1.2/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.3857.3855_v1.2.tif'
-    else if (aDEM = 'GEDTMV1_2f') then fName := 'https://s3.opengeohub.org/global/dtm/v1.2/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif'
-    else if (aDEM = 'GEDTMV1_2') then  fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif'
-*)
-
     if (aDEM = 'GEDTMV1_2') then       fName := 'https://s3.opengeohub.org/global/dtm/v1.2/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif'
     else if (aDEM = 'GEDTMV1_1') then  fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v20250611.tif'
     else if (aDEM = 'GEDTMV0') then    fName := 'https://s3.opengeohub.org/global/edtm/legendtm_rf_30m_m_s_20000101_20231231_go_epsg.4326_v20250130.tif'
     else if (aDEM = 'EDTM') then       fName := 'https://s3.eu-central-1.wasabisys.com/openlandmap/dtm/dtm.bareearth_ensemble_p10_30m_s_2018_go_epsg4326_v20230221.tif';
     Result := GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,OpenMap,SaveName,SaveName);
     if ValidDEM(Result) then begin
-       //if (aDEM = 'GEDTMV1_2') then DEMGlb[Result].MultiplyGridByConstant(0.1);   //because it lacks any indication it is decimeters
-       SaveGEDTMFamilyDEM(Result,SaveName);  //with EGM2008 code added, MD elevation code for meters, and kill ASCII tag 42112
+       SaveGEDTMFamilyDEM(Result,SaveName);  //add EGM2008 code, add MD elevation code for meters, kill ASCII tag 42112
     end
     else MessageToContinue('At it again; GEDTM download failure');
 end;

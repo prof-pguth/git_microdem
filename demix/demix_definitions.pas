@@ -576,7 +576,11 @@ begin
       Result := 'DTM';
    end
    else begin
-       if (Country  = 'ES_') or (Country  = 'IC_') then begin
+       if (Country = 'FR_') then begin
+            if ANSIcontainsStr(Tile,'MNS') then Result := 'DSM'
+            else if ANSIcontainsStr(Tile,'MNT') then Result := 'DTM';
+       end;
+       if (Country = 'ES_') or (Country = 'IC_') then begin
             if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
             else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
        end;
@@ -585,7 +589,7 @@ begin
             else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
        end;
    end;
-   if (Result = '') then Result := 'DTM';
+   //if (Result = '') then Result := 'DTM';
 end;
 
 
@@ -594,24 +598,26 @@ var
    TStr : shortstring;
 begin
   if GISdb[DBonTable].MyData.FieldExists('CRITERION') then TStr := 'CRITERION=' + QuotedStr('SLOPE') + ' AND ' else TStr := '';
-  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.05));
+  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.015));
   {$IfDef RecordDSM_DTMpairs} WriteLineToDebugFile(GISdb[DBonTable].MyData.Filter + '  matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));  {$EndIf}
-
+  DSMname := '';
+  DTMName := '';
+  Result := false;
   if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
-     TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+     TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
      if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
      GISdb[DBonTable].MyData.Next;
-     TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+     TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
      if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
-     Result := true;
+     Result := (DSMname <> '') and (DTMname <> '');
   end
+  else begin
+  end;
   {$IfDef RecordDSM_DTMpairs}
-     else if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
-        Result := false;
+     if (GISdb[DBonTable].MyData.FiltRecsInDB > 2) then begin
         WriteLineToDebugFile('Too many matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
-     end
+     end;
   {$EndIf}
-  else Result := false;
 end;
 
 
@@ -619,15 +625,15 @@ function GetDSMandDTMFileNamesFromLatLong(DBonTable : integer; Lat,Long : float6
 
    function TileName : ShortString;
    begin
-     TileName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+     TileName := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
    end;
 
 begin
   GISdb[DBonTable].ApplyGISFilter('CRITERION=' + QuotedStr('SLOPE') + ' AND ' + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.01));
   if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
-     DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + '\source\' + TileName + '.tif';
+     DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA')) + '\source\' + TileName + '.tif';
      GISdb[DBonTable].MyData.Next;
-     DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA') + '\source\' + TileName + '.tif';
+     DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA')) + '\source\' + TileName + '.tif';
      Result := FileExists(DSMName) and FileExists(DTMName);
   end
   else Result := false;

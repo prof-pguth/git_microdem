@@ -1070,6 +1070,9 @@ type
     DSMDTMcomparison1: TMenuItem;
     N60: TMenuItem;
     CompareCopDEMtoDSMDTMandaggregate1: TMenuItem;
+    Addlatlong2: TMenuItem;
+    Addprojectedcoordinates2: TMenuItem;
+    DownloadextractDEMIXtilesfromCOGDEMs1: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1897,6 +1900,7 @@ type
     procedure CompareDSMDTM1Click(Sender: TObject);
     procedure DSMlessthanDTM1Click(Sender: TObject);
     procedure CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
+    procedure DownloadextractDEMIXtilesfromCOGDEMs1Click(Sender: TObject);
     //procedure DSMlessthanDTM1Click(Sender: TObject);
     //procedure DSMDTMpairs1Click(Sender: TObject);
     //procedure Pointfilter2Click(Sender: TObject);
@@ -5291,6 +5295,7 @@ begin
    end;
 end;
 
+
 procedure Tdbtablef.AddDSMDTMpair1Click(Sender: TObject);
 var
    Lat,Long : float64;
@@ -5311,39 +5316,28 @@ begin
    GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','',false);
 
    repeat
-       GISdb[DBonTable].EmpSource.Enabled := false;
        GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
+       GISdb[DBonTable].EmpSource.Enabled := false;
        if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-           Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
            wmdem.SetPanelText(1,'Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
+           Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
            {$IfDef RecordDEMIX} WriteLineToDebugFile(Tile + '  Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
            if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) and GetDSMandDTMTileNamesFromLatLong(DBonTable,Lat,Long,DTMName,DSMName) then begin
-              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DSMName));
-              if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-                 GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES',false);
-                 GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname,false);
-                 GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname,false);
-              end
-              else begin
-                 MessageToContinue('Problem for DEMIX_TILE=' + QuotedStr(DSMName) + ' n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
-              end;
-              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DTMName));
-              if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-                 GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES',false);
-                 GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname,false);
-                 GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname,false);
-              end
-              else begin
-                 MessageToContinue('Problem for DEMIX_TILE=' + QuotedStr(DSMName) + ' n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
-              end;
+               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DSMName) + ' OR ' + 'DEMIX_TILE=' + QuotedStr(DTMName));
+               GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES',false);
+               GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname,false);
+               GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname,false);
            end
            else begin
-              GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tile));
-              GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','NO',false);
-           end;
-       end
-       else begin
-           {$IfDef RecordDEMIX} WriteLineToDebugFile('All tiles now paired'); {$EndIf}
+                 GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
+                 //no match for first tile in the DB
+                 GISdb[DBonTable].MyData.Edit;
+                 GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_PAIR','NO');
+                 GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME','');
+                 GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME','');
+                 GISdb[DBonTable].MyData.Post;
+            end;
+            GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
        end;
    until (GISdb[DBonTable].MyData.FiltRecsInDB = 0);
    SetColorForWaiting;
@@ -5795,10 +5789,7 @@ procedure Tdbtablef.Addmultiplefields1Click(Sender: TObject);
 begin
    try
       GetDEMIXPaths(true);
-      //Removerowsmissinganyevaluations1Click(Sender);
-      //RankDEMS(DBonTable,nil);
       EvalRangeAndBestEvalForCriterion(DBonTable);
-      //CompareSeriousCompetitors(DBonTable);
       AddTileCharacteristicsToDB(DBonTable);
    finally
       EndDEMIXProcessing;
@@ -12449,6 +12440,52 @@ begin
          Petmar.ScreenSymbol(TheMapOwner.Image1.Canvas,x,y,FilledBox,3,Color);
          LastZ := z;
       end;
+   end;
+end;
+
+procedure Tdbtablef.DownloadextractDEMIXtilesfromCOGDEMs1Click(Sender: TObject);
+const
+   TileSize = 10000.0;
+var
+   WalesDTM,OutName : PathStr;
+   x,y : float32;
+   i : integer;
+   cmd : shortstring;
+   bb : sfBoundBox;
+begin
+   if GISdb[DBonTable].MyData.FieldExists('X_PROJ') and GISdb[DBonTable].MyData.FieldExists('Y_PROJ') then begin
+       //ShowHourglassCursor;
+       WalesDTM := 'I:\hrdem_country_europe\wales_dtm_32bit_cog.tif';
+       GISdb[DBonTable].MyData.First;
+       i := 0;
+       StartProgress('COG extract');
+       while not GISdb[DBonTable].MyData.eof do begin
+          inc(i);
+          UpdateProgressBar(i/GISdb[DBonTable].MyData.FiltRecsInDB);
+          x := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('X_PROJ');
+          y := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('Y_PROJ');
+          bb.xmin := TileSize *round(x / TileSize);
+          bb.xmax := bb.xmin + TileSize;
+          bb.ymin := TileSize *round(y / TileSize);
+          bb.ymax := bb.ymin + TileSize;
+          OutName := ExtractFilePath(GISdb[DBonTable].DBfullName) + GISdb[DBonTable].DBname + '_' + IntToStr(round(x / TileSize)) + '_' + IntToStr(round(y/ TileSize)) + '.tif';
+          //ExtractFromMonsterTIFFforBoundingBox(WalesDTM, bb,false,OutName,OutName);
+
+          GDALsubsetGridAndOpen(bb,false,WalesDTM,false,OutName);
+
+          (*
+          cmd := GDAL_Translate_Name + ' ' + GDALextentBoxUTM(bb) + ' ' + WalesDTM + ' ' + OutName;
+          {$IfDef RecordDEMIX} WriteLineToDebugFile('cmd=' + cmd); {$EndIf}
+          GDALcommand(MDTempDir + 'raster_subset.bat',cmd);
+
+          repeat
+             Delay(2500);
+          until FileExists(OutName);
+          *)
+          GISdb[DBonTable].MyData.Next;
+       end;
+       EndProgress;
+       //ShowDefaultCursor;
    end;
 end;
 

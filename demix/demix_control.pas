@@ -164,7 +164,7 @@ procedure OpenDEMIXAreaMaps;
 procedure GetAreaDEMNames(TestAreaName : shortstring);
 
 function ExtraToSpreadDEMs(DEMName : shortString; Extra : float32) : float32;
-function PickWineContestDBLocation : boolean;
+function PickWineContestDBLocation(Force : boolean = false) : boolean;
 procedure PickDEMIXMode;
 
 
@@ -327,7 +327,7 @@ var
    while not GISdb[DBonTable].MyData.eof do begin
       inc(i);
       Area := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
-      Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+      Tile := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
       wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' + Tile,true);
       fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\GEDTMv1_2.tif';
       fName2 := MDDef.DEMIX_BaseDir + Area + '\' + Tile +  '_ref_test_dem\ref_dtm_srtm.tif';
@@ -861,7 +861,7 @@ begin
              Counts[4].Add(GISdb[DBonTable].MyData.GetFieldByNameAsString(DiffParams[i] + ParamSuffixes[j]));
           end;
        end;
-       aline := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+       aline := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
       for I := 1 to 4 do  begin
          aLine := aLine + ',' + IntToStr(Counts[i].Count) ;
          Counts[i].Free;
@@ -897,7 +897,7 @@ begin
       aline := 'DEMIX_TILE,ELVD,SLPD,RUFD,ALL';
       sl.Add(aline);
       for i := 0 to pred(Tiles.Count) do begin
-         Tile := Tiles.Strings[i];
+         Tile := UpperCase(Tiles.Strings[i]);
          wmdem.SetPanelText(1,IntToStr(i) + '/' + IntToStr(Tiles.Count) + ' ' + Tile,true);
          aline := Tile + ',';
          for j := 1 to 3 do begin
@@ -1262,10 +1262,13 @@ begin
 end;
 
 
-function PickWineContestDBLocation : boolean;
+function PickWineContestDBLocation(Force : boolean = false) : boolean;
 begin
-   if ValidPath(DEMIX_Base_DB_Path) then Result := true
-   else Result := FindPath('DEMIX Wine contest location',':\Wine_contest\',DEMIX_Base_DB_Path);
+   if (not Force) and ValidPath(DEMIX_Base_DB_Path) then Result := true
+   else begin
+      Result := FindPath('DEMIX Wine contest DB location',':\Wine_contest\',DEMIX_Base_DB_Path);
+      SaveMDdefaults;
+   end;
 end;
 
 
@@ -1527,11 +1530,11 @@ end;
 function DEMIX_GetListOfAreas : tStringList;
 var
   i : integer;
-  //AreaDir,TileDir : PathStr;
   Area : shortstring;
 begin
    Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    if (Result.Count = 0) then begin
+      {$IfDef RecordDEMIX} HighlightLineToDebugFile('No areas in ' + MDDef.DEMIX_BaseDir); {$EndIf}
       GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
       Result := GetSubDirsInDirectory(MDDef.DEMIX_BaseDir);
    end;

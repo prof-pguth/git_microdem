@@ -147,7 +147,10 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
         Result.Caption := RemoveUnderscores(dbOpts.XField) + ' vs ' + RemoveUnderscores(dbOpts.YField) + ' & ' + RemoveUnderscores(dbOpts.ZField) +  ' from ' + dbName + ' ' + dbOpts.MainFilter;
      end
      else begin
-        if (GraphType = dbgtN2DgraphcolorNumericField) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.NumericColorField) + ') '
+        if (GraphType = dbgtN2DgraphcolorNumericField) then begin
+           TStr := ' (color from ' + RemoveUnderscores(dbOpts.NumericColorField) + ') ';
+           Result.zUnits := dbOpts.NumericColorField;
+        end
         else if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.StringColorField) + ') '
         else TStr := '';
         Result.Caption := RemoveUnderscores(dbOpts.XField) + ' vs ' + RemoveUnderscores(dbOpts.YField) + TStr + ' from ' + dbName + ' ' + dbOpts.MainFilter;

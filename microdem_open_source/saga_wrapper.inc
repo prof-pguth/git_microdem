@@ -232,7 +232,6 @@ begin
 end;
 
 
-
 (*
 Usage: saga_cmd ta_morphometry 0 [-ELEVATION <str>] [-SLOPE <str>] [-ASPECT <str>] [-C_GENE <str>] [-C_PROF <str>] [-C_PLAN <str>] [-C_TANG <str>] [-C_LONG <str>] [-C_CROS <str>] [-C_MINI <str>] [-C_MAXI <str>] [-C_TOTA <str>] [-C_ROTO <str>] [-METHOD <str>] [-UNIT_SLOPE <str>] [-UNIT_ASPECT <str>]
   -ELEVATION:<str>  	Elevation
@@ -576,8 +575,7 @@ function SagaWatershedBasins(InName : PathStr; BasinGrid : PathStr = ''; Channel
           {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval in, InName= ' + InName); {$EndIf}
           if (OutName = '') then OutName := MDTempDir + 'saga_sinks_removed_' + ExtractFileNameNoExt(InName) + '.tif';
           CMD := MDDef.SagaCMD + ' ta_preprocessor "Sink Removal" -DEM ' + inName + ' -DEM_PREPROC ' + OutName;
-          //TemporaryNewGeotiff := false;
-          Result := SAGAMap(False,cmd,{InName,}outname,euMeters);
+          Result := SAGAMap(False,cmd,outname,euMeters);
           {$IfDef RecordSAGA} WriteLineToDebugFile('SagaSinkRemoval out'); {$EndIf}
        end
        else Result := 0;;

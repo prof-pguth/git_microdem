@@ -237,7 +237,7 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     Top = 240
     Width = 155
     Height = 25
-    Caption = 'Grid ot terrain scatterplots'
+    Caption = 'Grid of terrain scatterplots'
     TabOrder = 21
     OnClick = BitBtn14Click
   end

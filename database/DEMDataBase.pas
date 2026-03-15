@@ -5769,8 +5769,8 @@ begin
    EmpSource.Enabled := false;
    dbOpts.MainFilter := fString;
    MyData.ApplyFilter(fString);
-   EmpSource.Enabled := false;
    if DoShowStatus then ShowStatus;
+   EmpSource.Enabled := false;
    //ApplicationProcessMessages;
 end;
 
