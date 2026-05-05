@@ -192,7 +192,7 @@ type
     CheckBox39: TCheckBox;
     CheckBox41: TCheckBox;
     CheckBox42: TCheckBox;
-    RadioGroup25: TRadioGroup;
+    //RadioGroup25: TRadioGroup;
     CheckBox43: TCheckBox;
     RadioGroup26: TRadioGroup;
     TabSheet2: TTabSheet;
@@ -237,7 +237,7 @@ type
     Edit29: TEdit;
     TabSheet21: TTabSheet;
     GroupBox4: TGroupBox;
-    CheckBox105: TCheckBox;
+    //CheckBox105: TCheckBox;
     CheckBox111: TCheckBox;
     CheckBox112: TCheckBox;
     GroupBox5: TGroupBox;
@@ -949,7 +949,7 @@ begin
    RadioGroup22.ItemIndex := ord(MDdef.OutputPitchMethod);
    RadioGroup23.ItemIndex := ord(MDDef.SpeedUnit);
    RadioGroup24.ItemIndex := pred(MDDEF.PanOverlap);
-   if MDDef.DoubleEtopoImport then RadioGroup25.ItemIndex := 1 else RadioGroup25.ItemIndex := 0;
+   //if MDDef.DoubleEtopoImport then RadioGroup25.ItemIndex := 1 else RadioGroup25.ItemIndex := 0;
    RadioGroup26.ItemIndex := ord(MDdef.AutoOpen);
    RadioGroup32.ItemIndex := MDDef.ClipboardExports;
 
@@ -1195,7 +1195,7 @@ begin
       PageControl1.Pages[18].TabVisible := false;
       GroupBox4.Visible := false;
    {$Else}
-      CheckBox105.Checked := MDDef.ShowOceanographyOptions;
+      //CheckBox105.Checked := MDDef.ShowOceanographyOptions;
       CheckBox111.Checked := MDDef.ShowSidescan;
       CheckBox112.Checked := MDDef.ShowSubbottom;
    {$EndIf}
@@ -1387,7 +1387,7 @@ begin
    MDdef.OutputPitchMethod := tLatLongMethod(RadioGroup22.ItemIndex);
    MDDef.SpeedUnit := tSpeedUnit(RadioGroup23.ItemIndex);
    MDDEF.PanOverlap := succ(RadioGroup24.ItemIndex);
-   MDDef.DoubleEtopoImport := RadioGroup25.ItemIndex = 1;
+   //MDDef.DoubleEtopoImport := RadioGroup25.ItemIndex = 1;
    MDDef.AutoOpen := tAutoOpen(RadioGroup26.ItemIndex);
 
    MDDef.ClipboardExports := RadioGroup32.ItemIndex;
@@ -1542,7 +1542,7 @@ begin
    MDDef.AutoLoadVegDensityGrids := CheckBox78.Checked;
    MDDef.VegDensityGraphAverage := CheckBox87.Checked;
 
-   MDDef.ShowOceanographyOptions := CheckBox105.Checked;
+   //MDDef.ShowOceanographyOptions := CheckBox105.Checked;
    MDDef.ShowSidescan := CheckBox111.Checked;
    MDDef.ShowSubbottom := CheckBox112.Checked;
    MDDef.ShowGlobalDEM := CheckBox113.Checked;

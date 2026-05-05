@@ -17,7 +17,6 @@ unit DEMStat;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef Debug }
       //{$Define NoParallelFor}
-      {$Define RecordDEMIX}
       //{$Define RecordFUV}
       //{$Define RecordFUVcreate}
       //{$Define RecordFUVcreateFull}
@@ -28,7 +27,7 @@ unit DEMStat;
       //{$Define RecordComparisons}
       //{$Define RecordSSIM}
       //{$Define TrackCovariance}
-      {$Define TrackCovarianceFull}
+      //{$Define TrackCovarianceFull}
       //{$Define RecordCovarianceFail}
       //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
@@ -38,7 +37,7 @@ unit DEMStat;
       //{$Define RecordGridCorrrelations}
       //{$Define RecordGridScatterGram}
       //{$Define RecordDEMMapProj}
-      {$Define RecordSingleGridScatterGram}
+      //{$Define RecordSingleGridScatterGram}
       //{$Define RecordFUVsteps}
       //{$Define TimeGridsForArea}
       //{$Define TimeOpenCreateGrids}
@@ -75,7 +74,6 @@ unit DEMStat;
       //{$Define RecordClustering}
       //{$Define RecordFFT}
    {$Else}
-      //{$Define RecordDEMIX}
       //{$Define RecordFUVsteps}
    {$EndIf}
 {$EndIf}

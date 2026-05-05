@@ -12,7 +12,6 @@ unit demix_filter;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
   //{$Define RecordDEMIXLoad}
   //{$Define RecordSSIMprep}
-  //{$Define RecordDEMIX}
   //{$Define TrackFUV}    //should probably use only when doing a single tile
   //{$Define RecordSSIMprepFull}
   //{$Define RecordDEMIXDiffMaps}

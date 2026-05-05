@@ -122,7 +122,8 @@ begin
 end;
 
 
-function VerifyRecordsToUse(fName : PathStr; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE'; SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
+function VerifyRecordsToUse(fName : PathStr; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE';
+   SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
 var
   Table : tMyData;
 begin
@@ -132,7 +133,8 @@ begin
 end;
 
 
-function VerifyRecordsToUse(var Table : tMyData; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE'; SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
+function VerifyRecordsToUse(var Table : tMyData; FieldShownUser : ShortString; aCaption : shortstring = ''; FieldToToggle : ShortString = 'USE';
+   SecondaryField : ShortString = ''; LimitField : ShortString = '') : boolean; overload;
 var
    ToggleDBfieldsForm : TToggleDBfieldsForm;
    DataThere : tStringList;

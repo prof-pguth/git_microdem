@@ -4,7 +4,7 @@ object showrecordform: Tshowrecordform
   BorderIcons = [biSystemMenu]
   Caption = 'Data Base Record'
   ClientHeight = 529
-  ClientWidth = 1218
+  ClientWidth = 1352
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object showrecordform: Tshowrecordform
   object StatusBar1: TStatusBar
     Left = 0
     Top = 510
-    Width = 1218
+    Width = 1352
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -27,7 +27,7 @@ object showrecordform: Tshowrecordform
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 1218
+    Width = 1352
     Height = 29
     ButtonHeight = 21
     Caption = 'ToolBar1'
@@ -271,7 +271,7 @@ object showrecordform: Tshowrecordform
   object PageControl1: TPageControl
     Left = 0
     Top = 29
-    Width = 1218
+    Width = 1352
     Height = 481
     ActivePage = TabSheet1
     Align = alClient
@@ -281,23 +281,19 @@ object showrecordform: Tshowrecordform
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 1210
+        Width = 1344
         Height = 453
         Align = alClient
         ColCount = 2
         DefaultColWidth = 120
-        DefaultRowHeight = 16
+        DefaultRowHeight = 12
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing, goRowMoving, goColMoving]
         TabOrder = 0
+        ExplicitLeft = 3
+        ExplicitTop = -2
         ColWidths = (
           120
           120)
-        RowHeights = (
-          16
-          16
-          16
-          16
-          16)
       end
     end
     object TabSheet2: TTabSheet
@@ -306,12 +302,10 @@ object showrecordform: Tshowrecordform
       object Memo1: TMemo
         Left = 0
         Top = 0
-        Width = 1210
+        Width = 1344
         Height = 453
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 1183
-        ExplicitHeight = 476
       end
     end
     object TabSheet3DProf: TTabSheet
@@ -320,7 +314,7 @@ object showrecordform: Tshowrecordform
       object Image2: TImage
         Left = 0
         Top = 0
-        Width = 1210
+        Width = 1344
         Height = 453
         Align = alClient
         OnMouseDown = Image2MouseDown
@@ -336,12 +330,10 @@ object showrecordform: Tshowrecordform
       object Memo3: TMemo
         Left = 0
         Top = 0
-        Width = 1210
+        Width = 1344
         Height = 453
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 1183
-        ExplicitHeight = 476
       end
     end
     object TabSheet5: TTabSheet
@@ -350,7 +342,7 @@ object showrecordform: Tshowrecordform
       object Image1: TImage
         Left = 0
         Top = 0
-        Width = 1210
+        Width = 1344
         Height = 453
         Align = alClient
         OnMouseDown = Image1MouseDown
@@ -378,7 +370,7 @@ object showrecordform: Tshowrecordform
       object Image5: TImage
         Left = 0
         Top = 0
-        Width = 1210
+        Width = 1344
         Height = 453
         Align = alClient
         OnDblClick = Image5DblClick

@@ -51,9 +51,6 @@ object MapForm: TMapForm
     ParentFont = False
     TabOrder = 0
     OnClick = ScrollBox1Click
-    ExplicitLeft = 8
-    ExplicitTop = -333
-    ExplicitHeight = 1034
     object Image1: TImage
       Left = 3
       Top = -247
@@ -215,7 +212,6 @@ object MapForm: TMapForm
       Height = 41
       Align = alBottom
       TabOrder = 8
-      ExplicitTop = 989
       object TrackBar2: TTrackBar
         Left = 289
         Top = 1
@@ -2125,6 +2121,11 @@ object MapForm: TMapForm
             OnClick = Currentversion121Click
           end
         end
+        object ListCOGS1: TMenuItem
+          Caption = 'List COGS'
+          GroupIndex = 1
+          OnClick = ListCOGS1Click
+        end
       end
       object ViewExifimages1: TMenuItem
         Caption = 'View Exif images'
@@ -3556,7 +3557,6 @@ object MapForm: TMapForm
       object Offset1: TMenuItem
         Caption = '&Offset (point at distance/bearing)'
         GroupIndex = 1
-        OnClick = Offset1Click
       end
       object Oceanography1: TMenuItem
         Caption = 'Oceanography'
@@ -6456,7 +6456,7 @@ object MapForm: TMapForm
         OnClick = Gaussiancurvature1Click
       end
       object Caasoraticurvature1: TMenuItem
-        Caption = 'Caasorati curvature (kc)'
+        Caption = 'Casorati curvature (kc)'
         OnClick = Caasoraticurvature1Click
       end
       object N83: TMenuItem

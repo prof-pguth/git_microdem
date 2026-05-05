@@ -21,9 +21,9 @@ unit gdal_tools;
 
    {$IFDEF DEBUG}
       //{$Define RecordGDALOpen}
+      //{$Define RecordCOGdownload}
       //{$Define RecordSubsetOpen}
       //{$Define RecordDatumShift}
-      //{$Define RecordDEMIX}
       //{$Define RecordWKT}
       //{$Define RecordProjectionStrings}
       //{$Define RecordDEMIXCompositeDatum}
@@ -99,18 +99,20 @@ const
 
    procedure ResaveAsGDALgeotiff(fName : PathStr);
 
-   function GDALinfoOutputFName(fname : PathStr) : PathStr;
-   procedure GetGDALinfo(fName : PathStr; var GDALinfo : tGDALinfo);
-   procedure ZeroGDALinfo(var GDALinfo : tGDALinfo);
-   function GetEPSG(var GDALinfo : tGDALinfo) : integer;
-   procedure BatchGDALinfo(Infiles : tStringList; GetClipBox : boolean; var UTMZone : int16);
-   procedure BatchGDALSRSinfo(Infiles : tStringList);
+   //GDALinfo
+       function GDALinfoOutputFName(fname : PathStr) : PathStr;
+       procedure GetGDALinfo(fName : PathStr; var GDALinfo : tGDALinfo);
+       procedure ZeroGDALinfo(var GDALinfo : tGDALinfo);
+       procedure GDAL_info_forCOGsInTable;
+       function GetEPSG(var GDALinfo : tGDALinfo) : integer;
+       procedure BatchGDALinfo(Infiles : tStringList; GetClipBox : boolean; var UTMZone : int16);
+       procedure BatchGDALSRSinfo(Infiles : tStringList);
+
    procedure GDAL_Convert_JSON(var fName : pathStr);
    procedure GDAL_Fill_Holes(InName : PathStr);
    function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99; OutName : PathStr = '') : integer;
    function GDAL_warp_DEM(OpenMap : boolean; DEM : integer; OutName : PathStr; xspace,yspace : float32; IntString : shortstring = biLinearString) : integer;
    function GDAL_downsample_DEM_1sec(OpenMap : boolean; DEM : integer; OutName : PathStr) : integer;
-   //procedure GDAL_dual_UTM(DEM : integer);
 
    procedure GDAL_replace_42112_tag(DEMName : PathStr; ReplaceStr : shortstring = '');
 
@@ -159,7 +161,7 @@ const
 
    //merge files
       procedure CallGDALMerge(var MergefName : PathStr; InNames : tStringList; MissingData : integer = 255);
-      procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
+      procedure UseGDAL_VRT_to_merge(var MergefName{,OutVRT} : PathStr; OutNames : tStringList; Added : ShortString = '');
 
    //satellite imagery
       procedure GDALBandExtraction;
@@ -197,7 +199,6 @@ const
 
 implementation
 
-
 uses
    DEMDef_routines,
    DEMCoord,
@@ -212,8 +213,8 @@ uses
 const
    ogr2ogr_params = ' -skipfailures -overwrite -progress -t_srs EPSG:4326';
    GDAL_Geotiff_str = ' -of Gtiff -co TILED=NO -co COMPRESS=NONE ';
+   RunDOSwindow  = ' run batch file in DOS window for error message: ';
    AddWKT = ' -wkt_format WKT2';
-   RunDOSwindow  = ' run batch file in DOS window to see error message: ';
 
    {$IfDef ExGeoPDF}
    {$Else}
@@ -238,12 +239,16 @@ const
     function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
     var
        cmd : ANSIString;
+       ExitCode : integer;
     begin
        Result := 0;
        if (OutfName = '') then OutfName := NextFileNumber(MDTempDir,ShortName,'.tif');
        cmd := GDAL_translate_name + ' --debug on /vsicurl/' + WebName + ' ' + GDALextentBoxLatLong(bb) +  ' ' + OutFName;
-       if WinExecAndWait32(cmd) <> -1 then begin
-       end;
+       {$IfDef RecordCOGdownload} WriteLineToDebugFile(cmd); {$EndIf}
+       ExitCode := WinExecAndWait32(cmd);
+       {$IfDef RecordCOGdownload} WriteLineToDebugFile('   exit code =' + IntToStr(ExitCode)); {$EndIf}
+       //if (WinExecAndWait32(cmd) <> -1) then begin
+       //end;
        if FileExists(OutFName) then begin
           Result := OpenNewDEM(OutFName,OpenMap);
        end
@@ -260,6 +265,32 @@ const
           if OpenMap then CreateDEMSelectionMap(Result,true,true,MDDef.DefaultElevationColors);
        end;
      end;
+
+procedure GDAL_info_forCOGsInTable;
+//user must create dBase table with the grid names and web COG links
+//MICRODEM will add "/vsicurl/" to the links
+var
+   fName,OutName : PathStr;
+   Table : tMyData;
+   cmd : ANSIstring;
+   BatchFile : tStringList;
+begin
+    fName := ProgramRootDir + 'vsicurl_cogs.dbf';
+    Table := tMyData.Create(fName);
+    Table.ApplyFilter('USE=' + QuotedStr('Y'));
+    while not Table.eof do begin
+       OutName := Table.GetFieldByNameAsString('GRID');
+       OutName := MDtempDir + OutName + '_Metadata.txt';
+       fName := Table.GetFieldByNameAsString('LINK');
+       cmd := GDAL_info_name  + ' ' + '/vsicurl/' + fName + AddWKT + ' >' + OutName;
+       StartGDALbatchFile(BatchFile);
+       BatchFile.Add(cmd);
+       EndBatchFile(MDTempDir + 'cog_info.bat',batchfile);
+       ShowInNotepadPlusPlus(OutName,'GDAL_info results ' + OutName);
+       Table.Next;
+    end;
+    Table.Destroy;
+end;
 
 
 procedure GDAL_warp_reproject(How : tgdalWarpMethod);
@@ -315,12 +346,10 @@ begin
       GetEPSG(GDALinfo);
       OutEPSG := IntToStr(GDALinfo.utmEPSG);
       outer := 'utm';
-      //if (Sender = GDALwarpGeotifftoUTMNAD831) then begin
-         fName2 := GDAL_warp_name;
-         TStr2 := 'warp';
-         ch := 't';
-         inProj := ' -s_srs EPSG:' + IntToStr(GDALinfo.inEPSG);
-      //end;
+      fName2 := GDAL_warp_name;
+      TStr2 := 'warp';
+      ch := 't';
+      inProj := ' -s_srs EPSG:' + IntToStr(GDALinfo.inEPSG);
    end
    else begin
       MessageToContinue('Disabled');
@@ -352,13 +381,12 @@ begin
 end;
 
 
-
-procedure UseGDAL_VRT_to_merge(var MergefName,OutVRT : PathStr; OutNames : tStringList; Added : ShortString = '');
+procedure UseGDAL_VRT_to_merge(var MergefName{,OutVRT} : PathStr; OutNames : tStringList; Added : ShortString = '');
 //GDAL_VRT was about three times faster than other options tested
 //OutVRT has the VRT table if you want to look at it
 //added allows adding a projection of the files are lacking them, say for ASC input DEMs
 var
-   aName : PathStr;
+   aName,OutVRT : PathStr;
    cmd : shortstring;
    BatchFile : tStringList;
    NoProgress : boolean;

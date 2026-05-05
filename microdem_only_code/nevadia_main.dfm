@@ -2,7 +2,7 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1293
+  ClientHeight = 1313
   ClientWidth = 2418
   Color = clScrollBar
   DefaultMonitor = dmDesktop
@@ -1675,7 +1675,7 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1274
+    Top = 1294
     Width = 2418
     Height = 19
     Panels = <
@@ -1723,7 +1723,6 @@ object wmdem: Twmdem
         object Legislativeredistricting1: TMenuItem
           Caption = 'Legislative redistricting'
           GroupIndex = 6
-          OnClick = Legislativeredistricting1Click
         end
         object N30: TMenuItem
           Caption = '-'
@@ -2332,37 +2331,6 @@ object wmdem: Twmdem
         OnClick = Geoid1Click
       end
     end
-    object Oceanographicdata1: TMenuItem
-      Caption = 'Oceanography'
-      GroupIndex = 4
-      object CTD1: TMenuItem
-        Caption = 'CTD'
-        OnClick = CTD1Click
-      end
-      object Lightdata1: TMenuItem
-        Caption = 'Light data'
-        OnClick = Lightdata1Click
-      end
-      object ImportCTDfile1: TMenuItem
-        Caption = 'Import MEDS CTD file'
-      end
-      object Subset81Ssidescan1: TMenuItem
-        Caption = 'Subset .81S sidescan'
-        OnClick = Subset81Ssidescan1Click
-      end
-      object N81Sfileviewer1: TMenuItem
-        Caption = '.81S file viewer'
-        OnClick = N81Sfileviewer1Click
-      end
-      object MSTsidescanimport1: TMenuItem
-        Caption = 'MST sidescan '
-        OnClick = MSTsidescanimport1Click
-      end
-      object XTFindex1: TMenuItem
-        Caption = 'XTF index'
-        OnClick = XTFindex1Click
-      end
-    end
     object PClouder1: TMenuItem
       Caption = 'Point Clouds'
       GroupIndex = 4
@@ -2430,11 +2398,6 @@ object wmdem: Twmdem
       object SumatraPDFhelpcontents1: TMenuItem
         Caption = 'SumatraPDF help contents'
         OnClick = SumatraPDFhelpcontents1Click
-      end
-      object Onlinehelp1: TMenuItem
-        Caption = 'Online help'
-        Enabled = False
-        OnClick = Onlinehelp1Click
       end
       object Hardware1: TMenuItem
         Caption = '&Hardware'
@@ -2519,6 +2482,10 @@ object wmdem: Twmdem
       Caption = 'GDAL SRS info'
       OnClick = GDALSRSinfo1Click
     end
+    object GDALinfoforCOGfiles1: TMenuItem
+      Caption = 'GDALinfo for COG files'
+      OnClick = GDALinfoforCOGfiles1Click
+    end
     object OGRinfo1: TMenuItem
       Caption = 'OGRinfo'
       OnClick = OGRinfo1Click
@@ -2560,7 +2527,6 @@ object wmdem: Twmdem
     end
     object XTFsidescan1: TMenuItem
       Caption = 'XTF sidescan'
-      OnClick = XTFsidescan1Click
     end
     object N4: TMenuItem
       Caption = '-'
@@ -3010,13 +2976,20 @@ object wmdem: Twmdem
         Caption = 'Move files with name match'
         OnClick = Movefileswithnamematch1Click
       end
-      object Batchchangepartoffilenames1: TMenuItem
-        Caption = 'Batch change part of file names'
-        OnClick = Batchchangepartoffilenames1Click
-      end
-      object Batchchangefoldernames1: TMenuItem
-        Caption = 'Batch change folder names'
-        OnClick = Batchchangefoldernames1Click
+      object Inser1: TMenuItem
+        Caption = 'Batch change part of names'
+        object Batchchangepartoffilenames1: TMenuItem
+          Caption = 'Selected files'
+          OnClick = Batchchangepartoffilenames1Click
+        end
+        object Batchchangefoldernames1: TMenuItem
+          Caption = 'Selected directories'
+          OnClick = Batchchangefoldernames1Click
+        end
+        object Allfilesunderdirectory1: TMenuItem
+          Caption = 'All files under directory'
+          OnClick = Allfilesunderdirectory1Click
+        end
       end
       object Addprefixtoallfilesindirectory1: TMenuItem
         Caption = 'Add prefix to all files in a path'
@@ -3475,22 +3448,44 @@ object wmdem: Twmdem
     object N56: TMenuItem
       Caption = '-'
     end
+    object HDREMdownloadmanagement1: TMenuItem
+      Caption = 'HDREM download management'
+      object CleanupFrenchlistof1x1kmfiles1: TMenuItem
+        Caption = 'Subset download list of 1x1 km files into 10x10 tiles'
+        OnClick = CleanupFrenchlistof1x1kmfiles1Click
+      end
+      object Download10x10kmblocks1: TMenuItem
+        Caption = 'Prep Download 10x10 km blocks (requires source code changes)'
+        OnClick = Download10x10kmblocks1Click
+      end
+    end
+    object UTMbasedtilescreation1: TMenuItem
+      Caption = 'Tiles creation, test and reference DEMs'
+      OnClick = UTMbasedtilescreation1Click
+    end
+    object N52: TMenuItem
+      Caption = '-'
+    end
     object CreateCSVresultsfortestareas1: TMenuItem
       Caption = 'Create CSV results for test areas'
-      object UTMbasedtilescreation1: TMenuItem
-        Caption = 'Tiles creation'
-        OnClick = UTMbasedtilescreation1Click
-      end
-      object N38: TMenuItem
-        Caption = '-'
-      end
       object UTMbasedtilestatistics1: TMenuItem
         Caption = 'Tile statistics'
         OnClick = UTMbasedtilestatistics1Click
       end
+      object UTMbaseddifferencedistributionstatistics1: TMenuItem
+        Caption = 'Difference distribution statistics'
+        OnClick = UTMbaseddifferencedistributionstatistics1Click
+      end
       object UTMbasedFUVcalculations1: TMenuItem
         Caption = 'Mixed FUV calculations'
         OnClick = UTMbasedFUVcalculations1Click
+      end
+      object All3principal1: TMenuItem
+        Caption = 'All 3 principal'
+        OnClick = All3principal1Click
+      end
+      object N70: TMenuItem
+        Caption = '-'
       end
       object UTMbasedFUVpartialscalculations1: TMenuItem
         Caption = 'FUV partials calculations'
@@ -3500,9 +3495,12 @@ object wmdem: Twmdem
         Caption = 'FUV curvature calculations'
         OnClick = UTMbasedFUVcurvaturecalculations1Click
       end
-      object UTMbaseddifferencedistributionstatistics1: TMenuItem
-        Caption = 'Difference distribution statistics'
-        OnClick = UTMbaseddifferencedistributionstatistics1Click
+      object N73: TMenuItem
+        Caption = '-'
+      end
+      object CompareinterpolatedFUVs1: TMenuItem
+        Caption = 'Compare interpolated FUVs'
+        OnClick = CompareinterpolatedFUVs1Click
       end
     end
     object N15: TMenuItem
@@ -3514,21 +3512,28 @@ object wmdem: Twmdem
         Caption = 'Tile statisitics into DB'
         OnClick = UTMbasedmergetilestatisiticsintoDB1Click
       end
-      object UTMbasedmergeFUVresultsintoDB1: TMenuItem
-        Caption = 'FUV results into DB'
-        OnClick = UTMbasedmergeFUVresultsintoDB1Click
-      end
       object UTMbasedmergedifferencedistribution1: TMenuItem
         Caption = 'Difference distribution into DB'
         OnClick = UTMbasedmergedifferencedistribution1Click
       end
-      object UTMbasedmergecurvaturesintoDB1: TMenuItem
-        Caption = 'Curvatures into DB'
-        OnClick = UTMbasedmergecurvaturesintoDB1Click
+      object UTMbasedmergeFUVresultsintoDB1: TMenuItem
+        Caption = 'FUV results into DB'
+        OnClick = UTMbasedmergeFUVresultsintoDB1Click
+      end
+      object Allthreepimary1: TMenuItem
+        Caption = 'All three pimary'
+        OnClick = Allthreepimary1Click
+      end
+      object N71: TMenuItem
+        Caption = '-'
       end
       object UTMbasedmergepartialsintoDB1: TMenuItem
         Caption = 'Partials into DB'
         OnClick = UTMbasedmergepartialsintoDB1Click
+      end
+      object UTMbasedmergecurvaturesintoDB1: TMenuItem
+        Caption = 'Curvatures into DB'
+        OnClick = UTMbasedmergecurvaturesintoDB1Click
       end
       object N37: TMenuItem
         Caption = '-'
@@ -3576,25 +3581,38 @@ object wmdem: Twmdem
       Caption = 'Delete merged directories with small number of files'
       OnClick = Deletemergeddirectorieswithsmallnumberoffiles1Click
     end
-    object InventoryofLC10files1: TMenuItem
-      Caption = 'Inventory LC10 files'
-      OnClick = InventoryofLC10files1Click
-    end
     object estareaboundingboxes1: TMenuItem
       Caption = 'Test tile bounding boxes'
       OnClick = estareaboundingboxes1Click
+    end
+    object N38: TMenuItem
+      Caption = '-'
+    end
+    object InventoryofLC10files1: TMenuItem
+      Caption = 'Inventory LC10 files'
+      OnClick = InventoryofLC10files1Click
     end
     object Compare10mand100mlandcover1: TMenuItem
       Caption = 'Compare 10 m and 100 m landcover'
       OnClick = Compare10mand100mlandcover1Click
     end
+    object Percentlandcovercategories1: TMenuItem
+      Caption = 'Create grids with percent landcover categories'
+      OnClick = Percentlandcovercategories1Click
+    end
+    object N68: TMenuItem
+      Caption = '-'
+    end
+    object Compareslope1: TMenuItem
+      Caption = 'Compare slope algorithms for average tile slope'
+      OnClick = Compareslope1Click
+    end
     object Averagetileslopemapgeneration1: TMenuItem
       Caption = 'Average tile slope map generation'
       OnClick = Averagetileslopemapgeneration1Click
     end
-    object Percentlandcovercategories1: TMenuItem
-      Caption = 'Create grids with percent landcover categories'
-      OnClick = Percentlandcovercategories1Click
+    object N69: TMenuItem
+      Caption = '-'
     end
     object Createtilecategorymap1: TMenuItem
       Caption = 'Create tile category map'
@@ -3604,29 +3622,8 @@ object wmdem: Twmdem
       Caption = 'Pie charts with tile characterization DB versions'
       OnClick = ilecharacterization1Click
     end
-    object N49: TMenuItem
+    object N72: TMenuItem
       Caption = '-'
-    end
-    object Download10x10kmblocks1: TMenuItem
-      Caption = 'Prep Download 10x10 km blocks'
-      OnClick = Download10x10kmblocks1Click
-    end
-    object CleanupFrenchlistof1x1kmfiles1: TMenuItem
-      Caption = 'Subset download list of 1x1 km files into 10x10 tiles'
-      OnClick = CleanupFrenchlistof1x1kmfiles1Click
-    end
-    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
-      Caption = 'Moves tiles into 10 km UTM block directories'
-      Enabled = False
-      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
-    end
-    object MovemergedtilereferenceandtestDEMs1: TMenuItem
-      Caption = 'Move merged tile reference and test DEMs'
-      OnClick = MovemergedtilereferenceandtestDEMs1Click
-    end
-    object FixGEDTMlateadditonproblems1: TMenuItem
-      Caption = 'Fix  problems (hard coded for ONE problem)'
-      OnClick = FixGEDTMlateadditonproblems1Click
     end
     object ChangeDEMIXbasedirectory1: TMenuItem
       Caption = 'Change DEMIX base directory'
@@ -3641,6 +3638,21 @@ object wmdem: Twmdem
       OnClick = CloneEXEformultithreading1Click
     end
     object N66: TMenuItem
+      Caption = '-'
+    end
+    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
+      Caption = 'Moves tiles into 10 km UTM block directories'
+      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
+    end
+    object MovemergedtilereferenceandtestDEMs1: TMenuItem
+      Caption = 'Move merged tile reference and test DEMs'
+      OnClick = MovemergedtilereferenceandtestDEMs1Click
+    end
+    object FixGEDTMlateadditonproblems1: TMenuItem
+      Caption = 'Fix  problems (hard coded for ONE problem)'
+      OnClick = FixGEDTMlateadditonproblems1Click
+    end
+    object N49: TMenuItem
       Caption = '-'
     end
     object Geotiles1: TMenuItem

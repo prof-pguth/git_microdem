@@ -499,6 +499,7 @@ function NumberOfStringsWithSubstring(var sl : tStringList; ss : shortstring) : 
 
 procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
 function AvailablePhysicalMemoryString : shortstring;
+function YorN(What : boolean) : ANSIchar; inline;
 
 
 implementation
@@ -538,6 +539,11 @@ var
 
 
 {$I petmar_palettes_legends.inc}
+
+function YorN(What : boolean) : ANSIchar;
+begin
+   if What then Result := 'Y' else Result := 'N';
+end;
 
 
 function AvailablePhysicalMemoryString : shortstring;
@@ -1783,8 +1789,8 @@ end;
                Edit3.Text := IntToStr(Year);
                Edit4.Text := IntToStr(Duration);
                Edit4.Visible := ShowDuration;
-               CheckBox1.Checked := MDDef.RiseSet;
-               CheckBox2.Checked := MDDef.MoonPhase;
+               //CheckBox1.Checked := MDDef.RiseSet;
+               //CheckBox2.Checked := MDDef.MoonPhase;
                ShowModal;
                CheckEditString(Edit1.Text,Month);
                if (Month > 12) then Month := 12;
@@ -1792,8 +1798,8 @@ end;
                if (Day > 31) then Day := 31;
                CheckEditString(Edit3.Text,Year);
                CheckEditString(Edit4.Text,Duration);
-               MDDef.RiseSet := CheckBox1.Checked;
-               MDDef.MoonPhase := CheckBox2.Checked;
+               //MDDef.RiseSet := CheckBox1.Checked;
+               //MDDef.MoonPhase := CheckBox2.Checked;
             end;
          end;
 
@@ -2354,16 +2360,17 @@ end;
             else StartupInfo.wShowWindow := SW_Hide;
 
             if not CreateProcess(nil,
-                zAppName,                      { pointer to command line ANSIstring }
-                nil,                           { pointer to process security attributes }
-                nil,                           { pointer to thread security attributes }
-                false,                         { handle inheritance flag }
-                CREATE_NEW_CONSOLE or          { creation flags }
-                NORMAL_PRIORITY_CLASS,
-                nil,                           { pointer to new environment block }
-                nil,                           { pointer to current directory name }
-                StartupInfo,                   { pointer to STARTUPINFO }
-                ProcessInfo) then Result := -1 { pointer to PROCESS_INF }
+                zAppName,                                    { pointer to command line ANSIstring }
+                nil,                                         { pointer to process security attributes }
+                nil,                                         { pointer to thread security attributes }
+                false,                                       { handle inheritance flag }
+                CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, { creation flags }
+                nil,                                         { pointer to new environment block }
+                nil,                                         { pointer to current directory name }
+                StartupInfo,                                 { pointer to STARTUPINFO }
+                ProcessInfo) then begin                      { pointer to PROCESS_INF }
+                   Result := -1
+            end
             else begin
                 if Wait then WaitforSingleObject(ProcessInfo.hProcess,INFINITE);
                 Result := 0;
@@ -3605,7 +3612,8 @@ begin
    {$IfDef VCL}
       if WantShowProgress and (PETProgF <> Nil) and (not Math.IsNAN(HowFar)) and (not Math.IsInfinite(HowFar)) then begin
          PetProgF.Gauge1.Progress := round(100.0 * HowFar);
-         if HeavyDutyProcessing then begin
+         if HeavyDutyProcessing or MDDef.ProgressBarAlwaysUpperLeftCorner then begin
+            //on large screen, lets you web surf and see the progress in screen corner
             PetProgF.Top := 10;
             PetProgF.Left := 10;
          end;

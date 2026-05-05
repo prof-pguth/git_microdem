@@ -14,10 +14,10 @@
 
 {$IFDEF DEBUG}
    {$IfDef RecordProblems}  //normally only defined for debugging specific problems
-      //{$Define RecordDEMIX}
       //{$Define RecordDBsort}
       //{$Define LegendColors}
       //{$Define GraphLineWidth}
+      //{$Define RecordCSVexport}
 
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
@@ -79,7 +79,7 @@
       //{$Define RecordMaskDEMShapeFile}
       //{$Define RecordZoomMap}
       //{$Define RecordIcons}
-      {$Define RecordDBGraphs}
+      //{$Define RecordDBGraphs}
       //{$Define RecordUnique}
       //{$Define RecordQuadFill
 
@@ -105,9 +105,6 @@
    {$EndIf}
 {$Else}
 {$EndIf}
-
-//{$Define IncludeRiverNetworks}
-
 
 
 interface
@@ -208,7 +205,7 @@ type
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt,adAvgElevInWindow);
   tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,
      dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,{dgbtN2Dgraph2yaxes,}dbgtPlot1series1,dbgtPlotforsubsamples1,
-     dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield1,
+     dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield1,dbgtPlotFieldDifference,
      dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtPlot,dbgtUnspecified);
 
   tDBSaveOptions = record
@@ -331,7 +328,7 @@ type
      LineColorPresent,
      AreaFillPresent,
      NameFieldExists,
-     Redistricting,
+     //Redistricting,
      SecondLatLongFieldsPresent,
      CentroidPresent,
      DipStrikeFieldExists,
@@ -409,7 +406,7 @@ type
      function DBhasMapOrGraph : boolean;
      function CanPlot : boolean;
 
-     //is this a special kind of database
+     //is this special kind of database
         function IsICESat : boolean;
         function IsThisDEMIXdatabase : boolean;
 
@@ -435,6 +432,7 @@ type
         procedure FilterForUseField(Use : boolean = true);
         procedure QueryGeoBox(HiLat,LowLong,LowLat,HighLong : float64; DisplayOnTable : boolean);  overload;
         procedure QueryGeoBox(bb : sfBoundBox; DisplayOnTable : boolean); overload;
+        function NumRecsInDBstring : shortstring;
 
      //coordinates
         function LatLongCornersPresent : boolean;
@@ -494,6 +492,9 @@ type
         procedure ExportToXML(fName : PathStr);
         procedure ExportToSQLite;
         function ExportToKML(Ask,Default : boolean; SepExpField : ShortString = '') : PathStr;
+        procedure ExportToCSV(fName : PathStr; SepChar : ANSIchar; ThinFactor : integer = 1);
+        function ExtractDBtoCSV(ThinFactor : integer; SepChar : ANSIchar) : tStringList;
+        procedure ExtractXYZtoCSV(fName : PathStr; SepChar : ANSIchar);
 
      //legend routines
          function StringFieldLegend : tMyBitmap;
@@ -503,8 +504,6 @@ type
          function BarGraphLegend(Display : boolean = true; theLabel : shortstring = '') : tMyBitmap;
          function CreateDataBaseLegend(SimpleLegend : boolean = false) : tMyBitmap;
          procedure CreatePopupLegend(Title : shortstring = ''; SaveName : PathStr = '');
-
-
 
      procedure DefineColorTable;
      function ComputeColorFromRecord(var Color : tColor) : boolean;
@@ -570,7 +569,9 @@ type
          procedure PlotSingleMonth(Month : integer);
          procedure QueryBox(MapDraw : tMapDraw; x1,y1,x2,y2 : integer; DisplayOnTable : boolean);
          procedure LabelRecordsOnMap(var Bitmap : tMyBitmap);
-         procedure IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean; var FeatureName : ShortString; ShowItModal : boolean = true; JustFilterDB : boolean = false);
+         function IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean;
+             {var FeatureName : ShortString;} ShowItModal : boolean = true; JustFilterDB : boolean = false) : tStringList;
+         function GetStringFromRecordAtLatLong(Lat,Long : float64; fName : shortString) : shortstring;
          function FindAreaRecordWithPoint(Lat,Long : float64; AlreadyFiltered : boolean = true) : boolean;
          procedure ConnectSequentialPoints(Bitmap : tMyBitmap);
          procedure PlotRecord1to1Map(var NewMap : tMapForm; var Bitmap : tMyBitmap);
@@ -606,8 +607,6 @@ type
         procedure AddBoundingBox;
         procedure SavePointShapeFile(DoSHP : boolean = true; fName : PathStr = '');
         procedure GetFieldValuesInArrayLinkPossible(FieldDesired : ShortString; var zs : bfarray32; var Npts,Missing : int64; var Min,Max : float64);
-        function ExtractDBtoCSV(ThinFactor : integer; SepChar : ANSIchar) : tStringList;
-        procedure ExtractXYZtoCSV(fName : PathStr; SepChar : ANSIchar);
         procedure DefineDBColorTable;
         function GetFieldPercentile(WantedField : ShortString; PC : float64) : float64;
          function PickField(Mess: ShortString; TypesAllowed : tSetFieldType; AllFields : boolean = false) : ShortString;
@@ -656,7 +655,10 @@ type
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
          //function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil) : TThisbasegraph;
-         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil; FigureLabel : shortString = '') : TThisbasegraph;
+         //function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil; FigureLabel : shortString = '') : TThisbasegraph;
+         function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil;
+              FigureLabel : shortString = ''; MultCriteria : tStringList = nil) : TThisbasegraph;
+
          procedure MonthlyWindPlotCurrentPoint;
 
 
@@ -691,11 +693,6 @@ type
         procedure PlotDipsAndStrikes(Bitmap : tMyBitmap);
     {$EndIf}
 
-     {$IfDef ExRedistrict}
-     {$Else}
-        procedure SetRedistrictPattern(var Bitmap2 : tMyBitmap);
-     {$EndIf}
-
      {$IfDef ExSidescan}
      {$Else}
         //procedure PlotSideScanCoverage(Bitmap : tMyBitmap);
@@ -707,8 +704,6 @@ type
         procedure GetDrainageBasinNetwork;
         procedure FindDrainageBasinFromStreams;
      {$EndIf}
-
-
   end;
 
 procedure InitializeDEMdbs;
@@ -756,6 +751,10 @@ procedure SortAndReplaceDataBase(DBOnTable : integer; Ascending : boolean; aFiel
 {$EndIf}
 
 
+procedure AddCanopyHeightToDEMIXDB(DBonTable : integer);
+procedure AddBiomesToDEMIXdb(DBonTable : integer);
+
+
 const
    IDRecScreenTolerance : integer = 8;
    IDRecScreenIncr : integer = 1;
@@ -769,7 +768,6 @@ var
    WindsDB,
    PiratesDB,
    DBEditting,
-   DBEditRecord,
    ThinToPlot,
    dbxpic,dbypic : integer;
    HighLightDBOnWorld,
@@ -788,11 +786,6 @@ implementation
 uses
    {$IfDef VCL}
       Nevadia_Main,
-   {$EndIf}
-
-   {$IfDef ExRedistrict}
-   {$Else}
-      demredistrict,
    {$EndIf}
 
    {$IfDef ExGeography}
@@ -886,7 +879,6 @@ uses
 
 {$include demdatabase_special_cases.inc}
 
-
 {$IfDef NoDBEdits}
 {$Else}
    {$include demdatabase_field_edits.inc}
@@ -905,6 +897,18 @@ uses
 {$IfDef IncludeRiverNetworks}
    {$include demdatabase_drainage_basin.inc}
 {$EndIf}
+
+
+
+procedure TGISdataBaseModule.ExportToCSV(fName : PathStr; SepChar : ANSIchar; ThinFactor : integer = 1);
+var
+   Report : tStringList;
+begin
+   Report := ExtractDBtoCSV(ThinFactor,SepChar);
+   Report.SaveToFile(fName);
+   Report.Free;
+end;
+
 
 
 procedure TGISdataBaseModule.BackupDB;
@@ -2440,11 +2444,24 @@ end;
             MyData.First;
             EmpSource.Enabled := true;
             CopyFields := tStringList.Create;
+
+            for j := 0 to pred(MyData.FieldCount) do begin
+               {$IfDef RecordCSVexport} WriteLineToDebugFile('field=' + IntToStr(j) + '  visible=' + TrueOrFalse(dbOpts.VisCols[j]) ); {$EndIf}
+               if (dbOpts.VisCols[j]) then begin
+                  {$IfDef RecordCSVexport} WriteLineToDebugFile('   field=' + MyData.GetFieldName(j) ); {$EndIf}
+                  CopyFields.Add(MyData.GetFieldName(j));
+               end;
+            end;
+
+(*
             for j := 0 to pred(dbTablef.DBGrid1.Columns.Count) do begin
+               {$IfDef RecordCSVexport} WriteLineToDebugFile('field=' + IntToStr(j) + '  visible=' + TrueOrFalse(dbTablef.DBGrid1.Columns[j].Visible) ); {$EndIf}
                if (dbTablef.DBGrid1.Columns[j].Visible) then begin
+                  {$IfDef RecordCSVexport} WriteLineToDebugFile('   field=' + dbTablef.DBGrid1.Columns[j].Field.FieldName ); {$EndIf}
                   CopyFields.Add(dbTablef.DBGrid1.Columns[j].Field.FieldName);
                end;
             end;
+*)
             EmpSource.Enabled := false;
 
             ApplicationProcessMessages;
@@ -2467,6 +2484,7 @@ end;
                   UpdateProgressBar(Count / MyData.FiltRecsInDB);
                   EmpSource.Enabled := false;
                end;
+
                TStr := '';
                for k := 0 to pred(CopyFields.Count) do begin
                   if (k > 0) then TStr := Tstr + SepChar;
@@ -2483,6 +2501,7 @@ end;
                   MyData.Next;
                end;
             until MyData.EOF;
+            CopyFields.Destroy;
             EndProgress;
             EmpSource.Enabled := true;
          end;
@@ -3414,12 +3433,27 @@ end;
                 end;
             end;
 
+            function TGISdataBaseModule.GetStringFromRecordAtLatLong(Lat,Long : float64; fName : shortString) : shortstring;
+            var
+               sl : tStringList;
+               bf : shortstring;
+               RecsFound : integer;
+            begin
+               sl := IdentifyRecord(-99,-99,Lat,Long,RecsFound,false,false,false,false);
+               if (sl.Count = 1) then begin
+                  bf := MyData.Filter;
+                  MyData.ApplyFilter('REC_ID=' + sl.Strings[0]);
+                  Result := MyData.GetFieldByNameAsString(fName);
+                  MyData.ApplyFilter(bf);
+               end;
+            end;
 
-            procedure TGISdataBaseModule.IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean;  var FeatureName : ShortString;
-                ShowItModal : boolean = true; JustFilterDB : boolean = false);
+
+            function TGISdataBaseModule.IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean;  {var FeatureName : ShortString;}
+                ShowItModal : boolean = true; JustFilterDB : boolean = false) : tStringList;
             var
                LatLow,LongLow,LatHigh,LongHigh : float64;
-               Tol,i : integer;
+               Tol,i,RecID : integer;
                OldFilter : string;
                Bitmap : tMyBitmap;
 
@@ -3429,29 +3463,32 @@ end;
                   j : integer;
                begin
                   {$IfDef RecordID} WriteLineToDebugFile('Point DB'); {$EndIf}
-                  i := 0;
-                  repeat
-                      inc(i,IDRecScreenIncr);
-                      if (TheMapOwner <> Nil) then begin
-                         TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic-i,ypic-i,LatHigh,LongLow);
-                         TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic+i,ypic+i,LatLow,LongHigh);
-                         PetMath.MinOfPairFirst(LatLow,LatHigh);
-                         PetMath.MinOfPairFirst(LongLow,LongHigh);
-                         dbOpts.GeoFilter := MakePointGeoFilter(LatFieldName,LongFieldName,LatHigh,LongLow,LatLow,LongHigh);
+                      if (xpic < 0) or (ypic < 0) then begin
+                         dbOpts.GeoFilter := PointVeryCloseGeoFilter(LatFieldName,LongFieldName,Lat,Long,0.0001);
                          AssembleGISFilter;
                       end
                       else begin
-                           LongLow := theGraphOwner.GraphDraw.InvGraphX(xpic-i);
-                           LongHigh := theGraphOwner.GraphDraw.InvGraphX(xpic+i);
-                           LatLow := theGraphOwner.GraphDraw.InvGraphY(ypic+i);
-                           LatHigh := theGraphOwner.GraphDraw.InvGraphY(ypic-i);
-                           MyData.ApplyFilter('X' + ' >= ' + RealToString(LongLow,-12,-4) + ' AND ' + 'X' + ' <= ' + RealToString(LongHigh,-12,-4) + ' AND ' + 'Y' + ' >= ' +
-                              RealToString(LatLow,-12,-4) + ' AND ' + 'Y' + ' <= ' + RealToString(LatHigh,-12,-4));
-                      end;
-                  until (MyData.FiltRecsInDB > 0) or (i >= IDRecScreenTolerance);
+                          i := 0;
+                          repeat
+                              inc(i,IDRecScreenIncr);
+                              LongLow := theGraphOwner.GraphDraw.InvGraphX(xpic-i);
+                              LongHigh := theGraphOwner.GraphDraw.InvGraphX(xpic+i);
+                              LatLow := theGraphOwner.GraphDraw.InvGraphY(ypic+i);
+                              LatHigh := theGraphOwner.GraphDraw.InvGraphY(ypic-i);
+                              MyData.ApplyFilter('X' + ' >= ' + RealToString(LongLow,-12,-4) + ' AND ' + 'X' + ' <= ' + RealToString(LongHigh,-12,-4) + ' AND ' + 'Y' + ' >= ' +
+                                  RealToString(LatLow,-12,-4) + ' AND ' + 'Y' + ' <= ' + RealToString(LatHigh,-12,-4));
+                          until (MyData.FiltRecsInDB > 0) or (i >= IDRecScreenTolerance);
+                     end;
 
                   RecsFound := MyData.FiltRecsInDB;
-                  DBEditRecord := MyData.RecNo;
+                  //DBEditRecord := MyData.RecNo;
+                   MyData.First;
+                   while not MyData.eof do begin
+                      RecID := MyData.GetFieldByNameAsInteger('REC_ID');
+                      Result.Add(IntToStr(RecID));
+                      MyData.Next;
+                   end;
+
                   if JustFilterDB then exit;
 
                   {$IfDef RecordID}
@@ -3468,7 +3505,7 @@ end;
                               if (dbTablef <> Nil) then dbTablef.Highlightrecordonmap1Click(Nil);
                               DisplayTheRecord(j,ShowItModal,DEMNowDoing = EditDBRecs);
                            end;
-                           if LabelRec then begin
+                           if LabelRec and (theMapOwner <> nil) then begin
                               theMapOwner.Image1.Canvas.TextOut(xpic+4,ypic+4,MyData.GetFieldByNameAsString(dbOpts.LabelField));
                            end;
                            if MyData.EOF then break;
@@ -3483,88 +3520,73 @@ end;
                procedure ProcessShapeFile;
                var
                   j : integer;
+                  TolDeg : float64;
                begin
-                  Tol := 1;
-                  repeat
-                     TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic-Tol,ypic-Tol,LatHigh,LongLow);
-                     TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic+Tol,ypic+Tol,LatLow,LongHigh);
-                     dbOpts.GeoFilter := MakeGeoFilterFromCorners(LatHigh,LongLow,LatLow,LongHigh);
-                     AssembleGISFilter;
-                     {$IfDef RecordID} WriteLineToDebugFile('Filter tolerance =' + RealToString(Tol,-18,-6) + '   record count =' + IntToStr(MyData.FiltRecsInDB)); {$EndIf}
-                     inc(Tol);
-                  until (Tol > IDRecScreenTolerance) or (MyData.FiltRecsInDB >= 1);
-                  {$If Defined(RecordIDProblems) or Defined(RecordRedistrict)}
-                     WriteLineToDebugFile('filtered record count =' + IntToStr(MyData.FiltRecsInDB));
-                     if (RecsFound = 0) then  begin
-                        WriteLineToDebugFile('ID filter: ' + MyData.Filter + '  ' + LatLongDegreeToString(Lat,Long));
-                     end;
-                  {$EndIf}
-                  RecsFound := 0;
-                  if (MyData.FiltRecsInDB > 0) then begin
+                  TolDeg := 0.000001;
+                  dbOpts.GeoFilter := PointInBoxGeoFilter(Lat,Long,TolDeg);
+                  AssembleGISFilter;
+                  {$IfDef RecordID} WriteLineToDebugFile(MyData.Filter + '   recs=' + IntToStr(MyData.FiltRecsInDB) + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+                  if (MyData.FiltRecsInDB = 0) then begin
+                     WriteLineToDebugFile('ID filter no results: ' + MyData.Filter + '  ' + LatLongDegreeToString(Lat,Long));
+                  end
+                  else begin
+                     {$IfDef RecordID}
+                       var sl : tstringlist;
+                       sl := ExtractDBtoCSV(1,',');
+                       WriteLineToDebugFile('Found with first filter:');
+                       WriteStringListToDebugFile(sl,true);
+                       sl.Destroy;
+                    {$EndIf}
+
+                       RecsFound := 0;
                        MyData.First;
                        for j := 0 to pred(MyData.FiltRecsInDB) do begin
-                          if aShapeFile.PointInRecord(MyData.RecNo,Lat,Long) then begin
-                             {$IfDef RecordID} WriteLineToDebugFile('Rec: ' + IntToStr(MyData.RecNo)); {$EndIf}
+                          RecID := MyData.GetFieldByNameAsInteger('REC_ID');
+                          if aShapeFile.PointInRecord(RecID,Lat,Long) then begin
+                             if (Result.Count = 0) or (Result.IndexOf(IntToStr(RecID)) <> -1) then begin
+                                {$IfDef RecordID} WriteLineToDebugFile('Rec: ' + IntToStr(RecID)); {$EndIf}
+                                Result.Add(IntToStr(RecID));
+                                inc(RecsFound);
+                                if ShowRec then DisplayTheRecord(RecID,ShowItModal,DEMNowDoing = EditDBRecs);
+                                if (theMapOwner <> nil) then begin
+                                    CreateBitmap(Bitmap,TheMapOwner.MapDraw.MapXSize,TheMapOwner.MapDraw.MapYSize);
+                                    if AreaShapeFile(ShapeFileType) then Bitmap.Canvas.Pen.Width := 1
+                                    else if LineShapeFile(ShapeFileType) then Bitmap.Canvas.Pen.Width := IDRecScreenTolerance;
+                                    Bitmap.Canvas.Pen.Color := clBlack;
+                                    Bitmap.Canvas.Brush.Color := clBlack;
+                                    Bitmap.Canvas.Brush.Style := bsSolid;
+                                    DisplayCurrentRecordOnMap(TheMapOwner.MapDraw,Bitmap);
 
-                             {$IfDef ExRedistrict}
-                             {$Else}
-                             if (DEMNowDoing = RecolorRedistrict) then  begin
-                                {$IfDef RecordRedistrict} WriteLineToDebugFile('RecolorRedistrict, changed=' + IntToStr(MyData.RecNo) + ' in box=' + IntToStr(MyData.FiltRecsinDB)); {$EndIf}
-                                MyData.Edit;
-                                MyData.SetFieldByNameAsString('DISTRICT',RedistrictForm.ComboBox1.Text);
-                                MyData.SetFieldByNameAsInteger('COLOR',RedistrictForm.CurrentColor);
-                                RedistrictForm.ChangeBlock;
-                                MyData.Next;
-                             end
-                             else {$EndIf} begin
-                                CreateBitmap(Bitmap,TheMapOwner.MapDraw.MapXSize,TheMapOwner.MapDraw.MapYSize);
-
-                                if AreaShapeFile(ShapeFileType) then Bitmap.Canvas.Pen.Width := 1
-                                else if LineShapeFile(ShapeFileType) then Bitmap.Canvas.Pen.Width := IDRecScreenTolerance;
-
-                                Bitmap.Canvas.Pen.Color := clBlack;
-                                Bitmap.Canvas.Brush.Color := clBlack;
-                                Bitmap.Canvas.Brush.Style := bsSolid;
-                                DisplayCurrentRecordOnMap(TheMapOwner.MapDraw,Bitmap);
-
-                                if (Bitmap.Canvas.Pixels[xpic,ypic] <> clWhite) then begin
-                                   if ShowRec then DisplayTheRecord(j,ShowItModal,DEMNowDoing = EditDBRecs);
-                                   if LabelRec then begin
-                                      TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic,ypic,LatHigh,LongLow);
-                                      theMapOwner.AddPointToDB(LatHigh,LongLow,MyData.GetFieldByNameAsString(dbOpts.LabelField));
-                                   end;
-                                   if (dbOpts.LabelField <> '') then FeatureName := MyData.GetFieldByNameAsString(dbOpts.LabelField);
-                                   inc(RecsFound);
-                                end;
+                                    if LabelRec then begin
+                                       TheMapOwner.MapDraw.ScreenToLatLongDegree(xpic,ypic,LatHigh,LongLow);
+                                       theMapOwner.AddPointToDB(LatHigh,LongLow,MyData.GetFieldByNameAsString(dbOpts.LabelField));
+                                    end;
+                                //if (dbOpts.LabelField <> '') then FeatureName := MyData.GetFieldByNameAsString(dbOpts.LabelField);
                                 Bitmap.Free;
-                             end;
-                          end
-                          else begin
-                             {$IfDef RecordRedistrict} WriteLineToDebugFile('RecolorRedistrict, nothing in polygon  ' + IntToStr(MyData.RecNo) + '   ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
-                          end;
+                                end;
+                             end {if Matches};
+                          end {if aShapefile};
                           MyData.Next;
                        end {for j};
+                       {$IfDef RecordID} WriteLineToDebugFile('Found: ' + IntToStr(Result.Count) + '  and ' + IntToStr(RecsFound)); {$EndIf}
                   end;
                end;
 
 
-            begin
+            begin {procedure TGISdataBaseModule.IdentifyRecord}
                {$IfDef RecordID} WriteLineToDebugFile('tGISDataBase.IdentifyRecord enter ' + dbName); {$EndIf}
                PrevNextButtonsEnabled := false;
                EmpSource.Enabled := false;
                OldFilter := dbOpts.GeoFilter;
 
                AddSequentialIndex(RecNoFName,false);
+               Result := tStringList.Create;
 
                {$IfDef RecordID}
                   WriteLineToDebugFile('unfiltered record count =' + IntToStr(MyData.TotRecsInDB));
                   WriteLineToDebugFile('Old filter =' + OldFilter);
                   WriteLineToDebugFile('Main filter =' + dbOpts.MainFilter);
                {$EndIf}
-
-               if (TheMapOwner <> Nil) and (xpic < -99) and (Ypic < -99) then begin
-                  TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,xpic,ypic);
-               end;
 
                if SimplePointFile or XYZFile then begin
                   ProcessPointFile;
@@ -3573,21 +3595,13 @@ end;
                   ProcessShapeFile;
                end;
 
-               if (DEMNowDoing = IDDBforAction) then begin
-                  if (RecsFound > 1) then begin
-                     MessageToContinue('Too many records found');
-                  end;
-                  if (RecsFound = 1) and (DragonPlotForm[1] <> nil) then begin
-                     DragonPlotForm[1].BitBtn13Click(nil);
-                  end;
-               end;
                if not JustFilterDB then begin
                   dbOpts.GeoFilter := OldFilter;
                   AssembleGISFilter;
                end;
                {$IfDef RecordID} WriteLineToDebugFile('Leaving tGISDataBase.IdentifyRecord, ' + DBName + ' filter=' + MyData.Filter + ' and recs=' + IntToStr(MyData.FiltRecsInDB)); {$EndIf}
                ShowStatus;
-            end;
+            end {procedure TGISdataBaseModule.IdentifyRecord};
 
 
             procedure TGISdataBaseModule.OutlineCurrentViewOnMap;
@@ -3827,7 +3841,10 @@ begin
    {$IfDef RecordINIfiles} WriteLineToDebugFile('ProcessIniFile out'); {$EndIf}
 end;
 
-
+function TGISdataBaseModule.NumRecsInDBstring : shortstring;
+begin
+   Result := '_(n=' + IntToStr(MyData.FiltRecsInDB) + ')';
+end;
 
 function NumOpenDB : integer;
 var
@@ -4739,23 +4756,22 @@ begin
 end;
 
 
-
 procedure TGISdataBaseModule.FilterDBByUseAndDisable(Used : boolean);
-var
-   ch : AnsiChar;
+//var
+   //ch : AnsiChar;
 begin
-   if Used then ch := 'Y' else ch := 'N';
-   MyData.ApplyFilter('USE= ' + QuotedStr(ch));
+   //if Used then ch := 'Y' else ch := 'N';
+   MyData.ApplyFilter('USE= ' + QuotedStr(YorN(Used)));
    dbOpts.MainFilter := MyData.Filter;
    EmpSource.Enabled := false;
 end;
 
 procedure TGISdataBaseModule.FilterForUseField(Use: boolean);
-var
-   ch : AnsiChar;
+//var
+   //ch : AnsiChar;
 begin
-   if Use then ch := 'Y' else ch := 'N';
-   MyData.ApplyFilter('USE=' + QuotedStr(ch));
+   //if Use then ch := 'Y' else ch := 'N';
+   MyData.ApplyFilter('USE=' + QuotedStr(YorN(Use)));
    ShowStatus;
 end;
 
@@ -5049,7 +5065,7 @@ begin
     FanCanClose := false;
     ItsAShapeFile := false;
     ShapeGeoFilter := false;
-    Redistricting := false;
+    //Redistricting := false;
     DoNotTrackDBSettings := false;
     ShapeFileType := 0;
     LinkColorTable := 0;
@@ -5465,7 +5481,7 @@ begin
             inc(j);
             WWWFieldNames[j] := FieldsInDB.Strings[i];
          end;
-         if FieldsInDB.Strings[i] <> 'IMAGE' then begin
+         if (FieldsInDB.Strings[i] <> 'IMAGE') then begin
            if (copy(FieldsInDB.Strings[i],1,4) = 'IMG_') or (copy(FieldsInDB.Strings[i],1,5) = 'IMAGE') then begin
               inc(k);
               ImageFieldNames[k] := FieldsInDB.Strings[i];
@@ -5721,15 +5737,6 @@ begin
       CloseDBtableF;
    {$EndIf}
 
-   {$IfDef ExRedistrict}
-   {$Else}
-      if (RedistrictForm <> Nil) then begin
-         RedistrictForm.Closable := true;
-         RedistrictForm.Close;
-         RedistrictForm := Nil;
-      end;
-   {$EndIf}
-
    if (aShapeFile <> Nil) then begin
       aShapeFile.Destroy;
       aShapeFile := Nil;
@@ -5837,26 +5844,6 @@ begin
        if MyData.Filtered then begin
 
          {$IfDef RecordQueryGeoBox} WriteLineToDebugFile('Recs found: ' + IntToStr(MyData.FiltRecsInDB) + '  Filter: ' + MyData.Filter); {$EndIf}
-
-         {$IfDef ExRedistrict}
-         {$Else}
-            if (DEMNowDoing = RecolorRedistrictBox) then begin
-               ShowHourglassCursor;
-               MyData.First;
-               EmpSource.Enabled := false;
-               MyData.ApplyFilter('POP > 0' + ' AND ' + dbOpts.GeoFilter);
-               {$IfDef RecordRedistrict} WriteLineToDebugFile('RecolorRedistrictBox, changed=' + IntToStr(MyData.FiltRecsinDB)); {$EndIf}
-               while not MyData.EOF do begin
-                  MyData.Edit;
-                  MyData.SetFieldByNameAsString('DISTRICT',RedistrictForm.ComboBox1.Text);
-                  MyData.SetFieldByNameAsInteger('COLOR',RedistrictForm.CurrentColor);
-                  MyData.Next;
-                  RedistrictForm.ChangeBlock;
-               end;
-               ClearGISFilter;
-               ShowDefaultCursor;
-            end;
-         {$EndIf}
 
          {$IfDef VCL}
             if DisplayOnTable and (dbTablef <> Nil) then begin

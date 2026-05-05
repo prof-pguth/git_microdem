@@ -882,22 +882,23 @@ end;
 
 {$IfDef VCL}
 
-function EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true) : integer;
-begin
-   BatchFile.SaveToFile(fName);
-   {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile created,fname=' + fname); {$EndIf}
-   Result := WinExecAndWait32(fName,Wait,log);
-   {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile done'); {$EndIf}
-   BatchFile.Free;
-end;
-{$EndIf}
+    function EndBatchFile(fName : PathStr; var BatchFile : tStringList; Wait : boolean = true; Log : boolean = true) : integer;
+    begin
+       BatchFile.SaveToFile(fName);
+       {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile created,fname=' + fname); {$EndIf}
+       Result := WinExecAndWait32(fName,Wait,log);
+       {$IfDef RecordGDAL} if not HeavyDutyProcessing then WriteLineToDebugFile('EndBatchFile done'); {$EndIf}
+       BatchFile.Free;
+    end;
+    {$EndIf}
 
 
-{$IfDef AllowGeomorphometry}
-function BoxGridSize : shortString;
-begin
-   Result := ' (' +  IntToStr(MDDef.GeomorphBoxSizeMeters) + ' m)'
-end;
+    {$IfDef AllowGeomorphometry}
+    function BoxGridSize : shortString;
+    begin
+       Result := ' (' +  IntToStr(MDDef.GeomorphBoxSizeMeters) + ' m)'
+    end;
+
 {$EndIf}
 
 
@@ -2401,16 +2402,12 @@ var
          AParameter('DEM','PromptToSaveNewDEMs',PromptToSaveNewDEMs,false);
          AParameter('DEM','DefaultDEMFilter',DefaultDEMFilter,1);
          //AParameter('DEM','WrapETOPO',WrapETOPO,false);
-         AParameter('DEM','DoubleEtopoImport',DoubleEtopoImport,false);
-         AParameter('DEM','FavDEMSeries1',FavDEMSeries1,'');
-         AParameter('DEM','FavDEMSeries2',FavDEMSeries2,'');
+         //AParameter('DEM','DoubleEtopoImport',DoubleEtopoImport,false);
+         //AParameter('DEM','FavDEMSeries1',FavDEMSeries1,'');
+         //AParameter('DEM','FavDEMSeries2',FavDEMSeries2,'');
          AParameter('DEM','ConvertMGtoMD',ConvertMGtoMD,false);
          AParameter('DEM','DeleteAuxTiffFiles',DeleteAuxTiffFiles,true);
-
-         if (IniWhat = iniWrite) then IniFile.WriteInteger('DEM','DEMZunits',ord(DEMZunits));
-         if (IniWhat = iniRead) then DEMZunits := tDEMZunits(IniFile.ReadInteger('DEM','DEMZunits',ord(zuMeters)));
-         if (iniWhat = iniInit) then DEMZunits := zuMeters;
-
+         AParameter('DEM','DEMzUnits',DEMzUnits,zuMeters);
          {$IfDef RecordINIfiles} WriteLineToDebugFile('ProcessIniFile after DEM'); {$EndIf}
       end;
    end;
@@ -2732,7 +2729,6 @@ var
             AParameter('FMX','DefGPSSave',DefGPSSave,2);
          {$EndIf}
 
-         AParameterShortFloat('Misc','OffsetDistance',OffsetDistance,5);
          AParameterShortFloat('Misc','FilterRadius',FilterRadius,2500);
          AParameterShortFloat('Misc','MaxMergeSlope',MaxMergeSlope,0.45);
          AParameterShortFloat('Misc','MinPercentile',MinPercentile,2);
@@ -2747,6 +2743,8 @@ var
          AParameterShortFloat('Misc','SlopeSteepBoundary',SlopeSteepBoundary,50);
 
          AParameter('Misc','LandTypePointsNeeded',LandTypePointsNeeded,50);
+
+         AParameter('Misc','ProgressBarAlwaysUpperLeftCorner',ProgressBarAlwaysUpperLeftCorner,true);
 
          AParameter('Misc','ColorizeInPlace',ColorizeInPlace,true);
          AParameter('Misc','DeleteFIT',DeleteFIT,true);
@@ -2777,11 +2775,14 @@ var
          AParameter('Misc','FillHoleDiameter',FillHoleRadius,2);
          AParameter('Misc','LandCoverMaskSize',LandCoverMaskSize,2);
          AParameter('Misc','PrinterMapLength',PrinterMapLength,2);
-         AParameter('Misc','NumOffsets',NumOffsets,1);
 
          AColorParameter('Misc','ReplaceBorderColor',ReplaceBorderColor,claLime);
-         AColorParameter('Misc','OffsetColor',OffsetColor,claBlack);
-         AParameter('Misc','OffsetLineWidth',OffsetLineWidth,3);
+
+         //AParameterShortFloat('Misc','OffsetDistance',OffsetDistance,5);
+         //AParameter('Misc','NumOffsets',NumOffsets,1);
+         //AColorParameter('Misc','OffsetColor',OffsetColor,claBlack);
+         //AParameter('Misc','OffsetLineWidth',OffsetLineWidth,3);
+
          AParameter('Misc','RedistrictEvenness',RedistrictEvenness,5);
          AParameter('Misc','DrawRangeCircles',DrawRangeCircles,false);
          AParameter('Misc','PointSeparation',PointSeparation,1000);
@@ -2849,8 +2850,8 @@ var
             AParameter('Geography','VerifyTimeZone',VerifyTimeZone,false);
             AParameter('Geography','UTCOffset',UTCOffset,-4);
             AParameter('Geography','TZFromLong',TZFromLong,true);
-            AParameter('Geography','MoonPhase',MoonPhase,true);
-            AParameter('Geography','RiseSet',RiseSet,true);
+            //AParameter('Geography','MoonPhase',MoonPhase,true);
+            //AParameter('Geography','RiseSet',RiseSet,true);
 
             with KoppenOpts do begin
                AParameter('Koppen','Width',KopWidth,300);
@@ -3091,7 +3092,7 @@ var
          AParameter('Menus','ShowMarineGeology',ShowMarineGeology,true);
          AParameter('Menus','AlwaysShowMapCoordinates',AlwaysShowMapCoordinates,false);
          AParameter('Menus','ShowOceanModels',ShowOceanModels,true);
-         AParameter('Menus','ShowOceanographyOptions',ShowOceanographyOptions,false);
+         //AParameter('Menus','ShowOceanographyOptions',ShowOceanographyOptions,false);
          AParameter('Menus','ShowSidescan',ShowSidescan,false);
          AParameter('Menus','ShowSubbottom',ShowSubbottom,false);
          AParameter('Menus','ShowExperimentalOptions',ShowExperimentalOptions,false);
@@ -3905,7 +3906,7 @@ begin
          AParameterShortFloat('NewGrid','MinMaxGridTolerance',MinMaxGridTolerance,0.5);
       {$EndIf}
 
-      {$IfDef ExOceanography}
+      {$IfDef ExDriftModel}
       {$Else}
          AParameter('OceanModels','WindWidth',WindWidth,2);
          AParameter('OceanModels','TideWidth',TideWidth,2);
@@ -3961,7 +3962,7 @@ begin
       AParameter('CurveAlg','CurveFullWindow',CurveCompute.RequireFullWindow,true);
       AParameter('CurveAlg','CurveAllPts',CurveCompute.UsePoints,useAll);
 
-      AParameter('Slope','CD2',CD2,True);
+      //AParameter('Slope','CD2',CD2,True);
       AParameter('Slope','AspectRegionSize',AspectRegionSize,5);
       AParameter('Slope','NumSlopeBands',NumSlopeBands,5);
 
@@ -4911,7 +4912,7 @@ begin
    {$IfDef VCL}
        MDDef.ShowOceanModels := false;
        MDDef.ShowSidescan := false;
-       MDDef.ShowOceanographyOptions := false;
+       //MDDef.ShowOceanographyOptions := false;
        MDDef.ShowSubbottom := false;
   {$EndIf}
 end;
@@ -4987,7 +4988,7 @@ begin
        MDDef.ShowClimateAndLight := true;
        MDDef.ShowOceanModels := true;
        MDDef.ShowSidescan := true;
-       MDDef.ShowOceanographyOptions := true;
+       //MDDef.ShowOceanographyOptions := true;
    {$EndIf}
 end;
 

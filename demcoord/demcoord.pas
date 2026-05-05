@@ -29,7 +29,6 @@ unit DEMCoord;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
-      //{$Define RecordDEMIX}
       //{$Define RecordDEMClose}
       //{$Define TrackVerticalDatum}
       //{$Define TrackWKTstring}
@@ -324,7 +323,7 @@ type
          function PixelBoundBoxGeo(Col,Row : integer) : sfBoundBox;
          function PixelBoundBoxUTM(Col,Row : integer) : sfBoundBox;
          function bbDEMGridPartOfDEMonMap(BaseMap : tMapForm) : sfBoundBox;
-         function sfBoundBox2tGridLimits(sfBoundBox : sfboundBox) :tGridLimits;
+         function sfBoundBox2tGridLimits(sfBoundBox : sfboundBox) : tGridLimits;
 
          function PixelCenterOnFullSecond : boolean;
 
@@ -558,7 +557,6 @@ type
          function ParmametricIsotropicSmoothing(Col,Row : integer; var z : float32) : boolean; inline;
          function GaussianFilter(OpenMap : boolean; FilterSize : integer; Sigma : float32) : integer;
 
-
          function DetrendDEM(Normalize : boolean = true; FilterRadius : integer = 2) : integer;
 
          procedure TrackElevationRange(Where : shortstring);
@@ -572,7 +570,6 @@ type
          procedure GetVisiblePoints(ObsElev,W_TargetUp,MinViewPort,MaxViewPort : float64; ObserverTerrainHug,TargetTerrainHug : boolean; PointsPerRay : integer;
                 var xgrids,ygrids,dists,elevs : bfarray32; var VisPoints : array of boolean);
          procedure GetStraightRouteLatLongWithElevs(Lat1,Long1,Lat2,Long2 : float64; var NumPoints : integer; var xgrids,ygrids,dists,elevs : bfarray32);
-
 
          function PointInLowResPixel(DEM,x,y : integer; var Lat1,Long1 : float64; bbp : sfBoundBox) : boolean; inline;
 

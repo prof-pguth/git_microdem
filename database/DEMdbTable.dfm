@@ -993,6 +993,14 @@ object dbtablef: Tdbtablef
         Caption = '2D graph, all open databases (lines)'
         OnClick = N2Dgraphallopendatabaseslines1Click
       end
+      object N2dgraphpickmultipleseries1: TMenuItem
+        Caption = '2d graph, pick multiple series'
+        OnClick = N2dgraphpickmultipleseries1Click
+      end
+      object N2dgraphdifferencetwofields1: TMenuItem
+        Caption = '2d graph, difference two fields'
+        OnClick = N2dgraphdifferencetwofields1Click
+      end
       object Averagebylatitude1: TMenuItem
         Caption = 'Average by latitude'
         OnClick = Averagebylatitude1Click
@@ -1247,7 +1255,6 @@ object dbtablef: Tdbtablef
     end
     object LoadMSTfiles1: TMenuItem
       Caption = 'Load MST files'
-      OnClick = LoadMSTfiles1Click
     end
     object Featurestatistics1: TMenuItem
       Caption = 'Feature statistics'
@@ -1352,7 +1359,6 @@ object dbtablef: Tdbtablef
     end
     object Redistrict1: TMenuItem
       Caption = 'Redistrict'
-      OnClick = Redistrict1Click
     end
     object DEMIX1: TMenuItem
       Caption = 'DEMIX'
@@ -3067,6 +3073,29 @@ object dbtablef: Tdbtablef
       Caption = 'Limit decimals in multiple fields'
       OnClick = Limitdeimalsinmultiplefields1Click
     end
+    object Multiplefieldstatistics1: TMenuItem
+      Caption = 'Multiple field statistics'
+      object Sum3: TMenuItem
+        Caption = 'Sum'
+        OnClick = Sum3Click
+      end
+      object Mean1: TMenuItem
+        Caption = 'Mean'
+        OnClick = Mean1Click
+      end
+      object Median1: TMenuItem
+        Caption = 'Median'
+        OnClick = Median1Click
+      end
+      object Minimum1: TMenuItem
+        Caption = 'Minimum'
+        OnClick = Minimum1Click
+      end
+      object Maximum1: TMenuItem
+        Caption = 'Maximum'
+        OnClick = Maximum1Click
+      end
+    end
     object Fieldarithmetic1: TMenuItem
       Caption = 'Field arithmetic'
       object Copynumericfield1: TMenuItem
@@ -3186,29 +3215,6 @@ object dbtablef: Tdbtablef
         object Soundvelocity1: TMenuItem
           Caption = 'Sound velocity'
         end
-      end
-    end
-    object Multiplefieldstatistics1: TMenuItem
-      Caption = 'Multiple field statistics'
-      object Sum3: TMenuItem
-        Caption = 'Sum'
-        OnClick = Sum3Click
-      end
-      object Mean1: TMenuItem
-        Caption = 'Mean'
-        OnClick = Mean1Click
-      end
-      object Median1: TMenuItem
-        Caption = 'Median'
-        OnClick = Median1Click
-      end
-      object Minimum1: TMenuItem
-        Caption = 'Minimum'
-        OnClick = Minimum1Click
-      end
-      object Maximum1: TMenuItem
-        Caption = 'Maximum'
-        OnClick = Maximum1Click
       end
     end
     object Fieldgeometry1: TMenuItem
@@ -3871,6 +3877,18 @@ object dbtablef: Tdbtablef
         Caption = 'Add DSM_PC (FOREST_PC + URBAN_PC)'
         OnClick = AddDSMPCFORESTPCURBANPC1Click
       end
+      object Addcanopyheight1: TMenuItem
+        Caption = 'Add canopy height'
+        OnClick = Addcanopyheight1Click
+      end
+      object Addbiome1: TMenuItem
+        Caption = 'Add biome'
+        OnClick = Addbiome1Click
+      end
+      object AddKoppen1: TMenuItem
+        Caption = 'Add Koppen'
+        OnClick = AddKoppen1Click
+      end
       object N61: TMenuItem
         Caption = '-'
       end
@@ -3971,6 +3989,14 @@ object dbtablef: Tdbtablef
     end
     object N51: TMenuItem
       Caption = '-'
+    end
+    object Graphinterpolationresults1: TMenuItem
+      Caption = 'Graph interpolation results'
+      OnClick = Graphinterpolationresults1Click
+    end
+    object Interpolationresultscriteriaplusfields1: TMenuItem
+      Caption = 'Interpolation results, criteria plus fields'
+      OnClick = Interpolationresultscriteriaplusfields1Click
     end
     object Currenttest1: TMenuItem
       Caption = 

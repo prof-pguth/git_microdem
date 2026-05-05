@@ -251,7 +251,7 @@ var
 begin
    {$IfDef RecordLegend} WriteLineToDebugFile('Tgis_scaled_form.MakeStringFieldLegend'); {$EndIf}
    EmpSource.Enabled := false;
-   if (StringCategories = Nil) then StringCategories := PetDBUtils.FindUniqueEntriesLinkPossible(MyData,LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
+   if (StringCategories = Nil) then StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
    fHi := 22;
    DefineDBColorTable;
    CreateBitmap(Result,1000,fHi*StringCategories.Count);

@@ -949,6 +949,7 @@ begin
    AddAField('ROT'  + n2 + '_ANGLE',ftInteger,4,0);
 end;
 
+
 procedure tCreateDataBase.AddPointSymbolDefToTable;
 begin
    AddAField('SYM_TYPE',ftInteger,2);

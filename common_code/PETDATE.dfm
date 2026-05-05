@@ -106,20 +106,4 @@ object GetDateForm: TGetDateForm
     OnClick = BitBtn2Click
     IsControl = True
   end
-  object CheckBox1: TCheckBox
-    Left = 24
-    Top = 160
-    Width = 71
-    Height = 17
-    Caption = 'Rise/set'
-    TabOrder = 5
-  end
-  object CheckBox2: TCheckBox
-    Left = 101
-    Top = 160
-    Width = 97
-    Height = 17
-    Caption = 'Moon phases'
-    TabOrder = 6
-  end
 end

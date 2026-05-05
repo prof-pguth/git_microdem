@@ -16,7 +16,6 @@ unit demix_evals_scores_graphs;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      {$Define RecordDEMIX}
       //{$Define RecordBoxPlots}
       //{$Define RecordChangeDB}
       //{$Define RecordDEMIXByLandCover
@@ -145,6 +144,7 @@ type
     BitBtn46: TBitBtn;
     CheckBox14: TCheckBox;
     BitBtn47: TBitBtn;
+    BitBtn48: TBitBtn;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -226,6 +226,7 @@ type
     procedure BitBtn45Click(Sender: TObject);
     procedure BitBtn46Click(Sender: TObject);
     procedure BitBtn47Click(Sender: TObject);
+    procedure BitBtn48Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -584,7 +585,7 @@ var
 
 
 var
-   gr : tGraphArray;
+   gr : t1DGraphArray;
    Panels : tStringList;
    BigBitmap,Bitmap,Legend : tMyBitmap;
    StartY : integer;
@@ -854,7 +855,7 @@ var
    fName,BaseDir : PathStr;
    OpenMaps : boolean;
    tests : array[0..15] of integer;
-   gr : tGraphArray;
+   gr : t1DGraphArray;
 
       procedure RedrawGraph(k : integer);
       begin
@@ -1369,6 +1370,14 @@ begin
 end;
 
 
+
+procedure Teval_scores_graph_form.BitBtn48Click(Sender: TObject);
+begin
+   if (Memo3.Lines.Count >= 2) then begin
+      ScatterPlotTwoDEMs(db,Memo3.Lines[0],Memo3.Lines[1],MakeCriteriaList);
+   end;
+end;
+
 procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 
    procedure TryOne(Which : shortString; var db_num : integer; var fName : PathStr);
@@ -1744,12 +1753,12 @@ var
       end {function AverageWithFilter};
 
 
-      procedure MultipleAverageRanksOrEvaluations(LeftMarginLabels : boolean; CriteriaInFilter : tStringList; Findings : tStringList = Nil); //var gr : tGraphArray);
+      procedure MultipleAverageRanksOrEvaluations(LeftMarginLabels : boolean; CriteriaInFilter : tStringList; Findings : tStringList = Nil); //var gr : t1DGraphArray);
       var
          BigBitmap,bmp : tMyBitmap;
          y,i,MaxLeft,MaxWide,NumGr : integer;
          Title : shortstring;
-         gr : tGraphArray;
+         gr : t1DGraphArray;
          fName : PathStr;
       begin
          {$IfDef RecordDEMIXByLandcover} WriteLineToDebugFile('MultipleAverageRanksOrEvaluations'); {$EndIf}

@@ -17,9 +17,9 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordBatch}
+      //{$Define MessageStartup}
       //{$Define RecordCommandLine}
       //DEMIX conditionals
-          {$Define RecordDEMIX}
           {$Define RecordDEMIX_TileStats}
           {$Define RecordDEMIXMakeRef}
           {$Define RecordDEMIXMemory}
@@ -32,8 +32,8 @@
           //{$Define RecordRefDTM}
           //{$Define RecordDEMIXMakeRefFull}
           {$Define RecordDEMIXDatumShift}
-          {$Define RecordDEMIXDatumShiftFull}
-          {$Define RecordDEMIXMakeTestEvereyDEM}
+          //{$Define RecordDEMIXDatumShiftFull}
+          //{$Define RecordDEMIXMakeTestEveryDEM}
           //{$Define RecordFUVcreateFull}
           //{$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
@@ -197,9 +197,9 @@ type
     Algorithms1: TMenuItem;
     Verticalearthcurvature1: TMenuItem;
     Horizontalearthcurvature1: TMenuItem;
-    Oceanographicdata1: TMenuItem;
-    CTD1: TMenuItem;
-    Lightdata1: TMenuItem;
+    //Oceanographicdata1: TMenuItem;
+    //CTD1: TMenuItem;
+    //Lightdata1: TMenuItem;
     IntDBSpeedButton: TSpeedButton;
     HypImageSpeedButton: TSpeedButton;
     N7: TMenuItem;
@@ -253,14 +253,11 @@ type
     EXIFimage1: TMenuItem;
     Clustergrids1: TMenuItem;
     Copyfile1: TMenuItem;
-    N81Sfileviewer1: TMenuItem;
     CopyDBFstoXML1: TMenuItem;
     BackupprogramEXE1: TMenuItem;
     Geocodeaddresstolatlong1: TMenuItem;
     Stereopair1: TMenuItem;
-    MSTsidescanimport1: TMenuItem;
     N21: TMenuItem;
-    XTFindex1: TMenuItem;
     Findmatchingfiles1: TMenuItem;
     XTFsidescan1: TMenuItem;
     N22: TMenuItem;
@@ -282,7 +279,7 @@ type
     Addnormaliziedstatsforblockgridstotrainingset1: TMenuItem;
     Geomorphatlas1: TMenuItem;
     GISlabs1: TMenuItem;
-    Annapolisredistricting1: TMenuItem;
+    //Annapolisredistricting1: TMenuItem;
     Duckbeachsurveys1: TMenuItem;
     Physicalgeographylabs1: TMenuItem;
     OpenDEMwithoutmap1: TMenuItem;
@@ -309,7 +306,6 @@ type
     DEMsummarytable1: TMenuItem;
     Landsatfullsceneindex1: TMenuItem;
     Satellitepredictions1: TMenuItem;
-    Subset81Ssidescan1: TMenuItem;
     Sealevelrise1: TMenuItem;
     N29: TMenuItem;
     Ages1: TMenuItem;
@@ -319,7 +315,6 @@ type
     Fontsinstalled1: TMenuItem;
     Unicodeicongenerator1: TMenuItem;
     Nyquist1: TMenuItem;
-    Onlinehelp1: TMenuItem;
     Introductorytutorials1: TMenuItem;
     N30: TMenuItem;
     OpenandmergeDEMdirectories1: TMenuItem;
@@ -341,7 +336,7 @@ type
     OpenGeoPDFimagelayer1: TMenuItem;
     OpenUSTopoGeoPDF1: TMenuItem;
     Allindividuallayers1: TMenuItem;
-    Legislativeredistricting1: TMenuItem;
+    //Legislativeredistricting1: TMenuItem;
     Zipatoneeditor1: TMenuItem;
     LASdata1: TMenuItem;
     Other3Dpointclouds1: TMenuItem;
@@ -659,11 +654,26 @@ type
     MergeCSVresultsintosingleDB1: TMenuItem;
     CreateCSVresultsfortestareas1: TMenuItem;
     N37: TMenuItem;
-    N38: TMenuItem;
     EndclonedEXE1: TMenuItem;
     Cleararealocks1: TMenuItem;
     Batchchangefoldernames1: TMenuItem;
     ChangeDEMIXbasedirectory1: TMenuItem;
+    HDREMdownloadmanagement1: TMenuItem;
+    N52: TMenuItem;
+    Compareslope1: TMenuItem;
+    N38: TMenuItem;
+    N68: TMenuItem;
+    N69: TMenuItem;
+    GDALinfoforCOGfiles1: TMenuItem;
+    Inser1: TMenuItem;
+    Allfilesunderdirectory1: TMenuItem;
+    N70: TMenuItem;
+    N71: TMenuItem;
+    Allthreepimary1: TMenuItem;
+    All3principal1: TMenuItem;
+    N72: TMenuItem;
+    N73: TMenuItem;
+    CompareinterpolatedFUVs1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -744,8 +754,8 @@ type
     procedure Horizontalearthcurvature1Click(Sender: TObject);
     procedure OpenTIGERcountrymap1Click(Sender: TObject);
     procedure Openproject1Click(Sender: TObject);
-    procedure CTD1Click(Sender: TObject);
-    procedure Lightdata1Click(Sender: TObject);
+    //procedure CTD1Click(Sender: TObject);
+    //procedure Lightdata1Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
     procedure OpenDatabase1Click(Sender: TObject);
@@ -785,14 +795,12 @@ type
     procedure EXIFimage1Click(Sender: TObject);
     procedure Clustergrids1Click(Sender: TObject);
     procedure Copyfile1Click(Sender: TObject);
-    procedure N81Sfileviewer1Click(Sender: TObject);
     procedure CopyDBFstoXML1Click(Sender: TObject);
     procedure BackupprogramEXE1Click(Sender: TObject);
     procedure Stereopair1Click(Sender: TObject);
-    procedure MSTsidescanimport1Click(Sender: TObject);
-    procedure XTFindex1Click(Sender: TObject);
+    //procedure XTFindex1Click(Sender: TObject);
     procedure Findmatchingfiles1Click(Sender: TObject);
-    procedure XTFsidescan1Click(Sender: TObject);
+    //procedure XTFsidescan1Click(Sender: TObject);
     procedure Fullworldimage1Click(Sender: TObject);
     procedure Micronetquiz1Click(Sender: TObject);
     procedure SheepRange1Click(Sender: TObject);
@@ -827,7 +835,6 @@ type
     procedure Zeorlog1Click(Sender: TObject);
     procedure Landsatfullsceneindex1Click(Sender: TObject);
     procedure Satellitepredictions1Click(Sender: TObject);
-    procedure Subset81Ssidescan1Click(Sender: TObject);
     procedure OpenScannedmap1Click(Sender: TObject);
     procedure Openlandcover1Click(Sender: TObject);
     procedure Ages1Click(Sender: TObject);
@@ -837,7 +844,6 @@ type
     procedure Fontsinstalled1Click(Sender: TObject);
     procedure Unicodeicongenerator1Click(Sender: TObject);
     procedure Nyquist1Click(Sender: TObject);
-    procedure Onlinehelp1Click(Sender: TObject);
     procedure OpenandmergeDEMdirectories1Click(Sender: TObject);
     procedure SpeedButton6Click(Sender: TObject);
     procedure EditDEMHeader1Click(Sender: TObject);
@@ -852,7 +858,7 @@ type
     procedure XML1Click(Sender: TObject);
     procedure OpenGeoPDFimagelayer1Click(Sender: TObject);
     procedure Allindividuallayers1Click(Sender: TObject);
-    procedure Legislativeredistricting1Click(Sender: TObject);
+    //procedure Legislativeredistricting1Click(Sender: TObject);
     procedure Zipatoneeditor1Click(Sender: TObject);
     procedure Superimposedtopoprofiles1Click(Sender: TObject);
     procedure Other3Dpointclouds1Click(Sender: TObject);
@@ -1084,6 +1090,12 @@ type
     procedure Cleararealocks1Click(Sender: TObject);
     procedure Batchchangefoldernames1Click(Sender: TObject);
     procedure ChangeDEMIXbasedirectory1Click(Sender: TObject);
+    procedure Compareslope1Click(Sender: TObject);
+    procedure GDALinfoforCOGfiles1Click(Sender: TObject);
+    procedure Allfilesunderdirectory1Click(Sender: TObject);
+    procedure Allthreepimary1Click(Sender: TObject);
+    procedure All3principal1Click(Sender: TObject);
+    procedure CompareinterpolatedFUVs1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -1236,19 +1248,9 @@ uses
       dem_milicon,
    {$EndIf}
 
-   {$IfDef ExOceanography}
-   {$Else}
-      OCEANCAL,
-   {$EndIf}
-
    {$IfDef ExTIN}
    {$Else}
       DEM_TIN,
-   {$EndIf}
-
-   {$IfDef ExRedistrict}
-   {$Else}
-      demredistrict,
    {$EndIf}
 
    {$IfDef ExTrackSat}
@@ -1799,12 +1801,8 @@ begin
       end;
    {$EndIf}
 
-   if (WmDEM = Nil) or (SkipMenuUpdating) or (ProgramClosing) then exit;
+   if (WmDEM = Nil) or SkipMenuUpdating or ProgramClosing or HeavyDutyProcessing then exit;
    FileMode := 2;
-
-   {$IfDef ExRedistrict}
-      Legislativeredistricting1.Visible := false;
-   {$EndIf}
 
    {$IfDef IncludePython}
    {$Else}
@@ -1836,6 +1834,7 @@ begin
       DEMIXNeo1.Visible := false;
    {$EndIf}
 
+
    Open1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
    Toolbar1.Visible := MDDef.ShowMainToolbar and (MDDef.ProgramOption <> DragonPlotProgram);
    Introductorytutorials1.Visible := (MDDef.ProgramOption <> DragonPlotProgram);
@@ -1862,7 +1861,7 @@ begin
       Viewdebuglog1.Visible := false;
    {$EndIf}
 
-   Tools1.Visible := not (MDDef.ProgramOption in [DragonPlotProgram]);
+   Tools1.Visible := MDDef.ProgramOption in [ExpertProgram];
 
    Data1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowDataManipulation;
    InOutButton.Visible := Data1.Visible;
@@ -1898,8 +1897,6 @@ begin
       Newpanorama1.Visible := (NumDEMDataSetsOpen > 0) and (MDDef.ProgramOption = ExpertProgram);
       LiveFlySpeedButton.Enabled := (NumDEMDataSetsOpen > 0);
 
-
-
    Horizontalearthcurvature1.Visible := ExpertDEMVersion;
    Clustergrids1.Visible := ExpertDEMVersion;
 
@@ -1926,7 +1923,6 @@ begin
    NewSATButton.Visible := MDDef.ShowOpenImagery;
    OpenImage1.Visible := MDDef.ShowOpenImagery;
 
-
    Physicalgeographylabs1.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs;
    GISlabs1.Visible := MDDef.ShowLabs;
 
@@ -1937,14 +1933,11 @@ begin
 
    SpeedButton8.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram,GeographyProgram,RemoteSensingProgram]);
 
-   Oceanographicdata1.Visible := (MDDef.ProgramOption = ExpertProgram) and MDDef.ShowOceanographyOptions;
-
    Perspective1.Visible := PerspectiveButton.Visible;
    Batchprocessing1.Visible := (MDDef.ProgramOption = ExpertProgram);
    Edit1.Visible := (MDDef.ProgramOption = ExpertProgram) and (NumDEMDataSetsOpen = 0);
    Photos1.Visible := (MDDef.ProgramOption = ExpertProgram);
 
-   //DEMIXNeo1.Visible := TrilobiteComputer;
 
    {$IfDef ExDP}
       DragonPlot1.Visible := false;
@@ -1981,14 +1974,8 @@ begin
 
    {$IfDef CopALOSCompare}
    {$Else}
-      //N3OpenDEMs1.Visible := false;
-      //COPALOScomparetoreference1.Visible := false;
-      //COPALOShighlowgeomorphometry1.Visible := false;
-      //Creatediffrencemaps1.Visible := false;
-      //Pickdatadirectory1.Visible := false;
       Pixelbypixelmapstatistics1.Visible := false;
    {$EndIf}
-
 
    {$IfDef ExPointCloud}
       PClouder1.Visible := false;
@@ -2062,15 +2049,12 @@ begin
    OverwriteIfExists1.Enabled := MDDef.DEMIX_overwrite_enabled;
    OverwirteIfExists1.Enabled := MDDef.DEMIX_overwrite_enabled;
    OverwriteIfExits1.Enabled := MDDef.DEMIX_overwrite_enabled;
-   //OverwriteIfExists2.Enabled := MDDef.DEMIX_overwrite_enabled;
    OverwriteIfExits3.Enabled := MDDef.DEMIX_overwrite_enabled;
-   //Overwrite4.Enabled := MDDef.DEMIX_overwrite_enabled;
-   //OverwriteIfExits2.Enabled := MDDef.DEMIX_overwrite_enabled;
+
    CoastalDEMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
-   //DiluviumDEMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
    DeltaDTMfortestareas1.Visible := MDdef.DEMIX_AllowCoastal;
    OverwriteallthreecoastalDTMS1.Visible := MDdef.DEMIX_AllowCoastal;
-
+   InventoryDILUVIUMbytestarea1.Visible := MDdef.DEMIX_AllowCoastal;
 
    if (not MDDef.ShowMenus) then begin
       File1.Visible := false;
@@ -2080,7 +2064,7 @@ begin
       Options1.Visible := false;
       Window1.Visible := false;
       Help1.Visible := false;
-      Oceanographicdata1.Visible := false;
+      //Oceanographicdata1.Visible := false;
       PClouder1.Visible := false;
    end;
 
@@ -2313,7 +2297,6 @@ var
 
          if (Action = 'STDSLOPE_MAP') and OpenADEM then begin
             CreateSTDslopeRoughnessMap(false,DEM,OutFile);
-               //Result := CreateRoughnessSlopeStandardDeviationMap(false,DEM,MDDef.DEM_ruff_window);
          end;
 
          if (Action = 'RESIDUAL_MAP') and OpenADEM then begin
@@ -2436,7 +2419,6 @@ begin
      {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over ' + AvailablePhysicalMemoryString); {$EndIf}
      {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.FormActivate, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir); {$EndIf}
 
-
       if (not MDDef.RunOddballLocation) then begin
          if (Copy(UpperCase(ProgramRootDir),2,11) <> ':\MICRODEM\') then begin
             if not AnswerIsYes('Really run program here (really not recommended)') then halt;
@@ -2456,27 +2438,27 @@ begin
          {$IfDef RecordFormResize} WriteLineToDebugFile('Twmdem.FormActivate menus set, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
          {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate menus set, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
       end;
-     {$IfDef RecordDirs}  RecordDirs('after set panel widths'); {$EndIf}
+     {$IfDef RecordDirs} RecordDirs('after set panel widths'); {$EndIf}
 
       PetImage.FullPaletteBitmap;
       AddFreeDiskSpaceToDebugFile;
 
+      {$If Defined(MessageStartup)} MessageToContinue('Added free disk space'); {$EndIf}
       GetGDALFileNames;
       if not ValidPath(MapLibDir) then PickMapIndexLocation;
+      {$If Defined(MessageStartup)} MessageToContinue('PickMapIndexLocation done'); {$EndIf}
 
     {$IfDef NoCommandLineParameters}
     {$Else}
+       {$IfDef RecordCommandLine} WriteLineToDebugFile('ParamCount=' + IntToStr(ParamCount)); {$EndIf}
        if (ParamCount <> 0) then begin
           TStr := UpperCase(ptTrim(ParamStr(1)));
+          {$IfDef RecordCommandLine} WriteLineToDebugFile('Check command line, num=' + IntToStr(ParamCount) + '  first=' + TStr); {$EndIf}
+
           if not SetProgramOptions(TStr) then begin
-              if (ParamCount = 1) and (TStr[1] = '?') then begin
-                 ProcessCommandLine(TStr);
-              end
-              else begin
-                  TStr := '?' + TStr;
-                  for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(i)));
-                  ProcessCommandLine(TStr);
-              end;
+              TStr := '?' + TStr;
+              for i := 2 to ParamCount do TStr := TStr + '+' + UpperCase(ptTrim(ParamStr(i)));
+              ProcessCommandLine(TStr);
           end;
        end;
     {$EndIf}
@@ -2549,7 +2531,6 @@ begin
    ProgramClosing := false;
    NoAutoOpen := false;
    Self.Visible := false;
-   {$IfDef IncludeCoastalDEMs} InventoryDILUVIUMbytestarea1.Visible := true; {$Else} InventoryDILUVIUMbytestarea1.Visible := false; {$EndIf}
    {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('FormCreate out'); {$EndIf}
 end;
 
@@ -2663,6 +2644,18 @@ begin
 end;
 
 
+procedure Twmdem.All3principal1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udTileStats);
+   DEMIX_UTM_based_processing(udDiffDistribStat);
+   DEMIX_UTM_based_processing(udFUVCalc);
+end;
+
+procedure Twmdem.Allfilesunderdirectory1Click(Sender: TObject);
+begin
+   Batchchangepartoffilenames1Click(Sender);
+end;
+
 procedure Twmdem.Allindividuallayers1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -2671,6 +2664,13 @@ begin
    {$EndIf}
 end;
 
+
+procedure Twmdem.Allthreepimary1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udMergeTileStats,true);
+   DEMIX_UTM_based_processing(6,true);
+   DEMIX_UTM_based_processing(12,true);
+end;
 
 procedure Twmdem.Arcsecondrectangularpixels1Click(Sender: TObject);
 begin
@@ -2846,16 +2846,6 @@ begin
    end;
    RefName := MDTempDir + 'curvature_fuvs.dbf';
    StringList2CSVtoDB(Findings,RefName);
-end;
-
-
-procedure Twmdem.N81Sfileviewer1Click(Sender: TObject);
-begin
-   {$IfDef ExSidescan}
-   {$Else}
-      StopSplashing;
-      mst_format.View81Ssidescanfile(nil);
-   {$EndIf}
 end;
 
 
@@ -3223,15 +3213,6 @@ begin
 end;
 
 
-procedure Twmdem.MSTsidescanimport1Click(Sender: TObject);
-begin
-   {$IfDef ExSidescan}
-   {$Else}
-      ImportMSTSidescan;
-   {$EndIf}
-end;
-
-
 procedure Twmdem.Showfirstbytesofbinaryfile1Click(Sender: TObject);
 var
    bf : file;
@@ -3308,15 +3289,6 @@ end;
 procedure Twmdem.LOSButtonClick(Sender: TObject);
 begin
    LOS1Click(Sender);
-end;
-
-
-procedure Twmdem.Subset81Ssidescan1Click(Sender: TObject);
-begin
-   {$IfDef ExSidescan}
-   {$Else}
-      Subset81Ssidescanfile;
-   {$EndIf}
 end;
 
 
@@ -4102,13 +4074,6 @@ begin
    OneDegreeTilesToCoverTestAreas;
 end;
 
-procedure Twmdem.Onlinehelp1Click(Sender: TObject);
-begin
-   {$IfDef AllowUSNAhelp}
-      ExecuteFile('https://www.usna.edu/Users/oceano/pguth/md_help/html/microdem.htm');
-   {$EndIf}
-end;
-
 procedure Twmdem.Flythrough1Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(SeekingFlyThroughRoute);
@@ -4637,10 +4602,13 @@ end;
 
 
 
-procedure Twmdem.GDALSRSinfo1Click(Sender: TObject);
-{$IfDef ExGDAL}
+procedure Twmdem.GDALinfoforCOGfiles1Click(Sender: TObject);
 begin
-{$Else}
+    GDAL_info_forCOGsInTable;
+end;
+
+
+procedure Twmdem.GDALSRSinfo1Click(Sender: TObject);
 var
    fName,OutName : PathStr;
    defFilter : byte;
@@ -4659,7 +4627,6 @@ begin
        end;
       FilesWanted.Free;
     end;
-{$EndIf}
 end;
 
 procedure Twmdem.GDALWKT1Click(Sender: TObject);
@@ -5359,7 +5326,7 @@ end;
 
 procedure Twmdem.UTMbaseddifferencedistributionstatistics1Click(Sender: TObject);
 begin
-   DEMIX_UTM_based_processing(11);
+   DEMIX_UTM_based_processing(udDiffDistribStat);
 end;
 
 procedure Twmdem.UTMbasedfilefillreport1Click(Sender: TObject);
@@ -5480,24 +5447,6 @@ begin
    {$IfDef ExMilIcon}
       Militaryicongenerator1.Visible:= false;
    {$EndIf}
-
-   Militaryicongenerator1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Webpagethumbnails1.Visible := MDDef.ProgramOption = ExpertProgram;
-   EXIFmetadata1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Spectrallibrary1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Identifydirectory1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Findmatchingfiles1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Copyfile1.Visible := MDDef.ProgramOption = ExpertProgram;
-   ConvartDBFs1.Visible := MDDef.ProgramOption = ExpertProgram;
-   StereoPair1.Visible := MDDef.ProgramOption = ExpertProgram;
-   SlideSorter1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Experimental1.Visible := MDDef.ProgramOption = ExpertProgram;
-   FileOperations1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Showfirstbytesofbinaryfile1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Unicodeicongenerator1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Zipatoneeditor1.Visible := MDDef.ProgramOption = ExpertProgram;
-   Fileoperations1.Visible := MDDef.ProgramOption = ExpertProgram;
-   BackupprogramEXE1.Visible := MDDef.ProgramOption in [ExpertProgram];
    ToolsPopupMenu3.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -5577,53 +5526,6 @@ begin
    PickForNotePadPlusPlus(2);
 end;
 
-procedure Twmdem.XTFindex1Click(Sender: TObject);
-{$IfDef ExSidescan}
-begin
-{$Else}
-var
-   Infiles : tstringList;
-   i,DefaultFilter : byte;
-   GISNum,GISNum2 : integer;
-begin
-    StopSplashing;
-    Infiles := tstringList.Create;
-    Infiles.Add(InputSideScanFileName);
-    DefaultFilter := 1;
-    Petmar.GetMultipleFiles('sidescan data','XTF files|*.xtf',Infiles,DefaultFilter);
-    if (Infiles.Count > 0) then begin
-        for i := 0 to pred(Infiles.Count) do begin
-           SetPanelText(0,IntToStr(i) + '/' + IntToStr(Infiles.Count));
-           InputSideScanFileName := Infiles.Strings[i];
-           if not FileExists(ChangeFileExt(InputSideScanFileName,DefaultDBExt)) then begin
-              TSideImage.Create(Application);
-           end;
-           InputSideScanFileName := ChangeFileExt(Infiles.Strings[i],DefaultDBExt);
-           if FileExists(InputSideScanFileName) and OpenNumberedGISDataBase(GISNum,InputSideScanFileName,true) then begin
-               InputSideScanFileName := ChangeFileExt(InputSideScanFileName,'_line' + DefaultDBExt);
-               if not FileExists(InputSideScanFileName) then MakeLinesFromPoints(GISdb[GISNum],InputSideScanFileName,3,100);
-               if OpenNumberedGISDataBase(GISNum2,InputSideScanFileName,true) then begin
-                   GISdb[GISNum2].dbtablef.KML1Click(Nil);
-                   CloseAndNilNumberedDB(GISNum2);
-               end;
-               CloseAndNilNumberedDB(GISNum);
-           end;
-        end;
-        SetPanelText(0,'');
-    end;
-    Infiles.Free;
-{$EndIf}
-end;
-
-
-procedure Twmdem.XTFsidescan1Click(Sender: TObject);
-begin
-   {$IfDef ExSidescan}
-   {$Else}
-      XTFFileInfo;
-   {$EndIf}
-end;
-
 
 procedure Twmdem.Zeorlog1Click(Sender: TObject);
 begin
@@ -5673,6 +5575,7 @@ const
    ChangeTo : shortstring = 'NEW_';
 var
    fName,NewName,BaseName : PathStr;
+   Ext : ExtStr;
    i,Changed : integer;
    FilesWanted : TStringList;
    DefaultFilter : byte;
@@ -5683,8 +5586,15 @@ begin
       FilesWanted := tStringList.Create;
       FilesWanted.Add(BaseName);
       Changed := 0;
-      if ((Sender = Batchchangefoldernames1) and GetMultipleDirectories('change folder name',FilesWanted)) or
-          GetMultipleFiles('Change file name','AnyFile|*.*',FilesWanted, DefaultFilter) then begin
+      if (Sender = Batchchangefoldernames1) then GetMultipleDirectories('change folder name',FilesWanted)
+      else if (Sender = Batchchangepartoffilenames1) then GetMultipleFiles('Change file name','AnyFile|*.*',FilesWanted, DefaultFilter)
+      else if (Sender = Allfilesunderdirectory1) then begin
+         if not GetDOSPath('Directory to rename all files below',BaseName) then exit;
+         Ext := '*.tif';
+         Petmar.FindMatchingFiles(BaseName,Ext,FilesWanted,5);
+      end;
+
+      if FilesWanted.Count > 0 then begin
          Petmar.GetString('phrase to replace',NameContains,false,ValidDosFileNameChars);
          Petmar.GetString('replacement phrase',ChangeTo,false,ValidDosFileNameChars);
          ShowHourglassCursor;
@@ -5879,56 +5789,6 @@ begin
 end;
 
 
-procedure Twmdem.CTD1Click(Sender: TObject);
-var
-   FilesWanted : TStringList;
-   DefaultFilter : byte;
-   i : integer;
-   fName : PathStr;
-   InMessage : AnsiString;
-   NewGraph  : TThisBaseGraph;
-   Table : tMyData;
-begin
-   DefaultFilter := 1;
-   FilesWanted := tStringList.Create;
-   FilesWanted.Add('c:\yp686\');
-   if (Sender = CTD1) then InMessage := 'CTD data'
-   else InMessage := 'Light data';
-   if Petmar.GetMultipleFiles(InMessage,DBNameMask,FilesWanted,DefaultFilter) then begin
-      NewGraph := TThisBaseGraph.Create(Application);
-      with NewGraph,GraphDraw do begin
-         DBFYFieldName := 'DEPTH';
-         if (Sender = CTD1) then begin
-            fName := FilesWanted.Strings[0];
-            Table := tMyData.Create(fName);
-            if Table.FieldExists('TEMP') then DBFXFieldName := 'TEMP'
-            else if Table.FieldExists('TEMP_C') then DBFXFieldName := 'TEMP_C';
-            Table.Destroy;
-            MaxHorizAxis := 30;
-            Caption := 'CTD Cast';
-         end
-         else begin
-            DBFXFieldName := 'UWPAR';
-            MaxHorizAxis := 3000;
-            MinHorizAxis := 0.1;
-            Caption := 'PNF300 Cast';
-            HorizAxisFunctionType := Log10Axis;
-            HorizAxisFunct := Log10;
-         end;
-         MaxVertAxis := 10;
-         HorizLabel := DBFXFieldName;
-         VertLabel := 'Depth (m)';
-         NormalCartesianY := false;
-         SetUpGraphForm;
-         for i := 1 to FilesWanted.Count do GraphDraw.DBFLineFilesPlotted.Add(FilesWanted.Strings[pred(i)]);
-         RedrawDiagram11Click(Nil);
-      end;
-      StopSplashing;
-   end;
-   FilesWanted.Free;
-end;
-
-
 procedure Twmdem.Cylindricalprojections1Click(Sender: TObject);
 begin
    PickProjections(2);
@@ -6011,19 +5871,6 @@ end;
 procedure Twmdem.Leastcostpath1Click(Sender: TObject);
 begin
    LeastCostPathOptions;
-end;
-
-procedure Twmdem.Legislativeredistricting1Click(Sender: TObject);
-begin
-   {$IfDef ExRedistrict}
-   {$Else}
-      Annapolisredistricting1Click(Sender);
-   {$EndIf}
-end;
-
-procedure Twmdem.Lightdata1Click(Sender: TObject);
-begin
-   CTD1Click(Sender);
 end;
 
 procedure Twmdem.listgeo1Click(Sender: TObject);
@@ -6170,11 +6017,21 @@ begin
    DEMIX_UTM_based_processing(udCompareLandcover);
 end;
 
+procedure Twmdem.CompareinterpolatedFUVs1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udInterpolatedFUVs);
+end;
+
 procedure Twmdem.ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
 begin
    LandCoverBreakdowPointCloud;
 end;
 
+
+procedure Twmdem.Compareslope1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udCompareAverageSlopesByAlgorithm);
+end;
 
 procedure Twmdem.CompressDecompress1Click(Sender: TObject);
 begin

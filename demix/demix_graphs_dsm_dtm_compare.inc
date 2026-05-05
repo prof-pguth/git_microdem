@@ -396,6 +396,12 @@ begin
        Result.RedrawDiagram11Click(Nil);
    end;
    {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphDEMIX_CompareDSMandDTMslopes out'); {$EndIf}
+end {function GraphDEMIX_CompareDSMandDTMslopes};
+
+
+function GraphCompareInterpolation(db : integer) : tThisBaseGraph;
+begin
+   Result := CreateMultipleSeriesGraph(db);
 end;
 
 
@@ -435,10 +441,10 @@ var
    MultSeries : tStringList;
    BaseFilter : shortstring;
 
-   procedure CheckLSP(LSP : shortstring);
-   begin
-      if GISdb[db].MyData.FieldExists(LSP) then MultSeries.Add(LSP);
-   end;
+         procedure CheckLSP(LSP : shortstring);
+         begin
+            if GISdb[db].MyData.FieldExists(LSP) then MultSeries.Add(LSP);
+         end;
 
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphDSMandDTMdifferences LSP=' + LSP + '  ' + DTMName); {$EndIf}
@@ -450,7 +456,6 @@ begin
       if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
           if GISdb[db].MyData.FieldExists('GRID_SEC') then GISdb[db].dbOpts.XField := 'GRID_SEC' else GISdb[db].dbOpts.XField := 'GRID_M' ;
           MultSeries := tStringList.Create;
-
           MultSeries := tStringList.Create;
           CheckLSP(LSP + '_LE90');
           CheckLSP(LSP + '_RMSE');

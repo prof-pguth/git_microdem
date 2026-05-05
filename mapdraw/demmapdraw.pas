@@ -28,6 +28,7 @@
    {$IfDef Debug}
       //{$Define RecordMapDraw}
       //{$Define RecordWorldOutline}
+      //{$Define RecordBaseTitle}
       //{$Define RecordAverageGridTrue}
       //{$Define RecordClosing}
       //{$Define RecordDrawSecondGrid}
@@ -1180,7 +1181,6 @@ var
    z,DIP,TI,GV,lat,long : float64;
    Table : tMyData;
 
-
           function bpName : shortstring;
           begin
              case BasicProjection of
@@ -1190,17 +1190,18 @@ var
              end;
           end;
 
-
 begin
    {$If Defined(RecordMapDraw) or Defined(RecordTiming) or Defined(RecordUTMZone) or Defined(RecordElevationScaling) or Defined(RecordPixelSize) or Defined(RecordMapResize) or Defined(RecordSat)}
        WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in ' + MapSizeString + '  ' + PrimMapProj.GetProjName + '  bp=' + bpName);
    {$EndIf}
-   {$IfDef ShowProjectedLimits} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, proj limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxProj,3)); {$EndIf}
-   {$IfDef ShowProjectedLimits} if (VectorIndex <> 0) then WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, data grid limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1)); {$EndIf}
-   {$If Defined(track_f) or Defined(RecordMapDrawCreation) or Defined(RecordLong0)} PrimMapProj.ShortProjInfo('DrawMapOnBMP in');  {$EndIf}
+   {$IfDef ShowProjectedLimits}
+      WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, proj limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxProj,3));
+      if (VectorIndex <> 0) then WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, data grid limits: ' +  sfBoundBoxToString(MapCorners.BoundBoxDataGrid,1));
+   {$EndIf}
+   {$If Defined(track_f) or Defined(RecordMapDrawCreation) or Defined(RecordLong0)} PrimMapProj.ShortProjInfo('DrawMapOnBMP in'); {$EndIf}
    {$If Defined(RecordElevRange)} if DEMMap then  WriteLineToDebugFile('elev range ' + RealToString(MinMapElev,-12,-2) + ' to ' + RealToString(MaxMapElev,-12,-2) + ' ' + MapSizeString); {$EndIf}
    {$If Defined(RecordMapDraw)} WriteLineToDebugFile('deltas=' + RealToString(MapCorners.Projdx,-12,-6) +  '/' + RealToString(MapCorners.Projdy,-12,-6) + '  ' + MapSizeString); {$EndIf}
-
+   {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in,BaseTitle=' + BaseTitle); {$EndIf}
    try
       if (NoDrawingNow) or ClosingEveryThing then exit;
 
@@ -1262,7 +1263,7 @@ begin
                   end
                   else if isSlopeMap(MapType) or (MapType in [mtDEMaspectSlope,mtDEMAspect,mtFlowDir360,mtFlowDirArc,mtFlowDirTau]) or (DEMGlb[DEMonMap].DEMheader.ElevUnits in [euAspectDeg]) then begin
                      if (not isSlopeMap(MapType)) then {BaseTitle := 'Slope Map (' + SlopeMethodName(MDDef.SlopeAlgorithm) + ')'else} BaseTitle := 'Aspect Map';
-                     BaseTitle := 'Slope_map+' + DEMGlb[DEMonMap].AreaName;
+                     BaseTitle := 'Slope_map_' + DEMGlb[DEMonMap].AreaName;
                      DrawSlopeMap(BitMap);
                      {$If Defined(RecordFullMapDraw)} WriteLineToDebugFile('after DrawSlopeMap, bmp=' + MapSizeString); {$EndIf}
                   end
@@ -1432,8 +1433,8 @@ begin
                '  deltas=' + RealToString(MapCorners.Projdx,-12,-6) +  '/' + RealToString(MapCorners.Projdy,-12,-6) + '  ' + MapSizeString);
       end;
    {$EndIf}
-
-end;
+   {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('tMapDraw.DrawMapOnBMP in, BaseTitle=' + BaseTitle); {$EndIf}
+end {procedure tMapDraw.DrawMapOnBMP};
 
 
 procedure DrawOverlayNoDelete(var Bitmap,Overlay : tMyBitmap; Opacity : byte = 100; StartX : SmallInt = 0; StartY : SmallInt = 0; TextMode : boolean = false);

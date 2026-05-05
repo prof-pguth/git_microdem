@@ -143,7 +143,7 @@ type
          MonochromeBitmap,
          CorrectScaling,
          ForceNewSize,
-         ForcePrinterDPI,
+         //ForcePrinterDPI,
          LabelPointsAtop,
          RainBowColors,
          LLlegend,
@@ -199,18 +199,20 @@ type
          XYZFilesPlotted,
          XYColorFilesPlotted,
          DataFilesPlotted,
-         DBFPointFilesPlotted,
-         DBFLineFilesPlotted  : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
+         DBFPointFilesPlotted : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
+         //DBFLineFilesPlotted  : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
 
           constructor Create;
           destructor Destroy;
           function GraphX(x : float32) : integer; {$IfDef NoInLine} {$Else} inline; {$EndIf}
-          function GraphY(y : float32) : integer; inline;
-          function GraphY2(y : float32) : integer; inline;
+          function GraphY(y : float32) : integer; {$IfDef NoInLine} {$Else} inline; {$EndIf}
+          function GraphY2(y : float32) : integer; {$IfDef NoInLine} {$Else} inline; {$EndIf}
           function AxisRange : shortstring;
           procedure SetMargins(Bitmap : tMyBitmap);
 
           procedure SetAllDrawingSymbols(DrawingSymbol : tDrawingSymbol);
+          procedure SetShowAllLines(setting : boolean; LineWidth : integer = 2);
+          procedure SetShowAllPoints(setting : boolean);
 
           function InvGraphY(y : integer) : float32;
           function InvGraphX(x : integer) : float32;
@@ -219,8 +221,6 @@ type
           procedure DefaultAxisFit(AxisFunctionType : tAxisFunction; NumPoints : integer; var x : array of float32; var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32; PixelsHigh,TickSpacing : integer);
           procedure ManualAxisFit(var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32; Message : shortstring; PixelsHigh,TickSpacing : integer);
           procedure ForceAxisFit(AxisFunctionType : tAxisFunction; var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32; PixelsHigh,TickSpacing : integer);
-          procedure SetShowAllLines(setting : boolean; LineWidth : integer = 2);
-          procedure SetShowAllPoints(setting : boolean);
    end;
 
   TThisBaseGraph = class(TForm)
@@ -427,7 +427,7 @@ type
     procedure FindpeakYvalueineachseries1Click(Sender: TObject);
   private
     { Private declarations }
-     DataPlotsVisible : array[0..512] of boolean;
+     DataPlotsVisible : array[0..MaxGraphSeries] of boolean;
      procedure WindowACCORD(Canvas : TCanvas; ContInterval,NumContourLines,NumDataPoints : integer; Pnt : tPointerPnt; XMin,YMin,ZMin,DataX : float32; ColorFunction : ColorFunctionType; SaveTIN : PathStr = '');
      procedure SetMyBitmapColors(var Bitmap : tMyBitmap; i : integer);
      procedure MakePointDensityGraph(DensityShow : tDensityShow);
@@ -560,12 +560,10 @@ const
    DefGraphLLText : shortString = '';
    DefMaxHorizAxis : float32 = 100;
 type
-   tGraphArray = array[0..35] of tThisBaseGraph;
+   t1DGraphArray = array[0..35] of tThisBaseGraph;
    t2Dgrapharray = array[0..10,0..10] of tThisBaseGraph;
 
-
-
-procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas;  GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
+//procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas;  GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
 procedure LocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw; x,y : integer);
 
 function GraphAxesName(GraphAxes : tGraphAxes) : shortstring;
@@ -578,19 +576,18 @@ function NumOpenGraphs : integer;
 
 function SaveSingleValueSeries(NumVals : integer; var zs : bfarray32; fName : PathStr = '') : PathStr;
 
-
 procedure CreateQuantileQuantilePlot(var ThisGraph : TThisBaseGraph; NumVals : integer; var values : array of float32; Mean,Std : float32; ParamName,TitleBar : ShortString);
 function CreateCumProbabilityFromFile(fNames : tStringList; ParamName,TitleBar : ShortString) : TThisBaseGraph;
 
 function StartBoxPlot(DBonTable : integer; LLtext : shortstring = ''; HLabel : shortString = ''; MinHoriz : float32 = 1; MaxHoriz : float32 = -1) : tThisBaseGraph;
 function StartStackedHistogram(DBonTable : integer; Percentage : boolean) : TThisBaseGraph;
 
-
-function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
-function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
+function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : t1DGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
+function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : t1DGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
 function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
 procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
 
+function CreateMultipleSeriesGraph(db : integer;    HAxisField : shortstring = ''; MultSeries : tStringList = nil) : tThisBaseGraph;
 
 
 
@@ -666,7 +663,6 @@ var
    FilterTerms : integer;
 
 
-
 {$IfDef TrackColors}
    procedure tThisBaseGraph.GraphColorsRecord(WhereAt : shortstring);
    var
@@ -689,6 +685,60 @@ var
     end;
 {$EndIf}
 
+
+function CreateMultipleSeriesGraph(db : integer; HAxisField : shortstring = ''; MultSeries : tStringList = nil) : tThisBaseGraph;
+var
+   GraphSeriesFiles : tStringList;
+   i : integer;
+   Min,Max : float64;
+   fName : PathStr;
+   Table : tMyData;
+   CreateDB : tCreateDataBase;
+begin
+  {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph in'); {$EndIf}
+  Result := nil;
+  if (HAxisField = '') then HAxisField := GISdb[db].PickField('Horizontal axis',NumericFieldTypes);
+  if (MultSeries = Nil) then MultSeries := GISdb[db].GetMultipleNumericFields('Multiple series to graph');
+
+  GISdb[db].EmpSource.Enabled := false;
+  if GISdb[db].MyData.FiltRecsinDB > 0 then begin
+      GISdb[db].dbOpts.XField := HAxisField;
+      Result := GISdb[db].ActuallyDrawGraph(dbgtN2DgraphMultSeries,MultSeries);
+      Result.GraphDraw.MinHorizAxis := 0;
+      GISdb[db].EmpSource.Enabled := false;
+      Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(HAxisField);
+      GISdb[db].MyData.FindMultipleFieldsRange(MultSeries,Min,Max);
+      Result.GraphDraw.MinVertAxis := Min;
+      Result.GraphDraw.MaxVertAxis := Max;
+      Result.GraphDraw.LeftMargin := 90;
+      Result.GraphDraw.BottomMargin := 80;
+      Result.GraphDraw.LRcornerText := GISdb[db].MyData.Filter;
+      Result.GraphDraw.SetShowAllLines(false);
+      Result.RedrawDiagram11Click(Nil);
+
+      fName := NextFileNumber(MDtempDir,'GraphSeries_','.dbf');
+      CreateDB := tCreateDataBase.Create(fName);
+      CreateDB.AddAField('NAME',ftString,12);
+      CreateDB.AddAField('SHOW_LINE',ftString,1);
+      CreateDB.AddAField('SHOW_POINT',ftString,1);
+      CreateDB.AddPointSymbolDefToTable;
+      CreateDB.AddLineDefToTable;
+      CreateDB.WriteCorrectHeader;
+      Table := tMyData.Create(fName);
+      for i := 0 to pred(MultSeries.Count) do begin
+         Table.Insert;
+         Table.SetFieldByNameAsString('NAME',MultSeries.Strings[i]);
+         Table.SetFieldByNameAsString('SHOW_LINE',YorN(Result.GraphDraw.ShowLine[i]));
+         Table.SetFieldByNameAsString('SHOW_POINT',YorN(Result.GraphDraw.ShowPoints[i]));
+         Table.SetLineColorAndWidth(Result.GraphDraw.FileColors256[i],Result.GraphDraw.LineSize256[i]);
+         Table.PostPointSymbol(Result.GraphDraw.Symbol[i]);
+         Table.Post;
+      end;
+      Table.Destroy;
+  end;
+  MultSeries.Destroy;
+  {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph out'); {$EndIf}
+end;
 
 
 function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
@@ -717,7 +767,7 @@ begin
 end;
 
 
-function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
+function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : t1DGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
 var
    i,StartX,DestX,PixWide : integer;
    BigBitMap,Bitmap : tMyBitmap;
@@ -748,7 +798,7 @@ begin
 end;
 
 
-function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : tGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
+function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : t1DGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
 var
    i,StartX,StartY,PixWide : integer;
    BigBitMap,Bitmap : tMyBitmap;
@@ -815,17 +865,16 @@ end;
   end;
 
 
-      function TThisBaseGraph.GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
-      begin
-          Result := TStr;
-          if StrUtils.AnsiContainsText(UpperCase(Result),'BF-PET_') then Result := ''
-          else if UseFileNames then begin
-             while Result[length(Result)] in ['0','9'] do Delete(Result,Length(Result),1);
-             Delete(Result,Length(Result),1);
-             Result := RemoveUnderScores(Result);
-          end;
-      end;
-
+function TThisBaseGraph.GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
+begin
+    Result := TStr;
+    if StrUtils.AnsiContainsText(UpperCase(Result),'BF-PET_') then Result := ''
+    else if UseFileNames then begin
+       while Result[length(Result)] in ['0','9'] do Delete(Result,Length(Result),1);
+       Delete(Result,Length(Result),1);
+       Result := RemoveUnderScores(Result);
+    end;
+end;
 
 
 procedure TThisBaseGraph.AddCorrelationToCorner;
@@ -873,7 +922,7 @@ var
    i,Series,Total : integer;
    Count : array[1..10] of integer;
    PC    : array[1..10] of float32;
-begin
+begin {procedure TThisBaseGraph.SetUpStackedHistogram}
    {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram graph enter, DataBaseOnGraph=' + IntToStr(DataBaseOnGraph) + GraphDraw.AxisRange); {$EndIf}
    Series := 0;
    while GISdb[DataBaseOnGraph].Mydata.FieldExists('SERIES_' + IntToStr(succ(Series))) do inc(Series);
@@ -951,7 +1000,7 @@ begin
    end;
    GISdb[DataBaseOnGraph].ShowStatus;
    {$IfDef RecordHistogram} WriteLineToDebugFile('SetUpStackedHistogram out, ' + GraphDraw.AxisRange); {$EndIf}
-end;
+end {procedure TThisBaseGraph.SetUpStackedHistogram};
 
 procedure SetReasonableGraphSize;
 begin
@@ -1141,7 +1190,6 @@ begin
    {$IfDef RecordGrafFromDB} WriteLineToDebugFile('TThisBaseGraph.DrawScaledColoredSymbols in'); {$EndIf}
 
    sTable := tMyData.Create(BarGraphDBName);
-   //sTable.First;
    aMax := sTable.FindFieldMax('N');
    MaxN := round(aMax);
    sTable.First;
@@ -1677,6 +1725,7 @@ begin
    GraphDraw.SatBands := 'WV2';
    RedrawDiagram11Click(Nil);
 end;
+
 
 procedure TThisBaseGraph.Separatehistograms1Click(Sender: TObject);
 var
@@ -2945,15 +2994,17 @@ begin
    {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph axis fit over ' + GraphDraw.AxisRange); {$EndIf}
    if (Bitmap <> Nil) then begin
       WindowGraphAxes(Bitmap);
-      if GraphDraw.Draw1to1Line then begin
-         Bitmap.Canvas.Pen.Color := clSilver;
-         Bitmap.Canvas.Pen.Width := 1 + MDDef.FrameLineWidth;
-         if (GraphDraw.MinHorizAxis > GraphDraw.MinVertAxis) then Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinHorizAxis),GraphDraw.GraphY(GraphDraw.MinHorizAxis))
-         else Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinVertAxis),GraphDraw.GraphY(GraphDraw.MinVertAxis));
-         if GraphDraw.MaxHorizAxis > GraphDraw.MaxVertAxis then Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxVertAxis),GraphDraw.GraphY(GraphDraw.MaxVertAxis))
-         else Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxHorizAxis),GraphDraw.GraphY(GraphDraw.MaxHorizAxis));
-      end;
    end;
+
+   if DrawInside and GraphDraw.Draw1to1Line then begin
+       Bitmap.Canvas.Pen.Color := clSilver;
+       Bitmap.Canvas.Pen.Width := 1 + MDDef.FrameLineWidth;
+       if (GraphDraw.MinHorizAxis > GraphDraw.MinVertAxis) then Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinHorizAxis),GraphDraw.GraphY(GraphDraw.MinHorizAxis))
+       else Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinVertAxis),GraphDraw.GraphY(GraphDraw.MinVertAxis));
+       if GraphDraw.MaxHorizAxis > GraphDraw.MaxVertAxis then Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxVertAxis),GraphDraw.GraphY(GraphDraw.MaxVertAxis))
+       else Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxHorizAxis),GraphDraw.GraphY(GraphDraw.MaxHorizAxis));
+   end;
+
    {$If Defined(RecordGraf) or Defined(RecordGrafSize) or Defined(RecordGrafAxis)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph out ' + FormClientSize(Self) + '  ' +  GraphDraw.AxisRange); {$EndIf}
 end;
 
@@ -3044,7 +3095,7 @@ begin
             CloseFile(tf);
         end
         else begin
-            for j := 0 to pred(GraphDraw.DBFPointFilesPlotted.Count) do {if FileExists(DBFPointFilesPlotted[j]) then} begin
+            for j := 0 to pred(GraphDraw.DBFPointFilesPlotted.Count) do begin
                fName := DBFPointFilesPlotted[j];
                MyTable := tMyData.Create(fname);
                while not MyTable.Eof do begin
@@ -3060,7 +3111,7 @@ begin
                end;
                MyTable.Destroy;
             end;
-            for j := 0 to pred(GraphDraw.DataFilesPlotted.Count) do {if FileExists(DataFilesPlotted[j]) then} begin
+            for j := 0 to pred(GraphDraw.DataFilesPlotted.Count) do  begin
                assignFile(tf,DataFilesPlotted[j]);
                reset(tf,2*SizeOf(float32));
                new(Coords);
@@ -3294,8 +3345,7 @@ var
    tf    : file;
    Coords : ^tPointDataBuffer;
 begin
-   {$IfDef TimeGraphing} WriteLinetoDebugFile('TThisBaseGraph.PlotPointFile in ' + inf); {$EndIf}
-   {$IfDef TrackColors} WriteLinetoDebugFile('TThisBaseGraph.PlotPointFile in ' + inf + ' ' + ColorString(Symbol.Color) + ' sym size=' + IntToStr(Symbol.Size)); {$EndIf}
+   {$If Defined(TrackColors) or Defined(TimeGraphing)} WriteLinetoDebugFile('TThisBaseGraph.PlotPointFile in ' + inf + ' ' + ColorString(Symbol.Color) + ' sym size=' + IntToStr(Symbol.Size)); {$EndIf}
 
    TotNum := GetFileSize(inf) div (2*SizeOf(float32));
    assignFile(tf,inf);
@@ -3346,22 +3396,19 @@ begin
                 yf := Coords^[pred(3*i)];
                 if GraphDraw.PtOnGraph(xf,yf) then  begin
                    zf := Coords^[(3*i)];
-                   //Plot := true;
                    if GraphDraw.RainBowColors and (zf >= MinZShow) then begin
                       GraphDraw.Symbol[0].Color := RainbowRGBFunct(zf,Minz,MaxZ);
                    end
                    else GraphDraw.Symbol[0].Color := ConvertTColorToPlatformColor(round(zf));
-                   //if Plot then begin
-                      xp := GraphDraw.GraphX(xf);
-                      yp := GraphDraw.GraphY(yf);
-                      if GraphDraw.Symbol[1].Size = 0 then begin
-                         Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.Symbol[1].Color);
-                         Bitmap.Canvas.Pen.Width := GraphDraw.Symbol[0].Size;
-                         if (i=1) then Bitmap.Canvas.MoveTo(xp,yp)
-                         else Bitmap.Canvas.LineTo(xp,yp);
-                      end
-                      else ScreenSymbol(Bitmap.Canvas, xp,yp,GraphDraw.Symbol[0]);
-                   //end;
+                   xp := GraphDraw.GraphX(xf);
+                   yp := GraphDraw.GraphY(yf);
+                   if GraphDraw.Symbol[1].Size = 0 then begin
+                      Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.Symbol[1].Color);
+                      Bitmap.Canvas.Pen.Width := GraphDraw.Symbol[0].Size;
+                      if (i=1) then Bitmap.Canvas.MoveTo(xp,yp)
+                      else Bitmap.Canvas.LineTo(xp,yp);
+                   end
+                   else ScreenSymbol(Bitmap.Canvas, xp,yp,GraphDraw.Symbol[0]);
                 end;
              end;
           end;
@@ -3554,7 +3601,6 @@ begin
 end;
 
 
-
 function TGraphDraw.InvGraphY(y : integer) : float32;
 begin
    Result := (Y - TopMargin) / (YWindowSize - BottomMargin - TopMargin) * (ScrMaxVertAxis - ScrMinVertAxis);
@@ -3585,11 +3631,8 @@ end;
 
 procedure TThisBaseGraph.IDSpeedButtonClick(Sender: TObject);
 begin
-   {$IfDef ExGIS}
-   {$Else}
-      GraphDoing := gdIDDataBase;
-      wmDEM.SetPanelText(0,'Pick record to ID');
-   {$EndIf}
+   GraphDoing := gdIDDataBase;
+   wmDEM.SetPanelText(0,'Pick record to ID');
 end;
 
 procedure TThisBaseGraph.FilterDBatCurrentPoint;
@@ -3814,7 +3857,7 @@ begin
     //ClearTemporaryFileGroup(GraphDraw.LegendList,free);
     ClearTemporaryFileGroup(GraphDraw.GraphTopLabels,free);
     ClearTemporaryFileGroup(GraphDraw.RawFilesPlotted,free);
-    ClearTemporaryFileGroup(GraphDraw.DBFLineFilesPlotted,free);
+    //ClearTemporaryFileGroup(GraphDraw.DBFLineFilesPlotted,free);
     ClearTemporaryFileGroup(GraphDraw.DBFPointFilesPlotted,free);
     ClearTemporaryFileGroup(GraphDraw.HistogramDistributionFileList,free);
 end;
@@ -3961,18 +4004,18 @@ begin
 
      GraphDraw.DataFilesPlotted := tStringList.Create;
      GraphDraw.XYZFilesPlotted := tStringList.Create;
-     GraphDraw.DBFLineFilesPlotted := tStringList.Create;
+     //GraphDraw.DBFLineFilesPlotted := tStringList.Create;
      GraphDraw.DBFPointFilesPlotted := tStringList.Create;
      GraphDraw.XYColorFilesPlotted := tStringList.Create;
      GraphDraw.RawFilesPlotted := Nil;
      GraphDraw.LegendList := Nil;
-     GraphDraw.DBFLineFilesPlotted := Nil;
+     //GraphDraw.DBFLineFilesPlotted := Nil;
      GraphDraw.GraphTopLabels := Nil;
      GraphDraw.GraphLeftLabels := Nil;
      GraphDraw.GraphBottomLabels := Nil;
      GraphDraw.DataFilesPlottedTable := '';
      GraphDraw.BottomLegendFName := '';
-     GraphDraw.ForcePrinterDPI := false;
+     //GraphDraw.ForcePrinterDPI := false;
      GraphDraw.AnnualCycle := false;
      GraphDraw.Draw1to1Line := false;
      GraphDraw.DrawRegion := false;
@@ -3999,7 +4042,7 @@ begin
      GraphComputedMAvD := -999;
      GraphDraw.GrayAllDataFilesFirst := false;
 
-     for i := 0 to 50 do DataPlotsVisible[i] := true;
+     for i := 0 to MaxGraphSeries do DataPlotsVisible[i] := true;
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -4360,7 +4403,7 @@ begin
    aMovie := tStringList.Create;
    GraphDraw.MultiPanelGraph := (not Movie);
    GraphDraw.GrayAllDataFilesFirst := true;
-   for j := 0 to 50 do DataPlotsVisible[j] := false;
+   for j := 0 to MaxGraphSeries do DataPlotsVisible[j] := false;
    if ShowFirstLayerOnAnimation then begin
       DataPlotsVisible[0] := true;
    end;
@@ -4406,7 +4449,7 @@ begin
       SaveBitmap(BigBitmap,Result);
       DisplayBitmap(Result,'Panel_Graph');
    end;
-   for j := 0 to 50 do DataPlotsVisible[j] := true;
+   for j := 0 to MaxGraphSeries do DataPlotsVisible[j] := true;
    GraphDraw.MultiPanelGraph := false;
    RedrawDiagram11Click(Nil);
 end;
@@ -4702,42 +4745,40 @@ begin
 end;
 
 
-procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw;  x,y,sx,sy : integer);
-var
-   xis,yis : float32;
-   Month,Day,Year : integer;
-   MenuStr,TStr : ShortString;
-begin
-   with GraphDraw do begin
-      Canvas.Pen.Mode := pmNotXor;
-      ScreenSymbol(Canvas,sx,sy,Splat,3,claRed);
-      xis := (x - LeftMargin) / (XWindowSize - LeftMargin) * (ScrMaxHorizAxis - ScrMinHorizAxis);
-      yis := (y - TopMargin) / (YWindowSize - BottomMargin - TopMargin) * (ScrMaxVertAxis - ScrMinVertAxis);
-      if NormalCartesianY then yis := ScrMaxVertAxis - yis
-      else yis := ScrMinVertAxis + yis;
-      if NormalCartesianX then xis := ScrMinHorizAxis + xis
-      else xis := ScrMaxVertAxis - xis;
-      if HorizAxisFunctionType = Log10Axis then xis := Math.Power(10,xis);
-      if VertAxisFunctionType = Log10Axis then yis := Math.Power(10,yis);
-      if GraphAxes in [ XTimeYFullGrid, XTimeYPartGrid] then begin
-         CalDat(Trunc(xis),Month,Day,Year);
-         if (ScrMaxHorizAxis - ScrMinHorizAxis) < 15.001 then
-            TStr := RealToString(Frac(xis)*24,6,2) + ' hrs '
-         else TStr := '';
-         MenuStr := IntegerToString(Day,2) + ' ' + MonthName[Month] +
-               IntegerToString(Year,5) + TStr;
-      end
-      else MenuStr := 'x=' + RealToString(xis,-12,2);
-
-      MessageToContinue(MenuStr + MessLineBreak + 'y=' + RealToString(yis,-12,DigitsFromSize(Yis)));
-      ScreenSymbol(Canvas,sx,sy,Splat,3,claRed);
-      Canvas.Pen.Mode := pmCopy;
-   end {with};
-end;
-
 procedure LocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw; x,y : integer);
-begin
-   ComplicatedLocatePointOnGraph(Canvas,GraphDraw,x,y,x,y);
+
+   // procedure ComplicatedLocatePointOnGraph(Canvas : TCanvas; GraphDraw : tGraphDraw;  x,y{,sx,sy} : integer);
+    var
+       xis,yis : float32;
+       Month,Day,Year : integer;
+       MenuStr,TStr : ShortString;
+    begin
+       with GraphDraw do begin
+          Canvas.Pen.Mode := pmNotXor;
+          ScreenSymbol(Canvas,x,y,Splat,3,claRed);
+          xis := (x - LeftMargin) / (XWindowSize - LeftMargin) * (ScrMaxHorizAxis - ScrMinHorizAxis);
+          yis := (y - TopMargin) / (YWindowSize - BottomMargin - TopMargin) * (ScrMaxVertAxis - ScrMinVertAxis);
+          if NormalCartesianY then yis := ScrMaxVertAxis - yis
+          else yis := ScrMinVertAxis + yis;
+          if NormalCartesianX then xis := ScrMinHorizAxis + xis
+          else xis := ScrMaxVertAxis - xis;
+          if HorizAxisFunctionType = Log10Axis then xis := Math.Power(10,xis);
+          if VertAxisFunctionType = Log10Axis then yis := Math.Power(10,yis);
+          if GraphAxes in [ XTimeYFullGrid, XTimeYPartGrid] then begin
+             CalDat(Trunc(xis),Month,Day,Year);
+             if (ScrMaxHorizAxis - ScrMinHorizAxis) < 15.001 then TStr := RealToString(Frac(xis)*24,6,2) + ' hrs '
+             else TStr := '';
+             MenuStr := IntegerToString(Day,2) + ' ' + MonthName[Month] + IntegerToString(Year,5) + TStr;
+          end
+          else MenuStr := 'x=' + RealToString(xis,-12,2);
+
+          MessageToContinue(MenuStr + MessLineBreak + 'y=' + RealToString(yis,-12,DigitsFromSize(Yis)));
+          ScreenSymbol(Canvas,x,y,Splat,3,claRed);
+          Canvas.Pen.Mode := pmCopy;
+       end {with};
+    //end;
+//begin
+   //ComplicatedLocatePointOnGraph(Canvas,GraphDraw,x,y,x,y);
 end;
 
 procedure PadAxis(var Min,Max : float32);
@@ -5304,7 +5345,7 @@ end;
 
 procedure TThisBaseGraph.PlotSingleDataFile(Bitmap : tMyBitmap; i : integer; fName : PathStr);
 begin
-   {$If Defined(TrackColors)}  WriteLineToDebugFile('PlotSingleDataFile: ' + ExtractFileNameNoExt(fName) + '  ' + IntToStr(i) + ' line='+ ColorString(GraphDraw.FileColors256[i]) + ' point='+ ColorString(GraphDraw.Symbol[i].Color)); {$EndIf}
+   {$If Defined(TrackColors)} WriteLineToDebugFile('PlotSingleDataFile: ' + ExtractFileNameNoExt(fName) + '  ' + IntToStr(i) + ' line='+ ColorString(GraphDraw.FileColors256[i]) + ' point='+ ColorString(GraphDraw.Symbol[i].Color)); {$EndIf}
    if GraphDraw.SingleGraphSymbology then begin
       Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[i]);
       Bitmap.Canvas.Pen.Width := GraphDraw.LineSize256[i];
@@ -5400,8 +5441,6 @@ end;
              Bitmap.Canvas.Draw(Xi,yi,Bmp);
              BMP.Free;
           end;
-
-
          {$If Defined(RecordGrafSize) or Defined(RecordScaling) or Defined(RecordGrafAxes)} WriteLineToDebugFile('RedrawDiagram11Click done, bitmap=' + BitmapSize(Bitmap) + '  ' + GraphDraw.AxisRange); {$EndIf}
       end;
 
@@ -5585,7 +5624,7 @@ begin
                           {$IfDef TrackColors} WriteLineToDebugFile('GraphDraw.GrayAllDataFilesFirst done gray');  WriteLineToDebugFile(''); {$EndIf}
                           {$IfDef TrackColorsSaveBitmaps} SaveBitmap(Bitmap,MDTempDir + 'grayscale_done.bmp'); {$EndIf}
                           for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
-                             if (i > 50) or DataPlotsVisible[i] then begin
+                             if (i > MaxGraphSeries) or DataPlotsVisible[i] then begin
                                 PlotSingleDataFile(Bitmap,i,GraphDraw.DataFilesPlotted.Strings[i]);
                                 {$IfDef TrackColorSaveBitmaps} SaveBitmap(Bitmap,MDTempDir + 'layer_' + IntToStr(i) + '.bmp'); {$EndIf}
                              end;
@@ -5599,12 +5638,14 @@ begin
                            for i := 0 to pred(GraphDraw.DBFPointFilesPlotted.Count) do begin
                               PlotPointDBFFile(BitMap,GraphDraw.DBFPointFilesPlotted.Strings[i]);
                            end;
+                           (*
                            if (GraphDraw.DBFLineFilesPlotted <> Nil) then begin
                              for i := 0 to pred(GraphDraw.DBFLineFilesPlotted.Count) do begin
                                  SetMyBitmapColors(Bitmap,i);
                                  PlotLineDBFFile(BitMap,GraphDraw.DBFLineFilesPlotted.Strings[i]);
                              end;
                            end;
+                           *)
                        end;
                        if (GraphDraw.GraphTopLabels <> Nil) and GraphDraw.LabelPointsAtop then begin
                           Bitmap.Canvas.Pen.Color := clRed;
@@ -6047,7 +6088,7 @@ begin {function TThisBaseGraph.MakeLegend}
       Result := DefaultHorizontalLegendOnBitmap(MinZ,MaxZ,ZUnits,'',MDDef.GraphZColorScheme);
    end
    else if (GraphDraw.LegendList <> Nil) then Result := MakeTheLegend(GraphDraw.LegendList,false)
-   else if (GraphDraw.DBFLineFilesPlotted <> Nil) then Result := MakeTheLegend(GraphDraw.DBFLineFilesPlotted)
+   //else if (GraphDraw.DBFLineFilesPlotted <> Nil) then Result := MakeTheLegend(GraphDraw.DBFLineFilesPlotted)
    else if (GraphDraw.DataFilesPlotted <> Nil) then Result := MakeTheLegend(GraphDraw.DataFilesPlotted);
    {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('Legend created, ' + BitmapSizeString(Result)); {$EndIf}
 end {function TThisBaseGraph.MakeLegend};

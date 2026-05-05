@@ -26,8 +26,6 @@ type
     Edit3: TEdit;
     Edit4: TEdit;
     BitBtn2: TBitBtn;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
     procedure Button1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
   private

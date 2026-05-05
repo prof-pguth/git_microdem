@@ -8,7 +8,6 @@
 {________________________________________}
 
 
-
       procedure tGISdataBaseModule.FocalPlaneStats(What : tFocalPlaneWhat);
       begin
          if (What = fpRoseStrike) then begin
@@ -192,21 +191,15 @@
                   {$IfDef RecordQuadFill} WriteLineToDebugFile('Dip=' + IntToStr(Dip) +  '  strike='+ IntToStr(Strike)); {$EndIf}
                   if (Length(Mech) > 0) and (Mech[1] in ['N','S']) then Margin := 10
                   else Margin := 3;
-
                   if (Dip > 90-Margin) then Dip := 90-Margin;
                   if (Dip < Margin) then Dip := Margin;
-
                   if Strike > 360 then Strike := Strike - 360;
-
                   NetDraw.WorkingBitmap.Canvas.Brush.Color := Color;
                   NetDraw.WorkingBitmap.Canvas.Brush.Style := bsSolid;
-
                   NetDraw.ReallyPlot := false;
                   NetDraw.PlotPointOnNet(LinePlot,Dip,Strike,Sym,xd,yd);
                   NetDraw.ReallyPlot := true;
-
                   NetDraw.WorkingBitmap.Canvas.FloodFill(xd,yd,Color,fsBorder);
-
                   {$IfDef RecordQuadFill}
                      WriteLineToDebugFile('Dip=' + IntToStr(Dip) +  '  strike'+ IntToStr(Strike) + '  xd=' + IntToStr(xd) + '  yd=' + IntToStr(yd));
                      Sym.DrawingSymbol := FilledBox;

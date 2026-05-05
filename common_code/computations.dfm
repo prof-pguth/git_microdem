@@ -23,8 +23,6 @@ object CompForm: TCompForm
       '')
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitWidth = 550
-    ExplicitHeight = 227
   end
   object Panel1: TPanel
     Left = 0
@@ -33,7 +31,6 @@ object CompForm: TCompForm
     Height = 145
     Align = alTop
     TabOrder = 1
-    ExplicitWidth = 550
     object Label3: TLabel
       Left = 182
       Top = 85
@@ -209,8 +206,8 @@ object CompForm: TCompForm
       Top = 77
       Width = 89
       Height = 21
-      Date = 39165.000000000000000000
-      Time = 0.637004120369965700
+      Date = 39165.00000000000000000
+      Time = 0.63700412036996570
       Enabled = False
       TabOrder = 10
     end

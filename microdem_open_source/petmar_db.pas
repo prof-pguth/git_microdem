@@ -188,6 +188,8 @@ type
 
         function FieldTypeAndLength(WantFieldName : ANSIString) : AnsiString;
         function ListUniqueEntriesInDB(FieldName : ANSIString; Sort : boolean = true) : tStringList;
+        function FindUniqueEntriesLinkPossible(LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList;
+
         function NumUniqueEntriesInDB(FieldName : ANSIString) : integer;
         function FieldsInDataBase(Alphabetize : boolean = false) : tStringList;
         function GetFieldName(i : integer) : ANSIString;
@@ -896,10 +898,15 @@ function tMyData.PlatformColorFromTable : tPlatformColor;
          function CheckColorField(fName : shortstring) : boolean;
          var
             i : integer;
+            HexColor : shortstring;
          begin
             CheckColorField := false;
             if FieldExists(fName) then begin
-               if CarefullyGetFieldByNameAsInteger(fName,i) then begin
+               if IsStringField(fName) then begin
+                  HexColor := GetFieldByNameAsString(fName);
+                  PlatformColorFromTable := RGBtrip(StrToInt('$' + Copy(HexColor,2,2)),StrToInt('$' + Copy(HexColor,4,2)),StrToInt('$' + Copy(HexColor,6,2)));
+               end
+               else if CarefullyGetFieldByNameAsInteger(fName,i) then begin
                   PlatformColorFromTable := ConvertTColorToPlatformColor(i);
                   CheckColorField := true;
                end;
@@ -1591,9 +1598,45 @@ begin
 end;
 
 
+function tMyData.FindUniqueEntriesLinkPossible(LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList;
+var
+   Count,rc : integer;
+   BaseTable : tMyData;
+   TStr,LastTStr : ShortString;
+begin
+   {$If Defined(RecordRangeProblems) or Defined(RecordUniqueProblems)} WriteLineToDebugFile('FindUniqueEntriesLinkPossible in ' + Table.TableName + '  ' + FieldName); {$EndIf}
+   try
+      BaseTable := Self;
+      if (LinkData <> Nil) and LinkedField(FieldName) then BaseTable := LinkData;
+      Result := tStringList.Create;
+      BaseTable.First;
+      Count := 0;
+      if (BaseTable.RecordCount > 0) then begin
+         if Sort then begin
+            Result.Sorted := true;
+            Result.Duplicates := dupIgnore;
+         end;
+         rc := BaseTable.RecordCount;
+         LastTStr := '';
+         while not BaseTable.EOF do begin
+            TStr := ptTrim(BaseTable.GetFieldByNameAsString(FieldName));
+            if (TStr <> '') and (TStr <> LastTStr) then begin
+               Result.Add(TStr);
+            end;
+            BaseTable.Next;
+            inc(Count);
+            LastTStr := Tstr;
+         end;
+      end;
+   finally
+   end;
+   {$IfDef RecordRange} WriteLineToDebugFile('FindUniqueEntriesLinkPossible out'); {$EndIf}
+end;
+
+
 function tMyData.ListUniqueEntriesInDB(FieldName : ANSIString; Sort : boolean = true) : tStringList;
 begin
-   Result := PetDBUtils.FindUniqueEntries(Self,FieldName,sort);
+   Result := FindUniqueEntriesLinkPossible(Nil,'','',FieldName,sort);
 end;
 
 

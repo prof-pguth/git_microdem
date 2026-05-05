@@ -64,7 +64,7 @@ implementation
 uses
    {$IfDef ExGeography}
    {$Else}
-      sun_position, //moon_montenbruk_pfleger,
+      sun_position,
    {$EndIf}
    GetLatLn,Petmar,DEMDefs, BaseMap,demmagvar;
 

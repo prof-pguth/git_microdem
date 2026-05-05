@@ -112,7 +112,7 @@ function FractionOfWinnersGraph(db : integer; TheDEMs,Criteria : tStringList) : 
 procedure FinishGraph(var Graph : tThisBaseGraph; var Findings : tStringList; AddLegends : boolean = false);
 
 const
-   TheLandtypes : array[1..5] of shortstring = ('AVG_SLOPE','AVG_ROUGH','BARREN_PC','FOREST_PC','URBAN_PC');
+   //TheLandtypes : array[1..5] of shortstring = ('AVG_SLOPE','AVG_ROUGH','BARREN_PC','FOREST_PC','URBAN_PC');
    TheBins : array[1..5] of integer = (10,3,0,0,0);
    ExpandLegend : boolean = false;
 
@@ -122,6 +122,7 @@ function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStr
 procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
+function GraphCompareInterpolation(db : integer) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
 procedure GridOfTerrainScatterPlots(DB : integer; ColorBy,Compares,DEMs : tStringList);
 procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Comparisons : tStringList);
@@ -129,6 +130,7 @@ procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIX
 
 procedure BestDEMonScatterPlotTwoParameters(DB : integer; Criteria,DEMs : tstringList);
 procedure GraphTwoParameterGridsByAverageSlopeAndResolution(db : integer; DEMIXtileFieldName : shortstring; MultSeries : tStringList; AllTiles : boolean = false);
+procedure ScatterPlotTwoDEMs(db : integer; DEM1,DEM2 : shortstring; Criteria : tStringList);
 
 
 implementation
@@ -139,6 +141,7 @@ uses
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
    DEMIX_control,DEMIX_Definitions;
+
 
 function NumTilesString(DB : integer) : shortstring;
 var
@@ -271,7 +274,6 @@ begin
 end {function OpenGraphForCriterionScoresOrEvaluations};
 
 
-
   {$I demix_graphs.inc}
 
   {$I demix_graphs_dsm_dtm_compare.inc}
@@ -358,7 +360,7 @@ var
    rfile : file;
    v : array[1..2] of float32;
    color : tColor;
-   gr : tGraphArray;
+   gr : t1DGraphArray;
 
      function DoMultipleResolutionGraph : tThisBaseGraph;
      const
@@ -731,7 +733,7 @@ const
 
 
          function TileGeomorphGraphByDEM(LandType : shortstring; TheDEMs : tStringList; Bin : integer = 0) : tThisBaseGraph;
-         //x-axis will be the criteria, y-axis the FUV
+         //x-axis will be criteria, y-axis FUV
          //colors will be for the DEMs
          //graphs for each value of LandType
 
@@ -798,7 +800,7 @@ const
 
          var
             i,j,k,Start,PixWide : integer;
-            gr : tGraphArray;
+            gr : t1DGraphArray;
             fName : PathStr;
             aFilter,aLabel : ShortString;
             Bitmap,BigBitmap : tMyBitmap;
@@ -1113,7 +1115,7 @@ var
    i,j : integer;
    HL,LLLabel : shortstring;
    fName : PathStr;
-   gr :  tGraphArray;
+   gr :  t1DGraphArray;
    Legend,BigBitmap : tMyBitmap;
 begin
    if TileCharacteristicsInDB(DB,true) then begin
@@ -1146,7 +1148,7 @@ var
    i,j : integer;
    HL : shortstring;
    fName : PathStr;
-   gr :  tGraphArray;
+   gr :  t1DGraphArray;
    Legend,BigBitmap : tMyBitmap;
 begin
    if TileCharacteristicsInDB(DB,true) then begin
@@ -1556,8 +1558,9 @@ var
          for I := 1 to Criteria.count do begin
             Criterion := Criteria.Strings[pred(i)];
             Tolerance := CriterionTieTolerance(Criterion);
-            if (BaseFilter <> '') then aFilter := BaseFilter + ' AND ' else aFilter := '';
-            aFilter := aFilter + VarFilter + ' AND CRITERION=' + QuotedStr(Criterion);
+            //if (BaseFilter <> '') then aFilter := BaseFilter + ' AND ' else aFilter := '';
+            aFilter := AddAndIfNeeded(BaseFilter) + VarFilter + ' AND CRITERION=' + QuotedStr(Criterion);
+
             GISdb[DBonTable].ApplyGISFilter(aFilter);
             while not GISdb[dbOnTable].MyData.eof do begin
                 GISdb[DBonTable].EmpSource.Enabled := false;
@@ -1755,18 +1758,18 @@ var
             end;
          end;
      end;
-        fName := NextFileNumber(MDTempDir,Criterion + '_two_param_graph_','.dbf');
-        StringList2CSVtoDB(GraphData,fName,true,false,false);
-        Result.BarGraphDBName := fName;
-        if MDdef.ShowPieN then Result.GraphDraw.MinVertAxis := -4;
-        Result.AutoScaleAndRedrawDiagram(false,false,false,false);
+     fName := NextFileNumber(MDTempDir,Criterion + '_two_param_graph_','.dbf');
+     StringList2CSVtoDB(GraphData,fName,true,false,false);
+     Result.BarGraphDBName := fName;
+     if MDdef.ShowPieN then Result.GraphDraw.MinVertAxis := -4;
+     Result.AutoScaleAndRedrawDiagram(false,false,false,false);
    end {function CreateGraph};
 
 var
    i : integer;
    Graphs : tStringList;
    Bitmap : tMyBitmap;
-   gr : tGraphArray;
+   gr : t1DGraphArray;
    LegendFName,fName : PathStr;
    TStr : shortstring;
 begin  {procedure PiesBestByTwoLandTypes}
@@ -1819,7 +1822,7 @@ var
    NPts,i,j,TileID : integer;
    v : array[1..2] of float32;
    //Tile : shortstring;
-   Tiles : tStringList;
+   //Tiles : tStringList;
    val,y,Max : float32;
 begin
    if (DEMs <> Nil) then begin
@@ -1986,7 +1989,7 @@ var
            Result := nil;
            Result := GraphForOneCriterion(PanelName,DBonTable,Nil,Evaluations,HL,'');
            aLabel := 'BEST EVAL  ' + Criterion;
-           if (FUVMode <> fuvmDiffDist)  then aLabel := 'FUV: '  + aLabel;
+           if (FUVMode <> udDiffDistribStat)  then aLabel := 'FUV: '  + aLabel;
 
            Result.GraphDraw.HorizLabel := aLabel;
            AddTopLabelToGraph(Result,DBonTable);
@@ -2029,11 +2032,11 @@ var
    j : integer;
    Legend,BigBitmap : tMyBitmap;
    fName : PathStr;
-   gr : tGraphArray;
+   gr : t1DGraphArray;
 begin {FilterJustOneGraph}
    if TileCharacteristicsInDB(DBonTable,true) and GISdb[DBonTable].MyData.FieldExists('BEST_EVAL') then begin
      {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('FilterJustOneGraph in'); {$EndIf}
-        GetDEMIXpaths(False);
+      GetDEMIXpaths(False);
       for j := 0 to pred(Criteria.Count) do begin
          gr[j] := AGraph(j);
       end;
@@ -2054,7 +2057,7 @@ end {FilterJustOneGraph};
 
 
 procedure DEMIX_evaluations_graph(DBonTable,YAxisWhat : integer; DEMs,Criteria : tStringList; Evaluations : boolean = true);
-//for each criterion, graph of evaluations sorted by parameter, and with tile names
+//for each criterion, graph of evaluations sorted by parameter, with tile names
 var
    BaseFilter : shortstring;
 
@@ -2064,7 +2067,7 @@ var
          i,j : integer;
          y : integer;
          Slope : float32;
-         gr : tGraphArray;
+         gr : t1DGraphArray;
          v : array[1..3] of float32;
          rfile : file;
          BigBitmap : tMyBitmap;
@@ -2113,7 +2116,7 @@ var
       var
          Legend,BigBitmap,Bitmap : tMyBitmap;
          j : integer;
-         gr : tGraphArray;
+         gr : t1DGraphArray;
          BigGraph,Findings : tstringList;
          fName,PanelsName : PathStr;
          aFilter,aLabel : shortstring;
@@ -2127,7 +2130,7 @@ var
                GISdb[DBonTable].ApplyGISFilter(aFilter);
                if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
                   aLabel := Criteria.Strings[j];
-                  if (DEMIXMode <> fuvmDiffDist)  then aLabel := 'FUV: '  + aLabel;
+                  if (DEMIXMode <> udDiffDistribStat) then aLabel := 'FUV: '  + aLabel;
                   gr[j] := GraphForOneCriterion(PanelsName,DBonTable,DEMs,Evaluations,NoSuffixCriterion(aLabel),theSort,GraphName);
                   fName := gr[j].AnimateGraph(False,False);
                   Findings.Add(fName);
@@ -2147,7 +2150,6 @@ var
             MessageToContinue('Field missing for sort ' + TheSort);
          end;
       end {procedure MakeAllGraphs};
-
 
 
 begin {DEMIX_evaluations_graph}
@@ -2260,7 +2262,6 @@ begin
    for I := 0 to pred(Criteria.Count) do begin
       GISdb[DB].ApplyGISFilter('CRITERION=' + QuotedStr(Criteria.Strings[i]));
       Graph := GISdb[DB].CreateHistogramFromDataBase(true,DEMs,false);
-
       for j := 1 to NumDEMIXtestDEM do begin
          Graph.GraphDraw.Symbol[j].Color := (DEMIXColorFromDEMName(DEMIXShort[j]));
          Graph.GraphDraw.FileColors256[j] := (DEMIXColorFromDEMName(DEMIXShort[j]));
@@ -2289,7 +2290,7 @@ begin
          if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
             GISdb[DBonTable].EmpSource.Enabled := false;
             Color := GISdb[DBonTable].MyData.TColorFromTable;
-            fName := GISdb[DBonTable].MyData.Filter + '_(n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')';
+            fName := GISdb[DBonTable].MyData.Filter + GISdb[DBonTable].NumRecsInDBstring;
             if (i=1) then begin
                Graph := GISdb[DBonTable].CreateScatterGram(fName,Field1,Field2,Color);
                RealLegend := tStringList.Create;

@@ -14,8 +14,14 @@ unit petdbutils;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordDataBaseFilter}
+
       //{$Define RecordCSVMerge}
-      //{$Define RecordCSV}
+      {$Define RecordCSV}
+      //{$Define RecordShortCSV}
+      //{$Define RecordCSVParse}
+      //{$Define RecordFullCSV}      //major slowdown
+      //{$Define RecordProcessCSVLine}  //major slowdown
+
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
       //{$Define RecordCSVimport}
@@ -28,13 +34,9 @@ unit petdbutils;
       //{$Define RecordUnique}
       //{$Define RecordStringFromTable}
       //{$Define RecordGAZ}
-      //{$Define RecordShortCSV}
       //{$Define RecordKML}
       //{$Define RecordGPX}
-      //{$Define RecordCSVParse}
       //{$Define RecordFullGPX}      //major slowdown, but shows the line that is causing an error
-      //{$Define RecordProcessLine}  //major slowdown
-      //{$Define RecordFullCSV}      //major slowdown
    {$EndIf}
 
 {$EndIf}
@@ -97,7 +99,7 @@ function AddOrIfNeeded(Filter : Ansistring) : AnsiString;
 
 procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
 
-function PointInBoxGeoFilter(Lat,Long : float64) : AnsiString;
+function PointInBoxGeoFilter(Lat,Long : float64; Tol : float64 = 0.00001) : AnsiString;
 function MakeGeoFilterFromCorners(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;  //overload;
 function MakeGeoFilterFromBoundingBox(bBox : sfBoundBox) : AnsiString;  //overload;
 function MakePointGeoFilter(LatFieldName,LongFieldName : string16; HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
@@ -114,10 +116,10 @@ function UnionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
 procedure ZeroTable(fName : PathStr);  overload;
 procedure ZeroTable(var TheTable : tMyData); overload;
 
-function FindUniqueEntries(Table : tMyData; FieldName : ShortString; Sort : boolean = true) : tStringList; overload;
-function NumberUniqueEntries(Table : tMyData; FieldName : ShortString) : integer; overload;
+//function FindUniqueEntries(Table : tMyData; FieldName : ShortString; Sort : boolean = true) : tStringList; overload;
+//function NumberUniqueEntries(Table : tMyData; FieldName : ShortString) : integer; overload;
 
-function FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList; overload;
+//function FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList; //overload;
 
 function DefineColorTableValues(Palette : shortstring; Min,Max : float64; var ZColorTable : tColorTableDefinitions; Reverse : boolean = false) : boolean;
 
@@ -165,6 +167,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
 
 function MergeMultipleCSVorTextFiles(BaseMap : tMapForm = nil; FileNames : tStringList = nil; OutName : PathStr = '') : integer;
 
+function ListUseValuesInField(fName : PathStr; aField : shortstring) : tStringList;
 
 function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
 
@@ -202,6 +205,17 @@ uses
 
 
 {$I petdbutils_import.inc}
+
+function ListUseValuesInField(fName : PathStr; aField : shortstring) : tStringList;
+var
+   Table : tMyData;
+begin
+   Table := tMyData.Create(fName);
+   Table.ApplyFilter('USE=' + QuotedStr('Y'));
+   Result := Table.ListUniqueEntriesInDB(aField,false);
+   Table.Destroy;
+end;
+
 
 function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
 var
@@ -902,45 +916,10 @@ begin
 end;
 
 
-function FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList;
-var
-   Count,rc : integer;
-   BaseTable : tMyData;
-   TStr,LastTStr : ShortString;
-begin
-   {$If Defined(RecordRangeProblems) or Defined(RecordUniqueProblems)} WriteLineToDebugFile('FindUniqueEntriesLinkPossible in ' + Table.TableName + '  ' + FieldName); {$EndIf}
-   try
-      BaseTable := Table;
-      if (LinkData <> Nil) and LinkedField(FieldName) then BaseTable := LinkData;
-      Result := tStringList.Create;
-      BaseTable.First;
-      Count := 0;
-      if (BaseTable.RecordCount > 0) then begin
-         if Sort then begin
-            Result.Sorted := true;
-            Result.Duplicates := dupIgnore;
-         end;
-         rc := BaseTable.RecordCount;
-         LastTStr := '';
-         while not BaseTable.EOF do begin
-            TStr := ptTrim(BaseTable.GetFieldByNameAsString(FieldName));
-            if (TStr <> '') and (TStr <> LastTStr) then begin
-               Result.Add(TStr);
-            end;
-            BaseTable.Next;
-            inc(Count);
-            LastTStr := Tstr;
-         end;
-      end;
-   finally
-   end;
-   {$IfDef RecordRange} WriteLineToDebugFile('FindUniqueEntriesLinkPossible out'); {$EndIf}
-end;
-
 
 function FindUniqueEntries(Table : tMyData; FieldName : ShortString; Sort : boolean = true) : tStringList;
 begin
-   Result := FindUniqueEntriesLinkPossible(Table,Nil,'','',FieldName,Sort);
+   Result := Table.FindUniqueEntriesLinkPossible(Nil,'','',FieldName,Sort);
 end;
 
 
@@ -996,9 +975,9 @@ begin
 end;
 
 
-function PointInBoxGeoFilter(Lat,Long : float64) : AnsiString;
+function PointInBoxGeoFilter(Lat,Long : float64; Tol : float64 = 0.00001) : AnsiString;
 begin
-   Result := '(LAT_LOW<=' + RealToString(Lat,-18,6) + ' AND ' + 'LAT_HI>=' + RealToString(Lat,-18,6) + ' AND ' + 'LONG_LOW<=' + RealToString(Long,-18,6) + ' AND LONG_HI>=' + RealToString(Long,-18,6) + ')'
+   Result := '(LAT_LOW<=' + RealToString(Lat+Tol,-18,6) + ' AND ' + 'LAT_HI>=' + RealToString(Lat-Tol,-18,6) + ' AND ' + 'LONG_LOW<=' + RealToString(Long+Tol,-18,6) + ' AND LONG_HI>=' + RealToString(Long-Tol,-18,6) + ')'
 end;
 
 
@@ -1189,7 +1168,7 @@ var
    RecordValues : tStringList;
    j : int64;
    LinesToMoveToStringGrid,NumDupesIgnored,
-   NumRules,fs,skip,
+   NumRules,fs,//skip,
    OnLine,i,k,n,Len,Decs,BadFieldNames : integer;
    LongV : float64;
    SepChar : Char;
@@ -1226,20 +1205,20 @@ var
          end;
 
         procedure ProcessLine(MenuStr : string; j : integer);
-        {$IfDef RecordProcessLine}
+        {$IfDef RecordProcessCSVLine}
         const
            RecsDone : integer = 0;
         {$EndIf}
          var
             i : integer;
          begin
-           {$IfDef RecordProcessLine} inc(RecsDone); WriteLineToDebugFile('Recs=' + IntToStr(RecsDone)); if (RecsDone > 100) then MDdef.MDRecordDebugLog := false; {$EndIf}
+           {$IfDef RecordProcessCSVLine} inc(RecsDone); WriteLineToDebugFile('Recs=' + IntToStr(RecsDone)); if (RecsDone > 100) then MDdef.MDRecordDebugLog := false; {$EndIf}
             CleanLine(MenuStr);
             RecordValues := tStringList.Create;
             for i := 0 to pred(LocalStringGrid.ColCount) do begin
                fName := ptTrim(LocalStringGrid.Cells[i,0]);
                TStr := Petmar_types.BeforeSpecifiedCharacterUnicode(MenuStr,SepChar,true,true);
-               {$IfDef RecordProcessLine} WriteLineToDebugFile('fName=' + fName + '   TStr=' + TStr); {$EndIf}
+               {$IfDef RecordProcessCSVLine} WriteLineToDebugFile('fName=' + fName + '   TStr=' + TStr); {$EndIf}
                if (fName <> 'SKIP') then begin
                   if FieldRequiresLeadingZeros(fName) then begin
                      while (Length(TStr) < ZeroPadLen[i]) do TStr := '0' + TStr;
@@ -1248,7 +1227,7 @@ var
                   {$IfDef RecordProcessLine} WriteLineToDebugFile('added TStr=' + TStr); {$EndIf}
                end;
             end;
-            if (not RecIdExists) then  RecordValues.Add(IntToStr(j));
+            if (not RecIdExists) then RecordValues.Add(IntToStr(j));
             CreateDataBase.AddCorrectRecordFromStringList(RecordValues);
             RecordValues.Free;
          end;
@@ -1271,7 +1250,7 @@ var
          end;
 
 
-begin
+begin {function CSVFileImportToDB}
   {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} WriteLineToDebugFile('DoCSVFileImport enter for ' + fName); {$EndIf}
   {$IfDef RecordProcessLine} SaveToDebugLog := MDdef.MDRecordDebugLog; {$EndIf}
    if (FName = '') then begin
@@ -1289,32 +1268,34 @@ begin
      fs := Petmar.GetFileSize(fName);
      ProcessInMemory := (fs < (InMemoryStringSizeLimit));
 
-     {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} if ProcessInMemory then WriteLineToDebugFile('Process in memory') else WriteLineToDebugFile('Process by line'); {$EndIf}
      FileInMemory := tStringList.Create;
      if ProcessInMemory then begin
+        {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} WriteLineToDebugFile('Process in memory'); {$EndIf}
         FileInMemory.LoadFromFile(fName);
      end
      else begin
+        {$If Defined(RecordShortCSV) or Defined(RecordCSVProblems)} WriteLineToDebugFile('Process by line'); {$EndIf}
+        (*
         fs := fs div 1024 div 1024;
         if fs < 50 then Skip := 0
         else if fs < 200 then Skip := 10
         else Skip := 25;
-
+        *)
         AssignFile(tfile,fName);
         reset(tfile);
         repeat
            if not eof(tfile) then begin
               readln(tfile,LastLine);
               if (LastLine <> '') then FileInMemory.Add(LastLine);
-              for j := 1 to skip do readln(tfile);
+              //for j := 1 to skip do readln(tfile);
            end;
         until eof(tfile);
      end;
 
      {$IfDef RecordCSV}
-        WriteLineToDebugFile('CSV file import: ' + fname + '  Records: ' + IntToStr(FileInMemory.Count));
-        k := 10;
-        if (FileInMemory.Count < 10) then k := pred(FileInMemory.Count);
+        WriteLineToDebugFile('CSV file import: ' + fname + '  Records: ' + IntToStr(FileInMemory.Count) + '  first records');
+        k := 5;
+        if (FileInMemory.Count < 5) then k := pred(FileInMemory.Count);
         for j := 0 to pred(k) do WriteLineToDebugFile('---' +  FileInMemory.Strings[j]);
      {$EndIf}
 
@@ -1334,7 +1315,7 @@ begin
      for k := 1 to 2 do if (length(MenuStr) > 0) and (MenuStr[1] = '/') then Delete(MenuStr,1,1);
      GetSeparationCharacterUnicode(MenuStr,SepChar);
 
-     {$IfDef RecordCSV} WriteLineToDebugFile('SepChar= "' + SepChar + '"' + '  ord=' + IntToStr(ord(SepChar))); {$EndIf}
+     {$IfDef RecordCSV} WriteLineToDebugFile('SepChar= "' + SepChar + '"' + ' ord=' + IntToStr(ord(SepChar))); {$EndIf}
 
      if ForceAllInStringGrid then begin
         AllInStringGrid := true;
@@ -1352,15 +1333,19 @@ begin
          if ProcessInMemory then LinesToMoveToStringGrid := InMemoryStringSizeLimit
          else LinesToMoveToStringGrid := pred(FileInMemory.Count);
      end;
+
      NumDupesIgnored := 0;
      if (SepChar in [#9, ',', ' ', '|', ';']) then begin
         ptTrim(MenuStr);
         if (SepChar = ' ') then begin
-           for j := length(MenuStr) downto 2 do
+           //remove multiple spaces
+           for j := length(MenuStr) downto 2 do begin
               if (MenuStr[j] = ' ') and (MenuStr[pred(j)] = ' ') then begin
                  System.Delete(MenuStr,j,1);
               end;
+           end;
         end;
+
         i := 1;
         for j := 1 to length(MenuStr) do if (MenuStr[j] = SepChar) then inc(i);
         LocalStringGrid.ColCount := i;
@@ -1373,11 +1358,11 @@ begin
            MenuStr := ptTrim(FileInMemory.Strings[i]);
            ReplaceStr(MenuStr,#0,'');
            if (SepChar <> ' ') then ReplaceStr(MenuStr,' ','');
-           {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile(IntToStr(i) + '/' + IntToStr(FileInMemory.Count) + '  line=' + MenuStr); {$EndIf}
+           {$IfDef RecordCSVParse} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile(IntToStr(i) + '/' + IntToStr(FileInMemory.Count) + '  line=' + MenuStr); {$EndIf}
            if (MenuStr <> LastLine) or MDDef.DupeImportsAllowed then begin
               LastLine := MenuStr;
               CleanLine(MenuStr);
-             {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile('clean=' + MenuStr); {$EndIf}
+             {$IfDef RecordCSVParse} if (i mod 25000 = 0) or (i < 10) then WriteLineToDebugFile('clean=' + MenuStr); {$EndIf}
               for j := 0 to LocalStringGrid.ColCount-2 do begin
                  T2 := ptTrim(BeforeSpecifiedCharacterUnicode(MenuStr,SepChar,false,true));
                  if (length(t2) > 2) and (t2[1] = '"') and  (t2[length(t2)] = '"') then begin
@@ -1385,7 +1370,7 @@ begin
                     Delete(t2,length(t2),1);
                  end;
                  LocalStringGrid.Cells[j,OnLine] := t2;
-                 {$IfDef RecordCSV} if (i mod 25000 = 0) or (i < 25) then WriteLineToDebugFile(IntToStr(j) + '  ' + LocalStringGrid.Cells[j,0] + ' = ' + LocalStringGrid.Cells[j,OnLine] +  '   len=' + IntToStr(length(LocalStringGrid.Cells[j,OnLine])) ); {$EndIf}
+                 {$IfDef RecordCSVParse} if (i mod 25000 = 0) or (i < 25) then WriteLineToDebugFile(IntToStr(j) + '  ' + LocalStringGrid.Cells[j,0] + ' = ' + LocalStringGrid.Cells[j,OnLine] +  '   len=' + IntToStr(length(LocalStringGrid.Cells[j,OnLine])) ); {$EndIf}
               end;
               LocalStringGrid.Cells[pred(LocalStringGrid.ColCount),OnLine] := ptTrim(MenuStr);
               inc(OnLine);
@@ -1397,17 +1382,15 @@ begin
         end;
         LocalStringGrid.RowCount := OnLine;
      end;
-     {$IfDef RecordCSV} if (NumDupesIgnored > 0) then WriteLineToDebugFile(' Duplicate lines ignored: ' + IntToStr(NumDupesIgnored)); {$EndIf}
 
      Duplicates.Destroy;
-
+     {$IfDef RecordCSV} if (NumDupesIgnored > 0) then WriteLineToDebugFile(' Duplicate lines ignored: ' + IntToStr(NumDupesIgnored)); {$EndIf}
      {$IfDef RecordCSV} WriteLineToDebugFile(' Records: ' + IntToStr(LocalStringGrid.RowCount) + '   Fields: ' + IntToStr(LocalStringGrid.ColCount)); {$EndIf}
 
      Result := ExtractFilePath(fName) + SpacesToUnderScores(ExtractFileNameNoExt(fName)) + DefaultDBExt;
      DeleteFileIfExists(Result);
 
      NumRules := 0;
-     if (SpecialGaz = csvNGAgaz) or (SpecialGaz = csvUSGSgaz) then GetGazReplacements;
 
      RecIDExists := false;
      for i := 0 to pred(LocalStringGrid.ColCount) do begin
@@ -1415,7 +1398,7 @@ begin
          if StrUtils.AnsiContainsText(FieldName,'Roughness (') then FieldName := 'ROUGHNESS';
          if StrUtils.AnsiContainsText(FieldName,'Gaussian curvature (') then FieldName := 'CURV_GAUSS';
          for j := length(FieldName) downto 1 do if (FieldName[j] in [' ']) then Delete(FieldName,j,1);
-         {$IfDef RecordCSV} WriteLineToDebugFile(FieldName); {$EndIf}
+         //{$IfDef RecordCSV} WriteLineToDebugFile(FieldName); {$EndIf}
          if (FieldName = '')  then  begin
             FieldName := 'F_' + IntToStr(i);
          end
@@ -1425,15 +1408,12 @@ begin
             if (FieldName = 'EASTING') then FieldName := 'X';
             if (FieldName = 'NORTHING') then FieldName := 'Y';
             if (FieldName = 'ELEVATION') then FieldName := 'Z';
-            if (FieldName = 'LATITUDE') then FieldName := 'LAT';
-            if (FieldName = 'LATITUDEN/S') then FieldName := 'LAT';
-            if (FieldName = 'LONGITUDE') then FieldName := 'LONG';
-            if (FieldName = 'LONGITUDEE/W') then FieldName := 'LONG';
-            if (FieldName = 'LON') then FieldName := 'LONG';
+            if (FieldName = 'LATITUDE') or (FieldName = 'LAT_DD') or (FieldName = 'LATITUDEN/S') then FieldName := 'LAT';
+            if (FieldName = 'LONGITUDE') or(FieldName = 'LONG_DD') or (FieldName = 'LONGITUDEE/W')  or (FieldName = 'LON') then FieldName := 'LONG';
             FieldName := dBaseSafeNameByDeletion(FieldName);
             if (FieldName = '')  then FieldName := 'F_' + IntToStr(i);
             for j := 1 to NumRules do if FieldName = OldNames[j] then FieldName := NewNames[j];
-           if (FieldName[1] in ['0'..'9']) then FieldName := 'N_' + FieldName;
+            if (FieldName[1] in ['0'..'9']) then FieldName := 'N_' + FieldName;
          end;
          LocalStringGrid.Cells[i,0] := FieldName;
          if (FieldName = RecNoFName) then RecIdExists := true;
@@ -1441,7 +1421,6 @@ begin
 
      {$IfDef RecordCSV} WriteLineToDebugFile('Field names done'); {$EndIf}
 
-     {$IfDef MICRODEM}
      if (SpecialGaz = csvNGAgaz) then begin
         {$IfDef RecordGAZ}
         WriteLineToDebugFile('NGA GAZ=' + fName +'output='+ OutputName);
@@ -1452,14 +1431,16 @@ begin
      if (SpecialGaz = csvUSGSgaz) then begin
         {$IfDef RecordGAZ} WriteLineToDebugFile('USGS GAZ='+ fName + ' output='+ OutputName); {$EndIf}
      end;
-     {$EndIf}
+
+      if (SpecialGaz = csvNGAgaz) or (SpecialGaz = csvUSGSgaz) then GetGazReplacements;
+
+      {$IfDef RecordCSV}
+          WriteLineToDebugFile('Input file ' + fName  + ' NumFields= ' + IntToStr(LocalStringGrid.ColCount));
+          for i := 0 to pred(LocalStringGrid.ColCount) do WriteLineToDebugFile(UpperCase(LocalStringGrid.Cells[i,0]));
+      {$EndIf}
 
       CreateDataBase := tCreateDataBase.Create(Result);
       CreateDataBase.AddRecId := not RecIdExists;
-        {$IfDef RecordCSV}
-            WriteLineToDebugFile('Input file ' + fName  + ' NumFields= ' + IntToStr(LocalStringGrid.ColCount));
-            for i := 0 to pred(LocalStringGrid.ColCount) do WriteLineToDebugFile(UpperCase(LocalStringGrid.Cells[i,0]));
-        {$EndIf}
 
          BadFieldNames := 0;
          for i := 0 to pred(LocalStringGrid.ColCount) do begin
@@ -1579,7 +1560,7 @@ begin
                   end;
                   if (FieldName = 'BIN_NAME') and (Len < 35) then Len := 35;
                   CreateDataBase.AddAField(FieldName,ftString,Len);
-                  {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = string,  len=' + IntToStr(len) + '  zeropad=' + IntToStr(ZeroPadLen[i])); {$EndIf}
+                  {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = string, len=' + IntToStr(len) + ' zeropad=' + IntToStr(ZeroPadLen[i])); {$EndIf}
                end
                else if IsFloat then begin
                   if (FieldName = 'LAT') or (FieldName = 'LONG') then begin
@@ -1592,17 +1573,17 @@ begin
                   end
                   else Len := Len + 1;
                   CreateDataBase.AddAField(FieldName,ftFloat,Len,Decs);
-                  {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = float64'); {$EndIf}
+                  {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = float64, len=' + IntToStr(len) ); {$EndIf}
                end
                else begin
                   if (Len >= 10) then begin
                      CreateDataBase.AddAField(FieldName,ftString,Len);
                      ZeroPadLen[i] := len;
-                     {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = string (because too long for int or field=zip)'); {$EndIf}
+                     {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = string (because too long for int or field=zip),  len=' + IntToStr(len)); {$EndIf}
                   end
                   else begin
                      CreateDataBase.AddAField(FieldName,ftInteger,succ(Len));
-                     {$IfDef RecordCSVParse} WriteLineToDebugFile(FieldName + '  type = integer, length=' + IntToStr(Len)); {$EndIf}
+                     {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = integer, len=' + IntToStr(Len)); {$EndIf}
                   end;
                end;
             end;
@@ -1624,6 +1605,7 @@ begin
       end
       else begin
          if ProcessInMemory then begin
+            {$IfDef RecordCSV} WriteLineToDebugFile('Process in memory'); {$EndIf}
             StartProgress('Convert');
             for j := 1 to pred(FileInMemory.Count) do begin
                if (j mod 100 = 0) then UpdateProgressBar(j/FileInMemory.Count);
@@ -1632,6 +1614,7 @@ begin
             end;
          end
          else begin
+            {$IfDef RecordCSV} WriteLineToDebugFile('Read by line'); {$EndIf}
             ShowHourglassCursor;
             j := 0;
             Reset(tfile);
@@ -1650,7 +1633,8 @@ begin
       CreateDataBase.Destroy;
       EndProgress;
       {$IfDef RecordProcessLine} MDdef.MDRecordDebugLog := SaveToDebugLog; {$EndIf}
-end;
+      {$IfDef RecordCSV} WriteLineToDebugFile('CSVFileImportToDB complete'); {$EndIf}
+end {function CSVFileImportToDB};
 
 
 procedure SendStringGridToDataBase(StringGrid1 : tStringGrid; CreateDataBase : tCreateDataBase; ZeroPadLen : tZeroPadLen);

@@ -103,7 +103,7 @@ begin
    PlaceFormAtMousePosition(Self);
    RadioGroup1.ItemIndex := ord(MDDef.OutPutLatLongMethod);
    This_projection := CreateUKOSprojection;
-   {$IfDef ShowProjection} This_projection.WriteProjectionParametersToDebugFile('TUKOSConvertForm.FormCreate');  {$EndIf}
+   {$IfDef ShowProjection} This_projection.WriteProjParamsToDebugFile('TUKOSConvertForm.FormCreate');  {$EndIf}
    ShowParams;
    FromMap := tMapProjection.Create;
    ToMap := tMapProjection.Create;

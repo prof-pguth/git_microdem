@@ -15,7 +15,6 @@ unit dsm_dtm_compare;
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIX}
    {$Define RecordDSM_DTM_Compare}
 {$EndIf}
 

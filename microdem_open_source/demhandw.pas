@@ -23,7 +23,7 @@
       //{$Define RecordMergeProblems}
       //{$Define RecordClosingProblems}
       //{$Define RecordShapeFileContents}
-      //{$Define RecordGAZProblems}
+      {$Define RecordGAZProblems}
       //{$Define RecordGDAL}
    {$EndIf}
 {$EndIf}
@@ -91,7 +91,7 @@ type
     USGSgazetteerdatabase1: TMenuItem;
     NIMAgazetteerdatabase1: TMenuItem;
     ASCIIremoveblanklines1: TMenuItem;
-    IGERredistricting1: TMenuItem;
+    //IGERredistricting1: TMenuItem;
     N13: TMenuItem;
     N14: TMenuItem;
     BinaryrawDEM1: TMenuItem;
@@ -290,7 +290,7 @@ type
     procedure USGSgazetteerdatabase1Click(Sender: TObject);
     procedure NIMAgazetteerdatabase1Click(Sender: TObject);
     procedure ASCIIremoveblanklines1Click(Sender: TObject);
-    procedure IGERredistricting1Click(Sender: TObject);
+    //procedure IGERredistricting1Click(Sender: TObject);
     procedure ASCIIreverseorder1Click(Sender: TObject);
     //procedure ISOGravity1Click(Sender: TObject);
     procedure Repairheaders1Click(Sender: TObject);
@@ -639,7 +639,7 @@ end;
       FilesWanted : tstringlist;
       GazWant :tCSVImport;
       Which : shortstring;
-      fName,gName : PathStr;
+      fName{,gName} : PathStr;
    begin
       FilesWanted := tStringList.Create;
       FilesWanted.Add(GazetteerDir);
@@ -659,7 +659,7 @@ end;
          for k := 0 to pred(FilesWanted.Count) do begin
             fName := UpperCase(FilesWanted.Strings[k]);
             {$IfDef RecordGAZProblems} WriteLineToDebugFile('file=' + fName); {$EndIf}
-            gName := ChangeFileExt(fName,DefaultDBExt);
+            //gName := ChangeFileExt(fName,DefaultDBExt);
             fName := CSVFileImportToDB(fName,GazWant);
          end;
       end;
@@ -3171,18 +3171,6 @@ begin
 end;
 
 
-procedure TDemHandForm.IGERredistricting1Click(Sender: TObject);
-var
-   fName : PathStr;
-begin
-   {$IfDef ExTiger}
-   {$Else}
-      fName := 'C:\mapdata\0--current_projects\md_redistrict\';
-      if GetFileFromDirectory('Block/block group 2000/2010 shapefile','tl_*.shp',FName) then DEMTiger.RedistrictTigerFiles(fName);
-   {$EndIf}
-end;
-
-
 
 procedure TDemHandForm.Addfileextensions1Click(Sender: TObject);
 begin
@@ -3236,7 +3224,6 @@ begin
        SubsetLasfiles('',Memo1);
    {$EndIf}
 end;
-
 
 
 procedure TDemHandForm.LASionfo1Click(Sender: TObject);

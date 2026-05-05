@@ -99,7 +99,6 @@ function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : in
 
 function MakeCasoratiCurvatureGrid(OpenMap : boolean; OutName : shortstring; MeanGrid,GaussGrid : integer) : integer;
 
-
 function CreateStandardDeviationMap(OpenMap : boolean; DEM,BoxSizeRadius : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 function CreateIQRMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
 function CreateIQRslopeMap(OpenMap : boolean; DEM,BoxSizeDiameter : integer; Square : boolean = true; SaveName : PathStr = '') : integer;
@@ -119,7 +118,6 @@ function MakeTPIGrid(CurDEM : integer; Normalize : byte; OpenMap : boolean = tru
 function MakeSpecifiedTPIGrid(CurDEM : integer; GridLimits : tGridLimits; Normalize : byte; OpenMap : boolean = true) : integer;
 function MakeMAD2KGrid(OpenMap : boolean; CurDEM : integer; SaveName : PathStr = ''; ScaleFactor : byte = nmAvgSpace) : integer;
 function MakeVRMGrid(CurDEM : integer; GridLimits : tGridLimits; OpenMap : boolean = true; WindowRadius : integer = 5; SaveName : PathStr = '') : integer;
-
 
 procedure MakeGammaGrids(CurDEM,BoxSize : integer);
 

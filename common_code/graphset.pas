@@ -181,6 +181,7 @@ begin
          YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
          YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
 
+         (*
          if (GraphDraw.DBFLineFilesPlotted <> Nil) and (GraphDraw.DBFLineFilesPlotted.Count > 0) then begin
             ComboBox3.Visible := true;
             fName := GraphDraw.DBFLineFilesPlotted.Strings[0];
@@ -190,6 +191,7 @@ begin
             ComboBox3.Text := '';
             MyTable.Destroy;
          end;
+         *)
          if (GraphDraw.XYZFilesPlotted <> Nil) and (GraphDraw.XYZFilesPlotted.Count > 0) then begin
             Label1.Visible := true;
             Label4.Visible := true;

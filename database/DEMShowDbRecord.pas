@@ -270,6 +270,7 @@ begin
       else if TabSheet8.TabVisible then PageControl1.ActivePage := TabSheet8
       else PageControl1.ActivePage := TabSheet1;
 
+
       if ShowItModal then begin
          if (DelayTime > 0) then begin
             Timer1.Interval := DelayTime;
@@ -317,8 +318,11 @@ begin
 
   CanDisplay := false;
   saved := PageControl1.ActivePage;
+  LoadMyFontIntoWindowsFont(MDDef.DBtableGridFont,StringGrid1.Font);
+  StringGrid1.Font.Size := StringGrid1.Font.Size + 4;
+  StringGrid1.DefaultRowHeight := StringGrid1.Canvas.TextHeight('Tg') + 8;
 
-  if ShowRec > 0 then begin
+  if (ShowRec > 0) then begin
      OldFilter := GISDb[DBShown].MyData.Filter;
      GISDb[DBShown].MyData.ApplyFilter(RecNoFName + '=' + IntToStr(ShowRec));
   end;
@@ -342,10 +346,9 @@ begin
          TStr2 := GetFieldByNameAsString(TStr);
          if (TStr = 'LAT') then LatLine := k;
          if (TStr = 'LONG') then LongLine := k;
-
          if (TStr = 'COLOR') then begin
             ColorLine := k;
-            if (TStr2 = '') then Color := ConvertTColorToPlatformColor(clBlack) else Color := ConvertTColorToPlatformColor(StrToInt(TStr2));
+            Color := GISDb[DBShown].MyData.PlatformColorFromTable;
             Petmar.ColorBitBtn(ColorBitBtn,Color);
          end;
          if Copy(TStr,1,9) = 'TEXTFILE_' then begin

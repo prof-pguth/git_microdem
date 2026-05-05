@@ -55,6 +55,7 @@ object ThisBaseGraph: TThisBaseGraph
     Height = 215
     Align = alClient
     TabOrder = 0
+    ExplicitHeight = 195
     object Image1: TImage
       Left = 0
       Top = 0
@@ -84,6 +85,7 @@ object ThisBaseGraph: TThisBaseGraph
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
+    ExplicitTop = 223
   end
   object ToolBar1: TToolBar
     Left = 0

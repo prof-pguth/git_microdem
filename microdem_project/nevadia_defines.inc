@@ -85,11 +85,9 @@
 
  //deleted 4/19/2023 to track down problems with recent optimizations; they are not key options
    {$Define ExSidescan}
-   {$Define ExOceanography}
    {$Define ExDriftModel}
    {$Define ExSieve}
    {$Define ExLabDownloads}
-   {$Define ExRedistrict}
    //{$Define ExTIN}      //this will take some work to get out of core program
 
 

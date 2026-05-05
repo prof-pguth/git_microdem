@@ -247,7 +247,7 @@ begin
                if Table.eof then break;
             end;
             Label10.Caption := 'Actual record: ' + IntToStr(length(TStr));
-            if NumberUniqueEntries(Table,dbOpts.LinkFieldOtherDB) < Table.RecordCount then Label8.Visible := true;
+            if Table.NumUniqueEntriesInDB(dbOpts.LinkFieldOtherDB) < Table.RecordCount then Label8.Visible := true;
          end
          else begin
             dbOpts.LinkFieldOtherDB := '';

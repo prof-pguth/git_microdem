@@ -148,17 +148,17 @@ var
 
          function O(SA : tSlopeAspectRec) : float64; inline;
          begin
-            with SA do Result := zyy * zy + zxy * zx;
+            Result := SA.zyy * SA.zy + SA.zxy * SA.zx;
          end;
 
          function P(SA : tSlopeAspectRec) : float64; inline;
          begin
-            with SA do Result := 1 + M(SA);
+            Result := 1 + M(SA);
          end;
 
          function R(SA : tSlopeAspectRec) : float64; inline;
          begin
-            with SA do Result := zx * zy * H(SA) + zxy * G(SA);
+            Result := SA.zx * SA.zy * H(SA) + SA.zxy * G(SA);
          end;
 
          function kns_profile(SA : tSlopeAspectRec) : float64; inline;
@@ -212,7 +212,7 @@ begin
            eucurv_k_min : Curvature := MinCurve(SA);                                                                                   //minimal curvature, kmin
            eucurv_k : Curvature := k_gaussian(SA);                                                                                     //Gaussian
            eucurv_k_mean : Curvature := 0.5 * (kns_profile(SA) + knc_tangential(SA));                                                  //Mean
-           eucurv_kc : Curvature := sqrt(2 * sqr(k_mean(SA)) - k_gaussian(SA));                                                         //Casorati
+           eucurv_kc : Curvature := sqrt(2 * sqr(k_mean(SA)) - k_gaussian(SA));                                                        //Casorati
            eucurv_kncc : Curvature := (SA.zy * (B(SA) * M(SA) * P(SA) - K(SA) * (2 * N(SA) * P(SA) + M(SA) * N(SA))) -
                               SA.zx * (C(SA) * M(SA) * P(SA) - K(SA) * (2 * O(SA) * P(SA) + M(SA) * O(SA))) )  /
                               (Math.Power(P(SA),1.5) * Math.Power(M(SA),2.5));
@@ -309,7 +309,7 @@ var
    Lat,Long : float64;
 
          procedure GetAspect(var SlopeAsp : tSlopeAspectRec); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
-         // the tSlopeAspectRec structure includes variables for the aspect computation
+         // the tSlopeAspectRec structure includes variables for aspect computation
          //    inputs
          //       partial derivatives zx and zy
          //       GridTrueAngle, difference between grid and true north, positive or negative, computed once for the DEM
@@ -319,9 +319,6 @@ var
          //       Dir, a code for the 8 principal cardinal directions plus pits and flats where aspect is problematical
          // this procedure, and the external functions it calls, are coded inline for faster performance
 
-         //var
-            //a0,a1,a2,a3 : float32;
-            //TStr : shortstring;
          begin
             if (abs(SlopeAsp.zx) < 0.001) and (abs(SlopeAsp.zy) < 0.001) then begin
                //flat pixel where aspect is undefined
@@ -500,13 +497,6 @@ var
                SlopeAsp.zxx := 2 * B[4];
                SlopeAsp.zyy := 2 * B[6];
                SlopeAsp.zxy := B[5];
-
-            //z = b[1] + b[2]*x + b[3]*y +              // a, b, c
-            //    b[4]*x^2 + b[5]*x*y + b[6]*y^2 +      // d, e, f,
-            //    b[7]*x^3 + b[8]*x^2*y + b[9]*x*y^2 + b[10]*y^3 +   //g, h, i, j
-            //    b[11]*x^4 + b[12]*x^3*y + b[13]*x^2*y^2 + b[14]*x*y^3 + b[15]*y^4
-            //   The third-order partial derivatives are \(6g\), \(6j\), \(2h\), and \(2i\).
-
                SlopeAsp.zxxx := 6 * b[7];
                SlopeAsp.zxxy := 2 * b[8];
                SlopeAsp.zxyy := 6 * b[9];
@@ -547,7 +537,7 @@ begin
          SlopeAsp.dy := SlopeAsp.dy * HowCompute.WindowRadius;
          with SlopeAsp do begin
             // first order partial derivatives
-            if (HowCompute.AlgorithmName in [smShary,smEvansYoung,smLSQ]) then begin
+            if (HowCompute.AlgorithmName in [smShary,smEvansYoung]) then begin
                zx := (+zne+ze+zse-znw-zw-zsw) / (6 * dx);
                zy := (+znw+zn+zne-zsw-zs-zse) / (6 * dy);
             end
@@ -561,8 +551,8 @@ begin
             end;
 
             if NeedSecondOrder then begin // second order partial derivatives needed for curvature
-               if MDDef.CD2 or (HowCompute.AlgorithmName in [smShary,smLSQ]) then begin
-                  //CD2 method, getting the second order partials from just the 3x3 window
+               if {MDDef.CD2 or} (HowCompute.AlgorithmName in [smShary,smZevenbergenThorne,smEvansYoung,smHorn]) then begin
+                  //CD2 method, getting the second order partials from just 3x3 window
                   if (MDDef.SlopeCompute.AlgorithmName = smZevenbergenThorne) then begin
                      zxx := (ze - 2 * z + zw) / (2 * sqr(dx));
                      zyy := (zn - 2 * z + zs) / (2 * sqr(dy));
@@ -576,12 +566,13 @@ begin
                      zyy := (znw + 2 * zn + zne + zsw + 2 * zs + zse - 2 * (z + 2 * ze + zw)) / (4 * sqr(dx));
                   end
                   else if (HowCompute.AlgorithmName in [smShary]) then begin
-                     zx := ( znw + zne + zsw + zse - 2 * (zn + zs) + 3 * (zw + ze) - 6 * z) / (5 * sqr(dx));
-                     zy := ( znw + zne + zne + zse - 2 * (zw + ze) + 3 * (zn + zs) - 6 * z) / (5 * sqr(dy));
+                     zxx := ( znw + zne + zsw + zse - 2 * (zn + zs) + 3 * (zw + ze) - 6 * z) / (5 * sqr(dx));
+                     zyy := ( znw + zne + zne + zse - 2 * (zw + ze) + 3 * (zn + zs) - 6 * z) / (5 * sqr(dy));
                   end;
                   zxy := (zne - znw + zsw - zse) / (4 * dx * dy);  //same for all 3 algorithms
                end
                else begin
+                  (*
                   //CD1 method, getting the second order partials from a 5x5 window, which will be in the Ring2 elevations
                   if SurroundedPointElevs(Col,Row,Ring2.znw,Ring2.zw,Ring2.zsw,Ring2.zn,Ring2.z,Ring2.zs,Ring2.zne,Ring2.ze,Ring2.zse,2) then begin
                      if (HowCompute.AlgorithmName = smZevenbergenThorne) then begin
@@ -598,6 +589,7 @@ begin
                      end;
                      zxy := (Ring2.zne - Ring2.znw + Ring2.zsw - Ring2.zse) / (4 * dy * dy);
                   end;
+                  *)
                end;
             end;
          end;

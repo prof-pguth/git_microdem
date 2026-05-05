@@ -7,7 +7,7 @@
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
-        <ProjectVersion>20.3</ProjectVersion>
+        <ProjectVersion>20.4</ProjectVersion>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">microdem</ProjectName>
     </PropertyGroup>
@@ -164,16 +164,16 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>3</VerInfo_MinorVer>
+        <VerInfo_MinorVer>4</VerInfo_MinorVer>
         <VerInfo_MajorVer>2026</VerInfo_MajorVer>
-        <VerInfo_Release>13</VerInfo_Release>
+        <VerInfo_Release>28</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.3.13.2;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.4.28.5;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>2</VerInfo_Build>
+        <VerInfo_Build>5</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <Debugger_RunParams>-NOAUTOOPEN</Debugger_RunParams>
     </PropertyGroup>
@@ -181,6 +181,53 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="..\tdbf_current\dbf.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_ansistrings.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_avl.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_collate.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_common.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_cursor.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_dbffile.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_fields.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_idxcur.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_idxfile.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_lang.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_memo.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_parser.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_pgcfile.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_pgfile.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_prscore.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_prsdef.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_prssupp.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_str.pas"/>
+        <DCCReference Include="..\tdbf_current\dbf_wtil.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.BaseUtils.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.Consts.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.Demos.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.IPTC.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.JpegUtils.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.StreamHelper.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.TagIDs.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.TiffUtils.pas"/>
+        <DCCReference Include="..\xif\CCR.Exif.XMPUtils.pas"/>
+        <DCCReference Include="..\xif\JpegDumpForm.pas">
+            <Form>NewfrmJpegDump</Form>
+        </DCCReference>
+        <DCCReference Include="..\xif\JpegDumpOutputFrame.pas">
+            <Form>NewOutputFrame</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="..\misc\sgp\SGP_CONV.PAS"/>
+        <DCCReference Include="..\misc\sgp\Sgp_in.pas"/>
+        <DCCReference Include="..\misc\sgp\Sgp_init.pas"/>
+        <DCCReference Include="..\misc\sgp\SGP_INTF.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_MATH.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_OBS.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_OUT.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_TIME.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP4SDP4.PAS"/>
+        <DCCReference Include="..\misc\sgp\SGP_Support.pas"/>
         <DCCReference Include="..\microdem_only_code\nevadia_main.pas">
             <Form>wmdem</Form>
         </DCCReference>
@@ -613,26 +660,6 @@
         <DCCReference Include="..\common_code\grayscale_shift.pas">
             <Form>GrayscaleForm</Form>
         </DCCReference>
-        <DCCReference Include="..\tdbf_current\dbf.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_ansistrings.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_avl.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_collate.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_common.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_cursor.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_dbffile.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_fields.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_idxcur.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_idxfile.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_lang.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_memo.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_parser.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_pgcfile.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_pgfile.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_prscore.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_prsdef.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_prssupp.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_str.pas"/>
-        <DCCReference Include="..\tdbf_current\dbf_wtil.pas"/>
         <DCCReference Include="..\misc\nyquist\NyqGraph.pas">
             <Form>NyquistBaseGraph</Form>
         </DCCReference>
@@ -674,23 +701,6 @@
         <DCCReference Include="..\misc\nyquist\fat_fingers.pas">
             <Form>fat_fingers_form</Form>
         </DCCReference>
-        <DCCReference Include="..\xif\CCR.Exif.BaseUtils.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.Consts.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.Demos.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.IPTC.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.JpegUtils.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.StreamHelper.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.TagIDs.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.TiffUtils.pas"/>
-        <DCCReference Include="..\xif\CCR.Exif.XMPUtils.pas"/>
-        <DCCReference Include="..\xif\JpegDumpForm.pas">
-            <Form>NewfrmJpegDump</Form>
-        </DCCReference>
-        <DCCReference Include="..\xif\JpegDumpOutputFrame.pas">
-            <Form>NewOutputFrame</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="..\misc\FireMonkey3DGlobalRotate\ufrmMain.pas">
             <Form>frmMain</Form>
         </DCCReference>
@@ -719,16 +729,6 @@
         <DCCReference Include="..\demix\pick_demix_areas.pas">
             <Form>PickAreasForm</Form>
         </DCCReference>
-        <DCCReference Include="..\misc\sgp\SGP_CONV.PAS"/>
-        <DCCReference Include="..\misc\sgp\Sgp_in.pas"/>
-        <DCCReference Include="..\misc\sgp\Sgp_init.pas"/>
-        <DCCReference Include="..\misc\sgp\SGP_INTF.PAS"/>
-        <DCCReference Include="..\misc\sgp\SGP_MATH.PAS"/>
-        <DCCReference Include="..\misc\sgp\SGP_OBS.PAS"/>
-        <DCCReference Include="..\misc\sgp\SGP_OUT.PAS"/>
-        <DCCReference Include="..\misc\sgp\SGP_TIME.PAS"/>
-        <DCCReference Include="..\misc\sgp\SGP4SDP4.PAS"/>
-        <DCCReference Include="..\misc\sgp\SGP_Support.pas"/>
         <DCCReference Include="..\common_code\edit_exif_fields.pas">
             <Form>Form1</Form>
         </DCCReference>
@@ -764,28 +764,6 @@
         <DCCReference Include="..\common_code\icesat_filter_form.pas">
             <Form>Icesat_filter</Form>
         </DCCReference>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Buffers.DX11.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Buffers.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Buffers.WebGPU.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Colors.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Context.DX11.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Context.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Context.WebGPU.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.D3DShaderCompiler.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.DX11.Utils.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Material.PointColor.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.PointCloud.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Scene.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.Viewport3D.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.WebGPU.Materials.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FMXU.WebGPU.Utils.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FPointCloud.pas">
-            <Form>PointCloudForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\fmxu_point_cloud\FSimpleViewport.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\FSimpleWebGPU.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\WebGPU.Interfaces.pas"/>
-        <DCCReference Include="..\fmxu_point_cloud\WebGPU.pas"/>
         <DCCReference Include="..\viewer_3d\view3d_main.pas">
             <Form>View3DForm</Form>
         </DCCReference>
@@ -1050,6 +1028,7 @@
         <None Include="..\demix\demix_create_lsp_grids.inc"/>
         <None Include="..\demix\demix_graphs_dsm_dtm_compare.inc"/>
         <None Include="..\demix\demix_graphs_terrain_scatter_plots.inc"/>
+        <None Include="..\common_code\moon_montenbruk_pfleger.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1097,10 +1076,7 @@
                     <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                </Excluded_Packages>
+                <Excluded_Packages/>
                 <Language>
                     <Language Name="ProjectLang">$00000409</Language>
                 </Language>
@@ -1470,6 +1446,12 @@
                 <DeployFile LocalName="..\common_code\demstat_grid_compare.inc" Configuration="Release" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demstat_ssim.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\common_code\demstat_ssim.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\common_code\moon_montenbruk_pfleger.inc" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -2803,6 +2785,9 @@
                     <Platform Name="Win64x">
                         <Operation>1</Operation>
                     </Platform>
+                    <Platform Name="WinARM64EC">
+                        <Operation>1</Operation>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSDeviceDebug">
                     <Platform Name="iOSDevice32">
@@ -2873,6 +2858,10 @@
                         <RemoteDir>Assets</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
+                    <Platform Name="WinARM64EC">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="UWP_DelphiLogo44">
                     <Platform Name="Win32">
@@ -2880,6 +2869,10 @@
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Win64">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="WinARM64EC">
                         <RemoteDir>Assets</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
@@ -3098,6 +3091,7 @@
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64x" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="WinARM64EC" Name="$(PROJECTNAME)"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

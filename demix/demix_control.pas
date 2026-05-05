@@ -22,7 +22,6 @@ unit demix_control;
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIX}
    //{$Define RecordDEMIXneo}
    //{$Define RecordDEMIXStart}
    //{$Define LoadDEMIXNames}
@@ -189,7 +188,6 @@ procedure LandCoverBreakdowPointCloud;
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
-procedure DeleteCSV_FilesforArea(AreaName : shortstring);
 procedure GEDTM_problems(dbOnTable : integer);
 procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
 
@@ -245,7 +243,6 @@ var
       {$I demix_open_dems.inc}
    {$EndIf}
 
-
    {$IfDef IncludeEarlyDEMIXmaps}
       {$I demix_maps.inc}
    {$EndIf}
@@ -270,7 +267,7 @@ const
 procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
 //the decimeters must have been fixed first
 //removes Geotiff code 42112
-//also saves the vertical datum
+//also saves vertical datum
 begin
     DEMGlb[DEM1].CheckMaxMinElev;
     DEMGlb[DEM1].DEMHeader.ElevUnits := euMeters;
@@ -429,24 +426,12 @@ var
 end;
 
 
-
-procedure DeleteCSV_FilesforArea(AreaName : shortstring);
-begin
-    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_fuv_results\' + AreaName + '_fuv_results.csv');
-    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_partials_results\' + AreaName + '_fuv_partials.csv');
-    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_curvatures_results\' + AreaName + '_fuv_curvatures.csv');
-    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_diff_dist_results\' + AreaName + '_diff_dist.csv');
-    DeleteFileIfExists(MDDef.DEMIX_BaseDir + 'aa_tile_stats\' + AreaName + '_tile_stats.csv');
-end;
-
-
-
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
 begin
-    if Mode = fuvmMixed then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf';
-    if Mode = fuvmPartials then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_partials.dbf';
-    if Mode = fuvmCurves then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_curvatures.dbf';
-    if Mode = fuvmDiffDist then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_diff_dist.dbf';
+    if Mode in [udFUVCalc,udInterpolatedFUVs] then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf';
+    if Mode = udFUVpartials then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_partials.dbf';
+    if Mode = udFUVcurves then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_curvatures.dbf';
+    if Mode = udDiffDistribStat then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_diff_dist.dbf';
     FUVMode := Mode;
 end;
 
@@ -455,10 +440,10 @@ procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 begin
    DEMIX_criteria_tolerance_fName := '';
    if ValidDB(db) then begin
-      if AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then DEMIX_CriteriaToleranceFNameFromMode(fuvmPartials)
-      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then DEMIX_CriteriaToleranceFNameFromMode(fuvmCurves)
-      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'MIXED') then DEMIX_CriteriaToleranceFNameFromMode(fuvmMixed)
-      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'DIFF_DIST') then DEMIX_CriteriaToleranceFNameFromMode(fuvmDiffDist)
+      if AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then DEMIX_CriteriaToleranceFNameFromMode(udFUVpartials)
+      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then DEMIX_CriteriaToleranceFNameFromMode(udFUVCurves)
+      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'MIXED') then DEMIX_CriteriaToleranceFNameFromMode(udFUVcalc)
+      else if AnsiContainsText(UpperCase(GISdb[db].dbName),'DIFF_DIST') then DEMIX_CriteriaToleranceFNameFromMode(udDiffDistribStat)
       else begin
          MessageToContinue('No defined file for criteria for ' + GISdb[db].dbName);
       end;
@@ -466,17 +451,21 @@ begin
 end;
 
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
-var
-   Table : tMyData;
+//var
+   //Table : tMyData;
 begin
    if FileExists(DEMIX_criteria_tolerance_fName) then begin
+      Result := ListUseValuesInField(DEMIX_criteria_tolerance_fName,'CRITERION');
+
+      (*
       Table := tMyData.Create(DEMIX_criteria_tolerance_fName);
       Table.ApplyFilter('USE=' + QuotedStr('Y'));
       Result := Table.ListUniqueEntriesInDB('CRITERION',false);
       Table.Destroy;
+      *)
    end
    else begin
-      MessageToContinue('Invalid file for criteria');
+      MessageToContinue('Invalid file for criteria, ' + DEMIX_criteria_tolerance_fName);
       exit;
    end;
 end;
@@ -909,7 +898,6 @@ begin
          aline := aLine + IntToStr(GISdb[DBonTable].MyData.NumUniqueEntriesInDB('DEM_LOW_SC'));
          GISdb[DBonTable].EmpSource.Enabled := false;
          sl.Add(aline);
-         //MessageToContinue(aline);
       end;
       fName := NextFileNumber(MDTempDir,'different_rankings_by_tile','.dbf');
       StringList2CSVtoDB(sl,fName);
@@ -924,7 +912,6 @@ procedure CompareRankings(DBonTable : integer);
 var
    Tile,Crit,aline,Scores,Tstr : shortstring;
    i,j,k,N,DEM : integer;
-   //rfile : file;
    theTiles,sl,Crits : tStringList;
    fName : PathStr;
    ScoreSheet,ScoreSheet2 : array[0..14] of shortstring;

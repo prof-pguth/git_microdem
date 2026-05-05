@@ -220,13 +220,13 @@ var
                for i := 1 to MaxDataBase do begin
                  if (GISdb[i] <> nil) and (GISdb[i].theMapOwner = Self) then begin
                      if (GISdb[i].StratColPresent) then begin
-                        GISdb[i].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,False,false,TStr);
+                        GISdb[i].IdentifyRecord(-99,-99,Lat,Long,RecsFound,False,false{,TStr});
                         sc_ColMain.ColMainF.NewFileToDiagram(GISdb[i].MyData.GetFieldByNameAsString('COL_NAME'));
                         MapScreenX1 := LastX;
                         MapScreenY1 := LastY;
                      end;
                      if (GISdb[i].FocalMechsPresent) then begin
-                        GISdb[i].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,False,false,TStr);
+                        GISdb[i].IdentifyRecord(-99,-99,Lat,Long,RecsFound,False,false{,TStr});
                         if (DEMNowDoing in [EarthquakeFocalMech])then begin
                            FocalRad := GISdb[i].QuakeRadius;
                            GISdb[i].QuakeFocalMechs(LastX,LastY,Lat,Long,RecsFound,FocalMechBMP,FocalRad);
@@ -477,7 +477,6 @@ begin
           ExpandHorizAxis;
           if (PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis - PickRotationForm.ThisGraph.GraphDraw.MinVertAxis) < 100 then ExpandVertAxis;
           if (PickRotationForm.ThisGraph.GraphDraw.MaxHorizAxis - PickRotationForm.ThisGraph.GraphDraw.MinHorizAxis) < 100 then ExpandHorizAxis;
-
           PickRotationForm.ThisGraph.FormResize(Nil);
        end;
        VelocityScale;

@@ -174,7 +174,6 @@ uses
    Nevadia_main;
 
 
-
 procedure StartSlideSorter;
 var
    SlideSorterForm : TSlideSorterForm;
@@ -280,7 +279,7 @@ end;
 procedure TSlideSorterForm.Button13Click(Sender: TObject);
 begin
   Button13.Enabled := false;
-  if (MDDef.PictureMode = pmFourEqual) then  inc(OnSlide,4*Advance)
+  if (MDDef.PictureMode = pmFourEqual) then inc(OnSlide,4*Advance)
   else inc(OnSlide,3*Advance);
   LoadPictures;
   Button13.Enabled := true;
@@ -644,7 +643,7 @@ begin
       inc(OnSlide);
       LoadPictures;
       Delay(50);
-   until (Onslide =  FileNames.Count - 2);
+   until (Onslide = FileNames.Count - 2);
 end;
 
 procedure TSlideSorterForm.MenuItem17Click(Sender: TObject);
@@ -684,8 +683,7 @@ end;
 
 procedure TSlideSorterForm.MenuItem6Click(Sender: TObject);
 begin
-   {$IfDef LogSlideSorter}   WriteLineToDebugFile('Call editor, fname=' + fName[CurThumbnail]); {$EndIf}
-
+   {$IfDef LogSlideSorter} WriteLineToDebugFile('Call editor, fname=' + fName[CurThumbnail]); {$EndIf}
    Petimage_form.DisplayBitmap(fName[CurThumbnail],'',true);
 end;
 
@@ -714,5 +712,5 @@ end;
 
 initialization
 finalization
-   {$IfDef LogSlideSorter}   WriteLineToDebugFile('LogSlideSorter active in slider_sorter_form'); {$EndIf}
+   {$IfDef LogSlideSorter} WriteLineToDebugFile('LogSlideSorter active in slider_sorter_form'); {$EndIf}
 end.

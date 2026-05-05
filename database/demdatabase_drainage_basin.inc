@@ -8,12 +8,22 @@
 {   include file for demdatabase         }
 {________________________________________}
 
+ const   //for Hydrosheds river basins
+    MaxRiverBasinNodes = 850000; //160000;
+    MaxRiverSegs = 950000;
+ type
+   tRiverNode = packed record
+      Lat,Long : float64;
+      Basin : ShortString;
+      DOWN,UP_MAIN,UP_TRIB,UP_TRIB2 : string[15];
+      CONT_MAIN,CONT_TRIB,CONT_TRIB2 : integer;
+      UP_MAIN_O,UP_TRIB_O,DOWN_ORD,UP_TRIB2_O : byte;
+    end;
+    tRiverNetwork = array[1..MaxRiverBasinNodes] of tRiverNode;
+    pRiverNetwork = ^tRiverNetwork;
 
 
 procedure Tdbtablef.Networkends1Click(Sender: TObject);
-{$IfDef ExGeostats}
-begin
-{$Else}
 var
    StrahlerOrder : integer;
    ThalwegLength,TotalLength : float64;
@@ -35,20 +45,15 @@ begin
          TheMapOwner.LoadDataBaseFile(MDTempDir + MyData.GetFieldByNameAsString('BASIN_ID') + DefaultDBExt);
       end;
    end;
-{$EndIf}
 end;
 
 
 procedure Tdbtablef.Fillindrainagebasin1Click(Sender: TObject);
 begin
-{$IfDef ExGeostats}
-{$Else}
    if LineShapeFile(GISdb[DBonTable].ShapeFileType) then begin
       GISdb[DBonTable].FindDrainageBasinFromStreams;
    end;
-{$EndIf}
 end;
-
 
 
 procedure LoadNodeTableToMemory(NodeTable : tMyData; var NumNodes : integer; var RiverNetwork : pRiverNetwork; ReadLinks,ReadCont,ReadOrders : boolean);
@@ -142,11 +147,9 @@ var
 
 begin
    {$IfDef RecordBasinBreakdown} writeLineToDebugFile('tGISDataBase.FindDrainageBasinFromStreams in'); {$EndIf}
-
     Cont := Copy(ExtractFileName(DBFullName),1,2);
     for Order := 8 downto 4 do begin
       {$IfDef RecordBasinBreakdown} writeLineToDebugFile('order=' + IntToStr(Order)); {$EndIf}
-
       UseField := 'SUB_ORD_' + IntToStr(Order);
       outfName := ExtractFilePath(DEMGlb[TheMapOwner.MapDraw.DEMonMap].DEMFileName) + cont + '_' + UseField + '.dem';
       {$IfDef RecordBasinBreakdown} WriteLineToDebugFile('outfname=' + OutfName); {$EndIf}
@@ -466,12 +469,9 @@ begin
    if LineShapeFile(ShapeFileType) then begin
       {$IfDef RecordNetworkends} writeLineToDebugFile('tGISDataBase.GetDrainageBasinNetwork in, ' + GetFieldByNameAsString('BASIN_ID')); {$EndIf}
         wmdem.SetPanelText(3,TimeToStr(Now) + '   ' + dbName + '   ' + IntToStr(MyData.RecordCount));
-
         ShowHourglassCursor;
-
         DEMAvailable := (TheMapOwner.MapDraw <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0);
         OldFilter := MyData.Filter;
-
         fName := MDTempDir + MyData.GetFieldByNameAsString('BASIN_ID') + DefaultDBExt;
         if FileExists(fName) then begin
            RedoNodes := false;
@@ -488,16 +488,12 @@ begin
         end;
 
         {$IfDef RecordNetworkends} writeLineToDebugFile('Node entry complete'); {$EndIf}
-
         MarkThalweg;
-
         if not RedoNodes then begin
            NodeTable.Destroy;
            exit;
         end;
-
         LoadNodeTableToMemory(NodeTable,NumNodes,RiverNetwork,true,true,true);
-
         ThreadTimers.UpdateThreadStats(2,100);
         {$IfDef RecordNetworkends} writeLineToDebugFile('Network in memory'); {$EndIf}
         {$IfDef RecordNetworkNodes} SaveCSVFile(MDTempDir + 'raw_nodes.csv'); {$EndIf}
@@ -596,7 +592,7 @@ var
      begin
         Result := 0;
         MyData.ApplyFilter(TheFilter);
-        if MyData.RecordCount > 0 then begin
+        if (MyData.RecordCount > 0) then begin
           while not MyData.EOF do begin
              Result := Result + aShapeFile.LineLength(MyData.RecNo);
              MyData.Next;

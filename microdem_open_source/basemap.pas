@@ -21,7 +21,7 @@ unit basemap;
       //{$Define RecordWKTFull}
       //{$Define RecordWKT}
       //{$Define RecordUKOS}
-      //{$Define RecordDEMprojection}
+      {$Define RecordDEMprojection}
       //{$Define TrackWKTstring}
       //{$Define RawProjectInverse}
       //{$Define ForwardProject}

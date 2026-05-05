@@ -18,29 +18,29 @@ unit demix_definitions;
 
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
-   {$Define RecordDEMIX}
    //{$Define TrackCriteriaList}
    {$Define RecordDSM_DTMpairs}
    //{$Define RecordNeoDEMIX}
-   //{$Define RecordOpenExternalProgramGrids}
-   {$Define RecordDEMIXLoad}
-   //{$Define RecordTestDEMstart}
    //{$Define RecordDEMIXFilters}
-   //{$Define RecordDiluvium}
-   //{$Define TrackAverageStats}
-   //{$Define RecordDEMIX_CONIN}
-   //{$Define RecordGridFromVector}
-   //{$Define Record3DEPX}
    //{$Define RecordDEMIXRefDEM}
-   //{$Define Record3DEPXFull}
+   //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIX_evaluations_graph}
    //{$Define RecordComputeDEMIX_Diff_Dist}
    //{$Define RecordDEMIXLSgrids}
    //{$Define RecordDEMIXhillshades}
    //{$Define RecordDiluviumFull}
-   //{$Define Rec_DEMIX_Landcover}
    //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXsave}
+
+   //{$Define RecordOpenExternalProgramGrids}
+   //{$Define RecordDEMIXLoad}
+   //{$Define RecordTestDEMstart}
+   //{$Define RecordDiluvium}
+   //{$Define TrackAverageStats}
+   //{$Define RecordDEMIX_CONIN}
+   //{$Define RecordGridFromVector}
+   //{$Define Record3DEPX}
+   //{$Define Record3DEPXFull}
    //{$Define RecordCreateHalfSec}
    //{$Define RecordHalfSec}
    //{$Define RecordTileStats}
@@ -108,6 +108,46 @@ const
    DEMIX_vert_datum_code : integer = 0;
 
 const
+   udCreateTiles = 1;
+   udFUVCalc = 2;
+   udPixelGeometrySlope = 4;
+   udTileStats = 5;
+   udMergeMixedFUV = 6;
+   udMergeTileStats = 8;
+
+   udFUVpartials = 9;
+   udFUVcurves = 10;
+   udDiffDistribStat = 11;
+
+
+   udMergeDiffDist = 12;
+   udFileFillReport = 31;
+   udDeleteResultsCSVsForAreas = 32;
+   udInvalidTiles = 33;
+   udCSVReportByArea = 34;
+   udClearAreaLocks = 35;
+   udAverageTileElevations = 36;
+   udSourceFileSurvey = 37;
+   udCompareLandCover = 38;
+   udAverageSlopeMap = 39;
+   udLandcoverCats = 40;
+   udTileBoundingBoxes = 41;
+   udZipSourceFiles = 42;
+   udTileCatBinMap = 43;
+   udMergeDTMDSMcompare = 44;
+   udMergeCopDTMDSMcompare = 45;
+   udCompareAverageSlopesByAlgorithm = 46;
+   udInterpolatedFUVs = 47;
+
+//const
+   //fuvmMixed = udFUVCalc;
+   //fuvmPartials = udFUVpartials;
+   //fuvmCurves = udFUVcurves;
+   //fuvmDiffDist = udDiffDistribStat;
+
+
+
+const
    DEMIXOpenMap = false;
    DEMIXCloseMap = true;
 
@@ -123,8 +163,10 @@ const
    ShortParamSuffixes : array[1..5] of shortstring = ('AVD','STD','MAE','RMSE','LE90');
    LongParamSuffixes : array[1..10] of shortstring = ('MIN','MAX','MEAN','AVD','STD','MED','RMSE','MAE','LE90','N');
 
-   NumTileCharacters = 10;
-   TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','BARREN_PC','FOREST_PC','RELIEF','URBAN_PC','WATER_PC','MIN_ELEV','MAX_ELEV');
+   NumTileCharacters = 13;
+   TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','RELIEF','MIN_ELEV','MAX_ELEV',
+         'BARREN_PC','FOREST_PC','URBAN_PC','WATER_PC',
+         'BIOME_NAME','KOPPEN','CANOPY_HT');
 
    RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
 
@@ -146,12 +188,6 @@ const
    DEMIXtraditional = 1;
    DEMIXneo         = 2;
    DEMIXanalysismode : integer = 1;
-
-const
-   fuvmMixed = 1;
-   fuvmPartials = 2;
-   fuvmCurves = 3;
-   fuvmDiffDist = 4;
 
 var
    DEMIXDEMTypeName,                                           //name of folder with the DEMs, in case there are multiple versions
@@ -589,7 +625,7 @@ begin
             else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
        end;
    end;
-   //if (Result = '') then Result := 'DTM';
+   if (Result = '') then Result := 'DTM';
 end;
 
 

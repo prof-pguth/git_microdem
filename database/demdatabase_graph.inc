@@ -9,7 +9,8 @@
 {________________________________________}
 
 
-function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil; FigureLabel : shortString = '') : TThisbasegraph;
+function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil;
+     FigureLabel : shortString = ''; MultCriteria : tStringList = nil) : TThisbasegraph;
 var
   i,j,k,TimeCount,OnFile : integer;
   Hist : array[0..1000] of integer;
@@ -35,6 +36,7 @@ var
          if (GraphType = dbgtN2Dgraphsimplelines1) then Result.OpenDataFile(rfile,'')
          else Result.OpenPointSymbolFile(rfile,'',Result.MainSymbol);
          TimeCount := 0;
+         EmpSource.Enabled := false;
          MyData.First;
          repeat
              if GetFloat32FromTableLink(dbOpts.XField,v[2]) then begin
@@ -112,6 +114,37 @@ var
         end;
      end;
 
+     var
+        NumSeries : integer;
+
+     procedure AddASeries(CriterionName : PathStr);
+     var
+        j : integer;
+        FileName : PathStr;
+     begin
+        for j := 0 to pred(MultSeries.Count) do begin
+           FileName := MultSeries.Strings[j] + CriterionName;
+           Result.GraphDraw.Symbol[NumSeries].DrawingSymbol := FilledBox;
+           Result.GraphDraw.Symbol[NumSeries].Size := 5;
+           Result.GraphDraw.Symbol[NumSeries].Color := ConvertTColorToPlatformColor(WinGraphColors(NumSeries));
+           OnFile := Result.OpenPointSymbolFile(rfile,FileName,Result.GraphDraw.Symbol[NumSeries]);
+           Result.GraphDraw.ShowPoints[OnFile] := true;
+           Result.GraphDraw.ShowLine[OnFile] := true;
+           {$If Defined(TrackColors)} WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(NumSeries) + ' ' + FileName +
+               ' line='+ ColorString(Result.GraphDraw.FileColors256[NumSeries]) + ' point='+ ColorString(Result.GraphDraw.Symbol[NumSeries].Color)); {$EndIf}
+           MyData.First;
+           repeat
+              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(MultSeries.Strings[j],v[2]) then begin
+                 BlockWrite(Rfile,v,1);
+              end;
+              MyData.Next;
+           until MyData.eof;
+           CloseFile(rfile);
+           inc(NumSeries);
+           {$If Defined(RecordDBGraphs)} WriteLineToDebugFile(FileName + '   vals=' + IntToStr(k)); {$EndIf}
+        end;
+     end;
+
 
 begin {function TGISdataBaseModule.ActuallyDrawGraph}
      {$IfDef RecordDBGraphs} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph in'); {$EndIf}
@@ -126,7 +159,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      if (GraphType = dbgtPlotforsubsamples1) then  begin
         for I := 0 to pred(SubVals.Count) do begin
            MyData.ApplyFilter(SubField + '=' + QuotedStr(SubVals.Strings[i]));
-           {$IfDef RecordProblems} WriteLineToDebugFile(IntToStr(i) + '  ' + MyData.Filter); {$EndIf}
+           {$IfDef RecordDBGraphs} WriteLineToDebugFile(IntToStr(i) + '  ' + MyData.Filter); {$EndIf}
            MakeOneGraph;
         end;
         SubVals.Free;
@@ -165,6 +198,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      Result.GraphDraw.RainBowColors := (GraphType = dbgtN2DgraphcolorNumericField);
      Result.GraphDraw.RedGray := (DbTablef <> Nil) and dbtablef.RedGrayGraph;
      Result.SetUpGraphForm;
+     Result.GraphDraw.LRcornerText := MyData.Filter;
 
      if (GraphType in [dbgtN2DgraphMultSeries]) then begin
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('(GraphType in [dbgtN2DgraphMultSeries]'); {$EndIf}
@@ -175,27 +209,33 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
          for i := 1 to pred(MultSeries.Count) do begin
              Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
          end;
-        for j := 0 to pred(MultSeries.Count) do begin
-           Result.GraphDraw.Symbol[j].DrawingSymbol := FilledBox;
-           Result.GraphDraw.Symbol[j].Size := 5;
-           Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
-           OnFile := Result.OpenPointSymbolFile(rfile,MultSeries.Strings[j],Result.GraphDraw.Symbol[j]);
-           Result.GraphDraw.ShowPoints[OnFile] := true;
-           Result.GraphDraw.ShowLine[OnFile] := true;
-           {$If Defined(TrackColors)} WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(j) + ' ' + MultSeries.Strings[j] +
-               ' line='+ ColorString(Result.GraphDraw.FileColors256[j]) + ' point='+ ColorString(Result.GraphDraw.Symbol[i].Color)); {$EndIf}
-           MyData.First;
-           repeat
-              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(MultSeries.Strings[j],v[2]) then begin
-                 BlockWrite(Rfile,v,1);
-              end;
-              MyData.Next;
-           until MyData.eof;
-           CloseFile(rfile);
-           {$If Defined(RecordDBGraphs)} WriteLineToDebugFile(MultSeries.Strings[j] + '   vals=' + IntToStr(k)); {$EndIf}
-        end;
+         NumSeries := 0;
+         if (MultCriteria = Nil) then begin
+            AddASeries('');
+         end
+         else begin
+            for j := 0 to pred(MultCriteria.Count) do begin
+               ApplyGISFilter('CRITERION=' + QuotedStr(MultCriteria.Strings[j]));
+               AddASeries('_' + MultCriteria.Strings[j]);
+            end;
+            ClearGISFilter;
+         end;
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
         {$If Defined(TrackColors)} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
+     end
+     else if (GraphType = dbgtPlotFieldDifference) then begin
+         Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
+         Result.GraphDraw.VertLabel := dbOpts.YField + ' - ' + dbOpts.ZField;
+         Result.OpenPointSymbolFile(rfile,dbOpts.YField + '_minus_' + dbOpts.ZField,Result.GraphDraw.Symbol[0]);
+         MyData.First;
+         repeat
+            if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(dbOpts.YField,v[2]) and GetFloat32FromTableLink(dbOpts.ZField,v[3]) then begin
+               v[2] := v[2] - v[3];
+               BlockWrite(Rfile,v,1);
+            end;
+            MyData.Next;
+         until MyData.eof;
+         CloseFile(rfile);
      end
      else if (GraphType = dbgtN2Dgraphcolorcodetext) then begin
         DBFieldUniqueEntries(dbOpts.StringColorField,DataThere);
@@ -212,7 +252,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
            Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
            if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := DataThere.Strings[j]
            else TStr := 'Code_' + DataThere.Strings[j];
-           TStr := TStr + '_(n=' + IntToStr(MyData.FiltRecsInDB) + ')';
+           TStr := TStr + NumRecsInDBstring;
            Result.OpenPointSymbolFile(rfile,TStr,Result.GraphDraw.Symbol[j]);
 
            while Not MyData.eof do begin
@@ -379,6 +419,11 @@ begin
    end
    else if (GraphType in [dbgtPlot1series1,dbgtPlotforsubsamples1]) then begin
       if Ask then PickNumericFields(GraphType,1,'time series variable','','');
+   end
+   else if (GraphType = dbgtPlotFieldDifference) then begin
+      if Ask then begin
+         PickNumericFields(GraphType,3,'X axis variable','Y axis minuend','Y axis subtrahend');
+      end;
    end
    else if (GraphType = dbgtN2Dgraphcolorcodetext) then begin
       if Ask then begin

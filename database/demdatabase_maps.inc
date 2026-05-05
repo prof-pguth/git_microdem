@@ -276,10 +276,6 @@ end;
                              end
                              else Bitmap.Canvas.Pen.Color := Bitmap.Canvas.Brush.Color;
                           end;
-                          {$IfDef ExRedistrict}
-                          {$Else}
-                             if Redistricting then SetRedistrictPattern(Bitmap);
-                          {$EndIf}
                           DisplayCurrentRecordOnMap(TheMapOwner.MapDraw,Bitmap);
                        end;
                     end;
@@ -309,7 +305,7 @@ end;
                if UseLink or MyData.IsStringField(dbOpts.FloatColorField) or MyData.IsIntegerField(dbOpts.FloatColorField) then begin
                   EmpSource.Enabled := false;
                   if (StringCategories = Nil) then begin
-                     StringCategories := PetDBUtils.FindUniqueEntriesLinkPossible(MyData,LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
+                     StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
                   end;
                   {$IfDef RecordDBPlot} WriteLineToDebugFile('strings in field=' + IntToStr(StringCategories.Count)); {$EndIf}
 
@@ -780,7 +776,6 @@ end;
                    else begin
                       Bitmap.Canvas.Pen.Color := ConvertPlatFormColorToTColor(dbOpts.LineColor);
                    end;
-                   {$IfDef ExRedistrict} {$Else} if Redistricting then SetRedistrictPattern(Bitmap); {$EndIf}
                    DisplayCurrentRecordOnMap(TheMapOwner.MapDraw,Bitmap);
                    MyData.Next;
                    if WantOut then break;

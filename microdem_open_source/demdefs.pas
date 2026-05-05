@@ -8,7 +8,6 @@
 {________________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
@@ -67,7 +66,7 @@ const
 const
    MaxPts = 48000000;
 
-   type
+type
    tPointXYZ = record
       x,y,z : double;
    end;
@@ -75,19 +74,17 @@ const
       x,y,z : double;
       int,int2,int3 : byte;
    end;
-   tPointXYZArray = array[1..MaxPts] of tPointXYZ;
-   tPointXYZIArray = array[1..MaxPts] of tPointXYZI;
-
-type
    tColoredPoint = record
       x,y,z : single;
       Color : TAlphaColor;
    end;
+
+   tPointXYZArray = array[1..MaxPts] of tPointXYZ;
+   tPointXYZIArray = array[1..MaxPts] of tPointXYZI;
    tColoredPointBuffer = array[1..MaxPts] of tColoredPoint;
 
 const
    MaxThreadsAllowed = 24;
-
 
 const  //merging DEM modes
    dmMergeDirectories = 3;
@@ -108,7 +105,7 @@ const //satellite imagery definitions
 const
    InMemoryStringSizeLimit = 1250000;
 
-const
+const  //for Geotiffs
     Linear_Meters_9001 = 9001;
     Linear_Foot_9002 = 9002;
     Linear_Foot_US_Survey_9003 = 9003;
@@ -140,24 +137,6 @@ type
    tByteRow = array[0..DEMDefs.MaxColsInRAM] of byte;
 type
    tvdShift = (vdWGS84toEGM2008,vdEGM2008toWGS84,vdEGM96toEGM2008);
-
-
-{$IfDef IncludeRiverNetworks}
-   const   //for Hydrosheds river basins
-      MaxRiverBasinNodes = 850000; //160000;
-      MaxRiverSegs = 950000;
-   type
-     tRiverNode = packed record
-        Lat,Long : float64;
-        Basin : ShortString;
-        DOWN,UP_MAIN,UP_TRIB,UP_TRIB2 : string[15];
-        CONT_MAIN,CONT_TRIB,CONT_TRIB2 : integer;
-        UP_MAIN_O,UP_TRIB_O,DOWN_ORD,UP_TRIB2_O : byte;
-      end;
-      tRiverNetwork = array[1..MaxRiverBasinNodes] of tRiverNode;
-      pRiverNetwork = ^tRiverNetwork;
-{$EndIf}
-
 
 {$IfDef ExPointCloud}
 {$Else}
@@ -657,11 +636,6 @@ type
            FirstFresnelPoint,SecondFresnelPoint,
         {$EndIf}
 
-        {$IfDef ExRedistrict}
-        {$Else}
-           RecolorRedistrict,RecolorRedistrictBox,
-        {$EndIf}
-
         RegionDNs, EnsembleClassSummary,NDVIPointTimeSeries,
         SpectralReflectance,
         Scribble,
@@ -692,10 +666,10 @@ type
         PickToBroadcast,RoamBroadcast,
         CalculateArea,CalculateVolume,GraphFilterDB,
         SubsetByOutline,SubsetLake,SubsetHole,ReplaceValuesByOutline,FillHolesByOutline,
-        IDDataBaseOne,IDDataBaseAll,LabelIDDataBase,GraphicalResizeWindow,GetPointSymbols,CornerEditBox,{FindBlockHorizon,} IDDBforAction,
+        IDDataBaseOne,IDDataBaseAll,LabelIDDataBase,GraphicalResizeWindow,GetPointSymbols,CornerEditBox,
         GetGreatCircleRoute, PlotNorthArrow,DeleteSingleDBRecs,DeleteMultipleDBRecs,DeleteMultipleRecsAllDBs,
         MovePointDBRecs,EditDBRecs,EditZDBRecs,
-        {USCounty,}DigitizeContourPoint,DigitizeContourStream,PickCenterAndScale,PickDBRecsToMove);
+        DigitizeContourPoint,DigitizeContourStream,PickCenterAndScale,PickDBRecsToMove);
 
 
    tGridLimits = packed record
@@ -1143,7 +1117,8 @@ type
 
    tFanMethod = (fmFanRadials,fmAllPointToPoint,fmRadialIHS);
    tShowPointCloundOnProfile = (spcNone,spcPoints,spcDensity);
-   tDEMZunits = (zuMeters,zuFeet);
+   //tDEMZunits = (zuMeters,zuFeet);
+   tDEMZunits = byte;
    tFanShow = (fsMasked,fsVisible,fsBoth);
    tVerticalCurvAlg = (vcNoCurvature,vcTM5441,vcRadioLineOfSight,vcYoeli);
    tIntervisibilityAlgorithm = packed record
@@ -1167,6 +1142,8 @@ const
    LOSAlgorithmName : array[tLOSAlgorithm] of ShortString = ('Scale radial','Const radial');
    FanMethodName  : array[tFanMethod] of shortstring = ('Radials, discrete','Point to point','Radials, full');
    FanShowName  : array[tFanShow] of ShortString = ('Masked','Visible','Both');
+   zuMeters = 0;
+   zuFeet = 1;
 
 type
    tWeaponsFan = packed record
@@ -1506,7 +1483,7 @@ type
            ShowMarineGeology,
            ShowDataProperties,
            ShowDBonly,
-           ShowOceanographyOptions,
+           //ShowOceanographyOptions,
            ShowSidescan,
            ShowSubbottom,
            ShowOpenGL,
@@ -1769,7 +1746,7 @@ type
        {$IfDef ExGeography}
        {$Else}
            KoppenOpts  : tKoppenOpts;
-           RiseSet,MoonPhase : boolean;
+           //RiseSet{,MoonPhase} : boolean;
        {$EndIf}
 
        {$IfDef NoClustering}
@@ -1970,6 +1947,7 @@ type
        OutputPitchMethod,
        OutputAzimuthMethod,
        OutPutLatLongMethod   : tLatLongMethod;
+       ProgressBarAlwaysUpperLeftCorner : boolean;
        ZoomWindowMapType,
        DefaultElevationColors,
        DefRefMap,
@@ -2165,11 +2143,13 @@ type
        ShadeOpts : tShadeOpts;
        DBsOnAllMaps : boolean;
        DbMinIntFieldSize : byte;
+       (*
        NumOffsets : int32;
        OffsetDistance : float32;
        OffsetBearings : array[1..5] of float32;
        OffsetLineWidth : byte;
        OffsetColor : tPlatformColor;
+       *)
        UTCOffset : int16;
        TZFromLong : boolean;
        LandCoverMaskSize : byte;
@@ -2362,8 +2342,8 @@ type
        ExperimentalSliceOptions,
        DifferentFloorSliceThickness : boolean;
 
-       FavDEMSeries1,
-       FavDEMSeries2 : shortstring;
+       //FavDEMSeries1,
+       //FavDEMSeries2 : shortstring;
        MapTopTitle,
        JustSimpleGrid : boolean;
        GemorphAtlasFilterSize,
@@ -2715,8 +2695,6 @@ type
        SatMultiBandTrueColor,
        SatMultiBandNormalize : boolean;
        FileHeader : ShortString;
-       //DefaultServerIP : ShortString;
-       //DefaultServerPort : int16;
 
        GeoJSONG_zdec,GeoJSONP_zdec,GeoJSONP_xydec : byte;
        MaxPointsAddInBox : integer;
@@ -2917,7 +2895,7 @@ type
 
        DisplayFanBitmaps : boolean;
 
-       DoubleEtopoImport,
+       //DoubleEtopoImport,
        BoxAroundQuickMaps,
        TransparentIcons : boolean;
        ConPtsColor : tPlatformColor;

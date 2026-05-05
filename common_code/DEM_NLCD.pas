@@ -18,8 +18,8 @@ unit dem_nlcd;
    //{$Define TrackWaterMasking}  //generally not needed, but helped finding a bad LC100 tile
    //{$Define RecordNLCDLegend}
    //{$Define RecordBarGraphs}
-   //{$Define RecordDEMIX}
    //{$Define RecordBatch}
+   {$Define RecordDEMIXlandcover}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
 {$EndIf}
@@ -285,7 +285,7 @@ begin
    Lat := 0.5 * (bb.YMax + bb.YMin);
    Long := 0.5 * (bb.XMax + bb.XMin);
    LandCoverFName := GetLC10_fileName(Lat,Long);
-   {$IfDef RecordDEMIX} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
+   {$IfDef RecordDEMIXlandcover} writeLineToDebugFile('Landcover=' + LandCoverfName); {$EndIf}
    if FileExists(LandCoverFName) then begin
       Result := GDALsubsetGridAndOpen(bb,true,LandCoverFName,OpenMap);
       if ValidDEM(Result) then begin
@@ -294,11 +294,11 @@ begin
          DEMGlb[Result].SaveAsGeotiff(fName);
       end
       else begin
-         {$IfDef RecordDEMIX} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
+         {$IfDef RecordDEMIXlandcover} HighlightLineToDebugFile('Landcover load fail ' + LandCoverfName + '  ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
       end;
    end
    else begin
-      {$IfDef RecordDEMIX} writeLineToDebugFile('Missing Landcover=' + LandCoverfName); {$EndIf}
+      {$IfDef RecordDEMIXlandcover} writeLineToDebugFile('Missing Landcover=' + LandCoverfName); {$EndIf}
       if (not Silent) then MessageToContinue('Missing land cover file ' + LandCoverFName);
    end;
 end;
@@ -416,7 +416,7 @@ begin
    finally
       CloseAllDatabases;
       EndDEMIXProcessing;
-      {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
+      {$If Defined(RecordBatch) or Defined(RecordDEMIXlandcover)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
    end;
 end;
 
@@ -514,7 +514,7 @@ var
       i,RefDEM : integer;
       fName : PathStr;
    begin {procedure ASeries}
-       {$If Defined(RecordBatch) or Defined(RecordDEMIX)} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
+       {$If Defined(RecordBatch) or Defined(RecordDEMIXlandcover)} HighLightLineToDebugFile('Do series=' + LandCoverfName); {$EndIf}
        NumDrawn := 0;
        for j := 0 to MaxLandCoverCategories do LandCoverCatsUsed[j] := false;
        FindDriveWithFile(LandCoverfName);
@@ -630,7 +630,7 @@ var
    end {procedure ASeries};
 
 begin {procedure LandCoverBarGraphs}
-   {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs in'); {$EndIf}
+   {$If Defined(RecordBatch) or Defined(RecordDEMIXlandcover)} WriteLineToDebugFile('LandCoverBarGraphs in'); {$EndIf}
    try
       GetDEMIXpaths;
       OutPath := DEMIX_Base_DB_Path + 'test_land_class\';
@@ -645,7 +645,7 @@ begin {procedure LandCoverBarGraphs}
    finally
       CloseAllDatabases;
       EndDEMIXProcessing;
-      {$If Defined(RecordBatch) or Defined(RecordDEMIX)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
+      {$If Defined(RecordBatch) or Defined(RecordDEMIXlandcover)} WriteLineToDebugFile('LandCoverBarGraphs out'); {$EndIf}
    end;
 end {procedure LandCoverBarGraphs};
 

@@ -36,7 +36,6 @@
       //{$Define TrackWKTstring}
       //{$Define FanDrawProblems}
       //{$Define RawProjectInverse}  //must also be set in BaseMap
-      //{$Define RecordDEMIX}
       //{$Define RecordMapClosing}
       //{$Define RecordClosing}
       //{$Define RecordDerivedGrids}
@@ -45,7 +44,7 @@
       //{$Define RecordSat}
       //{$Define RecordVAT}
       //{$Define TrackHorizontalDatum}
-      {$Define TrackDEMCorners}
+      //{$Define TrackDEMCorners}
       //{$Define RecordResample}
       //{$Define RecordCarto}
       //{$Define RecordNumberOpenMaps}
@@ -266,7 +265,7 @@ type
     Elevation2: TMenuItem;
     Geology1: TMenuItem;
     Bearing1: TMenuItem;
-    Offset1: TMenuItem;
+    //Offset1: TMenuItem;
     StreamProfile1: TMenuItem;
     VectorOutlines1: TMenuItem;
     Erasersize1: TMenuItem;
@@ -755,7 +754,7 @@ type
     Suminbox1: TMenuItem;
     Forceredrawlegendsscalebars1: TMenuItem;
     Clearrangecircles1: TMenuItem;
-    Oceanography1: TMenuItem;
+    //Oceanography1: TMenuItem;
     suanamitravel1: TMenuItem;
     Driftmodels1: TMenuItem;
     Elevationmoments1: TMenuItem;
@@ -1707,6 +1706,7 @@ type
     CompareCasoraticurvature1: TMenuItem;
     CompareGaussiancurvature1: TMenuItem;
     N90: TMenuItem;
+    ListCOGS1: TMenuItem;
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
     procedure Smallcirclethroughpoint1Click(Sender: TObject);
@@ -1751,7 +1751,7 @@ type
     procedure Bearing1Click(Sender: TObject);
     procedure Subset1Click(Sender: TObject);
     procedure Forcesize1Click(Sender: TObject);
-    procedure Offset1Click(Sender: TObject);
+    //procedure Offset1Click(Sender: TObject);
     procedure Contourinterval1Click(Sender: TObject);
     procedure Reflectance1Click(Sender: TObject);
     procedure Blank1Click(Sender: TObject);
@@ -2933,6 +2933,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Comparemeancurvature1Click(Sender: TObject);
     procedure CompareCasoraticurvature1Click(Sender: TObject);
     procedure CompareGaussiancurvature1Click(Sender: TObject);
+    procedure ListCOGS1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3552,11 +3553,6 @@ uses
       DEM_Gaz_opts,
    {$EndIf}
 
-   {$IfDef ExRedistrict}
-   {$Else}
-      demredistrict,
-   {$EndIf}
-
    {$IfDef ExPNG}
    {$Else}
       PNGImage,
@@ -3916,7 +3912,7 @@ begin {procedure Bigimagewithallmaps}
                if ValidDEM(DEM) then begin
                   {$IfDef RecordBigMap} WriteLineToDebugFile('DEM=' + IntToStr(DEM) + '  ' + DEMGLB[DEM].AreaName); {$EndIf}
                   repeat
-                     Len := Bitmap.Canvas.TextWidth(RemoveUnderScores(DEMGLB[DEM].AreaName));
+                     Len := Bitmap.Canvas.TextWidth(RemoveUnderScores(DEMGLB[DEM].AreaName,false));
                      {$IfDef RecordBigMapFont} WriteLineToDebugFile('Len='+ IntToStr(Len) + ' width=' + IntToStr(Bitmap.Width) + ' font=' + IntToStr(Bitmap.Canvas.Font.Size)); {$EndIf}
                      if (Len > Bitmap.Width - 10) then Bitmap.Canvas.Font.Size := Bitmap.Canvas.Font.Size - 1;
                   Until (Len < Bitmap.Width - 10);
@@ -4461,7 +4457,7 @@ var
    x,y,i  : integer;
 begin
   if (MapDraw <> Nil) and MapRedrawsAllowed and (not MapDraw.ClosingMapNow) then begin
-     {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw in ' + MapDraw.BaseTitle); {$EndIf}
+     {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw in, BaseTitle=' + MapDraw.BaseTitle); {$EndIf}
      {$If Defined(RecordMapDraw) or Defined(RecordPixelSize) or Defined(RecordTiming) or Defined(RecordUTMZone)}
         Stopwatch := TStopwatch.StartNew;
         WriteLineToDebugFile('TMapForm.DoFastMapRedraw in, maptype=' + IntToStr(MapDraw.MapType) + '  ' + MapDraw.MapSizeString + ' Map UTM zone=' + IntToStr(MapDraw.PrimMapProj.projUTMZone));
@@ -4511,7 +4507,6 @@ begin
            end;
         end;
 
-
         if (not MapDraw.NoDrawingNow) and FullDraw and (Not MapDraw.FastMapDraw) then begin
            {$IfDef ExDrainage}
            {$Else}
@@ -4541,7 +4536,6 @@ begin
               if AutoAnaglyphRedraw then Draw3Dmap(Self);
            {$EndIf}
         end;
-        {$IfDef ExRedistrict} {$Else} if (RedistrictForm <> Nil) and (not MapDraw.FastMapDraw) then RedistrictForm.BitBtn4Click(Nil); {$EndIf}
         {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw after miscellaneous drawing, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       end;
      if ValidDEM(SavedMergeReflectanceDEM) then MergeAnotherDEMreflectance(SavedMergeReflectanceDEM);
@@ -4551,11 +4545,9 @@ begin
 
      {$IfDef ExMultigrid}
      {$Else}
-        if (MapDraw.MultiGridOnMap <> 0) then begin
-           if MultiGridArray[MapDraw.MultiGridOnMap].MonthlyData then begin
-              Image1.Canvas.Font.Size := 18;
-              Image1.Canvas.TextOut(5,5,MonthName[MultiGridArray[MapDraw.MultiGridOnMap].IndexBand]);
-           end;
+        if (MapDraw.MultiGridOnMap <> 0) and MultiGridArray[MapDraw.MultiGridOnMap].MonthlyData then begin
+           Image1.Canvas.Font.Size := 18;
+           Image1.Canvas.TextOut(5,5,MonthName[MultiGridArray[MapDraw.MultiGridOnMap].IndexBand]);
         end;
         if (MapDraw.MonthlyDBArrayOnMap <> 0) then begin
            Image1.Canvas.Font.Size := 18;
@@ -4592,9 +4584,10 @@ begin
      {$If Defined(RecordTiming) or Defined(RecordMapDraw) or Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
   end
   else begin
-      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw  not allowed, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw  not allowed, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
   end;
   {$IfDef RecordMapResize} DebugMapSize; {$EndIf}
+  {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('tMapForm.DoFastMapRedraw out, caption=' + Caption); {$EndIf}
 end {tMapForm.DoFastMapRedraw;};
 
 
@@ -4612,13 +4605,13 @@ procedure tMapForm.DoCompleteMapRedraw;
 begin
    if MapRedrawsAllowed then begin
       FormResize(Nil);
-      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-      {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in'); {$EndIf}
+      {$If Defined(RecordNumberOpenMaps) or Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       MapDraw.DeleteMapSavedLayers;
       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw DeleteMapSavedLayers'); {$EndIf}
       DoFastMapRedraw;
-      {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw out'); {$EndIf}
-      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      {$If Defined(RecordMapDraw) or Defined(RecordMapResize) or Defined(RecordNumberOpenMaps)}
+         WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw out, current open maps=' + IntToStr(NumOpenMaps));
+      {$EndIf}
    end
    else begin
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.DoCompleteMapRedraw no MapRedrawsAllowed, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
@@ -4747,9 +4740,9 @@ const
    PointSpacing : float64 = 50;
 var
    i,RecsFound,npts : integer;
-   FeatName : ShortString;
+   //FeatName : ShortString;
    fName : ShortString;
-   TStr : ShortString;
+   //TStr : ShortString;
    xg,yg : float64;
    OneRec,OtherRec,PathDistance,PathCost,Lat2,Long2,Distance,Azimuth : float64;
 begin
@@ -4771,7 +4764,7 @@ begin
    end;
 
    if (DBEditting <> 0) and (DEMNowDoing in [EditPointDBRecs {$IfDef ExMilicons}{$Else},EditMilIcons{$EndIf}]) then  begin
-      GISdb[DBEditting].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,false,false,FeatName,false);
+      GISdb[DBEditting].IdentifyRecord(-99,-99,Lat,Long,RecsFound,false,false,{FeatName,}false);
       if (RecsFound = 1) then begin
          if (DEMNowDoing = EditPointDBRecs) then begin
             GISdb[DBEditting].ValidLatLongFromTable(Lat,Long);
@@ -4781,17 +4774,6 @@ begin
          end;
       end;
     end;
-
-   {$IfDef ExRedistrict}
-   {$Else}
-      if (DEMNowDoing = RecolorRedistrict) then begin
-         CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckNothing);
-         MapDraw.ScreenToLatLongDegree(LastX,LastY,Lat,Long);
-         GISdb[RedistrictForm.DBonTable].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,false,false,FeatName);
-         GISdb[RedistrictForm.DBonTable].MyData.ApplyFilter('');
-         if not RedistrictForm.CheckBox1.Checked then  RedistrictForm.DistrictsChanged;
-      end;
-   {$EndIf}
 
    if DEMNowDoing in [GetPointSymbols,PlottingPointElevations{$IfDef ExGeology}{$Else},GetGeologySymbols{$EndIf}] then begin
       CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xsatg1,ysatg1,CheckReasonable);
@@ -4834,13 +4816,13 @@ begin
           fName := GISdb[DBEditting].PickField('time series' ,[ftString,ftInteger,ftSmallInt]);
 
           MapDraw.ScreenToLatLongDegree(LastX,LastY,lat,long);
-          GISdb[DBEditting].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,false,false,TStr,false,true);
-          if RecsFound> 0 then begin
+          GISdb[DBEditting].IdentifyRecord(-99,-99,Lat,Long,RecsFound,false,false,{TStr,}false,true);
+          if (RecsFound> 0) then begin
             OneRec := StrToFloat(GISdb[DBEditting].MyData.GetFieldByNameAsString(fName));
             GISdb[DBEditting].ClearGISFilter;
             MapDraw.ScreenToLatLongDegree(MapScreenX1,MapScreenY1,lat2,long2);
-            GISdb[DBEditting].IdentifyRecord(MapScreenX1,MapScreenY1,lat2,long2,RecsFound,false,false,TStr,false,true);
-            if RecsFound> 0 then begin
+            GISdb[DBEditting].IdentifyRecord(-99,-99,lat2,long2,RecsFound,false,false,{TStr,}false,true);
+            if (RecsFound> 0) then begin
                OtherRec := StrToFloat(GISdb[DBEditting].MyData.GetFieldByNameAsString(fName));
                PetMath.MinOfPairFirst(OneRec,OtherRec);
                GISdb[DBEditting].MyData.ApplyFilter(fName + '>=' + RealToString(OneRec,-18,-6) + ' AND ' + fName + '<=' + RealToString(OtherRec,-18,-6));
@@ -6195,16 +6177,6 @@ end;
       DoFastMapRedraw;
       {$IfDef RecordMapIndex} WriteLineToDebugFile('TMapForm.SetUpIndexMap out'); {$EndIf}
       end;
-
-
-
-(*
-      procedure TMapForm.SetUpNewDEMMapWindow(CurDEM: integer; mt: tMapType;
-  MapCaption: ShortString; Selection, DrawIt, UsePC: boolean);
-begin
-
-end;
-*)
 
 
 procedure TMapForm.Shapefileaftersubsettomatchmapextent1Click(Sender: TObject);
@@ -8202,7 +8174,6 @@ end;
 function BoxOutlining(DEMNowDoing :  tDEMDoingWhat) : boolean;
 begin
    Result := (DEMNowDoing in [NewCoverage,OpenMapsFromLibrary,CornerEditBox,MoveMapBox,GraphFilterDB,DeleteMultipleDBRecs,DeleteMultipleRecsAllDBs,
-              {$IfDef ExRedistrict}{$Else} RecolorRedistrictBox,{$EndIf}
               {$IfDef ExSat}{$Else} RegionDNs,PickTrainingBox,{$EndIf}
               NLCDBox]);
 end;
@@ -9289,13 +9260,13 @@ begin
       Pickmode1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
       CreateimagetomatchDEM1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
       SourceContours1.Visible := ExpertDEMVersion and MDDef.ShowGeomorphometry;
-      Oceanography1.Visible := MDDef.ShowOceanographyOptions;
+      //Oceanography1.Visible := MDDef.ShowOceanographyOptions;
 
       StreamProfile1.Visible := (MDdef.ProgramOption in [ExpertProgram]) and ValidDEM(MapDraw.DEMonMap);
 
       USProperties1.Visible := (MDDef.ProgramOption = ExpertProgram);
       Requiredantennaheight1.Visible := MDDef.ProgramOption = ExpertProgram;
-      Offset1.Visible := MDdef.ProgramOption = ExpertProgram;
+      //Offset1.Visible := MDdef.ProgramOption = ExpertProgram;
       ReplayFlightRoute1.Visible := ExpertDEMVersion;
       MatchOtherMaps1.Visible := (MDdef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (NumOpenMaps > 1);
       MatchOtherMaps2.Visible := (MDdef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and (NumOpenMaps > 1);
@@ -9677,7 +9648,7 @@ begin
        Slopes1.Visible := false;
        Elevations1.Visible := false;
        Ridges.Visible := false;
-       Offset1.Visible := false;
+       //Offset1.Visible := false;
        Areaofsinglecolor1.Visible := false;
        Greatcircleroute1.Visible := false;
        Findpeaks1.Visible := false;
@@ -9897,6 +9868,31 @@ begin
    else StartShapeFile(ShapeFirstPolygon);
 end;
 
+
+procedure TMapForm.ListCOGS1Click(Sender: TObject);
+//limited to geographic grids becasue of the bounding box
+//user must create dBase table with the grid names and web COG links
+//MICRODEM will add "/vsicurl/" to the links
+var
+   fName,OutName : PathStr;
+   bb : sfBoundBox;
+   Table : tMyData;
+begin
+    fName := ProgramRootDir + 'vsicurl_cogs.dbf';
+    Table := tMyData.Create(fName);
+    Table.ApplyFilter('USE=' + QuotedStr('Y'));
+    bb := MapDraw.MapCorners.BoundBoxGeo;
+    while not Table.eof do begin
+       OutName := Table.GetFieldByNameAsString('GRID');
+       if (OutName <> 'EU_DTM') then begin
+          OutName := MDtempDir + OutName + '.tif';
+          fName := Table.GetFieldByNameAsString('LINK');
+          GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,true,OutName,OutName);
+       end;
+       Table.Next;
+    end;
+    Table.Destroy;
+end;
 
 procedure BroadcastLatLong(Handle : tHandle; Lat,Long : float64);
 var
@@ -11673,7 +11669,7 @@ begin
    end;
 
    if (DBEditting <> 0) and (DEMNowDoing in [DeletePointDBRecs,EditZDBRecs]) then begin
-      GISdb[DBEditting].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,false,false,TStr,false);
+      GISdb[DBEditting].IdentifyRecord(-99,-99,Lat,Long,RecsFound,false,false,{TStr,}false);
       if (RecsFound = 1) then begin
          GISdb[DBEditting].MyData.Edit;
          if DEMNowDoing in [DeletePointDBRecs] then GISdb[DBEditting].MyData.Delete
@@ -11688,7 +11684,7 @@ begin
     end;
 
    if DEMNowDoing in [PickDBRecsToMove,DeleteSingleDBRecs] then begin
-      GISdb[DBEditting].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,False,false,TStr);
+      GISdb[DBEditting].IdentifyRecord(-99,-99,Lat,Long,RecsFound,False,false{,TStr});
       exit;
    end;
 
@@ -11710,17 +11706,17 @@ begin
    {$EndIf}
 
 
-   if (DEMNowDoing in [IDDataBaseOne,IDDataBaseAll,IDDBforAction,LabelIDDataBase,EditDBRecs]) and (MapDraw.MapOwner <> moMapDatabase) then begin
+   if (DEMNowDoing in [IDDataBaseOne,IDDataBaseAll,{IDDBforAction,}LabelIDDataBase,EditDBRecs]) and (MapDraw.MapOwner <> moMapDatabase) then begin
       {$IfDef RecordClick} WriteLineToDebugFile('IDDataBase in record click'); {$EndIf}
       if (DBEditting = 0) then begin
          for i := 1 to MaxDataBase do begin
-            if (GISdb[i] <> nil) and (GISdb[i].theMapOwner = Self) then begin
-               GISdb[i].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound, DEMNowDoing in [IDDataBaseOne,IDDataBaseAll],DEMNowDoing = LabelIDDataBase,TStr,false,false {DEMNowDoing = IDFilterDataBase});
+            if ValidDB(i) and (GISdb[i].theMapOwner = Self) then begin
+               GISdb[i].IdentifyRecord(-99,-99,Lat,Long,RecsFound, DEMNowDoing in [IDDataBaseOne,IDDataBaseAll],DEMNowDoing = LabelIDDataBase,{TStr,}false,false {DEMNowDoing = IDFilterDataBase});
             end;
          end;
       end
       else begin
-         GISdb[DBEditting].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,DEMNowDoing in [IDDataBaseOne,IDDataBaseAll,EditDBRecs],(DEMNowDoing = LabelIDDataBase),TStr,false,false);
+         GISdb[DBEditting].IdentifyRecord(-99,-99,Lat,Long,RecsFound,DEMNowDoing in [IDDataBaseOne,IDDataBaseAll,EditDBRecs],(DEMNowDoing = LabelIDDataBase),{TStr,}false,false);
       end;
    end;
 
@@ -11730,14 +11726,6 @@ begin
       BroadcastLatLong(Self.Handle,Lat,Long);
       exit;
    end;
-
-   (*
-   if (DEMNowDoing in [USCounty]) then begin
-      US_properties.GetCounty(Lat,Long,TStr);
-      MessageToContinue(tStr);
-      exit;
-   end;
-   *)
 
    if (DEMNowDoing = UTMTrueDeviation) then begin
       Dec := MapDraw.UTMGridToTrueNorthAngle(Lat,Long);
@@ -11899,6 +11887,8 @@ begin
       ThreeDCheckDblClick(NotSamePoint);
    {$EndIf}
 
+   (*
+   //removed April 2026, as not very useful
    if (DEMNowDoing = PlottingOffset) then with MapDraw do begin
       CheckThisPoint(LastX,LastY,xDEMg1,yDEMg1,xSATg1,ySATg1,CheckReasonable);
       DEMGlb[DEMonMap].DEMGridToLatLongDegree(xDEMg1,yDEMg1,Lat,Long);
@@ -11916,6 +11906,7 @@ begin
       if not AnswerIsYes('Another offset, same parameters') then BackToWandering;
       exit;
    end;
+   *)
 
    if (DEMNowDoing = SecondDistancePoint) and NotSamePoint then with MapDraw do begin
       {$IfDef MeasureDistance} WriteLineToDebugFile('DEMNowDoing = SecondDistancePoint start'); {$EndIf}
@@ -13529,15 +13520,6 @@ begin
           MapDraw.ScreenBoxToLatLongMinMax(newx1,Newy1,NewX2,NewY2,LatLow,LongLow,LatHigh,LongHigh);
           MapDraw.ScreenToDataGrid(NewX1,NewY1,xg1,yg1);
           MapDraw.ScreenToDataGrid(NewX2,NewY2,xg2,yg2);
-          {$IfDef ExRedistrict}
-          {$Else}
-             if (DEMNowDoing = RecolorRedistrictBox) then begin
-                GISdb[RedistrictForm.DBonTable].QueryBox(Self.MapDraw,NewX1,NewY1,NewX2,NewY2,false);
-                RedistrictForm.DistrictsChanged;
-                ChangeDEMNowDoing(RecolorRedistrictBox);
-                exit;
-             end;
-          {$EndIf}
 
           if (DEMNowDoing in [DeleteMultipleDBRecs,DeleteMultipleRecsAllDBs]) then begin
              Image1.Canvas.CopyMode := cmSrcAnd;
@@ -13749,7 +13731,7 @@ begin
 
    if (DBEditting <> 0) and (DEMNowDoing in [MovePointDBRecs]) then begin
       MapDraw.ScreenToLatLongDegree(LastX,LastY,Lat,Long);
-      GISdb[DBEditting].IdentifyRecord(LastX,LastY,Lat,Long,RecsFound,false,false,TStr,false,true);
+      GISdb[DBEditting].IdentifyRecord(-99,-99,Lat,Long,RecsFound,false,false,{TStr,}false,true);
       if (RecsFound > 0) then begin
          {$IfDef RecordEditDB} WriteLineToDebugFile('MovePointDBRecs rec ID at ' + LatLongDegreeToString(Lat,Long)); {$EndIf}
          Forms.Screen.Cursor := crDrag;
@@ -14648,6 +14630,7 @@ begin
     ColumnsEastLimit1Click(Sender);
 end;
 
+(*
 procedure TMapForm.Offset1Click(Sender: TObject);
 {$IfDef ExVectorOverlay}
 begin
@@ -14663,7 +14646,7 @@ begin
    ChangeDEMNowDoing(PlottingOffset);
 {$EndIf}
 end;
-
+*)
 
 procedure TMapForm.oGeographic1Click(Sender: TObject);
 begin
@@ -14694,7 +14677,7 @@ begin
 
    Caption := Self.Caption;
 
-   if (PC > -999) then ResizeByPercentage(PC {,true,true});
+   if (PC > -999) then ResizeByPercentage(PC);
 
    CloneImageToBitmap(Image1,RoadMaskBMP);
    MapDraw.DrawFullTigerCoverage(RoadMaskBMP,true,true,false,RoadProximity);
@@ -14702,11 +14685,8 @@ begin
    StartProgress('Mask road');
    if (dbNum = 0) then begin
       if NearRoadsMask then MakeBitmapNegative(RoadMaskBMP,RGBTripleBlack);
-
       Image1.Picture.Graphic := RoadMaskBMP;
-
       if MDDef.ShowMasks then Petimage_form.DisplayBitmap(RoadMaskBMP,'Mask');
-
       EditGridViaColor(emvcBasicMask,clBlack);
       DoBaseMapRedraw;
    end
@@ -14732,7 +14712,6 @@ begin
    EndProgress;
 end;
 {$EndIf}
-
 
 
 procedure TMapForm.Contourinterval1Click(Sender: TObject);
@@ -14840,7 +14819,6 @@ begin
       Self.Image1.Canvas.Pen.Color := ConvertPlatformColorToTColor(MDDef.DigitizeColor);
       Self.Image1.Canvas.Pen.Width := 3;
       CumDist := 0;
-      //TotalPoints := 0;
       New(Lats);
       New(Longs);
       New(dists);
@@ -14858,7 +14836,6 @@ begin
                   v[1] := CumDist + 0.001 * Dists[i];
                   if (v[2] > StreamGraph.GraphDraw.MaxVertAxis) then StreamGraph.GraphDraw.MaxVertAxis := v[2];
                   if (v[2] < StreamGraph.GraphDraw.MinVertAxis) then StreamGraph.GraphDraw.MinVertAxis := v[2];
-                  //inc(TotalPoints);
                   BlockWrite(rfile,v,1);
                end;
             end;
@@ -14892,15 +14869,6 @@ begin
          StartLong := Long;
       end;
       StreamGraph.GraphDraw.LabelPointsAtop := MDDef.LabelRouteTurningPoints and (StreamGraph.GraphDraw.GraphTopLabels.Count < 25);
-
-      (*
-      if ExtractXYPointsAlongProfile then begin
-         fName := Petmar.NextFileNumber(MDTempDir, 'profile_',DefaultDBExt);
-         StringListToLoadedDatabase(Results,fName);
-         ExtractXYPointsAlongProfile := false;
-      end;
-      *)
-
       StreamGraph.GraphDraw.GraphDrawn := true;
       StreamGraph.SetUpGraphForm;
       StreamGraph.RedrawDiagram11Click(Nil);
@@ -14913,20 +14881,18 @@ procedure TMapForm.StreamProfile1Click(Sender: TObject);
 begin
    ChangeDEMNowDoing(SeekingStreamProfile);
    if (StreamProfileResults <> Nil) then FreeAndNil(StreamProfileResults);
-   //MapDraw.MapOverlays.ovVectorFiles.Add('Pipeline-stream.plr');
 end;
 
 procedure TMapForm.Streams1Click(Sender: TObject);
 begin
-{$IfDef ExExoticMaps}
-{$Else}
-   CreateRidgeMap(MapDraw.DEMOnMap,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,rtmStream);
-{$EndIf}
+    {$IfDef ExExoticMaps}
+    {$Else}
+       CreateRidgeMap(MapDraw.DEMOnMap,DEMGlb[MapDraw.DEMonMap].FullDEMGridLimits,rtmStream);
+    {$EndIf}
 end;
 
 procedure TMapForm.Vectoraverage1Click(Sender: TObject);
 begin
-   //ThinDEM1Click(Sender);
    DEMGlb[MapDraw.DEMonMap].FilterThisDEM(true,fcVectAvg);
 end;
 
@@ -14952,10 +14918,10 @@ end;
 
 procedure TMapForm.Delete1Click(Sender: TObject);
 begin
-{$IfDef ExVectorOverlay}
-{$Else}
-   if (DEMEditForm <> Nil) then DEMeditForm.Delete1Click(Sender);
-{$EndIf}
+    {$IfDef ExVectorOverlay}
+    {$Else}
+       if (DEMEditForm <> Nil) then DEMeditForm.Delete1Click(Sender);
+    {$EndIf}
 end;
 
 
@@ -14966,10 +14932,10 @@ end;
 
 procedure TMapForm.Replace1Click(Sender: TObject);
 begin
-{$IfDef ExVectorOverlay}
-{$Else}
-   if (DEMEditForm <> Nil) then DEMeditForm.Replace1Click(Sender);
-{$EndIf}
+    {$IfDef ExVectorOverlay}
+    {$Else}
+       if (DEMEditForm <> Nil) then DEMeditForm.Replace1Click(Sender);
+    {$EndIf}
 end;
 
 
@@ -15080,10 +15046,9 @@ procedure TMapForm.Multiplyallgridsbyconstantsandresave1Click(Sender: TObject);
 begin
    {$IfDef ExMultigrid}
    {$Else}
-   MultiGridArray[MapDraw.MultiGridOnMap].MultiplyGrids;
+      MultiGridArray[MapDraw.MultiGridOnMap].MultiplyGrids;
    {$EndIf}
 end;
-
 
 
 procedure TMapForm.SingleGridArithmetic(How : tSingleGridArithmetic; ShowInvalid : boolean = true);
@@ -15121,9 +15086,7 @@ procedure TMapForm.CutPoints(MinGood,MaxGood : SmallInt);
 var
    Col,Row : integer;
    z : float32;
-  // Changed : boolean;
 begin
-  // Changed := false;
    with DEMGlb[MapDraw.DEMonMap]  do begin
       if ShowSatProgress and (DEMheader.NumCol > 1500) then StartProgress('Mask');
       for Col := 0 to pred(DEMheader.NumCol) do begin
@@ -15133,7 +15096,6 @@ begin
               if ( (MinGood = MaxGood) and (round(z) = MinGood)) or
                ((MinGood <> MaxGood) and ((round(z) < MinGood) or (round(z) > MaxGood))) then begin
                  SetGridMissing(Col,Row);
-                 //Changed := true;
               end;
             end;
          end;
@@ -15329,7 +15291,6 @@ begin
 end;
 
 
-
 procedure TMapForm.PanSEButtonClick(Sender: TObject);
 begin
    LastX := (8 - MDDEF.PanOverlap) * MapDraw.MapXSize div 8;
@@ -15406,15 +15367,12 @@ begin
          PanSButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.ymin > 0.5;
          PanWButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.xmin > 0.5;
          PanEButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.xmax < pred(DEMGlb[MapDraw.DEMonMap].DEMheader.NumCol) - 0.5;
-      {$IfDef ExSat}
-      {$Else}
       end
       else if (MapDraw.SatOnMap > 0) and (SatImage[MapDraw.SatOnMap] <> Nil) then with MapDraw.SatView do begin
          PanNButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.ymin > 0;
          PanSButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.ymax < pred(SatImage[MapDraw.SatOnMap].NumSatRow) - 0.5;
          PanWButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.xmin > 0;
          PanEButton.Enabled := MapDraw.MapCorners.BoundBoxDataGrid.xmax < pred(SatImage[MapDraw.SatOnMap].NumSatCol) - 0.5;
-      {$EndIf}
       end;
 
       PanNWButton.Enabled := PanNButton.Enabled and PanWButton.Enabled;
@@ -15453,14 +15411,6 @@ begin
    PanWButton.Visible := ButtonsVisible;
    PanNWButton.Visible := ButtonsVisible;
 end;
-
-
-(*
-function TMapForm.MakeTempGrid(OpenMap, GetParameters: boolean): integer;
-begin
-
-end;
-*)
 
 
 procedure TMapForm.NoScrollbars;
@@ -15593,7 +15543,7 @@ end;
 procedure TMapForm.Feet1Click(Sender: TObject);
 var
    CInt,i,j : integer;
-   Factor,z      : float32;
+   Factor,z : float32;
    TStr : ShortString;
 begin
    with MapDraw do begin
@@ -17468,7 +17418,7 @@ begin
         PickTrainingBox                : NewTitle := 'Training box';
         PickTrainingPoints             : NewTitle := 'Training points';
         JustWandering                  : NewTitle := '';
-        IDDBforAction,
+        //IDDBforAction,
         IDDataBaseOne,IDDataBaseAll    : NewTitle := 'Data base record to ID';
         DeleteSingleDBRecs             : NewTitle := 'Delete single DB recs';
         FirstZigDistance,
@@ -17499,7 +17449,7 @@ begin
         GetRGBValues                   : NewTitle := PointFor + 'RGB values';
         GetGreatCircleRoute            : NewTitle := PointFor + 'great circle route';
         SeekingPerspective             : NewTitle := LocationFor + 'Viewer perspective';
-        PlottingOffset                 : NewTitle := PointFor + 'offset';
+        //PlottingOffset                 : NewTitle := PointFor + 'offset';
         MoveMapBox                     : NewTitle := 'Move map box';
         ErasingPoints                  : NewTitle := 'Erasing points';
         SeekingFirstNewPanorama        : NewTitle := PointFor + 'panorama';
@@ -17559,11 +17509,6 @@ begin
            PickSlicePanorama              : NewTitle := 'Slice panorama';
            PickPointCloudStats            : NewTitle := 'Point cloud stats';
         {$EndIf}
-
-        {$IfDef ExRedistrict}{$Else}
-           RecolorRedistrictBox        : NewTitle := NWCornerStr + 'recs to redistrict';
-           RecolorRedistrict           : NewTitle := 'Single record to redistrict';
-       {$EndIf}
 
         {$IfDef ExGeostats}
         {$Else}
@@ -17895,7 +17840,7 @@ end;
 
 procedure TMapForm.Slopedegreestopercent1Click(Sender: TObject);
 begin
-    SingleGridArithmetic(sgaSlopedegreestopercent1);
+   SingleGridArithmetic(sgaSlopedegreestopercent1);
 end;
 
 
@@ -21155,7 +21100,7 @@ var
 begin
    for i := 1 to MaxDataBase do begin
       if (GISdb[i] <> nil) and (GISdb[i].theMapOwner = Self) then begin
-         GISdb[i].IdentifyRecord(LastX,LastY,RightClickLat,RightClickLong,RecsFound, true, false,TStr,false,false);
+         GISdb[i].IdentifyRecord(LastX,LastY,RightClickLat,RightClickLong,RecsFound, true, false,{TStr,}false,false);
       end;
    end;
 end;
@@ -24674,42 +24619,17 @@ end;
 procedure TMapForm.Koppenclimograph1Click(Sender: TObject);
 var
    RecsFound : integer;
-   TStr : shortstring;
 begin
   {$IfDef ExGeography}
   {$Else}
       if ValidDB(ClimateStationDB) and (GISdb[ClimateStationDB].theMapOwner = Self) and (GISdb[ClimateStationDB].KoppenPresent) then begin
-         GISdb[ClimateStationDB].IdentifyRecord(-999,-999,RightClickLat,RightClickLong,RecsFound,true,false,TStr,false);
+         GISdb[ClimateStationDB].IdentifyRecord(-99,-99,RightClickLat,RightClickLong,RecsFound,true,false,{TStr,}false);
       end;
    {$EndIf}
 end;
 
 
 procedure TMapForm.Koppenclimographfromclimategrids1Click(Sender: TObject);
-
-      (*
-      function MakeKoppenClimograph(DEM : integer; Lat,Long : float32) : TKoppenGraph;
-      var
-         ClimateData : tClimateData;
-         z : float32;
-      begin
-         {$IfDef RecordGeography} WriteLineToDebugFile('TMapForm.Koppenclimographfromclimategrids1Click'); {$EndIf}
-         OpenTempPrecipEvap(false);
-         if ValidMultiGrid(TempMG) and ValidMultiGrid(PrecipMG) then begin
-            ClimateData.Lat := Lat;
-            ClimateData.Long := Long;
-            ClimateData.Elevation := -9999;
-            if ValidDEM(DEM) then begin
-               if (DEMGlb[DEM].DEMheader.ElevUnits in [euMeters]) and DEMGlb[DEM].GetElevFromLatLongDegree(ClimateData.Lat,ClimateData.Long,z) then
-                  ClimateData.Elevation := round(z);
-            end;
-            ClimateData.Location := 'Global Grids ';
-            LoadClimateData(ClimateData);
-            ClassifyClimate(ClimateData);
-            Result := OpenKoppenGraph(500,400,ClimateData);
-         end;
-      end;
-      *)
 begin
    MakeKoppenClimograph(MapDraw.DEMonMap,RightClickLat,RightClickLong);
 end;

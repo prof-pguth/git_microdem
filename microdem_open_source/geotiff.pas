@@ -21,17 +21,17 @@ unit GeoTiff;
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
-      //{$Define RecordGeotiff}
+      {$Define RecordGeotiff}
       //{$Define RecordGeotiffRewrite}
       //{$Define GeotiffSave}
       //{$Define RecordJustMetadata}
       //{$Define RecordGeotiffFailures}
       //{$Define RecordFullGeotiff}
-      //{$Define RecordUTM}
-      //{$Define RecordWKT}
+      {$Define RecordUTM}
+      {$Define RecordWKT}
       //{$Define RecordProjProgress}
       //{$Define TrackWKTstring}
-      //{$Define RecordInitDEM}
+      {$Define RecordInitDEM}
       //{$Define RecordInitDEMName}
       //{$Define Record_h_datum_code}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
@@ -41,12 +41,12 @@ unit GeoTiff;
       //{$Define RecordImageOffsets}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackVerticalDatum}
-      //{$Define RecordDEMMapProj}
-      //{$Define RecordGeotiffProjection}
-      //{$Define RecordDefineDatum}
+      {$Define RecordDEMMapProj}
+      {$Define RecordGeotiffProjection}
+      {$Define RecordDefineDatum}
       //{$Define RecordGeotiffDestroy}
       //{$Define RecordUKOS}
-      //{$Define TrackProjection}
+      {$Define TrackProjection}
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
       //{$Define RecordTiePoints}
@@ -57,7 +57,7 @@ unit GeoTiff;
       //{$Define TrackA}
       //{$Define RecordKeys}
       //{$Define LongCent}
-      //{$Define RecordEntryInGeotiff}
+      {$Define RecordEntryInGeotiff}
       //{$Define RecordPlateCaree}
       //{$Define RecordGeotiffHistogram}
       //{$Define Record3076}
@@ -101,14 +101,14 @@ type
       xResolutionOffset,yResolutionOffset,
       Orientation,PlanarConfiguration,SubFileType,FillOrder,
       PhotometricInterpretation,ExtraSample,
-      Threshholding,NumEnt,
+      Threshholding,
       Num,Den,NewSubfileType,VertDatum,
       StripsPerImage,
       BitsPerSampleCount,MDZtype : int32;
 
       FirstImageOffset,CellWidth,CellLength,StripByteCounts,
       RowsPerStrip,TileWidth,TileHeight,Compression,
-      ImageWidth,ImageLength,StripOffsets : int64;
+      ImageWidth,ImageLength,StripOffsets,NumEnt : int64;
       SMin,SMax,Factor : float64;
       ResolutionUnit   : byte;
       MinSampleValue,MaxSampleValue : array[1..MaxBands] of int32;
@@ -1198,6 +1198,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   else WantDEM.DEMheader.DEMPrecision := SmallIntDEM;
                end
                else if (TiffHeader.BitsPerSample in [32,64]) then begin
+                  //even if this came in as integers, we will convert it to floating point
                   WantDEM.DEMheader.DEMPrecision := FloatingPointDEM;
                end;
             end;
@@ -1303,7 +1304,18 @@ begin {tTIFFImage.CreateTiffDEM}
             end;
 
             try
-               if (TiffHeader.BitsPerSample = 32) then begin
+               if (TiffHeader.BitsPerSample = 64) then begin
+                  RecsRead := FileRead(TiffHandle,DoubleRow^,bs);
+                  for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
+                     z := DoubleRow^[Col];
+                     if ValidZ(z) then begin
+                        z := z * TiffHeader.Factor;
+                        WantDEM.SetGridElevation(Col,dRow,z);
+                     end
+                     else WantDEM.SetGridMissing(Col,dRow);
+                  end;
+               end
+               else if (TiffHeader.BitsPerSample = 32) then begin
                   if (TiffHeader.SampleFormat = sfIEEEfloat) then begin
                      RecsRead := FileRead(TiffHandle,FloatRow^,bs);
                      for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
@@ -1350,17 +1362,6 @@ begin {tTIFFImage.CreateTiffDEM}
                         end
                         else WantDEM.SetGridMissing(Col,dRow);
                      end;
-                  end;
-               end
-               else if (TiffHeader.BitsPerSample = 64) then begin
-                  RecsRead := FileRead(TiffHandle,DoubleRow^,bs);
-                  for Col := 0 to pred(WantDEM.DEMheader.NumCol) do begin
-                     z := DoubleRow^[Col];
-                     if ValidZ(z) then begin
-                        z := z * TiffHeader.Factor;
-                        WantDEM.SetGridElevation(Col,dRow,z);
-                     end
-                     else WantDEM.SetGridMissing(Col,dRow);
                   end;
                end
                else if (TiffHeader.BitsPerSample in [8]) then begin
@@ -2128,6 +2129,12 @@ var
                                 MapProjection.LatHemi := 'N';
                                 ProjectionDefined := true;
                              end
+                             else if StrUtils.AnsiContainsText(TStr,'Portugal TM06') then begin
+                                MapProjection.InitProjFromWKTfile(ProgramRootDir + 'wkt_proj\portugal_tm06_epsg_3763.wkt');
+                                MapProjection.projUTMzone := 29;
+                                MapProjection.LatHemi := 'N';
+                                ProjectionDefined := true;
+                             end
                              else if StrUtils.AnsiContainsText(TStr,'NZGD2000') then begin
                                 MapProjection.InitProjFromWKTfile(ProgramRootDir + 'wkt_proj\nzgd2000_epsg_2193.wkt');
                                 MapProjection.projUTMzone := 59;
@@ -2366,7 +2373,7 @@ var
                Aline := IntegerToString(tag,7) + '  ' + TIFFTypeName(FType) + IntegerToString(LengthIm,7) + IntegerToString(TiffOffset,8) + '  ' + GeoTiffTagName(Tag) + '   ' + TStr;
                {$IfDef RecordProcessingHeader} WriteLineToDebugFile(ALine); {$EndIf}
                HeaderLogList.Add(aLine);
-               {$If Defined(TrackProjection)} MapProjection.WriteProjectionParametersToDebugFile('After tag' + IntToStr(i) + '  key=' + IntToStr(tag)); {$EndIf}
+               {$If Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('After tag' + IntToStr(i) + '  key=' + IntToStr(tag)); {$EndIf}
             end {for i};
 
             if (MapProjection.PName = UTMEllipsoidal) then MapProjection.False_east := 500000;

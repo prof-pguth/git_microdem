@@ -45,11 +45,9 @@ function HoursSolarIlluminationGrid(MapForm : tMapForm; JulianDay : integer; fNa
 function MoonPositionStereoNet(Lat,Long : float32; iyear,imonth,iday : integer; PlotPath : boolean = true) : tNetForm;
 function MoonPositionDB(Lat,Long : float32; iyear,imonth,iday : integer) : integer;
 
-
 //from Montenbruck, O., and Pfleger, T., 1991, Astronomy on the personal computer: Springer-Verlag, 255 p.
    procedure MP_MoonRise(stMonth,stDay,stYear,Duration : integer; Lat,Long : float64);
    function MP_DaysSinceFullMoon(stMonth,stDay,stYear : integer; Lat,Long : float64) : integer;
-
 
 var
    SunGraph : tThisBaseGraph;
@@ -814,8 +812,8 @@ var
          var
             MenuStr : ShortString;
          begin
-            if FullTable then MenuStr :=
-                    '               Morning Twilight                            Evening Twilight' + MessLineBreak + 'Date          Astron  Naut Civil    Sunrise     Sunset   Civil  Naut  Astron' + MessLineBreak
+            if FullTable then MenuStr := '               Morning Twilight                            Evening Twilight' + MessLineBreak +
+                'Date          Astron  Naut Civil    Sunrise     Sunset   Civil  Naut  Astron' + MessLineBreak
             else  MenuStr := LatLongDegreeToString(Lat,Long,MDdef.OutPutLatLongMethod) + MessLineBreak +  'Date       Sunrise     Sunset' + MessLineBreak;
             writeln(outf);
             writeln(Outf,MenuStr);
