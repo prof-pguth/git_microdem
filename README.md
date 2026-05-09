@@ -5,8 +5,11 @@ Last changes posted 8 May 2026
 This is about 400,000 lines of Delphi code, going back to the first iteration of Turbo Pascal.  While I use Delphi 13.1, it probably does not use any options that will not work in the previous few Delphi versions. It can be compiled with the free community edition of Delphi (https://www.embarcadero.com/products/delphi/starter/free-download).  Following the code, and finding routines called within any module, is best done in the Delphi IDE.
 
 Starting to look at the code:
+
 --The project file is "microdem_project\microdem.dpr"
+
 --The main program form is "microdem_only_code\nevadia_main.pas" 
+
 --The DEMIX processing pipeline is "microdem_only_code\nevadia_main_batch.inc"
 
 There are directories with compiled executables for Windows 64
