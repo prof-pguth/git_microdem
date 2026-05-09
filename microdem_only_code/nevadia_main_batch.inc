@@ -446,7 +446,6 @@ begin
           SafeMakeDir(MergeDir);
           ThisTileFiles := tStringList.Create;
           ListOfFiles := tStringList.Create;
-          //FullTilesFiles := tStringList.Create;
           ListOfFiles.LoadFromFile(fName);
           HighLightLineToDebugFile('At start files=' + IntToStr(ListOfFiles.Count));
           FilesNeeded := 90;
@@ -492,7 +491,6 @@ begin
           //HighLightLineToDebugFile('Final files=' + IntToStr(ListOfFiles.Count));
           ListOfFiles.Destroy;
           ThisTileFiles.Destroy;
-          //FullTilesFiles.Destroy;
           SetColorForWaiting;
        end;
    until not AnswerIsYes('Another area');
@@ -537,19 +535,6 @@ begin
                EndProgress;
              end;
              FreeAndNil(TheFiles);
-
-(*
-             AreaDirs := GetSubDirsInDirectory(MergesDirFName);
-             for i := 0 to pred(AreaDirs.Count) do begin
-                FullDir := MergesDirFName + AreaDirs.Strings[i];
-                FindMatchingFiles(FullDir,'*.tif',TheFiles,2);
-                if (TheFiles.Count > 0) then begin
-                   NewDir := MergesDirFName + ExtractFileNameNoExt(TheFiles.Strings[0]);
-                   SysUtils.RenameFile(FullDir,NewDir);
-                end;
-                FreeAndNil(TheFiles);
-             end;
-*)
            end
            else begin
               MessageToContinue('Not implemented yet for country with ' + AreaName);
@@ -558,7 +543,6 @@ begin
        ShowDefaultCursor;
    until not AnswerIsYes('Another area');
 end {procedure MoveSmallTilesInto10KTiles};
-
 
 
 
@@ -671,7 +655,6 @@ end {procedure PrepList10x10kmTiles};
           end
           else Result := DEM;
         end;
-
 
  var
     {$If Defined(TimeMakeMaps)} Stopwatch : TStopwatch; {$EndIf}
@@ -914,8 +897,6 @@ var
            for i := 0 to pred(TilesInArea) do begin
               wmDEM.SetPanelText(0,TimeToStr(Now),true);
               wmDEM.SetPanelText(1,AreaProgress,true);
-              //HeavyDutyProcessing := true;
-
               if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
                  OldTile := TheFiles.Strings[i];
                  UTM_Tile := DEMIX_UTM_tileName(AreaName,MergesDirFName + OldTile);
@@ -1095,7 +1076,7 @@ var
         PickMapIndexLocation;
      end;
 
-     if ((TilesInArea = 1) or ValidPath(WGS_EGMdir)) and FileExists(MapLibraryFName) then begin  //in case using second computer just to do hard part of work, like datum shift
+     if ValidPath(WGS_EGMdir) and FileExists(MapLibraryFName) then begin  //in case using second computer just to do hard part of work, like datum shift
          {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('Start test/ref for ' + AreaName +  ' tiles=' + IntToStr(TileSubDirs.Count)); {$EndIf};
          for i := 0 to pred(TileSubDirs.Count) do begin
             {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile(TileSubDirs.Strings[i]); {$EndIf};
@@ -1145,6 +1126,7 @@ begin {procedure UTMbasedtilescreation}
    NoDBPlots := true;
    theDEMs := GetListOfTestDEMsinUse;
    AreaDirectoryNames(AreaName);
+
    MakeSourceHRDEM_WGS84_EGM2008;
    MakeTestAndReferenceDEMs;
 
@@ -1483,7 +1465,11 @@ var
             end;
 
             procedure GetInterpolationComparisons;
+            //Option in [udInterpolatedFUVs]
+            const                 //   1         2          3          4          5           6           7            8           9          10
+               ComparisonFields = ',COP_ALOS,  ALOS_COP,  COP_REF,  ALOS_REF,  COP_A_REF,  ALOS_C_REF,  REFA_REFC,  REFC_REFA,  D_REFC_A,  D_COP_ALOS';
             var
+               TestCop,TestALOS,RefSRTM,RefALOS,
                Slope1,Slope2,SlopeR1,SlopeR2,T1,T2,TR1,TR2,R1,R2,RR1,RR2 : integer;
 
 
@@ -1507,9 +1493,9 @@ var
 
                     aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ','  + Param + '_FUV';
                     for i := 1 to NumComp do begin
-                       aline := aline + ',' + RealToString(FUV[i],-12,-8);
+                       aline := aline + ',' + RealToString(FUV[i],-12,-Decs);
                     end;
-                    aline := aline + ',' + RealToString(FUV[7]-FUV[8],-12,-4) +  ',' + RealToString(FUV[1]-FUV[2],-12,-4);
+                    aline := aline + ',' + RealToString(FUV[7]-FUV[8],-12,-Decs) +  ',' + RealToString(FUV[1]-FUV[2],-12,-Decs);
                     fuvResults.Add(aLine);
 
                     mv[1] := GridDifferenceStatsTwoGrids(DEMglb[T1].FullDEMGridLimits,T1,T2);
@@ -1525,7 +1511,7 @@ var
                     for i := 1 to NumComp do begin
                        aline := aline + ',' + RealToString(mv[i].MAE,-12,-Decs);
                     end;
-                    aline := aline + ',' + RealToString(mv[7].RMSE-mv[8].RMSE,-12,-Decs) +  ',' + RealToString(mv[1].RMSE-mv[2].RMSE,-12,-Decs);
+                    aline := aline + ',' + RealToString(mv[7].MAE-mv[8].MAE,-12,-Decs) +  ',' + RealToString(mv[1].MAE-mv[2].MAE,-12,-Decs);
                     fuvResults.Add(aLine);
 
                     aline := UTM_Tile + ',' + AreaName + ',' + RealToString(Lat,-8,-2) + ',' + RealToString(Long,-8,-2) + ','  + Param + '_RMSE';
@@ -1543,32 +1529,40 @@ var
                     fuvResults.Add(aLine);
                end;
 
-            begin {procedure GetInterpolationComparisons;}
-                if ValidDEM(RefDEMs[Ref_SRTM]) and ValidDEM(RefDEMs[Ref_ALOS]) and ValidDEM(TestDEMs[1]) and ValidDEM(TestDEMs[2]) then begin
+            begin {procedure GetInterpolationComparisons}
+                if (FUVresults = nil) then begin
+                   fuvResults := tStringList.Create;
+                   aline := aline + ComparisonFields;
+                   fuvResults.Add(aLine);
+                end;
+                TestCop := TestDEMs[1];
+                TestALOS := TestDEMs[2];
+                RefSRTM := RefDEMs[Ref_SRTM];
+                RefALOS := RefDEMs[Ref_ALOS];
+                if ValidDEM(Ref_SRTM) and ValidDEM(RefALOS) and ValidDEM(TestCop) and ValidDEM(TestALOS) then begin
                     //do not consider high latitude DEMs
-                    //order is 'COP_ALOS,ALOS_COP,COP_REF,ALOS_REF,COP_A_REF,ALOS_C_REF,REFC_REFA,REFA_REFC';
                     //second grid in pair is linearly interpolated to match first
                     OneTile('ELEV',TestDEMs[1],TestDEMs[2],RefDEMs[Ref_SRTM],RefDEMs[Ref_ALOS]);
 
-                    Slope1 := CreateSlopeMap(TestDEMs[1],false);
-                    Slope2 := CreateSlopeMap(TestDEMs[2],false);
-                    SlopeR1 := CreateSlopeMap(RefDEMs[Ref_SRTM],false);
-                    SlopeR2 := CreateSlopeMap(RefDEMs[Ref_ALOS],false);
+                    Slope1 := CreateSlopeMap(TestCop,false);
+                    Slope2 := CreateSlopeMap(TestAlos,false);
+                    SlopeR1 := CreateSlopeMap(RefSRTM,false);
+                    SlopeR2 := CreateSlopeMap(RefALOS,false);
                     OneTile('Slope',Slope1,Slope2,SlopeR1,SlopeR2);
 
-                    R1 := CreateRoughnessSlopeStandardDeviationMap(False,TestDEMs[1],MDDef.DEM_ruff_window);
-                    R2 := CreateRoughnessSlopeStandardDeviationMap(False,TestDEMs[2],MDDef.DEM_ruff_window);
-                    RR1 := CreateRoughnessSlopeStandardDeviationMap(False,RefDEMs[Ref_SRTM],MDDef.DEM_ruff_window);
-                    RR2 := CreateRoughnessSlopeStandardDeviationMap(False,RefDEMs[Ref_ALOS],MDDef.DEM_ruff_window);
+                    R1 := CreateRoughnessSlopeStandardDeviationMap(False,TestCop,MDDef.DEM_ruff_window);
+                    R2 := CreateRoughnessSlopeStandardDeviationMap(False,TestALOS,MDDef.DEM_ruff_window);
+                    RR1 := CreateRoughnessSlopeStandardDeviationMap(False,RefSRTM,MDDef.DEM_ruff_window);
+                    RR2 := CreateRoughnessSlopeStandardDeviationMap(False,RefALOS,MDDef.DEM_ruff_window);
                     OneTile('RUFF',R1,R2,RR1,RR2);
 
-                    T1 := WBT_TangentialCurvature(false,DEMGlb[TestDEMs[1]].GeotiffDEMName);
-                    T2 := WBT_TangentialCurvature(false,DEMGlb[TestDEMs[2]].GeotiffDEMName);
-                    TR1 := WBT_TangentialCurvature(false,DEMGlb[RefDEMs[Ref_SRTM]].GeotiffDEMName);
-                    TR2 := WBT_TangentialCurvature(false,DEMGlb[RefDEMs[Ref_ALOS]].GeotiffDEMName);
+                    T1 := WBT_TangentialCurvature(false,DEMGlb[TestCop].GeotiffDEMName);
+                    T2 := WBT_TangentialCurvature(false,DEMGlb[TestALOS].GeotiffDEMName);
+                    TR1 := WBT_TangentialCurvature(false,DEMGlb[RefSRTM].GeotiffDEMName);
+                    TR2 := WBT_TangentialCurvature(false,DEMGlb[RefALOS].GeotiffDEMName);
                     OneTile('TANGC',T1,T2,TR1,TR2);
                 end;
-            end {procedure GetInterpolationComparisons;};
+            end {procedure GetInterpolationComparisons};
 
 
           procedure GetFUVStatistics;
@@ -1740,11 +1734,6 @@ begin {procedure UTMbasedFUV}
           else begin
              aLine := 'DEMIX_TILE,AREA,LAT,LONG,CRITERION';
              if Option in [udInterpolatedFUVs] then begin
-                if (FUVresults = nil) then begin
-                   fuvResults := tStringList.Create;
-                   aline := aline + ',COP_ALOS,ALOS_COP,COP_REF,ALOS_REF,COP_A_REF,ALOS_C_REF,REFA_REFC,REFC_REFA,D_COP_ALOS,D_REFC_A';
-                   fuvResults.Add(aLine);
-                end;
                 GetInterpolationComparisons;
              end
              else begin

@@ -6361,9 +6361,6 @@ object MapForm: TMapForm
       object N48: TMenuItem
         Caption = '-'
       end
-      object N56: TMenuItem
-        Caption = '-'
-      end
       object Slopeandroughness1: TMenuItem
         Caption = 'Slope and roughness'
         OnClick = Slopeandroughness1Click
@@ -6378,6 +6375,10 @@ object MapForm: TMapForm
       object Slopeerrorestimatorexperimental1: TMenuItem
         Caption = 'Extrapolated Evans-Young method (slope, aspect, uncertainty)'
         OnClick = Slopeerrorestimatorexperimental1Click
+      end
+      object N3Dareas1: TMenuItem
+        Caption = '3D areas'
+        OnClick = N3Dareas1Click
       end
     end
     object Aspect3: TMenuItem

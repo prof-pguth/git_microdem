@@ -4,7 +4,7 @@ unit make_grid;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -81,6 +81,7 @@ type
    function CreateDownwardOpennessMap(OpenMap : boolean; DEM,BoxRadiusMeters,BoxRadiusPixels : integer) : Integer;
    function MakeAspectMap(OpenMap : boolean; DEM : integer; SaveName : PathStr = '') : integer;
 
+procedure MakePixelAreaGrids(DEM : integer; OpenMaps : boolean = true);
 function CreateSlopeMap(WhichDEM : integer; OpenMap : boolean = true; Components : boolean = false) : integer;
 function CreateSlopeMapPercentAlgorithm(HowCompute : tSlopeCurveCompute; OpenMap : boolean; DEM : integer; SaveName : PathStr = ''; Degrees : boolean = false) : integer;
 
@@ -788,6 +789,40 @@ begin
    if ShowSatProgress then EndProgress;
    if OpenMap then for i := 1 to 5 do DEMglb[Grids[i]].SetUpMap(false);
 end;
+
+
+procedure MakePixelAreaGrids(DEM : integer; OpenMaps : boolean = true);
+const
+   aName : array[1..3] of shortstring = ('ArcCOS','Planar_area','3D_area');
+var
+   i,x,y : integer;
+   AreaName : shortstring;
+   SlopeAspectRec : tSlopeAspectRec;
+   Grids : array[1..3] of integer;
+   aCos,Area2D,Area3D : float32;
+begin
+   for i := 1 to 3 do begin
+      grids[i] := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,aName[i] + '_' + DEMGlb[DEM].AreaName,euSquareMeter);
+   end;
+   if ShowSatProgress then StartProgressAbortOption('Slope');
+   for x := 0 to pred(DEMGlb[DEM].DEMheader.NumCol) do begin
+      if ShowSatProgress and (x mod 100 = 0) then UpdateProgressBar(x/DEMGlb[DEM].DEMheader.NumCol);
+      for y := 0 to pred(DEMGlb[DEM].DEMheader.NumRow) do begin
+         if DEMGlb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,x,y,SlopeAspectRec) then begin
+            aCos := 1 / CosDeg(SlopeAspectRec.SlopeDegree);
+            Area2D := DEMGlb[DEM].XSpaceByDEMrow[y] * DEMGlb[DEM].AverageYSpace;
+            Area3D := Area2D * aCos;
+            DEMGlb[grids[1]].SetGridElevation(x,y,aCos);
+            DEMGlb[grids[2]].SetGridElevation(x,y,Area2D);
+            DEMGlb[grids[3]].SetGridElevation(x,y,Area3D);
+         end;
+      end;
+   end;
+   for i := 1 to 3 do DEMglb[Grids[i]].CheckMaxMinElev;
+   if ShowSatProgress then EndProgress;
+   if OpenMaps then for i := 1 to 3 do DEMglb[Grids[i]].SetUpMap(false);
+end;
+
 
 
 function CreateFirstSecondThirdOrderPartialDerivatives(Method : tSlopeCurveCompute; OpenMap : boolean; DEM : integer;

@@ -1715,6 +1715,7 @@ begin
    DEMIXdbCreatePopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
+
 procedure Twmdem.DEMIXhelp1Click(Sender: TObject);
 begin
    DisplayHTMLTopic('demix_sg2\wine_contest.html');

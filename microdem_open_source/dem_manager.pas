@@ -192,11 +192,6 @@ uses
        DEMEROS,
    {$EndIf}
 
-   {$IfDef ExRedistrict}
-   {$Else}
-      demredistrict,
-   {$EndIf}
-
    {$IfDef ExGIS}
    {$Else}
       demdatabase,
@@ -273,12 +268,10 @@ uses
    BaseMap;
 
 
-
 function IsThisWebExtractDEM(aDEm : shortstring) : boolean;
 begin
    Result := (aDEM = 'GEDTMV0') or (aDEM = 'EDTM') or (aDEM = 'GEDTMV1_1') or (aDEM = 'GEDTMV1_2');
 end;
-
 
 
 function WebExtractGEDTMorEDTM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
@@ -350,12 +343,13 @@ begin
    Results := tStringList.Create;
    Results.Add('LAT,LONG,FILE_NAME');
    for i := 0 to pred(theFiles.Count) do begin
-      fName := ExtractFileNameNoExt(theFiles.Strings[i]);
+      fName := ExtractFileName(theFiles.Strings[i]);
       Lat := StrToInt(Copy(fName,31,2));
       if FName[30] = 'S' then Lat := -Lat;
       Long := StrToInt(Copy(fName,34,3));
       if FName[33] = 'W' then Long := -Long;
-      Results.Add(IntToStr(Lat) + ',' + IntToStr(Long) + ',' + fName);
+      if AnsiContainsText(UpperCase(fName),'INPUTQUALITY') then DeleteFileIfExists(fName)
+      else Results.Add(IntToStr(Lat) + ',' + IntToStr(Long) + ',' + fName);
    end;
    fName := MdtempDir + 'LC_10_files_sw_corner.dbf';
    PetDBUtils.StringList2CSVtoDB(Results,fName);

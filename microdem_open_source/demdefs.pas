@@ -783,7 +783,8 @@ const
    euGRC_L1 = 75;
    euGRC_L2 = 76;
    euGRC_L3 = 77;
-   euHighElevUnits = 77;  //same as last real one;  used only for loops through all the elevation units;
+   euSquareMeter = 78;
+   euHighElevUnits = 78;  //same as last real one;  used only for loops through all the elevation units;
 
 const
    VertCSUndefined = 0;

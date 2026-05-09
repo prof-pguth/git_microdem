@@ -551,7 +551,7 @@ begin
 
       if (TColorList <> Nil) and (TColorList.Count > 0) then begin
          for i := 1 to TColorList.Count do begin
-            {$IfDef RecordHistogramColors} WriteLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
+            {$IfDef GraphSymbology} WriteLineToDebugFile(IntToStr(i) + '  ' + TcolorList.Strings[pred(i)]); {$EndIf}
             if i in [0..255] then begin
                Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
                Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));

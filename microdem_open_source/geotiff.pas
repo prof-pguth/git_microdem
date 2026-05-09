@@ -21,17 +21,17 @@ unit GeoTiff;
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
-      {$Define RecordGeotiff}
+      //{$Define RecordGeotiff}
       //{$Define RecordGeotiffRewrite}
       //{$Define GeotiffSave}
       //{$Define RecordJustMetadata}
       //{$Define RecordGeotiffFailures}
       //{$Define RecordFullGeotiff}
-      {$Define RecordUTM}
-      {$Define RecordWKT}
+      //{$Define RecordUTM}
+      //{$Define RecordWKT}
       //{$Define RecordProjProgress}
       //{$Define TrackWKTstring}
-      {$Define RecordInitDEM}
+      //{$Define RecordInitDEM}
       //{$Define RecordInitDEMName}
       //{$Define Record_h_datum_code}
       //{$Define ReportKey258}  //happens with some Landsat, but does not appear to stop things
@@ -41,12 +41,12 @@ unit GeoTiff;
       //{$Define RecordImageOffsets}
       //{$Define TrackHorizontalDatum}
       //{$Define TrackVerticalDatum}
-      {$Define RecordDEMMapProj}
-      {$Define RecordGeotiffProjection}
-      {$Define RecordDefineDatum}
+      //{$Define RecordDEMMapProj}
+      //{$Define RecordGeotiffProjection}
+      //{$Define RecordDefineDatum}
       //{$Define RecordGeotiffDestroy}
       //{$Define RecordUKOS}
-      {$Define TrackProjection}
+      //{$Define TrackProjection}
       //{$Define ShowKeyDEM}
       //{$Define TrackZ}
       //{$Define RecordTiePoints}
@@ -57,7 +57,7 @@ unit GeoTiff;
       //{$Define TrackA}
       //{$Define RecordKeys}
       //{$Define LongCent}
-      {$Define RecordEntryInGeotiff}
+      //{$Define RecordEntryInGeotiff}
       //{$Define RecordPlateCaree}
       //{$Define RecordGeotiffHistogram}
       //{$Define Record3076}
@@ -165,7 +165,7 @@ type
          RegVars : tRegVars;
          TIFFFileName   : PathStr;
          TiffHandle : THandle; //public to read in multigrid
-         BigEndian,   //public to read in multigrid
+         BigEndian,           //public to read in multigrid
          CanEnhance,
          TIFFImageColorDefined  : boolean;   //must be public
          TIFFImageColor : Petmar_types.TRGBLookUp;

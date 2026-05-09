@@ -3442,7 +3442,7 @@ object wmdem: Twmdem
     Left = 1000
     Top = 288
     object Graphevaluationandscores1: TMenuItem
-      Caption = 'Open DEMIX database for graph evaluation and scores'
+      Caption = 'The fi'
       OnClick = Graphevaluationandscores1Click
     end
     object N56: TMenuItem

@@ -3998,6 +3998,9 @@ object dbtablef: Tdbtablef
       Caption = 'Interpolation results, criteria plus fields'
       OnClick = Interpolationresultscriteriaplusfields1Click
     end
+    object N62: TMenuItem
+      Caption = '-'
+    end
     object Currenttest1: TMenuItem
       Caption = 
         'Graph by evaluation criteria, with tile names and parameter sort' +

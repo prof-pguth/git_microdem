@@ -1425,7 +1425,6 @@ type
     Interactiveadjusment1: TMenuItem;
     Geoidgrids1: TMenuItem;
     SummaryallopenDEMsGrids1: TMenuItem;
-    N56: TMenuItem;
     Slopeandroughness1: TMenuItem;
     MergeanotherDEMhillshade1: TMenuItem;
     Zoomfullresolution1: TMenuItem;
@@ -1707,6 +1706,7 @@ type
     CompareGaussiancurvature1: TMenuItem;
     N90: TMenuItem;
     ListCOGS1: TMenuItem;
+    N3Dareas1: TMenuItem;
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
     procedure Smallcirclethroughpoint1Click(Sender: TObject);
@@ -2934,6 +2934,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure CompareCasoraticurvature1Click(Sender: TObject);
     procedure CompareGaussiancurvature1Click(Sender: TObject);
     procedure ListCOGS1Click(Sender: TObject);
+    procedure N3Dareas1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -7865,6 +7866,11 @@ end;
 procedure TMapForm.Changemap2Click(Sender: TObject);
 begin
    ModifyChangeMapSettings(Self);
+end;
+
+procedure TMapForm.N3Dareas1Click(Sender: TObject);
+begin
+   MakePixelAreaGrids(MapDraw.DEMonMap,true);
 end;
 
 procedure TMapForm.N3Dblockdiagrams2Click(Sender: TObject);

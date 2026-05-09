@@ -29,13 +29,11 @@ type
     CancelBtn: TBitBtn;
     Memo1: TMemo;
     BitBtn4: TBitBtn;
-    RadioGroup1: TRadioGroup;
     BitBtn5: TBitBtn;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
-    procedure RadioGroup1Click(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
   private
@@ -66,8 +64,10 @@ function ModeForAreaSelection : tStringList;
 var
   PickAreasForm : TPickAreasForm;
   fName : PathStr;
-  i,PickedNum,aThird,First,Last : integer;
+  i,PickedNum{,aThird,First,Last} : integer;
 begin
+    Result := DEMIX_GetListOfAreas;
+    exit;
     PickAreasForm := TPickAreasForm.Create(Application);
     PickAreasForm.LoadDEMs;
 
@@ -97,30 +97,6 @@ begin
                  for i := 0 to pred(PickAreasForm.Memo1.Lines.Count) do
                    Result.Add(PickAreasForm.Memo1.Lines[i]);
              end;
-         5..7 : begin
-                   Result := DEMIX_GetListOfAreas;
-                   aThird := Result.Count div 3;
-                   if PickAreasForm.Mode in [5,6] then begin //for first and mid thirds, delete last third
-                      First := pred(Result.Count);
-                      Last := (Result.Count - aThird);
-                      for i := First downto Last do Result.Delete(i);
-                   end;
-                   if PickAreasForm.Mode in [5] then begin //for first third, delete middle third
-                      First := pred(Result.Count);
-                      Last := (Result.Count - aThird);
-                      for i := First downto Last do Result.Delete(i);
-                   end;
-                   if PickAreasForm.Mode in [6] then begin //for middle third, delete first third
-                      First := pred(Result.Count) - aThird;
-                      Last := 0;
-                      for i := First downto Last do Result.Delete(i);
-                   end;
-                   if PickAreasForm.Mode in [7] then begin //for last third, delete first and mid thirds
-                      First := pred(Result.Count) - aThird;
-                      Last := 0;
-                      for i := First downto Last do Result.Delete(i);
-                   end;
-                end;
    end;
    {$IfDef RecordPickAreas} if Result.Count > 0 then WriteLineToDebugFile('Areas=' + IntToStr(Result.Count) + '  from ' + Result.Strings[0] + ' to ' + Result.Strings[pred(Result.Count)]); {$EndIf}
    Result.Sort;
@@ -176,12 +152,5 @@ begin
   Mode := 0;
   Close;
 end;
-
-procedure TPickAreasForm.RadioGroup1Click(Sender: TObject);
-begin
-   Mode := 5 + RadioGroup1.ItemIndex;
-   Close;
-end;
-
 
 end.

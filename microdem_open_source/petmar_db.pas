@@ -249,13 +249,13 @@ type
         procedure SetColorFromTColor(Color : tColor);
         function PlatformColorFromTable : tPlatformColor;
         function TColorFromTable : tColor;
+
         procedure GetLineColorAndWidth(var LineColor : tPlatFormColor; var LineSize : integer);
         procedure SetLineColorAndWidth(LineColor : tPlatFormColor; LineSize : integer);
 
         procedure DefinePointSymbol(var Symbol : tDrawingSymbol; var SymbolSize : byte; var SymbolColor : tPlatformColor); overload;
-        procedure PostPointSymbol(Symbol : tDrawingSymbol; SymbolSize : byte; SymbolColor : tPlatformColor); overload;
-
         procedure DefinePointSymbol(var Symbol : tFullSymbolDeclaration); overload;
+        procedure PostPointSymbol(Symbol : tDrawingSymbol; SymbolSize : byte; SymbolColor : tPlatformColor); overload;
         procedure PostPointSymbol(Symbol : tFullSymbolDeclaration); overload;
 
         procedure TrimAllStringFields(JustOne : ANSIString = '');

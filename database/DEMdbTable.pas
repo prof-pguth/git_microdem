@@ -15,6 +15,7 @@
    {$IfDef Debug}
        //{$Define RecordDetailedDEMIX}
        //{$Define RecordCloseDB}
+      {$Define RecordEditSymbols}
        //{$Define RecordDataBaseSaveFiles}
        //{$Define RecordDBPlot}
        //{$Define RecordCSVOut}
@@ -1079,6 +1080,7 @@ type
     N2dgraphpickmultipleseries1: TMenuItem;
     N2dgraphdifferencetwofields1: TMenuItem;
     Interpolationresultscriteriaplusfields1: TMenuItem;
+    N62: TMenuItem;
     //Pointfilter1: TMenuItem;
     //Pointfilter2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
@@ -1914,10 +1916,6 @@ type
     procedure N2dgraphpickmultipleseries1Click(Sender: TObject);
     procedure N2dgraphdifferencetwofields1Click(Sender: TObject);
     procedure Interpolationresultscriteriaplusfields1Click(Sender: TObject);
-    //procedure DSMlessthanDTM1Click(Sender: TObject);
-    //procedure DSMDTMpairs1Click(Sender: TObject);
-    //procedure Pointfilter2Click(Sender: TObject);
-    //procedure Pointfilter1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -1927,11 +1925,9 @@ type
     function GetMultipleEntriesFromTableField(WhatFor,aName : shortstring) : tStringList;
     function GetSingleEntryFromTableField(WhatFor,aName : shortstring) : ShortString;
     procedure SearchAndReplace(aField : ShortString; Before,After : ANSIString; var Changed : integer);
-    //procedure ThreeDGraph(NoVertExag: boolean);
     procedure SetFonts;
     procedure Distributionsummary(Title : shortstring);
     procedure SingleFieldArithmetic(DBonTable,Operation : integer; CheckField : shortstring);
-
   public
      DBonTable,
      xdrawspot,ydrawspot : integer;
@@ -1946,9 +1942,8 @@ type
      TrackBarringAllowed,
      AllOptionsForFans,
      FormWorking,
-     VATEdit,
      TrainingClassAvailable,
-     EditSymbologyOnly,
+     EditVATorSymbology,
      Closing : boolean;
      LinkGraph : tThisBaseGraph;
      AllGraphBitmap : tMyBitmap;
@@ -2172,7 +2167,7 @@ var
      var
         Min,Max : float64;
         zRange : float64;
-        GeometryFName{,ColorsFName} : PathStr;
+        GeometryFName : PathStr;
          Points : ^tPointXYZIArray;
          MemReq : int64;
          i,Mult : integer;
@@ -2329,7 +2324,8 @@ begin
    SingleFieldArithmeticPopupMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
-type tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
+type
+   tPointInPolygon = (pipLabels,pipDelete,pipSetMask);
 
 procedure MarkPointInPolygon(PIP : tPointInPolygon; DB,MaskDB : integer; NameField,MaskFieldName : string10);
 var
@@ -3370,6 +3366,10 @@ procedure Tdbtablef.DBGrid1CellClick(Column: TColumn);
 var
    ch : AnsiString;
    fName : PathStr;
+   aField : shortstring;
+   LineColor : tPlatFormColor;
+   LineSize,RecID : integer;
+   Symbol : tFullSymbolDeclaration;
 
    procedure ToggleField(fName : ShortString);
    begin
@@ -3406,13 +3406,63 @@ begin
               end;
        end;
    end
-   else if VATEdit or EditSymbologyOnly then begin
-        if (Column.FieldName = 'USE') then ToggleField('USE');
-        if (Column.FieldName = 'PLOT') then ToggleField('PLOT');
-        if (Column.FieldName = 'GRAY') then ToggleField('GRAY');
-        if (Column.FieldName = 'NAME') or (Column.FieldName = 'CLASS_NAME') or (Column.FieldName = 'CLASS') or (Column.FieldName = 'COLOR') or (Column.FieldName = 'PALETTE') or (Column.FieldName = 'DEMIX_TILE') then begin
+   else if EditVATorSymbology then begin
+        aField := Column.FieldName;
+        RecID := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('REC_ID');
+        {$IfDef RecordEditSymbols} WriteLineToDebugFile('Tdbtablef.DBGrid1DblClick, field=' + aField + '  RecID=' + IntToStr(RecID)); {$EndIf}
+
+        if (aField = 'USE') or (aField = 'PLOT') or (aField = 'SHOW_LINE') or (aField = 'SHOW_POINT') or (Afield = 'GRAY') then begin
+           ToggleField(aField);
+           if (LinkGraph <> Nil) then begin
+              if (aField = 'SHOW_LINE') then LinkGraph.GraphDraw.ShowLine[pred(RecID)] := (GISdb[DBonTable].MyData.GetFieldByNameAsString(aField) = 'Y');
+              if (aField = 'SHOW_POINT') then LinkGraph.GraphDraw.ShowPoints[pred(RecID)] := (GISdb[DBonTable].MyData.GetFieldByNameAsString(aField) = 'Y');
+              LinkGraph.RedrawDiagram11Click(Nil);
+           end;
+        end;
+        if (aField = 'SYM_TYPE') or (aField = 'SYM_SIZE') or (aField = 'SYM_COLOR') then begin
+           GISdb[DBonTable].MyData.DefinePointSymbol(Symbol);
+           PickSymbol(Nil,Symbol,'Point symbol');
+           GISdb[DBonTable].MyData.PostPointSymbol(Symbol);
+           if (LinkGraph <> Nil) then begin
+              LinkGraph.GraphDraw.Symbol[pred(RecID)] := Symbol;
+              LinkGraph.RedrawDiagram11Click(Nil);
+           end;
+        end;
+        if (aField = 'LINE_WIDTH') or (aField = 'LINE_COLOR') then begin
+           GISdb[DBonTable].MyData.GetLineColorAndWidth(LineColor,LineSize);
+           PickLineSizeAndColor('Line symbology',Nil,LineColor,LineSize);
+           GISdb[DBonTable].MyData.SetLineColorAndWidth(LineColor,LineSize);
+           if (LinkGraph <> Nil) then begin
+              LinkGraph.GraphDraw.FileColors256[pred(RecID)] := LineColor;
+              LinkGraph.GraphDraw.LineSize256[pred(RecID)] := LineSize;
+              LinkGraph.RedrawDiagram11Click(Nil);
+           end;
+        end;
+
+(*
+        procedure GetLineColorAndWidth(var LineColor : tPlatFormColor; var LineSize : integer);
+        procedure SetLineColorAndWidth(LineColor : tPlatFormColor; LineSize : integer);
+
+        procedure DefinePointSymbol(var Symbol : tDrawingSymbol; var SymbolSize : byte; var SymbolColor : tPlatformColor); overload;
+        procedure DefinePointSymbol(var Symbol : tFullSymbolDeclaration); overload;
+        procedure PostPointSymbol(Symbol : tDrawingSymbol; SymbolSize : byte; SymbolColor : tPlatformColor); overload;
+        procedure PostPointSymbol(Symbol : tFullSymbolDeclaration); overload;
+
+       Table.Insert;
+       Table.SetFieldByNameAsString('NAME',MultSeries.Strings[i]);
+       Table.SetFieldByNameAsString('SHOW_LINE',YorN(GraphDraw.ShowLine[i]));
+       Table.SetFieldByNameAsString('SHOW_POINT',YorN(GraphDraw.ShowPoints[i]));
+       Table.SetLineColorAndWidth(GraphDraw.FileColors256[i],GraphDraw.LineSize256[i]);
+       Table.PostPointSymbol(GraphDraw.Symbol[i]);
+       Table.Post;
+
+
+*)
+
+        if (aField = 'NAME') or (aField = 'CLASS_NAME') or (aField = 'CLASS') or (aField = 'COLOR') or (aField = 'PALETTE') or (aField = 'DEMIX_TILE') then begin
            Colorpoint1Click(Nil);
         end;
+        {$IfDef RecordEditSymbols} WriteLineToDebugFile('Tdbtablef.DBGrid1DblClick out, field=' + aField + '  RecID=' + IntToStr(GISdb[DBonTable].MyData.GetFieldByNameAsInteger('REC_ID'))); {$EndIf}
   end;
 end;
 
@@ -3564,6 +3614,7 @@ var
    begin
       bmpWidth := (Rect.Bottom - Rect.Top);
       if WidePalette then bmpWidth := 5 * bmpWidth;
+      if GISdb[DBonTable].MyData.FieldExists('SHOW_LINE') and GISdb[DBonTable].MyData.FieldExists('SHOW_POINT') then bmpWidth := 3 * bmpWidth;
       fixRect.Right := Rect.Left + bmpWidth;
       CreateBitmap(bitmap,bmpWidth,bmpWidth);
    end;
@@ -3593,7 +3644,7 @@ begin {Tdbtablef.DBGrid1DrawColumnCell}
                   Bitmap := MakeColorScaleBitmap(200,24,GISdb[DBonTable].dbOpts.DBColorScheme,GISdb[DBonTable].ColorDefTable);
                end
                else if GISdb[DBonTable].MyData.FieldExists('SHOW_LINE') and GISdb[DBonTable].MyData.FieldExists('SHOW_POINT') then begin
-                  Bitmap.Width := 50;
+                  //Bitmap.Width := 50;
                   if GISdb[DBonTable].MyData.GetFieldByNameAsString('SHOW_LINE') = 'Y' then begin
                       Bitmap.Canvas.Pen.Color := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('LINE_COLOR');
                       Bitmap.Canvas.Pen.Width := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('LINE_WIDTH');
@@ -3601,7 +3652,7 @@ begin {Tdbtablef.DBGrid1DrawColumnCell}
                   end;
                   if GISdb[DBonTable].MyData.GetFieldByNameAsString('SHOW_POINT') = 'Y' then begin
                      GISdb[DBonTable].MyData.DefinePointSymbol(Symbol);
-                     ScreenSymbol(Bitmap.Canvas,20,10,Symbol);
+                     ScreenSymbol(Bitmap.Canvas,Bitmap.height div 2,Bitmap.height div 2,Symbol);
                   end;
                end
                else if (ThisShapeType in [0,1,11]) and GISdb[DBonTable].PointSymbolFieldsPresent then begin
@@ -3792,8 +3843,7 @@ begin
    SimplePlot := false;
    RedGrayGraph := false;
    FormWorking := false;
-   VATEdit := false;
-   EditSymbologyOnly := false;
+   EditVATorSymbology := false;
    TrainingClassAvailable := false;
    Panel1.Visible := false;
    Panel3.Visible := false;
@@ -5000,7 +5050,7 @@ end;
 
 procedure Tdbtablef.HelpBtnClick(Sender: TObject);
 begin
-   if VATEdit then DisplayHTMLTopic('html\vat_grid_disp.htm')
+   if EditVATorSymbology then DisplayHTMLTopic('html\vat_grid_disp.htm')
    else DisplayHTMLTopic('html\database_table_display.htm');
 end;
 
@@ -12078,10 +12128,10 @@ procedure Tdbtablef.Interpolationresultscriteriaplusfields1Click(Sender: TObject
 var
    Series,Criteria : tStringList;
 begin
-   Toggle_db_use.VerifyRecordsToUse(DEMIXSettingsDir + 'interpolate_series.dbf','SERIES','','USE');
+   Toggle_db_use.VerifyRecordsToUse(DEMIXSettingsDir + 'interpolate_series.dbf','SERIES','DB fields for graph series','USE');
    Series := ListUseValuesInField(DEMIXSettingsDir + 'interpolate_series.dbf', 'SERIES');
 
-   Toggle_db_use.VerifyRecordsToUse(DEMIXSettingsDir + 'interpolate_criteria.dbf','CRITERION','','USE');
+   Toggle_db_use.VerifyRecordsToUse(DEMIXSettingsDir + 'interpolate_criteria.dbf','CRITERION','Values in CRITERION field','USE');
    Criteria := ListUseValuesInField(DEMIXSettingsDir + 'interpolate_criteria.dbf', 'CRITERION');
    GISDB[DBonTable].dbOpts.XField := 'AVG_SLOPE';
    GISDB[DBonTable].ActuallyDrawGraph(dbgtN2DgraphMultSeries, Series, Nil,'',Criteria);

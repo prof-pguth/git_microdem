@@ -1,13 +1,11 @@
 unit petdbutils;
 
-
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
 { Copyright (c) 1986-2025 Peter L. Guth  }
 {________________________________________}
-
 
 {$I nevadia_defines.inc}
 
@@ -16,7 +14,7 @@ unit petdbutils;
       //{$Define RecordDataBaseFilter}
 
       //{$Define RecordCSVMerge}
-      {$Define RecordCSV}
+      //{$Define RecordCSV}
       //{$Define RecordShortCSV}
       //{$Define RecordCSVParse}
       //{$Define RecordFullCSV}      //major slowdown
@@ -1559,7 +1557,7 @@ begin {function CSVFileImportToDB}
                      ZeroPadLen[i] := len;
                   end;
                   if (FieldName = 'BIN_NAME') and (Len < 35) then Len := 35;
-                  CreateDataBase.AddAField(FieldName,ftString,Len);
+                  if (len > 0) then CreateDataBase.AddAField(FieldName,ftString,Len);
                   {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = string, len=' + IntToStr(len) + ' zeropad=' + IntToStr(ZeroPadLen[i])); {$EndIf}
                end
                else if IsFloat then begin
@@ -1572,20 +1570,21 @@ begin {function CSVFileImportToDB}
                      if (Decs < 2) then Decs := 2;
                   end
                   else Len := Len + 1;
-                  CreateDataBase.AddAField(FieldName,ftFloat,Len,Decs);
+                  if (len > 0) then CreateDataBase.AddAField(FieldName,ftFloat,Len,Decs);
                   {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = float64, len=' + IntToStr(len) ); {$EndIf}
                end
                else begin
                   if (Len >= 10) then begin
-                     CreateDataBase.AddAField(FieldName,ftString,Len);
+                     if (len > 0) then CreateDataBase.AddAField(FieldName,ftString,Len);
                      ZeroPadLen[i] := len;
                      {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = string (because too long for int or field=zip),  len=' + IntToStr(len)); {$EndIf}
                   end
                   else begin
-                     CreateDataBase.AddAField(FieldName,ftInteger,succ(Len));
+                     if (len > 0) then CreateDataBase.AddAField(FieldName,ftInteger,succ(Len));
                      {$IfDef RecordCSV} WriteLineToDebugFile(FieldName + ' type = integer, len=' + IntToStr(Len)); {$EndIf}
                   end;
                end;
+               if (len = 0) then LocalStringGrid.Cells[i,0] := 'SKIP';
             end;
          end;
          if not RecIdExists then CreateDataBase.AddAField(RecNoFName,ftInteger,9);

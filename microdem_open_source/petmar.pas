@@ -3653,15 +3653,15 @@ begin
     StripBlanks(fName);
     CleanUpFileName(fName);
     StripInvalidPathNameChars(fName);
-    Result := System.IOUtils.TPath.Combine(Path, fName + IntToStr(i) + Ext);
-    if not FileExists(Result) then begin
-      if (fName[length(fName)] <> '_') then fName := fName + '_';
-      i := 0;
+    if (fName[length(fName)] <> '_') then fName := fName + '_';
+    i := 0;
+    //Result := System.IOUtils.TPath.Combine(Path, fName + IntToStr(i) + Ext);
+    //if not FileExists(Result) then begin
       repeat
          inc(i);
          Result  := System.IOUtils.TPath.Combine(Path, fName + IntToStr(i) + Ext);
       until not FileExists(Result);
-    end;
+    //end;
 end;
 
 

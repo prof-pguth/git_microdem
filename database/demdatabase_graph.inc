@@ -120,6 +120,7 @@ var
      procedure AddASeries(CriterionName : PathStr);
      var
         j : integer;
+        aField : shortstring;
         FileName : PathStr;
      begin
         for j := 0 to pred(MultSeries.Count) do begin
@@ -127,14 +128,16 @@ var
            Result.GraphDraw.Symbol[NumSeries].DrawingSymbol := FilledBox;
            Result.GraphDraw.Symbol[NumSeries].Size := 5;
            Result.GraphDraw.Symbol[NumSeries].Color := ConvertTColorToPlatformColor(WinGraphColors(NumSeries));
-           OnFile := Result.OpenPointSymbolFile(rfile,FileName,Result.GraphDraw.Symbol[NumSeries]);
-           Result.GraphDraw.ShowPoints[OnFile] := true;
-           Result.GraphDraw.ShowLine[OnFile] := true;
-           {$If Defined(TrackColors)} WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(NumSeries) + ' ' + FileName +
-               ' line='+ ColorString(Result.GraphDraw.FileColors256[NumSeries]) + ' point='+ ColorString(Result.GraphDraw.Symbol[NumSeries].Color)); {$EndIf}
+           Result.OpenPointSymbolFile(rfile,FileName,Result.GraphDraw.Symbol[NumSeries]);
+           //Result.GraphDraw.ShowPoints[OnFile] := true;
+           {$If Defined(TrackColors)}
+              WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(NumSeries) + ' ' + FileName +
+                 ' line='+ ColorString(Result.GraphDraw.FileColors256[NumSeries]) + ' point=' + ColorString(Result.GraphDraw.Symbol[NumSeries].Color));
+           {$EndIf}
            MyData.First;
            repeat
-              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(MultSeries.Strings[j],v[2]) then begin
+              aField := MultSeries.Strings[j];
+              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(aField,v[2]) then begin
                  BlockWrite(Rfile,v,1);
               end;
               MyData.Next;
@@ -145,7 +148,8 @@ var
         end;
      end;
 
-
+var
+   aFilter : shortstring;
 begin {function TGISdataBaseModule.ActuallyDrawGraph}
      {$IfDef RecordDBGraphs} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph in'); {$EndIf}
      EmpSource.Enabled := false;
@@ -202,10 +206,11 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
 
      if (GraphType in [dbgtN2DgraphMultSeries]) then begin
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('(GraphType in [dbgtN2DgraphMultSeries]'); {$EndIf}
+         Result.GraphDraw.SetShowAllLines(false);
          Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
-         Result.GraphDraw.VertLabel := MultSeries.Strings[0];
          Result.GraphDraw.XWindowSize := MDDef.DEMIX_xsize;
          Result.GraphDraw.YWindowSize := MDDef.DEMIX_ysize;
+         Result.GraphDraw.VertLabel := MultSeries.Strings[0];
          for i := 1 to pred(MultSeries.Count) do begin
              Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
          end;
@@ -215,11 +220,13 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
          end
          else begin
             for j := 0 to pred(MultCriteria.Count) do begin
-               ApplyGISFilter('CRITERION=' + QuotedStr(MultCriteria.Strings[j]));
+               aFilter := 'CRITERION=' + QuotedStr(MultCriteria.Strings[j]);
+               ApplyGISFilter(aFilter);
                AddASeries('_' + MultCriteria.Strings[j]);
             end;
             ClearGISFilter;
          end;
+         Result.CreateGraphSymbologyFile(Result.GraphDraw.DataFilesPlotted);
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
         {$If Defined(TrackColors)} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
      end

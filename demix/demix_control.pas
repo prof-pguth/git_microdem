@@ -451,22 +451,13 @@ begin
 end;
 
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
-//var
-   //Table : tMyData;
 begin
    if FileExists(DEMIX_criteria_tolerance_fName) then begin
       Result := ListUseValuesInField(DEMIX_criteria_tolerance_fName,'CRITERION');
-
-      (*
-      Table := tMyData.Create(DEMIX_criteria_tolerance_fName);
-      Table.ApplyFilter('USE=' + QuotedStr('Y'));
-      Result := Table.ListUniqueEntriesInDB('CRITERION',false);
-      Table.Destroy;
-      *)
    end
    else begin
+      Result := nil;
       MessageToContinue('Invalid file for criteria, ' + DEMIX_criteria_tolerance_fName);
-      exit;
    end;
 end;
 

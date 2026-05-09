@@ -69,27 +69,13 @@ object PickAreasForm: TPickAreasForm
     TabOrder = 5
     OnClick = BitBtn4Click
   end
-  object RadioGroup1: TRadioGroup
-    Left = 24
-    Top = 184
-    Width = 153
-    Height = 49
-    Caption = 'Alphabetical 1/3 of areas'
-    Columns = 3
-    Items.Strings = (
-      'First '
-      'Mid'
-      'Last')
-    TabOrder = 6
-    OnClick = RadioGroup1Click
-  end
   object BitBtn5: TBitBtn
     Left = 272
     Top = 248
     Width = 113
     Height = 25
     Caption = 'Revise DEMs used'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = BitBtn5Click
   end
 end

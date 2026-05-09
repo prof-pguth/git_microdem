@@ -14,7 +14,8 @@ unit BaseGraf;
    {$IFDEF DEBUG}
        //{$Define NoInLine}
        //{$Define SavePlotFileProgress}
-       //{$Define GraphLineWidth}
+       {$Define GraphSymbology}
+
        //{$Define TrackFormCreate}     //28 Oct 2024, attempt to track down creation of hidden graph form, but it locks up
        //{$Define RecordAnimateGraph}
        //{$Define RecordGraphMemoryAlocations}
@@ -27,11 +28,9 @@ unit BaseGraf;
        //{$Define RecordGrafFromDB}
        //{$Define TrackColors}
        //{$Define TrackColorsSaveBitmaps}
-       //{$Define RecordGraphColors}
        //{$Define RecordMenuMisdirect}
        //{$Define RecordClipboard}
        //{$Define RecordHistogram}
-       //{$Define RecordHistogramColors}
        //{$Define RecordFullGrafAxes}
        //{$Define RecordLegends}
        //{$Define RecordSaveSeries}
@@ -200,7 +199,6 @@ type
          XYColorFilesPlotted,
          DataFilesPlotted,
          DBFPointFilesPlotted : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
-         //DBFLineFilesPlotted  : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
 
           constructor Create;
           destructor Destroy;
@@ -334,6 +332,7 @@ type
     Imagewithseparatalayers1: TMenuItem;
     Copytoclipboard3: TMenuItem;
     FindpeakYvalueineachseries1: TMenuItem;
+    Graphsymbology1: TMenuItem;
     procedure IDSpeedButtonClick(Sender: TObject);
     procedure LegendSpeedButtonClick(Sender: TObject);
     procedure Bestfitlinecolor1Click(Sender: TObject);
@@ -425,6 +424,7 @@ type
     procedure Animate1Click(Sender: TObject);
     procedure Imagewithseparatalayers1Click(Sender: TObject);
     procedure FindpeakYvalueineachseries1Click(Sender: TObject);
+    procedure Graphsymbology1Click(Sender: TObject);
   private
     { Private declarations }
      DataPlotsVisible : array[0..MaxGraphSeries] of boolean;
@@ -458,18 +458,14 @@ type
      MouseIsDown : boolean;
      MainSymbol : tFullSymbolDeclaration;
      VertCompare,UserContourInterval,MaxZ,MinZ,MinZShow   : float32;
-     sx,sy,
-     TernarySymSize,
-     BoxLineWidth,
-     PointsInDataBuffer,
-     CurrentOverlay,
-     FirstX,FirstY,
-     LastX,LastY : integer;
+     sx,sy,TernarySymSize,BoxLineWidth,PointsInDataBuffer,
+     CurrentOverlay,FirstX,FirstY,LastX,LastY : integer;
      RoseColor  : tColor;
      RoseData   : ^CircleFreqType;
      SaveGraphName,
      RangeGraphName,
      BarGraphDBName,
+     ThisGraphSymbologyFName,
      BottomLegendFName : PathStr;
      BaseCaption,
      RoseLegend,
@@ -544,8 +540,9 @@ type
      procedure WriteDataSeriesASCII(XAxis,ASCII : boolean; var fftfilename : PathStr; var TotalNumberPoints : integer; DefSeries : integer = -1);
      procedure WindowGraphAxes(Bitmap : tMyBitmap);
      procedure AddCorrelationToCorner;
+     procedure CreateGraphSymbologyFile(MultSeries : tStringList);
      {$IfDef TrackColors} procedure GraphColorsRecord(WhereAt : shortstring);  {$EndIf}
-     {$If Defined(GraphLineWidth)}  procedure RecordLineWidths(where : shortstring); {$EndIf}
+     {$If Defined(GraphSymbology)}  procedure RecordLineWidths(where : shortstring); {$EndIf}
 
   end;
 
@@ -588,7 +585,6 @@ function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
 procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
 
 function CreateMultipleSeriesGraph(db : integer;    HAxisField : shortstring = ''; MultSeries : tStringList = nil) : tThisBaseGraph;
-
 
 
 implementation
@@ -678,7 +674,7 @@ var
    end;
 {$EndIf}
 
-{$If Defined(GraphLineWidth)}
+{$If Defined(GraphSymbology)}
     procedure tThisBaseGraph.RecordLineWidths(where : shortstring);
     begin
        WriteLineToDebugFile(Where + ' line widths: ' + IntToStr(GraphDraw.LineSize256[0]) + ' ' + IntToStr(GraphDraw.LineSize256[1])+ ' ' + IntToStr(GraphDraw.LineSize256[2]) );
@@ -689,10 +685,7 @@ var
 function CreateMultipleSeriesGraph(db : integer; HAxisField : shortstring = ''; MultSeries : tStringList = nil) : tThisBaseGraph;
 var
    GraphSeriesFiles : tStringList;
-   i : integer;
    Min,Max : float64;
-   fName : PathStr;
-   Table : tMyData;
    CreateDB : tCreateDataBase;
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph in'); {$EndIf}
@@ -701,7 +694,7 @@ begin
   if (MultSeries = Nil) then MultSeries := GISdb[db].GetMultipleNumericFields('Multiple series to graph');
 
   GISdb[db].EmpSource.Enabled := false;
-  if GISdb[db].MyData.FiltRecsinDB > 0 then begin
+  if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
       GISdb[db].dbOpts.XField := HAxisField;
       Result := GISdb[db].ActuallyDrawGraph(dbgtN2DgraphMultSeries,MultSeries);
       Result.GraphDraw.MinHorizAxis := 0;
@@ -716,25 +709,7 @@ begin
       Result.GraphDraw.SetShowAllLines(false);
       Result.RedrawDiagram11Click(Nil);
 
-      fName := NextFileNumber(MDtempDir,'GraphSeries_','.dbf');
-      CreateDB := tCreateDataBase.Create(fName);
-      CreateDB.AddAField('NAME',ftString,12);
-      CreateDB.AddAField('SHOW_LINE',ftString,1);
-      CreateDB.AddAField('SHOW_POINT',ftString,1);
-      CreateDB.AddPointSymbolDefToTable;
-      CreateDB.AddLineDefToTable;
-      CreateDB.WriteCorrectHeader;
-      Table := tMyData.Create(fName);
-      for i := 0 to pred(MultSeries.Count) do begin
-         Table.Insert;
-         Table.SetFieldByNameAsString('NAME',MultSeries.Strings[i]);
-         Table.SetFieldByNameAsString('SHOW_LINE',YorN(Result.GraphDraw.ShowLine[i]));
-         Table.SetFieldByNameAsString('SHOW_POINT',YorN(Result.GraphDraw.ShowPoints[i]));
-         Table.SetLineColorAndWidth(Result.GraphDraw.FileColors256[i],Result.GraphDraw.LineSize256[i]);
-         Table.PostPointSymbol(Result.GraphDraw.Symbol[i]);
-         Table.Post;
-      end;
-      Table.Destroy;
+      Result.CreateGraphSymbologyFile(Result.GraphDraw.DataFilesPlotted);
   end;
   MultSeries.Destroy;
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph out'); {$EndIf}
@@ -863,6 +838,42 @@ end;
      DisplayBitmap(BigBitmap,PanelName);
      Findings.Destroy;
   end;
+
+
+procedure TThisBaseGraph.CreateGraphSymbologyFile(MultSeries : tStringList);
+var
+   i,HowLong : integer;
+   Table : tMyData;
+   ShortName : PathStr;
+   CreateDB : tCreateDataBase;
+begin
+    ThisGraphSymbologyFName := NextFileNumber(MDtempDir,'GraphSeries_','.dbf');
+    CreateDB := tCreateDataBase.Create(ThisGraphSymbologyFName);
+    HowLong := 0;
+    for i := 0 to pred(MultSeries.Count) do begin
+       ShortName := ExtractFileNameNoExt(MultSeries.Strings[i]);
+       if length(ShortName) > HowLong then HowLong := length(ShortName);
+    end;
+    CreateDB.AddAField('NAME',ftString,HowLong);
+    CreateDB.AddAField('SHOW_LINE',ftString,1);
+    CreateDB.AddAField('SHOW_POINT',ftString,1);
+    CreateDB.AddPointSymbolDefToTable;
+    CreateDB.AddLineDefToTable;
+    CreateDB.WriteCorrectHeader;
+    Table := tMyData.Create(ThisGraphSymbologyFName);
+    for i := 0 to pred(MultSeries.Count) do begin
+       ShortName := ExtractFileNameNoExt(MultSeries.Strings[i]);
+       Table.Insert;
+       Table.SetFieldByNameAsString('NAME',ShortName);
+       Table.SetFieldByNameAsString('SHOW_LINE',YorN(GraphDraw.ShowLine[i]));
+       Table.SetFieldByNameAsString('SHOW_POINT',YorN(GraphDraw.ShowPoints[i]));
+       Table.SetLineColorAndWidth(GraphDraw.FileColors256[i],GraphDraw.LineSize256[i]);
+       Table.PostPointSymbol(GraphDraw.Symbol[i]);
+       Table.SetFieldByNameAsInteger('REC_ID',succ(i));
+       Table.Post;
+    end;
+    Table.Destroy;
+end;
 
 
 function TThisBaseGraph.GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
@@ -1593,7 +1604,7 @@ begin
    Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[i]);
    Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[i]);
    Bitmap.Canvas.Font.Color := Bitmap.Canvas.Pen.Color;
-   {$IfDef RecordGraphColors} WritelineToDebugFile('TThisBaseGraph.SetMyBitmapColors, fn='+ IntToStr(I) + '  color=' +IntToStr(Bitmap.Canvas.Pen.Color)); {$EndIf}
+   {$IfDef GraphSymbology} WritelineToDebugFile('TThisBaseGraph.SetMyBitmapColors, fn='+ IntToStr(I) + '  color=' +IntToStr(Bitmap.Canvas.Pen.Color)); {$EndIf}
 end;
 
 
@@ -1603,7 +1614,7 @@ begin
    DataBaseFilter := Filter;
    Self.XField := XField;
    Self.YField := YField;
-   IDSpeedButton.Visible := true;
+   IDSpeedButton.Visible := (XField <> '') and (YField <> '');
 end;
 
 
@@ -1744,7 +1755,7 @@ begin
    Words.SaveToFile(fName);
    db := OpenMultipleDataBases('',fName);
    GraphDraw.DataFilesPlottedTable := ChangeFileExt(fName,DefaultDBExt);
-   GISdb[db].dbtablef.EditSymbologyOnly := true;
+   GISdb[db].dbtablef.EditVATorSymbology := true;
 end;
 
 
@@ -2595,7 +2606,7 @@ var
 
       procedure VertPartOfGraph(Min,Max,Inc : float32; First : boolean; RightSide : boolean = false); {y axis ticks and lines}
       var
-         PerCen{,yf} : float32;
+         PerCen : float32;
          i,y,y2 : integer;
          TStr : ShortString;
       begin
@@ -3904,6 +3915,16 @@ begin
 end;
 
 
+procedure TThisBaseGraph.Graphsymbology1Click(Sender: TObject);
+var
+   db : integer;
+begin
+   if OpenNumberedGISDataBase(db,ThisGraphSymbologyFName, true) then begin
+      GISdb[db].dbtablef.EditVATorSymbology := true;
+      GISdb[db].dbtablef.LinkGraph := self;
+   end;
+end;
+
 procedure TThisBaseGraph.Grayscalegraph1Click(Sender: TObject);
 begin
    GrayScaleImage(Image1);
@@ -4032,6 +4053,7 @@ begin
      BoxLineWidth := 2;
      RangeGraphName := '';
      BarGraphDBName := '';
+     ThisGraphSymbologyFName := '';
      //XYColorDBName := '';
      GraphFilter := '';
      SlicerOverlay := false;
@@ -4042,7 +4064,7 @@ begin
      GraphComputedMAvD := -999;
      GraphDraw.GrayAllDataFilesFirst := false;
 
-     for i := 0 to MaxGraphSeries do DataPlotsVisible[i] := true;
+     for i := 0 to MaxGraphSeries do DataPlotsVisible[i] := false;
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -4180,7 +4202,7 @@ end;
 function tThisBaseGraph.OpenPointSymbolFile(var rfile : file; fName : shortstring; Symbol : tFullSymbolDeclaration; LineSize : integer = 3) : integer;
 begin
    Result := OpenDataFile(rfile,fName);
-   if Result > 0 then begin
+   if (Result > 0) then begin
       GraphDraw.LineSize256[Result] := LineSize;
       GraphDraw.FileColors256[Result] := Symbol.color;
       GraphDraw.Symbol[Result] := Symbol;
@@ -4452,7 +4474,7 @@ begin
    for j := 0 to MaxGraphSeries do DataPlotsVisible[j] := true;
    GraphDraw.MultiPanelGraph := false;
    RedrawDiagram11Click(Nil);
-end;
+end {function TThisBaseGraph.AnimateGraph};
 
 procedure TThisBaseGraph.AlongXaxis1Click(Sender: TObject);
 begin
@@ -6040,17 +6062,17 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
    begin
       Result := nil;
       if (Flist.Count > 0) then begin
-         {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
+         {$If Defined(GraphSymbology) or Defined(RecordLegends)} WritelineToDebugFile('TThisBaseGraph.MakeLegend'); {$EndIf}
          MaxLen := 0;
          NumF := 0;
          CreateBitmap(Result,1500,ItemHigh*fList.Count+4);
          ClearBitmap(Result,GraphDraw.GraphBackgroundColor);
          for i := pred(fList.Count) downto 0 do begin
             Tstr := GetLegendLabelFromFileName(UseFileNames,ExtractFileNameNoExt(flist.Strings[i]));
-            if (TStr <> '') and DataPlotsVisible[i] then begin
+            if (TStr <> '') and (DataPlotsVisible[i] or GraphDraw.ShowLine[i] or GraphDraw.ShowPoints[i]) then begin
                  inc(NumF);
                  SetMyBitmapColors(Result,i);
-                 {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[pred(i)]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
+                 {$If Defined(GraphSymbology) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[i]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
                  Result.Canvas.Font.Style := [fsBold];
                  Result.Canvas.Font.Name := FontDialog1.Font.Name;
                  Result.Canvas.Font.Size := FontDialog1.Font.Size;
@@ -6090,7 +6112,7 @@ begin {function TThisBaseGraph.MakeLegend}
    else if (GraphDraw.LegendList <> Nil) then Result := MakeTheLegend(GraphDraw.LegendList,false)
    //else if (GraphDraw.DBFLineFilesPlotted <> Nil) then Result := MakeTheLegend(GraphDraw.DBFLineFilesPlotted)
    else if (GraphDraw.DataFilesPlotted <> Nil) then Result := MakeTheLegend(GraphDraw.DataFilesPlotted);
-   {$If Defined(RecordGraphColors) or Defined(RecordLegends)} WritelineToDebugFile('Legend created, ' + BitmapSizeString(Result)); {$EndIf}
+   {$If Defined(GraphSymbology) or Defined(RecordLegends)} WritelineToDebugFile('Legend created, ' + BitmapSizeString(Result)); {$EndIf}
 end {function TThisBaseGraph.MakeLegend};
 
 

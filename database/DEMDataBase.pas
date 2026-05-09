@@ -2278,7 +2278,7 @@ end;
     dbTablef.BitBtn9.Visible := true;
     dbTablef.BitBtn23.Visible := true;
     dbTablef.CheckBox1.Checked := true;
-    dbTablef.VATEdit := true;
+    dbTablef.EditVATorSymbology := true;
     dbTablef.Editrecordsingrid1Click(Nil);
  end;
 
@@ -2732,7 +2732,6 @@ end;
                end;
             end;
 
-
             procedure OpenDBForModalEdit(fName : PathStr);
             var
                DBNum : integer;
@@ -2741,7 +2740,7 @@ end;
                   GISdb[DBNum].dbTablef.FormStyle := fsNormal;
                   GISdb[DBNum].dbTablef.Hide;
                   GISdb[DBNum].dbTablef.CheckBox1.Checked := true;
-                  GISdb[DBNum].dbTablef.EditSymbologyOnly := true;
+                  GISdb[DBNum].dbTablef.EditVATorSymbology := true;
                   GISdb[DBNum].dbTablef.Panel7.Visible := true;
                   if GISdb[DBNum].MyData.FieldExists('FILENAME') then begin
                      while not GISdb[DBNum].MyData.eof do begin

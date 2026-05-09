@@ -638,6 +638,10 @@ object ThisBaseGraph: TThisBaseGraph
       Caption = 'Line and point markers'
       OnClick = Lineandpointmarkers1Click
     end
+    object Graphsymbology1: TMenuItem
+      Caption = 'Graph symbology'
+      OnClick = Graphsymbology1Click
+    end
     object Legend2: TMenuItem
       Caption = 'Legend'
       object Pasteontograph1: TMenuItem
