@@ -1,0 +1,98 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Flight path movie & clearance computations</title>
+</head>
+
+<body>
+
+<p><font size="6"><b>Flight Path Movie and Clearance Computation</b></font></p>
+
+<p><img src="../../images/new%20dem.gif" width="32" height="32"> <a
+href="../tbme5iy6.htm"><b>New DEM</b></a>: Open a DEM covering
+the area.</p>
+
+<p><img src="../../images/new%20sat%20color.gif" width="32"
+height="32"> <a href="../tbme65lx.htm"><b>New image</b></a> to
+display or drape the path on a satellite image.</p>
+
+<p><a href="../tbme9dpq.htm"><img src="../../images/database.gif"
+width="23" height="23"> </a><a href="../data_base.htm">Database</a>
+should be closed for this operation&nbsp;</p>
+
+<p align="left">Pick &quot;<a href="../tbme8igl.htm">File</a>,
+Replay Flight Route&quot; menu choice.&nbsp; If you want to drape
+the satellite image, insure that the image is the active map
+window.&nbsp;&nbsp;</p>
+
+<p align="left">If you thin the dataset for faster operation (Use
+Thin option on <a href="../db_edit.htm"><b>Edit</b> button</a> of
+<a href="../database_table_display.htm">database table form</a>)
+it can display faster for preliminary assessment of the results.</p>
+
+<p align="left"><a href="../tbme8izy.htm">Set movie parameters</a>:</p>
+
+<ul>
+    <li><p align="left"><b>Viewport depth</b> on <a
+        href="../tbme8izy.htm#Viewport Tab">Viewport</a> tab may
+        require increasing the value, since the default may be
+        too small.</p>
+    </li>
+    <li><p align="left">Insure <b>cross track</b> and <b>along
+        track profile</b> settings are correct on <a
+        href="../tbme8izy.htm#Flight options Tab">Flight options</a>
+        tab.</p>
+    </li>
+</ul>
+
+<table border="1" width="100%" id="table3">
+    <tr>
+        <td><img src="movie_frame.gif" width="585" height="501"></td>
+        <td>Movie can have up to 4 images:<ol>
+            <li><strong>View ahead</strong> from the cockpit.</li>
+            <li><strong>Map showing the route and the area
+                covered in the view</strong>.&nbsp; You should
+                set the map area, and position or turn off the
+                scale bar, elevation color scale, and map grid
+                before making the movie.</li>
+            <li><b>Cross track view </b>at current
+                location.&nbsp; You set the horizontal and
+                vertical scale for this on the <a
+                href="file:///C:/mydocs/HELPFILE/wwwmicrodem/html/tbme8izy.htm#Flight options Tab">Flight
+                options</a> tab before running the movie.</li>
+            <li><b>Along track profile</b>.&nbsp; Set the
+                parameters on the <a
+                href="file:///C:/mydocs/HELPFILE/wwwmicrodem/html/tbme8izy.htm#Flight options Tab">Flight
+                options</a> tab before running movie.</li>
+        </ol>
+        <blockquote>
+            <ul>
+                <li>The green line is ground track below the
+                    aircraft</li>
+                <li>The dark gray line is the flight path.</li>
+                <li>The light gray points are elevations to
+                    either side of the aircraft.&nbsp; In this
+                    case, there are 10 profiles, five on each
+                    side, 250 meters apart.&nbsp; This shows the
+                    elevations within a band 2.5 km wide centered
+                    on aircraft.&nbsp; <a href="final_db.htm">The
+                    highest point in this band will be placed in
+                    the CLEAR_R and CLEAR_L fields of the
+                    database.</a></li>
+            </ul>
+        </blockquote>
+        </td>
+    </tr>
+</table>
+
+<p align="right">&nbsp;</p>
+
+<hr>
+
+<p align="right"><font size="2"><i>Last revision 12/7/2007</i></font></p>
+</body>
+</html>

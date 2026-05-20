@@ -1,0 +1,152 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Cartography in MICRODEM</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="6"><strong>Cartography </strong></font></p>
+
+<p>MICRODEM offers options for understanding
+cartography, map making, and map properties. These can be
+turned on using the <strong style="font-weight: 400">
+<a href="../menulimits.htm">Menu choices</a> tab on the </strong> 
+<a
+href="../tbme1njp.htm">options form</a> if they are not visible.</p>
+
+<p>
+<img border="2" src="../../images/quick_vector_map.GIF" width="32" height="35"> 
+ <font size="3">Quick vector map: open single vector map with default 
+projection and extent. The default is a Mercator projection; change it 
+on </font><strong style="font-weight: 400"><a href="../directories_tab.htm">Directories 
+tab</a> of <a href="../tbme1njp.htm">options form.</a></strong></p>
+
+<p><img src="../../images/vecmap.jpg"
+width="33" height="32">  <a
+        href="../vector_maps.htm">New Vector Map</a><font size="3"> on the 
+<a href="../maintool.htm">main
+toolbar</a>, or&nbsp; &quot;<a href="../tbme8igl.htm">File</a>, Open, New Vector map&quot; menu
+choice lets you open multiple projections at once.</font> </p>
+
+<p><font size="4"><strong>Cartography </strong></font><a
+href="../micr0alv.htm"><font size="3">menu choice</font></a> when a map window is active.</p>
+
+<table border="1" width="100%">
+  <tr>
+    <td>
+
+<ul>
+    <li><a href="map_distortion.htm"><strong>Map distortion (pick Tissot 
+	locations):</strong></a>
+      &nbsp;</li>
+    <li><a href="datum_shifts.htm"><strong>Datum (horizontal) shift</strong></a><strong>:</strong>&nbsp;
+      works on any map with different primary and
+        secondary datums. If the option is disabled, you must pick a different 
+	secondary datum.&nbsp; Shows the shift as you roam,
+        and displays full information when you double click. You
+        can also plot the absolute value of the shift when you
+        double click. To pick the font color and size, use the Font option on
+      the <a href="../tbme9u5x.htm"><b>Overlay</b></a><b> </b>menu.&nbsp; You 
+	will get a datbase table for the selected points.&nbsp;&nbsp; You 
+	can export the values to a database with the <a href="../csvexport.htm">Export computations 
+	option.</a></li>
+	<li>Sunrise/sunset times: You can select what to plot, and the time zone to 
+	use for the times.</li>
+    <li><strong>Magnetic variation values:</strong> using <a
+        href="../magnetic.htm">WMM model</a>.&nbsp; Export values to 
+	a database with <a href="../csvexport.htm">Export computations option.</a></li>
+    <li><a href="../true_north.htm"><strong>UTM grid to true
+        north declination</strong></a>: </li>
+	<li>Horizontal earth curvature</li>
+    <li><hr> </li>
+    <li><a href="magnetic.htm"><strong>Magnetic declination
+        overlay:</strong></a> The length of the
+        field lines are arbitrary and constant, but they align
+        with the earth's magnetic field calculated using the <a
+        href="../magnetic.htm">WMM model</a>.&nbsp; You are responsible for 
+	drawing this on a map with true north to the top.&nbsp; You can export the values 
+	to a database with the <a href="../csvexport.htm">Export computations 
+	option.</a></li>
+	<li>True north lines</li>
+	<li>Magnetic north lines</li>
+    <li><a href="tissot.htm"><strong>Tissot indicatrix (grid):</strong></a><strong>
+        </strong>this works only on vector maps and shows the pattern of map
+      distortion.</li>
+    <li><strong>State plane coordinate system</strong>: pick the projecton 
+	(conformal conic or transverse Mercator) and then the zone to use, and the 
+	program will show the corners of the current map.</li>
+	<li>Latitudinal scalebars: scalebars on the right side of the map, at the 
+	top, middle, and bottom</li>
+	<li>LCC standard parallels</li>
+	<li><a href="map_projection_zones.html">Map projection zones</a><ul>
+		<li>MGRS/USNG 6x8 zones: uses NGA shapefiles</li>
+		<li>UTM 100K zones.&nbsp; These are split at the 6x8 degrees boundaries.&nbsp; 
+		Uses NGA shapefiles</li>
+		<li>Combined MGRS Polygons</li>
+		<li>US SPCS zones (requires that you have the shapefile in the correct location, 
+		c:\mapdata\database\carto\us_spcs\us_spcs_zones.shp)</li>
+		<li><a href="../demix_10k.html">DEMIX 10K Tiles</a></li>
+	</ul>
+	</li>
+    <li><hr></li>
+	<li><strong><a href="../csvexport.htm">Export computations:</a> </strong>
+	saves a number of fields to a database on a regular grid, which you can plot.&nbsp; This can 
+	be a better visualization than a smaller number of points</li>
+	<li>Grid spacing and rotation: you can see the spacing and the grid rotation 
+	angle, either for the corners and center, or for points spacing a specified 
+	number of pixels apart.</li>
+	<li><hr></li>
+	<li><strong><a href="../earth_rotation_movie.htm">Earth rotation</a>:</strong> rotate the map, with an option to color
+      code it from a number of world data sets.&nbsp; You can overlay the world
+      outlines, with an option set on the &quot;Vector Maps&quot; tab of the
+      options form.&nbsp; Only available with stereographic, orthographic, and 
+	Lambert Azimuthal equal area projections</li>
+	<li>3D rotating globe: must be a global grid or image (-90 to 90, -180 to 
+	180) at full resolution.&nbsp; It will have all overlays; turn off grid 
+	labels, legends, and map labels</li>
+</ul>
+
+    </td>
+  </tr>
+</table>
+
+&nbsp;
+<p><img border="0" src="../../images/overlays.GIF" width="24" height="24">
+	<a href="../maptool.htm">Map Overlays</a> can show:</p>
+
+<ul>
+    <li><a href="mgrszone.htm"><strong>MGRS grids zones:</strong></a><strong>
+        </strong>&nbsp;6x8 degree MGRS zones. The first part,
+        a number, is the UTM zone between 1-60, and the second
+        part, a letter, is a latitude band.</li>
+    <li><a href="mgrszone.htm"><strong>MGRS 100K squares:</strong></a>
+        the two letter designator for 100,000 m squares.&nbsp; These will
+      behave much like a Tissot indicatrix; if the map is conformal, these
+      should be squares, and if the map is equal area, they will all be the same
+      size.&nbsp;&nbsp;&nbsp;</li>
+    <li><a href="../tissot_opts.htm">Tissot indicatrices:</a> show
+      patterns of map distortion.</li>
+</ul>
+
+<p><a href="map_projections.htm"><strong>Map projection gallery</strong></a><strong>.</strong>
+ With the vector map choice, you can get a large number of
+projections. The default projection is a Mercator ellipsoidal;
+you can change this by right clicking, and then selecting the
+&quot;Modify projection&quot; menu choice. There may be problems
+blowing up some of the more exotic projections.</p>
+<p><a href="../cartography_principles.htm">Cartography principles.</a></p>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 9/14/2021</em></p>
+</body>
+</html>

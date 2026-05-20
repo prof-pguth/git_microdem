@@ -1,0 +1,52 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>UTM Projection</title>
+</head>
+
+<body>
+
+<p><font size="5"><strong>UTM Projection</strong></font></p>
+
+<p>The UTM projection is designed to create a rectangular
+cartesian grid. This allows distances and angles to be computed
+easily, and minimizes distortion.&nbsp; While the military popularized the UTM 
+projection for ground operations, it is also ideal for many GIS operations.</p>
+
+<table border="1" width="100%">
+  <tr>
+    <td><img border="0" src="MERC_ELLIPSE.GIF" width="640" height="480"></td>
+    <td>The <b> Mercator projection</b> is conformal and preserves angles, but
+distortion increases away from the equator. Geometrically the
+Mercator projection places a cylinder around the globe tangent at the equator, and
+unfolds it. The meridians should converge, but must be stretched
+to keep their intersections with the parallels as right angles.
+For angles to remain correct, the same degree of stretching must
+occur along both meridians and parallels. At the poles the
+stretching must be infinite, to keep the meridians from
+converging to a point at the poles. This means the Mercator
+projection can not show the poles.</td>
+  </tr>
+  <tr>
+    <td>
+		<img border="0" src="../../images/UTM_PROJECTION.GIF" width="640" height="480"></td>
+    <td>The transverse Mercator projection rotates the cylinder 90
+degrees. The UTM uses 60 zones that are 6 degrees wide, with standard central 
+	meridians. Within
+these zones the UTM projection has very little distortion. UTM coordinates can 
+be extended into a neighboring zone for seamless operations, but the farther 
+away from the 6 degree zone you move, the greater the distortion.</td>
+  </tr>
+</table>
+
+<p><a href="../mgrs_utm.htm">MGRS vs UTM</a>.</p>
+
+<p><a href="file:///C:/mydocs/HELPFILE/wwwmicrodem/html/tbme7go4.htm">UTM grid</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 8/16/2015</em></p>
+</body>
+</html>

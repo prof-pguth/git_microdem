@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Earth Explorer</title>
+</head>
+
+<body>
+
+<h1>Earth Explorer Imagery Downloads</h1>
+<p>These directions apply specifically for <a href="../landsat8.htm">Landsat</a>&nbsp; satellite imagery, but 
+the same general procedures work for all data from Earth Explorer (specific <a href="../gis/high_res_usgs_imagery_earth_explorer.htm">High resolution 
+imagery directions</a>).&nbsp;</p>
+<table border="2">
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>
+		Connect to <a target="_blank" href="http://earthexplorer.usgs.gov/">EarthExplorer</a> 
+		&nbsp;</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="480" src="../../images/earth_explorer_pick_area.png" width="515" /></td>
+		<td>
+		Select area.&nbsp; The easiest way is to navigate on the map, and then 
+		use the option to select the map area.&nbsp; Making this as small as possible 
+		will save having to wade through thousands of images, since images that 
+		may only include a small sliver or corner of the map will be included.<br />
+		<br />
+		You can also select a date range,&nbsp; or search by month if you only 
+		want a seasonal event.<br />
+		<br />
+		You can pick Maximal clould cover.&nbsp; In deserts you should easily be 
+		able to get very limited cloud cover, but in other areas you might not 
+		be able to be so picky.</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="590" src="../../microdemtutorials/earth_explorer/landsat.png" width="518" />&nbsp;</td>
+		<td>
+		<p>Select the data sets<br />
+		</p>
+		<ul>
+			<li>Landsat-- <strong>Get Landsat Collection 2 Level-1.&nbsp; </strong>&nbsp;Avoid the other 
+			options.
+			</li>
+			<li>All four of the Landsat sensors should work, Landsat 1 to 9</li>
+		</ul>
+		<p>Landsat 7 had problems at the end of its mission with voids 
+				on the edges of scenes (SLC or scan line converter problem); during much of that time Landsat 5 was 
+				still collecting data for the multispectral bands (it did not 
+				have the pan band)</p>
+		</td>
+	</tr>
+	<tr>
+		<td><img height="565" src="landsat_filter.png" width="480" /></td>
+		<td>
+		<h2>Landsat Additional Criteria</h2>
+		<ul>
+			<li><a href="../landsat_path_row.html">Get the Landsat path and row</a></li>
+			<li>Once you know the path and row, set the filter on the additional 
+		criteria</li>
+			<li>Set the filter on he additional 
+		criteria such as cloud cover.&nbsp; In the desert you can set the most 
+			restrictive area.&nbsp; In cloudy areas you may have to be less 
+			restrictive, but can check if your portion of the entire scene might 
+			be cloud free.</li>
+			<li>If you look at the results without looking up the path and row, 
+			find a scene with the coverage you want, note its path and row, and 
+			return to set the path and row.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="57" src="../../microdemtutorials/hi_res_imagery/results_button.gif" width="469" /></td>
+		<td>
+		After setting all parameters, the Results button will be active and you 
+		will get results.&nbsp; This can take some time if you will be getting a 
+		lot of scenes, which will then take you a long time to go through.&nbsp; 
+		It pays to get the smallest area and time period that works, or set 
+		additionial criteria to filter the results.</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="444" src="../../microdemtutorials/earth_explorer/data_sets.png" width="524" />&nbsp;</td>
+		<td>
+		Each Landsat sensor will return results separately.<br />
+		<br />
+		Pick the sensor you want from the drop down list.&nbsp;<br />
+		<br />
+		</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;<img alt="" height="331" src="../../microdemtutorials/earth_explorer/results.png" width="517" /></td>
+		<td>
+		<p>Results will be displayed.&nbsp; Newest results will be at the top of 
+		the first page, oldest at the bottom of the last page.<br />
+		<br />
+		If you have a huge number of results, you should consider filtering the 
+		results:</p>
+		<ul>
+			<li>Get picky with clouds.&nbsp; This is easy in the desert, harder 
+			in the jungle.</li>
+			<li>Select only the months you want</li>
+			<li>Insure you have just the correct path and row&nbsp;</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+								<img height="540" src="../../microdemtutorials/hi_res_imagery/search_results.JPG" width="414"></td>
+		<td>
+								<p>Search results.&nbsp; Until you have some 
+								experience, insure that the secnes cover the 
+								area you want.&nbsp;
+								<a href="../tracking_data_locations.html">The 
+								program often shows a number of different scenes 
+								in terms of the coverage area, and they may not 
+								overlap.</a>&nbsp; This is particularly true for 
+								the earliest Landsats.<br><br>The useful buttons to 
+								the right of image thumbnail:<br>
+								</p>
+								<ul>
+									<li>Show footprint, to see what a tile 
+									shows.</li>
+									<li>Second button from the left overlays the 
+									image on the selection map, and should 
+									clearly show clouds before you download.</li>
+									<li>Show metadata and browse image</li>
+									<li>Download</li>
+								</ul>
+								<p>If you are just downloading a few files, use 
+								it from this page (you can have multiple 
+								downloads going at a time; that number might now 
+								be 2).&nbsp; </p>
+								<p>If you are downloading 
+								a lot, you can add to the Cart and then use one of the 
+								following options.&nbsp; This seems to be changing very 
+								rapidly</p>
+								<ul>
+									<li><a href="../batch_download.htm">MICRODEM 
+									download</a> (which may have challenges with 
+									the local friendly IT department blocking 
+									the operation)</li>
+									<li>uGet.</li>
+									<li>BDA</li>
+								</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="980" src="../../microdemtutorials/earth_explorer/download_earth_explorer.png" width="1019" />&nbsp;</td>
+		<td>
+		<p><strong>Landsat Download options for a single scene:</strong></p>
+		<ul>
+			<li>For detailed analysis, you need the <strong>Geotiff data produc</strong>t, 
+			and the Product bundle.&nbsp;
+			<ul>
+				<li>For Landsat 8 the scenes are about 1 GB compressed, and 
+				about 2 GB when uncompressed.&nbsp; </li>
+				<li>For Landsat 7 the scenes are about 226 MB compressed.</li>
+				<li>For Landsats 4 and 5 the scenes are about 163 MB compressed.</li>
+				<li>For Landsats 1 to 5 MSS the scenes are about 30 MB 
+				compressed.</li>
+			</ul>
+			</li>
+			<li>
+			<a name="For_quick_analysis,_the_Full-Resolution_Browse_GeoTIFF_images_are_significantly_smaller_">For quick analysis, the Full-Resolution Browse GeoTIFF images are significantly smaller 
+			</a>(~14 MB) and are georegistgered, 
+			zipped.<ul>
+				<li>Insure you have installed <a href="../adf_grids.htm"><b>GDAL</b></a> 
+				as the images must be processed before use (automatic operation)</li>
+				<li>These should be opened with the file option and not 
+				directory selectioni</li>
+			</ul>
+			</li>
+			<li>Do not get the Full-Resolution Browse <strong>JPEG</strong> images (they are dumb 
+			pictures with no registration).</li>
+			<li>Download the individual band files with great caution<ul>
+				<li>Cannot easily get color composite images</li>
+				<li>Open as a DEM/grid</li>
+			</ul>
+			</li>
+			<li>All downloads have 
+			<a href="../../remote_sensing_course/landsat_formats_names.html">standard Landsat naming conventions</a>.&nbsp; 
+			Do not rename the files or folders, and the program uses the file 
+			names to manipulate the data</li>
+			<li><a href="../manage_landsat.html">Manage Landsat data</a></li>
+		</ul>
+		</td>
+	</tr>
+	</table>
+
+<p>&nbsp;</p>
+<p>Alternative USGS downloads</p>
+<ul>
+	<li><a href="http://landsatlook.usgs.gov/" target="_blank">LandsatLook 
+	Viewer</a>.&nbsp;&nbsp; 
+		<ul>
+			<li>Must zoom in the see data; scale shows in lower left corner 
+	of the screen.</li>
+			<li>View scenes, with some contrast enhancement, with option to download</li>
+			<li>View cart with option in the upper left of the data table</li>
+			<li>May be a limit on how many files you can get at a time</li>
+	</ul>
+	</li>
+	<li>
+	<a href="../../microdemtutorials/landsat_look/GLOVIS.html" target="_blank">GloVis
+		</a></li>
+</ul>
+<p>&nbsp;</p>
+
+<hr>
+<p align="right"><em>Last revision 3/9/2023</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>
