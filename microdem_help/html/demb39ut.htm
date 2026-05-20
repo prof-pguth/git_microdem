@@ -1,0 +1,97 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>DEM data storage</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>DEM Data Storage</b></font></p>
+
+<p>Development of a structure for efficient storage of the DEM
+depends upon two factors: minimizing the size of the structure,
+and maximizing the retrieval speed. The two factors are
+interrelated, because if the data structure can allow significant
+blocks of the DEM to be loaded into memory, retrieval speed can
+dramatically decrease through bypassing disk access. Decreased
+costs for memory, both RAM and disk storage, allow microcomputers
+to easily manipulate large DEMs. Minimization of time-consuming
+real number arithmetic should also be avoided as much as
+possible.</p>
+
+<p>Because both DEMs record data along a regular grid, the x and
+y locations (whether UTM or latitude/longitude) do not have to be
+stored but can be computed implicitly from a point's location
+within the data structure. Since elevations are recorded only to
+the nearest meter (foot for some 1:24K DEMs), they can be stored
+in binary form as integers. Use of the standard 2 byte integer
+type, with a range of -32767 to 32767, easily covers elevations
+on the earth's surface. While the data structure can be
+visualized as an x,y array, the computer does not manipulate it
+as a single array. Instead the computer uses a random access
+file, with each record in the file being a north-south elevation
+profile (stored as an array of elevations). The record number
+corresponds to the x coordinate and retrieves an array, with
+subscripts in the array corresponding to the y coordinate. By
+knowing the ground coordinates of the 0,0 point in the array
+(southwest corner) in either UTM or latitude/longitude and the
+data spacing, the ground coordinates of any data point can be
+easily calculated, or the data point corresponding to any ground
+point can be easily selected.</p>
+
+<p>The two DEMs required slightly different design
+considerations. For the regular grid of the 1:250K DEM the only
+serious question concerned the size of data sets to use on the
+microcomputer. As supplied by NGA, the 1:250K DEM covers 1°
+by 1° areas. This contains 1.44 million elevations, and requires
+2.88 Mb of computer storage. A 15' subset was originally chosen
+as the basic element for MICROFIX, with 90,601 elevations
+requiring 180 kb of disk space (which would fit on a floppy disk
+of that era). The original TerraBase used 30&#146; subsets, four
+times the size of the 15&#146; subsets. The naming schemes for
+15' and 30' data subsets were compatible.</p>
+
+<p>The clipped profiles of the 1:24K DEM required slightly more
+design decisions. The number of columns and rows in the data sets
+change, unlike the 1:250K DEM (which always has the same number
+of rows in each profile, but the number of columns changes north
+of 50° latitude). The corners of the data file are calculated
+from the corners of the map quadrangle. The southwest corner has
+the smallest x and y UTM values (northing and false easting) of
+any point in the data set, and the northeast corner has the
+largest x and y values. The corners may not be within the data
+set, and in general several columns on each side of the data set
+will have only a few values within the data set. Most columns
+will have several missing points at the top or bottom of the
+profile. Points outside the data set are flagged with MaxInt
+(32767) to allow fast determination when the edge of the data set
+is reached.</p>
+
+<p>The 1:24K DEM supplied by USGS typically requires about 1.2 Mb
+of computer storage as an ASCII file (varies with latitude).
+Converted to binary form and a rectangular grid, the same data
+set requires about 358 kb, a compression of about 70%. A 1:250K
+DEM supplied by USGS required about 9.8 Mb as an ASCII file and
+2.9 Mb as a binary file, also compression of about 70%. While the
+ASCII format contains some relevant information such as data set
+boundaries and profile end points, these points can be easily
+calculated from the base coordinates and the quadrangle elevation
+range are stored in the 132 byte header record. </p>
+
+<p>For rapid data transfer, the binary data sets can typically be
+compacted 40-60% using data compression techniques, but must be
+de-archived before use.</p>
+
+<p><a href="gridsize.htm">As data spacing goes down, storage
+requirements go up dramatically</a>. This means that the coverage
+area must decrease.</p>
+<p><a href="approx_equivalents.htm">Approximate metric equivalents.</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 2/28/2010</em></p>
+</body>
+</html>

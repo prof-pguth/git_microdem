@@ -1,0 +1,71 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Vertical Exaggeration</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2 align="center">Vertical Exaggeration</h2>
+
+<p>Vertical exaggeration refers to the common practice in
+topographic profiles of different horizontal and vertical scales.
+It is expressed as a number, the ratio of the vertical to
+horizontal scale, and is almost always greater than 1. Over a
+long profile, if the same scale were used the differences in
+elevation would be very small compared to the distances involved
+and the profile would appear flat. The resulting scene would not
+look at all like the human eye perceives terrain; we overestimate
+slopes and the vertical dimension of topography.&nbsp;</p>
+
+<table border="2">
+  <tr>
+    <td ><img border="0" src="../microdemtutorials/Geology_GIS/TRENCH_PROFILE.GIF" width="798" height="365"></td>
+    <td >Vertical exaggeration x40. Note that this profile is about 
+	1100 km long, and the vertical scale is about 12 km in total, so that the 
+	ratio between the two is about 100 to 1.&nbsp; If the profile were drawn to 
+	be 1000 pixels wide, it should be only 10 pixels high to have correct 
+	scaling.</td>
+  </tr>
+  <tr>
+    <td ><img border="0" src="../microdemtutorials/Geology_GIS/VERT_EXAG_10.GIF" width="798" height="124"></td>
+    <td >Vertical exaggeration x10.</td>
+  </tr>
+  <tr>
+    <td ><img border="0" src="../microdemtutorials/Geology_GIS/VERT_EXAG_5.GIF" width="799" height="84"></td>
+    <td >Vertical exaggeration&nbsp; x5.&nbsp; Note that we are still a long way 
+	from a 1:1 scaling, and already we think the profile is essentially flat.</td>
+  </tr>
+</table>
+<p> MICRODEM
+automatically suggests a vertical exaggeration; the user must
+consider that exaggeration can make slight slopes into cliffs.
+The suggested vertical exaggeration is the largest that will fit
+on the screen if the profile goes through the maximum elevation
+in the data set and the base of the profile is the minimum
+elevation. (If a default option is selected, the computer will
+find the elevation range within the smallest square that contains
+the view). Selecting a larger vertical
+exaggeration should be done with care, generally only if you do
+not check for the extreme values first and only after drawing a
+profile and finding it to lack sufficient vertical exaggeration.
+You can always select a smaller vertical exaggeration, but may
+get pancake topography. Vertical exaggeration is necessary to
+interpret line of sight profiles, but must be considered before
+jumping to conclusions about trafficability up slopes.</p>
+<p> A true scale profile is only possible over short distances with very steep 
+topography.</p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 2/27/2016</em></p>
+</body>
+</html>

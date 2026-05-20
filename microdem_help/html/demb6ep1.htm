@@ -1,0 +1,220 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Structure of USGS DEMS</title>
+<style type="text/css">
+.auto-style1 {
+	font-family: "Times New Roman";
+}
+.auto-style2 {
+	font-family: "Times New Roman";
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>Structure of USGS DEMS</b></font></p>
+
+<p>DEMs are stored as a series of north-south elevation profiles. The profiles 
+progress from west to east, and within each profile the points start from the 
+south and follow sequentially to the north. Thus the first data point is at the 
+southwest corner of the data set, and the last point at the northeast point of 
+the data set. </p>
+
+<p>USGS created a 1:100,000 DEM, but it never became as popular
+or widespread as the 24K or 250K.&nbsp; <a href="demb3fw3.htm">SDTS</a>
+replaced the original ASCII formats but was never very popular despite mandates 
+that it be used. The current USGS push is to
+use <a href="ned.htm"><strong>3DEP/NED</strong></a>, which uses a
+variety of formats.</p>
+
+<table border="2" cols="6">
+    <tr>
+        <td valign="top">
+		<div align="left">
+			<pre><code><b><font size="3" face="Times New Roman"> USGS DEM </font></b></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><b><font size="3" face="Times New Roman">Spacing </font></b></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><b><font size="3" face="Times New Roman">Columns </font></b></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><b><font size="3" face="Times New Roman">Rows </font></b></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><b><font size="3" face="Times New Roman">File Size </font></b></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><b><font size="3" face="Times New Roman">Profiles</font></b></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		&nbsp;</td>
+    </tr>
+    <tr>
+        <td valign="top" class="auto-style2">
+		<div align="left">
+			<pre class="auto-style2"><a href="demb1ust.htm">1:24,000</a></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">UTM--10 m &amp; 30 m </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">varies </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">varies </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">variable </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">clipped</font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		This is no longer available, and unless you have very good reasons, do 
+		not use any old data you might find.</td>
+    </tr>
+    <tr>
+        <td valign="top" class="auto-style1">
+		<div align="left">
+			<pre><code><font size="3"><span class="auto-style1">1:100,000 </span></font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">Geographic--2 arc sec </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">constant </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">constant </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">constant </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">filled</font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		Never very common.</td>
+    </tr>
+    <tr>
+        <td valign="top" class="auto-style2">
+		<div align="left">
+			<pre class="auto-style2"><a href="demb5rfx.htm">1:250,000 </a></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">Geographic--3 arc sec </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">constant </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">constant </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">constant </font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		<div align="left">
+			<pre><code><font size="3" face="Times New Roman">filled</font></code></pre>
+        </div>
+        </td>
+        <td valign="top">
+		Original source was NGA-predecessor agency, and there is little good 
+		reason to use this data.&nbsp; SRTM is much better.</td>
+    </tr>
+    <tr>
+        <td class="auto-style1">
+		<p align="left" class="auto-style1"><a href="ned.htm"><strong>3DEP/NED</strong></a></td>
+        <td>
+		<p align="left"><font size="3" face="Times New Roman">1&quot;, 1/3&quot;, and 1/9&quot;</font></td>
+        <td>
+		<p align="left"><font size="3" face="Times New Roman">variable</font></td>
+        <td>
+		<p align="left"><font size="3" face="Times New Roman">variable</font></td>
+        <td>
+		<p align="left"><font size="3" face="Times New Roman">variable</font></td>
+        <td>
+		<p align="left"><font size="3" face="Times New Roman">filled</font></td>
+        <td>
+		&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="auto-style1">
+		1 m </td>
+        <td>
+		1 m</td>
+        <td>
+		&nbsp;</td>
+        <td>
+		&nbsp;</td>
+        <td>
+		&nbsp;</td>
+        <td>
+		filled</td>
+        <td>
+		Derived from lidar, with increasing coverage.</td>
+    </tr>
+</table>
+</center></div>
+
+<p>See also:</p>
+
+<ul>
+	<li><a href="approx_equivalents.htm">Approximate metric equivalents.</a></li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 11/2/2017</em></p>
+</body>
+</html>

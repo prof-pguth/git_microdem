@@ -1,0 +1,158 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Database Time and Date Fields</title>
+</head>
+
+<body>
+
+<h2>Database Date and Time Fields</h2>
+<p>Submenu on <a href="db_edit.htm">&quot;EDIT&quot; button </a>on 
+<a href="database_table_display.htm">database
+table form.</a>&nbsp; The button is only enabled if you check the box on the 
+right of the row of buttons, since all changes are permanent (save a copy of the 
+database if you are concerned about editing mistakes).</p>
+<ul>
+  <li><b><a href="add_time_anim.htm">Insert time animation fields</a></b> (for 
+	KML/KMZ file).&nbsp; Insure that you have the fields you need before 
+	proceeding.</li>
+	<li><b>Insert date field: </b>if fields MONTH, DAY, YEAR exist, they will be 
+	concatenated into a string field of the form &quot;12/25/1944&quot;.&nbsp; 
+	There will not be any padding for single digit months and days.</li>
+	<li><strong>Insert Year/month/day</strong></li>
+	<li><strong>Insert <a href="julian_days.htm">Julian date (annual)</a></strong></li>
+	<li><b>Split date field (MM//DD/YYYY): </b>takes date in the form MM/DD/YY, and creates 
+	fields YEAR, MONTH, and DAY.&nbsp;&nbsp; The date does not require leading 
+	zeroes for month and day.&nbsp; If the year only has two digits, for values 
+	less than 20 it assumes the 21st century, and for 21 to 99 it assumes the 
+	20th century.</li>
+	<li><b>Split date field (YYYYMMDD): </b>creates fields YEAR, MONTH, and DAY.&nbsp; 
+	Month and day must have two digits each.</li>
+	<li>Format date field: must have a DATE_LABEL field<ul>
+  <li>MM/DD/YYYY</li>
+	<li>M/D/YYYY</li>
+	<li>YYYY/MM/DD: in this format, dates will be in alphabetical order.</li>
+</ul>
+    </li>
+	<li><b>Split time string (HH:MM:SS):</b>&nbsp; creates fields &quot;HOUR&quot;, 
+	'MINUTE&quot;, and &quot;SECOND&quot;.</li>
+	<li><b>Time field (HHMMSS or HH:MM:SS) to dec hours</b>: creates a DEC_HOURS field 
+	which will have decimal hours.</li>
+	<li><b>Time fields (Hour/Minute/Second) to dec hours</b>: creates an 
+	DEC_HOURS field which will have decimal hours, from fields &quot;HOUR&quot;, 'MINUTE&quot;, 
+	and &quot;DAY&quot;.</li>
+	<li><b>Time fields (Day/Hour/Minute/Second) to dec days</b>: creates an 
+	DEC_DAYS field which will have decimal hours, from fields &quot;DAY&quot;,&quot;HOUR&quot;, 
+	'MINUTE&quot;, and &quot;SECOND&quot;.</li>
+	<li><b>Time fields&nbsp; to dec <a href="julian_days.htm">Julian days (annual)</a></b></li>
+	<li><b>Time fields to dec years</b></li>
+	<li><b>Dec hours to HH:MM:SS</b>--Uses DEC_HOURS to create a TIME_STR field 
+	(such as needed for KML time animations); hours, minutes, and seconds will 
+	have leading zeros so each is two digits.</li>
+	<li><b>Military time to HH:MM:SS</b></li>
+	<li><b>Day of week from Year/Month/Day</b>: <b>&nbsp;</b>if fields MONTH, DAY, YEAR 
+	exist, this will compute the day of the week.</li>
+	<li><b>Days since full moon</b>: if fields MONTH, DAY, YEAR 
+	exist, this will compute the number of days since the last full moon.&nbsp; 
+	Currently it only gives answers to an even number of days.</li>
+	<li>Format date field</li>
+</ul>
+    <hr>
+<p><b>Time fields used by MICRODEM database operations:</b></p>
+<table border="1" id="table1">
+	<tr>
+		<td>Name</td>
+		<td>Type</td>
+		<td>Example</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>HOUR</td>
+		<td>Integer</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>MINUTE</td>
+		<td>Integer</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>SECOND</td>
+		<td>Integer</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>DAY</td>
+		<td>Integer</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>MONTH</td>
+		<td>Integer</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>YEAR</td>
+		<td>Integer</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>DEC_HOURS </td>
+		<td>Float</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>DEC_DAYS</td>
+		<td>Float</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>TIME_STR</td>
+		<td>String</td>
+		<td>HH:MM:SS</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>START_DATE</td>
+		<td>String</td>
+		<td>1999-12-31T23:59:59Z (UTC)</td>
+		<td>Used for KML/KMZ</td>
+	</tr>
+	<tr>
+		<td>END_DATE</td>
+		<td>String</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>DATE</td>
+		<td>String</td>
+		<td>MM/DD/YY</td>
+		<td>If the year only has two digits, for values less than 20 it assumes 
+		the 21st century, and for 21 to 99 it assumes the 20th century.&nbsp; 
+		The date does not require leading zeroes for month and day. </td>
+	</tr>
+	<tr>
+		<td>DATE_LABEL</td>
+		<td>String</td>
+		<td>MM/DD/YYYY</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+    <hr>
+<p align="right"><i>Last revision 2/16/2016</i></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

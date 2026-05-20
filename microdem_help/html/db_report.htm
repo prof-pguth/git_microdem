@@ -1,0 +1,151 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Database report</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><b><font size="5">Database Report</font></b></p>
+<p>Menu from the &quot;Report&quot; button on 
+<a href="database_table_display.htm">database
+table form</a>.&nbsp;&nbsp;</p>
+<ul>
+				<li><a href="hide_db.htm">Hidden fields</a> will not be included, and only records
+that meet the current filter will be included.</li>
+				<li>Drag and drop can rearrange columns.</li>
+</ul>
+<table border="1">
+  <tr>
+    <td>
+<b>Choices available depend on the type of open database.</b><ul>
+            <li><a href="dd_text_rprt.htm"><b>Export text (CSV)</b></a>.&nbsp; 
+			You can supply any file extension.</li>
+			<li><a href="html_report.htm"><b>Export HTML</b>&nbsp;</a> </li>
+			<li><b>Export DBF Table: </b>Create new dBase table.&nbsp; The options here will 
+			only use the filtered records, and the displayed attributes/fields, 
+			so be careful.&nbsp; You can lose data, which can be good or bad 
+			depending on your desires.&nbsp; </li>
+			<li>Data DBF only (no geometry)</li>
+			<li>Quick <a href="kml_export.htm">KML: export for Google earth, 
+			using current settings.</a>
+			<ul>
+				<li>Quick--uses current settings.</li>
+			</ul></li>
+			<li>Export other database formats<ul>
+							<li><b>Export Text (Deliberate): </b>use only if you want a 
+			separator other than a comma, or to thin the export.</li>
+							<li>Deliberate KML--lets you adjust output</li>
+							<li><b>XML:</b> export as XML file, which includes a definition
+              of the database.&nbsp; This is valid XML, but I have seen 3
+              different exports into XML of a DBF file, so it might or might not
+              import into other software.</li>
+							<li>CDS: </li>
+							<li>SQLite:</li>
+			</ul>
+			Earthquake focal mechanisms</li>
+			<ul>
+				<li>Quick</li>
+				<li>Deliberate</li>
+			</ul>
+			<li><hr></li>
+			<li><b>Database structure: </b>see the field types and lengths.</li>
+			<li>Shapefile metadata</li>
+			<li><b>Coordinates to text file--</b>you can get your preferred lat/long format, or all of them</li>
+			<li>Color array</li>
+			<li><hr></li>
+			<li>Export points to registration table</li>
+			<li><a href="arcgis_viewshed_sensors.htm">ArcGIS viewshed sensors</a></li>
+			<li><b>Create point shapefile</b>--writes SHP and SHX
+              files for the current database, and includes all records and
+              fields.&nbsp;MICRODEM does not normally use the SHP
+              and SHX files for point shape files (but see the next option), and does not automatically
+              update them if you edit the file. If you need, subset first using the &quot;DBF
+              Table&quot; option which also has an option to save as a
+			<a href="shapefile.htm">shapefile</a>.&nbsp; This creates 
+			a PRJ file acceptable to ArcGIS.&nbsp; If there is a field Z or ELEV, 
+			this will be a 3D <a href="shapefile.htm">shapefile</a>.</li>
+			<li><strong>Create point SHX index:</strong> writes SHX files for 
+			the current database, and includes all records and fields.&nbsp;MICRODEM 
+			can use the SHX file for point shape file to Zoom to DB coverage on 
+			the <a href="db_plot.htm"><strong>Plot</strong></a> popup. </li>
+			<li>Create XYZ point shapefile</li>
+			<li><b><a href="create_grid_pt_db.htm">Create grid</a>:</b> makes  
+			grid with the same extent and spacing as the one associated with the 
+			map. </li>
+			<li>Create normalized database</li>
+			<li>Create cost surface from TIGER file</li>
+			<li><b>Export lat/long/z to text file: </b>must be line or area shape file, 
+			with Z values in a field, and creates a text file with all the coordinates.</li>
+			<li><b>Export XYZ triples to table: </b>must be 3D line or area shape file, 
+			and creates a point shape file with all the coordinates from the 
+			shapefile.</li>
+			<li><b>Thin database:</b> save DB to a new file, with a specified thinning 
+			(decimation) factor.</li>
+			<li><hr></li>
+			<li><a href="subse_shape_files.htm">Shapefile export</a>--only works for line and area 
+			<a href="shapefile.htm">shapefiles</a>, and if only available if the 
+			file is filtered.&nbsp; Use the DBF table 
+			option for point files.</li>
+			<li>Copy shapefile</li>
+			<li><a href="create_shp_from_pts.htm">Create area/line shape file from points</a></li>
+			<li><a href="create_points.htm">Create points file</a> </li>
+			<li>Create shapefile with outline all databases</li>
+			<li>Create KML bounding box for each record in DB, for use in web 
+			downloads that let you upload an outline file.&nbsp; This will be in 
+			the temp directory (get them moved immediately, as the next program 
+			restart will kill them), and in a separate KML folder for each 
+			record.</li>
+			<li><hr></li>
+			<li><b>Normalize fields</b>--select fields will be scaled so that 0 is&nbsp; mean of the original field, and values represent standard deviations 
+		from the mean.&nbsp; This will create a new database.</li>
+			<li><strong>ZIP shapefile</strong>: creates a zip file (<a href="shz_file.html">with SHZ extension</a>) with 
+			the <a href="shapefile.htm">shapefile</a>'s 3 files and the MICRODEM specific symbology 
+			in the INI file) and the linked table if there is a join.&nbsp; 
+			This keeps the files together to send to someone else,  
+			compresses the data, and lets you email without having to 
+			<a href="https://fileinfo.com/extension/piz">PIZ the file</a>.&nbsp; 
+			MICRODEM and use the SHZ file, or you can <b><a href="uncompress.htm">Uncompress</a></b>
+    		with MICRODEM, and rename the file and then use any software that 
+			handles zips.&nbsp; The SHZ file name will have the current date and 
+			time, so you can track edits to a database.</li>
+			<li><strong>Copy data files:</strong> copies all files in the FILENAME field 
+	to a specified directory.&nbsp; You can have previously filtered the 
+			database to only move those in a particular map area.</li>
+			<li>Movie:</li>
+			<li><a href="report_legend.htm">Legend:</a></li>
+			<li>Color bar chart: legend with the colors; required COLOR and 
+			PERCENT fields in the database.&nbsp; Useful for <a href="nlcd.htm">
+			landcover.</a></li>
+			<li>Fonts<ul>
+				<li>Grid </li>
+				<li>Legend</li>
+			</ul>
+			</li>
+			<li>Hide unused fields: for fields that are blank, hides them all.&nbsp; 
+			You can can export the database to remove them.</li>
+			<li>Show DB settings</li>
+			<li><b>Clear DB Settings</b>: restore default plotting and join options, 
+			by clearing the database's INI file.</li>
+			<li>Clear field ranges</li>
+        </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<HR>
+
+<P align=right><EM><span class="style1">Last revision 12/15/2022</span></EM></P>
+
+</body>
+
+</html>

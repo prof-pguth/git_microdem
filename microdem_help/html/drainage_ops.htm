@@ -1,0 +1,134 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Taudem Operations</title>
+</head>
+
+<body>
+
+<p><font size="5"><b>Taudem Operations</b></font></p>
+&nbsp;Has not been tested recently.&nbsp; The integration has been removed; use 
+the command line or try its integration with
+<a href="https://opentopography.org/">OpenTopography</a>.<br>
+<br>
+
+<table border="2">
+	<tr>
+		<td>Step</td>
+		<td>Program</td>
+		<td style="width: 63px" >Algorithm</td>
+		<td >Input</td>
+		<td>
+		<a href="http://hydrology.usu.edu/taudem/taudem5/help/GridDefinitionsAndNamingConventions.htm">
+		Output file name addition</a></td>
+	</tr>
+	<tr>
+		<td><a href="drainage_ops.htm">Pit removal</a>:</td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >&nbsp;</td>
+		<td >UTM DEM in Geotiff format</td>
+		<td>ife</td>
+	</tr>
+	<tr>
+		<td >Flow directions</td>
+		<td >&nbsp;</td>
+		<td style="width: 63px" >D8</td>
+		<td >&nbsp;</td>
+		<td >
+		<span style="color: rgb(0, 0, 0); font-family: Verdana, Arial, Helvetica, 'Sans Serif'; font-size: 12px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; display: inline !important; float: none; background-color: rgb(238, 238, 238);">
+		sd8--D8 slope grid (slope measured as drop/distance)<br>
+		p --&nbsp;&nbsp;D8&nbsp; flow direction</span></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >Dinf</td>
+		<td >&nbsp;</td>
+		<td>slp--&nbsp; Dinf slope grid<br>
+		ang--&nbsp;Dinf&nbsp; flow direction</td>
+	</tr>
+	<tr>
+		<td>Contributing area</li>
+				</td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >D8</td>
+		<td >&nbsp;</td>
+		<td>ad8</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >Dinf</td>
+		<td >&nbsp;</td>
+		<td>sca</td>
+	</tr>
+	<tr>
+		<td>Grid Network</td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >D8</td>
+		<td >&nbsp;</td>
+		<td>plen--longest upslope path<br>
+		gord--Strahler order<br>
+		tlen--total upstream parth length</td>
+	</tr>
+	<tr>
+		<td>Peuker Douglas:
+		<span style="color: rgb(0, 0, 32); font-family: Verdana, Gill, Helvetica, sans-serif; font-size: 13px; font-style: normal; font-variant: normal; font-weight: 500; letter-spacing: normal; line-height: normal; orphans: auto; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; display: inline !important; float: none; background-color: rgb(255, 255, 255);">
+		<span class="Apple-converted-space">&nbsp;</span>upward curved grid cells, 
+		generally lacks connectivity and requires thinning</span></td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >&nbsp;</td>
+		<td >&nbsp;</td>
+		<td>ss--stream source grid</td>
+	</tr>
+	<tr>
+		<td>Stream Definition by Threshhold</td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >&nbsp;</td>
+		<td >&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Stream reach and watershed (Streamnet): </td>
+		<td>&nbsp;</td>
+		<td style="width: 63px" >&nbsp;</td>
+		<td >fel<br>
+		ad8<br>
+		p<br>
+		<strong>src&nbsp; needed</strong></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Topographic Wetness Index</td>
+		<td>TWI</td>
+		<td style="width: 63px" >&nbsp;</td>
+		<td >&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+<hr>
+
+<p>Get
+TAUDEM, at&nbsp; <a href="https://hydrology.usu.edu/taudem/taudem5/index.html">
+https://hydrology.usu.edu/taudem/taudem5/index.html</a> </p>
+<ul>
+	<strong style="font-weight: 400">
+		<li>The current version, 5.3.7,&nbsp; has a full 
+	install which should take care of the HPC Pack issues.&nbsp; It will also install 
+	GDAL.</ul>
+		
+<p>Documentation:
+<a href="https://hydrology.usu.edu/taudem/taudem5/documentation.html">
+https://hydrology.usu.edu/taudem/taudem5/documentation.html</a> </p>
+	<li><hr>
+	<p align="right"><i>Last revision 1/27/2024</i> </li>
+</ul>
+		
+</strong>
+	

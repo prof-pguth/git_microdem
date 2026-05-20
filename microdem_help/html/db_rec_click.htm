@@ -1,0 +1,197 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Database Record Click Popup Menu</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="5"><strong>Database Record Click
+Popup Menu</strong></font></p>
+
+<p>These options will be on a popup menu when you click on a
+record in <a href="database_table_display.htm">table display
+window</a>. Some options will be available only for certain types
+of database files.</p>
+
+<table border="1">
+  <tr>
+    <td>
+
+<ul>
+    <li><strong><a href="db_rec_disp.htm">Record display.</a>&nbsp; </strong>&nbsp; 
+	In addition to the text for each records, graphics will also be displayed.<ul>
+    <li><strong>Earthquake focal mechanism:</strong> requires 
+	<a
+        href="earthquake_focal.htm">Harvard CMT project database
+        file</a>.</li>
+	<li><a href="gis/linking_imagery.htm"><strong>Image</strong></a>:
+        IMAGE field present. You can bring up an image (BMP, PNG, TIF, GIF,
+        or JPEG) stored in the same directory as the database. If
+        the file is a GIF, it will appear in a window that can
+        play animated GIFs. The program will attempt to load
+        other files (like MPEGs, WAVs, etc.) using the program
+        set as the default in Windows.</li>
+	<li><img border="0" src="../images/clim_button.GIF" width="32" height="32">
+	<a href="climograph.htm">Climograph</a>--<a href="tbme86at.htm">Koppen climate classification</a></li>
+</ul>
+
+    </li>
+    <li><strong>Edit record options, </strong>
+	<a
+        href="db_edit_mode.htm"><strong>requires edit enabled</strong></a><strong>: 
+	</strong>You can also <a href="#Color">Color
+      multiple records</a><b> </b>from the <a href="db_edit.htm">edit button</a> on the toolbar.</li>
+	<ul>
+					<li><strong>Record edit:&nbsp; You will get a pop up
+              window with the record, and can&nbsp;edit it.</strong></li>
+					<li><strong>Edit point location (graphical)</strong>:
+                	requires point database, and edit enabled. If available,
+                you can then double click a location on the map.
+                If the point verification (Verify Graphical
+                Selections, on the coordinates table of the
+                options form) is set to verify all or reasonable,
+                you will have to verify the selected points,
+                either graphically in a small blowup window or
+                via the keyboard. After selecting the point, and
+                verifying it if necessary, you can double click
+                on records in the data base to change their
+                locations. This option currently only works for
+                data bases which include LAT and LONG fields, and
+                not for Shape files.</li>
+					<li><strong>Edit Point symbol</strong>: for point shapefiles</li>
+					<li><b>Edit Font</b></li>
+					<li><b>Edit line weight and color</b> for line shapefiles</li>
+					<li><b>Edit fill pattern </b>for area shapefiles</li>
+					<li><strong>Keyboard new point location</strong>: for point
+              database.</li>
+					<li style="font-weight: 700"><a href="insert_pt.htm">Insert new 
+			record at distance/bearing</a></li>
+					<li style="font-weight: 700">Distance to other records: </li>
+					<li><strong>Associate image</strong>: requires an
+                IMAGE field, and you can pick
+                the image to associate with the record.</li>
+					<li><strong>Delete record</strong>:&nbsp;</li>
+					<li><strong>Color record</strong></li>
+	</ul>
+	<li><strong>Map </strong><ul>
+					<li>Recenter map on record</li>
+					<li>Zoom map to record</li>
+					<li>Highlight record on map</li>
+	</ul>
+	</li>
+	<li><strong>Show</strong><ul>
+					<li><strong>Record coordinates</strong>: gets a listing of the coordinates 
+	for the record.&nbsp; This will be in lat/long or UTM, depending on your 
+	choice of coordinates on the <strong style="font-weight: 400">
+					<a href="unitstab.htm">Units </a>tab of the </strong>
+					<a href="tbme1njp.htm">options form</a>,.</li>
+					<li><strong>Record screen coordinates</strong>:&nbsp; There is also a &quot;Coordinates to text file&quot; 
+	option the the <a href="db_report.htm">Report</a> tab.</li>
+					<li>Record bounding box</li>
+	</ul>
+	</li>
+	<li><strong>Calculate</strong><ul>
+					<li><strong>Calculate Line length</strong>:</li>
+					<li><strong>Calculate area</strong>:</li>
+					<li><strong>Calculate perimeter:</strong></li>
+					<li><strong>Calculate volume</strong></li>
+					<li><strong>Calculate centroid</strong>:</li>
+					<li><strong>Distance to other records</strong></li>
+	</ul>
+	</li>
+	<li><strong>Views</strong><ul>
+					<li>Outline camera view</li>
+					<li><b><a href="pan_persp_view_db.htm">Perspective view</a></b></li>
+	<li><b><a href="pan_persp_view_db.htm">Panorama View </a></b></li>
+					<li><b><a href="terr_prof_line_shape.htm">DEM Terrain profile</a>--</b>requires 
+	DEM map.</li>
+					<li>LOS/terrain profile</li>
+					<li>Normalized basin profile--distance and elevation both normalized from 
+	0.0 to 1.0, so you can compare basins with different scaling.</li>
+					<li><b><a href="shape_3d_prof.htm">3D shapefile profile</a></b>--requires  
+	3D <a href="shapefile.htm">shapefile</a></li>
+					<li>Compare shape file and DEM profiles--requires a 3D
+					<a href="shapefile.htm">shapefile</a> and a DEM map.</li>
+					<li>DEM Terrain blowups</li>
+	</ul>
+	</li>
+	<li><a href="../microdemtutorials/lvis/lvis_waveforms.html">LVIS waveform</a>: <a href="../microdemtutorials/lvis/processing_lvis.html">You must have 
+prepared LVIS Level 2 ASCII data.</a></li>
+	<li>Movie</li>
+	<li>WWW</li>
+	<li>Delete record</li>
+	<li>Select all records prior to this one</li>
+	<li>Select all records after this one</li>
+	<li><strong>Mask DEM/Grid: </strong>for an area shapefile, marks as missing 
+	all grid points not within the current record.&nbsp;
+	<a href="masking_opts.htm">Set masking options</a>.&nbsp; </li>
+	<li>Range circles</li>
+	<li>Export 
+	<ul>
+		<li>line/Polygon to point database: creates a point DBF file with LAT, LONG, 
+	ELEV_M, and DIST_KM.&nbsp; This allows you to see and manipulate the 
+	coordinates of&nbsp; the line.</li>
+	</ul>
+	</li>
+	<li><b>Create DEM</b></li>
+	<li>Mark holes</li>
+	<li><strong>Load Options to load data</strong><ul>
+					<li>from map library</li>
+					<li>sidescan image </li>
+					<li><a href="landsat_index.htm">Landsat indexed image</a></li>
+	</ul>
+	</li>
+	<li>Data statistics<ul>
+		<li><a href="station_time_series.htm">Station time series</a></li>
+		<li>Stratigraphic column</li>
+		<li>Plot XY fille</li>
+	</ul>
+	</li>
+	<li>Point in record</li>
+	<li>Feature geomorphometry</li>
+	<li><strong><a href="month_winds.htm">Monthly winds</a></strong></li>
+	<li>Ridge count around point</li>
+	<li>Accumulated cost surfeace</li>
+	<li>Point cloud and global DEMs<ul>
+		<li>Point cloud statistics and canopy density</li>
+		<li>Point cloud points to DBF</li>
+		<li>Lat profile</li>
+		<li>Long profile</li>
+		<li>Both profiles</li>
+	</ul>
+	</li>
+	<li><b>Show neighbors:</b> requires that <a href="find_neigh.htm">neighbors
+      have been computed and stored.</a></li>
+	<li><a href="gis/linking_imagery.htm"><strong>WWW</strong></a>:
+        WWW or URL field present. Bring up the web
+        browser with the selected page.</li>
+	<li>Associate image</li>
+	<li><strong>Options for <a href="viewshed_toolbar.htm">weapons fans edits</a></strong>:<ul>
+		<li><strong>Edit Fan properties</strong>:</li>
+		<li><b>Edit fan color</b></li>
+	</ul>
+	</li>
+	<li><b>Clipboard operations</b>--<b> </b>programs other than MICRODEM cannot 
+	use this feature.&nbsp; Move record locations from one file to another.<ul>
+		<li><b>Copy record coordinates to clipboard.&nbsp; </b>Point records can be 
+	pasted on this menu to modify a record, while new records can be inserted on 
+	the <a href="db_edit.htm">Edit</a> menu.</li>
+		<li><b>Paste coordinates from clipboard.&nbsp; </b>This works only for 
+	points and modifies the current record.</li>
+	</ul>
+	</li>
+</ul>
+
+      <p>&nbsp;</td>
+  </tr>
+</table>
+
+<hr>
+
+<p align="right" ><font size="3"><em>Last revision 1/27/2022</em></font></p>
+</body>
+</html>

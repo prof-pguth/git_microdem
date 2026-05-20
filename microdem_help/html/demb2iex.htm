@@ -1,0 +1,93 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>DEM Accuracy</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>DEM Accuracy</b></font></p>
+
+<p>The accuracy of a DEM is dependent upon its source and the
+spatial resolution, that is grid spacing, of the data profiles.
+One factor influencing DEM accuracy is source data scale and
+resolution. A dependency exists between the scale of the source
+materials and the level of grid refinement possible. The source
+resolution is also a factor in determining the level of content
+that may be extracted during digitization. For example,
+1:250,000-scale topographic maps are the primary source of
+1-degree DEMs.</p>
+
+<p>Another factor is the horizontal and vertical dimension of the
+DEM. Horizontal accuracy of DEM data is dependent upon the
+horizontal spacing of the elevation matrix. Within a standard
+DEM, most terrain features are generalized by being reduced to
+grid nodes spaced at regular intersections in the horizontal
+plane. This generalization reduces the ability to recover
+positions of specific features less than the internal spacing
+during testing and results in a de facto filtering or smoothing
+of the surface during gridding. </p>
+
+<p>Vertical accuracy of DEM data is dependent upon the spatial
+resolution (horizontal grid spacing), quality of the source data,
+collection and processing procedures, and digitizing systems. As
+with horizontal accuracy, the entire process, beginning with
+project authorization, compilation of the source data sets, and
+the final gridding process, must satisfy accuracy criteria
+customarily applied to each system. Each source data set must
+qualify to be used in the next step of the process. Errors have
+the effect of compounding for each step of the process. </p>
+
+<p>The horizontal accuracy of the DEM is expressed as an
+estimated root mean square error (RMSE). The estimate of the RMSE
+is based upon horizontal accuracy tests of the DEM source
+materials which are selected as equal to or less than intended
+horizontal RMSE error of the DEM. The testing of horizontal
+accuracy of the source materials is accomplished by comparing the
+planimetric (X and Y) coordinates of well-defined ground points
+with the coordinates of the same points as determined from a
+source of higher accuracy.</p>
+
+<p>The vertical RMSE statistic is used to describe the vertical
+accuracy of a DEM, encompassing both random and systematic errors
+introduced during production of the data. Accuracy is computed by
+a comparison of linear interpolated elevations in the DEM with
+corresponding known elevations. Test points are well distributed,
+representative of the terrain, and have true elevations with
+accuracies well within the DEM accuracy criteria. Acceptable test
+points include, in order of preference: field control,
+aerotriangulated test points, spot elevations, or points on
+contours from existing source maps with appropriate contour
+interval. A minimum of 28 test points per DEM is required to
+compute the RMSE, which is composed of a single test using 20
+interior points and 8 edge points. Edge points are those which
+are located along, at, or near the quadrangle neatlines and are
+deemed by the editor to be useful to evaluating the accuracy of
+the edge of the DEM. Collection of test point data and comparison
+of the DEM with the quadrangle hypsography are conducted by the
+quality control units within the USGS.</p>
+
+<p>There are three types of DEM vertical errors; blunder,
+systematic and random. These errors are reduced in magnitude by
+editing but cannot be completely eliminated. Blunder errors are
+those errors of major proportions and are easily identified and
+removed during interactive editing. Systematic errors are those
+errors that follow some fixed pattern and are introduced by data
+collection procedures and systems. These error artifacts include:
+vertical elevation shifts, misinterpretation of terrain surface
+due to trees, buildings and shadows, and fictitious ridges, tops,
+benches or striations. Random errors result from unknown or
+accidental causes.</p>
+
+<p><i>Extracted from USGS WWW pages in the spring of 1997. While
+it applies specifically to USGS products and procedures, the same
+principles apply to NGA or other DEM producers.</i></p>
+
+<hr>
+
+<p align="right"><em>Last revision 11/15/2006</em></p>
+</body>
+</html>

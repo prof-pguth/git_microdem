@@ -1,0 +1,117 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>DEBUG LOG</title>
+</head>
+
+<body>
+
+<p align="center"><b><font size="5">MICRODEM DEBUG LOG</font></b></p>
+
+<p><b>The program creates a debug log when it runs called 
+&quot;microDEM-64_debug_log.txt&quot;,&nbsp; in a subdirectory under 
+the program directory (&quot;c:\microdem\logs&quot;).&nbsp;</b> The log is 
+closed after each entry, so that a program crash will not lose any debug 
+information except perhaps the very last step.&nbsp; </p>
+
+<p><b>You can view the debug log inside the program with the
+&quot;Help, View debug log&quot; </b> <a href="micr0alv.htm">menu</a><b> choice</b>. 
+You can save this log, or cut and paste it into email or another program.&nbsp; </p>
+<p>On startup, the debug log from the last excution is saved and can be viewed 
+from the Help menu.&nbsp; This avoids having to find it.</p>
+
+<p>The debug log contains information about the <a href="build_number.htm">build 
+number</a>, hardware, program
+execution steps, and any problems.&nbsp; When you have
+difficulty, and cannot resolve them any other way, submit the
+debug log as a bug report, along with a description of the
+problem.</p>
+
+<p>The complete installations of the program have a limited debug
+log capability built in.&nbsp; These are carefully designed not
+to interfere with program execution; there are no logging events
+inside tight loops, and the exe and debug file sizes should not get very
+large.&nbsp; This is designed to generally track your program
+choices, and to supply data about the most common problems.</p>
+
+<p>Most problems will probably require additional debug
+information.&nbsp; We will first try to verify the problem on the
+development systems, and often we can reproduce the problem and
+fix it.&nbsp; Sometimes we cannot, and we must add more debug
+code and get you to rerun the program to pinpoint the
+problem.&nbsp; The goal is to trace program execution module by module, and 
+sometimes almost line by line, to see where things blow up.&nbsp; Usually this kind of problem is the result of the
+interaction of several choices you have made, and until we
+discover the combination of choices responsible we cannot
+duplicate the problem.&nbsp; Often your (and our) first guess
+about the cause of the problem is only half right, and we might
+require several iterations to fully identify the difficulty.</p>
+
+<p>We have a number of predefined debug packages, which can be
+inserted into the code immediately.&nbsp; These will be reported
+at the end of the debug log as a &quot;RecordXXXXProblems active
+in CodeModule&quot;.&nbsp; Some of these can degrade system
+performance, because sometimes the debug code must go inside a
+tight loop and be executed many times, each with a write to the
+file.&nbsp; We strive to remove these debug options as soon as
+the problem is fixed.&nbsp; If you think the program is running
+too slowly, you can:</p>
+
+<ul>
+    <li>look at the size of the debug log; if it exceeds 100 kb
+        there are likely severe problems being logged, and that
+        build of the program should not be used for general
+        operations other than tracking down a specific problem.</li>
+    <li>see how many options are enabled at the end of the debug
+        log, but this may not be reliable.</li>
+	<li>Turn off debug logging on <a href="printing_tab.htm"><strong>Printer/Hardware</strong></a> 
+	tab of the <a href="tbme1njp.htm">options form</a>.</li>
+</ul>
+
+<p>In rare cases the problem will&nbsp; be in the initial startup code, and 
+happen before the debug log opens.&nbsp; In that case we can compile a version 
+of the program that records progress during initialization through a series of 
+on screen messages.&nbsp; While annoying, this is usually very effective.</p>
+
+<table border="1" width="100%">
+    <tr>
+        <td width="100%"><p align="center"><font size="4"><b>Sample
+        Debug Log</b></font></p>
+        </td>
+    </tr>
+    <tr>
+        <td width="100%">9:58:27 PM Opened Debug log: 
+		C:\microdem\logs\MicroDEM-64_debug_log.txt<br>Log from 12/17/18<br>EXE: 
+		C:\microdem\microdem.exe<br>Build: MicroDEM-64 2018.12.16.60<br>
+		Compiled: Delphi 10.3 Rio<br>DB driver: tDBF<br>INI: 
+		C:\Users\NNN\AppData\Roaming\microdem\microdem.ini<br>9:58:27 PM 
+		GetHardware<br>Windows 10 (Version 10.0, Build 17134, 64-bit Edition)<br>
+		Total Physical Memory: 16.0 Gb<br>Intel64 Family 6 Model 60 Stepping 3<br>
+		CPU Speed: 3392 MHz<br>Processors: 8<br>Monitors: 2 Screen Resolution, 
+		Colors: 32 bits<br>Monitor 1: 1920x1200 Left=-1920 top=-103<br>Monitor 
+		2: 3072x1728 Left=0 top=0<br>Printer resolution : 4900 x 6400 at 600 dpi<br>
+		Computer name: MY_COMPUTER<br><br>9:58:30 PM GotHardware<br>9:58:30 PM 
+		Debug file opened<br>9:58:30 PM Start LoadMDdefaults ProgramMode=0<br>
+		9:58:30 PM End LoadMDdefaults ProgramMode=0<br>9:58:30 PM No command 
+		line parameters<br>9:58:30 PM Microdem Temp Directory: C:\mapdata\temp\ 
+		Free space: 191.4 Gb<br>9:58:31 PM MDdef.AutoOpen=1 
+		MDdef.ProgramOption=0 GDAL tool dir=C:\OSGeo4W64\bin\<br>9:58:31 PM 
+		MDdef.AutoOpen=1<br>9:58:37 PM MDdef.AutoOpen completed, 
+		Twmdem.FormActivate wsMaximized, width=3088 &amp; height=1704<br>9:58:37 PM 
+		ending FormActivate, first time<br>9:59:15 PM DoGeoStatAnalysis in<br>
+        </td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revision 1/23/2023</em></p>
+</body>
+</html>

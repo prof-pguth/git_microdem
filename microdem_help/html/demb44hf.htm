@@ -1,0 +1,89 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>DEM memory issues</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>DEM MEMORY ISSUES</b></font></p>
+
+<p>MICRODEM requires&nbsp; the DEM be in memory (RAM) because: </p>
+
+<ul>
+    <li>It speeds up the program considerably over disk access.</li>
+    <li>It simplifies coding, since there need only be different
+        import routines and then all access of the DEM uses the
+        program&#146;s internal storage model.</li>
+    <li>DEM storage in files is not standard, even at the level of storing by row or 
+	column. </li>
+	<li>Many operations require a number of points
+        surrounding the desired point (e.g. reflectance, slope,
+        aspect), and multiple DEM formats would
+        complicate and slow down these operations.</li>
+	<li>Operations like 3D oblique and perspective views, line of sight, and 
+	viewsheds require sequential points along diagonal lines and not just rows 
+	or columns.</li>
+    <li>The screen can display only a fraction of the points in a
+        DEM this size. A large DEM will effectively be subsampled to display on screen.<ul>
+					<li>Typical screen sizes are about 1000 x 1000 (now may 1920 by 128 
+					pixels may be common, and 3840x2160 is coming up fast (4K)).</li>
+					<li>Even my <a href="big_monitors.htm">four monitor large 
+					system</a> is only about 4000x2000 pixels, athough I do a 
+					second 2K monitor.</li>
+	</ul>
+	</li>
+    <li>With subset, merge, and thin options supported in the
+        program, it should be possible to create a suitable DEM
+        of the desired region. Small scale DEMs should cover a
+        large area at lower resolution, while large scale DEMs
+        would cover small areas with better resolution. It is
+        probably appropriate to have two scales of DEM covering
+        the same region, a small scale DEM for regional synthesis
+        and large scale DEMs for particular areas of interest. </li>
+	<li>You can have a small scale overview map, and use it to pick the large 
+	scale DEM for specific areas of interest for detailed analysis.</li>
+</ul>
+<p>Running out of&nbsp; memory can come from two sources.&nbsp; You should be 
+able to tell which source caused the problem by looking at the error message.&nbsp; 
+If it does not include words like &quot;DEM&quot;, &quot;column&quot;, or &quot;Row&quot;, it is probably being 
+passed from the operating system to MICRODEM, and it is unlikely we can fix the 
+problem and you will have to be less &quot;greedy&quot; and &quot;smarter&quot; in what you want to 
+do.</p>
+<ul>
+				<li>You try to load a DEM, probably by merging, that is too big 
+				for the <a href="md_limits.htm">current limits</a>.&nbsp; You 
+				should really think about whether you really need that level of 
+				detail over such a large area (you cannot see it on screen, and 
+				probably cannot also do meaningful analysis with it).&nbsp; This 
+				is less than the amount of memory on your system.</li>
+				<li>You try to create a map window on screen that exceeds the 
+				limits of Windows or your graphics card.&nbsp; This limit has been 
+				creeping up over time, and depends on your system's 
+				characteristics, but overall I think it is plenty big (although 
+				it will be much much less than the amount of memory you have).&nbsp;&nbsp; 
+				You should have gotten a warning that this will take a lot of 
+				memory, and noted that you cannot display it all on screen at 
+				once and would have to use scrollbars.&nbsp; In this case, <font size="3"><img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a>.</li>
+</ul>
+<p>With the <a href="md64.htm">64 bit version</a> the only one normally 
+supported, and even larger DEMs 
+could be moved into memory.</p>
+<p>Some programs compute multiple grids, and then use those grids to compute 
+geomorphometric parameters.&nbsp; We are considering moving in that direction, 
+but have not adopted it for general operations becasue the grids would all have 
+to be in memory.&nbsp; Having the partial grids might speed up computations, at 
+the cost of limiting the size of the DEMs which could be used.&nbsp; For 
+computations of the <a href="sso_analysis.htm">SSO</a>, MICRODEM does compute 
+the 3 components of the normal vector to the DEM surface and retains those in 
+memory to speed up computations, so this in effect has three additional grids in 
+memory, at the same cost as the original DEM.</p>
+<hr>
+        <p align="right"><em>Last revision 8/11/2022</em></p>
+</body>
+</html>

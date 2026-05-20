@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Designing a Database</title>
+</head>
+
+<body>
+
+<h2>Designing a Database</h2>
+<p>In designing a GIS data base, the first decision is the geometry to use.&nbsp; 
+In part this will depend on the scale; something that would be a point or line 
+at small scale could become a polygon at large scale.&nbsp; Most databases can 
+hold only a single geometry type, and data symbolization would become very 
+difficult when mixing multiple geometries.&nbsp; <a href="kml_overview.htm">KML</a> 
+files in Google Earth can mix geometries, but have little flexibility in 
+changing the symbolization.</p>
+<p>A point database can be much simpler, as a single, simple table can hold both 
+the coordinates and their attributes.&nbsp; It can be edited in a spreadsheet 
+with little chance of corruption.&nbsp; In contrast, a line or area database 
+usually requires multiple files because each record can have wildly different 
+number of coordinate pairs, from two for a simple straight line or three for a 
+triangular polygon, to tens or hundreds or thousands of points for complicated 
+feature like the outline of a coastal state.&nbsp; Because there are multiple 
+files, you cannot simply edit the database with impunity because deleting a 
+record, inserting a record, or reordering the records must include changes to 
+all the files; all edits must be done in 
+a GIS program which coordinates all changes in each of the files.</p>
+<p>The most common format for GIS databases, the <a href="shapefile.htm">shapefile</a>, 
+uses at least three files.</p>
+<p>If you have a choice, picking a point database will make your life simpler.&nbsp; 
+The coordinates can be included in the dBase table, and if required, the GIS 
+software can easily turn that file into a complete <a href="shapefile.htm">shapefile</a>.</p>
+<p>Polygons can be even more complex if donuts are allowed; these will have 
+exterior boundaries, and interior outlines of the "holes".&nbsp; Most programs 
+keep track of this by the direction of digitizing, clockwise or 
+counterclockwise.</p>
+<p>Once the geometry is chosen, the user must define the fields.&nbsp; 
+Considerations here include:</p>
+<ul>
+	<li><a href="computer_data_types.htm">Computer data types</a>.&nbsp; This 
+	determines what operations you can do.</li>
+	<li>Coding--you can use integer codes&nbsp; (e.g. 1=asphalt, 2=concrete, 3=dirt).&nbsp; 
+	These will conserve storage space, but are not very friendly for people 
+	looking at the data tables.&nbsp; Storage space, unless you have a great 
+	number of very large databases, is no longer a significant concern.&nbsp; 
+	If you use string codes, and avoid spelling inconsistencies, the table is 
+	much friendlier for humans. For <font face="Times New Roman">color you could 
+	use a number (1=red, 2=green, etc.), an abbreviation (GR=green, BR=brown, 
+	etc.), or fully spelled out (Green, Brown, etc.).&nbsp; You choice will determine 
+	the amount of storage required, the degree of human readability, and the 
+	effort required to insure that you do not record the same information in 
+	multiple ways.&nbsp; This becomes even more critical if you will not be doing all 
+	the data collection yourself, and have to insure accurate data collection by 
+	others.</font></li>
+	<li>Categories to use: allowing unrestricted choice can lead to confusion.&nbsp; 
+	A database tracking terrorists had problems because different analysts 
+	coded the same vehicle as "SUV", "Jeep", "Vehicle", and it becomes very 
+	difficult to identify all the records showing the same vehicle.</li>
+	<li>Fine or coarse granularity: if you wanted to add color to the terrorist 
+	vehicles, do you want one field with "Gray SUV", or do you want to have 
+	separate 
+	"VEH_TYPE" and "VEH_COLOR"?&nbsp; If you want to be able to search for the 
+	separate attributes, the second option is better; <a href="db_filters_define.html">
+	filters</a> can readily find matches at the beginning of the strings, but in 
+	the middle or end it becomes much harder.</li>
+	<li>Length of each field: saving a few bytes on each record will blow up if 
+	your data is truncated with no warning; unless your databases will be truly 
+	huge, skimping here can be a false economy.</li>
+	<li>Field names.&nbsp; You are likely to have a limited number of characters 
+	to choose from, and relatively short limits.</li>
+</ul>
+<p><font face="Times New Roman">&nbsp;</font>Newer databases do not have some of these limitations, but because databases 
+are stuck with the dBase table used in <a href="shapefile.htm">shapefile</a>, 
+any attempt to use a new standard will encounter huge incompatability issues.</p>
+
+<hr>
+
+<p align="right"><em>Last revision 8/29/2015</em></p>
+	
+	
+	
+	
+	<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

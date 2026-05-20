@@ -1,0 +1,288 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>DEM availability</title>
+</head>
+
+<body>
+
+<p align="center"><font size="5"><b>DEM Availability</b></font> </p>
+<p align="center"><a href="global_dems.html">Key Global Regional DEMs</a>&nbsp;&nbsp; <a href="dataused.htm">Supported data formats</a>.&nbsp;&nbsp;&nbsp;&nbsp; <a href="bathymetry.htm">Bathymetery</a></p>
+
+<table border="1">
+    <tr>
+        <td> <b>Scale</b></td>
+        <td><b>Spacing</b></td>
+        <td><b>Data series</b></td>
+        <td><b>Coverage</b></td>
+        <td><b>Provider</b></td>
+        <td><b>Web Source</b></td>
+        <td><b>Notes</b></td>
+    </tr>
+    <tr>
+        <td>Global</td>
+        <td>5' (~10 km)</td>
+        <td><a href="demb9w6s.htm">ETOPO5</a> 
+        </td>
+        <td>Entire world, including ocean basins</td>
+        <td>NOAA</td>
+        <td>&nbsp;<p>&nbsp;</p>
+        </td>
+        <td>&nbsp;<p>Get ETOPO1 and thin</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>2'</td>
+        <td><a href="demb9w6s.htm">ETOPO2</a></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>Get ETOPO1 and thin. </td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>2' long (lat has Mercator factor)</td>
+        <td><a href="sio_predicted_bathymetry.htm">Smith
+        &amp; Sandwell Predicted topography</a></td>
+        <td>Entire world, including ocean basins</td>
+        <td>SIO/NOAA</td>
+        <td><a
+        href="http://topex.ucsd.edu/marine_topo/mar_topo.html">Scripps</a></td>
+        <td>Ideal for regional base maps, especially for
+        geologists</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>1'</td>
+        <td><a href="demb9w6s.htm">ETOPO1</a></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><a href="http://www.ngdc.noaa.gov/mgg/global/global.html">
+		NGDC</a> </td>
+        <td>Entire data set, or
+		<a href="http://www.ngdc.noaa.gov/mgg/gdas/gd_designagrid.html">custom 
+		grids</a></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>30&quot;</td>
+        <td><a href="srtm_15plus.htm">SRTM-15 Plus</a>, <br><a href="srtm30plus.htm">SRTM-30_Plus:</a> Merge of SRTM30, Smith &amp; Sandwell, and <a
+        href="ibcao.htm">IBCAO</a></td>
+        <td>Entire world, including ocean basins</td>
+        <td>&nbsp;</td>
+        <td><a
+        href="http://topex.ucsd.edu/WWW_html/srtm30_plus.html">Scripps</a></td>
+        <td>Get the SRTM version files, with a data file and an ERS header.&nbsp; 
+		Open with MICRODEM which will use GDAL.&nbsp; You will probably have to 
+		edit the header to get the correct SW corner.</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>30&quot;</td>
+        <td>
+		<a href="https://dataservices.gfz-potsdam.de/panmetaworks/showshort.php?id=b2d17f8d-f599-11ee-967a-4ffbfe06208e">
+		GDEMM2024</a></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>
+		<span style="color: rgb(52, 52, 52); font-family: Verdana, sans-serif; font-size: 11.008px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(242, 245, 248); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Abrykosov, Oleh; Ince, E. Sinem; Förste, Christoph (2024): GDEMM2024: 30 
+		Arcsec Global Digital Elevation Merged Model 2024, a suite for Earth 
+		relief. GFZ Data Services. https://doi.org/10.5880/GFZ.1.2.2024.002</span></td>
+    </tr>
+    <tr>
+        <td Continental</td>
+        &nbsp;<td>30&quot; (~1 km)</td>
+        <td>GTOPO30</td>
+        <td>Entire world, land only</td>
+        <td>USGS</td>
+        <td bgcolor="#C0C0C0"><font
+        size="3">
+		GTOPO30</font></td>
+        <td bgcolor="#C0C0C0">Use <a href="gmted.htm">GMTED2010</a> as better 
+		alternative.</td>
+    </tr>
+    <tr>
+        <td &nbsp;</td>
+        &nbsp;<td>&nbsp;</td>
+        <td><a href="srtm30.htm">SRTM-30</a></td>
+        <td>Entire world, land only</td>
+        <td>&nbsp;</td>
+        <td bgcolor="#C0C0C0"><a href="ftp://e0srp01u.ecs.nasa.gov/srtm/version2/">SRTM-30</a></td>
+        <td bgcolor="#C0C0C0">Use <a href="gmted.htm">GMTED2010</a> as better 
+		alternative.</td>
+    </tr>
+    <tr>
+        <td &nbsp;</td>
+        <td>30&quot;, 15&quot;, and 7.5&quot;</td>
+        <td><a href="gmted.htm">Global Multi-resolution Terrain Elevation Data 2010 
+		(GMTED2010)</a></td>
+        <td>Entire world</td>
+        <td>USGS</td>
+        <td bgcolor="#C0C0C0">
+		GMTED</td>
+        <td bgcolor="#C0C0C0">&nbsp;</td>
+    </tr>
+    <tr>
+        <td>Regional</td>
+        <td>3&quot; (60-90 m)</td>
+        <td><a href="global_dems.html">Key Global Regional DEMs</a>:&nbsp; SRTM-3, 
+		MERIT, COPDEM</td>
+        <td>&nbsp;</td>
+        <td>JPL</td>
+        <td>&nbsp;</td>
+        <td>Entire world except for polar regions
+        (broadly defined)&nbsp;
+          <p> 
+<a href="../microdemtutorials/national_map/national_map.htm">National Map 
+Viewer directions.</a></td>
+    </tr>
+    <tr>
+        <td &nbsp;</td>
+        &nbsp;<td>1&quot; (20-30 m)</td>
+        <td><a href="global_dems.html">Key Global Regional DEMs</a>: COP DEM, 
+		SRTM-1, ALOS Global Digital Surface Model &quot;ALOS World 3D - 30m&quot; (AW3D30) 
+		,ASTER GDEM, NASDEM, FABDEM</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td bgcolor="#C0C0C0">
+        </td>
+        <td bgcolor="#C0C0C0">&nbsp;</td>
+    </tr>
+    <tr>
+        <td &nbsp;</td>
+        &nbsp;<td>1&quot; (20-30 m)</td>
+        <td><a href="ned.htm">3DEP (formerly NED</a>)</td>
+        <td>United States</td>
+        <td>USGS</td>
+        <td bgcolor="#C0C0C0">
+		<ul>
+			<li> 
+			<a href="https://apps.nationalmap.gov/downloader/#/">National Map Viewer</a></li>
+		</ul>
+        </td>
+        <td bgcolor="#C0C0C0"> 
+<a href="../microdemtutorials/national_map/national_map.htm">National Map Viewer</a></td>
+    </tr>
+    <tr>
+        <td &nbsp;</td>
+        &nbsp;<td>10 m</td>
+        <td>&nbsp; </td>
+        <td>&nbsp;</td>
+        <td>NOAA</td>
+        <td bgcolor="#C0C0C0">
+          <ul>
+            <li><a href="http://www.ngdc.noaa.gov/dem/">NOAA Tsunami Inundation
+              Grids</a>&nbsp;</li>
+            <li><a href="http://www.ngdc.noaa.gov/mgg/inundation/tsunami/general.html">NOAA
+              Tsunami grids</a></li>
+          </ul>
+        </td>
+        <td bgcolor="#C0C0C0">&nbsp;</td>
+    </tr>
+    <tr>
+        <td bgcolor="#C0C0C0">&nbsp;</td>
+        <td  bgcolor="#C0C0C0">1/3&quot;</td>
+        <td  bgcolor="#C0C0C0"><a href="ned.htm">3DEP (formerly NED</a>)</td>
+        <td bgcolor="#C0C0C0">United States</td>
+        <td bgcolor="#C0C0C0">USGS</td>
+        <td  bgcolor="#C0C0C0">
+		<a href="../microdemtutorials/national_map/national_map.htm">National 
+		Map Viewer</a></td>
+        <td bgcolor="#C0C0C0"> 
+<a href="../microdemtutorials/national_map/national_map.htm">National Map Viewer</a> 
+		&quot;Best&quot; available data from USGS.&nbsp;&nbsp;</td>
+    </tr>
+    <tr>
+        <td bgcolor="#C0C0C0">&nbsp;</td>
+        <td  bgcolor="#C0C0C0">1/3&quot;</td>
+        <td>Continuously Updated Digital Elevation Model (CUDEM) - Third 
+		Arc-Second Resolution Bathymetric</td>
+        <td>Coastal United States</td>
+        <td>NOAA</td>
+        <td  bgcolor="#C0C0C0">
+		&nbsp;</td>
+        <td bgcolor="#C0C0C0"> 
+		&nbsp;</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>1/9&quot;</td>
+        <td><a href="ned.htm">3DEP (formerly NED</a>)</td>
+        <td>United States</td>
+        <td>USGS</td>
+        <td width="241">
+		<a href="../microdemtutorials/national_map/national_map.htm">National 
+		Map Viewer</a></td>
+        <td> 
+<a href="../microdemtutorials/national_map/national_map.htm">National Map Viewer</a> &quot;Best&quot; available data
+        from USGS.&nbsp; Very limited coverage at this scale</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>1/9&quot;</td>
+        <td>Continuously Updated Digital Elevation Model (CUDEM) - Ninth 
+		Arc-Second Resolution Bathymetric</td>
+        <td>Coastal United States</td>
+        <td>NOAA</td>
+        <td width="241">
+		<a href="https://coast.noaa.gov/htdata/raster2/elevation/NCEI_ninth_Topobathy_2014_8483/">
+		https://coast.noaa.gov/htdata/raster2/elevation/NCEI_ninth_Topobathy_2014_8483/</a> </td>
+        <td> 
+		Tiles named for the NW corner</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>1 m</td>
+        <td><a href="coned.htm">Coastal National Elevation Database (CONED)</a></td>
+        <td>Coastal United States</td>
+        <td>USGS</td>
+        <td width="241">
+	
+	<a href="https://topotools.cr.usgs.gov/topobathy_viewer/">
+	https://topotools.cr.usgs.gov/topobathy_viewer/</a></td>
+        <td> 
+		<a href="coned.htm">Directions</a></td>
+    </tr>
+    <tr>
+        <td><a href="lidar_pt_clouds.htm">Point (Lidar)</a></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td width="241">&nbsp;</td>
+        <td> 
+		&nbsp;</td>
+    </tr>
+    </table>
+
+<p><a href="BAthymetry.htm">Bathymetry</a> (DEMs under water)</p>
+
+<p><strong>DEM resolution</strong>: the tradeoff between detail
+and file size, and help on selecting the DEM series to use.</p>
+
+<ul>
+    <li><a href="gridsize.htm">Table</a></li>
+    <li><a href="viewcal.htm">Color maps</a></li>
+</ul>
+
+<p><a href="commercial_dems.html">Commercial DEMs</a></p>
+<p>PaleoDEMs:
+<a href="https://www.earthbyte.org/paleodem-resource-scotese-and-wright-2018/">
+https://www.earthbyte.org/paleodem-resource-scotese-and-wright-2018/</a> .&nbsp;
+<span style="color: rgb(58, 58, 58); font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 300; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+The paleoDEMS describe the changing distribution of deep oceans, shallow seas, 
+lowlands, and mountainous regions during the last 540 million years at five 
+million year intervals.</span></p>
+
+<hr>
+
+<p align="right"><font size="3"><i>Last revision 
+12/9/2023</i></font></p>
+</body>
+</html>

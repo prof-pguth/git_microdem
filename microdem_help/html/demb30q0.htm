@@ -1,0 +1,182 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Vertical curvature of the earth</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>Vertical Curvature of the Earth</b></font></p>
+
+<p>Selected in MICRODEM: </p>
+<ul>
+				<li><a href="viewshed_parameters.htm">Viewshed Parameters
+        window</a>, <a href="fan_drawing.htm">Color &amp; algorithm</a>,&nbsp;
+				<a href="viewshed_parameters.htm">fan
+parameters</a> form.</li>
+				<li><a href="los_right_click_options.htm">LOS Right click options</a>, <a href="tbme1wc3.htm">LOS Parameters--change
+                display parameters</a>, Curvature</li>
+</ul>
+<p>In screen profiles the computer can include in its
+calculations curvature of the earth's surface along the profile.
+This can be seen on very long profiles through areas of low
+relief, where the ticks on both sides of the profile will be
+visibly at different levels (e.g. a 20 km profile through
+West Point will have a 50 m drop due to curvature of the
+earth with a 500 m vertical scale). The program will not allow
+curvature in very long profiles, such as those from SRTM30 where the curvature can be much greater than the actual
+relief.&nbsp;&nbsp;</p>
+
+<table border="1" width="100%">
+  <tr>
+    <td><img border="0" src="../images/vert_curv.gif" width="211" height="182"></td>
+    <td>
+
+<p> The algorithm choices are:</p>
+
+<ul>
+    <li><b>TM 5-441</b> (Feb 1970), p.2-12: the Army technical
+        manual for topographic surveying. HP = HP - d² * 0.0676</li>
+    <li><b>Radio</b>: radio line of sight. HP = HP - d² /
+        (RadioK * 0.25 * 51). &nbsp; This algorithm depends on the 
+    atmospheric conditions, but not the frequency/wavelength used. Frequency
+      does impact Fresnel zone calculations.
+      <ul>
+        <li> For standard conditions <b> RadioK</b> is
+        usually taken to be 1.33.&nbsp; With this assumption, the formula
+      becomes HP = HP - d² * 0.0590.</li>
+        <li> If you want other conditions, select an appropriate K value.</li>
+      </ul>
+    </li>
+    <li><b>Yoeli</b>: <a href="demb2trn.htm">Yoeli (1985)</a>
+        gives a slightly different formula (HP = HP - 0.87 * d²
+        /2R, where R is the radius of the earth, and the units are in
+      kilometers) which differs
+        slightly from the number calculated with the TM's
+        formula.&nbsp; With an earth radius of 6370 this becomes HP = HP - d² *
+      0.0683. ArcGIS uses this formula. </li>
+    <li><b>None.&nbsp; </b>Flat earth, appropriate for very long profiles which 
+    just show the terrain.</li>
+</ul>
+
+      <p>&nbsp;</td>
+  </tr>
+</table>
+&nbsp;
+<p>&nbsp;</p>
+
+
+<table border="2">
+  <col width="64" span="4" style="width:48pt">
+  <tr>
+    <td height="17" width="64" style="height:12.75pt;width:48pt"></td>
+    <td colspan="3" width="192" style="mso-ignore:colspan;width:144pt">Vertical
+      Earth Curvature (m)</td>
+  </tr>
+  <tr>
+    <td>Distance (m)</td>
+    <td>TM5-441</td>
+    <td>Yoeli</td>
+    <td>Radio, K=4/3</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>100</td>
+    <td x:num="6.7600000000000006E-4">0.0</td>
+    <td x:num="6.828885400313973E-4">0.0</td>
+    <td x:num="5.8970956803774152E-4">0.0</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>500</td>
+    <td x:num="1.6899999999999998E-2">0.0</td>
+    <td x:num="1.7072213500784927E-2">0.0</td>
+    <td x:num="1.4742739200943534E-2">0.0</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>1000</td>
+    <td x:num="6.7599999999999993E-2">0.1</td>
+    <td x:num="6.8288854003139707E-2">0.1</td>
+    <td x:num="5.8970956803774136E-2">0.1</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>2500</td>
+    <td x:num="0.42249999999999999">0.4</td>
+    <td x:num="0.42680533751962324">0.4</td>
+    <td x:num="0.36856848002358833">0.4</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>5000</td>
+    <td x:num="1.69">1.7</td>
+    <td x:num="1.707221350078493">1.7</td>
+    <td x:num="1.4742739200943533">1.5</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>10000</td>
+    <td x:num="6.76">6.8</td>
+    <td>6.8</td>
+    <td>5.9</td>
+  </tr>
+  <tr>
+    <td height="17"  x:num>25000</td>
+    <td>42.3</td>
+    <td>42.7</td>
+    <td>36.9</td>
+  </tr>
+  <tr>
+    <td>50000</td>
+    <td>169.0</td>
+    <td>170.7</td>
+    <td>147.4</td>
+  </tr>
+  <tr>
+    <td>100000</td>
+    <td>676.0</td>
+    <td>682.9</td>
+    <td>589.7</td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1">
+  <tr>
+    <td width="100%"><img border="0" src="../images/vert_los_alg.GIF" width="805" height="623"></td>
+  </tr>
+</table>
+
+<p>The differences between Yoeli and TM5-441 are probably due to the low resolution of the
+constants in the equations, and should not be considered
+significant.</p>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/EARTH_CURV_MAP.PNG" width="371" height="383"></td>
+		<td>Earth curvature (over 3d shading from the DEM).<p>Create on
+		<font
+                size="3"><a href="calculate_antenna_height.htm">
+		<strong style="font-weight: 400">Required antenna
+                height</strong></a><strong style="font-weight: 400"> of </strong><a
+href="intervisibility.htm">Calculate,
+Intervisibility menu</a>.&nbsp; </font></p>
+		<p><font
+                size="3">Provides an estimate of how good a flat earth 
+		approximation will be.</font></td>
+	</tr>
+</table>
+
+<p><a href="vert_curve_graphs.htm">Graphs of the vertical earth curvature.</a></p>
+
+<p><a href="horizontal_curvature.htm">Horizontal earth curvature</a></p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 7/29/2011</em></p>
+</body>
+</html>

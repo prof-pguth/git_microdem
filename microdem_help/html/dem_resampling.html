@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DEM Resampling</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h1>DEM Resampling</h1>
+<p>&nbsp;</p>
+<p>There are limited valid reasons to resample a DEM.&nbsp; Resampling gets new 
+data points, and can remove original data points.</p>
+<p>Valid reasons</p>
+<ul>
+	<li>Resample to a larger resolution</li>
+</ul>
+<p>The following are NOT valid reasons to resample:</p>
+<ul>
+	<li>Compute <a href="demb1f3n.htm">slope</a> or similar derived properties.&nbsp; 
+	Suggestions that the data must be in a UTM or similar projection are simply 
+	wrong.&nbsp; Properly designed software can work with lat/long data.&nbsp;
+	<a href="../slope_arc_second_dems/slope_methods_arc_sec_dems.htm">Slope, 
+	aspect, hillshade algorithms for arc second DEMs</a></li>
+	<li>Deal with arc second data with the lat and long spacings are different 
+	in an attempt to keep pixels more square, which is done at high latitude for 
+	some <a href="global_dems.html">global 1" and 3" DEMs.</a></li>
+</ul>
+<p>Resampling options in MICRODEM</p>
+<ul>
+	<li><a href="save_dem.htm">Save DEM/grid</a> on the <a href="tbme8igl.htm">File 
+	menu</a></li>
+	<li><a href="downsample.html">Downsampling</a> on the <a href="raster_gis.htm">Raster GIS</a> menu 
+	(creating a lower resolution grid)</li>
+</ul>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 2/18/2022</em></p>
+
+<p>.</p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

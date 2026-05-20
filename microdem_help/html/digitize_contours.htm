@@ -1,0 +1,87 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Digitize Contours</title>
+</head>
+
+<body>
+
+<p align="center"><b><font size="5">Digitize Contours</font></b></p>
+<font size="3">Choice from popup menu at the <img src="../images/icons.gif" border="2"
+        width="20" height="20">   <a href="annotate.htm">Annotate Map</a> icon on <a href="maptool.htm">map toolbar</a>.&nbsp;
+This requires that you use a registered map.&nbsp; If you 
+have a scanned map that you need to register, use the <a href="image_reg.htm">
+image registration option</a> from the </font>
+<a href="imagerytoolbar.htm">satellite image
+        analysis window</a>.
+<p><img border="0" src="../images/con_dig.gif" width="300" height="200"></p>
+<p>First open or create a new file for the digitized contours.&nbsp;
+This will be a dBase table with three fields (LAT, LONG, and Z).&nbsp; If you
+are appending to an existing file, the points already digitized will show on
+the map.</p>
+<p>You have three controls:</p>
+<ul>
+  <li>Z value: this will be same until you change it, since you are digitizing
+    contour lines.&nbsp; The initial value is -9999, often chosen for missing
+    data.</li>
+  <li>Mode:
+    <ul>
+      <li>Stream: as long as the left mouse button is down, points will be
+        automatically digitized once the tolerance value is exceeded.</li>
+      <li>Point: points will be recorded only when you double click.</li>
+    </ul>
+  </li>
+  <li>Tolerance: in stream mode, this is the distance a point must be from the
+    last digitized point in order to be recorded.&nbsp; This is measured either
+    horizontally or vertically, and not along the diagonall.</li>
+</ul>
+<p>As you digitize points, they will be added to the data table and marked on
+the map.</p>
+<p>When your file is created, you have the following options:</p>
+<ul>
+  <li>Ultimately
+you would like 1-5 elevations within each grid square that you
+will interpolate. There are bad consequences for both too many
+and too few digitized points. See <a href="micr4wyt.htm">Picking
+the Grid Size</a>.</li>
+</ul>
+
+<hr>
+
+<p>Once the map has been scanned: </p>
+
+<ul>
+	<li> <img src="../images/inout.jpg" border="1"
+        width="32" height="32">&nbsp; <a
+        href="tbme83sn.htm"><strong>Data Manipulation</strong></a>&nbsp; form's <a href="demb5bqr.htm">Import,
+    ASCII XYZ triples</a> option&nbsp; to import the resulting XYZ file and
+        create a DEM.</li>
+	<li><img border="0" src="../images/tin_button.gif" width="35" height="34">
+	<a href="tin.htm">TINs</a>
+    (Triangulated irregular networks)&nbsp;, which includes an option to create 
+	a DEM</li>
+    <li>Graphically edit XYZ data:&nbsp;&nbsp; Open dBase table using&nbsp; 
+	<img border="0" src="../images/db_map.png" width="24" height="24"><a href="tbme9dpq.htm">&nbsp; </a><a href="data_base.htm">Database</a> option
+    from a <a href="maptool.htm">map window</a>, and you can edit Z values,&nbsp; graphically move points,
+    or delete points.</li>
+    <li><a href="filldemholes.htm">Fill holes.</a> </li>
+</ul>
+
+<hr>
+
+<p>This option should be undertaken only as a <a
+href="dem_digitize.htm">last resort</a>.</p>
+
+<hr>
+<p align="right"><i>Last revision 12/13/2017</i></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

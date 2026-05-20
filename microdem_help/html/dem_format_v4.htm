@@ -1,0 +1,87 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>MICRODEM version 4 DEM Format</title>
+<style type="text/css">
+.style1 {
+	font-size: small;
+}
+.auto-style1 {
+	font-size: medium;
+	font-style: italic;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">MICRODEM</font><font size="5"> version 4 &amp; 5 DEM Format</font></b></p>
+<font SIZE="2" class="style1">
+<p>The MICRODEM format goes back to the mid 1980's, and has evolved as DEMs 
+moved from 16 bit integers.&nbsp; While the program can read other formats, they 
+are converted to this format for the program's internal representation of a 
+grid.</p>
+<p>For 
+interchange with other programs <a href="tbme9v52.htm">Geotiff</a> is a better 
+(probably mandatory) option.&nbsp; </p>
+<ul>
+	<li>The only thing 
+not currently in a Geotiff is an indication of what the z values represent, 
+which we add as a note which MICRODEM can interpret and which other 
+programs will ignore.</li>
+	<li>MICRODEM also reads its native format much faster than it does a
+	<a href="tbme9v52.htm">Geotiff</a>.</li>
+</ul>
+<p>MICRODEM format DEMs can now save the Geotiff keys for some map projections 
+(previously only geographic and UTM were allowed).&nbsp; This is an extension to 
+the <a href="dem_format_v4.htm">v4 format.</a>&nbsp; This allows creation of 
+derivative grids that are not UTM and not geographic.&nbsp; Mars DEMs in 
+equirectangular were the initial impetus.</p>
+<p>&nbsp;</p>
+<table border="2">
+	<tr>
+		<td>Header</td>
+		<td>Comments</td>
+	</tr>
+	<tr>
+		<td>*MICRODEMv4 <br>numcol=7543 <br>numrow=21131 <br>maxz=1786.507446
+		<br>minz=-327.923706 <br>dx=1.011582613 <br>dy=1.011582613 <br>
+		llx=-3691.26494242 <br>lly=-406457.93893821 <br>utmzone=11 <br>
+		projtype=0 <br>precision=1 <br>spaceunit=0 <br>elevunit=0 <br>
+		digdatum=11 <br>fipszone=0 <br>hemi=N <br>h_datum=WGS84 <br>VertCSType=0
+		<br>3075=17 <br>2057=3396036.8126024 <br>2058=3396036.8126024 <br>2061=0
+		<br>3078=-5 <br>3082=0 <br>3083=0 <br>3088=284.23 <br>3089=0 <br>*END</td>
+		<td>All number keys are the values from the Geotiff header.&nbsp; These 
+		are intially read from a Geotiff file, and written to the MICRODEM file 
+		when derivative grids are created.&nbsp; The 3075 code defined the 
+		projection, its presence alerts MICRODEM to&nbsp;&nbsp; </td>
+	</tr>
+</table>
+<p>The header consists of 1024 ASCII bytes at the beginning of the file.&nbsp; Each 
+field consists of a key, an &quot;=&quot;, the value, and a #13 line termination.&nbsp; The 
+order of keys is not specified, and more can be added at any time as long as the 
+total size does not exceed the 1024 characters.</p>
+<hr>
+</font>
+<p>
+Version 4 added the WKT projection in early 2021.&nbsp; Version 5 was added in&nbsp; 
+March 2021, to doubled the header size to 2028 to deal with very verbose WKT.</p>
+<p>
+<font SIZE="2" class="style1">
+The format was introduced 7/30/2014, to accommodate reading on Android and IOS 
+devices.&nbsp; Between the problems with byte order and string definitions, it 
+was time for a clean break and an easily extensible format.&nbsp;
+</font></p>
+<p><a href="dem_format_v3.htm"><span class="style1">version 3&nbsp; format</span></a><span class="style1">&nbsp;&nbsp; 
+introduced 5/23/2010.</span></p>
+<p><a href="dem_format_v2.htm">version 2&nbsp; format</a></p>
+<hr>
+<p align="right" class="auto-style1">Last revision 3/7/2021</p>
+
+</body>
+
+</html>
