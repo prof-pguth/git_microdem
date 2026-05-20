@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Arterfact Bin Frequency Table</title>
+</head>
+
+<body>
+
+<h2>Arterfact Bin Frequency Table</h2>
+<p>Example BIN_NAME field:</p>
+<ul>
+	<li>Lower gundeck/Left/12-13</li>
+	<li>For this bin, the program must find the following points in the Key 
+	points Database:<ul>
+		<li>Lower gundeck/Left/12</li>
+		<li>Lower gundeck/Left-mid/12</li>
+		<li>Lower gundeck/Left-mid/13</li>
+		<li>Lower gundeck/Left/13</li>
+	</ul>
+	</li>
+	<li>Names can differ, but must match exactly between the artefacts and the 
+	key points.</li>
+	<li>Use the String <b><a href="db_concatenate.htm">Concatenate fields</a> </b>
+				&nbsp;operation on the database to create the field 
+	from the separate fields.</li>
+	<li>Use the option to remove all values with a &quot;'99&quot; for missing values in 
+	one of the fields.</li>
+	<li>Create a <b><a href="db_counts_unique.htm">Frequency table</a></b> for the bins, save it as a CSV, and convert to 
+	a DBF.</li>
+</ul>
+
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="107" src="../images/vasa/bin_name_1.gif" width="559" /></td>
+		<td>Original artefact database (some fields are hidden).</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="110" src="../images/vasa/bin_name_3.gif" width="559" /></td>
+		<td>BIN-NAME created by using <b><a href="db_concatenate.htm">Concatenate fields</a> </b>
+		with the three fields.&nbsp; .</td>
+	</tr>
+	<tr>
+		<td>
+		<img height="187" src="../images/vasa/bin_freq.gif" width="240" /></td>
+		<td>Final bin frequency table.</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><i>last revision 3/8/2016</i></p>
+
+</body>
+
+</html>

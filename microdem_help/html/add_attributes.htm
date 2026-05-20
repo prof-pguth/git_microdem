@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Adding Attributes to a Database</title>
+</head>
+
+<body>
+
+<h2>Adding Attributes to a Database</h2>
+<p><a href="excel_2_csv.htm">Use Excel</a>.&nbsp; </p>
+<ul>
+	<li>If the lat/long fields are in the DBF file, this is easy and probably 
+	the best way.</li>
+	<li>Must be done with extreme caution with line are area shapefiles.&nbsp; 
+	You cannot add, delete, or rearrange records.</li>
+	<li>Excel will read a DBF file, but you must save it as CSV, and then use 
+	MICRODEM to import as a DBF.&nbsp; Once you have the DBF, all edits in 
+	MICRODEM will be to that, and you must avoid reopening ghe CVS and over 
+	writing your edits (the program will warn you).</li>
+</ul>
+<p>Use MICRODEM.</p>
+<ul>
+	<li>Put the <a href="db_edit.htm">database into edit mode</a>.</li>
+	<li><b><a href="db_insert_field.htm">Insert new fields</a></b>.&nbsp; You 
+	must get the <a href="computer_data_types.htm">data types</a> correct for 
+	what you want,&nbsp; the field length, and for real numbers the number of decimals.</li>
+	<li>You can fill a field for all records in the database, or all those that 
+	meet a filter, by <a href="db_click_field.htm">Double clicking on field name</a> 
+	and "Fill field".</li>
+	<li>You can edit a record by <a href="db_rec_click.htm">Double clicking on a record in 
+data base</a> and picking "Record edit".&nbsp; You must "Post edits" when you 
+	close that window.</li>
+</ul>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revision 9/27/2015</em></p>
+	
+	
+	
+	
+	<p>&nbsp;</p>
+
+</body>
+
+</html>
