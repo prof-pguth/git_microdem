@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Create Points File</title>
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Create Points File</h2>
+<p>On <b><a href="db_report.htm">Report</a> option of&nbsp; 
+<a href="database_table_display.htm">database
+table form</a>.&nbsp;&nbsp;</b></p>
+<p>Creates a new, points database with the requested number of records 
+for each record in the shapefile.</p>
+<p><img alt="" height="147" src="../images/pts_rec_db.gif" width="257" /></p>
+<h2>Along lines, by number or separation<br />
+</h2>
+<br />
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="212" src="../images/pts_along_line.gif" width="410" /></td>
+		<td>
+		<h4>Lines shape file</h4>
+		<p>Database must have "NAME" field, which will be used in the new 
+		database.<br />
+		Two options<br />
+		</p>
+		<ul>
+			<li>Along lines (by number): must have "NPTS" field for each record 
+			which will control the number of evenly spaced point records added along each line 
+			segment.</li>
+			<li>Along lines (by separation): select the separation in meters, 
+			which will be the same for all records.</li>
+		</ul>
+		<p>&nbsp;Options:</p>
+		<ul>
+			<li>Include first point</li>
+			<li>Include last point (partial distance): the last point might be a 
+			different distance apart from the others</li>
+			<li>Include turn waypoints (partial distance): if you force the 
+			waypoints to be included, not all points will be the same distance 
+			apart<br />
+			</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<h3>&nbsp;</h3>
+<h2>In polygons</h2>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="224" src="../images/pts_in_poly.gif" width="280" /></td>
+		<td>
+		<h4>Area shape file</h4>
+		<p>Database </p>
+		<ul>
+			<li>must have "NAME" field, which will be used in the new database.</li>
+			<li>must have "NPTS" field for each record</li>
+		</ul>
+		<p>The points will be randomly distributed in the polygon.&nbsp; 
+		Graphically drag them (<a href="db_edit.htm">Edi</a>t, Graphically move points) 
+		if you want a more even distribution, or to match the imagery. </p>
+		<p>&nbsp;</p>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<h2>All points in line, with XYZ</h2>
+<table style="width: 100%">
+	<tr>
+		<td>
+		<img alt="" height="433" src="../images/road_elevations.png" width="449" /></td>
+		<td>
+		<p>&nbsp;</p>
+		<ul>
+			<li>Need DEM. This uses a lidar NVS; you could also uses a DTM</li>
+			<li>Open two shapefiles with roads<ul>
+				<li>TIGER</li>
+				<li>OpenStreetMap</li>
+			</ul>
+			</li>
+			<li>Filter to just the road or roads you want</li>
+			<li>Pick option</li>
+			<li>While they generally have the same location, one swings wide 
+			around the curve near the top right</li>
+			<li>Where they are different, the elevations can be different, for 
+			instance where a car affects the NVS</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p><br />
+If you have a points shapefile, turn it into <a href="create_shp_from_pts.htm">
+area/line shape file from points</a>.</p>
+<hr />
+<p>&nbsp;</p>
+
+<P align=right><EM><span class="style1">Last revision 4/4/2018</span></EM></P>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

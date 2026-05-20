@@ -1,0 +1,809 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Curvature measures</title>
+<style type="text/css">
+ table.MsoNormalTable
+	{line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;
+	}
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-size: large;
+	font-weight: bold;
+}
+.auto-style3 {
+	font-size: large;
+	font-style: italic;
+}
+.auto-style5 {
+	font-family: Calibri, sans-serif;
+	font-size: large;
+}
+.auto-style6 {
+	font-size: large;
+}
+.auto-style7 {
+	font-size: medium;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Curvature Measures</h1>
+<table border="2">
+	<tr>
+		<td class="auto-style7" >Curvature</td>
+		<td class="auto-style7">
+		Short Name </td>
+		<td style="width: 422px" class="auto-style7" >
+		Name</td>
+		<td style="border-right: 1.0pt solid windowtext; border-top: 1.0pt solid windowtext; border-bottom: 1.0pt solid windowtext; mso-border-top-alt:solid windowtext .5pt; mso-border-bottom-alt:
+  solid windowtext .5pt; mso-border-right-alt:solid windowtext .5pt; padding:
+  0in 5.4pt 0in 5.4pt; width: 124px; border-left-style: none; border-left-color: inherit; border-left-width: medium;" valign="bottom">
+		<p align="left" class="auto-style7" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Units<o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:1;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+				<span lang="EN-GB" style="font-size:11.0pt;color:#3B3838;
+  mso-themecolor:background2;mso-themeshade:64;mso-ansi-language:EN-GB">(</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:normal">k</i></span><i style="mso-bidi-font-style:normal"><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><sub>n</sub></span></i><span class="auto-style1" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">)</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:
+  normal"><sub>s</sub></i></span></td>
+		<td style="border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kns<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Normal slope line (profile) curvature<o:p></o:p></p>
+		</td>
+		<td style="border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt; width: 124px; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;"bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:2;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+				<span lang="EN-GB" style="font-size:11.0pt;color:#3B3838;
+  mso-themecolor:background2;mso-themeshade:64;mso-ansi-language:EN-GB">(</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:normal">k</i></span><i style="mso-bidi-font-style:normal"><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><sub>n</sub></span></i><span class="auto-style1" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">)</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:
+  normal"><sub>c</sub></i></span></td>
+		<td style="border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		knc<o:p></o:p></p>
+		</td>
+		<td style="border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; width: 422px; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Normal contour (tangential) curvature<o:p></o:p></p>
+		</td>
+		<td style="border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; width: 124px; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:3;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		τ<sub>c</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		tc<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Contour torsion<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;rad.m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:4;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i>
+		<span class="auto-style6" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64">
+		z<sub>ss</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		zss<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Second slope line derivative<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:5;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		τ<sub>s</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		ts<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Slope line torsion<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:6;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i>
+		<span class="auto-style6" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64">
+		z<sub>cc</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		zcc<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Second contour derivative<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:7;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="mso-fareast-font-family: &quot;Times New Roman&quot;; mso-fareast-theme-font: minor-fareast; color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB; mso-fareast-language: EN-IE">
+		(k<sub>p</sub>)<sub>c</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kpc<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Projected contour (plan) curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:8;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="mso-fareast-font-family: &quot;Times New Roman&quot;; mso-fareast-theme-font: minor-fareast; color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB; mso-fareast-language: EN-IE">
+		(k<sub>p</sub>)<sub>s</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kps<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Projected slope line curvature (rotor)<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:9;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="mso-fareast-font-family: &quot;Times New Roman&quot;; mso-fareast-theme-font: minor-fareast; color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB; mso-fareast-language: EN-IE">
+		(sin S)<sub>c</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		sin_sc<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Contour change of sine slope&nbsp;<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:10;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>d</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kd<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Difference curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:11;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		K<sub>a</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		ka<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Total accumulation curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-2</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:12;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		K<sub>r</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kr<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Total ring curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-2</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:13;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>he</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		khe<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Horizontal excess curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:14;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>ve</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kve<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Vertical excess curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:15;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i>
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>max</sub></span></i><span style="font-size:11.0pt;font-family:
+  &quot;Calibri&quot;,sans-serif;mso-font-kerning:0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kmax<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Maximal curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:16;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i>
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>min</sub></span></i><span style="font-size:11.0pt;font-family:
+  &quot;Calibri&quot;,sans-serif;mso-font-kerning:0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kmin<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Minimal curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:17;height:22.7pt">
+		<td class="auto-style3" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+				<span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;
+  mso-font-kerning:0pt;mso-ligatures:none">K</span></td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+				<span style="font-size:11.0pt;mso-font-kerning:0pt;
+  mso-ligatures:none">k</span></td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Gaussian curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-2</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:18;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><!--[if gte msEquation 12]><m:oMathPara><m:oMathParaPr>
+		<m:jc
+     m:val="left" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"/></m:oMathParaPr><m:oMath><m:sSup><m:sSupPr>
+		<span style="font-size:11.0pt;mso-ansi-font-size:11.0pt;font-family:&quot;Cambria Math&quot;,serif;
+      mso-ascii-font-family:&quot;Cambria Math&quot;;mso-hansi-font-family:&quot;Cambria Math&quot;;
+      font-style:italic;mso-bidi-font-style:normal"><m:ctrlPr></m:ctrlPr></span></m:sSupPr><m:e><m:r><m:rPr>
+		<m:scr
+         m:val="roman" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"/>
+		<m:sty m:val="p" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"/></m:rPr>
+		<span class="auto-style6" style="font-family: &quot;Cambria Math&quot;,serif">
+		∇</span></m:r></m:e><m:sup><i style="mso-bidi-font-style:normal"><span class="auto-style6" style="font-family: &quot;Cambria Math&quot;,serif"><m:r>2</m:r></span></i></m:sup></m:sSup><i style="mso-bidi-font-style:normal"><span class="auto-style6" style="font-family: &quot;Cambria Math&quot;,serif"><m:r>z</m:r></span></i></m:oMath></m:oMathPara><![endif]--><![if !msEquation]><span class="auto-style6" style="mso-bidi-font-size: 11.0pt; line-height: 107%; font-family: &quot;Times New Roman&quot;,serif; mso-fareast-font-family: &quot;Times New Roman&quot;; color: black; mso-ansi-language: EN-US; mso-fareast-language: EN-US; mso-bidi-language: AR-SA"><!--[if gte vml 1]><v:shapetype id="_x0000_t75" coordsize="21600,21600"
+   o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f"
+   stroked="f">
+   </span>
+   <v:stroke joinstyle="miter" xmlns:v="urn:schemas-microsoft-com:vml"/>
+   <v:formulas>
+    <v:f eqn="if lineDrawn pixelLineWidth 0" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="sum @0 1 0" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="sum 0 0 @1" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="prod @2 1 2" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="prod @3 21600 pixelWidth" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="prod @3 21600 pixelHeight" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="sum @0 0 1" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="prod @6 1 2" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="prod @7 21600 pixelWidth" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="sum @8 21600 0" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="prod @7 21600 pixelHeight" xmlns:v="urn:schemas-microsoft-com:vml"/>
+    <v:f eqn="sum @10 21600 0" xmlns:v="urn:schemas-microsoft-com:vml"/>
+   </v:formulas>
+   <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect" xmlns:v="urn:schemas-microsoft-com:vml"/>
+   <o:lock v:ext="edit" aspectratio="t" xmlns:o="urn:schemas-microsoft-com:office:office"/>
+  </v:shapetype><v:shape id="_x0000_i1025" type="#_x0000_t75" style='width:17.25pt;
+   height:14.25pt'>
+   <v:imagedata src="../../../Users/pguth/AppData/Local/Temp/msohtmlclip1/01/clip_image001.png"
+    o:title="" chromakey="white" xmlns:v="urn:schemas-microsoft-com:vml"/>
+  </v:shape><![endif]-->
+		<![endif]><span style="font-size:
+  11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:0pt;mso-ligatures:
+  none"><o:p><img height="33" src="../images/elev_laplacian.png" width="49" /></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		el<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Elevation laplacian<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:19;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>u</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		ku<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Unsphericity curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:20;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i>
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>mean</sub></span></i><span style="font-size:11.0pt;font-family:
+  &quot;Calibri&quot;,sans-serif;mso-font-kerning:0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kmean<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Mean curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:21;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+		<p align="left" class="MsoNormal"><i style="mso-bidi-font-style:normal">
+		<span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">
+		k<sub>C</sub></span></i><span style="font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;mso-font-kerning:
+  0pt;mso-ligatures:none"><o:p></o:p></span></p>
+		</td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kc<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Casorati curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;m<sup>-1</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:22;height:11.35pt">
+		<td class="auto-style6" colspan="2" style="width:122.95pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:11.35pt" valign="bottom" width="164">
+				<span class="auto-style2" style="font-family: &quot;Calibri&quot;,sans-serif; mso-font-kerning: 0pt; mso-ligatures: none">
+		Change of curvature</span></td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:11.35pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none"><o:p>
+		&nbsp;</o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:11.35pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style=""><o:p>
+		&nbsp;</o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:23;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+				<span lang="EN-GB" style="font-size:11.0pt;color:#3B3838;
+  mso-themecolor:background2;mso-themeshade:64;mso-ansi-language:EN-GB">(</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:normal">k</i></span><i style="mso-bidi-font-style:normal"><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><sub>n</sub></span></i><span class="auto-style1" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">)</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:
+  normal"><sub>cc</sub></i></span></td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kncc<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Contour change of normal contour curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-2</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:24;height:22.7pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" >
+				<span lang="EN-GB" style="font-size:11.0pt;color:#3B3838;
+  mso-themecolor:background2;mso-themeshade:64;mso-ansi-language:EN-GB">(</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:normal">k</i></span><i style="mso-bidi-font-style:normal"><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><sub>n</sub></span></i><span class="auto-style1" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">)</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:
+  normal"><sub>cs</sub></i></span></td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:22.7pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		kncs<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Slope line change of normal contour curvature<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:22.7pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-2</sup><o:p></o:p></p>
+		</td>
+	</tr>
+	<tr style="mso-yfti-irow:25;mso-yfti-lastrow:yes;height:8.4pt">
+		<td class="auto-style6" style="  border-top:none;mso-border-left-alt:solid windowtext .5pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:8.4pt" >
+				<span lang="EN-GB" style="font-size:11.0pt;color:#3B3838;
+  mso-themecolor:background2;mso-themeshade:64;mso-ansi-language:EN-GB">(</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:normal">k</i></span><i style="mso-bidi-font-style:normal"><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><sub>n</sub></span></i><span class="auto-style1" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB">)</span><span class="auto-style6" lang="EN-GB" style="color: #3B3838; mso-themecolor: background2; mso-themeshade: 64; mso-ansi-language: EN-GB"><i style="mso-bidi-font-style:
+  normal"><sub>ss</sub></i></span></td>
+		<td style="width:70.8pt;border-top:none;border-left:none;border-bottom:
+  solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;mso-border-bottom-alt:
+  solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;padding:
+  0in 5.4pt 0in 5.4pt;height:8.4pt" width="94">
+		<p align="left" class="auto-style6" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		knss<o:p></o:p></p>
+		</td>
+		<td style="width:422px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:8.4pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="mso-font-kerning: 0pt; mso-ligatures: none">
+		Slope line change of normal slope line curvature&nbsp;<o:p></o:p></p>
+		</td>
+		<td style="width:124px; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:8.4pt; border-left-style: none; border-left-color: inherit; border-left-width: medium; border-top-style: none; border-top-color: inherit; border-top-width: medium;" valign="bottom">
+		<p align="left" class="auto-style5" style="">
+		&nbsp;&nbsp;m<sup>-2</sup><o:p></o:p></p>
+		</td>
+	</tr>
+</table>
+
+<p align="left">
+The formatting of the curvature names means they cannot be used by programs, so 
+the short names are required.&nbsp; They can be used for command line request, 
+and output file names.</p>
+<p align="left">
+<a href="https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/PARAMETERS.md">
+https://github.com/xiceph/physical-geomorphometry-tools/blob/main/lsp-calculator/PARAMETERS.md</a>
+</p>
+
+<hr>
+
+<p align="right"><em>Last revised 3/16/2025</em></p>
+
+</body>
+
+</html>

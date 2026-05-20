@@ -1,0 +1,47 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Create Grid from Point Database</title>
+<style>
+<!--
+
+.style1 {
+				font-size: small;
+}
+-->
+</style>
+</head>
+
+<body>
+
+<h2>Create Grid from Point Database</h2>
+<p>Option on <b><a href="db_report.htm">Report</a></b> menu of <a href="database_table_display.htm">database
+table form</a>.</p>
+<p>Makes grid with the same extent as the open map, and a projection and pixel 
+spacing selected. </p>
+<ul>
+	<li>Values from DB: the grid point closest to the record will 
+	get the value.</li>
+	<li>Radius from DB: all points within the radius specified by 
+	the RADIUS_M field will get the value.</li>
+	<li>Box: specify a radius in m, and all points will have the 
+	value of the point.</li>
+	<li>Specify code: all points in the database will have the 
+	specified code attached.</li>
+	<li>Point density: specify a grid size in meters, and the program will 
+	create a grid with the number of points in each grid cell.</li>
+</ul>
+<p>For the first three options, you will pick the fields from which to create 
+the grids, and the value of the field will be placed in the grid.</p>
+<p>This uses a drop in the bucket algorithm.&nbsp; If multiple points would plot 
+at the same location, the value of the last will be the one that appears in the 
+grid.</p>
+<HR>
+
+<P align=right><EM><span class="style1">Last revision 8/15/2022</span></EM></P>
+
+</body>
+
+</html>

@@ -1,0 +1,181 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Database Edit</title>
+</head>
+
+<body>
+
+<p align="center"><b><font size="5">Database Edit</font></b></p>
+<p>Menu appears when &quot;EDIT&quot; button is pressed on 
+<a href="database_table_display.htm">database
+table form</a>.&nbsp; You<a href="db_edit.htm"> must enable edits</a>.</p>
+<table border="1" height="595">
+  <tr>
+    <td height="589">
+<b>Choices available will depend on the type of database open.</b><ul>
+  <li><b><a href="color_db_recs.htm">Color_db_recs</a></b></li>
+	<li><b><a href="db_time_date.htm">Date/TIME</a></b></li>
+	<li><b><a href="db_edit_icons.html">Icons</a></b></li>
+		<li><b>Font</b></li>
+		<li><b><a href="db_edit_coordinates.htm">Map coordinates</a></b></li>
+		<li><b>Fill viewshed fields</b></li>
+		<li><hr></li>
+		<li><b>Insert record--add a new record at the bottom of the table. 
+		</b></li>
+		<li><a href="copy_db_rec.htm">Insert record from clipboard</a></li>
+		<li><b><a href="merge_pt_db.htm">Merge point databases</a>&nbsp;</b></li>
+		<li><b>Graphically move points</b>: drag points to a new location.</li>
+		<li><b>Graphical pick and edit record</b>: pick a record by clicking on it
+    on the map, and then edit the record.</li>
+		<li><b>Graphically insert point: </b>copies the current record to the bottom 
+	of the database, and gives it the location when you double click on the map.&nbsp; 
+	The you can edit the record.&nbsp; You must change any fields that do not 
+	apply to the new location, or that might be duplicated by the record this 
+	was copied from and are not allowed to be duplications.</li>
+		<li>Graphically delete<ul>
+			<li>Single points:&nbsp; double click to delete; confirm if you want 
+			to keep deleting</li>
+			<li>All points in box: outline box to delete.&nbsp; Right click and 
+			abort current operation when done.</li>
+			<li>All points in box, all open DBs</li>
+			<li>All points in polygon</li>
+			<li>All poits in polygon, all open DBs</li>
+		</ul>
+		</li>
+		<li>Delete current record</li>
+		<li><b>Delete all records--</b>useful after filter, for point databases 
+	only.&nbsp; You can get the same result by reversing the filter, and then 
+	saving that as a new DBF file on the <a href="db_report.htm">Report</a> 
+	menu.</li>
+		<li><b>Thin database: </b>select thinning factor.&nbsp; A &quot;USE&quot; field will 
+	be added to the database, the first record will be marked &quot;Y&quot;, and the next 
+	(thinning factor minus one) records will be marked &quot;N&quot;.&nbsp; You can then 
+	filter based on this field, and save as a new database.&nbsp; This only makes 
+	senses 
+	in certain cases, such as points selected along a line, for instance a least 
+	cost path or a digitized path, when such selective thinning produces a
+      reasonable subset of the data, or when you have points very densely but 
+	randomly located.</li>
+		<li><b>Mask--based on geometry</b><ul>
+			<li><b><a href="mask_db_shape.htm">Mask database with shapefile</a></b>: 
+			</li>
+			<li><b>Mask database with grid (DEM)</b>: select a grid, and the field 
+	&quot;MASKDEM_1&quot; or &quot;MASKDEM_2&quot; will be added.&nbsp; Then for each record, if 
+	there is a valid value in the grid the new field will be set to &quot;Y&quot;, and if 
+	missing data, it will be set to &quot;N&quot;.&nbsp; You could then filter 
+	the database with this field, and extract a subset.</li>
+			<li><a href="mask_dem_w_shape.htm">Mask DEM with shapefile</a> </li>
+			<li><a href="mask_dem_w_gaz.htm">Mask DEM with gazetteer</a> </li>
+			<li><b>Insert MASK field</b>--add additional 
+			<a href="db_mask_field.htm">MASK field</a> for use in masking.</li>
+			<li><a href="find_pts_areas.htm">Find points in areas</a></li>
+		</ul>
+		</li>
+		<li>Copy data files</li>
+		<li><b>Flag</b>--based on data characteristics<ul>
+			<li><a href="add_substring_flag.htm">Add Y/N&nbsp;&nbsp;from substring</a>.&nbsp; 
+					Because you cannot filter with an initial wild card, this 
+					enables you to create a new field, and fill it with a &quot;Y&quot; 
+					for every records that contains a specified substring.&nbsp; 
+			</li>
+			<li>Add count from substring: adds a new field with the 
+					number of times a specfied substring occurs in the field</li>
+		</ul>
+		</li>
+		<li>Evaluate XY profiles</li>
+		<li><hr></li>
+		<li><b>Edit records in grid</b>--type directly in the grid to change values.&nbsp; 
+	For the last change to take, you must click inside another cell.</li>
+		<li><hr>
+		</li>
+		<li>Create grid<ul>
+			<li>Point density (match map area)</li>
+			<li>Point density (match grid area)</li>
+		</ul>
+		</li>
+		<li><b><a href="edit_db_w_dem.html">DEM</a>/grid:&nbsp; </b>add fields to the 
+		DB using the DEM or grid.</li>
+		<li><b>Satellite, add reflectance: </b>add the reflectance value for each band in 
+	fields BAND_1 to BAND_N.&nbsp; If one of the bands (e.g. ETM pan) has 
+	different spacing, the values for it will not be correct.</li>
+		<li><b>Stream network topology/Strahler order</b><ul>
+			<li>Open shapefile with the river segments.</li>
+			<li>Filter&nbsp; shapefile to have a single basin, so the segments 
+	must be assigned to basins.</li>
+		</ul>
+		</li>
+		<li><b>Fill in drainage basin</b><ul>
+			<li>Must open grid with the drainage directions, following
+			<a href="arc_gis_flow.htm">ArcGIS flow directions</a> 
+		conventions. An example of this would be the <a href="hydrosheds.htm">HydroSHEDS</a>&nbsp; data.</li>
+			<li>Must open rivers shapefile, which must have the orders for 
+		the subbasins fields set.</li>
+		</ul>
+		</li>
+		<li><a href="add_nlcd.htm">Add NLCD category</a></li>
+		<li><b>Find neighbors in second database</b>: both databases must have point 
+	geometry, and you will select a box interval (distance out from point in all 
+	direction), and the program will find the number of points in the second 
+	database.&nbsp; For large databases this will be very slow, and you should 
+	consider the raster option to get <a href="pt_cld_dens.htm">Point Density</a>.</li>
+		<li><hr></li>
+		<li><b>Check joined database</b></li>
+		<li><b>Fill fields from joined table:&nbsp;</b>select fields from the 
+	joined table.&nbsp; They will be copied to the table into a field with the 
+	same name.&nbsp; If the field already existed, you choose whether or not to 
+	overwrite records which already have a value for the field.</li>
+		<li>Add fields from open data base:&nbsp; insert the value from the closest record 
+		in the other open database.</li>
+		<li><hr></li>
+		<li>Geocode<ul>
+			<li><strong><a href="db_geocode.htm">Geocode address to lat/long</a></strong>: compute LAT/LONG 
+	from ADDRESS field.&nbsp;</li>
+			<li><b>Geocode lat/long to address</b>:&nbsp; point databases only. 
+			</li>
+		</ul>
+		</li>
+		<li><b><a href="db_insert_field.htm">Insert new fields</a></b></li>
+		<li><b><a href="db_string_edits.htm">String field operations</a>--</b>change 
+	the string in the existing field.&nbsp; To be safe, you might want to create 
+	a duplicate field first.</li>
+		<li><b><a href="field_arithmetic.htm">Field arithmetic</a></b></li>
+		<li><b>Multiple field statistics:</b> select a number of numeric fields, 
+		and create a new field with the min, max, mean, median, or sum.</li>
+		<li><b><a href="foield_geomtery.htm">Field geometry</a></b></li>
+		<li><b><a href="nav_menu.htm">Navigation</a></b></li>
+		<li><a href="change_db_field_names.htm">Rename fields from reference table</a></li>
+		<li><b>Fill field for all records</b></li>
+		<li>Delete unused fields</li>
+		<li><b>Use field</b><ul>
+			<li>Mark all &quot;Y&quot;</li>
+			<li>Mark all &quot;N&quot;</li>
+			<li>Toggle records--change &quot;Y&quot; to &quot;N&quot;, and &quot;N&quot; to &quot;Y&quot;</li>
+			<li>Current filter &quot;Y&quot;, rest &quot;N&quot;--everything in the current 
+					filter will be &quot;Y&quot;, and everything else &quot;N&quot;</li>
+		</ul>
+		</li>
+		<li>Change fields used</li>
+		<li>Create geographic PRJ file</li>
+		<li>Backup DB</li>
+		<li>Restore backup version of DB</li>
+		<li>Octree</li>
+		<li>Reclassify Koppen</li>
+		<li>Reclassify focal mechanisms</li>
+		<li>Training class available</li>
+		<li>Clear all database settings</li>
+</ul>
+    </td>
+  </tr>
+  </table>
+<p align="left">Rename individual fields by <a href="db_click_field.htm">clicking on field name</a> for the field.</p>
+<hr>
+<p align="right"><em>Last revision 9/27/2019</em></p>
+
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Database Filters</title>
+<style type="text/css">
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Database Filters</h2>
+<p>Filters are applied to every record in a database, and only those meeting the 
+criteria will be displayed or used for computations.&nbsp; This provides a rapid 
+and powerful way to control and subset the data.</p>
+<p>Filters must be single conditions, combined with AND or OR.&nbsp; You cannot 
+say "2&lt;X&lt;6", but must say "(X&gt;2) AND (X&lt;6)".</p>
+<p>It never hurts to add extra parentheses to make the intent clear.</p>
+<p>Filters can use a wild card.&nbsp; For instance, volcano types might be coded 
+as &quot;Shield&quot;, &quot;Shields&quot;, or &quot;Shield (?)&quot; in a 
+database.&nbsp; To avoid an OR, you could filter 
+for &quot;TYPE=&#39;Shield*&#39;&quot; which would cover all three.&nbsp; You must be sure that 
+there are not other similar variants that you do not want, and know what the wild card 
+symbol is for the data base.&nbsp; While &quot;*&quot; is common, other databases might 
+use something else like &quot;%&quot;.</p>
+<p>After you filter a database, any operations like plotting on the map or 
+computing will only use the records which match the filter.</p>
+
+<hr>
+
+<p align="right"><span class="style1"><em>Last revision </em>9<em>/19/201</em>7</span></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

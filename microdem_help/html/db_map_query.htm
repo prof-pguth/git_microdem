@@ -1,0 +1,54 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>DataBase Map Query</title>
+</head>
+
+<body>
+
+<p><b><font size="5">DataBase Map Query</font></b></p>
+<p>Accessed with Map Query button on <a href="database_table_display.htm">database table
+display</a>.</p>
+Geographically filters the data,
+        and the restriction will remain in effect for all
+        database operations until you remove it by changing the
+<a href="db_filters.htm">filter</a> or selecting &quot;All Recs&quot; button.<ul>
+            <li><b><font size="3"><img src="../images/resize.gif" width="16"
+        height="16">&nbsp; </font>Rectangular region</b>: Outline region on the map, and show all records
+                in the box.</li>
+            <li><b>Irregular region</b>: select a region using current <a href="digitizing_options.htm">digitizing options</a>.<b>&nbsp;
+			</b>For area shape files this uses the centroid, and for line shape 
+			files the coordinates of the central point.&nbsp; Puts a 
+			<a href="db_mask_field.htm">&quot;MASK&quot; 
+			field</a> in the database.</li>
+			<li><b>Radius about point: </b>select a point and a radius.&nbsp; 
+			For area shape files this uses the centroid, and for line shape 
+			files the coordinates of the central point.&nbsp; Puts a 
+			<a href="db_mask_field.htm">&quot;MASK&quot; 
+			field</a> in the database.</li>
+            <li><b>Current map area:</b> Restrict database table to just those records
+                currently on screen.</li>
+			<li><b>Pick points for time/sequential series</b>:</li>
+			<li><b>Near TIGER roads</b>: will fill a USE column in the data base 
+			with &quot;Y&quot; or &quot;N&quot; depending on whether a point is within a specified 
+			buffer distance of a road in the TIGER data base.</li>
+			<li><b>Away from TIGER roads: </b>will fill a USE column in the data 
+			base with &quot;Y&quot; or &quot;N&quot; depending on whether a point is at least a 
+			specified buffer distance away from a road in the TIGER data base.</li>
+			<li>Find address</li>
+        </ul>
+
+<p>After the query, if it does not automatically fill in a
+<a href="db_mask_field.htm">MASK field</a>, you can manually set it.</p>
+
+<hr>
+
+<p align="right"><em>Last revision 9/14/2018</em></p>
+
+</body>
+
+</html>

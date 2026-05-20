@@ -1,0 +1,43 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Create Vegetation Density Voxels</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Create Vegetation Density Voxels</h1>
+<p>Create on tools tab of&nbsp; <a href="pt_cld_opts.htm">Point cloud options.</a>&nbsp; 
+</p>
+<ul>
+	<li>You <a href="create_dtm.htm">need a DTM</a> of the area to use.&nbsp; </li>
+	<li>This will create grids with the number of lidar point returns in bins above the 
+ground surface.&nbsp; Vertical bin size is currently set at 1 m.</li>
+	<li>You should have a horizontal bin size that includes a reasonable 
+number of returns in each grid cell, since this works on the statistics of the 
+returns.&nbsp; </li>
+	<li>The horizontal bin size of the DEM used to open the point cloud will be the 
+same as that used for the derived grids.&nbsp; If necessary, <a href="tbme0egj.htm"><b>Thin</b></a> 
+	the starting DEM first.&nbsp; You will have to use this DTM when using the 
+	data. </li>
+	<li>Filter the export by LAS 
+class for instance to only include vegetation.</li>
+	<li>Pick the number of bins, which determines the highest vegetation.</li>
+	<li>Ignore or include points above the highest class.&nbsp; If you do not 
+	ignore them, they will be placed in the highest bin.</li>
+</ul>
+<p><a href="veg_voxels.htm">Vegetation voxels overview.</a></p>
+<hr />
+
+<p align="right" class="style1"><em>Last revision 3/24/2013</em></p>
+
+</body>
+
+</html>

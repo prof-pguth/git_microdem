@@ -1,0 +1,95 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>CSV File Imports</title>
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><font size="6"><b>CSV File Imports</b></font></p>
+
+<p align="left">You can import a <a href="csv_file.htm">CSV (or TXT or XYZ)</a>&nbsp; file or a KML points file 
+into a Points database.&nbsp; </p>
+
+<ul>
+    <li>Select the file when you open a database and it will automatically be converted to a DBF file. The field 
+	types will match the data, and the length will be set to include all the 
+	data.&nbsp; If you want to be safe, you should put in dummy records with 
+	lengths that are sufficient to handle any edits you might want to make 
+	later.<ul>
+					<li>
+					<img border="0" src="../images/db_map.png" width="24" height="24"> <a href="data_base.htm">Database</a> on	<a href="maptool.htm">Map window toolbar</a>,</li>
+					<li>
+					<img border="0" src="../images/shp_btn.gif" width="32" height="30"> 
+					<a href="open_shape_map.htm">Open shapefile map</a> 
+					on <font color="#FF0000" size="6"><a href="maintool.htm"><font size="3">Main
+                Program Toolbar</font></a> </font></li>
+					<li>
+					<img border="0" src="../images/db_btn.gif" width="35" height="31"> 
+	Open database without map on <font color="#FF0000" size="6"><a href="maintool.htm"><font size="3">Main
+                Program Toolbar</font></a></font></li>
+	</ul>
+	</li>
+</ul>
+
+<p align="left"><font size="5" class="style1"><a href="rules_dbase.htm"><b>Rules for data 
+format and field labels.</b></a><b>&nbsp; </b></font></p>
+<ul>
+	<li>A GIS point database must have 
+        fields LAT and LONG. 
+	</li>
+	<li>Insure that the CSV file does not have blank lines, or extra columns at 
+	the end, which are probably the result of edits in Excel that leave hidden 
+	features in some cells.&nbsp; You can see them if you open the CSV file in 
+	Notepad, Wordpad, or a similar text editor (commas at the end of the lines are one way 
+	these will show up).</li>
+</ul>
+
+<p align="left">Set up a <a href="csv_imp_rules.htm">table with the 
+rules for CSV import.</a></p>
+<p align="left">For a KML file,&nbsp; the 
+feature NAME will go into a NAME field.</p>
+<p align="left"><a href="verify_csv_import.htm">Verify CSV Import.</a></p>
+<p align="left"><font color="#FF0000"><a href="problems_with_csv_import.htm">
+<span class="style1">Problems with CSV import</span></a></font></p>
+<h2 align="left">If the CSV file is too large:</h2>
+<ul>
+				<li>The program loads the entire CSV file into 
+				memory, and then if it is small enough, it will load the entire 
+				data set into a string grid.&nbsp; This loading does a lot of 
+				error checking.&nbsp; If the program suspects the file will be 
+				too large to load into the string grid, it will ask if you want 
+				to try anyway.<ul>
+								<li>If you file is extremely well 
+								behaved (no missing data cells), you do not have 
+								to load it into the string grid, and the import 
+								should work.
+								</li>
+								<li>You can try to load the string 
+								grid.&nbsp; Exactly what size will cause 
+								problems depends on a lot of factors.
+								</li>
+								<li>Split the input file with 
+the <b><a href="tbme2njo.htm">Edit</a>, ASCII split file</b> option on the 
+								<a href="tbme83sn.htm">data
+manipulation form</a>, and then recombine the files after you import the parts.
+								</li>
+				</ul>
+				</li>
+</ul>
+
+<hr>
+
+<p align="right"><i>Last revision 1/29/2017</i></p>
+</body>
+</html>

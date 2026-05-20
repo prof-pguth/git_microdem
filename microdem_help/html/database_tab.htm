@@ -1,0 +1,97 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Database Tab</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><font size="5"><strong>GIS Database Options Tab</strong></font></p>
+
+<p>Tab on <a href="tbme1njp.htm">options form</a>,
+brought up from <a href="tbme1njp.htm">Options</a> choice on <a href="micr0alv.htm">program menu</a>.</p>
+
+<table border="1">
+  <tr>
+    <td><img alt="" height="384" src="../images/db_tab.gif" width="527"></td>
+    <td>
+
+<ul>
+	<li><b><a href="smart_text_to_avoid_overwriting.htm">Avoid text overwriting</a></b></li>
+    <li><b>Plot on all maps</b></li>
+    <li><strong>Save data base status: </strong><a href="database_def_file.htm">current
+      display options.</a></li>
+    <li><b>Track database ranges:</b> a linked database will be created with the
+      max/min in each field, which can be used to greatly speed up color coding
+      of the map with database fields.</li>
+    <li><strong>Auto enhance shape files: </strong>should be set.
+        This adds the bounding box to each record in the dbf
+        file, and allows queries and filters using the database
+        engine.</li>
+    <li><strong>Show second data base toolbar</strong></li>
+    <li><strong>Show boundaries of colored regions</strong></li>
+    <li><strong><a href="gis_record_labels.htm">Relabel on map redraw</a></strong></li>
+	<li><strong>Autoassign label field</strong></li>
+</ul>
+
+<ul>
+    <li><b>Area:</b> the fill pattern used by default for area <a href="shapefile.htm">shapefiles</a>.</li>
+	<li><b>Outline selections</b>: outlines selected regions after you are done 
+	picking them.&nbsp; Works with outlines of rectangular and irregular regions 
+	on the <strong style="font-weight: 400"><a href="db_map_query.htm">Map query</a>.</strong></li>
+	<li><b>Add <a href="db_mask_field.htm">MASK field</a> when merging shape 
+	files</b>, with the number of mask fields to create</li>
+</ul>
+
+<ul>
+	<li>Always show coordinate edits</li>
+	<li><strong>GIS edits: </strong>unless this is set,
+        you cannot <a href="edit_dbf.htm">edit the database</a>.
+        Even when set, you must also check the checkbox on the
+        table display window to verify that you really want to
+        edit the data. unless you pick &quot;Always allowed&quot;.</li>
+	<li>Min integer field size: when creating a new database, this will be the 
+	minimum size. Unless you will create very large databases, this should be 
+	larger than you think you will need, to avoid problems when you later want 
+	to add or edit records with a larger value.</li>
+    <li><b>Default points:</b> the point symbol to use for the first data base
+      to be opened.</li>
+	<li><strong>Text as separate layer: </strong>this may lead to artefacts 
+	around some letters.</li>
+	<li><b>Quick shape file definitions</b>. Determines whether you must define 
+	fields when you digitize a shape file, or get a quick default which you can 
+	modify later by adding fields.</li>
+	<li>Multiple filters for DB graphs:</li>
+	<li>Start STAT graphs with reversed y-axis (this is automatic the the Y axis 
+	field is DEPTH or DEPTH_*)</li>
+	<li>Show shapefile donut message</li>
+	<li>Create 3D shapefiles: if set, and there is a DEM on the map which you 
+	are creating the shapefile from, it will be a 3D shapefile.</li>
+	<li><strong>Save intermediate DBFs:</strong> when you edit a database by 
+	adding fields, there is a potential for corruption.&nbsp; If this is 
+	selected, a backup will be created in the same directory, with ''old_db_file_' 
+	at the start and &quot;~.bak&quot; at the end of the file name.&nbsp; There is an 
+	option of the <a href="tbme83sn.htm"><strong>Data
+        Manipulation</strong></a> form, Delete menu, to clean these out when you 
+	are sure that you do not need them. </li>
+</ul>
+
+    </td>
+  </tr>
+</table>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 6/28/2013</em></p>
+
+<p>&nbsp;</p>
+</body>
+</html>

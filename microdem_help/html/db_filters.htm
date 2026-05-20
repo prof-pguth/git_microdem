@@ -1,0 +1,180 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>DB filters</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="5"><strong>DB filters</strong></font></p>
+
+<p>This form allows you set filters for the data base. Select
+database filtering from the <a href="database_table_display.htm">data
+base display table</a>.&nbsp; There is also a <a href="quick_db_filter.htm">Quick filtering</a> 
+option<b>.</b></p>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<p>
+		&nbsp;</td>
+		<td>Parts to the DB filters form:<ol>
+			<li>Tabs to create filter<ul>
+				<li><a href="#Create_the_filter_condition">Main filter</a> </li>
+				<li>Geographic filter.&nbsp; Set graphically with a
+				<strong style="font-weight: 400"><a href="db_map_query.htm">Map Query</a>.</strong></li>
+				<li><a href="#Create_Time_Filter.">
+				<strong style="font-weight: 400">Time Filter</strong> </a></li>
+			</ul>
+			</li>
+			<li><a href="#Plot_and_accept_options">Plot and accept options</a></li>
+		</ol>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="1">
+	<tr>
+		<td>
+		<img alt="" height="498" src="../images/db_filter_main.gif" width="661"></td>
+		<td>
+		<p>
+		<b><a name="Create_the_filter_condition">Create main filter condition</a>.</b>&nbsp; You must create at least 
+		one condition before you can filter. 
+
+</p>
+
+<ul>
+    <li>use edit boxes at the top of the form, and then
+        click &quot;Add condition&quot; button. <ul>
+            <li><b>Select the DB field with the drop down box DB Field in the center 
+			of the form.</b>&nbsp; You can type in the value if you are sure you can 
+			spell correctly.&nbsp; Since the length of the field names is 
+			limited, they might be abbreviated.</li>
+			<li>Use the drop down boxes to set the operator (=, &lt;&gt;, &lt;, &lt;=, and 
+			so on). The operators available will depend on the type of field.</li>
+            <li>For numerical fields, you can use the &lt; and
+                &gt; operators.&nbsp; You can make a complex condition, like &quot;8&lt; 
+			HEIGHT &lt; 18&quot;, which the program will convert to &quot;HEIGHT &gt; 8 AND 
+			HEIGHT &lt; 18&quot; which is what the program actually needs.</li>
+            <li>For text fields, you can use the =&nbsp; and &lt;&gt; operators.</li>
+			<li>If the field is an integer or string (and should not have too 
+			many unique values) you can:<ul>
+				<li>&nbsp;&quot;<b><a href="#Query_Field">Query field&quot;</a></b> button will find all
+                unique values in a text field, and the range of
+                values in a numerical field.&nbsp; This avoids spelling or 
+			typing issues, and can show you have the database was populated.&nbsp;
+				</li>
+				<li>&nbsp;&quot;OR&quot; button lets you select multiple values in the 
+				fields, and adds a filter that uses OR.&nbsp; </li>
+			</ul>
+			</li>
+        </ul>
+    </li>
+    <li>writing directly in the memo box</li>
+</ul>
+
+		<p>The &quot;Add condition&quot; button moves the
+        filter criteria to the middle box.</p>
+		<p>Add addition
+        criteria by repeating the process.</p>
+		<p>Edit the condition in the memo box, for example:</p>
+		<ul>
+			<li>Change &quot;=&quot; to &quot;&lt;&gt;&quot;, or
+                &quot;&lt;&quot; to &quot;&lt;=&quot;.</li>
+			<li>Use &quot;OR&quot; joins between lines, as the default will be
+                &quot;AND&quot;.&nbsp; Type the &quot;OR&quot; at the end of the line, and 
+			then use the delete key to move the next line up to become part of 
+			the single condition.</li>
+		</ul>
+
+<p>After the condition is added, the &quot;Apply filter&quot;
+button becomes active and&nbsp; uses the filter on the data set.</p>
+		<p>The quick filter button accepts the criteria and immediately filters.&nbsp; 
+		This is useful for single, simple filters.</p>
+		<p>Multiple conditions can be added.&nbsp; Each will be on a separate 
+		line, and they will be concatenated with an &quot;AND&quot;.&nbsp; If you want an 
+		&quot;OR&quot;, edit the filter display by adding the &quot;OR&quot; manually and then 
+		putting the second condition on the same line.</p>
+
+<p>The <strong>&quot;*&quot; character acts as a wildcard</strong>; thus
+&quot;M*&quot; in a state field will find MA, MD, MO....</p>
+
+<p>Filters are case sensitive or not, depending on how you set
+the checkbox.</p>
+
+<p>The Clear button removes all filter conditions.</p>
+		<p>&nbsp;</p>
+
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/db_time_filter.gif" width="519" height="242"></td>
+		<td>
+		<a name="Create_Time_Filter.">Create 
+		Time Filter.</a></td>
+	</tr>
+	<tr>
+		<td>
+		<p>
+		<img src="../images/dbfilter3.gif" width="527" height="103">&nbsp;</p>
+		</td>
+		<td>
+		<p>
+		<a name="Plot_and_accept_options">Plot and accept options</a></p>
+		<ul>
+			<li>Apply Filter button exits the form. If Redraw on close is 
+			checked, it will plot the filtered day.</li>
+			<li>Cancel aborts.</li>
+			<li>Plot takes the current filter and symbol and overlays the 
+			results on the map. If clear layer is checked, the layer will be 
+			erased before drawing.&nbsp; Otherwise the filtered data will plot 
+			over the other data.</li>
+			<li><b>+ Layer</b>: add symbology to layer file.</li>
+			<li><b>Clear Layer: </b>clears any layer symbology, and replaces it 
+			the current filtered set.&nbsp; If unchecked, the new display will 
+			draw above the previous display of the layer.</li>
+			<li><b>Redraw on close: </b>automatically redraw layer when the 
+			filter window closes.</li>
+			<li>Set USE on close: all records matching the filter will be set 
+			the &quot;Y&quot;, and the rest to &quot;NO&quot;</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="3" bgcolor="#808080">
+    <tr>
+        <td><img src="../images/filter2.gif" width="481"
+        height="223"></td>
+        <td bgcolor="#C0C0C0">For a text field with discrete values, you should
+        select the &quot;<a name="Query_Field"><b>Query Field</b>&quot;</a> button. This will give
+        you a selection box with all the values. You many find
+        poor quality control in the edit process of data base
+        creation, with mis-spelled words or multiple variants for
+        what should be the same coding.<p>Note in this case that
+        &quot;Cinder cone&quot; and &quot;Cinder cones&quot;, and
+        &quot;Complex volcano&quot; and &quot;Complex
+        volcanoes&quot; are used. You can use the wild card to
+        find both variants, as in &quot;Cinder cone*&quot;, or use the OR button.</p>
+        </td>
+    </tr>
+</table>
+
+<hr>
+
+<p align="right"><em><span class="style1">Last revision </span></em>
+<span class="style1"><em>7/19/2022</em></span></p>
+
+<p>&nbsp;</p>
+</body>
+</html>

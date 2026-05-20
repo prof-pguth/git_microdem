@@ -1,0 +1,86 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>CSV Export</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="5"><strong>CSV Export</strong></font></p>
+
+<p><font size="3">Accessed via </font></p>
+<ul>
+	<li> <strong>
+<a href="cartography/cartography.htm">Cartography</a> </strong>menu, Export 
+	computations options.&nbsp; If you use this option, the approximate map 
+	limits will automatically be entered into the form.</li>
+</ul>
+
+<table border="2">
+    <tr>
+        <td>
+		<img alt="" src="../images/csv_export.gif" width="311" height="443">&nbsp;</td>
+        <td>Set limits in decimal degrees for grid.&nbsp; By default this 
+		will be the map extent on the active map when you picked the option.<table
+        border="0">
+            <tr>
+                <td>&nbsp;</td>
+                <td bgcolor="#FFFFFF">Lat High</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td bgcolor="#FFFFFF">Long Low</td>
+                <td>&nbsp;</td>
+                <td bgcolor="#FFFFFF">Long High</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td bgcolor="#FFFFFF">Lat Low</td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+        <p>You can put in a record number with each line if the
+        checkbox is checked.</p>
+        <p>You can set a constant z value for all records</p>
+        <p>Set <a href="approx_equivalents.htm">spacing in lat and long for the grid, in dlat
+        and dlong, in decimal degrees</a>.&nbsp; By default this will be 1, 
+		which will not be appropriate for a large scale map.</p>
+		<p>Parameters:</p>
+		<ul>
+						<li>Datum shift, geographic: distance in meters between 
+						the two points having same lat/long coordinates in the 
+						two datums.</li>
+						<li>Datum shift, UTM: distance in meters between the two 
+						points having same UTM coordinates in the two datums.&nbsp;</li>
+						<li>Map distortion, h and k</li>
+						<li>Magnetic declination and intensity: you can plot 
+						this using the <a href="gis_vector_overlay.htm">Vector data</a> 
+						plot option.&nbsp; You will need a multiple of about 
+						0.002, because the intensity&nbsp; of the magnetic field 
+						is so large.</li>
+		</ul>
+		<p>You have the option to include a header line or not.</p>
+        <p>Set the file name for the output CSV file.</p>
+        <p>Write the file.&nbsp; This will close the form, and open output as&nbsp;
+	<img border="0" src="../images/db_map.png" width="24" height="24"> 
+	<a href="data_base.htm">Database</a> overlay.&nbsp; The file will be saved 
+		in a temporary directory, and you must save it elsewhere if you want to 
+		keep it.</p>
+        <p>Close the form without writing.</p>
+        </td>
+    </tr>
+    </table>
+
+<hr>
+
+<p align="right"><em><span class="style1">Last revised 1</span></em><span class="style1"><em>/24/2014</em></span></p>
+</body>
+</html>

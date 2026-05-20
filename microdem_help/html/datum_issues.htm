@@ -1,0 +1,88 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Datum Issues & MICRODEM</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="6"><strong>Horizontal Datum Issues &amp;
+MICRODEM</strong></font></p>
+
+<p>All open maps will have the same primary datum, set on the <a
+href="tbme1njp.htm">maps tab</a> of the <a href="tbme1njp.htm">options form</a>. The datums should be selected before opening data, and you
+probably cannot set the primary datum with open data sets. All data displays, and coordinate entry, use that datum.</p>
+
+<p>You can display coordinates in two datums as you roam with the
+mouse. This is also set on the <a
+href="tbme1njp.htm">maps tab</a> of the <a href="tbme1njp.htm">options form</a>. This can include your primary datum and and
+datum on which the data was digitized, or any choice of two
+datums. The datums should be selected before opening data.</p>
+
+<p>All DEMs and imagery (including scanned maps) will have a
+datum transformation applied when you open them. Whatever the
+datum used to digitize the data sets, they will be displayed on
+your primary datum. The datum shift moves the SW corner point
+(for a DEM) and the NW corner point (for an image) to the new
+datum, and then assumes the horizontal and vertical spacings
+remain the same in the new datum, and there is not a significant rotation
+between the two datums. If you do insist on using a
+primary datum other than WGS84, the raster imagery (DEMs and
+imagery) should work correctly. When a DEM or image does not
+explicitly state its datum on import, you will be prompted to
+enter it.</p>
+
+<p>Vector data (e.g. <a
+href="shapefile.htm">Shapefiles</a>, and <a href="demb0ylv.htm">TIGER</a>
+files) will generally not have a datum shift applied. It is up to
+you to select the correct primary map display datum for the
+vector data coming in.&nbsp;Mixing and matching datums with
+vector data will lead to misregistration.</p>
+
+<p>You can do a <a href="reproject_shape.htm">datum shift</a> for
+<a href="shapefile.htm">Shapefiles</a> on the data manipulation
+form, Resample, Shape file menu choice.&nbsp; You must transform
+to WGS84 Lat/Long coordinates before using them.</p>
+
+<p><strong>Saving data and datums:</strong></p>
+
+<ul>
+    <li>Saving as DTED will always transform to WGS84.</li>
+    <li>Saving as GEOTIFF will save the image of the current map
+        in the current primary datum.</li>
+    <li>Saving a DEM in MICRODEM format will save in the current
+        primary datum.</li>
+</ul>
+
+<p>You can get the digitizing datum by looking at the <a
+href="metadata.htm">metadata for your files</a>, or the <a
+href="tbme5ed1.htm">Analyze header</a> menu choice.</p>
+<p>Only in exceptional cases should you use another primary datum than 
+NAD83/WGS84, and then you must be careful.&nbsp; The problems will come with 
+plotting vector and GIS database files, which in general will not do a datum 
+shift. In addition, some options in this program assume WGS84 as the datum. </p>
+
+<p><b>See also:</b></p>
+
+<ul>
+    <li><a href="horiz_datum.htm">Horizontal datum introduction</a></li>
+	<li><a href="nima77ar.htm">Datums for warfighters</a> (but equally valid for other users).</li>
+    <li><a href="datum_shifts.htm">Datum shifts</a></li>
+    <li><a href="mapb959v.htm">Datum shift numerical examples</a></li>
+    <li><a href="incorrect_datum_shift.htm">Example of incorrect datum shift.</a></li>
+	<li><a href="vert_datum.htm">Vertical datums</a></li>
+</ul>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 8/16/2015</em></p>
+</body>
+</html>

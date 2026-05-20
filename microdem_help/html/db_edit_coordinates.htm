@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Map Coordinates</title>
+</head>
+
+<body>
+
+<h1>Map Coordinates</h1>
+<p>Submenu on <a href="db_edit.htm">&quot;EDIT&quot; button </a>on 
+<a href="database_table_display.htm">database
+table form.</a>&nbsp; The button must be enabled.</p>
+<ul>
+  <li>Add UTM--UTM x and y, and the UTM zone.&nbsp; You can force 
+	the conversion to a particular zone, or use the correct zone based on the 
+	longitude.</li>
+	<li>Add lat/long: adds but does not populate the fields.</li>
+	<li>Add centroids</li>
+	<li>Add UTM from offsets--</li>
+	<li>Add MGRS</li>
+	<li>Add MGRS&nbsp; bounding box for each record</li>
+	<li>Add Mercator--Mercator x and y, and h/k distortion factor.</li>
+	<li>Add projected coordinates--using the map projection of the map</li>
+	<li>Add decimal seconds string--adds text/string field of the form 
+	N54°23' 4.29" E0°26' 5.89".</li>
+	<li>Add decimal minutes string--adds text/string field of the form N54°23.072' 
+	E0°26.098'.</li>
+	<li>Add decimal degrees string--adds text/string field of the form N54.3845250° 
+	E0.43497000°.</li>
+  <li>Fix 360 longs--convert longitudes from 180 to 360 to 
+	negative values.</li>
+	<li>Add lat/long from shp file &nbsp;</li>
+	<li>Add lat/long from <a href="add_lat_link_db.htm">joined database</a></li>
+	<li>Add <a href="gis/bounding_box.htm">Bounding box</a></li>
+	<li>Add XYZ from shp file &nbsp;</li>
+	<li>Add XYZ from <a href="add_lat_link_db.htm">joined table</a>: XYZ fields will be added if they do 
+	not exist.&nbsp; For the field used to join, the program will find all the 
+	unique values in the primary table.&nbsp; It will filter for each unique 
+	value in turn, and apply a corresponding filter to the join table.&nbsp; If 
+	the filtered join table has at least as many records and the filtered 
+	primary table, XYZ values will be placed in each record in the primary 
+	table.&nbsp; The first record will be matched to the first record, the 
+	second to the second, and so on.&nbsp;</li>
+	<li>Convert DDMM.MH/DDDMM.MH/ string to Lat/Long: e.g. 
+	2037.0S/02913.0W</li>
+	<li>Convert UTM to Lat/Long</li>
+	<li>Datum shift (reproject lat/long coordinates): pick the datum used 
+	by the database, and a new datum, and the coordinates will be transformed</li>
+	<li>Vertical datum shift: creates a new field with the&nbsp; 
+	shift between the WGS84 ellipsoid, and the EGM2008 geoid.&nbsp; The shift file 
+	from NGA must be available in&nbsp; C:\mapdata\geology\tgeology_grids</li>
+	<li>Randomize duplicate points: if there are points in the 
+	database with the same coordinates they will be given new coordinates within a 
+	specified region about the point.</li>
+</ul>
+<hr>
+<p align="right"><i>Last revision 5/218/2026</i></p>
+
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Database Join</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Database Join</h2>
+<p>Set join relationships on <a href="db_stats.htm"><strong>Stats button</strong></a> 
+menu of <a href="database_table_display.htm"><u>table
+display window</u></a>.&nbsp;&nbsp; Joining does not require the same name for 
+the Join field, or the same order for the records.</p>
+<table border="1" id="table2">
+	<tr>
+		<td>
+		<img border="0" src="../images/db_join.gif" width="386" height="351"></td>
+		<td>Pick the field in the database for the join.&nbsp;This must be a 
+		string/character or integer field. You will see the 
+		values in this field for the first records.&nbsp; <p>Pick the table to join.</p>
+		<p>Pick the field in the join table database to use.&nbsp; This must be 
+		a string/character or integer field.&nbsp; You will see 
+		the values in this field for the first records.&nbsp; Depending on the 
+		organization of records in the two databases, you might not see exact 
+		matches, but you should verify the general correspondence of the two 
+		fields.&nbsp; If they have different lengths, you will not get any 
+		results.</p>
+		<p>Verify that the fields in the two tables have compatible records--they 
+		should have the same length and type of codings (string or integer; you 
+		cannot link on floats).&nbsp; <a href="csv_problems.htm">If the data 
+		starts with a &quot;0&quot;, be particularly careful, as Excel can remove them</a> 
+		and cause problems for things like Zip codes in New England and state 
+		FIPS for states starting with A and C.</p>
+		<p>You will see the number of records in the two databases.&nbsp; </p>
+		<p>If there are records in the join table with duplicate values in the 
+		join field, you will be issued a warning.&nbsp; This should not happen.&nbsp; 
+		MICRODEM will allow you to use the first of the duplicates if you pick 
+		the allow multiple join matches, but you should insure that your data 
+		file is not corrupt, and that you understand why there are multiple 
+		records.</p>
+		<p>Select OK.</td>
+	</tr>
+</table>
+<p>For US countries or states, you can link on either the name or the FIPS 
+codes.&nbsp; The name option must be used judiciously; a county might be coded as 
+any of the following:</p>
+<ul>
+	<li>Saint Louis</li>
+	<li>St Louis</li>
+	<li>St. Louis</li>
+	<li>St. Louis County</li>
+	<li>St. Louis Cnty</li>
+</ul>
+<p>If the two databases do not use the same model for the names, the join will 
+fail.&nbsp; In contrast the FIPS code will have no ambiguity.&nbsp; The FIPS 
+code is also shorter and takes up less storage space, which may no longer be 
+important, but was when a lot of the database functionality was developed.</p>
+<p>&nbsp;The MICRODEM default is now to strip the leading zeros from string fields (think 
+FIPS and ZIPs) when used to join. If you want to use the files in another 
+database with files that have not had this done, turn off the option on this 
+form, or <a href="add_lead_0.htm">add them back</a> in before using the 
+databases elsewhere.<br><br><a href="link_db.htm">Example using joined fields.</a></p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revised&nbsp; 3/4/2017</em></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

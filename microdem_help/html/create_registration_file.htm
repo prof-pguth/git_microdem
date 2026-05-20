@@ -1,0 +1,92 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Create Registration File</title>
+</head>
+
+<body>
+
+<h2>Create Registration File</h2>
+<p>
+<img border="0" src="../images/image_registration.gif" width="672" height="426"></p>
+
+<ol>
+    <li><b>REG File button,</b> which will also
+        automatically save the registration points.</li>
+</ol>
+
+<blockquote>
+	<blockquote>
+		<ul>
+			<li><b><a href="del_tri_reg.htm">TIN Mapping</a>:&nbsp;</b>any 
+			map will work as long as you enter enough control points.&nbsp; This 
+			uses all the registration points entered.</li>
+			<li><b>Simple registrations</b><ul>
+			<li><b>&quot;UTM world&quot;</b>: requires that 
+			<a href="grid_lines.htm">UTM grid lines
+            are lined up north-south</a> and creates a 
+			<a
+            href="tbme6h0z.htm">world file</a>.&nbsp; If this is a valid choice
+          for your data, &quot;Geo&quot; is not valid. For many data sets,
+          neither choice is appropriate.</li>
+			<li><b>&quot;Geographic world&quot;</b>: requires a
+			<a href="grid_lines.htm">lat/long
+            graticule lined up north-south</a> and creates a 
+			<a
+            href="tbme6h0z.htm">world file</a>.&nbsp; If this is a valid choice
+          for your data, &quot;UTM&quot; is not valid. For many data sets,
+          neither choice is appropriate.</li>
+			<li>Find optimal rotation registration: this will consider all 
+			combinations of three control points, and show you the average 
+			registration error and the maximum with the points considered as 
+			verification of the results.&nbsp; The three points with the 
+			smallest average error will probably produce the best rotation 
+			registration results.</li>
+		</ul>
+			</li>
+			<li>Shift prime meridian: move all the longitudes, for instance in 
+			you are doing &quot;quad map&quot; and the map uses an old Prime Meridian.&nbsp; 
+			You can enter an arbitrary shift, or use the Ferro value.</li>
+			<li>Lat/long Graphs</li>
+			<li>
+		<a href="../html/export_historic.htm">Export map for Google Earth.</a>&nbsp; 
+		This will create a KML or KMZ file and open it in Google Earth.&nbsp; 
+		This file will be stored in &quot;c:\mapdata\kml&quot; in a new directory, but you 
+		can save it from Google Earth with a name you want and a location where 
+		you can easily find it.&nbsp; You can overlay this file on a map (like a 
+		DEM) with the <b><a href="tbme9u5x.htm">Overlay</a>, </b>
+		<a href="image_overlays.htm">Imagery (KML, KMZ, world files)</a> </li>
+			<li><a href="../html/reproject_historic.htm">Reproject map</a>: This 
+			will create a Geotiff.&nbsp; </li>
+		</ul>
+	</blockquote>
+</blockquote>
+<ul>
+	<li>Insure the Datum and UTM zone are correct. If not, select
+        the Datum button and correct them.</li>
+	<li>The first three options (world files and rotation) use only the first 
+	three registration points.&nbsp; Those points would ideally be in three 
+	corners of the map; they should be as far apart as possible, and as far from 
+	being on a straight line as possible.&nbsp; Any points beyond three will be 
+	used to estimate the accuracy of the registration.</li>
+	<li>For the
+	<a href="tbme6h0z.htm">world file</a>&nbsp; register options, you will get a 
+	window with statistics. These are in the
+        form y = ax + b, and will show the results for both a UTM and lat/long 
+	spacing. </li>
+</ul>
+
+<p><a href="image_reg.htm">Part of Image Registration.</a></p>
+
+<hr>
+
+<p align="right"><i>Last revision 12/3/2017</i></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

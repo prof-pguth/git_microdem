@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Computer Data Types</title>
+</head>
+
+<body>
+
+<h2>Computer Data Types</h2>
+<p>The computer has different types of data, each with different properties:</p>
+<ul>
+				<li><b>Integer</b>--whole or counting numbers.&nbsp; Since the computer 
+				stores in binary, it is easier to store integers compared to 
+				floats, and they take less storage.</li>
+				<li><b>Float</b>&nbsp; (or floating point or real number)--numbers 
+				with a decimal point.&nbsp; These are 
+				actually stored with a mantissa and exponent, and will never be 
+				exact: 2 will be 1.99999999 or 2.00000001. (&radic;2)&sup2; will 
+				often not be 2.</li>
+				<li><b>String or character</b>--just text, can include numbers.&nbsp; 
+				In GIS you cannot do arithmetic on strings.</li>
+</ul>
+<p>When a <a href="mapb38f5.htm">vector data</a> database is created, each field will have a specific type which limits 
+what you can do with the database.&nbsp; For instance, if your enter &quot;14495 feet&quot; as the elevation 
+for Mount Whitney, the computer will store it as a string, because you cannot 
+mix the number with its units.&nbsp; You cannot do 
+arithmetic with that data, or color it by elevation since the computer cannot 
+compare &quot;14495 feet&quot; and &quot;13298 feet&quot;.&nbsp; One solution is 
+to put the units in the field name--this could be ELEV_FT.&nbsp; The other 
+option is to force the user to look up the units in the metadata that should 
+accompany the database.</p>
+<p><a href="mapb38f5.htm">Raster data</a> sets also have types; the values in the grids can be stored as 
+integers or floats.&nbsp; This determines the precision of the values, and the 
+required storage.</p>
+
+<hr>
+
+<p align="right"><em>Last revision 7/22/2015</em></p>
+	
+	
+	
+	
+	</body>
+
+</html>
