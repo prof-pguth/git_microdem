@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Terrain Analysis Tutorial</title>
+<link href="../../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.auto-style1 {
+	font-size: small;
+}
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Terrain Analysis Tutorial in MICRODEM</h2>
+<p>Insure MICRODEM has been installed.&nbsp; If necessary,
+<a href="http://www.usna.edu/Users/oceano/pguth/website/microdem/microdemdown.htm">
+download here</a>.&nbsp; You should immediately download the help file from the
+<a href="../../html/help_menu.htm">help menu</a>.&nbsp; MICRODEM is a Windows 64 
+bit program. </p>
+<p>If the version of the program is older than the revision date at the 
+bottom of this page, <font color="#FF0000">
+<a href="../../html/managing_microdem.htm"><span class="style1">update</span></a></font> 
+the program.</p>
+<p><a href="../Labs_intro.htm">Introduction to key operations in the program</a></p>
+<p>Go to <a href="../../html/tbme8igl.htm"><b>File</b></a>, Introductory 
+tutorials, Harper&#39;s Ferry Terrain Analysis.&nbsp; This will download the 
+following data sets, a 100+ MB file, unzip it, and open the DEM.</p>
+<table border="2">
+	<tr>
+		<td>Data Set</td>
+		<td>Scale</td>
+		<td>Uses</td>
+		<td>Format</td>
+		<td>Web Source</td>
+	</tr>
+	<tr>
+		<td><a href="../../html/demb55bn.htm">DEM</a>: NED, 1/9"</td>
+		<td>1/9" DTM, about 2.66x3.43 m</td>
+		<td>Terrain characterization</td>
+		<td><a href="../../html/tbme9v52.htm">Geotiff</a></td>
+		<td>USGS, 
+		<a href="../national_map/national_map.htm">National Map Viewer</a></td>
+	</tr>
+	<tr>
+		<td>
+            <a href="../../html/open_street_map.htm">OpenStreetMap</a>: vector 
+		overlays</td>
+		<td>&nbsp;</td>
+		<td>Cultural awareness</td>
+		<td><a href="../../html/shapefile.htm">Shapefile</a></td>
+		<td>
+												<a href="http://download.bbbike.org/osm/">
+												http://download.bbbike.org/osm/</a></td>
+	</tr>
+	<tr>
+		<td><a href="../../html/pt_clouds.htm">Lidar Point Clouds</a> </td>
+		<td>2.8 pts/m<span style="font-size: 11.0pt; font-family: &quot;Calibri&quot;,&quot;sans-serif&quot;; mso-ascii-theme-font: minor-latin; mso-fareast-font-family: Calibri; mso-fareast-theme-font: minor-latin; mso-hansi-theme-font: minor-latin; mso-bidi-font-family: &quot;Times New Roman&quot;; mso-bidi-theme-font: minor-bidi; mso-ansi-language: EN-US; mso-fareast-language: EN-US; mso-bidi-language: AR-SA">²</span></td>
+		<td>3D visualization</td>
+		<td><a href="../../html/las_format.htm">LAS</a></td>
+		<td>USGS, <a href="http://earthexplorer.usgs.gov/">
+	http://earthexplorer.usgs.gov/</a>
+	</td>
+	</tr>
+	<tr>
+		<td>Scanned geologic map</td>
+		<td>&nbsp;</td>
+		<td>Interpret geology</td>
+		<td>KMZ</td>
+		<td>USGS OF-2000-297, from <font size="4">
+		<a
+        href="http://ngmdb.usgs.gov/ngmdb/ngm_catalog.ora.html">
+		<span class="auto-style1">http://ngmdb.usgs.gov/ngmdb/ngm_catalog.ora.html</span></a></font></td>
+	</tr>
+</table>
+<p>This data uses common open formats, and should work with no problems in 
+commercial ESRI ArcGIS or open source QGIS.&nbsp; These data sets will show the range 
+of operations available in MICRODEM; you can later deal with the challenges of 
+getting additional data.&nbsp; This region was chosen because its relief 
+highlights the 3D possibilities in GIS.</p>
+<hr />
+<p>This tutorial emphasizes the <a href="../../html/terrain_analysis.htm">
+terrain analysis</a> aspects of MICRODEM; the program can do many other things.</p>
+<p><strong>Investigate displays possible with the DEM. </strong>&nbsp;<a href="../../html/map_disp_param.htm">Display parameter</a> 
+lets you pick the main option, and then many have additional choices that you 
+set the first time you pick or you can modify later.</p>
+<ul>
+	<li>Colored <a href="../../html/tbme9u5v.htm">hillshade or shaded relief</a> 
+	is the default.&nbsp; This will generally provide better appreciation of the 
+	terrain than an <a href="../../html/tbme78s3.htm">Elevation map</a></li>
+	<li>Grayscale<a href="../../html/tbme9u5v.htm"> hillshade</a> provides a 
+	good base map, on which you can overlay additional data sets in color.</li>
+	<li><a href="../../html/slopemap.htm">Slope</a>&nbsp;shows the terrain 
+	steepness; the gray scale reversed option provides a nice base map.</li>
+	<li><a href="../../html/openness_map.htm">Openness</a> provides a similar display, and might work better for
+	<a href="../../images/urban_dsm_display.htm">urban or open terrain lidar 
+	DSMs.</a>&nbsp; This option provides a quick default display.</li>
+	<li><a href="../../html/apsect_maps.htm">Aspect</a> show the downhill 
+	direction, and is important for soil development, vegetation, or ski slope 
+	siting.</li>
+	<li><a href="../../html/tbme327n.htm">Contours</a> can show the traditional 
+	relief depiction.&nbsp; You can also overlay contours on any base map with <img border="0" src="../../images/overlays.GIF" width="24" height="24">
+      <a href="../../html/map_overlay_manager.htm">Map Overlays</a></li>
+</ul>
+<p>
+<strong>Overlay raster data on the map</strong></p>
+<ul>
+	<li><a href="../../html/tbme9u5x.htm"><b>Overlay</b></a>,
+	<a href="../../html/image_overlays.htm">Imagery (KML, KMZ, world files)</a>, 
+	and pick the KMZ which will overlay a scanned geological map.&nbsp; You can 
+	adjust its opacity.</li>
+</ul>
+<p><strong>Overlay vector data on map</strong></p>
+<ul>
+	<li><b><a href="../../html/db_menu.htm">Database</a> menu, </b>Load OSM overlay, 
+	and pick the directory with the <a href="../../html/open_street_map.htm">OSM 
+	data.</a>&nbsp; This data set varies in quality with the local crowd 
+	sourcing community, but generally will have pretty good roads, and sometimes 
+	railroads, water, buildings, and natural landcover.</li>
+	<li><img border="0" src="../../images/overlays.GIF" width="24" height="24">
+      <a href="../../html/map_overlay_manager.htm">Map Overlays</a> allows you 
+	to change the opacity of the layer.</li>
+</ul>
+<p><strong>3D map operations</strong></p>
+<ul>
+    <li>
+	<img src="../../images/opengl.gif" border="1" width="32"
+        height="29"> <a href="../../html/opengl_3d_views.htm"><strong>OpenGL
+        3D view</strong></a>.&nbsp; This will be best with a larger map, perhaps 
+	even larger than will fit on screen.</li>
+	<li><img src="../../images/perspective.gif" width="32"
+        height="32"> <a href="../../html/tbme0cx1.htm"><strong>Perspective views</strong></a> </li>
+    <li><img src="../../images/PANORAMA.GIF" width="32" height="32">
+        <a href="../../html/new_panorama.htm">Panorama view</a> </li>
+    <li><img src="../../images/LOS.gif" width="32" height="32"> 
+	<a
+        href="../../html/tbme8vjn.htm"><strong>Line of sight</strong></a> and
+	<img alt="" src="../../images/prof.gif" width="32" height="27">
+	<a
+        href="../../html/tbme8vjn.htm"><strong>Topographic Profiles</strong></a>:&nbsp; 
+	these are similar and show a 2D slice through the terrain.&nbsp; Line of 
+	sight shows 
+	intervisibility, important for many military operations, and communications.</li>
+	<li> <font size="3">
+	<img src="../../images/fans.jpg" width="16"
+        height="16"> </font><a href="../../html/tbme3ncj.htm"><font size="3">Weapons
+        fan/viewshed</font></a><font size="3"> </font> </li>
+</ul>
+<p><strong>Open lidar point cloud</strong></p>
+<ul>
+	<li><img border="1" src="../../images/pnt_cld.GIF" width="23" height="23">
+	<a href="../../html/pt_cld_opts.htm">LIDAR Point clouds</a> and pick the 
+	directory with the lidar data.&nbsp; This is a relatively low resolution 
+	survey, but still creates a 300 MB file.&nbsp; It also has not beeen 
+	completely classified (there are no buildings or trees identified), which is 
+	typical for many readily available point clouds.<ul>
+		<li>Look at the <a href="../../html/pt_cld_draw_tab.htm">display options</a>.
+		</li>
+		<li>Slice: <a href="../../html/pt_cloud_slicing.htm">EW and NS slices through 
+	the point cloud</a>.&nbsp; These are xz and yz.&nbsp; The xy view will probably be 
+		less informative.<ul>
+			<li><img src="../../images/opengl.gif"
+        border="1"> <a href="../../html/opengl_controls.htm">OpenGL</a> 3D option.&nbsp; 
+			</li>
+		</ul>
+		</li>
+		<li>
+			<a href="../../html/grid_from_pt_cld.htm">Create grids</a>,
+		<a href="../../html/pt_cld_ceiling_floor.htm">Ceiling + floor grids</a>&nbsp;to 
+		make a DSM (ceiling) and a DTM (floor). A 1 or 2 m grid spacing is 
+		appropriate for this data.&nbsp; The 1 m grid will be 4 times larger.&nbsp; 
+			The DTM includes the buildings, because removing them requires a 
+			building classification to be done on the point cloud, and then 
+			replacing the building with a value determined from the surrounding 
+			ground.&nbsp; You can see this in the NED DSM, although it has a 
+			smaller scale.&nbsp;&nbsp; MICRODEM does not attempt to perform 
+			these operations, in part because we think the DTM with buildings is 
+			actually more useful in most cases. <ul>
+			<li>Create a HAG or CHM grid by doing the difference between the DSM 
+			and DTM. Use <a href="../../html/raster_gis.htm">Raster GIS</a>, 
+			<a href="../../html/mult_grid_math.htm">Multiple grid arithmetic</a>,
+			<a href="../../html/dem_diff_map.htm">Difference between two
+                grids</a>.&nbsp; You want DSM-DTM so the values will be 
+			positive.</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+			<b>
+<hr />
+
+</b>
+
+<p align="right"><font size="3"><em>Last revision 8/21/2018</em></font></p>
+
+			<b>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

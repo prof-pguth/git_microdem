@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Landsat Time Series</title>
+<style type="text/css">
+.auto-style2 {
+	font-size: medium;
+}
+.auto-style3 {
+	font-size: x-large;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Landsat Time Series</h2>
+<p>This will download and unzip 4 scenes in the Nile Delta of Egypt</p>
+<ul>
+	<li>Landsat 8 from mid December 2018.&nbsp; This has a 15 m Pan band in 
+	addition to the 30 m bands.</li>
+	<li>Three scenes from Landsat 5 from 1984, 1986, and 1994.&nbsp; Landsat 5 
+	did not have a 15 m panchromatic band.<ul>
+		<li>The 1984 scene&nbsp; may have a registration error, and does not 
+		align with the others.</li>
+	</ul>
+	</li>
+	<li>The file names shows:<ul>
+		<li>The satellite in the first group of characters</li>
+		<li>The path and row in the third group of characters (when you search 
+		for data, once you find the scene you want and then want to look at 
+		additional data collections, you can filter to just get the same path 
+		and row)<ul>
+			<li>You can get shapefiles and KML files showing the scene locations 
+			by path and row at
+			<a href="https://www.usgs.gov/land-resources/nli/landsat/landsat-shapefiles-and-kml-files">
+			https://www.usgs.gov/land-resources/nli/landsat/landsat-shapefiles-and-kml-files</a></li>
+			<li><a href="https://landsat.usgs.gov/landsat_acq#convertPathRow">https://landsat.usgs.gov/landsat_acq#convertPathRow</a> can convert 
+			a lat/long into the path/row</li>
+		</ul>
+		</li>
+		<li>The band number is in the last group of characters before the TIF 
+		extension (B1 to B11). There is also a quality assurance band (BQA) 
+		which you probably do not want</li>
+	</ul>
+	</li>
+</ul>
+<p><img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="../html/tbme65lx.htm">Open image</a>: you can open 
+any of the TIF files.&nbsp;&nbsp; The program will open the scene 
+and display a false color image.</p>
+<ul>
+	<li><img src="../images/band.gif" width="23" height="23"> 
+	<a
+        href="../html/tbme9dpq.htm">Band:</a> select multiband or single
+        band, choose among the available bands, and adjust
+	<a href="../html/set_contrast.htm">contrast</a>.</li>
+	<li><font size="3"><img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="../html/tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a>.&nbsp; These scenes are about 8500x7000 pixels, 
+	and your computer might not easily handle the large images when you look at 
+	the full resolution data.</li>
+	<li>
+	<img height="233" src="../images/map_percentage.gif" style="height: 68px; width: 50px" width="168"> 
+	<a href="../html/set_map_pc.htm">Set 
+	percentage data shown for raster data</a>.&nbsp; For detailed analysis or 
+	digitzing, you need to be at 100% scale.</li>
+</ul>
+<a href="../html/tbme9u5x.htm">Overlay</a> menu, Two map interactive comparison 
+to see differences between dates:<ul>
+		<li><a href="../html/variable_opacity_merges.htm">Variable opaque merge</a></li>
+		<li><a href="../html/vertical_swipe.html">Vertical swipe compare</a></li>
+	</ul>
+	<p>Create <a href="../html/norm_sat.htm">NDVI maps</a>.</p>
+<p><a href="../html/raster_gis.htm">Raster GIS</a>, 
+<a href="../html/mult_grid_math.htm">Multiple grid arithmetic</a>,
+<a href="../html/dem_diff_map.htm">Difference between two
+                grids</a><b><strong>.&nbsp; </strong></b>Create a difference map for the 
+2018 data compared to the earlier dates.</p>
+<p><font size="3"><img src="../images/icons.gif" border="2"
+        width="20" height="20"></font><a href="../html/annotate.htm"><font
+        size="3">Annotate Map</font></a>, <font size="3">
+<a href="../html/shape_digit.htm">Create
+                shapefile</a>,&nbsp; Line.&nbsp; </font>Digitize a stretch of 
+the coast where you think there has been erosion/deposition on three of the 
+maps, and overlay all the data on a single map.</p>
+<ul>
+	<li>Insure you are at 100% view (or higher), and can see the entire region 
+	on the map before you start digitizing.</li>
+	<li>You might want to experiment to see if you<a href="../html/digitizing_options.htm"> 
+	prefer stream or point digitizing mode</a>.</li>
+</ul>
+<hr />
+<p><strong><span class="auto-style3">Deliverables.&nbsp; </span></strong>Write a 
+discussion of how Landsat document change in the Nile Delta over the past 35 
+years.&nbsp; You should have at least 4-6 graphics.</p>
+<ul>
+	<li>How has the vegetation in the delta changed in the decades leading up to 
+	2018?&nbsp; Where have the largest changes taken place?&nbsp; Do you think 
+	this reflects true change, or does the season of the imagery make a 
+	difference?</li>
+	<li>Does the Landsat data show erosion of the delta (e.g.
+	<a href="https://eos.org/research-spotlights/how-fast-is-the-nile-delta-sinking">
+	https://eos.org/research-spotlights/how-fast-is-the-nile-delta-sinking</a>)?&nbsp; 
+	Cite this paper using the correct format.</li>
+</ul>
+
+<hr>
+
+<p align="right" class="auto-style2"><em>Last revision&nbsp;9/16/2019</em></p>
+<h1>&nbsp;</h1>
+
+</body>
+
+</html>

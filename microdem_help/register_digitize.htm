@@ -1,0 +1,179 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Register Image and Digitize</title>
+</head>
+
+<body>
+
+<p><font size="5"><b>Tutorial: Register Image and Digitize</b></font></p>
+
+<p><a href="../html/register_image.htm">Caveats on
+image registration.</a></p>
+<p>WW2 situation maps from
+<a href="http://memory.loc.gov/ammem/collections/maps/wwii/date.html">
+http://memory.loc.gov/ammem/collections/maps/wwii/date.html</a></p>
+<p>This page has an overview of the process.&nbsp; Details are on the pages 
+linked to from the overview.</p>
+<table border="1" width="100%" id="table2">
+	<tr>
+		<td><b><font size="5">Directions</font></b></td>
+		<td><b><font size="5">Additional Notes</font></b></td>
+	</tr>
+	<tr>
+		<td>
+		<a href="http://memory.loc.gov/ammem/collections/maps/wwii/date.html">Download JPEG2000 file</a>&nbsp; 
+		for desired date.<p>
+		<img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> Open <a href="../html/tbme65lx.htm">New image</a> with 
+		<a href="../html/adf_grids.htm">JPEG2000 file</a>.&nbsp;This requires
+		<a href="../html/adf_grids.htm">FWTools</a>; you will be 
+		warned if it is not present.</p>
+		<p>Pick 50% or 100% zoom level.&nbsp; The 50% level should have an 
+		acceptable lowering of the image quality, and will require 25% of the 
+		file storage.&nbsp; Verify that you can read the map at this resolution; 
+		if not, go with the 100%.</p>
+		<p><font size="3"><img src="../images/Filesave.jpg"
+        width="16" height="16"> <a href="../html/save_image.htm">Save image</a></font> 
+		with PNG format. Rename as 
+		&quot;SIT-MAP_DDMMM194Y&quot;. This file is unregistered, and cannot be 
+		used for mapping.<p>Close map, and do not use it any further.&nbsp; 
+			<p>
+		<img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> Open <a href="../html/tbme65lx.htm">New image</a> with  
+		PNG file you just saved.&nbsp;
+		<p>
+		<b>
+		<a href="../html/reg_quad.htm">Register image using map graticule for  
+		quadrangle registration.</a></b>&nbsp; This will create two databases, one 
+		with the registration points and another with the triangle mappings. The 
+		triangle mappings can always be regenerated.</p></td>
+		<td>Original map downloaded from the Library of Congress.&nbsp; Note&nbsp; conical projection with both parallels and meridians curved, 
+		removed secret classification,&nbsp; marginal information, and&nbsp; in 
+		the lower right that this map entered the Library of Congress 
+		collections in November 1944, three months after the day depicted.<p>If the map edges are not parallels and meridians, you can
+		<a href="../html/tri_extrapolate.htm">extrapolate to the edges</a> (or 
+		the margins if you want to retain that information).<p>Because this map 
+		spans the Prime Meridian, you must be very careful as you enter the 
+		longitude values.</td>
+	</tr>
+	<tr>
+		<td><a href="../html/export_historic.htm">Export&nbsp; map to Google Earth</a> 
+		from the Registration window, using Reg File, export map to Google 
+		Earth option.<p>If it does not line up, carefully look at which part of 
+		the map appears to be in error, and then redo the 
+		<a href="../html/del_tri_reg.htm">Delaunay triangulation registration</a> 
+		paying particular attention to the graphs provided and the triangulation 
+		overlay.&nbsp; Adjust 
+		the registration.</td>
+		<td>Reprojected map after 
+		<a href="../html/del_tri_reg.htm">Delaunay triangulation registration</a>. Note the decollaring which removed the marginal 
+		information, and straightened the meridians and parallels.<p>Select Register button, and then&nbsp;
+		<a href="../html/reproject_historic.htm">Reproject map.</a>&nbsp; This 
+		will close the map registration and open the registered map for use in 
+		MICRODEM.</p>
+		<p>This map 
+		can be viewed in the main map window, and used for all program 
+		operations.</td>
+	</tr>
+	<tr>
+		<td>Digitize locations of all divisions on the map. Divisions have 
+		an &quot;XX&quot; above the box for the symbol.&nbsp; Name this 
+		file &quot;DIVISIONS_xxMonth1944&quot;.&nbsp; You have two options:<ul>
+			<li><a href="../html/google_earth/pt_file_digitize.htm">Digitize in Google 
+			Earth and import to MICRODEM.</a>&nbsp; If you do this, only the Name 
+		field will be imported, so you should put the name of the division in it, 
+			and then add the ICON and DATE in MICRODEM. Use
+			<a href="../html/dnr_garmin.htm">DNR GPS</a> to convert a KML file 
+			from Google Earth to a shapefile.</li>
+			<li><font size="3">
+			<img height="20" src="../images/icons.gif" width="20" border="2">
+			<a href="../html/annotate.htm">Annotate Map</a> and </font>
+			<font size="3"><a href="../html/shape_digit.htm">create a point
+                shapefile</a> in MICRODEM.&nbsp; </font></li>
+		</ul>
+		<p><font size="3">
+		You must carefully 
+		consider </font>how to <a href="../html/database_create.htm">define the database
+        table</a>.&nbsp;&nbsp; 
+		Follow the conventions in the database shown on the right. Some software 
+		might limit the length of the NAME field, so you might want to 
+		abbreviate the division identifiers.</p>
+		<p>As a point geometry, this database is very tolerant of mistakes as it 
+		resides in a single DBF file.&nbsp; You can edit the file in 
+		MICRODEM, or in Excel (export via CSV back to MICRODEM).</p>
+		<p><b>
+		<a href="../html/using_icons_for_db_pts.htm">Create and fill an icon 
+		field</a></b>, and populate it with the correct symbols for each type of 
+		division. Use the <a href="../html/add_substring_flag.htm">Add 
+		from substring flag option </a>and make new fields for &quot;GER&quot;, &quot;US&quot;, 
+		&quot;BRIT&quot;, &quot;ARM&quot;, and &quot;INF&quot;.&nbsp; You can then filter for US='Y' and&nbsp; 
+		ARM='Y', and do a <b>Fill field for all records</b> on the ICON fields 
+		and put in &quot;us-Arm-Div.gif&quot;.</p>
+		<p>Add a DATE field on the
+		<a href="../html/db_edit.htm">Edit option,</a> <b>
+		<a href="../html/db_insert_field.htm">Insert new field</a> </b>and then fill all values 
+		with a single command (<b>Fill field for all records</b>) since all the 
+		divisions entered should be for a single day.&nbsp; This will allow us 
+		to merge all the daily databases, and filter on the date.</p></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Digitize the front lines on the map.&nbsp; Name this file 
+		&quot;FRONT_LINES_xxJuxx1944&quot;. You have two options:<ul>
+			<li><a href="../html/google_earth/pt_file_digitize.htm">Digitize in Google 
+		Earth and import in MICRODEM.</a></li>
+			<li><font size="3">
+			<img height="20" src="../images/icons.gif" width="20" border="2">
+			<a href="../html/annotate.htm">Annotate Map</a> and </font>
+			<a href="../html/shape_digit.htm"><font size="3">create a line
+                shapefile</font></a><font size="3">.&nbsp; You must carefully 
+		consider </font>how to <a href="../html/database_create.htm">define the database base
+        table</a>. You will need the date to label your front lines.</li>
+		</ul>
+		<p>As a line geometry, this will be fussy and you must keep all three 
+		parts of the shapefile together.&nbsp;</p>
+		</td>
+		<td>Map in Google Earth after
+		<a href="../html/google_earth/pt_file_digitize.htm">digitizing unit 
+		locations and front lines</a>. This shows the default push pins and not 
+		unit icons that must be added in MICRODEM, and which can then be 
+		exported back to Google Earth.</td>
+	</tr>
+	<tr>
+		<td>Databases displayed on <img src="../images/new%20dem.gif" width="32" height="32">
+        <a href="../html/tbme5iy6.htm"><b>SRTM Map</b></a> using&nbsp; <img border="0" src="../images/db_map.png" width="24" height="24"><a href="../html/tbme9dpq.htm"> </a><a href="../html/data_base.htm">Database</a> 
+		overlay option.&nbsp; To get icons, change 
+		<strong style="font-weight: 400"><a href="../html/db_sym_select.htm">
+		Plotting Options</a> for the database.&nbsp; You can adjust the size of 
+		the icons with the scaling factor.</strong><p>
+		<strong style="font-weight: 400">Export map to Google Earth, by
+		</strong> <a href="../html/map_right_click.htm">right
+      clicking on map</a><strong style="font-weight: 400"> and picking
+		</strong><a href="../html/export_right_click.htm">Export</a><strong style="font-weight: 400">, </strong>
+		<a href="../html/kml_overlay.htm">Google Earth overlay</a><strong style="font-weight: 400">.</strong><p>
+		<strong style="font-weight: 400">Export the front lines and the division 
+		locations from the </strong><a href="../html/db_report.htm">Report:</a> 
+		button on the table display forms.<p>
+		<a href="../html/clean_kml.htm">Clean up KML exports</a> within Google Earth</td>
+		<td>&nbsp;</td>
+	</tr>
+	</table>
+<p align="left"><b>Problem solving:</b></p>
+<ul>
+	<li>
+	<p align="left">Label the points and plot your registration points.&nbsp; 
+	Look at the four corners.&nbsp; If they are not in the correct locations, 
+	fix them by editing in the grid.&nbsp; Then you can retry the registration 
+	after closing the map and deleting the files listed above.</p>
+	</li>
+</ul>
+<hr>
+<p align="right"><i>Last revision 12/3/2024</i></p>
+</body>
+</html>

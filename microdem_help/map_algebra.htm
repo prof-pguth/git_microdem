@@ -1,0 +1,130 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Map Algebra</title>
+</head>
+
+<body>
+
+<h2>Map Algebra</h2>
+<p>Map algebra manipulates geographic raster data sets to produce new map layers.&nbsp; 
+They can work on a single layer (grid), or combine multiple layers.&nbsp; 
+Tomlinson is credited with the concept.&nbsp; In many ways map algebra works 
+like matrix manipulations in Matlab.</p>
+<p>The map algebra transformations can use different spatial neighborhoods:</p>
+<ul>
+	<li>Local operations works on individual raster cells. An example would be 
+	converting elevations from meters to feet, or taking the log of the 
+	elevations to spread out the use of color.</li>
+	<li><a href="../html/focal_ops.htm">Focal operations</a> work on cells and their neighbors. Examples include&nbsp; 
+	<a href="../html/slope.htm">Slope</a><a href="../html/hillshade.htm">,
+	</a>&nbsp;<a href="../html/hillshade.htm">Reflectance (or hillshade)</a>, and <a href="../html/satb1otj.htm">Filtering</a>.&nbsp; For this type of operation, 
+	missing values for any of the points in the neighborhood can lead to a 
+	missing value in the output layer.&nbsp; </li>
+	<li>Global operations work on the entire layer. </li>
+	<li>Zonal operations work on areas of cells that share the same value.&nbsp;&nbsp; 
+	This can for example be used to reclassify all cells with one value, or 
+	a range of values, to another value.</li>
+</ul>
+<p>Single layer operations can add a constant, take a log or sin, filter the 
+raster, or compute the slope.&nbsp; This can operate on the grid in question in 
+memory, 
+provided you take care not to the overwrite the original layer unless you want 
+to do that.</p>
+<p>Multiple layer operations can include addition/subtraction, 
+multiplication/division, ratios, or statistics like mean or standard deviation. 
+This often requires creating a new grid, because if you replace values 
+in the original grid, that will affect the computation of its neighbors not yet 
+done. Focal operations must create a new grid, since the values depend on the 
+neighborhood which cannot be overwritten.</p>
+<p>Some operations may require several steps in succession.&nbsp; For example, 
+with a noisy DEM, it might be best to <a href="../html/satb1otj.htm">Filter</a> 
+before computing <a href="../html/geomorph_curvature.htm">Curvature</a> because 
+as a second derivative, curvature can be very sensitive to minor noise in the 
+input DEM.</p>
+<p>You can often combine many operations into one step, but often the 
+intermediate grids will be helpful to help you see the effects of each layer.&nbsp; 
+If you have five criteria and their result is no acceptable locations, it helps 
+to look at each layer so you can decide which one to change, or to know why 
+there are no acceptable locations.&nbsp; The ability of the analyst to see the 
+spatial patterns can provide insights the software cannot.</p>
+<p>Examples:</p>
+<ul>
+	<li>Sand dune migration.<ul>
+		<li>You have grids with the locations of sand dunes at three time 
+		periods (T1, T2, and T3).</li>
+		<li>Reclassify them to 1, 2, and 4 respectively for dune locations, and 
+		0 for non dune.&nbsp; Note that if you think in terms of computer bits, 
+		you are setting three bits, one for each of the time periods.</li>
+		<li>Sum the three reclassified grids.</li>
+		<li>You will have potential values of&nbsp; 0, 1, 2, 3, 4, 5, 6, and 7.&nbsp; 
+		From the value you can determine when a dune occurred at each point in the grid: a 
+		0 was never a dune, a 3 was a dune during T1 and T2, and a 7 was a dune 
+		at all three time periods.</li>
+	</ul>
+	</li>
+	<li>Find&nbsp; a location for a helicopter landing zone, with three input 
+	grids.<ul>
+		<li>DEM derived slope grid.&nbsp; You want the slope in the landing zone 
+		to be less than 5%.</li>
+		<li>NLCD.&nbsp; You want the categories 31 or 72.</li>
+		<li>Tiger roads.&nbsp; You want to be within 100 m of a road.</li>
+		<li>Some approaches:<ul>
+			<li>Reclassify slope grid, to make &gt; 5% 0, and less &lt; 5% 1.</li>
+			<li>Reclassify NLCD to 1 for classes 31 or 72, and 0 for the 
+			remainder.</li>
+			<li>Make a<a href="../html/buffering.htm"> buffer</a> for the roads, insure it is a grid, and reclassify 
+			so that points close to the road are 1 and those too far away are 0.</li>
+			<li>Operate on the three grids, with several possibilities<ul>
+				<li>Multiply the three grids.&nbsp; If any layer is a 0, 
+			unacceptable, it will make the result 0. If the value is 0, it is 
+			unacceptable; if it is 1, it meets all three criteria.</li>
+				<li>&nbsp;Sum the three grids.&nbsp; The value will be the 
+			number of criteria met.&nbsp; You want the 3, but if there are not 
+			enough points, you could consider those with a score of 2, or you 
+			could go back and adjust the criteria--maybe another NLCD category 
+			is acceptable, or you can land on a steeper slope.</li>
+				<li>Use&nbsp; boolean operators like (Slope 
+			&lt; 5),&nbsp; (NLCD=31) or (NLCD=72), which will create grids with 0 
+			(false, failed the condition) or 1 (true, met the condition) which 
+			you could name Good_slope and Good_NLCD, and then combine to a new 
+			grid with Good_slope and Good_NLCD and Good_roads.</li>
+			</ul>
+			</li>
+			<li>Make all the unacceptable points missing data.&nbsp; 
+			Then you could start with a clean grid, and successively mask out 
+			all the missing data in the other grids.&nbsp; Whatever was left 
+			would be acceptable.</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+<hr>
+<p>In MICRODEM, map algebra operations are available:</p><ul>
+            <li><a href="../html/micr0alv.htm">Calculate Menu</a>, 
+			<a href="../html/derivative_grids.htm">Derivative Grid</a></li>
+            <li><a href="../html/raster_gis.htm">Raster GIS menu</a>, 
+			<a href="../html/derivative_grids.htm">Create derivative grid</a></li>
+			<li><a href="../html/raster_gis.htm">Raster GIS menu</a>, 
+			<a href="../html/mult_grid_math.htm">Multiple grid arithmetic</a></li>
+			<li><a href="../html/edit_menu.htm">Edit</a> menu,
+			<a href="../html/single_grid_arithmetic.html">Single grid arithmetic</a></li>
+			<li><a href="../html/edit_menu.htm">Edit</a> menu,
+			<a href="../html/edit_mark_missing.htm">Mark as missing</a></li>
+        </ul>
+
+<hr>
+
+<p align="right"><em>Last revision 11/23/2017</em></p>
+	
+	
+	
+	
+	<p>&nbsp;</p>
+
+</body>
+
+</html>
