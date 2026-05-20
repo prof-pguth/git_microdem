@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>ICESat-2</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-family: "Times New Roman", serif;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ICESat-2</h1>
+<p>&nbsp;</p>
+<p><img alt="" src="selection_map.png" /></p>
+<p>Selection map at <a href="http://openaltimetry.org/">http://openaltimetry.org/</a>.</p>
+<ul>
+	<li>Tracks in red, with the selected track in green.</li>
+	<li>Clicking on a track shows the available dates, quarterly.</li>
+	<li>Picking a date shows the lidar beams in colored dots for the 6 beams, in 
+	three pairs. <span class="auto-style1">&nbsp;</span><span class="auto-style1" style="font-family: &quot;Times New Roman&quot;,serif; mso-fareast-font-family: SimSun; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN; mso-bidi-language: AR-SA">The 
+	6 beams, in pairs 90 m apart, with strong and weak beams, and 3.3 km from 
+	the next pair of beams. </span></li>
+	<li class="auto-style2">Some dates will have no data or partial data, 
+	depending on weather.</li>
+</ul>
+<p><img alt="" height="290" src="view_popup.png" width="411" /></p>
+<p>Right click on track, and pick view elevation profile.</p>
+<p>Cycle through all the dates, saving the CSV files.&nbsp; Insure you do not 
+change to the Photon View, or to a product other than ATL08.&nbsp; This is a
+<a href="../lvis/lvis_icesat.html">manual process of picking tracks and saving 
+them.</a></p>
+<p>For the photon ATL03 data, you must select each beam you want and download 
+them indivudually.</p>
+<p>&nbsp;</p>
+<p><img alt="" src="csv_download.png" /></p>
+<p>Fields as downloaded in CSV format from <a href="http://openaltimetry.org/">http://openaltimetry.org/</a>.&nbsp;
+</p>
+<p>&nbsp;</p>
+<p><img alt="" src="converted.png" /></p>
+<p>File after merging and converting individual dates and tracks (batch 
+process).</p>
+<ul>
+	<li>Removed unneeded fields (segments, h5 file names)</li>
+	<li>Field names comply with dBase length requirements</li>
+	<li>Reasonable decimals for elevations (cm instead of micrometers)</li>
+	<li>EGM2008 correction applied to ellipsoid heights</li>
+	<li>Top of canopy elevation computed</li>
+</ul>
+<p><img alt="" src="alaska_map.png" /></p>
+<p>Alaska test region with ICESat-2 data overlain</p>
+<ul>
+	<li>Four tracks go through the area (lower latitude locations would have 
+	many fewer because of orbital geometries, and the beams would be farther 
+	apart).</li>
+	<li>Data for 13 dates</li>
+	<li>Data for 4594 points.&nbsp; A 1x2" DEM covering the area has 220,000 
+	points, so there is about 2% coverage.</li>
+</ul>
+<p><img alt="" height="378" src="single_day.png" width="405" /></p>
+<p>Coverage for a single day's orbit.</p>
+<p><img alt="" height="380" src="add_z.png" width="1136" /></p>
+<p>Elevations added for the three global DEMs via bilinear interpolation.</p>
+<p>
+<span class="style2" style="font-size: small; color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;, serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(128, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+Guth, P. L., &amp; Geoffroy, T. M. (2021; <span>&nbsp;</span><a href="https://doi.org/10.1111/tgis.12825">https://doi.org/10.1111/tgis.12825</a></span><span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;, serif; font-size: small; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(128, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">&nbsp;&nbsp;&nbsp;&nbsp;<span>&nbsp;</span></span><a href="https://www.usna.edu/Users/oceano/pguth/website/reprints_public/guth_and_geoffroy_submitted_april_2021_tgis.pdf" style="font-family: &quot;Times New Roman&quot;, serif; font-size: small; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(128, 255, 255);">Paper 
+as submitted in January 2021).</a> show that the global DEMs sample 
+somewhere between the ICESat-2 ground and top canopy elevations.</p>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revised 1/15/2022</em></p>
+
+</body>
+
+</html>

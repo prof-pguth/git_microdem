@@ -1,0 +1,194 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>National Map</title>
+</head>
+
+<body>
+
+<h1>USGS National Map</h1>
+
+<ol>
+	<li>Open by:<ul>
+		<li>Point browser to 
+		<a href="https://apps.nationalmap.gov/downloader/">
+		https://apps.nationalmap.gov/downloader/</a> </li>
+	</ul>
+	</li>
+</ol>
+<table border="2">
+	<tr>
+		<td>
+		<img height="116" src="../../images/national_map/nav.gif" width="677">&nbsp;</td>
+		<td>To download data
+	<ul>
+		<li>Zoom to your area of interest; </li>
+		<li>Easiest to just 
+		download the entire screen.</li>
+		<li>You can upload a zipped shape file (insure you get all the files) 
+		that will zoom the map to your area of interest.</li>
+	</ul>
+		&nbsp;</td>
+	</tr>
+	<tr>
+		<td>
+		<img height="912" src="../../images/national_map/products.gif" width="545">&nbsp;</td>
+		<td>
+	<ul>
+		<li>Select available data products.&nbsp; The most useful will be:<ul>
+						<li>Elevation Products (3DEP): this is <b>
+						<a href="../../html/ned.htm">3DEP/NED</a></b> in 1&quot;, 1/3&quot; 
+						available nationwide;&nbsp; and 1/9&quot;, and the 1 m DEM 
+						available in some locations.&nbsp; Different spacing in 
+						Alaska.</li>
+		</ul>
+		</li>
+		<ul>
+			<li>Elevation Source Data (3DEP): LAS files.&nbsp; These 
+						are large</li>
+			<li>Names--Geographic Names Information System (GNIS, or 
+						<a href="../../html/download_convert_gaz.htm">gazetteer</a>)</li>
+			<li>US Topo</li>
+			<li>Historical Topographic Maps</li>
+		</ul>
+		<li>Generally less useful</li><ul>
+			<li>Hydrography NHD: you probably want the shapefiles for Dynamic 
+						Extract and Dynamic extract with flow table.</li>
+		</ul>
+		<li>Select format.&nbsp; If possible you want Geotiff or
+		<a href="../../html/shapefile.htm">Shapefile</a> as the best formats for use in MICRODEM.&nbsp; In 
+		particular avoid the Geodatabase, which is a 
+		proprietary ESRI format for Arc.&nbsp; Some other formats will require 
+		that that you have <a href="../../html/adf_grids.htm">GDAL</a></li>
+	</ul>
+		<br><br></td>
+	</tr>
+	<tr>
+		<td>
+		<img height="668" src="../../images/national_map/elevs.gif" width="502">&nbsp;</td>
+		<td>
+		<p>Elevation Products (3DEP): For the elevation data there are several formats, all of which work 
+		with varying challenges.&nbsp; All will be zipped initially.</p>
+		<ul>
+			<li>Geotiff</li>
+			<li>IMG select the IMG file and
+			<a href="../../html/adf_grids.htm">GDAL</a> converts to a Geotiff 
+			which will open.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img height="379" src="../../images/national_map/llidar.gif" width="500">&nbsp;</td>
+		<td>
+		<p>Elevation Source Data (3DEP): LAS files.&nbsp; </p>
+		<ul>
+			<li>Pick lidar point cloud under data, and select the region</li>
+			<li><a href="#Download_options">Download options</a></li>
+		</ul>
+		<p><br></p>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img height="245" src="../../images/national_map/imagery.gif" width="524">&nbsp;</td>
+		<td>
+		<a href="../../html/gis/high_res_usgs_imagery.htm">High 
+			resolution imagery</a>.&nbsp; 
+			<ul>
+				<li>Imagery--1 foot (HRO)&nbsp;.This imagery may have the choice of multiple dates, some of 
+						which will include 4 bands with IR for vegetation 
+						analysis.</li>
+				<li>Imagery--1 meter (NAIP).&nbsp; Newer NAIP might have higher 
+				spatial resolution.</li>
+			</ul>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" src="national_map1.png"></td>
+		<td>
+		<p>Zoom map to show your area.</p>
+		<p>Pick the option for &quot;Current extent&quot; on the top of the mpa.</p>
+		<p>&nbsp;</p>
+		<p>You can upload a KML file or shapefile.&nbsp; For the KML option, you 
+		get a hug buffer around the area (3-5 times the number of tiles actually 
+		in the area).&nbsp; If you then manually draw a polygon around the KML 
+		file, you get the right number.</p>
+		<p>Find products.</p>
+		<p>&nbsp;</p>
+		<p><a href="#Download_options">Download options</a></p>
+		<p>&nbsp;</p>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="530" src="national_map2.png" width="700"></td>
+		<td>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<h3><a name="Download_options">Download options</a></h3>
+		<p>Options here have been changing significantly</p>
+		<p>Should be able to</p>
+		<ul>
+			<li>Download each tile individually. Download link LAZ in blue on 
+			the right lets you 
+			choose the directory to download a single file. Easiest choice if you want just a few 
+			file.</li>
+			<li>Batch download<br>
+			<ul>
+				<li>From the results of the search or the cart, export URLs to text 
+				(TXT icon)</li>
+				<li>Use <a href="../../html/batch_download.htm">Batch Download</a> 
+			on <a href="../../html/tbme83sn.htm">Data
+        Manipulation</a> form if you get the TEXT file.</li>
+			</ul>
+			</li>
+			<li>You must pick 
+		the data you want and add to your cart (you use +All instead of checking 
+		each individually). Then view cart.&nbsp; You can download all files 
+			together.</li>
+		</ul>
+		<p>Recently (but not now) the <a href="../../html/uget.htm">uget</a> option was the 
+		only one that worked; it is available from your cart where the 
+		individual download option is not present.&nbsp; Use uGet only if you 
+		need a lot of files.</p>
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<p><br></p>
+
+<hr>
+<h2><b>National Map Alternatives&nbsp; </b></h2>
+
+<p>The table below shows alternatives to the National Map if the site is down or unresponsive.&nbsp; These might 
+also be faster and easier to use.&nbsp; Most options now require you to 
+get pre-packaged tiles, instead of packaging the region on demand that was 
+possible with the Seamless Server model.</p>
+<table border="2">
+	<tr style="font-weight: 700">
+		<td>Data layer</td>
+		<td>Alternative source</td>
+		<td>Comments</td>
+	</tr>
+	<tr>
+		<td><a href="../../html/gazetteer.htm">Gazetteer</a></td>
+		<td> <font face="Times New Roman" size="3">
+				<a href="http://geonames.usgs.gov/">USGS NAMES server</a></font></td>
+		<td>Alternative to Gazetteer for some applications.&nbsp;</td>
+	</tr>
+	</table>
+
+<hr>
+
+<p align="right"><i>Last revision 1/27/2025</i></p>
+
+</body>
+
+</html>

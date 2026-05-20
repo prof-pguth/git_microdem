@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Processing steps for LVIS Level</title>
+</head>
+
+<body>
+
+<h2>Processing steps for LVIS Level 2 data</h2>
+<ul>
+	<li>Get the Level 2 ASCII text files at
+	<a href="https://lvis.gsfc.nasa.gov/Gabon_2016.html">
+	https://lvis.gsfc.nasa.gov/Gabon_2016.html</a> </li>
+	<li>In a text editor<ul>
+		<li>Remove the first twelve lines with comments</li>
+		<li>Remove the "#" character from the 13th line</li>
+		<li>Rename the incident angle field name (it is too long for dbASE).</li>
+	</ul>
+	</li>
+	<li>Import the text file in MICRODEM It will be converted to a DBF file, which 
+you should use going forward.</li>
+</ul>
+<hr />
+<h2>References&nbsp;</h2>
+<ul>
+	<li>Metadata:
+	<a href="https://lvis.gsfc.nasa.gov/data_sets/2016_gabon/LVIS_GabonAfriSAR_data_release.pdf">
+	https://lvis.gsfc.nasa.gov/data_sets/2016_gabon/LVIS_GabonAfriSAR_data_release.pdf</a>
+	</li>
+	<li>Tutorial to use data in QGIS:
+	<a href="https://lvis.gsfc.nasa.gov/workshop/LVIS_QGIS_Tutorial_Gabon.pdf">
+	https://lvis.gsfc.nasa.gov/workshop/LVIS_QGIS_Tutorial_Gabon.pdf</a> </li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 12/13/2017</em></p>
+
+</body>
+
+</html>

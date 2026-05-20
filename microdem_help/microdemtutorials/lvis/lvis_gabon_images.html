@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>LVIS Gabon Images</title>
+</head>
+
+<body>
+
+<h1>LVIS Images</h1>
+<p>The LVIS returns can be plotten on a map, with any of the parameters colored.&nbsp; 
+These are from the survey of Gabon.</p>
+<p>The maps can display two things:</p>
+<ul>
+	<li>How the data was collected</li>
+	<li>The terrain, and the structure of the forest.</li>
+</ul>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="363" src="lvis_pulse_pattern.png" width="464" /></td>
+		<td>The scan pattern from LVIS, which is parallel to the flight path.<br />
+		<br />
+		The aircraft flew NW to SE.</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="292" src="lvis_pulse_top_bottom.png" width="464" /></td>
+		<td>Because LVIS records the top and base of the waveform, software can 
+		compute the horizontal distance traversed by the wave.<br />
+		<br />
+		This connects the two points, <a href="../../html/db_edit.htm">EDIT 
+		button</a>,&nbsp; <b><a href="../../html/foield_geomtery.htm">Field geometry</a>, </b>
+		Distance between two points in record<br />
+		<br />
+		The distance is typically &lt; 2 m</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_scan_angle.png" width="464" /></td>
+		<td>Unlike typical scanning lidars which scan on either side of nadir, 
+		LVIS scans to the front of the aircraft.&nbsp; Points directly along the 
+		flight path are about 3 degrees, which those on the edges of the swath 
+		are about 8 degrees.&nbsp; This angle is the number of degrees, measured 
+		from vertical (off-nadir).&nbsp; This is never very large, and accounts 
+		for the small ground footprint of the returns in each pulse.</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_zg.png" width="464" /></td>
+		<td>ZG (ground elevation): --This would be a DTM if converted to a grid.&nbsp; The low 
+		points are streams on the SE edge of the map (nearly the same height in 
+		ZT, and with a CHM near 0).</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_zt.png" width="464" /></td>
+		<td>ZT: -- elevation at the top of the canopy, this would be a DSM if converted to a grid</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_rh100.png" width="464" /></td>
+		<td>RH100, or CHM.&nbsp; Height from which cumulative 100% of the energy 
+		is returned.</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_azimuth.png" width="403" /></td>
+		<td>Azimuth of laser pulse.&nbsp; The aircraft flight path is in the 
+		center, to the SE, about 130 degrees, and it scans to the left and 
+		right.&nbsp; You should think about this geometry with the incident 
+		angle.</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_range.png" width="464" /></td>
+		<td>
+		<p>Range of&nbsp; pulse.&nbsp; This portion of the record shows:<br />
+		<br />
+		</p>
+		<ul>
+			<li>Steady climb of the aircraft as it flew SE</li>
+			<li>With each pulse, the smallest range is at the center, and the 
+			largest on either side as the laser swung left and right.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="434" src="lvis_shot_number.png" width="464" /></td>
+		<td>SHOT or pulse NUMBER.&nbsp; The increase in numbers shows the flight 
+		direction, NW to SE. Not particularly useful, but shows the direction of 
+		flight.</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revision 6/30/2020</em></p>
+
+</body>
+
+</html>

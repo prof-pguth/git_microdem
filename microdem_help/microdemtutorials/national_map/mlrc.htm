@@ -1,0 +1,79 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>MLRC--NLCD Download</title>
+<style type="text/css">
+.style1 {
+				border-style: solid;
+				border-width: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>MLRC--NLCD Download</h1>
+<p>&nbsp;
+				&nbsp;</p>
+<p>Map view and the ability 
+to subset small regions.&nbsp; </p>
+<ul>
+					<li><a href="https://www.mrlc.gov/viewer/">
+					https://www.mrlc.gov/viewer/</a>&nbsp; allows you to subset 
+					the data; you want the land cover.&nbsp; Pick the desired region, and it will be prepped 
+					and you will get an email to download with all 8 years.&nbsp; You may get a 
+					larger area than requested (but it will be Albers equal area 
+					projection, and you select on a cylindrical projection)</li>
+					<li>You 
+					can get all 7 years from 2001 to 2019&nbsp; of NLCD as a 10.2 GB download.&nbsp; 
+					To open:
+					<ul>
+						<li>File, import, GDAL raster&nbsp; subset to match map 
+						extent</li>
+						<li>Load that file in QGIS, and then export a smaller 
+					region as a Geotiff for use in MICRODEM.</li>
+					</ul>
+					</li>
+					<li>There are two versions.&nbsp; The science product has 
+					two experimental, transitional forest categories (45 and 
+					46).&nbsp; Unless you need them, don't get them since it 
+					just doubles the size of an already large download.</li>
+				</ul>
+<table border="1" width="100%" class="style1">
+	<tr>
+		<td>
+		<img height="789" src="../../images/mrlc/new_step1.gif" width="337"></td>
+		<td>
+		<p>&nbsp;</p>
+		<p>Zoom in the to area desired.&nbsp; The map can be resistant to 
+		dragging the viewport; just be persistent.</p>
+		<p>Open the download tool in the upper right of the map.</p>
+		<p>&nbsp;</p>
+		<p>Pick &quot;Place&quot; in the lower left, which then changes to &quot;clear&quot;.</p>
+		<p>Drag the selection box to where you want it.</p>
+		<p>Check that the bounding box is correct.&nbsp; Since you won't 
+		see the files for a day, you should be sure you are getting the right 
+		area.</p>
+		<p>Pick land cover, and all land cover years.</p>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>
+		<p>Keep track of where you saves the file, and being able to determine 
+		which data set it is.&nbsp; The file names for the ZIP, and the extract, 
+		is a random string of numbers.&nbsp; The files should start with 
+		NLCD_20NN for the year.&nbsp; They will be Geotiffs.</p>
+		</td>
+	</tr>
+	</table>
+<hr>
+
+<p align="right"><i>Last revision 3/21/2023</i></p>
+
+</body>
+
+</html>

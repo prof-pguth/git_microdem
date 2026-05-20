@@ -1,0 +1,331 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>GIS Joins Lab</title>
+<style type="text/css">
+.style1 {
+				text-align: left;
+}
+.style2 {
+				font-size: small;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><font size="5"><b>GIS Joins Lab</b></font><p class="style1"><b>This lab will teach:</b>
+
+<ul>
+  <li>
+
+Downloading Census Bureau economic data, and joining it to shape 
+files.&nbsp; <a href="../../html/link_db.htm">Joining databases</a> is an important GIS concept.</li>
+	<li>
+
+Computing areas for shape files, and population densities. 
+
+  </li>
+	<li>
+
+Making maps showing a database parameter</li>
+</ul>
+
+<b>Tasking:</b>
+<ul>
+	<li>
+	Your best friend from high school wants to set up a dating 
+	service in your county, and wants your help doing a GIS analysis on where in the 
+	county efforts should be concentrated.&nbsp; You are to pick either men or 
+	women as the target audience, and must:
+	<br>
+	<ul>
+		<li>
+		Get the following data&nbsp; from the SF1 data for the 2010 Census:<ul>
+						<li>Total population</li>
+						<li>Male to female ratio (either overall, or an 
+						interesting age category)</li>
+						<li>Age distribution by gender (limit to 
+						interesting one or two interesting age categories)</li>
+		</ul>
+		</li>
+		<li>
+		Get at least one additional data set from the American Community Survey; 
+		you might consider one of the following.&nbsp;
+		<ul>
+						<li>S1501 Educational Attainment</li>
+						<li>B08302 Time leaving home to 
+												go to work</li>
+						<li>B23006, Educational 
+												Attainment by Employment Status</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+<h2>Deliverables</h2>
+<ul>
+	<li>If you country is large, show maps of only a portion of the 
+	county.&nbsp;
+		Prepare maps showing:<ul>
+	<li>Population of the target gender in the county.</li>
+	<li>Population density of the target gender in the 
+		county.</li>
+	<li>Ratio of men to women (or women to men) in the 
+		county, by age group if you want.</li>
+	<li>Your additional data set.</li>
+</ul>
+	</li>
+</ul>
+<ul>
+	<li>
+	Use at least two different mechanisms to show results
+	on the maps, such <a href="../../html/gis_color_db_field.htm">Color
+      code by DB field</a> or <a href="../../html/gis_scaled_symbols.htm">
+			<strong style="font-weight: 400">Proportional 
+			Scale Symbols</strong></a>.</li>
+	<li>
+	Put at least one map on&nbsp; DEM reflectance base map, and one on NLCD 
+	using <font size="3"><a href="../../html/gray_sub.htm">Grayscale and subdue map</a>, 
+	with adjusted</font>
+	<a href="../../html/layer_opacity.htm">opacity for the GIS layer</a>.</li>
+	<li>Discussion<ul>
+		<li>What geometry level (block, block group, or tract) would 
+					be best to use, and why?&nbsp; 
+					Include a table with the number of polygons at each level 
+					for your county, 
+					and the mean and median sizes for each in both square 
+					kilometers and square miles.&nbsp; For the 2000 Census, you 
+					could get data for each geometry.&nbsp; For the 2010 census 
+					this is no longer true, and we can only get the tracts. Why do you 
+					think the Census Bureau no longer distributes detailed data 
+					for the blocks?&nbsp; You might consider the average 
+					population for polygon at the different levels, and privacy 
+		issues.</li>
+		<li>What are the advantages and disadvantages of the 
+					different ways to display the map data (color coding and 
+					scaled symbols)?</li>
+		<li>Which is better, population numbers or 
+					<a href="../../html/pop_density.htm">population density</a>, for a 
+					map of the county?&nbsp; Why?</li>
+		<li>What names did you pick for two of the fields that were 
+					not converted?&nbsp; How hard or easy was this, both in 
+					terms of the procedure, and in finding a &quot;good&quot; name?</li>
+	</ul>
+	</li>
+	<b>
+<h2 style="height: 19px"><b>Data Acquisition</b></h2>
+<table border="1">
+	<tr>
+		<td>Download, Do early</td>
+		<td>Data Layer</td>
+		<td>File name and location on your hard drive</td>
+	</tr>
+	<tr>
+		<td>Yes (should be simple)</td>
+		<td>Download Tiger <a href="../../html/census/census_data_geometry.htm">Census Blocks shapefile</a></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="../../html/subse_shape_files.htm">Subset Blocks shapefile</a> to just your county (<a href="../../html/db_filters.htm">filter</a> with county FIPS 
+		codes) and save</td>
+		<td>&nbsp;</td>
+	</tr>
+
+
+	<tr>
+		<td>Yes (should be simple)</td>
+		<td>Download Tiger <a href="../../html/census/census_data_geometry.htm">Census Block groups shapefile</a></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="../../html/subse_shape_files.htm">Subset Block groups shapefile</a> to just your county 
+		and save</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Yes (should be simple)</td>
+		<td>Download Tiger <a href="../../html/census/census_data_geometry.htm">Census Tracts shapefile</a></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="../../html/subse_shape_files.htm">Subset tracts shapefile</a> to just your county 
+		and save</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Yes (big but simple)</td>
+		<td>Download National coverage <a href="../../html/sf1.htm">Census Bureau SF1 shapefile</a> 
+		by tracts (it has a metadata file with it)</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="../../html/subse_shape_files.htm">Subset SF1 shapefile</a> to just your county (<a href="../../html/db_filters.htm">filter</a> with county and 
+		state FIPS codes, which are the first 5 characters of the GEOID field, 
+		so use GEOID='24003*') and save.&nbsp; Because of the size of this file, the subset is 
+		critical (or you will sit around a lot).</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="../../html/change_db_field_names.htm">Rename fields in 
+		subset SF1</a></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Yes; will be complicated</td>
+		<td><a href="../../html/am_comm_surv.htm">Download American Community 
+		Survey Data</a> for your county, by tracts</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="../../html/import_new_am_fact_find.htm">Modify CSV file 
+		from American Community survey</a> (rename a few fields, and delete the 
+		rest)</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>Import American Community survey as DBF file.&nbsp; If you have a 
+		coastal region, there are often tracts with 0 population.&nbsp; These 
+		will skew your color coding by field, and it will probably improve your 
+		map if you filter them out and perhaps save the shapefile without them.<br>
+		<a href="../../html/add_lead_0.htm"><b>Add leading zeros</b></a> to 
+		repair Zip or FIPS codes.</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+<hr>
+<h2 style="height: 19px">Data analysis:</h2>
+	</b>
+<ol>
+	<li>Open a&nbsp; map.<ul>
+    <li><img src="../../images/new%20dem.gif" width="32" height="32">
+        <a href="../../html/tbme5iy6.htm">New DEM</a>.&nbsp; With a 
+	reflectance map, this provides a very nice background, but you can use any 
+	base map you want.&nbsp; The TIGER edges on top might provide additional 
+	context.&nbsp; You will be trying to understand where in the county things are 
+	happening, and a good base map really helps. 
+	<ul>
+					<li>
+					<img border="0" src="../../images/db_map.png" width="24" height="24">
+					<a href="../../html/tbme9dpq.htm">&nbsp;</a><a href="../../html/data_base.htm">Database</a>: Open the tract&nbsp;<a href="../../html/shapefile.htm">shapefile</a> 
+		as an overlay atop another map</li>
+	</ul>
+	</li>
+		<li><b>
+		<img border="0" src="../../images/shp_btn.gif" width="32" height="30">
+		</b>
+		<a href="../../html/open_shape_map.htm">Open 
+		shapefile map</a> that covers just the region of the 
+		<a href="../../html/shapefile.htm">shapefile</a>. </li>
+	</ul></li>
+	<li><a href="../../html/db_join.htm">Link/join the demographic data</a> to the
+	<a href="../../html/shapefile.htm">shapefile</a> with region outlines.&nbsp; 
+	You must correctly match the geometry with the correct demographics (you 
+	cannot match block groups with tracts, for instance) for the ACS data.<ul>
+		<li>In the census demographic data, the linking field is GEO_ID2, unless you renamed it.</li>
+	</ul></li>
+	<li>Plot maps of parameters&nbsp; from the <font size="3">
+	<a href="../../html/db_plot.htm">&quot;Plot&quot;
+button menu </a>on the </font> database 
+	<a href="../../html/database_table_display.htm">table display
+window</a>,<ul>
+		<li> <a href="../../html/gis_color_db_field.htm">Color
+      code by DB field</a></li>
+		<li><a href="../../html/gis_scaled_symbols.htm">Proportional symbols 
+			plotting</a> </li>
+		<li>If there are tracts along the coast with 0 population, you should 
+		filter then out. Otherwise they can cause a lot of color to be wasted, 
+		since the lowest actual value should be 0 rather than the artificial 0.</li>
+		<li>Insure that you consider <a href="../../html/layer_opacity.htm">
+		opacity</a> for the display.</li>
+	</ul>
+	</li>
+	<li>Computations you want<ul>
+		<li><a href="../../html/shapefile_areas.htm">Compute area.</a> </li>
+		<li>Convert area to square miles:<ul>
+				<li>
+				<a href="../../html/db_edit.htm">Edit</a>, 
+				<a href="../../html/field_arithmetic.htm">Field arithmetic</a>, Copy numeric field 
+				to make a new field. You could just operate on the original 
+				field, but you must be careful that the size and precision of 
+				the field will work.&nbsp; In this case, square kilometers and 
+				square miles are close enough that it should work.&nbsp; If you 
+				were converting square meters to square kilometers, you need a 
+				much shorter field, but probably many more decimal places.
+				</li>
+				<li><a href="../../html/db_edit.htm">Edit</a>, 
+				<a href="../../html/field_arithmetic.htm">Field arithmetic</a>, 
+				Multiply field by constant (Google the 
+				conversion factor)
+				</li>
+</ul>
+		</li>
+		<li>Compute ratio (e.g. <a href="../../html/pop_density.htm">population density</a>, or male/female ratio):&nbsp; 
+		<a href="../../html/db_edit.htm">Edit button</a>,&nbsp;
+		<a href="../../html/field_arithmetic.htm">Field arithmetic</a>, Quotient 2 Fields (ratio)</li>
+		<li>Get the mean and median of the area field with
+		<a href="../../html/db_stats.htm">Stats</a>, Moments, 
+		or <a href="../../html/db_click_field.htm">Double clicking on field name</a> 
+		and picking Field stats.</li>
+	</ul>
+	</li>
+	<li><a href="../../html/db_click_field.htm">Double click on</a> 
+the area field header, and get Field statistics (min, max, mean, etc.)&nbsp; 
+Make a table with this information</li>
+	<li>Adjust the color in the underlying map to de-emphasize the 
+	background and let this data dominate, but the background helps the viewer 
+	locate the points of interest.<ul>
+		<li><font size="3"><a href="../../html/gray_sub.htm">Grayscale and subdue map</a></font></li>
+	</ul>
+	</li>
+</ol>
+
+	<b>
+
+	<br>
+	<table border="1" id="table1">
+		<tr>
+			<td>
+			<p align="center"><a href="../../html/gis_color_db_field.htm">Color
+      code by DB field</a></td>
+			<td>
+			<p align="center"><a href="../../html/gis_scaled_symbols.htm">
+			<strong style="font-weight: 400">Proportional 
+			Scale Symbols</strong></a></td>
+		</tr>
+		<tr>
+			<td>
+			<img border="0" src="../../images/link_db/live_births.gif" width="324" height="270"></td>
+			<td>
+			<img src="../../images/SC_SYM_MAP.GIF" width="400"
+        height="300"></td>
+		</tr>
+	</table>
+
+<hr>
+
+<p><a href="../../html/problems_with_csv_import.htm">CSV file import problems</a></p>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 9/13/2018</em></p>
+	
+	
+	
+	
+	</body>
+</html>
