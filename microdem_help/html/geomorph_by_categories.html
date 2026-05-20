@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Geomorphometry by categories</title>
+</head>
+
+<body>
+
+<h1>Geomorphometry by Categories</h1>
+<p>This is still experimental, and the top row of graphs might not be created</p>
+<p>With the grid with categories as the active map, On <a href="raster_gis.htm"> &nbsp;Raster GIS operation</a>, 
+pick this option</p>
+<p><img height="156" src="../images/geomorph_categories.png" width="501" /></p>
+<p>Works with two categories of grid</p>
+<ul>
+	<li>Numerical grid with a <a href="color_pal.htm"><b>Fixed color 
+					palette
+                        from table</b></a>
+	<ul>
+		<li>Display numerical grid with a color scale like dNBR and NDVI.</li>
+		<li>&quot;Numeric grid with VAT to byte grid with codes&quot; option on
+			<a href="edit_menu.htm">Edit,</a> Reclassify menu.&nbsp; This makesa 
+		new grid byte codes, and links a VAT table, with the color scale.</li>
+	</ul>
+	</li>
+	<li>Grid with integer codes and a <a href="vat_grid_disp.htm">VAT</a> such 
+	as vegetation types</li>
+</ul>
+<p>Get histograms of elevation, slope, and roughness for each classification code 
+in the VAT.&nbsp; You must selecte the VAT grid as the active 
+map, and then select a DEM that covers the area.</p>
+<p>There will be 8 graphs created</p>
+<ul>
+	<li>On the top row, the percentage of the area in each bin of the histogram 
+	that falls within each category.&nbsp; This can blow up on the tails of the 
+	distribution (the left side of the graphs on the left side, and the right 
+	side of the next two graphs)</li>
+	<li>On the bottom row above, histograms for elevation, slope, roughness, and 
+	aspect for each of the categories in the VAT</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 3/25/2023</em></p>
+
+</body>
+
+</html>

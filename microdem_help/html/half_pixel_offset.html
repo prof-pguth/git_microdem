@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Half Pixel Offset</title>
+</head>
+
+<body>
+
+<h1>Half Pixel Offset</h1>
+<table border="2">
+	<tr>
+		<td>
+		<img height="711" src="../images/half_pixel_shift.png" width="649" /></td>
+		<td>
+		<ul>
+			<li>"Same" pixel by coordinates.<ul>
+				<li>Blue is COP, where the posting points are the center of the 
+				support area</li>
+				<li>Red is ALOS, where the points points are a corner of the 
+				support area</li>
+			</ul>
+			</li>
+			<li>Dots mark the position of approximately 900 (less away for the 
+			equator, where the pixels are clearly rectantular 1 m UTM pixels in 
+			each 1 arc second pixel</li>
+			<li>Grids rotated slightly (stairstepping of points) since the UTM 
+			points do not match with the arc-second grid</li>
+			<li>Only ¼ of the points are common to “corresponding” pixels</li>
+			<li>Cannot easily overlay the two maps without seeing the offset 
+			shift</li>
+		</ul>
+		<p>&nbsp;</p>
+		<p>Two factors determine this, which makes marks two grid origin models, 
+		named for the SRTM and ALOS, the first 1" global DEMs to use them</p>
+		<ul>
+			<li><a href="PixelIsWhat.html">PixelIsPoint/PixelIsArea</a> </li>
+			<li>Where the nominal corner of the DEM is located, at the center or 
+			corner of a pixel</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<p>DEMIX dealing with the offset&nbsp;issue</p>
+<ul>
+	<li>Create reference DEMs to match ALOS (pixel-is-area) and COP 
+	(pixel-is-point, which also includes&nbsp; FABEM, SRTM, NASADEM, and ASTER)</li>
+	<li>Avoid trying to do direct map comparison of ALOS and COP</li>
+	<li><a href="https://zenodo.org/record/8057703">Use half-second grids to 
+	perform direct map comparison</a></li>
+</ul>
+
+<table style="width: 100%">
+	<tr>
+		<td></td>
+	</tr>
+	<tr>
+		<td>
+		<p>Pixel centroids.</p>
+		<ul>
+			<li>Two 15 seconds grids (ETOPO 2024 and SRTM15+) have pixels in the same position.</li>
+			<li>The 1 second grids have pixels in the different positions, which 
+			is controlled by the <a href="PixelIsWhat.html">comined effect of 
+			two choices, the pixel representation and the chosen corner 
+			location.</a></li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p><a href="../demix_sg2/wine_contest.html">DEMIX main page</a></p>
+<p><a href="../html/microdem.htm">MICRODEM home page</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 4/17/2024</em></p>
+
+</body>
+
+</html>

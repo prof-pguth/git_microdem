@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Global Multi-Resolution Topography</title>
+<style type="text/css">
+.style1 {
+				font-size: medium;
+				font-style: italic;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>
+	&nbsp;<a href="http://www.marine-geo.org/portals/gmrt/">Global Multi-Resolution 
+Topography</a></h1>
+<p>
+	Bathymetric grids, with high resolution multibeam where available, and radar 
+	altimetry/single beam where nothing better exists.</p>
+
+<ul>
+    <li>Connect to&nbsp;&nbsp; <a href="https://www.gmrt.org/GMRTMapTool/">
+	https://www.gmrt.org/GMRTMapTool/</a> </li>
+	<li>Use the small black square icon on the top center to graphically select 
+	a region.</li>
+	<li>If you want to merge regions, type in coordinates.&nbsp; At the highest 
+	resolution (stated as about 61 m, but actually in arc seconds), you can get 
+	grids over 150 MB in size.</li>
+	<li>Click on the mask below Base layers in the upper right to see the ship 
+	tracks and where there will be high resolution bathymtery.&nbsp; The grids 
+	include land, but typically have a gap in shallow water where<a href="../microdemtutorials/bathy/multi_grids.htm"> 
+	mulitbeams can only collect very narrow swaths</a>.</li>
+	<li>Pick if you want <a href="../microdemtutorials/bathy/multi_grids.htm">
+	masked or unmasked data.</a></li>
+	<li>Pick geotiff format.</li>
+	<li>Pick maximum&nbsp; grid resolution.&nbsp; If the resolution in the 
+	upper right does not match what you picked, your region is too large, and 
+	you should select a smaller region.&nbsp; You should be able to get a grid 
+	size of about 61 m.<ul>
+		<li>You can <a href="loadmany.htm">Open and merge DEMs</a>, so if you 
+		cannot get all of your region at 61 m resolution, you can break it into 
+		smaller segments for the download, and then merge them.</li>
+		<li>If you have a really large region, you can get a lower resolution 
+		for the entire area (or just use <a href="demb9w6s.htm">
+		<span class="auto-style1">ETOPO1</span></a>, 
+		and then get the 61 m resolution for interesting areas.</li>
+		<li>Of course the 61 m resolution only makes sense if the area has good 
+		multibeam bathymetery.</li>
+	</ul>
+	</li>
+	<li>Format<ul>
+		<li>The ArcASCII version is larger (twice the size of the Geotiff)and 
+		loads more slowly, but works correctly as of 5/4/2021.&nbsp; Do a <strong><a href="save_dem.htm">Save DEM</a></strong> 
+		as and pick the MD format after it loads.</li>
+		<li>Other formats will be much harder to use.&nbsp; The GMT v3 Compatible NetCDF works if you have 
+	<a href="adf_grids.htm">GDAL</a> installed.&nbsp; You might have to multiply 
+		the values by -1.</li>
+		<li>The Geotiff&nbsp; export made multiple changes 
+		during spring 2019 and both MICRODEM and QGIS had problems.&nbsp; This 
+		appeared to be fixed.&nbsp; As of 5/4/2021, the Geotiffs have no 
+		registration information, just the corner coordinates but no indication 
+		of the projection.&nbsp; </li>
+	</ul>
+	</li>
+</ul>
+
+<p><a href="ot_global_dems.htm">OpenTopography also has GMRT</a>, with limited 
+registration information.</p>
+
+<p><img src="../images/new%20dem.gif" width="32" height="32">
+			<a href="tbme5iy6.htm"><b>Open Grid/DEM</b></a> to view the map.</p>
+
+<p>Reference:</p>
+<ul>
+	<li>Ryan, W.B.F., S.M. Carbotte, J.O. Coplan, S. O&#39;Hara, A. Melkonian, R. 
+	Arko, R.A. Weissel, V. Ferrini, A. Goodwillie, F. Nitsche, J. Bonczkowski, 
+	and R. Zemsky (2009), Global Multi-Resolution Topography synthesis, Geochem. 
+	Geophys. Geosyst., 10, Q03014, doi:
+	<a href="http://dx.doi.org/10.1029/2008GC002332">10.1029/2008GC002332</a></li>
+</ul>
+
+<hr>
+
+<p align="right" class="style1">Last revision 11/8/2022</p>
+
+</body>
+
+</html>

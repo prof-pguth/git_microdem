@@ -1,0 +1,50 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>GIS and the Internet</title>
+</head>
+
+<body>
+
+<h2>GIS and the Internet</h2>
+<p>&nbsp;</p>
+<p>GIS can use the Internet for a variety of things:</p>
+<ul>
+	<li>Data download portal, such as the USGS Seamless Server.&nbsp; In this 
+	model, you go a web page, select data, download it it your computer, and 
+	then use it locally.&nbsp; This is just a faster and more convenient way to 
+	get data than the old alternatives of CD-ROM or similar hardware solutions.</li>
+	<li>Live feeding of data, much as Google Earth or Google Maps do.&nbsp; If 
+	you lose the internet connection, you lose the maps.&nbsp; The GIS program 
+	decides you want data for a map area, and requests it from a web server.&nbsp; 
+	For this operation the web server has two choices, which determine whether 
+	the server has to do more processing or store more data:<ul>
+		<li>Serve the data in tiles.&nbsp; You request a tile, of a specific 
+		area at a specific scale, and the server just finds the file and returns 
+		it to you.&nbsp; It will probably have a pyramid of coverage, with 
+		several scales available.&nbsp; Larger scales have smaller tiles, with 
+		much larger downloads to cover the same area.</li>
+		<li>Serve the data exactly as requested, by scale and coverage area.&nbsp; 
+		This requires the server to run a program to get the data, merge or 
+		subset as required, and then send you the file you want.</li>
+	</ul>
+	</li>
+	<li>Live creation of maps on the web, in a browser, where you can download a 
+	final map.&nbsp; This will probably not be a good choice for further GIS 
+	analysis, but can be very useful for casual users.</li>
+	<li>Services like Address Geocoding, converting between street address and 
+	geographic coordinates.</li>
+</ul>
+
+<hr>
+
+<p align="right"><font size="2"><em>Last revision 11/1/2011</em></font></p>
+	
+	
+	
+	
+	</body>
+
+</html>

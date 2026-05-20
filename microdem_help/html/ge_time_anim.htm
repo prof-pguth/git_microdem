@@ -1,0 +1,108 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Google Earth Time Animation</title>
+</head>
+
+<body>
+
+<h2>Google Earth Time Animation</h2>
+<p>This example will create a database with sightings of the right whale.&nbsp; 
+</p>
+<p>For a case like this where you will be entering data from a file or by typing 
+it in, the most efficient tool is probably Excel.&nbsp; This will create a 
+database with points, which is the simplest to create.</p>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/whales_db.gif" width="481" height="224"></td>
+		<td><a href="rules_dbase.htm">Rules for what you must</a> do in Excel to 
+insure that file will work.&nbsp; The computer will be very picky.<ul>
+			<li>The types of data (characters, integers, and floating point), 
+			and what you can do with each.</li>
+			<li>Which hemispheres are negative, especially the western</li>
+			<li>While dates can be entered in a single field, for earth science 
+			data it is nice to split them so you can look at the annual 
+			patterns, and you can <strong style="font-weight: 400"><a href="db_filters.htm">Filter</a> 
+			by month.</strong></li>
+			<li><strong style="font-weight: 400">If you put the name of an image 
+			file (GIF or PNG) in an ICON field, that icon can be plotted on the 
+			map in both MICRODEM and Google Earth.</strong></li>
+		</ul>
+		<p><strong style="font-weight: 400">When done, save your file in CSV 
+		format.</strong>&nbsp; </td>
+	</tr>
+</table>
+<table border="1" id="table2">
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td><a href="db_icons.htm">Create Icons.</a><p>
+		<a href="transparent_icons.htm">Adjust 
+		icon transparency</a> (may no longer be required).</p>
+		<p>If you wanted to get really fancy, you could have multiple icons, 
+		depending on the number of whales spotted.</td>
+	</tr>
+</table>
+<table border="1" id="table3">
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>Open a map.&nbsp; <p>
+		<img border="0" src="../images/db_map.png" width="24" height="24">&nbsp; <a href="data_base.htm">Database</a>.&nbsp; 
+		The first time you should select the CSV file you created; thereafter 
+		you should select the DBF that MICRODEM will create.</p>
+		<p>To get the ICON field to be used for plotting,
+		<strong style="font-weight: 400">use <a href="db_sym_select.htm">
+		Database symbol selection</a> (</strong><a href="db_plot.htm"><strong style="font-weight: 400">Plot button </strong></a>on the <a href="database_table_display.htm">table display
+window</a>).</td>
+	</tr>
+</table>
+<table border="1" id="table5">
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>Get other maps to use for the base.&nbsp;
+		<p>Examples include <a href="oceano_data.htm">sea surface temperature</a> 
+		(perhaps that controls when and where the whales congregate).&nbsp; 
+		Animating these can currently be done, but only with some drag and drop 
+		edits in Google Earth.&nbsp; If you have another animation (say with 
+		your whales), each time period will be in a different folder.&nbsp; If 
+		you open all the maps, you can export them all when you do the export 
+		(with the &quot;All maps&quot; checkbox).&nbsp; You can then just drag the correct 
+		image into the folder for each time step. </p>
+		<p>Another option would be MODIS images from
+		<a href="http://rapidfire.sci.gsfc.nasa.gov/subsets/">
+		http://rapidfire.sci.gsfc.nasa.gov/subsets/</a>&nbsp; (<a href="modis_rapid_response.htm">directions).</a>&nbsp; 
+		There are daily images from two satellites, with several color 
+		combinations possible.&nbsp; You want the Geotiff, or the JPG 
+		with ancillary files, which you can use in MICRODEM, or you can go 
+		straight to Google Earth with the KMZ file..</td>
+	</tr>
+</table>
+<table border="1" id="table6">
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>Put <a href="mhtml_into_kml.htm">text into KML file</a> 
+		for explanations.</td>
+	</tr>
+</table>
+<table border="1" id="table7">
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="ge_toc.htm">Modify display in Google Earth, 
+		using layers shown in Table of contents.</a><p>A little time 
+		here can greatly increase the user-friendliness of your results.</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><font size="3"><em>Last revision 10/24/2015</em></font></p>
+
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Curvature</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.style2 {
+				border-style: solid;
+				border-width: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Geomorphic Curvature</font></b></p>
+<p>Curvature is the rate of change of slope, so it is the second 
+derivative of the elevation surface.</p>
+<p>Computing in MICRODEM</p>
+<ul>
+	<li><a href="raster_external_tools.html">External tools</a> has a number of curvature 
+computations; I do not vouch for their correct operation, especially for arc 
+second DEMs.<ul>
+		<li><a href="raster_external_tools.html#GRASS_curvature">GRASS</a></li>
+		<li><a href="raster_external_tools.html#SAGA_curvature">SAGA</a></li>
+		<li><a href="raster_external_tools.html#Whitebox_curvature">Whitebox</a></li>
+	</ul>
+	</li>
+	<li><a href="derivative_grids.htm">Derivative grid.</a> can compute curvature.&nbsp; 
+They will be drawn with a percentile color stretch.&nbsp;&nbsp;<ul>
+		<li>Profile (kns)</li>
+		<li>Plan (kpc)</li>
+		<li>Tangential (knc)</li>
+		<li>Flow line (rotor, kps)</li>
+		<li>Contour torsion (tc)</li>
+		<li>Maximum (k_max)</li>
+		<li>Mean (k_mean)</li>
+		<li>Minimum (k_min)</li>
+		<li>Gaussian (k)</li>
+		<li>Casorati (kc)</li>
+	</ul>
+	</li>
+</ul>
+<p><a href="curvature_refs.html">Minar and others (2020)</a>&nbsp; 
+</p>
+<ul>
+	<li>reviewed the state of curvature.&nbsp; Units 
+were a mess, positive/negative didn't 
+agree, and scaling was inconsistent (some implementations tried to avoid really 
+small values by multiplying by a constant).&nbsp;</li>
+	<li>&nbsp;listed a total of <a href="curvature_measures.html">25 curvatures</a>, and three basic 
+(trio of curvatures):<ul>
+		<li>Profile</li>
+		<li>Plan.&nbsp; Wilson (2018) followed Mitasova and Hofierka, 1993, and 
+	Gallant and Wilson, 2000) in suggesting that tangential curvature (plan 
+	curvature multiplied by the sine of the slope angle) as being more 
+	appropriate due to the behaviour of plan curvature at low slope angles)</li>
+		<li>Twisting (rotor in Whitebox)</li>
+	</ul>
+	</li>
+</ul>
+<p><a href="filter_grid.htm"><b>Parametric isotropic smoothing</b>:</a> recommended by Hengl and Evans 
+	(2008, after Sharry and others, 2002) before computing curvature or 
+	other derivatives.&nbsp; Use this (or any smoothing) with caution, as it 
+will reduce roughness which you might want.</p>
+
+<p><a href="curvature_refs.html">Curvature references</a></p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revised&nbsp;4/22/2026</em></p>
+
+</body>
+
+</html>

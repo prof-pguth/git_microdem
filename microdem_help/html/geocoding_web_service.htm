@@ -1,0 +1,93 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Geocoding Web Service</title>
+</head>
+
+<body>
+
+<h2>Geocoding Web Service</h2>
+
+<p>In addition to being done locally for a database, geocoding can be done as a web service 
+from a server.&nbsp; The server might limit you to a specified number of 
+requests per day, tracked by your IP address, and entice you to pay for more 
+requests.&nbsp;This tracking can be fooled, and think you have exceeded your 
+quota far earlier than it should.&nbsp; It may only complain every few 
+records.&nbsp; For example <a href="http://www.gpsvisualizer.com/geocoder/">
+http://www.gpsvisualizer.com/geocoder/</a> can use either the Yahoo or the 
+Google service, but your browser will be the one making the request and running 
+into the limit.</p>
+Google geocoding now requires an account and an API key.&nbsp; You must 
+	have a credit card on file, but do get some free usage each month.<ul>
+		<li><a href="https://cloud.google.com/maps-platform/user-guide/">https://cloud.google.com/maps-platform/user-guide/</a>
+		</li>
+		<li>
+		<a href="https://cloud.google.com/maps-platform/user-guide/account-changes/">
+		https://cloud.google.com/maps-platform/user-guide/account-changes/</a>
+		</li>
+		<li>Enter your key on the Web tab of the options form so it can be 
+		included in your request.</li>
+	</ul>
+	<p>Google geocoding API uses requests like:</p>
+<ul>
+	<li>
+	Old requests, before your API key had to be included in the request:<ul>
+		<li>Address to lat/long:
+				<a href="http://maps.googleapis.com/maps/api/geocode/xml?address=107+Claude+Street,+Annapolis,+MD&amp;sensor=true">http://maps.googleapis.com/maps/api/geocode/xml?address=107+Claude+Street,+Annapolis,+MD&amp;sensor=true</a>
+		</li>
+		<li>Lat/long to address:
+		<a href="http://maps.googleapis.com/maps/api/geocode/xml?latlng=38.9933070,-76.4992460&amp;sensor=true">http://maps.googleapis.com/maps/api/geocode/xml?latlng=38.9933070,-76.4992460&amp;sensor=true</a>
+		</li>
+	</ul>
+	</li>
+				<li>Google documentation:
+				<ul>
+					<li>
+					<a href="http://code.google.com/apis/maps/documentation/geocoding/#GeocodingRequests">http://code.google.com/apis/maps/documentation/geocoding/#GeocodingRequests</a>&nbsp;
+					</li>
+					<li>Geocoding API policies:
+					<a href="https://developers.google.com/maps/documentation/geocoding/policies">
+					https://developers.google.com/maps/documentation/geocoding/policies</a>
+					</li>
+				</ul>
+	</li>
+	<li>If the geocoding fails, you will be informed, along with the address 
+	that could not be resolved.&nbsp; You can look at the web results to 
+	determine if you want to continue.</li>
+</ul>
+
+<p><b>Options</b></p>
+<ul>
+				<li><a href="map_right_click.htm">Right
+      clicking on the map</a>, Geocode, Address to Lat/Long.</li>
+				<li><a href="map_right_click.htm">Right
+      clicking on the map</a> ,Geocode, Lat/Long to address</li>
+				<li>On a database with ADDRESS field, <a href="db_edit.htm">Edit,</a> 
+				<strong style="font-weight: 400"><a href="db_geocode.htm">Geocode addresses</a></strong> to fill in LAT/LONG fields for every record.&nbsp; 
+				Address can be a full street address, or just the names of the 
+				CITY and STATE.&nbsp; You might have to edit the database to get 
+				the field in the correct format.</li>
+</ul>
+<p><a href="address_geocoding.htm">TIGER geocoding in MICRODEM.</a></p>
+<p>Using QGIS</p>
+<ul>
+	<li>
+	<a href="https://www.gislounge.com/how-to-geocode-addresses-using-qgis/">
+	https://www.gislounge.com/how-to-geocode-addresses-using-qgis/</a> </li>
+	<li><a href="http://michaelminn.com/linux/mmqgis/">
+	http://michaelminn.com/linux/mmqgis/</a> </li>
+</ul>
+
+<p>Census Bureau online geocoding:
+<a href="https://geocoding.geo.census.gov/geocoder/locations/addressbatch?form">
+https://geocoding.geo.census.gov/geocoder/locations/addressbatch?form</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 3/25/2019</em></p>
+
+</body>
+
+</html>

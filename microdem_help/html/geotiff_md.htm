@@ -1,0 +1,91 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>GEOTIFFs in MICRODEM</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1 align="center">GEOTIFFs in MICRODEM</h1>
+
+<p>A <a href="tbme9v52.htm">GEOTIFF</a> is a special kind of TIFF file that contains
+information about the map projection and registration.&nbsp; </p>
+<p><img src="../images/inout.jpg" border="1" width="32"
+        height="32"><strong> </strong><a href="tbme83sn.htm"><strong>Data
+        Manipulation</strong></a>.&nbsp; </p>
+<p>The Geotiff format has a huge number of 
+options, and some combinations might present problems for MICRODEM.&nbsp; If 
+this happens, MICRODEM will call <a href="adf_grids.htm"><b>GDAL</b></a> to 
+convert to a more generic Geotiff.&nbsp; The most common problems are tiled images, compressed images, and unsual 
+	color representations.&nbsp; The original file will have &quot;original_' added to the start of the file 
+	name.&nbsp; The GDAL version will have the original name.&nbsp; You can delete it if the converted file works.&nbsp; If the 
+	converted file does not work, you will have to figure out the problem.&nbsp; 
+	MICRODEM cannot do anything more with the file until the source code is changed.&nbsp; 
+	If you have a sting of files &quot;original_original_......&quot; they will all be the 
+	same.</p>
+<ul>
+	<li>For DEMs, the new Geotiff will be in the
+	<a href="file:///c:/mapdata/temp">c:\mapdata\temp</a> directory.&nbsp; This 
+	assumes you have a lot of DEMs, and want to take advantage of the smaller 
+	storage size.&nbsp; This adds up when you have TB of global DEMs, and a 50% 
+	storage saving is a big deal.</li>
+	<li>For imagery, the new Geotiff will have the same name as the old one, and 
+	the old will have have the name &quot;original_&quot; appended.</li>
+</ul>
+<p>The program can also handle TIFF files with a TFW <a
+href="tbme6h0z.htm">world file</a> containing registration
+information, although in that case you will probably have to set the UTM zone 
+when you load the file. </p>
+
+<p>The program will ignore all images in a geotiff after the
+first, and will warm you of this fact. It uses Tiff Tag 254 to
+identify a second image.</p>
+
+<p>&nbsp;You must correctly identify the Geotiff as either
+an image or a DEM.&nbsp; The image can be opened as a DEM, but will not have all 
+the imagery display options.</p>
+
+<p>Once loaded, the GEOTIFF behaves like any other image or DEM.</p>
+<p><a href="geotiff_grid_image.htm">Geotiff imagery and DEMs</a></p>
+
+<p><a href="geotiff_multiband.htm">Imagery stored in multiple
+files</a> (one band per file).</p>
+
+<p>The program will <a href="geotiff_map_saving.htm">save maps in
+GEOTIFF format</a>. Once saved in this format you have a dumb
+image, and if it was a DEM, it no longer has the elevation
+information.&nbsp; You can save the DEM as a Geotiff.</p>
+<p>&nbsp;MICRODEM does not use Geotiff as its default grid format because:</p>
+<ol>
+	<li>Geotiffs load more slowly than the MICRODEM format.&nbsp; Fixing this is 
+	on the to do list, but not the highest priority.</li>
+	<li>MICRODEM stores the z units, which facilitates display and allowing 
+	appropriate options depending on the nature of the grid.&nbsp; GeoTIFF does 
+	not.&nbsp; As a workaround, MICRODEM uses a non-standard tag to store the z 
+	units.<br><br></li>
+</ol>
+
+<hr>
+
+<p><b>GEOTIFF DEM</b>s have the following characteristics and
+limitations:</p>
+
+<ul>
+    <li>Must be 
+	<ul>
+		<li>32 bit real numbers</li>
+		<li>16 bit integers (signed)</li>
+		<li>16 bit words (unsigned)</li>
+		<li>8 bit bytes</li>
+	</ul>
+	</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 10/8/2021</em></p>
+</body>
+</html>

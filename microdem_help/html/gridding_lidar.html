@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Gridding Lidar</title>
+</head>
+
+<body>
+
+<h2>Gridding Lidar</h2>
+<p>Lidar surveys create <a href="pt_clouds.htm">point clouds</a>, essentially 
+random collections of 3D points.&nbsp; While data analysis directly with the 
+point cloud is increasing, conversion to regular grids generally greatly 
+decresases the data storage requirements, and allows the use of standard raster 
+GIS tools.</p>
+<p>&nbsp;</p>
+<p>Prior to gridding, the user must select the desired final surface or 
+surfaces, generally <a href="dtm_dsm.htm">DTM or DSM</a>.</p>
+<p>High and low noise can be flagged, so it is not used, or removed from the 
+data set.</p>
+<p>The point cloud can be classified, to at least identify the ground returns, 
+and only these will be used for a DTM.</p>
+<p>For a DSM, all points can be used, or the electrical power lines, and 
+vehicles could be removed (neither of these are routinely included in the point 
+clouds distributed by national mapping agencies).</p>
+<p>There are two general methods for creating the grids:</p>
+<ul>
+	<li>
+	<h2><a href="tirangulation.htm">Triangulation</a></h2>
+	<ul>
+		<li>Points are triangulated with a Delaunay triangulation.</li>
+		<li>At each of the desired grid nodes, find the triangle containing that 
+		point, and then interpolate to find the grid elevation.</li>
+		<li>If there are many points per grid cell, many of the triangles will 
+		not be needed.</li>
+		<li>Works best with a small number of point, suggesting small
+		<a href="data_tiles.html">tiles</a>.</li>
+		<li>Edge effects will be minimized with larger tiles, or with a buffer 
+		of points around the tile, which are only&nbsp; used for the 
+		triangulation of point within the tile.&nbsp; This will slightly 
+		increase the data storage requirements.</li>
+		<li>There will be no gaps within the region outlined by data points.</li>
+		<li>If there are grid cells with no points from the lidar survey, they 
+		will appear in the final grid as obvious triangular facets.&nbsp; The 
+		larger these areas, the more obvious the effect.&nbsp; These could be 
+		eliminated, either by not interpolating in large triangles, or by 
+		editing the grid to remove any points with no close neighbors, which can 
+		be done as a fast raster operation.</li>
+	</ul>
+	</li>
+</ul>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="500" src="../images/tin_anomalies.PNG" width="582" /></td>
+		<td>Circled anomalies from the triangulation in a DSM from Denmark.&nbsp; 
+		These result from the lack of water reflections in the castle moat.</td>
+	</tr>
+</table>
+<ul>
+	<li>
+	<h2>Drop in the bucket</h2>
+	<ul>
+		<li>Very simple and fast</li>
+		<li>Each point is assigned to the nearest point in the desired grid.&nbsp;
+		<ul>
+			<li>For a DSM, if the point is higher than the current point at the 
+			grid cell, the new point replaces the older point.</li>
+			<li>For a DTM, if the point is lower than the current point at the 
+			grid cell, the new point replaces the older point.</li>
+		</ul>
+		</li>
+		<li>The selected point could be mislocated in the grid by half the grid 
+		spacing.</li>
+		<li>The gridding can interpolate across very small voids, and the fills 
+		will not be noticeable.</li>
+		<li>For a DTM or NVS, the more points in the grid cell, the greated the 
+		chance that at least one is actually on the ground.&nbsp; This will 
+		reduce the number of tree trunk spikes.</li>
+	</ul>
+	</li>
+</ul>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="427" src="../images/nvs_grid_size.PNG" width="1062" /></td>
+		<td>Two Non vegetation surface grids.&nbsp; The 1 m grid has a number of 
+		anomalies, because the point density of the lidar survey did not 
+		reliably deliver a point on the ground in every grid cell, and has a 
+		number of spikes.</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><em>Last revision 6/18/2020</em>&nbsp;</p>
+
+</body>
+
+</html>

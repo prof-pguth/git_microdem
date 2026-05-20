@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Global Terrorism Database</title>
+</head>
+
+<body>
+
+<h1>Global Terrorism Database</h1>
+<ul>
+	<li>&nbsp;<a href="https://www.start.umd.edu/gtd/">https://www.start.umd.edu/gtd/</a>.&nbsp; 
+	May have problems with your institutional firewall with partially renders 
+	the page but won't allow it to do anything.&nbsp; You will have to deal with 
+	the fortress firewall defenders, or download at home. 
+	<ul>
+		<li>After register, can download data as Excel file</li>
+		<li>has lat/long</li>
+		<li>In Excel<ul>
+			<li>Change all commas to semicolons</li>
+			<li>Change all Unknown to nothing</li>
+		</ul>
+		</li>
+		<li>Save as CSV</li>
+		<li>Import into DB</li>
+		<li>Filter out with just the region, dates, terror organization you need 
+		to get a workable file.</li>
+	</ul>
+	</li>
+	<li><a href="https://www.start.umd.edu/gtd/search/">
+	https://www.start.umd.edu/gtd/search/</a> This page works fine. (10/24/2019)<ul>
+		<li>No export option found (Wikipedia says it can be done, and you can 
+		get it as a Geodatabase, which might be importable via 
+								<a href="../html/adf_grids.htm">GDAL</a>, and 
+		should have coordinates), but you can cut and paste from the results 
+		into Excel</li>
+		<li>Filter the results to just what you want (country, group, time 
+		period).&nbsp; If you cannot find bulk download, make the filter as 
+		restictive as possible.</li>
+		<li>Change to 100 items per page</li>
+		<li>Cut and paste into excel. Repeat to get all the records.</li>
+		<li>Change the field names to &lt;= 10 characters</li>
+		<li>Save as CSV</li>
+		<li>Import into DB</li>
+		<li>There are no coordinates; use a join from another database. 
+		Depending on the country and the challenges of names in different 
+		languages and alphabets, the success my vary.
+		<ul>
+			<li><a href="download_convert_gaz.htm">Get the NGA gazetteer</a><ul>
+				<li><a href="../microdemtutorials/gis_joins/gis_joins.htm">Join</a> 
+				the terror DB to the gazetteer, using the CITY and NAME fields</li>
+				<li>Add lat/long from the join to the terror database</li>
+			</ul>
+			</li>
+			<li>Get OpenStreetMap for the area<ul>
+				<li><a href="../microdemtutorials/gis_joins/gis_joins.htm">Join</a> 
+				the terror DB to the PLACES file from OSM, using the CITY and 
+				NAME fields</li>
+				<li>Add lat/long from the join to the terror database</li>
+			</ul>
+			</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 10/24/2019</em></p>
+
+<p align="right">&nbsp;</p>
+	
+</body>
+
+</html>

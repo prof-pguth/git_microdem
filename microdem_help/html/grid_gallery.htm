@@ -1,0 +1,157 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Grid Gallery</title>
+<style type="text/css">
+.auto-style1 {
+	color: #FF00FF;
+	font-size: large;
+}
+.auto-style2 {
+	color: #00FF00;
+	font-size: large;
+}
+.auto-style3 {
+	font-size: large;
+}
+.auto-style4 {
+	font-size: large;
+	color: #FF9933;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Grid Gallery</font></b></p>
+<p>A map might have three kinds of grids:</p>
+<ul>
+	<li>The <strong>lat/long graticule</strong>.</li>
+	<li>A <strong>projected coordinate system</strong> used to locate points, 
+	which does not have to be the actual projection of the map, such as:<ul>
+		<li>UTM.&nbsp; Printing this on the map allows easy computation of 
+		coordiinates in the field, even with the map partially folded.</li>
+		<li>SPCS</li>
+		<li>A national grid, like the UK OS, Irish.</li>
+	</ul>
+	</li>
+	<li>The <strong>native projected grid of the projection</strong>.&nbsp; While the GIS program uses 
+	these for plotting and computations, it will only be shown on the map if it 
+	is also used to locate points.<ul>
+		<li>Lambert conformal conic.&nbsp; This is used to locate points in the 
+		SPCS projections.</li>
+		<li>Transverse Mercator</li>
+		<li>Mercator.&nbsp; I don't know of a case where this is shown, or used 
+		in computations.</li>
+	</ul>
+	</li>
+</ul>
+<p>There might also be grids in two different datums, in the case where a region 
+has two datums in common use, or changed the datum recently and old data or maps 
+are still present.</p>
+<p>The spacing of the grid should have the same intervals in both the x and y 
+directions.&nbsp; If the GIS program allows you to set different spacings, you 
+should override the defaults and make them the same.&nbsp; This can lead to 
+challenges with labeling, but you can find a solution that is better than 
+differential spacing.</p>
+<p>Appropriate grids on the map depends on the usage of the map:</p>
+<ul>
+	<li>For a map for presentation purposes, or printing in a scientitific 
+	journal, a single grid should be sufficient, and the cartographer must 
+	decide which to use; the lat/long graticule should be strongly considered.&nbsp; 
+	This map will only be viewed on a printed page, or online, and will have a 
+	restricted size, typically a few thousand pixels.</li>
+	<li>For a large paper map, one grid will probably be drawn, and the lat/long 
+	graticule might be indicated with internal ticks on the map and labels along 
+	the margins.&nbsp; If a second grid is required, it would have only ticks on 
+	the margin, and a user would have to connect them to measure coordinates in 
+	the field.&nbsp; This map could have the equivalent of tens of thousands of 
+	pixels in each dimension.</li>
+</ul>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="528" src="cartography/three_grids.gif" width="726"></td>
+		<td>
+		<p>Three grids on a map of Rabat:</p>
+		<ul>
+			<li class="auto-style1"><strong>Lat/long graticule</strong></li>
+			<li class="auto-style2"><strong>UTM</strong></li>
+			<li class="auto-style3"><strong>Native Lambert conformal conic</strong></li>
+		</ul>
+		<p>This is probably impossible to use effectively, even with three 
+		different colors,&nbsp; but shows the 
+		possible changes, and how they differ.</p>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="528" src="cartography/two_datums.gif" width="726"></td>
+		<td>
+		<p>Lat/long graticule for two datums<br><br></p>
+		<ul>
+			<li class="auto-style1"><strong>WGS84</strong></li>
+			<li class="auto-style4"><strong>Merchich Morocco</strong></li>
+		</ul>
+		<p>Note the datum shift is (almost) entirely in the east-west direction; 
+		the WGS 84 layer is plotted second, and the east west parallels 
+		completely overprint the secondary datum.&nbsp; There could a north 
+		south shift, but it is less than the pixel size on this map.</p>
+		</td>
+	</tr>
+</table>
+<table border="1">
+  <tr>
+    <td>
+      <p align="center"><img border="0" src="../images/LAT_LONG_GRID.GIF" width="255" height="317"></td>
+    <td>
+      <p align="center"><img border="0" src="../images/LAT_LONG_TICKS.GIF" width="255" height="317"></td>
+  </tr>
+  <tr>
+    <td><b>Lat-long graticule with lines </b>
+	<ul>
+		<li>Graticule is not square, because a degree of
+      latitude does not equal a degree of longitude. </li>
+		<li>You should be able to see that the &quot;rectangles&quot; are taller than they 
+		are wide.</li>
+		<li>If the graticule is &quot;square&quot;, you are either at the equator or have 
+		a map with bad distortion.</li>
+		<li>You can set the graticule spacing.</li>
+		<li>If the graticule parallels the edges of the map, you have a 
+		geographic projection (like Mercator)</li>
+		<li>If the graticule does not parallel the edges of the map, you have a 
+		projection like UTM.</li>
+	</ul>
+	  </td>
+    <td>Lat-long ticks.&nbsp; Set spacing of the ticks.</td>
+  </tr>
+  </table>
+
+<p align="left"><img border="1" src="../images/grid.gif" width="16" height="16">
+<a href="tbme8cv8.htm">Option</a> on <a href="maptool.htm">map toolbar</a> or
+by <a href="map_right_click.htm"> right clicking on the map window</a>.</p>
+
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/full_pretty_grid.GIF" width="309" height="304"></td>
+    <td><font size="3"><img src="../images/PRINT.jpg" width="16"
+        height="16"> Print button on <a href="maptool.htm">map
+toolbar</a> has&nbsp;</font><a href="map_legend_creation.htm"><font size="3"><b>Prepare
+                printer image</b></font></a><font size="3"> option that gives
+      great control over a lat/long or UTM grid, or both.<br><br>Also from <a href="map_right_click.htm">right
+      click on the map</a>, <a href="clipboard_export.htm">Copy to 
+	clipboard</a>, Detailed map.</font></td>
+  </tr>
+</table>
+
+<hr>
+
+<p align="right"><em>Last revised 11/25/2017</em></p>
+
+</body>
+
+</html>

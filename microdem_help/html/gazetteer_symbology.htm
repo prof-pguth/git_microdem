@@ -1,0 +1,95 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Gazetteer Symbology</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	font-family: serif;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="5"><b>Gazetteer Symbology</b></font></p>
+
+<p>File &quot;GAZ_SYMBOLS_Vnnn.DBF&quot; 
+in program root directory.&nbsp; This contains categories to use, and 
+symbols.</p>
+<table border="1">
+  <tr>
+    <td><img height="283" src="../images/gaz_syms.gif" width="1205"></td>
+  </tr>
+  <tr>
+    <td>Gazetteer labeling uses definitions database as displayed above. <br>
+	<p><b>Fields used:</b></p>
+<ul>
+	<li>NAME--Each category has a name.</li>
+	<li>GAZ--whether the category applies to USGS, NGA 
+	or other gazetteers.</li>
+	<li><font class="auto-style1">USE--Y/N, to determine if the category will be 
+	plotted.&nbsp; This is set on <a href="gaz_opts.htm">gazetteer options 
+	form</a>.</font></li>
+	<li>Radius (m) used for <a href="buffering.htm">buffering</a>. <a href="mask_dem_w_gaz.htm">
+	Use gazetteer to mask a DEM</a></li>
+	<li>Filter--filter used find the members 
+	of the category in the database.</li>
+	<li>SYM_COLOR, SYM_SIZE, and SYM_TYPE--determine the 
+	point symbol. You can edit the database and graphically modify these by 
+	right clicking on a record.</li>
+	<li>ICON</li>
+	<li>FONT_NAME, FONT_SIZE, FONT_COLOR</li>
+</ul>
+      <p><b><a name="To_change_symbology_and_font">To change symbology and font</a>:</b></p>
+
+<ul>
+    <li><img border="0" src="../images/db_map.png" width="24" height="24">&nbsp;Open <a href="data_base.htm">Database</a></li>
+    <li>Check edit checkbox.</li>
+    <li>Double click on the record, and pick &quot;Edit point symbol&quot; or
+      &quot;Edit font&quot;</li>
+    <li>Select the color, size, and symbol type.</li>
+	<li>Changes should take effect immediately.</li>
+</ul>
+
+      <p><b>To add another category:</b>&nbsp;</p>
+
+<ul>
+    <li><img border="0" src="../images/db_map.png" width="24" height="24">&nbsp;Open <a href="data_base.htm">Database</a></li>
+    <li>Check the edit checkbox.</li>
+    <li>Double click on the record, and pick &quot;Insert record&quot;</li>
+    <li>Fill in the following fields:
+      <ul>
+        <li>Name--can be anything; it is what will be displayed</li>
+        <li>GAZ--must be &quot;USGS&quot; or &quot;NGA&quot; or another such as 
+		&quot;CCOG&quot;, which will be defined in this file.</li>
+        <li>FILTER--fill in a filter that identifies the type of data
+          from the gazetteer.</li>
+        <li>SYMBOL and FONT options can be most easily added later with 
+		<a href="#To_change_symbology_and_font">change symbology option.</a></li>
+		<li>Use--&quot;Y&quot; to display, &quot;N&quot; to skip</li>
+      </ul>
+    </li>
+    <li>Select Post edits</li>
+</ul>
+
+    </td>
+  </tr>
+</table>
+
+<p>&quot;Church&quot; includes other
+        religous buildings.</p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 8/12/2020</em></p>
+
+</body>
+
+</html>

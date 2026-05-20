@@ -1,0 +1,129 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Geomorphometrics by block</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	text-align: left;
+}
+.auto-style2 {
+	text-align: right;
+}
+</style>
+</head>
+
+<body>
+
+<p><strong><font size="5">Geomorphometrics by block</font></strong></p>
+<p class="style1"><font size="3">From </font><a href="geostatistical_analysis.htm">Geomorphometry analysis</a>
+          option o<font size="3">n <a href="tbme5ed1.htm">Analyze</a> menu.&nbsp; </font>This divides the DEM into a series of rectangular blocks, and 
+computes statistics in each, which will be placed in a dBase table.</p>
+<p class="style1">&nbsp;</p>
+<table>
+	<tr>
+		<td><img height="575" src="../images/new_geomorph_db.gif" width="532">&nbsp;</td>
+		<td>
+      <ul>
+		<li>Select options<ul>
+			<li>Box/region size in meters or pixels</li>
+			<li>Min points for elevation: data voids, or edge effects have no 
+			effect on the elevation statistics.</li>
+			<li>Min points for SSO: SSO requires no holes in the point and its 8 
+			nearest neighbors, so cannot be done on edge pixels. </li>
+		</ul>
+		  </li>
+		  <li>Select parameters.&nbsp; <a href="regional_geo_params.htm">
+		Parameter definitions and references</a>.<ul>
+			<li>Basic elevation: 4 moments</li>
+			<li>Advanced elevation: 
+			<ul>
+				<li>relief, elev_relf, </li>
+				<li>min and max elevations locations (if multiple points have 
+				the same elevation, the result will be the first one 
+				encountered)</li>
+				<li>characteristics of the line connecting the min and 
+				max.&nbsp; This may or may not have any meaning, as they depend 
+				on the shape of the analysis region.&nbsp; They make sense for 
+				polygon shapefiles with things like a landslide or drainage 
+				basin.
+				<ul>
+					<li><strong>DIST_DROP</strong> is the distance in m betweeen 
+					the high and low points</li>
+					<li><strong>DIST_AZ</strong> is the compass direction 
+					between the high and low points</li>
+					<li><strong>SLOPE_DROP</strong> is the slope along the 
+					straight line distance</li>
+				</ul>
+				</li>
+			</ul>
+			  </li>
+			<li>Slope: max slope, and 4 moments</li>
+			<li>
+	<a href="micr0rhp.htm">
+	<b><span style="line-height: 200%">
+	<font size="3">S1S2, S2S3, FABRIC_DIR</font></span></b><span style="line-height: 200%"><font size="3">:</font></span></a> S1S2, S2S2, fabric direction, shape, strength, 
+			roughness, and average aspect.&nbsp;&nbsp; Requires a box size.&nbsp; 
+			These will be blank if there are not enough valid points to compute 
+			the statistics.&nbsp; You can reduce the number of points required 
+			using the ASPECT_PTS or SSO_PTS fields.<ul>
+				<li>ASPECT_AVG: Vector average of the aspect (downhill 
+				direction)</li>
+				<li>ASPECT_STR: strength of the average aspect.&nbsp; It will be 
+				0 if there is a completely random orientation, and 1 if they all 
+				point in the same direction.</li>
+			</ul>
+			  </li>
+			<li>Profile curvature: 4 moments</li>
+			<li>Plan curvature: 4 moments</li>
+			<li><a href="splash_screen_messages.htm">Openness</a>: 4 moments each of upward and downward openness.&nbsp; 
+			Requires a box size.</li>
+			<li>Less useful<ul>
+				<li>Gamma: nugget covariance from variogram</li>
+				<li>Fractal will slow things down, and the results may not be 
+				worth the effort.</li>
+				<li>Wavelength/height is currently disabled</li>
+			</ul>
+			</li>
+		</ul>
+		  </li>
+		  <li>You can only turn groups off or on.</li>
+		  <li>T<font size="3">he program will create a database with desired parameters.</font></li>
+      </ul>
+        </td>
+	</tr>
+</table>
+<p class="style1">&nbsp;</p>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/geo_blocks.gif" width="294" height="582"></td>
+    <td>
+      <ul>
+          <li><a href="db_plot.htm">Plot</a><font size="3">
+          results using standard procedures from database </font><a href="database_table_display.htm">
+		  table display
+window</a></li>
+		<li><a href="regional_geo_params.htm">Parameter definitions and 
+		references</a></li>
+      </ul>
+      <p>&nbsp;</td>
+  </tr>
+</table>
+
+<p class="auto-style1"><br>You can alternatively
+<a href="multliple_grid_creation.htm">create grids,</a> for these and some other 
+parameters.</p>
+<hr>
+<div class="auto-style2">
+<font size="2"><em>last revised 8/29/2017</em></font>
+</div>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

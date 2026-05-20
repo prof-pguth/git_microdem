@@ -1,0 +1,55 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Geotiff Images and Grids</title>
+</head>
+
+<body>
+
+<h2>Geotiff Images and Grids</h2>
+<p>GIS programs often distinguish between grids (DEMs) and imagery.&nbsp; By 
+saving as a <a href="tbme9v52.htm">Geotiff,</a> it is possible to operate on a data set with both sets of 
+tools (<b><a href="image_analysis.htm">Image analysis</a> and </b><strong><a href="raster_gis.htm">Raster GIS</a></strong>).</p>
+<table border="1">
+	<tr>
+		<td>
+		<img border="0" src="../images/DSM_32_BIT.JPG" width="465" height="458"></td>
+		<td>32 bit floating point grid, displayed with <a href="hillshade.htm">
+		hillshading</a>.</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/DSM_8_BIT.JPG" width="464" height="465"></td>
+		<td>8 bit (byte) grid<ul>
+			<li>Elevations stretched from 1 to 255 (range was -3 to 264) (Single grid arithmetic. Expand given z range).</li>
+			<li>Missing data set to 0</li>
+			<li>Geotiff save to 8 bit</li>
+			<li>8 bit grid opened</li>
+			<li>Note stair stepping from quantization of elevations</li>
+			<li>As a grid, there are better options to <a href="edit_menu.htm">
+			edit</a> and reclassify perform <strong><a href="raster_gis.htm">Raster GIS</a></strong></li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/DSM_8_BIT_IMAGE.JPG" width="470" height="465"></td>
+		<td>8 bit (byte) image<ul>
+			<li>if displayed with no stretch, would look like grid displayed as 
+			elevations</li>
+			<li>Can do <a href="image_analysis.htm">Image analysis</a> on the 
+			image, which has options not possible for a grid</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<hr>
+<p align="right"><i>Last revision 12/3/2017</i></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

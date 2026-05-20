@@ -1,0 +1,245 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Global Geology Grids</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+				font-style: italic;
+}
+.auto-style2 {
+	font-weight: inherit;
+	font-style: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	line-height: inherit;
+	text-align: inherit;
+	vertical-align: baseline;
+	border-style: none;
+	border-color: inherit;
+	border-width: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+.auto-style3 {
+	font-family: serif;
+	font-size: medium;
+	font-style: normal;
+}
+.auto-style4 {
+	font-size: medium;
+}
+.auto-style6 {
+	font-style: normal;
+}
+.auto-style7 {
+	font-size: small;
+}
+.auto-style8 {
+	font-weight: inherit;
+	font-style: inherit;
+	font-size: small;
+	font-family: inherit;
+	line-height: inherit;
+	text-align: inherit;
+	vertical-align: baseline;
+	border-style: none;
+	border-color: inherit;
+	border-width: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="5"><b>Global Geology Grids</b></font></p>
+
+<table border="2">
+	<tr>
+		<td><strong>Data set</strong></td>
+		<td><strong>Reference (their format, may not match ours or yours, so 
+		reformat if necessary)</strong></td>
+		<td><strong>Web site</strong></td>
+		<td><strong>Notes</strong></td>
+	</tr>
+	<tr>
+		<td><img src="pred_bath.jpg" width="30" height="30">
+        <a href="mk:@MSITStore:C:/microdem/microdem.chm::/html/demb9w6s.htm">
+		ETOPO1</a>&nbsp;topography and bathymetry</td>
+		<td><cite><span style="FONT-SIZE: 12pt; FONT-STYLE: normal">Amante, C., 
+		and Eakins, B.W., 2009, ETOPO1&nbsp; 1 Arc-Minute Global Relief Model: 
+		Procedures, Data Sources and Analysis: NOAA Technical Memorandum NESDIS 
+		NGDC-24, 19 p.</span></cite><i><span style="FONT-SIZE: 12pt; FONT-FAMILY: 'Times New Roman',serif">
+		<cite><span style="FONT-SIZE: 12pt; FONT-STYLE: normal">
+		&nbsp;<a href="http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/docs/ETOPO1.pdf" style="TEXT-DECORATION: underline; COLOR: blue; text-underline: single">http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/docs/ETOPO1.pdf</a></span></cite>&nbsp;&nbsp;</span></i></td>
+		<td>Download&nbsp; <a href="http://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1</a><br>
+		<br></td>
+		<td>This has ocean bathymetry and land elevations.&nbsp;
+<ul>
+				<li>Floating point binary version is probably the best.&nbsp; 
+				Save it as a 16 bit integer, since the floating point values are 
+				actually integers.</li>
+				<li>&nbsp;GRD98 version has registration that is 
+misinterpreted by 1 degree in 
+longitude because of byte swapping issues in MICRODEM, so do not get that version.</li>
+				<li>The Geotiff version&nbsp; is not registered, so you must 
+				create a world file for it.</li>
+</ul>
+		</td>
+	</tr>
+	<tr>
+		<td><a href="srtm30plus.htm">SRTM 30 Plus</a></td>
+		<td>
+		<a href="http://topex.ucsd.edu/sandwell/publications/124_MG_Becker.pdf">
+		Becker, J. J., D. T. Sandwell, W. H. F. Smith, J. Braud, B. Binder, J. 
+		Depner, D. Fabre, J. Factor, S. Ingalls, S-H. Kim, R. Ladner, K. Marks, 
+		S. Nelson, A. Pharaoh, R. Trimmer, J. Von Rosenberg, G. Wallace, P. 
+		Weatherall., Global Bathymetry and Elevation Data at 30 Arc Seconds 
+		Resolution: SRTM30_PLUS, Marine Geodesy, 32:4, 355-371, 2009.</a><table border="2">
+	</table>
+		</td>
+		<td><a href="http://topex.ucsd.edu/WWW_html/srtm30_plus.html">
+		http://topex.ucsd.edu/WWW_html/srtm30_plus.html</a> </td>
+		<td><a href="srtm_15plus.htm">SRTM 15+</a> for smaller areas, more detail</td>
+	</tr>
+	<tr>
+		<td><img alt="" src="sed_thick_btn.png" width="30" height="30"> 
+		<a href="sed_thick.htm">Sediment thickness</a></td>
+		<td><cite>
+		<span class="auto-style3" style="font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Current version 3: E. O. Straume, C. Gaina, S. Medvedev, K. Hochmuth,K. 
+		Gohl, J. M. Whittaker, R. Abdul Fattah, J. C. Doornenbal, and J. R. 
+		Hopper(2019). GlobSed: Updated total sediment 
+		thickness in the world's oceans. Geochemistry, Geophysics, Geosystems, 
+		vol.20.<span>&nbsp;</span></span></cite><a id="anch_16" class="auto-style4" href="https://doi.org/10.1029/2018GC008115" style="box-sizing: border-box; text-decoration: none; background-color: rgb(255, 255, 255); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">DOI: 
+		10.1029/2018GC008115</a><cite> <br class="auto-style4">
+		<br class="auto-style4"></cite><span class="auto-style7">Older version 2: Whittaker, Joanne, Alexey Goncharov, Simon Williams, R. 
+		Dietmar Muller, German Leitchenkov (2013) Global sediment thickness 
+		dataset updated for the Australian-Antarctic Southern Ocean, 
+		Geochemistry, Geophysics, Geosystems. </span> 
+		<span id="volumeNumber" class="auto-style7">Volume 14</span><span class="auto-style7">,
+		</span>
+		<span id="issueNumber" class="auto-style7">Issue 8</span><span class="auto-style7">,
+		</span><cite class="auto-style6">
+		<span class="auto-style7">
+		<a href="http://dx.doi.org/10.1002/ggge.20181" title="external link">
+		DOI: 10.1002/ggge.20181</a></span></cite><br><br>Oldest version 1:
+		Divins, D.L., Total Sediment Thickness of the World's Oceans &amp; Marginal 
+		Seas, NOAA National Geophysical Data Center, Boulder, CO, 2003.<br>
+		<br><br><br></td>
+		<td><a href="http://www.ngdc.noaa.gov/mgg/sedthick/index.html">
+		http://www.ngdc.noaa.gov/mgg/sedthick/index.html</a></td>
+		<td>Grid in Geotiff 
+and other less useful formats.&nbsp; If Geotiff is not present, MICRODEM via 
+		GDAL can read the nc file.&nbsp; The current version 3 still has v2 in 
+		the file names, but the data hole near Japan has been filled in.</td>
+	</tr>
+	<tr>
+		<td>
+		<a href="../geology_course/marine_seds.htm">Sediment type distribution</a></td>
+		<td><span class="auto-style7">Adriana Dutkiewicz, R. Dietmar Muller, Simon O'Callaghan, and 
+		Hjortur Jonasson, 2015, Census of seafloor sediments in the world's 
+		ocean </span> <cite>
+		<abbr class="auto-style8" style="OUTLINE-STYLE: none" title="Geology">
+		Geology</abbr><span class="auto-style8" style="OUTLINE-STYLE: none">, </span>
+		<span class="auto-style2" style="OUTLINE-STYLE: none">
+		<span class="auto-style7" style="color: rgb(0, 0, 0); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		43 (9): 795&#8211;798.</span></span>
+		<span class="auto-style8" style="OUTLINE-STYLE: none">G36883.1,&nbsp; 
+		doi:10.1130/G36883.1,&nbsp;&nbsp;&nbsp;
+		<a href="http://geology.gsapubs.org/content/43/9/795.full">
+		http://geology.gsapubs.org/content/43/9/795.full</a></span></cite></td>
+		<td>
+		<a href="ftp://ftp.earthbyte.org/papers/Dutkiewicz_etal_seafloor_lithology">
+		ftp://ftp.earthbyte.org/papers/Dutkiewicz_etal_seafloor_lithology</a>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td><img src="seafloorage.gif" width="30"
+        height="30"> <a href="seafloor.htm">Predicted sea
+        floor ages</a>. </td>
+		<td>
+<ul>
+	<li>Current verson: Muller, R.D., M. Sdrolias, C. Gaina, and W.R. Roest 2008. Age, spreading rates and spreading symmetry of the world's ocean 
+	crust, Geochem. Geophys. Geosyst., 9, Q04006,
+	<a title="external link" href="http://www.agu.org/pubs/crossref/2008/2007GC001743.shtml">doi:10.1029/2007GC001743</a>.
+	</li>
+	<li>Original version: MÜLLER, Roest, Royer,Gahagan, and Sclater (1997) in Journal of Geophysical Research.
+	</li>
+</ul>
+
+		</td>
+		<td>Version 3:
+		<a href="https://www.ngdc.noaa.gov/mgg/ocean_age/ocean_age_2008.html">
+		https://www.ngdc.noaa.gov/mgg/ocean_age/ocean_age_2008.html</a> </td>
+		<td>Derived from models of plate spreading.&nbsp; There is a value about every 11 km.&nbsp; 
+		There is no data on continental crust, and problematic regions of 
+		oceanic crust. </td>
+	</tr>
+	<tr>
+		<td><img alt="" height="32" src="magmap.jpg" width="32"> 
+	<a href="grid_mag_anom.htm">Magnetic 
+	anomaly maps</a></td>
+		<td><a href="http://www.geomag.us/models/emag2.html">EMAG2</a>: 
+					2 arc minute grid, available as Geotiff 
+		<ul>
+			<li>Version 3: Brian Meyer, Richard Saltus, Arnaud Chulliat (2016): EMAG2: 
+			Earth Magnetic Anomaly Grid (2-arc-minute resolution) Version 3. 
+			National Centers for Environmental Information, NOAA. Model. 
+			doi:10.7289/V5H70CVX, accessed 13 Aug 2016.</li>
+			<li>Version 2:&nbsp; Maus, S., Barckhausen, U., Berkenbosch, H., Bournas, N., Brozena, J., Childers, V., Dostaler, F., Fairhead, J. D., Finn, C., von Frese, R. R. B., Gaina, C., Golynsky, S., Kucks, R., Luhr, H., Milligan, P., Mogren, S., Muller, R. D., Olesen, O., Pilkington, M., Saltus, R., Schreckenberger, B., Thebault, E., 
+and Caratori Tontini, F. 2007, EMAG2: A 2&#8211;arc min resolution Earth Magnetic Anomaly Grid compiled from 
+satellite, airborne, and marine magnetic measurements: Geochemistry, Geophysics, Geosystems, 
+vol. 10, no.8, DOI 10.1029/2009GC002471.</li>
+		</ul>
+		</td>
+		<td><a href="http://www.geomag.us/models/emag2.html">
+		http://www.geomag.us/models/emag2.html</a> </td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>EGM2008: <a href="../html/egm96.htm">Geoid </a></td>
+		<td>
+		<a href="https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2011JB008916">The development and evaluation of the Earth 
+	Gravitational Model 2008 (EGM2008) - Nikolaos K. Pavlis, Simon A. Holmes, 
+	Steve C. Kenyon, John K. Factor; Journal of Geophysical Research: Solid 
+	Earth (1978-2012) Volume 117, Issue B4, April 2012</a>
+		<span style="color: rgb(118, 118, 118); font-family: 'Open Sans', icomoon, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">
+		&nbsp;</span><div class="epub-section" style="box-sizing: border-box; opacity: 1; margin: 0px; font-size: 14px; line-height: 1.15; display: inline-block; color: rgb(118, 118, 118); font-family: &quot;Open Sans&quot;, icomoon, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;">
+			<a aria-label="Digital Object Identifier" class="epub-doi" href="https://doi.org/10.1029/2011JB008916" style="box-sizing: border-box; background-color: transparent; cursor: pointer; color: rgb(0, 82, 116); text-decoration: none; font-weight: 600; overflow-wrap: break-word;">
+			https://doi.org/10.1029/2011JB008916</a></div>
+		</td>
+		<td>
+<ul>
+	<li>
+	<a href="http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/egm08_gis.html">
+	http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/egm08_gis.html</a>
+	</li>
+	<li><a href="http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/">
+	http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/</a> </li>
+</ul>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<p><br>Larger scale DEMs, like&nbsp; <a href="srtm.htm">SRTM</a>,
+		<a href="merit_dem.htm">MERIT</a>, or <a href="asterdem.htm">ASTER GDEM</a>,&nbsp; 
+		provide good base maps for almost any geoscience-related project.&nbsp; 
+		The grayscale hillshade provides an excellent starting map.</p>
+<hr>
+
+<p align="right" class="style1">Last revision 1/26/2020</p>
+
+<font size="4">
+
+<p>&nbsp;</p>
+</body>
+</html>
