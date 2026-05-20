@@ -1,0 +1,81 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Imagery Merge and Sharpening</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="5"><strong>Imagery Merge and
+Sharpening</strong></font></p>
+
+<table border="3">
+    <tr>
+        <td colspan="3" class="auto-style1">
+		<h2 align="center" class="auto-style1">Landsat 7 TM data</h2>
+		<h2 align="center" class="auto-style1">Deep
+Springs California. Panchromatic and merged imagery at 15
+m scale, with Bands 4-3-2 blown up with interpolated reflectances.</h2>
+		</td>
+    </tr>
+    <tr>
+        <td>
+		<img src="../images/TM-3BAND.jpg" width="320"
+        height="380" class="auto-style1"></td>
+        <td>
+		<img src="../images/TM-MERGE.jpg" width="311"
+        height="380" class="auto-style1"></td>
+        <td>
+		<img src="../images/TM-BAND8.jpg" width="320"
+        height="380" class="auto-style1"></td>
+    </tr>
+    <tr>
+        <td class="auto-style1">Bands 4-3-2 in R-G-B, 30 m pixels</td>
+        <td><span class="auto-style1">Bands 4-3-2 in RGB to give the hue, and band 8</span><br class="auto-style1">
+        <span class="auto-style1">to give the intensity.&nbsp; 15 m pixels</span></td>
+        <td class="auto-style1">Band 8 (panchromatic), 15 m pixels</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<p class="auto-style1">To get merge:</p>
+
+<ol>
+    <li><span class="auto-style1">Open a </span> <a href="geotiff_multiband.htm">
+	<span class="auto-style1">Landsat 7/8/9</span></a><span class="auto-style1"> scene.</span></li>
+	<li>
+	<img src="../images/resize.gif" width="16"
+        height="16" class="auto-style1"><span class="auto-style1"> </span><a href="tbme0o81.htm">
+	<span class="auto-style1">Subset
+        &amp; zoom</span></a><span class="auto-style1"> to the region you want.&nbsp; The map will be at 
+	100% magnification for the pan band, and 200% for the other bands</span></li>
+	<li>
+	<img src="../images/band.gif" width="23" height="23" class="auto-style1"> <a
+        href="tbme9dpq.htm"><span class="auto-style1">Band</span></a><span class="auto-style1"> to pick the three color merge you want: 
+	true color, false color, or custom.</span></li>
+	<li><span class="auto-style1">Pick the Pan sharpen button</span><ol>
+		<li class="auto-style1">The current 3 band color merge will be drawn with 200% 
+		magnification.</li>
+		<li class="auto-style1">The pan band will be drawn at 100% magnification.</li>
+		<li class="auto-style1">The color merge will be overlaid to give the hue, and the intensity 
+		will be from the pan band.</li>
+	</ol>
+	</li>
+</ol>
+
+<hr>
+
+<p align="right"><i>Last revision2/6/2023</i></p>
+
+<p>&nbsp;</p>
+</body>
+</html>

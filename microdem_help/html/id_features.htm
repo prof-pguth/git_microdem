@@ -1,0 +1,59 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>ID Features</title>
+</head>
+
+<body>
+
+<h2>ID Features</h2>
+<p>Option on <a href="raster_gis.htm">Raster GIS</a> menu.</p>
+
+<ul>
+	<li>Find all contiguous regions with non missing values</li>
+	<li>Options<ul>
+					<li>Compute centroid of each region</li>
+					<li>Set a minimum region size by number of pixels</li>
+	</ul>
+	</li>
+	<li>Regions will have an integer code going from 1 up to the number of 
+	features.</li>
+	<li>You will be required to save this file, so that the VAT table that goes 
+	with it can be located.</li>
+	<li>This can be used, if you have sequential time grids, for <a href="feat_migrate.htm">Feature migration</a>.</li>
+</ul>
+
+<table border="1">
+	<tr>
+		<td>
+		<img border="0" src="../images/id_feat_map.gif" width="477" height="465"></td>
+		<td>Map of&nbsp; features grid.&nbsp; Each feature will have a different color 
+		if there are not too many features.<p>
+		Red squares are the centroids, which might not be within the regions
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/id_feat_tabl.gif" width="594" height="173"></td>
+		<td>Table accompanying grid.<ul>
+			<li>NPts: number of grid points in the region.</li>
+			<li>Lat/Long for the centroid.</li>
+			<li>Bounding box in terms of the grid coordinates.&nbsp; These allow 
+			rapid searches.</li>
+			</ul>
+		</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><em>Last revision 10/9/2013</em></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

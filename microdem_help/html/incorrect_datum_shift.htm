@@ -1,0 +1,49 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>Incorrect Datum Shift</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="6"><strong>Incorrect Datum Shift</strong></font></p>
+
+<p><strong>Always use WGS84 as the primary
+datum</strong>.&nbsp; </p>
+
+<table border="3">
+    <tr>
+        <td><img
+        src="../images/DLGOVERLAY--WGS84.JPG"
+        width="478" height="555"></td>
+        <td><font size="3">Central La Plata, PR, 1:24:000 DEM and DLG</font><ul>
+            <li><font size="3">Both digitized on NAD27</font></li>
+            <li><font size="3">Displayed on WGS84</font></li>
+            <li><font size="3">DEM correctly shifted</font></li>
+            <li><font size="3">DLG not shifted.&nbsp; MICRODEM does not perform
+              a datum shift on DLGs, so in this case you should display on NAD27
+              (or get an alternate source of streams, like TIGER data).</font></li>
+            <li><font size="3">Note the large N-S offset--the streams are about 200 m too far 
+            to the south, as are the quad boundaries included in the streams DLG.</font></li>
+        </ul>
+        </td>
+    </tr>
+    <tr>
+        <td><img
+        src="../images/DLGOVERLAY--NAD27.JPG"
+        width="478" height="555"></td>
+        <td><font size="3">Central La Plata, PR, 1:24:000 DEM and DLG</font><ul>
+            <li><font size="3">Both digitized on NAD27</font></li>
+            <li><font size="3">Displayed on NAD27</font></li>
+            <li><font size="3">Correct registration</font></li>
+        </ul>
+        </td>
+    </tr>
+</table>
+
+<p align="right"><font size="2"><em>Last revision 6/5/2007</em></font></p>
+</body>
+</html>

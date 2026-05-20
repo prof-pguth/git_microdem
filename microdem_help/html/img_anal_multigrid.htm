@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Multigrids Image Analysis</title>
+<link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Multigrids Image Analysis</h2>
+<p><a href="mutiband_2_grid.htm">Multigrids</a> menu options on <a href="image_analysis.htm"><b>Image analysis</b></a> 
+Menu.&nbsp; You must have loaded the satellite image into memory before this 
+will work.</p>
+<ul>
+		  <li>Change display band</li>
+		  <li>Basic statistic: max, min, mean, std dev</li>
+		  <li>Scattergram of two bands</li>
+		  <li>Filter image</li>
+		  <li><a href="train_classify.htm">Supervised classification</a></li>
+		  <li><a href="upsup_im_class.htm">Unsupervised classification</a></li>
+	<li><a href="pc_opts.htm">Variance-covariance/Principal components</a></li>
+	<li>Average reflectance in region</li>
+		  <li>Reinterpolate all to same resolution<ul>
+			  <li>Will use the resolution of the grid with the smallest data 
+			  spacing</li>
+			  <li>Will use bilinear interpolation</li>
+			  <li>Will place files in a new subdirectory named "resolution_NN"</li>
+			  <li>Be judicious and select only those bands you want to use; with
+			  <a href="sentinel2.html">Sentinel-2</a>, this will increase the 
+			  storage required by 3 times.</li>
+		  </ul>
+		  </li>
+		  <li>Create Max DN grid:</li>
+		  <li>Create Average DN grid: create and open a grid with the average DN in all bands.</li>
+		  <li>Create Min DN grid</li>
+		  <li><b>Locate values</b>; create a database with all points within a given 
+	range.&nbsp; This will have the LAT/LONG, BAND, and DN.&nbsp; This database 
+	can become very large if you do not pick values judiciously.&nbsp; It can be 
+	useful to find extreme values.</li>
+		  <li><b>Tail percentiles:</b> create a database with key information on each band</li>
+		  <li>Normalize</li>
+</ul>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 12/26/2020</em></p>
+
+</body>
+
+</html>

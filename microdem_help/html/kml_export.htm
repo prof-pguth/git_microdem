@@ -1,0 +1,78 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>KML Database Export</title>
+</head>
+
+<body>
+
+<p><b><font size="5">KML Database Export</font></b></p>
+<ul>
+				<li>Deliberate KML/Google Earth Option on 
+				<a href="db_report.htm">Report button's popup menu</a> of&nbsp; 
+				<a href="database_table_display.htm">database
+table form</a>.&nbsp; You probably need this for Icons.</li>
+				<li>&quot;Quick Export&quot; option should be good for quick work and often good enough; 
+do <a href="clean_kml.htm">simple edits in Google Earth</a>.</li>
+</ul>
+<p><a href="kml_overlay.htm">Export map image</a>  
+can be preferable since you can combine several databases in one KML file, or 
+you can <a href="clean_kml.htm">clean up KML exports</a> within Google Earth.&nbsp; 
+This will not give you any of the database information.</p>
+<table border="1">
+  <tr>
+    <td>
+	<img border="0" src="../images/kml_overlay_opts.gif" width="559" height="421">&nbsp;</td>
+    <td><b>Folder name:<br>
+	Folder description</b>:
+      <p>Set <b>Name </b>field from the database that will appear for each record, 
+		and will label records on the map.&nbsp; This should be short text.&nbsp; 
+	  You can make it blank if you do not want Google Earth to label the images.</p>
+	<p><b><a href="kml_field_export.htm">Separate layers:</a> </b>you can filter 
+	the database, and get each unique value of the field as a separate export.</p>
+      <p><b>Image.</b>&nbsp; Set <a href="gis/linking_imagery.htm">links to image</a> (on the
+      hard disk, from an image field in the data base).&nbsp; You can embed&nbsp;
+      images, or a thumbnail with link to full sized image, or just
+      the thumbnail.&nbsp; 
+		Google Earth does not do a very good job with large images, so you 
+		should consider the thumbnail options.&nbsp; The thumbnails will be
+      copied to the KML directory, and&nbsp;
+      embedded in the KMZ file.</p>
+	<p>If you use thumbnails, set the height in pixels.</p>
+      <p><b>Web site.</b>&nbsp; Set <a href="gis/linking_www_to_db.htm">links to web page</a>.</p>
+      <p><b>Icon.</b>&nbsp; Symbol displayed in Google Earth.&nbsp; 
+		Icon scale factor determines how 
+		large they will be.&nbsp; The icon will be your own image instead of the 
+		default push pin.&nbsp; This can be from: </p>
+	<ul>
+		<li><a href="db_icons.htm">ICON fields in the database</a>. </li>
+		<li>Pick Icon, which uses the same icon for all&nbsp; records.&nbsp; 
+		This is particularly effective if you export the database multiple times 
+		with different filters, and can use a different icon for each filter. </li>
+	</ul>
+	<p><b>Text.</b>&nbsp; Put <a href="mhtml_into_kml.htm">text file 
+	(with graphics and links) into the pop-ups in KML display</a>.&nbsp; The 
+	HTML file must be named in the field you select here; by default the program 
+	looks for the TEXT field.&nbsp; If your HTML is hand tuned, you can avoid <a href="html_clean.htm">cleaning 
+	up HTML</a>.</p>
+      <p><a href="kml_time_anim.htm">Use timeline with TIME fields in the database.</a>&nbsp; </p>
+      <p><b>Table with attributes</b> puts a table in the KML when
+      you select a record.&nbsp; This can put the images in twice.</td>
+  </tr>
+</table>
+<p>KML files are saved in a c:\mapdata\KML directory, with each export saved in 
+a new sequentially numbered subdirectory.&nbsp; You can find either the KMZ file 
+there, or the KML file and all its associated imagery.&nbsp; It is usually much 
+simpler to just save the output from Google Earth to whatever location you want.</p>
+<p><a href="kml_overview.htm">KML overview.</a></p>
+<p><a href="mhtml_into_kml.htm">Putting HTML into KML display</a></p>
+<p><a href="kml_problems.html">Problems opening KML/KMZ files</a></p>
+<hr>
+
+<P align=right><EM>Last revision 8/30/2018</EM></P>
+
+</body>
+
+</html>

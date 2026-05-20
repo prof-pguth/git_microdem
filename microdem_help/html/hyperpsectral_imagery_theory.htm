@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Hyperspectral Imagery</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Hyperspectral Imagery</h1>
+<p>Multispectral imaging (MSI) measures light in a small number (typically 3 to 15) 
+of&nbsp;spectral bands.&nbsp; <a href="landsat_tm.htm">Landsat </a>or 
+<a href="sentinel2.html">Sentinel 2</a> are good 
+examples.</p>
+<p>Hyperspectral imaging&nbsp;is a special case of spectral imaging where often 
+hundreds of contiguous spectral bands are available.&nbsp; The bands have a much 
+smaller spectral bandwith (many shades each of red, green, and blue, as well as 
+the NIR and into the SWIR), allowing very precise determination of<a href="ref_spectra.htm"> reflectance spectra</a> and the 
+possibiliy to surface material determination.</p>
+<p>Hyperspectral imagery is particularly suited for:</p>
+<ul>
+	<li>Geology--mapping the distribution of mineras, perhaps for mininig</li>
+	<li>Agriculture--monitoring the health of fields, to control irrigation, 
+	fertilizer application, and similar operations</li>
+	<li>Military--in particular looking for camouflaged material.&nbsp; People 
+	generally match the visible spectrum of vegetation, but because we do not 
+	see any of the NIR or SWIR, might not undertake the extra of making sure the 
+	object does not stick out in that part of the spectrum.</li>
+</ul>
+<table border="2">
+	<tr>
+		<td><img border="0" src="../images/hyp_image_cube.JPG" width="340" height="225"></td>
+		<td><b>Hyperspectral image cube</b>.&nbsp; You can have a selected single
+      band or and RGB merge on the top, and see the image in all&nbsp; bands (1 on
+      top, highest in the sensor on the bottom) for front and right side.
+      <p>You can see:</p>
+      <ul>
+        <li>Bands that are high/low reflectance in all bands.&nbsp; High 
+		reflectance is white, and low reflectance black.</li>
+        <li>Bands that are missing or distorted.&nbsp; 
+		<ul>
+			<li>If the band is all black, 
+		is is likely missing (two prominent water absorption 
+		bands occur in the limits for many hyperspectral sensors).</li>
+			<li>If it is speckled white with some black, it is likely very 
+		noisy, perhaps at the edge of an absorption band.</li>
+			<li>Typically the sensor actually has two different detectors, since 
+			designing one sensor to run the entire range of waverlengths is too hard, 
+			and in that case, the sensors may not overlap well, leading to 
+			bands that are not collected</li>
+		</ul>
+		  </li>
+		<li>Individual pixels that are high/low in reflectance in some or all 
+		bands, which have the same shade of gray top to bottom.</li>
+      </ul>
+    	</td>
+	</tr>
+</table>
+
+
+<p><br />
+<span class="auto-style2">
+			<a href="../html/hyperion.htm">Hyperion</a> is a good example of a 
+hyperspectral imager, and a reasonable amount of archived data is available.</span></p>
+<hr />
+<p>The following are research sensors, flown on aircraft.&nbsp; They may require 
+pre-processing before use.</p>
+
+<p>AVIRIS</p>
+<ul>
+	<li>
+	<a href="https://directory.eoportal.org/web/eoportal/airborne-sensors/aviris">https://directory.eoportal.org/web/eoportal/airborne-sensors/aviris</a> </li>
+	<li>
+	<a href="https://directory.eoportal.org/web/eoportal/airborne-sensors/aviris">https://directory.eoportal.org/web/eoportal/airborne-sensors/aviris</a></li>
+</ul>
+	<p>AVIRIS-NG</p>
+	
+	<ul>
+		<li><a href="https://avirisng.jpl.nasa.gov/alt_locator/">https://avirisng.jpl.nasa.gov/alt_locator/</a></li>
+		<li>rotated UTM coordinates</li>
+	</ul>
+	<p>AVIRIS-3</p>
+	
+	<ul>
+		<li>
+		<a href="https://earth.jpl.nasa.gov/estd-missions/airborne/aviris-3/">
+		https://earth.jpl.nasa.gov/estd-missions/airborne/aviris-3/</a> </li>
+		<li><a href="https://popo.jpl.nasa.gov/mmgis-aviris/">
+		https://popo.jpl.nasa.gov/mmgis-aviris/</a>? </li>
+		<li><a href="https://gliht.gsfc.nasa.gov/">https://gliht.gsfc.nasa.gov/</a>
+		</li>
+		<li><a href="https://glihtdata.gsfc.nasa.gov/">https://glihtdata.gsfc.nasa.gov/</a>
+		</li>
+		<li>Lidar in LAS format available to go with the 124 bands in Geotiff 
+	format.</li>
+	</ul>
+
+	<p><a href="emit.html">EMIT</a></p>
+
+	<hr />
+	<p align="right" class="auto-style1"><em>Last revision&nbsp; 6/28/2023</em></p>
+	<strong>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	</li>
+</ul>
+
+</body>
+
+</html>

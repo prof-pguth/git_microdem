@@ -1,0 +1,142 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Image Registration</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+				font-style: italic;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="6"><b>Affine Image Registration</b></font></p>
+
+<p>Limitations on method:</p>
+<ul>
+    <li>North must be towards the top of the image; rotate if
+        necessary, for example with Paint.</li>
+    <li>Correct datum and UTM zone must be selected.</li>
+	<li>Must be small area, with minimal earth curvature.</li>
+</ul>
+
+<p> 
+		<a href="../html/del_tri_reg.htm">Delaunay triangulation registration</a> 
+		has fewer restrictions (but more effort)</p>
+
+<hr>
+
+<p><img src="../images/new%20sat%20color.gif" width="32"
+height="32"> <a href="tbme65lx.htm"><b>New image</b></a><b>.&nbsp;
+</b>Select image (TIFF, GIF, BMP, JPEG, PNG) that you want to
+register. </p>
+
+<p>If the image were already registered,&nbsp;
+use the &quot;<a href="edit_menu.htm">Edit</a>, Re-register&quot; edit choice. Then select
+Register, Image from the window's menu.</p>
+
+<table border="1" id="table1">
+    <tr>
+        <td>
+		&nbsp;</td>
+        <td>Main Buttons on right of form:<ul>
+            <li><a href="create_registration_file.htm">Reg File</a></li>
+			<li>Plot option<ul>
+            <li>Plot and Label&nbsp; registration points</li>
+			<li>Plot delaunay triangles</li>
+			<li>Font, point symbol, line symbols</li>
+        </ul>
+        	</li>
+            <li><a href="google_earth/ge_locations.htm">KML
+                points</a>--enter locations from a KML file.&nbsp; You will get 
+			Point Name, Lat, and Long entered in the database, and then will 
+			have to associate image coordinates.</li>
+			<li>Clear points--deletes all registration points.&nbsp; Use with 
+			care.</li>
+			<li><a href="reg_quad.htm">Quad Map</a></li>
+        </ul>
+        <p>Buttons on bottom of form:</p>
+        <ul>
+            <li>Image Point: select points on the image.</li>
+            <li>Map Point: select points on a registered map open in another 
+			window to
+                get ground coordinates to use for the
+                registration.</li>
+            <li>Graph point: select points on a graph window to
+                get ground coordinates to use for the
+                registration.</li>
+            <li>Enter Coords--enter lat/long, UTM, or MGRS coordinates.</li>
+            <li>XY--enter arbitrary XY coordinates for an image that is not a 
+			map.</li>
+            <li><a href="reg_gaz.htm">Gaz</a>--use gazetteer to
+                add points</li>
+            <li><a href="tri_extrapolate.htm">Tri-</a>-triangle
+                extrapolation to add points along map edges</li>
+			<li>Next point</li>
+        </ul>
+        </td>
+    </tr>
+</table>
+
+<p><a href="copy_reg_pts.htm">Copying and pasting coordinates for registration.</a></p>
+
+<p>You are responsible for determining <a
+href="register_image.htm">if this procedure is appropriate</a>,
+and which kind of <a href="tbme6h0z.htm">world file</a> or
+rotational registration to create for <a
+href="world_grid_types.htm">your grid.</a> In a UTM file, the UTM
+grid lines should be running north-south and east-west, with no
+stairstepping. Similarly, for a geographic grid the lat/long
+lines should be straight.&nbsp; The most general case does a
+&quot;Rotate Reg&quot;, but will only use UTM coordinates and
+cannot be exported from MICRODEM .&nbsp; The rotated image cannot
+be saved correctly for export to other programs.&nbsp; If you
+need registration for another program, you should get a more
+robust solution.</p>
+
+<ol>
+    <li><a href="enter_pts_image_reg.htm">Enter coordinates and
+        the points on the image to which they correspond</a>. </li>
+    <li><a href="create_registration_file.htm">Create
+        registration file.</a> </li>
+    <li><a href="edit_registration_file.htm">Edit registration
+        points.</a> </li>
+</ol>
+
+<ul>
+    <li>Radio buttons allow you to register in x &amp; y
+        simultaneously, or only x and y separately. The separate
+        option is for scanned maps that have side ticks for only
+        lat or long, and not crosses where they intersect.</li>
+</ul>
+
+<hr>
+
+<p>Image registration pages:</p>
+
+<ul>
+    <li><a href="../microdemtutorials/register_digitize.htm">Tutorial
+        on image registration</a></li>
+    <li><a href="reg_gaz.htm">Register with Gazetteer</a></li>
+    <li><a href="reg_map_anal.htm">Register with Map Analyst</a></li>
+    <li><a href="reg_quad.htm">Register Quad Map</a></li>
+    <li><a href="register_image.htm">Caveats on image
+        registration.</a></li>
+    <li><a href="google_earth/ge_locations.htm">Import ground
+        locations from Google Earth.</a></li>
+	<li><a href="reg_quad_gaz.htm">Supplementing quadrangle registration 
+	with gazetteer points.</a></li>
+</ul>
+
+<hr>
+
+<p align="right"><i>Last revision 12/3/2024</i></p>
+</body>
+</html>

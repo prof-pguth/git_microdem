@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Huge Files</title>
+</head>
+
+<body>
+
+<h1>Huge File Workarounds</h1>
+<p>If you have a very large file, it takes a long time for operations, and you 
+only need part of the data.</p>
+<table border="2">
+	<tr>
+		<td><strong>File Type</strong></td>
+		<td><strong>MICRODEM native solutions</strong></td>
+		<td><strong>QGIS solutions If you installed <a href="adf_grids.htm"><b>GDAL</b></a>, 
+		you should have QGIS as well</strong></td>
+	</tr>
+	<tr>
+		<td><strong>Vector shapefiles</strong></td>
+		<td>
+		<p>Open a map, <font size="3">
+		<img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> to the region you want. You have three choices:</p>
+		<ol>
+			<li>Subset DB before opening it in MICRODEM</li>
+			<ul>
+				<li><a href="tbme8igl.htm"><b>File</b></a>, Import, Shapefile 
+				after subset to match map extent.&nbsp; You can adjust the map 
+				extent first to cover your area of interest.</li>
+				<li>This uses <a href="adf_grids.htm"><b>GDAL</b></a>/OGR, with
+				<a href="#gdal_problems">possible problems</a>.</li>
+				<li>The file will be loaded.&nbsp;&nbsp; It will be in a 
+				subdirectory of the directory with the initial shapefile.</li>
+			</ul>
+			</li>
+			<li>Filter the file ASAP
+			<ul>
+				<li>Open the shapefile.</li>
+				<li>Abort drawing if it is taking too long</li>
+				<li>Filtering options<ul>
+					<li><a href="db_map_query.htm">Map query</a>, Current map area:</li>
+					<li><a href="db_filters.htm">Filter</a>: the DB as desired 
+					if there are fields in the DB that will do the job</li>
+					<li><a href="db_edit.htm">Edit,</a>&nbsp;Mask--based on geometry<ul>
+						<li><a href="mask_db_shape.htm">Mask database with shapefile</a>
+						</li>
+						<li><a href="find_pts_areas.htm">Find points in areas</a> (like an 
+			administrative boundary in a shapefile)</li>
+					</ul>
+					</li>
+				</ul>
+				</li>
+				<li><a href="db_report.htm">Report</a>, 
+				<a href="subse_shape_files.htm">Shapefile export</a> 
+				for line/areas, or Export DBF Table for points.<ul>
+					<li>current map extent option</li>
+					<li>current filter option</li>
+				</ul>
+				</li>
+				<li>Open the new file and close the original file.</li>
+			</ul>
+			</li>
+			<li>&nbsp;Open in QGIS, extract just the portion you need, and open 
+			that.&nbsp; If the file is too big for MICRODEM, it is likely to be 
+			very slow in QGIS as well.</li>
+		</ol>
+		</td>
+		<td>
+		<p>QGIS will open the files rapidly.&nbsp; </p>
+		<p><a href="#QGIS_subset">Use QGIS to export/subset</a>, noting
+		<a href="#gdal_problems">possible problems</a>.</p>
+		</td>
+	</tr>
+	<tr>
+		<td><strong>Raster</strong></td>
+		<td>
+		<ul>
+			<li>Option 1, when you need only part of the map extent<ul>
+				<li><font size="3">
+				<img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a>,&nbsp; </li>
+				<li><a href="tbme8igl.htm">File</a>, <a href="save_dem.htm">Save DEM</a>, Current 
+				subset, MD DEM</li>
+			</ul>
+			</li>
+			<li>Option 2, when you can afford a lower grid resolution<ul>
+				<li><a href="raster_gis.htm">Raster GIS</a>: </li>
+				<li><a href="tbme0egj.htm">Thin</a> (decimate DEM to lower 
+				spatial resolution).&nbsp; </li>
+			</ul>
+			</li>
+			<li>Option 3, when the input file is too big to open (say a 
+			compressed Geotiff; probably has to be geographic)<ul>
+				<li>Open a map, <font size="3">
+				<img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> to the region you want.</li>
+				<li>File, Import, Raster after subset to match map extent</li>
+			</ul>
+			</li>
+			<li>Option 4: open in QGIS, and subset there.</li>
+		</ul>
+		</td>
+		<td>QGIS will open the files rapidly.&nbsp; <br />
+		Use QGIS to export/subset.<br />
+		The export option produces a smaller file that works easily.</td>
+	</tr>
+	<tr>
+		<td><strong>Lidar</strong></td>
+		<td>
+<ul>
+	<li>Turn off Immediate map on the
+	<a href="../images/pt_cld/files_list_tab.htm">File list</a> tab.</li>
+	<li><font size="3"><img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> immediately to just the area you want to see.&nbsp; 
+	This is particularly important for:<ul>
+		<li><a href="new_3d_viewer.htm"><font size="3">OpenGL Point 
+			cloud</font></a></li>
+		<li><a href="pt_cloud_slicing.htm">Slice: EW and NS slices through 
+	the point cloud</a>.&nbsp;</li>
+	</ul>
+	</li>
+	<li><a href="pt_cld_draw_tab.htm">Draw</a> tab, thin map, either manual or 
+	automatic.&nbsp; Remember to check that this is adjusting as you zoom in, 
+	when you want to see all the data.</li>
+	<li>Consider
+			<a href="../images/pt_cld/grid_from_pt_cld.htm">Creating grids</a> 
+	if they will do what you need<strong>.</strong></li>
+	<li><a href="maintool.htm">Subset very large files</a>. Instead of having to 
+	look at every point for every operation<ul>
+		<li>As you zoom in, you will only have to look at a few tiles.</li>
+		<li>Some operations can be multi-threaded, meaning they will run in 
+		parallel.</li>
+	</ul>
+	</li>
+</ul>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<p><a name="QGIS_subset"><strong>QGIS file subset geographically</strong></a></p>
+<ul>
+	<li>Open QGIS</li>
+	<li>Open&nbsp; shapefile (Layer, Add Vector Layer) or a raster (Layer, add 
+	raster layer)</li>
+	<li>Zoom the map to the region you want</li>
+	<li>Right click on the layer in the table of contents, and select 
+	properties.</li>
+	<li>Pick export, and select the current map extent and other parameters</li>
+</ul>
+<p><a href="adf_grids.htm"><b>GDAL</b></a><a name="gdal_problems">/OGR shapfile problems when subsetting geographically</a>:&nbsp;
+		The export option has issues we have not gotten around for some 
+shapefiles (e.g. NASA MODIS fires).&nbsp; These appear to be in <a href="adf_grids.htm"><b>GDAL</b></a>/OGR, 
+because the same problems are in MICRODEM and QGIS which both use GDAL.&nbsp; Other files, like 
+TIGER shapfiles, work fine.</p>
+		<ul>
+			<li>Truncates 
+		the float fields in the dBase fields.&nbsp; </li>
+			<li>If you delete/rename the lat/long fields, you can import them from 
+			the shapefile's SHP file and you can work with the file except for any floating 
+			point fields</li>
+		</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 2/3/2021</em></p>
+
+</body>
+
+</html>

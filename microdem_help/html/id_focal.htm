@@ -1,0 +1,110 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Identify focal planes</title>
+</head>
+
+<body>
+
+<h1>Identify focal planes</h1>
+<p><img src="../images/geology_button.jpg" width="28"
+height="29"> <a href="geology_popup.htm">Geology options</a>
+and pick Focal Plane Analysis</p>
+<table border="1" width="100%">
+	<tr>
+		<td>
+		<img alt="" src="../microdemtutorials/fault_scarp/MANY_DIP_DIR.GIF" width="248" height="248"></td>
+		<td>
+		If you have a number of earthquakes, a plot of the
+		<a href="db_stats_quakes.htm">dip directions on the focal planes</a> can 
+		help you see the trends more easily than using the great circles.&nbsp; This will be color coded by the 
+		earthquake type.&nbsp; In this case there appear to be two clusters, 
+		probably related to the two focal planes for a single family of normal 
+		faults.<br>
+		<br>
+		If you <a href="micr1d6b.htm">Adjust net properties </a> to put on a 
+		polar grid, you can easily determine the range of dip directions for 
+		each potential focal plane, as well as the dips.<br><br>You could 
+		alternatively get&nbsp; a <a href="rose_focal_planes.htm">rose diagram 
+		with the dip directions</a>.</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../microdemtutorials/fault_scarp/focal_planes.gif" width="255" height="156"></td>
+		<td>
+		The 
+<font size="4">
+    	<a href="http://www.globalcmt.org/CMTsearch.html">Global (Harvard) CMT</a>&nbsp;</font>database contains the two focal planes in the right hand 
+		rule format, with two numbers.&nbsp; The first is the strike, and the 
+		second is the dip.&nbsp; The dip direction is 90<font face="Times New Roman">º 
+		to the right (clockwise) from the strike.&nbsp; The record display 
+		option will show the planes in two additional formats, the traditional 
+		strike and dip, and the dip and direction for the pole (normal) to the 
+		fault plane.</font><p><font face="Times New Roman">The two focal planes 
+		for this fault have nearly the same strike (N5E and N19E), with is 
+		common for thrust and normal faults.&nbsp; One 
+		focal plane dips 34 to the W, and the other dips 57 toward the E.&nbsp; </font></td>
+	</tr>
+	<tr>
+		<td>
+		<img height="528" src="../microdemtutorials/fault_scarp/pick_dip_dirs.gif" width="398">&nbsp;</td>
+		<td>
+		You should do this analysis on a <a href="tbme9u5v.htm">grayscale 
+		reflectance map</a> so the colors for the focal planes stand out.<br>
+		<br>You can do this for a single earthquake, 
+		or a number of earthquakes in a small region which share the same 
+		approximate orientation.&nbsp; Get the potential focal planes 
+		from the <a href="cmt_display.htm">CMT database record display.</a> This 
+		example is for the single quake with the earthquake with the focal 
+		mechanim below, whose strikes are about N20E.<ul>
+						<li>Enter the two focal planes.&nbsp; The min/max dip 
+						directions (90<font face="Times New Roman">º</font> to 
+						the right from the strike) provide a range, since 
+						natural data are usually not geometrically perfect, and 
+						the fault plane may curve, even over a fairly small 
+						distance.&nbsp; 
+						You will have to decide how much of a window you want to 
+						use.&nbsp; If you get no potential colored scarps, you 
+						should open up the range a bit.&nbsp; You can get the 
+						focal planes orientations by looking at a rose diagram 
+						of the dip directions or from a stereo net.&nbsp; This 
+						example uses 80-100 degrees from the strike.</li>
+						<li>Enter the minimal slope to show potential scarps.&nbsp; 
+						Many areas do not have many steep slopes, so any scarps 
+						will have been eroded back from the values recorded by the 
+						focal planes, or the faults curve between the focus and 
+						the earth's surface.&nbsp; It will probably be easier to 
+						match the strike than the dip for the focal planes. 
+						Slopes are entered in degrees, whereas many terrain 
+						analysis functions used percent.</li>
+		</ul>
+		<p>Pick the plot button.</p>
+		<p>The map shows the matching locations, and the memo box shows the 
+		percentage of points that matched your criteria.</p>
+		<p>Iterate until you have a good result.&nbsp; OK or Cancel 
+		leaves this form.</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../microdemtutorials/fault_scarp/ASPECT_MAP.GIF" width="415" height="316"></td>
+		<td>Matches for the two focal planes.&nbsp; You might want to increase 
+		the values allowed to see more potential areas.<br><br>This is a range 
+		front fault in the Great Basin of the western US.<br><br>
+		<a href="../microdemtutorials/fault_scarp/beach_ball_scarp.htm">
+		Additional analysis of this fault scarp.</a></td>
+	</tr>
+</table>
+
+<p>The dip directions used to compute this option are the same as
+shown on
+<a href="apsect_maps.htm">Aspect maps.</a></p>
+
+<hr>
+
+<p align="right"><font size="3"><i>Last revision 11/8/2022</i></font></p>
+
+</body>
+
+</html>

@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>IQR</title>
+</head>
+
+<body>
+
+<h1>IQR (Inter Quantile Range)</h1>
+<p>IRQ = Q3 - Q1 and is more robust than the range or standard deviation.</p>
+<p>Hyndman and Fan (1996) discussed 9 formulations for the quantiles, and there 
+is not a clear "best" choice.&nbsp; They advocated the need for the statistical 
+community to rally around a best choice, but that was 30 years ago and it has 
+not happened.</p>
+<p>Excel has two formulations for quantiles, EXC (exclude) and INC (include).&nbsp; EXC is used by 
+more online free calculating web sites, and according to Wikipedia is one of two 
+methods available in both R and Python.&nbsp; There are noticeable differences 
+between the two Excel versions. QGIS and ArcGIS use the INC method.</p>
+<p>MICRODEM will </p>
+<ul>
+	<li>make IRQ maps on the <a href="filter_grid.htm">filter submenu</a> on the
+	<a href="raster_gis.htm">Raster GIS menu</a>.&nbsp;&nbsp; You pick the 
+	window size.&nbsp; This produces the same results as the EXCEL INC (and thus 
+	QGIS and ArcGIS).</li>
+	<li>Compute IRQ for a field in a database table, on <a href="db_click_field.htm">Double clicking on field name</a> 
+	</li>
+</ul>
+<p>Reference:</p>
+    <ul>
+		<li>Hyndman, R. J., &amp; Fan, Y. (1996). Sample Quantiles in Statistical Packages.	The American Statistician, vol.50, no.4, 361–365. 
+		<a href="https://doi.org/10.1080/00031305.1996.10473566">https://doi.org/10.1080/00031305.1996.10473566</a> .
+		</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 10/3/2025</em></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

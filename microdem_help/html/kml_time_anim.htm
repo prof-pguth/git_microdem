@@ -1,0 +1,58 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>KML Time Animations</title>
+</head>
+
+<body>
+
+<p><b><font size="5">KML Time Animations</font></b></p>
+<p>Option when <a href="kml_export.htm">exporting a database to KML</a>, either on <a href="db_report.htm">Report menu</a> of&nbsp; <a href="database_table_display.htm">database
+table form</a> or the <a href="kml_overlay.htm">export of map image</a>.</p>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/kml_opts.gif"></td>
+    <td>
+	<p><img border="0" src="../images/kml_time.gif" width="475" height="168"></p>
+      <p>You can use a timeline in the KML export, using TIME fields in the database.&nbsp; These
+      must follow the
+		conventions
+      used by Google Earth. You must set these 
+		fields near the bottom of the KML options form, with the starting date 
+		on the left and ending date on the right.</p>
+	<ul>
+		<li>You can use any fields, but by default the starting field should be START_DATE.&nbsp; The ending field should be END_DATE.&nbsp; The 
+		program will pick these fields automatically if they exist.</li>
+		<li>MICRODEM can <a href="db_time_date.htm">convert a number of time 
+		formats.</a></li>
+		<li>MICRODEM can <a href="add_time_anim.htm">enter the fields from entries in 
+		the database.</a><ul>
+		<li>Dates must be in the format YYYY-MM-DD.</li>
+		<li>If you have time periods shorter than a day, you need to enter them 
+		as 1999-12-31T23:59:59Z (UTC), or 1999-12-31T23:59:59-07:00 (UTC +/- 
+		hour deviation for time zones) </li>
+		<li>This can be tricky to get in Excel.&nbsp; You best bet might be to 
+		use the &quot;Concatenate&quot; function, or another edit option.</li>
+	</ul></li>
+		<li>MICRODEM will take a date such as 1944-1-7 and put in 
+		the zeros required by KML so that the export will be 1944-01-07.</li>
+		<li>If you have daily data, you can leave out the END_DATE field blank, and 
+		MICRODEM will use the &quot;&lt;TimeStamp&gt;&quot; option in KML.&nbsp; Otherwise it 
+		will use the &quot;&lt;TimeSpan&gt;&quot; option.</li>
+		<li>If there is a field DATE_LABEL, it will be used for the folder names 
+		in the KML file.&nbsp; Otherwise the START_DATE field will be used.</li>
+		<li>All records must have the time fields filled in (or you must filter 
+		out the ones with blanks before exporting)</li>
+	</ul></td>
+  </tr>
+</table>
+<p><a href="kml_overview.htm">KML overview.</a></p>
+<p><a href="ge_time_anim.htm">Time animation example</a></p>
+<hr>
+<p align="right"><i>Last revision 7/8/2015</i></p>
+
+</body>
+
+</html>

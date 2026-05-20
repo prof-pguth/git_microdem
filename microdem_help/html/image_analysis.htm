@@ -1,0 +1,95 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Image analysis</title>
+<link href="../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Image analysis</font></b></p>
+<p><a href="micr0alv.htm">Menu choice with active map window</a> with an image.</p>
+<table border="1">
+  <tr>
+    <td>
+      <ul>
+		  <li><a href="mutiband_2_grid.htm">Open multi-grids for raster analysis</a> to perform statistics on 
+		  satellite imagery, it must be converted to grids and loaded into 
+		  memory.&nbsp; If these have not been created, they will be created and 
+		  saved; thereafter, loading should be very fast.<ul>
+			  <li>All bands: all Landsat bands except panchromatic band 8, or 
+			  Sentinel-2.&nbsp; For Sentinel-2 the first time this will be slow, 
+			  as all bands must be interpolated to 10 m resolution.</li>
+			  <li>VIS and NIR surface bands: Landsat bands except for 
+			  panchromatic band 8, the TIR bands, and the cirrus band.</li>
+		  </ul>
+		  </li>
+		  <li> <a href="img_anal_multigrid.htm">Multi-grids raster analysis</a></li>
+		  <li> Open band for raster analysis</li>
+        <li><a href="new_band.htm">Create difference index, band ratio, new band</a> (<a href="satb1otj.htm">Filter</a>, <a href="satb8a0j.htm">
+		ratio</a>, etc.)</li>
+		  <li><a href="add_tm_wind.htm">Add RGB windows</a></li>
+		<li><a href="satb1qur.htm"><b>Satellite histograms</b>:</a> graph of DN versus the number of pixels with that DN.</li>
+		  <li> <a href="erode_dilate.htm">Dilate/erode image </a></li>
+		  <li> Line detection (Hough transform)</li>
+		<li> <b>Optimum index factor</b>: OIF uses total variance within bands and
+      correlation coefficient between bands,.&nbsp; It will compute all
+      possible&nbsp; 3-band combinations. The combinations with high total
+      variance within bands and low correlations between bands will have high
+      OIF.&nbsp; These combinations should have the maximum extractable&nbsp;
+      information since they use bands with the least redundancy in the remotely
+      sensed data.</li>
+		<li> <a href="ref_spectra.htm">Spectral library graph</a></li>
+		<li> <b>Create DBF table from image</b>--currently limited to 
+		the number of points that can be used for <a href="cluster.htm">cluster 
+		analysis.</a>&nbsp; The table will cover the current map area, and 
+		subsample so that the number of points will be less than allowed by 
+		clustering.</li>
+		<li> <b>Image negative</b>--displays the image in negative format (color 
+		composites can look very surreal).&nbsp; Repeated selections toggle this 
+		on/off.</li>
+		  <li> Metadata<ul>
+			  <li>Sentinel-2 metadata</li>
+			  <li><a href="landsat_qa.htm">Landsat QA</a></li>
+		  </ul>
+		  </li>
+		  <li>External tools<ul>
+			  <li><a href="../new_options/acolite.html">ACOLITE processing</a></li>
+			  <li><a href="orfeo_toolbox.html">Orfeo toolbox</a></li>
+		  </ul>
+		  </li>
+		  <li> Quick classification</li>
+		  <li> Experimental options<ul>
+			  <li><a href="ndvi_nsdi.htm">NDVI/NSDI analysis time series</a> 
+			  (not tested recently; used Landsat, but perhaps before recent 
+			  format changes)</li>
+		  </ul>
+		  </li>
+		  <li> 3D view with two DEMs</li>
+      </ul>
+      <p>&nbsp;</p>
+	  <p>Missing options:</p>
+	  <ul>
+		  <li><a href="mult_grid_mask.htm">Multiple grid masking</a></li>
+	  </ul>
+    </td>
+  </tr>
+  </table>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 10/21/2021</em></p>
+
+</body>
+
+</html>

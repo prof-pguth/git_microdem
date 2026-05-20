@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Import New American Fact Finder Data</title>
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Importing New American Fact Finder Data</h1>
+<p>&nbsp;</p>
+<p>Use with caution.&nbsp; Note the data when this was written; I think this has 
+changed significantly</p>
+<table border ="2">
+				<tr>
+								<td>The CSV files have the data.&nbsp; If there 
+								are two CSV files, you do not want the one with 
+								annotations which will have &quot;ANN&quot; in the file 
+								name.<br />
+								<br />
+								Open the file in the spreadsheet.&nbsp; The 
+								field labels are not very well laid out.&nbsp; 
+								You should keep the web page open, where they 
+								will be clearer.<br />
+								<br />
+								The MOE columns are &quot;margin of error&quot;, whose 
+								statistical use is beyond what is covered here.&nbsp; 
+								Unless you know what you are doing, those 
+								columns can be deleted.<br />
+								<br />
+								The EST columns are estimates, because this data 
+								is based on limited sampling.</td>
+				</tr>
+				<tr>
+								<td>If you selected the option to include 
+								descriptive element names, the second row will 
+								have a very long title for the column.&nbsp; You 
+								will have to widen the column to see it, but it 
+								can help to devise a
+								<a href="rules_fields_Names.htm">good short name</a> 
+								for the field. You will have to remember to 
+								delete this row before you import the CSV file 
+								into MICRODEM.</td>
+				</tr>
+				<tr>
+								<td>If you did not select the option to include 
+								descriptive element names, use can use the 
+								second CSV in the file, which has &quot;<a href="metadata.htm">Metadata</a>&quot; 
+								in the file name.&nbsp; This has the field names 
+								in the export, and the same long, descriptive 
+								titles in the second column.</td>
+				</tr>
+				<tr>
+								<td>View of the data on Fact finder.&nbsp; Note 
+								that this is tract 7011,01 and 02, which is on rows 
+								2&nbsp; 
+								and 3 in 
+								the spreadsheet.&nbsp; This is also transposed 
+								from the spreadsheet.</td>
+				</tr>
+				<tr>
+								<td>
+								<p>Edit field names in row 1, using the
+								<a href="rules_fields_Names.htm">Rules
+          for field names</a>&nbsp; which are very picky.&nbsp; </p>
+								<p>
+								<br />
+								We will first: </p>
+								<ul>
+												<li>Delete column A</li>
+												<li>Remove the commas in Column 
+												C (search and replace &quot;,&quot; with a 
+												space or nothing).</li>
+												<li>Since this data set is 
+												entirely with a single county, 
+												we could also remove the County 
+												Name with a search and replace</li>
+								</ul>
+								<p>Then add field names.&nbsp; The fields go across 
+								(the first ones are the total population, then 
+								the under 5 then the 5 to 9, and so on.</p>
+								<p>You can delete columns that you do not want.&nbsp; 
+								The margin of error columns, if present, might 
+								be removed if you do not want to use them in 
+								your analysis.</p>
+								<p><a href="leading_0.htm">GEOID with leading 
+								Zero</a></p>
+								</td>
+				</tr>
+				<tr>
+								<td><br />
+								<br />
+								Save in spreadsheet format in case there are 
+								problems and your CSV files becomes corrupted.<br />
+								<br />
+								Save as a CSV file.<br />
+								<br />
+								Close the spreadsheet, since the GIS program 
+								cannot access the file at the same time.</td>
+				</tr>
+				<tr>
+								<td><b><img border="0" src="../images/db_btn.gif" width="35" height="31"> 
+	</b>Open database without map to convert the CSV file to a database.&nbsp; 
+								You can open on a map, but because there are no 
+								coordinates, the file will not plot on a map.<br />
+								<br />
+								This cannot be plotted on the map, because it 
+								has no geometry attached.<br />
+								<br />
+								A field has been added in the database, with the 
+								ratio of male to female earnings.</td>
+				</tr>
+				<tr>
+								<td>If there are problems with the import, you can look at the 
+								CSV file in Notepad or WordPad, and it should 
+								look like this.&nbsp; <br />
+								<br />
+								You might be able to make some simple fixes 
+								here.&nbsp; The global search and replace can be 
+								much faster in WordPad than in NotePad.</td>
+				</tr>
+				<tr>
+								<td>The male to female population ratio for the county, displayed 
+								with <a href="db_join.htm">Join/Link databases</a> 
+								and then <font size="3"> <a href="db_plot.htm">
+								Plot</a>,&nbsp; </font> <a href="gis_color_db_field.htm">Color code by DB field</a>.&nbsp; 
+								The values range from 77 to 479, and the color 
+								highlight the extreme high values which have 
+								many more men than women.&nbsp; You should be 
+								curious about what kind of a tract can have 
+								almost 5 times as many men as women.<br />
+								<br />
+								The map on the right shows where women outnumber 
+								men, by setting all values over 100 of the 
+								gender ratio to the maximum color, and seeing 
+								the variation in the parts of the country that 
+								are all blue in the map on the left.</td>
+				</tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" width="100%" id="table2">
+	<tr>
+		<td colspan="2">
+		<h3 align="center"><a name="Fix_ID">Fixing ID field in Scientific 
+		Notation</a></h3>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>Note that this file has the GEOID field as a floating point number 
+		with an exponent (and that all the values are the same).&nbsp; This will 
+		not work.&nbsp; Before you save, you must reformat the column so that it 
+		is a number with 0 decimal places.</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>After correcting the IDs.</td>
+	</tr>
+</table>
+
+<p><a href="csv_problems.htm">CSV file import problems</a></p>
+<p><a href="link_db.htm">Join/Link database examples</a> 
+								</p>
+
+<hr>
+
+<p align="right" ><span class="style1"><em>Last revision 9/13/2018</em></span></p>
+
+</body>
+
+</html>

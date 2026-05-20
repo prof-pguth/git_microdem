@@ -1,0 +1,88 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Using Hyperpsectral Imagery</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style2 {
+	font-size: medium;
+}
+.auto-style3 {
+	font-size: medium;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Using Hyperspectral Imagery</font></b></p>
+
+<p>
+<img border="1" src="../images/hyp_data_cube.PNG" width="25" height="21" class="auto-style2"><span class="auto-style2">Access
+via </span></p>
+<ul>
+	<li><span class="auto-style2">Button on </span><a href="maintool.htm">
+	<span class="auto-style2">main program toolbar</span></a><span class="auto-style2">,
+	</span></li>
+	<li><a href="tbme8igl.htm"><span class="auto-style3">File</span></a><span class="auto-style2">, 
+	</span><a href="file_open.htm"><span class="auto-style2">Open</span></a><span class="auto-style2">, Open Hyperspectral imagery 
+	</span><a href="micr0alv.htm"><span class="auto-style2">menu choice</span></a><span class="auto-style2">.</span></li>
+</ul>
+<p class="auto-style2">
+Best used with <a href="hyperion.htm">Hyperion</a> 
+data.&nbsp; Some <a href="hyperpsectral_imagery_theory.htm">older or other 
+hyperspectral data</a> might still work, but have not been tested recently.</p>
+<table border="2">
+	<tr>
+		<td><img height="613" src="../images/hyp_form1.gif" width="381"></td>
+		<td>
+		<p>Intended for Hyperion</p>
+		<ul>
+			<li>Basic band stats: range, average, and standard deviation.&nbsp; It 
+		also finds which bands have no data, and marks the band list for those 
+			bands.</li>
+			<li><a href="upsup_im_class.htm">Unsupervised classification</a></li>
+			<li><a href="satb1qur.htm"><b>Satellite histogram</b>.</a>&nbsp;&nbsp; 
+			This will be for the currently active band.</li>
+			<li>Grid scattergrams.&nbsp; Select two bands.&nbsp; Adjacent bands 
+			will generally be very strongly correlated.&nbsp; To better 
+			discriminate, you would bands to be uncorrelated.</li>
+			<li><a href="dns_at_point.html">DNs at point</a>:&nbsp; Checkbox selects 
+		graphs in terms of wavelength instead of band number.&nbsp; You can keep 
+			adding points until you select some other option.&nbsp;&nbsp; If you 
+			hit the button again, it&nbsp; will start a new graph.</li>
+			<li>Correlation matrix--very slow.</li>
+			<li>High and low tails affect the contrast for the scene.&nbsp; The 
+			colors will be linearly stretched between the two percentiles, and 
+			not waste colors on clouds or very dark pixels.</li>
+			<li>Picking a band changes the display to grayscale for that band.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td><img alt="" height="498" src="../images/hyp_form2.gif" width="316"></td>
+		<td>
+	<strong>
+		Requires <a href="ref_spectra.htm">spectral reflectance library</a>.</strong><br>
+		<br>Reflectance library spectra button: pick multiple files if desired for a 
+		file open dialog.<br><br>
+		Pick single files from the list box.</td>
+	</tr>
+</table>
+<hr>
+
+<p align="right" class="style1"><em>Last revision 12/21/2017</em></p>
+	<strong>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

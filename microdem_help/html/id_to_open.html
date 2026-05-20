@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Identify Data Type to Open</title>
+</head>
+
+<body>
+
+<h2>Identify Data Type to Open</h2>
+<p>The program forces you to select the type of data because:</p>
+<ul>
+	<li>Some data formats, like Geotiffs, could be either DEMs or imagery, and 
+	nothing in the file or its metadata makes this apparent.&nbsp; The program 
+	needs to know the type of data, because it supports different menu choices 
+	depending of the data's characteristics.</li>
+	<li>The program originally had completely different display operations for 
+	DEMs and imagery.&nbsp; While this has mostly been replaced with a common 
+	map window, the data structures for a DEM and an image remain quite 
+	distinct.</li>
+	<li>In the early days of GIS and remote sensing, completely different 
+	programs were used for the two operations, and that philosophy still has 
+	some remnants in the MICRODEM source code.</li>
+</ul>
+<p>The most important <a href="file_open.htm">data open operations:</a></p>
+		<ul>
+			<li><img src="../images/new%20dem.gif" width="32" height="32">
+			<a href="tbme5iy6.htm"><b>Open DEM</b></a></li>
+			<li>
+			<img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="tbme65lx.htm"><b>Open image</b></a></li>
+			<li><img src="../images/vecmap.jpg" width="33" height="32">
+			<a
+        href="vector_maps.htm">Open Vector Map</a></li>
+			<li><b>
+			<img border="0" src="../images/shp_btn.gif" width="32" height="30"> Open shape file map</b>--open blank map and display shape file
+      filling the display area.</li>
+			<li><a href="laser_scan_point_cloud.htm">Open point clouds</a></li>
+		</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 9/28/2017</em></p>
+
+</body>
+
+</html>
