@@ -1,0 +1,79 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Principal components</title>
+</head>
+
+<body>
+
+<p><b><font size="5">Satellite analysis--Principal Components (2 band examples)</font></b></p>
+
+<p><a href="../principal_components.htm"><b>General discussion, and example with 
+7 bands</b></a></p>
+<table border="1" id="table1">
+	<tr>
+		<td><img border="0" src="SCATTER_23.GIF" width="327" height="303"></td>
+		<td><img border="0" src="PC_SCATTER_23.GIF" width="327" height="303"></td>
+	</tr>
+	<tr>
+		<td colspan="2">Scatter grams, bands 2 and 3.&nbsp; These bands are 
+		highly correlated.&nbsp; In principal components, the axes are rotated
+          so that the first axis goes through the main cloud of data.&nbsp; Both
+          axes are scaled so that values range from 0-255.&nbsp; Because almost
+          all points lie along a single line as indicated by the very high
+          correlation coefficient, PC1 explains almost all the data (98.63%).</td>
+	</tr>
+</table>
+<b>Correlation Matrix</b>
+<table border="3" id="table3">
+<tr><td>&nbsp;</td><td>Band 3, TM: red</td><td>Band 2, TM: green</td></tr>
+<tr><td>Band 3, TM: red</td><td>1.00</td><td>0.96</td></tr>
+<tr><td>Band 2, TM: green</td><td>0.96</td><td>1.00</td></tr>
+</table>
+
+&nbsp;<table border="3" id="table2">
+<tr><td>&nbsp;</td><td>PC1</td><td>PC2</td><td><b>Notes</b></td></tr>
+<tr><td>Eigenvalue</td><td>265.62</td><td>3.69</td><td>&nbsp;</td></tr>
+<tr><td>Explains</td><td>98.63</td><td>1.37</td><td>&nbsp;</td></tr>
+<tr><td>Band 3, TM: red</td><td>0.86895</td><td>-0.49491</td><td><b>PC1 is a 
+	mixture of bands 2 and 3, which a higher loading from Band 3</b></td></tr>
+<tr><td>Band 2, TM: green</td><td>0.49491</td><td>0.86895</td><td>&nbsp;</td></tr>
+</table>
+
+<hr>
+<p>&nbsp;</p>
+<table border="1" id="table4">
+	<tr>
+		<td><img border="0" src="SCATTER_14.GIF" width="327" height="303"></td>
+		<td><img border="0" src="PC_SCATTER_14.GIF" width="327" height="303"></td>
+	</tr>
+	<tr>
+		<td colspan="2">Scatter grams, bands 1 and 4.&nbsp; These bands are 
+		poorly correlated (r=0.27), and rotation of the axes leads to a PC1 that
+          explains 93.42% of the information.</td>
+	</tr>
+</table>
+<p>
+<b>Correlation Matrix</b>
+</p>
+<table border="3" id="table6">
+<tr><td>&nbsp;</td><td>Band 3  TM: red 0.63-0.69</td><td>Band 4  TM: near IR 0.76-0.90</td></tr>
+<tr><td>Band 3  TM: red 0.63-0.69</td><td>1.00</td><td>0.27</td></tr>
+<tr><td>Band 4  TM: near IR 0.76-0.90</td><td>0.27</td><td>1.00</td></tr>
+</table>
+
+<table border="3" id="table5">
+<tr><td>&nbsp;</td><td>PC1</td><td>PC2</td><td><b>Notes</b></td></tr>
+<tr><td>Eigenvalue</td><td>2631.06</td><td>185.33</td><td>&nbsp;</td></tr>
+<tr><td>Explains</td><td>93.42</td><td>6.58</td><td>&nbsp;</td></tr>
+<tr><td>Band 3, TM: red 0.63-0.69</td><td>0.08122</td><td>0.99670</td><td><b>PC2 
+	is almost entirely Band 3.</b></td></tr>
+<tr><td>Band 4, TM: near IR 0.76-0.90</td><td>0.99670</td><td>-0.08122</td><td>
+	<b>PC1 is almost entirely Band 4</b></td></tr>
+</table>
+
+</body>
+
+</html>

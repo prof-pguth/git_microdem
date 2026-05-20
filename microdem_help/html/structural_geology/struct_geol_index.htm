@@ -1,0 +1,243 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Structural Geology Exercise</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+				font-style: italic;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="6"><b>Geology Version</b></font></p>
+
+<table border="2">
+    <tr>
+        <td>The geology version of MICRODEM has a limited menu and toolbar:<ul>
+            <li><img src="../../images/desktop.jpg" width="32"
+                height="32"> <a href="../savedesk.htm"><strong>Load
+                project:</strong></a> </li>
+            <li><img src="../../images/new%20dem.gif" width="32"
+                height="32"> <a href="../tbme5iy6.htm"><b>New DEM</b></a>
+            </li>
+            <li><img src="../../images/new%20sat%20color.gif"
+                width="32" height="32"> <a href="../tbme65lx.htm"><b>New
+                image</b></a>: </li>
+            <li><img src="../../images/opengl.gif" border="1"
+                width="32" height="29"> <a
+                href="../opengl_3d_views.htm"><strong>OpenGL 3D
+                views:</strong></a> </li>
+            <li><img src="../../images/LOS.gif" width="32"
+                height="32"><a href="../tbme8vjn.htm"><strong>LOS/Topographic
+              Profiles:</strong></a> <strong> </strong>in geology these are
+              topographic profiles or cross sections. </li>
+            <li><img border="0" src="../../images/strike_slip_fault.GIF" width="20" height="20">&nbsp;
+              Earthquake centroids--open database and plot
+                location of earthquakes.</li>
+			<li><img src="../../images/stereonet.gif" width="39" height="35">
+      <a href="../stereonet.htm">Stereo net&nbsp;</a></li>
+        </ul>
+        </td>
+    </tr>
+</table>
+
+<p>Viewing and visualizing terrain</p>
+
+<ul>
+    <li><a href="../tbme8vjn.htm">Topographic Profiles</a>:
+        for maximum precision in measuring on the profiles and in
+        getting a true visualization, select a short distance,
+        and run the profiles in the dip direction perpendicular to the strike.</li>
+    <li><a href="../opengl_3d_views.htm">OpenGL 3D views</a>:
+        block diagrams.</li>
+    <li><a href="../variable_opacity_merges.htm">Variable opacity
+        merges</a>: stack two views (such as DEM
+        topography and satellite image) and adjust how much of
+        each one you see.</li>
+    <li><a href="../micr96nn.htm">Topographic grain overlays:</a> for an
+      objective view of how organized the terrain is, and if the valleys and
+      ridges align in a preferred direction.</li>
+</ul>
+
+<p>Measuring fault scarps</p>
+
+<ul>
+    <li>Get strike from <a href="../tbme9lrp.htm">Calculate</a>, Bearing menu option.</li>
+    <li><a href="../slope_on_los.htm">Measure dip from profiles</a> or <a href="../los_protractor.htm">place
+      a protractor on the profile</a>
+        if you assume the land surface follows the fault plane, and you draw the
+      profiles perpendicular to strike of the faults.&nbsp; This can be a good assumption with active
+        faults in arid climates.</li>
+    <li>Get dip and strike from <a href="../threept.htm">three
+        point problems</a></li>
+    <li>Get dip from <a href="../tbme2515.htm">terrain categories</a>
+        (from the Overlay, Terrain Categories menu).&nbsp; Select
+        the slope in percent (100 * tangent) or degrees, and the
+        matching terrain will be colored.&nbsp; If you would like
+        to see all the slopes with a particular range of values,
+        this can be effective in picking out large areas that
+        could be fault scarps.</li>
+    <li>Get dip from slope maps.&nbsp; Right click on the map,
+        Select &quot;Display parameter&quot;, and then pick
+        &quot;Slope&quot;.&nbsp; You should pick standard
+        categories, and then use the button to select slope
+        categories.&nbsp; You should pick categories to match
+        what you are looking for on the fault scarps.</li>
+</ul>
+
+<p>Earthquake focal mechanisms</p>
+
+<ul>
+    <li>Harvard data base locations (and many other earthquake catalogs) are accurate to 0.01<font
+        face="Times New Roman">°, so at the very best we can
+        locate to about 1 km.&nbsp; This will be in addition to
+        any errors in locating the earthquake; those errors will
+        be greatest for small earthquakes, and earthquakes in
+        remote location with a poor distribution of recording
+        stations.</font></li>
+    <li><font face="Times New Roman">Plot the beach ball diagrams</font></li>
+    <li><font face="Times New Roman">ID epicenters, and get the
+        strike and dip from the database record. </font>The dip
+        direction is not in the data base, but can be computed as
+        90 degrees from the strike. Remember that the focal mechanism provides
+      two planes, one of which is the fault plane. </li>
+</ul>
+
+<hr>
+
+<p>&nbsp;</p>
+
+<table border="2">
+    <tr>
+        <td><img src="BEACH_BALL_MAP.JPG" width="633"
+        height="601"></td>
+        <td>DEM opened, and earthquake focal mechanisms selected with plotting
+          by colored symbols.<p><img
+        src="../../images/focal_mech.gif" width="24" height="24">
+        <a href="../plot_focal_mech.htm">Plot single focal
+        mechanism on the map by clicking </a>.&nbsp; </p>
+        <p>One of the two nodal planes will be the fault plane.</p>
+        </td>
+    </tr>
+</table>
+
+<table border="2">
+    <tr>
+        <td><img src="map_3pt.jpg" width="513" height="585"></td>
+        <td>The southwestern earthquakes lies in a valley, far
+        away from any bedrock exposures.&nbsp; The strike appears
+        to be approximately east-west, and the ridge to the
+        southeast might represent the fault scarp.<p>This shows
+        the result of using the <a href="../threept.htm">three
+        point problem</a> (on the <a
+        href="struct_geology_form.htm">structural geology
+        computation window</a>).&nbsp; After selecting three
+        points on the SW side of the ridge, the computer
+        calculated the plane which passes though them (N63W
+        21SW), and shows where its outcrop would project.</p>
+        <p>The plane passes close to the epicenter, but the focus
+        is 35 km deep, which would affect the results depending
+        on which of the two focal planes represented the fault
+        rupture surface.</p>
+        <p>This dip is significantly different than the two focal
+        planes ( N76W 45N, and N82E 47S), and the strike is
+        different from the focal plane with a south dip).</p>
+        <p>The ridge is probably not a fault line scarp from the
+        fault associated with this earthquake. </p>
+        </td>
+    </tr>
+</table>
+
+<table border="2">
+    <tr>
+        <td><img src="map_bearing.jpg" width="482" height="349"></td>
+        <td><a href="../tbme9lrp.htm">Calculate</a> menu has a Bearing tool is being used to measure
+        the trend of the long linear valleys in the NW part of
+        the map, as they could be related to a fault.<p>The 115
+        degrees measured is N75W, fairly close to the second
+        focal plane.&nbsp; The segment closer to the dialog box
+        actually has an even closer fit.</p>
+        <p>The large number of valleys and lineaments oriented
+        NW-SE suggest that the second focal plane may well be the
+        orientation of the fault.</p>
+        </td>
+    </tr>
+</table>
+
+<table border="2">
+    <tr>
+        <td><img src="quake_id_1.gif" width="212" height="366"></td>
+        <td>Record of the southeastern of the two
+        earthquakes, obtaining by using&nbsp; <img
+        src="../../images/id.gif" width="27" height="25">
+          Identify data base records button on the <a href="../maptool.htm"> map toolbar</a>
+          or the <a href="../database_table_display.htm">database table display</a>
+          and
+        then double clicking on the epicenter.&nbsp;<a href="../cmt_catalog.htm">Explanation
+          of the fields</a>. <p>The two
+        possible fault planes have nearly identical strikes (284
+        and 82) and dips (45 and 47), but have very different dip
+        directions.&nbsp; The dip direction is not in the data
+        base, but can be computed as 90 degrees clockwise from the
+        strike.&nbsp; In this case, Plane 1 dips to the N
+        (284+90=374=14, and Plane 2 dips to the S
+        (82+90=172).&nbsp; Standard geological shorthand for the
+        two planes would be N76W 45N, and N82E 47S.<a href="http://">http://</a> </p>
+        </td>
+    </tr>
+</table>
+
+<table border="2">
+    <tr>
+        <td><img src="quake_id_2.gif" width="207" height="366"></td>
+        <td>Record of the northwestern of the two
+        earthquakes, obtaining by using the <img
+        src="../../images/id.gif" width="27" height="25">
+        Identify data base records button on the map toolbar and
+        then double clicking on the epicenter.&nbsp; <p>The two
+        planes are N36E, 74SE and N58W, 75NE </p>
+        </td>
+    </tr>
+</table>
+
+<table border="1" >
+    <tr>
+        <td><img src="faults_opengl.JPG" width="592"
+        height="342"></td>
+        <td><a href="../opengl_3d_views.htm">OpenGL
+        3D view</a> of faults and their scarps.&nbsp; This
+        was selected on the Landsat TM of the area, so the view
+        combines the satellite imagery with SRTM
+        topography.&nbsp; You can rotate and zoom the view.</td>
+    </tr>
+</table>
+
+<table border="1" >
+    <tr>
+        <td><img src="VARIABLE_OPACITY.JPG" width="425"
+        height="395"></td>
+        <td><a href="../variable_opacity_merges.htm">Variable
+        opacity merge</a> combines&nbsp; TM satellite imagery with
+        a reflectance view of SRTM DEM.&nbsp; This
+        emphasizes the fault scarps, although the direction of
+        lighting in the reflectance view determines which faults
+        will be highlighted.&nbsp; In this option you can
+        interactively adjust the opacity, and which of the two
+        scenes dominates the display.</td>
+    </tr>
+</table>
+
+<p align="right" class="style1">Last revision 10/8/2014</p>
+</body>
+</html>
