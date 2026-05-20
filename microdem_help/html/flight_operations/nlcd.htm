@@ -1,0 +1,178 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Land Cover Overview</title>
+<link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><font size="6"><strong>Land Cover Overview</strong></font></p>
+
+<p>Land cover is a grid which assigns a code to each point in the data set based 
+on occurs there.&nbsp; It differs from land use, but obviously the two are 
+related.&nbsp; 
+The code is normally a byte, and there are usually a few dozen categories.&nbsp; 
+They are created from satellite imagery such as Landsat or Sentinel-2, and due to clouds and collection 
+schedules the imagery is usally from about a year in time.</p>
+<table border="2">
+				<tr>
+								<td >
+								<img alt="" height="338" src="../images/worldcover10m.png" width="394">&nbsp;</td>
+								<td >
+								<img alt="" src="../images/globcov.png" width="516" height="495" /></td>
+								<td>
+		<img border="0" src="../images/NLCD_2001.GIF" width="338" height="341"></td>
+				</tr>
+				<tr>
+								<td>
+								<a href="land_cover_10m.html">WorldCover 10 m</a>, 
+								spacing 0.3&quot; (10 m)<br></td>
+								<td >
+								<a href="../cop_glc100.htm">Copernicus Global 
+								Land Cover (GLC100)</a> Globabally available  
+								with 3.6" spacing (100 m) .</td>
+								<td><a href="us_nlcd.htm">US NLCD 30 m pixels</a> 
+								(<span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">now 
+								annual land cover from 1985 to 2023</span>).<br><br>This is 
+								the best data for the CONUS<br><br>
+								<span style="color: rgb(23, 23, 23); font-family: &quot;Merriweather Web&quot;, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; font-size: 21px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 300; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+								Land Change Monitoring, Assessment,&nbsp;and 
+								Projection (LCMAP)<span>&nbsp;</span></span><br>
+								<a href="https://eros.usgs.gov/lcmap/viewer/index.html">
+								https://eros.usgs.gov/lcmap/viewer/index.html</a>
+								<br>
+								<a href="https://www.usgs.gov/special-topics/lcmap">
+								https://www.usgs.gov/special-topics/lcmap</a>
+								<br><a href="https://earthexplorer.usgs.gov/">
+								https://earthexplorer.usgs.gov/</a> <br></td>
+				</tr>
+</table>
+<p>&nbsp;</p>
+<table border="2">
+	<tr>
+		<td>
+		<img height="351" src="../demix_sg2/compare_lc10_lc100.png" width="1887"></td>
+	</tr>
+	<tr>
+		<td class="auto-style1">Comparing LC10 and LC100 for three categories 
+		after reclassification </td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table>
+	<tr>
+		<td>
+		<img alt="" height="430" src="../images/landcover_catefores.png" width="606"></td>
+		<td>
+		<p>Extract from the MICRODEM database of landcover categeries.</p>
+		<ul>
+			<li>Cateogory is the byte value stored in the grid.&nbsp; In some 
+			case the first digit is a larger category, as in NLCD the 20's are 
+			all developed areas, and the one's digit has subcategories.</li>
+			<li>The color is normally assigned by the data set creator.</li>
+			<li>The long name</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<hr>
+<p>Other land cover data sets</p>
+<ul>
+				<li>Global<ul>
+					<li>Terra and Aqua combined Moderate Resolution Imaging 
+				Spectroradiometer (MODIS) Land Cover Type (MCD12Q1) Version 6 
+				data product provides global land cover types at yearly 
+				intervals (2001-2018) in HDF-4 format (you are on your own to 
+					get it into a usable GIS format),
+					<a href="https://lpdaac.usgs.gov/products/mcd12q1v006/">https://lpdaac.usgs.gov/products/mcd12q1v006/</a></li>
+					<li>
+								<a href="land_cover_300m.html">300 m 
+								C3S Global Land Cover and Land Cover Maps - 
+								v2.0.7</a>&nbsp; 22 classes</li>
+					<li><a href="globcov.htm">GlobCover 2006 and 2009</a>--300 m pixels</li>
+					<li><a href="glc2000.htm">Global Land Coverage 
+								2000</a>--1 km pixels</li>
+					<li><a href="land_cover_10m.html">ESA World Cover 2020 and 
+					2021, 10 m resolution</a></li>
+					<li><a href="esri_10m_landcover.html">ESRI 10 m UTM 
+					projection Land Cover</a> </li>
+					<li>
+					<a href="https://www.un-spider.org/links-and-resources/data-sources/land-cover-map-globeland-30-ngcc">
+					https://www.un-spider.org/links-and-resources/data-sources/land-cover-map-globeland-30-ngcc</a>&nbsp; 
+					10 classes</li>
+				</ul>
+				</li>
+				<li>Europe<ul>
+					<li><a href="s2glc.htm">S2GLC--Sentinel-2 Global Land Cover</a> 
+					(10 m)</li>
+					<li><a href="corine_land_cover.htm">Corine
+Land cover 2000 and 2006 for Europe (100 m and 250 m)</a> </li>
+				</ul>
+				</li>
+				<li>US<ul>
+					<li><a href="cdl.htm">CDL--Cropland Data Layer</a>&nbsp; USDA 56 
+				m resolution</li>
+					<li><a href="ccap.html">NOAA Coastal Change Land Cover (CCAP or 
+				C-CAP)</a></li>
+					<li>
+				<a href="https://www.chesapeakeconservancy.org/conservation-innovation-center/high-resolution-data/land-cover-data-project/">
+				https://www.chesapeakeconservancy.org/conservation-innovation-center/high-resolution-data/land-cover-data-project/</a>&nbsp; 
+				1m landcover for the Chesapeake water shed, 2013-2014<ul>
+					<li>7 and 13 classes, can get by entire data set, state, or 
+					county</li>
+				</ul>
+					</li>
+				</ul>
+				</li>
+				<li>
+				Africa<ul>
+					<li>Africa shapefile&nbsp;and KMZ landcover:
+					<a href="http://www.glcn.org/databases/lc_gc-africa_en.jsp">http://www.glcn.org/databases/lc_gc-africa_en.jsp</a>
+					</li>
+					<li>Africa 20 m landcover from Sentinel satellite<ul>
+						<li>
+						<a href="http://2016africalandcover20m.esrin.esa.int/viewer.php">http://2016africalandcover20m.esrin.esa.int/viewer.php</a>&nbsp; 
+					(view in web browser)</li>
+						<li>
+						<a href="http://2016africalandcover20m.esrin.esa.int/download.php">http://2016africalandcover20m.esrin.esa.int/download.php</a> 
+					(download 6 GB Geotiff)</li>
+					</ul>
+					</li>
+				</ul>
+				</li>
+</ul>
+<p>Biomes</p>
+<ul>
+	<li>US Terrestrial biomes:
+	<a href="http://rmgsc.cr.usgs.gov/ecosystems/dataviewer.shtml">http://rmgsc.cr.usgs.gov/ecosystems/dataviewer.shtml</a>
+	</li>
+</ul>
+
+<p>Web viewer Copernicus Landcover from 1992 to 2015:
+<a href="https://openlandmap.org/#/?base=Stamen%20(OpenStreetMap)&amp;center=39.0000,25.0000&amp;zoom=4&amp;opacity=80&amp;layer=lcv_land.cover_esacci.lc.l4_c&amp;time=2015">
+https://openlandmap.org/#/?base=Stamen%20(OpenStreetMap)&amp;center=39.0000,25.0000&amp;zoom=4&amp;opacity=80&amp;layer=lcv_land.cover_esacci.lc.l4_c&amp;time=2015</a>
+</p>
+
+<p>
+<a href="http://worldgrids.org/doku.php?id=wiki:land_cover_and_land_usehttp://worldgrids.org/doku.php?id=wiki:land_cover_and_land_use">
+http://worldgrids.org/doku.php?id=wiki:land_cover_and_land_use</a></p>
+
+<hr>
+
+<p align="right" class="style1"><em>&nbsp;Last revision 4/20/2023</em></p>
+
+<p>&nbsp;</p>
+</body>
+</html>

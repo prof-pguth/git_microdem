@@ -1,0 +1,91 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>WorldView Snapshots</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>WorldView Snapshots</h1>
+<p><font class="auto-style1" size="3">There is near complete daily coverage, 
+with some gaps near the equator.&nbsp; If there is a gap in your region, pick&nbsp; 
+the day before or after.</font></p>
+<ul>
+	<li>Connect to <a href="https://wvs.earthdata.nasa.gov/">
+https://wvs.earthdata.nasa.gov/</a></li>
+	<li>Zoom in on the map</li>
+	<li>Outline your area using the button to the right on the NE corner of the 
+	map</li>
+	<li>Geographic projection</li>
+	<li>Select imagery (if you want to look at false colors, click the &quot;i&quot; 
+	button for an explanation)<ul>
+		<li>Terra (1030 local time overpass) or Aqua (1330 local time) MODIS 
+		true color (corrected reflectance).&nbsp; This archive goes back over 20 
+		years.</li>
+	</ul>
+	</li>
+	<ul>
+		<li>Suomi NPP VIIRS (1330 local time),&nbsp; has a night lights (0130 
+		local time) option, which can be very informative.&nbsp; This archive 
+		goes back to 2015</li>
+		<li>NOPAA 20 VIIRS (1420 local time) goes back to 2020</li>
+	</ul>
+	<li>You can overlay boundaries, roads, coasts, and detected fires if desired</li>
+	<li>Format (you must change this if want to download for use in GIS)<ul>
+		<li>Geotiff is the best option (requires
+		<a href="adf_grids.htm">GDAL</a>). </li>
+		<li>PNG plus <a href="tbme6h0z.htm">world
+        file</a>: you will have to unzip the download file to get the files you 
+		need.</li>
+	</ul>
+	</li>
+	<li>Pick resolution.&nbsp; (2 km, 1 km,&nbsp; 500 m, and 250 m)&nbsp; The 
+	web site will tell you the size of the download. You would like to see the 
+	full 250 m resolution and some context of the surrounding region, so aim for 1000x1000 to 2000x2000 pixels. If 
+	necessary adjust the coverage area to make it smaller.&nbsp; If you want to 
+	see the big picture, use one of the larger resolutions.</li>
+	<li>Turn off Autoscale</li>
+	<li>Preview 
+	<ul>
+		<li>Cycle forward/backward by date to get a cloud 
+	free image, and one without gaps.&nbsp; If you have a really cloudy area, it 
+		can be very difficult to get cloud free coverage.</li>
+		<li>&nbsp;For use in GIS, Download image, and Unzip</li>
+	</ul>
+	</li>
+</ul>
+<p>Use in GIS:</p>
+<ul>
+	<li><img src="new%20sat%20color.gif" width="32"
+        height="32"> <a href="tbme65lx.htm">New image</a> to open the file,
+picking the <a href="tbme6h0z.htm">world
+        file (PGW)</a>. </li>
+	<li><img border="0" src="../images/db_map.png" width="24" height="24">
+	<a href="data_base.htm">Open database</a> 
+	(shapefile) to overlay boundaries, roads, or other databases.</li>
+</ul>
+<table border="1" id="table1">
+	<tr>
+		<td>
+        <img border="0" src="MODIS_TERRA_500M.PNG" width="463" height="331"></td>
+		<td>MODIS Terra imagery at 500 m resolution (displayed with 1200 m 
+		resolution).<p>Roads and boundaries overlaid, in MICRODEM, where 
+		you add any information the same way you do with any other map.&nbsp; </td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 1/15/2021</em></p>
+
+</body>
+
+</html>

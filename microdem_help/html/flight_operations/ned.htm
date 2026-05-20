@@ -1,0 +1,89 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>NED</title>
+<style type="text/css">
+.style2 {
+				font-size: small;
+				font-style: italic;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><font size="5"><b>3DEP (NED)</b></font></p>
+<p align="center" style="text-align: left">
+
+The USGS elevation program was initially known as NED (National Elevation 
+Dataset) when it replaced older USGS ASCII formats.&nbsp; It also marked a shift 
+from UTM projected data sets to arc second data, which was &quot;seamless&quot; and 
+distributed from the USGS Seamless Server.&nbsp; The current name is 
+3DEP, for 3D Elevation Program.</p>
+<p align="center" style="text-align: left">
+
+Bare earth DEM layers in <a href="http://nationalmap.gov/3DEP/index.html">
+3DEP</a> are nationally seamless and are distributed in geographic coordinates 
+at 1/3, 1, and 2 arc-seconds.</p>
+<p align="center" style="text-align: left">This
+is arc second data of the highest quality available from USGS.&nbsp; 
+About 25% of the country has 1/9&quot; data (about 3 m), but no more will be 
+produced.&nbsp; Alaska has 2&quot; NED and a 
+limited coverage with 1/9&quot; data.</p>
+<p align="center" style="text-align: left">There is now a 1 m DTM, in IMG format
+<a href="adf_grids.htm">(requires GDAL</a>)&nbsp; with a UTM projection in 10 km 
+tiles which can be 250 mb in size.&nbsp; It currently covers a limited area.&nbsp; 
+Merging data sets at the UTM zone boundaries is not as simple as with arc second 
+data.</p>
+<p align="center" style="text-align: left">USGS will be moving to a Geotiff 
+format in early 2020.</p>
+<p align="center" style="text-align: left">Download directions&nbsp; from 
+<a href="../microdemtutorials/national_map/national_map.htm">National Map 
+Viewer.</a></p>
+<table border="2">
+	<tr>
+		<td><img height="345" src="../images/ned_1_sec.png" width="326"></td>
+		<td>One second NED.&nbsp; Note that some water has elevations, and 
+		others is missing data.</td>
+	</tr>
+	<tr>
+		<td><img height="432" src="../images/ned_third_sec.png" width="386"></td>
+		<td>One third second NED.</td>
+	</tr>
+	<tr>
+		<td><img height="296" src="../images/ned_ninth_sec.png" width="318"></td>
+		<td>One ninth second NED.&nbsp; Note half of a building in the center on 
+		the map.</td>
+	</tr>
+	<tr>
+		<td><img height="344" src="../images/usgs_1m_dtm.png" width="383"></td>
+		<td>1 m USGS UTM DEM.&nbsp; This example is from 
+		the Pentagon.&nbsp; In urban areas artefact dominate this product; the 
+		buildings and bridges/overpasses are mostly gone, but a number of the 
+		roadbeds are still prominent.&nbsp; 
+		This is not the full resolution of the dataset.</td>
+	</tr>
+</table>
+<p align="left">NED references:</p>
+<ul>
+	<li>Gesch, D.B., 2007, The National 
+	Elevation Dataset, in Maune, D., ed., Digital Elevation Model Technologies 
+	and Applications: The DEM Users Manual, 2nd Edition: Bethesda, Maryland, 
+	American Society for Photogrammetry and Remote Sensing, p. 99-118.</li>
+	<li>Gesch, D., Oimoen, M., Greenlee, S., 
+	Nelson, C., Steuck, M., and Tyler, D., 2002, The National Elevation Dataset: 
+	Photogrammetric Engineering and Remote Sensing, v. 68, no. 1, p. 5-11.</li>
+</ul>
+
+<hr>
+
+<p align="right" class="style2">Last revision 12/4/2019</p>
+
+<p>&nbsp;</p>
+</body>
+</html>

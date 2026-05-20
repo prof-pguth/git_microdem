@@ -1,0 +1,134 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="Template" content="C:\MSOFFICE\OFFICE\html.dot">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>New in Version 12</title>
+<style type="text/css">
+.style1 {
+				font-family: Verdana;
+				font-size: x-small;
+}
+.style2 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF"
+vlink="#800080">
+
+<p align="center"><font size="5"><b>New in MICRODEM Version 16</b></font></p>
+
+<hr>
+
+<p align="left">Version 16.0 first appeared in November 2011, compiled with 
+Delphi XE2.&nbsp; </p>
+
+<p align="left">Version number has now been de-emphasized on the
+splash screen, in favor of the build number, which is easier to
+track because it changes daily instead of annually (at best).</p>
+
+<p align="left"><a href="micr769l.htm"><font size="2"
+face="Verdana">Program History</font></a><font size="2"
+face="Verdana">&nbsp;</font></p>
+
+<hr>
+<p align="left">(11/28/2011): <a href="pit_spire.htm">Spires and pits</a> 
+revised.&nbsp;</p>
+<p align="left">(11/28/2011): <font face="Verdana" size="2">
+			<a href="fresnel_zones.htm">Fresnel zones</a> major rewrite</font></p>
+<p align="left" class="style1">(11/28/2011) Fixed problems with
+<a href="ambush.htm">ambush </a></p>
+<p align="left"><span class="style1">(11/29/2011)&nbsp; </span><img border="1" src="../images/area.GIF" width="20" height="20">
+	<a href="area.htm">Area computation</a> revised to create <a href="shapefile.htm">shapefile</a> with 
+the region.</p>
+<p align="left">(12/13/2011) <a href="edit_menu.htm">Edit</a> menu has new 
+options to remove single point pits or spires in a DEM</p>
+<p align="left">(1/2/2012) <a href="md_ini.htm">MICRODEM.INI</a> with default 
+settings</p>
+<p align="left">(1/4/2012): Major changes to <img src="../images/LOS.gif" width="32" height="32"> <a
+        href="tbme8vjn.htm"><strong>Line of sight / Topographic
+        Profiles</strong></a> with point clouds (spillover for other cases)</p>
+<p align="left">(1/7/2012): option to save end points for LOS from the file 
+menu, and to restore it by opening the resulting CSV file and picking the 
+profile option on the STAT button menu.</p>
+<p align="left">(2/10/2012):&nbsp; numerous changes to plotting databases.</p>
+<p align="left">(2/12/2012): To plot database by ratio, first compute the ratio 
+(Edit, Field arithmetic), and then plot that field.</p>
+<p align="left">(2/18/2012): Multiple changes to Geotiff imagery, or WorldView 2 
+and QuickBird imagery with 16 bit data, 4 and 8 bands in a single file.&nbsp; 
+This requires a <a href="files_run_md.htm">new sat_band_names_v2.dbf </a>data 
+file, which now has the names the Landsat TM bands in the database instead of in 
+the program code.</p>
+<p align="left">(2/28/2012): multiple changes for 
+<a href="pt_cloud_db_project_new.htm">form to control point clouds not viewed 
+over a map.</a></p>
+<p align="left">(2/28/2012): can open a TXT file like a CSV</p>
+<p align="left">(3/4/2012): option on <a href="image_analysis.htm"><b>Image analysis</b></a> 
+menu to get the Digital Numbers for all bands, and it will report the 16 bit 
+results for Geotiffs.</p>
+<p align="left">(4/1/2012): additional options to edit DEMs, and to reclassify 
+them</p>
+<p align="left"><a href="veg_voxels.htm">Veg density voxels</a>: </p>
+<ul>
+				<li><a href="veg_dens_prof.htm">Vegetation density vertical profiles</a></li>
+				<li><a href="power_lines.htm">Power line detection</a></li>
+</ul>
+<p align="left">(7/12/2012): deployment of a 64 bit version is imminent. This 
+requires moving to a different method for database access, because the BDE will 
+not work in 64 bit Windows. The rewrite is underway, and if you use this version 
+of the <br>
+program, you should be careful to back up any critical databases as it is 
+possible that there will be growing pains would could involve loss or corruption 
+of databases. The new choice is SQLite3, which hopefully will allow eventual 
+deployment to smart phones.<br>
+&nbsp;</p>
+<p align="left">(7/13/2012) Changes to DEM handling because Memory is cheap</p>
+<ul>
+	<li>
+	<p align="left">All old MICRODEM DEMs will be rewritten</p></li>
+	<li>
+	<p align="left">All 32 bit DEMs will be imported as floating point (explicit 
+	save as 32 bit if desired)</p></li>
+	<li>
+	<p align="left">DEMs/grids will save as 8 bit, 16 bit, or 32 bit depending 
+	on selected option</p></li>
+</ul>
+<p align="left">(7/13/2012) Changes to allow <a href="geotiff_grid_image.htm">
+Geotiffs to be used as both images and grids</a></p>
+<p align="left">(7/13/2012) Several changes to support databases, because SQLite 
+does not like some field names (e.g. TABLE or FIELD and does not like a &quot;-&quot; in a table 
+name.</p>
+<p>(8/22/2012): The INI and menus.dbf file are now&nbsp; stored in the Windows 
+Application Directory. This&nbsp; lets each user on a lab computer keep there 
+own&nbsp; settings.</p>
+<p>(8/22/2012): Change to <a href="update_microdem.htm">Update MICRODEM program</a> 
+and help file.&nbsp;&nbsp; The external file is no longer needed, and the&nbsp; 
+Windows security is hopefully happy with it, and will stay happy.</p>
+<p>(8/22/2012): Many changes to <a href="tbme8vjn.htm">Line of sight</a>.</p>
+<p>(8/22/2012): Options to open two <a href="veg_grid.htm">vegetation grids</a>, 
+two <a href="veg_voxels.htm">vegetation density voxel data sets</a>, and two
+<a href="pt_cld_opts.htm">point clouds</a>, and to compare then on a
+<a href="tbme8vjn.htm">Line of sight</a> or <a href="pt_cloud_slicing.htm">
+slices</a>.</p>
+<p>(8/27/2012): First <a href="md64.htm">64 bit version</a> of the program.</p>
+<p>8/27/2012: Revision of&nbsp; <a href="mgrs_utm_zones.htm">MGRS grid zones</a> 
+and <a href="mgrs_utm_zones.htm">1:100K squares (UTM)</a> so they draw better on 
+conical map projections.&nbsp; Also changed </p>
+
+<ul>
+    <li><img src="../images/vecmap.jpg" width="33" height="32"> <a
+        href="vector_maps.htm">New Vector Map</a> so that you can automatically 
+	draw <a href="mgrs_utm_zones.htm">MGRS grid zones</a> and <a href="mgrs_utm_zones.htm">1:100K squares (UTM)</a></li>
+</ul>
+
+		<p>8/31/2012: added a Masking option on the Plot popup of a database.</p>
+
+<hr>
+
+<p align="right" class="style2"><em>Last revision 8/27/2012</em></p>
+</body>
+</html>

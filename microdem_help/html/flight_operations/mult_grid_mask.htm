@@ -1,0 +1,83 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Multiple Grid Masking</title>
+</head>
+
+<body>
+
+<h2>Multiple Grid Masking</h2>
+<p>Option on</p>
+<ul>
+	<li><a href="image_analysis.htm">Image analysis</a> menu for imagery</li>
+	<li><a href="raster_gis.htm">Raster GIS</a> for DEMs and other grids.</li>
+</ul>
+<table border="1">
+	<tr>
+		<td>
+		<img border="0" src="../images/mult_grid_mask.gif" width="812" height="676"></td>
+		<td>Select grids. 
+<ul>
+	<li>Pick open grids lets you pick from the grids that were previously 
+	opened.&nbsp; Selection of this option will clear the current selection.</li>
+	<li>Add single grid: add a grid to the current selection and does not open a 
+	map for the grid..</li>
+	<li>Load DEM list.&nbsp;Will clear the current selection.&nbsp; Opens a database with a list of grids, and the 
+	min/max for the mask.</li>
+	<li>Save DEM list saves to a database.&nbsp; </li>
+</ul>
+		<p>&nbsp;</p>
+		<p>Training point statistics: <a href="grid_stats.htm">Grid statistics</a>&nbsp; 
+				for all grids for each class.</p>
+		<p><a href="mask_opts2.htm">Mask options</a></td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Changes added late 6/13/13:</p>
+<ul>
+	<li>Upped grid limit to 7</li>
+	<li>ReqN checkbox.&nbsp; If this is checked, if the point does not match the 
+	criteria for that grid, it will not be included in the mask.</li>
+	<li>Save mask: save as a grid.&nbsp; Useful if you do not create a separate 
+	mask map (in which case you can use File, Save DEM).</li>
+</ul>
+<p>Changes added late 6/11/13:</p>
+<ul>
+				<li>Mask map, which can be:<ul>
+								<li>Separate: makes a map with just the mask.</li>
+								<li>Overlaid: overlay on the initial map.&nbsp; 
+								This provides context, and reduces screen 
+								clutter by not adding another map.</li>
+								<li>Both</li>
+				</ul>
+				</li>
+				<li>Grid maps: you can show the map for grids loaded on this 
+				form, or save screen clutter and not show them.</li>
+				<li>Save mask for all the grids</li>
+</ul>
+<p>&nbsp;</p>
+<p>Use checkboxes determine if the grid is used or not in the masking.&nbsp; 
+This lets you rapidly see the effect of a single layer.</p>
+<p>Lock checkboxes means the min/max will not be changed.</p>
+<p>Change min/max.&nbsp; All grids being used and not locked will be entered.</p>
+<p>Mask options: </p>
+<ul>
+	<li>Either overwrite each time, or create new masks (which you must be 
+	careful to keep track of).</li>
+	<li>The mask can either have the number of matches, or just a single integer 
+	code which you can specify.</li>
+	<li>You can specify the minimum number of matches.</li>
+</ul>
+<p>Save table (HTML) creates an HTML file and opens it in the browser.&nbsp; This 
+includes all information in the grid..</p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 12/3/2015</em></p>
+
+</body>
+
+</html>

@@ -1,0 +1,132 @@
+﻿
+<title>Nautical charts</title>
+<p><b><font size="5">Nautical Charts</font></b></p>
+<p>&nbsp;</p>
+<p><b><font size="4">Vector Data--NOAA </font></b><font size="4">has changed 
+much of this</font></p>
+      <ul>
+        <li>DNC (Digital Nautical
+      Chart)--download for the US, convert 
+		VPF to shape files 
+		in GDAL.</li>
+        <li>NOAA
+          ENC--direct to GIS&nbsp;convert to shape files at the NOAA website<ul>
+			<li>
+			<a href="https://encdirect.noaa.gov/help/encdirect_help.html#frequently-asked-questions">
+			https://encdirect.noaa.gov/help/encdirect_help.html#frequently-asked-questions</a>
+			</li>
+		</ul>
+		  </li>
+		  <li>Mobile Offshore Drilling Units (MODU)
+		  <a href="http://msi.nga.mil/NGAPortal/MSI.portal?_nfpb=true&amp;_pageLabel=msi_portal_page_67">
+		  http://msi.nga.mil/NGAPortal/MSI.portal?_nfpb=true&amp;_pageLabel=msi_portal_page_67</a>&nbsp; 
+		  in shapefile or KMZ</li>
+		  <li>Broadcast warnings:
+		  <a href="http://msi.nga.mil/NGAPortal/MSI.portal?_nfpb=true&amp;_pageLabel=msi_portal_page_63">
+		  http://msi.nga.mil/NGAPortal/MSI.portal?_nfpb=true&amp;_pageLabel=msi_portal_page_63</a> 
+		  as a KMZ file</li>
+        <li><a href="http://nauticalcharts.noaa.gov/mcd/enc/download.htm">Download
+          NOAA S57 files</a>
+          <ul>
+            <li>Use GDAL&nbsp; to convert to shapefiles (FWTools0.9.5> ogr2ogr -skipfailures out us5tx51m.000--out
+              is a direction, the .000 is the S57 file)</li>
+          </ul>
+        </li>
+      </ul>
+<p>NOAA chart on demand</p>
+<ul>
+	<li><a href="https://devgis.charttools.noaa.gov/pod/">
+	https://devgis.charttools.noaa.gov/pod/</a>&nbsp; makes PDF chart with 
+	control of size, scale, and coverage area</li>
+</ul>
+<p><b><font size="4">Raster Data--NOAA is discontinuing raster charts</font></b></p>
+<ul>
+  <li>Online viewer:
+	<a href="http://www.nauticalcharts.noaa.gov/mcd/NOAAChartViewer.html">
+	http://www.nauticalcharts.noaa.gov/mcd/NOAAChartViewer.html</a> </li>
+	<li><a href="hist_naut_chart.html">Historical NOAA nautical charts</a></li>
+	<li><font size="3">MICRODEM can display raster charts converted to Geotiff
+    format.&nbsp;&nbsp;</font></li>
+  <li><font size="3">NOAA nautical charts can now be downloaded in BSB, a
+    proprietary format from Maptech, at</font>
+    <ul>
+      <li>
+		<a href="http://www.nauticalcharts.noaa.gov/mcd/Raster/download_agreement.htm">
+		http://www.nauticalcharts.noaa.gov/mcd/Raster/download_agreement.htm</a>
+      </li>
+		<li>
+		<a href="http://www.freeboatingcharts.com/">http://www.freeboatingcharts.com/</a></li>
+    </ul>
+  </li>
+  <li>Convert BSB files for use in MICRODEM using
+    the converter from NOAA, available at
+	<a href="http://www.csc.noaa.gov/digitalcoast/tools/chartreprojector">
+  http://www.csc.noaa.gov/digitalcoast/tools/chartreprojector</a> (or 
+	from the 
+	<a href="auto_download_data.htm">data files download in MICRODEM</a>)<ul>
+  <li>After you download and unzip the chart, you must select the KAP file to 
+	convert.</li>
+	<li>Geographic will probably give the best results in MICRODEM.</li>
+	<li>UTM also works.</li>
+</ul>
+	</li>
+	<li>You can also convert the KAP file by opening an image (the .KAP file) 
+	and letting <a href="adf_grids.htm"><b>GDAL</b></a> convert.&nbsp; If it 
+	does not display, you must then run GDAL_warp on the Geotiff created.&nbsp; 
+	Making this one stop is on our to do list.</li>
+</ul>
+<p><b><font size="4">Point Soundings</font></b></p>
+<ul>
+	<li>NOAA soundings: 
+	<ul>
+					<li><a href="http://maps.ngdc.noaa.gov/viewers/bathymetry/">http://maps.ngdc.noaa.gov/viewers/bathymetry/</a> .&nbsp; 
+					<ul>
+									<li>Turn on data in &quot;NOS Hydrographic Surveys&quot;.&nbsp; 
+									</li>
+									<li>Zoom in on map.</li>
+									<li>Outline box</li>
+									<li>Pick a survey by its ID,</li>
+									<li>Get data in XYZ 
+	format, <a href="uncompress.htm">Decompress</a>
+    the GZ file, and convert to a DBF file. May have to open in Excel, and save 
+					as a CSV file, before the file will open in MICRODEM.</li>
+									<li>BAG files will have the best data, for 
+									small regions<ul>
+										<li>Can request conversion of BAG 
+									file to XYZ. </li>
+										<li>Can extract bands with GDAL, and 
+										then open the band with the depths (the 
+										second band has the uncertainty).&nbsp; 
+										Have to edit out the missing data, and 
+										multiply depths by -1.</li>
+										<li>Grids will be huge, and may be 
+										almost entirely missing data with small 
+										"islands" of data.&nbsp; You can subset 
+										and save just the areas with data.</li>
+									</ul>
+									</li>
+					</ul>
+					</li>
+					<li><a href="http://maps.ngdc.noaa.gov/viewers/nos_hydro/">
+					http://maps.ngdc.noaa.gov/viewers/nos_hydro/</a> Alternative 
+					link.</li>
+	</ul>
+	</li>
+</ul>
+<p><b><font size="4">Wrecks</font></b></p>
+<ul>
+  <li>NOAA database: 
+  <a href="https://nauticalcharts.noaa.gov/data/wrecks-and-obstructions.html">
+  https://nauticalcharts.noaa.gov/data/wrecks-and-obstructions.html</a> Get the 
+  shapefile.&nbsp; There are two databases with wrecks, and obstructions.</li>
+</ul>
+<p><b><font size="4">Vector Shorelines</font></b></p>
+<ul>
+  <li>
+	<a href="vector_shorelines.htm">Vector shorelines in shapefile
+    format&nbsp;</a></li>
+</ul>
+<hr>
+<p align="right"><i>Last revision 7/18/2024</i></p>
+
+

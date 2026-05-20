@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Navigation Menu</title>
+</head>
+
+<body>
+
+<h2>Navigation Menu</h2>
+<p>Submenu on <a href="db_edit.htm">&quot;EDIT&quot; button </a>of 
+<a href="database_table_display.htm">database
+table form.</a>&nbsp; The button is only enabled if you check the box on the 
+right of the row of buttons, since all changes are permanent (save a copy of the 
+database if you are concerned about editing mistakes).</p>
+<ul>
+					<li><b>Add travel path (Azimuth, distance, speed).&nbsp; </b>
+					To get speed, there 
+	must be a DEC_DAYS or DEC_HOURS field.&nbsp; The records must be in chronological order, 
+	in a point database.&nbsp; 
+	You can select to add the speed, distance, cumulative distance (for 
+	instance useful if you want a graph of a parameter versus distance 
+	traveled), and to record in meters per second or km per hour. There will be 
+					no entries for the first record, except for a 0 in the 
+					cumulative distance field.</li>
+	</ul>
+<table border="2">
+	<tr>
+		<td><img height="310" src="../images/speed_heading.gif" width="282" />
+		</td>
+		<td>3D distances will compute the distance on the hypotenuse for each 
+		segment, as well as the gains and drops in elevation.</td>
+	</tr>
+</table>
+<ul>
+					<li>New DBF with speed/path by ID:&nbsp; Must have fields 
+					LAT, LONG, ID, SHIP, MONTH, and DEC_YEARS.&nbsp; Will create 
+					a new database, with the readings halfway between each pair 
+					of readings, and adding fields HEADING, SPEED_KPH, AND 
+					KNOTS.&nbsp; Designed for the CLIWOC data base.</li>
+					<li><b>Get azimuth from magnetic heading: </b>convert magnetic heading to
+      true north, using the <a href="magnetic.htm">WMM model.</a></li>
+					<li><b>Add Distance/Azimuth fields</b><ul>
+									<li>Database must have fields &quot;LAT&quot;, &quot;LONG&quot;,
+    &quot;LAT2&quot;, and &quot;LONG2&quot;.</li>
+									<li>If the data base does not already have &quot;DIST_KM&quot; and
+    &quot;AZIMUTH&quot; fields, they will be added.</li>
+									<li>Program will compute the distance (in km) and direction from each
+    point in the data base to the other point with the &quot;LAT2&quot;, and
+    &quot;LONG2&quot; coordinates.</li>
+					</ul>
+					</li>
+					<li>Get azimuth from magnetic heading:&nbsp; requires fields 
+					LAT, LONG, ALTITUDE, MAG_HEAD&nbsp; and will create and 
+					compute AZIMUTH&nbsp; (the magnetic heading plus the 
+					declination).</li>
+					<li><a href="dead_reckon.htm">Dead reckoning</a>&nbsp;
+					</li>
+	</ul>
+<hr>
+<p align="right"><i>Last revision 12/10/2019</i></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Multiple Grid Creation</title>
+</head>
+
+<body>
+
+<h2>Multiple Grid Creation</h2>
+<p>Create with <strong><a href="raster_gis.htm">Raster GIS</a>, <a href="derivative_grids.htm"><b>Create derivative grid</b></a>, 
+Multiple parameters</strong></p>
+<table style="width: 100%">
+	<tr>
+		<td>
+		<img height="448" src="../images/new_geomorph_grids.png" width="656" /></td>
+		<td>
+		<p>Many of the groups compute multiple parameters together, so creating 
+		several grids will not significantly increase the time (but will 
+		increase the memory requirements):<br />
+		</p>
+		<ul>
+			<li>Relief1</li>
+			<li>Relief 2</li>
+			<li>Terrain Fabric</li>
+			<li>Slope/aspect</li>
+			<li><a href="geomorph_curvature.htm">Curvature--use these with 
+			caution</a> (maybe even extreme caution).&nbsp; <a href="raster_external_tools.html">External tools</a> 
+			has other options for creating curvature maps.</li>
+			<li>Openness</li>
+		</ul>
+		<p>The moments computation will increase the time required depending on 
+		the number of parameters included.&nbsp; It will create up to our grids for 
+		mean, standard deviation, skewness, and kurtosis for each parameter.&nbsp; 
+		Note the caveats for <a href="geomorph_curvature.htm">Curvature</a>.</p>
+		<p>Several grids require a region size, and the ability to thin the 
+		resulting grids.&nbsp; Thinning speeds up the processing, and is a good 
+		option for parameters like relief which change slowly.</p>
+		<p>Create all maps on the lower left creates all the checked maps.</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		</td>
+	</tr>
+</table>
+<p>
+You can alternatively <a href="geomorph_block.htm">create a database</a> with 
+many of these parameters.</p>
+
+<hr>
+
+<p align="right"><em>Last revision 3/30/2023</em></p>
+
+</body>
+
+</html>

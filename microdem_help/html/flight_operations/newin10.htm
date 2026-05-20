@@ -1,0 +1,672 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="Template" content="C:\MSOFFICE\OFFICE\html.dot">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>New in Version 10</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF"
+vlink="#800080">
+
+<p align="center"><font size="5"><b>New in MICRODEM Version 10</b></font></p>
+
+<hr>
+
+<p align="left">Version 10.0 first appeared in June 2006,
+compiled under Delphi 2006.&nbsp; It was replaced with <a href="newin12.htm">
+Version 12</a> starting in June 2009.&nbsp; Because of the difficulty in 
+converting to Delphi 2009, the posted releases remained version 10 for some 
+time.</p>
+
+<p align="left">Version number has now been de-emphasized on the
+splash screen, in favor of the build number, which is easier to
+track because it changes daily instead of annually.</p>
+
+<p align="left"><a href="micr769l.htm"><font size="2"
+face="Verdana">Program History</font></a><font size="2" face="Verdana">&nbsp;</font></p>
+
+<hr>
+
+<p><font size="4"><strong>Program installation:</strong></font></p>
+
+<ul>
+    <li>(12/31/2007) Program
+	<a href="tbme0001.htm">installs into c:\microdem</a></li>
+    <li>(6/24/2008)  Program defaults
+      changed.&nbsp; <a href="md_paths_dbf.htm">Programs and directories needed
+      to run are stored in a new database.</a></li>
+	<li style="display: list-item; font-weight: 400">(12/30/2008)<b>   </b>
+	&nbsp;<a href="update_microdem.htm">Improved program update</a></li>
+</ul>
+
+<p><font size="4"><strong>Map appearance and options:</strong></font></p>
+
+<ul>
+    <li>Revised <a href="marginalia.htm">selection of legend
+        elements</a>, and added option to do that when right
+        clicking on a map. </li>
+    <li>Option to <a href="recenter_map.htm">subsample map to a
+        specific geographic quadrangle</a>. </li>
+    <li>Improved options for <a href="marginalia.htm">Map
+        Marginalia</a> on maps; right click on the map, and pick
+        the legends/marginalia choice from the pop up menu. </li>
+    <li>Option to <a href="tbme8cv8.htm">display a native grid </a>for
+        DEMs such as <a href="demb1ir1.htm">UK OS grid</a> or <a
+        href="spcs_dems.htm">SPCS DEMs</a>.</li>
+    <li>Use percentiles to set extreme values for <a
+        href="elevation_range_for_coloring.htm">elevation map
+        coloring</a>. </li>
+    <li>(11/30/2007)<b> </b>Option to display elevations from a
+        second grid while roaming (on the Calculate menu), and to
+        overlay contours from a second grid (on the Overlay menu,
+        say to put elevation contours on a slope map).</li>
+    <li>(12/28/2007) <img
+        src="../images/overlays.GIF" width="24" height="24">
+      Further changes and enhancements&nbsp; to <a
+        href="map_overlay_manager.htm">manage overlays.</a> and
+        removal of older options. </li>
+    <li>(2/18/2008)  <a href="geotiff_map_saving.htm">Map
+      image saving as a Geotiff</a> can save as a grayscale or color image, with
+      a savings of 1/3 the file size. </li>
+    <li>(2/28/2008)   Should be major speed
+      up of most map redraws with saving of map layers as temporary bitmap
+      files.&nbsp;&nbsp; This is done by saving each layer as a bitmap, and only 
+	redrawing when necessary.&nbsp; If the program is fooled, there is an option 
+	on the bottom of the <a href="mapm9r79.htm">modify menu </a>to force a 
+	complete redraw of all layers.</li>
+    <li>(3/3/2008)    Scrollbars for map and satellite image
+      windows expanded so you can now drag the map and scroll
+      through them.</li>
+	<li>(3/10/2008)     Scrolling over the DEM
+will show the elevations in all open DEMs in the status bar.</li>
+	<li>(5/12/2008)    
+	<img border="1" src="../images/grid.gif" width="16" height="16">
+	<a href="tbme8cv8.htm">Grid</a> options changed--if you want to label the 
+	grid or graticule, you must use the <font size="3"><a href="map_legend_creation.htm">Prepare
+                printer image</a> option.</font></li>
+	<li>(8/11/2008)     
+	Improved options to display <a href="tissot_opts.htm">Tissot indicatrix</a></li>
+	<li>(4/26/2009) Option to put <a href="map_legend_creation.htm#Simple_grid">simple grid on printed 
+	map.</a></li>
+</ul>
+
+<p><font size="4"><strong>Data download:</strong></font></p>
+
+<ul>
+    <li><a href="automatic_ftp.htm">Automatic ftp download of map
+        data</a> </li>
+    <li>Automatic download of SRTM30
+    </li>
+    <li>Option to <a href="srtm_ftp.htm">download cells of SRTM-3</a>
+        as needed.&nbsp; </li>
+</ul>
+
+<p><font size="4"><strong>Gazetteers:</strong></font></p>
+
+<ul>
+    <li>Improved gazetteer plotting of points with 
+	<a href="gazetteer_symbology.htm">configuration file</a></li>
+    <li>(1/27/2008) <a
+        href="reg_gaz.htm">Gazetteers can be used to register
+        imagery</a></li>
+    <li>(2/22/2008)   USGS <a href="gazetteer.htm">gazetteers</a> must use <a
+        href="download_convert_gaz.htm">new BGN format</a>.&nbsp;
+        Old files can still be used as databases, without special
+        plotting options.&nbsp; USGS gazetteers use a
+      new format (Pipe &quot;|&quot; separated), with a few new field names that
+      were too long, and they can now be imported</li>
+</ul>
+
+<p><font size="4"><strong>Data base operations:</strong></font></p>
+
+<ul>
+    <li>New options for coloring database with field values. </li>
+    <li>Greatly expanded and improved the <a href="rgb_maps.htm">3
+        color RGB map option</a> to show three parameters with
+        databases.</li>
+    <li>Connect sequential points, with <a href="db_plot.htm">
+	<strong style="font-weight: 400">Plot
+        </strong></a><strong style="font-weight: 400">button o</strong>n <a
+        href="database_table_display.htm">Table display window</a>
+        popup menu.</li>
+    <li>Option to <a href="tbme327n.htm">export contour lines as
+        a shape file</a>.&nbsp; This replaces the DXF
+        option.&nbsp; </li>
+    <li>Number of new options on the <a href="db_edit.htm">Edit</a>
+        button for a <a href="database_table_display.htm">database
+        table form</a> including <a href="db_edit.htm">thin a
+        database</a>,&nbsp; arithmetic operations to create new
+        fields, and <a href="add_lat_link_db.htm">add lat/long
+        from linked data base</a>. </li>
+    <li>Changed Database legends option available from File menu
+        with a map open, to show a symbol for each database
+        associated with the map.&nbsp; It currently only works
+        with point databases.</li>
+    <li><a href="db_report.htm">XML file export</a></li>
+    <li><a href="cluster.htm">Clustering</a></li>
+    <li>Improved options with <a href="link_db.htm">Linked data
+        base</a></li>
+    <li>Improved spatial masking of a database, and the option to
+        set <a href="db_mask_field.htm">multiple spatial masks</a>.</li>
+    <li><a href="terr_prof_line_shape.htm">Terrain profile:</a>
+        for a line shape file, with a DEM associated with the map
+        display.</li>
+    <li><a href="db_sym_select.htm">Revised symbol selection and
+        option to easily change display method</a></li>
+    <li><a href="multi_db.htm">Legend for multiple databases </a>with
+        option to <a href="db_sym_select.htm">change display
+        settings</a></li>
+    <li>Documented example of shape file grouping and multiple
+        filters with <a href="plot_highways.htm">US highways</a></li>
+    <li><a href="address_geocoding.htm"><font
+        face="Times New Roman">Address geocoding with TIGER shape
+        files.</font></a> </li>
+    <li><a href="find_neigh.htm"><font face="Times New Roman">Compute
+        neighbors, </font></a><font face="Times New Roman">and use for adding 
+	average neighbor value field (in Field arithmetic, on </font><a href="db_edit.htm"><font
+        face="Times New Roman">Edit button</font></a><font
+        face="Times New Roman">).</font> </li>
+    <li>(11/15/2007)<b> </b><a href="gis/linking_www_to_db.htm">Link&nbsp;
+        multiple web sites to a database</a> </li>
+    <li>(12/2/2007) <a
+        href="gis/linking_imagery.htm">Link multiple images to a
+        data base</a> </li>
+    <li>(12/3/2007) <a
+        href="pan_persp_view_db.htm">Perspective and panorama
+        views</a> from a point in the database </li>
+    <li>New <a href="db_animate.htm">Animate field</a> option </li>
+    <li>(12/26/2007) Option
+        to create merged table, on <a href="db_report.htm">Reports
+        tab</a> </li>
+    <li>(1/8/2008) Option to
+        edit database, on Resample, <a href="resample_db.htm">DataBase</a>
+        of the&nbsp; <a href="tbme83sn.htm">Data Manipulation
+        Form</a> </li>
+    <li>(2/1/2008) Option to
+        add <a href="db_mask_field.htm">MASK field </a>on&nbsp; <a href="db_edit.htm">EDIT</a> menu <a
+        href="database_table_display.htm">database table form</a>.</li>
+    <li>(2/2/2008) Icons for
+        the <a href="symbols_options.htm">plotting of a database</a>
+        can be in either the directory with the database, or the
+        main \MapData\ICONS, and you can<a href="db_icons.htm"> include multiple
+      icons</a>.</li>
+    <li>(2/18/2008)  Option on <a href="database_tab.htm">Database</a>
+      tab of <strong style="font-weight: 400"> &nbsp;</strong><a href="tbme1njp.htm">options form</a>, which
+      lets you set the font color for labeling to match the color for the shape
+      file.</li>
+    <li>(3/4/2008)  Option to track the
+      ranges in the database (it can be toggled on the <a href="database_tab.htm">Database</a>
+      tab of the&nbsp; <a href="tbme1njp.htm">options form</a>)</li>
+	<li>(3/6/2008)  Option to computes
+      area in km<font face="Arial">²&nbsp; </font>for each record and puts in field AREA_KM2, on the <a href="db_edit.htm">Edit</a>, field arithmetic
+      option.</li>
+	<li>(3/15/2008)  Option to save a point
+      database as a shapefile with the SHP and SHX files, on <a href="db_report.htm">Reports
+        tab</a>.</li>
+	<li>(3/15/2008)  Option to click on the
+      column header in the DB table and get popup menu with appropriate
+      options from the STATS button.</li>
+	<li>(3/23/2008)&nbsp; <a href="database_accessory_files.htm">Database
+      auxiliary files stored</a> in subdirectory &quot;db_aux&quot; under the
+      location of the main database files.&nbsp; If you have files stored in the
+      old location, the program will automatically move them.</li>
+	<li>(3/31/2008)&nbsp; <a href="add_nlcd.htm">Add
+      NLCD category</a> on the <a href="db_edit.htm">Edit tab</a> of the <a
+        href="database_table_display.htm">database table form</a>.</li>
+	<li>(4/5/2008)   Option on Tools
+      menu to create a database of photos with their GPS locations if those are
+      in the EXIF header.&nbsp; You can then, for instance, export photos to
+      a KML/KMZ file.</li>
+	<li>(4/22/2008)    Database plots saved, and should rapidly redraw with the map.&nbsp; Also,
+      advanced DB
+      plot options should also be saved and redrawn.</li>
+	<li>(6/23/2008)     <a href="db_layer_prop.htm">Databases
+      can be plotted with much more complex rules</a>, and the layer symbology
+      saved.&nbsp; A work in progress, at first only for area shape files.</li>
+	<li>(8/2/2008)     Databases plotted
+      with variable opacity, rather than IHS merge; this provides much more
+      control.</li>
+	<li>(1/30/09)&nbsp; Import of CSV will make any field with the phrases &quot;ZIP&quot; 
+	or &quot;FIPS&quot; as a string, so they can be used for <a href="db_join.htm">join 
+	operations.</a></li>
+	<li>(3/20/2009) Many options will go much faster for plotting from a points 
+	shape file</li>
+	<li>(4/6/2009) Option on the <a href="db_edit.htm">Edit tab</a> of the <a
+        href="database_table_display.htm">database table form</a> to compute 
+	record lengths and centroid locations for each record in the data base.</li>
+	<li>(5/19/2009) Cut and paste point coordinates into a database, and from a
+	<a href="map_right_click.htm">map right click</a> and a
+	<a href="db_rec_click.htm">database record double click</a>. (programs other 
+	than MICRODEM cannot use this clipboard feature)</li>
+	<li>(5/25/2009) Option to put in <a href="tbme1jub.htm">range circles</a> by&nbsp;
+	<a href="db_rec_click.htm">database record double click</a> for a point 
+	database</li>
+</ul>
+
+<p><a href="kml_overview.htm"><font size="4"><strong>KML and
+Google Earth</strong></font></a></p>
+
+<ul>
+    <li><a href="google_earth/ge_locations.htm">Register imagery
+        with Google Earth and KML files</a>.</li>
+    <li>(12/15/2007) Option <a
+        href="map_right_click.htm">right clicking on the map</a>
+        to open Google Earth in the same location as the current
+        map window.</li>
+    <li>(12/26/2007) Option
+        on the File, Save map as image, For Google earth&nbsp; to
+        open Google earth with the current map as a colored
+        overlay.&nbsp; Currently only works with DEMs in
+        lat/long.</li>
+    <li>(12/26/2007) Option on the File, Save DEM, Create Image to match DEM to 
+	create an image with the same dimensions as the current DEM.&nbsp; </li>
+    <li>(1/19/2008)
+        Rudimentary export to open Google Maps</li>
+    <li>(2/18/2008)   <a href="export_historic.htm">Tile
+      and export scanned maps to Google Earth</a> using <a href="reproject_historic.htm"> Delauney
+      triangulation</a>.</li>
+	<li>(2/23/2008)  <a href="kml_export.htm">Time
+      animations improved</a></li>
+	<li>(2/23/2008)
+	<a href="kml_export.htm">KML database export for Google
+        earth</a> improved so icons are put in the correct directory.&nbsp; 
+	However, consider instead using <a
+        href="kml_overlay.htm">KML overlay</a></li>
+	<li>(3/22/2008)
+ <a
+        href="kml_overlay.htm">KML overlay</a> will Zip the files into a KMZ
+      file, and delete the other files; can save a world file with each tile; 
+	and can optionally not open Google Earth.</li>
+	<li>(4/2/2008)&nbsp; 
+ 	KML DB export can include <a href="kml_export.htm">thumbnail images, with 
+	link to full sized image</a>.&nbsp; Thumbnail images can be embedded in the
+      KMZ file.</li>
+	<li>(5/20/2008)&nbsp; 
+ 	KML creation correctly codes for special characters (', &quot;, &amp;, and &gt;).</li>
+	<li>(6/30/2008)&nbsp; 
+ 	KML export can put <a href="google_earth/kml_viewshed_viewing.htm">each fan
+      in its own layer</a>.</li>
+	<li>(9/8/2008)<b>&nbsp; </b><a href="kml_export.htm">KML
+      database export</a> has option to put a table in the pop-up box with the record
+      attributes.</li>
+	<li>(10/1/2008)</b></font><b>&nbsp; </b>
+	<a href="csv_file_imports.htm">KML import of points into a database.</a></li>
+	<li>(11/22/2008) </b></font>
+	<a href="add_time_anim.htm">Enter the fields for time animation from entries 
+	in the database.</a></li>
+	<li>(3/27/2009) Options to disable <a href="kml_time_anim.htm">Time animations,</a> 
+	and to get a rapid KML output of all databases with the default options.</li>
+</ul>
+
+<p><font size="4"><strong>Mask data sets</strong></font></p>
+
+<ul>
+    <li>Options to <a href="masking_grids.htm">mask grid using
+        TIGER roads</a>. </li>
+    <li><a href="mask_dem_w_shape.htm">Mask DEM with shape file</a></li>
+    <li><a href="mask_dem_w_gaz.htm">Mask DEM with gazetteer</a></li>
+    <li>Option to mask a point database using the TIGER roads (on
+        the <a href="db_map_query.htm">query button</a> of the <a
+        href="database_table_display.htm">database table display</a>).</li>
+    <li>Mask database from shape file, and grid/DEM, on the <a
+        href="db_edit.htm">Edit button</a> on the <a
+        href="database_table_display.htm">Table display window</a>
+        popup menu.</li>
+</ul>
+
+<p><font size="4"><strong>DEM/Grid Manipulation:</strong></font></p>
+
+<ul>
+    <li>(12/2/2007)<b> </b>Mean
+        and median filters for DEMs, on <a href="raster_gis.htm">Raster
+        GIS</a> menu </li>
+    <li>(3/1/2008) Min and max filters for
+      DEMs, on <a href="raster_gis.htm">Raster
+        GIS</a> menu.&nbsp; These might be useful before thinning a DEM,
+      which&nbsp; uses decimation. </li>
+    <li>(3/7/2008) Merge grids, take
+      lowest value: on the DEM holes submenu of the <a href="edit_menu.htm">Edit
+      menu.</a>&nbsp; The grids must have the same size and spacing. </li>
+    <li>(3/15/2008) <a href="save_dem.htm">Save
+      DEM as a dBase table.</a> </li>
+    <li>(3/29/2008) Modified grid
+      saving for saving as MD format, thinning, filtering, and subsetting in
+      cases where the DEM native datum is not the same as the primary display
+      datum.&nbsp; This may still have issues, and you should really be using
+      grids in WGS84 if you want to do a lot of manipulation.&nbsp;&nbsp; </li>
+    <li>(5/19/2008) Option to 
+	<a href="save_dem.htm">save
+      DEM in GeoTIFF format </a> </li>
+    <li>(5/19/2008) Reading of
+      GeoTIFF in some orientations probably had a one pixel offset in the Y
+      direction; this has been fixed. </li>
+    <li>(6/13/2008) Saved world
+      files probably had slight coordinate spacing rounding error. </li>
+    <li>(9/13/2008)</b></font><b>   </b><a href="map_algebra.htm">Map
+      algebra&nbsp;</a> </li>
+	<li><a href="map_masking.htm">Stream masking</a></li>
+</ul>
+
+<p><font size="4"><strong>Read/write DEMs:</strong></font></p>
+
+<ul>
+    <li>Read DEMs with <a href="prj_files.htm">ESRI PRJ files</a>.&nbsp;
+        Because there are several different kinds and PRJ files
+        and they are not well documented, this can lead to
+        problems.</li>
+    <li>ASCII Arc Grid DEMs (ASC or GRD extensions) read with
+        open DEM and not the Import Menu of the data manipulation
+        form.</li>
+    <li>(6/22/2008) <a href="adf_grids.htm">Read
+      ADF format grids</a> </li>
+    <li>(7/27/2008) Write <a href="splat.htm">SPLAT</a>
+      SDF files </li>
+	<li>Combined the ETOPO and Smith/Sandwell buttons.&nbsp; You now pick which 
+	you want to use, and that one is loaded.&nbsp; You can still open the other 
+	manually.</li>
+</ul>
+
+<p><font size="4"><strong>Line of sight/Viewshed:</strong></font></p>
+
+<ul>
+    <li><a href="miss_dem_los.htm">Missing data can block LOS</a> or viewsheds.</li>
+    <li>Use <a href="veg_grid.htm">vegetation grid </a>for <a
+        href="load_vegetation_grid.htm">line of sight and
+        viewsheds</a>.</li>
+	<li>(3/8/2008) New option to <a href="masked_airspace.htm">show
+      masked airspace</a> on the LOS profile. </li>
+	<li>(3/8/2008) Speed up and improve <a href="calculate_antenna_height.htm">required
+      antenna height</a> </li>
+	<li>(3/9/2008) <a href="change_sensor_azimuth_for_los.htm">LOS
+      for a sensor location allows rapid shift of azimuth</a> </li>
+	<li>(3/11/2008) <a href="tbme8vjn.htm">LOS view</a> 
+	right margin shows elevations to top, useful for very long profiles</li>
+	<li>(3/11/2008) New option to draw a
+	<a href="tbme3ncj.htm">fan/viewshed</a>, right click, 
+	edit the fan, and draw <a href="calculate_antenna_height.htm">required
+      antenna height</a> </li>
+	<li>(3/12/2008) New option for viewsheds
+      to be drawn with IHS or opaque. </li>
+	<li>(3/26/2008) LOS has always been done
+      at screen resolution.&nbsp; For very long ranges, or very high resolution
+      DEMs, this could cause problems, which would be most severe if you were on
+      the back side of a hill.&nbsp; Hills could be missed (especially very 
+	close to the observer), and you could get a very skewed interpretation.&nbsp; This has been fixed.&nbsp;&nbsp; 
+	In hindsight this was a major oopsie, but with the computer hardware 
+	available when the program started this would never have been a problem, and 
+	it just never got considered as gigabytes of RAM became cheap.</li>
+	<li>(3/27/2008) 
+	<a href="los_right_click_options.htm">LOS option, when right clicking on the 
+	LOS profile</a>, to get a blowup map of the sensor/observer location.&nbsp; 
+	This will be a slope map, color coded by trafficability categories, with 
+	contours overlaid.&nbsp; The observer will be a small red square in the 
+	center of the view. Recent related changes let you change the range, 
+	azimuth, and see the effect of <a href="load_vegetation_grid.htm">
+	adding/removing the vegetation grid.</a> </li>
+	<li>(3/10/2008)     Scrolling over the DEM
+will show the vegetation height if a <a href="veg_grid.htm">vegetation grid </a>&nbsp;is open</li>
+	<li>(3/11/2008) Option when loading a 
+	<a href="veg_grid.htm">vegetation grid </a>&nbsp;to 
+	show the map or not; on the <a href="import_tab.htm">Import/Export</a> tab of the&nbsp; 
+	<a href="tbme1njp.htm">options form</a></li>
+	<li>(3/11/2008) <a href="tbme8vjn.htm">LOS view</a> 
+	right margin shows elevations to top, useful for very long profiles</li>
+	<li>(3/11/2008) New option to draw a
+	<a href="tbme3ncj.htm">fan/viewshed</a>, right click, edit the fan, and draw 
+	<a href="calculate_antenna_height.htm">required
+      antenna height</a> </li>
+	<li>(3/12/2008) New option for viewsheds
+      to be drawn with IHS or opaque. </li>
+	<li>(4/25/2008) 
+      New option to create <a href="veg_grid.htm">vegetation grid </a> from <a href="vegetation_inventories.htm">NBCD</a> </li>
+	<li>(5/9/2008) The computation of 
+	masked/visible for fans ignores points that are inside the sensor minimum 
+	range, which will change the computed coverage values.&nbsp; Previously 
+	those were considered as masked.</li>
+	<li>(6/28/2008) <a href="viewshed_parameters.htm">Option to save viewshed
+      fans in a particular location</a>.</li>
+	<li>(6/30/2008) <a href="storing_and_exporting_viewsheds.htm">Directions
+      to export viewsheds to ArcGIS or Google Earth.</a></li>
+	<li>(7/7/2008) Option to <a href="arcgis_viewshed_sensors.htm">export
+      fan definitions into shape file for use in ArcGIS</a></li>
+	<li>(7/27/2008) Option to set the fan
+      zoom factor on the <a href="los_fan_alg.htm">viewshed algorithm form</a> </li>
+    <li>(7/27/2008) Graphical
+      interface to<a href="splat.htm"> SPLAT</a> </li>
+    <li>(7/28/2008) <a href="grazing_angles.htm">Grazing
+      angles computation</a> </li>
+    <li>(7/31/2008) Option to create a map
+      of grazing angles when <a href="calculate_antenna_height.htm">computing
+      required antenna heights.</a> </li>
+    <li>(7/31/2008) Finished consolidation
+      to using a single way to draw fans.&nbsp; This changed the field
+      definitions of the DBF file used to store fans, and added a <a href="viewshed_toolbar.htm">fans
+      toolbar</a> to display of that table. </li>
+    <li>(8/2/2008) Changed display of fans
+      to use variable opacity, selected on the <img border="0" src="../images/overlays.GIF" width="24" height="24">
+      <a href="map_overlay_manager.htm">Map Overlays</a> option. </li>
+    <li>(8/29/2008) Added <a href="los_protractor.htm">protractor</a>
+      to the LOS view. </li>
+	<li>(12/15/2008) </b></font>New
+	<a href="viewshed_toolbar.htm">viewshed toolbar</a> to edit fans</li>
+	<li>(12/15/2008) </b></font>Added option to use
+	<a href="hi_res_dem_intervis.htm">high-res DEM for intervisibility.</a></li>
+	<li>(1/9/2009) </b></font>Allow differentiating the
+	<a href="viewshed_mixed_pixels.htm">mixed pixels </a>on viewsheds.</li>
+	<li>(1/23/2009) </b></font>Route observation 
+	option working again</li>
+	<li>(1/24/2009) </b></font>Graphs showing the 
+	amount of <a href="fresnel_zone_intrusion.htm">intrusion of the terrain into 
+	the first Fresnel zone</a></li>
+	<li>(5/25/2009) <a href="tbme1jub.htm">Range circle improvements.</a></li>
+</ul>
+
+<p><font size="4"><strong>General new options or improvements:</strong></font></p>
+
+<ul>
+    <li>Rearrange <a href="geostatistical_analysis.htm">geostatistics
+        options</a> on <a href="tbme5ed1.htm">analyze menu.</a> </li>
+    <li>Extract&nbsp; lat/long of points along a
+        profile (on <a href="edit_menu.htm">edit menu</a>). </li>
+    <li>Option for <a href="least_cost_path/lcp.htm">least cost
+        path determination</a>. </li>
+    <li><a href="drag_geography_maps.htm">Drag climographs and
+        sunlight duration maps</a>; <a
+        href="geography_options.htm">set options for them</a>.</li>
+    <li>Documented&nbsp;<a href="state_or_county_dems.htm">
+        creation state or country DEM</a>.</li>
+    <li>New system to control plotting of
+        gazetteers, and &nbsp;the <a href="gaz_opts.htm">form
+        to control this</a>.</li>
+    <li>Improved <a href="drg_anaglyph.htm">3D display options</a>
+        (especially anaglyph)</li>
+    <li>Slight change to <a href="dem_format_v2.htm">header for
+        MICRODEM format DEMs</a>; any software reading MICRODEM
+        DEMs written with a version of the program after 1/3/2007
+        will have to modify its code slightly.</li>
+    <li><a href="computations.htm">New Computations form</a>,
+        with options to enter coordinates and get
+        distance/bearing, or the point at a distance and bearing
+        from a point.</li>
+    <li>Option on <a href="import_tab.htm">Import/Export</a> tab
+        to set all negative elevations to 0 on opening grids; use
+        this with extreme care.</li>
+    <li>Option (on&nbsp; <a href="tbme8igl.htm">File</a>, Match
+        other maps menu) to show footprint of current map on
+        other maps.</li>
+    <li>Allow getting a map
+        from Terraserver and immediately import into a usable
+        map.</li>
+    <li><a href="update_microdem.htm">Update MICRODEM program.</a>
+        included in full install.</li>
+    <li>(12/2/2007)&nbsp;
+        S2/S3 (organization value and orientation) added&nbsp; to
+        <a href="derivative_grids.htm">Create derivative grid</a>
+        on <a href="raster_gis.htm">Raster GIS</a> menu</li>
+    <li>(12/26/2007) <a
+        href="drift/drift_model.htm">Drift model combining tide
+        and ship motion</a></li>
+    <li>(1/19/2008) Quick sea level rise
+        option. </li>
+    <li>(1/27/2008) New buttons on <img src="../images/perspective.gif"
+        width="16" height="16"> <a href="tbme0cx1.htm">
+	<strong style="font-weight: 400">Perspective
+        views</strong></a> to zoom in and out (make the window
+        twice or half as large) </li>
+    <li>(2/10/2008) 
+	<strong style="font-weight: 400"><a href="thumbnails.htm">Thumbnails</a></strong>--batch change size of bitmaps, and change the format</li>
+    <li>(3/26/2008) 
+      Compress/decompress moved to the tools menu, available from the Main menu
+      or when a map window is active. (Still available on the DEM manipulation
+      form)</li>
+	<li>(5/12/2008) Toggle on the Printer/hardware tab of the options form, to 
+	save GIFS transparent (or not).&nbsp; Formerly this applied mostly to KML, 
+	but now all GIF saves should use the selected setting.&nbsp; In MICRODEM, 
+	this setting is ignored, and how it affects other software is an open 
+	question.&nbsp; It is mostly likely to affect images that try not to show a 
+	white background.</li>
+	<li>(1/5/2009) </b></font><a href="vrml.htm">VRML</a><ul>
+    <li>View file structure on the <a href="file_metadata.htm">File Metadata</a> 
+	option of the <a href="tbme5ed1.htm">Analyze</a> menu.</li>
+	<li>Extract XYZ points from the <a href="tbme9rw3.htm">Import</a> menu on 
+	the&nbsp; <a href="tbme83sn.htm">Data
+Manipulation form</a>.</li>
+</ul>
+
+	</li>
+	<li>(5/25/2009)<span style='mso-ansi-language:
+EN-US'> Disaster Response Map Symbols (DRMS) added, but no longer available</span></li>
+</ul>
+
+<p><font size="4"><strong>Lidar Point Clouds</strong></font></p>
+
+<ul>
+	<li>(3/31/2009)</b></font><b>   </b><a href="laser_scan_point_cloud.htm">Laser scanning point cloud visualization and and manipulation</a></li>
+	<li>(5/8/2009) Read of the <a href="las_format.htm">LAS format</a> and 
+	display <a href="laser_scan_point_cloud.htm">point cloud</a></li>
+</ul>
+
+<p><font size="4"><strong>Tiger files;</strong></font></p>
+
+<ul>
+	<li>(11/30/2008)</b></font><b>   </b>
+	Tiger 2007 edges shape files, will use the <a href="tigerops.htm">Tiger line 
+	plotting options</a>. At present you must pick them as a shape file, and 
+	they can be stored anywhere.</li>
+</ul>
+
+<p><font size="4"><strong>Imagery:</strong></font></p>
+
+<ul>
+    <li><a href="mr_sid.htm">Direct viewing of MrSid in MICRODEM </a>&nbsp;
+        (on the fly conversion to Geotiff with <a
+        href="tbme6h0z.htm">world file</a>). </li>
+    <li>Displays <a href="nlcd.htm">NLCD</a> 2001, which required
+        reading Geotiffs in Albers equal area conic
+        projection.&nbsp;&nbsp; </li>
+    <li>MODIS
+        Rapid Response Imagery options</li>
+    <li><a href="google_earth/ge_locations.htm">Register imagery
+        with Google Earth and KML files</a>.</li>
+    <li>(11/20/2007)<b> </b>Recenter imagery in analysis window
+        by right clicking at the spot you want to be the map
+        center.</li>
+    <li>(11/25/2007) Fixed some serious problems with image
+        registration, and changed <a href="image_reg.htm">image
+        registration interface</a></li>
+    <li>(12/15/2007) Improvements to <a href="hyperpsectral_imagery.htm">hyperspectral
+        imagery</a></li>
+    <li>(12/30/2007)<b><font color="#FF0000"> </font> </b>Many
+        options for imagery moved from the image analysis form to
+        a new menu option (Image analysis) on the regular map</li>
+    <li>(2/28/2008)<b> </b>   <a href="reg_map_anal.htm">Register
+      historic maps with Map Analyst</a> using <a href="reproject_historic.htm"> Delauney
+      triangulation</a>.</li>
+    <li>(2/28/2008)  <a href="reg_quad.htm">Special
+      case to register quadrangle scanned maps</a> using <a href="reproject_historic.htm"> Delauney
+      triangulation</a>.</li>
+    <li>(2/28/2008)   <a href="export_historic.htm">Tile
+      and export scanned maps to Google Earth</a> using <a href="reproject_historic.htm"> Delauney
+      triangulation</a>..</li>
+    <li>(3/2/2008)  Improved options with <a
+        href="reg_gaz.htm">Gazetteers to register
+        imagery</a></li>
+	<li>(3/7/2008) Modified reading of <a href="tbme6h0z.htm">world files</a>, with an option to always ask about 
+	the datum (<span style="font-weight: 400"><a href="import_tab.htm">Import/Export </a>
+	tab of </span>the <a href="tbme1njp.htm">options form</a>).</li>
+	<li>(5/30/2008) New option to
+	<a href="merge_images.htm">merge imagery</a></li>
+	<li>(6/25/2008) <a href="adf_grids.htm">Read
+      JPEG2000 imagery</a></li>
+	<li>(11/30/2008)</b></font><b>   </b>
+	<a href="tri_extrapolate.htm">extrapolate to the edges</a> of the map when 
+	scanning.</li>
+	<li>(2/13/2009)</b></font><b>   </b>
+	&nbsp;should recognize Spot 4 band Geotiffs from Geobase Canada.</li>
+	<li>(3/5/2009)</b></font><b>   </b>
+	&nbsp;major enhancements to <a href="sup_class_ex.htm">supervised classification</a></li>
+	<li>(5/8/2009) fixed problems getting Band 7 to load automatically with the 
+	other bands when using Landsat TM downloaded from USGS (<a href="http://glovis.usgs.gov/">GLOVIS</a>)</li>
+</ul>
+
+<p><font size="4"><strong>OpenGL:</strong></font></p>
+
+<ul>
+    <li>(5/8/2009) Allows use of the <a href="3dconnexion.htm">3DConnexion SpaceNavigator</a> ( 3D mouse) 
+    </li>
+</ul>
+
+<p><font size="4"><strong>GPS:</strong></font></p>
+
+<ul>
+    <li>Coordinate conversions on <a href="tbme1ucz.htm">GPS
+        waypoints form.</a> <ul>
+            <li>LL files can only be read here.&nbsp;</li>
+            <li><a href="utm_coord_files.htm">UTM file
+                conversions</a> </li>
+        </ul>
+    </li>
+	<li>(12/30/2008)</b></font><b>   </b>
+	Changed <a href="gps.htm">GPS menus</a>, and options only available from a
+	<a href="maptool.htm">map window</a>.</li>
+</ul>
+
+<p><font size="4"><strong>Geology:</strong></font></p>
+
+<ul>
+  <li>(8/29/2008) Added <a href="los_protractor.htm"><font color="#000000">protractor</font></a>
+    to the LOS view.</li>
+  <li>(4/11/2009) Improved <a href="beach_ball_opts.htm">options for how to plot 
+	the beach balls.</a></li>
+	<li>(4/26/2009) Use <a href="atlas_classify.htm">SRTM atlas for 
+	classification</a></li>
+	<li>(5/8/2009) <a href="sieve/html/siev9b1q.htm">Sieve analysis</a></li>
+</ul>
+
+<p><font size="4"><strong>Oceanography:</strong></font></p>
+
+<ul>
+    <li><a href="sidescan.htm">Sidescan sonar with XTF files</a>
+        (may or may not be very robust with variants of the file)
+        and <a href="subbottom.htm">Subbottom profiler</a> with
+        EdgeTech files</li>
+	<li><a href="drift/drift_model.htm">Drift model</a></li>
+</ul>
+
+<p><a href="int_data_db.htm"><font size="4"><b>Map library</b></font></a><b><font size="4"> 
+--</font></b>in May 2009, we changed the integrated database to map library.&nbsp; 
+You lost the ability to set the index map to anything other than a simple world 
+map, but gained the ability to load data from the map library from an map.&nbsp; 
+SRTM-30 now uses the Map Library rather than a special format.</p>
+
+<p><a href="disabled_options.htm"><font size="4"><b>Disabled
+options</b></font></a><font size="4"><b>. </b></font></p>
+
+<hr>
+
+<p align="right"><font size="2"><em>Last revision 5/29/2015</em></font></p>
+</body>
+</html>

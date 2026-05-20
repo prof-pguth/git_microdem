@@ -1,0 +1,144 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Using NGS Survey Control Points</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="5"><strong>Using NGS Survey Control Points</strong></font></p>
+
+<p>You can get National Geodetic Survey control points.</p>
+<ul>
+	<li><a href="https://geodesy.noaa.gov/NGSDataExplorer/">
+	https://geodesy.noaa.gov/NGSDataExplorer/</a> lets you see them on a map, 
+	and see the individual data sheets, but does not appear to have a download 
+	capability.</li>
+	<li><a href="https://geodesy.noaa.gov/datasheets/">
+	https://geodesy.noaa.gov/datasheets/</a> lets you get shapefiles</li>
+</ul>
+
+<p><img src="../images/new%20dem.gif" width="32" height="32"> <a
+href="tbme5iy6.htm"><b>New DEM</b></a> . Open one DEM or
+multiple DEMs of the same area.</p>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/bm_db.gif" width="815" height="302"></td>
+        <td><a href="tbme9dpq.htm"><img src="../images/database.gif"
+        width="23" height="23"> </a><a href="data_base.htm">Database</a>.&nbsp; Open shape file with ground control points.</td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/MAP_BM.JPG" width="375"
+        height="387"></td>
+        <td>10 m USGS DEMs.<p>Map showing National Geodetic
+        Survey ground control points. Note that many follow
+        roads, and and not randomly or evenly distributed,
+        although they do cover many of the major peaks</p>
+        </td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/bm_checks.gif" width="308"
+        height="298"></td>
+        <td>You can use the <a href="db_edit.htm"><b>Edit</b></a>  button on the
+          <a href="database_table_display.htm">Table display
+        window</a>, DEM options to add the elevations for the DEM or multiple 
+		DEMs.<p>This database shows the
+        locations of the bench marks, the elevation from NGS, and
+        the elevation difference for each DEM (positive, the
+        interpolated DEM elevation is higher than the bench
+        mark).</p>
+        </td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/BM_COLORS.JPG" width="375"
+        height="387"></td>
+        <td>From the <a href="db_plot.htm"><strong>Plot</strong></a>  button on the
+          <a href="database_table_display.htm">Table display
+        window</a>, <b><a href="gis_color_db_field.htm">Color code by DB field</a></b>
+          you can get the differences from the DEM
+        for each of the bench marks. Note the small differences
+        on the roads in flat terrain.</td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/BM_LARGEST.JPG" width="371"
+        height="329"></td>
+        <td><img src="../images/bm_largest.gif" width="303"
+        height="82"><p>The largest deviation in this region is
+        -37 m, and this shows its location with the DEM
+        reflectance view with overlaid contours (&quot;overlay,
+        contours&quot; from the menu).</p>
+        <p>The interpolated DEM value is 1857 m.</p>
+        </td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/bm_drg.gif" width="416"
+        height="326"></td>
+        <td>DRG, obtained by right clicking on the
+        map and <a href="terraserver_download.htm">loading Terraserver</a> data.<p>The peak with the elevation
+        control is shown as 6107 ft (or 1,861.41 m). Since this
+        is almost exactly the value in the DEM (probably not
+        surprising, since the DEM was produced from the contours
+        on the paper map), either there is a big problem with the
+        DEM and paper map, or the NGS database has a problem.</p>
+        </td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/BM_srtm.jpg" width="466"
+        height="374"></td>
+        <td>SRTM DEM with the deviations from the control points.
+        Note the very close agreement along the roads.<p><img
+        src="../images/bm_2dems.gif" width="374" height="61"></p>
+        <p>A difference result, with two DEMs (33123379 is the
+        SRTM). The SRTM is even lower than the USGS 10 m DEM,
+        suggesting that the NGS control point is in error in the
+        database.</p>
+        </td>
+    </tr>
+</table>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/BM_SRTM_CON.JPG" width="315"
+        height="271"></td>
+        <td>Contoured SRTM DEM. Note that the control point is
+        not on the peak, suggesting a horizontal displacement
+        error, and that the peak elevation (determined by the
+        closed contour) closely matches that from the USGS 10 m
+        data.</td>
+    </tr>
+</table>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 3/4/2021</em></p>
+</body>
+</html>
