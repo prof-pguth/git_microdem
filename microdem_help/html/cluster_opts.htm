@@ -1,0 +1,76 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>clustering options</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Clustering Options</font></b></p>
+<p>Unsupervised classification
+scheme using a k-means algorithm.</p>
+<ul>
+	<li>On&nbsp;<a href="db_stats.htm">Stats button</a> popup menu of 
+	<a href="database_table_display.htm"><u>table
+display window</u></a><u>.&nbsp; </u></li>
+	<li>On <a href="upsup_im_class.htm">Unsupervised classification</a> menu 
+	choice of&nbsp; <a href="image_analysis.htm"><b>Image analysis</b></a> 
+menu</li>
+</ul>
+<table border="1" id="table1">
+	<tr>
+		<td>
+        <img alt="" src="../images/cluster_opts.gif" width="291" height="319"></td>
+		<td width="862">Select clustering options:<ul>
+			<li><b>Initialization:</b> best options will probably be with the 
+			first two</li>
+			<li><b>Clusters:</b> the maximum number of clusters you will get. 
+			The program may return fewer clusters if there are not enough 
+			distinct clusters in n-dimensional space.</li>
+			<li><b>Iterations</b>:&nbsp; how long to keep going</li>
+			<li><b>Sampling:</b> the clustering can use only a limited number of 
+			points, and the data set will be thinned by this factor in both x 
+			and y for grids, and pick every nth point for databases.&nbsp; The 
+			original default should be the largest allowed.&nbsp; You can pick a larger value of this parameter 
+			to speed up operations, but not 
+			a smaller one.</li>
+			<li>These options can greatly slow operations.<ul>
+			<li><b>Scatterplots by cluster</b>: get 2D graphs from each pair of variables, 
+			colored by cluster.
+              </li>
+			<li><b>Scatterplots by mask</b>:
+              </li>
+			<li><b>Histograms by cluster, </b>colored by cluster</li>
+			<li><b>Histograms by mask</b></li>
+		</ul>
+			</li>
+			<li><b>Create grid: </b>put the classification into a grid.</li>
+			<li><strong>Classification distance power</strong>: the Euclidian 
+			distance uses the the square, but other powers can also be used.&nbsp; 
+			The larger the power, the greater the effect of single outliers.</li>
+		</ul>
+		</td>
+	</tr>
+	</table>
+
+<ul>
+	<li><a href="credits.htm"><b>Clustering Delphi code</b> from Fred Edberg</a></li>
+</ul>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 8/23/2023</em></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

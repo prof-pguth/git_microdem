@@ -1,0 +1,104 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Cloud Compare</title>
+</head>
+
+<body>
+
+<h1>Cloud Compare</h1>
+<table border="2">
+				<tr>
+								<td>&nbsp;</td>
+								<td>
+								<img alt="" src="../foss_geomorph/logos/cloudcompare.png" width="153" height="154"></td>
+								<td>
+<p>&nbsp;<a href="http://www.danielgm.net/cc/">http://www.danielgm.net/cc/</a>&nbsp;&nbsp; 
+								Reads LAS files, fast display, and allows 
+comparison. 
+</p>
+<ul>
+	<li>Documentation: <a href="http://www.danielgm.net/cc/">
+	http://www.danielgm.net/cc/</a> </li>
+</ul>
+								</td>
+				</tr>
+</table>
+<p>
+	<a href="http://www.cloudcompare.org/doc/wiki/index.php?title=Command_line_mode">
+	http://www.cloudcompare.org/doc/wiki/index.php?title=Command_line_mode</a>&nbsp; 
+which is used to add roughness and curvature to point clouds</p>
+<p>Options in CloudCompare:</p>
+<ul>
+				<li>Axis conventions<ul>
+								<li>x--red</li>
+								<li>y--green</li>
+								<li>z--blue</li>
+				</ul>
+				</li>
+				<li>Convert a PLY file to LAS.</li>
+				<li>Edit, segment: clip out parts of the clouds you do not want.
+				<a href="http://www.cloudcompare.org/doc/wiki/index.php?title=Interactive_Segmentation_Tool">http://www.cloudcompare.org/doc/wiki/index.php?title=Interactive_Segmentation_Tool</a>
+				<ul>
+								<li>Segment tool (scissors on toolbar)</li>
+								<li>Outline points</li>
+								<li>Segment in or segment out on the popup toolbar</li>
+								<li>Confirm and delete hidden points</li>
+								<li>Green check on popup toolbar</li>
+				</ul>
+				</li>
+				<li>Interactive Transformation Tool&nbsp;&nbsp;&nbsp;
+				<a href="http://www.cloudcompare.org/doc/wiki/index.php?title=Interactive_Transformation_Tool">http://www.cloudcompare.org/doc/wiki/index.php?title=Interactive_Transformation_Tool</a>
+				<ul>
+								<li>Translate and rotate model to match axes.</li>
+				</ul>
+				</li>
+</ul>
+<p>Cloud compare wants the clouds to be centered, and&nbsp; the coordinates 
+should be the same for all the clouds.</p>
+<ul>
+									<li>Open files</li>
+									<li>Highlight</li>
+									<li>Edit, synchronize</li>
+									<li>Highlight 2</li>
+									<li>Compute cloud/cloud distance</li>
+									<li>Local model, height function</li>
+									<li>Compute</li>
+									<li>Capture the graph; the mean/standard 
+									deviation are on the bottom of the screen 
+									(the approximate values are in the 
+									prominently displayed table)</li>
+								</ul>
+<hr>
+<p>Ransac:</p>
+<ul>
+				<li>R. Schnabel, R. Wahl, R. Klein, 2007,&nbsp; &quot;Efficient 
+				RANSAC for Point-Cloud Shape Detection&quot;, in Computer Graphics 
+				Forum, Vol. 26, No. 2, pages 214-226.</li>
+</ul>
+<p>RansacShapeDetector: ransac Options;</p>
+<ul>
+				<li>ransacOptions.m_minSupport = 500; // this is the minimal number of points 
+required for a primitive</li>
+				<li>ransacOptions.m_epsilon = .01f * pc.getScale(); // set distance threshold to 
+.01f of bounding box width
+// NOTE: Internally the distance threshold is taken as 3 * 
+ransacOptions.m_epsilon!!!</li>
+				<li>ransacOptions.m_bitmapEpsilon = .02f * pc.getScale(); // set bitmap resolution 
+to .02f of bounding box width&nbsp;
+// NOTE: This threshold is NOT multiplied internally!</li>
+				<li>ransacOptions.m_normalThresh = .9f; // this is the cos of the maximal normal 
+deviation</li>
+				<li>ransacOptoins.m_probability = .001f; // this is the &quot;probability&quot; with which a 
+primitive is overlooked</li>
+</ul>
+<hr>
+<p align="right"><i>last revision 11/29/2015</i></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

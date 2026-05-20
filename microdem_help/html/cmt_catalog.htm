@@ -1,0 +1,241 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Global&nbsp; CMT catalog</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	font-family: serif;
+	font-size: medium;
+}
+.auto-style2 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Global centroid-moment-tensor (CMT) catalog</h2>
+<p><a href="earthquake_focal.htm">Options with the CMT data.</a>&nbsp; Originally the Harvard CMT catalog.</p>
+<p>The CMT method gives two focal planes, one of which is the fault plane and
+other the auxiliary plane.&nbsp; The first motions used for the CMT method do
+not allow a determination of which plane is which, but study of the regional
+geology sometimes allows that discrimination.&nbsp; These are FP1 and FP2, and
+each has a dip and strike.</p>
+<table border="2">
+  <tr height="17" style="height:12.75pt">
+    <td height="17" width="64" style="height:12.75pt;width:48pt" bgcolor="#C0C0C0"><b>Field Name</b></td>
+    <td width="64" style="width:48pt" bgcolor="#C0C0C0"><b>Type</b></td>
+    <td width="64" style="width:48pt" bgcolor="#C0C0C0"><b>Length</b></td>
+    <td width="220" style="width:165pt" bgcolor="#C0C0C0"><b>Explanation</b></td>
+    <td width="220" style="width:165pt" bgcolor="#C0C0C0"><b>Example</b></td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">EVENT_ID</td>
+    <td>string</td>
+    <td align="right" x:num>16</td>
+    <td>&nbsp;</td>
+    <td>M122604A</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">MONTH</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>&nbsp;</td>
+    <td align="right" x:num>12</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">DAY</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>&nbsp;</td>
+    <td align="right" x:num>26</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">YEAR</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>&nbsp;</td>
+    <td align="right" x:num>2004</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">TIME</td>
+    <td>string</td>
+    <td align="right" x:num>10</td>
+    <td class="xl22" align="left" x:num="4.0856481481481487E-2">UTC</td>
+    <td class="xl22" align="right" x:num="4.0856481481481487E-2">58:50.0</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">LAT</td>
+    <td>float</td>
+    <td align="right" x:num>8</td>
+    <td align="left" x:num>Decimal degrees</td>
+    <td align="right" x:num>3.3</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">LONG</td>
+    <td>float</td>
+    <td align="right" x:num>8</td>
+    <td align="left" x:num>Decimal degrees</td>
+    <td align="right" x:num>95.78</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">DEPTH</td>
+    <td>float</td>
+    <td align="right" x:num>8</td>
+    <td align="left" x:num>km</td>
+    <td align="right" x:num>10</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">MB</td>
+    <td>float</td>
+    <td align="right" x:num>8</td>
+    <td align="left" x:num>Body wave magnitude mb (~Richter magnitude)</td>
+    <td align="right" x:num>8.9</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">MS</td>
+    <td>float</td>
+    <td align="right" x:num>8</td>
+    <td align="left" x:num>Surface wave magnitude MS (~Richter magnitude)</td>
+    <td align="right" x:num>8.9</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">MECH</td>
+    <td>string</td>
+    <td align="right" x:num>2</td>
+    <td>Fault type (N= normal, T=thrust, S=strike slip, blank for
+      oblique slip).&nbsp; Assigned by MICRODEM for color coding on maps and
+      cross sections.</td>
+    <td></td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">REGION</td>
+    <td>string</td>
+    <td align="right" x:num>30</td>
+    <td>Description of the location</td>
+    <td>OFF W COAST OF NORTHERN</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">FP1_STRIKE</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Strike in degrees of the first focal plane</td>
+    <td align="right" x:num>329</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">FP1_DIP</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Dip (from the horizontal) of the first focal
+      plane,&nbsp; The dip direction is 90 degrees clockwise from the strike
+      direction.&nbsp;</td>
+    <td align="right" x:num>8</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">FP2_STRIKE</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Strike of the first focal plane</td>
+    <td align="right" x:num>129</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">FP2_DIP</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Dip (from the horizontal) of the second focal
+      plane,&nbsp; The dip direction is 90 degrees clockwise from the strike
+      direction.&nbsp;</td>
+    <td align="right" x:num>83</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">PLUNGE_1</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Moment tensor, first eigenvector</td>
+    <td align="right" x:num>52</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">STRIKE_1</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>&nbsp;</td>
+    <td align="right" x:num>36</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">PLUNGE_2</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Moment tensor, second eigenvector</td>
+    <td align="right" x:num>3</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">STRIKE_2</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>&nbsp;</td>
+    <td align="right" x:num>130</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">PLUNGE_3</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>Moment tensor, third eigenvector</td>
+    <td align="right" x:num>38</td>
+  </tr>
+  <tr height="17" style="height:12.75pt">
+    <td height="17" style="height:12.75pt">STRIKE_3</td>
+    <td>integer</td>
+    <td align="right" x:num>2</td>
+    <td align="left" x:num>&nbsp;</td>
+    <td align="right" x:num>222</td>
+  </tr>
+</table>
+
+<p>Data file will be cmt_fault_cent_MMM_YYYY.dbf, named for the last month with 
+data:</p>
+
+<ul>
+    <li>It will download automatically if you try to open it. &nbsp; 
+	MICRODEM will periodically update as the
+	<a href="http://www.globalcmt.org/CMTsearch.html">Global (formerly Harvard) CMT</a> 
+	releases new data.</li>
+	<li>Create data file if you want the latest files<ul>
+    <li>Download NDK files from
+	<a href="http://www.globalcmt.org/CMTsearch.html">Global&nbsp; CMT</a> project.&nbsp; 
+	They usually are posted several months after the earthquakes.&nbsp;</li>
+	<li>Create DBF file, from <a href="tbme9rw3.htm">Import</a>
+        menu on  
+	<img src="../images/inout.jpg" border="1"
+        width="32" height="32"> <a href="tbme83sn.htm">Data
+        Manipulation form</a>. No checking is done about adding multiple records 
+	if that data is already in the database.&nbsp; You will asked if you want to 
+	overwrite or append to the existing file.</li>
+	<li>File <strong>x:\mapdata\database\fault_cent.dbf</strong>
+        will be created.</li>
+</ul>
+
+	</li>
+</ul>
+
+<p><a href="http://www.globalcmt.org/CMTcite.html">Citing the data</a></p>
+<p>
+<span class="auto-style1" style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+Ekström, G., Nettles, M. &amp; Dziewo&#324;ski, A. The global CMT project 2004–2010: 
+centroid-moment tensors for 13,017 earthquakes.<span>&nbsp;</span></span><i class="auto-style2" style="box-sizing: inherit; color: rgb(34, 34, 34); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Phys. 
+Earth Planet. Inter.</i><span class="auto-style2" style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><b class="auto-style2" style="font-weight: bolder; box-sizing: inherit; color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">200</b><span class="auto-style2" style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, 
+1–9 (2012).</span></p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 4/3/2019</em></p>
+
+</body>
+
+</html>

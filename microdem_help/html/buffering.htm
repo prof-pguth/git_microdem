@@ -1,0 +1,84 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Buffering</title>
+<style type="text/css">
+.style1 {
+				text-align: center;
+}
+.style2 {
+				text-align: center;
+				font-size: large;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Buffering</font></b></p>
+<p>Buffering is the process of&nbsp; putting an inclusive or exclusive zone
+around features.&nbsp; It can be done with points, lines, or areas.&nbsp; With 
+points you will circles around each point; for lines, you will get a wider line; 
+and with areas, you get a generalized, larger outline.</p>
+<table border="1">
+  <tr>
+    <td width="50%" colspan="2" style="width: 100%" class="style2">
+	<strong>Point Shapefile</strong></td>
+  </tr>
+  <tr>
+    <td width="50%">
+	<p align="center"><img border="0" src="../images/MASK_IN.PNG"></td>
+    <td width="50%">
+	<p align="center"><img border="0" src="../images/MASK_OUT.PNG"></td>
+  </tr>
+  <tr>
+    <td width="50%">
+	&nbsp;Points outside a 500 m radius have been eliminated</td>
+    <td width="50%">
+	Points within a 500 m radius have been eliminated.</td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2">DEM masked with schools from USGS <a href="gazetteer.htm">gazetteer
+      database</a>.
+      <p>This could model the effects of a school drug free zone, for example, 
+		or restrictions on sex offenders, or the zoning of adult businesses.</td>
+  </tr>
+</table>
+<table border="1">
+  <tr>
+    <td class="style2" colspan="2"><strong>Line shapefile</strong></td>
+  </tr>
+  <tr>
+    <td class="style1"><img border="0" src="../images/NEAR_ROADS_MASK.PNG" width="206" height="257"></td>
+    <td class="style1"><img border="0" src="../images/AWAY_ROADS_MASK.PNG" width="206" height="257"></td>
+  </tr>
+  <tr>
+    <td><b>Only points near roads</b>, with buffer of 250 m on each side of the 
+	road.&nbsp; </td>
+    <td><b>Only points off roads</b>, with buffer of 250 m on each side of the
+      road.</td>
+  </tr>
+  <tr>
+    <td colspan="2">This could model critical zone along rivers, proximity to 
+	roads (or subclasses of roads like interstates) for businesses seeking 
+	locations.</td>
+  </tr>
+</table>
+<p>Buffering can be done in MICRODEM:</p>
+<ul>
+  <li><a href="mask_dem_w_gaz.htm">Using shapefile to buffer DEM or grid.</a></li>
+  <li><a href="masking_grids.htm">Using grid mask, or TIGER roads</a></li>
+  <li><a href="mask_db_shape.htm">Mask database with shapefile</a></li>
+	<li>Plot of a database, which does not edit the grid</li>
+</ul>
+<hr>
+<p align="right"><em><font size="4">Last revision 8/31/2012</font></em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

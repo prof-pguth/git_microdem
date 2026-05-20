@@ -1,0 +1,73 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Clean up KML exports</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Clean Up KML exports</h1>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/kml_tc2.gif" width="220" height="475"></td>
+		<td>
+		<img border="0" src="../images/kml_tc1.gif" width="258" height="455"></td>
+	</tr>
+	<tr>
+		<td>Original output, with all default entries.&nbsp; This is fine for 
+		quick initial visualizations.&nbsp; Since you are likely to create a 
+		number of maps before you finalize your output, it may not pay to 
+		perfect the map until you are sure you have what you want.</td>
+		<td>Output after light edits in Google earth.&nbsp; You can right click, 
+		and edit any of the values.&nbsp; You can also drag elements to other 
+		locations, and add/subtract folders.&nbsp; Note the changes:<ul>
+			<li>MICRODEM_Map replaced with more descriptive terms.</li>
+			<li>Database and DB Map leading&nbsp; text removed.</li>
+			<li>Dates changed to the month, since this was&nbsp;a monthly 
+			animation.</li>
+			<li>INTRO moved up a level, since it was the only entry in that 
+			database. The GE table of contents supports drag and drop of items. </li>
+		</ul>
+		<p>A number of these changes could have been done in MICRODEM by 
+		<a href="kml_overlay.htm">setting 
+		values</a> for the deliberate export instead of accepting the defaults 
+		from the quick export.&nbsp; If you know you want 
+		to save the output, this can be a good idea, but usually the process 
+		will be iterative, so it might make sense to see what major changes need 
+		to be made before getting down to the minor details, and then just do 
+		the edits in Google Earth.</td>
+	</tr>
+</table>
+<p>You can save output in Google Earth at multiple levels.&nbsp; When you save, 
+any subfolders will be included.&nbsp; In the example above, you could save all 
+of &quot;Temporary Places&quot;, or get the same effect by saving just &quot;Oklahoma Tornadoes 
+1950-1990&quot;.&nbsp; You could save just &quot;Animation by Month&quot; and get 10 maps, or 
+save each individual map.&nbsp; If you save at a high level, you will have a single 
+file with all the data, but it might be very large; you can turn layers on and 
+off in Google Earth with the check boxes.&nbsp; Saving individual layers 
+provides many small files, but the user can pick which ones to open, as Google Earth 
+can choke fairly fast with very large data sets.&nbsp; Recommended size limits 
+are a moving target, as computers and Google Earth both improve.</p>
+<p>If you want to remove the labels in Google Earth: </p>
+<ul>
+	<li>Right click on layer, pick properties</li>
+	<li>Pick Style, Color Tab</li>
+	<li>Drop Label Opacity to 0 which makes them invisible</li>
+	<li>Make the scale smaller.</li>
+</ul>
+<HR>
+
+<P align=right><EM><span class="style1">Last revision </span></EM>
+<span class="style1"><em>4/19/2017</em></span></P>
+
+</body>
+
+</html>

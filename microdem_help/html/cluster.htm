@@ -1,0 +1,123 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Clustering database</title>
+<style type="text/css">
+.auto-style1 {
+	color: #FF00FF;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Clustering database</font></b></p>
+<p class="auto-style1"><strong>This is not totally correct. If you want to use 
+this, contact us and we will update it to match the current operation of the 
+program.</strong></p>
+<p>Unsupervised classification
+scheme using a k-means algorithm.</p>
+<p>You can also do an <a href="upsup_im_class.htm">unsupervised classification 
+of satellite imagery</a> using the same algorithm.</p>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/table_hide.gif" width="298" height="411"></td>
+		<td width="862"><a href="db_hide.htm">Select fields for clustering</a>, which will be all
+          fields not hidden.&nbsp; You want to at least remove LAT, LONG, MASK.<p>If&nbsp; fields have a great range in the degree and 
+		amount of variability, you could normalize them first (option on 
+		the <a href="db_edit.htm">&quot;EDIT&quot; button</a> of the <a href="database_table_display.htm">database
+table form</a>). Otherwise distances will&nbsp; largely depend on the
+          variable with the largest range.</td>
+	</tr>
+	<tr>
+		<td>
+        <img border="0" src="../images/cluster_opts.gif"></td>
+		<td width="862"><a href="cluster_opts.htm">Select clustering options:</a></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td width="862">A &quot;CLUSTER&quot; field will be added to the database, if it does not 
+		exist.&nbsp; Values with be cluster number, from 1 to the maximum you
+          specified.&nbsp; Map the results with the <a href="gis_color_db_field.htm">Color code by DB field</a> 
+		option on <font size="3"> <a href="db_plot.htm">&quot;Plot&quot;
+button menu </a>on the </font> database <a href="database_table_display.htm">table display
+window</a>.</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/cluster_graph.gif" width="382" height="257"></td>
+		<td width="862">You can get 2D scatterplots, color coded by assigned clusters.<p>
+		The fields are arrayed in the rows and columns.&nbsp; Each graph is
+          displayed twice, but the ability to look at each variable on the same
+          axis helps in the interpretation.<p>
+		This can be a slowdown with a lot of clusters.</td>
+	</tr>
+	<tr>
+		<td>
+        <img border="0" src="../images/cluster_mask.gif" width="374" height="312"></td>
+		<td width="862">If you have masked the database and created a MASK field
+          (such as using the irregular area option on the <a href="db_map_query.htm">Map query</a>
+          button of the <a href="database_table_display.htm">database table
+display</a>, you can get a scatterplot with coloring from the MASK field.&nbsp;
+          Those points will be colored in red, and other points will be in gray.</td>
+	</tr>
+	<tr>
+		<td>
+        <img border="0" src="../images/cluster_hist.GIF" width="452" height="233"></td>
+		<td width="862">Histograms, with each cluster a separate color.</td>
+	</tr>
+	<tr>
+		<td>
+        <img border="0" src="../images/cluster_hist_mask.GIF" width="450" height="240"></td>
+		<td width="862">Histograms, with the MASK points in a different color 
+		from the non-mask points.</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" width="100%" id="table2">
+	<tr>
+		<td>
+		<img border="0" src="../images/cluster_res.gif" width="890" height="280"></td>
+	</tr>
+	<tr>
+		<td>If you have more than 5 selected parameters, you will have an option 
+		to search for the best set of 5 parameters.<p>If you select the option, 
+		you will get no graphical output but will get this text file which you 
+		should save and import into something like Excel for analysis.</p>
+		<p>The columns will be:</p>
+		<ul>
+			<li>Five parameters used.</li>
+			<li>The number of clusters found by the algorithm.</li>
+			<li>The number of clusters which contain points in the MASK.</li>
+			<li>The number of MASK points in the cluster with the most MASK 
+			points.</li>
+			<li>The percentage of MASK points in the cluster with the largest 
+			number of MASK points.&nbsp; The higher this value, the better the 
+			cluster did at isolating MASK points from others.&nbsp; It is 
+			(Number of MASK Points in Cluster) / (Total points in the cluster).</li>
+			<li>The percentage of all MASK points located in this cluster.&nbsp; 
+			The higher this value, the better the cluster did at combining all 
+			the MASK points in a single cluster.&nbsp; It is (Number of MASK 
+			Points in Cluster) / (All MASK points).</li>
+		</ul>
+		<p>The &quot;best&quot; set of parameters would produce high values in the last 
+		two columns.&nbsp; You can sort by column in Excel (insure that you 
+		expand the selection to sort the entire data set, and not just the 
+		single column.</td>
+	</tr>
+</table>
+<p><a href="credits.htm"><b>Clustering Delphi code</b> from Fred Edberg</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 6/13/2015</em></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Classify Point Clouds</title>
+<style type="text/css">
+.auto-style2 {
+	text-align: right;
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Classify Point Clouds</h1>
+<p>Classifying point clouds looks at the returns in a region, and attempts to 
+assign them to a category based on geometric properties of the points.&nbsp; The 
+resulting classification can be stored in the <a href="../html/las_format.htm">
+LAS file.</a></p>
+<ul>
+	<li><strong>ground</strong>: finds the ground returns, which define a 
+	continuous surface at the bottom of the point cloud, excluding low noise.&nbsp; 
+	This requires several parameters, most importantly a step size which affects how 
+	buildings will be excluded, and a bulge parameter which affects how much 
+	local variation is allowed in the surface created by a TIN of the ground 
+	points.&nbsp; </li>
+	<li><strong>roofs:</strong> regions above the ground with planar 
+	orientation.&nbsp; There are generally few returns from the sides of 
+	buildings.</li>
+	<li><strong>Vegetation:</strong> regions above the ground with rough 
+	surface, and multiple points within the canopy.&nbsp; Success will depend on 
+	the number of points; the more mulitple returns, the easier it is to 
+	differentiate the trees.&nbsp; </li>
+	<li><strong>water:</strong> very flat, horizontal surfaces, with low 
+	intensity.&nbsp; May only 
+	see water with very small scan angles</li>
+</ul>
+<p>Options to peform <a href="lidar_ground_classification.html">Ground 
+						point classification in MICRODEM</a>.&nbsp; These are not designed for robust use, 
+but as educational tools to show how the process works.</p>
+		<ul>
+						<li><a href="lastools_classify.html">Classify (LAStools)</a></li>
+						<li><a href="mcc-lidar.htm">Classify--mcc-lidar</a></li>
+		</ul>
+
+<hr />
+<p class="auto-style2"><em>last revision 6/15/2020</em></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>
