@@ -1,0 +1,154 @@
+﻿<html> 
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Data types tutorial</title>
+<link href="../../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+.auto-style1 {
+	font-weight: normal;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Data Types Tutorial in MICRODEM</h2>
+<p><a href="../../html/tbme8igl.htm"><b>File</b></a>,
+<a href="../../html/intro_tutorials.html">Introductory tutorials</a>,
+							<a href="annapolis_data_type_tutorial.htm">Annapolis GIS data sampler</a></p>
+<p>&nbsp;</p>
+<p>&nbsp;<a href="../annapolis_data.htm">This 
+will download data if it is not present&nbsp; (you should review this page to 
+see what data is present and something of its characteristics)</a></p>
+<p>&nbsp;</p>
+<h3>Raster and Vector Data.</h3>
+<ul>
+	<li><img src="../../images/new%20dem.gif" width="32" height="32">
+	<a href="../../html/tbme5iy6.htm">Open Grid/DEM</a> and open the
+	<a href="../../html/ned.htm">3DEP/NED</a> ninth second.&nbsp; </li>
+	<li><img border="0" src="../../images/db_map.png" width="24" height="24">
+	<a href="../../html/data_base.htm">Database</a> 
+	(shapefile) and open the TIGER edges file.&nbsp; There is a database table 
+	display, which you can toggle on and off with the checkbox on the top left 
+	of the toolbar.</li>
+	<li>The "best" display for the DEM is a shaded reflectance or hillshade.&nbsp; 
+	It can have elevation colors (called IHS, for the color model used), or be 
+	grayscale.&nbsp; To change, right click on the&nbsp; map, and pick the 
+	option desired (there are some more esoteric ones as well).</li>
+	<li>Which of these is raster data, and which is vector?
+	<ul>
+		<li><font size="3">
+		<img src="../../images/resize.gif" width="16"
+        height="16"> </font><a href="../../html/tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> to be sure you understand what happens to each 
+		type of data as you change the scale.</li>
+	</ul>
+	</li>
+</ul>
+<h3>Vector Data Types.</h3>
+<ul>
+	<li><img src="../../images/new%20dem.gif" width="32" height="32">
+	<a href="../../html/tbme5iy6.htm">Open Grid/DEM</a> and open the
+	<a href="../../html/ned.htm">3DEP/NED</a> ninth second</li>
+	<li><img border="0" src="../../images/db_map.png" width="24" height="24">
+	<a href="../../html/data_base.htm">Database</a> 
+	(shapefile) and open the TIGER edges file.&nbsp; There is a database table 
+	display, which you can toggle on and off with the checkbox on the top left 
+	of the toolbar.</li>
+	<li>From the DB table, <a href="../../html/db_report.htm">Report, 
+	Database structure</a> </li>
+	<li>What types of data are in this database?&nbsp; Besides the type, what 
+	other key variables are there for each field? </li>
+	<li>Note that the <a href="../../html/rules_fields_Names.htm">field names cannot be very long, and can only use capital 
+	letters, digits, and the underscore.</a>&nbsp; This is a relict from an ancient 
+	PC database, but which was adapted for the shapefile standard and which 
+	remains the de facto interchange format even as database technology has 
+	improved.</li>
+</ul>
+<h3 class="auto-style1">&nbsp;<strong>Vector Data Geometries.</strong></h3>
+<ul>
+	<li><img src="../../images/new%20dem.gif" width="32" height="32">
+	<a href="../../html/tbme5iy6.htm">Open Grid/DEM</a> and open the
+	<a href="../../html/ned.htm">3DEP/NED</a> ninth second</li>
+	<li><a href="../../html/db_menu.htm">Database</a>: Load OSM overlay: pick the directory with the
+	<a href="../../html/open_street_map.htm">OSM data</a> (there are two years 
+	to choose from).
+	<ul>
+		<li>This does not load the DB tables, which would allow addtional 
+		options if you instead opened the eight files (or just those you wanted) 
+		with
+		<img border="0" src="../../images/db_map.png" width="24" height="24">
+	<a href="../../html/data_base.htm">Database</a></li>
+	</ul>
+	</li>
+	<li>To highlight just the vector data, you could:<ul>
+		<li>Hide the DEM with the "blank" option on
+		<a href="../../html/map_disp_param.htm">Display parameter</a></li>
+		<li>Change the <a href="../../html/tbme9u5v.htm">Reflectance map</a> to 
+		use grayscale instead of color, since your mind has troubles using color 
+		for too many things at once</li>
+	</ul>
+	</li>
+	<li>To better see the vector data, you could:<ul>
+		<li>
+	<img height="233" src="../../images/map_percentage.gif" style="height: 68px; width: 50px" width="168"> 
+		<a href="../../html/set_map_pc.htm">Set 
+	percentage data shown for raster data</a></li>
+		<li><font size="3">
+		<img src="../../images/resize.gif" width="16"
+        height="16"> </font><a href="../../html/tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a></li>
+	</ul>
+	</li>
+	<li>Can you see examples of point, line, and area features?&nbsp; Looking 
+	back to the TIGER data, what geometry was it?</li>
+</ul>
+<h3>Raster Data Resolution.</h3>
+<ul>
+	<li><img src="../../images/new%20dem.gif" width="32" height="32">
+	<a href="../../html/tbme5iy6.htm">Open Grid/DEM</a> and open the three
+	<a href="../../html/ned.htm">3DEP/NED</a> DEMs, which are all nearly the 
+	same file size (10-15 MB).</li>
+	<li>Which has the most detail?</li>
+	<li>Which covers the largest area?</li>
+	<li>What do you have to do to see the pixels?</li>
+	<li>These all have data spacing in arc seconds.&nbsp; What does this do to 
+	the spacing in meters?</li>
+</ul>
+<h3>Raster Data Types</h3>
+<ul>
+	<li><img src="../../images/new%20dem.gif" width="32" height="32">
+	<a href="../../html/tbme5iy6.htm">Open Grid/DEM</a> and open the one second
+	<a href="../../html/ned.htm">3DEP/NED</a> DEM<ul>
+		<li><a href="../../html/edit_menu.htm">Edit</a>,
+		<a href="../../html/edit_dem_grid.htm">Edit DEM grid</a>, and then 
+		outline a box.&nbsp; What is the type for the data in the grid?</li>
+	</ul>
+	</li>
+	<li><img border="0" src="../../images/landcover.GIF" width="30" height="30">
+	<a href="../../html/nlcd.htm">Open Landcover map</a> and open the 2011
+	<a href="../../html/us_nlcd.htm">NLCD</a>&nbsp; (you want the TIF file).&nbsp; This 
+	uses Landsat satellite imagery to classify the ground into about 25 
+	categories.&nbsp; <ul>
+		<li>Roam over the map and note that it tells you the name for feature 
+		class at that location.&nbsp; The grid actually holds an integer, which 
+		the program converts to a string using a lookup table.</li>
+		<li>Get a legend by right clicking and Popup legend.</li>
+	</ul>
+	</li>
+	<li>Grids cannot hold strings/characters</li>
+</ul>
+
+<hr>
+
+<p align="right"><font size="3"><em>Last revision 5/25/2020</em></font></p>
+
+</body>
+
+</html>

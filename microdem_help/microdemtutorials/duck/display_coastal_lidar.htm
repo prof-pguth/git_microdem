@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Display of Coastal Lidar</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Display of Coastal Lidar Grids</h2>
+<p>Older coastal lidar, with sparser point densities, can present challenges for 
+display.&nbsp; You might consider <a href="../../html/filldemholes.htm">void filling</a>, and the display options you 
+want.</p>
+<table border="1" id="table2">
+	<tr>
+		<td><b>2004 Pre-Ivan survey</b></td>
+		<td><a href="../../html/tbme78s3.htm">Elevation map</a>--relatively tolerant of 
+		voids</td>
+		<td><a href="../../html/tbme9u5v.htm">Reflectance map or Hillshade</a>--not very tolerant of 
+		voids. 
+		<p>Computing requires all the point's neighbors (<a href="../../html/focal_ops.htm">Focal operation</a>).<p>If any 
+		neighbors are missing, the point will be missing.</td>
+	</tr>
+	<tr>
+		<td>Data as downloaded</td>
+		<td>
+		<img border="0" src="../../images/DUCK_ELEV1.PNG" width="347" height="300"></td>
+		<td>
+		<img border="0" src="../../images/DUCK_REF1.PNG" width="347" height="300"></td>
+	</tr>
+	<tr>
+		<td>Data after <a href="../../html/filldemholes.htm">void filling</a></td>
+		<td>
+		<img border="0" src="../../images/DUCK_ELEV2.PNG" width="347" height="300"></td>
+		<td>
+		<img border="0" src="../../images/DUCK_REF2.PNG" width="347" height="300"></td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" id="table6">
+	<tr>
+		<td>
+		<img border="0" src="../../images/DUCK_LAND_SEA.PNG" width="372" height="296"></td>
+		<td>
+		<img border="0" src="../../images/DUCK_LAND_SEA2.PNG" width="372" height="296"></td>
+	</tr>
+	<tr>
+		<td><a href="../../html/tbme9u5v.htm">Reflectance map</a> with blue/green color 
+		scheme 
+		for points below and above sea level.&nbsp; <br />
+		Note the wave crestsf in green on the right of the map.</td>
+		<td><a href="../../html/tbme78s3.htm">Elevation map</a> with land/sea color 
+		scheme.</td>
+	</tr>
+</table>
+<p><br />
+</p>
+<table border="1" id="table5">
+	<tr>
+		<td>
+		<img border="0" src="../../images/DUCK_DIFF_MAP.PNG" width="300" height="245" align="right"></td>
+		<td><a href="../../html/dem_diff_map.htm">Difference map</a> between two 
+		surveys, shown as <a href="../../html/tbme78s3.htm">Elevation map</a>.&nbsp; The
+		<a href="../../html/elevation_range_for_coloring.htm">color scheme only shows 
+		elevation differences</a> with an absolute value less than 2 m.&nbsp; 
+		The data has big vertical differences (up to
+		<font face="Times New Roman">± 30m) which are probably not significant 
+		or meaningful, especially for natural processes like beach erosion and 
+		deposition.&nbsp; Restricting the range of values used for coloring may 
+		enhance the ability to see the trends of interest.&nbsp; In this map, 
+		note that the largest positive changes are along the edges of the pier 
+		and some of the buildings; other large changes relate to the vegetation, 
+		which can grow rapidly, and can respond very different in leaf-on and 
+		leaf-off conditions.<br />
+		<br />
+		In coastal regions, the largest changes are likely be be in the 
+		dune-berm region, reflecting both seasonal and long term changes.</font></td>
+	</tr>
+</table>
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 8/5/2018</em></p>
+
+</body>
+
+</html>
