@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Data Format Interoperability--Key Formats</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Data Format Interoperability--Key Formats</h2>
+<p>Most GIS and geomorphometry programs have their own internal format, which is 
+designed for optimal storage and processing for the particular program.&nbsp; Most programs can convert a 
+number of other formats into their internal format, and can export to a number of 
+other formats.</p>
+<p>Three formats have the most versatility, and widest acceptance, for the three 
+main classes of data.&nbsp; Rasters have traditionally been the data used by 
+geomorphometry, but the increasing availability of lidar data sets may drive 
+algorithm development toward the raw point cloud instead of the derived grids.&nbsp;</p>
+<p> 
+								<a href="../html/adf_grids.htm">GDAL</a> 
+provides translatiton to and from a large number of formats, relieving GIS 
+programs from handling all variants of formats like Geotiff, and providing a 
+standard against which to measure data set compatibility (if GDAL cannot read 
+it, there is a problem with the implementation of the data format).</p>
+<table border="2">
+				<tr>
+								<td>Raster</td>
+								<td>&nbsp;<a href="../html/tbme9v52.htm">Geotiff</a> especially with the 
+								<a href="../html/adf_grids.htm">GDAL drivers</a>.&nbsp; 
+				Problems include:<ul>
+								<li>Tiling may cause issues</li>
+								<li>Inconsistent handling of missing data</li>
+									<li> 
+								<a href="../html/adf_grids.htm">GDAL</a> can 
+									converta Geotiff that uses unusual options 
+									in the Geotiff specification, which allows 
+									an almost limitless number of coding 
+									options, or if the projection is not 
+									natively supported by the GIS program.</li>
+				</ul>
+								</td>
+				</tr>
+				<tr>
+								<td>Vector </td>
+								<td><a href="../html/shapefile.htm">Shapefile</a><ul>
+								<li>ESRI spec did not call for datum projection</li>
+								<li>PRJ file not always present, and not always 
+								interpreted correctly</li>
+									<li> <a
+href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">
+<span class="auto-style1">Shapefile specs</span></a><span class="auto-style1"> 
+									from ESRI</span></li>
+									<li>  
+								<a href="../html/adf_grids.htm">GDAL</a> can 
+									reproject data if the projection is not 
+									natively supported by the GIS program.&nbsp; 
+									Geographic (lat/long) provides the most 
+									versatile coordinates.</li>
+				</ul>
+								</td>
+				</tr>
+				<tr>
+								<td>Point cloud</td>
+								<td>
+								<p>&nbsp;<a href="../html/las_format.htm">LAS</a> with
+								<a href="../html/lidar_compression.htm">LAZ compression</a><br />
+								<br />
+&nbsp;</p>
+								<ul>
+									<li>Web format description:
+									<a href="https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities">
+									https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities</a></li>
+									<li>
+									<a href="https://github.com/ASPRSorg/LAS">
+									https://github.com/ASPRSorg/LAS</a>&nbsp; 
+									official file format</li>
+								</ul>
+								</td>
+				</tr>
+				<tr>
+								<td style="height: 72px">Raster/Vector Mix</td>
+								<td style="height: 72px">
+								<p><a href="../html/kml_overview.htm">KML format</a></p>
+								<ul>
+									<li>Lacks a way to 
+	manipulate or search for data attributes.&nbsp; </li>
+									<li>Combines raster and vector 
+	data in a single file.</li>
+									<li>Can be compresses as KMZ file</li>
+									<li>Good distribution format to non-GIS 
+									users</li>
+									<li> 
+									<a href="http://www.opengeospatial.org/standards/kml/">
+									Open 
+standard at Open Geospatial Consortium (OGC).</a></li>
+								</ul>
+								</td>
+				</tr>
+</table>
+<p><a href="../html/epsg.htm">EPSG codes</a></p>
+<p>With the ability to exchange data in common formats, users can use several 
+programs to capitalize on the unique capabilities of each.</p>
+<p>Some programs will require a separate import step, and write a new version of 
+the program in their native format, while others will convert on the fly and 
+keep the native version of the data set in memory.</p>
+<p>Formats to watch:</p>
+<ul>
+	<li><a href="http://www.geopackage.org/">OGC Geopackage</a> (*.gkpg): supports raster 
+	(especially tiled data) and vector data; design had mobile devices as key 
+	motivating factor.&nbsp; <a href="../html/adf_grids.htm">GDAL</a> supports 
+	both raster and vector.</li>
+</ul>
+
+<p>Formats to avoid:</p>
+<ul>
+				<li><a href="../html/tbme6h0z.htm">World files</a></li>
+				<li><a href="../html/xyz_format.html">XYZ format</a></li>
+				<li>ESRI geodatabases</li>
+				<li><a href="../html/esri_zlas.html">ESRI zLAS</a></li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revised&nbsp;3/13/2025</em></p>
+
+</body>
+
+</html>

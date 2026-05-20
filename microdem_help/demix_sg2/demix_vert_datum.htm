@@ -1,0 +1,114 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>DEMIX Vertical Datums Shifts</title>
+<!--[if !mso]>
+<style>
+v\:*         { behavior: url(#default#VML) }
+o\:*         { behavior: url(#default#VML) }
+.shape       { behavior: url(#default#VML) }
+.DefinitionList {
+	text-align: center;
+}
+.auto-style1 {
+	text-align: left;
+	font-size: medium;
+}
+</style>
+<![endif]-->
+<!--[if gte mso 9]>
+<xml><o:shapedefaults v:ext="edit" spidmax="1027"/>
+</xml><![endif]-->
+</head>
+
+<body>
+
+<p align="center"><font size="5"><b>DEMIX Vertical Datum Shifts for Version 2 of 
+DEMIX Database</b></font></p>
+<p align="center">&nbsp;</p>
+<p class="auto-style1">The reference high resolution DEMs have several distinct 
+reference systems.&nbsp; Our goal is a reference DEM on the WGS84 ellipsoid and 
+the EGM2008 geoid.</p>
+<ul>
+	<li>
+	USGS 3DEP are on the NAD83 ellipsoid and 
+	NAVD88 geoid.&nbsp; There is not a grid to convert, because you must convert 
+	the x and y coordinates a variable amount across the DEM, as well as the z 
+	coordinates.&nbsp; For version 1 of the database we used the GEOID18 grid 
+	and ignored the differences in the horizontal datum.&nbsp; For version 2 we 
+	first used <a href="../html/vdatum_datum_shift.html">US VDATUM</a> to compute an 
+	average shift for each area, and confirmed using GDAL that the differences 
+	were &quot;small&quot;, and now are using GDAL.
+	</li>
+	<li>
+	Spain, Norway:&nbsp; on the WGS84 ellipsoid and a 
+	national geoid (two for Spain, mainland and Canary islands).&nbsp; These 
+	only involve a shift in the vertical coordinates, and there are grids to 
+	accomplish this.&nbsp; This requires two grids, one to move the elevation 
+	from the national geoid to the WGS84 elllipsoid, and a second grid to go 
+	from the ellipsoid to the EGM2008 geoid.&nbsp; The EGM2008 grids are 
+	derived from NGA, and are included in the 
+	<a href="../html/vdatum_datum_shift.html">US VDATUM</a> download, or
+<a href="../html/osgeo4w.htm">OSGeo4W</a>.&nbsp; We are using mapalgebra with 
+	OSGEO4W national grids for Spain and Norway: 
+	OSGeo4W\share\proj\es_ign_egm08-rednap.tif, 
+	OSGeo4W\share\proj\es_ign_egm08-rednap-canarias.tif, 
+	OSGeo4W\share\proj\no_kv_HREF2018B_NN2000_EUREF89.tif</li>
+	<li>
+	UK: we are using a map algebra and vertical 
+	transformation grid from
+<a href="../html/osgeo4w.htm">OSGeo4W</a>&nbsp; 
+	OSGeo4W\share\proj\uk_os_OSGM15_GB.tif</li>
+	<li>
+	Italy:&nbsp; this uses a local geoid from the two 
+	provinces which produced the lidar DEMs, which supply a transformation grid 
+	which doe not have a ESPG code.&nbsp; We used map algebra.&nbsp; Without an 
+	EPSG code we cannot use GDAL.</li>
+	<li>
+	South America: these were converted by 
+	co-authors using unspecified methodology.</li>
+</ul>
+<table border="2">
+	<tr>
+		<td>Program</td>
+		<td>Data</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>GDAL</td>
+		<td>Grid</td>
+		<td>Need EPSG codes for both ellipsoids and vertical datums.<br>
+<a href="../html/osgeo4w.htm">OSGeo4W</a> 
+		installation will install the transformation data, which are used by 
+		PROJ and GDAL.<br>Slow when both horizontal and vertical datums have to 
+		shift.<br>Will create a new grid with an offset corner location, and the 
+		same number of rows and columns.&nbsp; It is unclear if the horizontal shift is 
+		exact for the corner, or an average for the entire grid.<br>This agrees 
+		with very small differences with what ArcGIS does (check by a 
+		colleague).<br></td>
+	</tr>
+	<tr>
+		<td>Simple map algebra in GIS</td>
+		<td>Grid</td>
+		<td>Need two conversion grids, one between the local geoid and the 
+		ellipsoid, and another from the ellispoid to EGM2008 from NGA, and do a 
+		subtraction and addition with the DEM. 
+<a href="../html/osgeo4w.htm">OSGeo4W</a> 
+		installation will install these, which are used by PROJ and GDAL.<br>
+		This will not handle a horizontal datum (ellipsoid shift)</td>
+	</tr>
+	</table>
+<p><a href="../html/projection_data_sets.html">Projection data sets</a><br></p>
+<hr>
+<p>&nbsp;</p>
+
+<p align="right"><i>Last revision 6/9/2023</i></p>
+
+<p>&nbsp;</p>
+</body>
+</html>

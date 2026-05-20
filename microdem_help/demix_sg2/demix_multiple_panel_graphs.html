@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Best DEM Multiple Panel Graphs</title>
+</head>
+
+<body>
+
+<h1>Best DEM Multiple Panel Graphs</h1>
+<p>Option from Open and manipulate DEMIX database: on the <a href="../demix_sg2/demix_main_menu_options.html">DEMIX</a> 
+main menu submenu</p>
+<p><br />
+</p>
+<table border="2">
+	<tr>
+		<td>Graph Settings</td>
+		<td>Graph Panels</td>
+		<td>Max Panels</td>
+	</tr>
+	<tr>
+		<td>
+		<p>Sort by tile parameters, DEM type, graph for each criterion</p>
+		</td>
+		<td>TP * DEM</td>
+		<td>14</td>
+	</tr>
+	<tr>
+		<td>
+		<p>Sort by tile parameters, graph by DEM type and Land Type, merged all 15 
+	criteria</p>
+		</td>
+		<td>TP</td>
+		<td>7</td>
+	</tr>
+	<tr>
+		<td>
+		<p>Sort by tile paramaters, each criterion, and graph by DEM type and Land 
+	type</p>
+		</td>
+		<td>TP * CRIT</td>
+		<td>105</td>
+	</tr>
+	<tr>
+		<td>Sort by tile parameters, graph by criterion and DEM type</td>
+		<td>TP</td>
+		<td>7</td>
+	</tr>
+	</table>
+<p>&nbsp;</p>
+<p>
+<table border="2">
+	<tr>
+		<td>Index</td>
+		<td>Category</td>
+		<td>Number of Options</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>TP</td>
+		<td>Tile Parameters</td>
+		<td>7</td>
+		<td>Calculated over entire tile<br />
+		4 geomorphmetric, 3 land cover</td>
+	</tr>
+	<tr>
+		<td>DEM</td>
+		<td>DEM type</td>
+		<td>2</td>
+		<td>DSM and DTM</td>
+	</tr>
+	<tr>
+		<td>CRIT</td>
+		<td>Criterion</td>
+		<td>15</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>LT</td>
+		<td>Land type</td>
+		<td>8</td>
+		<td>Only matching pixels use to evaluate criteria<br />
+		All, 4 Slopes classes, 3 land cover</td>
+	</tr>
+</table>
+<br />
+</p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<table border="2">
+	<tr>
+		<td><img height="248" src="graph1.png" width="520" /><br />
+		</td>
+		<td><a name="Best_by_sorted_geomorphometry.">Best by sorted 
+		geomorphometry values.</a>&nbsp; Be careful about the caveats below<ul>
+			<li>Vertical axis will be sorted on average slope, forest percentage, and so 
+			on<ul>
+				<li>May also consdider only a single criterion</li>
+			</ul>
+			</li>
+			<li>Horizontal column label will be for criterion or land type.</li>
+			<li>Two columns, blue for DSM, and brown for DTM</li>
+			<li>Only DEMs tied for first in the current tolerance will be 
+			included, and each DEM will always have the same position along the 
+			x axis.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+</body>
+
+</html>

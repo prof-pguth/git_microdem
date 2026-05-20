@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DEMIX Options with Evaluation and Opinion Matrices</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<h1>&nbsp;<img height="67" src="demix.png" width="92" />&nbsp; DEMIX Options with Evaluation and Opinion Matrices</h1>
+<p>Database Submenu under <a href="../html/db_stats.htm"><strong>Stats</strong>, 
+DEMIX</a>&nbsp; and also on a button the DB toolbar</p>
+<ul>
+	<li><a href="../../demix/manipulate_demix_db.html">Open DEMIX graphs</a></li>
+	<li>Create new tables</li>
+	<li>Modify this table</li>
+	<li>Filter this table</li>
+</ul>
+<hr />
+<p>The remaining options are experimental and may not currently work, or may 
+only work with older versions of the database.&nbsp; Options may come and go, change positon, or be 
+renamed</p>
+<ul>
+	<li>Mean and median histograms</li>
+	<li>Graph filters</li>
+	<li>DEMIX tile inventory: shows whether each tile has DTM, DSM, or both</li>
+	<li><a href="#DEMIX_tile_summary">DEMIX tile summary:</a> creates table showing the number of cells and how 
+	many have sufficient pixels in each land type&nbsp;&nbsp;
+	&nbsp;&nbsp;</li>
+	<li>Filter out signed criteria (mean and median, which do not work with the 
+	wine contest)</li>
+	<li>Filter for just signed criteria (mean and median, which do not work with the 
+	wine contest)--for instance you could then delete them from the database</li>
+	<li>Filter for DEMIX tiles: apply a filter so each DEMIX tile appears only 
+	once, to get tile statistics or to make an index for tile graphs</li>
+	<li>1 degree tiles to cover records in table; creates list of the SW corner 
+	of the 1 degree tiles needed to cover every record in the table.</li>
+	<li>Add IMAGE field for difference distribution graphs.&nbsp; This file can 
+	also serve as a summary of the average characteristics of each tile</li>
+	<li><a href="#Best_by_sorted_geomorphometry.">Best by sorted geomorphometry 
+	values</a>.&nbsp; Be careful about the caveats so you understand the graph.&nbsp; 
+	Increased control over the results on the graphs</li>
+	<li>Graph best DEM (average score) for criteria and filters: makes two 
+	graphs (DSM and DTM) for all criteria and several&nbsp; terrain filters.&nbsp; 
+	Graphs with a legend will be in <a href="file:///c:/mapdata/temp">c:\mapdata\temp</a> 
+	which you must save</li>
+	<li>Rank DEMs and find best by criterion and tile.&nbsp; You can change the 
+	tolerances used for ties.</li>
+</ul>
+<ul>
+	<li>Graphs with various filters (experimental)<ul>
+		<li>Key means</li>
+		<li>Key medians</li>
+		<li>Key 3 params</li>
+		<li>Pick criterion (parameter)</li>
+		<li>Single tile, all criteria, values</li>
+		<li>Simple example</li>
+	</ul>
+	</li>
+	<li>Sum scores based on active filters</li>
+	<li>Ties by opions: adds a field for each DEM to the database, showing where 
+	it is tied for being best and how many DEMs share the tie, and a field 
+	showing CRIT_CAT whether what kind of difference is used for the criterion.&nbsp; 
+	Reod if you change the tolerances.</li>
+	<li>Wins and ties: summarize results from Ties by opinions.&nbsp; Call that 
+	if it has not been done already.</li>
+	<li>Graph filters</li>
+	<li>Winning percentages and shootouts</li>
+	<li>Graphs best DEM per tile, by criteria (sort by area)</li>
+	<li>Graphs best DEM per tile, by criteria (sort by tile characteristics)</li>
+	<li>Graph best DEM (average score) for criteria and filters </li>
+	<li>Graph difference values by DEMIX tile</li>
+	<li>Sum scores based on active filters, used for Friedman statistics</li>
+	<li>Graph best DEM (average score) for criteria</li>
+</ul>
+<p><a href="../demix_sg2/wine_contest.html">DEMIX wine contest 
+main page</a><br /></p>
+<hr />
+<table border="2">
+	<tr>
+		<td>&nbsp;<br>
+		<br>
+		</td>
+		<td>
+		<p><strong><a name="Winning_percentages_and_shootouts">Winning percentages and shootouts</a></strong></p>
+		<p>Graphs for DTM and DSM</p>
+		<p>Graph for</p>
+		<ul>
+			<li>COP versus ALOS</li>
+			<li>COP versus ALOS versus FABDEM</li>
+			<li>All 6 DEMs (ties allows, so sum can be over 100%)</li>
+		</ul>
+		<p>Within each graph</p>
+		<ul>
+			<li>Each row is a wine contest</li>
+			<li>Top group each of the 15 criteria</li>
+			<li>Next group has filters by tile</li>
+			<li>Bottom group has filters by pixel</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td class="auto-style1">
+		&nbsp;</td>
+		<td>
+		<p>Best DEM per tile, by criteria</p>
+		<ul>
+			<li>Tiles on the left, but only areas labelled</li>
+			<li>Criteria on the horizontal axis</li>
+			<li>Ties shown by multiple color boxes in the column&nbsp;</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td class="auto-style1">
+		&nbsp;</td>
+		<td>
+		<ul>
+			<li>Tiles arranged in the same order as in the database</li>
+			<li>Labels by area, with a break between areas</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>
+		<p>Plots for mean or median, which are signed.&nbsp; The criteria used in the 
+		wine contest are unsigned</p>
+		<ul>
+			<li>Tiles arranged in the same order as in the database</li>
+			<li>Labels by area, with a break between areas</li>
+			<li>Vertical line at 0.&nbsp;
+			<ul>
+				<li>Points to the left have negative differences, so the 
+				candidate DEM has a lower value than the reference DEM</li>
+				<li>Points to the right have postive differences, so the 
+				candidate DEM has higner value than the reference DEM</li>
+			</ul>
+			</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Option details, and snippet of graphical output</p>
+<table border="2">
+	<tr>
+		<td><img height="248" src="graph1.png" width="520" /><br />
+		</td>
+		<td><a name="Best_by_sorted_geomorphometry.">Best by sorted 
+		geomorphometry values.</a>&nbsp; Be careful about the caveats below<ul>
+			<li>Vertical axis will be sorted on average slope, forest percentage, and so 
+			on, with the axis title showing the tile characteristic<ul>
+				<li>May also consdider only a single criterion, which will also 
+				appear on the axis title</li>
+			</ul>
+			</li>
+			<li>Horizontal column label will be for criterion or land type.</li>
+			<li>Two columns, blue for DSM, and brown for DTM</li>
+			<li>Only DEMs tied for first in the current tolerance will be 
+			included, and each DEM will always have the same position along the 
+			x axis.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+	<table border="3" style="font-family: &quot;Times New Roman&quot;; letter-spacing: normal; orphans: 2; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+		<tr>
+			<td>REF_TYPE</td>
+			<td>AREA</td>
+			<td>ALL</td>
+			<td>BARREN</td>
+			<td>CLIFF</td>
+			<td>FLAT</td>
+			<td>FOREST</td>
+			<td>GENTLE</td>
+			<td>STEEP</td>
+			<td>URBAN</td>
+		</tr>
+		<tr>
+			<td class="auto-style1">DTM</td>
+			<td class="auto-style1">15</td>
+			<td class="auto-style1">105</td>
+			<td class="auto-style1">102</td>
+			<td class="auto-style1">49</td>
+			<td class="auto-style1">105</td>
+			<td class="auto-style1">105</td>
+			<td class="auto-style1">86</td>
+			<td class="auto-style1">60</td>
+			<td class="auto-style1">79</td>
+		</tr>
+		<tr>
+			<td class="auto-style1">DSM</td>
+			<td class="auto-style1">6</td>
+			<td class="auto-style1">48</td>
+			<td class="auto-style1">46</td>
+			<td class="auto-style1">42</td>
+			<td class="auto-style1">48</td>
+			<td class="auto-style1">48</td>
+			<td class="auto-style1">48</td>
+			<td class="auto-style1">48</td>
+			<td class="auto-style1">43</td>
+		</tr>
+	</table>
+		</td>
+		<td><a name="DEMIX_tile_summary">DEMIX tile summary</a>.&nbsp; Shows the 
+		number of areas, and the number of tiles that have a sufficient number 
+		of pixels with the appropriate land type.</td>
+	</tr>
+	</table>
+<p><a href="wine_contest.html">DEMIX main page</a></p>
+<p><a href="../html/microdem.htm">MICRODEM home page</a></p>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><i>last revision 5/8/2026&nbsp;</i></p>
+
+</body>
+
+</html>

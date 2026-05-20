@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Prep high resolution refererence DEM</title>
+<style type="text/css">
+.auto-style3 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: general;
+	vertical-align: bottom;
+	white-space: normal;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+}
+.auto-style4 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: center;
+	vertical-align: bottom;
+	white-space: normal;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Prepping a high resolution reference DEM to compare to a 1" Global DEM</h2>
+<ul>
+	<li>Comparing point values in a high resolution DEM, which represent a very 
+	small area, with the values in the <a href="../html/global_dems.html">global 
+	DEM</a> which represent a much larger 
+	area, has been done in a lot of 
+	studies, but is probably not ideal.&nbsp; Instead we should compare the 
+	global DEM with what the true value should be of a DEM representing a 1" 
+	pixel, using the high resolution reference DEM to 
+	create a 1" reference DEM.</li>
+	<li>The 1" reference DEM has "comparable" elevations for every pixel, both 
+	in sampled area size and location.&nbsp; Simple map algebra can create 
+	difference maps and statistics between the reference and candidate DEM.</li>
+	<li>For slopes and aspects (and to some extent elevations), we could either:<ul>
+		<li>Use the 1" reference DEM, and compute slope and aspect from it.&nbsp; 
+		In this case differences do not reflect the pixel size, but the DEM 
+		characteristics.&nbsp; This is the preferred method.</li>
+		<li>Compute slope and aspect at every point in the reference DEM in its 
+		original resolution, and then take some kind of average slope and aspect 
+		of every point that is within each pixel of the 1" <a href="../html/global_dems.html">
+		global DEM</a>.&nbsp; We 
+		would expect the reference DEMs to have steeper slopes due to their 
+		smaller pixel sizes.&nbsp; If we have reference DEMs of different 
+		resolutions, we cannot compare test areas.</li>
+	</ul>
+	</li>
+</ul>
+<h2>Steps:</h2>
+<ul>
+	<li>Horizontal datum:
+	<ul>
+		<li>If needed convert high resolution reference DEM to WGS84</li>
+		<li>For 1" DEMs, conversion probably not needed for NAD83 or ETRS89 and 
+		perhaps some national datums</li>
+		<li>For 1" DEMs, probably no need for the realizations in time for the 
+		horizontal datum</li>
+	</ul>
+	</li>
+	<li>Vertical datum<ul>
+		<li>Most geotiffs do not have the vertical datum specified, and it takes 
+		some digging to find it (and then more digging to find how the local 
+		vertical datum relates to the WGS84 ellipsoid)</li>
+		<li>Need EGM96 for ALOS, ASTER, SRTM, and NASADEM, but we will shift all 
+		of those to EGM2008</li>
+		<li>Need EGM2008 for COP</li>
+		<li>Probably assumes WGS84 ellipsoid</li>
+		<li>Real challenge is to get conversion from a local datum (e.g. NAVD88 
+		in North America, SLOVRP2016-Koper in Slovenia, or Rednap in Spain) to 
+		EGM</li>
+		<li><a href="../html/egm96.htm">Use Geotiff or GTX grids</a>.&nbsp; For 
+		EGM96 in particular, these are relatively coarse resolution.&nbsp; Use 
+		the files from PROJ</li>
+		<li>NGA has Fortran code and coefficients to do the conversions at any 
+		point (<a href="https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs8">https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs84</a>).&nbsp; 
+		These run from the command line, with an ASCII input and output files. <ul>
+			<li>For EGM96, the coefficients file is only 5 MB, and 15' grids might 
+			be the best attainable with the model.&nbsp; Interpolation within 
+			the 1' file is likely to be as good as a higher resolution model.</li>
+			<li>For EGM2008, the coefficients for the model 
+			are 236 MB, and the 1' grid is much more detailed that for EGM96.</li>
+		</ul>
+		</li>
+		<li>MICRODEM can use the NGA programs to
+		<a href="../html/egm_full_model.htm">compute, using the full model 
+		resolution, EGM96 and EGM2008 geoid</a> values at any desired point, but 
+		it is slow</li>
+	</ul>
+	</li>
+	<li>Projection<ul>
+		<li>Ultimately we want the reference DEM in geographic coordinates</li>
+		<li>For getting the 1" geographic reference DEM, reproject the original 
+		high resolution reference DEM to UTM or geographic if required (might be 
+		for MICRODEM, as other projections have not been tested since they are 
+		relatively rare)</li>
+	</ul>
+	</li>
+	<li>DEMIX tile extent: does a 10 km tile, for the pixel-is-point DEMs, 
+	include the points on the bounding parallels and meridians (for 
+	pixel-is-area this is not a concern).&nbsp; They will then be double 
+	counted, but I think that is not a problem.</li>
+	<li>Resampling the reference DEM to get a 1" version<ul>
+		<li><a href="../html/PixelIsWhat.html">Grid storage</a>, the pixel 
+		representation to avoid 1/2 pixel posting shift.<ul>
+			<li>Need pixel-is-point for COP, ASTER, SRTM, and NASADEM </li>
+			<li>Need pixel-is-area for ALOS</li>
+		</ul>
+		</li>
+		<li>Lidar point cloud as the source of reference data<ul>
+			<li>Choose DSM or DTM as desired result</li>
+			<li>Use any tool, providing the methodology can be defended</li>
+			<li>MICRODEM can create the grid using mean or median, and either 
+			the first returns, all returns, or just ground classified points.&nbsp; 
+			This can create any desired grid spacing, with UTM, geographic, and 
+			some WKT projections with restrictions.&nbsp; This is currently done 
+			in the GUI, but could easily be adapted to the command line.<ul>
+				<li><a href="../html/grid_from_pt_cld.htm">1 pass grids</a>&nbsp; Create a new 
+		grid that matches the DEM covering the map.&nbsp; This can use min, max, 
+				or mean points in the pixel.</li>
+				<li><a href="../images/pt_cld/multi_pass_tab.html">Multi pass grid</a>: if you want the median, or a specified 
+				percentile.&nbsp; This is slower, but avoids influence of rogue 
+				returns</li>
+			</ul>
+			</li>
+		</ul>
+		</li>
+		<li>DEM as the source of reference data<ul>
+			<li>Most of the DEMs will be a DTM, which don't compare well with 
+			the 1" global DEMs which are DSMs</li>
+			<li>Use any tool, providing the methodology can be defended</li>
+			<li>MICRODEM can&nbsp;<a href="../html/downsample_avg_new_proj.html">Average to new projection</a>&nbsp; 
+			which takes the mean 
+			of all points in the reference DEM that contribute to the 1" pixel.&nbsp;&nbsp; 
+			MICRODEM can do this with either the GUI or the command line.&nbsp; 
+			See <a href="resample/grid_resampling_by_averaging.html">example for 
+			El Hiero</a>, with 2.5 m source DEM resampled to 1".</li>
+			<li>Take median of all points in the reference DEM that contribute 
+			to the 1" pixel.&nbsp; This can be done using
+				<a href="../html/lastools.htm">LAStools</a> (demzip) to create a 
+			point cloud with the DEM, and then using the point cloud option 
+			above.</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+<p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 170pt" width="226">
+	<colgroup>
+		<col style="mso-width-source: userset; mso-width-alt: 3726; width: 79pt" width="105" />
+		<col style="mso-width-source: userset; mso-width-alt: 4295; width: 91pt" width="121" />
+	</colgroup>
+	<tr height="58" style="height: 43.2pt">
+		<td class="auto-style3" height="58" style="height: 43.2pt; width: 79pt" width="105">
+		DEM grid size (m)</td>
+		<td class="auto-style3" style="width: 91pt" width="121">Approximate 
+		points in 1"x1" pixel</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td class="auto-style4" height="19" style="height: 14.4pt; width: 79pt" width="105">
+		1</td>
+		<td class="auto-style4" style="width: 91pt" width="121">900</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td class="auto-style4" height="19" style="height: 14.4pt; width: 79pt" width="105">
+		2.5</td>
+		<td class="auto-style4" style="width: 91pt" width="121">144</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td class="auto-style4" height="19" style="height: 14.4pt; width: 79pt" width="105">
+		5</td>
+		<td class="auto-style4" style="width: 91pt" width="121">36</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td class="auto-style4" height="19" style="height: 14.4pt; width: 79pt" width="105">
+		10</td>
+		<td class="auto-style4" style="width: 91pt" width="121">9</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td class="auto-style4" height="19" style="height: 14.4pt; width: 79pt" width="105">
+		15</td>
+		<td class="auto-style4" style="width: 91pt" width="121">4</td>
+	</tr>
+</table>
+</p>
+<p>The table assumes the 1" pixels are 30 m.&nbsp; If the reference DEM is UTM, 
+the number of pixels from the reference DEM that map into each pixel will vary 
+because the grids will have different sizes, are not multiples of each other, and 
+the UTM grid will be rotated relative to the geographic grid.</p>
+<hr />
+<p>Using ICESat-2 to verify correct vertical datum</p>
+<ul>
+	<li>Converting to the same vertical datum (EGM2008) might be the hardest 
+	part of the comparisons, and it can be verify to determine the local 
+	vertical datum and its relation to EGM2008</li>
+	<li>ICESat-2 offers a way to check this, using only the highest quality 
+	returns<ul>
+		<li><a href="../html/get_icesat.htm">Get the ICESat-2 data</a></li>
+		<li><a href="../html/get_icesat.htm#Prep_the_data">Prep the ICESat-2 
+		data</a> (in particular, convert the elevations to EGM2008)</li>
+		<li>Filter the data<ul>
+			<li>Terrain elevation uncertainty above 0.1 m to remove points with 
+			no uncertainly</li>
+			<li>Terrain elevation uncertainty below 1 m </li>
+		</ul>
+		</li>
+		<li>Interpolate the elevation from the reference DEM at the location of 
+		each IECSat-2 elevation.&nbsp; Remove all ICESAT points where the DEM 
+		elevation is less than 0. 5m (these are water)</li>
+		<li>For the island of La Palma<ul>
+			<li>This leaves 243 points </li>
+			<li>There were 20,692 points on the island</li>
+			<li>The table shows the difference statistics between the national 
+			2.5 m DTM and the highest quality ICESat-2 points</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+<p>&nbsp;&nbsp;</p>
+<p><a href="../html/global_dems.html">Summary of quasi global DEMs</a>,</p>
+
+<hr>
+
+<p align="right"><em>Last revision 1/28/2023</em></p>
+
+</body>
+
+</html>

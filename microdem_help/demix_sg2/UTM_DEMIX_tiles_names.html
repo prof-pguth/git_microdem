@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>UTM DEMIX Tiles Names</title>
+<link href="../md.png" rel="shortcut icon">
+
+
+</head>
+
+<body>
+
+<h1>UTM DEMIX Tile Names</h1>
+<ul>
+	<li><a href="UTM_DEMIX_tiles.html">Tile geometry and merging</a></li>
+	<li><a href="demix_tile_requirements.html">DEMIX tile requirements</a></li>
+</ul>
+<p>
+
+<iframe src="hrdem_source_ref.html" width="1200" height="800" ></iframe>
+ 
+</p>
+
+<p>
+
+<span style="color: rgb(32, 33, 34); font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+<a href="https://en.wikipedia.org/wiki/Wikipedia:Emerson_and_Wilde_on_consistency">
+"A foolish consistency is the hobgoblin of little minds"</a>.&nbsp; While it 
+could be possible to create a single file naming scheme for UTM tiles, it would 
+need to account for other projections like the UKOS and French Lambert and probably 
+others, and the very differnt&nbsp; schemes based on the national maps.&nbsp; 
+This system evolved as additional countries were added, using the simplest way 
+to convert files names into a tile name.</span></p>
+<p>
+
+Area names cannot have an underscore as the third character, since that is used 
+as the country identifier.</p>
+<p>
+
+<span class="auto-style1">To find the location of a tile:</span></p>
+<ul>
+	<li>For a rough estimate, use the tile centroid included in all the DEMIX 
+	databases.</li>
+	<li>Use MICRODEM to get the bounding box for the reference DTMs.</li>
+</ul>
+<p>
+
+Tile names and country codes are not case sensitive.&nbsp; MICRODEM converts all 
+strings to uppercase before comparisons.</p>
+<p>
+
+&nbsp;</p>
+<table border="2">
+	<tr>
+		<td>Quarter Quad File Name Examples</td>
+	</tr>
+	<tr>
+		<td><img height="185" src="quarter_quad_files.png" width="706" /></td>
+	</tr>
+</table>
+<p><a href="wine_contest.html">DEMIX main page</a></p>
+<p><a href="../html/microdem.htm">MICRODEM home page</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 11/25/2025</em></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

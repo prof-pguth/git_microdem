@@ -1,0 +1,293 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DEM</title>
+<style type="text/css">
+.style2 {
+				font-size: medium;
+}
+.auto-style2 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: general;
+	vertical-align: bottom;
+	white-space: nowrap;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>DEM, Criterion, Tile Geomorphometry Interplay</h2>
+<p><a href="wine_contest.html">DEMIX main help page</a></p>
+<p><a href="../../demix/manipulate_demix_db.html">Detailed directions</a></p>
+<p>The DEMIX database contains a rich resource for looking at how the 
+		test DEMs, different criteria, and tile characteristics interact.<br />
+		<br />
+		MICRODEM can provide multiple graphics to explore these.&nbsp; It will 
+		automatically combine graphics into large combined images.</p>
+<p>Mixed filters have the following format.&nbsp; They can combine or mix 
+multiple fields in the database, and can be created by the user.&nbsp; The 
+FILTER field must be a valid dBase filter; the LABEL can be more human readable 
+and will be used to label graphics.</p>
+<p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse:
+ collapse;width:144pt" width="192">
+	<colgroup>
+		<col span="1" /><col span="1" style="width:48pt" width="64" />
+	</colgroup>
+	<tr height="20">
+		<td class="auto-style2" height="20" style="height: 15.0pt; width: 174pt">
+		FILTER</td>
+		<td class="auto-style2" style="width: 144pt">LABEL</td>
+	</tr>
+	<tr height="20">
+		<td class="auto-style2" height="20" style="height: 15.0pt; width: 174pt;">
+		avg_slope &gt; 50</td>
+		<td class="auto-style2" style="width: 144pt">Mean slope &gt; 50%</td>
+	</tr>
+	<tr height="20">
+		<td class="auto-style2" height="20" style="height: 15.0pt; width: 174pt;">
+		avg_slope &gt; 30 and avg_slope &lt; 50</td>
+		<td class="auto-style2" style="width: 144pt">Mean slope 30-50%</td>
+	</tr>
+	<tr height="20">
+		<td class="auto-style2" height="20" style="height: 15.0pt; width: 174pt;">
+		avg_slope &gt; 5 and avg_slope &lt; 30</td>
+		<td class="auto-style2" style="width: 144pt">Mean slope 5-30%</td>
+	</tr>
+	<tr height="20">
+		<td class="auto-style2" height="20" style="height: 15.0pt; width: 174pt;">
+		avg_slope &lt; 5</td>
+		<td class="auto-style2" style="width: 144pt">Mean slope &lt; 5%</td>
+	</tr>
+</table>
+</p>
+<table border="2">
+	<tr>
+		<td>
+		<img height="151" src="demix_graph_options.png" width="218" /></td>
+		<td><a name="Symbol_options">Symbol options</a></td>
+	</tr>
+	<tr>
+		<td><img src="demix_landscape_filters.png" /></td>
+		<td>
+		<p><a name="Landscape_filters">Landscape filters</a></p>
+		<ul>
+			<li>Mixed filters point to dbf files in the DEMIX settings directory 
+			with the name in drop down list.&nbsp; Most options use the first, 
+			but some use both.</li>
+			<li>&nbsp;Standard landscape filters make a series for the 
+			particular feature.&nbsp; They are created in code</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<table border="2">
+	<tr>
+		<td style="width: 260px">
+		<img height="144" src="pie_winners.png" width="250" /></td>
+		<td>
+		<h2>Pie Chart One Mixed Filter</h2>
+		Graphs manipulating DB<br />
+		Pick DEMs to be included (determines number of slices in each pie)<br />
+		Pick Criteria to show (determines number of columns)<br />
+		<a href="#Landscape_filters">Pick single mixed filters</a> to use (determines&nbsp; number of rows)<br />
+		Check box lets you pick separate diagrams for US/not US, or 
+		free/restricted licences<br />
+		<strong>Pie graphs button</strong></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="400" src="box_plots.png" width="250" /></td>
+		<td>Graphs manipulating DB<br />
+		Pick DEMs to be included (color plots)<br />
+		Pick Criteria to show<br />
+		<a href="#Landscape_filters">Pick mixed filters</a> to use <br />
+		<strong>Box plot button</strong></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="236" src="vert_panel_each_criterion.png" width="250" /></td>
+		<td>
+		<h2>Graphs of filters versus FUV</h2>
+		<p>Graphs manipulating DB<br />Pick DEMs to be included (colored symbols)<br />Pick Criteria to show (Columns)<br />Pick mean or median for the criteria<br />
+		<a href="#Symbol_options">Pick graph symbol</a> options<br />Pick land types to show (rows) with checkboxes Standard landscape 
+		filters<br /><br /><br />Pick desired button: </p>
+		<ul>
+			<li>Selected mixed filters: uses the <a href="#Landscape_filters">
+			top mixed filter</a>, and makes a separate graph for each criterion.</li>
+			<li>Land type filters: uses the selected standard landscape filters, 
+			with a separate graph for mean or median of all the selected 
+			criteria combined</li>
+			<li>Panels multiple criteria: uses the selected standard landscape, 
+			with a separate from each of the seleted criteria<br /><br /><br />
+			</li>
+		</ul>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="265" src="graph_Y_axis_sort.png" width="250" /></td>
+		<td>
+		<h2><strong>Graph with Y axis sort on</strong></h2>
+		<br />
+		Graphs manipulating DB<br />Pick DEMs to be included (colored symbols)<br />
+		Pick Criteria to show <br />
+		Pick the sorting variable for the vertical axis<br />
+		Pick graph button<br />
+		<br />
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="134" src="winners_2dems_filters.png" width="250" /></td>
+		<td>Graphs manipulating DB<br />
+		Pick DEMs to be included (left column)<br />
+		Pick second set of DEMs (right column)--currently hard coded<br />
+		Pick Criteria to show (Rows in each graph)<br />
+		Pick mixed filters (rows of graphs)<br />
+		Pick <strong>Winning percentages (2 DEM lists)</strong></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="77" src="criteria_fuv_by_param.png" width="250" /></td>
+		<td>
+		<h2>Graphs of FUV versus criteria</h2>
+		<p>Graphs manipulating DB<br />Pick DEMs to be included <br />Pick mean or median for the FUV on vertical axis<br />Pick Criteria to show (on x axis)<br />Pick mixed filters (graphs)<br />
+		Pick button</p>
+		<ul>
+			<li><strong>Criteria FUV, standard landscape: </strong>each DEM will 
+			be in a separate row, each standard landscape filter in a row of 
+			graphs with a legend on the bottom<strong>.</strong></li>
+			<li><strong>Criteria FUV, 1 mixed filter: </strong>each graph will 
+			have one filter form the top mixed filter, with all selected DEMs on 
+			that graph</li>
+			<li><strong>Criteria FUV, 2 mixed filter grid: </strong>each graph 
+			will have all the DEMs with color symbols the FUV on the vertical 
+			axis, and the criteria on the horizontal axis.&nbsp; The top mixed 
+			filter will be in the rows of the diagram, and the second in the 
+			columns.</li>
+			<li><strong>Criteria FUV, just DB filter: </strong>allows creation 
+			of a single graph, mean/median FUV on the vertical axis, and the 
+			criteria on the horizontal axis, with whatever the active filter on 
+			the data base is.&nbsp; If you want more details work with that 
+			filter, save the filtered database and run the analysis on it.</li>
+		</ul>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="120" src="compare_pie_graphs.png" width="250" /><br />
+		<br />
+		<img height="116" src="pies_all_dems.png" width="250" /><br />
+		<br />
+		<img height="126" src="best_eval_two_land_types.png" width="250" /></td>
+		<td>
+		<p>&nbsp;</p>
+		<h2>Pie charts for two land types</h2>
+		<p>Graphs manipulating DB<br />
+		Pick DEMs to use</p>
+		<ul>
+			<li>Just two (gray will be ties)</li>
+			<li>All</li>
+			<li>Best evaluation.&nbsp; You can use circles or squares for the 
+			symbols<br />
+			</li>
+		</ul>
+		Pick Criteria to show (graphic for each)<br />
+		Pick two land types to use <br />
+		Pick button for <strong>"Pie graphs"</strong><br />
+		</td>
+		<td>
+		Size of pies proprotional to the number of tiles in that 2D bin</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="185" src="winner_2_cop_bar.png" width="250" /></td>
+		<td>
+		Graphs manipulating DB<br />
+		Pick DEMs to use<br />
+		Pick DEM to compare others to<br />
+		<br />
+		Pick Criteria to show (line in each DEM grouping)<br />
+		Pick mixed filters (graph for each)<br />
+		Pick button for <strong>"Comparison DEM wins with filters"</strong></td>
+		<td>
+		&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="184" src="barren_vs_slope.png" width="250" /></td>
+		<td>
+		Graphs manipulating DB<br />
+		Pick DEMs to use<br />
+		<br />
+		Pick Criteria to show (on horizontal axis)<br />
+		Pick mixed filters (first will rows of graphs, second columns)<br />
+		Pick button for <strong>"Comparison DEM wins with filters"</strong></td>
+		<td>
+		&nbsp;</td>
+	</tr>
+	<tr>
+		<td style="width: 260px">
+		<img height="267" src="dems_criteria.png" width="250" /></td>
+		<td>
+		<h2>Evaluation percentile versus best eval FUV&nbsp;</h2>
+		<p>Graphs manipulating DB<br />Pick DEMs to use<br /><br />Pick Criteria to show (colored plots)<br />Pick mixed filters (graph for each)<br />Pick button 
+		</p>
+		<ul>
+			<li><strong>"Best eval graph per criterion". </strong>&nbsp;Requires 
+			that the database has been sorted for the best evaluation. Makes one 
+			graph per filter.</li>
+			<li><strong>"Pick DEMs 
+		graph per criterion".&nbsp; </strong>Requires sorting the DB for each 
+			DEM. Makes a graph for each filter (columns) and DEM (rows)</li>
+			<li><strong>"Best eval graph criterion, Filters"</strong> Filters 
+			will be compared on a single graph,&nbsp; one per criterion</li>
+		</ul>
+		</td>
+		<td>
+		&nbsp;</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</tr></table>
+
+<hr>
+
+<p align="right"><em>Last revision 9/25/2025</em></p>
+
+</body>
+
+</html>

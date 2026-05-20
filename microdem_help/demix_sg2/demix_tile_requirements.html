@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DEMIX Tile Requirements</title>
+</head>
+
+<body>
+
+<h1>DEMIX Tile Requirements</h1>
+<ul>
+	<li>Online government portal to download DTMs in Geotiff format.&nbsp; We 
+	now (post version 4 of the DB, allow ASC files)</li>
+	<li>Grid spacing of 2 m or smaller. If the country has several resolutions, 
+	such as Switzerland, we use the larger as aggregation to one-arc-second will 
+	not benefit from the smaller grid spacing.</li>
+	<li>Vertical datum shifts to EGM2008 from the original datum supported by 
+	GDAL. If this is not possible, we can use the DEM only for LSPs which do not 
+	depend on absolute elevation values.</li>
+	<li>Availability of tiles approximately 10x10 km, or under 10x10 km that can 
+	be merged into tiles of approximately 10x10 km. This rules out huge, 
+	multi-GB files. While we could extract tiles from such files, it would not 
+	add much to the diversity of test areas, but may remove this requirement in 
+	a future version of the database.</li>
+	<li>Elevations in floating point meters with resolution to at least 
+	decimeter.</li>
+</ul>
+<p>Related topics</p>
+<ul>
+	<li><a href="UTM_DEMIX_tiles_names.html">UTM DEMIX tiles names</a></li>
+	<li><a href="UTM_DEMIX_tiles.html">UTM DEMIX tiles</a></li>
+	<li><a href="UTM_directory_structure.html">UTM DEMIX directory structure</a></li>
+	<li><a href="wine_contest.html">DEMIX main page</a></li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 11/9/2025</em></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

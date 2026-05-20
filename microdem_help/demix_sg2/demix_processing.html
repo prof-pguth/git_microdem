@@ -1,0 +1,200 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DEMIX Processing Steps</title>
+</head>
+
+<body>
+
+<h1><img height="67" src="demix.png" width="92" />&nbsp;&nbsp; DEMIX Pipeline Processing Steps in MICRODEM</h1>
+<table border="2">
+	<tr>
+		<td>
+		<p>MICRODEM Setup</p>
+<ul>
+	<li><a href="../html/download_md.htm">Download and install MICRODEM</a></li>
+	<li>Perform&nbsp; default GDAL installation from
+<a href="../html/osgeo4w.htm">OSGeo4W</a>.&nbsp; This is needed to read some Geotiff DEMs, 
+	reproject to WGS84, and has transformation grids to convert vertical datums to 
+	EGM2008</li>
+</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<p><a href="demix_setup.html">Setting up MICRODEM&nbsp; DEMIX Definitions 
+Databases</a></p>
+		<ul>
+			<li>Samples of these files are included in the installation program, 
+			in "c:\microdem\demix_settings\"</li>
+			<li><a href="../html/national_datum_db.html">National datums 
+			database</a></li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		Get HRDEM for <a href="demix_ref_dems.html">Reference DEMs</a>&nbsp;<ul>
+			<li>Download national mapping agency files for reference DEMs<ul>
+		<li>For HRDEM that must merge 1x1 km tiles, there are options.&nbsp; For some countries there is MICRODEM 
+		source code that can be modified to create a list of 100 
+		1x1 km tiles to fill a UTM DEMIX tile if the country supports automatic 
+		download by sending the name of the file</li>
+				<li>Place <a href="UTM_directory_structure.html">files into directories</a> 
+				with specified structure</li>
+	</ul>
+			</li>
+			<li>EPSG codes for the 
+			horizontal and vertical datums are currently hard wired in the 
+			MICRODEM source code.&nbsp; This will eventually moved into a 
+			database</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		
+		Landcover data for test areas.&nbsp; 
+		
+		<ul>
+			<li>
+			Currently
+			<ul>
+				<li><a href="../html/land_cover_10m.html">ESA Land cover 10 m</a> 10 m&nbsp;11 classes</li>
+				<li>
+									<a href="https://viewer.esa-worldcover.org/worldcover/">
+									https://viewer.esa-worldcover.org/worldcover/</a>? 
+									allows selection of 3x3 degree tiles</li>
+				<li>Place in x:\landcover\esa_world_cover_10m (any drive)</li>
+				<li>
+				<b id="docs-internal-guid-e0cdb5e6-7fff-938b-a9ba-8ca72a984e54" style="font-weight:normal;">
+				<b id="docs-internal-guid-e0cdb5e6-7fff-938b-a9ba-8ca72a984e55" style="font-weight:normal;">
+				Changing this requires require source code changes (1) adding file 
+		name recognition for another data set, and (2) adjusting land cover 
+		category codes for aggregation in forest and barren super-categories.</b></b></li>
+			</ul>
+			</li>
+			<li>
+			Originally<ul>
+				<li>
+				<b id="docs-internal-guid-e0cdb5e6-7fff-938b-a9ba-8ca72a984e53" style="font-weight:normal;">
+				<b id="docs-internal-guid-e0cdb5e6-7fff-938b-a9ba-8ca72a984e52" style="font-weight:normal;">Copernicus Global Land Cover (GLC100).&nbsp; 
+				</b></b></li>
+				<li>Place in x:\landcover\Copernicus_LC100</li>
+				<li>This had a single, global file</li>
+			</ul>
+			</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		Collect and index test/candidate Global DEMs<ul>
+			<li>Create directories in the root directory of a 
+			drive <a href="file:///x:/mapdata/index_data/DEMs">x:\mapdata\indexed_data\DEMs</a>, with 
+				subdirectories for each of the 1" global DEMs
+			</li>
+			<li>Insure that the <a href="../html/int_data_db.htm">
+			x:\microdem\demix\<strong>demix_dems.dbf </strong>is updated</a></li>
+			<li>Download&nbsp; <a href="../html/global_dems.html">Global DEMs</a> for all test areas to 
+			be used.&nbsp; Each is a 
+			separate downoad from a different location.&nbsp; Place  
+			files in correct subdirectories; they can be in additional 
+			nested subdirectories if desired.&nbsp; </li>
+			<li><a href="../html/Manage_int_data_db.htm">Index map library </a></li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<p><strong>Process data, using </strong>
+		<a href="demix_main_menu_options.html"><strong>DEMIX button</strong></a><strong> 
+		on the </strong><a href="../html/micr0alv.htm"><strong>main program menu</strong></a><strong>, 
+		Tiles creation, test and reference DEMs.&nbsp; </strong>This performs 
+		the following steps:</p>
+		<ol>
+			<li>Completes creating the <a href="UTM_directory_structure.html">
+			directory structure </a>for the comparison data</li>
+			<li>Merge the files in the directory (MICRODEM will call GDAL) if the country requires 
+	merges.&nbsp; This merge file is not saved.</li>
+			<li>Convert the file (MICRODEM will call GDAL) to WGS84 UTM, EGM2008 or just 
+	WGS84 UTM if GDAL does no support the vertical datum shift</li>
+			<li>Create the test DEMs files for each tile<ul>
+				<li>Test DEMs must be in the map library and indexed</li>
+				<li>10 m landcover must be in a directory 
+		"X:\landcover\esa_world_cover_10m"</li>
+				<li>ALOS will be transformed to EGM2008</li>
+			</ul>
+			</li>
+			<li>Mean aggregate to 1 arc second reference DEMs<ul>
+				<li>Test DEMs will be merged and clipped to the extent of the high 
+		resolution DEMs for each tile</li>
+				<li>Uses Fathom DEM for the SRTM geometry</li>
+				<li>Use ALOS for the ALOS geometry, and the high latitude </li>
+				<li>Use CopDEM for the high latitude areas where CopDEM, but not the 
+		derived DTMs, changes the longitudinal spacing</li>
+			</ul>
+			</li>
+		</ol>
+		</td>
+	</tr>
+	<tr>
+		<h2 style="height: 19px"><a href="demix_main_menu_options.html">DEMIX 
+		button</a> on the <a href="../html/micr0alv.htm">main program menu</a>, 
+		Tiles creation, test and reference DEMs</h2>
+	</tr>
+	<tr>
+		<td style="height: 140px">
+		<p><strong>Evaluate criteria, using </strong>
+		<a href="demix_main_menu_options.html"><strong>DEMIX button</strong></a><strong> 
+		on the </strong><a href="../html/micr0alv.htm"><strong>main program menu</strong></a><strong>, 
+		Create CSV results for test areas.&nbsp; </strong>This creates a CSV 
+		file for each area:</p>
+		<ul>
+			<li>Tile characteristics</li>
+			<li>Difference distributions for elevation, slope, and roughness.&nbsp; 
+			This follows the first DEMIX paper (Bielski and others, 2024)</li>
+			<li>FUV for a mixed suite of criteria.&nbsp; This follows the later 
+			DEMIX papers (Guth and others 2024, 2025)</li>
+			<li>All three at once (if there are a lot of areas, each of these 
+			can be slow)</li>
+			<li>Partial derivatives and curvature criteria used in DB version 4 
+			still available</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<strong>Create DBF files, using </strong>
+		<a href="demix_main_menu_options.html"><strong>DEMIX button</strong></a><strong> 
+		on the </strong><a href="../html/micr0alv.htm"><strong>main program menu</strong></a><strong>, 
+		Merge CSV results for test areas.&nbsp; </strong>This merges the CSV 
+		files for each area.</td>
+	</tr>
+	<tr>
+		<td><a href="demix_db_options.html">Manipulate database</a>, in 
+		MICRODEM or possibly in the DEMIX Jupyter notebook (not tested with 
+		changes in the database, and the notebook may not deal&nbsp; with the 
+		new DEMs)</td>
+	</tr>
+</table>
+
+<p><a href="wine_contest.html">Wine Contest home page</a></p>
+<p><a href="../html/microdem.htm">MICRODEM home page</a></p>
+<ul>
+	<li><a href="demix_tile_requirements.html">DEMIX tile requirements</a></li>
+	<li><a href="UTM_DEMIX_tiles_names.html">UTM DEMIX tiles names</a></li>
+	<li><a href="UTM_DEMIX_tiles.html">UTM DEMIX tiles</a></li>
+</ul>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revision 5/8/2026</em></p>
+
+</body>
+
+</html>
