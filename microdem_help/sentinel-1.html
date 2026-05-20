@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Sentinel-1</title>
+<style type="text/css">
+.auto-style2 {
+	font-size: medium;
+}
+.auto-style3 {
+	letter-spacing: normal;
+	background-color: #FFFFFF;
+	font-size: medium;
+}
+.style1 {
+	font-size: medium;
+}
+.auto-style4 {
+	font-size: medium;
+	color: #222222;
+	letter-spacing: normal;
+	background-color: #FFFFFF;
+}
+.auto-style6 {
+	font-size: medium;
+	font-family: serif;
+}
+.auto-style8 {
+	font-family: serif;
+}
+.auto-style9 {
+	font-size: 16px;
+	letter-spacing: normal;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Sentinel-1</h1>
+<p class="style1">ESA active radar satellites</p>
+<p class="style1">Like all Sentinels </p>
+<ul>
+	<li><span class="style1">Download data at: </span> <a href="https://scihub.copernicus.eu/dhus/#/home">
+	<span class="style1">Copernicus Open Access Hub</span></a><span class="style1"> (</span><a href="microdemtutorials/copernicus_open_access_hub.html"><span class="style1">Directions</span></a><span class="style1">)
+	</span>
+	</li>
+	<li><span class="style1">Use <a href="html/snap.htm">SNAP</a></span></li>
+</ul>
+<p><a href="html/radar_principles.html">Radar Principles</a></p>
+<hr />
+<p class="style1">Sentinel-1 Overview: </p>
+<ul>
+	<li>
+	Characteristics<ul>
+		<li>C band SAR</li>
+		<li>12 day repeat cycle, LTAN=1800 hours</li>
+		<li>Data online within 24 hours</li>
+	</ul>
+	</li>
+	<li>
+	Interpretation<ul>
+		<li>
+		<a href="https://ceos.org/ard/files/Laymans_SAR_Interpretation_Guide_2.0.pdf">
+		https://ceos.org/ard/files/Laymans_SAR_Interpretation_Guide_2.0.pdf</a>
+		</li>
+	</ul>
+	</li>
+	<li>Easiest download from EO Browser (<a href="html/eo_browser_directions.html">directions</a>)</li>
+	<li>
+	<span class="style1">User Guide:&nbsp;
+	</span>
+	<a href="https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-1-sar/overview">
+	<span class="style1">https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-1-sar/overview</span></a><span class="style1">
+	</span>
+	</li>
+	<li>
+	<span class="style1">Technical Guide:
+	</span>
+	<a href="https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-1-sar">
+	<span class="style1">https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-1-sar</span></a><span class="style1">
+	</span> </li>
+	<li class="style1">
+	<a href="html/sentinel2_hub.html">Sentinel Hub is good starting place to 
+	explore imagery</a></li>
+	<li>
+	<a href="https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/">
+	<span class="auto-style2">https://asf.alaska.edu/how-to/data-recipes/geocode-sentinel-1-with-gdal/</span></a><span class="auto-style2">
+	</span>
+	</li>
+	<li>
+	Modes<ul>
+		<li class="auto-style2">Stripmap (SM) 80 km swath, slightly better than 
+		5x5 m spatial resolution.&nbsp; Image small islands and in exceptional 
+		cases emergency operations</li>
+		<li class="auto-style2">
+		<span style="font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Interferometric Wide (IW) swath mode is the main acquisition mode over 
+		land and satisfies the majority of service requirements. 250 km swath at 
+		5 m by 20 m spatial resolution, often resampled to 10x10 m or 20x20 m</span></li>
+		<li class="auto-style2">
+		<span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Extra Wide (EW) swath mode&nbsp; acquires data over a 400 km swath at 20 
+		m by 40 m spatial resolution.</span></li>
+		<li class="auto-style2">
+		<span class="auto-style6" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Wave mode acquires data in 20 km by 20 km vignettes, at 5 m by 5 m 
+		spatial resolution, every 100 km along the orbit, acquired alternately 
+		on two different incidence angles.<span>&nbsp;&nbsp; Wave mode at VV 
+		polarisation is the default mode for acquiring data over open ocean.</span></span></li>
+	</ul>
+	</li>
+	<li>
+	In MICRODEM<ul>
+		<li><a href="html/gdal_options.htm">Need to reproject to UTM before using</a></li>
+		<li>Open </li>
+	</ul>
+	</li>
+</ul>
+<p><br class="Apple-interchange-newline" />
+<span style="color: rgb(46, 46, 50); font-family: &quot;Public Sans&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration: underline; display: inline !important; float: none;">
+OPERA Radiometric Terrain Corrected SAR Backscatter from Sentinel-1--RTC-S1</span></p>
+<ul>
+	<li>
+	<a href="https://search.earthdata.nasa.gov/search/granules?p=C2777436413-ASF&amp;pg[0][v]=f&amp;pg[0][gsk]=-start_date&amp;q=%22OPERA_L2_RTC-S1_V1%22&amp;tl=1733977583!3!!&amp;lat=-0.140625">
+	https://search.earthdata.nasa.gov/search/granules?p=C2777436413-ASF&amp;pg[0][v]=f&amp;pg[0][gsk]=-start_date&amp;q=%22OPERA_L2_RTC-S1_V1%22&amp;tl=1733977583!3!!&amp;lat=-0.140625</a>
+	</li>
+	<li>Floating point, so open as a grid</li>
+	<li>Single burst, about 30 per scene</li>
+	<li>30 m UTM projection</li>
+	<li>There is a Mask GeoTiff, and VH and VV files</li>
+	<li>Product specifcation:
+	<a href="https://asf.alaska.edu/wp-content/uploads/2023/10/OPERA-RTC-S1-ProductSpec-v1.0.3-D-108758-RevB-2024-03-21-URS324227.pdf">
+	https://asf.alaska.edu/wp-content/uploads/2023/10/OPERA-RTC-S1-ProductSpec-v1.0.3-D-108758-RevB-2024-03-21-URS324227.pdf</a> </li>
+	<li>Tutorial,
+	<a href="https://storymaps.arcgis.com/stories/dc2807b444924fc3a76c117a2c909f8b">
+	https://storymaps.arcgis.com/stories/dc2807b444924fc3a76c117a2c909f8b</a> </li>
+	<li>Tutorial change detection,
+	<a href="https://storymaps.arcgis.com/stories/4f7ab712e40346809597b4ae8fd641ca">
+	https://storymaps.arcgis.com/stories/4f7ab712e40346809597b4ae8fd641ca</a> </li>
+</ul>
+<hr />
+<p>Viewing</p>
+<ul>
+	<li>
+	<a href="https://apps.sentinel-hub.com/sentinel-playground/?source=L8&amp;lat=38.97917812104331&amp;lng=-76.48522853851318&amp;zoom=15&amp;preset=1_TRUE_COLOR&amp;layers=B01,B02,B03&amp;maxcc=20&amp;gain=1.0&amp;gamma=1.0&amp;">https://apps.sentinel-hub.com/sentinel-playground/</a>--best 
+			source for viewing</li>
+	<li><a href="https://apps.sentinel-hub.com/eo-browser/">https://apps.sentinel-hub.com/eo-browser/</a>?&nbsp; is very similar</li>
+	<li>
+	<a href="https://search.asf.alaska.edu/#/?zoom=13.000&amp;center=-76.466,38.963&amp;polygon=POLYGON((-76.5321%2039.0041,-76.5424%2038.8998,-76.4216%2038.8951,-76.4314%2039.0037,-76.5321%2039.0041))&amp;start=2023-01-01T05:00:00Z&amp;end=2023-06-22T03:59:59Z&amp;resultsLoaded=true&amp;granule=S1A_IW_GRDH_1SDV_20230620T230707_20230620T230732_049076_05E6CC_172A-GRD_HD">https://search.asf.alaska.edu</a></li>
+</ul>
+<hr />
+<p>
+<a href="https://eos.org/science-updates/a-cloud-based-solution-to-a-radar-data-deluge">
+https://eos.org/science-updates/a-cloud-based-solution-to-a-radar-data-deluge</a> </p>
+<p>
+<a href="https://www.l3harrisgeospatial.com/docs/sentinel1intensityanalysistutorial.html">
+<span class="style1">https://www.l3harrisgeospatial.com/docs/sentinel1intensityanalysistutorial.html</span></a><span class="style1">
+</span></p>
+<ul>
+	<li>
+	<a class="auto-style2" href="https://asf.alaska.edu/how-to/data-recipes/create-an-interferogram-using-esas-sentinel-1-toolbox/" rel="nofollow noopener noreferrer" style="text-decoration: underline; color: blue; cursor: pointer; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255);" target="_blank">https://asf.alaska.edu/how-to/data-recipes/create-an-interferogram-using-esas-sentinel-1-toolbox/</a><ul>
+		<li class="auto-style3">Need to get sub_swath SLC burst mode, IW (each 
+		scene about 4 GB download, and 8 GB uncompressed)</li>
+		<li class="auto-style3">May need to go to apply orbit file, and tell the 
+		program not to fail</li>
+	</ul>
+	</li>
+	<li>
+	<a href="https://asf.alaska.edu/how-to/data-recipes/create-an-rgb-composite-from-multi-temporal-sentinel-1-data/">
+	<span class="style1">https://asf.alaska.edu/how-to/data-recipes/create-an-rgb-composite-from-multi-temporal-sentinel-1-data/</span></a><span class="style1">
+	</span></li>
+	<li class="auto-style2">
+	<span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style2">GRD is not projected, because it is in ground range geometry (the .tiff in 
+	the SAFE set is not a GeoTIFF). You need to first apply terrain correction 
+	to project and create a GeoTIFF, which will then have the geometry 
+	information embedded in the relevant TIFF tags (which gdal.open() 
+	recognises).</span><ul>
+		<li class="auto-style4">GRD are about 0.75 GB compressed, and about 1.5 
+		GB uncompressed</li>
+	</ul>
+	</li>
+	<li class="auto-style2">Geocoding and terrain correction are different</li>
+	<li class="auto-style2">Multi-coherence product for volcanic eruptions</li>
+	<li class="auto-style2">
+	<span class="author" style="box-sizing: border-box; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">StaMPS was developed by Hooper et&nbsp;al.&nbsp;(</span></span><span class="author" style="box-sizing: border-box; color: rgb(28, 29, 30); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span style="box-sizing: border-box; color: rgb(28, 29, 30); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><a id="#grl63963-bib-0022R" class="bibLink tab-link" data-tab="pane-pcw-references" href="https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2022GL098477#grl63963-bib-0022" style="box-sizing: border-box; background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; ">2004</a></span></span><span class="author" style="box-sizing: border-box; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="author" style="box-sizing: border-box; color: rgb(28, 29, 30); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span style="font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">) 
+	to calculate PS-InSAR time series. </span>Hooper, A.</span></span><span style="color: rgb(28, 29, 30); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">,</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><span class="author" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Zebker, 
+	H.</span><span style="color: rgb(28, 29, 30); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">,</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><span class="author" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Segall, 
+	P.</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style6">, 
+	&amp;<span>&nbsp;</span></span><span class="author" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Kampes, 
+	B.</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">(</span><span class="pubYear" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">2004</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style6">).<span>&nbsp;</span></span><span class="articleTitle" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">A 
+	new method for measuring deformation on volcanoes and other natural terrains 
+	using InSAR persistent scatterers</span><span style="color: rgb(28, 29, 30); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">.</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><span style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Geophysical 
+	Research Letters</span><span style="color: rgb(28, 29, 30); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">,</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><span class="vol" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">31</span><span style="font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">(</span><span class="citedIssue" style="box-sizing: border-box; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">23</span><span style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style6">).<span>&nbsp;</span></span><a class="linkBehavior" href="https://doi.org/10.1029/2004gl021737" style="box-sizing: border-box; background-color: rgb(255, 255, 255); cursor: pointer; text-decoration: none; display: inline-block; word-break: break-word; padding-right: 5px; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">https://doi.org/10.1029/2004gl021737</a>
+	</li>
+</ul>
+
+<p><strong>Radar processing options:</strong></p>
+<ul>
+				<li><span class="comment-body" data-li-comment-text="">
+				<span class="text">ESA's NEST software (free), which has 
+				some built-in tools for interferogram generation:&nbsp;
+				<a target="blank" rel="nofollow" href="http://www.linkedin.com/redirect?url=http%3A%2F%2Fnest%2Earray%2Eca%2Fweb%2Fnest&amp;urlhash=OSoc&amp;_t=tracking_disc">
+				http://nest.array.ca/web/nest</a></span></span></li>
+				<li><span class="comment-body" data-li-comment-text="">
+				<span class="text">Great free InSAR guide:
+				<a target="blank" rel="nofollow" href="http://www.linkedin.com/redirect?url=http%3A%2F%2Fwww%2Eesa%2Eint%2FesaMI%2FESA_Publications%2FSEM867MJC0F_0%2Ehtml&amp;urlhash=6iep&amp;_t=tracking_disc">
+				http://www.esa.int/esaMI/ESA_Publications/SEM867MJC0F_0.html</a>&nbsp; 
+				describes all essential steps to an interferogram. </span>
+				</span></li>
+				<li><span class="comment-body" data-li-comment-text="">
+				<span class="text">
+				<a target="blank" rel="nofollow" href="http://www.linkedin.com/redirect?url=http%3A%2F%2Fwww%2Eastrium-geo%2Ecom%2Fde%2F3023-copy-of-software-tools&amp;urlhash=kirC&amp;_t=tracking_disc">
+				http://www.astrium-geo.com/de/3023-copy-of-software-tools</a> 
+				(only in German unfortunately) for software tools, e.g. RAT is 
+				free and allows interferometric processing</span></span></li>
+				<li><a href="html/snap.htm">SNAP, for the Sentinels</a></li>
+</ul>
+
+<p>&nbsp;NASA in partnership with the Indian Space Research Organization (ISRO) 
+is about to launch
+<span style="color: rgb(34, 34, 34); font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style8">
+<a href="https://www.earthdata.nasa.gov/learn/blog/esdis-grfn-pathfinder-initiative?utm_source=email&amp;utm_medium=newsletter&amp;utm_campaign=earthdata-discovery-may-2024">The NASA-ISRO SAR (NISAR) Mission<span>&nbsp;in 
+2024</span></a> <a href="https://nisar.jpl.nasa.gov/">
+https://nisar.jpl.nasa.gov/</a> </span></p>
+<ul>
+	<li class="auto-style9">
+	<a href="https://asf.alaska.edu/data-sets/derived-data-sets/sentinel-1-interferograms/">
+	https://asf.alaska.edu/data-sets/derived-data-sets/sentinel-1-interferograms/</a>, 
+	with 4 layers as Geotiffs (make sure you do not get the netcdf standard 
+	product)</li>
+	<li>Global Seasonal Sentinel-1 Interferometric Coherence and Backscatter 
+	Dataset: Global Seasonal Sentinel-1 Interferometric Coherence and 
+	Backscatter Dataset ,
+	<a href="https://www.nature.com/articles/s41597-022-01189-6">
+	https://www.nature.com/articles/s41597-022-01189-6</a> 1 degree tiles, </li>
+	<li>
+	<a href="https://uavsar.jpl.nasa.gov/science/documents/nisar-sample-products.html">
+	https://uavsar.jpl.nasa.gov/science/documents/nisar-sample-products.html</a>
+	<br />
+	</li>
+</ul>
+
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><span class="style1"><em>Last revision 10/25/2024</em></span></p>
+<p align="right">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>
