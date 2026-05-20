@@ -1,0 +1,418 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Correlation matrix</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1 align="center">Correlation Matrix</h1>
+
+<p><a href="image_analysis.htm">Imagery analysis menu</a>,
+<a href="img_anal_multigrid.htm">Multi-grids raster analysis</a>.&nbsp; You must 
+first have converted the satellite image into a series of grids for numerical 
+computations.</p>
+<ul>
+	<li>Grid correlations</li>
+	<li><a href="pc_opts.htm">Variance-covariance/Principal components</a>
+choice.</li>
+</ul>
+
+<p>
+<span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); display: inline !important; float: none;">
+A correlation matrix takes each pair of satellite bands (or other related grids) and computes the<span class="Apple-converted-space">&nbsp;</span></span><a href="satb4qgk.htm" style="font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255);"><b>correlation 
+coefficient</b></a><span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span class="Apple-converted-space">&nbsp;</span>between 
+the reflectances in the two bands for each pixel in the image. Because the matrix is 
+symmetrical (the correlation between Bands 1 and 2 does not depend on the order 
+of considering the two bands), often only the upper half is presented. The 
+correlations along the principal diagonal are 1.0, since anything allows perfect 
+prediction of itself.</span></p>
+
+<b>Correlation Matrix</b><p>
+<table border="3">
+	<tr>
+		<td>Band </td>
+		<td>Band 1</td>
+		<td>Band 2</td>
+		<td>Band 3</td>
+		<td>Band 4</td>
+		<td>Band 5</td>
+		<td>Band 6</td>
+		<td>Band 7</td>
+		<td>Band 9</td>
+		<td>Band 10</td>
+		<td>Band 11</td>
+	</tr>
+	<tr>
+		<td>Band 1</td>
+		<td>1.0000</td>
+		<td>0.9804</td>
+		<td>0.7420</td>
+		<td>0.6295</td>
+		<td>-0.0220</td>
+		<td>0.1765</td>
+		<td>0.3439</td>
+		<td>0.5334</td>
+		<td>-0.2145</td>
+		<td>-0.2889</td>
+	</tr>
+	<tr>
+		<td>Band 2</td>
+		<td>0.9804</td>
+		<td>1.0000</td>
+		<td>0.8318</td>
+		<td>0.7498</td>
+		<td>0.0425</td>
+		<td>0.2912</td>
+		<td>0.4626</td>
+		<td>0.4757</td>
+		<td>-0.0816</td>
+		<td>-0.1565</td>
+	</tr>
+	<tr>
+		<td>Band 3</td>
+		<td>0.7420</td>
+		<td>0.8318</td>
+		<td>1.0000</td>
+		<td>0.9440</td>
+		<td>0.4954</td>
+		<td>0.6991</td>
+		<td>0.7934</td>
+		<td>0.3144</td>
+		<td>0.4001</td>
+		<td>0.3149</td>
+	</tr>
+	<tr>
+		<td>Band 4</td>
+		<td>0.6295</td>
+		<td>0.7498</td>
+		<td>0.9440</td>
+		<td>1.0000</td>
+		<td>0.4255</td>
+		<td>0.7220</td>
+		<td>0.8325</td>
+		<td>0.2141</td>
+		<td>0.4690</td>
+		<td>0.3973</td>
+	</tr>
+	<tr>
+		<td>Band 5</td>
+		<td>-0.0220</td>
+		<td>0.0425</td>
+		<td>0.4954</td>
+		<td>0.4255</td>
+		<td>1.0000</td>
+		<td>0.8132</td>
+		<td>0.6598</td>
+		<td>0.0533</td>
+		<td>0.6981</td>
+		<td>0.6347</td>
+	</tr>
+	<tr>
+		<td>Band 6</td>
+		<td>0.1765</td>
+		<td>0.2912</td>
+		<td>0.6991</td>
+		<td>0.7220</td>
+		<td>0.8132</td>
+		<td>1.0000</td>
+		<td>0.9565</td>
+		<td>0.0279</td>
+		<td>0.7919</td>
+		<td>0.7300</td>
+	</tr>
+	<tr>
+		<td>Band 7</td>
+		<td>0.3439</td>
+		<td>0.4626</td>
+		<td>0.7934</td>
+		<td>0.8325</td>
+		<td>0.6598</td>
+		<td>0.9565</td>
+		<td>1.0000</td>
+		<td>0.0689</td>
+		<td>0.7228</td>
+		<td>0.6606</td>
+	</tr>
+	<tr>
+		<td>Band 9</td>
+		<td>0.5334</td>
+		<td>0.4757</td>
+		<td>0.3144</td>
+		<td>0.2141</td>
+		<td>0.0533</td>
+		<td>0.0279</td>
+		<td>0.0689</td>
+		<td>1.0000</td>
+		<td>-0.3577</td>
+		<td>-0.4422</td>
+	</tr>
+	<tr>
+		<td>Band 10</td>
+		<td>-0.2145</td>
+		<td>-0.0816</td>
+		<td>0.4001</td>
+		<td>0.4690</td>
+		<td>0.6981</td>
+		<td>0.7919</td>
+		<td>0.7228</td>
+		<td>-0.3577</td>
+		<td>1.0000</td>
+		<td>0.9875</td>
+	</tr>
+	<tr>
+		<td>Band 11</td>
+		<td>-0.2889</td>
+		<td>-0.1565</td>
+		<td>0.3149</td>
+		<td>0.3973</td>
+		<td>0.6347</td>
+		<td>0.7300</td>
+		<td>0.6606</td>
+		<td>-0.4422</td>
+		<td>0.9875</td>
+		<td>1.0000</td>
+	</tr>
+</table>
+</p>
+<p style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+In this example from a Landsat 8 scene, the best correlation of 0.98 is between 
+bands 1 and 2 (both of which lie in the visible), and bands 10 and 11 in the 
+thermal IR.&nbsp;&nbsp; Several bands have negative correlations (especially 9 
+and the two TIR bands), and some have essentially no correlation (bands 1 and 
+5).&nbsp; The nature of this matrix depends entirely on what is in the scene; 
+there might be be no negative correlations.</p>
+<p style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+If two bands were perfectly correlated they would be redundant; the recorded 
+reflectance in one channel could be used to predict exactly the value in the 
+other.&nbsp;<span class="Apple-converted-space">&nbsp;</span><a href="principal_components.htm"><b>Principal 
+Components</b></a>&nbsp; analysis can suggest a new set of bands that reduces 
+data volume with little loss of information. When bands are highly correlated, 
+the outliers are unusual and might have the most interest to determine what is 
+different about them.</p>
+<hr>
+<p style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<b style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+Correlation Matrix For A Different Scene (Rif of Morocco).&nbsp; Note there are 
+no negative correlations</b><table border="3" style="font-family: &quot;Times New Roman&quot;; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+	<tr>
+		<td>&nbsp;</td>
+		<td>L8 Band 1</td>
+		<td>L8 Band 2</td>
+		<td>L8 Band 3</td>
+		<td>L8 Band 4</td>
+		<td>L8 Band 5</td>
+		<td>L8 Band 6</td>
+		<td>L8 Band 7</td>
+		<td>L8 Band 9</td>
+		<td>L8 Band 10</td>
+		<td>L8 Band 11</td>
+	</tr>
+	<tr>
+		<td>L8 Band 1</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9799</td>
+		<td class="auto-style1">0.8637</td>
+		<td class="auto-style1">0.7910</td>
+		<td class="auto-style1">0.6444</td>
+		<td class="auto-style1">0.6496</td>
+		<td class="auto-style1">0.6830</td>
+		<td class="auto-style1">0.2110</td>
+		<td class="auto-style1">0.4909</td>
+		<td class="auto-style1">0.4638</td>
+	</tr>
+	<tr>
+		<td>L8 Band 2</td>
+		<td class="auto-style1">0.9799</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9427</td>
+		<td class="auto-style1">0.8835</td>
+		<td class="auto-style1">0.7638</td>
+		<td class="auto-style1">0.7650</td>
+		<td class="auto-style1">0.7925</td>
+		<td class="auto-style1">0.3041</td>
+		<td class="auto-style1">0.6167</td>
+		<td class="auto-style1">0.5966</td>
+	</tr>
+	<tr>
+		<td>L8 Band 3</td>
+		<td class="auto-style1">0.8637</td>
+		<td class="auto-style1">0.9427</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9792</td>
+		<td class="auto-style1">0.9143</td>
+		<td class="auto-style1">0.9141</td>
+		<td class="auto-style1">0.9282</td>
+		<td class="auto-style1">0.4366</td>
+		<td class="auto-style1">0.7901</td>
+		<td class="auto-style1">0.7786</td>
+	</tr>
+	<tr>
+		<td>L8 Band 4</td>
+		<td class="auto-style1">0.7910</td>
+		<td class="auto-style1">0.8835</td>
+		<td class="auto-style1">0.9792</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9429</td>
+		<td class="auto-style1">0.9632</td>
+		<td class="auto-style1">0.9744</td>
+		<td class="auto-style1">0.4677</td>
+		<td class="auto-style1">0.8420</td>
+		<td class="auto-style1">0.8289</td>
+	</tr>
+	<tr>
+		<td>L8 Band 5</td>
+		<td class="auto-style1">0.6444</td>
+		<td class="auto-style1">0.7638</td>
+		<td class="auto-style1">0.9143</td>
+		<td class="auto-style1">0.9429</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9651</td>
+		<td class="auto-style1">0.9519</td>
+		<td class="auto-style1">0.5164</td>
+		<td class="auto-style1">0.8577</td>
+		<td class="auto-style1">0.8458</td>
+	</tr>
+	<tr>
+		<td>L8 Band 6</td>
+		<td class="auto-style1">0.6496</td>
+		<td class="auto-style1">0.7650</td>
+		<td class="auto-style1">0.9141</td>
+		<td class="auto-style1">0.9632</td>
+		<td class="auto-style1">0.9651</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9956</td>
+		<td class="auto-style1">0.5146</td>
+		<td class="auto-style1">0.8894</td>
+		<td class="auto-style1">0.8752</td>
+	</tr>
+	<tr>
+		<td>L8 Band 7</td>
+		<td class="auto-style1">0.6830</td>
+		<td class="auto-style1">0.7925</td>
+		<td class="auto-style1">0.9282</td>
+		<td class="auto-style1">0.9744</td>
+		<td class="auto-style1">0.9519</td>
+		<td class="auto-style1">0.9956</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.5025</td>
+		<td class="auto-style1">0.8844</td>
+		<td class="auto-style1">0.8713</td>
+	</tr>
+	<tr>
+		<td>L8 Band 9</td>
+		<td class="auto-style1">0.2110</td>
+		<td class="auto-style1">0.3041</td>
+		<td class="auto-style1">0.4366</td>
+		<td class="auto-style1">0.4677</td>
+		<td class="auto-style1">0.5164</td>
+		<td class="auto-style1">0.5146</td>
+		<td class="auto-style1">0.5025</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.5187</td>
+		<td class="auto-style1">0.5235</td>
+	</tr>
+	<tr>
+		<td>L8 Band 10</td>
+		<td class="auto-style1">0.4909</td>
+		<td class="auto-style1">0.6167</td>
+		<td class="auto-style1">0.7901</td>
+		<td class="auto-style1">0.8420</td>
+		<td class="auto-style1">0.8577</td>
+		<td class="auto-style1">0.8894</td>
+		<td class="auto-style1">0.8844</td>
+		<td class="auto-style1">0.5187</td>
+		<td class="auto-style1">1.0000</td>
+		<td class="auto-style1">0.9957</td>
+	</tr>
+	<tr>
+		<td>L8 Band 11</td>
+		<td class="auto-style1">0.4638</td>
+		<td class="auto-style1">0.5966</td>
+		<td class="auto-style1">0.7786</td>
+		<td class="auto-style1">0.8289</td>
+		<td class="auto-style1">0.8458</td>
+		<td class="auto-style1">0.8752</td>
+		<td class="auto-style1">0.8713</td>
+		<td class="auto-style1">0.5235</td>
+		<td class="auto-style1">0.9957</td>
+		<td class="auto-style1">1.0000</td>
+	</tr>
+</table>
+</p>
+<p style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+The scattergrams below show only two bands, a concession to human abilities, 
+while the Landsat scene has 11, several of which (coastal, cirrus, and thermal) 
+might be less useful.&nbsp; For <a href="../html/hyperpsectral_imagery_theory.htm">Hyperspectral 
+			imagery</a>, there could be hundreds of bands, and the challenge is 
+even greater because the correlation matrix overwhelms the user with its size.</p>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="372" src="../images/band_scatterplot_low_correlation.png" width="600"></td>
+		<td>
+		<p>Scatterplot of two bands from a scene in the Rif of Morocco with low 
+		correlation.&nbsp;</p>
+		<ul>
+			<li>r: 0.3041</li>
+			<li>r²: 0.0925</li>
+		</ul>
+		<p>There is a best fit line, but the predictions from it are not very 
+		good.<br></p>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="372" src="../images/band_scatterplot_high_correlation.png" width="600"></td>
+		<td>
+		<p>Scatterplot of two TIR bands from a scene in the Rif of Morocco with 
+		very high correlation</p>
+		<ul>
+			<li>r: 0.9957</li>
+			<li>r²: 0.9915</li>
+		</ul>
+		<p>The graph shows colors with concentrations of points, and most are in 
+		the center of the cloud of points.</p>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="372" src="../images/band_scatterplot_neg_correlation.png" width="600"></td>
+		<td>
+		<p>Scatterplot of two bands from a scene in theAtlas of Morocco with 
+		negative correlation</p>
+		<ul>
+			<li>r: -0.3386</li>
+			<li>r²: 0.1146</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="372" src="../images/band_scatterplot_odd_correlation.png" width="600"></td>
+		<td>
+		<p>Scatterplot of two bands from a scene including Rabat, Morocco.&nbsp; 
+		The trend is not linear, and reflects the fact that the scene covers two 
+		very distinct regions: Atlantic Ocean with clouds, and the coastal 
+		plain.</p>
+		<ul>
+			<li>r: -0.8351</li>
+			<li>r²: 0.6974<br></li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><em>Last revision 12/29/2017</em></p>
+</body>
+</html>

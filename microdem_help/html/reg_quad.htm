@@ -1,0 +1,200 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Register scanned quadrangle</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="6"><b>Register Scanned Quadrangle Maps</b></font></p>
+<p class="style1">This option creates two databases in the same directory as the 
+scanned map image:</p>
+<ol>
+				<li>07AUG44.PNG	: original scanned image</li>
+				<li>07AUG44.DBF: points used for registration.&nbsp; You can edit this file, and redo the 
+				registration if there are problems you need to correct.</li>
+				<li>tin-07AUG44.DBF: triangles used for the 
+				registration, which can be regenerated as needed from the 
+				07AUG44.DBF file&nbsp; if you change any parameters.&nbsp; This 
+				is used to warp the map into a projection that Google Earth and 
+				MICRODEM can both display.</li>
+</ol>
+
+<table border="1">
+  <tr>
+    <td>
+      <p>
+		<img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> Open <a href="../html/tbme65lx.htm">New image</a>.&nbsp;
+        <a href="reg_hist_mr_sid.htm">Historic map scan</a> may require special 
+		considerations which you should understand</p>
+      <p>Zoom to 100% for best results. You might be able to work at 50%, but 
+		you must be careful about the resulting loss of accuracy, particularly 
+		if you already reduced resolution from the original map scan.</p>
+		<p>Pick Register Image from the menu.&nbsp; If the map has a cutout in a 
+		corner, make sure your &quot;corners&quot; are on the intersections of two 
+		parallels and two meridians.</p>
+	<p>On <a href="image_reg.htm"> image registration</a>&nbsp; form,
+      register the four corners of the map. </p>
+		<ul>
+			<li>Click &quot;Image point&quot; button on the bottom of the form, and double click on 
+			a corner.&nbsp; The screen coordinates will be entered in the table.</li>
+			<li>Click &quot;Coords&quot; button on the bottom of the form, 
+			and type in the values (most likely in lat/long coordinates) for the 
+			corner you just clicked.</li>
+			<li>It is optional to type in the name of the corner, but can help 
+			you keep track of the process.</li>
+			<li>&quot;Next point&quot; button on the bottom of the form</li>
+			<li>Repeat entering the corner locations and corner coordinates for 
+			all 4 corners.</li>
+		</ul>
+      <table style="width: 100%">
+					<tr>
+									<td>&nbsp;<img src="../images/map_corners.gif" width="496" height="221"></td>
+									<td>Form after entering the four corners.&nbsp; 
+									The NE corner, on the 4th line, in fact has 
+									an error in the LONG.&nbsp;</td>
+					</tr>
+		</table>
+		&nbsp;<p>&nbsp;</p>
+      <p>The <b>quad map</b> button on the right side of the form should now be enabled; select it.&nbsp; Set the size in
+      minutes for the ticks (e.g. 15' for a 1:250K quadrangle map) or the grid
+      lines present on some maps.&nbsp; The map margins should have labels for
+      the ticks or grids, from which you can compute the spacing, but they might 
+		not be in all corners.&nbsp; After 
+		you enter the tick spacing, check 
+		the results for the NW and SE corners of the map, and the approximate 
+		pixel spacing in the horizontal and vertical directions.&nbsp; If the x 
+		and y spacings are substantially different, you might have a problem 
+		with the corner coordinates.&nbsp; The program will provide an error 
+		message if your corners do not define two parallels and two meridians; 
+		you should not ignore that warning.</p>
+		<table style="width: 100%">
+						<tr>
+										<td>
+										<img src="../images/quad_info.gif" width="285" height="137">&nbsp;</td>
+										<td>Note that the x-spacing is over 10 
+										times the y spacing, because the SE 
+										corner has 50 (the latitude entered 
+										twice)&nbsp; instead of 1 for the 
+										longitude.&nbsp;After correcting that value, 
+										re-select the Quad Map button.</td>
+						</tr>
+						<tr>
+										<td>
+										<img src="../images/quad_info2.gif" width="284" height="137">&nbsp;</td>
+										<td>X and Y spacings now almost identical.&nbsp; 
+										They may not be identical, because the 
+										assumptions might not be strictly valid, 
+										and the map projection might not 
+										preserve distances, 
+										but this registration only needs to be 
+										able to identify the correct 
+										intersection on the lat/long graticule.</td>
+						</tr>
+		</table>
+		&nbsp;<p>Select&nbsp; &quot;Next point&quot; option.</p>
+      <p>Double click on each&nbsp; lat/long grid point intersection on the map.&nbsp; The
+      image coordinates will be entered, as will lat/long from the rough
+      registration.&nbsp; You can only select the grid intersections, and the
+      coordinates will be rounded to the nearest value from 
+		the tick interval.&nbsp; The program will automatically advance to the 
+		Next Point.&nbsp; You should select points in a consistent pattern so 
+		that you get all the intersections.</p>
+	<p>If you need additional points along the edges (for instance because you 
+	have a conical projection which has been cut to have a rectangular map 
+	region), you can <a href="reg_gaz.htm">use a gazetteer to register 
+	additional points</a> or the <a href="tri_extrapolate.htm">Tri-</a>-triangle 
+		<a href="../html/tri_extrapolate.htm">extrapolate to the edges</a>&nbsp; to 
+			add points along map edges. </p>
+      <p>When done, perform a <b>Reg File</b> button, and pick the <b>TIN
+      Mapping</b> option.&nbsp; The program will create a 
+		<a href="del_tri_reg.htm">Delauney triangulation registration</a> with 
+		several graphics to help evaluate the registration.</td>
+    <td>
+      <p>Scanned AMS 1:250K quad of western Europe done after World War
+      II</p>
+	<p>Neat lines are not parallel or straight, and the map cannot be easily
+      registered.&nbsp;&nbsp; 
+		<p>Coordinates are listed on the edges of the map.<p>Notice that all the intersections line up in rows and columns, and 
+		that no points have been missed.</td>
+  </tr>
+</table>
+<table border="1">
+  <tr>
+    <td>Options on the REG button after doing <a href="del_tri_reg.htm">Delauney triangulation registration</a>&nbsp; 
+	<ul>
+		<li><a href="reproject_historic.htm">Reproject&nbsp; map.</a>  
+	<ul>
+		<li><a href="export_historic.htm">Export&nbsp; map for Google Earth.</a></li>
+		<li>Geotiff export</li>
+		<li>KML and Geotiff both at the same time.</li>
+	</ul>
+		</li>
+	</ul>
+      &nbsp;</td>
+    <td><img border="0" src="../images/map_reg/kml_tile.png"><p>&nbsp;</td>
+  </tr>
+</table>
+&nbsp;
+<p><br>
+</p>
+<table border="2">
+	<tr>
+		<td>
+		<p>Problems with the registration:<br>
+		</p>
+		<ul>
+			<li>Close MICRODEM (so you can delete files).</li>
+			<li>Find the files that match your scanned map<ul>
+			<li>Do not delete the .DBF file, unless you want to lose all your 
+			work.&nbsp; This is the only one the program cannot recover</li>
+			<li>Delete the &quot;tin-xxxxxx.dbf&quot; file</li>
+			<li>Delete the .datum file</li>
+			<li>Delete the .pgw file</li>
+		</ul>
+			</li>
+			<li>You can edit the DBF file with the coordinates in EXCEL<ul>
+				<li>Insure you have the four corners of the map on the first 4 
+				lines, properly labeled, with correct labels.</li>
+				<li>Save the file as a CSV file.</li>
+				<li>Open the CSV file with the DB option in MICRODEM, which will convert it to a DBF</li>
+			</ul>
+			</li>
+			<li>Reopen PNG file with the map.</li>
+			<li>Image, Register</li>
+			<li>Quad option, set the tick spacing in minutes, and recompute the 
+			interior pointsI jus.&nbsp; Pay particular attention that you do not 
+			get any warnings.</li>
+			<li>Reg, TIN option.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>This example does not consider datum shifts.&nbsp; Historic maps do not indicate
+the datum used, and at the map scale (each pixel is about 36 m in this example) and with
+allowable cartographic license, it was not worth considering.&nbsp; That
+additional step could be used if warranted.</p>
+
+<ul>
+  <li><a href="../microdemtutorials/register_digitize.htm">Tutorial on image 
+registration</a></li>
+  <li><a href="image_reg.htm">Directions for image registration.</a></li>
+  <li><a href="register_image.htm">Caveats on image registration.</a></li>
+</ul>
+
+<hr>
+
+<p align="right"><i>Last revision 2/24/2014</i></p>
+</body>
+</html>

@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Rose Diagrams</title>
+<style type="text/css">
+.style1 {
+				font-size: large;
+				text-align: center;
+}
+.style2 {
+				text-align: center;
+}
+.style3 {
+				font-size: large;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Rose Diagrams</h1>
+<p><br />
+A rose diagram shows the circular distribution of directional data.&nbsp; The 
+diagram plots lines at each of the 360 degrees of a compass distribution, with 
+the length proportional to the number of values in that direction.&nbsp; With 
+small data sets, directions can be binned.</p>
+<table border="1" id="table7">
+	<tr>
+		<td class="style1">
+		<strong>From DEMS</strong></td>
+		<td class="style2">
+		<strong><span class="style3">From D</span></strong><span class="style3"><strong>ata 
+		Bases</strong></span></td>
+	</tr>
+	<tr>
+		<td class="style1">
+<ul>
+				<li><a href="aspect_by_slope.htm">Aspect distribution by
+        slope</a> on <font size="3"><a href="geostatistical_analysis.htm">Geomorpometry analysis</a> of 
+				<a href="tbme5ed1.htm">Analyze</a> menu</font></li>
+				<li> <a href="tbme5ed1.htm">Analyze</a>, <a href="tbme6110.htm">Elevation-slope plot</a>, 
+		Aspect distribution.</li>
+</ul>
+		</td>
+		<td class="style2">
+		Rose diagram on <a href="db_stats.htm"><strong>Stats</strong></a>
+        		button popup menu from database 
+<a href="database_table_display.htm"><u>table
+display window</u></a></td>
+	</tr>
+	<tr>
+		<td>
+		<p align="center">
+		<img alt="" height="389" src="../images/aspect_roses.png" width="971" /></td>
+		<td>
+		<img border="0" src="../microdemtutorials/compare_dems/ASPECT2.GIF" width="399" height="289"></td>
+	</tr>
+	<tr>
+		<td>Rose diagrams for a Copernicus 1" DEM, both in the native floating 
+		point format, and rounded to a 16 bit integer.</td>
+		<td>Rose diagram for the Negative Vegetation &gt;&nbsp; 1m</td>
+	</tr>
+</table>
+<p>Numbers at the top of the rose, after the DEM name, show the vector average (<a href="geomorph_param_refs.htm">Fisher, 
+Lewis, &amp; Embleton, 1987</a>), computed by summing 
+			the x (sin) and y (cos) components of the aspect, and then computing the average 
+			component by averaging the x and y components, and then expressing 
+the result as a vector.&nbsp; The average magnitude will be between 0 and 1, with 0 being a completely 
+			random, uniform distribution, and 1 being all in a single direction.&nbsp;&nbsp; 
+The aspects use geographic conventions, with 0 as north and the aspect 
+increasing clockwise; both differ from the math and computer science conventions 
+of programming languages.</p>
+<p>For the two Copernicus DEMs, the average directions, both direction and 
+magnitude, are virtually identical.&nbsp; The slope distributions are also 
+virtually identical, but a slope difference map shows random small differences 
+resulting from rounding the elevations. The integer DEM has many more aspects in 
+the principle directions.</p>
+<p>The last number is the <a href="queens_aspect.htm">Queen's aspect ratio</a>, 
+showing how much the number of aspects in the 8 cardinal directions compares 
+with a uniform distribution.&nbsp; It should be close to 1 for floating point 
+DEMs, and much larger for integer DEMs.</p>
+<hr>
+<p align="right"><i>Last revision 12/8/2021</i></p>
+
+</body>
+
+</html>

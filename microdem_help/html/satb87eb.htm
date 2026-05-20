@@ -1,0 +1,125 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Satellite orbits</title>
+<style type="text/css">
+.auto-style2 {
+	font-size: medium;
+	font-weight: bold;
+}
+.auto-style3 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="6"><b>Satellite Orbits</b></font></p>
+
+<p class="auto-style3">Remote sensing satellites use two types of orbits:</p>
+
+<ul>
+    <li><span class="auto-style2">Geosynchronous (geostationary)</span><span class="auto-style3"> satellites orbit
+        36,000 km over the equator and remain over a single spot.
+        They always view the same region, and produce the movie
+        &quot;loops&quot; seen on TV news. They cannot cover the
+        high latitudes. They are used for weather forecasting, satellite TV, and
+        communications.&nbsp; These satellites are not really stationary, but 
+	appear stationary when viewed from earth because their orbit at the same 
+	rate as the earth's daily rotation.</span></li>
+    <li><span class="auto-style2">Polar orbiting</span><span class="auto-style3"> satellites fly several hundred km
+        over the earth's surface with a rotation period of about
+        110 minutes. They can cover most of the earth's surface
+        except for regions immediately adjacent to the poles.
+        They have an inclination which measures the angle at
+        which they cross the equator and which determines how
+        close they get to passing directly over the poles. They
+        are also called </span><span class="auto-style2">sun synchronous</span><span class="auto-style3"> satellites because
+        they often try to maintain the same angle with respect to
+        the sun and hence the illumination. The imaging satelliltes want some 
+	shadows, but not too many, so they generally time their orbits for mid 
+	morning collections, which can also minimize cloud formation.&nbsp; These satellites have
+        characteristic </span><span class="auto-style2">orbital patterns</span><span class="auto-style3">, similar to those
+        of the space shuttle or international space station (ISS). They will make about a dozen orbits
+        every day, and at the equator each orbit will be about
+        3000 km apart.&nbsp; Almost all satellites used for remoted sensing and 
+	GIS work are polar orbiters.</span></li>
+</ul>
+
+<table border="0">
+    <tr>
+        <td><img src="../images/topexorb.gif" width="622"
+        height="343"></td>
+        <td><span class="auto-style3">The map shows the coverage of the TOPEX/Poseidon
+        radar altimeter, but all </span> <strong><span class="auto-style3">polar orbiting
+        satellites </span> </strong><span class="auto-style3">would show a similar geometry. TOPEX
+        has a 10 day repeat cycle, with 127 compete orbits during the cycles. Each
+        orbit has an ascending (odd numbers) and a descending
+        (even numbers) portion, numbered from 1 to 254. The
+        coverage of all 254 passes is indicated with the gray
+        color, with the first eight highlighted.<br><br>The <a href="sentinel2.html">Sentinel-2 satellite</a> 
+		has the same 10 day repeat pattern, but its inclination allows imaging 
+		higher latitudes.</span><p class="auto-style3">Note the lack
+        of coverage for high latitudes in both hemispheres, determined by the 
+		orbit's inclination.</p>
+        </td>
+    </tr>
+</table>
+
+<p align="center">&nbsp;</p>
+
+<p><span class="auto-style2">The track width</span><span class="auto-style3"> is 
+imaged on each pass, and occurs on either side of the point directly beneath the satellite
+(&quot;</span><span class="auto-style2">nadir</span><span class="auto-style3">&quot;)s. Greater track width allows greater coverage, but the
+geometric distortion at the edges of the track increases because
+of the earth's curvature. If track width is decreased for greater
+geometric precision, more orbits will be required for complete
+global coverage, which decreases the time between coverage.</span></p>
+
+<p class="auto-style3">Each orbit of a polar orbiting satellite will have an
+&quot;ascending&quot; pass when the satellite moves northward
+toward the equator and then into the northern hemisphere, and
+then a descending pass on the other side of the word when then
+satellite moves southward. Because of the geometry, one of the
+passes will occur during daylight hours and the other will be
+during the night because it occurs on the opposite side of the
+earth with a very short delay.</p>
+<table>
+	<tr>
+		<td><img height="480" src="../images/orbit_velocities.png" width="720"></td>
+		<td>Typical orbits and oribital velocities.&nbsp; Rotational periods 
+		range from 100-110 minutes in sun-synchronous orbit, about 12 hours for 
+		the GPS constellation, and 24 hours for geostationary. (from Nasa)</td>
+	</tr>
+</table>
+<p class="auto-style3">&nbsp;</p>
+<table style="width: 100%">
+	<tr>
+		<td>
+		<img height="442" src="../remote_sensing_course/SolarAng-fig12_1.png" width="685"></td>
+		<td><span class="auto-style3">Orientation of the satellite and sun over 
+		the course of the year.&nbsp; A sun-synchronous satellite like Landsat 
+		or <a href="sentinel2.html">Sentinel-2</a>&nbsp; always passes at the 
+		same time, so the position of the satellite with respect to the ground 
+		will be same same, with small differences from one corner of the scene 
+		to anothter, and potential small difference if the orbit is not 
+		precisely constant.<br><br>The solar illumination in the scene, and and 
+		the angle between the sun and the spacecraft, will change with the 
+		seasons.&nbsp; Both the elevation and azimuth to the sun change with the 
+		seasons.&nbsp; The most prominent effect will be greater shadows in 
+		winter. <br><br>This is an earth-centric view; in reality the sun 
+		position should be constant, and the earth's inclination changes how it 
+		faces the sun.<br> </span><br><br>(<a href="https://www.usgs.gov/media/images/earth-s-axial-tilt-and-seasonal-effects">https://www.usgs.gov/media/images/earth-s-axial-tilt-and-seasonal-effects</a>)</td>
+	</tr>
+</table>
+<p class="auto-style3">&nbsp;</p>
+
+<hr>
+
+<p align="right" class="auto-style3"><em>Last revision 1/23/2023</em></p>
+</body>
+</html>

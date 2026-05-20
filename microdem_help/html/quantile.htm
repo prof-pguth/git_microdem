@@ -1,0 +1,54 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Quantile Scaling</title>
+</head>
+
+<body>
+
+<h2>Quantile Scaling</h2>
+<p>There are two ways to do automatic coloring, without having to set the break 
+points manually:</p>
+<ul>
+	<li>Linear scale.&nbsp; From the maximum and minimum values, the breaks are 
+	distributed evenly.</li>
+	<li>Quantile scale: attempts to have the same number of records in each 
+	color category; the boundaries and sized of each color band will vary to 
+	enable this.</li>
+</ul>
+<table border="1">
+	<tr>
+		<td colspan="3">
+		<p align="center"><b>Annapolis Population Density</b></td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/ANNAP_POP_LINEAR.PNG" width="302" height="345"></td>
+		<td>
+		<img border="0" src="../images/ANNAP_POP_QUANTILE.PNG" width="358" height="283"></td>
+		<td>
+		<img border="0" src="../images/ANNAP_POP_quant2.PNG" width="344" height="282"></td>
+	</tr>
+	<tr>
+		<td>Linear scale.&nbsp; Values range from 0 to 47,000.&nbsp; There are 
+		very few densely populated blocks, so most of the color scale is unused.</td>
+		<td>Quantile scaling with a five color scale.&nbsp; The breaks are 
+		chosen to put the same of blocks (or as close to it as possible) in each 
+		category. In this case there are 645 blocks, and the boundaries are very 
+		unevenly distributed.&nbsp; </td>
+		<td>Quantile scaling with a five color scale, with the unpopulated 
+		blocks not included (only 436 blocks actually have people living in 
+		them).&nbsp; </td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><font size="2" face="Verdana"><em>Last revision 10/2</em></font><em><font face="Verdana" size="2">/2012</font></em></p>
+
+</body>
+
+</html>

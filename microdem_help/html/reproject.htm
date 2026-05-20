@@ -1,0 +1,113 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Reprojection</title>
+<style type="text/css">
+.style1 {
+				text-align: left;
+}
+.style2 {
+				text-align: right;
+}
+.style3 {
+				border-style: solid;
+				border-width: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Reprojection</h1>
+<p>Reprojecting a data set creates a new data set with different coordinates.&nbsp; 
+This can be done for two reasons:</p>
+<ol>
+	<li>Change the datum.&nbsp; Taking a data set on NAD27, and changing all the 
+	coordinates to NAD83.</li>
+	<li>Change the projection.&nbsp; You could take data in a projected 
+	coordinate system like UTM, and change the coordinates to geographic 
+	lat/long, or do the reverse.</li>
+</ol>
+<p>If you want to display the data as a KML file in Google Earth, only one 
+projection and datum are allowed (geographic coordinates with WGS84), 
+and reprojection will be required unless the data already complies with the 
+requirement.</p>
+<p>The reversibility of the reprojection depends on the kind of data.</p>
+<ol>
+	<li>For vector data, you are just taking the coordinates in one reference 
+	system and computing them in another.&nbsp; Within the numerical precision 
+	of the computer, this should be completely reversible.</li>
+	<li>For raster data, a datum shift should be reversible since it only affect 
+	the coordinates of a single corner point.&nbsp; For a change in coordinate system, the 
+	location and spacing of the points in the grid will change, which will 
+	require interpolation.&nbsp; This will not be reversible, and hence reprojection will introduce error into the data.</li>
+</ol>
+
+<table border="2">
+    <tr>
+        <td><img src="../images/utm_vs_geo.GIF" width="464"
+        height="440"></td>
+        <td><b>DEM grids for 30 m UTM spacing (triangles) and
+        1&#148; geographic spacing (squares) for a location in
+        Wyoming. The UTM grid is square, while the geographic
+        grid is almost rectangular. This mismatch varies over the
+        map area, changing slowly in the north-south direction
+        and rapidly east-west.</b> If you reproject from one coordinate system 
+		to another, you have to change the locations of the points in the grid, 
+		and presumably also their values.&nbsp; The number of points in the grid 
+		will likely change as well.</td>
+    </tr>
+</tab;e>
+
+
+<hr>
+
+<p align="right"><font size="2"><em>Last revision 9/23/2011</em></font></p>
+	
+	
+	
+	
+	</table>
+<p class="style1">Reprojecting in MICRODEM</p>
+<ol>
+				<li>
+				For vector data, MICRODEM only allows the 
+				geographic projection in WGS84.&nbsp; If you have a shapefile 
+				with another projection or datum, you must
+				<a href="reproject_shape.htm">reproject the shapefile</a> before 
+				you use it.
+				</li>
+				<li>
+				For raster DEMs or other grids, the <a href="tbme8igl.htm">File</a>, <a href="save_dem.htm">Save DEM</a>, <a href="reinterpolate_dem.htm">Reinterpolate,
+                UTM or lat/long can do a reprojection</a> by selecting the type 
+				of projection you want, and the grid spacing.
+				</li>
+</ol>
+<table id="table1" class="style3">
+	<tr>
+		<td>
+		<p align="right">
+		<img border="0" src="../microdemtutorials/county_maps/NLCD_CONIC.PNG" width="252" height="316"></td>
+		<td>2006 NLCD, in conic projection.</td>
+	</tr>
+	<tr>
+		<td>
+		<p align="right">
+		<img border="0" src="../microdemtutorials/county_maps/NLCD_REPROJECTED.PNG" width="264" height="316"></td>
+		<td>NLCD2006 <a href="reproject.htm">reprojected </a>to match the DEM in 
+		a geographic projection.&nbsp; Note the changed 
+		orientation of the gaticule.&nbsp; </td>
+	</tr>
+</table>
+<hr>
+				<p align="right" class="style2"><em>Last revision 11/18/2017</em></p>
+				<p class="style1">&nbsp;</p>
+	
+	
+	
+	
+	</body>
+
+</html>

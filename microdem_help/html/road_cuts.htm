@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Cut/Fill along Road</title>
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Cut/Fill along Road</h1>
+
+<ul>
+    <li><img src="../images/new%20dem.gif" width="32" height="32">
+        <a href="tbme5iy6.htm">Open DEM</a> .&nbsp; The resolution and quality 
+	of the DEM will affect your results.</li>
+	<li>Digitize centerline of road, with several options.&nbsp; If you use a 
+	Points file, the points must be in sequential order along the line.&nbsp; 
+	You want to digitize zoomed in as much as possible; your accuracy picked a 
+	point is half the pixel size on screen at best, and worse if your hand/eye 
+	coordination is not perfect.<ul>
+		<li><font size="3">
+		<img src="../images/icons.gif" border="2"
+        width="20" height="20"></font><a href="annotate.htm"><font
+        size="3">Annotate Map</font></a>, <font size="3">
+		<a href="shape_digit.htm">Create
+                shapefile</a>, Points or Line.</font></li>
+		<li>
+	<a href="google_earth/pt_file_digitize.htm">Digitize in Google Earth</a>, and create a points KML file, which you can open <img border="0" src="../images/db_map.png" width="24" height="24"> <a href="data_base.htm">Database</a>. 
+		If you want to create a line, you will have to convert to shapefile with <a href="dnr_garmin.htm">DNRGPS</a></li>
+	</ul>
+	</li>
+	<li>If you have a points shapefile, turn it into
+	<a href="create_shp_from_pts.htm">area/line shape file from points</a>.</li>
+	<li><a href="create_points.htm">Create points file</a> (along line) and pick 
+	a uniform spacing such as the grid spacing in the DEM</li>
+	<li>Verify the point spacing with <a href="db_edit.htm">Edit</a>, <b>&nbsp; </b><a href="nav_menu.htm">Navigation</a>,&nbsp; 
+	Add travel path (Azimuth, distance).</li>
+	<li>You can get a profile of the road centerline, with <a href="db_stats.htm"><strong>Stats:</strong></a>
+        <a href="2d_db_graph.htm"><b>2D graph:</b>&nbsp;</a>2D graph, simple (points) 
+	with cumulative distance versus elevation.</li>
+	<li><a href="db_edit.htm">Edit</a>, DEM, Add interpolated elevation from DEM.
+	</li>
+</ul>
+
+		<hr />
+
+<P align=right><EM><span class="style1">Last revision 4/4/2018</span></EM></P>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

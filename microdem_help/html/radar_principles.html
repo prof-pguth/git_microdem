@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Radar Principles</title>
+<style type="text/css">
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Radar Principles</h1>
+<p>&nbsp;</p>
+
+<p class="style1">Physics</p>
+<ul>
+	<li class="style1">Rough surface reflects more back to the sensor</li>
+	<li><span class="style1">Dielectric constant</span><ul>
+		<li class="style1">Most materials 3-8</li>
+		<li class="style1">Water approximately 80, so moisture greatly increases 
+		reflectivity</li>
+	</ul>
+	</li>
+	<li class="style1">C band has some attenuation during heavy rain events</li>
+</ul>
+<p class="style1">Color scaling from
+<a href="https://gis.stackexchange.com/questions/400726/creating-composite-rgb-images-from-sentinel-1-channels">
+<span class="style1">https://gis.stackexchange.com/questions/400726/creating-composite-rgb-images-from-sentinel-1-channels</span></a><span class="style1">
+</span></p>
+<ul>
+	<li>
+	Single date imagery affected by ground and atmospheric conditions</li>
+	<li>
+	<span class="style1" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+	composite RGB (colour) image created using the VV channel for red, VH 
+	channel for green and the ratio |VV| / |VH| for blue.</span></li>
+	<li>
+	RGB combination to map if you work with linear data:<ul>
+		<li>red=VV</li>
+		<li>green=VH</li>
+		<li>blue=VV/VH</li>
+	</ul>
+	<li>
+	If you work with log-scaled data (in dB) it is slightly different because 
+	the laws of logarithms which turn ratios into subtraction:</li>
+	<ul>
+		<li>red=VV</li>
+		<li>green=VH</li>
+		<li>blue=VV - VH</li>
+	</ul>
+	</li>
+</ul>
+
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><span class="style1"><em>Last revision 8/14/2023</em></span></p>
+<p align="right">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

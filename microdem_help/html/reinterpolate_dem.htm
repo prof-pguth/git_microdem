@@ -1,0 +1,79 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Reinterpolate DEM</title>
+<link href="../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="5"><b>Reinterpolate</b></font><b><font size="5"> DEM</font></b></p>
+<p>&nbsp;</p>
+<p>This has <a href="new_grid_pt_cloud.html">moved to a single selection window.</a></p>
+
+<ul>
+    <li><b>Reinterpolate, UTM</b>:&nbsp; the entire DEM will be
+        resampled into a UTM grid with a specified
+        resolution.&nbsp; If it is a UTM grid, it will be
+        resampled (either up or down in resolution). If the DEM
+        covers two or more UTM zones, you will be asked for the
+        zone's coordinates to use. You should not extend UTM
+        coordinates very far beyond the UTM zone boundaries.
+        Extending too far to the west will create negative
+        coordinates, and the behavior of the program in this
+        case might be erratic.&nbsp; Reinterpolation uses a bilinear interpolation. 
+	If you are crossing the zone boundary, you should strongly consider using a 
+	lat/long grid.</li>
+    <li><b>Reinterpolate, lat/long</b>: the entire DEM will
+        be resampled into a lat/long grid.&nbsp; If it is already
+        a lat/long grid, it will be resampled to the spacing you
+        desire (either up or down in resolution).&nbsp;&nbsp;You should pick a spacing in arc seconds 
+	that is less than the spacing in meters; for instance, with a 150 m DEM, 
+	pick 3 arc seconds.&nbsp; This will result in a larger file but retain more 
+	of the detail.&nbsp; You can also decide whether to use a floating point or 
+	an integer to save elevations; floating points uses twice the storage and 
+	memory.&nbsp; </li>
+</ul>
+
+<p>Reinterpolation uses a bilinear interpolation, which MICRODEM always uses to 
+get an elevation not exactly on a grid node.</p>
+
+<p>There is no penalty in MICRODEM for using lat/long DEMs, and all 
+	computations use them without problems.&nbsp; Lat/long DEMs are much better 
+	for seamless operations (USGS and NGA agree, and that's what is used for
+	<a href="ned.htm">3DEP/NED</a>, <a href="srtm.htm">SRTM</a>, ASTER, MERIT, and DTED 
+covering moderate to large areas).</p>
+
+<p>If you are downsampling and want to consider a larger region rather than just
+the four points around your desired grid postings, you can <a href="satb1otj.htm"><b>
+Filter</b></a> the DEM first.</p>
+<p>If you reinterpolate to a finer resolution than your original DEM, you will 
+get a smoother, generalized DEM, which will behave inside MICRODEM exactly the 
+same as the original DEM.&nbsp; The reinterpolation will not be &quot;better&quot; than 
+the original DEM and will be arguably worse (high and low points tend to be 
+smoothed out); if your DEM is lead, nothing you can do with it can turn it into 
+gold.</p>
+<p>Before reinterpolating, you should be sure that you understand the actual 
+resolution of the DEM, and not just the appearance on screen because MICRODEM 
+defalts to <a href="map_size.htm">showing the entire data set on screen without scrollbars</a>.</p>
+<p><a href="dem_resampling.html">Options and cautions for DEM resampling.</a></p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 1/20/2022</em></p>
+
+<p>.</p>
+
+</body>
+
+</html>

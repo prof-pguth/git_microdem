@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Raster to Vector</title>
+</head>
+
+<body>
+
+<h2>Raster to Vector</h2>
+<h3><strong><a href="raster_gis.htm">Raster GIS</a></strong> menu option </h3>
+<table border="1">
+	<tr>
+		<td>Suppress speckles: under this size will be removed.&nbsp; Larger 
+		values will be less noisy.<p>Black level: under this level, pixels 
+		converted to black.&nbsp; Value range is 0-1.</p>
+		<p>Invert image outlines white regions.&nbsp; Otherwise black regions 
+		will be outlined.<p>Border details. If the border option selected is white or black, it will draw a box around 
+the image, with either a white or black line.&nbsp; This might close off regions 
+on the edge which are truncated.<p>Convert:<ul>
+			<li>Blows map to 100%</li>
+			<li>Takes the bitmap, and turns all non-white to black.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>Notes</p>
+<ul>
+				<li><span LANG="EN">
+				Uses: <a href="https://potrace.sourceforge.net/">
+				https://potrace.sourceforge.net/</a>&nbsp; 
+				.&nbsp; Place it in x:\gis_sfotware\potrace\</span></li>
+				<li><span LANG="EN">
+				Command created: potrace test.bmp -b geojson -L 270795 -B 3289770 -x 2.5 
+				</span>
+				</li>
+				<li><span LANG="EN">
+				Convert back to shapefile: 0gr2ogr from <a href="adf_grids.htm">
+				<b>GDAL</b></a><b> </b></span>
+				</li>
+</ul>
+
+<hr>
+
+<p align="right"><i>last revised 2/12/2026</i></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

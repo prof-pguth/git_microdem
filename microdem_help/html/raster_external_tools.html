@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Raster GIS External tools</title>
+<style type="text/css">
+.auto-style3 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Raster GIS External tools</h1>
+<p>Submenu on the <strong><a href="raster_gis.htm">Raster GIS</a> 
+menu.&nbsp; </strong></p>
+<p><strong>Some of these might not work with arc second DEMs.</strong></p>
+<ul>
+		<li><a href="whitebox.html">Whitebox Tools</a><ul>
+			<li>Whitebox slope map (Horn)</li>
+			<li>Whitebox Aspect map</li>
+			<li><a name="Whitebox_curvature">Whitebox curvature</a><ul>
+				<li>Plan</li>
+				<li>Profile</li>
+				<li>Tangential</li>
+				<li>Minimal</li>
+				<li>Maximal</li>
+				<li>Mean</li>
+				<li>Gaussian</li>
+				<li>Casiorati</li>
+			</ul>
+			</li>
+			<li>Whitebox fill holes</li>
+			<li>Whitebox multiscale roughness</li>
+			<li>Whitebox Pennock Landform Classification (Pennock,D.J., Zebarth,B.J., and De Jong,E., 1987. Landform 
+	Classification and Soil Distribution in Hummocky Terrain, Saskatchewan, 
+	Canada. Geoderma, 40: 297-315.) on <a href="tbme9lrp.htm"><b>Calculate</b></a> 
+	menu, <a href="point_class_form.htm">Ridges/valleys</a></li>
+			<li>Whitebox Geomorphons</li>
+			<li>Whitebox average normal vector angular deviation</li>
+			<li>Whitebox circular variance of aspect</li>
+		</ul>
+		</li>
+		<li><a href="grass.html">GRASS</a>.&nbsp; <ul>
+			<li>Grass Slope (Horn)</li>
+			<li>Grass aspect (Horn)</li>
+			<li><a name="GRASS_curvature">GRASS curvature</a><ul>
+				<li>Grass Profile curvature</li>
+				<li>Grass Tangential curvature</li>
+			</ul>
+			</li>
+			<li><a href="https://grass.osgeo.org/grass78/manuals/addons/">Add-ons 
+			you have to add to GRASS</a>.&nbsp; There is an option to get these 
+			on the File menu with a DEM map open, only with the GIS full version.&nbsp; 
+			Alternatively load them directly in the GRASS GUI.&nbsp;
+			<ul>
+				<li><a href="tpi.htm"> TPI</a></li>
+				<li> <a href="topo_rugged_index.htm">TRI</a> </li>
+				<li><a href="roughness.html">GRASS &nbsp;r.roughness.vector; relatively slow</a></li>
+			</ul>
+			</li>
+		</ul>
+		</li>
+		<li><a href="adf_grids.htm"><span class="auto-style3">GDAL</span></a><ul>
+			<li>GDAL slope and aspect maps (2 methods available each; problems 
+			with geographic DEMs)</li>
+			<li>GDAL hillshade (problems with geographic DEMs)</li>
+			<li>GDAL <a href="topo_rugged_index.htm">TR</a>I (Wilson, bathymetric)</li>
+			<li>GDAL <a href="topo_rugged_index.htm">TRI</a> (Riley, terrestrial)</li>
+			<li>GDAL <a href="tpi.htm"> TPI</a></li>
+			<li>GDAL <a href="roughness.html">roughness </a>&nbsp;(not the same as the MICRODEM 
+			roughness; Roughness is the largest inter-cell difference of a central pixel 
+			and its surrounding cell, as defined in Wilson et al (2007, Marine 
+			Geodesy 30:3-35).</span>)</li>
+			<li>Contours shapefile:&nbsp; this will be in the temp directory; 
+			save elsewhere before closing the program if you want.&nbsp; </li>
+		</ul>
+		</li>
+		<li><a href="../foss_geomorph/saga.htm">SAGA</a><ul>
+			<li>SAGA aspect map</li>
+			<li>SAGA TRI map</li>
+			<li>SAGA TPI map</li>
+			<li>SAGA VRM map (vector ruggedness)</li>
+			<li><a name="SAGA_curvature">SAGA curvature</a><ul>
+				<li>SAGA profile curvature</li>
+				<li>SAG plan curvature</li>
+			</ul>
+			</li>
+		</ul>
+		</li>
+		<li>
+		<a href="https://github.com/xiceph/physical-geomorphometry-tools/tree/main/lsp-calculator">
+		LSP Calculator</a><ul>
+			<li>All LSPs</li>
+			<li>All partial derivatives</li>
+			<li>kns</li>
+			<li>kncc</li>
+			<li>kncs</li>
+			<li>knss</li>
+		</ul>
+		</li>
+		<li><a href="deskew.htm">Line detection (Hough transform)</a></li>
+		<li><a href="raster2vector.htm">Raster to vector</a></li>
+		<li><a href="rvt_toolbox.html">RVT grid creation</a></li>
+	</ul>
+<p>There are also <a href="image_analysis.htm">image analysis external tools</a> </p>
+
+<hr>
+
+<p align="right"><i>last revised&nbsp; 2/8/2026</i>&nbsp;</p>
+
+</body>
+
+</html>

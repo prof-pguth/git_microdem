@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Retired/Disabled Command Line Op</title>
+</head>
+
+<body>
+
+<h1>Retired/Disabled Command Line Options</h1>
+<p>&nbsp;</p>
+<p>This work was done early in the DEMIX process.&nbsp; It has not been widely 
+used (maybe not at all?) and has not been tested.</p>
+<table border="2">
+				<tr>
+								<td style="width: 136px">Option</td>
+								<td>Act(ion)</td>
+								<td>Command line, mandatory parameters</td>
+								<td>Optional parameters (not case sensitive)</td>
+								<td>Notes</td>
+				</tr>
+				<tr>
+								<td style="width: 136px">DEMIX criteria evaluation</td>
+								<td>
+								&nbsp;</td>
+								<td>
+								?act=demix-criteria&amp;filelist=c:\microdem\demix_criteria_files.txt</td>
+								<td>&nbsp;</td>
+								<td>
+								<ul>
+									<li>filelist is the full path to an ASCII 
+									file, with one full path DBF control file 
+									name per test DEM</li>
+									<li>requires that the test and 1" reference DEMs be on the 
+									local machine, and indexed in the  <a href="int_data_db.htm">
+	Map library</a> </li>
+								</ul>
+								</td>
+				</tr>
+				<tr>
+								<td style="width: 136px">DEMIX resample by aggregation</td>
+								<td>
+								&nbsp;</td>
+								<td>
+								?act=DEMIX-CREATE-REF&amp;filelist=c:\microdem\demix_resample_files.txt</td>
+								<td>&nbsp;</td>
+								<td>
+								<ul>
+									<li>filelist is the full path to an ASCII 
+									file, with one full path DEM file name per 
+									test DEM.&nbsp; This creates 1" 
+									pixel-is-area and pixel-is-point reference 
+									DEMS, and additional resolutions for high 
+									latitude COP and ALOS</li>
+									<li>output will be in the same directory, 
+									with standard names</li>
+								</ul>
+								</td>
+				</tr>
+</table>
+<p>&nbsp;</p>
+<p>Saving and used of GeoJSON was a long ago experiment, and has not been tested 
+recently.&nbsp; It is now commented out in the code, but could be restored by 
+setting a conditional compiler direction</p>
+<table border="2">
+				<tr>
+								<td style="width: 136px">Option</td>
+								<td>Act(ion)</td>
+								<td>Command line, mandatory parameters</td>
+								<td>Optional parameters (not case sensitive)</td>
+								<td>Notes</td>
+				</tr>
+				<tr>
+								<td style="width: 136px">DEM to GeoJSON-G</td>
+								<td>dem2json</td>
+								<td>?act=dem2json&amp;in=c:\mapdata\glacier.dem</td>
+								<td>&nbsp;</td>
+								<td>Output in same directory, with new extension 
+								.JSON</td>
+				</tr>
+				<tr>
+								<td style="width: 136px">LAS to GeoJSON-P</td>
+								<td>las2json</td>
+								<td>?act=las2json&amp;in=c:\mapdata\little.las</td>
+								<td>&nbsp;</td>
+								<td>Output in same directory, with two new files 
+								with new extensions .JSON and .JSON.BZ2<br />
+								7zip used for compression</td>
+				</tr>
+</table>
+<hr>
+
+<p align="right" ><em>Last revised&nbsp; 4/25/2025</em></p>
+
+</body>
+
+</html>

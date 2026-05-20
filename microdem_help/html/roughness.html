@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Roughness</title>
+<link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-family: serif;
+	font-size: medium;
+}
+.auto-style3 {
+	font-size: medium;
+}
+.auto-style4 {
+	font-family: serif;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Roughness</h1>
+	<table border="2">
+	<tr>
+		<td><b>Roughness Measure</b></td>
+		<td><b>MICRODEM, </b> <a href="derivative_grids.htm"><b>Create derivative grid</b></a></td>
+		<td><b>GRASS (callable from Windows command line)</b></td>
+		<td>SAGA</td>
+		<td><b>GDAL (callable from Windows command line)</b></td>
+		<td style="width: 125px"><b>WhiteBox (callable from Windows command line)</b></td>
+		<td><b>Reference</b></td>
+	</tr>
+	<tr>
+		<td>RRI--radial roughness index</td>
+		<td>Yes</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+		<span style="font-size:10.0pt;font-family:&quot;Times New Roman&quot;,serif;
+mso-fareast-font-family:&quot;Times New Roman&quot;;mso-ansi-language:EN-US;mso-fareast-language:
+AR-SA;mso-bidi-language:AR-SA">Trevisani, S., Teza, G., and Guth, P.L., 2023, 
+		Hacking the topographic ruggedness index, Geomorphology,
+		<a href="https://doi.org/10.1016/j.geomorph.2023.108838">
+		https://doi.org/10.1016/j.geomorph.2023.108838</a></span>.
+		<a href="https://doi.org/10.5281/zenodo.7716785">https://doi.org/10.5281/zenodo.7716785</a>
+		</td>
+	</tr>
+	<tr>
+		<td>Roughness factor</td>
+		<td class="auto-style1"><a href="sso_analysis.htm">By product of SSO computations</a></td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>GDAL Roughness is the largest inter-cell difference of a central pixel 
+			and its surrounding cells, as defined in Wilson et al (2007, Marine 
+			Geodesy 30:3-35).</span></td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+	
+	<a href="demb2trn.htm"><span class="auto-style1">Mark, 
+	1975; Etzelmuller, 2000</span></a><span class="auto-style1">.</span></td>
+	</tr>
+	<tr>
+		<td><a href="tpi.htm">TPI</a></td>
+		<td><a href="norm_dist_tri.html">Option to normalize all distances </a> </td>
+		<td>Includes multidimensional (add on,&nbsp; called from MICRODEM)</td>
+		<td>&nbsp;</td>
+		<td>Yes (does not agree with MICRODEM)</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+		<span style="color: rgb(0, 0, 0); font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Guisan, A., S. B. Weiss, A. D. Weiss 1999. GLM versus CCA spatial 
+		modeling of plant species distribution. Plant Ecology 143: 107-122</span></td>
+	</tr>
+	<tr>
+		<td><a href="topo_rugged_index.htm">TRI</a><br />
+		<br />
+		<a href="../demix_sg2/tri_compare.html">Comparison of TRI with Various Programs</a></td>
+		<td><a href="norm_dist_tri.html">Option to normalize all distances</a></td>
+		<td>Allows neighborhood, distance weighting&nbsp; (addon,&nbsp; called from MICRODEM)</td>
+		<td>&nbsp;</td>
+		<td>Yes</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+		<ul>
+			<li>
+			<span class="auto-style1" style="color: rgb(64, 64, 64); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(252, 252, 252); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+			<span class="auto-style1">Riley, S. J., S. D. DeGloria and R. Elliot 
+	(1999). A terrain ruggedness index that quantifies topographic 
+	heterogeneity, Intermountain Journal of Sciences, vol. 5, No. 1-4,</span> 
+	pp.23-27.</span></li>
+			<li>
+			<span class="auto-style1" style="color: rgb(64, 64, 64); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(252, 252, 252); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">Wilson et al (2007, Marine Geodesy 30:3-35)</span></li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>Multiscale roughness</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">Yes</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>MAD--median absolute differences</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>S. Trevisani, M. Rocca,2015, MAD: robust image texture analysis for 
+		applications in high resolution geomorphometry: Computers &amp; Geosciences, 
+		Volume 81, pages 78-92, https://doi.org/10.1016/j.cageo.2015.04.003.</td>
+	</tr>
+	<tr>
+		<td>MAD2K</td>
+		<td>Yes</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+		<ul>
+			<li>
+			<span style="color: rgb(0, 0, 0); font-family: Helvetica, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 300; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(245, 245, 245); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">strevisani. (2023). strevisani/MADSurfaceTexture: V1.1 plus R package 
+		(RoughnessV1.0). Zenodo.<span>&nbsp;</span></span><a href="https://doi.org/10.5281/zenodo.7716927" style="box-sizing: inherit; background-color: rgb(245, 245, 245); color: rgb(47, 111, 167); text-decoration: none; font-family: Helvetica, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 300; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal;" target="_blank">https://doi.org/10.5281/zenodo.7716927</a></li>
+			<li>Trevisani,S., Teza, G., and Guth,P., 2023, A 
+								simplified geostatistical approach for 
+								characterizing key aspects of short-range 
+								roughness: CATENA, Volume 223, 
+								<a href="https://doi.org/10.1016/j.catena.2023.106927">https://doi.org/10.1016/j.catena.2023.106927</a> .</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td><a href="roughness.html">Standard deviation of slope</a></td>
+		<td>Yes</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+		<span class="auto-style2" style="color: rgb(51, 51, 51); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		C. H. Grohmann, M. J. Smith and C. Riccomini, "Multiscale Analysis of 
+		Topographic Surface Roughness in the Midland Valley, Scotland," in<span>&nbsp;</span></span><em class="auto-style1" style="color: rgb(51, 51, 51); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">IEEE 
+		Transactions on Geoscience and Remote Sensing</em><span class="auto-style1" style="color: rgb(51, 51, 51); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, 
+		vol. 49, no. 4, pp. 1200-1213, April 2011, 
+		<a href="https://doii.org/10.1109/TGRS.2010.2053546">https://doi.org/10.1109/TGRS.2010.2053546</a>&nbsp; .</span></td>
+	</tr>
+	<tr>
+		<td><a href="iqr.html">IQRslope</a></td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+		&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Variogram gamma</td>
+		<td>Yes</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td><a href="rugosity.htm">Rugosity</a></td>
+		<td>Yes</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td><a href="https://pubs.usgs.gov/ds/477/">
+		https://pubs.usgs.gov/ds/477/</a> </td>
+	</tr>
+	<tr>
+		<td>Vector ruggedness (VRM)</td>
+		<td>Yes</td>
+		<td>r.roughness.vector&nbsp; (addon,&nbsp; called from MICRODEM)</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">&nbsp;</td>
+		<td>
+<ul>
+	<li>
+	<a href="https://grass.osgeo.org/grass78/manuals/addons/r.vector.ruggedness.html">
+	https://grass.osgeo.org/grass78/manuals/addons/r.vector.ruggedness.html</a>
+	</li>
+	<li>
+	<span style="color: rgb(0, 0, 0); font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+	Sappington, J.M., K.M. Longshore, and D.B. Thomson. 2007. Quantifying 
+	Landscape Ruggedness for Animal Habitat Analysis: A case Study Using Bighorn 
+	Sheep in the Mojave Desert. Journal of Wildlife Management. 71(5): 1419 
+	-1426.</span></li>
+	<li><span class="auto-style1">C. H. Grohmann, M. J. Smith and C. Riccomini, 
+	"Multiscale Analysis of Topographic Surface Roughness in the Midland Valley, 
+	Scotland," in<span>&nbsp;</span></span><em class="auto-style3">IEEE Transactions 
+	on Geoscience and Remote Sensing</em><span class="auto-style3">, vol. 49, 
+	no. 4, pp. 1200-1213, April 2011, doi: 10.1109/TGRS.2010.2053546.</span>
+	</li>
+	<li><span class="auto-style1">McKean, J. &amp; Roering, J., 2004. Objective 
+	landslide detection and surface morphology mapping using high-resolution 
+	airborne laser altimetry.<span>&nbsp;</span></span><em class="auto-style3">Geomorphology</em><span class="auto-style1">, 
+	57:331-351.<span>&nbsp;</span></span><a class="auto-style3" href="http://dx.doi.org/10.1016/S0169-555X(03)00164-8" target="_blank">http://dx.doi.org/10.1016/S0169-555X(03)00164-8</a><span class="auto-style3">.</span>
+	</li>
+	<li>This command changed in GRASS 82, which has two different versions which 
+	give different results<ul>
+		<li>
+		<a href="https://grass.osgeo.org/grass82/manuals/addons/r.roughness.vector.html">
+		https://grass.osgeo.org/grass82/manuals/addons/r.roughness.vector.html</a>
+		</li>
+		<li>
+		<a href="https://grass.osgeo.org/grass82/manuals/addons/r.vector.ruggedness.html">
+		https://grass.osgeo.org/grass82/manuals/addons/r.vector.ruggedness.html</a>
+		</li>
+	</ul>
+	</li>
+</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>Multiscale Std Dev Normals</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td style="width: 125px">Yes (not yet callable from MICRODEM)</td>
+		<td>
+		<span style="color: rgb(0, 0, 0); font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">
+		JB Lindsay, DR Newman, and A Francioni. 2019 Scale-Optimized Surface 
+		Roughness for Topographic Analysis.<span>&nbsp;</span></span><em style="color: rgb(0, 0, 0); font-size: 16px; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Geosciences</em><span style="color: rgb(0, 0, 0); font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, 
+		9(322) doi: 10.3390/geosciences9070322.</span></td>
+	</tr>
+</table>
+<p class="MsoNormal" align="left" style="text-align: left; text-indent: -.2in; margin-left: .2in">
+	
+	<a href="demb2trn.htm"><span class="auto-style1">Mark, 
+	1975; Etzelmuller, 2000</span></a><span class="auto-style1">.&nbsp; 
+	RoughnessFactor := 1 - sqrt(sqr(x1sq) + sqr(y1sq) + 
+	sqr(z1sq)) / NumPts;&nbsp; (the three numbers are the sums of the squares of 
+	the three components (directional cosines) of the normal vector to the earth's surface)</font> 
+	done as <a href="sso_analysis.htm">byproduct of SSO computations</a></span></p>
+<p class="MsoNormal" align="left" style="text-align: left; text-indent: -.2in; margin-left: .2in">
+Call routines from GRASS, GDAL, and <a href="whitebox.html">Whitebox</a> from MICRODEM: <strong><a href="raster_gis.htm">Raster GIS</a>, </strong>
+<a href="raster_external_tools.html">External tools</a></p>
+<p class="MsoNormal" align="left" style="text-align: left; text-indent: -.2in; margin-left: .2in">
+Other references:</p>
+<ul>
+	<li>Shepard, M. K., B. A. 
+	Campbell, M. H. Bulmer, T. G. Farr, L. R. Gaddis, and J. J. Plaut (2001), 
+	The roughness of natural terrain: A planetary and remote sensing 
+	perspective, J. Geophys. Res., 106(E12), 32777–32795, 
+	doi:10.1029/2000JE001429.&nbsp;
+	<a href="https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2000JE001429">
+	https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2000JE001429</a>
+	</li>
+	<li>&nbsp;Fan, Lei, and Yang Zhao. "Comparing roughness maps generated by 
+	five typical roughness descriptors for LiDAR-derived digital elevation 
+	models." AIMS Geosciences 10.2 (2024): 228-241.&nbsp;&nbsp;&nbsp;
+	<a href="https://www.aimspress.com/aimspress-data/aimsgeo/2024/2/PDF/geosci-10-02-013.pdf">
+	https://www.aimspress.com/aimspress-data/aimsgeo/2024/2/PDF/geosci-10-02-013.pdf</a>
+	</li>
+	<li>
+	<span style="mso-fareast-font-family: &quot;Times New Roman&quot;; color: #222222; background: white; mso-ansi-language: EN-US; mso-fareast-language: AR-SA; mso-bidi-language: AR-SA">
+	Trevisani, S.; Guth, P.L. Surface Roughness in Geomorphometry: From Basic 
+	Metrics Toward a Coherent Framework.&nbsp;</span><em style="box-sizing: border-box;line-height:
+inherit;max-height: 1e+06px;font-variant-ligatures: normal;font-variant-caps: normal;
+orphans: 2;text-align:start;widows: 2;-webkit-text-stroke-width: 0px;
+text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;
+word-spacing:0px">Remote Sens.</em><span style="font-variant-ligatures: normal;
+font-variant-caps: normal;orphans: 2;text-align:start;widows: 2;-webkit-text-stroke-width: 0px;
+text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;
+float:none;word-spacing:0px">&nbsp;</span><b style="box-sizing: border-box;
+line-height:inherit;max-height: 1e+06px;font-variant-ligatures: normal;
+font-variant-caps: normal;orphans: 2;text-align:start;widows: 2;-webkit-text-stroke-width: 0px;
+text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;
+word-spacing:0px">2025</b><span style="font-variant-ligatures: normal;
+font-variant-caps: normal;orphans: 2;text-align:start;widows: 2;-webkit-text-stroke-width: 0px;
+text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;
+float:none;word-spacing:0px">,&nbsp;</span><em style="box-sizing: border-box;
+line-height:inherit;max-height: 1e+06px;font-variant-ligatures: normal;
+font-variant-caps: normal;orphans: 2;text-align:start;widows: 2;-webkit-text-stroke-width: 0px;
+text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;
+word-spacing:0px">17</em><span style="font-variant-ligatures: normal;
+font-variant-caps: normal;orphans: 2;text-align:start;widows: 2;-webkit-text-stroke-width: 0px;
+text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;
+float:none;word-spacing:0px">, 3864.
+	<a href="https://doi.org/10.3390/rs17233864">
+	https://doi.org/10.3390/rs17233864</a> </span></li>
+</ul>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 4/16/2016</em></p>
+<p>&nbsp;</p>
+
+<p class="MsoNormal" align="left" style="text-align: left; text-indent: -.2in; margin-left: .2in">
+&nbsp;</p>
+
+<p>&nbsp;</p>
+<ul>
+</ul>
+	
+</body>
+
+</html>

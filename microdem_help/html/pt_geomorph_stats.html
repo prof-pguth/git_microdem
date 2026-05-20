@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Area Geomorphometry Stats</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Point Geomorphometry Stats</h1>
+<p><a href="db_stats.htm"><strong>Stats button </strong></a>&nbsp;popup menu for 
+an area/polygon shapefile.&nbsp; </p>
+<p>There must be a <a href="ass_dem_w_db.html">DEM associated with the map</a> 
+on which the DB is plotted.</p>
+<p><a href="geomorph_block.htm">Set parameters</a> that you want computed.&nbsp; 
+You have the same choices as used a regular array of blocks.&nbsp; You also pick 
+the size of the region around each point.</p>
+<ul>
+	<li>Advanced elevation option has the highest and lowest elevations, the locations where they occur, 
+		and the direction, distance, and slope in a staight line between them (think for 
+		landslides).&nbsp; You can extract these into a new point shape file</li>
+</ul>
+<p>Point shapefile will be created, with the lat/long of the center of each 
+polygon's bounding box, and the requested geomorphomertic parameters.&nbsp; You can join with the polygon shapefile using the 
+REC_ID record in each.<br />
+</p>
+
+<hr>
+
+<p align="right"><em><span class="auto-style1">Last revision 5/31/2019</span></em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

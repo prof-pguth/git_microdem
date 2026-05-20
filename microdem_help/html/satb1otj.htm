@@ -1,0 +1,141 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Satellite image filtering</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-size: medium;
+	font-weight: bold;
+}
+.auto-style3 {
+	font-size: medium;
+	text-align: center;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2 align="center">Filtering--Grids or Imagery</h2>
+
+<p class="auto-style1">Filters can be used to enhance the appearance of an image. The
+filter can be viewed as a matrix that is moved over the image.
+Each value in the filter is multiplied by the value in the image
+underneath it, and then the sum replaces the value at the center
+of the filter. Filters can also be applied to DEMs or others grids, either to 
+enhance trends or to smooth out random noise or generalize the map.</p>
+
+<p class="auto-style1">Filters can be used to smooth or average the image, sharpen
+the image, or search for edges. </p>
+
+<p class="auto-style1">Filtering is available:</p>
+<ul>
+	<li><span class="auto-style1">On the </span> <strong style="font-weight: 400"><a href="raster_gis.htm">
+	<span class="auto-style1">Raster GIS</span></a><span class="auto-style1"> 
+menu for DEMs or other grids including </span> <a href="img_anal_multigrid.htm">
+	<span class="auto-style1">Multi-grids</span></a><span class="auto-style1">. For these you can get larger sizes using mean,
+median, min, and max filters compared to imagery.</span></strong></li>
+	<li><span class="auto-style1">On the </span> <a href="image_analysis.htm">
+	<span class="auto-style1">Imagery analysis menu</span></a><span class="auto-style1">,
+	<a href="new_band.htm">Create difference index, band ratio, new band</a> for satellite
+imagery.</span></li>
+</ul>
+
+<hr>
+
+<p><span class="auto-style1">An unweighted </span><span class="auto-style2">averaging&nbsp; or smoothing filter</span><span class="auto-style1"> would look like 
+this:</span></p>
+
+<table border="1">
+    <tr>
+        <td class="auto-style1">1</td>
+        <td class="auto-style1">1</td>
+        <td class="auto-style1">1</td>
+    </tr>
+    <tr>
+        <td class="auto-style1">1</td>
+        <td class="auto-style1">1</td>
+        <td class="auto-style1">1</td>
+    </tr>
+    <tr>
+        <td class="auto-style1">1</td>
+        <td class="auto-style1">1</td>
+        <td class="auto-style1">1</td>
+    </tr>
+</table>
+
+<p class="auto-style1">Smoothing filters included with MICRODEM include AV-5x5.fil, AV-7x7.fil, 
+AV-9x9.fil, and SMOOTH.FIL.</p>
+
+<hr>
+
+<p class="auto-style1">A sharpening filter might look like this:</p>
+
+<table border="2">
+    <tr>
+        <td class="auto-style1">-1</td>
+        <td class="auto-style1">-1</td>
+        <td class="auto-style1">-1</td>
+    </tr>
+    <tr>
+        <td class="auto-style1">-1</td>
+        <td class="auto-style3">9</td>
+        <td class="auto-style1">-1</td>
+    </tr>
+    <tr>
+        <td class="auto-style1">-1</td>
+        <td class="auto-style1">-1</td>
+        <td class="auto-style1">-1</td>
+    </tr>
+</table>
+
+<p><span class="auto-style2">The sharpening or coarsening filter will enhance differences.</span><span class="auto-style1"> If a pixel
+had the same value as its neighbors, their eight values would be
+subtracted from nine times the central value, and the result
+would be the same at the initial central value.&nbsp;&nbsp;</span></p>
+
+<p> <span class="auto-style1">Sharpening filters 
+included with MICRODEM include DIAGLINE.FIL, VERTLINE.FIL, DIAGLINE.FIL,&nbsp;
+EDGE.FIL, and Laplacian of Gaussian (LoG) filter.&nbsp; See
+</span>
+<a href="../microdemtutorials/naip_filters/naip_filters.htm">
+<span class="auto-style1">examples of these 
+edge filters with NAIP imagery.</span></a></p>
+<hr>
+<p><span class="auto-style2">MICRODEM allows only square filters (number of rows equals the
+number of columns); the current maximum size is 15x15.</span><span class="auto-style1"> Values in the filter must be integers; the
+final result will be divided by the sum of the values in the
+filter to insure that the average value of the image will not
+change. </span> </p>
+
+<table border="1">
+    <tr>
+        <td>
+		<img src="../images/B4_NOFIL.gif"
+        width="304" height="357" class="auto-style1"></td>
+        <td>
+		<img src="../images/B4_DIAFIL.gif"
+        width="304" height="357" class="auto-style1"></td>
+        <td>
+		<img src="../images/B4_AV9.gif"
+        width="304" height="357" class="auto-style1"></td>
+    </tr>
+    <tr>
+        <td class="auto-style1">TM Band 4, no filter</td>
+        <td class="auto-style1">TM band 4, sharpening (diagonal)&nbsp;
+        filter applied</td>
+        <td class="auto-style1">TM Band 4, smoothing filter (9x9) applied.</td>
+    </tr>
+</table>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 3/7/2017</em></p>
+</body>
+</html>

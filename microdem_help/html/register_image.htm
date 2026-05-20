@@ -1,0 +1,73 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Register ImageCaveats</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+				font-style: italic;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><font size="6"><b>Register Image Caveats</b></font></p>
+
+<p><a href="image_reg.htm">Affine image registration directions</a>.</p>
+
+<hr>
+
+<p>Caveats on image registration, which might work if the simple <a href="world_grid_types.htm">
+World file</a> options will not:</p>
+
+<ul>
+    <li>The MICRODEM image registration provides a &quot;quick
+        and dirty&quot; result.&nbsp; It should only be used
+        carefully, and as a last resort.</li>
+    <li>If your image has geometric distortions, or relief displacement, the simple
+        affine transformation used cannot work well.</li>
+    <li>This should only be used for a large scale imagery of a
+        small area.</li>
+    <li>If your image has an inappropriate projection, the simple
+        affine transformation used cannot work well.&nbsp; The
+        smaller the scale of the image (the larger the area
+        covered), the greater the chance that this will not work.</li>
+    <li>If you scan an image, you almost certainly have to use
+        this method (or rotate the image), because other
+        alternatives (like <a href="tbme6h0z.htm">world files</a>)
+        assume that the map's grid is oriented north-south and it
+        is impossible to get that in a scan.</li>
+    <li>The following will limit the effectiveness of this
+        technique:<ul>
+            <li>Camera lens distortion (poor optics).</li>
+            <li>Off-nadir viewing geometry.</li>
+            <li>Terrain displacement in steep areas.</li>
+            <li>Scanner imperfections and distortions.</li>
+        </ul>
+    </li>
+    <li>If at all possible, let a professional handle this.&nbsp;
+        In addition to errors that you might make, your data may
+        not be possible to register using this simple technique.</li>
+</ul>
+
+<p><a href="world_grid_types.htm">World file and grid types</a>.</p>
+<p> 
+		<a href="../html/del_tri_reg.htm"><span class="auto-style1">Delaunay triangulation registration</span></a><span class="auto-style1"> 
+		is valid in a wider range of cases.</span></p>
+
+<hr>
+
+<p align="right" class="style1">Last revision 12/3/2024</p>
+
+<p>&nbsp;</p>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Satellite reflectance histograms</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>Satellite Reflectance
+Histograms</b></font></p>
+
+<p>Option on <a href="image_analysis.htm"><b>Image analysis</b></a> menu.</p>
+<b>Satellite histograms</b>: graph of DN versus the number of pixels with that DN.&nbsp; 
+DN is the digital number, which measures the energy sensed by the satellite if 
+the particular band.<ul>
+						<li>Histogram, all bands</li>
+						<li> <a href="satb1qur.htm"><b>Histogram, pick band</b></a>:</li>
+						<li>Use current subset</li>
+		</ul>
+
+<p>The reflectance histogram graphs the number of pixels (or
+percentage of the scene) with a particular DN in the scene. The
+most commonly occurring DN will mark the mode; in some cases the
+distribution may have multiple modes. If multiple modes exist,
+that means that many pixels share a common DN, few pixels have
+DNs in the region between the modes, and then many pixels share
+another DN.</p>
+
+<p>The histogram represents the reflectance characteristics of
+the scene, which is a function of reflection characteristics and
+the distribution of terrain in the scene.</p>
+
+<p>Because water in rivers, lakes, or the ocean has very
+distinctive and uniform reflectance characteristics, large water
+regions will usually lead to a large mode.</p>
+
+<p align="center"><img src="../images/sathist1.gif" width="456"
+height="306"></p>
+
+<p align="center"><img src="../images/sathist2.gif" width="456"
+height="306"></p>
+
+<p>Note that the top diagram shows a band with a unimodal
+distribution, and the bottom diagram shows a band with a bimodal
+distribution. The bimodal distribution that the scene contains a
+number of points with very low reflectance (such as water), and
+then a number of points with varying higher reflectances.</p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 3/25/2008</em></p>
+</body>
+</html>
