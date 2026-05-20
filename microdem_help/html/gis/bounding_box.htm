@@ -1,0 +1,72 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Bounding Box</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.style2 {
+	font-size: small;
+	font-style: italic;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Bounding Box</font></b></p>
+<p><span class="style1">The bounding box is the smallest rectangle that will 
+completely enclose a feature.&nbsp; Two points (x-y coordinates) will determine 
+it, or alternatively the MaxX, MaxY, MinX, and MinY. A </span>
+			<a href="../shapefile.htm">Shapefile</a><span class="style1"> stores 
+the bounding box for every record, and for the entire database.</span><font size="5"><b><br>
+</b></font></p>
+<table border="1" width="100%">
+  <tr>
+    <td width="50%"><img border="0" src="../../images/bound_box.GIF" width="519" height="440"></td>
+    <td width="50%">Four line segments, each of which would have the same
+      bounding box.&nbsp; The corners of the box would be the SW and NE corners.<p>The line segments have a direction, since they might have attributes
+      based on their <a href="../topology.html">topology</a>, or right and left sides (such as the addresses in TIGER roads).&nbsp;&nbsp; The direction goes from 
+	the first point in the coordinate list, toward the last point.</td>
+  </tr>
+</table>
+<table border="1" width="100%">
+  <tr>
+    <td width="50%"><img border="0" src="../../images/bound_box_screen.GIF" width="665" height="570"></td>
+    <td width="50%">A more complex line with its bounding box in black, and a screen window
+      in green.
+      <p>Without the bounding box, a program would have to consider all
+      coordinates in the line (potentially thousands) to know if the line or any 
+	  part of it is on
+      screen.&nbsp; </p>
+      <p>With the bounding box, programs can do a quick check and reject many
+      lines as having no possibility of being on screen, such as the lower left 
+	  case in the diagram to the left..</p>
+	<p>&nbsp;</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+	<img alt="" src="../../images/bound_box_fool.GIF" width="493" height="403"></td>
+    <td width="50%">It is possible that the screen will lie partly or wholly 
+	within the bounding box for a line, and yet the line will be completely off 
+	the screen.&nbsp; In this case the GIS program will have to project the 
+	line, and then determine point by point that it does not plot on the screen.</td>
+  </tr>
+</table>
+<p>ESRI <a href="../shapefile.htm">shapefiles</a> store the bounding box in the SHP file for each line and
+area record.&nbsp; MICRODEM also adds this information to the DBF file.</p>
+<hr>
+<p align="right" class="style2">Last revision 1/8/2018</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

@@ -1,0 +1,162 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>Plate Motion Data Files</title>
+<style type="text/css">
+.auto-style2 {
+	font-weight: bold;
+	text-align: center;
+}
+.auto-style3 {
+	font-size: medium;
+}
+.auto-style4 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: general;
+	vertical-align: bottom;
+	white-space: nowrap;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+}
+.auto-style5 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: center;
+	vertical-align: bottom;
+	white-space: nowrap;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+}
+</style>
+</head>
+
+<body>
+
+<p><font size="5"><strong>Plate Motion Data Files</strong></font></p>
+
+<table border="2" >
+    <tr>
+        <td class="auto-style2" style="width: 438px">Table Output&nbsp;</td>
+        <td class="auto-style2">File&nbsp;</td>
+    </tr>
+    <tr>
+        <td style="width: 438px"><img alt="" height="236" src="data_file1.gif" width="434">&nbsp;</td>
+        <td>Plate Outline File := DBDirectory + <strong>'continental_crust.dbf'&nbsp;</strong><br><br>
+		This is a polygon shapefile.</td>
+    </tr>
+    <tr>
+        <td style="width: 438px"><img alt="" height="287" src="total_poles_db.gif" width="406">&nbsp;</td>
+        <td>
+		<p>Plate Poles File := DBDirectory +<strong> 'total_poles.dbf'&nbsp;</strong><br>
+		<br>
+		<br>
+		</p>
+		<ul>
+			<li>Two models</li>
+			<li>Each model has several times, which are not the same</li>
+			<li>At each time there is an Euler pole for each plate.&nbsp; This 
+			is a total reconstruction pole, which moves the plate from its 
+			curret position to the position at the specified time.</li>
+		</ul>
+		</td>
+    </tr>
+    <tr>
+        <td style="width: 438px"><img alt="" height="165" src="data_file4.gif" width="410">&nbsp;&nbsp; </td>
+        <td><strong><a name="Plate_models">Plate models</a></strong> in Current Motions File := MainProgramDirectory + <strong>'current_rotations_vN.dbf'<br>
+		<br>
+		<table border="0" cellpadding="0" cellspacing="0" style="border-collapse:
+ collapse;width:207pt" width="276">
+			<colgroup>
+				<col style="mso-width-source:userset;mso-width-alt:5595;width:115pt" width="153">
+				<col style="mso-width-source:userset;mso-width-alt:4498;width:92pt" width="123">
+			</colgroup>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt; width: 115pt" width="153">
+				MODEL</td>
+				<td class="auto-style4" style="width: 92pt" width="123">Number 
+				of Plates</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				NNR-MORVEL56</td>
+				<td class="auto-style5">56</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">GSRM</td>
+				<td class="auto-style5">25</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				MORVEL</td>
+				<td class="auto-style5">25</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				NNR-NUVEL-1A</td>
+				<td class="auto-style5">16</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				SOPAC-200510</td>
+				<td class="auto-style5">16</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				HS2-NUVEL-1A</td>
+				<td class="auto-style5">15</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				HS3-NUVEL-1A</td>
+				<td class="auto-style5">15</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">T22A</td>
+				<td class="auto-style5">14</td>
+			</tr>
+			<tr height="20">
+				<td class="auto-style4" height="20" style="height: 15.0pt;">
+				APKIM8.80</td>
+				<td class="auto-style5">12</td>
+			</tr>
+		</table>
+		<br></strong>
+		<p>
+		To add another model, add it to the file, with one line for each plate, 
+		including the Euler poles.
+		</p>
+		</td>
+    </tr>
+</table>
+<ul>
+  <li>SOPAC 200510 from &quot;sopac.ucsd.edu/cgi-bin/poleRotationValues.cgi&nbsp;&quot; 
+  (now broken)</li>
+  <li>GSRM from <a href="http://gsrm.unavco.org/model/files/1.2/rotation_vector_plates_PA.dat">http://gsrm.unavco.org/model/files/1.2/rotation_vector_plates_PA.dat</a>
+  </li>
+	<li>Morvel from
+	<a href="http://geoscience.wisc.edu/~chuck/MORVEL/MRVL_AVs.html">
+	http://geoscience.wisc.edu/~chuck/MORVEL/MRVL_AVs.html</a>
+  </li>
+  <li>Others from: &quot;dgfi2.dgfi.badw-muenchen.de/geodis/GDYN/platemodels.html&nbsp;&quot; 
+  (now broken)</li>
+</ul>
+<hr>
+<p align="right" class="auto-style3"><i>Last revision 1/7/2018</i></p>
+<p>&nbsp;</p>
+</body>
+</html>

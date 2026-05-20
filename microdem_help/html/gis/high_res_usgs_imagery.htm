@@ -1,0 +1,90 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>High resolution imagery National Map</title>
+</head>
+
+<body>
+
+<table border="2">
+				<tr>
+								<td colspan="2">
+								<p align="center"><b><font size="4">
+								High 
+								Resolution Imagery from National Map</font></b></td>
+				</tr>
+				<tr>
+								<td>
+								<img height="295" src="../../microdemtutorials/hi_res_imagery/usgs_imagery.gif" width="741">&nbsp;</td>
+								<td>
+								<a href="../../microdemtutorials/national_map/national_map.htm">
+								General directions for National Map.</a><br><br>
+								<b>
+								<a href="../../microdemtutorials/national_map/national_map.htm">National 
+	Map</a> 
+								</b>
+								imagery available for Annapolis.&nbsp; Be careful about the size of 
+								the region you request since these files can 
+								rapidly grow to huge sizes.<ul>
+												<li>The four band NAIP allows 
+												selection of either true color 
+												or false color IR.&nbsp; The &quot;A&quot; 
+												in NAIP stands for agriculture, so it 
+												might also be leaf on, making 
+												things hard to see on the 
+												ground.&nbsp; Non agricultural 
+												users like geologists or hikers often prefer leaf off 
+												imagery to see through the trees.</li>
+												<li>You may have to decide if 
+												you lots of detail for a small 
+												area, or a larger area with less 
+												detail.</li>
+												<li>The data is in prestaged 
+												tiles, mostly in JPG2000 format (<a href="../compressed_data.htm">lossy compression</a>).&nbsp; 
+												You will need
+												<a href="../adf_grids.htm">GDAL</a> 
+												to open the imagery in 
+												MICRODEM.&nbsp;</li>
+								</ul>
+								<p>Some of these data sets are in <strong>
+								<a href="../web_mercator.html">
+								WGS_1984_Web_Mercator_Auxiliary_Sphere</a></strong> 
+								projection.&nbsp; You can verify this by looking 
+								in the Geotiff<b> <a href="../file_metadata.htm">File Metadata</a></b> 
+								for the Geotiff created by GDAL.&nbsp; If the 
+								program does not automatically correct this, you 
+								must <strong>warp </strong>the image to usable UTM coordinates, 
+								on the <a href="../resample_data.htm">Resample</a> 
+								menu.&nbsp; </p>
+								<p><a href="../gdal_merge.htm">If you need to 
+								merge tiles, get ready for the command line</a> 
+								using <a href="../adf_grids.htm">GDAL</a>.&nbsp; 
+								MICRODEM should hide the messy details.&nbsp;&nbsp; 
+								Do any merges before you warp.</p>
+								</td>
+				</tr>
+				<tr>
+								<td>
+								<img border="0" src="../../microdemtutorials/hi_res_imagery/IMAGERY_0.15M.PNG" style="float: right"></td>
+								<td><a href="high_res_usgs_imagery_sampler.htm">
+								Data sampler</a>.<br><br>For a greater choice of 
+								imagey, use 
+								<a href="high_res_usgs_imagery_earth_explorer.htm">
+								Earth Explorer</a>.</td>
+				</tr>
+				</table>
+<font face="Times New Roman"><b>
+
+<hr align="right">
+
+</b>
+
+<p class="style2" align="right"><em>Last revision 10/15/2018</em></p>
+
+</body>
+
+</html>
