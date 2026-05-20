@@ -1,0 +1,95 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Trend surface</title>
+<style type="text/css">
+.style1 {
+				font-style: normal;
+}
+</style>
+</head>
+
+<body >
+
+<p align="center"><font size="5"><b>MICRODEM Trend Surface</b></font></p>
+
+<p>Option on </p>
+<ul>
+				<li><font size="3"><strong><a href="raster_gis.htm">Raster GIS</a></strong> menu, 
+				</font><b><a href="geostatistical_analysis.htm">Geomorphometry analysis</a>, 
+				with a DEM</b></li>
+				<li><a href="db_stats.htm"><strong>Stats</strong></a>
+        		button&nbsp; 
+<a href="database_table_display.htm"><u>table
+display window</u></a>, with points upon a line to which you want to fit a plane</li>
+</ul>
+
+<table border="1">
+  <tr>
+    <td><img src="../images/trend_surf.gif" width="316" height="209"></td>
+    <td>
+
+<p>Display multiple windows with its results:</p>
+
+<ul>
+    <li>Graph with trend surface versus DEM.</li>
+    <li>A map window with deviations from trend surface
+        (difference between DEM and trend surface).
+        Modify this map like any other map.</li>
+    <li>Histogram of deviations between DEM and trend surface.</li>
+    <li>Text window with statistics. This will include the <a
+        href="satb4qgk.htm"><b>correlation coefficient r</b></a>
+        and r², the coefficients for the trend surface, and some
+        data on the goodness of fit and the variation explained
+        by the surface (see Davis, 1986, for an explanation of
+        this table).</li>
+    <li>Map window with trend surface. Modify this
+        map like any other map.</li>
+</ul>
+
+      <p>&nbsp;</td>
+  </tr>
+</table>
+
+<p>This option fits a <a
+href="trend_surf_basic.htm">trend surface</a> to the current DEM or database.
+You should be aware of the following limitations:</p>
+
+<p>The entire DEM will be fit. If you do not want to use portions
+of the DEM, <b>edit the DEM</b> first.&nbsp; To speed
+up the computations, the program will decimate the DEM to&nbsp; use 250,000
+points or fewer to compute the trend surface.</p>
+
+<p>All variables are in meters, with the elevation (z) and the
+easting (x) and northing (y) UTM coordinates. To avoid math
+overflow problems, the x and y coordinates are shifted to place
+the origin at the SW corner of the data set. The shift will be
+indicated in the statistics window.</p>
+
+<ul>
+  <li>The DEM must be capable of conversion to UTM coordinates,
+which will be the x and y coordinates used. The input DEMs in
+mind when the option was created were USGS 1:24K and 1:250K (DTED).&nbsp;</li>
+  <li>The z units should be meters to correspond with the UTM
+coordinates.&nbsp;</li>
+</ul>
+
+<p>Potential problems and their solutions:</p>
+
+<ol>
+    <li style="height: 19px; width: 1218px">The deviations from the trend surface mirror ridges and
+        valleys in the valley. Consider editing the DEM to remove
+        the deep stream valleys.</li>
+</ol>
+
+<hr>
+
+<p align="right">
+
+<span class="style1"><em>Last revision 9/15/2016</em></span></p>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Matching Criteria</title>
+<style type="text/css">
+.style1 {
+	font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Matching Criteria</h1>
+<p>To find locations for something, you can prepare a set of grids which mark 
+acceptable locations.&nbsp; These can be defined in a number of ways:</p>
+<ul>
+	<li>Unacceptable locations are marked as missing data.&nbsp; In GIS, missing 
+	data is marked with a special value in the grid.</li>
+	<li>Locations can be coded as 0 (unacceptable) or 1 (acceptable).</li>
+	<li>Locations can be coded as 0 (unacceptable), the grid for each criterion 
+	can be 1, 2, 4, 8, 16, 32, 64, or 128.&nbsp; This is equivalent to setting a 
+	single bit.</li>
+</ul>
+<p>To get these grids, you can use several GIS operations:</p>
+<ul>
+	<li><a href="edit_mark_missing.htm">Mark as missing</a></li>
+	<li>Reclassify--assign values to new values.</li>
+</ul>
+<p>The criteria can be combined in several ways:</p>
+<ol>
+	<li>Start with a complete grid, and then sequentially mask out (mark as 
+	missing) those that are missing in each of the acceptable locations grids.&nbsp; 
+	The final grid then shows all locations that match all of the criteria.&nbsp; 
+	The actual values in the final grid are not important (they will be whatever 
+	was in the starting grid), but the locations are.</li>
+	<li>Sum all of the criterion grids, using&nbsp; 0/1 values.&nbsp; The 
+	resulting numbers will be the number of criteria met.&nbsp; If you have 
+	impossible criteria, this may help to determing the regions that come 
+	closest to meeting the criteria, and how you might go about finding a 
+	revised definition of acceptable.</li>
+	<li>Sum all of the criterion grids, using the bits.&nbsp; This shows you for 
+	each point which criteria are met--for example a value of 12 indicates that 
+	the point meets the criteria for the grids with for 4 and 8, but not 1 and 
+	2.</li>
+</ol>
+
+<hr>
+
+<p align="right"><em><span class="style1">Last revision 11/13/2018</span></em></p>
+
+</body>
+
+</html>

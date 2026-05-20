@@ -1,0 +1,75 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>64 bit MICRODEM</title>
+</head>
+
+<body>
+
+<h2>64 bit MICRODEM</h2>
+<p>&nbsp;The 64 bit version of the program is now the default installation, and we 
+will&nbsp; update the 32 bit program only in exceptional cases like teaching 
+students with no access to modern Windows machines.&nbsp; </p>
+<p>In addition to those changes required for 
+64 bit, a number of changes were also made to get the program to run on Android, 
+Mac OS and iOS.&nbsp; 
+We have noticed significant speed up using the 64 bit version of the program, 
+and also with Windows 8.1 and 10.&nbsp;</p>
+<p>As a 32 bit program, the <a href="demb44hf.htm">most memory the program could address 
+was 2 GB</a>.&nbsp; </p>
+<table border="2">
+	<tr>
+		<td>MICRODEM Version</td>
+		<td>BDE</td>
+		<td>tDBF</td>
+		<td>SQLITE</td>
+		<td>Changes required</td>
+	</tr>
+	<tr>
+		<td>32 bit (will run on 64 bit Windows)</td>
+		<td>Yes--requires BDE installed</td>
+		<td>Yes</td>
+		<td>Yes</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>64 bit</td>
+		<td>No</td>
+		<td>Yes</td>
+		<td>Yes</td>
+		<td>New database engine</td>
+	</tr>
+	<tr>
+		<td>Android, iOS, Mac OS</td>
+		<td>No</td>
+		<td>?</td>
+		<td>Yes</td>
+		<td>New database, case sensitive file names, \ to / in file names, no 
+		BMP files</td>
+	</tr>
+</table>
+<p>You should be aware of the following limitations:</p>
+<ul>
+				<li>For the SQLlite versions,&nbsp; if you try to load a DBF 
+				file (including a shapefile), the program will automatically 
+				convert it to a .db file.&nbsp; This could be slow.</li>
+				<li>Automatic saving of databases might not be perfect, and you 
+				might lose edits to the databases.&nbsp; You can manually save 
+				if needed.</li>
+				<li>Syncing of shapefiles is not happening, so any edits to the 
+				database will not be reflected in the shapefile.</li>
+				<li>If you want to share your database (including shapefile) 
+				with another program, you 
+				must save the .db file to a .dbf.</li>
+</ul>
+<p>If you have problems or suggestions, do not hesitate to contact us.</p>
+
+<hr>
+
+<p align="right" class="style2"><em>Last revision 4/4/2018</em></p>
+
+</body>
+
+</html>

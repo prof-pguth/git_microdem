@@ -1,0 +1,62 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Missing data on maps</title>
+</head>
+
+<body>
+
+<p align="center"><font size="6"><b>Missing Data on Maps</b></font></p>
+
+<p>Because of the importance of dealing with missing data, GIS programs have a 
+special missing or no data category.</p>
+<p>Dealing with missing elevations can use two approaches:</p>
+
+<ul>
+    <li>Set the color with which to display it on maps.&nbsp;
+        This approach keeps the elevations as missing data, so
+        they should be ignored for display and analysis
+        purposes.&nbsp; This may lead to anomalies over the ocean
+        in some processing steps.&nbsp; This can be set on the <a href="mapstab.htm">
+	<strong style="font-weight: 400">Maps tab</strong></a><u><strong>
+                </strong></u>of the <a href="tbme1njp.htm">options form</a>, or 
+	on the <a href="mapm9r79.htm">Modify </a>menu. </li>
+    <li>Turn it all to sea level, on&nbsp; <a href="import_tab.htm">Import/Export
+      tab</a> of the <a href="tbme1njp.htm">options form</a>. This can lead to anomalies
+        if you export the data, if the missing data is not sea
+        level.&nbsp; This works in some cases, but it's intended when you are
+      doing imports or merges, and not for MICRODEM data sets which are assumed
+      to have had this already taken care of.</li>
+</ul>
+
+<p>There is a <a href="edit_menu.htm#DEM Holes:">DEM Holes</a> submenu on the <a href="edit_menu.htm">Edit</a>
+menu with various ways to fill the holes.</p>
+
+<table border="1" width="100%">
+	<tr>
+		<td>
+		<img border="0" src="../images/expand_holes.png" width="507" height="265"></td>
+		<td>Holes will have a greater impact on <a href="tbme9u5v.htm">Reflectance maps</a> 
+or <a href="slopemap.htm">Slope maps</a>,&nbsp; which require a neighborhood 
+		with eight neighbors surrounding the point (<a href="focal_ops.htm">focal 
+		operations</a>).&nbsp; For those maps, with a lot of holes, you might be 
+		better to use an <a href="tbme78s3.htm">Elevation map</a> where a hole 
+		will affect only a single point. </td>
+	</tr>
+</table>
+<p>MICRODEM uses the MaxInt value (32767) to mark missing data, for both integer 
+and floating point data sets.&nbsp; Other data sets have different startands; 
+often a number of 9's marks mimssing data.&nbsp; </p>
+
+<hr>
+
+<p align="right"><i>Last revision </i>8/26/2023</p>
+
+<p>&nbsp;</p>
+</body>
+</html>

@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>MICRODEM LAS resampling</title>
+<style type="text/css">
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>MICRODEM LAS resampling</h1>
+<p>
+<img src="../images/inout.jpg" border="1" width="32"
+        height="32"><strong> </strong><a href="tbme83sn.htm"><strong>Data
+        Manipulation</strong></a>, <b><a href="resample_data.htm">Resample</a></b>&nbsp;,  LAS files (MD): this will convert the coordinates to geographic, do a datum 
+shift to WGS84 (if required), and then convert the coordinates to UTM, in one 
+step.&nbsp; <ul>
+				<li>Defined to UTM: MICRODEM must be able to recognize the 
+				projection, which must be in the LAS file.&nbsp; This currently 
+				works for SPCS files.</li>
+				<li>Change UTM zone</li>
+				<li>Irish grid to UTM--works even if no projection is assigned 
+				in the LAS file, and does not look for the projection.&nbsp; 
+				This has not been used since there were major revisions to 
+				handling projections.</li>
+				<li>UK OS to UTM--works even if no projection is assigned in the 
+				LAS file, and does not look for the projection.&nbsp; This has 
+				not been used since there were major revisions to handling 
+				projections.</li>
+				<li>z shift, feet to meters</li>
+				<li>LAS to.... converts a single LAS file to ASCII.&nbsp; These will use the number 
+	of decimals for the coordinates that are set on the <a href="tbme1njp.htm"><b>Options</b></a> 
+				form.&nbsp; This is grossly inefficient and should only be used 
+				for small areas. <ul>
+					<li>XYZ</li>
+					<li>XYZ, RGB</li>
+					<li>XYZ, Class, Intensity</li>
+					<li>GeoJSON-P</li>
+	</ul>
+				</li>
+			</ul>
+			<p>These will also set the coordinate precision to cm in the 
+			exported LAS files.</p>
+<p><a href="lastools_resample.htm">LAStools</a>--might be more robust</p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revised&nbsp;8/18/2021</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

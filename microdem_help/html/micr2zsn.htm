@@ -1,0 +1,100 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>MICRODEM Program Overview</title>
+<link href="../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2>MICRODEM Program Overview</h2>
+
+<p><strong>MICRODEM</strong>&nbsp;is a Geographical Information system (GIS) 
+which manipulates <a href="digital_map_data.htm">digital
+map data</a>.&nbsp; All data used must be registered to fully benefit from the 
+GIS, meaning
+the data has earth coordinates associated.&nbsp;
+While the program has some capabilities to create and register
+data sets, this requires a high degree of user sophistication and
+is not recommended for most users, and is not a major focus of program
+development.</p>
+
+<p>Users of GIS must be aware of the
+following mapping issues:</p>
+
+<ul>
+    <li><a href="datum_issues.htm"><strong>Datums.</strong></a>&nbsp; The wrong datum
+        can shift coordinates up to hundreds of meters, and the
+        GIS software cannot always automatically detect and
+        correct for different datums, so the user must have a basic 
+	understanding of the difference between NAD27 and NAD83/WGS84. Users should also 
+	recognize that they may have to check the metadata with their data to learn 
+	about the datum and projection used. </li>
+    <li>The difference between <a href="grids_geo_utm.htm">geographic Lat/Long coordinates and projected</a> coordinate systems. Software can easily convert one to the other,
+        but some operations may require that the two data
+        sets share the same coordinate system.</li>
+	<li><a href="digital_map_data.htm">Vector and raster digital map data</a>, 
+	and the difference between
+        &quot;objective&quot;
+        data like a satellite image or a DEM elevation and
+        &quot;subjective&quot; data like interpreted plate
+        boundaries or a geologic map.</li>
+    <li>The difference between screen resolution and data
+        resolution. Many GIS data sets cannot be displayed on
+        screen at full resolution. The program must either subsample
+        to show the big picture, subset the area to show a small
+        area at full resolution, or use scrollbars. With the
+        last two options it can be hard to recognize where in the
+        data set you are looking.</li>
+</ul>
+
+<p><a href="microdem_basics.htm">Basics of running MICRODEM.</a></p>
+<p><a href="intro_data.htm">Introduction to Data</a></p>
+<p><strong>Edits:</strong></p>
+<ul>
+	<li>Edits to databases are immediate.&nbsp; Because of this, you must 
+	check to enable edits on the database display table.&nbsp; You can save a 
+	copy of the database before you work, using the <a href="db_report.htm">Report</a> 
+	button.</li>
+	<li>Edits to grids/DEMs do not take effect unless you deliberately save 
+	the grid/DEM, because these are stored in memory for rapid manipulation, and 
+	when you save, you can save them to a new file.&nbsp; </li>
+</ul>
+
+<hr>
+
+<p><a href="micr769l.htm"><b>Program History</b></a>: how a
+great program like this evolved.</p>
+
+<p><a href="product.htm"><strong>Product Gallery</strong></a>. Samples of  
+imagery the program produces, with links to how they are created.&nbsp; </p>
+
+<p><a href="microdem_download_stats.htm"><b>Download
+history.</b></a><b>&nbsp;</b>See how many people are getting MICRODEM.</p>
+
+<p><a href="managing_microdem.htm"><strong>Manage
+program updates</strong></a>.</p>
+
+<p>C<strong>ontact the program author</strong> with
+comments and suggestions using the online <a
+href="http://forums.delphiforums.com/microdem/start">MD forum</a>
+hosted by Delphi.&nbsp; You should also check the <a
+href="file:///C:/MyDocs/HELPFILE/wwwmicrodem/html/debug_log.htm">debug
+log</a> option.&nbsp; </p>
+
+<p><a href="demb2trn.htm"><strong>Selected References</strong></a></p>
+
+<HR>
+
+<P align=right><EM><span class="style1">Last revision </span></EM>
+<span class="style1"><em>8/5/2018</em></span></P>
+
+</body>
+</html>

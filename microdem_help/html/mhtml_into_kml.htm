@@ -1,0 +1,160 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Put HTML into KML display</title>
+</head>
+
+<body>
+
+<h2>Put HTML into KML display</h2>
+<table border="2">
+				<tr>
+								<td>
+										<p>Create a blank new folder for this.&nbsp; 
+										Once you have this folder, you should 
+										not move any of the files from it, or 
+										you risk breaking links to the images.&nbsp; The 
+										folder will evantually will have the 
+										following in it:</p>
+										<ul>
+											<li>The word processor document.</li>
+											<li>An HTML file saved from the word 
+											processor (or Google Docs), and a folder with all the 
+											images.&nbsp; These must stay 
+											together, and cannot be renamed 
+											after you save them in the word 
+											processor unless you really know 
+											what you are doing and are very careful.</li>
+											<li>A bitmap for the icon.</li>
+											<li>A CSV file created in Excel, and 
+											a DBF file created from it by 
+											MICRODEM.&nbsp; It must have the 
+											location to display the symbol on 
+											the map, the 
+											name of the symbol's bitmap, and the HTML 
+											file.</li>
+										</ul>
+				</tr>
+				<tr>
+								<td>
+								<p><a href="create_html.htm">Create an HTML file with text, graphics, and other standard features such as 
+a reference list</a>, with very simple formatting.&nbsp; Fancy formatting that 
+								does not export is a waste of time and leads to 
+								a poor product.&nbsp;</p>
+								</td>
+				</tr>
+</table>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/kml_html1.gif" width="353" height="39"></td>
+		<td>Create a point database with the LAT/LONG location where you want 
+		the introduction to appear.&nbsp; Use the field names (the top row) 
+		exactly as shown to the left.<ul>
+			<li>The NAME field will be used to label the push pin (or use the <a href="db_icons.htm">ICON field</a> entry for a 
+			more attractive option).</li>
+			<li>
+			The 
+			ICON will be placed on the screen.&nbsp; It must either be in the directory with the other files, or 
+			in c:\mapdata\icons. </li>
+			<li>The TEXT field should have the name of the HTML file, which must be 
+		in the same directory as your database.&nbsp; The images must be 
+			correctly located (they are probably in a subdirectory from the 
+			location of the HTML file, but you should let this happen 
+			automatically by not changing anything). Insure that the correct 
+			extension (.HTM or .HTML) matches the file.</li>
+			<li>The database can contain multiple records, and each will appear 
+			at a different location on the map.</li>
+		</ul>
+		<p>Create the file in Excel, save as a CSV file (File, Save As, and 
+		pick the file type), 
+		and import into MICRODEM.<ul>
+			<li><a href="tbme9dpq.htm"><img src="../images/database.gif"
+        width="23" height="23"> </a><a href="data_base.htm">Database</a> open 
+			option on <a href="maintool.htm"><font size="3">Main
+                Program Toolbar</a> </font></li>
+			<li><img border="0" src="../images/db_map.png" width="24" height="24"> <a href="data_base.htm">Database</a> 
+			option on <a href="maptool.htm"><font size="3">Map Window
+                Toolbar</font></a> </font>which 
+			will plot the location on the map.</li>
+			</ul>
+			<p><a href="kml_export.htm">Export the database to KML</a>, from 
+		the <a href="db_report.htm">Report button's popup menu</a>, and  
+		Google Earth (or a comparable program you have selected to open KML 
+		files) will automatically open it.&nbsp; The quick option will work.&nbsp; 
+			If the export hangs up, it is likely that your
+			<a href="create_html.htm">Word document is not very KISSABLE.</a>&nbsp; 
+			Three finger salute, and then fix the Word document (start with the 
+			figures).<p>
+		<a href="clean_kml.htm">Clean up KML exports</a></td>
+	</tr>
+</table>
+<table border="1" id="table2">
+	<tr>
+		<td>
+		<img border="0" src="../images/kml_html2.png" width="297" height="154"></td>
+		<td>The icon or a push pin will appear at the specified location.&nbsp; 
+		A red X for broken link means the icon file was not in the correct 
+		location.<p>In 
+		this case &quot;F.A.T.A&quot; is the label from the database (in the 
+		NAME field), and &quot;Landi Kotal&quot; is 
+		Google's text from the &quot;Borders and Labels&quot; layer, which 
+		happens to display at the chosen location,&nbsp; which you 
+		can turn off if desired in the GE table of contents.</td>
+	</tr>
+</table>
+<table border="1" id="table3">
+	<tr>
+		<td>
+		<img border="0" src="../images/kml_html3.png" width="463" height="388"></td>
+		<td>Clicking on the icon or push pin brings up the HTML page, with graphics and 
+		links. 
+		<p>You can also bring up the page by clicking on the link for the record 
+		in the Google Earth table of&nbsp; contents in the &quot;Places&quot; panel.</p>
+		<p>
+		<img border="0" src="../images/kml_html4.gif" width="217" height="77">&nbsp; 
+		<p>
+		Save the resulting KML/KMZ files by right clicking on the entry in the 
+		Google Earth list of layers, and picking &quot;Save Place As&quot;.&nbsp; Select KMZ, as it will give you a single zipped file with all the 
+		graphics included.&nbsp; You may want to rename it first, and adjust the 
+		folder layout used (<a href="clean_kml.htm">Clean up KML exports</a>).&nbsp; 
+		This file is buried in a directory, but since the directory only has one 
+		entry, access to your file will be easier if you highlight and save the 
+		lower entry as highlighted above.<p>
+		&nbsp;</td>
+	</tr>
+</table>
+
+<h2>Troubleshoot problems:</h2>
+<ul>
+	<li>Open the HTML file with your favorite browser.&nbsp; If the images do 
+	not display, reopen the word document, and resave as HTML (and do not move 
+	the file or image, or try to rename them).</li>
+	<li>Insure you have the desktop version of
+	<a href="https://www.google.com/earth/versions/#earth-pro">Google Earth Pro</a> Installed.<ul>
+		<li>If you do not, another program (IE, Adobe Reader, Notepad) might 
+		attempt to hijack the KMZ file.</li>
+	</ul>
+	</li>
+	<li>If the file does not open automatically, use the ^ option on the file on 
+	the bottom of the browser window, and check the open this type of file 
+	automatically.</li>
+	<li>Insure that Google Earth is set as the default viewer for KMZ; some 
+	other software likes to hijack the file extension.&nbsp; If 
+	not, use the Open with, and pick Google Earth.</li>
+	<li>Insure all the required files (the images and icon) are in the same directory.</li>
+	<li>Insure the names for the icon and HTML file match those in the CSV/DBF 
+	file.</li>
+	<li>The KMZ files will be in <a href="file:///c:/mapdata/kml">c:\mapdata\kml</a>.&nbsp; 
+	They will be in numbered subfolders, in sequential order, if you want to 
+	find them later.<br></li>
+</ul>
+<hr>
+
+<p align="right"><em>Last revision&nbsp;12/6/2021</em></p>
+
+</body>
+
+</html>

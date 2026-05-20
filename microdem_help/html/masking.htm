@@ -1,0 +1,50 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Masking</title>
+</head>
+
+<body>
+
+<h1>Masking or Clipping</h1>
+<p>In GIS, masking or clipping is selecting areas to be used for analysis.&nbsp; It can 
+apply to both raster and vector data, and removes from consideration all data 
+that does not meet geographic criteria.&nbsp;&nbsp; You will typically use 
+another data set for the masking, and either remove or retain only the data that 
+matches geographic criteria.</p>
+<p>It is probably easiest to start with a vector shapefile, select a specific 
+record, and then remove everything in the other data set not within the record.</p>
+<p>Masking differs from filtering the database, which uses fields/attributes in 
+the database to select or hide individual records.</p>
+<table border="1" id="table1">
+  <tr>
+    <td>
+	<img border="0" src="../images/AA_COUNTY_MASKED.PNG" width="396" height="475"></td>
+    <td>Map of Anne Arundel County, Maryland:<ul>
+		<li>NED DEM oritiginally filling a rectangular box, masked with 
+		the county outline.</li>
+		<li>Schools from the USGS Gazetteer for the state of Maryland, filtered to show just the schools, 
+		and masked to restrict them to the county.</li>
+	</ul>
+	</td>
+  </tr>
+  </table>
+
+<p><br>
+MICRODEM options</p>
+<ul>
+				<li><a href="../html/state_or_county_dems.htm">Mask/clip to show just your 
+				country/state/county</a> 
+	for the DEM</li>
+</ul>
+
+<hr>
+<p style="font-style: italic; text-align: right"><br>
+last revision 2/17/2014</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

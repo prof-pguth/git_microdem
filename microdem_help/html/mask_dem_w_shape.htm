@@ -1,0 +1,45 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Mask DEM with shape file</title>
+</head>
+
+<body>
+
+<p><b><font size="5">Mask DEM with Shapefile</font></b></p>
+<p>From the <a href="db_edit.htm">Edit button</a> on the <a href="database_table_display.htm">Table display
+        window</a> of the database or 
+<a href="../html/shapefile.htm">shapefile</a>.&nbsp; Select the <a href="mask_opts.htm">masking
+options</a> (buffer size and whether to mask out or in).</p>
+<table border="1">
+  <tr>
+    <td width="50%">
+	<p align="center"><img border="0" src="../images/MASK_IN.PNG"></td>
+    <td width="50%">
+	<p align="center"><img border="0" src="../images/MASK_OUT.PNG"></td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2">The DEM has been masked with a USGS <a href="gazetteer.htm">gazetteer
+      database</a>, <a href="db_filters.htm">filtered</a> to show just the
+      schools.
+      <p>On the left, points outside a 500 m radius have been eliminated, while
+      on the right those within a 500 m radius have been eliminated.</p>
+      <p>This could model the effects of a school drug free zone, for example..</td>
+  </tr>
+</table>
+<p>This creates a bitmap with the database plotted, and compares the color with 
+the desired masking inside or outside the areas).&nbsp; For best results, in 
+terms of both speed and accuracy, use a <a href="1to1maps.htm"><font size="3">1:1
+        map view</font></a>.&nbsp;&nbsp;</p>
+<p>Because this shape file is a gazetteer, you could also <a href="mask_dem_w_gaz.htm">Mask
+DEM with gazetteer</a> which allows for some easier filtering.</p>
+<hr>
+<p align="right"><em>Last revision 7/24/2008</em></p>
+
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Merge Point Databases</title>
+</head>
+
+<body>
+
+<h2>Merge Point Databases</h2>
+<p>Enable edits, and pick on <a href="db_edit.htm"><b>Edit</b></a> button.&nbsp; 
+Options:</p>
+<ul>
+					<li>Pick files</li>
+	</ul>
+<p>If you are going to have strings in the databases, you want to make 
+		sure that the first database will accommodate the longest string in each 
+		field in the other databases.&nbsp; One way to do this it to create the database in Excel, and 
+		have a &quot;dummy record&quot; with the longest string you could imagine.&nbsp; 
+		Save the file as a CSV, import into MICRODEM, and then delete the dummy 
+		record.</p>
+<p>If there are images in the database, they must be copied to the 
+		same directory as the databases.</p>
+<p align="left">For each field in the starting DB, the program will attempt to 
+insert a record for each record in the merging databases.&nbsp; It will increase 
+the length of the field if required.&nbsp;&nbsp; It will use the 
+field type&nbsp; in the starting database, and will do nothing if there are 
+fields in the merging databases that are not in the original database.&nbsp; If 
+data in the merging database is the wrong type, you will get 
+problems.</p>
+<p align="left">
+<b>&nbsp;</b>For line and 
+	area shapefiles, use the <a href="merge_shapefile.htm">merge shapefile</a> option on Merge menu of 
+	<a href="tbme83sn.htm">Data Manipulation Form</a>.</p>
+<hr>
+<p align="right"><i>Last revision 10/11/2023</i></p>
+
+</body>
+
+</html>

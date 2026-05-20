@@ -1,0 +1,116 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>MCC-LIDAR</title>
+</style>
+</head>
+
+<body>
+
+<h1 >MCC-LIDAR--last update in 2013</h1>
+<p >Multiscale Curvature Classification of ground returns in 3-D lidar point 
+clouds (las files), designed for forested environments&nbsp; </p>
+<ul>
+	<li><a href="https://sourceforge.net/projects/mcclidar/">	https://sourceforge.net/projects/mcclidar/</a> 
+	</li>
+	<li><a href="https://sourceforge.net/p/mcclidar/wiki/Home/">https://sourceforge.net/p/mcclidar/wiki/Home/</a>
+	</li>
+</ul>
+<ul>
+	<li>Classifies as 
+ground/non-ground.&nbsp; May in the future classify into low, medium, and high 
+vegetation.</li>
+	<li>Based on
+	<a class="ext-link" href="http://www.treesearch.fs.fed.us/pubs/29032">
+	<span class="icon">Evans, Jeffrey S.; Hudak, Andrew T. 2007</span></a>. A 
+multiscale curvature algorithm for classifying discrete return LiDAR in forested 
+environments. Geoscience and Remote Sensing. 45(4): 1029-1038. which classifies 
+vegetation in a LAS file.&nbsp;</li>
+	<li>Directions: <a href="https://sourceforge.net/p/mcclidar/wiki/HowToRun/">
+	https://sourceforge.net/p/mcclidar/wiki/HowToRun/</a>
+	</li>
+</ul>
+<p>Driections to install</p>
+<ul>
+	<li>Install into c:\microdem\mcc_lidar</li>
+	<li>Get the file msvcr71.dll from the web, and place it in 
+	c:\microdem\mcc_lidar\bin</li>
+	<li>Insure there are no spaces in the path to the bin directory</li>
+	<li>If there are problems when you try to run, get the command from the 
+	debug file, run it in a DOS command window, and note the error messages.</li>
+</ul>
+<p>Actions to run:</p>
+<ul>
+	<li>The first time you run the program, you must identify the EXE file.</li>
+	<li>Then&nbsp; pick a directory for the classified files.</li>
+	<li>Two parameters must be defined in the command line syntax 
+to run MCC, the scale ('s') parameter and the curvature threshold ('t'). The 
+optimal scale parameter is a function of 
+	<ol>
+		<li>scale of the objects (e.g., 
+trees) on the ground, and </li>
+		<li>sampling interval (post spacing) of the lidar 
+data. </li>
+	</ol>
+	</li>
+	<li>This will be threaded, using the number of cores on the Hardware tab of 
+	the options form, if there are a number of files to process.</li>
+</ul>
+<hr>
+<p >Extract from mcc-lidar help file on setting the paramters:</p>
+<ul>
+	<li>Current lidar sensors are capable of collecting high density data (e.g., 8 
+pulses/m<sup>2</sup>) that translate to a spatial sampling frequency (post 
+spacing) of 0.35 m/pulse (1/sqrt(8 pulses/m<sup>2</sup>) = 0.35 m/pulse), which 
+is small relative to the size of mature trees and will oversample larger trees 
+(i.e., nominally multiple returns/tree). Sparser lidar data (e.g., 0.25 pulses/m<sup>2</sup>) 
+translate to a post spacing of 2.0 m/pulse (1/sqrt(0.25 pulses/m<sup>2</sup>) = 
+2.0 m/pulse), which would undersample trees and fail to sample some smaller 
+trees (i.e., nominally &lt;1 return/tree). </li>
+	<li>Therefore, a bit of trial and error is warranted to determine the best scale 
+and curvature parameters to use. Select a las tile containing a good variety of 
+canopy and terrain conditions, as it's likely the parameters that work best 
+there will be applicable to the rest of your project area tiles. As a starting 
+point: if the scale (post spacing) of the lidar survey is 1.5 m, then try 1.5. 
+Try varying it up or down by 0.5 m increments to see if it produces a more 
+desirable digital terrain model (DTM) interpolated from the classified ground 
+returns in the output file. Use units that match the units of the lidar data. 
+For example, if your lidar data were delivered in units of feet with a post 
+spacing of 3 ft, set the scale parameter to 3, then try varying it up or down by 
+1 ft increments and compare the resulting interpolated DTMs. If the trees are 
+large, then it's likely that a scale parameter of 1 m (3 ft) will produce a 
+cleaner DTM than a scale parameter of 0.3 m (1 ft), even if the pulse density is 
+0.3 m (1 ft). As for the curvature threshold, a good starting value to try might 
+be 0.3 (if data are in meters; 1 if data are in feet), and then try varying this 
+up or down by 0.1 m increments (if data are in meters; 0.3 if data are in feet).
+	</li>
+</ul>
+<hr >
+<p >Very slow classification.</p><hr >
+<p >Option on <strong>Stats tab</strong> of the <a href="pt_cld_opts.htm">LIDAR point cloud analysis</a> 
+form.</p>
+<p >You are responsible for:</p>
+<ul>
+	<li>Picking the two parameters above.&nbsp; These will be saved as MICRODEM 
+	defaults.</li>
+	<li>Pick the number of threads you want to use, and that number of batch files 
+	can be created.&nbsp; You can close 
+	MICRODEM, or do other things while the classification runs.</li>
+	<li>Insure the mcc-lidar files are on your hard disk.</li>
+	<li>If&nbsp; you need to debug, use the batch file option, and run the batch 
+	file from the DOS prompt to see error messages.&nbsp; </li>
+	<li>You might have to subset the&nbsp; LAS files to get this to run.</li>
+	<li>This will treat roofs as ground.</li>
+</ul>
+<hr >
+<p align="right" ><i>last revision 6/7/2017</i></p>
+
+<p >&nbsp;</p>
+<p >&nbsp;</p>
+<p >&nbsp;</p>
+
+</body>
+
+</html>

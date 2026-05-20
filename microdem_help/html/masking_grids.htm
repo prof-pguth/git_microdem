@@ -1,0 +1,72 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Masking Grids</title>
+</head>
+
+<body>
+
+<p><b><font size="4">Masking Grids</font></b></p>
+<p>Option on <a href="raster_gis.htm">Raster GIS menu</a>.&nbsp; It is an 
+application of <a href="buffering.htm">buffering,</a> where you can put a little 
+extra around the geometric shapes you select.</p>
+<table border="1">
+  <tr>
+    <td>
+<ul>
+  <li><b>Set mask grid</b>--pick a grid to use as the mask.&nbsp; It must have
+    the same dimensions as the grid to used. You will set the minimum and
+    maximum for the range of values to mask. By default the entire grid will be
+    chosen, but you can use this if parts of the grid have been marked missing
+    with <a href="edit_menu.htm">Edit menu</a>.</li>
+  <li>Retain points not meeting criteria: if the points are not in the range you
+    selected, they will be marked missing.</li>
+  <li>Retain points meeting criteria: if the points are in the range you
+    selected, they will be marked missing.</li>
+</ul><hr>
+<ul>
+  <li>Remove missing points in mask: select an open grid, and all missing points 
+	in it will be removed from the current grid.</li>
+</ul></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/mask_grid.gif" width="223" height="200"></td>
+    <td>
+      <p><a href="mask_opts.htm">Set masking options</a>.</td>
+  </tr>
+</table>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/NEAR_ROADS_MASK.PNG" width="206" height="257"></td>
+    <td><b>Only points near roads</b>, with buffer of 250 m on each side of the
+      road.&nbsp; Roads come from the <a href="tiger_data_base.htm">TIGER file, which
+      must have correctly located and indexed</a>.</td>
+  </tr>
+  <tr>
+    <td><img border="0" src="../images/AWAY_ROADS_MASK.PNG" width="206" height="257"></td>
+    <td><b>Only points off roads</b>, with buffer of 250 m on each side of the
+      road.</td>
+  </tr>
+</table>
+<p>Additional ways to mask grids:</p>
+
+<ul>
+  <li><a href="mask_dem_w_shape.htm">Using database shapefile</a>.</li>
+  <li><a href="edit_menu.htm">Using EDIT menu functions.</a></li>
+</ul>
+<p><a href="grid_mask/mask_gis.htm">Mask grid example</a></p>
+
+<hr>
+
+<p align="right"><font size="2"><em>Last revision 11/19/2011</em></font></p>
+
+</body>
+
+</html>

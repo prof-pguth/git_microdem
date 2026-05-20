@@ -1,0 +1,93 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<title>DEM creation files</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h2 align="center"><font size="6">DEM Creation Files</font></h2>
+
+<p>Files used for creation and editing of a DEM, with each having
+the name of the quadrangle:</p>
+
+<ul>
+    <li>*<a href="demb5bqr.htm"><b>.XYZ, an ASCII text file</b></a>
+        with one point per line, and values separated with blank
+        spaces and not tabs. </li>
+    <li>*.XYB, a binary file containing the xyz triples. The X
+        and Y coordinates are of type single (4 bytes each,
+        accurate to 7-8 significant digits), and the Z elevation
+        is an integer (2 bytes). Thus each data point requires 10
+        bytes. The *.XYI and *.XYM files can be created from this
+        file. The indexing scheme limits the size of this file to
+        64000 points.</li>
+    <li>*.XYI, an index file to the locations of digitized data
+        points. This file has the same size as the grid that will
+        be created for the DEM, and contains one integer per grid
+        node. A zero value indicates no data points surrounding
+        the grid node, while a positive value points to the
+        record in the *.XYB file containing the digitized xyz
+        triple (since the file actually starts with record 0, the
+        program code must adjust when it seeks a particular
+        record). A negative entry indicates multiple digitized
+        points corresponding to a single grid note, and it points
+        to the *.XYM file that in turn points to the digitized
+        points. This file requires two bytes per grid node; it is
+        the same size at the eventual DEM.</li>
+    <li>*.XYM, a file pointing to the digitized points where
+        multiple points are found in the bin surrounding a single
+        grid node. The maximum number of such points is currently
+        limited to 10; if even this number of points are
+        digitized for each grid value desired, the scale of the
+        DEM should be increased because the multiple points are
+        not adding any information. This file contains records
+        consisting of an integer with the number of points, and
+        an integer containing the record number in the *.XYB file
+        of each point in the bin. This file requires 22 bytes per
+        bin with multiple data points; the number of multiple
+        data point bins depends on the digitization but will be
+        less that half the number of digitized points. Efficient
+        digitization would minimize the size of this file.</li>
+    <li>*.TIE, a binary file containing the coordinate
+        transformation matrix between a scanned map image and UTM
+        coordinates.</li>
+    <li>*.XY, an ASCII file with the coordinates of the three
+        control points on the TIFF file, with the coordinates in
+        the TIFF image first and then the UTM coordinates.</li>
+    <li>*.HDR, the standard MICRODEM header, created at the start
+        of the digitization process. This is required for datum
+        initialization and UTM coordinate conversions.</li>
+    <li>*.DEM, the standard data file, created when the grid
+        interpolation is performed and modified during the edit
+        process.</li>
+    <li>Indexing of the data set from an original ASCII file
+        requires a great deal of CPU time and disk access because
+        of the number of random file accesses. This operation can
+        be greatly speeded up by using a large RAM disk provided
+        that you verify beforehand that sufficient disk space is
+        available, and then save the resulting file to a
+        permanent medium after you exit MICRODEM. On the other
+        hand, throwing lots of firepower (like a 486 or a
+        Pentium) may also provide acceptable results.</li>
+</ul>
+
+<p>Editing of the digitized data set corrects all the associated
+files. Heavy editing can increase the size of the *.XYB file,
+because deleted entries are zeroed out but still take up an
+entry. They can be recognized by all zero values, the index files
+no longer point to them, and they will not affect the use of the
+data files. The file can be corrected by converting it to an
+ASCII file and then reindexing if desired.</p>
+<p><i>DEM creation must be done in an old DOS version of the program, which you
+might be able to find on the internet.&nbsp; It is not recommended, and is not
+likely to be fixed any time soon.&nbsp;&nbsp; There is no support for this
+procedure.</i></p>
+<p><i>You can <a href="digitize_scan_contours.htm">digitize
+from a scanned map</a> in the Windows version of the program.</i></p>
+<p>&nbsp;</p>
+</body>
+</html>

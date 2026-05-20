@@ -1,0 +1,112 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>SSO diagram</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1 align="center">SSO Diagram Algorithm</h1>
+
+<p>The statistical slope orientation diagram of <a href="terrain_org_refs.htm"> Chapman (1952)</a>
+provides a tool for this analysis; the calculation and display of
+the orientation for an entire DEM takes only a few seconds. The
+diagram contours the normals to the earth's surface. The data are
+portrayed on an equal area net, averaged to show the
+concentration per 1% area on the map. This removes artifacts from
+the digitizing process (steps in the slope values calculated) and
+in plotting to the net.</p>
+
+<p>In addition to the SSO diagram, the program will compute
+statistics about the distribution.&nbsp; The organization parameter (vector 
+length) and
+eigenvector S<sub>3 </sub>direction (vector direction) can be plotted on a map to graphically show
+the strength and orientation of the terrain fabric.</p>
+
+<h3>Algorithm:</h3>
+
+<ul>
+    <li>At each interior point in the DEM, calculate the slope
+        and aspect which define a vector normal to the
+        earth&#146;s surface. This will use the <a href="demb9nxp.htm">Preferred slope algorithm</a></li>
+    <li>Compute direction cosines of the normal vector.</li>
+    <li>Create a 3x3 matrix of the sums of the cross products of
+        the direction cosines.</li>
+    <li>Extract eigenvalues and eigenvectors from the 3x3 matrix</li>
+    <li>Normalize three eigenvalues, and for terrain S<sub>1</sub>
+        &gt;&gt; S<sub>2</sub> &gt;S<sub>3</sub>.&nbsp; S<sub>1 </sub>will be 
+	close to vertical</li>
+	<li><a href="sso_code.htm">Pseudocode for the preceding steps</a></li>
+    <li>Eigenvector S<sub>3 </sub>points in direction of dominant
+        topographic fabric.</li>
+    <li>Compute and graph the ratios ln(S<sub>1</sub>/S<sub>2 </sub>)
+        (flatness) and ln(S<sub>2</sub>/S<sub>3</sub>) (organization) (follows <a href="terrain_org_refs.htm">Woodcock,
+      1977</a>).<ul>
+		<li>s1s2 := ln(v[1]/v[2]);</li>
+		<li>s2s3 := ln(v[2]/v[3]);</li>
+	</ul></li>
+    <li>Can also calculate the shape and strength parameters from <a href="demb2trn.htm">Fisher
+      and others, 1987</a><ul>
+		<li>Shape := ln(v[1]/v[2])/ln(v[2]/v[3]);</li>
+		<li>Strength := ln(v[1]/v[3]);</li>
+	</ul></li>
+    <li>Plot and contour the normal vectors on an equal area, lower hemisphere projection.</li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p align="center"><img src="../images/net.gif" width="459"
+height="456"></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The diagram above shows the lower hemisphere, equal area
+projection. Slopes in both percent and slope angle are indicated
+inside the diagram, and the uphill direction around the margin. A
+1% circle (used for the contouring) is also shown.&nbsp;
+<a href="stereo_contour.htm">Contouring.</a></p><hr>
+
+<p>Select in MICRODEM </p>
+<ul>
+	<li><a href="topo_grain_calc.htm">Topographic
+grain</a> submenu of <a href="tbme9lrp.htm">Calculate</a>
+menu.&nbsp; <strong style="font-weight: 400"><a href="micr96nn.htm">Topographic fabric vector
+        overlay</a>.&nbsp; This will plot vectors on the map, and is probably 
+	the most useful product.&nbsp; It combines both the orientation and 
+	strength, and lets you rapidly assess if the algorithm is working.&nbsp; If 
+	not, you should experiment with the spacing parameters.&nbsp; This should be 
+	relatively fast.</strong></li>
+	<li><a href="micr0alv.htm">Calculate Menu</a>,&nbsp; or<a href="raster_gis.htm"> 
+	Raster GIS menu</a>, <a href="derivative_grids.htm">Create derivative grid</a>.&nbsp; 
+	This will create grids of the different parameters, and will be very slow.</li>
+</ul>
+
+<p>The box size to pick depends on the resolution of the DEM (how much detail it 
+captures), and the characteristics of the terrain.&nbsp; 1000 m is probably 
+reasonable for 10-30-90 m DEMs.<br>
+<br>
+Because this will change only slowly, you don't need to compute it at every 
+point.&nbsp; Thus you can subsample.&nbsp; If you don't care about time, or have a small 
+DEM, 1 is OK.<br>
+<br>
+If you do the fabric overlay (which provides a visual clue about the 
+effectiveness of your parameters), you can plot the database it creates and have 
+the same effect as the grid creation.</p>
+
+<p><a href="sso_analysis.htm">Example SSO analysis.</a></p>
+<p><a href="terrain_org_refs.htm">Terrain organization 
+references</a>.</p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 2/5/2017</em></p>
+</body>
+</html>

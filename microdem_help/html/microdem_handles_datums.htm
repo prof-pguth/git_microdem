@@ -1,0 +1,47 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>How MICRODEM Handles Datums</title>
+</head>
+
+<body>
+
+<p align="center"><font size="4"><b>How MICRODEM Handles Datums</b></font></p>
+<p>A DEM's header record indicates the datum upon which it was digitized. These
+choices are geared toward US data, using either NAD or WGS, and will provide the
+greatest flexibility for datum shifts and display of dual datums.&nbsp;&nbsp;
+The options for digitizing datum:</p>
+<ul>
+  <li>WGS72</li>
+  <li>WGS84</li>
+  <li>NAD27</li>
+  <li>NAD83</li>
+  <li>Spherical</li>
+  <li>Local--in this case you must be sure to select the correct datum for the
+    map display, as the program will not perform a datum transformation, but
+    will corrrectly translate between UTM coordinates and lat/long.</li>
+  <li>Rectangular--no chance to convert the coordinates to lat/long</li>
+</ul>
+<p>When the program displays coordinates, it will display using the primary (and
+optionally the secondary) datum you have selected, which do not have to be the
+digitizing datum.&nbsp; Thus the datum on which the DEM was created can be
+completely hidden to users.</p>
+<p>If you export as</p>
+<ul>
+  <li>ASCII DEM, it will use your primary display datum--this means you might be
+    getting a datum transformation and not the original grid locations. The
+    ASCII file does not indicate its datum.</li>
+  <li>DTED, the datum will be transformed to WGS84.&nbsp; This is both
+    explicitly listed in the file and implicit in the DTED specs.</li>
+</ul>
+<hr>
+<p align="right"><i><font size="3">Last revision 6/13/2000</font></i></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>
