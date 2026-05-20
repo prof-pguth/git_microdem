@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>LasTools Classify</title>
+<style type="text/css">
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>LAStools Classify</h2>
+<p>
+			<a href="lidar_ground_classification.html">Class</a> tab of the <a href="pt_cld_opts.htm">control window for 
+the point cloud</a>. </p>
+<p>This strings together three <a href="lastools.htm">LAStools </a>programs.&nbsp; 
+All have a restrictive license, and you should carefully evaluate if you are 
+allowed to use the free version.&nbsp; This is included in MICRODEM solely for 
+educational purposes, and to expose people to <a href="lastools.htm">LAStools.</a></p>
+<p>Without licensing, large data sets will have anomalies introduced into the 
+data, and you will be warned.&nbsp; You should read the documentation of each of 
+these modules, to understand the parameters, but a quick run through with the 
+defaults will show how this processing runs.</p>
+<ul>
+	<li>l<strong>asground</strong>: finds the ground returns, which define a 
+	continuous surface at the bottom of the point cloud, excluding low noise.&nbsp; 
+	This has several parameters, most importantly a step size which affects how 
+	buildings will be excluded, and a bulge parameter which affects how much 
+	local variation is allowed in the surface created by a TIN of the ground 
+	points.&nbsp; These two parameters are similar to those used in
+	<a href="mcc-lidar.htm">mcc-lidar</a> (which is completely free, but slow). 
+	Intermdiate files are written to MICRODEM's temporary folder.</li>
+	<li><strong>lasheight:</strong> computes the height of each point above the 
+	terrain surface.&nbsp; Intermdiate files written to MICRODEM's temporary 
+	folder.&nbsp; Should not require any parameters.</li>
+	<li><strong>lasclassify:</strong> looks for regions above the ground with 
+	planar orientation (roofs) or rough surface (vegetation).&nbsp;&nbsp; It has 
+	parameters defining planar and rough; if you want to change the defaults, 
+	you will have to experiment, and read the documentation.&nbsp; The best 
+	values depend on the density of the point cloud, and the characteristics of 
+	the terrain.</li>
+</ul>
+
+<hr />
+
+<p align="right" class="style1"><em>Last revised&nbsp;10/31/2019</em></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

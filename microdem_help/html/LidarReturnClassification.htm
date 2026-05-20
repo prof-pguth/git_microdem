@@ -1,0 +1,99 @@
+<html xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>lidar return number and classification</title>
+<style type="text/css">
+.style3 {
+				border-style: solid;
+				border-width: 2px;
+}
+.style4 {
+				color: #008000;
+				font-size: medium;
+}
+.style5 {
+				color: #00FF00;
+				font-size: medium;
+}
+.style6 {
+				color: #996633;
+				font-size: medium;
+}
+.style7 {
+				font-size: medium;
+}
+.style8 {
+				color: #800080;
+				font-weight: bold;
+}
+.style9 {
+				color: #FF0000;
+				font-weight: bold;
+}
+.style10 {
+				color: #00FF00;
+}
+.style11 {
+				text-align: center;
+}
+.auto-style1 {
+	border-width: 1px;
+	background-color: #C0C0C0;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Lidar Return Number and Classification</h1>
+<p><a href="pt_clouds.htm">Point clouds</a> are collections of 3D points located randomly in space.</p>
+<table border="2">
+				<tr>
+								<td>
+								<img alt="" src="../microdemtutorials/LAS_Files/class_maps.png" width="848" height="695"></td>
+								<td>Map showing the spatial pattern of 
+								classifications.&nbsp; In the upper left is a 
+								DSM constructed from the LIDAR shows data gaps 
+								primarily along the stream.&nbsp; Water often 
+								has no returns unless it is directly under the 
+								sensor.<br><br>Water returns 
+								appear 
+								in the upper right.&nbsp; If the water surface 
+								is flat, there will be few returns except 
+								directly under the aircraft.<br><br>Ground returns appear 
+								in the lower left.&nbsp; This level of 
+								classification is almost always included in a
+								<a href="las_format.htm">LAS file</a>, as it is 
+								needed to create a <a href="dtm_dsm.htm">DTM</a>.<br>
+								<br>Unclassified returns 
+								are in the lower right--they are mostly 
+								vegetation, but the data set was not classified, 
+								and there are also some buildings.</td>
+				</tr>
+				<tr>
+								<td class="auto-style1">
+								&nbsp;</td>
+								<td class="auto-style1">&nbsp;</td>
+				</tr>
+				<tr>
+								<td>
+								<img alt="" src="../microdemtutorials/LAS_Files/return_map.png" width="846" height="694"></td>
+								<td>The same area shown above, with the return 
+								numbers shown.&nbsp; There are first returns 
+								everywhere, and they can be any category, except where no energy returned due 
+								to specular reflections from the water surface. 
+								Second and third returns only occur in areas with 
+								vegetation, or more rarely power lines.&nbsp; As 
+								point densities increase, so does the dectection 
+								of power lines.</td>
+				</tr>
+</table>
+<p><a href="pt_cld_opts.htm">Point cloud display controls</a></p>
+<hr>
+<p align="right"><i>last revision 6/15/2020</i></p>
+
+</body>
+
+</html>

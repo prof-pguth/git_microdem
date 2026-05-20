@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>libLAS</title>
+<style type="text/css">
+.auto-style1 {
+	font-family: "Times New Roman";
+}
+.auto-style2 {
+	font-family: "Times New Roman";
+	font-size: medium;
+}
+.auto-style3 {
+	font-size: medium;
+}
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>libLAS</h1>
+<a href="https://www.liblas.org/">libLAS</a> is a library for lidar. It comes 
+installed with&nbsp; <a href="https://trac.osgeo.org/osgeo4w/">OSGeo4W</a>
+		<a href="adf_grids.htm">and GDAL</a>.&nbsp;
+<span class="auto-style2" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+As of 2014, libLAS has been almost entirely superseded by<span class="Apple-converted-space">&nbsp;</span></span><a class="auto-style2" href="http://www.cs.unc.edu/~isenburg/" style="color: rgb(26, 26, 86); text-decoration: underline; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255);">Martin 
+Isenburg</a><span class="auto-style2" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">‘s</span><span class="auto-style3" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><span class="auto-style1">&nbsp;</span></span><a class="auto-style2" href="http://www.cs.unc.edu/~isenburg/lastools/download/laslib.zip" style="color: rgb(26, 26, 86); text-decoration: underline; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255);">LASlib</a><span class="auto-style3" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><span class="auto-style1">&nbsp;</span></span><span class="auto-style2" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">library. 
+The only functionality that libLAS provides over LASlib is the ability to work 
+with<span class="Apple-converted-space">&nbsp;</span></span><a class="auto-style2" href="http://www.gdal.org/" style="color: rgb(26, 26, 86); text-decoration: underline; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255);">GDAL</a><span class="auto-style2" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">-derived 
+coordinate system information and reproject into infrequently-used coordinate 
+systems.&nbsp; <br />
+MICRODEM can use libLAS to convert UK-OS LAS files to UTM, because
+<a href="lastools.htm">LAStools</a> will not currently do this very easily (they 
+use different datums).&nbsp; This option is on the
+<img src="../images/inout.jpg" border="1" width="32"
+        height="32"> <a href="tbme83sn.htm">Data
+        Manipulation</a>,</span><span class="auto-style2" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+</span>
+<span class="auto-style2" style="color: rgb(62, 67, 73); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><a href="resample_data.htm">Resample</a>, 
+LAS lidar.&nbsp; You can select either a LAS or an LAZ file.&nbsp; This combines 
+both assigned the correct projection, and reprojecting.<br />
+<ul>
+							<li><a href="liblas.htm">libLAS</a> UK-OS to UTM.&nbsp; 
+							You can select either LAS or LAZ files, which must 
+							be in the OK-OS projection (<a href="epsg.htm">EPSG</a>:27700) 
+							and the output will be in UTM zone 30
+							<a href="epsg.htm">(EPSG:</a>32630).</li>
+							<li>libLAS specified EPSG to UTM: you must enter the 
+							correct EPSG codes</li>
+			</ul>
+MICRODEM can also do this conversion natively, and you should verify which 
+alternative works best.<hr>
+
+<p align="right" class="style1"><em>Last revised&nbsp; 2/11/2018</em></p>
+<p>&nbsp;</p>
+
+</span>
+</body>
+
+</html>

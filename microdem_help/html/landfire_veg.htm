@@ -1,0 +1,167 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>LANDFIRE Vegetation </title>
+<link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="4">LANDFIRE Vegetation </font></b></p>
+<p><b>Open these as a DEM, </b>categories 
+		displayed Use the<a href="vat_grid_disp.htm"> VAT Grid display</a>.&nbsp;&nbsp;</p>
+<p><a href="map_right_click.htm">Right click on map,</a> Popup legends, Grid VAT 
+legend, and put the percentage of area required to appear on the legend</p>
+<table border="1" width="100%" id="table1">
+	<tr>
+		<td>
+		<p align="center">
+		<img border="0" src="../images/LF_VEG_TYPES.PNG" width="528" height="199"></td>
+		<td><b>EVT: Landfire Existing vegetation Type--</b>The existing vegetation type 
+		(EVT) 
+		data layer represents the current distribution of the terrestrial 
+		ecological systems classification developed by NatureServe for the 
+		western Hemisphere.&nbsp; Categories defined in the metadata.<ul>
+			<li>2004, North American Warm Desert Sparsely Vegetated Systems</li>
+			<li>2019, Great Basin Pinyon-Juniper Woodland</li>
+			<li>2079, Great Basin Xeric Mixed Sagebrush Shrubland</li>
+			<li>2082, Mojave Mid-Elevation Mixed Desert Scrub</li>
+			<li>2087, Sonora-Mojave Creosotebush-White Bursage Desert Scrub</li>
+			<li>2155, North American Warm Desert Riparian Systems</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/landfire_veg_ht.PNG" width="528" height="237"></td>
+		<td><b>EVH: Landfire Existing Vegetation Height</b><p>Uses NLCD classes, and vegetation categories 
+		for grass, shrubs, and trees subdivided into several height categories.<ul>
+          <li>Tree classes; 0-5 m, 5-10 m, 10-25 m, 25-50 m, and greater than 50
+            m,&nbsp;</li>
+          <li>Shrub classes; 0-0.5 m, 0.5-1.0 m, 1.0-3.0 m, greater than 3.0 m,</li>
+          <li>Herbaceous vegetation classes; 0-0.5 m; 0.5-1.0 m, greater than 1
+            m.</li>
+        </ul>
+      	<p>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/lf_can_ht.PNG" width="478" height="149"></td>
+		<td><b>Landfire forest canopy height--</b>categories displayed using 
+		Modify, Colors from Grid categories.
+		<p>Only computed for forest, and does not include shrubs.&nbsp; If you 
+		want to use this, you might want to remove the missing data (category 
+		0).&nbsp; The values are height in decimeters; half dozen categories 
+		(midpoints of class canopy heights in dm).</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/lf_can_cov.PNG" width="450" height="162"></td>
+		<td><b>Forest Canopy cover-</b>-percentage of the pixel covered by forest 
+		cover, in 10 categories (0, 15, 25, 35, 45, 55, 65,75,85).&nbsp; Also has non-forest data 
+		(0), and missing 
+		data</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td><b>Existing vegetation Cover</b><p><b>NLCD categories plus: </b>100 
+		sparse vegetation, </p>
+		<table border="1" id="table2">
+			<tr>
+				<td>Percent Canopy</td>
+				<td>Trees</td>
+				<td>Shrub</td>
+				<td>Herb</td>
+			</tr>
+			<tr>
+				<td>10-20%</td>
+				<td>101</td>
+				<td>111</td>
+				<td>121</td>
+			</tr>
+			<tr>
+				<td>20-30%</td>
+				<td>102</td>
+				<td>112</td>
+				<td>122</td>
+			</tr>
+			<tr>
+				<td>30-40%</td>
+				<td>103</td>
+				<td>113</td>
+				<td>123</td>
+			</tr>
+			<tr>
+				<td>40-50%</td>
+				<td>104</td>
+				<td>114</td>
+				<td>124</td>
+			</tr>
+			<tr>
+				<td>50-60%</td>
+				<td>105</td>
+				<td>115</td>
+				<td>125</td>
+			</tr>
+			<tr>
+				<td>60-70%</td>
+				<td>106</td>
+				<td>116</td>
+				<td>126</td>
+			</tr>
+			<tr>
+				<td>70-80%</td>
+				<td>107</td>
+				<td>117</td>
+				<td>127</td>
+			</tr>
+			<tr>
+				<td>80-90%</td>
+				<td>108</td>
+				<td>118</td>
+				<td>128</td>
+			</tr>
+			<tr>
+				<td>90-100%</td>
+				<td>109</td>
+				<td>119</td>
+				<td>129</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+</table>
+
+<p>Download data</p>
+
+<ul>
+  <li><a href="https://landfire.gov/viewer/">https://landfire.gov/viewer/</a> </li>
+  <li>Get Geotiff format--be careful, it likes to revert to ArcGrid (which you 
+  can probably read with GDAL).
+    </li>
+	<li>You can get in UTM or Albers projection</li>
+	<li>Watch the names and get what you want, and be careful with the data file 
+	names.</li>
+</ul>
+
+<p><a href="vegetation_inventories.htm">Other vegetation data</a></p>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 10/17/2022</em></p>
+<p align="right">&nbsp;</p>
+<p align="right">&nbsp;</p>
+
+</body>
+
+</html>

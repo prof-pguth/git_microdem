@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>LAS file Prep</title>
+</head>
+
+<body>
+
+<h1>LAS file prep, create grids</h1>
+<ul>
+				<li><a href="lidar_pt_clouds.htm">Download point cloud files</a></li>
+				<li>If you got ZIP file, uncompress</li>
+				<li>Check what the data projection is, before you do anything 
+				with LAZ files<ul>
+					<li>You can use the LAStools lasinfo, on File, <a href="tbme5ed1.htm"><b>Analyze</b></a> menu, 
+					opn either a LAS or LAZ file.&nbsp; Hopefully the projection 
+					information is in the file.</li>
+					<li>If the file does not include projection information (a 
+					failure of the producer/distibutor) you can check the 
+					metadata on the download site.&nbsp; Some include the 
+					metadata files in their download, others do not.</li>
+				</ul>
+				</li>
+				<li>If the files are not UTM or have no assigned projection, you 
+				should use LAStools to <a href="resample_lidar.htm">resample to UTM</a>&nbsp; 
+				and decompress to LAS format in one step.</li>
+				<li>If files are compressed (LAZ in the UTM projection or eLAS 
+				in any projection),
+				<a href="uncompress.htm">Decompress</a><b>&nbsp;</b> <a href="lidar_compression.htm">LAS/LAZ--point clouds</a><b>&nbsp;</b></li>
+				<li>If the LAS files will not work in MICRODEM, perhaps because of flaky 
+				or no geo-coding in the LAS file, try <a href="resample_lidar.htm">resampling to UTM</a> 
+				(you should have gotten UTM in the first place).</li>
+				<li>Open any map, such as<ul>
+								<li>
+								<img border="2" src="../images/quick_vector_map.GIF" width="32" height="35">
+								<a href="vector_maps.htm">Quick vector map</a>
+								</li>
+				</ul>
+				</li>
+				<li><img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+	<a href="pt_cld_opts.htm">LIDAR Point clouds</a> and pick the LAS files or 
+				the directory.</li>
+				<li>If desired, <font size="3"><img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> the map.&nbsp; Depending on the size of the area and DEM 
+				grid size you want to create, you could run out of memory.&nbsp;&nbsp; 
+				The new grids will cover the same area as the base map.&nbsp; 
+				Once you have a good base map, use it to reload the point clouds 
+				and keep all grids the exact same size, which will make any map 
+				algebra faster.</li>
+				<li><a href="grid_from_lidar.htm">Create grids</a></li>
+</ul>
+<p>Anomalous points in the lidar data will cause the color scale in your grid could 
+be off.&nbsp; Low noise will mean very few points on the low end of the color 
+scheme, and high noise will mean very few points on the high end.&nbsp; The net 
+effect will be to squeeze all the elevation colors into a narrow central range.&nbsp; 
+You can get around this by using the percentile option for the color scale (<b><a href="elevation_range_for_coloring.htm">z 
+Range</a>, Percentiles)</b>.</p>
+
+<hr />
+
+<p align="right"><em>Last revision 9/6/2019</em></p>
+
+</body>
+
+</html>

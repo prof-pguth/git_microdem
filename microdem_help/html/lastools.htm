@@ -1,0 +1,94 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>lastools</title>
+<link href="../md.png" rel="shortcut icon">
+</head>
+
+<body>
+
+<h1>lastools</h1>
+<p>lastools is a suite of command line tools for lidar point clouds.&nbsp; Since 
+the the untimely end of Martin Isenburg, the program has seen massive changes to 
+rationalize some of its idiosyncracies.&nbsp; The progam has an open source 
+part, which includes LASZIP and some other useful utilities, and a licensed 
+part.</p>
+<ul>
+				<li>New rapidlasso site: <a href="https://rapidlasso.de/">
+				https://rapidlasso.de/</a>, with the download at
+				<a href="https://rapidlasso.de/customers/">
+				&nbsp;https://rapidlasso.de/product-overview/</a>&nbsp; and then
+				<a href="https://rapidlasso.de/downloads/">
+				https://rapidlasso.de/downloads/</a> </li>
+				<li>The open source site:
+				<a href="https://github.com/LAStools/LAStools">
+				https://github.com/LAStools/LAStools</a> </li>
+				<li>Old sites that might not survive the untimely end of Martin 
+				Isenburg<ul>
+					<li><a href="http://www.cs.unc.edu/~isenburg/lastools/">At UNC</a> 
+				some have 
+					<a href="http://www.cs.unc.edu/~isenburg/lastools/download/LICENSE.txt">license</a> 
+		for free use, restricted to personal or educational purposes with very 
+		limited exceptions.&nbsp; LASZIP is there for a very easy download.&nbsp; 
+					The site uses http, so it might be blocked by your IT 
+					department or your browser settings.</li>
+					<li><a href="https://rapidlasso.com/lastools/">At RapidLasso</a> 
+					which has a direct link to lastools download</li>
+				</ul>
+				</li>
+</ul>
+<p>You should unzip or install into X<a href="file:///J:/gis_software/LAStool">:\gis_software\LAStools</a>, 
+insuring you do not get <a href="file:///J:/gis_software/LAStools/LAStools">
+X:\gis_software\LAStools\LAStools</a>.&nbsp; MICRODEM will attempt to find the 
+program in this folder on any drive.&nbsp; If it cannot find the program, it 
+will ask you to find it.</p>
+<p>You can also get their free viewer, laslook.</p>
+<p>Help for lastools (and lidar in general):</p>
+<ul>
+	<li>The forum at <a href="https://groups.google.com/forum/#!forum/lastools">https://groups.google.com/forum/#!forum/lastools</a> has a lot of helpful 
+discussions about lidar in general, and lastools in particular.</li>
+	<li><a href="https://rapidlasso.com">https://rapidlasso.com</a> has many 
+	helpful blog posts</li>
+</ul>
+<table border="1" >
+	<tr>
+		<td>
+		<p>MICRODEM encapsulates lastools for:</p>
+		<ul>
+						<li>Use 
+						<a href="http://www.cs.unc.edu/~isenburg/lastools/">lastools</a> LASZIP to convert LAZ files to LAS.&nbsp; 
+	Access with <a href="uncompress.htm">Compress/Decompress</a>.&nbsp; LASZIP 
+						has no restrictions on use.</li>
+						<li><a href="lastools_resample.htm">resampling with 
+						las2las and 
+						lasinfo</a> which has some limitations (will not do a 
+						datum shift)</li>
+						<li><a href="lastools_classify.html">Lidar point classification</a>--<a href="http://www.cs.unc.edu/~isenburg/lastools/download/LICENSE.txt">restricted 
+license</a> for these programs may not allow you to use them.&nbsp; </li>
+		</ul>
+		You must use the lastools GUI or command line interface to:<ul>
+						<li>Use 
+						<a href="http://www.cs.unc.edu/~isenburg/lastools/">lastools</a>&nbsp; TXT2LAS to convert text file to LAS (txt2las -parse xyz -i 
+	lidar.txt).&nbsp; This can be accessed on the <a href="tbme7ncj.htm">Export 
+	menu</a> choice of the 
+						<img src="../images/inout.jpg" border="2"  width="32" height="32">
+						<a href="tbme83sn.htm">Data Manipulation form</a>.&nbsp; If your XYZ file is 
+	more complicated, you will have to create a command line.</li>
+						<li>Use 
+						<a href="http://www.cs.unc.edu/~isenburg/lastools/">lastools</a>&nbsp; LAS2TXT to convert LAS to text (las2txt -sep comma&nbsp; lidar.las).&nbsp; You will have to add the header row in something like 
+	Notepad, which works better than Word for files around 75 MB in size.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<table border="1" id="table4">
+	</table>
+<p><a href="point_cloud_problems.htm">Problems with point clouds</a></p>
+<hr>
+<p align="right"><i>last revision 10/19/2024</i></p>
+
+</body>
+
+</html>

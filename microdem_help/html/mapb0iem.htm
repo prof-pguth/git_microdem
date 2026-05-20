@@ -1,0 +1,168 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Map projection</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>Map Projection</b></font></p>
+
+<p>The globe is not the ideal map: it is too small to see any
+amount of detail, and you can't get a straight edge or protractor
+on it to measure distances or angles. The central problem in cartography thus 
+becomes flattening a round earth onto a flat piece of paper or a computer 
+screen.</p>
+
+<p>The<a href="mapb9omd.htm"><b> earth's shape</b></a> is really
+extremely close to spherical, but precise maps require a <a
+href="mapb65gt.htm"><b>shape model or datum</b></a>.</p>
+
+<p>A projection is a mathematical equation or series of equations
+to take a three dimensional location on the earth (even when
+given in the seeming two dimensional form of latitude and
+longitude, earth coordinates have an implicit third dimension,
+the earth radius) and provide two dimensional coordinates to plot
+on a paper or computer screen.</p>
+
+<ul>
+    <li>Forward equation: Lat,Long ===&gt; x,y</li>
+    <li>Inverse equation: x,y ====&gt; Lat,Long</li>
+</ul>
+
+<p>Without the use of a chart table and tools, accurate plotting with lat/long 
+coordinates is not easy.&nbsp; The x,y cartesian coordinates make plotting much 
+easier, even if the xy coordinates do not appear on the final map.&nbsp; In 
+other cases, such as the UTM/MGRS coordinates used by the military's ground 
+forces, the cartesian coordinates appear much more prominently on the map than 
+the lat/long graticule.</p>
+
+<p>&nbsp;</p>
+
+<table border="1">
+  <tr>
+    <td>
+	<p align="center"><b><font size="5">Example for the Mercator Projection</font></b></td>
+  </tr>
+  <tr>
+    <td><img border="0" src="../images/merc_spherical.gif" width="419" height="294"></td>
+  </tr>
+  <tr>
+    <td>The use of a single R term indicates this is a spherical projection.</td>
+  </tr>
+  <tr>
+    <td><img border="0" src="../images/merc_ellips.gif" width="660" height="331"></td>
+  </tr>
+  <tr>
+    <td>
+        The inclusion of the terms a and e indicate this is an
+        ellipsoidal projection.&nbsp;<p>Note the much greater inclusion of 
+		trigonometric and log/exponents, which are expensive (slow) to compute.</td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+<p>A Perfect projection would preserve:</p>
+
+<ul>
+    <li>Area</li>
+    <li>Distance</li>
+    <li>Azimuths</li>
+    <li>Shape</li>
+    <li>Navigation routes</li>
+    <li>Parallels evenly spaced</li>
+    <li>Parallels-meridian right angle intersections</li>
+</ul>
+
+<p>You can't get it all (except very large <a href="mapb9d5x.htm"><b>scale</b></a>
+maps of small areas when the earth's curvature can be ignored, and they only 
+generally get one thing perfect, and the others are &quot;close&quot; enough that you 
+cannot see the distortion.)</p>
+
+<p>Projection Terms:</p>
+
+<ul>
+    <li><strong>Conforma</strong>l: shapes are correct; local
+        angles about point are accurate; local scale about any
+        point is constant. This is generally the most import
+        characteristic; for military users, all NGA maps are
+        conformal except those designed to show the entire world
+        for general description.</li>
+    <li><strong>Equal area</strong>: areas correct everywhere</li>
+    <li><strong>Equidistant</strong>: distances constant</li>
+    <li><strong>Azimuthal</strong>: directions correct with
+        respect to center of map</li>
+</ul>
+
+<p>Special characters desired for some maps:</p>
+
+<ul>
+    <li>Rhumb lines (constant direction) are straight</li>
+    <li>Great circles (meridians): either straight, or circles</li>
+    <li>Small circles (parallels): shown as circles</li>
+</ul>
+
+<p>Geometric Projection types: distribute error differently
+depending on the geometry</p>
+
+<ul>
+    <li>Cone</li>
+    <li>Cylinder</li>
+    <li>Plane</li>
+</ul>
+
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="739" src="../images/projection_geometries.png" width="871"></td>
+		<td>
+
+<p>Geometric Projection types: distribute error differently
+depending on the geometry</p>
+
+<ul>
+    <li>Plane--a plane is a cone whose apex and base coincide</li>
+	<li>Cone</li>
+    <li>Cylinder--a cylinder is a cone whose apex is located infinitely far from 
+	the base</li>
+</ul>
+
+		<p>Take the geometric shape, project from the earth onto the
+shape, and then open up and flatten the shape. <b>Different
+projections</b> have different properties based on this geometric
+starting point and how the projecting works.</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>Diagrams from Wikipedia.</p>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>Grids: ease of plotting, with rectangular coordinates; may or
+may not coincide with lat-long. UTM best known example.</p>
+
+<p><a href="cartography/map_projections.htm">Album of projections</a>.</p>
+
+<p><a href="mapb5a5v.htm">Table of projection properties</a></p>
+
+<p>Reference on projections:</p>
+
+<ul>
+    <li>Snyder, J.P., 1987, Map projections -- a working manual:
+        U.S. Geological Professional Paper 1395, 383 p.</li>
+</ul>
+
+<hr>
+
+<p align="right"><em><font size="3">Last revision </font>2/28/2022</em></p>
+</body>
+</html>

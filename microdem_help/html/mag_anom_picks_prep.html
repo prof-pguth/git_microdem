@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Magnetic Anomaly Picks Data Prep</title>
+<style type="text/css">
+.style1 {
+				font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Prep for Magnetic Anomaly Picks (Oct 2018 version)</h2>
+<p><img src="../images/geology_button.jpg" width="28"
+        height="29"> <a href="geology_popup.htm">Geology options</a>, Magnetic anomaly picks.&nbsp; 
+This shows points where someone has identified a particular anomaly.</p>
+<p>Magnetic picks, shapefile or KML:
+		</p>
+<p>To get a new version of the file and prep it for MICRODEM:</p>
+<ul>
+	<li>Download global shapefile from
+		<a href="http://www.soest.hawaii.edu/PT/GSFML/ML/index.html">
+		http://www.soest.hawaii.edu/PT/GSFML/ML/index.html</a>&nbsp; 
+<a href="mag_anom_refs.htm">(Seton and 
+others, 2014)</a> No updates since Oct 2018, and the site is not secure)</li>
+	<li>Open</li>
+	<li>Edit</li>
+	<li><a href="db_edit.htm"><b>Edit</b></a>, Coordinates, add lat/long from 
+	SHP file</li>
+	<li>In the GEEK2007 field, limit the decimals to 3</li>
+	<li><a href="db_edit.htm"><b>Edit</b></a>, <b><a href="db_string_edits.htm">String field operations</a>, Trim blanks, 
+	All fields</b></li>
+	<li><b><a href="db_report.htm">Report</a></b>, <a href="dd_text_rprt.htm"><b>Text (CSV)</b>:</a></li>
+	<li>Open the TXT/CSV file, which removes a hugely excessive number of blanks 
+	in the string fields</li>
+</ul>
+<p>Ages, in the <a href="mag_anom_refs.htm">GEEK2007 (Gee and Kent, 2007) </a>field of the database.</p>
+<p><a href="mag_anom_picks.htm">Using the data.</a></p>
+
+<hr>
+
+<p align="right" class="style1"><em>Last revision 11/8/2022</em></p>
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

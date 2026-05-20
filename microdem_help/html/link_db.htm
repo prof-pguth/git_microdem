@@ -1,0 +1,116 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Example Linking Data Bases</title>
+</head>
+
+<body>
+
+<p><b><font size="5">Example Linking (Joining) Data Bases</font></b></p>
+<p>Many statistical data bases are not GIS but simply flat tables with data for
+states or counties or other geographic regions.&nbsp; However, many of these have the State or County 
+<a href="fips.htm">FIPS
+code,</a> and can be linked to GIS shapefiles of state and
+<a href="county_outlines.htm">county boundaries</a>.&nbsp; The link or join uses two fields which have the 
+same values for the corresponding records.&nbsp; The field names do not have to 
+be the same, and the order of the records does not matter.&nbsp; The program 
+must just be able to find the corresponding record in the second database, using 
+the value from the join field in the first database.</p>
+<p>Other data bases will be records of individual events, like hurricanes or 
+tornadoes, and include a&nbsp; <a href="fips.htm">FIPS code</a> for each event.&nbsp; 
+You can use the Sum, <a href="sum_records.htm">All records matching single field</a> 
+on the <strong style="font-weight: 400">
+<a href="db_stats.htm">Stats</a></strong> button on the <a href="database_table_display.htm"><u>table
+display window</u></a>&nbsp; to create a file that can be linked with the total 
+number of events for each <a href="fips.htm">FIPS code</a>, as well as the sum of fields like 
+FATALITIES or DAMAGE.</p>
+<p>The database you are linking to your main data base can have at most 1 record 
+that matches each record in your primary database.&nbsp; If there are none, or 
+more than one, the join will not be accomplished.&nbsp; Several records in your 
+primary record can link to the same record in the other database--for instance a 
+database of counties in the US could have multiple records for each county 
+(perhaps for islands), but they would all link to the same county statistical 
+data.</p>
+<p>In addition to using the fields through the link/joined data bases, you can 
+copy fields into the primary database with the <a href="db_edit.htm">Edit</a>, 
+&quot;Fill fields from linked database&quot; option on the
+<a href="database_table_display.htm"><u>table
+display window</u></a><u>.</u> </p>
+<p>We will demonstrate this capability with a database of live births from
+1995-1999, downloaded from the US
+National Atlas</p>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/link_db/state_db.gif" width="464" height="245"></td>
+    <td>Open <b> states data base</b>.&nbsp; Note:
+      <ul>
+        <li><a href="us_data.htm">Sources to obtain states database.</a></li>
+		<li>From the symbol display button on the far left, this is an area data base.</li>
+        <li>The <a href="db_plot.htm">&quot;PLOT&quot;</a> button is present, so
+          you can plot this on a map.</li>
+        <li>The presence of a &quot;<a href="fips.htm">STATE_FIPS</a>&quot; field.</li>
+      </ul>
+      <p>On the pop up menu from the <a href="db_stats.htm">STATS</a> button,
+      select the <a href="db_join.htm">&quot;Link/join data base&quot; and then 
+		&quot;Set Join&quot;.</a></td>
+  </tr>
+</table>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/link_db/linked_db.gif" width="436" height="248"></td>
+    <td><b>Select the linked data base</b> with live births.&nbsp; You will not get this
+      display after linking, but could get it by opening the second database by 
+	itself, and might want to check this database before attempting the join.&nbsp; Note about this linked data base:
+      <ul>
+        <li>This is not a GIS data base because there is&nbsp;
+          <ul>
+            <li> No button on the far left
+          indicating the point, line, or area nature of the data base, and 
+			allowing you to change the display symbology.</li>
+            <li> No <a href="db_plot.htm">&quot;PLOT&quot;</a> button,
+          because without the GIS location data, you cannot plot this on the map.</li>
+          </ul>
+        </li>
+        <li>The presence of a &quot;<a href="fips.htm">STATE_FIPS</a>&quot; field.</li>
+      </ul>
+      <p><b>Select Fields to use for the linking</b>.&nbsp; You should use &quot;<a href="fips.htm">STATE_FIPS</a>&quot;,
+      since as a number there are fewer chances that the spelling might be
+      different.&nbsp; You could alternatively try the &quot;STATE&quot; field.
+      You must select the field in both data bases, and while the two field names
+      might be diffeent, they must use the same coding within the field--you 
+		cannot join based on full state names, as here, and two letter 
+		abbreviations.&nbsp;</td>
+  </tr>
+</table>
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/link_db/live_births.gif" width="648" height="541"></td>
+    <td>On the <a href="db_plot.htm">&quot;PLOT&quot;</a> button of the state
+      data base, pick the &quot;<a href="gis_color_db_field.htm">Color code by DB field</a>&quot;
+      option.
+      <ul>
+        <li>Pick type of field to use (numeric or string)</li>
+        <li>Pick field to plot.&nbsp; The linked fields will be at the bottom of 
+		the list, after those in the database itslef.</li>
+        <li><a href="pick_db_coding_colors.htm">Pick color scheme to use, and approve
+          the numeric limits.</a></li>
+      </ul>
+    <p>This is teen birth rate by state.&nbsp; The highest values in red, across 
+	the southern part of the country, are twice (almost three times) those in New England, MN, and 
+	ND.</td>
+  </tr>
+</table>
+
+<p><a href="db_join.htm">Setting up a Join in MICRODEM.</a></p>
+
+<hr>
+
+<p align="right"><font size="2"><em>Last revision 12/19/2016</em></font></p>
+
+</body>
+
+</html>

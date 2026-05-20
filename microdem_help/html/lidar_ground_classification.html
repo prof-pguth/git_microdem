@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Lidar Ground Classification</title>
+<style type="text/css">
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Lidar Ground Classification</h1>
+<p>From the "CLASS" tab on
+	<a href="pt_cld_opts.htm">LIDAR Point clouds</a> control form.&nbsp; You 
+must have installed the selected program in the location where MICRODEM expects 
+it.</p>
+<p>This should be a last resort, based on my experience with this.</p>
+<table border="2">
+	<tr>
+		<td class="style1"><strong>Program and setup diretions</strong></td>
+		<td class="style1"><strong>Module</strong></td>
+		<td class="style1"><strong>Parameters</strong></td>
+		<td class="style1"><strong>Notes</strong></td>
+	</tr>
+	<tr>
+		<td class="style1"><a href="whitebox.html"><strong>Whitebox</strong></a></td>
+		<td class="style1"><strong>whitebox_tools.exe -r=LidarGroundPointFilter</strong></td>
+		<td>
+		<ul>
+			<li class="style1"><strong>radius plus .....</strong></li>
+		</ul>
+		</td>
+		<td class="style1">&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="style1">&nbsp;</td>
+		<td class="style1"><strong>whitebox_tools.exe -r=LidarSegmentationBasedFilter</strong></td>
+		<td>
+		<ul>
+			<li class="style1"><strong>radius plus......</strong></li>
+		</ul>
+		</td>
+		<td class="style1">&nbsp;</td>
+	</tr>
+	<tr>
+		<td><a href="pdal.htm">PDAL</a></td>
+		<td>translate pmf<br />
+		</td>
+		<td>&nbsp;</td>
+		<td>Very slow</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>translate smrf<br />
+		</td>
+		<td>&nbsp;</td>
+		<td>Uses point data type 3, which is very verbose</td>
+	</tr>
+	<tr>
+		<td><a href="lastools.htm">LAStools</a></td>
+		<td>lasground<br />
+		lasheight<br />
+		lasclassify</td>
+		<td>
+		<ul>
+			<li>step size which affects how buildings will be excluded</li>
+			<li>bulge parameter which affects local variation in the surface 
+			created by a TIN of the ground points</li>
+		</ul>
+		</td>
+		<td><a href="lastools_classify.html">Classify (LAStools)</a>.&nbsp; Note 
+		this has license restrictions.</td>
+	</tr>
+	<tr>
+		<td><a href="mcc-lidar.htm">mcc-lidar</a></td>
+		<td>&nbsp;</td>
+		<td>
+		<ul>
+			<li>scale ('s') parameter</li>
+			<li>curvature threshold ('t')</li>
+		</ul>
+		</td>
+		<td>Last update 2013</td>
+	</tr>
+	<tr>
+		<td><a href="fusion_for_lidar.html">Fusion</a></td>
+		<td>groundfilter</td>
+		<td>Approximately 7</td>
+		<td>Last update 2020 (or maybe not much since 2006)</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="2">
+	<tr>
+		<td>
+		<img height="199" src="../images/pt_cld/class_tab.gif" width="450" /></td>
+		<td>
+		<p><img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+		<a href="pt_cld_opts.htm">LIDAR Point cloud form</a>&nbsp; option,&nbsp; 
+		Class tab<br />
+		</p>
+		<ul>
+			<li>Classify options</li>
+			<li>Denoise options</li>
+			<li>Program settings which control how the other programs operate</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr />
+
+<p align="right" class="style1"><em>Last revised&nbsp;6/21/2020</em></p>
+
+</body>
+
+</html>

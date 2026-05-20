@@ -1,0 +1,87 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Computer contouring</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<h1 align="center">Computer Contouring</h1>
+
+<p>Contouring shows the third dimension on sheet of paper or
+the computer monitor.&nbsp; Common uses on maps include topographic maps, or weather analyses.&nbsp; 
+Contours can also appear on cross sections to show sound velocity or density or salinity or temperature versus depth</p>
+
+<p>Contours creates a math model of surface, which can be used for derivatives
+(slopes), isopachs, volume calculations, or interpolations </p>
+
+<p><b>Contouring</b></p>
+
+<ol>
+    <li>Contouring uses lines to connect all points on a surface
+        with the same value in the z direction.<ul>
+		<li>
+		<b>isoline</b> = line of equal value
+		</li>
+		<li>
+		<b>contour</b> = isoline of elevation (but frequently used for any isoline)
+		</li>
+	</ul>
+	</li>
+    <li>Computer contouring interpolates, generally linearly or biliniearly,
+        between known data points and then connects these
+        interpolated points.</li>
+    <li>Two different approaches to contouring use <a
+        href="mapb27dz.htm"><b>Triangulation</b></a> or
+	<a
+        href="mapb19bb.htm"><b> Gridding</b></a>.</li>
+    <li>Grid contouring can introduce a problem &quot;honoring
+        the data points&quot;, since once the grid is created, the original 
+	points are no longer used.</li>
+    <li>One set of triangles can be mathematically described as
+        best for triangulation contouring.</li>
+	<li>Contours composed of straight &quot;Unnatural&quot; line segments:
+        direct result of assumption about slopes</li>
+</ol>
+
+<p><a href="mapb52sn.htm"><b>Principles of logical contouring</b></a>:
+for the computer to do contouring, it must have certain rules to
+follow. </p>
+
+<p>Computer behaves like &quot;average&quot; person in terms of
+where it bends the contours (bunching or spreading) </p>
+<table style="width: 100%">
+	<tr>
+		<td><img border="0" src="../images/cont_in_grid.GIF" width="436" height="181"></td>
+		<td>In some cases with a rectangle, there can be two ways to draw the 
+		contours, as in the case on the left.&nbsp; On the left, a ridge 
+		connects the two points with elevation of 80, and on the right, a valley 
+		connects the two points with elevation 70.&nbsp; The number of such 
+		boxes will generally be small, and with a large DEM, the effect will 
+		also be very small.</td>
+	</tr>
+</table>
+<p>The contouring of a grid can be done in two ways:</p>
+<ul>
+	<li>On the fly, on a group of four grid points at a time.&nbsp; This is very 
+	fast; the algorithm just has to determine where the contour lines cross the 
+	fours sides of the rectangle, and then connect them.&nbsp; There can be 
+	ambiguities as shown in the figure above.&nbsp; This does not allow labels 
+	(which will be slow anyway, and might just clutter a screen map).&nbsp; When 
+	blown up, the individual line segments become obvious.&nbsp; In flat 
+	terrain, or with noisy DEMs, the patterns can be chaotic.</li>
+	<li>By creating a shapefile with the contour lines.&nbsp; This requires 
+	&quot;threading&quot; the lines though the DEM, to get continous lines&nbsp; These 
+	lines can be smoothed after generation, or the DEM can be smoothed 
+	(filtered) before the contouring.&nbsp; This must be done to label some of 
+	the contours.</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 11/26/2017</em></p>
+</body>
+</html>

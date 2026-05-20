@@ -1,0 +1,107 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Load Multiple DEMs</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="5"><strong>Loading &amp; Merging
+Multiple DEMs</strong></font></p>
+
+<p>There are several ways to load multiple DEMs:&nbsp; You can select as many DEMs 
+as you want, up the size limits on a single DEM. The current limits are listed 
+with the Help, Program Limits menu choice.&nbsp; The memory in your computer 
+might limit your ability to manipulate such a DEM, and you probably cannot 
+display every data point simultaneously. If this is a problem you should <a
+href="tbme0egj.htm">Thin</a> or <a href="tbme3qd0.htm">Subset</a>
+the DEMs before the merge.&nbsp; You should also consider using
+multiple scales of DEMs for different scales of analysis.</p>
+<ul>
+				<li><a href="tbme8igl.htm"><b>File</b></a>, <a href="file_open.htm">Open submenu</a> 
+				with Open and merge DEMs.&nbsp; You must use the multifile 
+				selection option from Windows as you pick files, all of which 
+				must be in the same directory. There are two options<ul>
+					<li>Using GDAL and a VRT.&nbsp; This is fast, but somewhere 
+					in the several GB Geotiff size range MICRODEM cannot open 
+					the DEM, and we have been unable to track down the problem.</li>
+					<li>Using MICRODEM's slow but sure method</li>
+				</ul>
+				</li>
+				<li><img border="0" src="../images/index_md.GIF" width="30" height="30">  <b> 
+<a href="int_data_db.htm">Map library</a>&nbsp; to </b> load
+and merge multiple DEMs on the fly.&nbsp; This will bring up a graphical selection window, showing the
+available DEMs.&nbsp; Move to the NW corner of the region
+you want, hold down and drag to the SE corner. The DEMS will be
+loaded. With UTM based DEMs you can only select DEMs in a single
+6 degree zone.</li>
+</ul>
+
+<p>You can savethe merged DEMs from the <a href="tbme8igl.htm"><b>File</b></a>, <strong><a href="save_dem.htm">Save DEM</a></strong> menu
+choice.</p>
+<p>You must obey the following rules: </p>
+
+<ul>
+    <li>All DEMs must be the same basic type, UTM-based or
+        lat/long based.</li>
+    <li>All DEMs must have the same data spacing.</li>
+    <li>If using UTM based DEMs, all
+        must be in the same UTM zone.</li>
+    <li>All feet DEMs will be converted to metric.</li>
+</ul>
+
+<p>Instructions for special cases of
+merging:</p>
+
+<ul>
+	<li><a href="arb_dem_merge.htm">Arbitrary DEM merge</a></li>
+</ul>
+
+<p>When merging DEMs, MICRODEM loads all the DEMs into memory, determines the 
+size of the merged grid, creates it, and then adds each DEM to the merge.&nbsp; 
+If you do not have the memory, you could:</p>
+<ul>
+	<li>Merge just the DEMs that will be in the corners of the final merge; they 
+	will define the required size.</li>
+	<li>Then use the Fill holes option (<a href="edit_menu.htm">Edit</a>, <a href="dem_holes.htm">DEM Holes</a>, Fill holes from reference DEM, 
+	Grid in file) which will minimize the memory required.</li>
+</ul>
+
+<hr>
+
+<h2><a name="Merging_Multi-GB_DEMs">Merging Multi-GB DEMs</a></h2>
+<p>Think very carefully about the wisdom of doing this.</p>
+<ul>
+	<li><img border="0" src="../images/index_md.GIF" width="30" height="30">  
+	Consider 
+<a href="int_data_db.htm">Map library</a>&nbsp;</li>
+	<li>Consider using lower resolution DEM</li>
+</ul>
+<table border="2">
+	<tr>
+		<td><img height="508" src="../images/stateline_21_usgs.png" width="423"></td>
+		<td>
+		<img height="508" src="../images/stateline_21_usgs_cliipped_demixpng.png" width="338"></td>
+	</tr>
+	<tr>
+		<td>21 tiles of 1 m USGS DEM (5 GB as compressed, 11.8 GB uncompressed).&nbsp; 
+		<br>Note the irregular boundaries when the mapping projects ended.&nbsp; 
+		<br>DEMIX &quot;10 km&quot; tiles shown.&nbsp; <br>The USGS DEMs are also 10 km, but on a 
+		UTM grid on not lat/long.<br>This fails with GDAL and the VRT method, 
+		but works with MICRODEM.</td>
+		<td>DEM clipped to just the area with filled DEMIX tiles.&nbsp; <br>This 
+		drops the DEM to under 6 GB.</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revised 4/16/2023</em></p>
+<p>&nbsp;</p>
+</body>
+</html>

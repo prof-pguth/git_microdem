@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Managing Lidar Data</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Managing Lidar Data</h1>
+<p>Do not use spaces anywhere in the path to the lidar data.&nbsp; Do not ignore 
+warnings about this.</p>
+<p>Place every survey in its own folder, with a short descriptive name, which 
+the program will use to identify it, such as "DUCK_2015" and "Duck_2018"</p>
+<p>If you have multiple surveys of a single area, organize them under a single 
+higher level folder such as "Duck_surveys"</p>
+<p>Many surveys produce data only in very long strips.&nbsp; These are more cost 
+effective comparted to regular "mow the lawn surveys", but lead to very long and 
+skinny maps, with mostly missing data.&nbsp; These are difficult to visualize</p>
+<ul>
+	<li>Utility line corredors</li>
+	<li>Beach erosion surveys, where all the change is along the coastline.</li>
+</ul>
+<p>When visualizing or displaying multiple surveys, think about what you want to 
+show, and control this with the checkboxes:</p>
+<ul>
+	<li>All surveys on the same map or 3D view, or in the same derived grid.&nbsp; 
+	This makes sense if you have adjacent surveys with each cover only part of 
+	what you want, or you need the second survey to fill in holes in the first, 
+	and do not care about temporal differences.</li>
+	<li>All surveys separately.&nbsp; This makes sense if you are tracking 
+	change over time.</li>
+</ul>
+<p>If you get a warning that your data does not have
+<a href="projections_raster_data.html">projection information, or has an 
+unsupported projection</a>:</p>
+<ul>
+	<li>Look at the metadata from the LAS file, to see what the projection is if 
+	it is present.&nbsp; SPCS means it will have to be reprojected<ul>
+		<li>See if there is a metadata file in your download folder.&nbsp; It 
+		could be XML, TXT, or HTML</li>
+		<li><a href="tbme5ed1.htm"><b>Analyze</b></a>, <b><a href="file_metadata.htm">File Metadata</a>.</b> <a href="las_format.htm">LAS</a>--you can find if the problem is 
+			with MICRODEM, or the data files.<ul>
+				<li><a href="las_format.htm">via MICRODEM</a>--this will be 
+				faster, as it just reads the header</li>
+				<li>via&nbsp; Lasinfo--reads the entire file, and provides some 
+				statistics</li>
+			</ul>
+			</li>
+	</ul>
+	</li>
+	<li>Look at the web site from the data download&nbsp; for the file or project metadata</li>
+	<li><a href="lastools_resample.htm">LAStools</a> file resampling.&nbsp; 
+	Based on what is actually in the data, you must pick the correct option:<ul>
+		<li>Unsupported projection, <strong>Reproject, Specified to UTM:</strong></li>
+		<li>No projection information,
+				<strong>Assign projection.&nbsp; </strong>If it is not UTM 
+		(where you need the UTM zone) or geographic, you need to
+		<a href="epsg.htm">get the EPSG code</a><strong>.<br />
+		</strong>This will create new LAS files with "_utm" in the name.&nbsp; If you 
+		did not recycle the original files, you need to remove them for the 
+		directory manually if you want to use directory selection.</li>
+	</ul>
+	</li>
+</ul>
+<hr />
+<p>&nbsp;</p>
+<h2>Metadata samples</h2>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="364" src="../microdemtutorials/national_map/metadata_4.png" width="400" /></td>
+		<td>Metadata location at USGS National Map</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="498" src="../microdemtutorials/national_map/metadata_1.png" width="454" /></td>
+		<td>Spatial ref section of a metadata file at the USGS site.<br />
+		<br />
+		It gives the projection as UTM, zone 8.<br />
+		<br />
+		It does not mention the vertical datum.</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="588" src="../microdemtutorials/national_map/metadata_2.png" width="519" /></td>
+		<td>Spatial ref section of a metadata file at the USGS site.<br />
+		<br />
+		It gives the projection as Lambert Conformal Conic, which is Maryland 
+		state plane.&nbsp; It does not&nbsp; specify the type of feet.&nbsp; If 
+		the projection is not recognized by LAStools, you will have to
+		<a href="epsg.htm">get the EPSG code</a>.<br />
+		<br />
+		It gives the vertical datum as NAVD 88</td>
+	</tr>
+	<tr>
+		<td>
+		<img alt="" height="192" src="../microdemtutorials/national_map/metadata_3.png" width="954" /></td>
+		<td>Metadata from LAStools LASinfofor a LAS file. <br />
+		<br />
+		It gives both the UTM projection, and the horizontal and vertical 
+		datums.</td>
+	</tr>
+	<tr>
+		<td>
+		Image 1<br />
+&nbsp;<img alt="" height="261" src="../microdemtutorials/national_map/lastools_metadata.png" width="1022" />
+		
+		
+		<hr />Image 2<br />
+		<img alt="" height="116" src="../microdemtutorials/national_map/geotiff_codes.png" width="327" /><br />
+		<hr />Image 3 <br />
+		<img alt="" height="288" src="../microdemtutorials/national_map/spatial_ref.png" width="469" /><br />
+		
+		
+		</td>
+		<td>Image 1.<br />
+		<br />
+		Lastools Lasinfo extract. The projection is defined in the LAS file, 
+		but it is state plane and LASTools (written by a German) does not 
+		understand the Geotiff code 26958;
+		<a href="epsg.htm">EPSG code</a>&nbsp; is more common.<br />
+		<hr /><br />
+		Image 2.<br />
+		<br />
+		Geotiff codes, from
+		<a href="http://geotiff.maptools.org/spec/geotiff6.html">
+		http://geotiff.maptools.org/spec/geotiff6.html</a> or
+		<a href="https://svn.osgeo.org/metacrs/geotiff/trunk/geotiff/html/usgs_geotiff.html">
+		https://svn.osgeo.org/metacrs/geotiff/trunk/geotiff/html/usgs_geotiff.html</a>.&nbsp; 
+		You need to do a search of 26958, to find it is Florida east.<br />
+		<hr /><br />
+		Image 3 <br />
+		<br />
+		<a href="epsg.htm">EPSG code</a> from
+		<a href="https://spatialreference.org/ref/epsg/?search=florida&amp;srtext=Search">
+		https://spatialreference.org/ref/epsg/?search=florida&amp;srtext=Search</a>&nbsp; 
+		These are the results for Florida, and we already know it was the east 
+		zone and in feet, so we want EPSG 2236.&nbsp; Get the UTM zone for 
+		Florida, 17.&nbsp;&nbsp; We can now use <a href="lastools_resample.htm">LAStools</a> with Assign projection <a href="epsg.htm">by EPSG</a> 
+		(2236) and reproject to UTM zone 17 N, with the elevations in feet.<br />
+		<br />
+		<hr /></td>
+	</tr>
+</table>
+<hr />
+
+<p align="right" class="auto-style1"><em>Last revision 3/7/2022</em></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>
