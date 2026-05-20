@@ -1,0 +1,605 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 14 (filtered)">
+
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{mso-style-link:"Header Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{mso-style-link:"Footer Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoAcetate, li.MsoAcetate, div.MsoAcetate
+	{mso-style-link:"Balloon Text Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:"Tahoma","sans-serif";}
+p.text, li.text, div.text
+	{mso-style-name:text;
+	margin-right:0in;
+	margin-left:0in;
+	line-height:13.0pt;
+	font-size:8.5pt;
+	font-family:"Arial","sans-serif";
+	color:#333399;}
+span.HeaderChar
+	{mso-style-name:"Header Char";
+	mso-style-link:Header;}
+span.FooterChar
+	{mso-style-name:"Footer Char";
+	mso-style-link:Footer;}
+span.BalloonTextChar
+	{mso-style-name:"Balloon Text Char";
+	mso-style-link:"Balloon Text";
+	font-family:"Tahoma","sans-serif";}
+ /* Page Definitions */
+ @page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+.auto-style1 {
+	font-size: medium;
+}
+-->
+</style>
+
+<title>Slope algorithm arc second DEMs</title>
+
+</head>
+
+<body lang=EN-US link=blue vlink=purple>
+
+<div class=WordSection1>
+
+<h1 align=center style='text-align:center'>Slope Algorithms for
+Arc-Second Digital Elevation Models</h1>
+
+<p class=MsoNormal>&nbsp;</p>
+	<p class=MsoNormal style="text-align: center"><em>There is a paper in Transactions in GIS 
+	(<a href="https://doi.org/10.1111/tgis.12852">Guth &amp; Kane, 2021</a>) that covers this.</em></p>
+	<p class=MsoNormal style="text-align: center"><em>
+	<a href="https://doi.org/10.5194/isprs-archives-XLIII-B4-2021-395-2021">Strobl and others (2021)</a> 
+	list software that can correctly do this, including MICRODEM</em>&nbsp;</p>
+	<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><span style="font-size: medium">            Slope and aspect computations provide one of the
+most useful derivative products from digital elevation models (DEMs).  Slope
+and aspect affect mobility and insolation, so users in fields as diverse as the
+military and ecology care about the results.  At least a half dozen distinctly
+different slope algorithms exist, and a host of studies (e.g. Carter, 1992;
+Florinsky, 1998; Guth, 1995; Hodgson, 1998; Jones, 1998; Zhou and Liu, 2004a,
+2004b; and countless other more recently) have looked at slope algorithms and the effects of data resolution and
+precision on the computed results. However, except for brief mentions in Guth
+(1995, p.32; 2009, p.352; 2010), the published discussions implicitly assume a
+rectangular UTM or UTM-like grid for the DEM because they refer to a single
+value for data spacing.  This paper will explore the implications of that
+assumption, and its importance when the best medium resolution DEMs (10-100 m
+post spacing) all use arc-second spacing.</span></p>
+
+<p class=MsoNormal style="font-size: medium">&nbsp;</p>
+
+<p class=MsoNormal style="font-size: medium">            Three common DEMs use geographic coordinates:
+the U.S Geological Survey’s National Elevation Dataset (USGS NED, Gesch and
+others, 2002); the National Geospatial-Intelligence Agency’s Digital Terrain
+Elevation Data (NGA DTED, National Imagery and Mapping Agency, 2000), and the
+Shuttle Radar Topography Mission (SRTM, Slater and others, 2006).  These data
+sets have horizontal spacing from 30” (DTED-0 and SRTM-30) to 1/9” (limited
+quantities of NED).  Much of this data is freely available on the WWW: 30” and
+3” (SRTM) for the entire world, and 1” data for the United States (both SRTM
+and NED).  Free means both easy to obtain and without cost.  Because of its
+ready availability, these DEMs have seen widespread usage world-wide.</p>
+	<p class=MsoNormal style="font-size: medium">&nbsp;</p>
+	<p class=MsoNormal style="font-size: medium">All of the global DEMs at 1-3 arc second spacing use 
+	geographic coordinates: SRTM (Slater and others, 2006), ASTER, ALOS, 
+	TandemX, ASTER, as do many of the USGS 3DEP data (formerly USGS NED, Gesch 
+	and others, 2002) and the&nbsp; the National Geospatial-Intelligence 
+	Agency’s Digital Terrain Elevation Data (NGA DTED, National Imagery and 
+	Mapping Agency, 2000).&nbsp; Much of this data is freely available on the 
+	WWW for the entire world.&nbsp;&nbsp; Free means both easy to obtain and 
+	without cost.&nbsp; Because of its ready availability, these DEMs have seen 
+	widespread usage world-wide.</p>
+	<p class=MsoNormal style="font-size: medium">&nbsp;</p>
+	<p class=MsoNormal><span style="font-size: medium">The traditional approach, typified by a comment about 
+	GDAL: &quot;</span><span style="font-family: serif; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(252, 252, 252); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">The<span>&nbsp;</span></span><strong class="program" style="box-sizing: border-box; font-weight: normal; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(252, 252, 252); text-decoration-style: initial; text-decoration-color: initial;">gdaldem</strong><span style="font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(252, 252, 252)">&nbsp;</span><span style="font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(252, 252, 252); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">generally 
+	assumes that x, y and z units are identical. If x (east-west) and y 
+	(north-south) units are identical, but z (elevation) units are different, 
+	the scale (-s) option can be used to set the ratio of vertical units to 
+	horizontal. For LatLong projections near the equator, where units of 
+	latitude and units of longitude are similar, elevation (z) units can be 
+	converted to be compatible by using scale=370400 (if elevation is in feet) 
+	or scale=111120 (if elevation is in meters). For locations not near the 
+	equator, it would be best to reproject your grid using gdalwarp before using 
+	gdaldem.</span><span style="font-size: medium">&quot; (<a href="https://gdal.org/programs/gdaldem.html">https://gdal.org/programs/gdaldem.html</a> 
+	) ArcGIS long used the same approach 
+	(<a href="https://desktop.arcgis.com/en/arcmap/10.3/tools/spatial-analyst-toolbox/applying-a-z-factor.htm">https://desktop.arcgis.com/en/arcmap/10.3/tools/spatial-analyst-toolbox/applying-a-z-factor.htm</a>), 
+	but now has a geodetic option that produces correct results.&nbsp; 
+	If there were no alternative, accepting the changes in the grid brought 
+	about by resampling could be justified.&nbsp; Howerver, if the grid could be 
+	used in its native form, that should produce a better result.&nbsp;</span></p>
+	<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style='text-indent:.5in; font-size: medium;'>
+<a href="../html/vincenty.htm">Geodetic formulas (Vincenty, 1975)</a>
+can be used to compute spacing of DEMs with coordinates in latitude and
+longitude.  &nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img height="415" src="spacing_by_lat.gif" width="662"></p>
+
+<p class=MsoNormal>Fig.  Spacing in meters for a 1” DEM as a function of
+latitude.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img height="351" src="diff_long_spacing.gif" width="598"></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style="height: 2px">Fig.  Percent difference in E-W data spacing from the top to
+the bottom of a 1º cell of a lat/long DEM.&nbsp; If the DEM covers more than a 
+degree, the result will be the sum of the values.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+	<p class=MsoNormal><img height="451" src="max_err_lat.gif" width="676"></p>
+
+<p class=MsoNormal>Fig.  Maximum error in the value of the slope computed using
+a constant E-W data spacing equal to the value in the center of a DEM, for a
+DEM centered near 55º N</p>
+
+<p class=MsoNormal>&nbsp;</p>
+	<p class=MsoNormal>&nbsp;</p>
+	<p class=MsoNormal style="font-size: medium">Guth (2010) proposed 5 ways to 
+	deal with calculating slope and aspect for arc second DEM</p>
+	<ol>
+		<li>
+		<p class=MsoNormal style="font-size: medium">Reproject the DEM to a 
+		projected cartesian system, such as UTM.&nbsp; This changes the DEM and 
+		cannot improve it, and there is no reason to accept the need for 
+		reprojection.</p>
+		</li>
+		<li>
+		<p class=MsoNormal style="font-size: medium">Using a single conversion 
+		factor to relate degrees to meters, and ignore the differences between 
+		the x and y spacings.&nbsp; This only works very close to the equator.&nbsp; 
+		A number of GIS programs in 2020 still offer only this option, and 
+		suggest the reprojection option otherwise (or always, since the equator 
+		is a rare place to be using a DEM).</p>
+		</li>
+		<li>
+		<p class=MsoNormal style="font-size: medium">Assume the DEM has a 
+		rectangular framework, with constant spacing throughout the DEM but a 
+		different x and y spacing. This works for small areas, not at high 
+		latitude where the x spacing changes rapidly (see figure above)</p>
+		</li>
+		<li>
+		<p class=MsoNormal style="font-size: medium"><strong>Assume the DEM has 
+		a trapezoidal framework (quasi-rectangular), with constant y spacing 
+		throughout the DEM but an x spacing that varies with latitude.&nbsp; 
+		This is the optimal solution, and has little performance penalty.&nbsp; 
+		When the DEM is opened, the software computes the x spacing at every row 
+		of the DEM grid, using geodetic formulae like 
+		<a href="../html/vincenty.htm">Vincenty (1975)</a>.</strong></p>
+		</li>
+		<li>
+		<p class=MsoNormal style="font-size: medium">Assume the DEM has a 
+		trapezoidal framework, with variable x and y spacing that varies with 
+		latitude.&nbsp; This is overkill, as the y spacing changes very little.</p>
+		</li>
+	</ol>
+	<p class=MsoNormal><br style="font-size: medium">&nbsp;</p>
+	<h3>Preferred Slope algorithm pseudo-code</h3>
+
+<p class=MsoNormal>Variables for arc second DEMs.&nbsp; These are calculated 
+when opening the DEM, along with the projection and datum initialization.</p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal>AverageYSpace: computed once for a DEM, and differences
+     can be ignored.&nbsp; It is the average of the y spacing at the top and 
+ bottom of the DEM</li>
+ <li class=MsoNormal>AverageXSpace: computed once for a DEM, and for a small
+     area, differences can be ignored.  The larger the area, and the higher the
+     latitude, the greater the errors in using this approximation.&nbsp; If you 
+ want to go this way, replace UseXSpace in the formulas below;</li>
+ <li class=MsoNormal>UseXSpace: the spacing for each row of the DEM is computed
+     and stored when the DEM is opened, and all computations use the value for
+     the row where the computation is done.  There is no significant
+     performance penalty.</li>
+</ul>
+
+	<p>&nbsp;</p>
+
+<p class=MsoNormal>Slope := sqrt(sqr(dzdx) + sqr(dzdy));</p>
+
+<p class=MsoNormal>GetAspect(dzdx,dzdy) uses an ATAN2 function, and adjusting 
+for geographic compass convention that 0 is north and values increase clockwise (math 
+convention 0 is east, and values increase counterclockwise)</p>
+
+	<p class=MsoNormal>&nbsp;</p>
+	<h3>Preferred Slope algorithm pseudo-code for dzdx and dzdy</h3>
+	<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>EightNeighborsUnweighted  (Evans; 3FD, Heerdegen and Beran, 1982; <span
+style='font-size:10.0pt'>Sharpnack and Akin, 1969; Horn, 1981; Wood, 1996 (PhD)</span>)</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdx := (zne + ze + zse - zsw - zw
+- znw) / 6 / UseXSpace; (variable, function of the latitude; compute and store 
+when opening DEM)</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdy := (znw + zn + zne - zsw - zs
+- zse) / 6 / AverageYSpace;</p>
+	<p class=MsoNormal style='text-indent:.5in'>&nbsp;</p>
+
+</div>
+<div class=WordSection1>
+
+<h3>Other algorithms pseudo-code for dzdx and dzdy</h3>
+	<p class=MsoNormal>&nbsp;</p>
+	<p class=MsoNormal>FourNeighbors (2FD, <span style='font-size:10.0pt'>Fleming
+and Hoffer, 1979 (Purdue Laboratory technical report cited in Zhou and Liu,
+2004); Zevenbergen and Thorne, 1987; Ritter, 1987</span>)</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdy := (zn - zs) * 0.5 /
+AverageYSpace;</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdx := (ze - zw) * 0.5 /
+UseXSpace;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>EightNeighborsWeighted (3FDWRSD, Horn 1981 method)</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdy := 0.125 * ((znw + 2 * zn +
+zne) - (zsw + 2 * zs + zse)) / AverageYSpace;</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdx := 0.125 * ((zne + 2 * ze +
+zse) - (znw + 2 * zw + zsw)) / UseXSpace;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>EightNeighborsWeightedByDistance (<span style='font-size:
+10.0pt'>3FDWRD, Third-order Finite Difference Weighted by Reciprocal of
+Distance; Unwin, 1981</span>)</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdy := 1 / (4 + 2 * <span
+style='font-family:Symbol'>Ö</span>2) * ((znw + <span style='font-family:Symbol'>Ö</span>2*zn
++ zne) - (zsw + <span style='font-family:Symbol'>Ö</span>2*zs + zse)) /
+AverageYSpace;</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdx := 1 / (4 + 2 *<span
+style='font-family:Symbol'>Ö</span>2) * ((zne + <span style='font-family:Symbol'>Ö</span>2*ze
++ zse) - (znw + <span style='font-family:Symbol'>Ö</span>2*zw + zsw)) /
+UseXSpace;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>FrameFiniteDifference <span style='font-size:10.0pt'>(FFD, Chu
+and Tsai 1995 Conference Proceedings cited in Zhou and Liu, 2004)</span></p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdy := (znw - zsw + zne - zse) *
+0.25 / AverageYSpace;</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdx := (zse - zsw + zne - znw) *
+0.25 / UseXSpace;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>SimpleDifference <span style='font-size:10.0pt'> (SIMPLE-D, Jones
+1998)</span></p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdy := (z - zs) * 0.5 /
+AverageYSpace;</p>
+
+<p class=MsoNormal style='text-indent:.5in'>dzdx := (z - zw) * 0.5 / UseXSpace;</p>
+
+	<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Jones (1998) proposed a “diagonal Ritters” method that uses
+the four diagonal neighbors to the NE, SE, SW, and NW.  While this readily
+adapts to a square grid, for a rectangular grid the two partial derivatives
+will not be perpendicular.  Because this algorithm provides no significant
+advantages, I will not try to adapt it for a geographic grid. </p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<h3>DISCUSSION</h3>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style='text-indent:.25in'>Comparing the results of the
+geographic algorithm with a UTM algorithm is not simple, for several reasons:</p>
+
+<ol style='margin-top:0in' start=1 type=1>
+ <li class=MsoNormal>Reinterpolation produces grid nodes at different locations,
+     so you cannot compare results of the two DEMs since they compute slope at
+     different locations.</li>
+ <li class=MsoNormal>Reinterpolation produces a grid with a different number of
+     grid nodes.</li>
+ <li class=MsoNormal>Most reinterpolation algorithms probably smooth the
+     original DEM, so the overall statistics may be different.</li>
+</ol>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style='text-indent:.25in'>We looked at the slope
+distributions for 4 versions of the Westgard Pass, California quadrangle: two
+SDTS DEMs with 10 m and 30 m spacing, and two NED DEMs with 1/3” and 1”
+spacing.  The reinterpolation for these DEMs was done by USGS, which uses the SDTS
+DEMs as the source for NED.  The 10 m and 1/3” show slightly steeper slopes, as
+expected for a DEM with smaller spacing, and generally agree with each other. 
+Likewise the 30 m and 1” DEMs generally agree with each other. In both pairs at
+comparable scales, the distributions differ.</p>
+	<p class=MsoNormal style='text-indent:.25in'>&nbsp;</p>
+	<p class=MsoNormal style='text-indent:.25in'>
+	<img height="591" src="slope_compares.gif" width="1550"></p>
+
+<p class=MsoNormal>Figure.  Slopes for the Westgard Pass, California 7.5’
+quadrangle</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+	<hr>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style='text-autospace:none'>Table.  Westgard Pass CA 7.5m
+quad Slope method:  8 neighbors (even)</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>&nbsp;</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>NED 1/3 sec</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>SDTS 10 m</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>NED 1 sec</p>
+  </td>
+  <td width=160 valign=top style='width:95.8pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>SDTS 30 m</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Max slope</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>231.62% (66.6°)</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>233.33% (66.8°)</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>157.64% (57.6°)</p>
+  </td>
+  <td width=160 valign=top style='width:95.8pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>154.32% (57.1°)</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Average slope</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>39.19% (21.4°)</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>39.24% (21.4°)</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>37.09% (20.3°)</p>
+  </td>
+  <td width=160 valign=top style='width:95.8pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>36.79% (20.2°)</p>
+  </td>
+ </tr>
+ <tr>
+  <td width=160 valign=top style='width:95.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Slope standard deviation</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>20.64</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>20.62</p>
+  </td>
+  <td width=160 valign=top style='width:95.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>19.12</p>
+  </td>
+  <td width=160 valign=top style='width:95.8pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>18.98</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+	<hr>
+
+<span style='font-size:12.0pt;font-family:"Times New Roman","serif"'><br
+clear=all style='page-break-before:always'>
+</span>
+
+<p class=MsoNormal><b>References Cited</b></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Carter, J.R.,
+1992, The effect of data precision on the calculation of slope and aspect using
+gridded DEMs: Cartographica, vol.29, no.1, pp.22-34.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Florinsky, I.V.,
+1998, Accuracy of local topographic variables derived from digital elevation
+models: International Journal of Geogaphical Information Science, vol.12, no.1,
+p.47-61.</p>
+
+<p class=text style='margin-top:0in;margin-right:0in;margin-bottom:0in;
+margin-left:.5in;margin-bottom:.0001pt;text-align:justify;text-indent:-.5in;
+line-height:normal'><span style='font-size:12.0pt;font-family:"Times New Roman","serif";
+color:windowtext'>Gesch, D.B., Oimoen, M., Greenlee, S., Nelson, C., Steuck,
+M., and Tyler, D., 2002.  The national elevation dataset: <i>Photogrammetric
+Engineering &amp; Remote Sensing</i>, 68(1):5-11.</span></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Guth, P.L., 1995,
+Slope and aspect calculations on gridded digital elevation models: Examples
+from a geomorphometric toolbox for personal computers: Zeitschrift fur
+Geomorphologie N.F. Supplementband 101, pp.31-52.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Guth, P.L., 2009,
+Geomorphometry in MICRODEM, In Hengl, T., and Reuter, H.I. (eds),
+Geomorphometry: concepts, software, applications. Developments in Soil Science
+Series, Elsevier, ISBN-13: 978-0-12-374345-9, p.351-366.</p>
+
+	<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>
+	<font style="font-family: serif">Guth, P.L., 2010,<span>&nbsp;</span>Slope, 
+	Reflectance, and Viewshed Algorithms for Arc-Second Digital Elevation Models: 
+	ASPRS 2010 Conference, San Diego, CA, April 26-30, 2010, 11 page paper on 
+	Conference CD-ROM.</font></p>
+	<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>
+	Guth, P., &amp;&nbsp;Kane, M.&nbsp;(2021).&nbsp;Slope, aspect, and hillshade algorithms for 
+	non-square digital elevation models.&nbsp;Transactions in GIS,&nbsp;25,&nbsp;2309–&nbsp;2332.&nbsp;</span><a href="https://doi.org/10.1111/tgis.12852" style="font-family: &quot;Times New Roman&quot;, serif; font-size: small; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(128, 255, 255);">https://doi.org/10.1111/tgis.12852</a><span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;, serif; font-size: small; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(128, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">&nbsp;&nbsp;&nbsp;<span>&nbsp;</span></span><a href="https://www.usna.edu/Users/oceano/pguth/website/reprints_public/guth_and_kane_non_square_pixels_submitted_april_2021.pdf" style="font-family: &quot;Times New Roman&quot;, serif; font-size: small; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(128, 255, 255);">Paper 
+	as submitted in April 2021</a></p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Hodgson, M.E., 1995, What cell size does the computed slope/aspect angle represent?: Photogrammetic
+Engineering &amp; Remote Sensing, vol.61, no.5, pp.513-517.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Hodgson, M.E., 1998, Comparison of angles from surface slope/aspect algorithms: Cartography and
+Geographic Information Systems, vol.25, no.3, p.173-185.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Jones, K.H.,
+1998, A comparison of algorithms used to compute hill slope as a property of
+the DEM: Computers &amp; Geosciences, vol.24, no.4, p.315-324.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>National Imagery
+and Mapping Agency, 2000, Performance specification digital terrain elevation
+data (DTED): MIL-PRF-89020B, 45 p.  Available online at <a
+href="http://www.nga.mil/ast/fm/acq/89020B.pdf">http://www.nga.mil/ast/fm/acq/89020B.pdf</a>. 
+</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Slater, J.A.,
+Garvey, G., Johnston, C., Haase, J., Heady, B., Kroenung, G., and Little, J.,
+2006, The SRTM data “finishing” process and Products: Photogrammetric
+Engineering &amp; Remote Sensing, 72, 237-247.</p>
+
+	<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>
+
+	Strobl, P. A., Bielski, C., Guth, P. L., Grohmann, C. H., Muller, J.-P., 
+	López-Vázquez, C., Gesch, D. B., Amatulli, G., Riazanoff, S., and Carabajal, 
+	C.: 2021 THE DIGITAL ELEVATION MODEL INTERCOMPARISON EXPERIMENT DEMIX, A 
+	COMMUNITY-BASED APPROACH AT GLOBAL DEM BENCHMARKING, Int. Arch. Photogramm. 
+	Remote Sens. Spatial Inf. Sci., XLIII-B4-2021, 395–400<span class="auto-style1">,
+	</span>
+	<a href="https://doi.org/10.5194/isprs-archives-XLIII-B4-2021-395-2021">https://doi.org/10.5194/isprs-archives-XLIII-B4-2021-395-2021</a>
+	
+</div>
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Verdin, K.L.,
+Godt, J.W., Funk, C., Pedreros, D., Worstell, B., Verdin, J., 2007, Development
+of a global slope dataset for estimation of landslide occurrence resulting from
+earthquakes: U.S. Geological Survey, Open-File Report 2007-1188, 25
+p.</p>
+
+	
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Vincenty, T. 1975. Direct and inverse solutions of geodesics on the ellipsoid with
+application of nested equations. Survey Review. 23(176):88-93.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Zhou, Q., and 
+Liu, X., 2004, Analysis of errors of derived slope and aspect related to DEM 
+data properties: Computers &amp; Geosciences, vol.30, no.4, p.369-378.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:-.5in'>Zhou, Q., 
+and Liu, X., 2004, Error analysis on grid-based slope and aspect algorithms: 
+Photogrammetic Engineering &amp; Remote Sensing, vol.70, no.8, p.957-962.</p>
+
+<hr>
+
+<p align="right"><em>Last revised 1/15/2022</em></p>
+
+</body>
+
+</html>
