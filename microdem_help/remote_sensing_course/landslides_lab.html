@@ -1,0 +1,398 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Eureka Valley Landslide</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-family: "Times New Roman";
+	font-size: 16px;
+	letter-spacing: normal;
+}
+.auto-style3 {
+	font-family: "Times New Roman";
+	letter-spacing: normal;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Eureka Valley Landslide</h1>
+Eureka Valley in eastern California, on the edge of Death Valley National Park 
+has a large landslide (<a href="https://pubs.geoscienceworld.org/gsa/lithosphere/article/2020/1/8860819/592942/The-Eureka-Valley-Landslide-Evidence-of-a-Dual">Shaller 
+and others, 2020</a>;
+<a href="https://blogs.agu.org/landslideblog/2009/01/15/intriguing-long-runout-landslide-in-death-valley/">
+Petley, 2009</a>;
+<a href="https://blogs.agu.org/landslideblog/2020/12/14/the-eureka-valley-landslide/">
+Petley, 2020</a>) that may be similar to features on Mars<br />
+<br />
+<a href="https://blogs.agu.org/landslideblog/2023/01/24/blacks-beach-1/">
+https://blogs.agu.org/landslideblog/2023/01/24/blacks-beach-1/</a> <h2>Deliverables:</h2>
+<ul>
+	<li>Create a 3D view of the landslide, with the imagery.&nbsp; Discuss the horizontal and 
+	vertical distances covered by the landslide.</li>
+	<li>Digitize the breakaway zone (Qt) and the final runout location (Ql) for 
+	the Eureka Valley Landslide.&nbsp; Submit the shapefiles merged into a 
+	single file (<a href="../html/shz_file.html">use the SHZ 
+	option</a> after <a href="../html/merge_shapefile.htm">merging the 
+	individual shapefiles</a> or <a href="#Merge_KMZ">merge as a Google Earth&nbsp; KMZ file</a>), and discuss how the landslide appears on the 4 available imagery 
+	data sets, and why you chose the two that you did to use to digitize.&nbsp; Insure that you 
+	cover the pan and multispectral bands in Landsat.</li>
+	<li>Compare your digitization to the published geologic map and the NAIP 
+	imagery</li>
+	<li>Complete the table on the thermal reflectance at 6 locations.&nbsp; 
+	Discuss what affects the differences.</li>
+</ul>
+<hr />
+<p>&nbsp;</p>
+<table border="2">
+	<tr>
+		<td>Data set</td>
+		<td>How to open</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>DEM</td>
+		<td><img src="../images/new%20dem.gif" width="32" height="32">
+        <a href="../html/tbme5iy6.htm"><b>Open DEM</b></a>, USGS 1/3" DEM.&nbsp; 
+		You want the TIF file.</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Sentinel 2 image</td>
+		<td><img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="../html/tbme65lx.htm"><b>Open image</b></a>&nbsp; 
+		L1C_T11SMB_A011464_20170901T183959&nbsp;&nbsp; Use directory selection</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Landsat 8 image</td>
+		<td><img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="../html/tbme65lx.htm"><b>Open image</b></a>, 
+		LC08_L1TP_041034_20190615_20190620_01_T1&nbsp; Use directory selection</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>NAIP</td>
+		<td><img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="../html/tbme65lx.htm"><b>Open image</b></a>, 
+		eureka_valley_dunes_last_chance_range_merge&nbsp;&nbsp; Use directory 
+		selection or pick the TIF file.</td>
+		<td>NAIP: 1 m data is available almost everywhere in the US.&nbsp; This is 
+		a merge of two tiles, whose metadata is in the folder.&nbsp; This is 
+		actually better than 1 m resolution.</td>
+	</tr>
+	<tr>
+		<td>Geologic Map</td>
+		<td>
+<p>&nbsp;Last 
+Chance Range Geologic Quad </p>
+<ul>
+	<li>4300 x 4300 pixels</li>
+	<li>22056 x 27865 m</li>
+	<li>5.12 x 6.48 m/pixel</li>
+	<li>You can overlay this on the DEM, using
+	<a href="../html/tbme9u5x.htm"><b>Overlay</b></a>,
+	<a href="../html/image_overlays.htm">Imagery (KML, KMZ, world files)</a>, 
+	and picking the KMZ file.&nbsp; The overlay only works on a map with 
+	geographic coordinates; the imagery has UTM coordinates.</li>
+	<li>You can also view the KMZ file in Google Earth, which will have 
+	different imagery.</li>
+	<li>As you move you on the map overlaid on the DEM, you will see the 
+	locations on the imagery.&nbsp; </li>
+	<li>You are not to trust the geologic map, but are to outline the 
+	landslide on the imagery.</li>
+	<li>Do not try to open the TIF file, or try to overlay the KMZ on any map other 
+	than the DEM (it must be overlaid on a map using a geographic lat/long 
+	grid).</li>
+</ul>
+		</td>
+		<td>This was published in 1990 as an open file report (partially peer 
+		reviewed, and not in color) and was completed before current technology 
+		was available.&nbsp; The geologists would not have had imagery 
+		comparable to what you have, so you might be able to create a better 
+		outline of the landslide.<br />
+		<br />
+		<a href="https://ngmdb.usgs.gov/Prodesc/proddesc_18007.htm">
+		https://ngmdb.usgs.gov/Prodesc/proddesc_18007.htm</a>&nbsp;&nbsp; <br />
+		<br />
+		<a href="https://pubs.usgs.gov/of/1990/0647b/report.pdf">
+		https://pubs.usgs.gov/of/1990/0647b/report.pdf</a> has a hand colored 
+		version.</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<h2>Thermal</h2>
+<table border="2">
+	<tr>
+		<td>Location</td>
+		<td>Lat</td>
+		<td>Long</td>
+		<td>Elevation</td>
+		<td>DN_ Band 10</td>
+		<td>DN_ Band 11</td>
+		<td>TB_Band10</td>
+		<td>TB_Band11</td>
+	</tr>
+	<tr>
+		<td>White Mountain Peak</td>
+		<td>37.64001545</td>
+		<td>-118.24844236</td>
+		<td>4350 m</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Deep Springs Valley</td>
+		<td>37.32899127</td>
+		<td>-118.01812667</td>
+		<td>1600 m</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Eureka Valley
+		</td>
+		<td>37.07861378</td>
+		<td>-117.67113684</td>
+		<td>900 m</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Death Valley</td>
+		<td>36.64493023</td>
+		<td>-117.13562305</td>
+		<td>500 m</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Fish Lake Valley field</td>
+		<td>37.47529862</td>
+		<td>-117.86270947</td>
+		<td>1550 m</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Fish Lake Valley desert</td>
+		<td>37.46979888</td>
+		<td>-117.85399529</td>
+		<td>1550 m</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<p>To show these locations on a map use the same steps as in the last lab.</p>
+<ul>
+	<li><img border="0" src="../images/db_map.png" width="24" height="24">
+	<a href="../html/data_base.htm">Open database</a>&nbsp; and pick the CSV file.&nbsp; 
+	The default symbol, a red square, might not show up if you have the false 
+	color image display; you can always modify the symbols.</li>
+	<li>The points might not appear on all the images, since the coverage area is very 
+	different for the 1 m, 10 m, and 30 m data.</li>
+</ul>
+<p>You must use a satellite that has thermal bands.&nbsp; Get these Satellite DN's 
+and brightness temperatures by:</p>
+<ul>
+	<li><a href="../html/map_right_click.htm"><span style="font-size: medium">Right click</span></a> on the map where you want to get the values,
+	<a href="../html/right_click_remote_sensing.html">Remote sensing</a>, 
+	Satellite DNs at points.&nbsp; The results differ between Sentinel-2 and 
+	Landsat because of how the process the radiances at the satellite. </li>
+	<li>You can also get <a href="../remote_sensing_course/landsat_thermal.htm">TLS (temperature of the land surface) for a range of 
+			  emissivities</a> at the points</li>
+</ul>
+<p>&nbsp;</p>
+<h2>Digitize the Landslide outline</h2>
+<p>The geologic map has:</p>
+<ul>
+	<li>Ql, Quaternary landslide where the landslide rode out into the valley, at N37.07475813° W117.65031939°,&nbsp;&nbsp;&nbsp;&nbsp; N37° 4.486' 
+	W117°39.019', N37° 4'29.13" W117°39' 1.15"</li>
+	<li>Qt, Quaternary talus where the landslide started, at N37.06843596° W117.61902538°,&nbsp;&nbsp;&nbsp;&nbsp; N37° 4.106' 
+	W117°37.142', N37° 4' 6.37" W117°37' 8.49"</li>
+</ul>
+<p>You can overlay the KMZ on the DEM [<a href="../html/tbme9u5x.htm"><b>Overlay</b></a>,<a href="../html/image_overlays.htm">Imagery (KML, KMZ, world files)</a>] 
+or in Google Earth 
+.&nbsp; </p>
+<p>Digitize the outline of the Ql and Qt on two different base maps (choose 
+among NAIP, 
+the two satellite images, Google Earth).&nbsp; Overlay the two on the DEM with the Geologic map, 
+or in Google Earth, and compare the results with the different imagery.</p>
+
+<hr />
+<p>General digitizing guidance</p>
+<ul>
+	<li style="font-size: medium">Insure you are working on the 
+full resolution of the raster data, on a big screen</li>
+	<li style="font-size: medium">Strongly consider a mouse</li>
+	<li class="auto-style1">Insure that the entire feature you want to digitize 
+	is on screen.&nbsp; If you try to resize the screen in the middle of 
+	digitizing, the program is likely to confuse the two operations.</li>
+	<li class="auto-style1">If you cannot get the feature on screen at the full 
+	resolution on the data, make it as large as you can, digitize, and then edit 
+	the points zoomed in ever farther.</li>
+	<li style="font-size: medium">Decide if you want point or stream mode (right click, and change from 
+	the popup menu)</li>
+	<li style="font-size: medium">If you use stream mode, set the point 
+	tolerance
+	<ul>
+		<li style="font-size: medium"><a href="../html/map_right_click.htm">
+		<span style="font-size: medium">Right click</span></a> while digitizing, 
+		and set tolerance from the popup</li>
+	</ul>
+	</li>
+	<li class="auto-style1">Some of the digitizing files are saved in temporary 
+	storage, and may be deleted the next time you open the program.&nbsp; If you 
+	do not know where the file was saved, save it on the <b>
+	<a href="../html/db_report.htm">Report</a></b> menu.<ul>
+		<li class="auto-style1">Export DBF file if it is points</li>
+		<li class="auto-style1">Export shapefile if it is lines or polygons</li>
+	</ul>
+	</li>
+</ul>
+<p><a href="../html/digitizing.htm">Digitizing</a> in 
+	MICRODEM.&nbsp; If you are confident of your digitizing ability and doubt you will have to 
+edit your lines.</p>
+<ul>
+	<li><font size="3">
+	<img src="../images/icons.gif" border="2"
+        width="20" height="20"> </font><a href="../html/annotate.htm">
+	<font
+        size="3">Annotate Map</font></a>, <font size="3">
+	<a href="../html/shape_digit.htm">Create
+                shapefile</a>, area/polygon.&nbsp; </font></li>
+	<li>If you were overly optimistic and want to edit the outline,
+	<a href="../html/db_rec_click.htm">Double click on the record in 
+data base</a>, Export, line/Polygon to point database, and continue with the 
+	graphical edits in the step below</li>
+</ul>
+<p><a href="../html/digitizing.htm">Digitizing</a> in 
+	MICRODEM if you expect that you might have to edit your lines</p>
+<ul>
+	<li><span style="font-size: medium"><font size="3">
+	<img src="../images/icons.gif" border="2"
+        width="20" height="20"> </font><a href="../html/annotate.htm">
+	<font
+        size="3">Annotate Map</font></a>, <font size="3">
+	<a href="../html/shape_digit.htm">Create
+                shapefile</a>, </font>track database.&nbsp; You cannot add 
+	points later, so insure you get enough points for the level of detail you 
+	want</span></li>
+	<li>Once the <span style="font-size: medium">track (point) </span>table 
+	opens, <a href="../html/db_edit.htm"><b>Edit</b></a>, <b>Graphically move points </b>
+	to drag points to a new location.</li>
+	<li>C<span style="font-size: medium">onvert the track (point) database to a polygon.&nbsp;&nbsp;
+	</span><b><a href="../html/db_report.htm"><span style="font-size: medium">Report</span></a><span style="font-size: medium">, 
+	</span></b><a href="../html/create_shp_from_pts.htm">
+	<span style="font-size: medium">Create area/line shape file from points</span></a><span style="font-size: medium">.&nbsp; 
+	You need the polgyon shapefile to compute area.</span></li>
+</ul>
+<p><span style="font-size: medium">
+<a href="../html/google_earth/pt_file_digitize.htm">Digitize in Google Earth</a>.&nbsp; </span></p>
+<ul>
+	<li>Open KMZ file of the geologic quad in Google Earth to locate the Last 
+	Chance Range and Eureka Valley</li>
+	<li><span style="font-size: medium">To add the ortho image to Google Earth,&nbsp;
+		</span>
+	<ul>
+    <li><font size="3"><img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="../html/tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a></li>
+    	<li>
+		<img src="../images/1to1.gif" width="29"
+        height="23" style="font-size: medium"><span style="font-size: medium">
+		</span><a href="../html/1to1maps.htm"><span style="font-size: medium">1:1
+        map view</span></a><span style="font-size: medium"> to insure you have the full resolution of the 
+			imagery</span></li>
+		<li><a href="../html/map_right_click.htm">
+		<span style="font-size: medium">Right click</span></a><span style="font-size: medium">,
+			</span><a href="../html/export_right_click.htm">
+		<span style="font-size: medium">Export</span></a><span style="font-size: medium">, Quick map to Google Earth</span></li>
+	</ul>
+	</li>
+	<li><span style="font-size: medium">Digitize points (if you want lines/polygons, you will have to 
+		install </span><a href="../html/dnr_garmin.htm"><b>
+	<span style="font-size: medium">DNRGPS</span></b></a><span style="font-size: medium"> and use that 
+	to convert a shapeilf)</span></li>
+	<li style="font-size: medium">Save as a KML file</li>
+	<li>
+	<span style="color: rgb(0, 0, 0); font-family: 'Times New Roman'; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none">
+	<span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+	<img border="0" src="../images/db_map.png" width="24" height="24">
+	<a href="../html/data_base.htm">Database</a>, and open the KML file to 
+		get it converted to a DBF file</span></span></li>
+	<li class="auto-style3" style="font-size: medium">If you have points, <b>
+	<a href="../html/db_report.htm">Report</a>, </b>
+	<a href="../html/create_shp_from_pts.htm">Create area/line shape file from points</a></li>
+</ul>
+<p><a href="../html/dig_ur_imagery_ge.html">Digitize in Google Earth with your 
+imagery</a></p>
+<ul>
+	<li class="auto-style2">
+	<img border="1" src="../images/area.GIF" width="20" height="20" style="font-size: medium"><a href="../html/area.htm"><span class="auto-style1">Area computation</span></a><span class="auto-style1"> requires 
+	the polygons from your digitization</span></li>
+</ul>
+<hr />
+<p>Create a 3D view</p>
+<ul>
+	<li><img src="../images/new%20dem.gif" width="32" height="32">
+        <a href="../html/tbme5iy6.htm"><b>Open DEM</b></a></li>
+	<li><img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="../html/tbme65lx.htm"><b>Open image</b></a> you 
+	want to use</li>
+	<li><font size="3"><img src="../images/resize.gif" width="16"
+        height="16"> </font><a href="../html/tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> the image to just the area you want</li>
+	<li>Make the map big (the quality of the view is directly related to its 
+	size)</li>
+	<li><img height="27" src="../images/opengl_small.gif" width="27">
+	<a href="../html/new_3d_viewer.htm">OpenGL 3D view</a> from the image 
+	toolbar</li>
+</ul>
+<hr />
+<p>Merging Files</p>
+<ul>
+	<li><a href="../html/merge_shapefile.htm">Merge shapefiles:&nbsp;</a> You 
+	will probably have 4 files with the outline of the landslide 
+	(two different images, and separate files for the two regions, and if you 
+	have both on screen you probably are not seeing any details).&nbsp; Separate shapefiles 
+	can make symbolization and creation of a legend easier, but you will combine them 
+	for submisson.&nbsp; Insure the name field shows if it is Ql or Qt, and the 
+	source imagery used.</li>
+	<li><a name="Merge_KMZ">Merge KMZ</a>: <a href="../html/kml_export.htm">KML: export for Google earth,</a> 
+	for all the files in Google Earth, move them all to be the 
+	only things in a single&nbsp; folder, and then save that folder as a KMZ.&nbsp;&nbsp;&nbsp;
+	<a href="../html/clean_kml.htm">Clean up KML exports</a> and save KML/KMZ </li>
+</ul>
+
+<hr>
+
+<p align="right"><i>last revised 2/2/2023</i></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

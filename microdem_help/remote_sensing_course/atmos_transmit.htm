@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Atmospheric Transmittance</title>
+</head>
+
+<body>
+
+<h2>Atmospheric Transmittance</h2>
+<p>Transmission in the atmosphere varies by wavelength.&nbsp; Particular gasses 
+cause each of the absorption bands.&nbsp; Note the effects of CO2, particularly 
+in the TIR, which explain its role as a greenhouse gas.</p>
+<table border="2">
+	<tr>
+		<td><img height="535" src="atmospheric_transmittance.png" width="981" /></td>
+	</tr>
+	<tr>
+		<td>Translated from Russian at
+		<a href="https://commons.wikimedia.org/wiki/File:Atmosfaerisk_spredning-ru.svg">
+		https://commons.wikimedia.org/wiki/File:Atmosfaerisk_spredning-ru.svg</a></td>
+	</tr>
+</table>
+<h2>Landsat 8 and Sentinel-2 have three bands in regions where the atmosphere 
+absorbs:</h2>
+<table border="2">
+	<tr>
+		<td>Landsat 8 Band</td>
+		<td>Sentinel-2 Band</td>
+		<td>Use</td>
+	</tr>
+	<tr>
+		<td>Band 1 Coastal/aerosol 0.43-0.45</td>
+		<td>B01 : 443 nm (60 m)</td>
+						
+		<td>This edge of the blue suffers from scattering (what makes the sky 
+		blue). It has two main uses: imaging shallow water, and tracking fine 
+		particles like dust and smoke. By itself, its output looks a lot like 
+		Band 2 (normal blue), but if we contrast them and highlight areas with 
+		more deep blue, we can see differences.</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>B09 : 945 nm (60 m)</td>
+		<td>Band 9 measures moisture in the atmosphere, compared to Band 8a in 
+		an atmospheric window region. Band 9 is the measurement channel in the 
+		absorption region. </td>
+
+					</tr>
+	<tr>
+		<td>Band 9 cirrus 1.36-1.38</td>
+		<td>B10 : 1375 nm (60 m)</td>
+		<td>Anything that appears clearly in it must be reflecting very brightly 
+		and/or be above most of the atmosphere, which absorbs completely at this 
+		wavelength.&nbsp; These clouds are hard to see otherwise.</td>
+	</tr>
+</table>
+
+		
+	<p>&nbsp;</p>
+&nbsp;<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="380" src="../microdemtutorials/sat_imagery/landsat_sentinel_bands.png" width="760" /></td>
+	</tr>
+	<tr>
+		<td>
+		<a data-saferedirecturl="https://www.google.com/url?q=https://www.usgs.gov/faqs/what-are-band-designations-landsat-satellites?qt-news_science_products%3D0%23qt-news_science_products&amp;source=gmail&amp;ust=1568728259851000&amp;usg=AFQjCNESsoOHViCy3Te9_zcnk5TCeeyYgQ" href="https://www.usgs.gov/faqs/what-are-band-designations-landsat-satellites?qt-news_science_products=0#qt-news_science_products" style="color: rgb(17, 85, 204); font-family: Arial, Helvetica, sans-serif; font-size: small; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255);" target="_blank">
+		https://www.usgs.gov/faqs/<wbr />what-are-band-designations-<wbr />landsat-satellites?qt-news_<wbr />science_products=0#qt-news_<wbr />science_products</a></td>
+	</tr>
+</table>
+<p><br />
+</p>
+<p>&nbsp;</p>
+<table border="2" style="border-style: solid; border-width: 2px">
+	<tr>
+		<td><img height="857" src="Atmospheric_Transmission.png" width="850" /></td>
+	</tr>
+	<tr>
+		<td>
+		<a href="https://commons.wikimedia.org/wiki/File:Atmospheric_Transmission.png">
+		https://commons.wikimedia.org/wiki/File:Atmospheric_Transmission.png</a></td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

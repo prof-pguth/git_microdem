@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Lab 3--Kangaroo Island</title>
+</head>
+
+<body>
+
+<h1>Lab 3--Kangaroo Island</h1>
+<p>In the fires in Australia at the beginning of 2020, the unique 
+ecological area of
+<a href="https://www.australia.com/en/places/adelaide-and-surrounds/guide-to-kangaroo-island.html">
+Kangaroo Island</a> was devastated.&nbsp; 
+<a href="https://www.nytimes.com/2020/02/04/world/australia/kangaroo-island-fire.html?action=click&amp;module=RelatedLinks&amp;pgtype=Article">Much of the news</a> focused on the
+<a href="https://www.theguardian.com/australia-news/2020/jan/07/kangaroo-island-bushfires-grave-fears-for-unique-wildlife-after-estimated-25000-koalas-killed">
+lovable dunnart</a>.</p>
+<p>We are going to assess the damage from the fires using Sentinel-2 imagery.&nbsp; 
+The island is on two tiles, PA (west) and QA (east, because in MGRS the first 
+letter is the east-west coordinate, and the second is the north-south 
+coordinate; the 53H gives the 6 degree UTM zone).&nbsp; You will do the analysis 
+on PA. You can download and uncompress the data from the File, Remote sensing 
+lab menu choice.&nbsp; There are also three dates, before, during, and after the 
+fire.</p>
+<p>Deliverables.&nbsp; For each of these you probably need at least a short 
+paragraph and a few images.</p>
+<ol>
+	<li>Write a short introduction, with a map showing the unitiated person where this 
+	is.&nbsp; Say clearly what data you used.</li>
+	<li>Comment on whether the visible, false color, NBR or NDVI best shows what has burned.&nbsp; 
+	What spectral bands are involved, and why do they work?</li>
+	<li>Comment on dNBR and dNDVI grids, and what they show, and if they improve 
+	on the NBR and NDVI.</li>
+	<li>Compute the area burned, and the percentage of the island within the PA 
+	tile that burned.&nbsp; Insure that you mask the water, and consider just 
+	the land.</li>
+	<li>Dscuss what <a href="../html/msi_fires.html">band combination </a>best 
+	shows the active fire, its wavelength, and
+	<a href="https://www.spectralcalc.com/blackbody_calculator/blackbody.php">
+	what black body temperature emits to give a peak at that wavelenght</a>.&nbsp; 
+	Include a graph.</li>
+	<li>Have an acknowledgments section, to discss any help you received and 
+	give credit.</li>
+</ol>
+<hr />
+<ul>
+	<li><img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="../html/tbme65lx.htm">Open image</a>.&nbsp; For 
+	the <a href="../html/sentinel2.html">Sentinel-2</a> 
+		imagery, you want to use the open by directory option.<ul>
+		<li><img src="../images/band.gif" width="23" height="23"> 
+		<a
+        href="../html/tbme9dpq.htm">Band selection</a> and&nbsp;
+	<a href="../html/set_contrast.htm">contrast enhancement</a></li>
+	</ul>
+	</li>
+	<li>MSI <a href="../html/msi_fires.html">band combinations </a>to show 
+	active fire.&nbsp; The page lists three band suggestions for OLI on TM, but 
+	you should be able to find the corresponding Sentinel-2 bands.&nbsp; The one 
+	reference for Sentinel-2 is for the wavelength, which you can convert to 
+	band number. <a href="landsat_sentinel2.htm">Landsat/Sentinel-2 bands.</a></li>
+	<li>Create one of the normalized difference indexes<ul>
+		<li><a href="../html/ndvi_colors.html">NDVI</a>--in addition to 
+		vegetation, this can highlight water or barren land<ul>
+			<li><a href="../html/ndvi_colors.html">NDVI</a> are created with 
+			<a href="../html/new_band.htm">Create new band</a>.</li>
+			<li>Use <a href="../html/color_pal.htm">defined palette display</a> 
+			for NDVI&nbsp; (this should be automatic; lowest colors in gray will 
+			be water, then barren land, and finally vegetation in shades of 
+			green</li>
+			<li>dNDVI grids are created with&nbsp;
+			<a href="../html/mult_grid_math.htm">Multiple grid arithmetic,</a>&nbsp;
+			<a href="../html/dem_diff_map.htm">Difference between two
+                grids</a> and show the difference in vegetation between two 
+			scenes (could be seasonal pattern, drought, fire, increased 
+			farming)&nbsp; </li>
+			<li>dNDVI does not have a special palette.</li>
+		</ul>
+		</li>
+		<li><a href="../html/nbr_colors.html">NBR and dNBR</a><ul>
+			<li><a href="../html/nbr_colors.html">NBR</a>&nbsp; created with
+			<a href="../html/new_band.htm">Create new band</a>.</li>
+			<li>There is no special palette for NBR, so you can use any of the 
+			color scales</li>
+			<li> <a href="../html/nbr_colors.html">dNBR</a> grids are created with&nbsp;
+			<a href="../html/mult_grid_math.htm">Multiple grid arithmetic,</a>&nbsp;
+			<a href="../html/dem_diff_map.htm">Difference between two
+                grids</a>.&nbsp; </li>
+			<li>For <a href="../html/nbr_colors.html">dNBR</a> use
+			<a href="../html/color_pal.htm">defined palette display</a></li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+	<li>You should save the computed grids, with a name that lets you know which 
+	is which, and somewhere where you can find them.&nbsp; The program will 
+	suggest reasonable names, although file names cannot use some of the math 
+	operators.</li>
+	<li>If you only need to work with part of the map area, <b>&nbsp;</b><a href="../html/tbme8igl.htm">File</a>,
+	<a href="../html/save_dem.htm">Save DEM/grid</a>,&nbsp; Current subset, MD 
+	DEM.&nbsp; This will be smaller, but more importantly, process much faster.</li>
+	<li>If you edit these grids, the changes are only to the copy of the grid in 
+	memory.&nbsp; If you make a mistake, you can reload the DEM from the copy on 
+	disk, with an option on the Edit menu.</li>
+</ul>
+<ul>
+	<li>Masking out the water.&nbsp; Save the intermediate grids in case you 
+	want to recreate a step.<ul>
+		<li>Find a grid that does a good job seperating the island from the 
+		ocean.&nbsp; You could use:<ul>
+			<li>A single band of the satellite.&nbsp; If you want this, you must <a href="../html/new_band.htm">Create 
+			a new band</a>&nbsp; 
+			with the reflectances for that band.</li>
+			<li><a href="../html/satb8a0j.htm">Band ratio</a></li>
+			<li><a href="../html/norm_sat.htm">Normalized satellite indexes</a>; 
+			there is a water index NDWI and you can check the vegetation 
+			index <a href="../html/ndvi_colors.html">NDVI</a> which also clearly differentiates the water</li>
+		</ul>
+		</li>
+		<li><a href="../html/create_mask.htm">Create a mask from the grid</a>.&nbsp; 
+		You can design the mask so you identify the water, or the non-water.&nbsp; 
+		You will give it a value; the rest of the grid will be 0.</li>
+		<li>If the data is noisy, you might do a median 
+		<a href="../html/filter_grid.htm"><b>Filter</b></a> on it, which will 
+		eliminate single pixels or small groups of pixels.&nbsp; Try 
+		a size of 5.</li>
+		<li>Turn the values in the mask you do not want to missing data.<b>
+		<a href="../html/edit_menu.htm">Edit</a></b>, 
+		<a href="../html/edit_mark_missing.htm">Mark as missing</a>, All above 
+		or all below the value you want.</li>
+		<li>Mask the NBR or NDVI grid with the water mask you just created: <b>
+		<a href="../html/edit_menu.htm">Edit</a></b>, 
+		<a href="../html/edit_mark_missing.htm">Mark as missing</a>, 
+		Open grid.&nbsp; Pick either the valid points or the missing points in 
+		the mask to set missing in your primary grid.</li>
+	</ul>
+	</li>
+	<li>If you had a high resolution vector coastline, you could mask with that.&nbsp; 
+	We are not considering that option here because you need practice 
+	identifying water from the satellite imagery.</li>
+	<li>Computing areas from the grids<ul>
+		<li>Insure you have the NDVI or dNBR color set for the map.&nbsp;
+		<a href="../html/map_disp_param.htm">Display Parameter</a>, 
+		<a href="../html/tbme78s3.htm">Elevation map</a>, 
+		<a href="kangaroo_island_lab.htm">Fixed color palette</a>, 
+	and pick one of the dNBR palettes.&nbsp; They have slightly different 
+		categories, and it does not matter which you use.</li>
+    <li><img src="../images/resize.gif" width="16" height="16"><a href="../html/tbme0o81.htm"><font size="3">Subset
+        &amp; zoom</font></a> and zoom to just the area you want (in this case, to avoid 
+		the mainland to the north of Kangaroo Island). </li>
+		<li><a href="../html/map_right_click.htm">Right
+      click on map</span></a><span style="font-size: medium">, Popup legends&nbsp; 
+		to get a database with the categories and the pixel count in each.</span><ul>
+			<li>To get a prettier version, <b><a href="../html/db_report.htm">
+			Report</a></b>, <a href="../html/report_legend.htm">Legend</a> on 
+			the database toolbar.</li>
+			<li>To export it to compute areas,
+Export the legend database with <a href="../html/db_report.htm">Report</a>, 
+			<a href="../html/html_report.htm">Export HTML,</a> 
+Single table.&nbsp; You can take the table from the web page, paste it into 
+Excel, and do computations.</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+
+<table border="2">
+	<tr>
+		<td>
+		<img height="337" src="../images/area_from_pixel_count.GIF" width="719" /></td>
+		<td><br />
+		Columns A-E were created in Excl with a count of the number of pixels in 4 
+		categories from the exported legend.<br />
+		<br />
+		Count has the number of pixels in each category.<br />
+		<br />
+		This is from a Sentinel-2 scene<br />
+		<br />
+		Column F is added in Excel to get the area in square meters (you know 
+		the size of each pixel).<br />
+		<br />
+		Column G converts the square meters to square kilometers, which makes 
+		better sense in this case.</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revision 2/1/2023</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

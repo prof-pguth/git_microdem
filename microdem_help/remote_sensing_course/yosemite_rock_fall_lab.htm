@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Lab 4--Yosemite Rock Fall</title>
+</head>
+
+<body>
+
+<h1>Lab 4--Yosemite Rock Fall</h1>
+<p>Deliverables</p>
+<ul>
+	<li>Discuss whether the lidar data is good enough for a 0.5 m grid, a 1 m grid, or 
+	a 2 m grid.&nbsp; Support your choice with a point density grid.</li>
+	<li>Discuss which DEM you prefer (NVS, DTM, DSM), and why.</li>
+	<li>Discuss the utility or lack thereof for the intensity and classification 
+	grids.&nbsp; Is this a general assessment, or specific to these two data 
+	sets.</li>
+	<li>Prepare a high quality map showing where the rockfall started, and where 
+	it came to rest.&nbsp; You want this map to show as much of the story as you 
+	can tell on a single map.</li>
+	<li>Get a topographic profile of the cliff surface before and after the 
+	landslide</li>
+	<li>Compute the change in volume at both locations.&nbsp; Does the volume 
+	change at the headwall match that where the slide came to rest?</li>
+</ul>
+<hr />
+<p>In the Yosemite directory you have</p>
+<ul>
+	<li>Two lidar surveys from Open Topography.&nbsp; The metadata is at:<ul>
+		<li>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.092012.26911.2">
+		https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.092012.26911.2</a></li>
+		<li>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.112011.26911.2">
+		https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.112011.26911.2</a></li>
+	</ul>
+	</li>
+	<li>Three Landsat scenes</li>
+	<li>One Sentinel-2 scene</li>
+	<li>Two DEMs that cover a large area.&nbsp; These are small scale with 
+	spacing of 1-3 arc seconds</li>
+	<li>Tiger line data if you wanted to shows roads and other features</li>
+</ul>
+<p>To help you locate the slide</p>
+<p>
+<table border="3">
+	<tr>
+		<td>NAME</td>
+		<td>LAT</td>
+		<td>LONG</td>
+	</tr>
+	<tr>
+		<td>Source of slide</td>
+		<td>37.751119</td>
+		<td>-119.537053</td>
+	</tr>
+	<tr>
+		<td>Mid journey</td>
+		<td>37.751312</td>
+		<td>-119.538805</td>
+	</tr>
+	<tr>
+		<td>Final resting</td>
+		<td>37.752705</td>
+		<td>-119.542344</td>
+	</tr>
+</table>
+</p>
+<p>&nbsp;</p>
+<p style="text-indent: -.5in; line-height: 115%; font-size: 11.0pt; font-family: Calibri, sans-serif; margin-left: .5in; margin-right: 0in; margin-top: 0in; margin-bottom: 10.0pt;">
+<span style="font-size:
+12.0pt;line-height:115%;font-family:&quot;Times New Roman&quot;,&quot;serif&quot;">
+Zimmer, V.L., Collins, B.D., Stock, G.M., and Sitar, N., 2012, Rock fall 
+dynamics and deposition: an integrated analysis of the 2009 Ahwiyah Point rock 
+fall, Yosemite National Park, USA: Earth Surf. Process. Landforms, vol. 37, 
+no.6. p.680-691, DOI: <a href="https://doi.org/10.1002/esp.3206">
+https://doi.org/10.1002/esp.3206</a> (free from
+<a href="https://www.nps.gov/yose/learn/nature/upload/Zimmer-et-al-2012-ESPL-Ahwiyah-Point.pdf">
+https://www.nps.gov/yose/learn/nature/upload/Zimmer-et-al-2012-ESPL-Ahwiyah-Point.pdf</a>).<o:p></o:p></span></p>
+<hr />
+<p>In steep terrain, slight horizontal mis-registations can lead to large 
+differences in elevation.&nbsp; This frequently leads to linear large 
+differences in elevation along the sides of buildings, for example.&nbsp; You 
+should be suspicious of such apparent changes, and lend more credence to 
+differences over a large area.</p>
+<hr />
+<p><br />
+</p>
+<p>Create a point density grid</p>
+<p>Create a DSM from each point cloud with 0.5, 1, and 2 m grid spacing</p>
+<p>&nbsp;</p>
+<p>Create the following grids for each point cloud with the resolution you 
+consider best for thes data sets:</p>
+<ul>
+	<li>DEM (the general term) and the specific grids DSM, NVS, and DTM from the 
+	ground classified points (you can create all</li>
+	<li>Max Intensity grid from the lidar (if the point cloud has intensities)</li>
+</ul>
+
+<p>Create a difference map (<a href="../html/dem_diff_map.htm">Difference between two
+                grids</a>) to show the origin and final destination of the rock 
+fall.&nbsp; Experiment with you different base maps and overlay the difference 
+grid.</p>
+<p>Directions</p>
+<ul>
+	<li><a href="../html/grid_from_lidar.htm">Grids from lidar point cloud</a></li>
+	<li>Options for a single map<ul>
+		<li><a href="../html/tbme9u5v.htm">Change the display coloring </a>to 
+		emphasize the change you think are important.&nbsp; You can use a three 
+		color scheme to emphasize only the larger changes on the difference map, 
+		with a <a href="../html/tbme9u5v.htm">Reflectance map</a> display option.</li>
+		<li><a href="../html/color_merge_two_grids.htm">Color merge of two grids</a>: 
+	Display the change grid on the DSM, intensity map, or any other map</li>
+	</ul>
+	</li>
+	<li>
+	<img src="../images/Mult_prof.gif" width="28" height="29"> 
+	<a href="../html/multiple_profiles.htm">Multiple DEM profiles</a></li>
+	<li>Finding the volume of the landslide.&nbsp; Do this on the difference 
+	grid, from a 0 elevation (no change) reference level.<br />
+	<ul>
+		<li><font size="3"><img src="../images/icons.gif" border="2"
+        width="20" height="20"> </font><a href="../html/annotate.htm"><font
+        size="3">Annotate Map</font></a>, <font size="3">
+<a href="../html/shape_digit.htm">Create
+                shapefile</a>, area/polygon for the two areas where the 
+		landslide originated and came to rest.&nbsp; </font>
+		<ul>
+			<li><a href="../html/db_rec_click.htm">Double clicking on a record in 
+data base</a>, Calculate, Calculate volume</li>
+			<li>You will have the shapefile if you want to show it on a map, or 
+			perform additional operations on it</li>
+		</ul>
+		</li>
+		<li><img src="../images/volume.GIF" width="22" height="21"> 
+		<a
+        href="../html/volume.htm">Volume computation</a>.<ul>
+			<li>Digitize the perimeter on the fly.&nbsp; You have the volume, 
+			but no permanent record of the area you picked. </li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 6/26/2020</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

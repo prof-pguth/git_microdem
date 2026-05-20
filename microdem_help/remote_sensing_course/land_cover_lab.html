@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Land Cover Lab</title>
+</head>
+
+<body>
+
+<h1>Land Cover Lab</h1>
+<p>Deliverables </p>
+<ul>
+	<li>Compare the ALOS and COP DEMs, with a difference map and visual 
+	comparison of the hillshades.&nbsp; Where are the big differences?</li>
+	<li>Compare the 30 m NLCD and the 100 m Copernicus Land cover.&nbsp; What 
+	are the most significant changes in the Las Vegas area?</li>
+	<li>Include a map of downtown Las Vegas Open Street Map, showing the roads 
+	and buildings.&nbsp; You will have to zoom in quite a bit.</li>
+</ul>
+<p>Directions</p>
+<ul>
+	<li>Get all data sets covering Las Vegas, the mountain ranges to the west 
+	and north, and all of Lake Mead.</li>
+	<li>Get a 250 m <a href="../html/modis_rapid_response.htm">MODIS image</a> 
+	covering Las Vegas.</li>
+	<li>Get the ALOS (do not get ellipsoidal) and COP 30 m DEMs for the region 
+	around Las Vegas from <a href="http://www.opentopography.org/">OpenTopography</a> (<a href="../html/ot_global_dems.htm">Directions</a>) 
+	<ul>
+		<li>Get a difference map.&nbsp; Think about the difference value to 
+		highlight.</li>
+	</ul>
+	</li>
+	<li><a href="../cop_glc100.htm">Copernicus Global Land Cover 
+								100 m</a>&nbsp;&nbsp;&nbsp; 
+	<ul>
+		<li>Download at <a href="https://lcviewer.vito.be/download">https://lcviewer.vito.be/download</a> 
+		.&nbsp; Get the 2015 through 2019 tiles that cover Las Vegas.</li>
+	</ul>
+	</li>
+	<li>Open as a DEM/grid, <a href="../html/us_nlcd.htm">US NLCD</a>&nbsp; from&nbsp; <a href="../microdemtutorials/national_map/mlrc.htm">MLRC</a>, 
+		30 m resolution.&nbsp; Get all the available years.&nbsp; In addition to 
+	each year, you will have an overall change map.&nbsp; You can get a popup 
+	legend.</li>
+	<li>Open the two DEMs<ul>
+		<li>File, Import, GDAL raster&nbsp; subset to match map to open the 
+		Copernicus land cover.&nbsp; This must be started on the DEM, or another 
+		map with a geographic map projection.</li>
+	</ul>
+	</li>
+</ul>
+
+</body>
+
+</html>
