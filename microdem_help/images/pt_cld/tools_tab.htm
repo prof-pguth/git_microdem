@@ -1,0 +1,81 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>Point Cloud Tools tab</title>
+<link href="../../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.style1 {
+				margin-left: 80px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Tools Tab</h1>
+<p><img border="1" src="../pnt_cld.GIF" width="23" height="23">
+	<a href="../../html/pt_cld_opts.htm">LIDAR Point cloud form</a>&nbsp; option,&nbsp; Tools tab</p>
+
+<table border="2">
+    <tr>
+        <td>
+		<img height="168" src="tools_tab.gif" width="423"></td>
+        <td class="style1"><b>Tools tab:&nbsp; </b>Many of these options require that the base 
+		map in use have a DEM associated with it, which will determine the size 
+		of the grid created.<p><b>Point based</b></p>
+		<ul>
+						<li><b>Extract map LAS, Extract masked, Extract valid 
+						grid:</b><ul>
+										<li>Extract points on the current map, which might be
+                in multiple files, into a single 
+										LAS file or
+										<a
+                href="shapefile.htm">3D shapefile</a>.&nbsp; Pick
+                a small map area for this option.</li>
+										<li>For mask option, 
+										the current map must have a mask in red, 
+										and only points that project to a red 
+										pixel on the map will be extracted.</li>
+										<li>For extract valid grid, only points 
+										that map to valid values in the DEM 
+										associated with the map will be 
+										extracted.</li>
+						</ul>
+						</li>
+						<li><b>Extract GeoJSON: create file </b>for current map area</li>
+						<li><b>Points above DEM, Points below DEM:</b> puts the points above or 
+		below the DEM on the map into the memo box on the right of the form.&nbsp; 
+		This uses the Zcrit defined below.</li>
+		</ul>
+		<p>Others</p>
+		<ul>
+			<li>Thin LAS</li>
+			<li>Translate LAS</li>
+			<li>Scale up LAS</li>
+			<li>RGB filter las</li>
+		</ul>
+		<p><strong>Zcrit:</strong> buffer added to DTM before deciding if point is not on the 
+		ground.</p>
+		<p><br>
+		<strong>DEM Z:</strong></p>
+		<ul>
+			<li>Interpolate: get elevation with bilinear interpolation.</li>
+			<li>Floor/ceiling: get elevation from highest or lowest, as 
+			appropriate, of the 4 grid nodes surrounding the point cloud 
+			location.&nbsp; This can be better in regions of steep slope in the 
+			DEM.</li>
+		</ul>
+		<p>&nbsp;</p>
+        </td>
+    </tr>
+    </table>
+
+<hr />
+
+<p align="right"><em>Last revision 4/10/2018</em></p>
+</body>
+</html>
