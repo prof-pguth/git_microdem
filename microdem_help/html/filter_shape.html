@@ -1,0 +1,514 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Square versus Round Filters</title>
+<style type="text/css">
+.auto-style1 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: general;
+	vertical-align: bottom;
+	white-space: nowrap;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+}
+.auto-style2 {
+	font-size: medium;
+}
+.auto-style3 {
+	color: black;
+	font-size: 11.0pt;
+	font-weight: 400;
+	font-style: normal;
+	text-decoration: none;
+	font-family: Calibri, sans-serif;
+	text-align: center;
+	vertical-align: bottom;
+	white-space: nowrap;
+	border: .5pt solid windowtext;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 1px;
+	background-color: #CCFFFF;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Square versus Round Filters</h1>
+<p>Filters can be square or "round", and figured in terms of either pixel or 
+meters.&nbsp; Meters will be more appropriate when considering the arc second 
+DEMs.&nbsp; We will use filter interchangeably with kernel or matrix.</p>
+<p>Because the matrix with the filter will always&nbsp; be centered on the pixel 
+and be symmetrical about that point, the size will be odd.</p>
+<p>Filters are defined either in terms of the radius, or the size of the filter 
+matrix.&nbsp; A radius 2 filter will have a 5x5 matrix.&nbsp; </p>
+<p>A square filter will have a value for every element in the matrix, such as 
+3x3, 5x5, 7x7.&nbsp; It could:</p>
+<ul>
+	<li>Use the points at each location, ignore the different horizontal 
+	distances.</li>
+	<li>Linearly interpolate values at the same distance within the grid</li>
+	<li>Find the elevation at the same distance, assuming a constant slope 
+	between the center point and the nearest point to the desired location </li>
+</ul>
+<p>A round filter will not compute values that are too far from the center 
+pixel, which will be in each corner.&nbsp; These will have s value of 0 or some 
+equivalent depending on how the coding is implemented.</p>
+<ul>
+	<li>The size of the filter could be based on either based on the pixel size, 
+	or the diagonal.&nbsp; This makes a big difference for the 3x3 filter in the 
+	case below.&nbsp; If the filter size is 30 m (1 pixel), only the four nearest 
+	neighbors will be considered.&nbsp; If the filter size is 45 m, all 8 nearest 
+	neighbors will be considered.&nbsp; We think that for the case of the 3x3 
+	filter using all 8 neighbors makes more sense.</li>
+	<li>For the values on the diagonals, you have the same choices as above.</li>
+</ul>
+<p>The units of the result are import.&nbsp; </p>
+<ul>
+	<li>For slope, the units are essentially dimensionless, and do not depend on 
+	the difference over which they are measured, because the vertical difference 
+	is divided by the horizontal difference.&nbsp; The common options for slope 
+	are percent, degrees, or m/m, all of which are dimensionless.&nbsp; There 
+	are slight differences because slope decreases with increasing region size.</li>
+	<li>Other measures, like relief or TPI, consider only the vertical 
+	differnces, and will increase with increasing measurement area.</li>
+</ul>
+<p>An operation like TPI takes the 8 points surrounding the central point, and 
+averages the differences in elevation from the central pixel.&nbsp; It does not consider the different distances to 
+the diagonal points.&nbsp; This is essentially a relief computation.&nbsp; An improvement to the algorithm is to normalize the 
+distances.&nbsp; MICRODEM takes the NS distance, and for the diagonal, finds the 
+elevation that would occur at that distance using the slope between the central 
+point and the diagonal neighbor.&nbsp; This elevation will be less than the 
+elevation at the point on the diagonal.</p>
+<hr />
+<p>Table 1.&nbsp; Filter dimensions in meters for a 30 m UTM DEM at Trentino 
+Italy.&nbsp; To keep the projection conformal, the data spacing varies very 
+slightly over the map.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 576pt" width="768">
+	<colgroup>
+		<col span="12" style="width: 48pt" width="64" />
+	</colgroup>
+	<tr height="19" style="height: 14.4pt">
+		<td class="auto-style1" height="19" style="height: 14.4pt; width: 48pt" width="64">
+		Radius</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_5</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_4</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_3</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_2</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_1</td>
+		<td class="auto-style1" style="width: 48pt" width="64">ZERO</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_1</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_2</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_3</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_4</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_5</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		5</td>
+		<td align="right" class="auto-style1">212.169</td>
+		<td align="right" class="auto-style1">192.127</td>
+		<td align="right" class="auto-style1">174.959</td>
+		<td align="right" class="auto-style1">161.583</td>
+		<td align="right" class="auto-style1">152.997</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">152.997</td>
+		<td align="right" class="auto-style1">161.583</td>
+		<td align="right" class="auto-style1">174.959</td>
+		<td align="right" class="auto-style1">192.127</td>
+		<td align="right" class="auto-style1">212.169</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		4</td>
+		<td align="right" class="auto-style1">192.127</td>
+		<td align="right" class="auto-style1">169.735</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">134.188</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">120.021</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">134.188</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">169.735</td>
+		<td align="right" class="auto-style1">192.127</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		3</td>
+		<td align="right" class="auto-style1">174.959</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">127.301</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">90.016</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">127.301</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">174.959</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		2</td>
+		<td align="right" class="auto-style1">161.583</td>
+		<td align="right" class="auto-style1">134.187</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">84.868</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">60.011</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">84.868</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">134.187</td>
+		<td align="right" class="auto-style1">161.583</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		1</td>
+		<td align="right" class="auto-style1">152.997</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">42.434</td>
+		<td align="right" class="auto-style1">30.005</td>
+		<td align="right" class="auto-style1">42.434</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">152.997</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		0</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">120.021</td>
+		<td align="right" class="auto-style1">90.016</td>
+		<td align="right" class="auto-style1">60.01</td>
+		<td align="right" class="auto-style1">30.005</td>
+		<td class="auto-style3">0</td>
+		<td align="right" class="auto-style1">30.005</td>
+		<td align="right" class="auto-style1">60.01</td>
+		<td align="right" class="auto-style1">90.016</td>
+		<td align="right" class="auto-style1">120.021</td>
+		<td align="right" class="auto-style1">150.026</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-1</td>
+		<td align="right" class="auto-style1">152.997</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">42.434</td>
+		<td align="right" class="auto-style1">30.005</td>
+		<td align="right" class="auto-style1">42.434</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">152.997</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-2</td>
+		<td align="right" class="auto-style1">161.583</td>
+		<td align="right" class="auto-style1">134.187</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">84.868</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">60.011</td>
+		<td align="right" class="auto-style1">67.094</td>
+		<td align="right" class="auto-style1">84.868</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">134.187</td>
+		<td align="right" class="auto-style1">161.583</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-3</td>
+		<td align="right" class="auto-style1">174.959</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">127.301</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">90.016</td>
+		<td align="right" class="auto-style1">94.885</td>
+		<td align="right" class="auto-style1">108.185</td>
+		<td align="right" class="auto-style1">127.301</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">174.959</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-4</td>
+		<td align="right" class="auto-style1">192.127</td>
+		<td align="right" class="auto-style1">169.735</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">134.188</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">120.021</td>
+		<td align="right" class="auto-style1">123.715</td>
+		<td align="right" class="auto-style1">134.188</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">169.735</td>
+		<td align="right" class="auto-style1">192.127</td>
+	</tr>
+	<tr height="19" style="height: 14.4pt">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-5</td>
+		<td align="right" class="auto-style1">212.169</td>
+		<td align="right" class="auto-style1">192.127</td>
+		<td align="right" class="auto-style1">174.959</td>
+		<td align="right" class="auto-style1">161.583</td>
+		<td align="right" class="auto-style1">152.997</td>
+		<td align="right" class="auto-style1">150.026</td>
+		<td align="right" class="auto-style1">152.997</td>
+		<td align="right" class="auto-style1">161.583</td>
+		<td align="right" class="auto-style1">174.959</td>
+		<td align="right" class="auto-style1">192.127</td>
+		<td align="right" class="auto-style1">212.169</td>
+	</tr>
+</table>
+<hr />
+<p>For the arc second DEM, the spacing in x and y differ.&nbsp; This means that 
+a filter defined in meters might effectively be rectangular, with a different 
+number of rows and columns.</p>
+<p>For normalizing the distances for TPI, both the diagonals and the EW points 
+must be adjusted.&nbsp; The EW points used will be higher, because the EW 
+distances are smaller and the points corresponding to the NS distances are 
+farther away.</p>
+<hr />
+<p>Table 2.&nbsp; Filter dimensions in meters for a 1" DEM at Trentino Italy</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 576pt" width="768">
+	<colgroup>
+		<col span="12" width="64" />
+	</colgroup>
+	<tr height="19">
+		<td class="auto-style1" height="19" style="height: 14.4pt; width: 48pt" width="64">
+		Radius</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_5</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_4</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_3</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_2</td>
+		<td class="auto-style1" style="width: 48pt" width="64">MINUS_1</td>
+		<td class="auto-style1" style="width: 48pt" width="64">ZERO</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_1</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_2</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_3</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_4</td>
+		<td class="auto-style1" style="width: 48pt" width="64">PLUS_5</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		5</td>
+		<td align="right" class="auto-style1">188.007</td>
+		<td align="right" class="auto-style1">176.641</td>
+		<td align="right" class="auto-style1">167.267</td>
+		<td align="right" class="auto-style1">160.236</td>
+		<td align="right" class="auto-style1">155.865</td>
+		<td align="right" class="auto-style1">154.381</td>
+		<td align="right" class="auto-style1">155.865</td>
+		<td align="right" class="auto-style1">160.236</td>
+		<td align="right" class="auto-style1">167.267</td>
+		<td align="right" class="auto-style1">176.641</td>
+		<td align="right" class="auto-style1">188.007</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		4</td>
+		<td align="right" class="auto-style1">163.606</td>
+		<td align="right" class="auto-style1">150.406</td>
+		<td align="right" class="auto-style1">139.277</td>
+		<td align="right" class="auto-style1">130.75</td>
+		<td align="right" class="auto-style1">125.355</td>
+		<td align="right" class="auto-style1">123.505</td>
+		<td align="right" class="auto-style1">125.355</td>
+		<td align="right" class="auto-style1">130.75</td>
+		<td align="right" class="auto-style1">139.277</td>
+		<td align="right" class="auto-style1">150.406</td>
+		<td align="right" class="auto-style1">163.606</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		3</td>
+		<td align="right" class="auto-style1">141.751</td>
+		<td align="right" class="auto-style1">126.288</td>
+		<td align="right" class="auto-style1">112.804</td>
+		<td align="right" class="auto-style1">102.089</td>
+		<td align="right" class="auto-style1">95.082</td>
+		<td align="right" class="auto-style1">92.629</td>
+		<td align="right" class="auto-style1">95.082</td>
+		<td align="right" class="auto-style1">102.089</td>
+		<td align="right" class="auto-style1">112.804</td>
+		<td align="right" class="auto-style1">126.288</td>
+		<td align="right" class="auto-style1">141.751</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		2</td>
+		<td align="right" class="auto-style1">123.801</td>
+		<td align="right" class="auto-style1">105.745</td>
+		<td align="right" class="auto-style1">89.209</td>
+		<td align="right" class="auto-style1">75.203</td>
+		<td align="right" class="auto-style1">65.375</td>
+		<td align="right" class="auto-style1">61.752</td>
+		<td align="right" class="auto-style1">65.375</td>
+		<td align="right" class="auto-style1">75.203</td>
+		<td align="right" class="auto-style1">89.209</td>
+		<td align="right" class="auto-style1">105.745</td>
+		<td align="right" class="auto-style1">123.801 </td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		1</td>
+		<td align="right" class="auto-style1">111.654</td>
+		<td align="right" class="auto-style1">91.224</td>
+		<td align="right" class="auto-style1">71.401</td>
+		<td align="right" class="auto-style1">52.872</td>
+		<td align="right" class="auto-style1">37.601</td>
+		<td align="right" class="auto-style1">30.876</td>
+		<td align="right" class="auto-style1">37.601</td>
+		<td align="right" class="auto-style1">52.872</td>
+		<td align="right" class="auto-style1">71.401</td>
+		<td align="right" class="auto-style1">91.224</td>
+		<td align="right" class="auto-style1">111.654</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		0</td>
+		<td align="right" class="auto-style1">107.3</td>
+		<td align="right" class="auto-style1">85.84</td>
+		<td align="right" class="auto-style1">64.38</td>
+		<td align="right" class="auto-style1">42.92</td>
+		<td align="right" class="auto-style1">21.46</td>
+		<td class="auto-style3">0</td>
+		<td align="right" class="auto-style1">21.46</td>
+		<td align="right" class="auto-style1">42.92</td>
+		<td align="right" class="auto-style1">64.38</td>
+		<td align="right" class="auto-style1">85.84</td>
+		<td align="right" class="auto-style1">107.3</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-1</td>
+		<td align="right" class="auto-style1">111.654</td>
+		<td align="right" class="auto-style1">91.224</td>
+		<td align="right" class="auto-style1">71.401</td>
+		<td align="right" class="auto-style1">52.872</td>
+		<td align="right" class="auto-style1">37.601</td>
+		<td align="right" class="auto-style1">30.876</td>
+		<td align="right" class="auto-style1">37.601</td>
+		<td align="right" class="auto-style1">52.872</td>
+		<td align="right" class="auto-style1">71.401</td>
+		<td align="right" class="auto-style1">91.224</td>
+		<td align="right" class="auto-style1">111.654</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-2</td>
+		<td align="right" class="auto-style1">123.801</td>
+		<td align="right" class="auto-style1">105.745</td>
+		<td align="right" class="auto-style1">89.209</td>
+		<td align="right" class="auto-style1">75.203</td>
+		<td align="right" class="auto-style1">65.375</td>
+		<td align="right" class="auto-style1">61.752</td>
+		<td align="right" class="auto-style1">65.375</td>
+		<td align="right" class="auto-style1">75.203</td>
+		<td align="right" class="auto-style1">89.209</td>
+		<td align="right" class="auto-style1">105.745</td>
+		<td align="right" class="auto-style1">123.801</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-3</td>
+		<td align="right" class="auto-style1">141.751</td>
+		<td align="right" class="auto-style1">126.288</td>
+		<td align="right" class="auto-style1">112.804</td>
+		<td align="right" class="auto-style1">102.089</td>
+		<td align="right" class="auto-style1">95.082</td>
+		<td align="right" class="auto-style1">92.629</td>
+		<td align="right" class="auto-style1">95.082</td>
+		<td align="right" class="auto-style1">102.089</td>
+		<td align="right" class="auto-style1">112.804</td>
+		<td align="right" class="auto-style1">126.288</td>
+		<td align="right" class="auto-style1">141.751</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-4</td>
+		<td align="right" class="auto-style1">163.606</td>
+		<td align="right" class="auto-style1">150.406</td>
+		<td align="right" class="auto-style1">139.277</td>
+		<td align="right" class="auto-style1">130.75</td>
+		<td align="right" class="auto-style1">125.355</td>
+		<td align="right" class="auto-style1">123.505</td>
+		<td align="right" class="auto-style1">125.355</td>
+		<td align="right" class="auto-style1">130.75</td>
+		<td align="right" class="auto-style1">139.277</td>
+		<td align="right" class="auto-style1">150.406</td>
+		<td align="right" class="auto-style1">163.606</td>
+	</tr>
+	<tr height="19">
+		<td align="right" class="auto-style1" height="19" style="height: 14.4pt;">
+		-5</td>
+		<td align="right" class="auto-style1">188.007</td>
+		<td align="right" class="auto-style1">176.641</td>
+		<td align="right" class="auto-style1">167.267</td>
+		<td align="right" class="auto-style1">160.236</td>
+		<td align="right" class="auto-style1">155.865</td>
+		<td align="right" class="auto-style1">154.381</td>
+		<td align="right" class="auto-style1">155.865</td>
+		<td align="right" class="auto-style1">160.236</td>
+		<td align="right" class="auto-style1">167.267</td>
+		<td align="right" class="auto-style1">176.641</td>
+		<td align="right" class="auto-style1">188.007</td>
+	</tr>
+</table>
+<hr />
+<p>The Delphi language does not have built in matrix functions, which colors how 
+I approach the issue.</p>
+<ul>
+	<li>The matrix multiplcation implementation in MICRODEM may or may not be 
+	particularly fast.</li>
+	<li>Even if it is not fast, the number of computations may mean the speed 
+	loss is not significant.</li>
+	<li>As an alternative, the algorithm can use the linear interpolations it 
+	already does to get elevations to get the elevations required.</li>
+	<li>The direction linear interpolation would become increasingly attractive 
+	as the size of the kernel increased and the number of 0 elements increased.&nbsp; 
+	These require multiplications and then additions for every point in the 
+	matrix, and the direct interpolation for the required points would require 
+	significantly fewer.</li>
+	<li>&nbsp;For UTM grids, the kernels can be computed once and stored.&nbsp; 
+	For geographic grids, they probably have to be computed for every latitude, 
+	making the direct computations of desired, interpolated points more 
+	attractive.</li>
+</ul>
+<p>MICRODEM will compute these filters out to 7x7 in</p>
+<ul>
+	<li><a href="raster_gis.htm">Raster GIS</a>, Algorithm comparisons. </li>
+	<li>Right click, cartography</li>
+</ul>
+
+<hr>
+
+<p align="right"><em><span class="auto-style2">Last revision 10/3/2025</span></em></p>
+
+<p align="right">&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

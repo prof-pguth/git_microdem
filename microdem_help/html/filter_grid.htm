@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Filter Grid</title>
+</head>
+
+<body>
+
+<h2>Filter Grid</h2>
+<p>Option on <a href="raster_gis.htm">Raster GIS menu</a>, <a href="filter_grid.htm"><b>Filter</b></a></p>
+<b>Filter</b>: creates a new grid, leaving the original unchanged.&nbsp; This 
+cannot operate on the original grid in place because it requires the unchanged 
+neighborhood values.<ul>
+            <li><a href="satb1otj.htm"><b>Filter grid with .fil file</b></a>--filter
+                the current grid, using a matrix with custom
+                values from a text file.</li>
+            <li>Enter value for number of pixels to go out
+                in each direction--for instance a value of 2 will
+                create a 5x5 filter.&nbsp;&nbsp;<b> </b>(this
+                allows much bigger filters than the Filter grid
+                command, but will be slower) <ul>
+                    <li><b><strong>Mode (majority filter)</strong>--only for byte grids, replaces 
+					the value with the most common one in the 3x3 or 5x5 
+					neighborhood.</b></li>
+					<li><b>Median filte</b>r:&nbsp;Replaces with
+                        median value in the box.</li>
+                    <li><b>Mean filter: </b>Replaces with
+                        mean (average) value in the box.</li>
+                    <li><b>Minimum filte</b>r:&nbsp;Replaces with
+                        lowest value in the box.</li>
+                    <li><b>Maximum filte</b>r:&nbsp;Replaces with
+                        highest value in the box.</li>
+					<li><b>Parametric isotropic smoothing</b>:
+                        recommended by Hengl and Evans (2008,
+                        after Sharry and others, 2002) before
+                        computing curvature or other derivatives (but beware it 
+					will remove roughness).</li>
+					<li><strong>Vector average</strong>: smooths circular data like aspects.</li>
+					<li><strong>Std Dev in box (local variance)</strong>: Replaces with the standard 
+					deviation in the region</li>
+					<li><b>Sum in box:</b> sums values within box.</li>
+					<li><a href="iqr.html">IQR in box</a></li>
+					<li><strong>Filled neighborhood</strong>: Pick minimum number of points that must be present in the 
+					region.&nbsp; Points not meeting the criteria will be 
+					removed from the grid.</li>
+					<li><strong>Number immediate neighbors</strong>: new grid with the number of 
+					immediate neighbors in a specified region size</li>
+					<li>Isolated values</li>
+					<li><strong><a href="edge_filters.htm">Edges </a></strong></li>
+					<li><strong>RGB grid fill holes</strong></li>
+					<li><strong>Detrend DEM/grid (residual surface): </strong>select radius in 
+					pixels for a square mean filter, and a new DEM will be 
+					creating subtracting the result of the filter from the 
+					original DEM elevation</li>
+                </ul>
+            </li>
+        </ul>
+    <p>"Filter grids to edge", set on <strong><a href="grid_tab.htm">Grids</a> 
+	tab of </strong>the <a href="tbme1njp.htm"><b>Options</b></a> form, allows 
+	filtering to the edge of data set, even if the filter should require points 
+	outside the grid limits.</p>
+    <p><a href="satb1otj.htm">Filtering theory</a></p>
+
+<hr>
+
+<p align="right"><em>Last revision 2/8/2026</em></p>
+
+</body>
+
+</html>

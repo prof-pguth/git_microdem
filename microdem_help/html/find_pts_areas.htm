@@ -1,0 +1,35 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Find points in areas</title>
+</head>
+
+<body>
+
+<h2>Points in polygon (areas)</h2>
+<p>This uses the Point in Polygon operation, a standard GIS operation.</p>
+<p>Option on <a href="db_edit.htm">&quot;EDIT&quot; button</a> on 
+<a href="database_table_display.htm">database
+table form</a> for an open <a href="shapefile.htm">shapefile</a>.&nbsp; &nbsp;If your original shapefile is an area or line shape file, the centroid will be used, 
+and must have been computed previously (<b><a href="foield_geomtery.htm">Field geometry</a></b>).</p>
+<p>You&nbsp; then pick an open area <a href="shapefile.htm">shapefile</a>, and 
+the field in that database to insert into the first database.</p>
+<p>For those 
+records which lie within a record on the area shapefile, the desired field value will be put in the 
+first database.</p>
+<p>This could find the <a href="../html/county_outlines.htm">County 
+outline</a> which contains a record.&nbsp; You want to 
+be careful in picking the field to insert: for counties, the FIPS are unique, 
+but half the states have a &quot;Washington County&quot;.&nbsp; The FIPS will 
+also enable you to find the counties.</p>
+<hr>
+<p align="right"><i>Last revision 1/9/2019</i></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

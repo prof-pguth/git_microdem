@@ -1,0 +1,88 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Edit menu</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<p align="center"><strong><font size="5">Edit Menu</font></strong></p>
+
+<p align="left"><font size="3"><a href="micr0alv.htm">Menu</a>&nbsp; choice available with a DEM available for the active
+map window.&nbsp;</font></p>
+<table border="1" id="table1">
+	<tr>
+		<td bgcolor="#C0C0C0">
+          <ul>
+            <li><a href="../html/map_masking.htm">Mask map</a> </li>
+			<li><a href="edit_mark_missing.htm">Mark as missing</a> submenu </li>
+    <li><a href="dem_holes.htm">DEM Holes</a><b> </b> submenu
+    </li>
+			<li><a href="reclassify_menu.htm">Reclassify:</a> replace values with a new value.&nbsp; In some cases 
+			it might create a new grid.</li>
+			  <li>Remove: set a threshold.&nbsp; If a single point is this much, 
+			or more, higher or lower than all eight neighbors, it will be 
+			replaced with the average of those eight points.<ul>
+				  <li>Single point spires</li>
+				  <li>Single point pits</li>
+			  </ul>
+			  </li>
+			  <li>Flatten tails<ul>
+				  <li>High end</li>
+				  <li>Low end</li>
+				  <li>Flatten Lake</li>
+			  </ul>
+			  </li>
+			  <li><a href="#region">Outline regions</a> submenu (below)</li>
+			  <li><b><a href="single_grid_arithmetic.html">Single grid arithmetic</a>&nbsp; 
+			  </b>(map algebra) </li>
+			  <li><b><a href="set_z_units.htm">Set z units</a></b></li>
+			  <li><a href="perform_vert_datum_shift.html"><strong>Vertical datum shift</strong>:</a> shift between 
+			  <a href="egm96.htm">WGS84 ellipsoid, 
+			and EGM2008 geoid</a>.&nbsp; </li>
+			  <li><b>Edit point elevations</b></li>
+			  <li><a href="edit_dem_grid.htm">Edit DEM grid</a></li>
+			  <li><b>Reload DEM: </b>if you have unsaved edits you want to 
+			discard, you can reload the original DEM.</li>
+			  <li>Edit gazetteer symbology</li>
+			  <li>Edit fans</li>
+			  <li>Edit VAT-DBF (colors, category names): opens the file for 
+			  edits; you must close, and then the map will be redrawn with the 
+			  new settings.</li>
+			  <li>Quarter DEM</li>
+			  <li><a href="image_reg.htm">Re-register image</a></li>
+			  <li>Merge all images</li>
+          </ul>
+        </td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td><b><a name="region">Outline regions options:</a></b>
+          <ul>
+            <li>region of interest--outline a polygon, and the program will 
+			subset the DEM to include just the points within it.</li>
+            <li>holes</li>
+            <li>lakes</li>
+			<li>region to fill holes with reference DEM</li>
+			<li>region to replace values with reference DEM</li>
+          </ul>
+ </td>
+	</tr>
+</table>
+
+<p align="right" class="style1"><em>Last revision 3/29/2023</em></p>
+</body>
+</html>

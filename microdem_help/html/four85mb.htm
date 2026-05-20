@@ -1,0 +1,56 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Get Fourier Options</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><font size="5"><b>Get Fourier Options</b></font></p>
+
+<p>Select the following parameters for the FFT:</p>
+
+<table border="1">
+  <tr>
+    <td><img border="0" src="../images/fft_opts.gif" width="337" height="320"></td>
+    <td>
+
+<ul>
+    <li><b>Window</b>: this attempts to control power leakage
+        into adjacent frequencies. The Parzen or Welch should
+        give the best results.</li>
+    <li><b>Overlap segments</b>: if the series is longer than the
+        segment size, you will combine a number of segments. If
+        you overlap them, each segment will share half its points
+        with the segment before and half with the segment after.
+        Except for the initial points and the end points, each
+        point will be considered twice.</li>
+    <li><b>Zero pad end series</b>: to get the series to an even
+        power of two, zeros can be appended to the end of the
+        series.</li>
+    <li>The <b>segment size</b> for processing must be a power of
+        two. The segment size determines the speed of the
+        operation and the frequencies that can be resolved.</li>
+    <li>Whether the power density spectrum will be plotted as
+        periods or frequencies (they are reciprocals).</li>
+	<li>The bins and Units are used for labeling the axes of the graphs.</li>
+</ul>
+
+      <p>&nbsp;</td>
+  </tr>
+</table>
+
+<p>You can review the basics of <a href="time3sa5.htm"><b>FFT
+analysis</b></a>.</p>
+<p>These results follow the recommendations in <a href="demb2trn.htm">Press and 
+others (1985)</a> and are based on their code.<br>
+</p>
+
+<hr>
+
+<p align="right"><em>Last revision 3/6//2013</em></p>
+</body>
+</html>

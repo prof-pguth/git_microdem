@@ -1,0 +1,61 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Focal Operations</title>
+</head>
+
+<body>
+
+<h2>Focal Operations</h2>
+<p><b>Focal operations</b> work on cells and their neighbors. To compute the 
+value at a cell the method uses the cell and its nearest neighbors, and creates 
+a new grid. Examples include 
+	<a href="../html/slope.htm">Slope</a> and <a href="../html/hillshade.htm">
+	Reflectance (or hillshade)</a>, or <a href="../html/satb1otj.htm">Filtering</a>.&nbsp; For this type of operation, 
+	missing values for any of the points in the neighborhood will lead to a 
+	missing value in the output layer.&nbsp; </p>
+<table border="1" width="100%" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/focal_ops_gis.gif" width="1220" height="497"></td>
+	</tr>
+	<tr>
+		<td>This example uses the SW corner of a grid, with the cells numbered 
+		with (0,0) in that corner.&nbsp; This is a traditional convention of DEMs 
+		(it leads to a regular Cartesian grid), but is not what is used for most 
+		satellite imagery which uses a computer graphics convention with the 
+		origin in the NW corner and values increasing to the right and down.&nbsp; 
+		The principles are the same, just the identification of the grid points.<p>Focal operations pass an operator, generally 
+		a <b><font color="#FF0000">square matrix</font></b>, over the grid, and 
+		replace the <b><font color="#3399FF">center value</font></b> with the 
+		computed value.</p>
+		<p>A. Because the operator requires a 3x3 neighborhood, the first 
+		computation will be done for cell (1,1).&nbsp; The operator cannot work 
+		on the left column, or the bottom row.&nbsp; In this case, because cell 
+		(0,2) is missing, no value can be computed for (1,1).</p>
+		<p>B. The operator moves to the right, and computes a value for cell 
+		(2,1).</p>
+		<p>C. The operator moves to the right, and computes for every cell in 
+		the row except the last column on the right, which like the first does 
+		not have a complete neighborhood.</p>
+		<p>D.&nbsp; The operator moves up a row, and repeats the process.&nbsp; 
+		Cell (1,2) is missing two neighbors, so it will be missing data.</p>
+		<p>E. The operator continues to the right.</p>
+		<p>F. The operator continues.&nbsp; The last row on the top of the grid, 
+		like the bottom, cannot be done.</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right"><em>Last revision 3/14/2014</em></p>
+	
+	
+	
+	
+	</body>
+
+</html>

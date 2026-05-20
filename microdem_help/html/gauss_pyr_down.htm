@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Gaussian Pyramid Downsample</title>
+</head>
+
+<body>
+
+<h2>Gaussian Pyramid Downsample</h2>
+<p>On <a href="raster_gis.htm">Raster GIS</a>, Downsampling menu</p>
+<p>For the current DEM</p>
+<ul>
+	<li>Saves the original DEM in a new subdirectory under c:\mapdata\multigrid</li>
+	<li>For 5 iterations<ul>
+		<li>Filters the DEM with a 5 term square gaussian filter</li>
+		<li>Thins the DEM by the factor of two (data spacing becomes twice as 
+		large, file size one quarter of the starting grid)</li>
+		<li>Saves the new DEM</li>
+	</ul>
+	</li>
+</ul>
+<p>This could be used to take a 1 m lidar DTM, and create generalized grids at 
+2, 4, 8, 16, and 32 meters.&nbsp;&nbsp; Alternatively you could create the lower 
+resolution grids directly from the point cloud.</p>
+<p>For a 0.4" grid, you could create generalized grids at 0.8, 1.6, 3.2, and 6.4 
+arc seconds</p>
+<p>Reference:</p>
+<ul>
+	<li>
+	<p class="MsoNormal">T. Behrens, K. Schmidt, R.A. MacMillan, R.A. Viscarra 
+	Rossel, 2018, Multiscale contextual spatial modelling with the Gaussian 
+	scale space:<span style="mso-spacerun:yes">&nbsp; </span>Geoderma, Volume 
+	310, p 128-137, <a href="https://doi.org/10.1016/j.geoderma.2017.09.015">https://doi.org/10.1016/j.geoderma.2017.09.015</a> .<o:p></o:p></p>
+	</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 8/19/2021</em></p>
+
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage Express 2.0">
+<title>Viewer and Target on Grid Node</title>
+</head>
+
+<body>
+
+<p><font size="5"><b>Viewer and Target on Grid Node</b></font></p>
+
+<p style="text-indent: .5in; line-height: 200%">Forcing the
+observer or target locations to lie on grid nodes in the DEM,
+while not explicitly stated, appears to be used in the
+computations for some algorithms. Algorithms that pre-compute
+intervisibility for an entire DEM use only the grid points, and
+blowing up some programs shows a pixelated appearance. With high
+resolution DEMs this would not be a problem, but with typical
+military DEMs having 1&quot; or 3&quot; resolution, this might
+not allow for optimal level of detail.</p>
+
+<p style="text-indent: .5in; line-height: 200%">Fisher (1993)
+discussed this issue, and found that it had the largest impact on
+the final analysis.&nbsp; He noted that the viewshed could be
+considered Point-to-Point, Point-to-Cell, Cell-to-Cell, or
+Cell-to-Point. In the case of Cell-to-Cell, Fisher advocated
+going from each corner of the viewer&#146;s cell to each corner
+of the target cell.&nbsp; Potentially 16 separate calculations
+would be required, although the algorithm could stop with the
+first visible finding.&nbsp; Of the seven GIS implementations in
+Fisher (1993), five used a grid cell location for the viewpoint,
+one used a vector point, and one allowed either representation.</p>
+
+<hr>
+
+<p align="right"><font size="1"><i>Last revision 7/1/2004</i></font></p>
+
+<p>&nbsp;</p>
+</body>
+</html>

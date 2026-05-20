@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+    <meta name="ProgId" content="FrontPage.Editor.Document">
+    <title>Elevation Range for Coloring</title>
+    <link href="../md.png" rel="shortcut icon">
+    <style type="text/css">
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+  </head>
+  <body>
+    <p><b><font size="5">Elevation Range for Coloring</font></b></p>
+    <p><font size="4">Access with z range button from </font></p>
+    <ul>
+      <li><font size="4"><a href="tbme78s3.htm">Elevation Map Options</a></font></li>
+      <li class="auto-style1"><a href="tbme9u5v.htm">Reflectance options</a></li>
+      <li class="auto-style1"><a href="edit_menu.htm">Edit</a>, &nbsp;<a href="edit_mark_missing.htm">Mark
+          as missing</a>, Interactive adjustment</li>
+      <ul>
+        <li class="auto-style1">Turn on clip colors</li>
+        <li class="auto-style1">Set contrasting colors for the highs and lows</li>
+        <li class="auto-style1">Specified for the z Range</li>
+        <li class="auto-style1">Mode the Max and Min</li>
+        <li class="auto-style1"><font size="3"><img src="../images/redraw.gif" height="16"
+
+              width="16"> Force screen redraw to see the effect</font></li>
+        <li class="auto-style1"><font size="3">Mask to Z range when range is
+            right<br>
+          </font></li>
+      </ul>
+    </ul>
+    <table border="1">
+      <tbody>
+        <tr>
+          <td><img height="332" src="../images/z_range_color.png" width="296">&nbsp;</td>
+          <td>You can restrict colors to get better detail, or to match multiple
+            maps.
+            <p>Percentiles allows you to ignore a few extreme elevations.&nbsp;
+              If you pick the 1% and 99%, the top and bottom 1% will plot with
+              the same color.&nbsp; This works when you have a skewed
+              distribution with long tails.</p>
+            <p>Clip colors</p>
+            <ul>
+              <li>&nbsp;Checked, all those above/below the limits will be show
+                in a particular color, selected with the buttons above.</li>
+              <li>Unchecked, all colors above or below the color range will use
+                the max or min colors in the color scale</li>
+            </ul>
+            <p>Mask&nbsp; to z range: all values above or below the current
+              color scale will be marked missing.&nbsp; This will only be in
+              memory; you must save the DEM/grid if you want the changes to be
+              permanent.&nbsp;</p>
+            <p>&nbsp;</p>
+            <p>Stretching</p>
+            <ul>
+              <li>None</li>
+              <li>Percentiles--equivalent to a histogram equalization.&nbsp; All
+                colors should appear with the same frequency.</li>
+              <li>Standard deviation--no difference from no stretch, but the
+                legend will be in terms of the mean elevation at 0 and standard
+                deviations away from it</li>
+            </ul>
+            <p><font size="3"><img src="../images/redraw.gif" height="16" width="16">
+                Force screen redraw to see the effects of the changes without
+                leaving the form.</font>&nbsp;</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <hr>
+    <p align="right"><font size="4"><em>Last revision 3/29/2023</em></font></p>
+    <p align="right">&nbsp;</p>
+    <p>&nbsp;</p>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>File Open Menu</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h1><b>File, Open Menu</b></h1>
+<p>Use this menu option (popup from <a href="tbme8igl.htm"><b>File</b></a> menu), or the icons on the main toolbar, to open a data set.&nbsp; 
+You must understand the types of data and select the correct one.</p>
+<p>The program forces you to select the type of data because:</p>
+<ul>
+	<li>Some data formats, like Geotiffs, could be either DEMs or imagery, and 
+	nothing in the file or its metadata makes this apparent.&nbsp; The program 
+	needs to know the type of data, because it supports different menu choices 
+	depending of the data's characteristics.</li>
+	<li>The program originally had completely different display operations for 
+	DEMs and imagery.&nbsp; While this has mostly been replaced with a common 
+	map window, the data structures for a DEM and an image remain quite 
+	distinct.</li>
+	<li>In the early days of GIS and remote sensing, completely different 
+	programs were used for the two operations, and that philosophy still has 
+	some remnants in the MICRODEM source code.</li>
+</ul>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<ul>
+			<li><img src="../images/desktop.jpg" width="32" height="32"><a
+        href="savedesk.htm"><strong> Open project</strong></a>--will close all 
+			open data and windows</li>
+			<li>Add project--keeps any already open maps.</li>
+			<li><img src="../images/new%20dem.gif" width="32" height="32">
+			<a href="tbme5iy6.htm"><b>Open Grid/DEM</b></a></li>
+			<li><a href="loadmany.htm">Open and merge DEMs</a>--<ul>
+				<li>Pick multiple 
+			DEMs in a single directory, and merge them on the fly.&nbsp; To merge 
+			from multiple directories, use <font color="#FF0000">
+				<img border="2" src="../images/index_md.GIF" width="30" height="30">
+				<a href="int_data_db.htm">map library 
+			database</a></font></li>
+				<li>Open and merdge DEMs (very large)--at several GB for the 
+				merge, the previous method fails and this can succeed</li>
+				<li>Open and merge DEM directories: pick the directories you want.&nbsp; 
+			Cancel when you have them all the directories you want.</li>
+			</ul>
+			</li>
+			<li>Open DEM/grid without map</li>
+			<li>
+			<img src="../images/new%20sat%20color.gif" width="32"
+        height="32"> <a href="tbme65lx.htm"><b>Open image</b></a></li>
+			<li>Open Landsat/Sentinel-2 multiband image: particularly good for 
+			<a href="sentinel2.html">Sentinel-2</a> which buries the image files many directories deep</li>
+			<li><img src="../images/topomap.jpg" width="33" height="32"><b>Open
+        scanned map: </b>while this generally behaves like an image, it does not 
+			allow contrast enhancement and similar operations which can have 
+			have bad effects<b>.</b></li>
+			<li>Open GeoPDF (<a href="ustopo.htm">US topo;</a> may not work with 
+			other versions)<ul>
+				<li>Layers you selected, each map in separate window</li>
+				<li>Just imagery layers</li>
+				<li>All layers in separate GeoTiffs</li>
+				<li>Merge maps</li>
+			</ul>
+			<img border="0" src="../images/landcover.GIF" width="30" height="30">
+			<a href="nlcd.htm">Open Landcover</a>: while this generally behaves 
+			like an image, it does not allow contrast enhancement and similar 
+			operations which can have have bad effects</li>
+			<li>Open and merge Geotiffs</li>
+			<li>
+			<span class="auto-style1" style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+			Open image with multiple bands.&nbsp; It is not error-trapped; you must 
+			insure</span><ul class="auto-style1" style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+				<li>All bands must be integer values</li>
+				<li>They must have the same number of rows and columns, data 
+				spacing, and conver the same area</li>
+				<li>They will be in alphabetical order</li>
+			</ul>
+			</li>
+			<li><img src="../images/vecmap.jpg" width="33" height="32">
+			<a
+        href="vector_maps.htm">Open Vector Map</a></li>
+			<li><img src="../images/tiger.GIF" border="1">
+			<a href="tiger_county_map.htm">Open
+      TIGER county
+        map</a></li>
+			<li><b>
+			<img border="0" src="../images/shp_btn.gif" width="32" height="30"> Open shape file map</b>--open blank map and display shape file
+      filling the display area.</li>
+			<li>Open US States maps</li>
+			<li>Open US counties map</li>
+			<li><a href="open_point_clouds.html">Open LAS point clouds</a></li>
+			<li><a href="open_point_clouds.html">Open other point clouds</a></li>
+			<li>
+			<img border="1" src="../images/hyp_data_cube.PNG" width="25" height="21">
+      Open <a href="hyperpsectral_imagery.htm">hyperpectral imagery</a></li>
+			<li>
+			Open<a href="multigrids.htm"> multigrids</a><ul>
+				<li>by Directory</li>
+				<li>Pick files</li>
+			</ul>
+			</li>
+			<li>Open climate onlty monthly multigrids</li>
+			<li><a href="lidar_multi.htm">Open lidar matched grids</a></li>
+			<li>
+			Open Landsat multigrids</li>
+			<li>
+			<a href="../sentinel-1.html">Open Sentinel-1</a></li>
+			<li>Open google maps</li>
+			<li><b>
+			<img border="0" src="../images/db_btn.gif" width="35" height="31">
+			</b>Open database without map</li>
+			<li>Annapolis harbor: bathymetry grid and 3 nautical charts</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><em>Last revision 4/16/2023</em></p>
+
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DTMs from other software</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: 14px;
+	color: #252525;
+	letter-spacing: normal;
+	background-color: #FFFFFF;
+}
+</style>
+</head>
+
+<body>
+
+<h2>DTMs from other software</h2>
+<p><img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+	<a href="pt_cld_opts.htm">LIDAR Point cloud form</a>&nbsp; option on
+			<b><a href="grid_from_pt_cld.htm">Create grids</a></b>&nbsp; tab.&nbsp; </p>
+<ul>
+	<li><a href="fusion_for_lidar.html">Fusion DTM from TIN</a></li>
+	<li><a href="whitebox.html">Whitebox Tools IDW grid creation</a></li>
+	<li>WB nearest neighbor</li>
+	<li>blast2dem (from <a href="lastools.htm">LAStools</a>, read license carefully; 
+	there will be artefacts in the unlicensed version)</li>
+</ul>
+
+<p><a href="dtm_from_lidar.htm">MICRODEM native options</a></p>
+<p>Other software:</p>
+<ul>
+	<li><a href="cloud_compare.htm">Cloud Compare</a>, with CSF plugin<ul>
+		<li>
+		<a href="https://www.cloudcompare.org/doc/wiki/index.php?title=CSF_(plugin">
+		https://www.cloudcompare.org/doc/wiki/index.php?title=CSF_(plugin</a>)
+		</li>
+		<li>
+		<span style="color: rgb(37, 37, 37); font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Zhang W, Qi J, Wan P, Wang H, Xie D, Wang X, Yan G. An Easy-to-Use 
+		Airborne LiDAR Data Filtering Method Based on Cloth Simulation. Remote 
+		Sensing. 2016; 8(6):501. </span></li>
+		<li class="auto-style1" style="font-size: medium">Creates ground points, off ground points, and a 
+		ground mesh.</li>
+		<li class="auto-style1" style="font-size: medium">Only works with the GUI, so one tile at at time</li>
+		<li>DLL and EXE at http://ramm.bnu.edu.cn/projects/CSF/download/</li>
+		<li>
+		http://ramm.bnu.edu.cn/researchers/wumingzhang/english/default_contributions.htm</li>
+		<li><a href="https://www.itc.nl/isprs/wgIII-3/filtertest/report/">2003 
+		ISPRS report on ground filtering</a></li>
+		<li>CSFDemo_v2<ul>
+			<li>Needs ASCII input, no header line, XYZ with space or comma 
+			separation</li>
+			<li>Output will be ASCII, tab separation, in a different order</li>
+		</ul>
+		</li>
+		<li>There are some experimental options for this on the Experimental tab 
+		of the data manipultion form.&nbsp; With most lidar coming with ground 
+		classification, and other options list above, this one is harder to 
+		implement.</li>
+	</ul>
+	</li>
+</ul>
+
+<hr />
+
+<p align="right"><em>Last revision 2/18/2021</em></p>
+
+</body>
+
+</html>

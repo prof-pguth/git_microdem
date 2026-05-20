@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>EGM96 and EGM2008 Geoids</title>
+</head>
+
+<body>
+
+<h1>EGM96 and EGM2008 and Other Geoid Grids</h1>
+<p>Geoid models created by NGA, which provide mean sea level everywhere on earth .&nbsp; These have the height above the ellipsoid in meters, and 
+should range up to approximately 100 m in absolute value.&nbsp; NGA  
+produces grids and&nbsp; the model with coefficients, and code to create your own grids or values at any 
+location.&nbsp; The RMS difference between EGM96 and EGM2008 is about 0.5&nbsp;m, 
+with the maximum differences of about 10 m in places like ocean trenches.&nbsp; Add 
+the grid values to to the ellipsoid height to get the geoid height.</p>
+<table border="2">
+	<tr>
+		<td>Gravity Model (vertical datum)</td>
+		<td>EPSG code</td>
+		<td>Numerical coefficients to spherical harmomics</td>
+		<td>Grid downloads </td>
+		<td>References</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>WGS84 ellipsoid</td>
+		<td>4979</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>EGM2020</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>EGM2020 is to be a new release with the same structure as EGM2008, 
+		but with improved accuracy by incorporating newer data.&nbsp; It is at 
+		almost two years late now (March 2022).</td>
+	</tr>
+	<tr>
+		<td>
+<p>
+<a href="http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm2008/egm08_gis.html">
+EGM2008</a></p>
+		</td>
+		<td>
+		3855</td>
+		<td>
+		2160</td>
+		<td>
+		<ul>
+			<li>NGA 2.5' grid:
+			<a href="https://earth-info.nga.mil/php/download.php?file=egm-08interpolation">
+			https://earth-info.nga.mil/php/download.php?file=egm-08interpolation</a>&nbsp; 
+			(7/7/2021 and 8/6/2021 and 11/9/2021, could not find the GIS versions at NGA, only 
+			the harmonics and code to create the grids)</li>
+			<li>Agisoft has Geotiffs with 1' and 2.5' resolution:
+			<a href="https://www.agisoft.com/downloads/geoids/">https://www.agisoft.com/downloads/geoids/</a>&nbsp; This is easier to deal 
+	with than alternatives.&nbsp; You may have to override the browser wanting 
+			to block the download.</li>
+		</ul>
+		</td>
+		<td>
+		<ul>
+			<li>
+			<a href="https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs84">
+			https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs84</a> </li>
+			<li>Nikolaos K. Pavlis, Simon A. Holmes, 
+	Steve C. Kenyon, John K. Factor; 2012, EGM2008: The development and 
+			evaluation of the Earth Gravitational Model 2008 (EGM2008) -Journal of Geophysical Research: Solid 
+	Earth (1978-2012) Volume 117, Issue B4, April 2012.
+			<a href="https://doi.org/10.1029/2011JB008916">https://doi.org/10.1029/2011JB008916</a>&nbsp; 
+			</li>
+		</ul>
+		</td>
+		<td>
+		EGM2008 is provided as a set of normalized, geopotential coefficients 
+		complete to degree and order 2159, and contains additional spherical 
+		harmonic coefficients extending to degree 2190 and order 2159. Also 
+		provided is a 2.5-minute worldwide geoid height file, precomputed from 
+		the EGM2008.
+		</td>
+	</tr>
+	<tr>
+		<td>EGM96</td>
+		<td>5773</td>
+		<td>360</td>
+		<td>Grid has 15 arc minute resolution<ul>
+		<li>
+		<a href="http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/binary/readme.txt">http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/binary/readme.txt</a></li>
+		<li>
+		<a href="http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/binary/binarygeoid.html">http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/binary/binarygeoid.html</a> 
+		(raw binary file, integers in seconds)</li>
+			<li>
+			Agisoft has Geotiff with 15' resolution. starting at IDL:
+			<a href="https://www.agisoft.com/downloads/geoids/">https://www.agisoft.com/downloads/geoids/</a>&nbsp; This is easier to deal 
+	with than alternatives.&nbsp; You may have to override the browser wanting 
+			to block the download.</li>
+	</ul>
+		</td>
+		<td>
+		<ul>
+			<li>
+			<a href="https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs84">
+			https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs84</a> </li>
+		</ul>
+		</td>
+		<td>
+		EGM96 is provided as a set of normalized, geopotential coefficients to 
+		degree and order 360. Also provided is a 15-minute worldwide geoid 
+		height file, precomputed from the EGM96.</td>
+	</tr>
+	<tr>
+		<td>EGM84</td>
+		<td>5798</td>
+		<td>180</td>
+		<td>&nbsp;</td>
+		<td>
+		&nbsp;</td>
+		<td>
+		This existed, but is only of historical interest at this point.</td>
+	</tr>
+</table>
+<h1><a href="egm_microdem.html">Using EGM Grids in MICRODEM</a></h1>
+<hr />
+<h2><a href="gis_country_sites.htm#Nationals_Datums_and_Conversion_to_EGM">
+National Datums and Conversion to EGM</a></h2>
+<hr />
+<p>
+		NAVD88 to other datums:
+		<a href="https://vdatum.noaa.gov/download.php#download_geoid">
+		https://vdatum.noaa.gov/download.php#download_geoid</a>&nbsp; has
+		GTX files</p>
+<p>
+		<a href="https://www.ngs.noaa.gov/GEOID/GEOID12B/GEOID12B_CONUS.shtml">GEOID12B_CONUS</a></p>
+<p>
+		<a href="https://geodesy.noaa.gov/GEOID/GEOID18/downloads.shtml">GEOID 
+		18 US</a></p>
+<ul>
+	<li>Get the 2018 geoid:  
+	 https://www.google.com/url?q=<a href="https://geodesy.noaa.gov/PC_PROD/GEOID18/Format_pc/g2018u0.bin">https://geodesy.noaa.gov/PC_PROD/GEOID18/Format_pc/g2018u0.bin</a><sub>&nbsp;
+	</sub>&nbsp;&nbsp; <a href="#GDAL_reads">Convert to Geotiff with GDAL</a></li>
+</ul>
+<p><strong>OSGEO4W</strong></p>
+<ul>
+	<li><a href="file:///C:/OSGeo4W/share/proj">C:\OSGeo4W\share\proj</a> has a 
+	number of TIF grids.&nbsp; Tag 270 describes what each grid contains.&nbsp; 
+	The first two characters of the file are the standard country code.</li>
+</ul>
+<hr />
+<p><a name="GDAL_reads"><strong>GDAL reads a number of the grid shift files</strong></a> needed for the vertical datum 
+shifts and can convert to Geotiff:</p>
+<ul>
+	<li>GTX</li>
+	<li>NRCAN (Canada, but might have trouble with all the subsets)</li>
+	<li>NTv2</li>
+</ul>
+<hr />
+<h2><a href="icgem.html">International Centre for Global Earth Models (ICGEM)</a></h2>
+<h2>Online calculation:
+</h2>
+<ul>
+	<li><a href="https://vdatum.noaa.gov/vdatumweb/">
+	https://vdatum.noaa.gov/vdatumweb/</a> US and possessions only, but full 
+	featured</li>
+	<li><a href="https://geographiclib.sourceforge.io/cgi-bin/GeoidEval">https://geographiclib.sourceforge.io/cgi-bin/GeoidEval</a>, using
+	<a href="https://geographiclib.sourceforge.io/">https://geographiclib.sourceforge.io/</a>&nbsp; </li>
+	<li>
+	<a href="https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=egm96-geoid-calc">
+	https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=egm96-geoid-calc</a>: 
+	does the 96 and 08 models (nust fill in deg, min, and sec fields)</li>
+	<li>
+	<a href="https://www.unavco.org/software/geodetic-utilities/geoid-height-calculator/geoid-height-calculator.html">
+	https://www.unavco.org/software/geodetic-utilities/geoid-height-calculator/geoid-height-calculator.html</a>&nbsp; 
+	(EGM96 only; no interpolation used)</li>
+	<li>
+	<a href="https://geodesy.noaa.gov/NCAT/">https://geodesy.noaa.gov/NCAT/</a>&nbsp; 
+	(US systems only)</li>
+	<li>
+	Canada:
+	<a href="https://webapp.csrs-scrs.nrcan-rncan.gc.ca/geod/tools-outils/trx.php?locale=en">
+	TRX (nrcan-rncan.gc.ca)</a></li>
+</ul>
+<hr />
+<p>References</p>
+<ul>
+	<li>
+	<a href="https://www.fig.net/resources/proceedings/fig_proceedings/fig2010/papers/ts01c/ts01c_roman_wang_et_al_3768.pdf">
+	https://www.fig.net/resources/proceedings/fig_proceedings/fig2010/papers/ts01c/ts01c_roman_wang_et_al_3768.pdf</a>
+	</li>
+	<li>
+	<a href="https://proj.org/resource_files.html">https://proj.org/resource_files.html</a> has links to 
+	download <a href="#GDAL_reads">GTX files</a></li>
+	<li>
+	<a href="https://vdatum.noaa.gov/docs/gtx_info.html">
+	https://vdatum.noaa.gov/docs/gtx_info.html</a>&nbsp; (undated)</li>
+	<li>
+	Other vertical datum shift files:&nbsp;
+<a href="https://www.agisoft.com/downloads/geoids/">
+https://www.agisoft.com/downloads/geoids/</a>&nbsp; You may have to override the 
+	browser wanting to block the download.</li>
+	<li>
+	<a href="https://proj.org/operations/transformations/vgridshift.html">
+	https://proj.org/operations/transformations/vgridshift.html</a> </li>
+	<li>
+	NOAA VDATUM<ul>
+		<li><a href="https://vdatum.noaa.gov/">https://vdatum.noaa.gov/</a> </li>
+		<li><a href="https://vdatum.noaa.gov/vdatumweb/">
+		https://vdatum.noaa.gov/vdatumweb/</a> </li>
+	</ul>
+	</li>
+	<li>
+	<a href="https://proj.org/operations/transformations/vgridshift.html?highlight=vertical%20datum">
+	https://proj.org/operations/transformations/vgridshift.html?highlight=vertical%20datum</a>
+	</li>
+	<li>
+	<a href="https://groups.google.com/forum/#!searchin/lastools/las2las$20coodinate$20transformation%7Csort:date/lastools/1A36bxhcZUM/jE-6D3lJAAAJ">
+	https://groups.google.com/forum/#!searchin/lastools/las2las$20coodinate$20transformation%7Csort:date/lastools/1A36bxhcZUM/jE-6D3lJAAAJ</a></li>
+	<li>
+	<a href="https://spatialthoughts.com/2019/10/26/convert-between-orthometric-and-ellipsoidal-elevations-using-gdal/">
+	https://spatialthoughts.com/2019/10/26/convert-between-orthometric-and-ellipsoidal-elevations-using-gdal/</a> </li>
+	<li>
+	Using GDAL:
+	<a href="https://gis.stackexchange.com/questions/191565/vertical-datum-conversion-of-a-raster-with-gdal">
+	https://gis.stackexchange.com/questions/191565/vertical-datum-conversion-of-a-raster-with-gdal</a>&nbsp; 
+	(this is rather old by now)</li>
+</ul>
+<font face="Times New Roman"><b>
+
+<hr align="right">
+
+</b>
+
+<p class="style2" align="right"><em>Last revision 4/27/2023</em></p>
+
+</body>
+
+</html>

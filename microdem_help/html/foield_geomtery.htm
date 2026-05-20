@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Field Geometry</title>
+</head>
+
+<body>
+
+<h1>Field Geometry</h1>
+<p>Submenu on <a href="db_edit.htm">&quot;EDIT&quot; button </a>on 
+<a href="database_table_display.htm">database
+table form.</a>&nbsp;&nbsp; <a href="edit_dbf.htm">You must enable edits</a> 
+before this option is available.</p>
+		<ul>
+			<li><b>Area of each record in&nbsp; km<font face="Arial">²</font>:</b> computes area in km<font face="Arial">²&nbsp;
+			</font>and puts in field AREA_KM2.&nbsp; Uses UTM, so there is a 
+			limit to the size over which it will be valid.</li>
+			<li><b>Area of each record in&nbsp; m<font face="Arial">²</font>:</b> computes area in 
+			m<font face="Arial">²&nbsp;
+			</font>and puts in field AREA_M2.&nbsp;&nbsp; Uses UTM, so there is 
+			a limit to the size over which it will be valid.</li>
+			<li><b>ALAND to LAND_KM2:</b> takes Census field of land area in 
+			square meters puts in field LAND_KM2.&nbsp; If the field is not 
+			ALAND, but something like ALAND10, you will have to pick it.</li>
+			<li><b>AWATER to WATER_KM2:</b> takes Census field of land area in 
+			square meters puts in field WATER_KM2.</li>
+			<li><b>Perimeter of each record:</b> computes perimeter in km<font face="Arial">&nbsp;
+			</font>and puts in field PERIMTR_KM.</li>
+			<li><b>Centroid of each record: </b>computes centroid of each record 
+			and puts in fields LAT_CENTRD and LON_CENTRD.</li>
+			<li><b>Length of each record: </b>computes length in km using the 
+			Vincenty formulas<font face="Arial">
+			</font>and puts in a field LENGTH_KM</li>
+			<li><strong>Polygon shape indices</strong>, using perimeter and area.&nbsp; Many of these are used for 
+			Gerrymandering<ul>
+				<li>Compactness: 4piA/P^2r,	iso-perimetric quotient, Polsby-Popper, Cox's circularity</li>
+				<li>Mean width 2A / P</li>
+				<li>Shape number (P/sqrt(A))</li>
+				<li>Schwartzberg, 1 / (Perimeter / ( 2 * Pi * sqrt(Area/Pi)))).&nbsp; 
+				Ratio of perimeter to the circumference of a circle 
+				with the same area.</li>
+				<li>Perimeter/Area ratio (P2A):	</li>
+			</ul>
+			</li>
+			<li>Elevation change of each record</li>
+			<li>Direction of record: line files only. Computes the azimuth from 
+			the first point in the line to the last point.</li>
+			<li>Distance between two points in record: must have to LAT/LONG 
+			pairs in each record</li>
+			<li>
+			<a href="nearest_pt_line.htm">Distance to line/polygon</a></li>
+			<li>
+			<a href="nearest_pt_line.htm">Nearest point on line/perimeter</a></li>
+			<li><a href="db_dist_pt.htm">Distance from point</a> using 
+			Vincenty forumula.</li>
+			<li><a href="measure_distance.htm">Distance algorithm comparison</a>: 
+			does Vincenty, haversine, and cosine distance formulas</li>
+			<li>Distance to nearest neighbor:</li>
+			<li>Distance off map: for a points database, will add a field 
+			DIST_OFF with the distance and direction for those records not on 
+			the current map</li>
+			<li>Gradient</li>
+			<li><a href="find_pts_areas.htm">Point in polygon/area</a>: find the record within an area shapefile in which a point 
+	(or the centroid of an area/line shapefile) lies, and enter a field from 
+	that database into the current database.&nbsp; For instance this could find 
+	the <a href="county_outlines.htm">county</a> which contains a record.&nbsp; You want to be careful in picking 
+	the field to insert: for counties; the FIPS are unique, but half the states 
+	have a &quot;Washington County&quot;.</li>
+			<li>Sinuosity</li>
+			<li>Number points each record</li>
+			<li>First and last points each record.&nbsp; Add fields LAT_START, 
+			LONG_START, LAT_END, LONG_END.</li>
+		</ul>
+<hr>
+<p align="right"><i>Last revision 5/8/2021</i></p>
+
+</body>
+
+</html>

@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>DTM Creation Steps</title>
+<link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.auto-style4 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>DTM Creation Steps</h1>
+<table border="2">
+	<tr>
+		<td class="auto-style4">Step</td>
+		<td class="auto-style4"><strong>Free programs</strong></td>
+		<td class="auto-style4"><strong>Notes</strong></td>
+	</tr>
+	<tr>
+		<td class="auto-style4">Noise removal</td>
+		<td> 
+		<ul>
+			<li>
+			<span class="auto-style4" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+			<a href="pdal.htm">PDAL</a> </span></li>
+			<li><a href="whitebox.html"><span class="auto-style4">WhiteBox toolbox</span></a></li>
+		</ul>
+		</td>
+		<td class="auto-style4">Many (most?) point clouds will have this mostly accomplished</td>
+	</tr>
+	<tr>
+		<td class="auto-style4"><a href="lidar_ground_classification.html">Ground classification</a></td>
+		<td class="auto-style4" style="mso-fareast-font-family: SimSun; mso-ansi-language: EN-US; mso-fareast-language: ZH-CN; mso-bidi-language: AR-SA">
+		<ul>
+			<li><a href="fusion_for_lidar.html">Fusion</a></li>
+			<li><a href="mcc-lidar.htm">mcc-lidar</a></li>
+			<li><a href="whitebox.html">WhiteBox toolbox</a> 
+		(2 methods)</li>
+		</ul>
+		</td>
+		<td class="auto-style4">
+		<span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		Many (most?) point clouds will have this mostly accomplished<br />
+		</span>Would be nice to have water, vegetation, and buildings as well, 
+		but no free software does this.</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">Surface generation to grid<ul>
+			<li><span class="auto-style4">TIN--triangulated irregular network</span></li>
+			<li><span class="auto-style4">IDW--Inverse distance weighting</span></li>
+			<li><span class="auto-style4">Drop in the bucket (highest, lowest, 
+			average, closest to center of grid cell)</span></li>
+		</ul>
+		</td>
+		<td> 
+		<ul>
+			<li><a href="fusion_for_lidar.html"><span class="auto-style4">Fusion</span></a></li>
+			<li><a href="mcc-lidar.htm"><span class="auto-style4">mcc-lidar</span></a></li>
+			<li><span class="auto-style4"><a href="grid_from_pt_cld.htm">MICRODEM</a></span></li>
+			<li>
+			<span class="auto-style4" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+			<a href="pdal.htm">PDAL</a> </span><span class="auto-style4">&nbsp;(2 methods)</span></li>
+			<li><a href="whitebox.html"><span class="auto-style4">WhiteBox toolbox</span></a><span class="auto-style4"> (2 methods)</span></li>
+		</ul>
+		</td>
+		<td class="auto-style4">&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">Void filling in grid</td>
+		<td>
+		<ul>
+			<li><span class="auto-style4">MICRODEM</span></li>
+			<li><a href="whitebox.html"><span class="auto-style4">WhiteBox toolbox</span></a></li>
+		</ul>
+		</td>
+		<td class="auto-style4">Not needed for TIN and IDW, unless they had a size limit imposed 
+		for interpolation.<br />
+		Can lead to artefacts.</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">Surface smoothing in grid</td>
+		<td class="auto-style4">
+		<ul>
+			<li>MICRODEM</li>
+		</ul>
+		</td>
+		<td>
+		<p><span class="auto-style4">Could be accomplished </span></p>
+		<ul>
+			<li>Filter directly</li>
+			<li>Two steps<ul>
+				<li><span class="auto-style4">Set larger grid size intially</span></li>
+				<li><span class="auto-style4">Filter grid, and then subsample/thin</span></li>
+			</ul>
+			</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">Hydrologic conditioning of grid</td>
+		<td>
+												<ul>
+													<li>
+													<a href="drainage_ops.htm">
+													<span class="auto-style4">TauDEM</span></a></li>
+													<li><a href="whitebox.html">
+													<span class="auto-style4">Whitebox 
+													Tools</span></a></li>
+												</ul>
+		</td>
+		<td class="auto-style4">&nbsp;</td>
+	</tr>
+</table>
+
+		<ul>
+			<li>Leaf-off will have fewer vegetation spikes, and more points on 
+			the ground</li>
+			<li>Create with <a href="pt_cld_ceiling_floor.htm">Ceiling/floor grid</a> 
+			option. </li>
+			<li>To lessen the impact of vegetation spikes, you can
+		<ul>
+			<li><a href="tbme0egj.htm">Thin</a> starting DEM first to 
+			get a larger grid size (hoping you set at least on true ground 
+			return in each pixel), and the <a href="reinterpolate_dem.htm">Reinterpolate,
+                UTM </a>&nbsp;the resulting grid.&nbsp; This will work well 
+			on level ground, but introduce a different kind of anomaly in 
+			sloping ground.</li>
+			<li>If you have two point clouds (snow/no snow, leaf on/leaf off) to 
+			you can compute the DTM with each, and then do a minimum of the two 
+			grids (<a href="raster_gis.htm">Raster GIS</a>, Multiple grid 
+			arithmetic)..</li>
+		</ul></li>
+			<li>You could filter and&nbsp; use just the &quot;Ground&quot; classification 
+			points.&nbsp; This is likely to leave a lot of voids.&nbsp; You can 
+			then try the Edit, DEM holes, <a href="filldemholes.htm">Interpolate across holes (smooth)</a> 
+			and would likely have to adjust the parameters to make it work.</li>
+		</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 7/28/2018</em></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

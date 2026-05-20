@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Garmin FLT Files</title>
+<style type="text/css">
+a:link
+	{color:blue;
+	text-decoration:underline;}
+.auto-style1 {
+	font-family: serif;
+	font-size: medium;
+}
+.auto-style2 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Garmin FLT Files</h1>
+<p>
+FIT, Flexible 
+and Interoperable Data Transfer is a file format used for GPS tracks and routes. It is used by newer Garmin fitness 
+GPS devices, including the Edge and Forerunner.</p>
+<p>MICRODEM converts it to a DBF when you open the file as a database.&nbsp; 
+This requires:</p>
+<ul>
+	<li><span class="auto-style2">Install GPSBabel in the default location: </span> <a href="https://www.gpsbabel.org/">
+	<span class="auto-style2">https://www.gpsbabel.org/</span></a></li>
+	<li class="auto-style2">Connect the fitness tracker to the PC with its USB 
+	cable.</li>
+	<li><span class="auto-style2">The files will be in </span> <a href="file:///E:/GARMIN/ACTIVITY">
+	<span class="auto-style2">E:\GARMIN\ACTIVITY</span></a><span class="auto-style2">, with names like "97KB2003.FIT".&nbsp; Use the Date 
+	Modified to find the desired file.</span></li>
+	<li><span class="auto-style2">MICRODEM will </span> 
+	<span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style1">
+	execute: "C:\Program Files (x86)\GPSBabel\gpsbabel.exe" -i garmin_fit -o gpx 
+	-f c:\temp\97J72123.FIT -F <a href="file:///c:/temp/97J72123.gpx">
+	c:\temp\97J72123.gpx</a>&nbsp; which will extract the latitudes, longitudes, 
+	times, and speed.</span></li>
+	<li><span class="auto-style2">MICRODEM will natively convert the GPX to a DBF with the 
+	</span> 
+	<span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style2">
+	latitudes, longitudes, times.&nbsp; This could be done with GDAL, but that 
+	creates a large number of empty fields, and creates a number of shapefiles.&nbsp; 
+	The DBF files will be in <a href="file:///c:/mapdata/tracks/">
+	c:\mapdata\tracks\</a>.&nbsp; They will be named with the date/time of the 
+	first reading.</span></li>
+	<li>Speed, distance, and azimuth can be added on the <a href="nav_menu.htm">
+	Navigation menu.</a>&nbsp; They will automatically added during import using 
+	your current settings, if you have the option checked on the <a href="import_tab.htm"><strong>Import/Export </strong></a>&nbsp;tab 
+	of the <a href="tbme1njp.htm">options form</a>, </li>
+	<li>The FIT files on the device will be deleted by default.&nbsp; If you 
+	want to retain them, turn the option off on the <a href="tbme1njp.htm"><b>Options</b></a> 
+	form, <a href="database_tab.htm"><strong>Database</strong></a> tab.</li>
+</ul>
+<p>
+<span class="auto-style2">The FIT documentation is included in the FIT SDK archive 
+</span><a href="http://www.thisisant.com/resources/fit/">
+<span class="auto-style2">http://www.thisisant.com/resources/fit/</span></a><span class="auto-style2">&nbsp; 
+which also has some tools for dealing with FIT files.&nbsp; These can extract 
+all data from the file, including things like heart rate, but you would have to 
+do some custom programming to convert the times and coordinates into something 
+useful in GPS.</span><p>
+&nbsp;<p>
+Testing has been with files from a Garmin Forerunner 35.<hr />
+
+<p align="right" ><em>Last revision 8/22/2019</em></p>
+
+</body>
+
+</html>

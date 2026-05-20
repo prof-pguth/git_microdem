@@ -1,0 +1,86 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Field co-occurrence matrix</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+				font-style: italic;
+}
+</style>
+</head>
+
+<body>
+
+<p><b><font size="5">Field co-occurrence matrix</font></b></p>
+<p>On&nbsp; <a href="db_stats.htm">Stats button</a> popup menu on 
+<a href="database_table_display.htm"><u>table
+display window</u></a><u>.</u></p>
+<p>Pick whether the co-occurrences are</p>
+<ul>
+  <li>Symmetric--it does not matter about the order of the two fields.&nbsp; 
+	Treats fields as strings, and the ordering will be in alphabetical order.</li>
+  <li>Asymmetric--the order of the two fields matters.</li>
+	<li><a href="co_occur_matrix.htm">Integer</a>--only works for integer 
+	fields, with &lt;255 values.</li>
+</ul>
+<p>Then pick:</p>
+<ul>
+  <li>First field in the database</li>
+  <li>Second field in the database</li>
+</ul>
+<p>Then pick a database for the results.</p>
+<table border="1" width="100%">
+  <tr>
+    <td><img border="0" src="../images/co_oc_original.gif" align="right" width="350" height="163"></td>
+    <td>Original data base.&nbsp; It has a list of contracts between two towns,
+      listed in the BUR and VIL1 fields.
+      <p>The analysis selects the BUR and VIL1 fields</td>
+  </tr>
+  <tr>
+    <td><img border="0" src="../images/co_oc_mat.gif" width="502" height="267"></td>
+    <td>The title bar lists the data base name (CORMIMATR) and the two fields
+      used.
+      <p>This string grid shows the results.&nbsp; The two field will be listed
+      in the rows and columns.&nbsp; The numbers in the grid will be the number
+      of times in the original data base base a record occurs with the two towns
+      in the two fields.</p>
+      <p>This is a symmetric analysis; the matrix is symmetrical about the
+      principal diagonal, and it does not matter which town is in which
+      field.&nbsp;</p>
+      <p>You can save this table as a CSV file, or an HTML file.&nbsp; Neither
+      can be used for statistical work in MICRODEM, because most of the town
+      names are longer than 10 characters and cannot be field names in dBase
+      tables, and in any case the format is probably not useful.</td>
+  </tr>
+  <tr>
+    <td><img border="0" src="../images/co_oc_db.gif" align="right" width="394" height="253"></td>
+    <td>The dBase table summarizing the results, which you must manually open.&nbsp; Each grid cell that is
+      filled in has a record, with the first two fields those selected, and the
+      N field showing the number of co-occurrences.
+      <p>&nbsp;</p>
+      <p>You probably want to do judicious filtering with this option, as it is
+      very easy to get very complex results that don't reveal much.</td>
+  </tr>
+  <tr>
+    <td><img border="0" src="../images/PT_SEP_MAP.GIF" align="right" width="320" height="240"></td>
+    <td><a href="add_lat_link_db.htm">Add the lat/long coordinates (and any 
+	other data desired)&nbsp; from
+      a linked data base</a> for the two towns, and then <a href="db_pt_sep.htm">do
+      a point separation</a> plot to graphically look at the links between the
+      towns.
+      <p>This shows the trade relationships from Cormicy to the towns around
+      it--thicker lines indicate more contracts.</td>
+  </tr>
+</table>
+
+<hr>
+
+<p align="right" class="style1">Last revision 7/24/2013</p>
+
+</body>
+
+</html>

@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Elevation grids from point cloud</title>
+</head>
+
+<body>
+
+		<h1>Elevation grids from point clouds</h1>
+<p><img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+	<a href="pt_cld_opts.htm">LIDAR Point cloud form</a>&nbsp; option on
+			<b><a href="grid_from_pt_cld.htm">Create grids</a></b>&nbsp; tab.&nbsp; 
+<a href="dtm_dsm.htm">DTM/DSM/NVS/CHM 
+definitions.</a></p>
+		<ul>
+						<li>DSM + NVS + DTM</li>
+						<li>DSM + NVS</li>
+						<li>DSM (Highest point in the pixel)</li>
+						<li>NVS (lowest point in the pixel)</li>
+						<li>DTM from ground classified points<ul>
+							<li>Uses only points 
+						classified as ground, so quality depends on the 
+						classification job.</li>
+						</ul>
+						</li>
+						<li>DTM range of scales from ground points:<ul>
+							<li>Pick database to define what is wanted&nbsp;
+							<table border="3" style="font-family: &quot;Times New Roman&quot;; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial;">
+								<tr>
+									<td>RESOLUTION</td>
+									<td>UNITS</td>
+									<td>PIXEL_IS</td>
+									<td>DEM</td>
+									<td>CALC</td>
+								</tr>
+								<tr>
+									<td>0.5</td>
+									<td>sec</td>
+									<td>area</td>
+									<td>DTM</td>
+									<td>Mean</td>
+								</tr>
+								<tr>
+									<td>1</td>
+									<td>sec</td>
+									<td>area</td>
+									<td>DTM</td>
+									<td>Mean</td>
+								</tr>
+								<tr>
+									<td>2</td>
+									<td>sec</td>
+									<td>area</td>
+									<td>DTM</td>
+									<td>Mean</td>
+								</tr>
+								<tr>
+									<td>3</td>
+									<td>sec</td>
+									<td>area</td>
+									<td>DTM</td>
+									<td>Mean</td>
+								</tr>
+								<tr>
+									<td>4</td>
+									<td>sec</td>
+									<td>area</td>
+									<td>DTM</td>
+									<td>Mean</td>
+								</tr>
+							</table>
+							</li>
+							<li>Pick directory for the files created</li>
+						</ul>
+						</li>
+						<li>Mean all returns</li>
+						<li>Mean first returns (a DSM)</li>
+						<li>Distance Above/Below DEM: height in m for any points in the point 
+						cloud that lie above or below the DEM.&nbsp; The DEM should be a 
+						DTM. Uses zcrit on the Tools tab, and the DEM Z choice.</li>
+						<li>Low ground points x-y-z: this creates a database 
+						with the X,Y, and Z coordinates of the lowest point 
+						within the grid box that has been classified as ground.&nbsp; 
+						This is intended to use as input for triangulation 
+						creation of a DTM, with a reduced resolution to better 
+						capture the local relief and not every small deviation 
+						which might be better viewed as noise.</li>
+						<li>Low points x-y-z: Same as the previous option, but 
+						no prior need for classification.&nbsp; It will include 
+						buildings, if the area has any.</li>
+		</ul>
+
+<hr />
+
+<p align="right"><em>Last revision 12/18/2024</em></p>
+
+</body>
+
+</html>

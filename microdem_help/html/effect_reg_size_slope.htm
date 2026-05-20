@@ -1,0 +1,278 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Effect of Region Size on Slope Distribution</title>
+</head>
+
+<body>
+
+<p><font size="5"><b>Effect of Region Size on Slope Distribution</b></font></p>
+<p>Accessed with the <b><a href="geostatistical_analysis.htm">Geomorphometry analysis</a>, </b>Algorithms 
+tab, &quot;Slope region
+size&quot; option.</p>
+<p>Because computed slopes vary with size of the region used, this lets
+you assess the impact.&nbsp; It will use regions various multiples times the
+grid size.</p>
+<p>The locations of the 8 neighbors used to compute slope, with region sizes and 
+1 (3x3), 2 (5x5), and 3 (7x7).</p>
+<table border="2">
+	<tr>
+		<td>Region 3</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>Region 3</td>
+		<td style="width: 71px">&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>Region 3</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>Region 2</td>
+		<td>&nbsp;</td>
+		<td>Region 2</td>
+		<td style="width: 71px">&nbsp;</td>
+		<td>Region 2 </td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>Region 1 </td>
+		<td>Region 1</td>
+		<td style="width: 71px">Region 1</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Region 3</td>
+		<td>Region 2</td>
+		<td>Region 1</td>
+		<td>&nbsp;<strong>Point&nbsp;</strong></td>
+		<td style="width: 71px">Region 1</td>
+		<td>Region 2 </td>
+		<td>Region 3</td>
+	</tr>
+	<tr>
+		<td style="height: 28px"></td>
+		<td style="height: 28px">&nbsp;</td>
+		<td style="height: 28px">Region 1</td>
+		<td style="height: 28px">Region 1</td>
+		<td style="height: 28px; width: 71px">Region 1</td>
+		<td style="height: 28px"></td>
+		<td style="height: 28px"></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>Region 2</td>
+		<td>&nbsp;</td>
+		<td>Region 2</td>
+		<td style="width: 71px">&nbsp;</td>
+		<td>Region 2</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Region 3</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>Region 3</td>
+		<td style="width: 71px">&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>Region 3</td>
+	</tr>
+</table>
+<hr>
+<p><img alt="" height="330" src="../images/slope_regions.gif" width="1017"></p>
+<p>The diagram represents a geographic grid away from the equator, where the 
+east-west spacing&nbsp; (dx) is less than the north south spacing (dy).&nbsp; In 
+this case there is not a single grid spacing in meters, and the algorithm must 
+use both dx and dy.</p>
+<p>The most common slope algorithm uses 8 points surrounding the point to 
+compute the slope.&nbsp; There are three east west lines shown in blue, and 
+three north south lines shown in red.&nbsp; The elevation difference of the two 
+end points provides a dz, and the&nbsp; average of the three provides dz.&nbsp; 
+The dx and dy will be two times the grid spacing.&nbsp; There are two ways to 
+look at the distance over which the slope is computed.&nbsp; The region size is 
+twice the grid spacing, but could also be considered to be a region of &quot;radius&quot; 
+equal to the grid spacing around the point.&nbsp; While this is partly a matter 
+of semantics, if you want to compare the slopes computed from the DEM to those 
+actually measured in the field the difference is crucial.</p>
+<p>There are slope computations that use larger regions, but still only using 8 
+points, and the region size doubles or triples as shown in the diagrams with 
+sizes of 2 and 3.&nbsp; This can be done by thinning (decimating) the grid.&nbsp; 
+There are arguments that averaging is preferable to decimation, but decimation 
+was ingrained in early DEM work through it use in DTED and SRTM.&nbsp; Software 
+can retrieve the collect elevations without the need to actually decimate the 
+DEM.</p>
+<p>In general the slope will decrease as the region size increases, but some 
+local geomorphic forms will see it increase.</p>
+<p>There are slope algorithms that use the actual grid spacing (dx, dy, and the 
+diagonal), such as only taking the slope particular directions, or computing the 
+steepest of the eight.&nbsp; These methods actually use the elevation of the 
+central point, and will produce steeper slopes.&nbsp; They are mostly only of 
+historical use, and not widely used at present.</p>
+<hr>
+<p>&nbsp;</p>
+<p>The example is for a 1&quot; DEM in Alaska created from lidar.</p>
+<table border="1">
+  <tr>
+    <td><img height="372" src="../images/sl_dist_reg_size.gif" width="600">&nbsp;</td>
+    <td>Slope distribution histograms.</td>
+  </tr>
+</table>
+<table border="1">
+  <tr>
+    <td>
+	<b style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;; font-size: medium; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	Slope Region Size Moment Report</b><table border="3" style="font-family: &quot;Times New Roman&quot;; letter-spacing: normal; orphans: 2; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+		<tr>
+			<td>alaska elevation geographic</td>
+			<td>Region 1 (1&quot;)</td>
+			<td>Region 2 (2&quot;)</td>
+			<td>Region 3 (3&quot;)</td>
+			<td>Region 4 (4&quot;)</td>
+			<td>Region 5 (5&quot;)</td>
+			<td>Region 7 (7&quot;)</td>
+			<td>Region 10 (10&quot;)</td>
+			<td>Region 15 (15&quot;)</td>
+			<td>Region 20 (20&quot;)</td>
+		</tr>
+		<tr>
+			<td>Slope n</td>
+			<td>436112</td>
+			<td>432729</td>
+			<td>429387</td>
+			<td>426155</td>
+			<td>422952</td>
+			<td>416630</td>
+			<td>407450</td>
+			<td>392336</td>
+			<td>377683</td>
+		</tr>
+		<tr>
+			<td>Slope mean</td>
+			<td>57.69</td>
+			<td>55.46</td>
+			<td>53.72</td>
+			<td>52.2</td>
+			<td>50.8</td>
+			<td>48.25</td>
+			<td>44.78</td>
+			<td>39.65</td>
+			<td>35.15</td>
+		</tr>
+		<tr>
+			<td>Slope avg dev</td>
+			<td>24.58</td>
+			<td>22.86</td>
+			<td>21.7</td>
+			<td>20.81</td>
+			<td>20.09</td>
+			<td>18.92</td>
+			<td>17.53</td>
+			<td>15.83</td>
+			<td>14.49</td>
+		</tr>
+		<tr>
+			<td>Slope std dev</td>
+			<td>30.76</td>
+			<td>28.02</td>
+			<td>26.34</td>
+			<td>25.11</td>
+			<td>24.12</td>
+			<td>22.59</td>
+			<td>20.92</td>
+			<td>19</td>
+			<td>17.53</td>
+		</tr>
+		<tr>
+			<td>Slope skewness</td>
+			<td>0.3629</td>
+			<td>0.1015</td>
+			<td>-0.0163</td>
+			<td>-0.0816</td>
+			<td>-0.1194</td>
+			<td>-0.1365</td>
+			<td>-0.0614</td>
+			<td>0.1487</td>
+			<td>0.2928</td>
+		</tr>
+		<tr>
+			<td>Slope curtosis</td>
+			<td>0.5049</td>
+			<td>-0.2066</td>
+			<td>-0.454</td>
+			<td>-0.5962</td>
+			<td>-0.6942</td>
+			<td>-0.7933</td>
+			<td>-0.8296</td>
+			<td>-0.7693</td>
+			<td>-0.6252</td>
+		</tr>
+		<tr>
+			<td>Slope min</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0.01</td>
+		</tr>
+		<tr>
+			<td>Slope max</td>
+			<td>327.29</td>
+			<td>223.27</td>
+			<td>191.79</td>
+			<td>165.46</td>
+			<td>140.12</td>
+			<td>118.87</td>
+			<td>100.33</td>
+			<td>90.07</td>
+			<td>86.18</td>
+		</tr>
+		<tr>
+			<td>Slope median</td>
+			<td>58.02</td>
+			<td>56.54</td>
+			<td>55.13</td>
+			<td>53.7</td>
+			<td>52.31</td>
+			<td>49.45</td>
+			<td>45.23</td>
+			<td>38.9</td>
+			<td>33.96</td>
+		</tr>
+	</table>
+	&nbsp;</td>
+    <td>Slope distribution moments.
+      <p>Note that the average slope decreases as the region size increases, and
+      the significant change in the skewness and&nbsp; curtosis of the slope distribution.</p>
+    </td>
+  </tr>
+</table>
+<p>This will give the same results as thinning the DEM and doing a slope
+computation with the <a href="tbme0egj.htm">thinned DEM</a>.&nbsp; However, this method will compute a
+slope for every point in the DEM (except those along the margins which do have
+have a sufficiently large neighborhood).&nbsp; This method may help to decrease
+the noise in very high resolution DEMs, like 1 m or 1/9&quot; LIDAR.</p>
+<p>This parameter can be set for the slope algorithm used in MICRODEM on the <a href="analysis_tab.htm">Analysis
+tab</a> of the <a href="tbme1njp.htm">options form</a>.</p>
+<p>You can get a plot of slope by region size for a single location,
+<a href="map_right_click.htm">Right click</a>, Geomorphometry, Point slope by 
+region size.&nbsp; Size plotted is the y direction size, which matters for a 
+geographic DEM.</p>
+<hr>
+
+<p align="right"><i>last revised 2/19/2021</i></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

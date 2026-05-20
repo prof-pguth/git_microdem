@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Fusion</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Fusion</h1>
+<p>Use in MICRODEM</p>
+<ul>
+	<li>Create DTM from TIN, implemented on
+			<b><a href="grid_from_pt_cld.htm">Create grids</a></b>&nbsp;of 
+	<a href="pt_cld_opts.htm">LIDAR point cloud analysis</a> f<b>orm.</b>
+	<ul>
+		<li>Size is limited</li>
+		<li>-1 for missing data</li>
+		<li>Can extrapolate across edges where the coverage stairsteps</li>
+	</ul>
+	</li>
+	<li><a href="lidar_ground_classification.html">Ground classify lidar data</a></li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+			<li>
+			<a href="http://forsys.sefs.uw.edu/index.html">
+			http://forsys.sefs.uw.edu/index.html</a> (last update 2018)</li>
+			<li>
+			<a href="http://forsys.sefs.uw.edu/FUSION/fusion_overview.html">
+			http://forsys.sefs.uw.edu/FUSION/fusion_overview.html</a> (last 
+			update early 2020)</li>
+			<li><a href="http://forsys.sefs.uw.edu/fusion/fusionlatest.html">
+			http://forsys.sefs.uw.edu/fusion/fusionlatest.html</a>&nbsp;&nbsp; 
+			download</li>
+			<li><a href="https://sourceforge.net/projects/fusion-lidar/">
+			https://sourceforge.net/projects/fusion-lidar/</a> (last update 
+			2011) </li>
+			<li>
+			<a href="http://forsys.cfr.washington.edu/JFSP06/lidar_&_ifsar_tools.htm">
+			http://forsys.cfr.washington.edu/JFSP06/lidar_&amp;_ifsar_tools.htm</a> 
+			(circa 2006)</li>
+		</ul>
+		<p>PLANS DTM format</p>
+<ul>
+	<li>One file binary, similar in concept to the current MICRODEM DEM</li>
+	<li>MICRODEM will read, but the file has to be:<ul>
+		<li>UTM</li>
+		<li>Meters</li>
+		<li>NAD83</li>
+	</ul>
+	</li>
+</ul>
+
+<p>Additional Programs to consider:</p>
+<ul>
+	<li>CanopyMaxima: uses a canopy height model to identify local maxima using 
+	a variablesize evaluation window. The window size is based on the canopy 
+	height. For some forest types, this tool can identify individual trees. 
+	However, it does not work in all forest types and it can only identify 
+	dominant and codominant trees in the upper canopy</li>
+	<li>CanopyModel:&nbsp; creates a canopy surface model using a LIDAR point 
+	cloud. By default, the algorithm used by CanopyModel assigns the elevation 
+	of the highest return within each grid cell to the grid cell center. 
+	CanopyModel provides for smoothing of the generated surface using a median 
+	or a mean filter or both. Specialized logic, activated using the /peaks 
+	switch, preserves local maxima in the surface while smoothing to force the 
+	surface to adhere to the tops of trees</li>
+	<li>TreeSeg: applies a watershed segmentation algorithm to a canopy height 
+	model to produce “basins” that correspond to dominate clumps of tree foliage 
+	and branches. In some cases, the segments represent individual trees but it 
+	is common for segments to encompass several tree crowns</li>
+</ul>
+
+				<HR>
+				<P align=right class="auto-style1"><EM>Last revision&nbsp; 
+				3/10/2018</EM></P>
+				
+<p>&nbsp;</p>
+
+</body>
+
+</html>

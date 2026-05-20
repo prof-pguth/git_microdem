@@ -1,0 +1,75 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Feature Migration</title>
+</head>
+
+<body>
+
+<h2>Feature Migration</h2>
+
+<p>Choice on <a href="raster_gis.htm">Raster GIS</a> menu, 
+<a href="migrate_over_time.htm">migration over time </a>submenu.&nbsp; 
+Designed for <a href="dune_geomorph.htm">sequential time surveys of features like dunes</a>.</p>
+<p>Select two feature grids (created with <a href="id_features.htm">ID features</a>). 
+These can have different numbers of features, but must have the same extent and 
+grid spacing.</p>
+<ul>
+	<li>Original </li>
+	<li>Migrated</li>
+</ul>
+<table border="1" width="100%">
+	<tr>
+		<td>
+		<img border="0" src="../images/feat_migrate.gif" width="651" height="375"></td>
+		<td><ul>
+			<li>Boxes at the top let you select the maximum lags to test, from 
+			each point in a feature.&nbsp; These are in grid units.&nbsp; In 
+			this case we know the migration should be to the NE, so the values 
+			to the south and west are 0.</li>
+			<li><b>All features:</b> For each feature in the original grid, the 
+			algorithm will attempt to find a corresponding point in the migrated 
+			grid.&nbsp; The score will be the percentage of points that had a 
+			match, with the largest percentage being the computed shift.&nbsp; 
+			If several shifts have the same score, the computed shift will be 
+			the centroid of the points with the tied score.</li>
+			<li><b>Reverse (all)</b>:&nbsp; flips the original and migrated 
+			grids, the box containing the lags to test, and the resulting lags.&nbsp; 
+			This basically finds the motion that must be reversed to go from the 
+			migrated feature to an original feature.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<table border="1">
+	<tr>
+		<td>
+		<img border="0" src="../images/feat_mig_tabl.gif" width="542" height="134"></td>
+		<td>Table, which includes:<ul>
+			<li>ID of the feature</li>
+			<li>Number of points for the feature in the grid</li>
+			<li>Centroid location of the feature</li>
+			<li>Shift in meters</li>
+			<li>PC is the percentage of the points in the feature which have a 
+			point at the new location</li>
+			<li>NAVG is the number of shifts with the same PC, which were 
+			averaged to get the shift.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/feat_mig_map.jpg" width="420" height="319"></td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+<hr>
+
+<p align="right"><em>Last revision 5/14/2014</em></p>
+
+</body>
+
+</html>

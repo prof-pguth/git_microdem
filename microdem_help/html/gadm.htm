@@ -1,0 +1,93 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>GADM</title>
+</head>
+
+<body>
+
+<h1>GADM</h1>
+<p>The global Administrative area database (GADM) has been developed by a group of 
+zoologists and agricultural scientists in California.</p>
+<ul>
+	<li>National (level 0)</li>
+	<li>State/province/equivalent (level 1)</li>
+	<li>County/district/equivalent (level 2)</li>
+	<li>Smaller Level 3 or 4.</li>
+</ul>
+<p> <font size="3"><span style="font-weight: 400">
+			<a href="http://www.gadm.org/">GADM download</a></span></font></p>
+<ul>
+	<li>Get the data by country in <a href="../html/shapefile.htm">Shapefile</a> format.</li>
+	<li>You can also get in KMZ format<ul>
+		<li>With this you can click on the map in Google Earth, and the name of the province 
+		will appear.&nbsp; The record in the table of contents will be 
+		highlighted.&nbsp; You can right click on the record, and do a Save as 
+		to get the single record in a KMZ file of its own.</li>
+	</ul>
+	</li>
+	<li>Single file is far too large to use (<font size="3"><span style="font-weight: 400">level 0 is 150 MB, level 2 is 184 MB).&nbsp;</span></font>&nbsp;&nbsp; 
+	Get this only if you will immediately subset it.</li>
+	<li><a href="prep_shapefiles.htm">Prep OSM/Natural Earth/GADM shapefile </a>&nbsp;should 
+	be done.</li>
+</ul>
+<hr>
+<p>Global subnational river borders:
+<a href="https://zenodo.org/record/3906567#.X1gr8nlKj8A">
+https://zenodo.org/record/3906567#.X1gr8nlKj8A</a> </p>
+<hr>
+<h2> Politics and Boundaries</h2>
+<p>There are political questions about boundary locations, which are not clearly 
+demarcated on the ground.&nbsp; While most of the world's boundaries are clearly 
+agreed to by the countries they separate, there are a number of disputed 
+boundaries such as Kashmir, the Gaza Strip, the West Bank, or the Golan Heights.&nbsp; 
+For these, if you go to a place like Google Maps, you will see boundaries drawn 
+with a different symbology.&nbsp; In some cases you might see different 
+boundaries or symbologies based on the country you are in.&nbsp; The same can be 
+true for the names displayed.</p>
+<p>GADM does not mention this challenge, and you will have to look at the 
+boundaries to see how they handled the disputed boundaries.&nbsp; For example, 
+they have a &quot;Palestina&quot; &quot;country&quot;.&nbsp; <a href="download_convert_gaz.htm">NGA</a> has the following note about its 
+gazetteers: &quot;
+The geographic names in this database are provided for the guidance of and use by 
+the Federal Government and for the information of the general public.  The 
+names, variants and associated data may not reflect the views of the United 
+States Government on the sovereignty over geographic features.&quot;&nbsp; NGA has 
+country files for the &quot;Gaza Strip&quot; and &quot;West Bank&quot;.</p>
+<hr>
+<p>Using GADM in MICRODEM</p>
+<p><a href="tbme9u5x.htm">Overlay</a>, <b>GADM</b> will take you straight 
+	to the correct directory if you have the global GADM in the correct 
+	locations (subdirectories c:\mapdata\gadm\adm0 and&nbsp; 
+	c:\mapdata\gadm\adm1).&nbsp; This will avoid having to navigate to the correct directory.&nbsp; 
+This will be higher resolution that the <a href="world_outlines_options.htm">
+World boundaries</a> from Natural Earth, and goes down to lower levels.</p>
+<hr>
+<h2>Alternative: <a name="GAUL,_Global_Adminiatrative_Units_Layers,_from_UNs_FAO">GAUL, Global Adminiatrative Units Layers, from UN's FAO</a>:
+</h2>
+<ul>
+	<li>Metadata:
+	<a href="http://www.fao.org/geonetwork/srv/en/metadata.show?id=12691">http://www.fao.org/geonetwork/srv/en/metadata.show?id=12691</a>
+	</li>
+	<li>Download at: <a href="http://www.fao.org/geonetwork/srv/en/">
+	http://www.fao.org/geonetwork/srv/en/</a>
+	(this appears to lack the most highly developed countries, and finding the 
+	country requires patience)
+	<ul>
+		<li>Find country</li>
+		<li>On next page, find data for download (either national, or 
+		sub-national)</li>
+	</ul>
+	</li>
+	<li><a href="https://geonode.wfp.org/layers/geonode:adm1_gaul_2015">
+	https://geonode.wfp.org/layers/geonode%3Aadm1_gaul_2015</a> has level 1 for 
+	all countries in a single <a href="../html/shapefile.htm">Shapefile</a></li>
+</ul>
+<hr>
+<p align="right"><i>Last revision 4/9/2021</i></p>
+
+</body>
+
+</html>

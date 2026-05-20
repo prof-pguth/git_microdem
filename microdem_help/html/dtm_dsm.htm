@@ -1,0 +1,245 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>DTM/DSM and other lidar grids</title>
+<link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.auto-style3 {
+	font-size: medium;
+	font-family: "Times New Roman";
+	font-style: normal;
+	margin-left: 0in;
+	margin-right: 0in;
+	margin-top: 0in;
+	margin-bottom: 10.0pt;
+}
+.auto-style4 {
+	font-size: medium;
+}
+.auto-style5 {
+	font-family: serif;
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>DTM/DSM and Other Lidar Grids</h1>
+<p>By today's standards, the first <a href="demb55bn.htm">DEM'</a>s were crude and generalized.&nbsp; They 
+had large spacing between postings.&nbsp; It was also unclear how they accounted 
+for vegetation and buildings, so many like SRTM and ASTER are really DSMs.&nbsp; 
+Those created photogrammetrically were probably DTMs.</p>
+<p>With the advent of lidar (lasers collecting many thousands of elevations per 
+second), the resolution and detail increased substantially.&nbsp; We can now 
+create multiple surfaces, each with a specific name and properties.<p>
+<a href="dtm_creation.htm">DTM creation</a><p>&nbsp;<table border="2">
+	<tr>
+		<td><img alt="" height="656" src="../images/lidar_grid_types.PNG" width="1063"></td>
+	</tr>
+	<tr>
+		<td>
+		<p>Five grids for Fort Monroe, Virginia</p>
+		<ul>
+			<li>DTM from USGS.&nbsp; This has had light edits to fill and place the 
+			entire moat at one elevation. The castle walls remain.</li>
+			<li>Drop in the bucket 1 m grids from MICRODEM.&nbsp; These take the 
+			largest or smallest lidar return in the pixel.<ul>
+				<li>DTM from just the ground points in the lidar point cloud.&nbsp; 
+				The buildings, vegetion, and the moat are voids</li>
+				<li>NVS.&nbsp; A 2 m grid removes the spikes from tree trunks, 
+				in cells where no returns penetrated to the ground.</li>
+				<li>DSM.&nbsp; Only the SW corner of the moat has 
+				elevations.&nbsp; Lidar has problems getting returns from still 
+				water.</li>
+				<li>CHM</li>
+			</ul>
+			</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;<table border="1">
+	<tr>
+		<td class="auto-style4">
+		Grid
+		</td>
+		<td class="auto-style4">Synonyms</td>
+		<td class="auto-style4">Comments</td>
+		<td class="auto-style4">
+		MICRODEM produces from point cloud, with drop in the bucket algorithm</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">
+		DEM--digital elevation model</td>
+		<td class="auto-style4">&nbsp;</td>
+		<td class="auto-style4">Generic term, without implying what is shown.&nbsp; 
+		There is not widespread agreement about these terms, and in particular 
+		USGS now uses DEM for what is here called a DTM.&nbsp; This usage 
+		follows the Maune book, and most European usage.</td>
+		<td class="auto-style4">
+		&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">DSM—digital	surface model		</td>
+		<td ><span class="auto-style4">First return</span><br class="auto-style4">
+		<span class="auto-style4">Ceiling		</span>		</td>
+		<td >
+		<ul>
+			<li class="auto-style4">
+			Easiest to 	create
+			</li>
+			<li class="auto-style4">
+			
+			Only need to identify and remove obvious anomalies like bird 
+		strikes.
+			</li>
+			<li class="auto-style4">
+			
+			Not to be confused with digital soil map</li>
+		</ul>
+		</td>
+		<td class="auto-style4" >
+		Yes</td>
+	</tr>
+	<tr>
+		<td class="auto-style4">
+		DTM—digital 
+		terrain model		</td>
+		<td >
+		<span class="auto-style4">Bare earth</span><br class="auto-style4">
+		<span class="auto-style4">Last return</span><br class="auto-style4">
+		<span class="auto-style4">Floor		</span>		</td>
+		<td >
+		<ul>
+			<li>
+			<span class="auto-style4">Requires 
+		identification (classification) of ground points, buildings, and power 
+		lines.</span><span style="mso-spacerun:yes" class="auto-style4">&nbsp; </span>
+			</li>
+			<li class="auto-style4">
+			Challenges with tree stumps and large buildings. 
+			</li>
+			<li>
+			<span class="auto-style4">Building 
+		ghosts look unrealistic.</span><span style="mso-spacerun:yes" class="auto-style4">&nbsp; </span>
+			</li>
+			<li class="auto-style4">
+			TIN gridding 
+		can create anomalies at data voids.			</li>
+		</ul>
+		</td>
+		<td class="auto-style4" >
+		Yes, if point cloud has ground classification<br>
+		<a href="dtm_creation.htm">DTM creation</a></td>
+	</tr>
+	<tr style="mso-yfti-irow:3">
+		<td class="auto-style4">
+		CHM—canopy 
+		height model		</td>
+		<td >
+		<span class="auto-style4">HAG, height 
+		above ground</span><o:p><br class="auto-style4">
+		<span class="auto-style4">nDSM</span><span style="color: rgb(0, 0, 0); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">,
+		</span>
+		<span style="color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;, stixgeneral, serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">
+		normalized digital surface model</span></o:p></td>
+		<td >
+		<ul>
+			<li>
+			<span class="auto-style4">Difference 
+		between DSM and DTM</span><o:p><span class="auto-style4"> (or DSM and 
+			NVS), which is the height of vegetation.</span></o:p></li>
+		</ul>
+		</td>
+		<td class="auto-style4" >
+		Yes</td>
+	</tr>
+	<tr style="mso-yfti-irow:4;mso-yfti-lastrow:yes">
+		<td class="auto-style4">
+		NVS—Non-vegetated 
+		surface		</td>
+		<td >
+		<o:p><span class="auto-style4">&nbsp;</span></o:p></p>
+		</td>
+		<td >
+		<ul>
+			<li>
+			<p class="auto-style3" style="page-break-after: avoid; mso-bidi-font-style: italic;">Easier to compute than DTM, and buildings affect most users of the 
+		grids, so leaving them in may create a more useful data set.			</li>
+		</ul>
+		</td>
+		<td class="auto-style4" >
+		Yes</td>
+	</tr>
+	<tr style="mso-yfti-irow:4;mso-yfti-lastrow:yes">
+		<td class="auto-style4">
+		DoD: DEM of difference</td>
+		<td >
+		&nbsp;</td>
+		<td class="auto-style4" >
+		This should be called a grid, and not a DEM.</td>
+		<td class="auto-style4" >
+		&nbsp;</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/MT_FIRST.PNG" width="391" height="264"></td>
+		<td>
+		<img border="0" src="../images/MT_BARE.PNG" width="391" height="251"></td>
+		<td><img border="0" src="../images/MT_VEG.PNG" width="391" height="251"></td>
+	</tr>
+	<tr>
+		<td><strong>DSM</strong>--First return DEM.&nbsp; This includes trees and buildings.</td>
+		<td><strong>DTM</strong>--Bare earth DEM</td>
+		<td>CHM <a href="dem_diff_map.htm">Difference</a> grid, shown 
+		as <a href="tbme78s3.htm">Elevation map</a> (red is tall).</td>
+	</tr>
+</table>
+
+
+<br>
+<br>
+
+
+<br>
+
+<p><a href="lidar_interp.htm">Lidar interpretation.</a></p>
+<p><a href="../images/urban_dsm_display.htm">Urban lidar displays</a></p>
+<p>Other DEM terminology:</p>
+<ul>
+	<li>
+	<span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">
+	Digital Feature Model</span><ul>
+		<li>
+		<span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style5">
+		Pingel, Thomas J., Keith Clarke, and Anabel Ford. &quot;Bonemapping: A LiDAR 
+		processing and visualization technique in support of archaeology under 
+		the canopy.&quot;<span>&nbsp;</span></span><i style="color: rgb(34, 34, 34); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;" class="auto-style4">Cartography 
+		and Geographic Information Science</i><span class="auto-style4" style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">42.sup1 
+		(2015): 18-26.&nbsp;
+		<a href="https://doi.org/10.1080/15230406.2015.1059171">
+		https://doi.org/10.1080/15230406.2015.1059171</a> </span></li>
+		<li>
+		<span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style5">
+		Štular, B.; Lozi&#263;, E.; Eichert, S. Airborne LiDAR-Derived Digital 
+		Elevation Model for Archaeology.<span>&nbsp;</span></span><em style="box-sizing: border-box; font-style: italic; line-height: inherit; max-height: 1e+06px; color: rgb(34, 34, 34); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;" class="auto-style4">Remote 
+		Sens.</em><span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)" class="auto-style4">&nbsp;</span><b style="box-sizing: border-box; font-weight: 700; line-height: inherit; max-height: 1e+06px; color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;" class="auto-style4">2021</b><span style="color: rgb(34, 34, 34); font-family: &quot;helvetica neue&quot;, Helvetica, Roboto, Arial, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">,</span><span class="auto-style4" style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span><em style="box-sizing: border-box; font-style: italic; line-height: inherit; max-height: 1e+06px; color: rgb(34, 34, 34); font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;" class="auto-style4">13</em><span style="color: rgb(34, 34, 34); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style4">, 
+		1855. <a href="https://doi.org/10.3390/rs13091855">
+		https://doi.org/10.3390/rs13091855</a></span><span style="color: rgb(34, 34, 34); font-family: &quot;helvetica neue&quot;, Helvetica, Roboto, Arial, sans-serif; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"> </span></li>
+	</ul>
+	</li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 12/18/2024</em></p>
+
+</body>
+
+</html>

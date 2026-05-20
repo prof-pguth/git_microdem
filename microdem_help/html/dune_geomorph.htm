@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dune Geomorphometry</title>
+</head>
+
+<body>
+
+<h2>Dune Geomorphometry</h2>
+<p>Dune migration for asymmetric dunes.&nbsp; All methods require:</p>
+<ol>
+				<li>Two grids of the same area at different times</li>
+				<li>Select on Migration over time submenu on the <a href="raster_gis.htm">Raster GIS</a> 
+				menu</li>
+</ol>
+<hr />
+<p><a href="feat_migrate_linear.htm">Method 1, using linear dune crests</a></p>
+<ol>
+				<li>Create a slope grid.</li>
+				<li>Identify slip faces by slope.&nbsp; Set all slopes less than the 
+				threshold (50% might be a good initial selection) as missing.</li>
+				<li><a href="edge_filters.htm">Find edges</a> with a directional 
+				filter.&nbsp; The 
+				edge direction to pick is the opposite of the migration 
+				direction.</li>
+				<li>To display on the base map, <a href="save_dem.htm">export the edge grids</a> as a 
+				database and plot them.</li>
+				<li>Pick Migration over time, Feature migration, grids with 
+				linear features on the <a href="raster_gis.htm">Raster GIS</a></li>
+				<li>Resulting table will have the motion at each point on the 
+				crest that can be matched in the two grids.</li>
+</ol>
+<p>Method 2, using grid correlations</p>
+<ol>
+				<li>Algorithm requires three parameters:
+				<ul style="margin-left: 80px">
+								<li>interval between computation points,</li>
+								<li>size of the regions (which can overlap).&nbsp; Regions must be large enough to contain a significant proportion of dunes, as 
+this will not work in flat interdune regions.&nbsp; </li>
+								<li>maximum distance to consider for shifting the two grids.
+								</li>
+				</ul>
+</li>
+				<li>Algorithm shifts one grid 
+relative to the other one grid node at a time, computes the correlation coefficient the elevation in the 
+stationary grid and the shifted grid. The offsets for the highest correlation 
+define the computed migration.</li>
+</ol>
+<hr />
+<p>Method 3, using slip face objects</p>
+<ol>
+	<li>Create slip face objects.<ul>
+		<li>Create slope map</li>
+		<li>Mark as missing all slopes less than threshold (e.g. 50%)</li>
+		<li><a href="id_features.htm">ID features</a> to get grid with each slip 
+		face having a unique code.</li>
+	</ul>
+	</li>
+</ol>
+<hr />
+<p>Method 4, using slip face point clouds</p>
+<ol>
+	<li>For both time periods:<ul>
+		<li>Create slip face objects</li>
+		<li>Open grid with slip face objects</li>
+		<li>You might have to change the display to elevation so they appear 
+		(will not effect results, but good verification)</li>
+		<li>If missing data appears as 0, set it to missing.</li>
+		<li>Open LAS files for point cloud</li>
+		<li>Extract valid grid, to create a LAS file with just the points on the 
+		slip faces</li>
+	</ul>
+	</li>
+	<li>Open the two LAS points clouds in CloudCompare.&nbsp; You will have to 
+	recenter them both (use &quot;Yes to all&quot;).&nbsp; If you are going to export the 
+	cloud-cloud distances, you might want to skip importing the scalar fields.</li>
+	<li>Select (highlight) the two point clouds.</li>
+	<li>Tools, distances, Cloud/cloud dist.&nbsp; Pick the reference and 
+	compared cloud. You will get distances for every point in the compared 
+	cloud, as scalar fields.</li>
+	<li>On the Distance computation form, check &quot;split x,y,z components&quot;</li>
+	<li>Pick compute</li>
+	<li>Pick OK to close window</li>
+	<li>Highlight one cloud.</li>
+	<li>
+	Set 
+	the active scalar field.&nbsp; There should be four choices for the shift 
+	between the two clouds, the absolute distances and x, y, z componnents.</li>
+	<li>Tools, statistics, compute stat params.&nbsp; </li>
+	<li>File, Save As, and pick the ASCII export.</li>
+	<li>If you have skipped the scalar fields when you imported the LAS files, 
+	you can Import in MICRODEM.&nbsp; This file may well be too big for the 
+	normal import; you can thin the file.</li>
+</ol>
+
+<hr>
+
+<p align="right"><em>Last revision 4/15/2024</em></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>
