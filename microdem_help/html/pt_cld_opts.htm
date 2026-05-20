@@ -1,0 +1,151 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>Point Cloud Options</title>
+<link href="../md.png" rel="shortcut icon">
+
+<style type="text/css">
+.style1 {
+				margin-left: 80px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Point Cloud Options</h1>
+
+<p><a href="pt_clouds.htm">Points clouds</a> are a category of GIS data.&nbsp; 
+This forms allow manipulation of the <a href="las_format.htm">LAS point cloud</a>.</p>
+
+<ul>
+    <li><a href="open_point_clouds.html">Open point clouds</a>.&nbsp; </li>
+	<li><img src="../images/LOS.gif" width="32" height="32"> <a
+        href="tbme8vjn.htm">Line of sight / Topographic
+        Profiles</a>, right click</li>
+</ul>
+
+<table border="2">
+    <tr>
+        <td>
+		<img alt="" height="54" src="../images/pt_cld/pt_cld_opts.gif" width="574">&nbsp;<br>
+		<br>
+		<br><img src="../images/pt_cld/main_control.png"></td>
+        <td>Tabs provided detailed option selection:<ul>
+			<li><a href="#General_tab.">General</a></li>
+			<li><a href="../images/pt_cld/files_tab.htm">Files</a></li>
+			<li><a href="../images/pt_cld/tools_tab.htm">Tools</a></li>
+			<li>Stats</li>
+			<li>
+			<a href="pt_cld_draw_tab.htm">Draw</a></li>
+			<li>
+			<a href="lidar_points_to_grid.html">Grid creation</a><ul>
+				<li><a href="grid_from_pt_cld.htm">1 pass grids</a>&nbsp; Create a new 
+		grid that matches the DEM covering the map.&nbsp; This can use min, max, 
+				or mean points in the pixel.</li>
+				<li><a href="../images/pt_cld/multi_pass_tab.html">Multi pass grid</a>: if you want the median, or a specified 
+				percentile</li>
+				<li><a href="new_grid_pt_cloud.html">Grid params</a></li>
+			</ul>
+			</li>
+			<li>
+			<a href="filtering_las.html">Filter</a></li>
+			<li>
+			<a href="lidar_ground_classification.html">Class</a></li>
+		</ul>
+		<p><a href="pt_cld_main_bottom.htm">Main controls on the bottom of the form, always visible.</a>&nbsp;&nbsp;</p>
+		</td>
+    </tr>
+    <tr>
+        <td>
+		<img alt="" height="285" src="../images/pt_cld/general_tab.gif" width="570"></td>
+        <td><b><a name="General_tab.">General tab&nbsp;</a> </b>
+		<ul>
+			<li>Thinning for OpenGL, and slices</li>
+			<li>KML vertical offset, to put the points above the landscape/ground for KML exports.</li>
+			<li>Bad point filter: if this is set, you can ignore
+			<a href="las_format_classification_codes.htm">points classified</a> 
+			as noise, and points classified as overlay.</li>
+			<li>Assume LAS 1.4 for data sets using an older version of the LAS 
+			specs, but including the newer classification categories, which is 
+			relatively common</li>
+			<li>Open only tiles on map.&nbsp; If you make the map larger, no new 
+			tiles will be added.</li>
+			<li>Immediate zoom to cloud on opening files: zoom the map to only 
+			include area with lidar data</li>
+			<li>Immediate map after opening: turn off if you have very large 
+			point clouds that will draw slowly, and you want to subset first, 
+			but keep flexibility to choose a larger or different map area later</li>
+			<li>Automatic lidar redraws: turn off for a very large point cloud</li>
+			<li>Show point density on mean grid creation</li>
+			<li>Log output</li>
+			<li>Use geographic coordindates for slices (for instance to compare 
+			global DEMs with the lidar)</li>
+		</ul>
+        <table border="0">
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+		<img alt="" height="154" src="../images/pt_cld/stats_tab.gif" width="360">&nbsp;</td>
+        <td>
+		<p><strong>Stats tab</strong>:</p>
+		<ul>
+						<li><a href="pc_histogram.htm">Histograms/Counts</a>: histograms for elevation and 
+						intensity, and a count of the returns in each category, 
+						and by return number. </li>
+						<li>Zero classification: merge all LAS 
+						files in the current files listing into a single file, 
+						with the classifications all reset to zero.</li>
+						<li>RGB Palette:</li>
+						<li>Split by class: create new files by classification 
+						(vegetation, buildings, ground, non_ground, 
+						unclassified, and other)</li>
+						<li>Recenter files: recenter all coordinates so that 
+						multiple files share the same values.&nbsp; This is 
+						designed for use with <a href="cloud_compare.htm">Cloud 
+						Compare</a>, and not at this time to create usable LAS 
+						files for further analysis.</li>
+						<li>Subset/tile: recursively quarter files until all 
+						file sizes are under a specified value;</li>
+						<li>Zero fields&nbsp;: set the following fields to zero: 
+						Intensity, ReturnFlags, ScanAngle, UserData, 
+						PointSourceID </li>
+						<li>Cell statistics: compute elevation statistics for 
+						every cell in the DEM on which the point cloud is 
+						displayed</li>
+						<li>Recompute: recreate the index files for the lidar 
+						directories (all those currently selected).&nbsp; Should 
+						only be necessarily if the index becomes corrupted, or 
+						you add new files to the directory.</li>
+		</ul>
+        </td>
+    </tr>
+    </table>
+
+<p>&nbsp;</p>
+
+<ul>
+		  <li><a href="set_grid_size.html">Notes on gridding</a>&nbsp; 
+		  point cloud</li>
+		  <li><a href="lidar_hints.html">Hints with large point 
+		  clouds or wimpy computers</a> to improve performance</li>
+	  	<li><a href="compare_2_pt_clds.htm">Compare two point clouds</a></li>
+		  <li><a href="other_point_cloud_viewers.htm">Other Point Cloud Viewers and Lidar 
+tools</a></li>
+		  <li><a href="lidar_pt_clouds.htm">Lidar Point Cloud Data Sources</a></li>
+		  <li><a href="las_prep.htm">File prep and work flow to create grids</a></li>
+		  <li><a href="point_cloud_problems.htm">Problems with point clouds</a></li>
+	  </ul>
+
+<p>&nbsp;</p>
+
+<hr />
+
+<p align="right"><em>Last revision 12/18/2024</em></p>
+</body>
+</html>

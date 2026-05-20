@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Organizing Point Clouds</title>
+</head>
+
+<body>
+
+<h1>Downloading and Organizing Point Clouds</h1>
+<p>Getting point clouds</p>
+<ul>
+	<li>I recommend getting the point clouds, and not the derived grids that 
+	many sites (<a href="http://www.opentopography.org/">OpenTopography</a> or&nbsp;
+	<a href="https://coast.noaa.gov/dataviewer/?#/">
+	https://coast.noaa.gov/dataviewer/?#/</a> ) offer.&nbsp; You can 
+	create your own grids from the point cloud, and have more options for 
+	hillshading. If you just want the grids, don't bother with the point clouds.</li>
+</ul>
+Download lidar data<ul>
+	<li>Suggested <a href="key_data.htm">download locations</a> (mostly US) and 
+	links to international <a href="gis_country_sites.htm">Country sites</a>.</li>
+	<li>You will likely need
+				<a href="lastools.htm">LAStools</a>, which MICRODEM can call for 
+	reprojection and projection assignment</li>
+	<li>If the data does not have a projection, <a href="lastools_resample.htm">
+	you must assign it.</a>&nbsp; Assign projection by EPSG and reproject to 
+	UTM, which you can do with a LAS or LAZ file.</li>
+	<li>If the data is not in the UTM projection,
+	<a href="lastools_resample.htm">you must reproject the data</a> to UTM.</li>
+	<li>If you get LAZ files and you did not 
+	need to assign the projection or reproject, you will need
+				<a href="lastools.htm">LAStools</a> to uncompress
+	<a href="lidar_compression.htm">LAZ--point clouds</a>&nbsp; </li>
+	<li>If you are unfortunate enough to get data in the proprietary zLAS 
+	format, you need the
+	<a href="http://www.arcgis.com/home/item.html?id=787794cdbd384261bc9bf99a860a374f">
+					ESRI tool</a> to convert to LAS</li>
+</ul>
+<p>Each point cloud should go in its own directory</p>
+<ul>
+	<li>Insure the directory has an easy to understand name.&nbsp; The program 
+	will refer to the point cloud by the directory name.&nbsp; You can also open 
+	the cloud with the folder.</li>
+	<li>The point cloud is likely to have many files (hundreds are quite 
+	possible), so it can be easiest to <a href="open_point_clouds.html">open by 
+	directory rather than files</a></li>
+	<li><a href="open_point_clouds.html">Open by directory</a> will find files 
+	nested in subdirectories</li>
+	<li>If you get data from <a href="http://www.opentopography.org/">
+	OpenTopography</a> using the graphical selection, every point cloud will 
+	have the same file name, and be huge.&nbsp; You should subset the cloud with <a href="tbme83sn.htm">Data Manipulation</a>.&nbsp; As you zoom into the 
+	data, you will not need to open the files that are not on the map, which 
+	will speed up operations, but operations can be threaded and processed in 
+	parallel.</li>
+	<li>You can open up to 5 clouds, and show them separately or together.</li>
+</ul>
+<hr>
+<p align="right"><i>last revision 1/3/2023</i></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

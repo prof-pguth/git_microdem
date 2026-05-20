@@ -1,0 +1,37 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>ESRI PRJ files</title>
+</head>
+
+<body>
+
+<p><b><font size="6">ESRI</font><font size="6"> PRJ Files</font></b></p>
+<p>The program can now read ASC DEMs with an associated PRJ file. The projection 
+file must be in the same directory as the DEM, and have the same base name.</p>
+<table border="1" width="100%" id="table1">
+	<tr>
+		<td>Sample PRJ file that can be read (single line, ASCII)</td>
+	</tr>
+	<tr>
+		<td>PROJCS[&quot;Croatia&quot;,GEOGCS[&quot;GCS_Croatia_2000&quot;,DATUM[&quot;D_Croatia_2000&quot;,SPHEROID[&quot;Bessel_1841&quot;,6377397.155,299.15281]],PRIMEM[&quot;Greenwich&quot;,0],UNIT[&quot;Degree&quot;,0.017453292519943295]],PROJECTION[&quot;Transverse_Mercator&quot;],PARAMETER[&quot;False_Easting&quot;,6500000],PARAMETER[&quot;False_Northing&quot;,0],PARAMETER[&quot;Central_Meridian&quot;,18],PARAMETER[&quot;Scale_Factor&quot;,0.9999],PARAMETER[&quot;Latitude_Of_Origin&quot;,0],UNIT[&quot;Meter&quot;,1]]</td>
+	</tr>
+</table>
+<p>Currently this will only work with a Transverse Mercator projection, and a 
+file that looks like this.</p>
+<p>This file is not publicly documented, to the best of our knowledge.&nbsp; We 
+will add support for other projections as we become aware of DEMs available in 
+this format.</p>
+<p>Because there are other kinds of PRJ files, this can lead to problems.&nbsp;
+You might have to remove offending PRJ files if you have problems with them.</p>
+
+<hr>
+
+<p align="right"><em>Last revision 6/9/2015</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

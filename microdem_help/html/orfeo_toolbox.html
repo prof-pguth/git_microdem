@@ -1,0 +1,519 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Orfeo Toolbox</title>
+<style type="text/css">
+.style1 {
+				font-size: small;
+}
+.auto-style1 {
+	font-size: medium;
+}
+.auto-style2 {
+	font-family: serif;
+	font-size: medium;
+}
+.auto-style3 {
+	font-weight: normal;
+}
+.auto-style4 {
+	text-decoration: none;
+}
+.auto-style5 {
+	text-decoration: none line-through;
+}
+.auto-style6 {
+	text-decoration: line-through;
+}
+.auto-style7 {
+	font-size: medium;
+	text-decoration: line-through;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Orfeo Toolbox</h1>
+<p>Currently not enabled.</p>
+<p class="auto-style7">Get the 64 bit toolbox, install, and move to
+x<a href="file:///C:/microdem/OTB" class="auto-style4">:\gis_software\OTB</a>&nbsp;&nbsp; &nbsp; Insure there is a
+<a href="file:///c:/microdem/OTB/bin" class="auto-style4">c:\microdem\OTB\bin</a> directory.</p>
+<ul>
+	<li><a href="https://www.orfeo-toolbox.org/" class="auto-style4">
+	<span class="auto-style7">https://www.orfeo-toolbox.org/</span></a><span class="auto-style7">&nbsp; 
+		available from QGIS or the command line</span></li>
+	<li><a href="https://www.orfeo-toolbox.org/CookBook/" class="auto-style4">
+	<span class="auto-style7">https://www.orfeo-toolbox.org/CookBook/</span></a><span class="auto-style7">
+	</span>
+	</li>
+</ul>
+<p class="auto-style6">
+<a class="auto-style4" href="https://www.orfeo-toolbox.org/CookBook-develop/Applications/app_Segmentation.html">
+https://www.orfeo-toolbox.org/CookBook-develop/Applications/app_Segmentation.html</a>
+</p>
+<ul class="auto-style2" style="box-sizing: border-box; margin: 0px 0px 24px; padding: 0px; list-style: disc; line-height: 24px; color: rgb(64, 64, 64); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(252, 252, 252); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<li style="box-sizing: border-box; list-style: disc; margin-left: 24px;">
+	<span class="auto-style6">You 
+	must have “Visual C++ Redistributable for Visual Studio 2019” installed 
+	before using this package. It can be downloaded freely from&nbsp;</span><a class="auto-style5" href="https://aka.ms/vs/16/release/vc_redist.x64.exe" style="box-sizing: border-box; color: rgb(41, 128, 185); cursor: pointer;">microsoft</a></li>
+</ul>
+<p class="auto-style7">Currently only works with Landsat imagery</p>
+<p class="auto-style7">If you want to subset the 
+Landsat scene so the operations are faster (or will just plain work),&nbsp; 
+subset first (<a href="save_sat.htm" class="auto-style4">Save satellite image</a>, 
+	GDAL Landsat subset current map area).</p>
+<p><span class="auto-style6">In MICRODEM: </span> 
+<a href="micr0alv.htm" class="auto-style4"><span class="auto-style7">Menu choice with active map window</span></a><span class="auto-style7">, 
+</span> <a href="image_analysis.htm" class="auto-style4">
+<span class="auto-style7">Image analysis</span></a><span class="auto-style7">, 
+Orfeo toolbox</span></p>
+<ul>
+	<li><span class="auto-style1"><span class="auto-style6">
+	<strong class="auto-style3">Concatenate images</strong>: Orfeo will only use images in a single file.&nbsp; 
+	This will take the main imagery bands from a Landsat scene (ignoring the 
+	thermal and pan bands) and create a single Geotiff.&nbsp; It will handle a 
+	full Landsat scene.</span></span><ul>
+		<li>
+		<a href="https://www.orfeo-toolbox.org/CookBook/Applications/app_ConcatenateImages.html" class="auto-style4">
+		<span class="auto-style7">https://www.orfeo-toolbox.org/CookBook/Applications/app_ConcatenateImages.html</span></a><span class="auto-style7">
+		</span>
+		</li>
+	</ul>
+	</li>
+	<li><span class="auto-style1"><span class="auto-style6">
+	<strong class="auto-style3">K means clustering</strong>: this now appears to work with a 
+	full Landsat scene;&nbsp; </span> </span><ul>
+		<li>
+		<a href="https://www.orfeo-toolbox.org/CookBook/Applications/app_KMeansClassification.html" class="auto-style4">
+		<span class="auto-style7">https://www.orfeo-toolbox.org/CookBook/Applications/app_KMeansClassification.html</span></a><span class="auto-style7">
+		</span>
+		</li>
+	</ul>
+	</li>
+	<li><span class="auto-style1"><span class="auto-style6">
+	<strong class="auto-style3">Segmentation--</strong>may not handle 
+	large images</span></span><ul>
+		<li>
+		<a href="https://www.orfeo-toolbox.org/CookBook/Applications/app_Segmentation.html" class="auto-style4">
+		<span class="auto-style7">https://www.orfeo-toolbox.org/CookBook/Applications/app_Segmentation.html</span></a><span class="auto-style6">
+		</span>
+		</li>
+	</ul>
+	</li>
+</ul>
+
+<p class="auto-style6">The new tif files will be in the directory with the Landsat imagery.</p>
+<p class="auto-style6">If there are problems, you need to run the bat file (in the Orfeo directory) 
+from a DOS command window and watch the problem messages.</p>
+<p class="auto-style6">&nbsp;</p>
+<pre style="box-sizing: border-box; line-height: 1.4; font-family: SFMono-Regular, Menlo, Monaco, Consolas, &quot;Liberation Mono&quot;, &quot;Courier New&quot;, Courier, monospace; font-size: 12px; white-space: pre; margin: 0px; padding: 12px; display: block; overflow: auto; color: rgb(64, 64, 64); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="c1" style="box-sizing: border-box; color: rgb(64, 128, 144); font-style: italic;"># Example of use with vector mode and watershed segmentation</span>
+otbcli_Segmentation<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-in<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>QB_Toulouse_Ortho_PAN.tif<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-mode<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>vector<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-mode.vector.out<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>SegmentationVector.sqlite<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-filter<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>watershed
+
+<span class="c1" style="box-sizing: border-box; color: rgb(64, 128, 144); font-style: italic;"># Example of use with raster mode and mean-shift segmentation</span>
+otbcli_Segmentation<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-in<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>QB_Toulouse_Ortho_PAN.tif<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-mode<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>raster<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-mode.raster.out<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>SegmentationRaster.tif<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>uint16<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>-filter<span class="w" style="box-sizing: border-box; color: rgb(187, 187, 187);"> </span>meanshift</pre>
+<p><a href="file:///J:/gis_software/OTB-9.1.1-Win64/bin/">
+J:\gis_software\OTB-9.1.1-Win64\bin\</a></p>
+<pre style="box-sizing: border-box; font-family: SFMono-Regular, Menlo, Monaco, Consolas, &quot;Liberation Mono&quot;, &quot;Courier New&quot;, Courier, monospace; font-size: 12px; white-space: pre; margin: 0px; padding: 12px; display: block; overflow: auto; line-height: 1.4; color: rgb(64, 64, 64); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">otbApplicationLauncherCommandLine</pre>
+<p>&nbsp;&nbsp; otbcli_Segmentation -in C:\temp\input.tif -mode.raster.out 
+c:\temp\out_seg.tif uint16 -filter meanshift&nbsp;&nbsp; </p>
+<p>but fails</p>
+<p>otbenv.bash</p>
+<p>otbApplicationLauncherCommandLine 
+J:\gis_software\OTB-9.1.1-Win64\bin\otbcli_Segmentation.ps1 -in 
+C:\temp\input.tif -mode raster out c:\temp\out_seg.tif uint16 -filter meanshift<br />
+<br />
+J:\gis_software\OTB-9.1.1-Win64\bin\otbcli_Segmentation.ps1 -in 
+C:\temp\input.tif -mode raster out c:\temp\out_seg.tif uint16 -filter meanshift<br />
+<br />
+otbcli_Segmentation.ps1 -in C:\temp\input.tif -mode raster out 
+c:\temp\out_seg.tif uint16 -filter meanshift<br />
+<br />
+otbcli_Segmentation -in C:\temp\input.tif -mode raster out c:\temp\out_seg.tif 
+uint16 -filter meanshift</p>
+<p>Segmentation -in C:\temp\input.tif -mode raster out c:\temp\out_seg.tif 
+uint16 -filter meanshift</p>
+<p>Segmentation.ps1 -in C:\temp\input.tif -mode raster out c:\temp\out_seg.tif 
+uint16 -filter meanshift</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<span data-di="0" style="font-size:11pt">
+<div>
+	<span>Segmenting a Digital Elevation Model (DEM) using the Orfeo Toolbox 
+	(OTB) <span style="font-weight: bold; background: #D3E3FD">typically 
+	involves applying segmentation algorithms, such as Large-Scale Mean-Shift 
+	(LSMS), to identify topographical features or geomorphological units based 
+	on elevation values</span>. Because DEMs are single-band images 
+	(representing height), the segmentation acts on height gradients rather than 
+	spectral color. [<a data-ic="" href="https://www.orfeo-toolbox.org/CookBook-develop/recipes/improc.html">1</a>,
+	<a data-ic="" href="https://www.youtube.com/watch?v=p7yijxaSNkM">2</a>,
+	<a data-ic="" href="https://en.wikipedia.org/wiki/Digital_elevation_model#:~:text=In%20contrast%20to%20a%20DSM%2C%20the%20digital,without%20any%20further%20definition%20about%20the%20surface.">
+	3</a>,
+	<a data-ic="" href="https://www.mdpi.com/2072-4292/12/12/2002#:~:text=During%20this%20process%20the%20DEM%20is%20interpreted,images%2C%20we%20decide%20to%20build%20our%20own.">
+	4</a>,
+	<a data-ic="" href="https://www.cliffsnotes.com/cliffs-questions/4710992#:~:text=DEM%20excels%20at%20showing%20elevation%20as%20it,or%20color%20gradients%20to%20represent%20elevation%20changes.">
+	5</a>] </span></div>
+<br style="line-height:11pt" />
+<div>
+	<span>Here is how to segment a DEM using OTB, primarily via QGIS: </span>
+</div>
+<br style="line-height:11pt" />
+<div style="font-size:13pt;font-weight:bold;margin-bottom:11pt">
+	<span>1. Pre-requisites and Setup </span></div>
+<ul>
+	<li><span><span style="font-weight:bold">Install OTB:</span> Download and 
+	extract the Orfeo Toolbox. </span></li>
+	<li><span><span style="font-weight:bold">Configure QGIS:</span> Go to
+	<span style="font-weight:bold">Processing &amp;gt; Options &amp;gt; Providers &amp;gt; 
+	Orfeo Toolbox</span>, enable it, and set the application folder to the path 
+	in your extracted folder. </span></li>
+	<li><span><span style="font-weight:bold">Input Data:</span> A GeoTIFF 
+	formatted DEM (e.g., SRTM or DSM). [<a data-ic="" href="https://www.youtube.com/watch?v=PpDuSgAUqEw">6</a>,
+	<a data-ic="" href="https://www.youtube.com/watch?v=xFT5qnczcP4">7</a>,
+	<a data-ic="" href="https://library.carleton.ca/guides/help/dem-formats#:~:text=GeoTIFFs%20allow%20location%20information%20to%20be%20embedded,Spaceborne%20Thermal%20Emission%20and%20Reflection%20(ASTER)%20DEM.">
+	8</a>,
+	<a data-ic="" href="https://www.mdpi.com/2072-4292/13/7/1342#:~:text=In%20order%20to%20perform%20the%20geocoding%20of,30%2Dm%20global%20DEM%2C%20referred%20to%20as%20GLO%2D30.">
+	9</a>,
+	<a data-ic="" href="https://www.mass.gov/info-details/massgis-data-legacy-lidar-terrain-data#:~:text=Bare%2Dearth%20Digital%20Surface%20Model%20(DSM)%20rasters%20(aka,created%20by%20MassGIS%20from%20the%20ground%2Dclassified%20points.">
+	10</a>] </span></li>
+</ul>
+<div>
+	<span>2. Segmentation Workflow (via QGIS OTB Provider) </span></div>
+<br style="line-height:11pt" />
+<div style="font-size:13pt;font-weight:bold;margin-bottom:11pt">
+	<span>For large DEM datasets, the <span style="font-weight:bold">Large-Scale 
+	Mean-Shift (LSMS)</span> workflow is recommended to avoid memory issues.
+	</span></div>
+<ol>
+	<li><span><span style="font-weight:bold">Step 1: Mean-Shift Smoothing ()</span>
+	</span>
+	<ul>
+		<li><span>This reduces noise in the DEM while preserving edge 
+		boundaries, which is crucial for elevation data. </span></li>
+		<li><span><span style="font-weight:bold">Input:</span> Your DEM ().
+		</span></li>
+		<li><span><span style="font-weight:bold">Parameters:</span> Adjust the 
+		spatial radius and range radius to control smoothing strength. </span>
+		</li>
+	</ul>
+	</li>
+	<li><span><span style="font-weight:bold">Step 2: Segmentation ()</span>
+	</span>
+	<ul>
+		<li><span>This converts the smoothed DEM into segmented regions based on 
+		elevation similarity. </span></li>
+		<li><span><span style="font-weight:bold">Input:</span> The smoothed 
+		image from Step 1 (). </span></li>
+		<li><span><span style="font-weight:bold">Parameters:</span> (minimum 
+		object size in pixels to prevent over-segmentation). </span></li>
+	</ul>
+	</li>
+	<li><span><span style="font-weight:bold">Step 3: Vectorization ()</span>
+	</span>
+	<ul>
+		<li><span>Converts the raster segmentation output into polygons 
+		(Shapefile or KML). </span></li>
+		<li><span><span style="font-weight:bold">Input:</span> The segmented 
+		image from Step 2. </span></li>
+		<li><span><span style="font-weight:bold">Output:</span> Vector file. [<a data-ic="" href="https://www.orfeo-toolbox.org/CookBook-develop/recipes/improc.html">1</a>,
+		<a data-ic="" href="https://www.orfeo-toolbox.org/CookBook/Applications/app_ConnectedComponentSegmentation.html">
+		12</a>,
+		<a data-ic="" href="https://www.whiteboxgeo.com/manual/wbt_book/available_tools/hydrological_analysis.html#:~:text=The%20user%20must%20specify%20the%20names%20of,and%20the%20output%20file%20(%20%2D%2Doutput%20).">
+		13</a>,
+		<a data-ic="" href="https://www.whiteboxgeo.com/manual/wbt_book/available_tools/geomorphometric_analysis.html#:~:text=The%20user%20must%20specify%20the%20name%20(,and%20%2D%2Dfiltery%20)%2C%20measured%20in%20grid%20size.">
+		14</a>,
+		<a data-ic="" href="https://www.tandfonline.com/doi/full/10.1080/15481603.2024.2437252#:~:text=Segments%20are%20merged%20based%20on%20elevation%20similarity%2C,labeling%20are%20%F0%9D%91%82%20(%20%F0%9D%91%9A%20)%20operations.">
+		15</a>] </span></li>
+	</ul>
+	</li>
+</ol>
+<div>
+	<span>3. Alternative: Connected Component Segmentation </span></div>
+<br style="line-height:11pt" />
+<div style="font-size:13pt;font-weight:bold;margin-bottom:11pt">
+	<span>For specific, smaller-scale segmentation, you can use . </span></div>
+<ul>
+	<li><span>This allows defining a formula to merge neighboring pixels based 
+	on whether they meet specific criteria (e.g., elevation thresholds). </span>
+	</li>
+	<li><span><span style="font-weight:bold">Parameter :</span> A formula for 
+	segmentation, such as defining slope ranges or absolute elevation ranges. [<a data-ic="" href="https://www.orfeo-toolbox.org/CookBook/Applications/app_ConnectedComponentSegmentation.html">12</a>,
+	<a data-ic="" href="https://www.orfeo-toolbox.org/Applications/ConnectedComponentSegmentation.html">
+	16</a>,
+	<a data-ic="" href="https://grass.osgeo.org/grass-stable/manuals/addons/i.segment.gsoc.html#:~:text=This%20segmentation%20algorithm%20sequentially%20examines%20all%20current,meet%20a%20number%20of%20criteria%2C%20including:%201.">
+	17</a>] </span></li>
+</ul>
+<div>
+	<span>4. Line Segment Detection (Topographic Lines) </span></div>
+<br style="line-height:11pt" />
+<div style="font-size:13pt;font-weight:bold;margin-bottom:11pt">
+	<span>If the goal is to segment the DEM into ridges or valleys (edges), use 
+	the <span style="font-weight:bold">Line Segment Detection</span> 
+	application. </span></div>
+<ul>
+	<li><span><span style="font-weight:bold">Algorithm:</span> Based on the 
+	Burns, Hanson, and Riseman method. </span></li>
+	<li><span><span style="font-weight:bold">Usage:</span> Extracts structural 
+	linear features from the raster DEM and saves them directly as vector data. 
+	[<a data-ic="" href="https://www.orfeo-toolbox.org/Applications/LineSegmentDetection.html">18</a>,
+	<a data-ic="" href="https://www.orfeo-toolbox.org/CookBook/Applications/app_LineSegmentDetection.html">
+	19</a>] </span></li>
+</ul>
+<div style="font-size:13pt;font-weight:bold;margin-bottom:11pt">
+	<span>Tips for DEM Segmentation in OTB </span></div>
+<ul>
+	<li><span><span style="font-weight:bold">Scale:</span> Ensure your in LSMS 
+	is appropriate to handle large data without crashing, even if the total 
+	image is small. </span></li>
+	<li><span><span style="font-weight:bold">Visualization:</span> Use the
+	<span style="font-weight:bold">ColorMapping</span> application to visualize 
+	the result in RGB. </span></li>
+	<li><span><span style="font-weight:bold">Elevation Data:</span> If the OTB 
+	application asks for elevation data (e.g., for ortho-rectification), you can 
+	point it to a directory containing your DEM files. [<a data-ic="" href="https://www.orfeo-toolbox.org/CookBook/Applications/app_Segmentation.html">11</a>,
+	<a data-ic="" href="https://www.orfeo-toolbox.org/Applications/LineSegmentDetection.html">
+	18</a>,
+	<a data-ic="" href="https://www.reddit.com/r/QGIS/comments/f375cb/processing_sentinel_images_with_orfeo_toolbox/">
+	20</a>,
+	<a data-ic="" href="https://orfeo-toolbox.org/CookBook/Applications/app_ConnectedComponentSegmentation.html">
+	21</a>] </span></li>
+</ul>
+<br style="line-height:11pt" />
+<div>
+	<div style="margin-bottom:11pt">
+	</div>
+</div>
+<div class="Y3BBE" data-hveid="CAIQAA" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_e|npT2md" jscontroller="zcfIf" jsuid="ySbEbd_e" style="font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; overflow-wrap: break-word; margin-block: 12px 16px; color: rgb(10, 10, 10); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	Here is how to segment a DEM using OTB, primarily via QGIS:<span class="txxDge notranslate" data-processed="true" data-wiz-uids="ySbEbd_g,ySbEbd_h" jsaction="rcuQ6b:&amp;ySbEbd_f|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_f" style="visibility: hidden;"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_f/TKHnVd" style="white-space: nowrap; position: relative;">
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="454fb974-5686-4a6f-89a9-03f7ad675eb5" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIAhAB" data-wiz-attrbind="disabled=ySbEbd_f/C5gNJc;aria-label=ySbEbd_f/bOjMyf;class=ySbEbd_f/UpSNec" jsaction="click:&amp;ySbEbd_f|S9kKve;mouseenter:&amp;ySbEbd_f|sbHm2b;mouseleave:&amp;ySbEbd_f|Tx5Rb" jsuid="ySbEbd_h" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<div class="Fsg96" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_i|npT2md" jscontroller="KHhJQ" jsuid="ySbEbd_i" style="color: rgb(10, 10, 10); font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+</div>
+<div aria-level="3" class="otQkpb" data-animation-nesting="" data-processed="true" data-sfc-cp="" jscontroller="a7qCn" jsuid="ySbEbd_j" role="heading" style="margin-block: 24px 12px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 22px; font-weight: 600; line-height: 28px; letter-spacing: normal; color: rgb(0, 29, 53); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	1. Pre-requisites and Setup<span class="txxDge notranslate" data-processed="true" data-wiz-uids="ySbEbd_l,ySbEbd_m" jsaction="rcuQ6b:&amp;ySbEbd_k|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_k" style="visibility: hidden;"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_k/TKHnVd" style="white-space: nowrap; position: relative;">
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="cc96ae38-8bb7-40e5-b294-9bad603b4722" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIAxAA" data-wiz-attrbind="disabled=ySbEbd_k/C5gNJc;aria-label=ySbEbd_k/bOjMyf;class=ySbEbd_k/UpSNec" jsaction="click:&amp;ySbEbd_k|S9kKve;mouseenter:&amp;ySbEbd_k|sbHm2b;mouseleave:&amp;ySbEbd_k|Tx5Rb" jsuid="ySbEbd_m" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_n" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; padding-inline-start: 16px; margin-inline: 0px; color: rgb(10, 10, 10); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<li data-hveid="CAQQAA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_o" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_p" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_q" style="font-weight: bolder;">
+	Install OTB:</strong><span>&nbsp;</span>Download and extract the Orfeo Toolbox.</span></li>
+	<li data-hveid="CAQQAQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_r" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_s" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_t" style="font-weight: bolder;">
+	Configure QGIS:</strong><span>&nbsp;</span>Go to<span>&nbsp;</span><strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_u" style="font-weight: bolder;">Processing 
+	&gt; Options &gt; Providers &gt; Orfeo Toolbox</strong>, enable it, and set the 
+	application folder to the<span>&nbsp;</span><code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_v" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">lib/OTB/applications</code><span>&nbsp;</span>path 
+	in your extracted folder.</span></li>
+	<li data-hveid="CAQQAg" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_w" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_x" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_y" style="font-weight: bolder;">
+	Input Data:</strong><span>&nbsp;</span>A GeoTIFF formatted DEM (e.g., SRTM or 
+	DSM).</span><span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_10,ySbEbd_11" jsaction="rcuQ6b:&amp;ySbEbd_z|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_z"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_z/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="1f12147f-e8bd-486e-9c9f-ab45334b92f8" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIBBAD" data-wiz-attrbind="disabled=ySbEbd_z/C5gNJc;aria-label=ySbEbd_z/bOjMyf;class=ySbEbd_z/UpSNec" jsaction="click:&amp;ySbEbd_z|S9kKve;mouseenter:&amp;ySbEbd_z|sbHm2b;mouseleave:&amp;ySbEbd_z|Tx5Rb" jsuid="ySbEbd_11" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></li>
+</ul>
+<div class="Fsg96" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_14|npT2md" jscontroller="KHhJQ" jsuid="ySbEbd_14" style="color: rgb(10, 10, 10); font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+</div>
+<div aria-level="3" class="otQkpb" data-animation-nesting="" data-processed="true" data-sfc-cp="" jscontroller="a7qCn" jsuid="ySbEbd_15" role="heading" style="margin-block: 24px 12px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 22px; font-weight: 600; line-height: 28px; letter-spacing: normal; color: rgb(0, 29, 53); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	2. Segmentation Workflow (via QGIS OTB Provider)<span class="txxDge notranslate" data-processed="true" data-wiz-uids="ySbEbd_17,ySbEbd_18" jsaction="rcuQ6b:&amp;ySbEbd_16|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_16" style="visibility: hidden;"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_16/TKHnVd" style="white-space: nowrap; position: relative;">
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="2e6dadd4-0edb-4d41-80fa-90445f68f7ef" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIBRAA" data-wiz-attrbind="disabled=ySbEbd_16/C5gNJc;aria-label=ySbEbd_16/bOjMyf;class=ySbEbd_16/UpSNec" jsaction="click:&amp;ySbEbd_16|S9kKve;mouseenter:&amp;ySbEbd_16|sbHm2b;mouseleave:&amp;ySbEbd_16|Tx5Rb" jsuid="ySbEbd_18" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<div class="Y3BBE" data-hveid="CAYQAA" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_19|npT2md" jscontroller="zcfIf" jsuid="ySbEbd_19" style="font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; overflow-wrap: break-word; margin-block: 12px 16px; color: rgb(10, 10, 10); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	For large DEM datasets, the<span>&nbsp;</span><strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_1a" style="font-weight: bolder;">Large-Scale 
+	Mean-Shift (LSMS)</strong><span>&nbsp;</span>workflow is recommended to avoid 
+	memory issues.<span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_1c,ySbEbd_1d" jsaction="rcuQ6b:&amp;ySbEbd_1b|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_1b"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_1b/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="f8f5ed0b-a9fc-4c63-bc4f-c2d443067d77" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIBhAB" data-wiz-attrbind="disabled=ySbEbd_1b/C5gNJc;aria-label=ySbEbd_1b/bOjMyf;class=ySbEbd_1b/UpSNec" jsaction="click:&amp;ySbEbd_1b|S9kKve;mouseenter:&amp;ySbEbd_1b|sbHm2b;mouseleave:&amp;ySbEbd_1b|Tx5Rb" jsuid="ySbEbd_1d" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<ol class="IaGLZe VimKh" data-processed="true" jscontroller="xE4zce" jsuid="ySbEbd_1g" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; padding-inline-start: 20px; margin-inline: 0px; color: rgb(10, 10, 10); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<li data-hveid="CAcQAA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_1h" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_1i" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_1j" style="font-weight: bolder;">
+	Step 1: Mean-Shift Smoothing (<code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_1k" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">otbcli_MeanShiftSmoothing</code>)</strong></span><ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_1l" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0px; padding-inline-start: 16px; margin-inline: 0px;">
+		<li data-hveid="CAcQAQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_1m" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_1n" style="overflow-wrap: break-word;">
+		This reduces noise in the DEM while preserving edge boundaries, which is 
+		crucial for elevation data.</span></li>
+		<li data-hveid="CAcQAg" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_1o" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_1p" style="overflow-wrap: break-word;">
+		<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_1q" style="font-weight: bolder;">
+		Input:</strong><span>&nbsp;</span>Your DEM (<code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_1r" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">-in</code>).</span></li>
+		<li data-hveid="CAcQAw" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_1s" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_1t" style="overflow-wrap: break-word;">
+		<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_1u" style="font-weight: bolder;">
+		Parameters:</strong><span>&nbsp;</span>Adjust the spatial radius and range 
+		radius to control smoothing strength.</span></li>
+	</ul>
+	</li>
+	<li data-hveid="CAcQBA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_1v" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_1w" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_1x" style="font-weight: bolder;">
+	Step 2: Segmentation (<code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_1y" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">otbcli_LSMSSegmentation</code>)</strong></span><ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_1z" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0px; padding-inline-start: 16px; margin-inline: 0px;">
+		<li data-hveid="CAcQBQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_20" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_21" style="overflow-wrap: break-word;">
+		This converts the smoothed DEM into segmented regions based on elevation 
+		similarity.</span></li>
+		<li data-hveid="CAcQBg" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_22" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_23" style="overflow-wrap: break-word;">
+		<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_24" style="font-weight: bolder;">
+		Input:</strong><span>&nbsp;</span>The smoothed image from Step 1 (<code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_25" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">-in</code>).</span></li>
+		<li data-hveid="CAcQBw" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_26" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_27" style="overflow-wrap: break-word;">
+		<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_28" style="font-weight: bolder;">
+		Parameters:</strong><span>&nbsp;</span><code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_29" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">minsize</code><span>&nbsp;</span>(minimum 
+		object size in pixels to prevent over-segmentation).</span></li>
+	</ul>
+	</li>
+	<li data-hveid="CAcQCA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_2a" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_2b" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_2c" style="font-weight: bolder;">
+	Step 3: Vectorization (<code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_2d" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">otbcli_Vectorization</code>)</strong></span><ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_2e" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0px; padding-inline-start: 16px; margin-inline: 0px;">
+		<li data-hveid="CAcQCQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_2f" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_2g" style="overflow-wrap: break-word;">
+		Converts the raster segmentation output into polygons (Shapefile or 
+		KML).</span></li>
+		<li data-hveid="CAcQCg" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_2h" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_2i" style="overflow-wrap: break-word;">
+		<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_2j" style="font-weight: bolder;">
+		Input:</strong><span>&nbsp;</span>The segmented image from Step 2.</span></li>
+		<li data-hveid="CAcQCw" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_2k" style="margin: 0px 0px 12px; padding: 0px; list-style: decimal; padding-inline-start: 0px;">
+		<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_2l" style="overflow-wrap: break-word;">
+		<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_2m" style="font-weight: bolder;">
+		Output:</strong><span>&nbsp;</span>Vector file.</span><span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_2o,ySbEbd_2p" jsaction="rcuQ6b:&amp;ySbEbd_2n|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_2n"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_2n/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+		<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="0b0bdccd-329e-4b74-8911-596f33d0c6d3" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIBxAM" data-wiz-attrbind="disabled=ySbEbd_2n/C5gNJc;aria-label=ySbEbd_2n/bOjMyf;class=ySbEbd_2n/UpSNec" jsaction="click:&amp;ySbEbd_2n|S9kKve;mouseenter:&amp;ySbEbd_2n|sbHm2b;mouseleave:&amp;ySbEbd_2n|Tx5Rb" jsuid="ySbEbd_2p" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+		<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+		<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+		<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+		</svg></span></button></span></span></li>
+	</ul>
+	</li>
+</ol>
+<div class="Fsg96" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_2r|npT2md" jscontroller="KHhJQ" jsuid="ySbEbd_2r" style="color: rgb(10, 10, 10); font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+</div>
+<div aria-level="3" class="otQkpb" data-animation-nesting="" data-processed="true" data-sfc-cp="" jscontroller="a7qCn" jsuid="ySbEbd_2s" role="heading" style="margin-block: 24px 12px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 22px; font-weight: 600; line-height: 28px; letter-spacing: normal; color: rgb(0, 29, 53); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	3. Alternative: Connected Component Segmentation<span class="txxDge notranslate" data-processed="true" data-wiz-uids="ySbEbd_2u,ySbEbd_2v" jsaction="rcuQ6b:&amp;ySbEbd_2t|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_2t" style="visibility: hidden;"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_2t/TKHnVd" style="white-space: nowrap; position: relative;">
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="c38f762a-82ae-4e0d-b87a-3fb25e358988" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQICBAA" data-wiz-attrbind="disabled=ySbEbd_2t/C5gNJc;aria-label=ySbEbd_2t/bOjMyf;class=ySbEbd_2t/UpSNec" jsaction="click:&amp;ySbEbd_2t|S9kKve;mouseenter:&amp;ySbEbd_2t|sbHm2b;mouseleave:&amp;ySbEbd_2t|Tx5Rb" jsuid="ySbEbd_2v" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<div class="Y3BBE" data-hveid="CAkQAA" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_2w|npT2md" jscontroller="zcfIf" jsuid="ySbEbd_2w" style="font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; overflow-wrap: break-word; margin-block: 12px 16px; color: rgb(10, 10, 10); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	For specific, smaller-scale segmentation, you can use<span>&nbsp;</span><strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_2x" style="font-weight: bolder;"><code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_2y" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">otbcli_ConnectedComponentSegmentation</code></strong>.<span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_30,ySbEbd_31" jsaction="rcuQ6b:&amp;ySbEbd_2z|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_2z"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_2z/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="c466d9da-1ba3-440c-9616-7acb0c2e7d31" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQICRAB" data-wiz-attrbind="disabled=ySbEbd_2z/C5gNJc;aria-label=ySbEbd_2z/bOjMyf;class=ySbEbd_2z/UpSNec" jsaction="click:&amp;ySbEbd_2z|S9kKve;mouseenter:&amp;ySbEbd_2z|sbHm2b;mouseleave:&amp;ySbEbd_2z|Tx5Rb" jsuid="ySbEbd_31" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_33" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; padding-inline-start: 16px; margin-inline: 0px; color: rgb(10, 10, 10); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<li data-hveid="CAoQAA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_34" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_35" style="overflow-wrap: break-word;">
+	This allows defining a formula to merge neighboring pixels based on whether 
+	they meet specific criteria (e.g., elevation thresholds).</span></li>
+	<li data-hveid="CAoQAQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_36" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_37" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_38" style="font-weight: bolder;">
+	Parameter<span>&nbsp;</span><code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_39" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">expr</code>:</strong><span>&nbsp;</span>A 
+	formula for segmentation, such as defining slope ranges or absolute 
+	elevation ranges.</span><span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_3b,ySbEbd_3c" jsaction="rcuQ6b:&amp;ySbEbd_3a|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_3a"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_3a/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="4592d237-0dbb-4b42-9b48-38c9aef07777" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIChAC" data-wiz-attrbind="disabled=ySbEbd_3a/C5gNJc;aria-label=ySbEbd_3a/bOjMyf;class=ySbEbd_3a/UpSNec" jsaction="click:&amp;ySbEbd_3a|S9kKve;mouseenter:&amp;ySbEbd_3a|sbHm2b;mouseleave:&amp;ySbEbd_3a|Tx5Rb" jsuid="ySbEbd_3c" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></li>
+</ul>
+<div class="Fsg96" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_3e|npT2md" jscontroller="KHhJQ" jsuid="ySbEbd_3e" style="color: rgb(10, 10, 10); font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+</div>
+<div aria-level="3" class="otQkpb" data-animation-nesting="" data-processed="true" data-sfc-cp="" jscontroller="a7qCn" jsuid="ySbEbd_3f" role="heading" style="margin-block: 24px 12px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 22px; font-weight: 600; line-height: 28px; letter-spacing: normal; color: rgb(0, 29, 53); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	4. Line Segment Detection (Topographic Lines)<span class="txxDge notranslate" data-processed="true" data-wiz-uids="ySbEbd_3h,ySbEbd_3i" jsaction="rcuQ6b:&amp;ySbEbd_3g|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_3g" style="visibility: hidden;"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_3g/TKHnVd" style="white-space: nowrap; position: relative;">
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="1f131cdd-5582-4a01-8094-c64af508cd25" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQICxAA" data-wiz-attrbind="disabled=ySbEbd_3g/C5gNJc;aria-label=ySbEbd_3g/bOjMyf;class=ySbEbd_3g/UpSNec" jsaction="click:&amp;ySbEbd_3g|S9kKve;mouseenter:&amp;ySbEbd_3g|sbHm2b;mouseleave:&amp;ySbEbd_3g|Tx5Rb" jsuid="ySbEbd_3i" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<div class="Y3BBE" data-hveid="CAwQAA" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_3j|npT2md" jscontroller="zcfIf" jsuid="ySbEbd_3j" style="font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; overflow-wrap: break-word; margin-block: 12px 16px; color: rgb(10, 10, 10); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	If the goal is to segment the DEM into ridges or valleys (edges), use the<span>&nbsp;</span><strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_3k" style="font-weight: bolder;">Line 
+	Segment Detection</strong><span>&nbsp;</span>application.<span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_3m,ySbEbd_3n" jsaction="rcuQ6b:&amp;ySbEbd_3l|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_3l"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_3l/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="bdc5b5ee-10b9-488d-9d8d-12a19b36d2ca" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIDBAB" data-wiz-attrbind="disabled=ySbEbd_3l/C5gNJc;aria-label=ySbEbd_3l/bOjMyf;class=ySbEbd_3l/UpSNec" jsaction="click:&amp;ySbEbd_3l|S9kKve;mouseenter:&amp;ySbEbd_3l|sbHm2b;mouseleave:&amp;ySbEbd_3l|Tx5Rb" jsuid="ySbEbd_3n" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_3p" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; padding-inline-start: 16px; margin-inline: 0px; color: rgb(10, 10, 10); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<li data-hveid="CA0QAA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_3q" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_3r" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_3s" style="font-weight: bolder;">
+	Algorithm:</strong><span>&nbsp;</span>Based on the Burns, Hanson, and Riseman 
+	method.</span></li>
+	<li data-hveid="CA0QAQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_3t" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_3u" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_3v" style="font-weight: bolder;">
+	Usage:</strong><span>&nbsp;</span>Extracts structural linear features from the 
+	raster DEM and saves them directly as vector data.</span><span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_3x,ySbEbd_3y" jsaction="rcuQ6b:&amp;ySbEbd_3w|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_3w"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_3w/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span>
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="7b2af80f-9657-4ba1-bce6-8d855e621119" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIDRAC" data-wiz-attrbind="disabled=ySbEbd_3w/C5gNJc;aria-label=ySbEbd_3w/bOjMyf;class=ySbEbd_3w/UpSNec" jsaction="click:&amp;ySbEbd_3w|S9kKve;mouseenter:&amp;ySbEbd_3w|sbHm2b;mouseleave:&amp;ySbEbd_3w|Tx5Rb" jsuid="ySbEbd_3y" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></li>
+</ul>
+<div class="Fsg96" data-processed="true" data-sfc-cp="" jsaction="rcuQ6b:&amp;ySbEbd_41|npT2md" jscontroller="KHhJQ" jsuid="ySbEbd_41" style="color: rgb(10, 10, 10); font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+</div>
+<div aria-level="3" class="otQkpb" data-animation-nesting="" data-processed="true" data-sfc-cp="" jscontroller="a7qCn" jsuid="ySbEbd_42" role="heading" style="margin-block: 24px 12px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 22px; font-weight: 600; line-height: 28px; letter-spacing: normal; color: rgb(0, 29, 53); margin-inline: 0px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	Tips for DEM Segmentation in OTB<span class="txxDge notranslate" data-processed="true" data-wiz-uids="ySbEbd_44,ySbEbd_45" jsaction="rcuQ6b:&amp;ySbEbd_43|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_43" style="visibility: hidden;"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_43/TKHnVd" style="white-space: nowrap; position: relative;">
+	<button aria-label="View related links" class="rBl3me" data-amic="true" data-icl-uuid="3de8d94b-a4bc-4bd8-bcef-f511f3537d80" data-processed="true" data-ved="2ahUKEwjzgpya0cqSAxXLpokEHQcSNYkQye0OegQIDhAA" data-wiz-attrbind="disabled=ySbEbd_43/C5gNJc;aria-label=ySbEbd_43/bOjMyf;class=ySbEbd_43/UpSNec" jsaction="click:&amp;ySbEbd_43|S9kKve;mouseenter:&amp;ySbEbd_43|sbHm2b;mouseleave:&amp;ySbEbd_43|Tx5Rb" jsuid="ySbEbd_45" style="margin: 0px 6px 0px 0px; background-color: rgb(229, 237, 255); border: none; border-radius: 10px; height: 20px; padding: 0px; width: 20px; position: relative; outline: 0px; cursor: pointer;" tabindex="0">
+	<span class="wiMplc ofC0Ud" data-processed="true" style="color: rgb(0, 29, 53); display: inline-block; transform: rotate(135deg);">
+	<svg fill="currentColor" focusable="false" height="12px" style="margin-top: 3px;" viewBox="0 0 24 24" width="12px" xmlns="http://www.w3.org/2000/svg">
+	<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path>
+	</svg></span></button></span></span></div>
+<ul class="KsbFXc U6u95" data-processed="true" jscontroller="mPWODf" jsuid="ySbEbd_46" style="margin: 0px; padding: 0px; margin-block: 12px 16px; font-family: &quot;Google Sans&quot;, Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: normal; padding-inline-start: 16px; margin-inline: 0px; color: rgb(10, 10, 10); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">
+	<li data-hveid="CA8QAA" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_47" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_48" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_49" style="font-weight: bolder;">
+	Scale:</strong><span>&nbsp;</span>Ensure your<span>&nbsp;</span><code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_4a" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">tilesize</code><span>&nbsp;</span>in 
+	LSMS is appropriate to handle large data without crashing, even if the total 
+	image is small.</span></li>
+	<li data-hveid="CA8QAQ" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_4b" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_4c" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_4d" style="font-weight: bolder;">
+	Visualization:</strong><span>&nbsp;</span>Use the<span>&nbsp;</span><strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_4e" style="font-weight: bolder;">ColorMapping</strong><span>&nbsp;</span>application 
+	to visualize the<span>&nbsp;</span><code class="o8j0Mc" data-processed="true" dir="ltr" jscontroller="PR9Qj" jsuid="ySbEbd_4f" style="unicode-bidi: isolate; font-size: 14px; line-height: 22px; background-color: rgb(243, 245, 246); border-color: rgb(243, 245, 246); border-style: solid; border-width: 0.666667px; border-image: none 100% / 1 / 0 stretch; border-radius: 4px; padding: 2px 4px;">.tif</code><span>&nbsp;</span>result 
+	in RGB.</span></li>
+	<li data-hveid="CA8QAg" data-processed="true" jscontroller="vsuOFb" jsuid="ySbEbd_4g" style="margin: 0px 0px 12px; padding: 0px; list-style: disc; padding-inline-start: 4px;">
+	<span class="T286Pc" data-processed="true" data-sfc-cp="" jscontroller="fly6D" jsuid="ySbEbd_4h" style="overflow-wrap: break-word;">
+	<strong class="Yjhzub" data-processed="true" jscontroller="zYmgkd" jsuid="ySbEbd_4i" style="font-weight: bolder;">
+	Elevation Data:</strong><span>&nbsp;</span>If the OTB application asks for 
+	elevation data (e.g., for ortho-rectification), you can point it to a 
+	directory containing your DEM files.</span><span class="uJ19be notranslate" data-processed="true" data-wiz-uids="ySbEbd_4k,ySbEbd_4l" jsaction="rcuQ6b:&amp;ySbEbd_4j|npT2md" jscontroller="udAs2b" jsuid="ySbEbd_4j"><span class="vKEkVd" data-animation-atomic="" data-processed="true" data-wiz-attrbind="class=ySbEbd_4j/TKHnVd" style="white-space: nowrap; position: relative;"><span aria-hidden="true" data-processed="true">&nbsp;</span></span></span></li>
+</ul>
+<br style="line-height:11pt" />
+</span>
+<p>&nbsp;</p>
+
+<hr>
+
+<p align="right" class="auto-style1"><em>Last revision 2/8/2026</em></p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

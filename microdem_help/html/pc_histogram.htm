@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Point Cloud Histogram</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Point Cloud Histogram</h2>
+<p>Get on the Stats tab of the <a href="pt_cld_opts.htm">Point Cloud display form</a>.</p>
+<p>Results</p>
+<ul>
+	<li>Text summary<ul>
+		<li>Includes tails of the RGB, intensity, and elevation histograms.&nbsp; 
+		You can use the 1%, 0.1%, and 0.01% values to set
+		<a href="pt_cld_draw_tab.htm">scaling values for the display</a>.</li>
+	</ul>
+	</li>
+	<li>Elevation histogram</li>
+	<li>Intensity histogram, by category.&nbsp; Right click on the graph to get 
+	a legend.</li>
+</ul>
+<table border="2">
+	<tr>
+		<td>
+		<img alt="" height="219" src="../images/pt_cld/lidar_hist.gif" width="443" /></td>
+		<td>Histgram on elevations within a lidar tile.&nbsp; Note that 
+		essentially all elevations are between 1500 and 1800.&nbsp; There are a 
+		few low returns, and a few high returms up to almost 1000 m above the 
+		terrain.</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="auto-style1">
+		<img alt="" height="208" src="../images/pt_cld/pt_cloud_elevs.jpg" width="202" /></td>
+		<td>Color coding by elevation, with the bulk of the color scale not used 
+		for the high noise.</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="auto-style1">
+		<img alt="" height="208" src="../images/pt_cld/pt_cloud_elevs_2.jpg" width="202" /></td>
+		<td>Color coding by elevation, with the range set 1500 to 1800.</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+
+<hr />
+
+<p align="right"><em>Last revision 2/4/2018</em></p>
+
+</body>
+
+</html>

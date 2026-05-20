@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+<meta http-equiv="Content-Language" content="en-us" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Photo Database</title>
+<style type="text/css">
+.style2 {
+				text-align: right;
+}
+.auto-style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>EXIF Photo Database</h1>
+<p><span class="st"><span class="auto-style1">Exchangeable image file format (</span><em><span class="auto-style1">Exif</span></em><span class="auto-style1">) embeds 
+information about the camera and GPS location in JPEG images. This is very 
+convenient, as it tags when and where a photograph was taken, but can have 
+security implications as it shows when and where you were.&nbsp; If you are on 
+vacation, you home might be empty and could be targeted for break in based on 
+that information.&nbsp; You should be careful about where you place timely 
+personal information such as your location.&nbsp; In 2007 insurgents in Iraq 
+apparently used geo-tagged photos posted on the internet to attack and destroy helicopters on the 
+flight line.</span></span></p>
+<p class="auto-style1"><a href="geotag_photos.htm">Setting up the phone.</a></p>
+<hr>
+<p>Ways to open EXIF database</p>
+<ul>
+				<li>File menu, map window open: best choice, shows photo locations on 
+				map</li>
+				<li>File, <a href="toolsmenu.htm">Tools</a>, EXIF:</li>
+				<li><a href="tbme5ed1.htm">Analyze</a>,
+				<a href="file_metadata.htm">File metadata</a>, EXIF</li>
+</ul>
+<table border="2">
+				<tr>
+								<td>
+								<img height="233" src="../images/exif.gif" width="629" />&nbsp;</td>
+								<td>
+								<p>Pick directory: to cycle through directory 
+								and its subdirectories to see other photos</p>
+								<p>Open file: pick a single image<br />
+								</p>
+								<p>Make DB: Create database with the DB button.&nbsp; 
+								This will work with all images in the directory 
+								and its subdirectories.</p>
+								<p>You can include or exclude images with no 
+								location data.&nbsp; The could might not be 
+								turned on for the camera, the camera might not 
+								have GPS, and the GPS units might not have 
+								acquired satellite yet.</p>
+								<p>Close: form closes</p>
+								</td>
+				</tr>
+				<tr>
+								<td>
+								<img height="119" src="../images/exif_db.gif" width="458" />&nbsp;</td>
+								<td>
+								<p>DB created:</p>
+								<ul>
+									<li>Critical fields are LAT,LONG, and IMAGE.</li>
+									<li>ALTITUDE will be most useful for images 
+									from a drone or aircraft.</li>
+									<li>AZIMUTH is helpful to know when the 
+									photograph is looking, but will not always 
+									be present.&nbsp; The azimith must be 
+									recorded in an expected format, which varies 
+									by camera.</li>
+									<li>IMAGE has the full path and file name.&nbsp; 
+									To move to another computer, <a href="db_edit.htm">Edit:</a>, <a href="db_string_edits.htm">String field operations</a>, 
+									and Extract file name will remove the 
+									path, but then you have to insure the 
+									database and the images stay together, and 
+									you do not have imagery in subdirectories.<br />
+									&nbsp;</li>
+								</ul>
+								</td>
+				</tr>
+				</table>
+<ul>
+				<li>
+				<img border="0" src="../images/db_map.png" width="24" height="24">
+				<a href="data_base.htm">Database</a>&nbsp; on base map.<ul>
+								<li>&nbsp;You can attribute the photos.&nbsp; 
+								Add a text field and populate it.</li>
+								<li>See field of view of the photos.&nbsp; This requires an azimuth 
+								and field of view; the program can 
+								compute the horizontal field of view from the 
+								camera properties in the EXIF data. , and may 
+								not be present in most current phones.<ul>
+									<li>Plot, photo locations to see the field 
+									of view of each photo.</li>
+									<li><a href="db_rec_click.htm">Double click on record in
+data base</a>, View, "Outline camera view" to see the field of view of that 
+									photo.&nbsp; This requires field of view fields 
+									in the database</li>
+								</ul>
+								</li>
+								<li><a href="db_rec_click.htm">Double click on record in
+data base</a>, &quot;Record display&quot; to see the 
+					record, a small version of the photo, and the field of view 
+					of that photo.&nbsp; You can use the Forward and Backward 
+					buttons to cycle through the pictures.</li>
+								<li>
+<font face="Times New Roman"><a href="kml_export.htm">KML export for Google earth.</a> 
+			can include the photos in the display in Google Earth, and you can 
+	control the size if you select the deliberate export.</font></li>
+								<li>
+								<b><a href="icons_from_thumbnails.htm">Icons from thumbnails</a> 
+								of the images. </b></li>
+				</ul>
+				</li>
+</ul>
+
+<hr>
+<p><b>Cameras</b></p>
+<ul>
+	<li>We initially designed this with a Nikon SLR camera with an external GPS unit 
+that integrated with the camera via the 10 pin remote terminal on higher models 
+in the Nikon line.&nbsp; The external connection was much less convenient than 
+	the integrated GPS in phones.</li>
+	<li>We then had a Sony DSC-HX5V with a compass in addition to the GPS.&nbsp; 
+The compass allows determination of the shooting direction of the picture.</li>
+	<li>iPhones </li>
+	<li>Android phones</li>
+	<li>We are now using an Olympus.</li>
+</ul>
+
+<p><a href="https://en.wikipedia.org/wiki/Image_sensor_format">
+https://en.wikipedia.org/wiki/Image_sensor_format</a></p>
+
+<hr>
+
+<p class="style2"><em>Last revision 12/16/20176</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

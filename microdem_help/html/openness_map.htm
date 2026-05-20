@@ -1,0 +1,86 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Openness Maps</title>
+    <link href="../md.png" rel="shortcut icon">
+<style type="text/css">
+.auto-style1 {
+	font-size: medium;
+	font-style: italic;
+}
+.auto-style2 {
+	font-family: serif;
+}
+.auto-style3 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1 align="center"><font "face="Verdana">Openness Maps</font></h1>
+
+
+<p class="auto-style3">Openness maps show ridge crests and valleys in 
+contrasting colors.&nbsp; The grayscale can be reversed, so that upward and 
+downward maps have similar depictions.&nbsp;
+They provide dramatic depictions of terrain.</p>
+<p class="auto-style3">
+<img height="808" src="../images/openness_hillshade_curvature.png" width="949"><br></p>
+<p>&nbsp;</p>
+<p><font class="auto-style2"><span class="auto-style3">Choice of upward (positive)
+and downward (negative) openness.&nbsp; Openness is defined as a maximum
+or minimum angle over a specified region.&nbsp; The region size should be at 
+least as large as the ridge/valley spacing in the region.&nbsp; </span> <a href="micr3ru6.htm">
+<span class="auto-style3">Graph parameter by region size</span></a><span class="auto-style3">
+      &nbsp;can help you pick the value by seeing the inflection points.</span></font></p>
+<p>Openness can be computed from<strong> </strong></p>
+<ul>
+	<li><a href="map_disp_param.htm">Display parameter</a>, which changes the 
+	current map display to upward openness.&nbsp; You can change the display by 
+	picking the ranges of openness angle to set as the min/max, and the level of 
+	grayness for the min and max</li>
+	<li><strong><a href="raster_gis.htm">Raster GIS</a>&nbsp; 
+	<a href="raster_gis.htm">Raster GIS</a> </strong>where you will be asked about the region size 
+	and other options. This creates new grids, with the display using a 
+	grayscale or reversed grayscale.</li>
+</ul>
+<p>&nbsp;</p>
+<table border="1" width="100%" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/openness.gif" width="692" height="738" class="auto-style3"></td>
+		<td><span class="auto-style3">Openness calculates an angle in each of 8 radials in the 
+principal compass directions.&nbsp;The diagrams to the left shows two of the 
+		angles computed for upward openness.&nbsp; The peak in the top diagram will have 
+		a high value for openness, while the valley in the bottom diagram will 
+		have a small value.</span><p class="auto-style3">The Value L shows the 
+		distance used for the computation; for the peak, visibility extends all 
+		the way out to L, while for for valley, the steep walls block visibility 
+		well before the L distance. </p>
+		<p><font class="auto-style2"><span class="auto-style3">You can limit to use 
+		only some of the 8 
+radial directions.&nbsp; The final 
+value is the average of the values in each of the directions used.</span></font></td>
+	</tr>
+</table>
+
+<p><a href="../images/urban_dsm_display.htm"><span class="auto-style3">Short distance openness maps</span></a><span class="auto-style3"> 
+can be very effective with urban lidar DSM.</span></p>
+<p class="auto-style3"><a href="openness_refs.htm">References
+for openness maps</a></p>
+
+<hr>
+
+<p align="right" class="auto-style1">Last
+revision 5/5/2025</p>
+
+<p>&nbsp;</p>
+</body>
+</html>

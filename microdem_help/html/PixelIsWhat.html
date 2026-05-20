@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>PixelIsPoint or PixelIsArea</title>
+<style type="text/css">
+.style1 {
+	font-size: small;
+}
+.auto-style1 {
+	font-family: serif;
+}
+.auto-style2 {
+	font-size: medium;
+}
+.auto-style3 {
+	font-family: serif;
+	font-size: medium;
+}
+table.MsoTableGrid
+	{border:solid windowtext 1.0pt;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;
+	}
+</style>
+</head>
+
+<body>
+
+<h1>Pixel-Is-Point or Pixel-Is-Area</h1>
+<p>The GeoTIFF specification includes a data item, GTRasterTypeGeoKey (#1025), which may 
+be set to either RasterPixelIsArea 
+<a href="https://docs.opengeospatial.org/is/19-008r4/19-008r4.html#_requirements_class_gtrastertypegeokey">(maybe the default, 
+but not clear in 7.2.1</a>), or RasterPixelIsPoint.</p>
+<ul>
+	<li>
+	The GTRasterTypeGeoKey value SHALL be:</em><ul>
+		<li>0 to indicate that the Raster type is undefined or unknown; or</li>
+		<li>1 to indicate that the Raster type is PixelIsArea; or</li>
+		<li>2 to indicate that the Raster type is PixelIsPoint; or</li>
+		<li>32767 to indicate that the Raster type is user-defined.</li>
+	</ul>
+	</li>
+	<li>
+	Recommendation: the use of 0 (undefined) or 32767 (user-defined) is not 
+	recommended</li>
+</ul>
+<p>RasterPixelIsArea defines that a pixel represents an area in the real world, 
+while RasterPixelIsPoint defines a pixel to represent a point in the real world. 
+Often this is useful to distinguish the behavior of optical sensors that average 
+light values over an area vs. raster data which is point oriented like an 
+elevation sample at a point, but this cannot be assumed from key 1025, because 
+global DEMs like SRTM and Copernicus are pixel-is-point but it derived from 
+an area<br />
+<br />
+</p>
+<p>This is a real world issue with
+		<a href="global_dems.html">Key Global Regional DEMs</a>.&nbsp; For 
+these, some follow the </p>
+<ul>
+	<li>Pixel-is-point standard with DTED, where a 3" data set has 
+	1201x1201 points.&nbsp; The edge columns and rows are shared with the 
+	neighboring cells.</li>
+	<li>Pixel-is-area standard, where a 3" data set has 1200x1200 points and no 
+	points are shared with neighboring cells. The point coordinates are the 
+	corner of each cell, so the center, where most computations are assigned, 
+	has a 1/2 pixel offset in both directions.</li>
+</ul>
+<p>In "Arc-speak" these are</p>
+<ul>
+	<li>
+	<span style="color: rgb(0, 0, 0); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style3">
+	punctual&nbsp;spatial support where the pixel
+	</span>
+	<span style="color: rgb(0, 0, 0); font-size: 13.3333px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;" class="auto-style1">
+	<span style="color: rgb(0, 0, 0); " class="auto-style2">represents the 
+	value </span><font color="#000000"><span class="auto-style2">of 
+	elevation at the center of the cell</span></font></span></li>
+	<li>
+	<span style="color: rgb(0, 0, 0); font-family: Helvetica, Arial, sans-serif; font-size: 13.3333px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+	<div style="color: rgb(0, 0, 0); font-size: 13.3333px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;" class="auto-style1">
+		<span style="color: rgb(0, 0, 0); font-size: 13.3333px;">
+		<span style="color: rgb(0, 0, 0); font-size: 13.3333px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		<font color="#000000"><span class="auto-style2">spatial 
+		support equal to the pixel size </span></font></span></span>
+		<font color="#000000"><span class="auto-style2">where the 
+		value of the pixel represents the mean value of the elevation inside the 
+		pixel</span></font></div>
+	</span></li>
+</ul>
+<hr />
+<p><img height="438" src="../images/pixel-is-.png" width="800" /><br />
+View of the grid for a 1" geographic grid in Alaska, where the spacing is about 
+15 m x 30 m.&nbsp; The black star represents the geographic position of a pixel.</p>
+<ul>
+	<li>In the pixel-is-point interpretation on the left, the elevation 
+	represents the elevation of a single point.&nbsp; If the sensor that created 
+	the DEM had to sample an area on the ground, that area would be the size of 
+	the pixel, and centered on the coordinates of the pixel, giving the green 
+	box.</li>
+	<li>In the pixel-is-point interpretation on the right, the elevation 
+	represents the elevations within the pixel (mean, median, min, or max, for 
+	instance).&nbsp; The convention is that this is the SW corner of the pixel.&nbsp; 
+	If a single point is desired for display or computaions, it should be the 
+	center of the pixel, shown with the yellow start.&nbsp; This is offset from 
+	the nominal coordinates by a half pixel in each direction.</li>
+</ul>
+<p><img alt="" height="332" src="../images/points_areas_red.png" width="919" /></p>
+<p>A number of programs (e.g. GDAL, GRASS) turn all DEMs into Pixel-Is-Area, 
+transforming all coordinates by a half pixel.</p>
+<p>For internal operations MICRODEM shifts all DEMs to Pixel-Is-Point, but on 
+export reverts to the original encoding.</p>
+<p><a href="dem_grid_conventions.html">History of DEM grid coordinate 
+conventions</a></p>
+<p>References:</p>
+<ul>
+	<li>Geotiff<ul>
+		<li><a href="http://geotiff.maptools.org/spec/geotiff2.5.html">
+		http://geotiff.maptools.org/spec/geotiff2.5.html</a> section 2.5.2.2, 
+		which clearly shows the half pixel offset, and does not say anything 
+		about the sampling scheme for the data</li>
+		<li>
+		<a href="https://docs.ogc.org/is/19-008r4/19-008r4.html#_raster_space">
+		https://docs.ogc.org/is/19-008r4/19-008r4.html#_raster_space</a>
+		<ul>
+			<li>Note the "mays" in the explanation.</li>
+			<li>"
+			Many different types of raster data <strong>may</strong> be 
+			georeferenced, and there <strong>may</strong> be subtle ways in 
+			which the nature of the data itself influences how the coordinate 
+			system (Raster Space) is defined for raster data. For example, pixel 
+			data derived from imaging devices and sensors represent aggregate 
+			values collected over a small, finite, geographic area, and so it is 
+			natural to define coordinate systems in which the pixel value is 
+			thought of as filling an area. On the other hand, digital elevations 
+			models <strong>may </strong>consist of discrete "postings," which
+			<strong>may</strong> best be considered as point measurements at the 
+			vertices of a grid, and not in the interior of a cell."</li>
+			<li>Later discussion is about the half pixel shift, and how to 
+			interpret the two raster space definitions</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+	<li>GDAL: "AREA_OR_POINT: May be either "Area" (the default) or "Point". 
+	Indicates whether a pixel value should be assumed to represent a sampling 
+	over the region of the pixel or a point sample at the center of the pixel. 
+	This is not intended to influence interpretation of georeferencing which 
+	remains area oriented."&nbsp;
+	<a href="https://gdal.org/user/raster_data_model.html">
+	https://gdal.org/user/raster_data_model.html</a> , 15 Feb 2024</li>
+	<li>OGC Geopackage:
+	<a href="https://docs.ogc.org/is/17-066r1/17-066r1.html#_strong_grid_point_strong">
+	https://docs.ogc.org/is/17-066r1/17-066r1.html#_strong_grid_point_strong</a>
+	<ul>
+		<li>
+		<span style="color: rgba(0, 0, 0, 0.9); font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: -2.25px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		grid_cell_encoding has 3 values:
+		</span>
+		<span style="color: rgb(101, 109, 118); font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		<span style="color: rgba(0, 0, 0, 0.9); font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: -2.25px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;default </span></span>
+		<span style="color: rgba(0, 0, 0, 0.9); font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: -2.25px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		<span style="color: rgb(101, 109, 118); font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		<span style="color: rgba(0, 0, 0, 0.9); font-family: &quot;Droid Sans Mono&quot;, &quot;DejaVu Sans Mono&quot;, monospace; font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: -2.25px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+		"grid-value-is-center", "grid-value-is-area", or 
+		"grid-value-is-corner". </span></span></span></li>
+	</ul>
+	</li>
+	<li><a href="https://grasswiki.osgeo.org/wiki/GRASS_raster_semantics">https://grasswiki.osgeo.org/wiki/GRASS_raster_semantics</a>
+	</li>
+	<li><a href="https://github.com/opengeospatial/ogcapi-coverages/issues/92">https://github.com/opengeospatial/ogcapi-coverages/issues/92</a>
+	</li>
+	<li><a href="https://github.com/opengeospatial/geotiff/issues/4">
+	https://github.com/opengeospatial/geotiff/issues/4</a>
+	</li>
+	<li><a href="https://www.ngdc.noaa.gov/mgg/global/gridregistration.html">https://www.ngdc.noaa.gov/mgg/global/gridregistration.html</a>
+	</li>
+	<li>
+	<a href="https://github.com/opengeospatial/coverage-implementation-schema/issues/6">https://github.com/opengeospatial/coverage-implementation-schema/issues/6</a>
+	</li>
+</ul>
+
+<ul>
+	<li><a href="http://srtm.csi.cgiar.org/faq/">http://srtm.csi.cgiar.org/faq/</a>&nbsp; 
+	has diagram at the bottom of the page</li>
+	<li>
+	<a href="https://www.usgs.gov/land-resources/eros/topochange/science/srtm-ned-vertical-differencing?qt-science_center_objects=0#qt-science_center_objects">
+	https://www.usgs.gov/land-resources/eros/topochange/science/srtm-ned-vertical-differencing?qt-science_center_objects=0#qt-science_center_objects</a> 
+	how to match SRTM and NED</li>
+	<li>
+	<a href="https://www.researchgate.net/publication/222420565_The_impact_of_misregistration_on_SRTM_and_DEM_image_differences">
+	https://www.researchgate.net/publication/222420565_The_impact_of_misregistration_on_SRTM_and_DEM_image_differences</a></li>
+	<li>
+	Landsat take (they use pixel-is-point);
+	<ul>
+		<li>
+		<a href="https://www.usgs.gov/media/images/differences-between-pixel-area-and-pixel-point-designations">https://www.usgs.gov/media/images/differences-between-pixel-area-and-pixel-point-designations</a>
+		</li>
+		<li>
+		<a href="https://www.usgs.gov/landsat-missions/ground-control-points">
+		https://www.usgs.gov/landsat-missions/ground-control-points</a> </li>
+	</ul>
+	</li>
+</ul>
+<p>Much older references</p>
+<ul>
+	<li>
+	<a href="https://lists.osgeo.org/pipermail/gdal-dev/2009-April/020520.html">
+	https://lists.osgeo.org/pipermail/gdal-dev/2009-April/020520.html</a>&nbsp; 
+	GDAL take, old</li>
+	<li>
+	<a href="https://gdal.org/development/rfc/rfc33_gtiff_pixelispoint.html">
+	https://gdal.org/development/rfc/rfc33_gtiff_pixelispoint.html</a> </li>
+	<li>
+	<a href="https://trac.osgeo.org/gdal/wiki/rfc33_gtiff_pixelispoint">
+	https://trac.osgeo.org/gdal/wiki/rfc33_gtiff_pixelispoint</a> 
+	
+	(this is old, and GDAL has apparently been handling correctly for over a 
+	decade)</li>
+</ul>
+
+<hr>
+
+<p align="right"><em><span class="style1" style="font-size: medium">Last revision 
+9/13/2024</span></em></p>
+
+</body>
+
+</html>

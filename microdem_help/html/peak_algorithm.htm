@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Peak/Spire/Pit Algorithm</title>
+</head>
+
+<body>
+
+<h1><b>Peak/Spire/Pit Algorithm</b>&nbsp; </h1>
+<table border="1" id="table3">
+	<tr>
+		<td>&nbsp;<table border="1" id="table4">
+			<tr>
+				<td><b>x</b></td>
+				<td>&nbsp;</td>
+				<td><b>x</b></td>
+				<td>&nbsp;</td>
+				<td><b>x</b></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td><b>x</b></td>
+				<td>&nbsp;</td>
+				<td><b>c</b></td>
+				<td>&nbsp;</td>
+				<td><b>x</b></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td><b>x</b></td>
+				<td>&nbsp;</td>
+				<td><b>x</b></td>
+				<td>&nbsp;</td>
+				<td><b>x</b></td>
+			</tr>
+		</table>
+		<p>&nbsp;</td>
+		<td>This is a 1 m lidar DEM, and the search radius is 2 m.&nbsp; Based 
+		on the radius selected, the program picks the number of pixels to go in 
+		the x and y directions.&nbsp; The number can be different for a 
+		geographic DEM.<p>In this example the program 
+		considers a box 5 pixels by 5 pixels in size, centered on c (2 m each 
+		direction, with 1 m LIDAR DEM).</p>
+		<p><b>Peak Algorithm.</b>&nbsp; Point c is a peak if:</p>
+		<ul>
+			<li>C must be taller than all other points in the box.</li>
+			<li>C must be taller than&nbsp; than the minimum point in the region 
+			by the selected peak height (relief).</li>
+		</ul>
+		<p><b>Pit Algorithm.</b>&nbsp; Point c is a pit if:</p>
+		<ul>
+			<li>C must be lower than all other points in the box.</li>
+			<li>C must be lower than the 8 points marked by &quot;x&quot; by the selected pit depth.</li>
+		</ul>
+		<p><b>Spire Algorithm.</b>&nbsp; Point c is a spire if:</p>
+		<ul>
+			<li>C must be taller than all other points in the box.</li>
+			<li>C must be taller than&nbsp; than the 8 points 
+			marked by &quot;x&quot; by the selected spire height.</li>
+			<li>If the looser standard is allowed, it must only be taller than 
+			the number picked, from the 8 marked points.&nbsp; As an example, 
+			this might allow selection of a lamppost, which would extend at the 
+			top and thus not have all 8 neighbors lower.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+
+<p align="right"><font size="2" face="Verdana"><em>Last revised 8/20/2021</em></font></p>
+
+</body>
+
+</html>

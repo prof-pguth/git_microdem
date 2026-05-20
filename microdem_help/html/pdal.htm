@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>PDAL</title>
+<style type="text/css">
+.auto-style3 {
+	font-size: medium;
+	font-family: "Times New Roman";
+}
+.auto-style4 {
+	font-family: "Times New Roman";
+}
+.auto-style2 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h1>PDAL</h1>
+<p>&nbsp;</p>
+<p>
+<span class="auto-style3" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+PDAL offers 2 methods for ground classification (SMRF and PMF) and it is 
+significantly faster than MCC-LIDAR, already has 64-bit binaries ready for use 
+and also supports compressed LAZ files. You can download and install it via 
+OS4GEO here:<span>&nbsp;</span></span><a class="auto-style3" href="http://download.osgeo.org/osgeo4w/osgeo4w-setup-x86_64.exe" rel="nofollow" style="box-sizing: inherit; margin: 0px; padding: 0px; vertical-align: baseline; background: rgb(255, 255, 255); outline: none; text-decoration: none; -webkit-tap-highlight-color: rgb(0, 119, 170); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;">http://download.osgeo.org/osgeo4w/osgeo4w-setup-x86_64.exe</a>.&nbsp;
+<span class="auto-style4" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">
+<span class="auto-style2">&nbsp;</span></span><span class="auto-style3" style="font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">Its 
+command line can be challenging.</span><span style="color: rgb(85, 85, 85); font-family: sans-serif; font-size: 13px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none; background-color: rgb(255, 255, 255)">&nbsp;</span></p>
+<ul>
+										<li>
+										<a href="https://www.pdal.io/tutorial/las.html">https://www.pdal.io/tutorial/las.html</a> 
+									PDAL tutorial</li>
+										<li>
+										<a href="https://www.pdal.io/tutorial/pcl_block_tutorial.html">https://www.pdal.io/tutorial/pcl_block_tutorial.html</a>
+										</li>
+										<li>
+										<a href="https://www.pdal.io/apps/index.html#apps">
+										https://www.pdal.io/apps/index.html#apps</a>
+										</li>
+										<li>
+										<a href="https://www.pdal.io/workshop/exercises/analysis/ground/ground.html">
+										https://www.pdal.io/workshop/exercises/analysis/ground/ground.html</a>
+										</li>
+									</ul>
+									<p>&nbsp;</p>
+<p>commands</p>
+<ul>
+	<li>pdal translate c:/temp/aa.las -o c:/temp/aa_smrf.las smrf -v 4</li>
+	<li>pdal translate c:/temp/aa.las -o c:/temp/aa_pmf.las pmf -v 4 -f 
+	filters.reprojection --filters.reprojection.out_srs="EPSG:26918" 
+	--filters.reprojection.in_srs="EPSG:26918"<br />
+	</li>
+</ul>
+<p>&nbsp;</p>
+<h3>Consider:</h3>
+<p>Point cloud distances: <a href="https://www.pdal.io/apps/hausdorff.html">
+https://www.pdal.io/apps/hausdorff.html</a></p>
+<p>Outlier removal:
+<a href="https://www.pdal.io/tutorial/pcl_ground/index.html#pcl-ground">
+https://www.pdal.io/tutorial/pcl_ground/index.html#pcl-ground</a> </p>
+
+<hr>
+
+<p align="right"><i>last revised 2/14/2018</i></p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

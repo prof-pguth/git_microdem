@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Point Cloud Problems</title>
+<style type="text/css">
+.style1 {
+	font-size: medium;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Point Cloud Problems</h2>
+<ul>
+		  <li><a href="lidar_hints.html">Hints with large point clouds or wimpy 
+		  computers</a> to improve performance</li>
+		  <li>Insure you do not have an unnecessarily restrictive <a href="../images/pt_cld/filtering_las.html">Filter</a>, 
+		  which can caused you to see few or no points.</li>
+	  </ul>
+<h3>Will not plot</h3>
+<ul>
+	<li>An unfortunate number of LAS files do not have the projection set in the 
+	LAS file.</li>
+	<li>Follow the procedures in the table below.&nbsp; Some of these require current <a href="lastools_resample.htm">
+	LAStools</a> </li>
+</ul>
+<table border="2">
+	<tr>
+		<td> <img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+		Try opening
+	<a href="pt_cld_opts.htm">LIDAR Point cloud</a></td>
+		<td style="width: 193px">Works, done</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td style="width: 193px">Fails, look at LAS file's metadata<ul>
+			<li>Use MICRODEM's <a href="file_metadata.htm">File Metadata</a> option.</li>
+		<li>Use <a href="lastools_resample.htm">LAStools</a></li>
+			<li>Look at download site, which often has the metadata.</li>
+	</ul>
+		</td>
+		<td>If no projection information, <a href="lastools_resample.htm">assign 
+		it</a> with&nbsp; <a href="lastools_resample.htm">
+		LAStools</a></td>
+		<td>Must have either the UTM zone, or the
+										<a href="microdem.htm">EPSG</a> code, 
+		and this must come from the metadata with the file.&nbsp; Metadata is 
+		often an XML file, best viewed in <a href="https://notepad-plus-plus.org/">NotePad++</a>.&nbsp; 
+		There is only one correct choice here, and it is whatever the creator of 
+		the data set used.&nbsp; You cannot use this step for <a href="reproject.htm">Reprojection.</a>&nbsp; 
+		If the data is not now geographic or UTM, you must
+		<a href="lastools_resample.htm">reproject it</a> for MICRODEM.</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td style="width: 193px">&nbsp;</td>
+		<td>If there is projection information, but it is not geographic of UTM,<a href="lastools_resample.htm"> 
+		reproject it</a></td>
+		<td>Must have the correct UTM zone for the operations area.</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td style="width: 193px">&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<h3>Elevation colors a single shade</h3>
+<ul>
+	<li>Set the range on the <a href="pt_cld_draw_tab.htm">Draw tab</a> of the <img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+	<a href="pt_cld_opts.htm">LIDAR Point clouds</a> form.</li>
+</ul>
+
+<hr />
+
+<p align="right" class="style1"><em>Last revised&nbsp;10/31/2019</em></p>
+
+</body>
+
+</html>

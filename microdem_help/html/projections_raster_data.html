@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Map Projections for Raster Data</title>
+</head>
+
+<body>
+
+<h1>Map Projections for Raster&amp; Lidar Data Data</h1>
+<p>Raster data such as satellite imagery or DEMs is stored in a rectangular 
+grid, with the coordinates of one corner and the spacing in the x and y 
+directions.&nbsp; The coordinates for every pixel can be computed from the four 
+stored values, and requires essentially no storage.&nbsp; In contrast a point 
+cloud must explicitly stored the x, y, and z values for every point.</p>
+<p>The definition of the stored coordinates uses a <a href="mapb0iem.htm">map 
+projection</a>, which is a series of equations going between latitude and 
+longitude and cartesian x and y coordinates.&nbsp; Since it is impossible to 
+take the surface and flatten it on a flat plane, all projections involve 
+compromise.&nbsp; Computer mapping uses three main types of projection:</p>
+<ul>
+	<li>UTM, the Universal Transverse Mercator system developed by the US 
+	military.&nbsp; This creates 60
+	<a href="https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system#/media/File:Universal_Transverse_Mercator_zones.svg">
+	UTM zone</a>s, each 6 degrees of longtitude, and within the zone there is 
+	virtually no distortion.&nbsp; Computations are very easy, and the only real 
+	challenge is dealing with the discontinuities at the UTM zone boundaries.&nbsp; 
+	The Sentinel-2 and Landsat data all use UTM coordinates for their grids.&nbsp; 
+	The maximum distortion in the UTM projection, if you stay within the zone, 
+	is about 4 parts in 10,000 (stretching by a factor of about 1.0004).</li>
+	<li>Geographic equidistant cylindrical or equirectangular projection, 
+	equidirectional projection,&nbsp; geographic projection,
+	<font color="#ffffff" style="BACKGROUND-COLOR: #0078d7">plate</font> carrée 
+	or carte parallelogrammatique projection.&nbsp; This is not really a 
+	projection, but just an assumption the latitude and longitude can be plotted 
+	as if they were cartesian coordinates, ignoring earth curvature.&nbsp; It 
+	blows up completely at the poles, where the poles maps to the top and bottom 
+	rows of the grid.&nbsp; This has been used for data because it is 
+	"seamless", meaning there are no problems merging data.&nbsp; Within small 
+	areas, the pixels can be considered to be rectangular, and the computations 
+	are not much more complicated that with UTM projections.&nbsp; This is used 
+	for all the
+		<a href="global_dems.html">Global Regional DEMs</a>, but they should not 
+	be displayed in this projection.</li>
+	<li>Other projections are used much less commonly.<ul>
+		<li>Polar stereographic for the poles.</li>
+		<li>Lambert conformal conic, for regions that are wider than they are 
+		tall, such as covering all of the continental US or countries like 
+		France or Morocco.</li>
+		<li>Transverse Mercator: rather than using the arbitrary central 
+		longitudes used in the UTM, this uses a central longitude centered on 
+		the region of interest, which should be taller than it is wide.</li>
+	</ul>
+	</li>
+</ul>
+<p>The US has a system called the <a href="cartography/spcs_zones.html">state 
+plane coordinate system (SPCS) </a>, which is designed to have even less 
+distortion that with the UTM system.&nbsp; To achieve this, each state has at 
+least one zone, and the largest states have more than one, for a total of about 
+120 zones.&nbsp; To further complicate matter,
+<a href="https://geodesy.noaa.gov/SPCS/images/spcs83-legislation-feet.png">many 
+SPCS data sets are in feet, and there are definitions of feet</a>--<a href="https://oceanservice.noaa.gov/geodesy/international-foot.html#:~:text=A%20U.S.%20survey%20foot%20is,of%20a%20foot%20per%20mile.">how 
+you truncate the irrational number matters, and when the coordinates get into 
+the millions</a>, the tiny difference adds up and displaces features.&nbsp; You 
+should avoid the SPCS system if at all possible (some states require that it be 
+used for legal surveys).</p>
+
+<hr>
+
+<p align="right"><em><font size="3">Last revision </font>2/28/2022</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Open Point Clouds</title>
+</head>
+
+<body>
+
+<h2>Open Point Clouds</h2>
+<p>&nbsp;</p>
+<h3>1.&nbsp; LAS point cloud data</h3>
+<ul>
+	<li>Decide if you want to open a directory, or pick the files.&nbsp; There 
+	could be a lot of files, and you will have a very hard time identifying the 
+	files your want.
+	<ul>
+		<li>Note if the selection form is for a directory (and subdirectories 
+		under it), or for files (if you 
+		cannot see your files, you are probably using directory mode for 
+		selection).</li>
+		<li>If you find you are using the wrong mode, cancel the open dialog, 
+		change the mode on the <a href="pt_cld_opts.htm">control window</a>, and&nbsp; 
+		pick the files tab and the cloud you want to open.</li>
+		<li>The program will identify each project area by the name of the 
+		directory.&nbsp; You should put the files form each project in a 
+		separate directory, and give it a short, meaningful name.</li>
+		<li>To open a folder, you have to highlight the folder and pick the open 
+		button; you cannot double click.</li>
+		<li>You can double click when selecting a single file, or seleect a 
+		number of files.</li>
+		<li>You should organize your lidar, as it is very easy to have a huge 
+		number of files.</li>
+	</ul>
+	</li>
+	<li>Two ways to open:<ul>
+		<li>If you have an open map of your area.&nbsp; Only tiles on the map will 
+	be opened.<ul>
+			<li>
+			<img border="1" src="../images/pnt_cld.GIF" width="23" height="23">
+			<a href="pt_cld_opts.htm">LIDAR Point clouds</a>, icon on the map 
+			toolbar.&nbsp; This will only open the tiles that are included in the 
+			current map window.&nbsp;</li>
+			<li><a href="map_right_click.htm">Right click on map</a>,
+        			<a href="right_click_load.htm">Load</a>, Point cloud</li>
+		</ul>
+		</li>
+		<li>Without an open map<ul>
+			<li>Option on the Point Cloud submenu of the main menu</li>
+			<li>Option on the <a href="file_open.htm">Open submenu</a> of the file menu.</li>
+			<li>These will<ul>
+				<li>Ask you to open the first lidar data cloud</li>
+				<li>Create a new map that will cover just the area of the lidar 
+				data set.</li>
+			</ul>
+			</li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+	<li>This brings up a <a href="pt_cld_opts.htm">control window for the point 
+	cloud</a> operations. You can open additional point clouds from it</li>
+</ul>
+<hr />
+<h3>2.&nbsp; Other point cloud data</h3>
+<ul>
+	<li>Option on the Point Cloud submenu of the main toolbar.</li>
+	<li>Option on the Open submenu of the file menu.</li>
+	<li>Data supported.&nbsp; This has been designed for fairly specific cases, 
+	and may not be general purpose since it does have not the luxury of a 
+	specific format.<ul>
+		<li>DBF file with project.&nbsp; Set the files to use, and pick 
+	display options. </li>
+		<li>Point 3D<font size="3"> </font><a
+        href="shapefile.htm"><font size="3">shapefile</font></a>.&nbsp; </li>
+		<li><a href="las_format.htm">LAS binary format.</a>&nbsp; </li>
+		<li>ASCII XYZ file in TXT or CSV format (with or without a header 
+	line, and with comma/space/tab delimiters). </li>
+	</ul>
+	</li>
+</ul>
+
+<hr>
+
+<p align="right"><i>Last revision 6/5/2021</i></p>
+
+<p>&nbsp;</p>
+  
+</body>
+
+</html>

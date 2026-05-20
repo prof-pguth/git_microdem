@@ -1,0 +1,77 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<title>Perspective Image Quality</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<p align="center"><font size="5"><strong>Perspective Image
+Quality </strong></font></p>
+
+<p>Image quality with a draped perspective depends on the
+following: </p>
+
+<ul>
+    <li><strong>Size of the window</strong>. Bigger is generally
+        better, but slower, until you get to the point where you
+        don't have enough data to support the requirements.</li>
+    <li><strong>Vertical exaggeration in the window</strong>. You
+        can change this by resizing the window, or changing the
+        maximum and minimum viewport angles. </li>
+    <li><strong>Spacing of points on the radials</strong>. The
+        default should give optimal image quality; you might
+        consider reducing this spacing for faster display. </li>
+    <li><strong>Distance out from the observer</strong>. The
+        close in points will only have a few data points spread
+        across the entire screen. You can avoid this problem by
+        raising the minimum vertical angle, or increasing the
+        distance to the first point that will be considered. The
+        second option might result in unrealistic views, by
+        ignoring hills close to your location and letting you see
+        behind them, but the image quality will be better. </li>
+    <li><strong>Max size of the drape image</strong>. Set on <a
+        href="viewstab.htm">Views </a>tab of <a
+        href="tbme1njp.htm">options form</a>.</li>
+</ul>
+
+<p>The program will redraw the draped image map with pixel size
+equal to the DEM data spacing or the image data spacing before
+performing the view. However, if the max size of the drape image
+does not allow drawing with this pixel size, you will get
+decreased resolution. </p>
+
+<p>For example:</p>
+
+<ul>
+    <li>1 m imagery, covering an area of 25 x 25 km.</li>
+    <li>Max drape size to 2000 x 2000 pixels.</li>
+    <li>View requires a drape map that is 10 km by 10 km.</li>
+    <li>To get the full resolution from your 1 m imagery would
+        require 10,000 x 10,000 pixels. To get within the
+        limitsof 2000 x 2000, the drape map will have a
+        resolution of 5 m.</li>
+    <li>To get better resolution, you could:<ul>
+            <li>Try increasing the size of the drape maps,
+                although your hardware and the OS might not
+                support this.</li>
+            <li>Decrease the depth of the view. If your drape map
+                only required 5 x 5 km, the resolution would be
+                2.5 m. To get the full value from the 1 m imagey,
+                you would have to make a view only 2 x 2 km.</li>
+            <li>You will only get the benefit of the the high
+                resolution very close to the viewer's position;
+                farther back the extra resolution will be
+                &quot;wasted&quot;.</li>
+        </ul>
+    </li>
+</ul>
+
+<hr>
+
+<p align="right"><em>Last revision 2/16/2015</em></p>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Point Classification (ridges and valleys)</title>
+</head>
+
+<body>
+
+<h2>Point Classification (Ridges and valleys)</h2>
+<ul>
+  <li>Selected <font size="3">on </font><a href="geostatistical_analysis.htm">Geomorphometry analysis</a>
+of <font size="3"><a href="tbme5ed1.htm">Analyze</a>  menu </font></li>
+  <li>On Ridges choice of <a href="tbme9lrp.htm">Calculate</a> menu.</li>
+  <li>Used with <a href="map_masking.htm">DEM map masking</a></li>
+</ul>
+<p>Now also includes:</p>
+<ul>
+	<li>Pennnock Landform Classification (Pennock,D.J., Zebarth,B.J., and De Jong,E., 1987. Landform 
+	Classification and Soil Distribution in Hummocky Terrain, Saskatchewan, 
+	Canada. Geoderma, 40: 297-315.), using <a href="whitebox.html">Whitebox 
+	Tools.</a></li>
+		<li><a href="iw_pike_class.htm">Iwashashi and Pike Classification</a></li>
+</ul>
+<table border="1">
+  <tr>
+    <td>
+	<img height="620" src="../images/pt_class_fm.gif" width="592">&nbsp;</td>
+    <td><p><b>Mask radius </b>applies the <a href="#Simple">Simple</a> and
+	<a href="#Simple2">Simple 2</a> algorithms.&nbsp; For 
+	each point classified as a ridge, a radius of this size will be masked.</p>
+	<p><b>Algorithm: </b>&nbsp; &nbsp;<a href="#Simple">Simple</a>&nbsp;&nbsp;
+	<a href="#Simple2">Simple 2</a></p>
+	<p><b><a href="#simple2_toleranace">Ridge valley tolerance</a>:</b> for the <a href="#Simple2">Simple 2</a> algorithm, how many 
+	neighbors must be higher/lower.&nbsp; Smaller values lead to more classified 
+	points.</p>
+	<p><b><a href="#Draw">Draw</a></b> shows the ridges and other point classifications, and 
+	optionally shows counts</p>
+	<p><b>Ridge map</b>: creates grid using the current algorithm, 
+	with the elevations of the points classified as ridges and peaks.</p>
+	<p><b>Valley map</b>: creates grid using the current algorithm, 
+	with the elevations of the points classified as pits and valleys.</p>
+	<p><b>Ridge mask</b> creates mask with the ridge and peak points.&nbsp; This can 
+	be used with <a href="map_masking.htm">map masking.</a></p>
+	<p><b>Valley mask</b> creates mask with the pit and valley points.&nbsp; </p>
+	<p><b>All points map</b>: creates&nbsp; grid using the current algorithm, 
+	with each category with a different number.</p>
+	<p><a href="high_low_neighbors.html">High/Low neighbors</a></p>
+	<p><b>Close</b>: exit form.&nbsp; Do not hit this early.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" id="table2">
+	<tr>
+		<td colspan="3">
+		<h3 align="center">Draw <a name="Draw">Ridge/valley Map</a></h3>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>
+		<img border="0" src="../images/RIDGES_SIMPLE.PNG" width="374" height="465"></td>
+		<td>
+		<img border="0" src="../images/RIDGES_SIMPLE2_5.PNG" width="374" height="465"></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><a href="#Simple">Simple</a> algorithm</td>
+		<td><a href="#Simple">Simple 2</a> algorithm&nbsp; (tolerance 5)</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" id="table3">
+	<tr>
+		<td colspan="3">
+		<h3 align="center">Draw <a name="simple2_toleranace">Simple 2 
+		Ridge/valley Map</a></h3>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/RIDGES_SIMPLE2_7.PNG" width="374" height="465"></td>
+		<td>
+		<img border="0" src="../images/RIDGES_SIMPLE2_6.PNG" width="374" height="465"></td>
+		<td>
+		<img border="0" src="../images/RIDGES_SIMPLE2_5.PNG" width="374" height="465"></td>
+	</tr>
+	<tr>
+		<td><a href="#Simple">Simple 2</a> algorithm (tolerance 7)</td>
+		<td><a href="#Simple">Simple 2</a> algorithm&nbsp; (tolerance 6)</td>
+		<td><a href="#Simple">Simple 2</a> algorithm (tolerance 5, same as above)</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" id="table1">
+	<tr>
+		<td colspan="3">
+        <p align="center"><font size="4"><b>Ridge Mask</b></font></td>
+	</tr>
+	<tr>
+		<td>
+		&nbsp;</td>
+		<td>
+		<img border="0" src="../images/RIDGE_MASK_SIMPLE.PNG" width="374" height="465"></td>
+		<td>
+		<img border="0" src="../images/RIDGE_MASK_SIMPLE2.PNG" width="374" height="465"></td>
+	</tr>
+	<tr>
+		<td align="center">&nbsp;</td>
+		<td align="center"><a href="#Simple">Simple</a> algorithm</td>
+		<td align="center"><a href="#Simple">Simple 2</a> algorithm</td>
+	</tr>
+</table>
+<p><b><a name="Simple">Simple:</a></b></p>
+<blockquote>
+	<p>&nbsp;if (z &lt; znw) and (z &lt; zn) and (z &lt; zne) and&nbsp; (z &lt; zsw) and (z 
+	&lt; zs) and (z &lt; zse) and (z &lt; zw) and (z &lt; ze) then Result := PitPoint<br>
+	else if (z = znw) and (z = zn) and (z = zne) and (z = zsw) and (z = zs) and 
+	(z = zse) and (z = zw) and (z = ze) then Result := FlatPoint<br>
+	else if (z &gt; znw) and (z &gt; zn) and (z &gt; zne) and (z &gt; zsw) and (z &gt; zs) and 
+	(z &gt; zse) and (z &gt; zw) and (z &gt; ze) then Result := PeakPoint<br>
+	else if ((zn &gt; znw) and (zn &gt; zne)) and ((z &gt; zw) and (z &gt; ze)) and ((zs &gt; 
+	zsw) and (zs &gt; zse)) then Result := RidgePoint {NS trend}<br>
+	else if ((zw &gt; znw) and (zw &gt; zsw)) and ((z &gt; zn) and (z &gt; zs)) and ((ze &gt; 
+	zne) and (ze &gt; zse)) then Result := RidgePoint {WE trend}<br>
+	else if ((zn &lt; znw) and (zn &lt; zne)) and ((z &lt; zw) and (z &lt; ze)) and ((zs &lt; 
+	zsw) and (zs &lt; zse)) then Result := ValleyPoint {NS trend}<br>
+	else if ((zw &lt; znw) and (zw &lt; zsw)) and ((z &lt; zn) and (z &lt; zs)) and ((ze &lt; 
+	zne) and (ze &lt; zse)) then Result := ValleyPoint {WE trend}<br>
+	else Result := OtherPoint;<br>
+&nbsp;</p>
+</blockquote>
+<p><b><a name="Simple2">Simple 2</a>:</b></p>
+<blockquote>
+	<p>Of 8 neighbors, count those higher and lower</p>
+	<p>&nbsp;if Higher = 8 then Result := PitPoint<br>
+	else if Lower = 8 then Result := PeakPoint<br>
+	else if (Higher = 0) and (Lower = 0) then Result := FlatPoint<br>
+	else if (Higher &gt;= RidgeValleyTolerance) then Result := ValleyPoint<br>
+	else if (Lower &gt;= RidgeValleyTolerance) then Result := RidgePoint<br>
+	else Result := OtherPoint;</p>
+</blockquote>
+<hr>
+<h3>Compare to:</h3>
+<blockquote>
+	<ul>
+		<li><a href="tpi.htm">TPI: Topographic position index</a></li>
+	</ul>
+</blockquote>
+
+<hr>
+
+<p align="right"><em>Last revision 8/19/2024</em></p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

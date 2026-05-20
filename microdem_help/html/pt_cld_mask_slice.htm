@@ -1,0 +1,68 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Point Cloud Mask via Slices</title>
+</head>
+
+<body>
+
+<h2>Point Cloud Mask via Slices</h2>
+<p>This option may not be fully robust.&nbsp; Do not try it with more than one 
+graph open.&nbsp; This option does not appear to be very useful, and we may 
+remove it.</p>
+<table border="1" id="table1">
+	<tr>
+		<td>
+		<img border="0" src="../images/vasa_slicer.gif"></td>
+		<td>Mask Pts button of the <a href="laser_scan_point_cloud.htm">Point 
+		Cloud manipulation form</a><ul>
+			<li>Pick field to use for masking.&nbsp; If it does not exist in 
+			the selected&nbsp; shapefiles, it will be added. This can be slow if 
+			you have very large databases, or very many of them.</li>
+			<li>The selected shape files will be opened, and the tables 
+			displayed.</li>
+		</ul>
+		<p>Toolbar lets you:</p>
+		<ul>
+			<li>Select individual points by double clicking on the slice graph.</li>
+			<li>Outlining a box (drag from upper left to lower right) on the 
+			slice graph.</li>
+			<li>Points will have the mask set, and the memo box will indicate 
+			the number of points masked in each shape file.</li>
+		</ul>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/vasa_mask_db.gif" width="436" height="197"></td>
+		<td>The masking will put &quot;Y&quot; in the mask field for the selected points.&nbsp;You can <strong><a href="db_filters.htm">Filter</a></strong> based on this field, save the filtered database, and use 
+		it for further operations.</td>
+	</tr>
+	<tr>
+		<td>
+		<img border="0" src="../images/vasa_beam.png" width="433" height="295"></td>
+		<td>Procedure to create a new 3D point shapefile:<ul>
+			<li>Select points and mask using the procedure above.</li>
+			<li><strong><a href="db_filters.htm">Filter</a></strong> the 
+			database to just those points with a &quot;Y&quot; in the mask field.</li>
+			<li>Save the filtered database as a DBF file. (<a href="db_report.htm">Report 
+			menu</a> on the <a href="database_table_display.htm">database
+table form</a>).<b>&nbsp; </b></li>
+			<li>Open the new DBF file.</li>
+			<li>Write the point shapefile SHP and SHX files. (<a href="db_report.htm">Report 
+			menu</a><b>&nbsp;</b>on the <a href="database_table_display.htm">database
+table form</a>).<b>&nbsp; </b>This will make many operations significantly 
+			faster.</li>
+		</ul>
+		</td>
+	</tr>
+</table>
+<p>&nbsp;</p>
+<hr>
+<p align="right"><i>last revision 9/15/2009</i></p>
+
+</body>
+
+</html>

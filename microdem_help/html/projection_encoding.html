@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Projection Encoding</title>
+</head>
+
+<body>
+
+<h1>Projection Encoding</h1>
+<table border="2">
+	<tr>
+		<td><strong>Data type</strong></td>
+		<td><strong>Projection encoding</strong></td>
+	</tr>
+	<tr>
+		<td>Raster, Geotiff</td>
+		<td>Geotiff keys, in Geotiff file</td>
+	</tr>
+	<tr>
+		<td>Vector, Shapefile</td>
+		<td><a href="wkt.htm">WKT</a> in PRJ file</td>
+	</tr>
+	<tr>
+		<td>Point Cloud, LAS</td>
+		<td><a href="epsg.htm">EPSG codes,</a> Geotiff keys or <a href="wkt.htm">WKT</a>, in LAS file</td>
+	</tr>
+</table>
+
+<p>If the projection is not encoded, or not correctly encoded, you may have to 
+assign the projection.&nbsp; <a href="gdal_options.htm">GDAL can do this</a>, or 
+Lastools for lidar.&nbsp; 
+The <a href="resample_data.htm">Resample</a> menu has some options to correct or 
+assign the datum and projection.</p>
+<p>Using <a href="epsg.htm">EPSG codes</a> may be the most efficient way to 
+encode the projection; you can look them up online.</p>
+
+<hr>
+
+<p align="right"><em>Last revision 10/27/2020</em></p>
+	
+	
+	
+	
+	<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

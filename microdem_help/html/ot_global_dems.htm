@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Global DEMs at OpenTopography</title>
+<style type="text/css">
+.style1 {
+	font-size: small;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Global DEMs from OpenTopography </h2>
+<p><a href="https://onlinelibrary.wiley.com/doi/10.1111/tgis.12852">Guth and Kane (Transactions in GIS, 2021)</a> suggest that Copernicus is the best 
+choice among these.&nbsp; ALOS World 3D would be the second choice.</p>
+<table border="2">
+	<tr>
+		<td><b>DEM and its properties</b></td>
+		<td><b>OpenTopography Metdata and location to start download<br />
+		Pick link for the data set you want</b></td>
+		<td><b>Precision</b></td>
+		<td><b>File numbers and size for complete data set</b></td>
+		<td><b>Notes</b></td>
+	</tr>
+	<tr>
+		<td>
+		<a href="copernicus_dem.htm">Copernicus DEM</a></td>
+		<td>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.032021.4326.1">
+		OT.032021.4326.1</a>
+		</td>
+		<td>
+		Float</td>
+		<td>
+		26,440 files, 550 GB</td>
+		<td>Resampled to same arc second spacing in x and y if you select by box, 
+		which changes the data characteristics.&nbsp; Some 
+		countries missing for political reasons.&nbsp; Goes farther north than 
+		SRTM and NASADEM.</td>
+	</tr>
+	<tr>
+		<td><a href="alos_world_3d.html">ALOS World 3D</a> AW3D30 v 3.2: </td>
+		<td>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.112016.4326.2">
+		OT.112016.4326.2</a> </td>
+		<td>Integer</td>
+		<td>23,997 files, 220 GB</td>
+		<td>Not void filled.&nbsp; They have the averaged data from the 5 m 
+		source; JAXA also has median</td>
+	</tr>
+	<tr>
+		<td><a href="nasadem.html">NASDADEM</a></td>
+		<td>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.032021.4326.2">
+		OT.032021.4326.2</a>
+		</td>
+		<td>
+		Integer</td>
+		<td>
+		14,251 files, 128 GB</td>
+		<td>HGT files, stored as TIFF here</td>
+	</tr>
+	<tr>
+		<td><a href="srtm.htm">SRTM</a> v3: </td>
+		<td>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.042013.4326.1">
+		OT.042013.4326.1</a> </td>
+		<td>Integer</td>
+		<td>14,280 files, 125 GB</td>
+		<td>Unclear which 3" version they have (middle or 
+		average)</td>
+	</tr>
+	<tr>
+		<td>USGS 1" 3DEP/NED merged with DEMs from Canada and Mexico</td>
+		<td>
+		<a href="https://portal.opentopography.org/datasetMetadata?otCollectionID=OT.012021.4269.2">
+		OT.012021.4269.2 </a> </td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>Terrible choice for name, since it is not just USGS but 
+		international.&nbsp; Perhaps not surprisingly, this has disappeared 
+		without explanation that I can find.</td>
+	</tr>
+	<tr>
+		<td>
+		<a href="gmrt.htm">Global Multi-Resolution Topography</a> and bathymetry</td>
+		<td>
+		<a href="https://portal.opentopography.org/raster?opentopoID=OTGMRT.112016.4326.1">
+		OTGMRT.112016.4326.1</a> </td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td><a href="srtm_15plus.htm">SRTM 15+</a> (land/ocean merge; the 15 arc 
+	second resolution is about 450 m)</td>
+		<td>
+		<a href="https://portal.opentopography.org/raster?opentopoID=OTSRTM.122019.4326.1">
+		OTSRTM.122019.4326.1</a> </td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<ul>
+	<li><strong>Graphical interface option in browser</strong><ul>
+		<li>Pick a region that includes what you want.&nbsp; It is better to get 
+		too much rather than not enough and then having to come back.</li>
+		<li>Open the Global Data Tab and choose the data set and the resolution 
+		for those that have 1" and 3" data.&nbsp; Get the geoid version for the <a href="vert_datum.htm">Vertical datum</a> 
+		unless you are absolutely sure you want the ellipsoid version.&nbsp; If 
+		there is any chance you might get both, store them differently as the 
+		downloads do not indicate the vertical datum.</li>
+		<li>If you are having problems with the graphical selection, you can 
+		manually select the coordinates.&nbsp; You can use the&nbsp;<a href="gis/bounding_box.htm">Bounding box</a> 
+		that covers the area you want.</li>
+		<li>You do not need a hillshade (uncheck the option) since the GIS can 
+		easily create.&nbsp; </li>
+		<li>The limit is 450,000 
+	square km.&nbsp; </li>
+		<li>Keep the default Geotiff format.</li>
+		<li>Download will be a <strong>tar.gz file</strong>, which is a Unix format you can
+			<a href="../html/uncompress.htm">decompress</a> in MICRODEM.&nbsp; 
+		You can have the program delete the compressed file.&nbsp; The file will 
+		be in a sub-directory in the folder where the tar.gz file was.</li>
+		<li>If you let the download change the file name, say by adding " (1)" 
+		because there is another download with the same name, you will have to 
+		manually 
+		untar the result from the un-gzip (so don't let Windows rename).</li>
+		<li>File will be named "output_srtm", so you must keep track of 
+			which version you got. The metadata has the data spacing, but not the 
+			vertical datum.&nbsp; Considering renaming the final TIF file with the geographic region and 
+		the <a href="vert_datum.htm">Vertical datu</a> selected.</li>
+	</ul>
+	</li>
+	<li>
+	<a href="../microdemtutorials/open_topo/open_topo.htm#AWS_Bulk_downloads.">
+	Raster bulk downloads use AWS command line</a><ul>
+		<li>This gets the complete data set, so be ready for some serious 
+		bandwidth and hard disk requirements</li>
+		<li>I suspect you could figure out how to get just the area you want, 
+		which is left as an exercis for the curious student.</li>
+	</ul>
+	</li>
+</ul>
+
+<p>You must have <a href="adf_grids.htm">GDAL</a> 
+installed, via <a href="osgeo4w.htm">OSGEO4W</a>, to use the DEMs in MICRODEM.</p>
+<p>The grids use -9999 for missing data without indicating this in the 
+		Geotiff header.&nbsp; You should mark it missing on
+		<a href="import_tab.htm"><strong>Import/Export</strong></a>, or editing 
+the grid, if the color scheme is distorted by the invalid large negative 
+elevations.&nbsp; <br />
+<br />
+DEM results will be in tar.gz (Unix) compressed file.&nbsp;
+		<a href="uncompress.htm">Compress/Decompress</a>
+    	option in MICRODEM
+    	will use decompress with <a href="7zip.htm">7-Zip</a> 
+		without bothering you with the details.&nbsp; If you do multiple downloads you must segregate 
+them in different directories, as they decompress with the same names and some 
+of the decompressions will fail.</p>
+<p><a href="../microdemtutorials/open_topo/open_topo.htm">General instructions 
+for Open Topography</a></p>
+<p> <a href="global_dems.html">Key Global Regional DEMs</a></p>
+
+<hr>
+
+<p align="right"><em><span class="style1" style="font-size: medium">Last revision 
+20/7/2021</span></em></p>
+
+</body>
+
+</html>
