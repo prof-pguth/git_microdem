@@ -10,7 +10,7 @@ Starting to look at the code:
 
 --The main program form is "microdem_only_code\nevadia_main.pas" 
 
---The DEMIX processing pipeline is "microdem_only_code\nevadia_main_batch.inc"
+--The DEMIX processing pipeline is "microdem_only_code\nevadia_main_batch.inc".  The helpfile directory has an HTML file with the seqeuential steps of the processing.  It is from the MICRODEM CHM help file (https://microdem.org/microdem_downloads/microdem.chm) which would be required for the links with the full details.
 
 There are directories with compiled executables for Windows 64
 --compiled_exe_installation which has versions that were used for publications; the file name includes the date.  Because I do not guarantee that future improvements will be 100% backward compatible, these versions will be maintained only in compiled form.
