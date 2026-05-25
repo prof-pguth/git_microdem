@@ -4,7 +4,7 @@ unit DEMmagvar;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -45,8 +45,8 @@ implementation
 uses
    PETMAR,PetMath,SysUtils,DEMDefs;
 
-const
-   DTR = 0.01745329252;  {degree to radians}
+//const
+   //DTR = 0.01745329252; {degree to radians}
 
 function CurrentMagneticDeclination(Lat,Long : float64) : float64;
 var
@@ -144,8 +144,8 @@ begin
    with MagModel^ do begin
       DT := TIME - MagEpoch;
       ALT := 0.001 * ALT;
-      RLON  := GLON*DTR;
-      RLAT  := GLAT*DTR;
+      RLON  := GLON*DegToRad;
+      RLAT  := GLAT*DegToRad;
       SRLON  := SIN(RLON);
       SRLAT  := SIN(RLAT);
       CRLON  := COS(RLON);
@@ -248,10 +248,10 @@ begin
 //        COMPUTE DECLINATION (DEC), INCLINATION (DIP) AND TOTAL INTENSITY (TI)
       BH := SQRT(BX*BX+BY*BY);
       TI := SQRT(BH*BH+BZ*BZ);
-      DEC := ATAN2(BY,BX)/DTR;
+      DEC := ATAN2(BY,BX)/DegToRad;
       if (Dec > 180) then Dec := Dec - 360;
 
-      DIP := ATAN2(BZ,BH)/DTR;
+      DIP := ATAN2(BZ,BH)/DegToRad;
 
 //C        COMPUTE MAGNETIC GRID VARIATION IF THE CURRENT
 //C        GEODETIC POSITION IS IN THE ARCTIC OR ANTARCTIC

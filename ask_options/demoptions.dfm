@@ -48,7 +48,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 793
     Height = 505
-    ActivePage = TabSheet21
+    ActivePage = TabSheet14
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -869,7 +869,6 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Get geography data'
         Enabled = False
         TabOrder = 7
-        OnClick = BitBtn33Click
       end
       object CheckBox53: TCheckBox
         Left = 280
@@ -921,7 +920,6 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Get Natural Earth Vectors'
         Enabled = False
         TabOrder = 13
-        OnClick = BitBtn42Click
       end
     end
     object TabSheet8: TTabSheet
@@ -2985,7 +2983,7 @@ inherited OptionsForm: TOptionsForm
         object CheckBox119: TCheckBox
           Left = 16
           Top = 24
-          Width = 97
+          Width = 129
           Height = 17
           Caption = 'Geology options'
           TabOrder = 0

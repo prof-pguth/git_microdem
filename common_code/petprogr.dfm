@@ -1,5 +1,5 @@
 object PetProgF: TPetProgF
-  Left = 653
+  Left = 25
   Top = 190
   BorderIcons = []
   BorderStyle = bsDialog
@@ -13,7 +13,7 @@ object PetProgF: TPetProgF
   Font.Name = 'System'
   Font.Style = []
   FormStyle = fsStayOnTop
-  Position = poScreenCenter
+  Position = poDesigned
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate

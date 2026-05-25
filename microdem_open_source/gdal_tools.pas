@@ -4,7 +4,7 @@ unit gdal_tools;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -25,7 +25,7 @@ unit gdal_tools;
       //{$Define RecordSubsetOpen}
       //{$Define RecordDatumShift}
       //{$Define RecordWKT}
-      //{$Define RecordProjectionStrings}
+      {$Define RecordProjectionStrings}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
@@ -1784,7 +1784,6 @@ end;
  var
     s_SRSstring,t_srsstring,OutVert : shortstring;
  begin
-    //SaveName := ChangeFileExt(fName,'_egm2008.tif');
     if FileExists(SaveName) then begin
        {$If Defined(Record3DEPXfull)} WriteLineToDebugFile('Already shifted=' + fName); {$EndIf}
     end
@@ -1802,13 +1801,13 @@ end;
           else if (HorizCode = 'GCS_WGS') then begin
              HorizCode := '4326'
           end;
-       if (VertCode = '') then begin
-          OutVert := '';
+       if (VertCode = 'NAVD88') then begin
+          VertCode := '+' + IntToStr(VertCSNAVD88);
        end
        else begin
-          OutVert := '+3855';
           Vertcode := '+' + VertCode
        end;
+       OutVert := '+3855';
        if (Length(UTMzone) = 3) and (UTMZone[3] = 'S') then UTMZone :=  '327' + Copy(UTMzone,1,2)
        else UTMZone := '326' + UTMzone;
        s_SRSstring := ' -s_srs EPSG:' + HorizCode + VertCode;

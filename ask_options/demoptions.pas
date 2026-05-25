@@ -334,8 +334,8 @@ type
     BitBtn28: TBitBtn;
     BitBtn30: TBitBtn;
     Label14: TLabel;
-    Edit1: TEdit;
-    BitBtn33: TBitBtn;
+    //Edit1: TEdit;
+    //BitBtn33: TBitBtn;
     CheckBox6: TCheckBox;
     CheckBox35: TCheckBox;
     //CheckBox53: TCheckBox;
@@ -375,7 +375,7 @@ type
     BitBtn40: TBitBtn;
     Label20: TLabel;
     BitBtn41: TBitBtn;
-    BitBtn42: TBitBtn;
+    //BitBtn42: TBitBtn;
     GroupBox18: TGroupBox;
     //Edit12: TEdit;
     DTfilllabel: TLabel;
@@ -460,13 +460,13 @@ type
     procedure BitBtn21Click(Sender: TObject);
     procedure BitBtn28Click(Sender: TObject);
     procedure BitBtn30Click(Sender: TObject);
-    procedure BitBtn33Click(Sender: TObject);
+    //procedure BitBtn33Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure BitBtn22Click(Sender: TObject);
     procedure BitBtn29Click(Sender: TObject);
     procedure BitBtn40Click(Sender: TObject);
     procedure BitBtn41Click(Sender: TObject);
-    procedure BitBtn42Click(Sender: TObject);
+   // procedure BitBtn42Click(Sender: TObject);
     procedure BitBtn43Click(Sender: TObject);
     procedure BitBtn39Click(Sender: TObject);
     procedure BitBtn44Click(Sender: TObject);
@@ -958,7 +958,7 @@ begin
 
    RadioGroup34.ItemIndex := pred(MDDef.FrameLineWidth);
 
-   Edit1.Text := MDDef.GoogleAPIkey;
+   //Edit1.Text := MDDef.GoogleAPIkey;
 
    Edit19.Text := IntToStr(MDDef.LOSSliceBuffer);
 
@@ -1578,7 +1578,7 @@ begin
    MDdef.StatSampleIncr := UpDown1.Position;
 
    CheckEditString(Edit19.Text,MDDef.LOSSliceBuffer);
-   MDDef.GoogleAPIkey := Edit1.Text;
+   //MDDef.GoogleAPIkey := Edit1.Text;
 
    CheckEditString(Edit2.Text,MDDef.BlowUpExtraMargin);
    CheckEditString(Edit4.Text,MDdef.ScalebarDistortionTolerable);
@@ -2001,16 +2001,6 @@ begin
 end;
 
 
-procedure TOptionsForm.BitBtn33Click(Sender: TObject);
-begin
-   {$IfDef AllowUSNAdataDownloads}
-      {$IfDef ExGeography}
-      {$Else}
-         ClimateGetData(true);
-      {$EndIf}
-   {$EndIf}
-end;
-
 procedure TOptionsForm.BitBtn34Click(Sender: TObject);
 begin
    Petmar.PickLineSizeAndColor('Country outlines',BitBtn34,MDDef.CountryOUtline_Color,MDDef.CountryOUtline_Width);
@@ -2053,12 +2043,6 @@ begin
    AdjustMapLibraryDataBaseSeries;
 end;
 
-procedure TOptionsForm.BitBtn42Click(Sender: TObject);
-begin
-   {$IfDef AllowUSNAdataDownloads}
-       GetNaturalEarthData(True);
-   {$EndIf}
-end;
 
 procedure TOptionsForm.BitBtn43Click(Sender: TObject);
 begin

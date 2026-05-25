@@ -3442,7 +3442,7 @@ object wmdem: Twmdem
     Left = 1000
     Top = 288
     object Graphevaluationandscores1: TMenuItem
-      Caption = 'The fi'
+      Caption = 'Start DEMIX graph analysis'
       OnClick = Graphevaluationandscores1Click
     end
     object N56: TMenuItem
@@ -3554,19 +3554,19 @@ object wmdem: Twmdem
       Caption = 'Delete results CSV for areas to recompute'
       OnClick = DeleteresultsCSVforareas1Click
     end
+    object Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem
+      Caption = 'Delete merged directories with small number of files'
+      OnClick = Deletemergeddirectorieswithsmallnumberoffiles1Click
+    end
     object N44: TMenuItem
       Caption = '-'
     end
-    object UTMbaseaverageslopebygeometry1: TMenuItem
-      Caption = 'UTM based average tile elev/slope, reference and test DEMs'
-      OnClick = UTMbaseaverageslopebygeometry1Click
-    end
     object UTMbasedCVSfilesbyarea1: TMenuItem
-      Caption = 'UTM based, CSV files by area report'
+      Caption = 'CSV files by area report'
       OnClick = UTMbasedCVSfilesbyarea1Click
     end
     object UTMbasedfilefillreport1: TMenuItem
-      Caption = 'UTM based file fill report'
+      Caption = 'File fill report'
       OnClick = UTMbasedfilefillreport1Click
     end
     object Inventorysourcefiles1: TMenuItem
@@ -3576,10 +3576,6 @@ object wmdem: Twmdem
     object Inventoryfilesformerged10x10kmtile1: TMenuItem
       Caption = 'Inventory files for merged 10x10 km tile'
       OnClick = Inventoryfilesformerged10x10kmtile1Click
-    end
-    object Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem
-      Caption = 'Delete merged directories with small number of files'
-      OnClick = Deletemergeddirectorieswithsmallnumberoffiles1Click
     end
     object estareaboundingboxes1: TMenuItem
       Caption = 'Test tile bounding boxes'
@@ -3602,6 +3598,10 @@ object wmdem: Twmdem
     end
     object N68: TMenuItem
       Caption = '-'
+    end
+    object UTMbaseaverageslopebygeometry1: TMenuItem
+      Caption = 'Average tile elev/slope, reference and test DEMs'
+      OnClick = UTMbaseaverageslopebygeometry1Click
     end
     object Compareslope1: TMenuItem
       Caption = 'Compare slope algorithms for average tile slope'
@@ -3993,14 +3993,11 @@ object wmdem: Twmdem
     object Criteriaranges1: TMenuItem
       Caption = 'Criteria ranges'
     end
+    object nMAEtest1: TMenuItem
+      Caption = 'nMAE test'
+      OnClick = nMAEtest1Click
+    end
     object N53: TMenuItem
-      Caption = '-'
-    end
-    object Onedegreetilestocovertestareas1: TMenuItem
-      Caption = 'One degree tiles to cover test areas'
-      OnClick = Onedegreetilestocovertestareas1Click
-    end
-    object N50: TMenuItem
       Caption = '-'
     end
     object MergeSSIMandR2database1: TMenuItem
@@ -4012,6 +4009,10 @@ object wmdem: Twmdem
     end
     object Experimentaltargetsforelimination1: TMenuItem
       Caption = 'Experimental--targets for elimination'
+      object Changemode1: TMenuItem
+        Caption = 'Change mode'
+        OnClick = Changemode1Click
+      end
       object Mergesourcedatatiles1: TMenuItem
         Caption = 'Merge source data tiles (and probably not shift to EGM2008)'
         OnClick = Mergesourcedatatiles1Click
@@ -4103,10 +4104,6 @@ object wmdem: Twmdem
     end
     object N28: TMenuItem
       Caption = '-'
-    end
-    object Changemode1: TMenuItem
-      Caption = 'Change mode'
-      OnClick = Changemode1Click
     end
     object DEMIXhelp1: TMenuItem
       Caption = 'DEMIX help'

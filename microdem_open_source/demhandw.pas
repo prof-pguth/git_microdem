@@ -4,7 +4,7 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -18,6 +18,7 @@
       //{$Define RecordSOESTtides}
       //{$Define RecordHandlingProblems}
       //{$Define RecordReformat}
+      {$Define RecordHTMLcheck}
       //{$Define RecordImportProblems}
       //{$Define RecordSatProblems}
       //{$Define RecordMergeProblems}
@@ -1704,10 +1705,11 @@ begin
 end;
 
 procedure TDemHandForm.HTMLinventory1Click(Sender: TObject);
+//designed to track MD help file
 label
    Found;
 var
-   TheFiles,Links,Images,ThisFile,TheContents : tStringList;
+   TheFiles,TheFiles1,TheFiles2,Links,Images,ThisFile,TheContents : tStringList;
    fName : PathStr;
    Dir,TStr,MenuStr : ANSIstring;
    SeekLink,
@@ -1716,6 +1718,8 @@ var
    ThisLine : ANSIstring;
    i,j,k      : integer;
 begin
+   {$IfDef RecordHTMLcheck} WriteLineToDebugFile('TDemHandForm.HTMLinventory1Click in'); {$EndIf}
+
    ThisFile := tStringList.Create;
    TheContents := tStringList.Create;
    Dir := 'C:\mydocs\md_help\html\';
@@ -1724,11 +1728,32 @@ begin
    Links := tStringList.Create;
    Images := tStringList.Create;
    ShowHourglassCursor;
-   TheFiles := Nil;
-   Petmar.FindMatchingFiles(Dir,'*.htm',TheFiles);
+   TheFiles1 := Nil;
+   Petmar.FindMatchingFiles(Dir,'*.htm',TheFiles1,6);
+   TheFiles2 := Nil;
+   Petmar.FindMatchingFiles(Dir,'*.htm',TheFiles2,6);
+   theFiles := tStringList.create;
+   theFiles.Duplicates := dupIgnore;
+   theFiles.Sorted := true;
+   for I := 0 to pred(TheFiles2.Count) do
+       TheFiles.Add(theFiles2.Strings[i]);
+   for I := 0 to pred(TheFiles1.Count) do
+       TheFiles.Add(theFiles1.Strings[i]);
+
+(*
+   TheFiles2 := Nil;
+   Petmar.FindMatchingFiles(Dir,'*.html',TheFiles2,6);
+   for I := 0 to pred(TheFiles2.Count) do
+       TheFiles.Add(theFiles2.Strings[i]);
+   theFiles2.Destroy;
+   theFiles.Duplicates := dupIgnore;
+   theFiles.Sort;
+*)
+
    for k := 0 to pred(TheFiles.Count) do begin
+      {$IfDef RecordHTMLcheck} WriteLineToDebugFile(IntToStr(k) + '/' + IntToStr(TheFiles.Count) + '  ' + TheFiles.Strings[k]); {$EndIf}
+      ThisFile.LoadFromFile(TheFiles.Strings[k]);
       fName := ExtractFileName(TheFiles.Strings[k]);
-      ThisFile.LoadFromFile(Dir + fName);
       MenuStr := '<tr>' + StartColumnString + '<a href="html\' + fName + '">' + fName + '</a></td><td>';
       Title := '';
       Links.Clear;
@@ -2596,14 +2621,14 @@ var
    OriginalLines : integer;
 begin
    if (fName = '') then FName := ProgramRootDir;
-   while GetFileFromDirectory('ASCII sort & duplicate removal (will not be saved)','*.*',FName) do begin
+   if GetFileFromDirectory('ASCII sort & duplicate removal (will not be saved)','*.*',FName) then begin
       ShowHourglassCursor;
       TheList := TStringList.Create;
+      TheList.Sorted := true;
+      TheList.Duplicates := dupIgnore;
       TheList.LoadFromFile(FName);
       OriginalLines := TheList.Count;
       TheList.Clear;
-      TheList.Sorted := true;
-      TheList.Duplicates := dupIgnore;
       TheList.LoadFromFile(FName);
       Petmar.DisplayAndPurgeStringList(TheList,ExtractFilename(fName) + '  had duplicates=' + IntToStr(OriginalLines - TheList.Count) + '  n=' + IntToStr(TheList.Count));
       TheList.Free;

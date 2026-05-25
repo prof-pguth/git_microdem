@@ -18,6 +18,7 @@
       //{$Define LegendColors}
       //{$Define GraphLineWidth}
       //{$Define RecordCSVexport}
+      {$Define WarCrimes}
 
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
@@ -79,7 +80,7 @@
       //{$Define RecordMaskDEMShapeFile}
       //{$Define RecordZoomMap}
       //{$Define RecordIcons}
-      //{$Define RecordDBGraphs}
+      {$Define RecordDBGraphs}
       //{$Define RecordUnique}
       //{$Define RecordQuadFill
 
@@ -288,6 +289,7 @@ type
   public
     { Public declarations }
      MyData,LinkTable,NeighborTable,RangeTable,LinkRangeTable,LayerTable : TMyData;
+     aShapeFile    : tShapeFile;
      DBNumber,
      LinkColorTable,
      ShapeFileType,
@@ -379,7 +381,6 @@ type
      ZeroTol : float64;
      ColorDefTable : tColorTableDefinitions;
      ZipPatName    : string3;
-     aShapeFile    : tShapeFile;
      PointsInMemory : ^tdCoords;
      NumPointsInMemory : integer;
      MaskIn : boolean;
@@ -474,7 +475,7 @@ type
         procedure FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
         procedure AddNavFields;
         function AddNavFieldDefinitions : boolean;
-        procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
+        procedure AddCentroidsToFile(Quick : boolean = false);
 
         procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
         procedure AddSymbolToDB;
@@ -487,6 +488,7 @@ type
         procedure FillUseField(UnfilterFirst : boolean; ch : char);
         procedure TrimOneStringField(SelectedColumn : shortstring);
         procedure TrimAllStringFields;
+        procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
 
      //export database
         procedure ExportToXML(fName : PathStr);
@@ -569,8 +571,7 @@ type
          procedure PlotSingleMonth(Month : integer);
          procedure QueryBox(MapDraw : tMapDraw; x1,y1,x2,y2 : integer; DisplayOnTable : boolean);
          procedure LabelRecordsOnMap(var Bitmap : tMyBitmap);
-         function IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean;
-             {var FeatureName : ShortString;} ShowItModal : boolean = true; JustFilterDB : boolean = false) : tStringList;
+         function IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean; ShowItModal : boolean = true; JustFilterDB : boolean = false) : tStringList;
          function GetStringFromRecordAtLatLong(Lat,Long : float64; fName : shortString) : shortstring;
          function FindAreaRecordWithPoint(Lat,Long : float64; AlreadyFiltered : boolean = true) : boolean;
          procedure ConnectSequentialPoints(Bitmap : tMyBitmap);
@@ -654,10 +655,8 @@ type
          procedure AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString; Connect : boolean = false);
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
-         //function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil) : TThisbasegraph;
-         //function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil; FigureLabel : shortString = '') : TThisbasegraph;
          function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil;
-              FigureLabel : shortString = ''; MultCriteria : tStringList = nil) : TThisbasegraph;
+              FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = true) : TThisbasegraph;
 
          procedure MonthlyWindPlotCurrentPoint;
 
@@ -730,7 +729,7 @@ procedure InitializeDEMdbs;
    function GraphFromCSVfile(var sl : tStringList; ShowTable : boolean; Lines : boolean = false) : tThisBaseGraph;
 {$EndIf}
 
-function FindOpenDataBase(var db : integer) : boolean;
+//function FindOpenDataBase(var db : integer) : boolean;
 
 procedure CloseSingleDB(var i : integer);
 function NumOpenDB : integer;
@@ -774,6 +773,13 @@ var
    AutoOverwriteDBF,
    ZeroRecordsAllowed : boolean;
    PreEditFilter : ANSIstring;
+
+
+
+procedure MapWarCrimesDB(MapOwner : tMapForm; InputDB : integer);
+procedure ProcessBuildings(MapOwner : tMapForm);
+procedure StatsWarCrimesDB(MapOwner : tMapForm; InputDB : integer);
+
 
 
 implementation
@@ -877,12 +883,12 @@ uses
    DataBaseCreate,
    DEMDef_routines;
 
+{$include demdatabase_field_edits.inc}
+
+
 {$include demdatabase_special_cases.inc}
 
-{$IfDef NoDBEdits}
-{$Else}
-   {$include demdatabase_field_edits.inc}
-{$Endif}
+
 
    {$include demdatabase_maps.inc}
    {$include demdatabase_legend.inc}
@@ -922,6 +928,23 @@ begin
    EmpSource.Enabled := false;
    Result := MyData.NumUniqueEntriesInDB(fName);
 end;
+
+
+function FindOpenDataBase(var db : integer) : boolean;
+var
+   i : integer;
+begin
+   for i := 1 to MaxDataBase do begin
+      if (GISdb[i] = Nil) then begin
+         Result := true;
+         db := i;
+         exit;
+      end;
+   end;
+   Result := false;
+   {$IfDef VCL} MessageToContinue('Too many open databases'); {$EndIf}
+end;
+
 
 
 function SortDataBase(DBOnTable : integer; Ascending : boolean; OpenTable : boolean = true; aField : shortString = ''; OutputDir : PathStr = '') : integer;
@@ -4882,22 +4905,6 @@ begin
 end;
 
 
-function FindOpenDataBase(var db : integer) : boolean;
-var
-   i : integer;
-begin
-   for i := 1 to MaxDataBase do begin
-      if (GISdb[i] = Nil) then begin
-         Result := true;
-         db := i;
-         exit;
-      end;
-   end;
-   Result := false;
-   {$IfDef VCL} MessageToContinue('Too many open databases'); {$EndIf}
-end;
-
-
 function tGISdataBaseModule.FieldSum(FieldDesired : shortstring; ReEnable : boolean = true) : float64;
 var
    z : float32;
@@ -5013,33 +5020,36 @@ function TGISdataBaseModule.LatLongFieldsPresent : boolean;
          if Table.FieldExists('LONG',true,ftfloat) and Table.FieldExists('LAT',true,ftfloat) then begin
             LatFieldName := 'LAT';
             LongFieldName := 'LONG';
-            exit;
-         end;
-         LongFieldName := '';
-         if Table.FieldExists('INTPTLON',true,ftFloat) then LongFieldName := 'INTPTLON';
-         if Table.FieldExists('GLON',true,ftFloat) then LongFieldName := 'GLON';
-         if Table.FieldExists('POLE_LONG',true,ftFloat) then LongFieldName := 'POLE_LONG';
-         if Table.FieldExists('LON',true,ftFloat) then LongFieldName := 'LON';
-         if Table.FieldExists('LONDEC',true,ftFloat) then LongFieldName := 'LONDEC';
-         if Table.FieldExists('LONGITUDE',true,ftFloat) then LongFieldName := 'LONGITUDE';
-         if Table.FieldExists('DEC_LONG',true,ftFloat) then LongFieldName := 'DEC_LONG';
-         if Table.FieldExists('LONG1',true,ftFloat) then LongFieldName := 'LONG1';
-         if Table.FieldExists('LONG_',true,ftFloat) then LongFieldName := 'LONG_';
-         if Table.FieldExists('LONG_CENT',true,ftFloat) then LongFieldName := 'LONG_CENT';
-         if Table.FieldExists('LONG',true,ftFloat) then LongFieldName := 'LONG';
+         end
+         else begin
+             LongFieldName := '';
+             if Table.FieldExists('INTPTLON',true,ftFloat) then LongFieldName := 'INTPTLON';
+             if Table.FieldExists('GLON',true,ftFloat) then LongFieldName := 'GLON';
+             if Table.FieldExists('POLE_LONG',true,ftFloat) then LongFieldName := 'POLE_LONG';
+             if Table.FieldExists('LON',true,ftFloat) then LongFieldName := 'LON';
+             if Table.FieldExists('LONDEC',true,ftFloat) then LongFieldName := 'LONDEC';
+             if Table.FieldExists('LONGITUDE',true,ftFloat) then LongFieldName := 'LONGITUDE';
+             if Table.FieldExists('DEC_LONG',true,ftFloat) then LongFieldName := 'DEC_LONG';
+             if Table.FieldExists('LONG1',true,ftFloat) then LongFieldName := 'LONG1';
+             if Table.FieldExists('LONG_',true,ftFloat) then LongFieldName := 'LONG_';
+             if Table.FieldExists('LONG_CENT',true,ftFloat) then LongFieldName := 'LONG_CENT';
+             if Table.FieldExists('LON_CENTRD',true,ftFloat) then LongFieldName := 'LON_CENTRD';
+             if Table.FieldExists('LONG',true,ftFloat) then LongFieldName := 'LONG';
 
-         LatFieldName := '';
-         if Table.FieldExists('INTPTLAT',true,ftFloat) then LatFieldName := 'INTPTLAT';
-         if Table.FieldExists('GLAT',true,ftFloat) then LatFieldName := 'GLAT';
-         if Table.FieldExists('POLE_LAT',true,ftFloat) then LatFieldName := 'POLE_LAT';
-         if Table.FieldExists('LATITUDE1',true,ftFloat) then LatFieldName := 'LATITUDE1';
-         if Table.FieldExists('LATITUDE',true) then LatFieldName := 'LATITUDE';
-         if Table.FieldExists('LATDEC',true,ftFloat) then LatFieldName := 'LATDEC';
-         if Table.FieldExists('DEC_LAT',true,ftFloat) then LatFieldName := 'DEC_LAT';
-         if Table.FieldExists('LAT1',true,ftFloat) then LatFieldName := 'LAT1';
-         if Table.FieldExists('LAT_',true,ftFloat) then LatFieldName := 'LAT_';
-         if Table.FieldExists('LAT_CENT',true,ftFloat) then LatFieldName := 'LAT_CENT';
-         if Table.FieldExists('LAT',true,ftFloat) then LatFieldName := 'LAT';
+             LatFieldName := '';
+             if Table.FieldExists('INTPTLAT',true,ftFloat) then LatFieldName := 'INTPTLAT';
+             if Table.FieldExists('GLAT',true,ftFloat) then LatFieldName := 'GLAT';
+             if Table.FieldExists('POLE_LAT',true,ftFloat) then LatFieldName := 'POLE_LAT';
+             if Table.FieldExists('LATITUDE1',true,ftFloat) then LatFieldName := 'LATITUDE1';
+             if Table.FieldExists('LATITUDE',true) then LatFieldName := 'LATITUDE';
+             if Table.FieldExists('LATDEC',true,ftFloat) then LatFieldName := 'LATDEC';
+             if Table.FieldExists('DEC_LAT',true,ftFloat) then LatFieldName := 'DEC_LAT';
+             if Table.FieldExists('LAT1',true,ftFloat) then LatFieldName := 'LAT1';
+             if Table.FieldExists('LAT_',true,ftFloat) then LatFieldName := 'LAT_';
+             if Table.FieldExists('LAT_CENT',true,ftFloat) then LatFieldName := 'LAT_CENT';
+             if Table.FieldExists('LAT_CENTRD',true,ftFloat) then LatFieldName := 'LAT_CENTRD';
+             if Table.FieldExists('LAT',true,ftFloat) then LatFieldName := 'LAT';
+         end;
       end;
 
 begin

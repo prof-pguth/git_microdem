@@ -6,7 +6,7 @@ unit petmar_db;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -1964,7 +1964,8 @@ begin
       if (TheBDEdata <> Nil) then  begin
           for i := 0 to pred(FieldCount) do begin
              if (TheBDEdata.Fields[i].FieldName = WantFieldName) then begin
-                Result := TheBDEdata.Fields[i].DataSize;
+                //Result := TheBDEdata.Fields[i].DataSize;
+                Result := GetFieldDataSize(i);
                 exit;
              end;
           end;
@@ -1982,7 +1983,7 @@ begin
       end;
    {$EndIf}
     {$IfDef UseFDMemTable}
-       if (FDMemTable <> nil) then  begin
+       if (FDMemTable <> nil) then begin
           for i := 0 to pred(FieldCount) do begin
              if (fdMemTable.Fields[i].FieldName = WantFieldName) then  begin
                 Result := fdMemTable.Fields[i].DataSize;

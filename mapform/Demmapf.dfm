@@ -1516,7 +1516,7 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 248
+    Left = 256
     Top = 50
     object File1: TMenuItem
       Caption = '&File'
@@ -2122,7 +2122,7 @@ object MapForm: TMapForm
           end
         end
         object ListCOGS1: TMenuItem
-          Caption = 'List COGS'
+          Caption = 'List COGS (4326)'
           GroupIndex = 1
           OnClick = ListCOGS1Click
         end
@@ -5091,6 +5091,33 @@ object MapForm: TMapForm
         GroupIndex = 1
         OnClick = MergeICESat2photonsATL031Click
       end
+      object Warcrimes1: TMenuItem
+        Caption = 'War crimes'
+        GroupIndex = 1
+        object NGAgazetteer1: TMenuItem
+          Caption = 'NGA gazetteer'
+          OnClick = NGAgazetteer1Click
+        end
+        object OSMpoints1: TMenuItem
+          Caption = 'OSM points'
+          OnClick = OSMpoints1Click
+        end
+        object OSMbuildings1: TMenuItem
+          Caption = 'OSM buildings'
+          OnClick = OSMbuildings1Click
+        end
+        object NGAfeatrurefreequency1: TMenuItem
+          Caption = 'NGA featrure freequency'
+          OnClick = NGAfeatrurefreequency1Click
+        end
+        object N56: TMenuItem
+          Caption = '-'
+        end
+        object N89: TMenuItem
+          Caption = 'Process buildings'
+          OnClick = N89Click
+        end
+      end
     end
     object Hidden1: TMenuItem
       Caption = 'Hidden'
@@ -5548,11 +5575,9 @@ object MapForm: TMapForm
       Caption = 'Geocode'
       object Addresstolatlong1: TMenuItem
         Caption = 'Address to lat/long'
-        OnClick = Addresstolatlong1Click
       end
       object Geocodeaddress1: TMenuItem
         Caption = 'Lat/long to address'
-        OnClick = Geocodeaddress1Click
       end
     end
     object Draw1: TMenuItem

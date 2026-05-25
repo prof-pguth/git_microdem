@@ -404,7 +404,7 @@ type
          function BoxAroundPointFromFullSizeMeters(Col,Row,BoxSize : integer) : tGridLimits;
          function FullAnalysisWindow(Col,Row,Radius : integer) : boolean;
 
-         function SetGridElevationLatLongDegree(Lat,Long : float64; z : float64) : boolean;
+         function SetGridElevLatLongDegree(Lat,Long : float64; z : float64) : boolean;
          function SetGridElevation(Col,Row : int32; z : float64) : boolean; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          procedure IncrementGridValue(Col,Row : int32); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
          procedure SetGridMissing(Col,Row : int32); overload; {$IfDef NoCoordInline} {$Else} inline; {$EndIf}

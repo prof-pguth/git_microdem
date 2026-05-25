@@ -102,6 +102,8 @@ type
     Edit17: TEdit;
     Edit18: TEdit;
     Label15: TLabel;
+    Label16: TLabel;
+    Edit19: TEdit;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -176,6 +178,7 @@ begin
          Edit16.Text := RealToString(OwningGraph.HistogramBinSize,-12,-3);
          Edit17.Text := RealToString(OwningGraph.HistogramNumBins,-12,-3);
          Edit18.Text := IntToStr(MdDef.GraphTickSize);
+         Edit19.Text := GraphDraw.LRcornerText;
          XLabelEdit.Text := GraphDraw.HorizLabel;
          YLabelEdit.Text := GraphDraw.VertLabel;
          YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
@@ -295,18 +298,22 @@ begin
       if (ComboBox3.Text <> '') then DBFXFieldName := ComboBox3.Text;
 
       if ComboBox2.Visible then begin
-         for i := 0 to pred(ComboBox2.Items.Count) do
-            if ComboBox2.Items.Strings[i] = ComboBox2.Text then
+         for i := 0 to pred(ComboBox2.Items.Count) do begin
+            if ComboBox2.Items.Strings[i] = ComboBox2.Text then begin
                case i of
                   0 : VertAxisFunctionType := ShortCumNormalAxis;
                   1 : VertAxisFunctionType := CumulativeNormalAxis;
                   2 : VertAxisFunctionType := LongCumulativeNormalAxis;
                   3 : VertAxisFunctionType := LongerCumulativeNormalAxis;
                end;
+            end;
+         end;
       end;
-      for i := 0 to pred(ComboBox1.Items.Count) do
-         if ComboBox1.Items.Strings[i] = ComboBox1.Text then
+      for i := 0 to pred(ComboBox1.Items.Count) do begin
+         if ComboBox1.Items.Strings[i] = ComboBox1.Text then begin
             GraphAxes := tGraphAxes(i);
+         end;
+      end;
 
       if GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
          MinHorizAxis := JulDay(Month1,Day1,Year1);
@@ -321,22 +328,20 @@ begin
        VertLabel2 := Edit13.Text;
 
        LLcornerText := Edit10.Text;
+       LRcornerText := Edit19.Text;
        CheckEditString(YMinEdit.Text,MinVertAxis);
        CheckEditString(YMaxEdit.Text,MaxVertAxis);
+       CheckEditString(Edit5.Text,MinZ);
+       CheckEditString(Edit6.Text,MaxZ);
+       CheckEditString(Edit8.Text,OwningGraph.GraphDraw.TopMargin);
+       CheckEditString(Edit11.Text,OwningGraph.GraphDraw.XWindowSize);
+       CheckEditString(Edit12.Text,OwningGraph.GraphDraw.YWindowSize);
        CheckEditString(Edit14.Text,MinVertAxis2);
        CheckEditString(Edit15.Text,MaxVertAxis2);
 
        if MaxVertAxis < MinVertAxis then SwapPair32(MinVertAxis,MaxVertAxis);
        if MaxVertAxis2 < MinVertAxis2 then SwapPair32(MinVertAxis2,MaxVertAxis2);
        if MaxHorizAxis < MinHorizAxis then SwapPair32(MinHorizAxis,MaxHorizAxis);
-       CheckEditString(Edit5.Text,MinZ);
-       CheckEditString(Edit6.Text,MaxZ);
-
-       //CheckEditString(Edit7.Text,OwningGraph.GraphDraw.LeftMargin);
-       CheckEditString(Edit8.Text,OwningGraph.GraphDraw.TopMargin);
-       //CheckEditString(Edit9.Text,OwningGraph.GraphDraw.BottomMargin);
-       CheckEditString(Edit11.Text,OwningGraph.GraphDraw.XWindowSize);
-       CheckEditString(Edit12.Text,OwningGraph.GraphDraw.YWindowSize);
        {$If Defined(RecordGrafSize)} WriteLineToDebugFile('TGraphSettingsForm.CheckSetting window, ' + IntToStr(XWindowSize) + 'x' + IntToStr(YWindowSize)); {$EndIf}
        OwningGraph.ClientWidth := OwningGraph.GraphDraw.XWindowSize;
        OwningGraph.ClientHeight := OwningGraph.GraphDraw.YWindowSize;

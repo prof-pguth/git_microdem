@@ -1050,7 +1050,7 @@ var
    Inbounds,UTMDEMs : boolean;
    MergeUTMzone,TileX,TileY : int32;
    CurDEM     : integer;
-   aName,ProjName,OldDEMName,OutVRT  : PathStr;
+   aName,ProjName,OldDEMName{,OutVRT}  : PathStr;
    MenuStr : ShortString;
    SaveIt : boolean;
 
@@ -1157,7 +1157,7 @@ var
                               end
                               else begin
                                  DEMGlb[CurDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-                                 DEMGlb[Result].SetGridElevationLatLongDegree(Lat,Long,zf);
+                                 DEMGlb[Result].SetGridElevLatLongDegree(Lat,Long,zf);
                               end;
                            end;
                         end {for Row};
@@ -1200,7 +1200,7 @@ begin {function MergeMultipleDEMsHere}
             if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
          end;
 
-         UseGDAL_VRT_to_merge(MergefDir,OutVRT,DEMList,ProjName);
+         UseGDAL_VRT_to_merge(MergefDir,{OutVRT,}DEMList,ProjName);
          {$If Defined(RecordMerge) or Defined(RecordTimeMerge) or Defined(MergeSummary)} WriteLineToDebugFile('GDAL VRT over for DEM, open ' + MergeFDir); {$EndIf}
          if FileExists(MergefDir) then begin
             Result := OpenNewDEM(MergefDir,false);

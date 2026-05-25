@@ -261,7 +261,6 @@ var
              PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis := PickRotationForm.ThisGraph.GraphDraw.MaxVertAxis + 25;
           end;
 
-
           procedure ExpandHorizAxis;
           begin
              PickRotationForm.ThisGraph.GraphDraw.MinHorizAxis := PickRotationForm.ThisGraph.GraphDraw.MinHorizAxis - 25;

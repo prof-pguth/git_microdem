@@ -153,7 +153,6 @@ begin
       ComboBox2.Text := ComboBox1.Text;
       ComboBox2Change(Sender);
    end;
-
    Table.Destroy;
 end;
 

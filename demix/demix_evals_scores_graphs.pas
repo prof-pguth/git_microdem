@@ -474,7 +474,7 @@ var
 
 begin
   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Teval_scores_graph_form.BitBtn10Click in'); {$EndIf}
-   if TileCharacteristicsInDB(DB,true) then begin
+   if TileCharacteristicsInDB(DB) then begin
       BitBtn4Click(Sender);   //If needed loads db_U10,db_U80,db_U120,db_Full))
       GeomorphFilters := GeomorphFiltersFromMixed1(Labels);
       DEMList := MakeDEMlist;
@@ -1064,7 +1064,7 @@ var
    gr : array[0..10] of tThisBaseGraph;
 begin
    {$IfDef RecordBoxPlots} WriteLineToDebugFile('Teval_scores_graph_form.BitBtn37Click in (BoxPlots)'); {$EndIf}
-   if TileCharacteristicsInDB(DB,true) then begin
+   if TileCharacteristicsInDB(DB) then begin
        SetColorForProcessing;
        Self.Visible := false;
        BaseFilter := GISdb[db].MyData.Filter;
@@ -1354,6 +1354,7 @@ begin
    BestDEMonScatterPlotTwoParameters(DB,MakeCriteriaList,MakeDEMlist);
 end;
 
+
 procedure Teval_scores_graph_form.BitBtn46Click(Sender: TObject);
 begin
    try
@@ -1364,11 +1365,11 @@ begin
    end;
 end;
 
+
 procedure Teval_scores_graph_form.BitBtn47Click(Sender: TObject);
 begin
    GridOfTerrainScatterPlots(DB,MakeCriteriaList,Nil,MakeDEMList);
 end;
-
 
 
 procedure Teval_scores_graph_form.BitBtn48Click(Sender: TObject);
@@ -1377,6 +1378,7 @@ begin
       ScatterPlotTwoDEMs(db,Memo3.Lines[0],Memo3.Lines[1],MakeCriteriaList);
    end;
 end;
+
 
 procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 

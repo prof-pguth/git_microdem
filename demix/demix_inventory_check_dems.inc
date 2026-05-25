@@ -337,33 +337,6 @@ begin
 end;
 
 
-procedure OneDegreeTilesToCoverTestAreas;
-var
-   Areas,Tiles,Results : tStringList;
-   DEM,j,i : integer;
-   fName : PathStr;
-begin
-   GetDEMIXPaths;
-   Areas := DEMIX_AreasWanted;
-   Results := tStringList.Create;
-   Results.Add('AREA,DEG_1_TILE');
-   for j := 0 to pred(Areas.Count) do begin
-      wmdem.SetPanelText(2, 'Area: ' + IntToStr(succ(j)) + '/' + IntToStr(Areas.Count) + '  ' + Areas.Strings[j]);
-      fName := DEMIX_test_dems + Areas.Strings[j] + '_cop.tif';
-      DEM := OpenNewDEM(fName,false);
-      Tiles := GetListOfDataInBoxInSeries('SRTM_GL1_srtm',DEMGlb[DEM].DEMBoundBoxGeo);
-      for i := 0 to pred(Tiles.Count) do Results.Add(Areas.Strings[j] + ',' + ExtractFileNameNoExt(Tiles.strings[i]));
-      CloseSingleDEM(DEM);
-      Tiles.Destroy;
-   end;
-   Areas.Destroy;
-   wmdem.SetPanelText(2,'');
-   fName := NextFileNumber(MDTempDir,'One_degree_tiles_needed','.dbf');
-   PetdbUtils.StringList2CSVtoDB(Results,fName);
-   EndDEMIXProcessing;
-end;
-
-
 procedure FixFilesWith42112;
 var
    TheBytes : array[0..4000] of byte;

@@ -402,7 +402,7 @@ begin
    end;
 end;
 
-function tDEMDataSet.SetGridElevationLatLongDegree(Lat,Long : float64; z : float64) : boolean;
+function tDEMDataSet.SetGridElevLatLongDegree(Lat,Long : float64; z : float64) : boolean;
 var
    xg,yg : int32;
 begin

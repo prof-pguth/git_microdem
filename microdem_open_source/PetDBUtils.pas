@@ -4,7 +4,7 @@ unit petdbutils;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -88,22 +88,28 @@ procedure DisplayWWWFromDataBase(Table : tMyData; WWWFieldName : ShortString = '
 
 procedure GetFields(Table : tMyData; VisCols : Array100Boolean; TypesAllowed : tSetFieldType; var FieldsInDB : tStringList; AllFields : boolean = false; SortFields : boolean = false);
 procedure GetFieldsLinkPossible(Table,LinkTable : tMyData; VisCols : Array100Boolean; TypesAllowed : tSetFieldType; var FieldsInDB : tStringList; AllFields : boolean = false; SortFields : boolean = false);
-
-procedure CopyDBTable(FromDBF,ToDBF : PathStr);
 function GetStringFromFieldInDataBase(Prompt : shortString; Table : tMyData; FieldName : ShortString) : ShortString;
 
-function AddAndIfNeeded(Filter : Ansistring) : AnsiString;
-function AddOrIfNeeded(Filter : Ansistring) : AnsiString;
+
+
+procedure CopyDBTable(FromDBF,ToDBF : PathStr);
+
+
+//db filters
+   function AddAndIfNeeded(Filter : Ansistring) : AnsiString;
+   function AddOrIfNeeded(Filter : Ansistring) : AnsiString;
+   function MakeOrFilter(db : integer; WantedFieldName : shortstring; sl : tStringList) : shortstring;
+   function PointInBoxGeoFilter(Lat,Long : float64; Tol : float64 = 0.00001) : AnsiString;
+   function MakeGeoFilterFromCorners(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;  //overload;
+   function MakeGeoFilterFromBoundingBox(bBox : sfBoundBox) : AnsiString;  //overload;
+   function MakePointGeoFilter(LatFieldName,LongFieldName : string16; HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
+   function PointVeryCloseGeoFilter(LatFieldName,LongFieldName : string16; Lat,Long : float64; Bit : float64 = 0.0001) : AnsiString;
+
 
 procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
 
-function PointInBoxGeoFilter(Lat,Long : float64; Tol : float64 = 0.00001) : AnsiString;
-function MakeGeoFilterFromCorners(HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;  //overload;
-function MakeGeoFilterFromBoundingBox(bBox : sfBoundBox) : AnsiString;  //overload;
-function MakePointGeoFilter(LatFieldName,LongFieldName : string16; HiLat,LowLong,LowLat,HighLong : float64) : AnsiString;
-function PointVeryCloseGeoFilter(LatFieldName,LongFieldName : string16; Lat,Long : float64; Bit : float64 = 0.0001) : AnsiString;
 
-procedure FindPointFileGeoLimits(Table : tMyData; var HiLat,LowLong,LowLat,HighLong : float64);
+//procedure FindPointFileGeoLimits(Table : tMyData; var HiLat,LowLong,LowLat,HighLong : float64);
 
 function PointBoundBoxGeo(Lat,Long : float64) : sfBoundBox;
 
@@ -113,11 +119,6 @@ function UnionTwoGeoBoundBoxes(bb1,bb2 : sfBoundBox) : sfBoundBox;
 
 procedure ZeroTable(fName : PathStr);  overload;
 procedure ZeroTable(var TheTable : tMyData); overload;
-
-//function FindUniqueEntries(Table : tMyData; FieldName : ShortString; Sort : boolean = true) : tStringList; overload;
-//function NumberUniqueEntries(Table : tMyData; FieldName : ShortString) : integer; overload;
-
-//function FindUniqueEntriesLinkPossible(Table,LinkData : tMyData; LinkFieldThisDB,LinkFieldOtherDB,FieldName : ShortString; Sort : boolean = true) : tStringList; //overload;
 
 function DefineColorTableValues(Palette : shortstring; Min,Max : float64; var ZColorTable : tColorTableDefinitions; Reverse : boolean = false) : boolean;
 
@@ -203,6 +204,23 @@ uses
 
 
 {$I petdbutils_import.inc}
+
+
+function MakeOrFilter(db : integer; WantedFieldName : shortstring; sl : tStringList) : shortstring;
+var
+   i : integer;
+begin
+   Result := '';
+   for i := 0 to pred(sl.Count) do begin
+      if GISdb[db].MyData.IsStringField(WantedFieldName) then begin
+         Result := AddOrIfNeeded(Result) + WantedFieldName + '=' + QuotedStr(sl.Strings[i]);
+      end
+      else begin
+         Result := AddOrIfNeeded(Result) + WantedFieldName+ '=' + sl.Strings[i];
+      end;
+   end;
+end;
+
 
 function ListUseValuesInField(fName : PathStr; aField : shortstring) : tStringList;
 var
@@ -520,6 +538,7 @@ begin
 end;
 
 
+(*
 procedure FindPointFileGeoLimits(Table : tMyData; var HiLat,LowLong,LowLat,HighLong : float64);
 var
    LatFieldName,LongFieldName : string16;
@@ -529,6 +548,7 @@ begin
    Table.FindFieldRange(LatFieldName,LowLat,HiLat);
    Table.FindFieldRange(LongFieldName,LowLong,HighLong);
 end;
+*)
 
 
 procedure GetFieldValuesInArray(Table : tMyData; FieldDesired : ShortString; var zs : bfarray32; var Npts,Missing : int64; var Min,Max : float64);

@@ -4,7 +4,7 @@ object GraphSettingsForm: TGraphSettingsForm
   ActiveControl = OKBtn
   BorderStyle = bsDialog
   Caption = 'Graph Modifications'
-  ClientHeight = 447
+  ClientHeight = 455
   ClientWidth = 564
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -51,8 +51,8 @@ object GraphSettingsForm: TGraphSettingsForm
     Caption = 'Bottom margin'
   end
   object RedrawSpeedButton12: TSpeedButton
-    Left = 298
-    Top = 410
+    Left = 308
+    Top = 426
     Width = 37
     Height = 28
     Hint = 'Force redraw'
@@ -81,9 +81,16 @@ object GraphSettingsForm: TGraphSettingsForm
     Height = 13
     Caption = 'Tick size'
   end
+  object Label16: TLabel
+    Left = 16
+    Top = 400
+    Width = 129
+    Height = 13
+    Caption = 'Lower right corner text'
+  end
   object OKBtn: TBitBtn
-    Left = 8
-    Top = 412
+    Left = 18
+    Top = 428
     Width = 77
     Height = 27
     Kind = bkOK
@@ -94,8 +101,8 @@ object GraphSettingsForm: TGraphSettingsForm
     IsControl = True
   end
   object CancelBtn: TBitBtn
-    Left = 115
-    Top = 412
+    Left = 125
+    Top = 428
     Width = 77
     Height = 27
     Kind = bkCancel
@@ -106,8 +113,8 @@ object GraphSettingsForm: TGraphSettingsForm
     IsControl = True
   end
   object HelpBtn: TBitBtn
-    Left = 215
-    Top = 412
+    Left = 225
+    Top = 428
     Width = 77
     Height = 27
     Kind = bkHelp
@@ -234,7 +241,7 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 13
   end
   object Edit10: TEdit
-    Left = 144
+    Left = 161
     Top = 373
     Width = 236
     Height = 21
@@ -318,7 +325,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -659,5 +666,12 @@ object GraphSettingsForm: TGraphSettingsForm
     TabOrder = 27
     Text = 'Edit18'
     OnChange = Edit18Change
+  end
+  object Edit19: TEdit
+    Left = 161
+    Top = 401
+    Width = 236
+    Height = 21
+    TabOrder = 28
   end
 end

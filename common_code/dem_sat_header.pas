@@ -75,7 +75,7 @@ begin
       Edit3.Text := IntToStr(NumSatCol);
       Edit4.Text := IntToStr(NumSatRow);
       Edit5.Text := IntToStr(SelectionMap.MapDraw.SatView.BandInWindow);
-      if NumBands = 1 then begin
+      if (NumBands = 1) then begin
          Edit6.Visible := false;
          Edit7.Visible := false;
          Edit8.Visible := false;

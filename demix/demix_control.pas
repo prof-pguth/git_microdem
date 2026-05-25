@@ -188,7 +188,7 @@ procedure LandCoverBreakdowPointCloud;
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
-procedure GEDTM_problems(dbOnTable : integer);
+//procedure GEDTM_problems(dbOnTable : integer);
 procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
 
 
@@ -277,161 +277,16 @@ end;
 
 
 
-procedure GEDTM_problems(dbOnTable : integer);
-var
-   DEM1,DEM2,i,j : integer;
-   NPts : int64;
-   Lat1,Long1,Lat2,Long2,Slope1,Slope2,DistanceMeters,Bearing : float64;
-   Elev1,Elev2,Std,dElev,dSlope,MinMultiple,MaxMultiple : float32;
-   Findings : tStringList;
-   Area,Tile,zUnits,Change,aLine : shortstring;
-   fName,fName1,fName2 : PathStr;
-   bb : SfBoundBox;
-
-        procedure StatsGEDTM;
-        begin
-          DEMglb[DEM1].DEMCenterPoint(Lat1,Long1);
-          DEMglb[DEM1].ElevationStatistics(DEMglb[DEM1].FullDEMGridLimits,Elev1,Std,NPts);
-          Slope1 := DEMglb[DEM1].AverageDEMslope(DEMglb[DEM1].FullDEMGridLimits);
-        end;
-
-        procedure Differences;
-        begin
-          dElev := Elev1 - Elev2;
-          dSlope := Slope1 - Slope2;
-          VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
-        end;
-
-        function DifferenceString : shortstring;
-        begin
-          Result := RealToString(0.001 * DistanceMeters,-12,-4) + ',' + RealToString(dElev,-12,-2) + ',' + RealToString(dSlope,-12,-2);
-        end;
-
-
- const
-   GEDTMversions : array[1..4] of shortstring = ('EDTM','GEDTMv0','GEDTMv1_1','GEDTMv1_2');
- begin
-   Findings := tStringList.Create;
-   Findings.Add('AREA,DEMIX_TILE,GEDTM_ZS,REF_ELEV,REF_SLOPE,DIST_KM,ELEV_DIFF,SLOPE_DIFF,PROBLEM');
-   GISdb[DBonTable].MyData.First;
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   i := 0;
-   WantShowProgress := false;
-
-
-   Findings := tStringList.Create;
-   Findings.Add('AREA,DEMIX_TILE,GEDTM_ZS,GEDTM_MAX,REF_MAX,MAX_MULT,CHANGE');
-   while not GISdb[DBonTable].MyData.eof do begin
-      inc(i);
-      Area := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
-      Tile := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
-      wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' + Tile,true);
-      fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\GEDTMv1_2.tif';
-      fName2 := MDDef.DEMIX_BaseDir + Area + '\' + Tile +  '_ref_test_dem\ref_dtm_srtm.tif';
-      if FileExists(fName1) and FileExists(fName2) then begin
-          LoadNewDEM(DEM2,fName2,false);
-          DEMglb[DEM2].DEMCenterPoint(Lat2,Long2);
-
-          for j := 1 to 4 do begin
-              fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\' + GEDTMversions[j] + '.tif';
-
-              LoadNewDEM(DEM1,fName1,false);
-              DEMglb[DEM1].DEMCenterPoint(Lat1,Long1);
-              zUnits := ElevUnitsAre(DEMglb[DEM1].DEMheader.ElevUnits);
-
-              MaxMultiple := DEMGlb[DEM1].DEMheader.MaxElev / DEMGlb[DEM2].DEMheader.MaxElev;
-              Change := 'None';
-
-              if (MaxMultiple > 3) then begin
-                  //this is in decimeters, but the Geotiff header does not have any units and meters were assumed when importing
-                  DEMGlb[DEM1].MultiplyGridByConstant(0.1);
-                  SaveGEDTMFamilyDEM(DEM1,fName1);
-                  MaxMultiple := DEMGlb[DEM1].DEMheader.MaxElev / DEMGlb[DEM2].DEMheader.MaxElev;
-                  Change := 'Times 0.1';
-              end
-              else if (MaxMultiple < 0.2) then begin
-                  //this was in decimeters, but the Geotiff header does not have any units and meters were assumed when importing
-                  DEMGlb[DEM1].MultiplyGridByConstant(10);
-                  SaveGEDTMFamilyDEM(DEM1,fName1);
-                  MaxMultiple := DEMGlb[DEM1].DEMheader.MaxElev / DEMGlb[DEM2].DEMheader.MaxElev;
-                  Change := 'Times 10';
-              end;
-          end;
-
-          aLine := Area + ',' + Tile + ',' + Zunits + ',' + RealToString(DEMGlb[DEM1].DEMheader.MaxElev,-8,-2) + ',' +
-                        RealToString(DEMGlb[DEM2].DEMheader.MaxElev,-8,-2)+ ',' + RealToString(MaxMultiple,-8,-2) + ',' + Change;
-          Findings.Add(aLine);
-      end;
-      CloseAllDEMs;
-      GISdb[DBonTable].MyData.Next;
-   end;
-
-
-(*
-   Findings := tStringList.Create;
-   Findings.Add('AREA,DEMIX_TILE,GEDTM_ZS,REF_ELEV,REF_SLOPE,DIST_KM,ELEV_DIFF,SLOPE_DIFF,PROBLEM');
-   while not GISdb[DBonTable].MyData.eof do begin
-      inc(i);
-      Area := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
-      Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
-      wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' + Tile,true);
-      fName1 := MDDef.DEMIX_BaseDir + Area + '\' + Tile  + '_ref_test_dem\GEDTMv1_2.tif';
-      fName2 := MDDef.DEMIX_BaseDir + Area + '\' + Tile +  '_ref_test_dem\ref_dtm_srtm.tif';
-      if FileExists(fName1) and FileExists(fName2) then begin
-          LoadNewDEM(DEM1,fName1,false);
-          StatsGEDTM;
-          zUnits := ElevUnitsAre(DEMglb[DEM1].DEMheader.ElevUnits);
-
-          LoadNewDEM(DEM2,fName2,false);
-          DEMglb[DEM2].DEMCenterPoint(Lat2,Long2);
-
-          DEMglb[DEM2].ElevationStatistics(DEMglb[DEM2].FullDEMGridLimits,Elev2,Std,NPts);
-          Slope2 := DEMglb[DEM2].AverageDEMslope;
-          Differences;
-
-
-          if (DistanceMeters > 5000) then begin
-              CloseSingleDEM(DEM1);
-              bb := DEMglb[2].DEMBoundBoxGeo;
-              fName := 'https://s3.opengeohub.org/global/edtm/gedtm_rf_m_30m_s_20060101_20151231_go_epsg.4326.3855_v1.2.tif';
-              DEM1 := GDAL_WebExtractFromMonsterTIFFforBoundingBox(fName,bb,false,fName1,fName1);
-              DEMGlb[DEM1].MultiplyGridByConstant(0.1);
-              DEMGlb[DEM1].SaveAsGeotiff(fName1);
-              StatsGEDTM;
-              Differences;
-          end
-          else if (abs(dElev) > 25) then begin
-              //this is in decimeters, but the Geotiff header does not have any units and meters were assumed when importing
-              DEMGlb[DEM1].MultiplyGridByConstant(0.1);
-              DEMGlb[DEM1].CheckMaxMinElev;
-              DEMGlb[DEM1].SaveAsGeotiff(fName1);
-              StatsGEDTM;
-              Differences;
-          end;
-
-          Findings.Add(Area + ',' + Tile + ',' + Zunits + ',' + RealToString(Elev2,-8,-2) + ',' + RealToString(Slope2,-8,-2) + ',' + DifferenceString );
-      end
-      else begin
-          Findings.Add(Area + ',' + Tile + Zunits + ',-9999,-9999,-9999,-9999,-9999,Missing DEM');
-      end;
-      CloseAllDEMs;
-      GISdb[DBonTable].MyData.Next;
-   end;
-*)
-
-   fName := MDTempDir + 'gedtm_tile_location_problems.dbf';
-   PetDBUtils.StringList2CSVtoDB(Findings,fName);
-   GISdb[dbOnTable].ShowStatus;
-   WantShowProgress := true;
-end;
-
-
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
 begin
-    if Mode in [udFUVCalc,udInterpolatedFUVs] then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf';
-    if Mode = udFUVpartials then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_partials.dbf';
-    if Mode = udFUVcurves then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_curvatures.dbf';
-    if Mode = udDiffDistribStat then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_diff_dist.dbf';
+    if Mode in [udFUVCalc,udInterpolatedFUVs] then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_fuv.dbf'
+    else if Mode = udFUVpartials then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_partials.dbf'
+    else if Mode = udFUVcurves then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_curvatures.dbf'
+    else if Mode = udDiffDistribStat then DEMIX_criteria_tolerance_fName := DemixSettingsDir + 'demix_criteria_diff_dist.dbf'
+    else begin
+       MessageToContinue('No mode for criteria defined, mode=' + IntToStr(Mode));
+    end;
+
     FUVMode := Mode;
 end;
 

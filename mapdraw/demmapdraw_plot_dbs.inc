@@ -298,7 +298,7 @@ begin
 
                            if (GISDB[GISNum].MyData.Filter = '') then begin
                               {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Use GISDB[GISNum].aShapeFile.PlotAllRecords'); {$EndIf}
-                              GISDB[GISNum].aShapeFile.PlotAllRecords(Self,Bitmap,GISDB[GISNum].ItsOSMShapeFile);
+                              GISDB[GISNum].aShapeFile.PlotAllRecords(Self,Bitmap{,GISDB[GISNum].ItsOSMShapeFile});
                            end
                            else begin
                               {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('Use GISDB[GISNum].aShapeFile.PlotSingleRecord'); {$EndIf}

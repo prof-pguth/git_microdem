@@ -9,6 +9,44 @@
 {________________________________________}
 
 
+procedure TGISdataBaseModule.AddCentroidsToFile(Quick : boolean = false);
+var
+   xCent,yCent : float64;
+   PolyLineHeader : sfPolyLineHeader;
+   i : integer;
+begin
+    if LineOrAreaShapeFile(ShapeFileType) then begin
+       if not CentroidPresent then begin
+           MyData.InsureFieldPresentAndAdded(ftFloat,'LAT_CENTRD',11,7);
+           MyData.InsureFieldPresentAndAdded(ftFloat,'LON_CENTRD',12,7);
+       end;
+       StartProgress('Record centroids');
+       EmpSource.Enabled := false;
+       MyData.First;
+       i := 0;
+       while not MyData.eof do begin
+          if (i mod 100 = 0) then UpdateProgressBar(i/MyData.FiltRecsInDB);
+          inc(i);
+          if Quick then begin
+             if aShapeFile.ReadPolyLineHeader(i,PolyLineHeader) then begin
+                 XCent := 0.5 * (PolyLineHeader.BoundBox.xmin + PolyLineHeader.BoundBox.xmax);
+                 yCent := 0.5 * (PolyLineHeader.BoundBox.ymin + PolyLineHeader.BoundBox.ymax);
+             end;
+          end
+          else begin
+             aShapeFile.AreaAndCentroid(WGS84DatumConstants,MyData.RecNo,YCent,XCent);
+          end;
+          MyData.Edit;
+          MyData.SetFieldByNameAsFloat('LAT_CENTRD',YCent);
+          MyData.SetFieldByNameAsFloat('LON_CENTRD',XCent);
+          MyData.Next;
+       end;
+       EndProgress;
+    end;
+end;
+
+
+
 function TGISdataBaseModule.AddFieldToDataBase(ft: TFieldType; FName: ShortString; Length : integer; Decimals : integer = 0) : boolean;
 begin
     if (MyData <> Nil) then begin
@@ -91,7 +129,6 @@ begin
    end;
    ShowStatus;
 end;
-
 
 
 procedure tGISdataBaseModule.AddLatLong;
@@ -275,11 +312,8 @@ end;
 
 procedure TGISdataBaseModule.AddNavFields;
 var
-   //xutm,yutm,xutm2,yutm2,
-   z,LastZ,
-   //Last4Grad,This4Grad,
-   Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
-   f1,f2,f3,f4,{TStr,}zfield : ShortString;
+   z,LastZ,Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
+   f1,f2,f3,f4,zfield : ShortString;
    dd,i,rc : integer;
 begin
     {$IfDef RecordNavigation} WriteLineToDebugFile('TGISdataBaseModule.AddNavFields in'); {$EndIf}
@@ -481,7 +515,6 @@ begin
        if not ForceOverwrite then begin
          for j := pred(TheFields.Count) downto 0 do begin
             CopyField := TheFields.Strings[j];
-            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Field: ' + aCopyFieldOtherDB); {$EndIf}
             if MyData.FieldExists(CopyField) then begin
                if not AnswerIsYes('Field ' + CopyField + ' already exists; proceed and overwrite') then TheFields.Delete(j);
             end;
@@ -490,18 +523,19 @@ begin
 
        StartThreadTimers('DB Fields from join',1);
        for j := 0 to pred(TheFields.Count) do begin
-         ThreadTimers.OverallGauge9.Progress := round(100 * j/TheFields.Count);
          CopyField := TheFields.Strings[j];
+         ThreadTimers.OverallGauge9.Progress := round(100 * j/TheFields.Count);
          ThreadTimers.EnableGauge(1,true,CopyField);
 
          if not MyData.FieldExists(CopyField) then begin
             fLength := LinkTable.GetFieldLength(CopyField);
+
             ft := LinkTable.GetFieldType(CopyField);
             if (ft = ftFloat) then begin
                Decs := LinkTable.GetFieldPrecision(CopyField);
             end
             else Decs := 0;
-            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('field=' + CopyField + '  fieldType=' + FieldTypeStr(ft) + '  fieldLength=' + IntToStr(fLength) +   '  decs=' + IntToStr(Decs)); {$EndIf}
+            {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Adding field=' + CopyField + '  fieldType=' + FieldTypeStr(ft) + '  fieldLength=' + IntToStr(fLength) +   '  decs=' + IntToStr(Decs)); {$EndIf}
             AddFieldToDataBase(ft,CopyField,fLength,Decs);
          end
          else begin
@@ -510,6 +544,7 @@ begin
          EmpSource.Enabled := false;
       end {for j};
 
+      {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('LinkField=' + dbOpts.LinkFieldThisDB + '/' + dbOpts.LinkFieldOtherDB); {$EndIf}
        i := 0;
        MyData.First;
        while not MyData.eof do begin
@@ -522,8 +557,10 @@ begin
 
           TStr := MyData.GetFieldByNameAsString(dbOpts.LinkFieldThisDB);
           if (TStr <> '') and FindValidJoin(TStr) then begin
+             {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('LinkField=' + dbOpts.LinkFieldThisDB + '/' + dbOpts.LinkFieldOtherDB  + ' value=' + Tstr); {$EndIf}
              MyData.Edit;
              for j := 0 to pred(TheFields.Count) do begin
+                {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('Field=' + TheFields.Strings[j] + '  transfer value=' +  LinkTable.GetFieldByNameAsString(TheFields.Strings[j])); {$EndIf}
                 MyData.SetFieldByNameAsString(TheFields.Strings[j],LinkTable.GetFieldByNameAsString(TheFields.Strings[j]));
              end;
           end
@@ -545,8 +582,8 @@ end;
                i : integer;
             begin
                if (What = agCentroid) then begin
-                  AddFieldToDataBase(ftFloat,'LAT_CENTRD',12,6);
-                  AddFieldToDataBase(ftFloat,'LON_CENTRD',12,6);
+                  AddFieldToDataBase(ftFloat,'LAT_CENTRD',11,7);
+                  AddFieldToDataBase(ftFloat,'LON_CENTRD',12,7);
                   CentroidPresent := true;
                end;
                if (What = agAreaKM2) then begin

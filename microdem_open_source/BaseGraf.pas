@@ -4,7 +4,7 @@ unit BaseGraf;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -14,8 +14,8 @@ unit BaseGraf;
    {$IFDEF DEBUG}
        //{$Define NoInLine}
        //{$Define SavePlotFileProgress}
-       {$Define GraphSymbology}
-
+       //{$Define GraphSymbology}
+       {$Define Record1to1}
        //{$Define TrackFormCreate}     //28 Oct 2024, attempt to track down creation of hidden graph form, but it locks up
        //{$Define RecordAnimateGraph}
        //{$Define RecordGraphMemoryAlocations}
@@ -584,7 +584,7 @@ function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : t1DGraphArray; Re
 function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
 procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
 
-function CreateMultipleSeriesGraph(db : integer;    HAxisField : shortstring = ''; MultSeries : tStringList = nil) : tThisBaseGraph;
+function CreateMultipleSeriesGraph(db : integer; SingleAxisField : shortstring = ''; MultSeries : tStringList = nil; MultOnX : boolean = true) : tThisBaseGraph;
 
 
 implementation
@@ -682,27 +682,44 @@ var
 {$EndIf}
 
 
-function CreateMultipleSeriesGraph(db : integer; HAxisField : shortstring = ''; MultSeries : tStringList = nil) : tThisBaseGraph;
+function CreateMultipleSeriesGraph(db : integer; SingleAxisField : shortstring = ''; MultSeries : tStringList = nil; MultOnX : boolean = true) : tThisBaseGraph;
 var
    GraphSeriesFiles : tStringList;
    Min,Max : float64;
+   TStr : shortstring;
    CreateDB : tCreateDataBase;
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph in'); {$EndIf}
   Result := nil;
-  if (HAxisField = '') then HAxisField := GISdb[db].PickField('Horizontal axis',NumericFieldTypes);
-  if (MultSeries = Nil) then MultSeries := GISdb[db].GetMultipleNumericFields('Multiple series to graph');
+  if MultOnX then TStr := 'Vertical' else TStr := 'Horizontal';
+  if (SingleAxisField = '') then SingleAxisField := GISdb[db].PickField(TStr + ' axis single field',NumericFieldTypes);
+  if (not MultOnX) then TStr := 'Vertical' else TStr := 'Horizontal';
+  if (MultSeries = Nil) then MultSeries := GISdb[db].GetMultipleNumericFields('Multiple series for ' + TStr + ' axis');
 
   GISdb[db].EmpSource.Enabled := false;
   if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
-      GISdb[db].dbOpts.XField := HAxisField;
-      Result := GISdb[db].ActuallyDrawGraph(dbgtN2DgraphMultSeries,MultSeries);
-      Result.GraphDraw.MinHorizAxis := 0;
       GISdb[db].EmpSource.Enabled := false;
-      Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(HAxisField);
-      GISdb[db].MyData.FindMultipleFieldsRange(MultSeries,Min,Max);
-      Result.GraphDraw.MinVertAxis := Min;
-      Result.GraphDraw.MaxVertAxis := Max;
+      GISdb[db].dbOpts.XField := SingleAxisField;
+      Result := GISdb[db].ActuallyDrawGraph(dbgtN2DgraphMultSeries,MultSeries,Nil,'',Nil,MultOnX);
+      GISdb[db].EmpSource.Enabled := false;
+
+      if MultOnX then begin
+          Result.GraphDraw.MinVertAxis := GISdb[db].MyData.FindFieldMin(SingleAxisField);
+          Result.GraphDraw.MaxVertAxis := GISdb[db].MyData.FindFieldMax(SingleAxisField);
+
+          GISdb[db].MyData.FindMultipleFieldsRange(MultSeries,Min,Max);
+          Result.GraphDraw.MinHorizAxis := Min;
+          Result.GraphDraw.MaxHorizAxis := Max;
+      end
+      else begin
+          Result.GraphDraw.MinHorizAxis := GISdb[db].MyData.FindFieldMin(SingleAxisField);
+          Result.GraphDraw.MaxHorizAxis := GISdb[db].MyData.FindFieldMax(SingleAxisField);
+
+          GISdb[db].MyData.FindMultipleFieldsRange(MultSeries,Min,Max);
+          Result.GraphDraw.MinVertAxis := Min;
+          Result.GraphDraw.MaxVertAxis := Max;
+      end;
+
       Result.GraphDraw.LeftMargin := 90;
       Result.GraphDraw.BottomMargin := 80;
       Result.GraphDraw.LRcornerText := GISdb[db].MyData.Filter;
@@ -1628,7 +1645,7 @@ var
 begin
    Result := tThisBaseGraph.Create(Application);
    ShowHourglassCursor;
-   Result.GraphDraw.HorizLabel := RemoveUnderscores(ParamName);
+   Result.GraphDraw.HorizLabel := RemoveUnderscores(ParamName,false);
    Result.GraphDraw.VertLabel := 'Cumulative probability';
    Result.GraphDraw.VertAxisFunctionType  := LongCumulativeNormalAxis;
    Result.Caption := TitleBar;
@@ -1668,7 +1685,7 @@ begin
    ThisGraph := TThisBaseGraph.Create(Application);
    ShowHourglassCursor;
    ThisGraph.GraphDraw.HorizLabel := 'Gaussian';
-   ThisGraph.GraphDraw.VertLabel := RemoveUnderscores(ParamName);
+   ThisGraph.GraphDraw.VertLabel := RemoveUnderscores(ParamName,false);
    ThisGraph.GraphDraw.Draw1to1Line := true;
    ThisGraph.Caption := TitleBar;
    HeapSort(NumVals,values);
@@ -1700,7 +1717,6 @@ begin
    SpeedButton11.Visible := (GraphDraw.GraphType <> gtRose);
    SpeedButton12.Visible := (GraphDraw.GraphType <> gtRose);
    SpeedButton13.Visible := (GraphDraw.GraphType <> gtRose);
-
    CrossCorrelation1.Visible := (GraphDraw.DataFilesPlotted.Count > 1);
    Labelpointsatopprofile1.Visible := (GraphDraw.GraphTopLabels <> Nil);
    MonthlyAverage1.Visible := GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid];
@@ -2701,7 +2717,7 @@ var
    y,x1,y1,i,ts: integer;
    yf : float32;
    TStr : shortstring;
-   LegBMP : tMyBitmap;
+   //LegBMP : tMyBitmap;
 begin {proc CreateGraphAxes}
    {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes in, ' + GraphDraw.AxisRange); {$EndIf}
     if GraphDraw.NormalCartesianX then LastLabelEnd := 0
@@ -2991,6 +3007,7 @@ begin
    for i := 0 to MaxGraphSeries do ShowPoints[i] := setting;
 end;
 
+
 procedure TThisBaseGraph.DrawGraph(Bitmap : tMyBitmap; DrawInside : boolean = true);
 begin
    {$If Defined(RecordGraf) or Defined(RecordGrafSize) or Defined(RecordGrafAxis)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph in ' + FormClientSize(Self) + '  ' +  GraphDraw.AxisRange); {$EndIf}
@@ -3005,15 +3022,6 @@ begin
    {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph axis fit over ' + GraphDraw.AxisRange); {$EndIf}
    if (Bitmap <> Nil) then begin
       WindowGraphAxes(Bitmap);
-   end;
-
-   if DrawInside and GraphDraw.Draw1to1Line then begin
-       Bitmap.Canvas.Pen.Color := clSilver;
-       Bitmap.Canvas.Pen.Width := 1 + MDDef.FrameLineWidth;
-       if (GraphDraw.MinHorizAxis > GraphDraw.MinVertAxis) then Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinHorizAxis),GraphDraw.GraphY(GraphDraw.MinHorizAxis))
-       else Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinVertAxis),GraphDraw.GraphY(GraphDraw.MinVertAxis));
-       if GraphDraw.MaxHorizAxis > GraphDraw.MaxVertAxis then Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxVertAxis),GraphDraw.GraphY(GraphDraw.MaxVertAxis))
-       else Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxHorizAxis),GraphDraw.GraphY(GraphDraw.MaxHorizAxis));
    end;
 
    {$If Defined(RecordGraf) or Defined(RecordGrafSize) or Defined(RecordGrafAxis)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph out ' + FormClientSize(Self) + '  ' +  GraphDraw.AxisRange); {$EndIf}
@@ -3651,8 +3659,8 @@ var
    x1,y1,x2,y2,z1,z2 : float32;
    k : integer;
 begin
-   with GISdb[DataBaseOnGraph] do repeat
-      EmpSource.Enabled := false;
+   repeat
+      GISdb[DataBaseOnGraph].EmpSource.Enabled := false;
       if (GraphDraw.GraphType = gtTernary) then begin
          Self.InverseProjectTernaryComposition(LastX+k,lastY+k,x1,y1,z1);
          Self.InverseProjectTernaryComposition(LastX-k,lastY-k,x2,y2,z2);
@@ -3677,7 +3685,7 @@ begin
           ' AND ' + YField + ' <= ' + RealToString(y2,-12,-2);
       GISdb[DataBaseOnGraph].AssembleGISFilter;
       inc(k);
-   until (MyData.RecordCount >= 1) or (k > 5);
+   until (GISdb[DataBaseOnGraph].MyData.RecordCount >= 1) or (k > 5);
 end;
 
 procedure TThisBaseGraph.FindpeakYvalueineachseries1Click(Sender: TObject);
@@ -4171,8 +4179,6 @@ end;
 
 
 function tThisBaseGraph.OpenDataFile(var rfile : file; fName : shortstring; Color : tColor = -1) : integer;
-var
-   n : integer;
 begin
     if GraphDraw.DataFilesPlotted.Count = MaxGraphSeries then begin
        Result := 0;
@@ -5442,14 +5448,13 @@ end;
              if (BMP <> nil) then begin
                  if GraphDraw.LLlegend then begin
                     xi := 2;
-                    yi := Bitmap.Height - 2 - Bmp.Height;
+                    yi := Bitmap.Height {- 2} - Bmp.Height;
                  end
                  else begin
-                       if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then
-                          yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height else yi := GraphDraw.TopMargin +15;
-                       if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then
-                          xi := GraphDraw.LeftMargin + 15
-                       else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width - 15;
+                       if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height
+                       else yi := GraphDraw.TopMargin {+ 15};
+                       if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin {+ 15}
+                       else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width {- 15};
                  end;
                  {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}
                  Bitmap.Canvas.Draw(xi,yi,bmp);
@@ -5654,6 +5659,18 @@ begin
                           {$IfDef TrackColors} WriteLineToDebugFile('GraphDraw.GrayAllDataFilesFirst done');  WriteLineToDebugFile(''); {$EndIf}
                        end
                        else begin
+   if GraphDraw.Draw1to1Line then begin
+       //if DrawInside then begin
+         Bitmap.Canvas.Pen.Color := clSilver;
+         Bitmap.Canvas.Pen.Width := 1 + MDDef.FrameLineWidth;
+         if (GraphDraw.MinHorizAxis > GraphDraw.MinVertAxis) then Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinHorizAxis),GraphDraw.GraphY(GraphDraw.MinHorizAxis))
+         else Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinVertAxis),GraphDraw.GraphY(GraphDraw.MinVertAxis));
+         if GraphDraw.MaxHorizAxis > GraphDraw.MaxVertAxis then Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxVertAxis),GraphDraw.GraphY(GraphDraw.MaxVertAxis))
+         else Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxHorizAxis),GraphDraw.GraphY(GraphDraw.MaxHorizAxis));
+       //end;
+      {$If Defined(Record1to1)} Bitmap.SaveToFile(NextFileNumber(MDtempDir,'Draw_graph_','.bmp')); {$EndIf}
+   end;
+
                           for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
                              PlotSingleDataFile(Bitmap,i,GraphDraw.DataFilesPlotted.Strings[i]);
                           end;
@@ -5707,7 +5724,7 @@ begin
              Bitmap.Canvas.Rectangle(0,0,GraphDraw.LeftMargin,Bitmap.Height);
              Bitmap.Canvas.Rectangle(Bitmap.Width-GraphDraw.RightMargin,0,Bitmap.Width,Bitmap.Height);
              Bitmap.Canvas.Rectangle(0,Bitmap.Height-GraphDraw.BottomMargin,Bitmap.Width,Bitmap.Height);
-             DrawGraph(BitMap,false);
+             DrawGraph(BitMap,true);
           end;
 
 

@@ -10,7 +10,7 @@
 
 
 function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil;
-     FigureLabel : shortString = ''; MultCriteria : tStringList = nil) : TThisbasegraph;
+     FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = true) : TThisbasegraph;
 var
   i,j,k,TimeCount,OnFile : integer;
   Hist : array[0..1000] of integer;
@@ -90,16 +90,18 @@ var
            Result.GraphDraw.MarginFreeboard := 25;
         end
         else if ( GraphType = dbgtPlot1series1) then begin
-           Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.XField);
+           Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.XField,false);
         end
         else if (GraphType = dbgtN2Dgraph2series) then begin
-           Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
-           Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.YField) + ' / ' + RemoveUnderscores(dbOpts.ZField);
+           Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField,false);
+           Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.YField,false) + ' / ' + RemoveUnderscores(dbOpts.ZField,false);
         end
         else begin
-           Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
-           Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.YField);
-           if ( GraphType = dbgtN2Dgraph2yaxes1) then Result.GraphDraw.VertLabel2 := RemoveUnderscores(dbOpts.ZField);
+           Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField,false);
+           Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.YField,false);
+           {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('Axis fields: ' + dbOpts.XField + '/' + dbOpts.YField); {$EndIf}
+           {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('Axis labels: ' + Result.GraphDraw.HorizLabel + '/' + Result.GraphDraw.VertLabel); {$EndIf}
+           if (GraphType = dbgtN2Dgraph2yaxes1) then Result.GraphDraw.VertLabel2 := RemoveUnderscores(dbOpts.ZField,false);
         end;
         if (GraphType = dbgtByLatitude2) then Result.GraphDraw.HorizLabel := 'North south distance (km)';
         if (GraphType = dbgtByLongitude2) then Result.GraphDraw.HorizLabel := 'East west distance (km)';
@@ -129,7 +131,6 @@ var
            Result.GraphDraw.Symbol[NumSeries].Size := 5;
            Result.GraphDraw.Symbol[NumSeries].Color := ConvertTColorToPlatformColor(WinGraphColors(NumSeries));
            Result.OpenPointSymbolFile(rfile,FileName,Result.GraphDraw.Symbol[NumSeries]);
-           //Result.GraphDraw.ShowPoints[OnFile] := true;
            {$If Defined(TrackColors)}
               WriteLineToDebugFile('Actually draw create data files: ' + IntToStr(NumSeries) + ' ' + FileName +
                  ' line='+ ColorString(Result.GraphDraw.FileColors256[NumSeries]) + ' point=' + ColorString(Result.GraphDraw.Symbol[NumSeries].Color));
@@ -137,8 +138,15 @@ var
            MyData.First;
            repeat
               aField := MultSeries.Strings[j];
-              if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(aField,v[2]) then begin
-                 BlockWrite(Rfile,v,1);
+              if MultOnX then begin
+                 if GetFloat32FromTableLink(aField,v[1]) and GetFloat32FromTableLink(dbOpts.XField,v[2]) then begin
+                    BlockWrite(Rfile,v,1);
+                 end;
+              end
+              else begin
+                 if GetFloat32FromTableLink(dbOpts.XField,v[1]) and GetFloat32FromTableLink(aField,v[2]) then begin
+                    BlockWrite(Rfile,v,1);
+                 end;
               end;
               MyData.Next;
            until MyData.eof;
@@ -204,34 +212,53 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      Result.SetUpGraphForm;
      Result.GraphDraw.LRcornerText := MyData.Filter;
 
-     if (GraphType in [dbgtN2DgraphMultSeries]) then begin
+     if (GraphType in [dbgtN2DgraphMultSeries,dbgtN2Dgraphsimplelines1,dbgtN2Dgraph1]) then begin
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('(GraphType in [dbgtN2DgraphMultSeries]'); {$EndIf}
          Result.GraphDraw.SetShowAllLines(false);
-         Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
          Result.GraphDraw.XWindowSize := MDDef.DEMIX_xsize;
          Result.GraphDraw.YWindowSize := MDDef.DEMIX_ysize;
-         Result.GraphDraw.VertLabel := MultSeries.Strings[0];
-         for i := 1 to pred(MultSeries.Count) do begin
-             Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
+         if (GraphType in [dbgtN2Dgraphsimplelines1]) then begin
+             Result.GraphDraw.SetShowAllLines(true);
+             Result.GraphDraw.SetShowAllPoints(false);
+         end;
+         if (GraphType in [dbgtN2Dgraph1]) then begin
+             Result.GraphDraw.SetShowAllLines(false);
+             Result.GraphDraw.SetShowAllPoints(true);
+         end;
+
+         if MultOnX then begin
+             Result.GraphDraw.VertLabel := RemoveUnderscores(dbOpts.XField,false);
+             Result.GraphDraw.HorizLabel := MultSeries.Strings[0];
+             for i := 1 to pred(MultSeries.Count) do begin
+                Result.GraphDraw.HorizLabel := Result.GraphDraw.HorizLabel + '/' + MultSeries.Strings[i];
+             end;
+         end
+         else begin
+             Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField,false);
+             Result.GraphDraw.VertLabel := MultSeries.Strings[0];
+             for i := 1 to pred(MultSeries.Count) do begin
+                Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
+             end;
          end;
          NumSeries := 0;
          if (MultCriteria = Nil) then begin
             AddASeries('');
          end
          else begin
+            BaseFilter := MyData.Filter;
             for j := 0 to pred(MultCriteria.Count) do begin
                aFilter := 'CRITERION=' + QuotedStr(MultCriteria.Strings[j]);
                ApplyGISFilter(aFilter);
                AddASeries('_' + MultCriteria.Strings[j]);
             end;
-            ClearGISFilter;
+            ApplyGISFilter(BaseFilter);
          end;
          Result.CreateGraphSymbologyFile(Result.GraphDraw.DataFilesPlotted);
         {$If Defined(RecordDBGraphs)} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
         {$If Defined(TrackColors)} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph Finish actually draw setup'); {$EndIf}
      end
      else if (GraphType = dbgtPlotFieldDifference) then begin
-         Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField);
+         Result.GraphDraw.HorizLabel := RemoveUnderscores(dbOpts.XField,false);
          Result.GraphDraw.VertLabel := dbOpts.YField + ' - ' + dbOpts.ZField;
          Result.OpenPointSymbolFile(rfile,dbOpts.YField + '_minus_' + dbOpts.ZField,Result.GraphDraw.Symbol[0]);
          MyData.First;
@@ -338,8 +365,8 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                      (*
                      if (GraphType = dbgtN2DgraphcolorNumericField) {or (GraphType = dbgtN2Dgraphcolorcodetext)} then begin
                         TStr := '';
-                        //if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := GetStringFromTableLinkPossible(dbOpts.StringColorField);
-                        if (GraphType = dbgtN2DgraphcolorNumericField) then TStr := GetStringFromTableLinkPossible(dbOpts.NumericColorField);
+                        //if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := GetStringFromTableLinkPossible(dbOpts.StringColorField,false);
+                        if (GraphType = dbgtN2DgraphcolorNumericField) then TStr := GetStringFromTableLinkPossible(dbOpts.NumericColorField,false);
                         GoodPoint := Tstr <> '';
                         if GoodPoint and (GraphType = dbgtN2Dgraphcolorcodetext) then begin
                            for k := 0 to pred(DataThere.Count) do
@@ -412,7 +439,10 @@ begin
    if (GraphType in [dbgtCluster1,dbgtMultiplegraphmatrix1,dbgtPlot]) then begin
    end
    else if (GraphType in [dbgtN2Dgraphsimplelines1,dbgtN2Dgraph1]) then begin
-      if Ask then PickNumericFields(GraphType,2,'X axis variable','Y axis variable','')
+      if Ask then PickNumericFields(GraphType,2,'X axis variable','Y axis variable','');
+      MultSeries := tStringList.Create;
+      MultSeries.Add(dbOpts.YField);
+      //ActuallyDrawGraph(Graphtype,MultSeries);
    end
    else if (GraphType in [dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2]) then begin
       dbOpts.YField := 'DEPTH';

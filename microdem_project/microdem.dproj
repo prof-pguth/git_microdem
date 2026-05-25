@@ -124,8 +124,8 @@
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
         <VerInfo_Release>10</VerInfo_Release>
-        <VerInfo_Build>2</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=PETMAR Trilobites;FileDescription=MICRODEM engine;FileVersion=2025.5.10.2;InternalName=Release version;LegalCopyright=Freeware release version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Build>6</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=PETMAR Trilobites;FileDescription=MICRODEM engine;FileVersion=2025.5.10.6;InternalName=Release version;LegalCopyright=Freeware release version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
@@ -168,12 +168,12 @@
         <VerInfo_MajorVer>2026</VerInfo_MajorVer>
         <VerInfo_Release>8</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.5.8.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.5.8.16;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>1</VerInfo_Build>
+        <VerInfo_Build>16</VerInfo_Build>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
         <Debugger_RunParams>-NOAUTOOPEN</Debugger_RunParams>
     </PropertyGroup>

@@ -198,11 +198,11 @@ end;
                               SatImage[NewSatImage].SatGridToLatLongDegree(i,j,Lat,Long);
                               v := NLCDRow[i];
                               if CategoryGrid then begin
-                                 DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,v);
+                                 DEMGlb[WantedDEM].SetGridElevLatLongDegree(Lat,Long,v);
                               end
                               else if (v < MaxNLCDCategories) and (v > 0) then begin
                                  flt := SatImage[NewSatImage].LandCoverImage.Categories[round(v)].Height;
-                                 DEMGlb[WantedDEM].SetGridElevationLatLongDegree(Lat,Long,flt);
+                                 DEMGlb[WantedDEM].SetGridElevLatLongDegree(Lat,Long,flt);
                               end;
                            end;
                         end;

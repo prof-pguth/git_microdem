@@ -4,7 +4,7 @@ unit GeoTiff;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^}
@@ -1890,7 +1890,7 @@ var
                         Compression := TiffKeys[j].KeyOffset;
                         if (Compression <> 1) then begin
                            Success := false;
-                           TStr := 'Unsupported compression (key 259)=' + IntToStr(Compression);
+                           TStr := 'MD support via GDAL (key 259)=' + IntToStr(Compression);
                            HeaderLogList.Insert(1,TStr);
                            {$If Defined(RecordGeotiffFailures)} WriteLineToDebugFile(TStr + '  ' + inFileName); {$EndIf}
                          end;

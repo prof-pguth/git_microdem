@@ -112,7 +112,6 @@ begin
 end;
 
 
-
 procedure SetGraphColors(inTheGraph : tThisBaseGraph);
 var
    graphcolorsform: Tgraphcolorsform;

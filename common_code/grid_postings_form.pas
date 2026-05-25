@@ -52,6 +52,7 @@ type
   public
     { Public declarations }
     MapOwner : tMapForm;
+    procedure Modify;
   end;
 
 
@@ -64,11 +65,25 @@ uses
    Petmar,
    DEMDefs;
 
+procedure Tgrid_posting_options.Modify;
+begin
+   if MapOwner <> Nil then begin
+      CheckEditString(Edit1.Text,MDDef.GridLabelXoff);
+      CheckEditString(Edit2.Text,MDDef.GridLabelYoff);
+      MapOwner.MapDraw.DEMGridLabel := CheckBox1.Checked;
+      MapOwner.MapDraw.HalfPixelOffsets := CheckBox2.Checked;
+      MapOwner.DoFastMapRedraw;
+   end;
+end;
+
+
 procedure Tgrid_posting_options.BitBtn1Click(Sender: TObject);
 begin
-   PetMar.PickSymbol(BitBtn1,MapOwner.MapDraw.DEMGridSym,MapOwner.MapDraw.DEMGridSymSize,MapOwner.MapDraw.DEMGridSymColor,'DEM grid postings');
-   MapOwner.DoFastMapRedraw;
+   if MapOwner <> Nil then begin
+      PetMar.PickSymbol(BitBtn1,MapOwner.MapDraw.DEMGridSym,MapOwner.MapDraw.DEMGridSymSize,MapOwner.MapDraw.DEMGridSymColor,'DEM grid postings');
+   end;
 end;
+
 
 
 procedure Tgrid_posting_options.OKBtnClick(Sender: TObject);
@@ -83,45 +98,39 @@ end;
 
 procedure Tgrid_posting_options.RedrawSpeedButton12Click(Sender: TObject);
 begin
-   MapOwner.DoFastMapRedraw;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.BitBtn2Click(Sender: TObject);
 begin
    ReadDefault('Decimal places',MDDef.GridLabelDecimals);
-   MapOwner.DoFastMapRedraw;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.BitBtn3Click(Sender: TObject);
 begin
    EditMyFont(MDDef.GridPointLabelFont);
-   MapOwner.DoFastMapRedraw;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.CheckBox1Click(Sender: TObject);
 begin
-   if (MapOwner <> Nil) then begin
-      MapOwner.MapDraw.DEMGridLabel := CheckBox1.Checked;
-      MapOwner.DoFastMapRedraw;
-   end;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.CheckBox2Click(Sender: TObject);
 begin
-   MapOwner.MapDraw.HalfPixelOffsets := CheckBox2.Checked;
-   if MapOwner <> Nil then MapOwner.DoFastMapRedraw;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.Edit1Change(Sender: TObject);
 begin
-   CheckEditString(Edit1.Text,MDDef.GridLabelXoff);
-   if MapOwner <> Nil then MapOwner.DoFastMapRedraw;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.Edit2Change(Sender: TObject);
 begin
-   CheckEditString(Edit2.Text,MDDef.GridLabelYoff);
-   if MapOwner <> Nil then MapOwner.DoFastMapRedraw;
+   Modify;
 end;
 
 procedure Tgrid_posting_options.FormClose(Sender: TObject; var Action: TCloseAction);

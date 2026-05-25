@@ -24,7 +24,7 @@ begin
    end
    else begin
       Cat := 1;
-      Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMGlb[DEMonMap].AreaName));
+      Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMGlb[DEMonMap].AreaName,false));
       Result.Canvas.TextOut(5,Cat*CatHeight + 4,'       % of area      Category');
       inc(Cat);
    end;
@@ -138,7 +138,7 @@ begin
       Cat := 1;
       ClearBitmap(Result,clNearWhite);
 
-      Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMglb[DEMonMap].AreaName));
+      Result.Canvas.TextOut(5,1,RemoveUnderscores(DEMglb[DEMonMap].AreaName,false));
       Result.Canvas.TextOut(5,Cat*CatHeight + 4,'   % Area    Category');
       while not GISdb[db].MyData.eof do begin
          xg := 100.0*GISdb[db].MyData.GetFieldByNameAsInteger(GISdb[db].MyData.NCountField) / fTotal;

@@ -4,7 +4,7 @@ unit dem_manager;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -163,7 +163,6 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
 function ValidDEMExt(ext : extstr) : boolean;
 function ValidImageryExt(ext : extstr) : boolean;
 
-//function GetLC100_fileName(Lat,Long : float32) : PathStr;
 function GetLC10_fileName(Lat,Long : float32) : PathStr;
 
 function WebExtractGEDTMorEDTM(aDEM : shortstring;  bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;

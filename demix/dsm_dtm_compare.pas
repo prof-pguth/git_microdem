@@ -136,7 +136,7 @@ procedure StartDSMandDTMcomparison(inDB : integer);
 var
   CompareDSM_DTMform: TCompareDSM_DTMform;
 begin
-  if TileCharacteristicsInDB(inDB,true) then begin
+  if TileCharacteristicsInDB(inDB) then begin
       MDdef.DBsOnAllMaps := false;
       MDDef.CountHistograms := false;
       CompareDSM_DTMform := TCompareDSM_DTMform.Create(Application);

@@ -20,6 +20,7 @@
       //{$Define MessageStartup}
       //{$Define RecordCommandLine}
       //DEMIX conditionals
+          {$Define RecordDEMIX}
           {$Define RecordDEMIX_TileStats}
           {$Define RecordDEMIXMakeRef}
           {$Define RecordDEMIXMemory}
@@ -29,8 +30,8 @@
           //{$Define RecordGridOpenProblems}
           //{$Define DEMIXtrackFUV}
           //{$Define TrackMissingPercentages}
-          //{$Define RecordRefDTM}
-          //{$Define RecordDEMIXMakeRefFull}
+          {$Define RecordRefDTM}
+          {$Define RecordDEMIXMakeRefFull}
           {$Define RecordDEMIXDatumShift}
           //{$Define RecordDEMIXDatumShiftFull}
           //{$Define RecordDEMIXMakeTestEveryDEM}
@@ -255,7 +256,7 @@ type
     Copyfile1: TMenuItem;
     CopyDBFstoXML1: TMenuItem;
     BackupprogramEXE1: TMenuItem;
-    Geocodeaddresstolatlong1: TMenuItem;
+    //Geocodeaddresstolatlong1: TMenuItem;
     Stereopair1: TMenuItem;
     N21: TMenuItem;
     Findmatchingfiles1: TMenuItem;
@@ -516,7 +517,6 @@ type
     Partialchannelnetworkprocessing1: TMenuItem;
     Channelnetworkmultistep1: TMenuItem;
     InsureallreferenceDTMscorrectlynamed1: TMenuItem;
-    N50: TMenuItem;
     MaskwaterinreferenceDEMs1: TMenuItem;
     ComputeDEMIXtilestats1: TMenuItem;
     VerifytestDEMcoverages1: TMenuItem;
@@ -547,7 +547,6 @@ type
     CreatefinalDB1: TMenuItem;
     N3DEPfileswithtag421121: TMenuItem;
     Fixtileswith42114foottag1: TMenuItem;
-    Onedegreetilestocovertestareas1: TMenuItem;
     N46: TMenuItem;
     OpenmapsforDEMIXtestarea1: TMenuItem;
     LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
@@ -674,6 +673,7 @@ type
     N72: TMenuItem;
     N73: TMenuItem;
     CompareinterpolatedFUVs1: TMenuItem;
+    nMAEtest1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1007,7 +1007,7 @@ type
     procedure CreatefinalDB1Click(Sender: TObject);
     procedure N3DEPfileswithtag421121Click(Sender: TObject);
     procedure Fixtileswith42114foottag1Click(Sender: TObject);
-    procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
+    //procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
     procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
     procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
@@ -1096,6 +1096,7 @@ type
     procedure Allthreepimary1Click(Sender: TObject);
     procedure All3principal1Click(Sender: TObject);
     procedure CompareinterpolatedFUVs1Click(Sender: TObject);
+    procedure nMAEtest1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
     procedure SeeIfThereAreDebugThingsToDo;
@@ -2859,6 +2860,11 @@ begin
 end;
 
 
+procedure Twmdem.nMAEtest1Click(Sender: TObject);
+begin
+    PermformNAEtest;
+end;
+
 procedure Twmdem.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    {$IfDef RecordClosing} WriteLineToDebugFile('Twmdem.FormClose in ' + BuildString  + ' dbfn=' + DebugFileName); {$EndIf}
@@ -3156,13 +3162,10 @@ procedure Twmdem.Updatehelpfile1Click(Sender: TObject);
 var
    HelpFileName : PathStr;
 begin
-   {$IfDef ExWebDownload}
-   {$Else}
-      HelpFileName := ProgramRootDir + 'microdem.chm';
-      SysUtils.DeleteFile(HelpFileName);
-      DownloadFileFromWeb('https://microdem.org/microdem_downloads/microdem.chm',HelpFileName);
-      UnblockFile(HelpFileName);
-   {$EndIf}
+   HelpFileName := ProgramRootDir + 'microdem.chm';
+   SysUtils.DeleteFile(HelpFileName);
+   DownloadFileFromWeb('https://microdem.org/microdem_downloads/microdem.chm',HelpFileName);
+   UnblockFile(HelpFileName);
 end;
 
 
@@ -4069,11 +4072,6 @@ begin
    {$EndIf}
 end;
 
-
-procedure Twmdem.Onedegreetilestocovertestareas1Click(Sender: TObject);
-begin
-   OneDegreeTilesToCoverTestAreas;
-end;
 
 procedure Twmdem.Flythrough1Click(Sender: TObject);
 begin

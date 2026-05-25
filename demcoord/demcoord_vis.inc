@@ -8,7 +8,6 @@
 {________________________________________}
 
 
-
 function tDEMDataSet.GridPointsIntervisible(xg1,yg1,ObsUp,xg2,yg2,TargetUp : float64; var Distance,BlockDistance : float64) : boolean;
    {elevations of observer (z1) and observed point (z2), above terrain (ground elevation + observer/target height)}
    {xg1 and yg1 are the coordinates in the data grid array of the observer}

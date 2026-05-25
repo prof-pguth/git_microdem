@@ -821,8 +821,8 @@ type
     DSMfirstreturn1: TMenuItem;
     HAGvegheight1: TMenuItem;
     DTMlastreturn1: TMenuItem;
-    Geocodeaddress1: TMenuItem;
-    Geocode1: TMenuItem;
+    //Geocodeaddress1: TMenuItem;
+    //Geocode1: TMenuItem;
     Addresstolatlong1: TMenuItem;
     ViewExifimages1: TMenuItem;
     Multiplevalues1: TMenuItem;
@@ -1707,6 +1707,13 @@ type
     N90: TMenuItem;
     ListCOGS1: TMenuItem;
     N3Dareas1: TMenuItem;
+    Warcrimes1: TMenuItem;
+    NGAgazetteer1: TMenuItem;
+    N56: TMenuItem;
+    N89: TMenuItem;
+    OSMpoints1: TMenuItem;
+    OSMbuildings1: TMenuItem;
+    NGAfeatrurefreequency1: TMenuItem;
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
     procedure Smallcirclethroughpoint1Click(Sender: TObject);
@@ -2216,8 +2223,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DSMfirstreturn1Click(Sender: TObject);
     procedure HAGvegheight1Click(Sender: TObject);
     procedure DTMlastreturn1Click(Sender: TObject);
-    procedure Geocodeaddress1Click(Sender: TObject);
-    procedure Addresstolatlong1Click(Sender: TObject);
+    //procedure Geocodeaddress1Click(Sender: TObject);
+    //procedure Addresstolatlong1Click(Sender: TObject);
     procedure ViewExifimages1Click(Sender: TObject);
     procedure Multiplevalues1Click(Sender: TObject);
     procedure Abortcurrentoperation2Click(Sender: TObject);
@@ -2935,6 +2942,11 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure CompareGaussiancurvature1Click(Sender: TObject);
     procedure ListCOGS1Click(Sender: TObject);
     procedure N3Dareas1Click(Sender: TObject);
+    procedure NGAgazetteer1Click(Sender: TObject);
+    procedure N89Click(Sender: TObject);
+    procedure OSMpoints1Click(Sender: TObject);
+    procedure OSMbuildings1Click(Sender: TObject);
+    procedure NGAfeatrurefreequency1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3178,7 +3190,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure DrawStreamProfile(FinalRun : boolean = false; AskToSave : boolean = true);
     procedure PlotGridPoint(xgrid,ygrid : float64; PlotColor : tPlatformColor);
     procedure ClipLatLongToMap(var Lat,Long : float64);
-    procedure AddressGeocode(AskUser,SupplyLatLong : boolean; var Address : shortString; var Lat,Long : float64; ShowResults : boolean = false);
+    //procedure AddressGeocode(AskUser,SupplyLatLong : boolean; var Address : shortString; var Lat,Long : float64; ShowResults : boolean = false);
     procedure Savemapwithworldfile(fName : PathStr; BaseMapOnly : boolean = false);
     procedure GridpointsfromsecondDEMAssignAndDraw(SecondDEM : integer);
     procedure MaskFromSecondGrid(SecondGrid: integer; HowMask : tMaskGrid ; ShowResults : boolean = false);
@@ -3387,7 +3399,7 @@ function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : t
     function DEMIX_UTM_tileName(AreaName : shortstring; FileName : PathStr) : shortstring;
     function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
     function GetDEMIX_GeoTileName(inLat,inLong : float64) : shortstring;
-    function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
+    //function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
     function DEMIX_NoVerticalShift(AreaName : shortstring) : boolean;
 
 
@@ -8129,6 +8141,16 @@ begin
    {$EndIf}
 end;
 
+procedure TMapForm.OSMbuildings1Click(Sender: TObject);
+begin
+   MapWarCrimesDB(Self,3);
+end;
+
+procedure TMapForm.OSMpoints1Click(Sender: TObject);
+begin
+   MapWarCrimesDB(Self,2);
+end;
+
 procedure TMapForm.ospecifiedlongitude1Click(Sender: TObject);
 var
    Long : float64;
@@ -8897,7 +8919,7 @@ begin
     //Edit Menu and options
       CreateDEMtomatchmap1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
       Edit2.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]);
-      Geocode1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
+      //Geocode1.Visible := (MDDef.ProgramOption in [ExpertProgram]);
       Flattenlake1.Visible := ExpertDEMVersion;
       MarkAsMissing2.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MapDraw.DEMMap;
       DEMHoles1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MapDraw.DEMMap;
@@ -9899,6 +9921,8 @@ begin
     end;
     Table.Destroy;
 end;
+
+
 
 procedure BroadcastLatLong(Handle : tHandle; Lat,Long : float64);
 var
@@ -11054,116 +11078,6 @@ end;
 
 
 
-
-procedure TMapForm.AddressGeocode(AskUser,SupplyLatLong : boolean; var Address : shortString; var Lat,Long : float64; ShowResults : boolean = false);
-
-         function ExtractFloatFromString(TStr : ShortString) : float64;
-         var
-            i : integer;
-         begin
-            for i := length(TStr) downto 1 do begin
-               if not (TStr[i] in ['-','.','0'..'9']) then Delete(TStr,i,1);
-            end;
-            Result := StrToFloat(TStr);
-         end;
-
-var
-   cmd : ANSIstring;
-   Results : tStringList;
-   i: Integer;
-   TStr : ANSIString;
-   fName : PathStr;
-   UseAddress,OK : boolean;
-begin
-   if (MDDef.GoogleAPIkey = '') then begin
-      MessageToContinue('No free lunch from google. Requires valid API key.  Enter now.');
-      GetString('Google API key',MDDef.GoogleAPIkey,false,ReasonableTextChars);
-      if (MDDef.GoogleAPIkey = '') then exit;
-   end;
-
-   Lat := -99;
-   Long := -999;
-   if (MapDraw <> Nil) and (not SupplyLatLong) or (not UseAddress) then begin
-      Lat := RightClickLat;
-      Long := RightClickLong;
-   end;
-
-   UseAddress := (Address <> '');
-
-   cmd := GoogleAPIsURL + 'key=' + MDDef.GoogleAPIkey;
-   if (UseAddress) then begin
-      if AskUser then begin
-         Petmar.GetString('address',Address,false,ReasonableTextChars);
-      end;
-      cmd := '&address=' + Address;
-   end
-   else begin
-      cmd := '&latlng=' + RealToString(Lat,-18,8) + ',' +  RealToString(Long,-18,8);
-   end;
-   cmd := GoogleAPIsURL + 'key=' + MDDef.GoogleAPIkey + cmd + '&sensor=true';
-
-   fName := Petmar.NextFileNumber(MDTempDir,'geocode_','.xml');
-   DownloadFileFromWeb(cmd,fName);
-
-   OK := false;
-   Results := tStringList.Create;
-   Results.LoadFromFile(fName);
-   for i := 0 to pred(Results.Count) do begin
-      if StrUtils.AnsiContainsText(Results.Strings[i],'<status>OK</status>') then begin
-         OK := true;
-         break
-      end;
-   end;
-
-   if OK then begin
-       if (UseAddress) then begin
-         for i := 0 to pred(Results.Count) do begin
-            if StrUtils.AnsiContainsText(Results.Strings[i],'<location>') then begin
-               Lat := ExtractFloatFromString(Results.Strings[succ(i)]);
-               Long := ExtractFloatFromString(Results.Strings[i+2]);
-               TStr := Address + MessLineBreak + LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
-               Break;
-            end;
-         end;
-      end
-      else begin
-         for i := 0 to pred(Results.Count) do begin
-            if StrUtils.AnsiContainsText(Results.Strings[i],'<formatted_address>') then begin
-               TStr := Results.Strings[i];
-               TStr := AfterSpecifiedCharacter(TStr,'>');
-               Address := BeforeSpecifiedCharacterANSI(TStr,'<');
-               TStr := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod) + MessLineBreak + Address;
-               Break;
-            end;
-         end;
-      end;
-      ClipBoard_Coords := true;
-      Clipboard_Lat := Lat;
-      ClipBoard_Long := Long;
-      if ShowResults then begin
-         MapDraw.MapSymbolAtLatLongDegree(Image1.Canvas,Lat,Long,MDDef.KeyLocationSymbol);
-         MessageToContinue(TStr,True);
-      end;
-      Results.Free;
-   end
-   else begin
-      Lat := -99;
-      Long := -999;
-      Clipboard_Lat := -999;
-      ClipBoard_Long := -999;
-      ShowInNotepadPlusPlus(Results);
-   end;
-end;
-
-
-procedure TMapForm.Addresstolatlong1Click(Sender: TObject);
-var
-   Lat,Long : float64;
-begin
-   if (MDDEF.GeocodeAddress = '') then MDDEF.GeocodeAddress := 'enter address';
-   AddressGeocode(True,false,MDDEF.GeocodeAddress,Lat,Long,true);
-end;
-
 procedure TMapForm.AddRGBwindows1Click(Sender: TObject);
 begin
    {$IfDef ExSatAdvanced}
@@ -11180,15 +11094,6 @@ end;
 procedure TMapForm.Genericdifference1Click(Sender: TObject);
 begin
    ChangeElevUnits(euDifference);
-end;
-
-procedure TMapForm.Geocodeaddress1Click(Sender: TObject);
-var
-   Lat,Long : float64;
-   Address : shortString;
-begin
-   Address := '';
-   AddressGeocode(false,false,Address,Lat,Long,true);
 end;
 
 
@@ -22806,6 +22711,7 @@ begin
     grid_posting_options.Show;
 end;
 
+
 procedure TMapForm.Label2Click(Sender: TObject);
 begin
    Show1Click(Nil);
@@ -23141,6 +23047,11 @@ begin
 end;
 
 
+procedure TMapForm.N89Click(Sender: TObject);
+begin
+   ProcessBuildings(Self);
+end;
+
 procedure TMapForm.NAN1Click(Sender: TObject);
 begin
    Markasmissing1Click(Sender);
@@ -23203,6 +23114,16 @@ begin
    {$EndIf}
 end;
 
+
+procedure TMapForm.NGAfeatrurefreequency1Click(Sender: TObject);
+begin
+   StatsWarCrimesDB(Self,1);
+end;
+
+procedure TMapForm.NGAgazetteer1Click(Sender: TObject);
+begin
+   MapWarCrimesDB(self,1);
+end;
 
 procedure TMapForm.NDSI1Click(Sender: TObject);
 begin

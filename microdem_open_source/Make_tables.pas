@@ -4,7 +4,7 @@ unit Make_tables;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -75,7 +75,6 @@ procedure CreateTigerRulesDBF(fName : PathStr);
 procedure MakeDummyRecordTable(fName : PathStr);
 procedure CreatPointCloudProjectTable(fName : PathStr);
 
-procedure MakeRedistrictingTable(fName : PathStr);
 procedure CreateGeomorphometryAttributesTable(fname : PathStr; IncludeName : boolean);
 
 procedure CreateColorBreaksTable(fName : PathStr);
@@ -944,22 +943,6 @@ begin
    CreateDataBase.WriteCorrectHeader;
 end;
 
-
-procedure MakeRedistrictingTable(fName : PathStr);
-begin
-   CreateDataBase := tCreateDataBase.Create(fName);
-   CreateDataBase.AddAField('DISTRICT',ftString,12,0);
-   CreateDataBase.AddAField('BLOCKS',ftInteger,9,0);
-   CreateDataBase.AddAField('POP',ftInteger,9,0);
-   CreateDataBase.AddAField('GOAL',ftFloat,6,2);
-   CreateDataBase.AddAField('WHITE_PC',ftFloat,6,2);
-   CreateDataBase.AddAField('BLACK_PC',ftFloat,6,2);
-   CreateDataBase.AddAField('HISPAN_PC',ftFloat,6,2);
-   CreateDataBase.AddAField('WHITE1',ftInteger,9,0);
-   CreateDataBase.AddAField('BLACK1',ftInteger,9,0);
-   CreateDataBase.AddAField('HISPANIC',ftInteger,9,0);
-   CreateDataBase.WriteCorrectHeader;
-end;
 
 procedure MakeProfileIndexTable(fName : PathStr);
 begin

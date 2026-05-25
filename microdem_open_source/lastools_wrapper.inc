@@ -2,10 +2,10 @@
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 {                                        }
-{        include file for md_use_tools   }
+{  include file for md_use_tools         }
 {________________________________________}
 
 
@@ -203,7 +203,7 @@ var
    cmd : ansistring;
    pName : PathStr;
 begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('BlastTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
+   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('BlastTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
    OutName :=  ChangeFileExt(OutName,'.asc');
    pName := LAStools_BinDir + 'txt2las.exe';
    if GetLASToolsFileName(pName) then begin

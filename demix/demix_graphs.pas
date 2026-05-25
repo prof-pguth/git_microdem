@@ -18,6 +18,7 @@ unit demix_graphs;
    {$Define RecordDSM_DTM_Compare}
    {$Define RecordCompareDSMandDTM}
    {$Define RecordDSM_DTM_CompareFull}
+   {$Define RecordDEMIXGraph}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
    //{$Define PiesByLandType}
@@ -28,7 +29,6 @@ unit demix_graphs;
    //{$Define RecordDEMIXWins}
    //{$Define TrackColors}               //must also be set in BaseGraf unit
    //{$Define RecordAverageScoresGraph}
-   //{$Define RecordDEMIXGraph}
    //{$Define RecordDEMIXGraphFull}
 {$EndIf}
 
@@ -759,7 +759,7 @@ const
                    else if BaseFilter = '' then UseFilter := GeomorphFilter
                    else UseFilter := BaseFilter + ' AND ' + GeomorphFilter;
                    GISdb[DBonTable].ApplyGISFilter(UseFilter);
-                   {$If Defined(RecordDEMIXGraph)} WriteLineToDebugFile('Applied filter=' + UseFilter); {$EndIf}
+                   {$If Defined(RecordDEMIXGraph)} WriteLineToDebugFile('Applied filter=' + UseFilter + ' recs=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
                 end
                 else UseFilter := '';
                 GISdb[DBonTable].EmpSource.Enabled := false;
@@ -775,8 +775,8 @@ const
                      Result.OpenDataFile(rfile,theDEMs.strings[k],Color);
                      wmdem.SetPanelText(2, IntToStr(succ(k)) + '/' + IntToStr(theDEMs.Count) + '  ' + theDEMs[k],true);
                      for j := 0 to pred(UseLSPs.Count) do begin
-                        aFilter := AddAndIfNeeded(UseFilter) + 'CRITERION=' + QuotedStr(UseLSPs.Strings[j]);
-                        GISdb[DBonTable].ApplyGISFilter(aFilter);
+                        //aFilter := AddAndIfNeeded(UseFilter) + 'CRITERION=' + QuotedStr(UseLSPs.Strings[j]);
+                        GISdb[DBonTable].ApplyGISFilter(UseFilter);
                         GISdb[DBonTable].EmpSource.Enabled := false;
                         if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
                           if (GISdb[DBonTable].MyData.FiltRecsInDB = 1) then
@@ -789,6 +789,9 @@ const
                           v[1] := succ(j);
                           v[2] := AverageFUV;
                           BlockWrite(rfile,v,1);
+                        end
+                        else begin
+                            {$If Defined(RecordDEMIXGraph)} WriteLineToDebugFile('No records meet filter=' + UseFilter); {$EndIf}
                         end;
                       end;
                       CloseFile(rFile);
@@ -995,7 +998,7 @@ var
    Criteria2 : tStringList;
    Criterion : shortstring;
 begin {procedure MainGraphOptions}
-   if ValidDB(DBonTable) and  ((DesiredOption in [4]) or TileCharacteristicsInDB(DBOnTable,true)) then begin
+   if ValidDB(DBonTable) and ((DesiredOption in [4]) or TileCharacteristicsInDB(DBOnTable)) then begin
       BaseFilter := GISdb[DBonTable].MyData.Filter;
       if (UseDEMs = Nil) then begin
          MessageToContinue('UseDEMs = Nil, should not be here');
@@ -1118,7 +1121,7 @@ var
    gr :  t1DGraphArray;
    Legend,BigBitmap : tMyBitmap;
 begin
-   if TileCharacteristicsInDB(DB,true) then begin
+   if TileCharacteristicsInDB(DB) then begin
       {$If Defined(RecordDEMIXGraph) or Defined(RecordBestEval)} WriteLineToDebugFile('BestEvalGraphPerCriterionMultipleFilters in'); {$EndIf}
       GetDEMIXpaths(true);
       try
@@ -1151,7 +1154,7 @@ var
    gr :  t1DGraphArray;
    Legend,BigBitmap : tMyBitmap;
 begin
-   if TileCharacteristicsInDB(DB,true) then begin
+   if TileCharacteristicsInDB(DB) then begin
      {$IfDef RecordWinningPies} WriteLineToDebugFile('WinningComparedToBaseDEM in'); {$EndIf};
       try
          GetDEMIXpaths(False);
@@ -1591,7 +1594,7 @@ var
 
 begin {function WinningPiesByCriteria}
      {$IfDef RecordWinningPies} WriteLineToDebugFile(' WinningPiesByCriteria in'); {$EndIf};
-     if TileCharacteristicsInDB(DBonTable,true) then begin
+     if TileCharacteristicsInDB(DBonTable) then begin
          ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
          BaseFilter := GISdb[dbOnTable].MyData.Filter;
          Result := StartPieGraph(Criteria,Labels1);
@@ -1773,7 +1776,7 @@ var
    LegendFName,fName : PathStr;
    TStr : shortstring;
 begin  {procedure PiesBestByTwoLandTypes}
-   if TileCharacteristicsInDB(DBonTable,true) and GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
+   if TileCharacteristicsInDB(DBonTable) and GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
       try
          {$If Defined(RecordDEMIXGraph) or Defined(PiesByLandType)} WriteLineToDebugFile('PiesBestByTwoLandTypes in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' DEMs=' + IntToStr(DEMs.Count)); {$EndIf}
          BaseFilter := GISdb[DBonTable].MyData.Filter;
@@ -1821,21 +1824,16 @@ procedure AddDEM_DrawingLayers(DBonTable : integer; DEMs : tStringList; Graph : 
 var
    NPts,i,j,TileID : integer;
    v : array[1..2] of float32;
-   //Tile : shortstring;
-   //Tiles : tStringList;
    val,y,Max : float32;
 begin
    if (DEMs <> Nil) then begin
       y := 0;
       GISdb[DBonTable].EmpSource.Enabled := false;
-      //Tiles := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
       OpenGraphDEMIXDEMColorFiles(Graph,DEMs,'eval');
-      //StartProgress('Graph');
       GISdb[DBonTable].MyData.First;
       NPts := 0;
       Max := 0;
       while not GISdb[DBonTable].MyData.eof do begin
-         //if (NPts mod 25 = 0) then UpdateProgressBar(j/Tiles.Count);
          inc(NPts);
          GISdb[DBonTable].EmpSource.Enabled := false;
          for i := 0 to pred(DEMs.Count) do begin
@@ -1854,8 +1852,6 @@ begin
       end;
 
       Graph.RedrawDiagram11Click(Nil);
-      //Tiles.Destroy;
-      //EndProgress;
       GISdb[DBonTable].EmpSource.Enabled := true;
       Graph.GraphDraw.HorizLabel := RemoveUnderscores(Graph.GraphDraw.HorizLabel) +  '  (n=' + IntToStr(NPts) + ')';
    end;
@@ -2034,7 +2030,7 @@ var
    fName : PathStr;
    gr : t1DGraphArray;
 begin {FilterJustOneGraph}
-   if TileCharacteristicsInDB(DBonTable,true) and GISdb[DBonTable].MyData.FieldExists('BEST_EVAL') then begin
+   if TileCharacteristicsInDB(DBonTable) and GISdb[DBonTable].MyData.FieldExists('BEST_EVAL') then begin
      {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('FilterJustOneGraph in'); {$EndIf}
       GetDEMIXpaths(False);
       for j := 0 to pred(Criteria.Count) do begin
@@ -2153,7 +2149,7 @@ var
 
 
 begin {DEMIX_evaluations_graph}
-   if (YAxisWhat in [yasBestEval]) or TileCharacteristicsInDB(DBonTable,true) then begin
+   if (YAxisWhat in [yasBestEval]) or TileCharacteristicsInDB(DBonTable) then begin
      try
         BaseFilter := GISdb[DBonTable].MyData.Filter;
         {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('DEMIX_evaluations_graph in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}

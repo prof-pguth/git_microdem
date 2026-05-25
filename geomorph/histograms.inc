@@ -557,11 +557,6 @@ begin
                Result.GraphDraw.FileColors256[i] := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
             end;
          end;
-         (*   removed Jan 2026
-         for i := 0 to pred(TColorList.Count) do begin
-            if (i <= 15) then Result.GraphDraw.Symbol[i].Color := ConvertTColorToPlatformColor(StrToInt(TcolorList.Strings[pred(i)]));
-         end;
-         *)
       end;
 
       {$IfDef RecordHistogram} WriteLineToDebugFile('CreateMultipleHistograms ProcessSeries over, NumBins=' + IntToStr(NumBins) + '  ' + Result.GraphDraw.AxisRange); {$EndIf}

@@ -995,7 +995,14 @@ object dbtablef: Tdbtablef
       end
       object N2dgraphpickmultipleseries1: TMenuItem
         Caption = '2d graph, pick multiple series'
-        OnClick = N2dgraphpickmultipleseries1Click
+        object Xaxis1: TMenuItem
+          Caption = 'Many fields X axis'
+          OnClick = Xaxis1Click
+        end
+        object Yaxis1: TMenuItem
+          Caption = 'Many fields Y axis'
+          OnClick = Yaxis1Click
+        end
       end
       object N2dgraphdifferencetwofields1: TMenuItem
         Caption = '2d graph, difference two fields'
@@ -2553,17 +2560,24 @@ object dbtablef: Tdbtablef
           OnClick = Addlatlongfromlinkeddatabase1Click
         end
       end
-      object AddDEMIXtilecentroid1: TMenuItem
-        Caption = 'Add DEMIX tile centroid'
-        OnClick = AddDEMIXtilecentroid1Click
+      object Addcentroid1: TMenuItem
+        Caption = 'Add centroid'
+        OnClick = Addcentroid1Click
       end
-      object AddDEMIXtileboundingbox1: TMenuItem
-        Caption = 'Add DEMIX tile bounding box'
-        OnClick = AddDEMIXtileboundingbox1Click
-      end
-      object AddDEMIXUTMtilename1: TMenuItem
-        Caption = 'Add DEMIX UTM tile name'
-        OnClick = AddDEMIXUTMtilename1Click
+      object DEMIX3: TMenuItem
+        Caption = 'DEMIX'
+        object AddDEMIXtilecentroid1: TMenuItem
+          Caption = 'Add DEMIX tile centroid'
+          OnClick = AddDEMIXtilecentroid1Click
+        end
+        object AddDEMIXtileboundingbox1: TMenuItem
+          Caption = 'Add DEMIX tile bounding box'
+          OnClick = AddDEMIXtileboundingbox1Click
+        end
+        object AddDEMIXUTMtilename1: TMenuItem
+          Caption = 'Add DEMIX UTM tile name'
+          OnClick = AddDEMIXUTMtilename1Click
+        end
       end
       object AddUTMcoordfields1: TMenuItem
         Caption = 'Add UTM'
@@ -2914,11 +2928,9 @@ object dbtablef: Tdbtablef
       Caption = 'Geocode'
       object Geocodeaddresses1: TMenuItem
         Caption = 'Address to lat/long'
-        OnClick = Geocodeaddresses1Click
       end
       object Geocodelatlong1: TMenuItem
         Caption = 'Lat/long to address'
-        OnClick = Geocodelatlong1Click
       end
     end
     object Insertnewfields1: TMenuItem
@@ -3716,6 +3728,10 @@ object dbtablef: Tdbtablef
       Caption = 'Update record numbers'
       OnClick = Updaterecordnumbers1Click
     end
+    object ListuniquefieldvaluesallopenDB1: TMenuItem
+      Caption = 'List unique field values, all open DB'
+      OnClick = ListuniquefieldvaluesallopenDB1Click
+    end
     object Copycolumntoclipboard1: TMenuItem
       Bitmap.Data = {
         F6000000424DF600000000000000760000002800000010000000100000000100
@@ -3750,7 +3766,6 @@ object dbtablef: Tdbtablef
     end
     object Indexnewlines1: TMenuItem
       Caption = 'Index new lines'
-      OnClick = Indexnewlines1Click
     end
   end
   object ReplaceDialog1: TReplaceDialog
@@ -3938,7 +3953,6 @@ object dbtablef: Tdbtablef
       end
       object Filterfor999valuesinanyevaluation1: TMenuItem
         Caption = 'Filter for -999 values in any evaluation'
-        OnClick = Filterfor999valuesinanyevaluation1Click
       end
       object Filterfor0valuesinanyevaluation1: TMenuItem
         Caption = 'Filter for missing evaluations'
@@ -4174,7 +4188,6 @@ object dbtablef: Tdbtablef
     object FindmisplacedGEDTMv12testDEMs1: TMenuItem
       Caption = 'Misplaced or bad elevation units GEDTM v1.2 test DEMs'
       Enabled = False
-      OnClick = FindmisplacedGEDTMv12testDEMs1Click
     end
   end
   object SingleFieldArithmeticPopupMenu: TPopupMenu

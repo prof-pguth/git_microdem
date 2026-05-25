@@ -176,7 +176,7 @@ begin
       PolyLineHeader.ContentLength := PolyLineHeader.ContentLength + (2 + PolyLineHeader.NumPoints) * 16;
    end;
    PolyLineHeader.ContentLength := PolyLineHeader.ContentLength div 2;
-   CheckMainFileBoundingBox(glMainFileHeader,PolyLineHeader.BoundBox.YMin,PolyLineHeader.BoundBox.YMax,PolyLineHeader.BoundBox.XMin,PolyLineHeader.BoundBox.XMax);
+   CheckMainFileBoundingBox(glMainFileHeader,PolyLineHeader.BoundBox);
 end;
 
 
@@ -473,7 +473,7 @@ var
                  PolyLineHeader.ContentLength := PolyLineHeader.ContentLength + (2 + NumPoints) * 16;
               end;
               PolyLineHeader.ContentLength := PolyLineHeader.ContentLength div 2;
-              CheckMainFileBoundingBox(glMainFileHeader,PolyLineHeader.BoundBox.YMin,PolyLineHeader.BoundBox.YMax,PolyLineHeader.BoundBox.XMin,PolyLineHeader.BoundBox.XMax);
+              CheckMainFileBoundingBox(glMainFileHeader,PolyLineHeader.BoundBox);
            end;
         end;
 

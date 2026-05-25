@@ -4,14 +4,16 @@ unit demESRIshapefile;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
 
 //{$Define UseMemoryStream}
 
-//{$Define InlinePlots}
+{$Define InlinePlots}
+
+{$Define InlineReads}
 
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
@@ -71,7 +73,6 @@ uses
    {$EndIf}
 //end
 
-
    System.Types,System.UIConsts,System.UITypes,System.Diagnostics,
    SysUtils,Classes,Math,StrUtils,
 
@@ -97,14 +98,14 @@ uses
    DEMCoord, BaseMap,
    Petmar_types,PETMAR,PETMath;
 
-
-
 type
    tShapeFile = class
       protected
       private
          SHXindexArray :  pshxindexarray;
-         function DrawDonuts(MapDraw : tMapDraw; var Bitmap : tMyBitmap; RecNum : int32) : boolean;  {$IfDef InlinePlots} inline; {$EndIf}
+         CurrentLineRecNum,
+         CurrentCCWRecNum  : int32;
+         function DrawDonuts(MapDraw : tMapDraw; var Bitmap : tMyBitmap; RecNum : int32) : boolean; {$IfDef InlinePlots} inline; {$EndIf}
          procedure ReadSHXindex;
          procedure MoveToStartShapefile; inline;
       public
@@ -124,8 +125,6 @@ type
          Symbol : PETMAR_types.tFullSymbolDeclaration;
          XPlaneMin,XPlaneMax,YPlaneMin,YPlaneMax,ZPlaneMin,ZPlaneMax : float64;
 
-         CurrentLineRecNum,
-         CurrentCCWRecNum  : int32;
          CurrentLineHaveZs : boolean;
          CurrentLineCoords : ^tdCoords;
          CurrentLineZs     : ^tdElevs;
@@ -145,7 +144,7 @@ type
          procedure AreasCounterClockwise;
          function AreaWithHoles(RecNum : int32) : boolean;
 
-         procedure PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap; OSMdata : boolean = false);
+         procedure PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
          procedure SafePolygonOrPolyline(MapDraw : tMapDraw; Bitmap : tMyBitmap; PtsPolyLine : int32; var PolyLinePts : tPolyLinePts; APolygon : boolean);
 
          function LineLength(RecNum : int32; GetZs : boolean = false) : float64;
@@ -158,14 +157,16 @@ type
          function LineAreaBoundBox(RecNum : int32) :  sfBoundBox;
          function LineHeading(RecNum : integer) : float64;
          procedure LineEndPoints(RecNum : int32; var x1,y1,x2,y2 : float64);
-         function ReadPointRecord(RecNo : int32; var PointsHeader : sfPointsWithHeader) : boolean;
-         function ReadPointRecord3D(RecNo : int32; var PointsHeader : sfPointsZWithHeader) : boolean;
-         function ReadPolyLineHeader(RecNum : int32; var PolyLineHeader : sfPolyLineHeader) : boolean; //overload;
-         function NextPolyLineHeader(var PolyLineHeader : sfPolyLineHeader) : boolean; inline;
+
+         function ReadPointRecord(RecNo : int32; var PointsHeader : sfPointsWithHeader) : boolean;   {$IfDef InlineReads} inline; {$EndIf}
+         function GetLineCoords(RecNum : int32; GetZS : boolean = false) : boolean;    {$IfDef InlineReads} inline; {$EndIf}
+         function ReadPointRecord3D(RecNo : int32; var PointsHeader : sfPointsZWithHeader) : boolean;   {$IfDef InlineReads} inline; {$EndIf}
+         function ReadPolyLineHeader(RecNum : int32; var PolyLineHeader : sfPolyLineHeader) : boolean;  {$IfDef InlineReads} inline; {$EndIf}
+         //function NextPolyLineHeader(var PolyLineHeader : sfPolyLineHeader) : boolean; inline;  {$IfDef InlineReads} inline; {$EndIf}
 
          procedure WriteEditCurrentRecordPolyLine(RecNum : int32);
 
-         function GetLineCoords(RecNum : int32; GetZS : boolean = false) : boolean;
+         //function GetLineCoords(RecNum : int32; GetZS : boolean = false) : boolean;  {$IfDef InlineReads} inline; {$EndIf}
          function GetLineCoordsAndZsFromDEM(DEM, RecNum: int32): boolean;
 
          function OldGetLineCoords(RecNum : int32; var NumPts,NParts : int32; var Coords : tdCoords; var PartSize : tPartSize) : boolean;
@@ -236,8 +237,8 @@ type
          procedure AddPointToShapeStream(Lat,Long : float64);
          procedure AddPointWithZToShapeStream(Lat,Long,z : float64);
          procedure GetPolyLineHeader(var PolyLineHeader : sfPolyLineHeader; var zMin,zMax : float64);
-            procedure ProcessShapeDigitization(TheMap : tMapForm);
-            procedure ProcessShapeFileRecord;
+         procedure ProcessShapeDigitization(TheMap : tMapForm);
+         procedure ProcessShapeFileRecord;
    end;
 
 
@@ -259,7 +260,7 @@ function ItsAShapeFile(FileName : PathStr; var NoDBF : boolean) : boolean;
 procedure DeleteShapeFile(FName : PathStr);
 procedure InitializeBoundingBox(var BoundBox : sfBoundBox);
 
-procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader;  LatLow,LatHigh,LongLow,LongHigh : float64); overload;
+//procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader;  LatLow,LatHigh,LongLow,LongHigh : float64); overload;
 procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; Lat,Long : float64); overload;
 procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; Lat,Long,z : float64); overload;
 procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; RecBoundBox : sfBoundBox); overload;
@@ -267,13 +268,14 @@ procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; RecBou
 procedure CheckIfMainFileBoundingBoxIsOutside(MainFileHeader : sfMainFileHeader; var LatLow,LatHigh,LongLow,LongHigh : float64);
 procedure PutBoundBoxInTable(var MyTable : tMyData; BoundBox : sfBoundBox; Name : ShortString = '');
 
-function PointShapeFile(ShapeType : int32) : boolean;  inline;
-function LineShapeFile(ShapeType : int32) : boolean;   inline;
-function AreaShapeFile(ShapeType : int32) : boolean;   inline;
-function ShapeFile3D(ShapeType : int32) : boolean; inline;
-function LineOrAreaShapeFile(ShapeType : int32) : boolean;  inline;
+//ID shapefile type
+    function IsItAShapefile(fName : PathStr) : boolean;
+    function PointShapeFile(ShapeType : int32) : boolean;  inline;
+    function LineShapeFile(ShapeType : int32) : boolean;   inline;
+    function AreaShapeFile(ShapeType : int32) : boolean;   inline;
+    function ShapeFile3D(ShapeType : int32) : boolean; inline;
+    function LineOrAreaShapeFile(ShapeType : int32) : boolean;  inline;
 
-function IsItAShapefile(fName : PathStr) : boolean;
 procedure PrepOSMFiles(OSMPath : PathStr = '');
 
 function DoAShapeFile(fName : PathStr; Trim : boolean = false) : integer;
@@ -1156,10 +1158,20 @@ end;
 
 
 procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; RecBoundBox : sfBoundBox);
+
+      procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; LatLow,LatHigh,LongLow,LongHigh : float64);
+      begin
+         if (LongLow < MainFileHeader.BoundBox.XMin) then MainFileHeader.BoundBox.XMin := LongLow;
+         if (LongHigh > MainFileHeader.BoundBox.XMax) then MainFileHeader.BoundBox.XMax := LongHigh;
+         if (LatLow < MainFileHeader.BoundBox.YMin) then MainFileHeader.BoundBox.YMin := LatLow;
+         if (LatHigh > MainFileHeader.BoundBox.YMax) then MainFileHeader.BoundBox.YMax := LatHigh;
+      end;
+
 begin
    CheckMainFileBoundingBox(MainFileHeader, RecBoundBox.YMin,RecBoundBox.YMax,RecBoundBox.XMin,RecBoundBox.XMax);
 end;
 
+(*
 procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; LatLow,LatHigh,LongLow,LongHigh : float64);
 begin
    if (LongLow < MainFileHeader.BoundBox.XMin) then MainFileHeader.BoundBox.XMin := LongLow;
@@ -1167,7 +1179,7 @@ begin
    if (LatLow < MainFileHeader.BoundBox.YMin) then MainFileHeader.BoundBox.YMin := LatLow;
    if (LatHigh > MainFileHeader.BoundBox.YMax) then MainFileHeader.BoundBox.YMax := LatHigh;
 end;
-
+*)
 
 procedure CheckMainFileBoundingBox(var MainFileHeader : sfMainFileHeader; Lat,Long : float64);
 begin
@@ -1700,6 +1712,7 @@ begin
 end;
 
 
+(*
 function tShapeFile.NextPolyLineHeader(var PolyLineHeader : sfPolyLineHeader) : boolean;
 var
    IndexRecord  : sfIndexRecord;
@@ -1717,7 +1730,7 @@ begin
    Result := LineOrAreaShapeFile(PolyLineHeader.ShapeType);
    {$IfDef RecordShapeFileLine} WriteLineToDebugFile('Polyline header: ' + IntToStr(RecNum) + '  Offset: ' + IntToStr(IndexRecord.Offset) + '   Content len: ' + IntToStr(IndexRecord.ContentLength)); {$EndIf}
 end;
-
+*)
 
 
 function tShapeFile.ReadPolyLineHeader(RecNum : int32; var PolyLineHeader : sfPolyLineHeader) : boolean;
@@ -1725,10 +1738,10 @@ var
    Offset : int32;
    IndexRecord  : sfIndexRecord;
 begin
-   result := false;
+   result := true;
    if (SHXindexArray <> Nil) then begin
       Offset := SHXindexArray^[RecNum].Offset;
-      //   Int4Swap(SHXindexArray^[i].ContentLength);
+      // Int4Swap(SHXindexArray^[i].ContentLength);
    end
    else begin
       Offset := 8 * pred(RecNum) + SizeOf(sfMainFileHeader);
@@ -2224,7 +2237,7 @@ begin
 end;
 
 
-procedure tShapeFile.PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap; OSMdata : boolean = false);
+procedure tShapeFile.PlotAllRecords(MapDraw : tMapDraw; var Bitmap : tMyBitmap{; OSMdata : boolean = false});
 var
    i,nDrawn,j,RecsRead,x,y,OnBlock,BlocksNeeded,Track : int32;
    ShapePoints3D : ^tLotsOfPoints3D;
@@ -2282,16 +2295,13 @@ begin
        end;
    end
    else begin
-     {$IfDef TimeDBPlot} writeLineToDebugFile('Line/area DB    Pen color: ' + IntToStr(Bitmap.Canvas.Pen.Color) + '  Pen width ' + IntToStr(Bitmap.Canvas.Pen.Width) + '  Brush color ' + IntToStr(Bitmap.Canvas.Brush.Color)); {$EndIf}
+      {$IfDef TimeDBPlot} writeLineToDebugFile('area/line NumRecs=' + IntToStr(NumRecs) + '  Pen color: ' + IntToStr(Bitmap.Canvas.Pen.Color) + '  Pen width ' + IntToStr(Bitmap.Canvas.Pen.Width) + '  Brush color ' + IntToStr(Bitmap.Canvas.Brush.Color)); {$EndIf}
       nDrawn := 0;
-      //Track:= UpdateRate(NumRecs);
-      MoveToStartShapefile;
+       MoveToStartShapefile;
       try
          ShapefileRandomAccess := false;
           for i := 1 to NumRecs do begin
-             if OSMdata then begin
-                Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width * 2;
-             end;
+             //if OSMdata then begin  Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width * 2; end;
              if PlotSingleRecordMap(MapDraw,Bitmap,i) then inc(NDrawn)
              else begin
                  {$IfDef TrackNoPlots} writeLineToDebugFile('tShapeFile.PlotAllRecords, fail to draw ' + IntToStr(i)); {$EndIf}
@@ -2300,17 +2310,15 @@ begin
                 {$IfDef VCL} UpdateProgressBar(i/Numrecs); {$EndIf}
                 if WantOut then Break;
              end;
-             if OSMdata then begin
-                Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width div 2;
-             end;
+            //if OSMdata then begin Bitmap.Canvas.Pen.Width := Bitmap.Canvas.Pen.Width div 2;  end;
           end;
        finally
          ShapefileRandomAccess := true;
        end;
    end;
    {$IfDef VCL} if ShowSatProgress and (not ThreadsWorking) then EndProgress; {$EndIf}
-   {$If Defined(TimeShapefile) or Defined(TimeDBPlot)}  WriteLineToDebugFile('PlotAllRecords, n=' + IntToStr(nDrawn) + '  took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
-end;
+   {$If Defined(TimeShapefile) or Defined(TimeDBPlot)} WriteLineToDebugFile('PlotAllRecords, n=' + IntToStr(nDrawn) + '  took ' + RealToString(Stopwatch1.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
+end {procedure tShapeFile.PlotAllRecords};
 
 
 function tShapeFile.LineLength;

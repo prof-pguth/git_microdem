@@ -8,14 +8,6 @@
 {________________________________________}
 
 
-function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
-var
-   Starter : shortstring;
-begin
-   Starter := UpperCase(Copy(AreaName,1,3));
-   Result := (Starter = 'MX_') or (Starter = 'UK_') or (Starter = 'CH_') or (Starter = 'NL_') or (Starter = 'NZ_') or (Starter = 'FR_') or
-      (Starter = 'DE_') or (Starter = 'DK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_');
-end;
 
 
 function DEMIX_NoVerticalShift(AreaName : shortstring) : boolean;
@@ -29,7 +21,7 @@ end;
 
 function DEMIX_UTM_TileName(AreaName : shortstring; FileName : PathStr) : shortstring;
 var
-   Northing : integer;
+   //Northing : integer;
    Starter : shortstring;
    TileMerges : tStringList;
 begin
@@ -48,66 +40,16 @@ begin
       *)
       TileMerges := Nil;
       FindMatchingFiles(FileName,'*.tif',TileMerges,2);
-      Result := AreaName + '_' + ExtractFileNameNoExt(TileMerges.Strings[0]);
+      if TileMerges.Count > 0 then begin
+         Result := AreaName + '_' + ExtractFileNameNoExt(TileMerges.Strings[0]);
+      end
+      else begin
+        {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No tiles found to merge, ' + AreaName); {$EndIf}
+      end;
       TileMerges.Destroy;
-   end;
-
-   if (UpperCase(Copy(AreaName,1,3)) = 'CA_') then begin
-      Result := 'CA_' + ExtractFileNameNoExt(FileName);
-   end;
-
-   if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
-      //Result := 'ES_' + copy(ExtractFileNameNoExt(FileName),1,5) + '_' + copy(ExtractFileNameNoExt(FileName),14,11);
-      Result := 'ES_' + ExtractFileNameNoExt(FileName);
-      {MDT02-ETRS89-HU29-0802-3-COB2.tif    }
-   end;
-
-   if (UpperCase(Copy(AreaName,1,3)) = 'IC_') then begin
-      //Result := 'IC_' + copy(ExtractFileNameNoExt(FileName),1,5) + '_' + copy(ExtractFileNameNoExt(FileName),16,11);
-      Result := 'IC_' + ExtractFileNameNoExt(FileName);
-      {MDT02-REGCAN95-HU28-1105-2-COB2.tif  }
-   end;
-
-   if (UpperCase(Copy(AreaName,1,3)) = 'NO_') then begin
-      Result := 'NO_' + ExtractFileNameNoExt(FileName);
-   end;
-
-   if (Starter = 'SL_') then Result := ExtractFileNameNoExt(FileName);
-
-   if StrUtils.AnsiContainsText(FileName,'USGS') then begin
-       Result := 'US_' + ExtractFileNameNoExt(FileName);
-       (*
-       if StrUtils.AnsiContainsText(FileName,'USGS_1m_x') then begin
-         {USGS_1m_x13y202_PR_PRVI_D_2018.tif  }
-         Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),8,8)
-       end
-       else if StrUtils.AnsiContainsText(FileName,'USGS_1M_') then begin
-          {USGS_1M_11_x43y414_NV_WestCentral_EarthMRI_2020_D20.tif  }
-          Result := 'UTM' + Copy(ExtractFileName(FileName),8,11);
-       end
-       else if StrUtils.AnsiContainsText(FileName,'USGS_one_meter_') then begin
-          {USGS_one_meter_x28y440_PA_South_Central_B1_2017.tif }
-           Result := 'UTM_' + IntToStr(Geotiff_UTMzone(FileName)) + Copy(ExtractFileName(FileName),15,8)
-       end;
-       if (Result[14] = '_') then begin
-          {UTM_4_x86y222_ }
-          //this is Hawaii or other Pacific Island
-          Delete(Result,14,1);
-          Insert('0',Result,5);
-       end;
-       //this only applies to USGS DEM, so it is N hemisphere
-       Insert('N',Result,7);
-       {UTM_10N_x65y529}
-       //drop 10,000 m to SW corner
-       Northing := StrToInt(Copy(Result,13,3));
-       Northing := Northing - 1;
-       Delete(Result,13,3);
-       Insert(IntToStr(Northing),Result,13);
-       *)
-   end;
-   if (Result = '') then begin
-       Result := 'Unknown';
-       MessageToContinue('Unknown UTM tile ' + ExtractFileName(FileName));
+   end
+   else begin
+      Result := UpperCase(Copy(AreaName,1,3)) + ExtractFileNameNoExt(FileName);
    end;
 end;
 

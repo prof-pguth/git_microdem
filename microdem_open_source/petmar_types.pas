@@ -6,7 +6,7 @@ unit petmar_types;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -163,12 +163,6 @@ type
        const
           Max_Path = 255;
    {$EndIf}
-
-{$IfDef VCL}
-//const
-   //WinGraphColors : tColorArray = (clBlack,clRed,clBlue,clLime,clFuchsia,clPurple,clNavy,clAqua,clTeal,clOlive,clMaroon,clGreen,clYellow,clDkGray,clSilver,clWhite);
-{$EndIf}
-
 
 
 type

@@ -4,7 +4,7 @@ unit md_use_tools;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 
@@ -295,7 +295,7 @@ begin
      WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
      if FileExists(OutName) then begin
         Result := OpenNewDEM(OutName,false);
-        DEMGlb[Result].DEMheader.ElevUnits := eucurv_kncc;
+        //DEMGlb[Result].DEMheader.ElevUnits := eucurv_kncc;
         DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
         if OpenMap then CreateDEMSelectionMap(Result,true,true,mtDEMBlank);
      end
@@ -304,9 +304,6 @@ begin
      end;
    end;
 end;
-
-
-
 
 
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);

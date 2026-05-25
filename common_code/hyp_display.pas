@@ -14,7 +14,6 @@ unit hyp_display;
    //{$Define RecordHyperion}
 {$EndIf}
 
-
 interface
 
 uses
@@ -185,7 +184,6 @@ begin
     BlueBandNum := 18;
     GrayBandNum := RedBandNum;
 
-    //if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
        CreateDEMSelectionMap(MultiGridArray[MultiGridUsed].Grids[GrayBandNum],true,false,mtElevGray);
       {$If Defined(RecordHyperion)} WriteLineToDebugFile('Created selection map, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
@@ -199,43 +197,17 @@ begin
       {$If Defined(RecordHyperion)} WriteLineToDebugFile('Multiband shown, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
        Caption := MultiGridArray[MultiGridUsed].MG_Name;
-       //ListBox2.Sorted := false;
-         for i := 1 to MaxGridsInMG do begin
             if ValidDEM(MultiGridArray[MultiGridUsed].Grids[i]) then begin
-               //if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName
-               //else TStr := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i];
                TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName;
-               //ListBox2.Items.Add(TStr);
                ComboBox1.Items.Add(TStr);
                ComboBox2.Items.Add(TStr);
                ComboBox3.Items.Add(TStr);
                ComboBox4.Items.Add(TStr);
             end;
-         end;
+         //end;
 
          LabelBands;
-
-         if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
-(*
-            ComboBox1.Visible := false;
-            ComboBox2.Visible := false;
-            ComboBox3.Visible := false;
-            ComboBox4.Visible := false;
-*)
-         end
-         else begin
-(*
-            ListBox2.Visible := false;
-            ComboBox1.Text := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName;
-            ComboBox2.Text := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName;
-            ComboBox3.Text := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[BlueBandNum];
-            ComboBox4.Text := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[GrayBandNum];
-*)
-         end;
-    //end
-    //else begin
-       //BaseMap := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].SelectionMap;
-    //end;
+         //end;
     BitBtn10Click(Nil);
     wmDEM.FormPlacementInCorner(self);
     Show;
@@ -288,11 +260,9 @@ end;
 
 procedure THyperspectralForm.BitBtn10Click(Sender: TObject);
 begin
-   //if (MultiGridArray[MultiGridUsed].SatImageIndex = 0) then begin
-      RedBandNum := 48;
-      GreenBandNum := 32;
-      BlueBandNum := 18;
-   //end;
+   RedBandNum := 48;
+   GreenBandNum := 32;
+   BlueBandNum := 18;
    if (Sender <> Nil) then begin
       AssociateBandDEMs('False color');
       {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn10Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
@@ -301,11 +271,9 @@ end;
 
 procedure THyperspectralForm.BitBtn11Click(Sender: TObject);
 begin
-   //if MultiGridArray[MultiGridUsed].SatImageIndex = 0  then begin
-      RedBandNum := 32;
-      GreenBandNum := 18;
-      BlueBandNum := 14;
-   //end;
+   RedBandNum := 32;
+   GreenBandNum := 18;
+   BlueBandNum := 14;
    if (Sender <> Nil) then begin
       AssociateBandDEMs('True color');
      {$IfDef RecordColorImage} WriteLineToDebugFile('THyperspectralForm.BitBtn11Click out, title=' + BaseMap.MapDraw.BaseTitle); {$EndIf}
@@ -333,10 +301,7 @@ end;
 procedure THyperspectralForm.BitBtn15Click(Sender: TObject);
 var
    Incr : integer;
-//var
-   //DEMsWanted : tDEMBooleanArray;
 begin
-   //GetMultipleDEMsFromList('Grid correlations',DEMsWanted);
    Incr := 10;
    ReadDefault('Sampling interval',Incr);
    GridCorrelationMatrix(gcmR,GetMultipleDEMsFromList('Grid correlations'),'Hyperspectral correlation matrix',incr);
@@ -359,7 +324,6 @@ begin
    else HypersectralImage.GrayBand := 0;
    with HypersectralImage do DisplayCube(GrayBand,RedBand,GreenBand,BlueBand);
 end;
-
 
 
 procedure THyperspectralForm.MakeScatterPlotsWithClasses;
@@ -575,21 +539,8 @@ var
    i : integer;
    fName : shortstring;
 begin
-
-
-(*
-   for i := 1 to SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].NumBands do begin
-      if ComboBox1.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then RedBandNum := i;
-      if ComboBox2.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then GreenBandNum := i;
-      if ComboBox3.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then BlueBandNum := i;
-      if ComboBox4.Text = SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i] then GrayBandNum := i;
-   end;
-*)
-
    for i := 1 to MaxGridsInMG do begin
       if ValidDEM(MultiGridArray[MultiGridUsed].Grids[i]) then begin
-         //if MultiGridArray[MultiGridUsed].SatImageIndex = 0 then TStr := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName
-         //else TStr := SatImage[MultiGridArray[MultiGridUsed].SatImageIndex].BandLongName[i];
          fName := DEMGlb[MultiGridArray[MultiGridUsed].Grids[i]].AreaName;
          if ComboBox1.Text = fName then RedBandNum := i;
          if ComboBox2.Text = fName then GreenBandNum := i;
@@ -597,7 +548,6 @@ begin
          if ComboBox4.Text = fName then GrayBandNum := i;
       end;
    end;
-
    if ShowColor and (RadioGroup2.ItemIndex  = 3) then AssociateBandDEMs('User picks')
    else BaseMap.SetMultibandToShowOnMap(GrayBandNum);
 end;

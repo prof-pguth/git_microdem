@@ -560,11 +560,13 @@ begin
    BitBtn1Click(Sender);
 end;
 
+
+
 procedure TdbFilterCreation.BitBtn7Click(Sender: TObject);
 var
    SL : tStringList;
    aFilter : shortstring;
-   i : integer;
+   //i : integer;
 begin
    if (WantedFieldName = '') then begin
       MessageToContinue('Pick DB field first');
@@ -575,15 +577,7 @@ begin
       GISdb[db].EmpSource.Enabled := true;
       PickSomeFromStringList(SL,'fields to add with OR');
       if (sl.Count > 1) then begin
-         aFilter := '';
-         for i := 0 to pred(sl.Count) do begin
-            if GISdb[db].MyData.IsStringField(GISdb[db].MyData.GetFieldName(WantedField)) then begin
-               aFilter := AddOrIfNeeded(aFilter) + WantedFieldName + '=' + QuotedStr(sl.Strings[i]);
-            end
-            else begin
-               aFilter := AddOrIfNeeded(aFilter) + WantedFieldName+ '=' + sl.Strings[i];
-            end;
-         end;
+         aFilter := MakeOrFilter(db,GISdb[db].MyData.GetFieldName(WantedField),sl);
          Memo1.Lines.Add('(' + aFilter + ')');
       end;
       sl.Free;

@@ -338,9 +338,6 @@ var
 {$EndIf}
 
 
-
-procedure OneDegreeTilesToCoverTestAreas;
-
 procedure TrimReferenceDEMsToDEMIXtiles;
 
 function AreDEMIXscoresInDB(db : integer) : boolean;
@@ -368,7 +365,7 @@ procedure ImportLandParamFiltersLong(fName : PathStr; var GeomorphFilters,Labels
 
 function ContinueExperimentalDEMIX : boolean;
 function NoSuffixCriterion(Criterion : shortstring) : shortstring;
-function TileCharacteristicsInDB(DB : integer; Warn : boolean = false) : boolean;
+function TileCharacteristicsInDB(DB : integer) : boolean;
 procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 
 function InsureFUVinLSPname(aName : shortstring) : shortstring;
@@ -386,12 +383,9 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
    {$EndIf}
 
    {$IfDef IncludeVectorCriteria}
+    //vector (channel network, ridges, valleys) comparisons
       Stream_valley_dir,
       ChannelMissesDir : PathStr;
-   {$EndIf}
-
-   {$IfDef IncludeVectorCriteria}
-    //vector (channel network, ridges, valleys) comparisons
        procedure ClassificationAgreement(Overwrite : boolean; AreasWanted : tstringlist = nil);
        procedure CompareChannelNetworks(Overwrite : boolean; Area : shortstring);
        procedure ChannelNetworkMissPercentages(Overwrite : boolean; AreasWanted : tstringlist = nil);
@@ -461,6 +455,8 @@ function ExpandFullFilterName(fName : shortstring) : PathStr;
 function AreaWithMergingFiles(AreaName : shortstring) : boolean;
 
 
+function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
+function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var HorizDatum,VertDatum,UTMzone : shortstring) : boolean;
 
 
 implementation
@@ -494,6 +490,76 @@ uses
 {$IfDef IncludeVectorCriteria}
    {$include demix_channels.inc}
 {$EndIf}
+
+
+function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
+var
+   CountryDatums : PathStr;
+   db : tMyData;
+   Country : shortstring;
+begin
+   Result := false;
+   CountryDatums := ProgramRootDir + 'national_datum_codes.dbf';
+   if FileExists(CountryDatums) then begin
+      Country := UpperCase(Copy(AreaName,1,3));
+      db := tMyData.Create(CountryDatums);
+      db.ApplyFilter('COUNTRY=' + QuotedStr(Country));
+      if (db.FiltRecsInDB > 0) then begin
+         Result := UpperCase(db.GetFieldByNameAsString('MERGE')) = 'Y';
+      end
+      else begin
+         MessageToContinue('County = ' + Country + '  Missing ' + CountryDatums);
+      end;
+      db.Destroy;
+   end
+   else begin
+      MessageToContinue('Missing ' + CountryDatums);
+   end;
+end;
+
+function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var HorizDatum,VertDatum,UTMzone : shortstring) : boolean;
+var
+   Country,Region : shortstring;
+   CountryDatums : PathStr;
+   db : tMyData;
+
+   procedure ReadValues;
+   begin
+      VertDatum  := db.GetFieldByNameAsString('VERT_DATUM');
+      HorizDatum := db.GetFieldByNameAsString('HORZ_DATUM');
+      UTMzone    := db.GetFieldByNameAsString('UTM_ZONE');
+   end;
+
+begin
+   Result := false;
+   CountryDatums := ProgramRootDir + 'national_datum_codes.dbf';
+   if FileExists(CountryDatums) then begin
+      db := tMyData.Create(CountryDatums);
+      //AreaName := UpperCase(AreaName);
+      Country := UpperCase(Copy(AreaName,1,3));
+      db.ApplyFilter('COUNTRY=' + QuotedStr(Country));
+      if (db.FiltRecsInDB > 0) then begin
+         Result := true;
+         ReadValues;
+         if (db.FiltRecsInDB > 1) then begin
+            db.Next;
+            while not(db.eof) do begin
+               Region := UpperCase(db.GetFieldByNameAsString('REGION'));
+               if StrUtils.AnsiContainsText(AreaName,Region) then begin
+                  ReadValues;
+               end;
+            end;
+         end;
+         if (UTMzone = '') then UTMzone := AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName))
+      end;
+      db.Destroy;
+   end
+   else begin
+      MessageToContinue('Missing ' + CountryDatums);
+   end;
+end;
+
+
 
 
 
@@ -688,17 +754,22 @@ begin
 end;
 
 
-function TileCharacteristicsInDB(DB : integer; Warn : boolean = false) : boolean;
+function TileCharacteristicsInDB(DB : integer) : boolean;
 begin
    Result := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
-   if Warn and (not Result) then MessageToContinue('Tile characteristics missing in ' + GISdb[db].dbName);
+   if (not Result) then begin
+     if AnswerIsYes('Add tile characteristics missing in ' + GISdb[db].dbName) then begin
+        AddTileCharacteristicsToDB(DB);
+        Result := GISdb[DB].MyData.FieldExists('BARREN_PC') and GISdb[DB].MyData.FieldExists('AVG_SLOPE');
+     end;
+   end;
 end;
 
 
 procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 begin
-     WriteLineToDebugFile(Where);
-     WriteStringListToDebugFile(UseLSPs,true);
+   WriteLineToDebugFile(Where);
+   WriteStringListToDebugFile(UseLSPs,true);
 end;
 
 
@@ -819,7 +890,6 @@ begin
      Criteria.Destroy;
    end;
 end;
-
 
 
 procedure FilterTableForDEMIXevaluation(DBonTable,Value : integer; anOperator : shortString = '<=');

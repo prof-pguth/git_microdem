@@ -115,17 +115,20 @@ var
       FinishScatterPlotParameters(db,Result);
    end;
 
+var
+   ThisFilter : shortstring;
 begin  {procedure BestDEMonScatterPlotTwoParameter}
-   if TileCharacteristicsInDB(DB,true) then begin
+   if TileCharacteristicsInDB(DB) then begin
       BaseFilter := GISdb[db].MyData.Filter;
       for I := 0 to pred(Criteria.Count) do begin
          Criterion := Criteria.Strings[i];
-         GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'Criterion=' + QuotedStr(Criterion));
+         ThisFilter := '(' +  Uppercase('Criterion=' + QuotedStr(Criterion)) + ')';
+         if (BaseFilter <> '') and (ThisFilter <> UpperCase(BaseFilter)) then ThisFilter := AddAndIfNeeded(BaseFilter) + ThisFilter;
+         GISdb[db].ApplyGISFilter(ThisFilter);
          Tolerance := CriterionTieTolerance(Criterion);
          GISdb[db].dbOpts.Symbol.Size := 8;
          gr := DoGraph;
       end;
-     //MakeBigBitmap(FileList,'',fName,2);
      GISdb[db].ApplyGISFilter(BaseFilter);
      GISdb[db].ShowStatus;
   end;
@@ -207,7 +210,7 @@ begin {procedure GridOfTerrainScatterPlots}
              for I := 0 to pred(Compares.Count) do begin
                 GISdb[DB].ApplyGISFilter(AddAndIfNeeded(SpaceFilter) + 'COMPARE=' + QuotedStr(Compares.Strings[i]));
                 {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
-                gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter +  ' (n=' + IntToStr(GISdb[DB].MyData.FiltRecsInDB) + ')');
+                gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter +  GISdb[DB].NumRecsInDBstring);
              end;
          end;
          Ncols := Compares.Count;
@@ -220,7 +223,7 @@ begin {procedure GridOfTerrainScatterPlots}
            for I := 0 to pred(DEMs.Count) do begin
               GISdb[DB].dbOpts.NumericColorField := DEMs.Strings[i];
               {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
-              gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter + '  (n=' + IntToStr(GISdb[DB].MyData.FiltRecsInDB) + ')');
+              gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter + GISdb[DB].NumRecsInDBstring);
            end;
            Ncols := DEMs.Count;
        end;

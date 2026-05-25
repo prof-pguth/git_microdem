@@ -8,6 +8,62 @@
 {________________________________________}
 
 
+procedure ScatterPlotTwoDEMs(db : integer; DEM1,DEM2 : shortstring; Criteria : tStringList);
+//row of graphs for each criterion currently selected
+//scatter plot for the FUV, x and y axis are the first two DEMs currently selected
+//uses any current filter in the DB
+var
+   i : integer;
+   BaseFilter,aFilter,Criterion : shortstring;
+   gr : t1DGraphArray;
+
+       function OneGraph : tThisBaseGraph;
+       var
+          v : array[1..2] of float32;
+          rfile : file;
+          fName : PathStr;
+       begin
+           Result:= tThisBaseGraph.Create(Application);
+           Result.Width := MDDef.DEMIX_xsize;
+           Result.Height := MDDef.DEMIX_ysize;
+           Result.GraphDraw.ShowHorizAxis1 := true;
+           Result.GraphDraw.HorizLabel := DEM1 + '_FUV';
+           Result.GraphDraw.VertLabel := DEM2 + '_FUV';
+           Result.Caption := GISdb[DB].DBName;
+           Result.GraphDraw.MinVertAxis := 0;
+           Result.GraphDraw.MaxVertAxis := 1;
+           Result.GraphDraw.MinHorizAxis := 0;
+           Result.GraphDraw.MaxHorizAxis := 1;
+           Result.GraphDraw.LeftMargin := 90;
+           Result.GraphDraw.BottomMargin := 90;
+           Result.GraphDraw.Draw1to1Line := true;
+           Result.GraphDraw.SetShowAllPoints(true);
+           Result.GraphDraw.LRCornerText := aFilter + GISdb[DB].NumRecsInDBstring;
+           fName := DEM1 + '_' + DEM2 + '_' + Criterion;
+           Result.OpenDataFile(rfile,fName);
+           while not GISdb[db].MyData.eof do begin
+              v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(DEM1);
+              v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEM2);
+              BlockWrite(rfile,v,1);
+              GISdb[db].MyData.Next;
+           end;
+           CloseFile(rFile);
+           Result.RedrawDiagram11Click(Nil);
+       end;
+
+begin {procedure ScatterPlotTwoDEMs}
+   BaseFilter := GISdb[db].MyData.Filter;
+   for I := 1 to Criteria.count do begin
+      Criterion := Criteria.Strings[pred(i)];
+      aFilter := AddAndIfNeeded(BaseFilter)  + 'CRITERION=' + QuotedStr(Criterion);
+      GISdb[db].ApplyGISfilter(aFilter);
+      GISdb[DB].EmpSource.Enabled := false;
+      gr[i] := OneGraph;
+   end;
+   GISdb[db].ApplyGISfilter(BaseFilter);
+end  {procedure ScatterPlotTwoDEMs};
+
+
 
 procedure DEMIXMeanMedianHistograms(db : integer);
 var
@@ -777,8 +833,8 @@ var
              {$EndIf}
              GISdb[DBonTable].EmpSource.Enabled := false;
              Result := tThisBaseGraph.Create(Application);
-             Result.GraphDraw.HorizLabel := RemoveUnderscores(HorizLabel);
-             Result.GraphDraw.VertLabel := RemoveUnderscores(VertLabel);
+             Result.GraphDraw.HorizLabel := RemoveUnderscores(HorizLabel,false);
+             Result.GraphDraw.VertLabel := RemoveUnderscores(VertLabel,false);
              Result.GraphDraw.RighJustifyHorizLabel := true;
 
              Result.Caption := GISdb[DBonTable].DBName;
