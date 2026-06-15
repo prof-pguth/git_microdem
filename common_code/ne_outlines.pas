@@ -39,7 +39,6 @@ type
     CheckBox3: TCheckBox;
     RedrawSpeedButton12: TSpeedButton;
     Label4: TLabel;
-    BitBtn2: TBitBtn;
     BitBtn16: TBitBtn;
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
@@ -56,7 +55,6 @@ type
     procedure Edit3Change(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
     procedure CheckBox3Click(Sender: TObject);
-    procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn16Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
@@ -138,13 +136,6 @@ begin
    GetFileFromDirectory('Small scale vectors','*.dbf',SmallScaleWorldOutlines);
    Label1.Caption := SmallScaleWorldOutlines;
    OpenDBForModalEdit(SmallScaleWorldOutlines);
-end;
-
-procedure TNEOutlineForm.BitBtn2Click(Sender: TObject);
-begin
-   {$IfDef AllowUSNAdataDownloads}
-      GetNaturalEarthData(True);
-   {$EndIf}
 end;
 
 procedure TNEOutlineForm.BitBtn3Click(Sender: TObject);

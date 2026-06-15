@@ -176,16 +176,6 @@ object NEOutlineForm: TNEOutlineForm
     TabOrder = 9
     OnClick = CheckBox3Click
   end
-  object BitBtn2: TBitBtn
-    Left = 499
-    Top = 136
-    Width = 109
-    Height = 25
-    Caption = 'Force NE download'
-    Enabled = False
-    TabOrder = 10
-    OnClick = BitBtn2Click
-  end
   object BitBtn16: TBitBtn
     Left = 185
     Top = 30
@@ -200,7 +190,7 @@ object NEOutlineForm: TNEOutlineForm
       44400FF0EFE4EFE4EFE00000FEF4FEF4FEF00FF04444444444400FF0FEF4FEF4
       FEF00FF0EFE4EFE4EFE000000000000000000FF0FFFFF0FFFFF00FF0FFFFF0FF
       FFF00000000000000000DADADADADADADADAADADADADADADADAD}
-    TabOrder = 11
+    TabOrder = 10
     OnClick = BitBtn16Click
   end
   object BitBtn3: TBitBtn
@@ -217,7 +207,7 @@ object NEOutlineForm: TNEOutlineForm
       44400FF0EFE4EFE4EFE00000FEF4FEF4FEF00FF04444444444400FF0FEF4FEF4
       FEF00FF0EFE4EFE4EFE000000000000000000FF0FFFFF0FFFFF00FF0FFFFF0FF
       FFF00000000000000000DADADADADADADADAADADADADADADADAD}
-    TabOrder = 12
+    TabOrder = 11
     OnClick = BitBtn3Click
   end
   object BitBtn4: TBitBtn
@@ -234,7 +224,7 @@ object NEOutlineForm: TNEOutlineForm
       44400FF0EFE4EFE4EFE00000FEF4FEF4FEF00FF04444444444400FF0FEF4FEF4
       FEF00FF0EFE4EFE4EFE000000000000000000FF0FFFFF0FFFFF00FF0FFFFF0FF
       FFF00000000000000000DADADADADADADADAADADADADADADADAD}
-    TabOrder = 13
+    TabOrder = 12
     OnClick = BitBtn4Click
   end
   object CheckBox4: TCheckBox
@@ -243,7 +233,7 @@ object NEOutlineForm: TNEOutlineForm
     Width = 97
     Height = 17
     Caption = 'Grayscale'
-    TabOrder = 14
+    TabOrder = 13
     OnClick = CheckBox4Click
   end
   object CheckBox5: TCheckBox
@@ -252,7 +242,7 @@ object NEOutlineForm: TNEOutlineForm
     Width = 97
     Height = 17
     Caption = 'Subdue'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = CheckBox5Click
   end
 end

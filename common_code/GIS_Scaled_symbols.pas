@@ -1348,16 +1348,24 @@ begin
 end;
 
 procedure Tgis_scaled_form.StringsComboBox2Change(Sender: TObject);
+var
+   StringCategories : tStringList;
 begin
    GISdb[theDB].dbOpts.FloatColorField := StringsComboBox2.Text;
+   (*
    if (GISdb[theDB].StringCategories <> Nil) then begin
       GISdb[theDB].StringCategories.Free;
       GISdb[theDB].StringCategories := Nil;
    end;
+   *)
    GISdb[theDB].EmpSource.Enabled := false;
-   GISdb[theDB].StringCategories := GISdb[theDB].MyData.FindUniqueEntriesLinkPossible(GISdb[theDB].LinkTable,GISdb[theDB].dbOpts.LinkFieldThisDB,GISdb[theDB].dbOpts.LinkFieldOtherDB,StringsComboBox2.Text);
+   //GISdb[theDB].StringCategories := GISdb[theDB].MyData.FindUniqueEntriesLinkPossible(GISdb[theDB].LinkTable,GISdb[theDB].dbOpts.LinkFieldThisDB,GISdb[theDB].dbOpts.LinkFieldOtherDB,StringsComboBox2.Text);
+   //GISdb[theDB].EmpSource.Enabled := true;
+  // Label6.Caption := 'Categories: ' + IntToStr(GISdb[theDB].StringCategories.Count);
+   StringCategories := GISdb[theDB].MyData.FindUniqueEntriesLinkPossible(GISdb[theDB].LinkTable,GISdb[theDB].dbOpts.LinkFieldThisDB,GISdb[theDB].dbOpts.LinkFieldOtherDB,StringsComboBox2.Text);
    GISdb[theDB].EmpSource.Enabled := true;
-   Label6.Caption := 'Categories: ' + IntToStr(GISdb[theDB].StringCategories.Count);
+   Label6.Caption := 'Categories: ' + IntToStr(StringCategories.Count);
+   StringCategories.Destroy;
    Edit19.Text := GISdb[theDB].dbOpts.FloatColorField;
    GISdb[theDB].LegendCaption := Edit19.Text;
    ChangeDisplayOptions;

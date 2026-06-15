@@ -253,6 +253,7 @@ var
    i : integer;
    b : byte;
 begin
+   {$IfDef UseDBPlotOrder}
    for i := 2 to 15 do begin
       if (DBPlotOrder[i] = ol) then begin
           b := DBPlotOrder[i];
@@ -261,6 +262,7 @@ begin
           exit;
       end;
    end;
+   {$EndIf}
 end;
 
 
@@ -686,37 +688,42 @@ var
    begin
       ThePanel.Visible := (GISdb[i] <> Nil) and GISDB[i].CanPlot;
       if ThePanel.Visible then begin
-         GISdb[i].LayerIsOn := DBPlotNow[i];
+         {$IfDef UseDBPlotNow} GISdb[i].LayerIsOn := DBPlotNow[i];{$EndIf}
          ThePanel.Top := BaseTop;
          GISdb[i].ColorButtonForSymbol(TheButton,GISdb[i].dbLegendLabel);
          BaseTop := BaseTop + ThePanel.Height;
-         CheckBox.Checked := DBPlotNow[i];
+         {$IfDef UseDBPlotNow} CheckBox.Checked := DBPlotNow[i]; {$EndIf}
       end;
    end;
 
 begin
    {$IfDef RecordTOC} WriteLinetoDebugFile('Tdb_display_opts.LabelTheButtons in'); {$EndIf}
-   BaseTop := 0;
-   for I := 1 to 15 do begin
-      case DBPlotOrder[i] of
-         1 : APanel(Panel1,BitBtn1,CheckBox1,1);
-         2 : APanel(Panel2,BitBtn2,CheckBox2,2);
-         3 : APanel(Panel3,BitBtn3,CheckBox3,3);
-         4 : APanel(Panel4,BitBtn4,CheckBox4,4);
-         5 : APanel(Panel5,BitBtn5,CheckBox5,5);
-         6 : APanel(Panel6,BitBtn6,CheckBox6,6);
-         7 : APanel(Panel7,BitBtn7,CheckBox7,7);
-         8 : APanel(Panel8,BitBtn8,CheckBox8,8);
-         9 : APanel(Panel9,BitBtn9,CheckBox9,9);
-         10 : APanel(Panel10,BitBtn10,CheckBox10,10);
-         11 : APanel(Panel11,BitBtn11,CheckBox11,11);
-         12 : APanel(Panel12,BitBtn12,CheckBox12,12);
-         13 : APanel(Panel13,BitBtn13,CheckBox13,13);
-         14 : APanel(Panel14,BitBtn14,CheckBox14,14);
-         15 : APanel(Panel15,BitBtn15,CheckBox15,15);
-      end;
-   end;
-   ClientHeight := BaseTop + BottomPanel.Height;
+   {$IfDef UseDBPlotOrder}
+       BaseTop := 0;
+       for I := 1 to 15 do begin
+          case DBPlotOrder[i] of
+             1 : APanel(Panel1,BitBtn1,CheckBox1,1);
+             2 : APanel(Panel2,BitBtn2,CheckBox2,2);
+             3 : APanel(Panel3,BitBtn3,CheckBox3,3);
+             4 : APanel(Panel4,BitBtn4,CheckBox4,4);
+             5 : APanel(Panel5,BitBtn5,CheckBox5,5);
+             6 : APanel(Panel6,BitBtn6,CheckBox6,6);
+             7 : APanel(Panel7,BitBtn7,CheckBox7,7);
+             8 : APanel(Panel8,BitBtn8,CheckBox8,8);
+             9 : APanel(Panel9,BitBtn9,CheckBox9,9);
+             10 : APanel(Panel10,BitBtn10,CheckBox10,10);
+             11 : APanel(Panel11,BitBtn11,CheckBox11,11);
+             12 : APanel(Panel12,BitBtn12,CheckBox12,12);
+             13 : APanel(Panel13,BitBtn13,CheckBox13,13);
+             14 : APanel(Panel14,BitBtn14,CheckBox14,14);
+             15 : APanel(Panel15,BitBtn15,CheckBox15,15);
+          end;
+       end;
+       ClientHeight := BaseTop + BottomPanel.Height;
+   {$Else}
+      MessageToContinue('This is disabled');
+   {$EndIf}
+
    {$IfDef RecordTOC} WriteLinetoDebugFile('Tdb_display_opts.LabelTheButtons out'); {$EndIf}
 end;
 

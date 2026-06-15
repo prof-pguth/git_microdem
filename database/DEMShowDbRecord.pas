@@ -329,7 +329,7 @@ begin
 
   CurrentRec_ID := GISDb[DBShown].MyData.GetFieldByNameAsInteger(RecNoFName);
 
-  if (GISDb[DBShown].MyData.RecordCount > 1) then TStr  := IntToStr(GISDb[DBShown].MyData.RecNo) + '/' + IntToStr(GISDb[DBShown].MyData.TotRecsInDB)
+  if (GISDb[DBShown].MyData.RecordCount > 1) then TStr  := IntToStr(GISDb[DBShown].MyData.RecNo) + '/' + IntToStr(GISDb[DBShown].MyData.TotalRecsInDB)
   else TStr := '';
   if LabelField = '' then begin
      if GISDb[DBShown].MyData.FieldExists('NAME') then LabelField := 'NAME';

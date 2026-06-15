@@ -117,130 +117,208 @@ begin
 end;
 
 
+const
+   MaxCountries = 10;
+   MaxLayers = 10;
 var
    NGAgazDir : PathStr;
    NGAplotoptions : PathStr;
-   NGAcode : shortstring;
+   NGAcode,LongName : shortstring;
+   PlotOptions : integer;
+   TheCountries,TheGroups : tStringList;
+   db : array[0..MaxCountries] of integer;
 
-procedure SetWarCrimesSettings(InputDB : integer);
+
+procedure SetWarCrimesSettings(MapOwner : tMapForm; InputDB : integer);
+var
+   j : integer;
 begin
    if InputDB = 1 then begin
       NGAgazDir := 'C:\mydocs\Papers\icmg_2026\data\gazetteer\';
       NGAplotoptions := 'C:\mydocs\Papers\icmg_2026\data\nga_feature_classes.dbf';
       NGAcode := 'DESIG_CD';
+      LongName := 'FEATURE';
    end
    else if InputDB = 2 then begin
       NGAgazDir := 'C:\mydocs\Papers\icmg_2026\data\osm_geofabrik_points\';
       NGAplotoptions := 'C:\mydocs\Papers\icmg_2026\data\geofabrik_point_feature_classes.dbf';
       NGAcode := 'FCLASS';
+      LongName := 'FCLASS';
    end
    else if InputDB = 3 then begin
       NGAgazDir := 'C:\mydocs\Papers\icmg_2026\data\osm_geofabrik_buildings\';
       NGAplotoptions := 'C:\mydocs\Papers\icmg_2026\data\geofabrik_building_types.dbf';
       NGAcode := 'TYPE';
+      LongName := 'TYPE';
    end;
+   PlotOptions := MapOwner.OpenDBonMap('',NGAPlotOptions,false,false);
+   TheGroups := GISdb[PlotOptions].MyData.ListUniqueEntriesInDB('GROUP');
+   TheCountries := tStringList.Create;
+   FindMatchingFiles(NGAgazDir,'*.dbf',TheCountries,0);
+   for j := 0 to pred(TheCountries.Count) do begin
+      db[j] := MapOwner.OpenDBonMap('',TheCountries.Strings[j],false,false);
+      GISdb[db[j]].LayerIsOn := false;
+   end;
+end;
+
+
+procedure EndWarCrimes;
+var
+   j : integer;
+begin
+   CloseSingleDB(PlotOptions);
+   for j := 0 to pred(TheCountries.Count) do begin
+      CloseSingleDB(db[j]);
+   end;
+
+   TheCountries.Destroy;
+   TheGroups.Destroy;
+   ShowDefaultCursor;
+   SetColorForWaiting;
+   wmdem.ClearStatusBarPanelText;
 end;
 
 
 procedure StatsWarCrimesDB(MapOwner : tMapForm; InputDB : integer);
 var
-   i,j,k,PlotOptions,db : integer;
-   TheFiles,TheGroups,Subgroups,Findings : tStringList;
-   aFilter : shortstring;
+   i,j,k : integer;
+   Findings : tStringList;
+   aFilter,aline,country : shortstring;
    fName : PathStr;
+   SubGroups : tStringList;
 begin
    {$IfDef WarCrimes} WriteLineToDebugFile('StatsWarCrimesDB in'); {$EndIf}
-   SetWarCrimesSettings(InputDB);
+   SetWarCrimesSettings(MapOwner,InputDB);
    SetColorForProcessing;
    ShowHourglassCursor;
    Findings := tStringList.Create;
-   Findings.Add('COUNTRY,GROUP,SUBGROUP,NUMBER');
-   TheFiles := tStringList.Create;
-   FindMatchingFiles(NGAgazDir,'*.dbf',TheFiles,0);
-   PlotOptions := MapOwner.OpenDBonMap('',NGAPlotOptions,false,false);
-   TheGroups := GISdb[PlotOptions].MyData.ListUniqueEntriesInDB('GROUP');
-   for j := 0 to pred(theFiles.Count) do begin
-      {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(j)) + '/' + IntToStr(theFiles.Count) + ' '  + theFiles.Strings[j]); {$EndIf}
-      db := MapOwner.OpenDBonMap('',theFiles.Strings[j],false,false);
-      for i := 0 to pred(theGroups.Count) do begin
-         {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(theGroups.Count) +' '  + theGroups.Strings[i]); {$EndIf}
-         GISdb[PlotOptions].ApplyGISFilter('USE=' + QuotedStr('Y') + ' AND GROUP=' + QuotedStr(TheGroups.Strings[i]));
-         Subgroups := GISdb[PlotOptions].MyData.ListUniqueEntriesInDB(NGAcode);
-         aFilter := MakeOrFilter(PlotOptions,NGAcode, GISdb[PlotOptions].MyData.ListUniqueEntriesInDB(NGAcode));
-         GISdb[db].ApplyGISFilter(aFilter);
-
-         Findings.Add(ExtractFileNameNoExt(theFiles.Strings[j]) + ',' + TheGroups.Strings[i] + ',  ,' + IntToStr(GISdb[db].MyData.FiltRecsInDB));
-         for k := 0 to pred(Subgroups.Count) do begin
-            aFilter := NGAcode + '=' + QuotedStr(SubGroups.Strings[k]);
-            {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(k)) + '/' + IntToStr(SubGroups.Count) +' '  + SubGroups.Strings[k] + ' ' + aFilter); {$EndIf}
-            GISdb[db].ApplyGISFilter(aFilter);
-            Findings.Add(ExtractFileNameNoExt(theFiles.Strings[j]) + ',' + TheGroups.Strings[i] + ',' + Subgroups.Strings[k] + ',' + IntToStr(GISdb[db].MyData.FiltRecsInDB));
-         end;
-         Subgroups.Destroy;
-      end;
-      CloseSingleDB(DB);
+   aline := 'GROUP,SUBGROUP';
+   for j := 0 to pred(TheCountries.Count) do begin
+      country := UpperCase(ExTractFileNameNoExt(TheCountries.Strings[j]));
+      country := StringReplace(Country,'_BUILDINGS','',[rfReplaceAll, rfIgnoreCase]);
+      country := StringReplace(Country,'_POIS_FREE','',[rfReplaceAll, rfIgnoreCase]);
+      aline := aline + ',' + Country;
    end;
-   TheGroups.Destroy;
-   CloseSingleDB(PlotOptions);
-   fName := MDtempDir + ExtractFileName(NGAplotoptions);
+   Findings.Add(aline);
+
+    for i := 0 to pred(theGroups.Count) do begin
+       wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(theGroups.Count) + '  ' + theGroups.Strings[i] ,true);
+       {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(theGroups.Count) +' '  + theGroups.Strings[i]); {$EndIf}
+       GISdb[PlotOptions].ApplyGISFilter('USE=' + QuotedStr('Y') + ' AND GROUP=' + QuotedStr(TheGroups.Strings[i]));
+       Subgroups := GISdb[PlotOptions].MyData.ListUniqueEntriesInDB(NGAcode);
+
+       Aline := theGroups.Strings[i] + ',ALL';
+       aFilter := MakeOrFilter(PlotOptions,NGAcode, GISdb[PlotOptions].MyData.ListUniqueEntriesInDB(NGAcode));
+       for j := 0 to pred(TheCountries.Count) do begin
+          GISdb[db[j]].ApplyGISFilter(aFilter);
+          aline := aline + ',' + IntToStr(GISdb[db[j]].MyData.FiltRecsInDB);
+       end;
+       Findings.Add(aLine);
+       if (SubGroups.Count > 0) then begin
+         for k := 0 to pred(Subgroups.Count) do begin
+            wmDEM.SetPanelText(3,IntToStr(succ(k)) + '/' + IntToStr(SubGroups.Count) + '  ' + SubGroups.Strings[k],true);
+            {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(k)) + '/' + IntToStr(SubGroups.Count) +' '  + SubGroups.Strings[k] + ' ' + aFilter); {$EndIf}
+            GISdb[PlotOptions].ApplyGISfilter(NGAcode + '=' + QuotedStr(SubGroups.Strings[k]));
+            Aline := theGroups.Strings[i] + ',' + GISdb[PlotOptions].MyData.GetFieldByNameAsString(LongName);
+            for j := 0 to pred(TheCountries.Count) do begin
+               aFilter := NGAcode + '=' + QuotedStr(SubGroups.Strings[k]);
+               GISdb[db[j]].ApplyGISFilter(aFilter);
+               aline := aline + ',' + IntToStr(GISdb[db[j]].MyData.FiltRecsInDB);
+            end;
+            Findings.Add(aLine);
+         end;
+       end;
+       Subgroups.Destroy;
+    end;
+   {$IfDef WarCrimes} WriteLineToDebugFile('CSV created'); {$EndIf}
+   fName := MDtempDir + GISdb[PlotOptions].dbName + '.dbf';
    StringList2CSVtoDB(Findings,fName);
-   ShowDefaultCursor;
-   SetColorForWaiting;
+   EndWarCrimes;
+   {$IfDef WarCrimes} WriteLineToDebugFile('StatsWarCrimesDB out'); {$EndIf}
 end;
 
-procedure MapWarCrimesDB(MapOwner : tMapForm; InputDB : integer);
+procedure MapWarCrimesDB(MapOwner : tMapForm; InputDB : integer; CountryMaps : boolean = false);
 var
-   TheFiles,TheGroups : tStringList;
-   i,j,k,db,xp,yp,PlotOptions : integer;
+   TheMaps : tStringList;
+   i,j,k,xp,yp,n : integer;
    Sym   : tDrawingSymbol;
    Lat,Long : float64;
    Size  : byte;
    Color : tPlatformColor;
-   Bitmap : tMyBitmap;
-   aFilter : shortstring;
+   aFilter,aTitle : shortstring;
+   fName : PathStr;
+   AllLayers : tMyBitmap;
+   Bitmap : array[0..MaxLayers] of tMyBitmap;
+   sName : array[0..MaxLayers] of PathStr;
 begin
    {$IfDef WarCrimes} WriteLineToDebugFile('MapWarCrimesDB in'); {$EndIf}
-   SetWarCrimesSettings(InputDB);
-
+   SetWarCrimesSettings(MapOwner,InputDB);
+   SetColorForProcessing;
    ShowHourglassCursor;
-   CopyImageToBitmap(MapOwner.Image1,Bitmap);
-   TheFiles := tStringList.Create;
-   FindMatchingFiles(NGAgazDir,'*.dbf',TheFiles,0);
-   PlotOptions := MapOwner.OpenDBonMap('',NGAPlotOptions,false,false);
-   GISdb[PlotOptions].ApplyGISFilter('USE=' + QuotedStr('Y'));
-   TheGroups := GISdb[PlotOptions].MyData.ListUniqueEntriesInDB('GROUP');
    Sym := FilledBox;
    Size := 3;
-   for j := 0 to pred(theFiles.Count) do begin
-      {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(j)) + '/' + IntToStr(theFiles.Count) + ' '  + theFiles.Strings[j]); {$EndIf}
-      db := MapOwner.OpenDBonMap('',theFiles.Strings[j],false,false);
-      for i := 0 to pred(theGroups.Count) do begin
-          {$IfDef WarCrimes} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(theGroups.Count) +' '  + theGroups.Strings[i]); {$EndIf}
-          GISdb[PlotOptions].ApplyGISFilter('USE=' + QuotedStr('Y') + ' AND GROUP=' + QuotedStr(TheGroups.Strings[i]));
-          if GISdb[PlotOptions].MyData.FiltRecsInDB > 0 then begin
+   CopyImageToBitmap(MapOwner.Image1,AllLayers);
+   if CountryMaps then begin
+      theMaps := tStringList.Create;
+   end;
+   for i := 0 to pred(theGroups.Count) do begin
+      aTitle := IntToStr(succ(i)) + '/' + IntToStr(theGroups.Count) + '  ' + theGroups.Strings[i];
+      wmDEM.SetPanelText(2,aTitle,true);
+      {$IfDef WarCrimes} WriteLineToDebugFile(aTitle); {$EndIf}
+
+      if CountryMaps then CopyImageToBitmap(MapOwner.Image1,Bitmap[i]);
+      GISdb[PlotOptions].ApplyGISFilter('USE=' + QuotedStr('Y') + ' AND GROUP=' + QuotedStr(TheGroups.Strings[i]));
+      n := 0;
+      for j := 0 to pred(TheCountries.Count) do begin
+         ShowHourglassCursor;
+         aTitle := IntToStr(succ(j)) + '/' + IntToStr(TheCountries.Count) + '  ' + TheCountries.Strings[j];
+         wmDEM.SetPanelText(3,aTitle,true);
+         {$IfDef WarCrimes} WriteLineToDebugFile(aTitle); {$EndIf}
+          if (GISdb[PlotOptions].MyData.FiltRecsInDB > 0) then begin
               Color := GISdb[PlotOptions].MyData.PlatformColorFromTable;
               aFilter := MakeOrFilter(PlotOptions,NGAcode, GISdb[PlotOptions].MyData.ListUniqueEntriesInDB(NGAcode));
-              GISdb[db].ApplyGISFilter(aFilter);
-              if GISdb[db].MyData.FiltRecsInDB > 0 then begin
-                  GISdb[db].EmpSource.Enabled := false;
-                  while not GISdb[db].MyData.eof do begin
-                    if GISdb[db].ValidLatLongFromTable(Lat,Long) then begin
+              {$IfDef WarCrimes} WriteLineToDebugFile(GISdb[db[j]].dbName + '  ' + aFilter); {$EndIf}
+              GISdb[db[j]].ApplyGISFilter(aFilter);
+              if GISdb[db[j]].MyData.FiltRecsInDB > 0 then begin
+                  GISdb[db[j]].EmpSource.Enabled := false;
+                  while not GISdb[db[j]].MyData.eof do begin
+                    if GISdb[db[j]].ValidLatLongFromTable(Lat,Long) then begin
                        MapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,xp,yp);
                        if MapOwner.MapDraw.OnScreen(xp,yp) then begin
-                          PETMAR.ScreenSymbol(Bitmap.Canvas,xp,yp,Sym,Size,Color);
+                          inc(n);
+                          if CountryMaps then PETMAR.ScreenSymbol(Bitmap[i].Canvas,xp,yp,Sym,Size,Color);
+                          PETMAR.ScreenSymbol(AllLayers.Canvas,xp,yp,Sym,Size,Color);
                        end;
                     end;
-                    GISdb[db].MyData.Next;
+                    GISdb[db[j]].MyData.Next;
                   end {while};
               end;
           end {if};
-      end {for i};
-      CloseSingleDB(db);
-   end {for j};
-   TheFiles.Destroy;
+          fName := MDtempDir + TheGroups.Strings[i] + '.png';
+          {$IfDef WarCrimes} WriteLineToDebugFile(TheGroups.Strings[i] + '  n=' + IntToStr(n)); {$EndIf}
+      end {for j};
+      if CountryMaps then begin
+          Bitmap[i].Canvas.Font.Size := 36;
+          Bitmap[i].Canvas.Font.Color := ConvertPlatformColorToTColor(Color);
+          Bitmap[i].Canvas.Font.Style := [fsBold];
+          aTitle := theGroups.Strings[i] + '  (n=' + IntToStr(n) + ')';
+          Bitmap[i].Canvas.TextOut(5,Bitmap[i].Height - 5 - Bitmap[i].Canvas.TextHeight(aTitle),aTitle);
+          sName[i] := MDtempDir + GISdb[PlotOptions].dbName + '_' + theGroups.Strings[i] + '.png';
+          SaveBitmap(Bitmap[i],sName[i]);
+          TheMaps.Add(sName[i]);
+      end
+      else begin
+         {$IfDef WarCrimesLayerMaps}
+            sName[i] := MDtempDir + GISdb[PlotOptions].dbName + '_' + theGroups.Strings[i] + '.png';
+            SaveBitmap(AllLayers,sName[i]);
+         {$EndIf}
+      end;
+   end {for i};
+   if CountryMaps then MakeBigBitmap(theMaps,Uppercase(ExtractFileNameNoExt(NGAplotoptions)),'',3);
    CloseSingleDB(PlotOptions);
-   MapOwner.Image1.Picture.Graphic := Bitmap;
-   ShowDefaultCursor;
+   EndWarCrimes;
+   MapOwner.Image1.Picture.Graphic := AllLayers;
+   //MessageToContinue('What am I doing');
    {$IfDef WarCrimes} WriteLineToDebugFile('MapWarCrimesDB out'); {$EndIf}
 end;
 

@@ -184,8 +184,6 @@ end;
 
 
 
-
-
 procedure ClusterMapLocation(DBonTable : integer; TheFilters : tStringList = nil);
 var
    i : integer;
@@ -213,7 +211,7 @@ begin
          MDDef.MapNameLocation.MapPosition := lpSEmap;
          GISdb[DBonTable].theMapOwner.MapDraw.GrayscaleWorldOutline := true;
          GISdb[DBonTable].theMapOwner.MapDraw.SubdueWorldOutline := true;
-         GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := GISdb[DBonTable].MyData.Filter  + '  (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) +')';
+         GISdb[DBonTable].theMapOwner.MapDraw.BaseTitle := GISdb[DBonTable].MyData.Filter  + GISdb[DBonTable].NumRecsInDBstring;
          GISdb[DBonTable].theMapOwner.DoCompleteMapRedraw;
          GISdb[DBonTable].dbOpts.DBAutoShow := dbasColorField;
          GISdb[DBonTable].theMapOwner.OutlineMap;
@@ -255,7 +253,7 @@ begin
              GISdb[DBontable].RedrawLayerOnMap;
              fName := NextFileNumber(MDtempDir,'dem_cluster_map_','.bmp');
              GISdb[DBontable].TheMapOwner.Image1.Canvas.Font.Size := 14;
-             aFilter := aFilter + ' (n=' + IntToStr(GISdb[DBontable].MyData.FiltRecsInDB) + ')';
+             aFilter := aFilter + GISdb[DBontable].NumRecsInDBstring;
              GISdb[DBontable].TheMapOwner.Image1.Canvas.TextOut(5,GISdb[DBontable].TheMapOwner.Image1.Height - 30,aFilter);
              GISdb[DBontable].TheMapOwner.OutlineMap;
              CopyImageToBitmap(GISdb[DBontable].TheMapOwner.Image1,bmp);

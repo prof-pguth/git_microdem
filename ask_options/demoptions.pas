@@ -1635,23 +1635,7 @@ begin
       MDdef.ProgramOption := tProgramOption(RadioGroup7.ItemIndex);
       if (MDdef.ProgramOption = GeologyProgram) then begin
          SetStructuralGeologyDefaults;
-         {$IfDef AllowUSNAdataDownloads}
-            {$If Defined(ExGeology) or Defined(ExLabDownloads)}
-            {$Else}
-               GetNaturalEarthData;
-               GeologyGetData;
-            {$EndIf}
-         {$EndIf}
       end;
-      {$IfDef AllowUSNAdataDownloads}
-         if (MDdef.ProgramOption = GeographyProgram) then begin
-            SetPhysicalGeographyDefaults;
-            ClimateGetData;
-            GetNaturalEarthData;
-         end;
-      {$EndIf}
-      //if (MDdef.ProgramOption = ShipwrecksProgram) then SetShipwrecksDefaults;
-      //if (MDdef.ProgramOption = EconProgram) then SetEconDefaults;
       if (MDdef.ProgramOption = RemoteSensingProgram) then SetRemoteSensingDefaults;
       {$IfDef ExDP}
       {$Else}

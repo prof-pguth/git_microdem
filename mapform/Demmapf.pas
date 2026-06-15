@@ -24,6 +24,7 @@
 
    {$IFDEF DEBUG}
       //{$Define RecordFan}
+      {$Define RecordOSM}
       //{$Define RecordDuplicate}
       //{$Define RecordBaseTitle}
       //{$Define RecordCreateReferenceDEM}
@@ -1714,6 +1715,10 @@ type
     OSMpoints1: TMenuItem;
     OSMbuildings1: TMenuItem;
     NGAfeatrurefreequency1: TMenuItem;
+    N91: TMenuItem;
+    Featurefrequency1: TMenuItem;
+    OSMpoints2: TMenuItem;
+    OSMbuildings2: TMenuItem;
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
     procedure Smallcirclethroughpoint1Click(Sender: TObject);
@@ -2947,6 +2952,8 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure OSMpoints1Click(Sender: TObject);
     procedure OSMbuildings1Click(Sender: TObject);
     procedure NGAfeatrurefreequency1Click(Sender: TObject);
+    procedure OSMpoints2Click(Sender: TObject);
+    procedure OSMbuildings2Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -5711,7 +5718,7 @@ begin
             fName := NextFileNumber(CurrentProject, 'Fans',DefaultDBExt);
             CreateTableOfType(fName,'WeaponsFan');
             ZeroRecordsAllowed := true;
-            OpenNumberedGISDataBase(MapDraw.CurrentFansTable,fName,false,false,Self);
+            OpenNumberedGISDataBase(MapDraw.CurrentFansTable,fName,true,Self);
             {$IfDef RecordFan} WriteLineToDebugFile('CheckViewShedMapDblClick Opened new fan table=' + fName);      {$EndIf}
          end;
          MapDraw.AddFanToMap(WeaponsFan);
@@ -8146,9 +8153,19 @@ begin
    MapWarCrimesDB(Self,3);
 end;
 
+procedure TMapForm.OSMbuildings2Click(Sender: TObject);
+begin
+   StatsWarCrimesDB(Self,3);
+end;
+
 procedure TMapForm.OSMpoints1Click(Sender: TObject);
 begin
    MapWarCrimesDB(Self,2);
+end;
+
+procedure TMapForm.OSMpoints2Click(Sender: TObject);
+begin
+   StatsWarCrimesDB(Self,2);
 end;
 
 procedure TMapForm.ospecifiedlongitude1Click(Sender: TObject);
@@ -10059,12 +10076,18 @@ end;
 
 procedure TMapForm.LoadOSMoverlay1Click(Sender: TObject);
 begin
-   if (MapDraw.OSMShapesUp <> Nil) then FreeAndNil(MapDraw.OSMShapesUp);
-   MapDraw.OSMShapesUp := tStringList.Create;
+   if (MapDraw.OSMShapesUp = Nil) then begin
+      {$IfDef RecordOSM} WriteLineToDebugFile('TMapForm.LoadOSMoverlay1Click in, no OSM yet'); {$EndIf}
+      MapDraw.OSMShapesUp := tStringList.Create;
+   end
+   else begin
+      {$IfDef RecordOSM} WriteLineToDebugFile('TMapForm.LoadOSMoverlay1Click in, clear existing OSM'); {$EndIf}
+      MapDraw.OSMShapesUp.Clear;
+      MapDraw.DeleteSingleMapLayer(MapDraw.OSMOverlayfName);
+   end;
    MapDraw.OSMShapesUp.Add(MainMapData);
    if GetMultipleDirectories('OSM shape files',MapDraw.OSMShapesUp) then begin
-      SubtractOverlay(Self,ovoWorldOutlines);
-      MapDraw.DeleteSingleMapLayer(MapDraw.OSMOverlayfName);
+      //SubtractOverlay(Self,ovoWorldOutlines);
       AddOverlay(self,ovoOSM);
       DoFastMapRedraw;
    end;
@@ -10601,7 +10624,7 @@ begin
       if (ValidDB(i)) then begin
          {$If Defined(RecordClosing) or Defined(RecordMapClosing)}  WriteLineToDebugFile('TMapForm.formClose Close db=' + IntToStr(i)); {$EndIf}
          if (GISdb[i].theMapOwner <> Nil) and (not GISdb[i].PLSSFile) then begin
-            if (GISdb[i].theMapOwner = Self) and GISdb[i].ShowLocalMapOnly then begin
+            if (GISdb[i].theMapOwner = Self) {and GISdb[i].ShowLocalMapOnly} then begin
                CloseIt(i);
             end
             else if MDDef.DBsOnAllMaps then begin
@@ -12005,7 +12028,7 @@ var
           i : integer;
        begin
           {$IfDef RecordGISDB} WriteLineToDebugFile('Enter OpenSingleDataBase ' + DefaultFile); {$EndIf}
-          if OpenNumberedGISDataBase(Result,DefaultFile,OpenTable,false,self) then begin
+          if OpenNumberedGISDataBase(Result,DefaultFile,OpenTable,self) then begin
              if (ForceColor > -99) then begin
                 GISdb[Result].dbOpts.LineColor := ConvertTColorToPlatformColor(ForceColor);
              end;
@@ -12037,6 +12060,7 @@ begin {TMapForm.OpenDBonMap}
       else FileNames.Add(DefaultFile);
       if not GetMultipleFiles('Data bases ' + WhatFor,DBMaskString ,FileNames,MDDef.DefDBFilter) then Exit;
       try
+         MapDraw.DeleteSingleMapLayer(MapDraw.BaseMapFName);
          for i := 0 to pred(FileNames.Count) do begin
             DefaultFile := FileNames.Strings[i];
             wmdem.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + DefaultFile);
@@ -13160,7 +13184,7 @@ begin
    {$IfDef ExSat}
    {$Else}
       SatImage[MapDraw.SATonMap].CreateDBfromSatImage(fName,MapDraw.MapCorners.BoundBoxDataGrid);
-      DEMDataBase.OpenNumberedGISDataBase(GISNum,fName,true,false,Self);
+      DEMDataBase.OpenNumberedGISDataBase(GISNum,fName,true,Self);
    {$EndIf}
 end;
 
@@ -20476,7 +20500,7 @@ begin
    {$IfDef RecordFan} WriteLineToDebugFile('TMapForm.Loadweaponsfans1Click ' + fName); {$EndIf}
    CloseSingleDB(MapDraw.CurrentFansTable);
 
-   OpenNumberedGISDataBase(MapDraw.CurrentFansTable,fName,false,false,Self);
+   OpenNumberedGISDataBase(MapDraw.CurrentFansTable,fName,false,Self);
 
    if GISdb[MapDraw.CurrentFansTable].MyData.FieldExists('OFFSETA') then begin
       {$IfDef RecordFan} WriteLineToDebugFile('Rename ArcGIS verion'); {$EndIf}
@@ -22553,9 +22577,6 @@ end;
 
 procedure TMapForm.Rivers2Click(Sender: TObject);
 begin
-   {$IfDef AllowUSNAdataDownloads}
-      if not FileExists(RiversFile) then GetNaturalEarthData;
-   {$EndIf}
    LoadDataBaseFile(RiversFile);
 end;
 
@@ -23461,7 +23482,6 @@ procedure TMapForm.Coastlines1Click(Sender: TObject);
 var
    db : integer;
 begin
-   //if not FileExists(CoastLineFile) then GetNaturalEarthData;
    db := LoadDataBaseFile(CoastLineFile);
    if ValidDB(db) then begin
       GISdb[db].dbOpts.LineColor := ConvertTColorToPlatformColor(clBlue);

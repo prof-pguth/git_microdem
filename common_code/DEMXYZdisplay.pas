@@ -150,7 +150,7 @@ procedure tXYZDisplayForm.OpenXYZTableDisplay(fName : PathStr);
 begin
    {$IfDef XYZDigitizeProblems} WriteLineToDebugFile('TXYZDisplayForm.OpenXYZTableDisplay ' + fname); {$EndIf}
    Caption := 'XYZ data: ' + ExtractFileName(fName);
-   if OpenNumberedGISDataBase(XYZTableGIS,fName,false,false,MapOwner) then begin
+   if OpenNumberedGISDataBase(XYZTableGIS,fName,false,MapOwner) then begin
       GISdb[XYZTableGIS].MyData.AssignEmpSource(DataSource1);
       DataSource1.Enabled := true;
       Self.StatusBar1.Panels[0].Text := IntToStr(GISdb[XYZTableGIS].MyData.RecordCount) + ' records';

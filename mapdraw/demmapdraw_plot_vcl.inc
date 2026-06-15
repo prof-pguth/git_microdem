@@ -67,7 +67,7 @@
       end;
       DrawOverlayNoDelete(Bitmap,TigerOverlay);
       {$If Defined(RecordTiger)} WriteLineToDebugFile('TMapDraw.FullTigerCoverage out for ' + BaseTitle + ' TigerOverlayFName=' + TigerOverlayFName + ' files=' + IntToStr(i)); {$EndIf}
-   end;
+   end {procedure TMapDraw.DrawFullTigerCoverage};
 {$EndIf}
 
 
@@ -117,7 +117,7 @@
       end;
       TempDB := (MapGazDB = 0);
       if TempDB then begin
-         if not OpenNumberedGISDataBase(MapGazDB, LastGazFile,false,false,Nil) then exit;
+         if not OpenNumberedGISDataBase(MapGazDB, LastGazFile,false,Nil) then exit;
       end;
 
       CreateBitmap(GazOverlay,inBitmap.Width,inBitmap.Height);
@@ -567,41 +567,6 @@
          end;
 
 
-         procedure TMapDraw.SmartWorldOutline(Bitmap : tMyBitmap);
-         var
-            NEOverlay : tMyBitmap;
-         begin
-            {$IfDef RecordWorldOutline} WriteLineToDebugFile('TMapDraw.SmartWorldOutline in, pixel=' + RealToString(ScreenPixelSize,-12,-2) + ' m, smart scaling='+ TrueOrFalse(MDDef.NEautoScale)); {$EndIf}
-            CreateBitmap(NEOverlay,Bitmap.Width,Bitmap.Height);
-            if (NaturalEarthOverlayFName <> '') then begin
-              NEOverlay.LoadFromFile(NaturalEarthOverlayFName);
-            end
-            else begin
-               if (not MDDef.NEautoScale) or (ScreenPixelSize > MDDef.SmallScaleWorldOutlinePixelSize) {or AFullWorldMap} then begin
-                  {$IfDef RecordWorldOutline} WriteLineToDebugFile('small scale ' + SmallScaleWorldOutlines); {$EndIf}
-                  PlotShapeFileGroupOnMap(SmallScaleWorldOutlines,NEOverlay);
-               end
-               else if (ScreenPixelSize > MDDef.MedScaleWorldOutlinePixelSize) then begin
-                  {$IfDef RecordWorldOutline} WriteLineToDebugFile('medium scale ' + MedScaleWorldOutlines); {$EndIf}
-                  PlotShapeFileGroupOnMap(MedScaleWorldOutlines,NEOverlay);
-               end
-               else if (ScreenPixelSize > MDDef.LargeScaleWorldOutlinePixelSize) then begin
-                  {$IfDef RecordWorldOutline} WriteLineToDebugFile('large scale ' + LargeScaleWorldOutlines); {$EndIf}
-                  PlotShapeFileGroupOnMap(LargeScaleWorldOutlines,NEOverlay);
-               end
-               else begin
-                  {$IfDef RecordWorldOutline} WriteLineToDebugFile('no scale and not drawn'); {$EndIf}
-               end;
-               if GrayscaleWorldOutline then MakeTheBitmapGrayScale(NEOverlay);
-               if SubdueWorldOutline then MakeTheBitmapSubdued(NEOverlay);
-
-               NaturalEarthOverlayFName := NextFileNumber(MDTempDir, 'NE_overlay', OverlayFExt);
-               NEOverlay.SaveToFile(NaturalEarthOverlayFName);
-            end;
-            DrawAndDeleteOverlay(Bitmap,NEOverlay,100); //,0,0,true);
-         end;
-
-
          procedure TMapDraw.CarefulPolyLineDraw(Bitmap : tMyBitmap; var PointsInPolyline : integer;  var PolyLinePoints : tPolyLinePts);
          var
             i,LastX : integer;
@@ -896,6 +861,34 @@
 
 
          procedure TMapDraw.SmartUSOutline(var inBitmap : tMyBitmap);
+
+
+              procedure PlotLineShapeFileOnMap(fName : PathStr; var Bitmap : tMyBitmap; LineColor : tPlatformColor; LineWidth : byte);
+              var
+                 sf : tShapeFile;
+                 Success : boolean;
+              begin
+                 {$IfDef RecordDBPlot} WritelineToDebugFile('PlotLineShapeFileOnMap ' + fName); {$EndIf}
+                 if FileExists(fName) then begin
+                   try
+                     sf := tShapeFile.Create(fName,Success);
+                     if Success then begin
+                        Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(LineColor);
+                        Bitmap.Canvas.Pen.Width := LineWidth;
+                        Bitmap.Canvas.Brush.Style := bsClear;
+                        sf.PlotAllRecords(Self,Bitmap);
+                     end
+                     else begin
+                        {$IfDef RecordDBPlot} WritelineToDebugFile('Failed to open shp'); {$EndIf}
+                     end;
+                   finally
+                      sf.Destroy;
+                   end;
+                 end;
+              end;
+
+
+
          var
             Bitmap : tMyBitmap;
          begin
@@ -1184,7 +1177,7 @@
                NewTable.SetFieldByNameAsString('Y2',ptTrim(Copy(TStr,33,8)));
                NewTable.Post;
             end;
-            NewTable.FiltRecsInDB := Contours.Count;
+            //NewTable.FiltRecsInDB := Contours.Count;
             Contours.Free;
 
             {$IfDef RecordContour} WriteLineToDebugFile('Start labelf, recs='  + IntToStr(NewTable.FiltRecsInDB)); {$EndIf}
@@ -1341,7 +1334,7 @@
                LatLongDegreeToScreen(Lat,Long,LastX,LastY);
                if ExpandIconName(Table,FieldName,MenuStr) then begin
                   MenuStr := Table.GetFieldByNameAsString(FieldName);
-                  if FileExists(ExtractFilePath(Table.TableName) + MenuStr) then MenuStr := ExtractFilePath(Table.TableName) + MenuStr
+                  if FileExists(ExtractFilePath(Table.ShortTableName) + MenuStr) then MenuStr := ExtractFilePath(Table.ShortTableName) + MenuStr
                   else MenuStr := MainMapData + 'Icons\' + MenuStr;
                   if FileExists(MenuStr) then PlotAnIcon(Bitmap,Lat,Long,MenuStr,ScalingFactor);
                end;
@@ -1429,7 +1422,6 @@
                    ovoGazetteer   : LabelGazetteerFeatures(inBitmap);
                    ovoSecondGrid  : DrawSecondGrid(inBitmap,DEM2onMap);
                    ovoVectors     : DrawVectors(inBitmap);
-                   ovoCartoDB     : PlotShapeFileGroup(inBitmap,CartoGroupShapesUp);
                    ovoDatabases   : begin
                                        PlotDataBases(inBitmap);
                                        DBSdone := true;
@@ -1452,18 +1444,11 @@
                       ovoWorldOutlines : SmartWorldOutline(inBitmap);
                       ovoUSOUtlines  : SmartUSOutline(inBitmap);
                    {$EndIf}
+
+                   ovoCartoDB     : PlotShapeFileGroup(CartoLayer,CartoGroupShapesUp,CartoGroupShapesUp,inBitmap);
                    {$IfDef ExOSM}
                    {$Else}
-                      ovoOSM      : begin
-                                       SaveBackupDefaults;
-                                       for j := 0 to pred(OSMShapesUp.Count) do begin
-                                          {$IfDef RecordShapeFileGroup} WriteLineToDebugFile('ovoOSM ' + OSMShapesUp.Strings[j]); {$EndIf}
-                                          PlotShapeFileGroup(inBitmap,OSMShapesUp.Strings[j],j=pred(OSMShapesUp.Count));
-                                       end;
-                                       if GrayscaleOSM then MakeTheBitmapGrayScale(inBitmap);
-                                       if SubdueOSM then MakeTheBitmapSubdued(inBitmap);
-                                       RestoreBackupDefaults;
-                                    end;
+                      ovoOSM      : PlotShapeFileGroup(OSMLayer,'',OSMOverlayFName,inBitmap,OSMShapesUp);
                    {$EndIf}
                    {$IfDef ExViewshed}
                    {$Else}

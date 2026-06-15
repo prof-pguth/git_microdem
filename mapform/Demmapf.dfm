@@ -5106,9 +5106,23 @@ object MapForm: TMapForm
           Caption = 'OSM buildings'
           OnClick = OSMbuildings1Click
         end
-        object NGAfeatrurefreequency1: TMenuItem
-          Caption = 'NGA featrure freequency'
-          OnClick = NGAfeatrurefreequency1Click
+        object N91: TMenuItem
+          Caption = '-'
+        end
+        object Featurefrequency1: TMenuItem
+          Caption = 'Feature frequency'
+          object NGAfeatrurefreequency1: TMenuItem
+            Caption = 'NGA gazetteer'
+            OnClick = NGAfeatrurefreequency1Click
+          end
+          object OSMpoints2: TMenuItem
+            Caption = 'OSM points'
+            OnClick = OSMpoints2Click
+          end
+          object OSMbuildings2: TMenuItem
+            Caption = 'OSM buildings'
+            OnClick = OSMbuildings2Click
+          end
         end
         object N56: TMenuItem
           Caption = '-'

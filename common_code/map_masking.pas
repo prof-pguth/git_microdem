@@ -423,7 +423,7 @@ var
 
       procedure AddFile(tName : PathStr);
       begin
-         if OpenNumberedGISDataBase(GISNum,tName,false,false,MapUsed) then begin
+         if OpenNumberedGISDataBase(GISNum,tName,false,MapUsed) then begin
             if AreaShapeFile(GISdb[GISNum].ShapeFileType) then begin
                MaskIn := MDDef.ShapeMaskNearInsideAreas;
                MaskingDistance := MDDef.ShapeAreaBufferDist;

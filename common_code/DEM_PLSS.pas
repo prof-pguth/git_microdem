@@ -394,7 +394,7 @@ begin
           QSectKey := '';
           SectKey := '';
           if MDDef.PLSSDef.PLSStoRAM and (not CleanSections) then DesiredDBMode := dbmCDS;
-          if OpenNumberedGISDataBase(QuarterDB,ThisPLSSDir + q84name,false,false,MapOwner) then begin
+          if OpenNumberedGISDataBase(QuarterDB,ThisPLSSDir + q84name,false,MapOwner) then begin
              if GISdb[QuarterDB].MyData.FieldExists('QQSECTION') then QSectKey := 'QQSECTION'
              else if GISdb[QuarterDB].MyData.FieldExists('QSECTN') then QSectKey := 'QSECTN';
              if GISdb[QuarterDB].MyData.FieldExists('SECTIONKEY') then SectKey := 'SECTIONKEY'
@@ -404,7 +404,7 @@ begin
        end;
 
        if MDDef.PLSSDef.PLSStoRAM  and (not CleanSections) then DesiredDBMode := dbmCDS;
-       OpenNumberedGISDataBase(SectionDB,ThisPLSSDir + s84name,false,false,MapOwner);
+       OpenNumberedGISDataBase(SectionDB,ThisPLSSDir + s84name,false,MapOwner);
        if CleanSections then begin
           CleanSectionNames(SectionDB);
           GISdb[SectionDB].TrimAllStringFields;
@@ -415,7 +415,7 @@ begin
        end;
 
        if MDDef.PLSSDef.PLSStoRAM then DesiredDBMode := dbmCDS;
-       OpenNumberedGISDataBase(TownshipDB,ThisPLSSDir + t84name,false,false,MapOwner);
+       OpenNumberedGISDataBase(TownshipDB,ThisPLSSDir + t84name,false,MapOwner);
        GISdb[TownShipDB].dbOpts.LabelField := 'TOWN_NAME';
        if not GISdb[TownshipDB].MyData.FieldExists(GISdb[TownShipDB].dbOpts.LabelField) then begin
           GISdb[TownshipDB].AddFieldToDataBase(ftstring,GISdb[TownShipDB].dbOpts.LabelField,12);

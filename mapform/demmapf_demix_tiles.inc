@@ -272,7 +272,7 @@ begin
       else Result := DEMGLB[DEM].SelectionMap.LoadDEMIXtileOutlines(fName,AreaBox,true,OpenTable);
 
       if (Result <> 0) then try
-         {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+         {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEMIXtileFill, db created recs=' + IntToStr(GISdb[Result].MyData.TotalResInDB)); {$EndIf}
          GISdb[Result].MyData.First;
          GISdb[Result].EmpSource.Enabled := false;
          while not GISdb[Result].MyData.eof do begin
@@ -307,7 +307,7 @@ begin
       EndProgress;
       if OpenTable then GISdb[Result].ShowStatus;
    end;
-   {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+   {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotalResInDB)); {$EndIf}
 end;
 
 

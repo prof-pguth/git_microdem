@@ -957,7 +957,7 @@ begin
    end;
 
    Table1.Destroy;
-   DEMDataBase.OpenNumberedGISDataBase(GISNum,fName,true,false,DEMGlb[1].SelectionMap);
+   DEMDataBase.OpenNumberedGISDataBase(GISNum,fName,true,DEMGlb[1].SelectionMap);
 end;
 
 procedure TGridOverlayonMap.BitBtn6Click(Sender: TObject);
@@ -972,7 +972,7 @@ var
    i : Integer;
    fName : shortstring;
 begin
-   Dir := ExtractFilePath(AtlasDefTable.TableName);
+   Dir := ExtractFilePath(AtlasDefTable.ShortTableName);
    TheFiles := Nil;
    Petmar.FindMatchingFiles(Dir,'*.dem',TheFiles);
    for i := 0 to pred(TheFiles.Count) do begin
@@ -1032,7 +1032,7 @@ begin
          inc(x,Sampler);
      end {While};
      Memo1.Lines.Add('Mask DEM n=' + IntToStr(DEMGlb[MaskDEM].ValidElevsInDEM));
-     fName := ExtractFilePath(AtlasDefTable.TableName) + 'cluster_mask.dem';
+     fName := ExtractFilePath(AtlasDefTable.ShortTableName) + 'cluster_mask.dem';
      DEMGlb[MaskDEM].WriteNewFormatDEM(fName);
      ShowMaskOnMainMap;
    end {if};

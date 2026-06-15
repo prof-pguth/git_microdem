@@ -204,7 +204,7 @@ begin
         if MDdef.JoinRemoveLeadingZeros and TheGIS.MyData.IsStringField(TheGIS.dbOpts.LinkFieldThisDB) then begin
            RemoveLeadingZerosInField(TheGIS.MyData,TheGIS.dbOpts.LinkFieldThisDB);
         end;
-        Skipr := MyData.TotRecsInDB div 12;
+        Skipr := MyData.TotalRecsInDB div 12;
         TheGIS.EmpSource.Enabled := false;
         for i := 0 to 9 do begin
            TStr := GetFieldByNameAsString(dbOpts.LinkFieldThisDB);
@@ -238,7 +238,7 @@ begin
                RemoveLeadingZerosInField(Table,TheGIS.dbOpts.LinkFieldOtherDB);
             end;
 
-            Skipr := Table.TotRecsInDB div 12;
+            Skipr := Table.TotalRecsInDB div 12;
             for i := 0 to 9 do begin
                TStr := Table.GetFieldByNameAsString(dbOpts.LinkFieldOtherDB);
                Memo2.Lines.Add(TStr);

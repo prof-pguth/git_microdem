@@ -1511,7 +1511,7 @@ begin
       GISdb[DBonTable].AddSequentialIndex(RecNoFName,true);
       {$IfDef RecordGeostat} WriteLineToDebugFile('MakeGeomporphDBforPoints prelims over'); {$EndIf}
       StartThreadTimers('Geomorph stats',0,true);
-      rc := GISdb[DBonTable].MyData.TotRecsInDB;
+      rc := GISdb[DBonTable].MyData.TotalRecsInDB;
       for i := 1 to rc do begin
          {$IfDef RecordGeostat} WriteLineToDebugFile('MakeGeomporphDBforPoints Rec=' + IntToStr(i) + '/' + IntToStr(rc)); {$EndIf}
          ThreadTimers.OverallGauge9.Progress := round(100 * i/rc);
@@ -1823,7 +1823,7 @@ begin
       GISdb[DBonTable].AddSequentialIndex(RecNoFName,true);
       {$IfDef RecordGeostat} WriteLineToDebugFile('MakeGeomporphDBforPolygons prelims over'); {$EndIf}
       StartThreadTimers('Geomorph stats',0,true);
-      rc := GISdb[DBonTable].MyData.TotRecsInDB;
+      rc := GISdb[DBonTable].MyData.TotalRecsInDB;
       for i := 1 to rc do begin
          {$IfDef RecordGeostat} WriteLineToDebugFile('MakeGeomporphDBforPolygons Rec=' + IntToStr(i) + '/' + IntToStr(rc)); {$EndIf}
          ThreadTimers.OverallGauge9.Progress := round(100 * i/rc);

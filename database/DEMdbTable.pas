@@ -6381,7 +6381,7 @@ begin
    i := 0;
    while not GISdb[DBonTable].MyData.eof do begin
       inc(i);
-      if (i mod 500 = 0) then UpdateProgressBar(i/ GISdb[DBonTable].MyData.TotRecsInDB);
+      if (i mod 500 = 0) then UpdateProgressBar(i/ GISdb[DBonTable].MyData.TotalRecsInDB);
       if GISdb[DBonTable].MyData.CarefullyGetFieldByNameAsFloat64(fName,area) then begin
          GISdb[DBonTable].MyData.Edit;
          GISdb[DBonTable].MyData.SetFieldByNameAsFloat(NewField,0.000001 * Area);
@@ -6546,12 +6546,12 @@ begin
       j := 0;
       for i := 1 to MaxDataBase do if (i <> MaskDB) and (GISdb[i] <> Nil) then begin
           inc(j);
-          OldRecs := GISdb[i].MyData.TotRecsInDB;
+          OldRecs := GISdb[i].MyData.TotalRecsInDB;
           wmDEM.SetPanelText(0,'Deleting ' + IntToStr(j)+  '/' + IntToStr(NumOpenDB));
           MarkPointInPolygon(PipDelete,i,MaskDB,'','');
           GISdb[i].DeleteAllSelectedRecords;
           GISdb[i].theMapOwner.DoFastMapRedraw;
-          WriteLineToDebugFile(GISdb[i].dbName + ' recs deleted = ' + IntToStr(OldRecs - GISdb[i].MyData.TotRecsInDB));
+          WriteLineToDebugFile(GISdb[i].dbName + ' recs deleted = ' + IntToStr(OldRecs - GISdb[i].MyData.TotalRecsInDB));
        end;
       wmDEM.SetPanelText(0,'');
       ShowStatus;
@@ -9579,10 +9579,10 @@ begin
       Insertpointsymbol1.Visible := not GISdb[DBonTable].PointSymbolFieldsPresent;
       {$IfDef RecordShowStatus} WriteLineRoDebugFile('check num recs'); {$EndIf}
       if GISdb[DBonTable].MyData.Filtered then begin
-         if (GISdb[DBonTable].MyData.FiltRecsInDB = 0) then TStr := 'No Records match filter, from ' + IntToStr(GISdb[DBonTable].MyData.TotRecsInDB)
-         else TStr := 'Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(GISdb[DBonTable].MyData.TotRecsInDB);
+         if (GISdb[DBonTable].MyData.FiltRecsInDB = 0) then TStr := 'No Records match filter, from ' + IntToStr(GISdb[DBonTable].MyData.TotalRecsInDB)
+         else TStr := 'Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(GISdb[DBonTable].MyData.TotalRecsInDB);
       end
-      else TStr := 'All Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.TotRecsInDB);
+      else TStr := 'All Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.TotalRecsInDB);
       StatusBar1.Panels[0].Text := TStr;
       {$IfDef RecordShowStatus} WriteLineRoDebugFile('call arrange buttons'); {$EndIf}
       ArrangeButtons;
@@ -14041,7 +14041,7 @@ var
    ArcShape : integer;
 begin
    with GISdb[DBonTable] do begin
-      fName := ExtractFilePath(MyData.TableName);
+      fName := ExtractFilePath(MyData.ShortTableName);
       if GetFileNameDefaultExt('Sensors for ArcGIS',DBNameMask,fName) then begin
          SaveCurrentDBaseSubset(fName);
          OpenNumberedGISDataBase(ArcShape, fName);

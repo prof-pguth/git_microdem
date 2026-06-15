@@ -37,6 +37,8 @@
       //{$Define TrackHorizontalDatum}
       //{$Define RecordFan}
       //{$Define RecordVAT}
+      //{$Define RecordOSM}
+      {$Define RecordDBsIndex}
       //{$Define RecordMapType}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
@@ -240,7 +242,7 @@ type
      MinZColorDEM2,MaxZColorDEM2 : float64;
      TIGERFilter : ShortString;
      OverlayOrder : array[1..MaxOverlays] of tOverlayOrder;
-     DBonThisMap :  array[1..MaxDataBase] of boolean;
+     {$IfDef UseDBonThisMap} DBonThisMap :  array[1..MaxDataBase] of boolean; {$EndIf}
      NeedToRedraw,
      ClosingMapNow,
      InitialMapDrawn,
@@ -297,8 +299,8 @@ type
      ContourOverlayfName2,
      AllFansCoverageFName,
      TigerOverlayFName,
+     OSMOverlayFName,
      BaseMapFName,
-     OSMOverlayfName,
      PLSSOverlayfName,
      USOverlayfName,
      GridOverlayFName,
@@ -406,8 +408,6 @@ type
       procedure MaximizeLatLongMapCoverage(bb : sfBoundBox; xsize: integer = -99; ysize : integer = -99); overload; {all in degrees}
       procedure SetFullMapCoverage;
 
-      //procedure MapOverlaysToDebugFile(Where : shortstring);
-
      //map coordinate routines
       procedure MapGridToDEMGrid(xg,yg : float64; var xg1,yg1 : float64);
       procedure DataGridToLatLongDegree(xgrid,ygrid : float32; var lat,long : float64);
@@ -446,7 +446,6 @@ type
       function GetBoundBoxGeo : sfBoundBox;
       function GetBoundBoxUTM : sfBoundBox;
       procedure FindMapUTMLimits;
-      //procedure BoxToContainFan(Lat,Long,Range : float64; var uMinLat,uMinLong,uMaxLat,uMaxLong : float64);
 
 
     //create map related strings
@@ -586,9 +585,7 @@ type
       procedure ShowMapGridLimits(Where : shortString);
       function DistanceOffMap(Lat,Long : float64) : shortstring;
 
-      procedure PlotLineShapeFileOnMap(fName : PathStr; var Bitmap : tMyBitmap; LineColor : tPlatformColor; LineWidth : byte);
-      procedure PlotShapeFileGroupOnMap(IndexFName : PathStr; Bitmap : tMyBitmap; BaseDir : PathStr = '');
-      procedure PlotShapeFileGroup(inBitmap : tMyBitmap; FName : PathStr; SaveLayerAllowed : boolean = true);
+      procedure PlotShapeFileGroup(LayerType : integer; IndexFName,LayerSavedName : PathStr; var inBitmap : tMyBitmap; MultFiles : tStringList = nil);
       procedure QuietPlotTIGERShapeFileOnMap(fName : PathStr; var Bitmap : tMyBitmap; RoadsOnly : boolean = false; MaskSize : integer = -1; StreamsOnly : boolean = false);
       procedure PlotDataBase(DBNum : integer; var Bitmap : tMyBitmap);
       procedure PlotTigerShapeFileOnMap(DBNum : integer; var Bitmap : tMyBitmap; RoadsOnly : boolean = false; MaskSize : integer = -1; StreamsOnly : boolean = false);
@@ -600,11 +597,6 @@ type
 
       {$IfDef ShowProjectedLimits}
          procedure ShowProjectedLimits(Where : shortstring);
-      {$EndIf}
-
-      {$IfDef ExOSM}
-      {$Else}
-          procedure OSMthread(Layer : integer; fName : PathStr; var Bitmap : tMyBitmap);
       {$EndIf}
 
 
@@ -789,6 +781,15 @@ const
    SlopeAspectColor : array[1..3, 1..8] of tColor = ((8500632,9480306,11374204,10515852,10582964,9407435,9086405,9027517),
                                                      (5817485,7449405,11958352,10307447,10243520,8024039,7120610,6216662),
                                                      (54916,4500224,12609536,10682476,10223818,6837759,4697087,64244));
+   OSMlayer = 1;
+   NaturalEarthLayer = 2;
+   CartoLayer = 3;
+
+   {$IfDef VCL}
+      {$I demmapdraw_map_colors.inc}
+      {$I demmapdraw_plot_dbs.inc}
+      {$I demmapdraw_plot_vcl.inc}
+   {$EndIf}
 
    {$IfDef ExViewshed}
    {$Else}
@@ -803,12 +804,6 @@ const
    {$IfDef ExMapGrids}
    {$Else}
       {$I demmapdraw_grids.inc}
-   {$EndIf}
-
-   {$IfDef VCL}
-      {$I demmapdraw_map_colors.inc}
-      {$I demmapdraw_plot_dbs.inc}
-      {$I demmapdraw_plot_vcl.inc}
    {$EndIf}
 
    {$IfDef ExWMS}
@@ -1589,7 +1584,7 @@ begin
    if CopyOverlays then begin
       for i := MaxOverlays downto 1 do NewMapDraw.OverLayOrder[i] := OverlayOrder[i];
       NewMapDraw.CartoGroupShapesUp := CartoGroupShapesUp;
-      for i := 1 to MaxDataBase do NewMapDraw.DBonThisMap[i] := DBonThisMap[i];
+      {$IfDef UseDBonThisMap} for i := 1 to MaxDataBase do NewMapDraw.DBonThisMap[i] := DBonThisMap[i]; {$EndIf}
       {$IfDef RecordDrape} WriteLineToDebugFile('Take care of MapOverlays'); {$EndIf}
       CopyStringList(MapOverlays.ovVectorFiles,NewMapDraw.MapOverlays.ovVectorFiles);
       CopyStringList(MapOverlays.ovTerrainCat,NewMapDraw.MapOverlays.ovTerrainCat);
@@ -1870,12 +1865,11 @@ begin
    RangeCirclesFName := '';
    AllFansCoverageFName := '';
    TigerOverlayFName := '';
+   OSMOverlayFName := '';
    CartoDBfName := '';
    ContourOverlayfName  := '';
    ContourOverlayfName2 := '';
    BaseMapFName := '';
-   //OSMShapesUp := '';
-   OSMOverlayfName := '';
    PLSSOverlayfName := '';
    GazOverlayFName := '';
    NaturalEarthOverlayFName := '';
@@ -1889,7 +1883,7 @@ begin
    MapGazDB := 0;
 
    for i := 1 to MaxDataBase do DBOverlayfName[i] := '';
-   for i := 1 to MaxDataBase do DBonThisMap[i] := false;
+   {$IfDef UseDBonThisMap} for i := 1 to MaxDataBase do DBonThisMap[i] := false; {$EndIf}
 
    CurrentFansTable := 0;
    FeatureGrid := 0;

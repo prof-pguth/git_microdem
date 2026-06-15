@@ -291,8 +291,8 @@ end;
             var
                OldFilter : ANSIString;
                i : integer;
-               TStr : shortString;
-               ShortName : ShortString;
+               TStr,ShortName : ShortString;
+               StringCategories : tStringList;
                UseLink : boolean;
             begin
                {$IfDef RecordDBPlot} WriteLineToDebugFile('TGISdataBaseModule.PlotDBStringField in, dbOpts.ColorField=' + dbOpts.FloatColorField); {$EndIf}
@@ -304,9 +304,9 @@ end;
 
                if UseLink or MyData.IsStringField(dbOpts.FloatColorField) or MyData.IsIntegerField(dbOpts.FloatColorField) then begin
                   EmpSource.Enabled := false;
-                  if (StringCategories = Nil) then begin
+                  //if (StringCategories = Nil) then begin
                      StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
-                  end;
+                  //end;
                   {$IfDef RecordDBPlot} WriteLineToDebugFile('strings in field=' + IntToStr(StringCategories.Count)); {$EndIf}
 
                   DefineColorTableValues(dbOpts.DBColorPaletteName,0,pred(StringCategories.Count),ColorDefTable);
@@ -335,6 +335,7 @@ end;
                       if WantOut then break;
                    end;
                    MyData.ApplyFilter(OldFilter);
+                   StringCategories.Destroy;
                end;
             end;
 

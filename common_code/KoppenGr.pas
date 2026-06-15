@@ -12,6 +12,7 @@ unit Koppengr;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    //{$Define RecordKoppen}
+   {$Define AddKoppen}
 {$EndIf}
 
 interface
@@ -108,6 +109,7 @@ function ClassifyClimate(var ClimateData : tClimateData) : boolean;
 
 procedure OpenKoppenGridDB(theMap : tMapForm; OpenTable : boolean = true);
 function GetKoppenClass(Lat,Long : float64) : shortstring;
+procedure AddKoppenClassToDB(DbOnTable : integer);
 
 
 
@@ -162,7 +164,6 @@ begin
    Result := '';
    if not ValidDB(KoppenGridDB) then OpenKoppenGridDB(Nil,False);
    if ValidDB(KoppenGridDB) then begin
-
       GisDB[KoppenGridDB].MyData.first;
       MinDist := 99999;
       while not GisDB[KoppenGridDB].MyData.eof do begin
@@ -182,6 +183,36 @@ begin
       end;
    end;
 end;
+
+
+procedure AddKoppenClassToDB(DbOnTable : integer);
+var
+   Lat,Long : float64;
+   i : integer;
+   aClass : shortstring;
+begin
+   {$IfDef AddKoppen} WriteLineToDebugFile('Add Koppen ' + GISdb[DBonTable].DBName); {$EndIf}
+   GISdb[DBonTable].ClearGISFilter;
+   GISdb[DBonTable].AddFieldToDataBase(ftString,'KOPPEN',4);
+   GISdb[DBonTable].MyData.First;
+   StartProgress('Add Koppen');
+   i := 0;
+   while not GISdb[DBonTable].MyData.eof do begin
+      GISdb[DBonTable].EmpSource.Enabled := false;
+      if (i mod 25 = 0) then UpdateProgressBar(i / GISdb[DBonTable].MyData.FiltRecsinDB);
+      inc(i);
+      if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
+         aClass := GetKoppenClass(Lat,Long);
+         GISdb[DBonTable].MyData.Edit;
+         GISdb[DBonTable].MyData.SetFieldByNameAsString('KOPPEN',aClass);
+      end;
+      GISdb[DBonTable].MyData.Next;
+   end;
+   EndProgress;
+   GISdb[DBonTable].ShowStatus;
+   {$IfDef AddKoppen} WriteLineToDebugFile('Add Koppen done'); {$EndIf}
+end;
+
 
 
 procedure LoadClimateData(var ClimateData : tClimateData);

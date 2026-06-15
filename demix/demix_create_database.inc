@@ -20,8 +20,9 @@ var
    fName,RefDSMName,RefDTMName,CopNAME,FathomName,cName,tName : PathStr;
 begin
   {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM in'); {$EndIf}
-   WantShowProgress := false;
    if GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM') then begin
+       WantShowProgress := false;
+       HeavyDutyProcessing := true;
        BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
        GISdb[DBonTable].ApplyGISFilter(BaseFilter );
        Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
@@ -104,13 +105,14 @@ begin
               end;
           end;
        end;
+       wmDEM.ClearStatusBarPanelText;
+       GISdb[DBonTable].ClearGISFilter;
+       SetColorForWaiting;
+       HeavyDutyProcessing := false;
    end
    else begin
       MessageToContinue('DB requires fields DEM_PAIR and REF_DEM');
    end;
-   wmDEM.ClearStatusBarPanelText;
-   GISdb[DBonTable].ClearGISFilter;
-   SetColorForWaiting;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM out'); {$EndIf}
 end;
 
@@ -1020,7 +1022,7 @@ var
 
          Cycles := Tiles.Count * 2 * NumLandTypes;
          Done := 0;
-         StartProgress('Transposing ' + Table.TableName);
+         StartProgress('Transposing ' + Table.ShortTableName);
          for Tile := 0 to Pred(Tiles.Count) do begin
             {$If Defined(RecordDEMIXFull)} if (Tile mod 25 = 0) then WriteLineToDebugFile(IntToStr(succ(Tile)) + '/' + IntToStr(Tiles.Count)); {$EndIf}
             wmdem.SetPanelText(2,IntToStr(succ(Tile)) + '/' + IntToStr(Tiles.Count));
@@ -1869,7 +1871,6 @@ var
    i : integer;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('AddTileCharacteristics'); {$EndIf}
-   //AddFieldsToDEMIXDB(DBonTable,theFields);
 
    GetDEMIXpaths(true);
    GISdb[DBonTable].ClearLinkTable(true);

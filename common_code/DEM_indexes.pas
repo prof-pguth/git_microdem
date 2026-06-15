@@ -262,7 +262,7 @@ uses
          finally
             CloseAndNilNumberedDB(db);
          end;
-         {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotRecsInDB)); {$EndIf}
+         {$IfDef RecordDEMIXTiles} writeLineToDebugFile('DEM contains parts of tiles=' + IntToStr(GISdb[Result].MyData.TotalResInDB)); {$EndIf}
       end;
 
 

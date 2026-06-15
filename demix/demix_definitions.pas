@@ -882,7 +882,7 @@ var
 
 begin
    Result := ddbUndefined;
-   if GISdb[db].MyData.FieldExists('CRITERION') then begin
+   if ValidDB(db) and GISdb[db].MyData.FieldExists('CRITERION') then begin
      Criteria := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
      if FindPartialMatch('LE90') and FindPartialMatch('MAE') then Result := ddbDiffDist
      else if FindPartialMatch('FUV') then Result := ddbFUV

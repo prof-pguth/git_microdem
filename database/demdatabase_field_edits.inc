@@ -765,9 +765,9 @@ begin
          end;
          MyData.Last;
          i := MyData.GetFieldByNameAsInteger(fName);
-         if (i <> MyData.TotRecsInDB) then begin
+         if (i <> MyData.TotalRecsInDB) then begin
             Fill := true;
-            {$If Defined(RecordSeqIndex)} WriteLineToDebugFile('Last record, ' + FName + ' is ' + IntToStr(i) + ' and not ' + IntToStr(MyData.TotRecsInDB)); {$EndIf}
+            {$If Defined(RecordSeqIndex)} WriteLineToDebugFile('Last record, ' + FName + ' is ' + IntToStr(i) + ' and not ' + IntToStr(MyData.TotalRecsInDB)); {$EndIf}
          end;
       end;
    end;
@@ -783,7 +783,7 @@ begin
       while not MyData.eof do begin
          inc(i);
          if (i mod 500 = 0) then begin
-            {$IfDef VCL} UpDateProgressBar(i/MyData.TotRecsInDB); {$EndIf}
+            {$IfDef VCL} UpDateProgressBar(i/MyData.TotalRecsInDB); {$EndIf}
             EmpSource.Enabled := false;
          end;
          MyData.Edit;

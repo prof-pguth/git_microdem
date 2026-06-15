@@ -187,7 +187,6 @@ begin
    {$IfDef RecordOverlay} WriteLineToDebugFile('ManageMapOverlays  Fan Opacity=' + IntToStr(MDDef.FanOpacity) + '  Grid 2 opacity=' + IntToStr(MDDef.SecondGridOpacity)); {$EndIf}
    MapOverlayForm := TMapOverlayForm.Create(Application);
    MapOverlayForm.TheMapForm := MapForm;
-
    MapOverlayForm.SettingUp := true;
    MapOverlayForm.Caption := 'Overlays--' + MapForm.Caption;
    ColorBitBtn(MapOverlayForm.BitBtn14,MDdef.WaterColor);
@@ -556,11 +555,13 @@ end;
 
 procedure TMapOverlayForm.BitBtn34Click(Sender: TObject);
 begin
-   if (TheMapForm.MapDraw.OSMShapesUp = Nil) and CheckBox15.Checked then begin
-      TheMapForm.LoadOSMoverlay1Click(Nil);
+   if CheckBox15.Checked then begin
+      if (TheMapForm.MapDraw.OSMShapesUp = Nil) then TheMapForm.LoadOSMoverlay1Click(Nil);
+      UpdateOverlayOrder(ovoOSM, (TheMapForm.MapDraw.OSMShapesUp <> Nil));
+   end
+   else begin
+      FreeAndNil(TheMapForm.MapDraw.OSMShapesUp);
    end;
-   if (not CheckBox15.Checked) then FreeAndNil(TheMapForm.MapDraw.OSMShapesUp);
-   UpdateOverlayOrder(ovoOSM, CheckBox15.Checked and (TheMapForm.MapDraw.OSMShapesUp <> Nil));
    CheckPanels;
 end;
 

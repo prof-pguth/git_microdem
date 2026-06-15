@@ -1106,7 +1106,7 @@ begin
    Graph.GraphDraw.TopLabel := GISdb[DBontable].dbName  +  ' (' + DateToStr(Now) + ')';
    if (GISdb[DBonTable].MyData.Filter <> '') then begin
       Graph.GraphDraw.TopLabel := Graph.GraphDraw.TopLabel  + '  ' +  GISdb[DBontable].MyData.Filter + ' (n=' + IntToStr(GISdb[DBontable].MyData.FiltRecsInDB) +
-                       '/' + IntToStr(GISdb[DBontable].MyData.TotRecsInDB) + ')';
+                       '/' + IntToStr(GISdb[DBontable].MyData.TotalResInDB) + ')';
    end;
    Graph.GraphDraw.TopMargin := 45;
 *)

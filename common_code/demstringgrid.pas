@@ -210,7 +210,7 @@ with DisplayGrid do begin
          end
          else begin
             if (MaxVal > MDDef.PerfectR) and (MDDef.PerfectR > 0) then begin
-               delta := (MDDef.PerfectR-MinVal) / pred(Table.TotRecsInDB);
+               delta := (MDDef.PerfectR-MinVal) / pred(Table.TotalRecsInDB);
                Table.Edit;
                Table.SetFieldByNameAsFloat('MAX',MaxVal);
                Table.SetFieldByNameAsFloat('MIN',MDDef.PerfectR);
@@ -218,7 +218,7 @@ with DisplayGrid do begin
                Value := MDDef.PerfectR;
             end
             else begin
-               delta := (MaxVal-MinVal) / Table.TotRecsInDB;
+               delta := (MaxVal-MinVal) / Table.TotalRecsInDB;
                Value := MaxVal;
             end;
             while not Table.eof do begin
@@ -234,7 +234,7 @@ with DisplayGrid do begin
          if (DoR = gcmMAbD) then begin
             Perfect := MDDef.PerfectMAbD;
             if (MinVal <= Perfect) then begin
-               delta := (MaxVal-Perfect) / pred(Table.TotRecsInDB);
+               delta := (MaxVal-Perfect) / pred(Table.TotalRecsInDB);
                Table.Edit;
                Table.SetFieldByNameAsFloat('MIN',MinVal);
                Table.SetFieldByNameAsFloat('MAX',Perfect);
@@ -242,7 +242,7 @@ with DisplayGrid do begin
                Value := Perfect;
             end
             else begin
-               delta := (MaxVal-MinVal) / Table.TotRecsInDB;
+               delta := (MaxVal-MinVal) / Table.TotalRecsInDB;
                Value := MinVal;
             end;
             while not Table.eof do begin
@@ -254,7 +254,7 @@ with DisplayGrid do begin
             end;
          end
          else begin
-            delta := (MaxVal-MinVal) / Table.TotRecsInDB;
+            delta := (MaxVal-MinVal) / Table.TotalRecsInDB;
             Value := MaxVal;
             while not Table.eof do begin
                Table.Edit;

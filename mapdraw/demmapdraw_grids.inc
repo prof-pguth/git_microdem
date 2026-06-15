@@ -277,10 +277,10 @@ var
                    DrawLatLine(GridOverlay.Canvas,Lat2,LeftY,RightY);
                    if MDDef.GridLabelsInsideMap and LabelsHere then begin
                       TStr := LatToString(Lat2,OutMethod);
-                      if LeftY > -99 then begin
+                      if (LeftY > -99) then begin
                         GridOverlay.Canvas.TextOut(5,LeftY-GridOverlay.Canvas.TextHeight(TStr) div 2,TStr);  //left side
                       end;
-                      if RightY > -99 then begin
+                      if (RightY > -99) then begin
                           GridOverlay.Canvas.TextOut(MapXsize - 5 - GridOverlay.Canvas.TextWidth(TStr),RightY-GridOverlay.Canvas.TextHeight(TStr) div 2,TStr);  //right side
                       end;
                    end;
@@ -308,10 +308,10 @@ var
 
                    if MDDef.GridLabelsInsideMap and LabelsHere then begin
                       TStr := LongToString(Long2,OutMethod);
-                      if TopX > -299 then begin
+                      if (TopX > -299) then begin
                          GridOverlay.Canvas.TextOut(TopX-GridOverlay.Canvas.TextWidth(TStr) div 2,5,TStr);
                       end;
-                      if BottomX > -299 then begin
+                      if (BottomX > -299) then begin
                          GridOverlay.Canvas.TextOut(BottomX-GridOverlay.Canvas.TextWidth(TStr) div 2,MapYSize - 5 - GridOverlay.Canvas.TextHeight(TStr),TStr);
                       end;
                    end;
@@ -581,7 +581,7 @@ end {DrawGridLines};
                   end;
                end;
             end;
-         end;
+         end {procedure tMapDraw.ShowDEMGrid};
 		 
 
          procedure TMapDraw.UTMBox(Bitmap : tMyBitmap; LowLong,HighLong : float64; x1,y1,x2,y2,inc : integer; var xc,yc,xr : integer; UseDatum : tMapProjection);
@@ -631,7 +631,7 @@ end {DrawGridLines};
             xc := xc div succ(4*inc);
             yc := yc div succ(4*inc);
             xr := xmax - xmin;
-         end;
+         end {TMapDraw.UTMBox};
 
 
          procedure TMapDraw.LatLongBox(Bitmap : tMyBitmap; Lat1,Long1,Lat2,Long2 : float64; inc : integer; var xc,yc : integer; Fill : boolean = false);

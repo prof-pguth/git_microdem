@@ -248,10 +248,12 @@ function TGISdataBaseModule.StringFieldLegend : tMyBitmap;
 var
    i,tl,l,fHi : integer;
    TStr : shortstring;
+   StringCategories : tStringList;
 begin
    {$IfDef RecordLegend} WriteLineToDebugFile('Tgis_scaled_form.MakeStringFieldLegend'); {$EndIf}
    EmpSource.Enabled := false;
-   if (StringCategories = Nil) then StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
+   //if (StringCategories = Nil) then StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
+   StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
    fHi := 22;
    DefineDBColorTable;
    CreateBitmap(Result,1000,fHi*StringCategories.Count);
@@ -281,6 +283,7 @@ begin
    Result.Canvas.Pen.Width := 1;
    Result.Canvas.Rectangle(0,0,tl+3,pred(Result.Height));
    Result.Width := tl + 3;
+   StringCategories.Destroy;
    {$IfDef RecordLegend} WriteLineToDebugFile('Tgis_scaled_form.MakeStringFieldLegend, size =' + IntToStr(Result.width) + 'x' + intToStr(Result.Height)); {$EndIf}
 end;
 
