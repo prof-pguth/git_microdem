@@ -419,7 +419,7 @@ procedure LoadTowersOnMap(TheMap : tMapForm);
 begin
    {$IfDef RecordDP} WriteLineToDebugFile('LoadTowersOnMap, file= ' + DragonPlotDef.TowerFileName); {$EndIf}
    if not FileExists(DragonPlotDef.TowerFileName) then DragonPlotDef.TowerFileName := '';
-   if OpenNumberedGISDataBase(TowerTable,DragonPlotDef.TowerFileName,false,false,TheMap) then begin
+   if OpenNumberedGISDataBase(TowerTable,DragonPlotDef.TowerFileName,false,TheMap) then begin
       GISdb[TowerTable].MyData.ApplyFilter('USE=' + QuotedStr('Y'));
       GISdb[TowerTable].dbOpts.LabelDBPlots := true;
       GISdb[TowerTable].KMLExportable := false;
@@ -491,6 +491,7 @@ begin
    CheckBox4.Checked := DragonPlotDef.AdvancedOptions;
    InstancesToLoad1.Visible := DragonPlotDef.AdvancedOptions;
 
+(*
   //lightning tab
     BitBtn8.Enabled := LightningTable <> 0;
     BitBtn34.Enabled := LightningTable <> 0;
@@ -501,6 +502,7 @@ begin
    BitBtn21.Visible := false;   //GroupBox4.Visible;
    BitBtn32.Visible := false;   //GroupBox4.Visible;
    BitBtn33.Visible := false;   //GroupBox4.Visible;
+*)
 
    //disabled options, but open for a full GIS use case
    GroupBox4.Visible := TrilobiteComputer or (MDDef.ProgramOption = ExpertProgram) or DragonPlotDef.AdvancedOptions;
@@ -794,7 +796,7 @@ begin
    if not GetTowerSettings(PrimaryTowerComboBox7.Text, TowerLat,TowerLong,TowerHeight,TowerGroundElevation,CameraElev,TowerRange) then begin
       MessageToContinue('Tower ' + PrimaryTowerComboBox7.Text + ' missing or not located within DEM');
    end;
-   if (LightningTable <> 0) then GISdb[LightningTable].IntervisibilityFromPoint(false,TowerLat,TowerLong,CameraElev,TowerHeight);
+   //if (LightningTable <> 0) then GISdb[LightningTable].IntervisibilityFromPoint(false,TowerLat,TowerLong,CameraElev,TowerHeight);
 end;
 
 
@@ -1212,8 +1214,11 @@ begin
    RadioGroup3.ItemIndex := DragonPlotDef.MapLevelIndex;
    RadioGroup3Click(nil);
 
-   SymbolOnButton(BitBtn15,DragonPlotDef.NegLightningSymbol);
-   SymbolOnButton(BitBtn21,DragonPlotDef.PosLightningSymbol);
+   BitBtn15.Visible := false;
+   BitBtn21.Visible := false;
+
+   //SymbolOnButton(BitBtn15,DragonPlotDef.NegLightningSymbol);
+   //SymbolOnButton(BitBtn21,DragonPlotDef.PosLightningSymbol);
    SymbolOnButton(BitBtn26,DragonPlotDef.MaskedSymbol);
    SymbolOnButton(BitBtn25,DragonPlotDef.VisibleSymbol);
    SymbolOnButton(BitBtn27,DragonPlotDef.AccuracySymbol);
@@ -1344,7 +1349,7 @@ end;
 
 procedure TDragonPlotForm.BitBtn8Click(Sender: TObject);
 begin
-   CloseSingleDB(LightningTable);
+   //CloseSingleDB(LightningTable);
    SetTabSheets;
 end;
 
@@ -1583,6 +1588,7 @@ begin
    t1 := ' (computed)';
    t2 := ' (entered)';
    if (Sender = Nil) then begin
+(*
       t3 := '';
       if GISdb[LightningTable].MyData.FieldExists('DTG') then begin
          t3 := '(' + GISdb[LightningTable].MyData.GetFieldByNameAsString('DTG') + ')';
@@ -1600,6 +1606,7 @@ begin
       if (PLSS[1] <> Nil) then begin
          PLSSString := PLSSLocation(PLSSLat,PLSSLong);
       end;
+*)
    end
    else begin
       if PLSSentered then begin
@@ -1619,9 +1626,11 @@ begin
    DisplayMessage(t3 + ' done ' + LastShotTime);
 
    if (Sender = Nil) then begin
+(*
       GetCurrentAndPolarity(Polarity,Current);
       DisplayMessage('Current:  ' + RealToString(Current,-12,0));
       DisplayMessage('Polarity: ' + Polarity);
+*)
    end;
 
    DisplayMessage('Tower: ' + PrimaryTowerComboBox7.Text + ' Elev: ' + RealToString(CameraElev,6,1) + ' m   (' +  RealToString(CameraElev/FeetToMeters,6,1) + ' ft)');
@@ -1697,9 +1706,11 @@ end;
 
 procedure TDragonPlotForm.BitBtn15Click(Sender: TObject);
 begin
+(*
    Petmar.PickSymbol(BitBtn15,DragonPlotDef.NegLightningSymbol,'- Lightning strikes');
    SetLightningSymbols;
    GISdb[LightningTable].RedrawLayerOnMap;
+*)
 end;
 
 
@@ -1860,11 +1871,13 @@ end;
 
 procedure TDragonPlotForm.BitBtn34Click(Sender: TObject);
 begin
+(*
    if (LightningTable <> 0) and (GISdb[LightningTable].TheMapOwner <> Nil) then begin
       ChangeDEMNowDoing(IDDBforAction);
       DBEditting := LightningTable;
       GISdb[LightningTable].theMapOwner.SetFocus;
    end;
+*)
 end;
 
 procedure TDragonPlotForm.BitBtn35Click(Sender: TObject);
@@ -1963,6 +1976,7 @@ end;
 
 procedure TDragonPlotForm.GetCurrentAndPolarity(var Polarity : shortstring; var Mag : float64);
 begin
+(*
     Polarity := '';
     Mag := 0;
     if GISdb[LightningTable].MyData.FieldExists('POLARITY') then begin
@@ -1972,9 +1986,12 @@ begin
        Mag := GISdb[LightningTable].MyData.GetFieldByNameAsFloat('PEAK_CURRE');
        if (Mag < 0) then Polarity := 'N' else Polarity := 'P';
     end;
+*)
 end;
 
 procedure TDragonPlotForm.SetLightningSymbols;
+begin
+(*
 var
    //fName : PathStr;
    Polarity : shortstring;
@@ -1986,10 +2003,6 @@ begin
    GISdb[LightningTable].MyData.First;
    while not GISdb[LightningTable].MyData.eof do begin
       GetCurrentAndPolarity(Polarity,Mag);
-      (*
-      if Polarity = 'N' then Sym := DragonPlotDef.NegLightningSymbol
-      else if Polarity = 'P' then Sym := DragonPlotDef.PosLightningSymbol;
-      *)
       if Polarity = 'N' then Sym.Color := claBlue  //16740352
       else if Polarity = 'P' then Sym.Color := claRed
       else Sym.Color := claLime;
@@ -2015,10 +2028,13 @@ begin
       GISdb[LightningTable].MyData.Next;
    end;
    GISdb[LightningTable].ShowStatus;
+*)
 end;
 
 
 procedure TDragonPlotForm.BitBtn17Click(Sender: TObject);
+begin
+(*
 var
    fName : PathStr;
 begin
@@ -2054,10 +2070,13 @@ begin
     end;
     SetTabSheets;
     {$IfDef RecordLightning} WriteLineToDebugFile('TDragonPlotForm.BitBtn17Click out (import lighthing file)'); {$EndIf}
+*)
 end;
 
 
 procedure TDragonPlotForm.BitBtn18Click(Sender: TObject);
+begin
+(*
 
       procedure PlotStrikes(ch : char; Symbol : tFullSymbolDeclaration);
       var
@@ -2095,12 +2114,13 @@ begin
    GISdb[LightningTable].RedrawLayerOnMap;
    Forms.Screen.Cursor := crDefault;
    {$IfDef RecordLightning} WriteLineToDebugFile('TDragonPlotForm.BitBtn18Click (plot lightning) out, recs = ' + IntToStr(GISdb[LightningTable].MyData.RecordCount)); {$EndIf}
+*)
 end;
 
 
 procedure TDragonPlotForm.BitBtn19Click(Sender: TObject);
 begin
-   ExecuteFile(DragonPlotDef.LightningWWW);
+   //ExecuteFile(DragonPlotDef.LightningWWW);
 end;
 
 procedure TDragonPlotForm.BitBtn1Click(Sender: TObject);
@@ -2111,12 +2131,14 @@ end;
 
 procedure TDragonPlotForm.DBGrid2DblClick(Sender: TObject);
 begin
+(*
   {$IfDef RecordLightning} WriteLineToDebugFile('TDragonPlotForm.DBGrid2DblClick'); {$EndIf}
    if GISdb[LightningTable].ValidLatLongFromTable(PlssLat,PlssLong) and (PLSS[1] <> Nil) then begin
       PLSSString := PLSSLocation(PLSSLat,PLSSLong);
    end;
    BitBtn13Click(Nil);
    GISdb[LightningTable].MyData.ApplyFilter('');
+*)
 end;
 
 
@@ -2173,9 +2195,11 @@ end;
 
 procedure TDragonPlotForm.BitBtn21Click(Sender: TObject);
 begin
+(*
    Petmar.PickSymbol(BitBtn21,DragonPlotDef.PosLightningSymbol,'+ Lightning strikes');
    SetLightningSymbols;
    GISdb[LightningTable].RedrawLayerOnMap;
+*)
 end;
 
 procedure TDragonPlotForm.BitBtn22Click(Sender: TObject);

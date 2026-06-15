@@ -378,10 +378,10 @@ begin
 
        Table := tMyData.Create(fName);
        I := 0;
-       ShowProgress := (Table.TotRecsInDB > MDDef.RecNumToShowDBProgress);
+       ShowProgress := (Table.TotalRecsInDB > MDDef.RecNumToShowDBProgress);
        {$IfDef VCL} if ShowProgress then StartProgress(ExtractFilenameNoExt(fName) + ' to CDS'); {$EndIf}
        while not Table.eof do begin
-          {$IfDef VCL} if ShowProgress and (i mod 5000 = 0) then UpdateProgressBar(i/Table.TotRecsInDB); {$EndIf}
+          {$IfDef VCL} if ShowProgress and (i mod 5000 = 0) then UpdateProgressBar(i/Table.TotalRecsInDB); {$EndIf}
           inc(i);
           CDS.Append;
           for j := 1 to FieldsInDB do begin

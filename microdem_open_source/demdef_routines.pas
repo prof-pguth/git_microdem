@@ -4677,7 +4677,7 @@ begin
     {$IfDef ExOSM}
     {$Else}
        OSMRoadRules := ProgramRootDir + 'osm_road_rules_v3' + DefaultDBExt;
-       OSMGroupRules := ProgramRootDir + 'osm_map_rules_v2' + DefaultDBExt;
+       OSMGroupRules := ProgramRootDir + 'osm_map_rules_v3' + DefaultDBExt;
     {$EndIf}
 
     {$IfDef ExWMS}

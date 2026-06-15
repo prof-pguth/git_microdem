@@ -1544,7 +1544,7 @@ begin
       if (View3d.FlightRouteDB <> Nil) then begin
          fName := '';
          if LiveFlying and MDDef.SaveLiveFlying and AnswerIsYes('Save flight route') then begin
-            fName2 := View3d.FlightRouteDB.TableName;
+            fName2 := View3d.FlightRouteDB.ShortTableName;
             fName := fName2;
             Petmar.GetFileNameDefaultExt('Saved flight route',DefaultDBMask,fName);
          end;

@@ -201,37 +201,33 @@ var
 
       //color routines
          function ColorString(Color : tPlatformColor) : shortString; overload;
-         //function ColorString(Color : tRGBTriple) : shortString; overload;
          function ColorString(Color : tColor) : shortString; overload;
 
          function RGBString(r,g,b : SmallInt; IncludeGray : boolean = false) : ShortString;
 
-         function GrayColorFunct(i : integer) : TColor;  overload;
-         function GrayColorFunct(z,Min,Max : float64) : TColor; overload; inline;
-         function SpectrumColorFunct(z,Min,Max : float64) : tColor;
-         function RainbowColorFunct(z,Min,Max : float64) : TColor;
-         function TerrainTColor(z,aMin,aMax : float64) : TColor;
          function ColorToHtml(DColor : TColor) : ShortString;
-
-         //function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
-         function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
-         function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
-         function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
-         function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor;
-
          procedure tColortoHLS(Color : tColor; var h,l,s : float64);
          function HLStoTcolor(H,L,S : float64) : tcolor;
          procedure RGBtripToHLS(Color : tRGBTriple; var h,l,s : float64);
 
          function MonthColor(i : integer) : TPlatformColor;
          function SameColor(c1,c2 : tPlatformColor) : boolean; inline;
-
-
          function RGBtripFromHSI(Hue,Sat,Int : float64) : tPlatformColor;
          procedure GetRGBfromTColor(Color : TColor; var r,g,b : byte);
 
          procedure RGBtoHLS(r,g,b : integer; var h,l,s : float64);
          procedure HLStoRGB(h,l,s : float64; var r,g,b : byte);
+
+         function GrayColorFunct(i : integer) : TColor;  overload;
+         function GrayColorFunct(z,Min,Max : float64) : TColor; overload; inline;
+         function SpectrumColorFunct(z,Min,Max : float64) : tColor; inline;
+         function RainbowColorFunct(z,Min,Max : float64) : TColor; inline;
+         function TerrainTColor(z,aMin,aMax : float64) : TColor;
+         function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
+         function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
+         function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor; inline;
+         function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor; inline;
+
 
          function SelectedColorSchemeColorFunct(ColorScheme: tLegendColors; ColorTable : tColorTableDefinitions; z : float64; Min,Max : float64) : TColor;
          function ColorFromZColorTable(ZColorTable : tColorTableDefinitions; zj : float64; var k : integer) : tRGBTriple;
@@ -1825,18 +1821,6 @@ end;
               BorderColor := PickBorderColor;
               inBorderWidth := PickFillForm.PickBorderWidth;
             end;
-         end;
-
-
-         function SpectrumColorFunct(z,Min,Max : float64) : tColor;
-         var
-            r,g,b : byte;
-         begin
-            if (z < Min) then z := Min;
-            if (z > Max) then z := Max;
-            z := 380 + 400 * (z - Min) / (Max - Min);
-            WavelengthToRGB(z, R,G,B);
-            Result := RGB(r,g,b);
          end;
 
 

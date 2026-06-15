@@ -2409,6 +2409,9 @@ var
       end;
 
 
+var
+   fName : PathStr;
+   CreateDB : tCreateDataBase;
 begin
    {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('start Twmdem.FormActivate, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
    {$If Defined(RecordFormResize) or Defined(RecordFormActivate)}
@@ -2484,11 +2487,21 @@ begin
          TryAutoOpen;
       end;
 
+
+
+      ZeroRecordsAllowed := true;
+      FName := NextFileNumber(MDtempDir,'Global_dbs_','.dbf');
+      CreateDB := tCreateDataBase.Create(FName);
+      CreateDB.AddAField('DB_NUM',ftInteger,4);
+      CreateDB.AddAField('DB_NAME',ftString,255);
+      CreateDB.WriteCorrectHeader;
+      OpenNumberedGISDataBase(OpenDBsIndex,fName,false);
+
      {$IfDef RecordProblems} WriteLineToDebugFile('MDdef.AutoOpen completed, Twmdem.FormActivate wsMaximized, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 
      {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time ' + AvailablePhysicalMemoryString); {$EndIf}
      {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate ending first time'); {$EndIf}
-   end;
+   end {if FirstRun};
 
    PetImage.LoadWinGraphColors;
 
@@ -2670,8 +2683,8 @@ end;
 procedure Twmdem.Allthreepimary1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(udMergeTileStats,true);
-   DEMIX_UTM_based_processing(6,true);
-   DEMIX_UTM_based_processing(12,true);
+   DEMIX_UTM_based_processing(udMergeMixedFUV,false);
+   DEMIX_UTM_based_processing(udMergeDiffDist,false);
 end;
 
 procedure Twmdem.Arcsecondrectangularpixels1Click(Sender: TObject);
@@ -5355,7 +5368,7 @@ end;
 
 procedure Twmdem.UTMbasedmergedifferencedistribution1Click(Sender: TObject);
 begin
-   DEMIX_UTM_based_processing(12);
+   DEMIX_UTM_based_processing(udMergeDiffDist);
 end;
 
 procedure Twmdem.UTMbasedMergeDSMDTMcomparison1Click(Sender: TObject);
@@ -5365,7 +5378,7 @@ end;
 
 procedure Twmdem.UTMbasedmergeFUVresultsintoDB1Click(Sender: TObject);
 begin
-   DEMIX_UTM_based_processing(6);
+   DEMIX_UTM_based_processing(udMergeMixedFUV);
 end;
 
 procedure Twmdem.UTMbasedmergepartialsintoDB1Click(Sender: TObject);

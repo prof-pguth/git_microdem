@@ -139,10 +139,8 @@ type
        DBFmovedToRAM,
        FieldWidthIssues : boolean;
        FullTableName : PathStr;
-       TableName     : shortstring;
-       RecsTaggedDeletion,
-       FiltRecsInDB,
-       TotRecsInDB : integer;
+       ShortTableName     : shortstring;
+       RecsTaggedDeletion : integer;
        constructor Create(var fName : PathStr; dbMode : tmydbMode = dbmyDefault);
        destructor Destroy;
         procedure ApplyFilter(TheFilter : ANSIstring); //inline;
@@ -157,6 +155,9 @@ type
         function EOF : boolean; inline;
         function BOF : boolean; inline;
         function RecordCount : integer;  inline;
+        function FiltRecsInDB : integer; inline;
+        function TotalRecsInDB : integer; inline;
+
         {$IfDef ExactRecordCountFix}
            function ExactRecordCount : integer;
         {$EndIf}
@@ -390,8 +391,8 @@ begin
    FileChanged := false;
    FieldWidthIssues := false;
    Filtered := false;
-   DBFmovedToRAM := false;
    Filter := '';
+   DBFmovedToRAM := false;
    RecsTaggedDeletion := 0;
 
    {$IfDef BDELikeTables}
@@ -416,25 +417,17 @@ begin
       if not GetFileFromDirectory('data base','*.dbf',fName) then exit;
    end;
 
-(*
-   if FileExtEquals(fName,'.csv') or FileExtEquals(fName,'.txt') then begin
-      OpenNumberedGISDataBase(i,fName,false);
-      CloseAndNilNumberedDB(i);
-      fName := ChangeFileExt(fName,'.dbf');
-   end;
-*)
-
-   if (FName <> '') and FileExists(fName) then begin
+   if {(FName <> '') and} FileExists(fName) then begin
        CheckFileNameForSpaces(fName);
        FullTableName := fName;
-       TableName := ExtractFileNameNoExt(fName);
+       ShortTableName := ExtractFileNameNoExt(FullTableName);
 
       if FileExtEquals(fName,'.dbf') then begin
          {$IfDef BDELikeTables}
             if (dbMode = dbmCDS) and MDDef.AllowMemoryLinkDB then begin
               {$IfDef TrackCDStiming} WriteLineToDebugFile('call LoadDBFtoClientDataSet ' + ExtractFileName(fName)); {$EndIf}
               LoadDBFtoClientDataSet(fName,TheClientDataSet);
-              TotRecsInDB := TheClientDataSet.RecordCount;
+              //TotalRecsInDB := TheClientDataSet.RecordCount;
               TheClientDataSet.LogChanges := false;
               DBFmovedToRAM := true;
               {$IfDef TrackCDStiming} WriteLineToDebugFile('done LoadDBFtoClientDataSet'); {$EndIf}
@@ -442,7 +435,7 @@ begin
             else begin
               {$IfDef RecordMyDataCreation} WriteLineToDebugFile('call CreateAndOpenTable'); {$EndIf}
               CreateAndOpenTable(Self.TheBDEdata,fName);
-              TotRecsInDB := Self.TheBDEdata.RecordCount;
+              //TotalRecsInDB := Self.TheBDEdata.RecordCount;
             end;
          {$EndIf}
        end;
@@ -463,7 +456,7 @@ begin
           end;
           First;
           TheClientDataSet.SaveToFile(FullTableName,dfBinary);
-          TotRecsInDB := TheClientDataSet.RecordCount;
+          //TotalRecsInDB := TheClientDataSet.RecordCount;
       end;
    {$EndIf}
 
@@ -474,7 +467,7 @@ begin
             FieldWidthIssues := true;
             OpenSQLLiteFiles(fName,dbMain,fdTable);
             fdTable.Last;
-            TotRecsInDB := fdTable.RecordCount;
+            //TotalRecsInDB := fdTable.RecordCount;
             fdTable.First;
          end;
       {$EndIf}
@@ -487,7 +480,7 @@ begin
                ConvertDBFtoSQLite(fName);
             end;
             fName := fName2;
-            TotRecsInDB := RecordCount;
+            //TotalRecsInDB := RecordCount;
             {$IfDef RecordMyDataCreation} WriteLineToDebugFile('changed input file to ' + fName); {$EndIf}
          end;
       {$EndIf}
@@ -497,13 +490,13 @@ begin
             FDMemTable := tFDMemTable.Create(Nil);
             FDMemTable.LoadFromFile(fName);
             FDMemTable.Open;
-            TotRecordsInDB := FDMemTable.RecordCount;
+            //TotRecordsInDB := FDMemTable.RecordCount;
          end;
       {$EndIf}
 
       {$IfDef RecordMyDataCreation} WriteLineToDebugFile('recs=' + IntToStr(RecordCount)); {$EndIf}
 
-      FiltRecsInDB := TotRecsInDB;
+      //FiltRecsInDB := TotalRecsInDB;
 
       {$IfDef RecordFullOpenDB}
          if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then begin
@@ -564,7 +557,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
          aline : ANSIstring;
       begin
          if (dbMain <> Nil) then begin
-            aline := 'ALTER TABLE ' + TableName + ' ADD COLUMN ' + FieldName + ' ' + SQLTypeDefString(ft,FieldLength);
+            aline := 'ALTER TABLE ' + ShortTableName + ' ADD COLUMN ' + FieldName + ' ' + SQLTypeDefString(ft,FieldLength);
             {$IfDef RecordFieldPresent} WriteLineToDebugFile('sql=' + aline); {$EndIf}
             dbMain.ExecSQL(aLine);
             if (fdTable <> Nil) then  begin
@@ -642,7 +635,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
 
             {$IfDef RecordFullOpenDB}
                Output := GetTableStructure;
-               WriteLineToDebugFile('Structure after reopen for ' +  TableName + '  recs=' + IntToStr(RecordCount));
+               WriteLineToDebugFile('Structure after reopen for ' +  ShortTableName + '  recs=' + IntToStr(RecordCount));
                WriteStringListToDebugFile(Output);
                Output.Free;
             {$EndIf}
@@ -654,11 +647,11 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
 begin
    FieldName := UpperCase(FieldName);
    if FieldExists(FieldName) then begin
-      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, field already present ' + FieldName + ' in ' + TableName); {$EndIf}
+      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, field already present ' + FieldName + ' in ' + ShortTableName); {$EndIf}
       Result := false;
    end
    else begin
-      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, Must Add field ' + FieldName + ' to ' + TableName); {$EndIf}
+      {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded, Must Add field ' + FieldName + ' to ' + ShortTableName); {$EndIf}
       FileChanged := true;
       CheckBDETable;
       {$IfDef UseTCLientDataSet} CheckSQLlite; {$EndIf}
@@ -848,7 +841,7 @@ begin
           if MDDef.DBfilterCaseInSensitive then TheBDEdata.FilterOptions := [foCaseInsensitive]
           else TheBDEdata.FilterOptions := [];
           TheBDEdata.Filter := TheFilter;
-          TheBDEdata.Filtered := true;
+          TheBDEdata.Filtered := filtered;
           TheBDEdata.First;
        end;
     {$EndIf}
@@ -858,7 +851,7 @@ begin
           if MDDef.DBfilterCaseInSensitive then FDMemTable.FilterOptions := [foCaseInsensitive]
           else FDMemTable.FilterOptions := [];
           FDMemTable.Filter := TheFilter;
-          FDMemTable.Filtered := true;
+          FDMemTable.Filtered := filtered;
        end;
     {$EndIf}
 
@@ -867,7 +860,7 @@ begin
           if MDDef.DBfilterCaseInSensitive then fdTable.FilterOptions := [foCaseInsensitive]
           else fdTable.FilterOptions := [];
           fdTable.Filter := TheFilter;
-          fdTable.Filtered := true;
+          fdTable.Filtered := filtered;
        end;
     {$EndIf}
 
@@ -876,14 +869,56 @@ begin
           if MDDef.DBfilterCaseInSensitive then TheClientDataSet.FilterOptions := [foCaseInsensitive]
           else TheClientDataSet.FilterOptions := [];
           TheClientDataSet.Filter := TheFilter;
-          TheClientDataSet.Filtered := true;
+          TheClientDataSet.Filtered := filtered;
        end;
     {$EndIf}
 
-    if Filtered then FiltRecsInDB := RecordCount
-    else FiltRecsInDB := TotRecsInDB;
-
    {$IfDef RecordMYDataFilter} WriteLineToDebugFile('tMyData.ApplyFilter out'); {$EndIf}
+end;
+
+
+function tMyData.TotalRecsInDB : integer;
+begin
+    if FileExtEquals(FullTableName,'.dbf') then begin
+       {$IfDef BDELikeTables}
+          if DBFmovedToRAM and MDDef.AllowMemoryLinkDB then begin
+            TotalRecsInDB := TheClientDataSet.RecordCount;
+          end
+          else begin
+            TotalRecsInDB := TheBDEdata.RecordCount;
+          end;
+       {$EndIf}
+     end;
+
+   {$IfDef UseTCLientDataSet}
+      if FileExtEquals(FullTableName,'.xml') or FileExtEquals(FullTableName,'.cds') then begin
+          TotalRecsInDB := TheClientDataSet.RecordCount;
+      end;
+   {$EndIf}
+
+    {$IfDef UseFireDacSQLlite}
+       if FileExtEquals(FullTableName,'.db') then begin
+          TotalRecsInDB := fdTable.RecordCount;
+       end;
+    {$EndIf}
+    {$IfDef SQLiteDefaultDBs}
+       if FileExtEquals(FullTableName,'.dbf') or FileExtEquals(FullTableName,'.db') then begin
+          TotalRecsInDB := RecordCount;
+       end;
+    {$EndIf}
+
+    {$IfDef UseFDMemTable}
+       if FileExtEquals(FullTableName,'.adb') then begin
+          TotRecordsInDB := FDMemTable.RecordCount;
+       end;
+    {$EndIf}
+end;
+
+
+function tMyData.FiltRecsInDB : integer;
+begin
+   if Filtered then FiltRecsInDB := RecordCount
+   else FiltRecsInDB := TotalRecsInDB;
 end;
 
 
@@ -1140,7 +1175,7 @@ begin
        end;
    {$EndIf}
 
-   inc(TotRecsInDB);
+   //inc(TotalRecsInDB);
 
    {$IfDef TrackInsert} WriteLineToDebugFile('tMyData.Insert out'); {$EndIf}
 end;
@@ -1165,7 +1200,7 @@ begin
        fdMemTable.Delete;
     end;
     {$EndIf}
-   dec(TotRecsInDB);
+   //dec(TotRecsInDB);
 end;
 
 
@@ -2352,7 +2387,7 @@ end;
 procedure  tMyData.ReopenDatabase(fName : PathStr);
 begin
    CreateAndOpenTable(Self.TheBDEdata,fName);
-   TotRecsInDB := Self.TheBDEdata.RecordCount;
+   //TotRecsInDB := Self.TheBDEdata.RecordCount;
    CheckDeletes := false;
 end;
 
@@ -2396,7 +2431,7 @@ procedure tMyData.EndRewrite(var OldName,fName : PathStr);
             {$IfDef VCL} if ShowSatProgress then StartProgress('Fill fields ' + ExtractFileName(NewName)); {$EndIf}
             j := 0;
             while Not OldTable.eof do begin
-               {$IfDef VCL} if ShowSatProgress and (j mod 100 = 0) then UpdateProgressBar(j/OldTable.TotRecsInDB); {$EndIf}
+               {$IfDef VCL} if ShowSatProgress and (j mod 100 = 0) then UpdateProgressBar(j/OldTable.TotalRecsInDB); {$EndIf}
                if (not CheckDeletes) or (OldTable.GetFieldByNameAsInteger(RecNoFName) > 0)  then begin
                   NewTable.Insert;
                   for i := 0 to pred(OldTable.FieldCount) do begin

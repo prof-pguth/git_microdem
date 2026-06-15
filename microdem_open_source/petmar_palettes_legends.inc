@@ -71,11 +71,11 @@ begin
 end;
 
 		 
-procedure GetTerrainRGBTrip(z,Min,Max : float64; var r,g,b : byte);
+procedure GetTerrainRGBTrip(z,Min,Max : float64; var r,g,b : byte);  inline;
 var
    zi : integer;
 
-      procedure InterpolateColor(c1,c2 : integer; Dist : float64);
+      procedure InterpolateColor(c1,c2 : integer; Dist : float64; var r,g,b : byte); inline;
       begin
          r := TerrainCuts[c1,1] + round(Dist * (TerrainCuts[c2,1] - TerrainCuts[c1,1])) ;
          g := TerrainCuts[c1,2] + round(Dist * (TerrainCuts[c2,2] - TerrainCuts[c1,2])) ;
@@ -85,10 +85,10 @@ var
 begin
    zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
    case zi of
-      0..80 : InterpolateColor(0,1,zi/80);
-      81..170 : InterpolateColor(1,2,(zi-81)/90);
-      171..200 : InterpolateColor(2,3,(zi-171)/29);
-      201..255 : InterpolateColor(3,4,(zi-201)/54);
+      0..80 : InterpolateColor(0,1,zi/80,r,g,b);
+      81..170 : InterpolateColor(1,2,(zi-81)/90,r,g,b);
+      171..200 : InterpolateColor(2,3,(zi-171)/29,r,g,b);
+      201..255 : InterpolateColor(3,4,(zi-201)/54,r,g,b);
       else begin
          r := 0;
          g := 0;
@@ -128,7 +128,30 @@ begin
 end {function};
 *)
 
-         PROCEDURE WavelengthToRGB(CONST Wavelength :  float64;  VAR R,G,B:  BYTE);
+
+
+ function SpectrumColorFunct(z,Min,Max : float64) : tColor;
+// var
+//    r,g,b : byte;
+ begin
+(*
+    if (z < Min) then z := Min;
+    if (z > Max) then z := Max;
+    z := 380 + 400 * (z - Min) / (Max - Min);
+    WavelengthToRGB(z, R,G,B);
+    Result := RGB(r,g,b);
+*)
+    Result := ConvertPlatformColorToTColor(SpectrumRGBFunct(z,Min,Max));
+ end;
+
+
+
+
+
+function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
+
+
+         PROCEDURE WavelengthToRGB(CONST Wavelength :  float64;  VAR R,G,B:  BYTE);  inline;
          // Adapted from www.isc.tamu.edu/~astro/color.html
          // SpectraLibrary
          // Copyright (C) 1998, 2001, Earl F. Glynn, Overland Park, KS.
@@ -144,7 +167,7 @@ end {function};
               Green :  DOUBLE;
               Red   :  DOUBLE;
 
-            FUNCTION Adjust(CONST Color, Factor:  DOUBLE):  INTEGER;
+            FUNCTION Adjust(CONST Color, Factor:  DOUBLE):  INTEGER;  inline;
             BEGIN
               IF   Color = 0.0 THEN RESULT := 0     // Don't want 0^x = 1 for x <> 0
               ELSE RESULT := ROUND(IntensityMax * Math.Power(Color * Factor, Gamma))
@@ -214,10 +237,6 @@ end {function};
             B := Adjust(Blue,  Factor)
           END {WavelengthToRGB};
 
-
-
-
-function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
 var
    r,g,b : byte;
 begin
@@ -226,7 +245,8 @@ begin
    z := 380 + 400 * (z - Min) / (Max - Min);
    WavelengthToRGB(z,r,g,b);
    Result := RGBtrip(r,g,b);
-end;
+end {function SpectrumRGBFunct};
+
 
 
 function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
@@ -255,13 +275,6 @@ end;
             GetTerrainRGBTrip(z,aMin,aMax,r,g,b);
             Result := RGB(r,g,b);
          end;
-
-         (*
-         function PlatformRainbowColorFunct(z,Min,Max : float64) : TPlatformColor;
-         begin
-            Result := ConvertTColorToPlatformColor(RainbowColorFunct(z,Min,Max));
-         end;
-         *)
 
 
          function RainbowColorFunct(z,Min,Max : float64) : TColor;

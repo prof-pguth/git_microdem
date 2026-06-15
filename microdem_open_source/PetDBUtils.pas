@@ -457,7 +457,7 @@ function ExpandIconName(Table : tMyData; FieldName : ShortString; var fName : Pa
 begin
    fName := Table.GetFieldByNameAsString(FieldName);
    if not FileExists(fName) then begin
-      if FileExists(ExtractFilePath(Table.TableName) + fName) then fName := ExtractFilePath(Table.TableName) + fName
+      if FileExists(ExtractFilePath(Table.ShortTableName) + fName) then fName := ExtractFilePath(Table.ShortTableName) + fName
       else fName := MainMapData + 'Icons\' + fName;
    end;
    Result := FileExists(fName);
@@ -616,14 +616,14 @@ begin
       else exit;
    end;
    URL := ptTrim(Table.GetFieldByNameAsString(WWWFieldName));
-   if FileExists(ExtractFilePath(Table.TableName) + URL) then begin
-      URL := ExtractFilePath(Table.TableName) + URL;
+   if FileExists(ExtractFilePath(Table.ShortTableName) + URL) then begin
+      URL := ExtractFilePath(Table.ShortTableName) + URL;
    end
    else begin
        Ext := UpperCase(ExtractFileExt(URL));
        if (UpperCase(Copy(URL,1,4)) <> 'HTTP') then begin
           if (Ext <> '.HTML') and (Ext <> '.HTM') and (Ext <> '.COM') and (Ext <> '.ASP') and (Ext <> '.GOV') and (Ext <> '.ORG') then begin
-             URL := ExtractFilePath(Table.TableName) + URL;
+             URL := ExtractFilePath(Table.ShortTableName) + URL;
              if not FileExists(URL) then URL := URL + '.doc';
           end
           else if (UpperCase(Copy(URL,1,4)) <> 'HTTP') then URL := 'https://' + URL;
@@ -1128,7 +1128,7 @@ var
    OneLine,LineClipboard : string;
 begin
    {$IfDef RecordHTML} WriteLineToDebugFile('SingleRecordHTMLReport in'); {$EndIf}
-   fName := Petmar.NextFileNumber(MDTempDir, ExtractFileNameNoExt(Table.TableName) + '_','.htm');
+   fName := Petmar.NextFileNumber(MDTempDir, ExtractFileNameNoExt(Table.ShortTableName) + '_','.htm');
    Report := tStringList.Create;
    Report.Add(StartHTMLString);
    LineClipboard := '';
@@ -1788,7 +1788,7 @@ var
    Report : string;
    fName : PathStr;
 begin
-   fName := Petmar.NextFileNumber(MDTempDir, ExtractFileNameNoExt(Table.TableName) + '_','.htm');
+   fName := Petmar.NextFileNumber(MDTempDir, ExtractFileNameNoExt(Table.ShortTableName) + '_','.htm');
    Report := StartHTMLString + DBtableToHTML(Table,Source,VisCols) + EndHTMLString;
    ClipBrd.ClipBoard.AsText := Report;
    {$IfDef RecordHTML} WriteLineToDebugFile(Report);  WriteLineToDebugFile(''); {$EndIf}

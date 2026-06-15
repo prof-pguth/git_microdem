@@ -17,32 +17,77 @@
 
 procedure PermformNAEtest;
 //experimental, and obviously very much hardwired
+const
+   ParamList = 'DEMIX_TILE,AREA_NAME,DEM,ELEV_FUV,ELEV_NMEA,ELVD_MAE,STD_ELEV,SLOPE_FUV,SLPD_NMAE,SLPD_MAE,STD_SLOPE,ROUGH_FUV,ROUGH_NMAE,ROUGH_MAE,STD_ROUGH,AVG_SLOPE,BARREN_PC,FOREST_PC';
 var
-   fName,StatsFName,FUVfName,DiffDistFName : PathStr;
+   fName,StatsFName,FUVfName,DiffDistFName,OutName : PathStr;
    i,Recs1,Recs2,StatDB,FUVdb,DDdb : integer;
-   Tilename,aline,aFilter : shortstring;
+   Tilename,AreaName,aline,aFilter : shortstring;
    Results : tstringlist;
+
+        procedure InitialFilters;
+        begin
+           aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('ELEV');
+           GISdb[FUVdb].ApplyGISFilter(aFilter);
+           Recs1 := GISdb[FUVdb].MyData.FiltRecsInDB;
+
+           aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('ELVD_MAE');
+           GISdb[DDdb].ApplyGISFilter(aFilter);
+           Recs2 := GISdb[DDdb].MyData.FiltRecsInDB;
+        end;
+
 
       procedure DoADEM(aDEM : shortstring);
       var
-        FUV,MAE,nMAE,StdDev : float32;
+        FUVelev,MAE,nMAE,StdDev,FUVslope,FUVrough,MAE2,nMAE2,MAE3,nMAE3,StdDev2,StdDev3 : float32;
       begin
-         FUV := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
+         InitialFilters;
+         FUVelev := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
          MAE := GISdb[DDdb].MyData.GetFieldByNameAsFloat(aDEM);
          StdDev := GISdb[StatDB].MyData.GetFieldByNameAsFloat('STD_ELEV');
          nMAE := MAE / StdDev;
-         aLine := TileName + ',' + aDEM + ',' + RealToString(FUV,-12,-6)  + ',' + RealToString(MAE,-12,-6)  + ',' + RealToString(nMAE,-12,-6)   + ',' +
-             RealToString(StdDev,-12,-6) + ',' + GISdb[StatDB].MyData.GetFieldByNameAsString('AVG_SLOPE')
-              + ',' + GISdb[StatDB].MyData.GetFieldByNameAsString('BARREN_PC')  + ',' + GISdb[StatDB].MyData.GetFieldByNameAsString('FOREST_PC');
+
+         aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLOPE');
+         GISdb[FUVdb].ApplyGISFilter(aFilter);
+         FUVslope := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
+
+         aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLPD_MAE');
+         GISdb[DDdb].ApplyGISFilter(aFilter);
+         MAE2 := GISdb[DDdb].MyData.GetFieldByNameAsFloat(aDEM);
+         StdDev2 := GISdb[StatDB].MyData.GetFieldByNameAsFloat('STD_SLOPE');
+         nMAE2 := MAE2 / StdDev2;
+
+         aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('RUFF');
+         GISdb[FUVdb].ApplyGISFilter(aFilter);
+         FUVrough := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
+         aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLPD_MAE');
+         GISdb[DDdb].ApplyGISFilter(aFilter);
+         MAE3 := GISdb[DDdb].MyData.GetFieldByNameAsFloat(aDEM);
+         StdDev3 := GISdb[StatDB].MyData.GetFieldByNameAsFloat('STD_ROUGH');
+         nMAE3 := MAE3 / StdDev3;
+
+         aLine := TileName + ',' + AreaName + ',' + aDEM + ',' +
+             RealToString(FUVelev,-12,-6) + ',' + RealToString(nMAE,-12,-4) + ',' + RealToString(MAE,-12,-2) + ',' + RealToString(StdDev,-12,-4) + ',' +
+             RealToString(FUVslope,-12,-6)  + ',' + RealToString(nMAE2,-12,-4)  + ','  + RealToString(MAE2,-12,-2) + ',' + RealToString(StdDev2,-12,-4) + ',' +
+             RealToString(FUVrough,-12,-6)  + ',' + RealToString(nMAE3,-12,-4)  + ','  + RealToString(MAE3,-12,-2) + ',' + RealToString(StdDev3,-12,-4) + ',' +
+             GISdb[StatDB].MyData.GetFieldByNameAsString('AVG_SLOPE')  + ',' +
+             GISdb[StatDB].MyData.GetFieldByNameAsString('BARREN_PC')  + ',' + GISdb[StatDB].MyData.GetFieldByNameAsString('FOREST_PC');
          Results.Add(aLine);
       end;
-
 
 
 begin
   StatsFName := 'H:\demix_db_4.1\demix_db_4.1_tile_stats_DB_05_25_26.dbf';
   FUVfName := 'H:\demix_db_4.1\demix_db_4.1_mixed_fuv_DB_04_14_26.dbf';
   DiffDistFName := 'H:\demix_db_4.1\demix_db_4.1_diff_distrib_DB_04_14_26.dbf';
+  OutName := 'H:\demix_db_4.1\demix_db_4.1_nMEA.dbf';
+
+  StatsFName := 'H:\demix_db_4.2\demix_db_4.2_tile_stats_DB_05_30_26.dbf';
+  FUVfName := 'H:\demix_db_4.2\demix_db_4.2_mixed_fuv_DB_05_29_26.dbf';
+  DiffDistFName := 'H:\demix_db_4.2\demix_db_4.2_diff_distrib_DB_05_30_26.dbf';
+  OutName := 'H:\demix_db_4.2\demix_db_4.2_nMEA.dbf';
+
+
   if FileExists(StatsFName) and FileExists(FUVfName) and FileExists(DiffDistFName) then begin
      if OpenNumberedGISDataBase(StatDB,StatsFName) and OpenNumberedGISDataBase(FUVdb,FUVfName) and OpenNumberedGISDataBase(DDdb,DiffDistFName) then begin
         SetColorForProcessing;
@@ -51,21 +96,19 @@ begin
         WriteLineToDebugFile('Tiles for DistDiff: ' + IntToStr(GISdb[DDdb].MyData.NumUniqueEntriesInDB('DEMIX_TILE')));
 
         Results := tStringList.Create;
-        Results.Add('DEMIX_TILE,DEM,ELEV_FUV,ELVD_MEA,ELEV_NMEA,STD_ELEV,AVG_SLOPE,BARREN_PC,FOREST_PC');
-        StartProgress('nMEA');
+        Results.Add(ParamList);
         i := 0;
         GISdb[StatDB].MyData.First;
         while not GISdb[StatDB].MyData.eof do begin
-           if (i mod 10 = 2) then UpDateProgressBar(i/GISdb[StatDB].MyData.FiltRecsInDB);
+           if (i mod 10 = 0) then begin
+              WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(GISdb[StatDB].MyData.FiltRecsInDB));
+              wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(GISdb[StatDB].MyData.FiltRecsInDB),true);
+           end;
+           inc(i);
            TileName := GISdb[StatDB].MyData.GetFieldByNameAsString('DEMIX_TILE');
-           aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('ELEV');
-           GISdb[FUVdb].ApplyGISFilter(aFilter);
-           Recs1 := GISdb[FUVdb].MyData.FiltRecsInDB;
-           WriteLineToDebugFile(aFilter + '   n=' + IntToStr(Recs1));
-           aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('ELVD_MAE');
-           GISdb[DDdb].ApplyGISFilter(aFilter);
-           Recs2 := GISdb[DDdb].MyData.FiltRecsInDB;
-           //WriteLineToDebugFile(aFilter + '   n=' + IntToStr(Recs2));
+           AreaName := GISdb[StatDB].MyData.GetFieldByNameAsString('AREA');
+
+           InitialFilters;
            if (Recs1 > 0) and (Recs2 > 0) then begin
               DoADEM('COP');
               DoADEM('ALOS');
@@ -74,13 +117,12 @@ begin
            end;
            GISdb[StatDB].MyData.Next;
         end;
-        EndProgress;
-        fName := 'H:\demix_db_4.1\demix_db_4.1_nMEA.dbf';
-        StringList2CSVtoDB(Results,fName);
+        StringList2CSVtoDB(Results,OutName);
         CloseSingleDB(StatDB);
         CloseSingleDB(FUVdb);
         CloseSingleDB(DDdb);
         SetColorForWaiting;
+        wmDEM.SetPanelText(2,'',true);
      end;
   end;
 end;
@@ -1262,14 +1304,15 @@ var
    RefDTM,LC, k : integer;
 
 
+         (*
          procedure InitializeStringLists;
          const
-            TileStatsString = ',COUNTRY,LAT,LONG,AVG_ELEV,STD_ELEV,AVG_SLOPE,AVG_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC,MIN_ELEV,MAX_ELEV';
+            TileStatsString = ',COUNTRY,LAT,LONG,AVG_ELEV,STD_ELEV,AVG_SLOPE,STD_SLOPE,AVG_ROUGH,STD_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC,MIN_ELEV,MAX_ELEV';
          begin
             TileStats := tStringList.Create;
             TileStats.Add('AREA,DEMIX_TILE' + TileStatsString);
          end;
-
+         *)
 
          procedure FinalizeStringLists;
          begin
@@ -1286,6 +1329,15 @@ var
 
 
          procedure GetTileStatistics(RefDEM,LandCoverGrid : integer);
+
+             procedure InitializeStringLists;
+             const
+                TileStatsString = ',COUNTRY,LAT,LONG,AVG_ELEV,STD_ELEV,AVG_SLOPE,STD_SLOPE,AVG_ROUGH,STD_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC,MIN_ELEV,MAX_ELEV';
+             begin
+                TileStats := tStringList.Create;
+                TileStats.Add('AREA,DEMIX_TILE' + TileStatsString);
+             end;
+
          var
            ElevMomentVar,SlopeMomentVar,RoughMomentVar : tMomentVar;
            zs : ^bfarray32;
@@ -1295,22 +1347,26 @@ var
            Relief,GridFull : float32;
          begin
             if ValidDEM(RefDEM) and ValidDEM(LandCoverGrid) then begin
+               if TileStats = nil then InitializeStringLists;                
                InitializeMomentVar(ElevMomentVar);
                InitializeMomentVar(SlopeMomentVar);
                InitializeMomentVar(RoughMomentVar);
                New(zs);
-               DEMGlb[RefDEM].ElevationMomentsWithArray(DEMGlb[RefDEM].FullDEMGridLimits,ElevMomentVar,zs^);
+               DEMGlb[RefDEM].ElevationMomentsWithArray(DEMGlb[RefDEM].FullDEMGridLimits,ElevMomentVar,zs^,msAll);
                DEMGlb[RefDEM].DEMCenterPoint(Lat,Long);
                Relief := ElevMomentVar.Maxz - ElevMomentVar.Minz;
                if (Relief > 1) then begin
-                  DEMGlb[RefDEM].SlopeMomentsWithArray(DEMGlb[RefDEM].FullDEMGridLimits,SlopeMomentVar,zs^);
+                  if (TileStats = Nil) then InitializeStringLists;
+                  DEMGlb[RefDEM].SlopeMomentsWithArray(DEMGlb[RefDEM].FullDEMGridLimits,SlopeMomentVar,zs^,msAll);
                   DEMGlb[RefDEM].GetRoughnessInLongArray(DEMGlb[RefDEM].FullDEMGridLimits,RoughMomentVar.NPts,zs^);
                   Moment(zs^,RoughMomentVar,msAll);
                   {$IfDef TrackAverageStats} WriteLineToDebugFile(AreaName + '  ' + DEMIXTile +  '  ' + ShortMomentResultsToString(RoughMomentVar));  {$EndIf}
                   SimplifiedLandCoverPercentages(LandCoverGrid,DEMGlb[LandCoverGrid].FullDEMGridLimits,ForestPC,UrbanPC,BarrenPC,WaterPC);
                   GridFull := -999;
                   aline := AreaName + ',' + DEMIX_TileNameFromSubDir(DEMIX_Tile) + ',' + Country + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
-                     RealToString(ElevMomentVar.Mean,-12,-2) + ',' + RealToString(ElevMomentVar.Std_dev,-12,-2) + ',' + RealToString(SlopeMomentVar.Mean,-12,-2)  + ',' + RealToString(RoughMomentVar.Mean,-12,-2)  + ',' +
+                     RealToString(ElevMomentVar.Mean,-12,-2) + ',' + RealToString(ElevMomentVar.Std_dev,-12,-2) + ',' +
+                     RealToString(SlopeMomentVar.Mean,-12,-2)  + ',' + RealToString(SlopeMomentVar.Std_dev,-12,-2) + ',' +
+                     RealToString(RoughMomentVar.Mean,-12,-2)  + ',' + RealToString(RoughMomentVar.Std_dev,-12,-2) + ',' +
                      RealToString(Relief,-12,-2) + ',' + RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2) + ',' +
                      RealToString(BarrenPC,-12,-2) + ',' + RealToString(WaterPC,-12,-2)  + ','  + RealToString(ElevMomentVar.MinZ,-12,-2)  + ','  +
                      RealToString(ElevMomentVar.MaxZ,-12,-2);
@@ -1319,7 +1375,6 @@ var
                Dispose(zs);
             end;
          end;
-
 
 var
    fName,fName2: PathStr;
@@ -1334,7 +1389,8 @@ begin {procedure DEMIX_tile_statistics}
        {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Already exists ' + TileStatsfName); {$EndIf}
     end
     else begin
-      InitializeStringLists;
+      TileStats := Nil;
+      //InitializeStringLists;
       TileList := DEMIX_GetListOfTileSubdirsInArea(AreaName);
       {$IfDef RecordDEMIX_TileStats} HighlightLineToDebugFile(AreaName + '  tiles=' + IntToStr(TileList.Count)); {$EndIf}
       for k := 0 to pred(TileList.count) do begin
@@ -1494,6 +1550,7 @@ var
              end;
 
             procedure GetDifferenceDistributionStatistics;
+            //Option in [udDiffDistribStat]
             var
                xoffset,yoffset : integer;
                zs : ^bfarray32;
@@ -1521,12 +1578,14 @@ var
                                     if Param = '_MAE' then  aline := aline + ',' + RealToString(MomentVar[k].MAE,-12,-Decimals);
                                     if Param = '_AVD' then aline := aline + ',' + RealToString(MomentVar[k].avg_dev,-12,-Decimals);
                                     if Param = '_STD' then aline := aline + ',' + RealToString(MomentVar[k].std_dev,-12,-Decimals);
+                                    //this should use the std dev of the reference, which is not easily found here
+                                    //if Param = '_NMAE' then aline := aline + ',' + RealToString(MomentVar[k].MAE / MomentVar[k].std_dev,-12,-Decimals);
                                 end;
                                 fuvResults.Add(aLine);
                             end;
 
                      begin {procedure ProcessOne}
-                        if (which = 'TAND') then Decimals := 8 else Decimals := 2;
+                        if (which = 'TAND') then Decimals := 8 else Decimals := 3;
                         DoOneLine('_MEAN');
                         DoOneLine('_MED');
                         DoOneLine('_RMSE');
@@ -1534,13 +1593,14 @@ var
                         DoOneLine('_MAE');
                         DoOneLine('_AVD');
                         DoOneLine('_STD');
+                        //DoOneLine('_NMAE');
                      end {procedure ProcessOne};
 
                var
                   Col,Row,K : integer;
                   z,zref : float32;
                   MomentVar : tManyMomentVar;
-                begin
+                begin {procedure DoOneDiffDist}
                     wmDEM.SetPanelText(3,Which,true);
                     for k := 1 to theDEMs.Count do begin
                        InitializeMomentVar(MomentVar[k]);
@@ -1560,7 +1620,7 @@ var
                        moment(zs^,MomentVar[k],msIncludeLE90);
                     end;
                     ProcessOne(Which,MomentVar);
-               end;
+               end {procedure DoOneDiffDist};
 
             begin
                New(zs);
@@ -1570,9 +1630,9 @@ var
                 else begin
                    DoOneDiffDist('ELVD');
                 end;
-                DoOneDiffDist('TAND');
                 DoOneDiffDist('SLPD');
                 DoOneDiffDist('RUFD');
+                DoOneDiffDist('TAND');
                 Dispose(zs);
             end;
 
@@ -2770,13 +2830,16 @@ var
            {$IfDef RecordDEMIX} writeLineToDebugFile('Merge success'); {$EndIf}
            if ValidDB(db) then begin
                if AddChars then begin
-                   wmDEM.SetPanelText(2,'Canopy height',true);
-                   AddCanopyHeightToDEMIXDB(DB);
+                   {$IfDef RecordDEMIX} writeLineToDebugFile('Add characteristics'); {$EndIf}
                    wmDEM.SetPanelText(2,'Koppen class',true);
                    AddKoppenClassToDB(Db);
+                   wmDEM.SetPanelText(2,'Canopy height',true);
+                   AddCanopyHeightToDEMIXDB(DB);
                    wmDEM.SetPanelText(2,'Biomes',true);
                    AddBiomesToDEMIXdb(DB);
+                   wmDEM.SetPanelText(2,'',true);
                end;
+               {$IfDef RecordDEMIX} writeLineToDebugFile('Add collection'); {$EndIf}
                wmDEM.SetPanelText(2,'Collection name',true);
                GISdb[db].MyData.InsureFieldPresentAndAdded(ftString,'COLLECTION',48);
                GISdb[db].FillFieldWithValue('COLLECTION',LastSubDir(Collection));
@@ -2786,6 +2849,7 @@ var
                end;
            end;
            wmDEM.SetPanelText(2,'',true);
+           {$IfDef RecordDEMIX} writeLineToDebugFile('Done MergeThem: ' + fName); {$EndIf}
        end;
 
 var
@@ -2814,6 +2878,7 @@ begin {procedure DEMIX_UTM_based_processing}
    theFiles := nil;
 
    if (Option in [udMergeMixedFUV,udMergeDiffDist,udMergeTileStats]) then begin
+      {$IfDef RecordDEMIX} writeLineToDebugFile('Merge ' + IntToStr(Option)); {$EndIf}
       wmDEM.SetPanelText(2,'Start merge',true);
       Collections := GetCollections;
       SecondRound := tStringList.Create;
@@ -2843,6 +2908,7 @@ begin {procedure DEMIX_UTM_based_processing}
            end;
            fName := MDDef.DEMIX_BaseDir + CollectionName + dbName + CurrentTimeForFileName(false) + '.dbf';
            Petmar.FindMatchingFiles(CollectionDir + dbDir,'*.csv',TheFiles,2);
+           {$IfDef RecordDEMIX} writeLineToDebugFile(CollectionDir + dbDir + '  files=' + IntToStr(TheFiles.Count)); {$EndIf}
            SecondRound.add(MergeThem(fname, Collections.strings[aCollection],(Collections.Count > 0),True));
            fName := MDDef.DEMIX_BaseDir + LastSubDir(MDDef.DEMIX_BaseDir) + dbName + CurrentTimeForFileName(false) + '.dbf';
        end;
@@ -2961,6 +3027,7 @@ begin {procedure DEMIX_UTM_based_processing}
    if (theAreas <> nil) then TheAreas.Destroy;
    EndDEMIXProcessing;
    HeavyDutyProcessing := false;
+   wmDEM.ClearStatusBarPanelText;
    NoDBPlots := false;
    RestoreBackupDefaults;
    {$IfDef RecordDEMIX} HighLightLineToDebugFile('DEMIX_UTM_based_processing out, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir + AvailablePhysicalMemoryString); {$EndIf}

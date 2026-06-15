@@ -15,7 +15,7 @@ unit BaseGraf;
        //{$Define NoInLine}
        //{$Define SavePlotFileProgress}
        //{$Define GraphSymbology}
-       {$Define Record1to1}
+       //{$Define Record1to1}
        //{$Define TrackFormCreate}     //28 Oct 2024, attempt to track down creation of hidden graph form, but it locks up
        //{$Define RecordAnimateGraph}
        //{$Define RecordGraphMemoryAlocations}
