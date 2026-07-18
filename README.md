@@ -1,6 +1,6 @@
 # git_microdem
  
-Last changes posted 26 June 2026
+Last changes posted 18 JUly 2026
 
 This is about 400,000 lines of Delphi code, going back to the first iteration of Turbo Pascal.  While I use Delphi 13.1, it probably does not use any options that will not work in the previous few Delphi versions. It can be compiled with the free community edition of Delphi (https://www.embarcadero.com/products/delphi/starter/free-download).  Following the code, and finding routines called within any module, is best done in the Delphi IDE.
 
