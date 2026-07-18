@@ -145,6 +145,8 @@ type
     CheckBox14: TCheckBox;
     BitBtn47: TBitBtn;
     BitBtn48: TBitBtn;
+    BitBtn49: TBitBtn;
+    BitBtn50: TBitBtn;
     procedure RadioGroup3Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -227,6 +229,8 @@ type
     procedure BitBtn46Click(Sender: TObject);
     procedure BitBtn47Click(Sender: TObject);
     procedure BitBtn48Click(Sender: TObject);
+    procedure BitBtn49Click(Sender: TObject);
+    procedure BitBtn50Click(Sender: TObject);
   private
     { Private declarations }
     procedure ChangeDBonForm(Newdb : integer);
@@ -1380,6 +1384,13 @@ begin
 end;
 
 
+procedure Teval_scores_graph_form.BitBtn49Click(Sender: TObject);
+begin
+   GridGraphFUVTwoCriteria(db,MakeDEMlist,Memo1.Lines[0], Memo1.Lines[1]);
+end;
+
+
+
 procedure Teval_scores_graph_form.BitBtn4Click(Sender: TObject);
 
    procedure TryOne(Which : shortString; var db_num : integer; var fName : PathStr);
@@ -1407,6 +1418,11 @@ begin
    TryOne('FULL',db_Full,MDDef.DEMIX_FullDBfName);
    db := db_Full;
    ChangeDBonForm(db_Full);
+end;
+
+procedure Teval_scores_graph_form.BitBtn50Click(Sender: TObject);
+begin
+    GridGraphFUVTwoDEMs(db,MakeDEMlist,MakeCriteriaList);
 end;
 
 procedure Teval_scores_graph_form.BitBtn5Click(Sender: TObject);

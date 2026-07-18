@@ -21,26 +21,15 @@ end;
 
 function DEMIX_UTM_TileName(AreaName : shortstring; FileName : PathStr) : shortstring;
 var
-   //Northing : integer;
    Starter : shortstring;
    TileMerges : tStringList;
 begin
    Result := '';
    Starter := UpperCase(Copy(AreaName,1,3));
    if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
-      (*
-      //Result := LastSubDir(ExtractFilePath(FileName));
-      if (Starter = 'NL_') or (Starter = 'UK_') or (Starter = 'FI_') or (Starter = 'EE_') or (Starter = 'GB_') or
-         (Starter = 'DK_') or (Starter = 'CA_') or (Starter = 'SL_') then Result := AreaName;   //use the map quad names
-
-      //German states
-      if (UpperCase(Copy(AreaName,4,3)) = 'BV_') then Result := AreaName;
-      if (UpperCase(Copy(AreaName,4,3)) = 'RH_') then Result := AreaName;
-      if (UpperCase(Copy(AreaName,4,3)) = 'SX_') then Result := AreaName;
-      *)
       TileMerges := Nil;
       FindMatchingFiles(FileName,'*.tif',TileMerges,2);
-      if TileMerges.Count > 0 then begin
+      if (TileMerges.Count > 0) then begin
          Result := AreaName + '_' + ExtractFileNameNoExt(TileMerges.Strings[0]);
       end
       else begin
@@ -49,11 +38,12 @@ begin
       TileMerges.Destroy;
    end
    else begin
-      Result := UpperCase(Copy(AreaName,1,3)) + ExtractFileNameNoExt(FileName);
+      Result := ExtractFileNameNoExt(FileName);
+      if Starter <> UpperCase(Copy(Result,1,3)) then Result := Starter + Result;
    end;
 end;
 
-
+(*
 function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
 var
    xutm,yutm : float64;
@@ -65,7 +55,7 @@ begin
    Easting := trunc(xutm) div 10000;
    Result := 'UTM_' + AddDayMonthLeadingZero(WGS84DatumConstants.projUTMZone) + WGS84DatumConstants.LatHemi + '_x' + IntToStr(Easting) + 'y' + IntToStr(Northing);
 end;
-
+*)
 
 procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
 //   9/8/2023, check if this is really needed; only called by TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);

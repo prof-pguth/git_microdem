@@ -103,49 +103,10 @@ begin
    Result := ConvertTColorToPlatformColor(RainbowColorFunct(z,MinV,MaxV));
 end;
 
-(*
-const
-   ColorStep = 2;
-   FirstColor = 136;
-var
-   zi : integer;
+function SpectrumColorFunct(z,Min,Max : float64) : tColor;
 begin
-   if (abs(MaxV-MinV) < 0.0001) then begin
-      Result := RGBTrip(255,0,0);
-   end
-   else begin
-      zi := ValidByteRange(round(255.0 * (z - MinV) / (MaxV - MinV)));
-      case zi of
-         0..42 : Result := RGBTrip(0, 0,FirstColor + ColorStep * zi); {blues}
-         43..85 : Result := RGBTrip(0,FirstColor + ColorStep * (zi-43),FirstColor + ColorStep * (zi-43)); {Cyans}
-         86..128 : Result := RGBTrip(0,FirstColor + ColorStep * (zi-86),0); {greens}
-         129..171: Result := RGBTrip(FirstColor + ColorStep * (zi-129), FirstColor + ColorStep * (zi-129),0);  {yellows}
-         172..214 : Result := RGBTrip(FirstColor + ColorStep * (zi-172), 0,0);  {reds}
-         215..255 : Result := RGBTrip(FirstColor + ColorStep * (zi-215), 0,FirstColor + ColorStep * (zi-215));  {magentas}
-         else Result := RGBTrip(0,0,0);
-      end;
-   end;
-end {function};
-*)
-
-
-
- function SpectrumColorFunct(z,Min,Max : float64) : tColor;
-// var
-//    r,g,b : byte;
- begin
-(*
-    if (z < Min) then z := Min;
-    if (z > Max) then z := Max;
-    z := 380 + 400 * (z - Min) / (Max - Min);
-    WavelengthToRGB(z, R,G,B);
-    Result := RGB(r,g,b);
-*)
     Result := ConvertPlatformColorToTColor(SpectrumRGBFunct(z,Min,Max));
- end;
-
-
-
+end;
 
 
 function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
@@ -300,6 +261,16 @@ end;
          end {function};
 
 
+function ChloroplethPlatformColor(ColorDefTable : tColorTableDefinitions; z,aMin,aMax : float64) : TPlatformColor;
+var
+   zi : integer;
+begin
+   if z > aMax then z := aMax;
+   zi := ValidByteRange(round(pred(ColorDefTable.ZTableEntries) * (z - aMin) / (aMax - aMin)));
+   Result := ColorDefTable.zTableColors[succ(zi)];
+end;
+
+
          function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
          var
             ColorTable : tMyData;
@@ -314,7 +285,7 @@ end;
                   ColorTable.ApplyFilter('PALETTE=' + QuotedStr(Palette));
                end;
                NumColors := ColorTable.RecordCount;
-               if NumColors > 255 then NumColors := 255;
+               if (NumColors > 255)then NumColors := 255;
 
                for i := 1 to NumColors do begin
                   if (i in [1..255]) then begin
@@ -566,7 +537,6 @@ end;
             Vals : array[0..255] of float64;
          begin
             {$IfDef RecordLegends} WriteLineToDebugFile('DefaultVerticalLegendOnBitmap, range ' + RealToString(Min,-12,-4) + ' to ' + RealToString(Max,-12,-4)); {$EndIf}
-
             MakeValuesForLegend(Colors,Vals,Min,Max,Legend,ChloroplethScheme,Reverse);
             Result := DoLegendOnBitmap(false,Colors,vals,Units,LegendTitle);
          end;

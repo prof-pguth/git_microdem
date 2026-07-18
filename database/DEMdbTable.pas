@@ -1043,7 +1043,7 @@ type
     //GraphbyDEM1: TMenuItem;
     //Grandbytilecharacterisitic1: TMenuItem;
     Addstringtoendofeachrecord1: TMenuItem;
-    AddDEMIXUTMtilename1: TMenuItem;
+    //AddDEMIXUTMtilename1: TMenuItem;
     Cret1: TMenuItem;
     N52: TMenuItem;
     //FindmisplacedGEDTMv12testDEMs1: TMenuItem;
@@ -1083,6 +1083,7 @@ type
     Addcentroid1: TMenuItem;
     Xaxis1: TMenuItem;
     Yaxis1: TMenuItem;
+    DSMDTMpowerlawforalltiles1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1872,7 +1873,7 @@ type
     //procedure GraphbyDEM1Click(Sender: TObject);
     //procedure Grandbytilecharacterisitic1Click(Sender: TObject);
     procedure Addstringtoendofeachrecord1Click(Sender: TObject);
-    procedure AddDEMIXUTMtilename1Click(Sender: TObject);
+    //procedure AddDEMIXUTMtilename1Click(Sender: TObject);
     procedure Cret1Click(Sender: TObject);
     //procedure N59Click(Sender: TObject);
     //procedure FindmisplacedGEDTMv12testDEMs1Click(Sender: TObject);
@@ -1902,6 +1903,7 @@ type
     procedure Addcentroid1Click(Sender: TObject);
     procedure Yaxis1Click(Sender: TObject);
     procedure Xaxis1Click(Sender: TObject);
+    procedure DSMDTMpowerlawforalltiles1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -3151,55 +3153,15 @@ end;
 
 
 procedure Tdbtablef.TimefieldHHMMSStohours1Click(Sender: TObject);
-var
-   TStr : ShortString;
-   Hours : float64;
-   i,rc : integer;
 begin
-   {$If Defined(RecordEditsDone) or Defined(RecordEditDBProblems)} WriteLineToDebugFile('Tdbtablef.TimefieldHHMMSStohours1Click in ' + GISdb[DBonTable].dbName + ' Time field to decimal hours'); {$EndIf}
-   //with GISdb[DBonTable] do begin
-      if GISdb[DBonTable].AddFieldToDataBase(ftFloat,'DEC_HOURS',12,6) then begin
-         {$IfDef RecordEditDB} WriteLineToDebugFile('dec_hours added'); {$EndIf}
-      end;
-
-      GISdb[DBonTable].ClearGISFilter;
-      GISdb[DBonTable].EmpSource.Enabled := false;
-      ShowHourglassCursor;
-      GISdb[DBonTable].MyData.First;
-      rc := ProgressIncrement(GISdb[DBonTable].MyData.FiltRecsInDB);
-      i := 0;
-      while not GISdb[DBonTable].MyData.EOF do begin
-         if (i mod rc = 0) then UpdateProgressBar(i/GISdb[DBonTable].MyData.FiltRecsInDB);
-         inc(i);
-         GISdb[DBonTable].MyData.Edit;
-         if (Sender = TimefieldHHMMSStohours1) then begin
-            TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('TIME'));
-            if ANSIContainsText(TStr,':') then begin
-               if (TStr[2] = ':') then Tstr := '0' + TStr;
-               Hours := 1.0 * StrToInt(Copy(TStr,1,2)) + StrToInt(Copy(TStr,4,2)) / 60 + StrToInt(Copy(TStr,7,2)) / 3600;
-               if (Length(TStr) > 8) and ANSIContainsText(TStr,'PM') then Hours := Hours + 12;
-            end
-            else begin
-               TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('TIME');
-               while (length(TStr) < 6) do Tstr := '0' + TStr;
-               Hours := 1.0 * StrToInt(Copy(TStr,1,2)) + StrToInt(Copy(TStr,3,2)) / 60 + StrToInt(Copy(TStr,5,2)) / 3600;
-            end;
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DEC_HOURS',Hours);
-         end
-         else begin
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DEC_HOURS',GISdb[DBonTable].MyData.GetFieldByNameAsInteger('HOUR') + GISdb[DBonTable].MyData.GetFieldByNameAsInteger('MINUTE') /60 + GISdb[DBonTable].MyData.GetFieldByNameAsInteger('SECOND') /3600);
-         end;
-         GISdb[DBonTable].MyData.Next;
-      end;
-      ShowStatus;
-   //end;
-   {$If Defined(RecordEditsDone) or Defined(RecordEditDBProblems)} WriteLineToDebugFile('Tdbtablef.TimefieldHHMMSStohours1Click out'); {$EndIf}
+   ConvertTimeStringToDecimalHours(DBonTable,false);
 end;
+
 
 
 procedure Tdbtablef.Timefieldshourminsectodechours1Click(Sender: TObject);
 begin
-   TimefieldHHMMSStohours1Click(Sender);
+   ConvertTimeStringToDecimalHours(DBonTable,true);
 end;
 
 
@@ -3208,32 +3170,30 @@ var
    t : float64;
    MinField,SecField : ShortString;
 begin
-  //with GISdb[DBonTable] do begin
-      if GISdb[DBonTable].MyData.FieldExists('DAY') and GISdb[DBonTable].MyData.FieldExists('HOUR') then begin
-         GISdb[DBonTable].AddFieldToDataBase(ftFloat,'DEC_DAYS',12,6);
-         if GISdb[DBonTable].MyData.FieldExists('MINUTE') then MinField := 'MINUTE'
-         else if GISdb[DBonTable].MyData.FieldExists('MIN') then MinField := 'MIN'
-         else MinField := '';
-         if GISdb[DBonTable].MyData.FieldExists('SECOND') then MinField := 'SECOND'
-         else if GISdb[DBonTable].MyData.FieldExists('SEC') then MinField := 'SEC'
-         else SecField := '';
+    if GISdb[DBonTable].MyData.FieldExists('DAY') and GISdb[DBonTable].MyData.FieldExists('HOUR') then begin
+       GISdb[DBonTable].AddFieldToDataBase(ftFloat,'DEC_DAYS',12,6);
+       if GISdb[DBonTable].MyData.FieldExists('MINUTE') then MinField := 'MINUTE'
+       else if GISdb[DBonTable].MyData.FieldExists('MIN') then MinField := 'MIN'
+       else MinField := '';
+       if GISdb[DBonTable].MyData.FieldExists('SECOND') then MinField := 'SECOND'
+       else if GISdb[DBonTable].MyData.FieldExists('SEC') then MinField := 'SEC'
+       else SecField := '';
 
-         GISdb[DBonTable].EmpSource.Enabled := false;
-         GISdb[DBonTable].MyData.First;
-         while not GISdb[DBonTable].MyData.EOF do begin
-            GISdb[DBonTable].MyData.Edit;
-            t := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('DAY') + GISdb[DBonTable].MyData.GetFieldByNameAsInteger('HOUR')/24;
-            if (MinField <> '') then t := t + GISdb[DBonTable].MyData.GetFieldByNameAsInteger(MinField) /60/24;
-            if (SecField <> '') then t := t + GISdb[DBonTable].MyData.GetFieldByNameAsInteger(SecField)/3600/24;
-            GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DEC_DAYS',t);
-            GISdb[DBonTable].MyData.Next;
-         end;
-         ShowStatus;
-      end
-      else begin
-         MessageToContinue('Required "HOUR" and "DAY" fields');
-      end;
-   //end;
+       GISdb[DBonTable].EmpSource.Enabled := false;
+       GISdb[DBonTable].MyData.First;
+       while not GISdb[DBonTable].MyData.EOF do begin
+          GISdb[DBonTable].MyData.Edit;
+          t := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('DAY') + GISdb[DBonTable].MyData.GetFieldByNameAsInteger('HOUR')/24;
+          if (MinField <> '') then t := t + GISdb[DBonTable].MyData.GetFieldByNameAsInteger(MinField) /60/24;
+          if (SecField <> '') then t := t + GISdb[DBonTable].MyData.GetFieldByNameAsInteger(SecField)/3600/24;
+          GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DEC_DAYS',t);
+          GISdb[DBonTable].MyData.Next;
+       end;
+       ShowStatus;
+    end
+    else begin
+       MessageToContinue('Required "HOUR" and "DAY" fields');
+    end;
 end;
 
 
@@ -3772,6 +3732,7 @@ procedure Tdbtablef.BitBtn24Click(Sender: TObject);
 begin
    if ValidDB(DBonTable) then begin
       Areasinclusters1.Visible := GISdb[DBonTable].MyData.FieldExists('AREA') and GISdb[DBonTable].MyData.FieldExists('CLUSTER');
+      OpenDEMIXgraphs1.Visible := GISdb[DBonTable].MyData.FieldExists('CRITERION');
       DEMIX1Click(Sender);
    end;
 end;
@@ -5059,7 +5020,7 @@ begin
     end;
     ShowStatus;
     {$IfDef RecordGraph} WriteLineToDebugFile('out'); {$EndIf}
-end;
+end {procedure Tdbtablef.N2Dgraphallopendatabases1Click};
 
 
 procedure Tdbtablef.N2Dgraphallopendatabaseslines1Click(Sender: TObject);
@@ -5360,6 +5321,7 @@ begin
    end;
 end;
 
+(*
 procedure Tdbtablef.AddDEMIXUTMtilename1Click(Sender: TObject);
 var
    tName : shortstring;
@@ -5379,7 +5341,7 @@ begin
    end;
    ShowStatus;
 end;
-
+*)
 
 procedure Tdbtablef.AddDISTANCEAZIMUTHfields1Click(Sender: TObject);
 var
@@ -7719,7 +7681,7 @@ begin
       Timefieldstodecyears1.Enabled := GISdb[DBonTable].MyData.FieldExists('YEAR') and GISdb[DBonTable].MyData.FieldExists(MonthFieldName);
       Splitdatefield1.Enabled := GISdb[DBonTable].MyData.FieldExists('DATE') or GISdb[DBonTable].MyData.FieldExists('ACQ_DATE') or GISdb[DBonTable].MyData.FieldExists('DATE_LABEL') or GISdb[DBonTable].MyData.FieldExists('DATEOFOCC');
       SplittimestringHHMMSS1.Enabled := GISdb[DBonTable].MyData.FieldExists('TIME_STR');
-      TimefieldHHMMSStohours1.Enabled := GISdb[DBonTable].MyData.FieldExists('TIME');
+      TimefieldHHMMSStohours1.Enabled := GISdb[DBonTable].MyData.FieldExists('TIME') or GISdb[DBonTable].MyData.FieldExists('TIMESTAMP');
       Timefieldshourminsectodechours1.Enabled := GISdb[DBonTable].MyData.FieldExists('HOUR') and GISdb[DBonTable].MyData.FieldExists('MINUTE') and GISdb[DBonTable].MyData.FieldExists('SECOND');
       Timefieldstodecdays1.Enabled := GISdb[DBonTable].MyData.FieldExists('DAY') and GISdb[DBonTable].MyData.FieldExists('HOUR');
       DechourstoHHMMSS1.Enabled := GISdb[DBonTable].MyData.FieldExists('DEC_HOURS');
@@ -9557,7 +9519,7 @@ procedure Tdbtablef.ShowStatus;
 
 var
    tstr : shortstring;
-begin
+begin {procedure Tdbtablef.ShowStatus}
    {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus in, db=' + IntToStr(dbOnTable)); {$EndIf}
    if (Closing <> true) and ValidDB(DBonTable) then begin
       if GISdb[DBonTable].dbIsUnsaved then TStr := 'Unsaved--'
@@ -9601,7 +9563,8 @@ begin
       {$IfDef RecordStatus} WriteLineRoDebugFile('UpdateStatus EmpSource.Enabled=' + TrueOrFalse(GISdb[DBonTable].EmpSource.Enabled) + '  DBGrid1.Enabled=' + TrueOrFalse(DBGrid1.Enabled)); {$EndIf}
    end;
    {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus out'); {$EndIf}
- end;
+ end {procedure Tdbtablef.ShowStatus};
+
 
 
 procedure Tdbtablef.RedclassifyLoppen1Click(Sender: TObject);
@@ -12063,27 +12026,22 @@ begin
 end;
 
 
-procedure Tdbtablef.DSMlessthanDTM1Click(Sender: TObject);
-var
-   TStr : shortstring;
+procedure Tdbtablef.DSMDTMpowerlawforalltiles1Click(Sender: TObject);
 begin
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DSM_LT_DTM',3);
-   GISdb[DBonTable].ApplyGISFilter('GRID_SIZE=30');
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   while not GISdb[DBonTable].MyData.eof do begin
-      if GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DSM_SLOPE') < GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DTM_SLOPE') - 1 then TStr := 'YES' else TStr := 'NO';
-      GISdb[DBonTable].MyData.Edit;
-      GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_LT_DTM',TStr);
-      GISdb[DBonTable].MyData.Next;
-   end;
-   GISdb[DBonTable].ClearGISFilter;
-   ShowStatus;
+   ComputePowerFitForAllTiles(dbOnTable);
 end;
+
+procedure Tdbtablef.DSMlessthanDTM1Click(Sender: TObject);
+begin
+   FindDSMslopeLessThanDEM(DbOnTable);
+end;
+
 
 procedure Tdbtablef.DTDSMcomparison1Click(Sender: TObject);
 begin
-    GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME'));
+   GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME'));
 end;
+
 
 function SourceFileNameFromTileName(theName : shortstring) : shortstring;
 var
@@ -12092,7 +12050,6 @@ begin
    al := length(theName);
    Result := copy(theName,4,al-3);
 end;
-
 
 
 procedure Tdbtablef.DTMDSMcomparison1Click(Sender: TObject);
@@ -13819,11 +13776,12 @@ begin
          GISdb[DBonTable].ClearGISFilter;
       end;
    end;
-
+   FormWorking := true;
    TheFields := GISdb[DBonTable].LinkTable.FieldsInDataBase;
    PickSomeFromStringList(TheFields,'joined fields to merge into DB');
    {$IfDef RecordCopyFieldLinkDB} WriteLineRoDebugFile('Fields picked, n=' + IntToStr(TheFields.Count)); {$EndIf}
    GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,false);
+   FormWorking := false;
    ShowStatus;
 end;
 

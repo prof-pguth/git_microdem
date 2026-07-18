@@ -152,85 +152,93 @@ var
       rfile : file;
       v : array[1..3] of float32;
    begin
-        Result := tThisBaseGraph.Create(Application);
-        SetScatterPlotParameters(db,Result);
-        Result.GraphDraw.RainBowColors := true;
-        Result.OpenXYZFile(rfile);
-        GISdb[DB].MyData.First;
-        while not GISdb[DB].MyData.eof  do begin
-            if GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.XField,v[1]) and
-               GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.YField,v[2]) and
-               GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.NumericColorField,v[3]) then begin
-                  BlockWrite(Rfile,v,1);
-                  CompareValueToExtremes(v[3],Result.MinZ, Result.MaxZ);
-            end
-            else begin
-                {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('Missing point ');  {$EndIf}
+        if GISdb[DB].MyData.FiltRecsInDB = 0 then Result := Nil
+        else begin
+            Result := tThisBaseGraph.Create(Application);
+            SetScatterPlotParameters(db,Result);
+            Result.GraphDraw.RainBowColors := true;
+            Result.OpenXYZFile(rfile);
+            GISdb[DB].MyData.First;
+            while not GISdb[DB].MyData.eof  do begin
+                if GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.XField,v[1]) and
+                   GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.YField,v[2]) and
+                   GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.NumericColorField,v[3]) then begin
+                      BlockWrite(Rfile,v,1);
+                      CompareValueToExtremes(v[3],Result.MinZ, Result.MaxZ);
+                end
+                else begin
+                    {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('Missing point ');  {$EndIf}
+                end;
+                GISdb[DB].MyData.Next;
             end;
-            GISdb[DB].MyData.Next;
-        end;
-        closeFile(rFile);
-        Result.MinZ := RowMinZ;
-        Result.MaxZ := RowMaxZ;
-        Result.MinZShow := Result.MinZ;
+            closeFile(rFile);
+            //Result.MinZ := RowMinZ;
+           //Result.MaxZ := RowMaxZ;
+            Result.MinZShow := Result.MinZ;
 
-        {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('coloring from '+ RealToString(Result.Minz,-12,-2) + ' to ' + RealToString(Result.Maxz,-12,-2) ); {$EndIf}
-        Result.GraphDraw.Symbol[0].Size := 5;
-        Result.GraphDraw.LRcornerText := LRText;
-        Result.GraphDraw.InsideMarginLegend := lpNEMap;
-  (*
-        if StrUtils.AnsiContainsText(GISdb[DB].dbOpts.NumericColorField,'_FUV') then begin
-           Result.MinZ := 0;
-           Result.MaxZ := 0.5;
+            {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('coloring from '+ RealToString(Result.Minz,-12,-2) + ' to ' + RealToString(Result.Maxz,-12,-2) ); {$EndIf}
+            Result.GraphDraw.Symbol[0].Size := 5;
+            Result.GraphDraw.LRcornerText := LRText;
+            Result.GraphDraw.InsideMarginLegend := lpNEMap;
+            FinishScatterPlotParameters(db,Result);
+            fName := NextFileNumber(MDtempdir,'fuv_grid_','.bmp');
+            SaveImageAsBMP(Result.Image1,fName);
+            FileList.Add(fName);
         end;
-  *)
-        FinishScatterPlotParameters(db,Result);
-        fName := NextFileNumber(MDtempdir,'fuv_grid_','.bmp');
-        SaveImageAsBMP(Result.Image1,fName);
-        FileList.Add(fName);
    end;
 
 begin {procedure GridOfTerrainScatterPlots}
-   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GridOfCriterionForMultipleDEMcomparisons in'); {$EndIf}
-   BaseFilter := GISdb[DB].MyData.Filter;
-   if GISdb[DB].MyData.FieldExists('GRID_SEC') then SpaceFilter := 'GRID_SEC=1'
-   else if GISdb[DB].MyData.FieldExists('GRID_M') then SpaceFilter := 'GRID_M=30'
-   else begin
-       SpaceFilter := '';
-   end;
-   FileList := tStringList.Create;
-   for j := 0 to pred(ColorBy.Count) do begin
-       {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('color=' + GISdb[DB].dbOpts.NumericColorField); {$EndIf}
-       if (DEMs=Nil) then begin
-         GISdb[DB].dbOpts.NumericColorField := ColorBy.Strings[j];
-         if (Compares = Nil) then begin
-            gr[j,0] := CreateGraph('n=' + IntToStr(GISdb[DB].MyData.FiltRecsInDB));   //ColorBy.Strings[i]);
-         end
-         else begin
-             for I := 0 to pred(Compares.Count) do begin
-                GISdb[DB].ApplyGISFilter(AddAndIfNeeded(SpaceFilter) + 'COMPARE=' + QuotedStr(Compares.Strings[i]));
-                {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
-                gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter +  GISdb[DB].NumRecsInDBstring);
-             end;
-         end;
-         Ncols := Compares.Count;
-       end
-       else begin
-           GISdb[DB].ApplyGISFilter('CRITERION=' + QuotedStr(ColorBy.Strings[j]));
-           GISdb[DB].EmpSource.Enabled := false;
-           GISdb[DB].MyData.FindMultipleFieldsRange(DEMs,RowMinZ,RowMaxZ);
+   {$IfDef RecordCompareDSMandDTM}
+      HighLightLineToDebugFile('GridOfCriterionForMultipleDEMcomparisons in, ' + ' colorsby=' + IntToStr(ColorBy.Count) + ' Compares=' + IntToStr(Compares.Count));
+      WriteLineToDebugFile('xfield=' + GISdb[DB].dbOpts.XField + '  yfield=' + GISdb[DB].dbOpts.YField);
+   {$EndIf}
+   if TileCharacteristicsInDB(DB) then begin
+       BaseFilter := GISdb[DB].MyData.Filter;
 
-           for I := 0 to pred(DEMs.Count) do begin
-              GISdb[DB].dbOpts.NumericColorField := DEMs.Strings[i];
-              {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
-              gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter + GISdb[DB].NumRecsInDBstring);
-           end;
-           Ncols := DEMs.Count;
+       if GISdb[DB].MyData.FieldExists('GRID_SEC') then SpaceFilter := 'GRID_SEC=1'
+       else if GISdb[DB].MyData.FieldExists('GRID_M') then SpaceFilter := 'GRID_M=30'
+       else begin
+           SpaceFilter := '';
        end;
-    end;
-    fName := NextFileNumber(MDTempDir,'grid_terrain_scatter_','.bmp');
-    MakeBigBitmap(FileList,'',fName,Ncols);
-    GISdb[DB].ShowStatus;
+
+       FileList := tStringList.Create;
+       for j := 0 to pred(ColorBy.Count) do begin
+           {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile(IntToStr(j) + ' color=' + ColorBy.Strings[j]); {$EndIf}
+           if (DEMs = Nil) then begin
+             GISdb[DB].dbOpts.NumericColorField := ColorBy.Strings[j];
+             if (Compares = Nil) then begin
+                gr[j,0] := CreateGraph('n=' + IntToStr(GISdb[DB].MyData.FiltRecsInDB));   //ColorBy.Strings[i]);
+                Ncols := 0;
+             end
+             else begin
+                 for I := 0 to pred(Compares.Count) do begin
+                    GISdb[DB].ApplyGISFilter(AddAndIfNeeded(SpaceFilter) + 'COMPARE=' + QuotedStr(Compares.Strings[i]));
+                    {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
+                    gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter +  GISdb[DB].NumRecsInDBstring);
+                 end;
+                 Ncols := Compares.Count;
+             end;
+           end
+           else begin
+               GISdb[DB].ApplyGISFilter('CRITERION=' + QuotedStr(ColorBy.Strings[j]));
+               GISdb[DB].EmpSource.Enabled := false;
+               GISdb[DB].MyData.FindMultipleFieldsRange(DEMs,RowMinZ,RowMaxZ);
+               {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('filter=' + GISdb[DB].MyData.Filter); {$EndIf}
+               for I := 0 to pred(DEMs.Count) do begin
+                  {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile(IntToStr(i) + ' ' + DEMs.Strings[i]); {$EndIf}
+                  GISdb[DB].dbOpts.NumericColorField := DEMs.Strings[i];
+                  gr[j,i] := CreateGraph(GISdb[DB].MyData.Filter + GISdb[DB].NumRecsInDBstring);
+               end;
+               Ncols := DEMs.Count;
+           end;
+        end;
+        if (Ncols > 1) then begin
+           fName := NextFileNumber(MDTempDir,'grid_terrain_scatter_','.bmp');
+           MakeBigBitmap(FileList,'',fName,Ncols);
+        end
+        else FileList.Destroy;
+        GISdb[DB].ShowStatus;
+   end;
 end {procedure GridOfTerrainScatterPlots};
 
 

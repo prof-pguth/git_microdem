@@ -25,7 +25,7 @@ unit gdal_tools;
       //{$Define RecordSubsetOpen}
       //{$Define RecordDatumShift}
       //{$Define RecordWKT}
-      {$Define RecordProjectionStrings}
+      //{$Define RecordProjectionStrings}
       //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
@@ -34,6 +34,7 @@ unit gdal_tools;
       //{$Define RecordGDAL}
       //{$Define RecordOGR}
       //{$Define RecordReformat}
+      //{$Define RecordRotate}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -134,7 +135,6 @@ const
    function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
    function GDAL_WebExtractFromMonsterTIFFforBoundingBox(WebName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
 
-
    function GDAL_DEM_command(OpenMap : boolean; InputDEM : integer; cmd : ANSIstring; OutName : PathStr; mt : byte = mtElevSpectrum; ElevUnits : byte = euUndefined) : integer;
 
 
@@ -188,13 +188,7 @@ const
       procedure TestPythonFile;
    {$EndIf}
 
-   {$IfDef ExGeoPDF}
-   {$Else}
-      type
-         tGDALGeoPDF = (gdalOpenGeoPDFimagelayer1,gdalAllindividuallayers1,gdalOpenGeoPDF1,gdalMergeGeoPDF1);
-      procedure GDALconvertGeoPDF(Option : tGDALGeoPDF);
-   {$EndIf}
-
+   procedure RotateTiff(DEM : integer);
 
 
 implementation
@@ -216,10 +210,6 @@ const
    RunDOSwindow  = ' run batch file in DOS window for error message: ';
    AddWKT = ' -wkt_format WKT2';
 
-   {$IfDef ExGeoPDF}
-   {$Else}
-      {$I geopdf.inc}
-   {$EndIf}
 
    {$IfDef IncludePython}
       procedure TestPythonFile;
@@ -246,7 +236,7 @@ const
        cmd := GDAL_translate_name + ' --debug on /vsicurl/' + WebName + ' ' + GDALextentBoxLatLong(bb) +  ' ' + OutFName;
        {$IfDef RecordCOGdownload} WriteLineToDebugFile(cmd); {$EndIf}
        ExitCode := WinExecAndWait32(cmd);
-       {$IfDef RecordCOGdownload} WriteLineToDebugFile('   exit code =' + IntToStr(ExitCode)); {$EndIf}
+       {$IfDef RecordCOGdownload} WriteLineToDebugFile(' exit code =' + IntToStr(ExitCode)); {$EndIf}
        //if (WinExecAndWait32(cmd) <> -1) then begin
        //end;
        if FileExists(OutFName) then begin
@@ -254,6 +244,157 @@ const
        end
        else Result := 0;
     end;
+
+
+
+   procedure RotateTiff(DEM : integer);
+   //Chrome AI made suggestions for this procedure, recommended verifying, which was done
+   var
+      ResultMatrix: TAffineMatrix;
+      // GCP 2: (0, 0) -> Origin
+      gcp_origin_px, gcp_origin_py, gcp_origin_mx, gcp_origin_my: Double;
+      // GCP 3: (400, 0) -> X Axis benchmark
+      gcp_x_axis_bm_px, gcp_x_axis_bm_py, gcp_x_axis_bm_mx, gcp_x_axis_bm_my: Double;
+      // GCP 1: (0, 325) -> Y Axis benchmark
+      gcp_y_axis_bm_px, gcp_y_axis_bm_py, gcp_y_axis_bm_mx, gcp_y_axis_bm_my: Double;
+
+
+              procedure ComputeTransform;
+              var
+                // Structural variables
+                deltaX_X, deltaX_Y: Double;
+                deltaY_X, deltaY_Y: Double;
+                distX, angleX, scaleX: Double;
+                distY, angleY, scaleY: Double;
+              begin
+                (*
+                // 1. Assign your specific Ground Control Point values
+                gcp_origin_px := 0;   gcp_origin_py := 0;   gcp_origin_mx := 490004.1;  gcp_origin_my := 4000006.2;
+                gcp_x_axis_bm_px := 400; gcp_x_axis_bm_py := 0;   gcp_x_axis_bm_mx := 500000.0;  gcp_x_axis_bm_my := 4000000.5;
+                gcp_y_axis_bm_px := 0;   gcp_y_axis_bm_py := 325; gcp_y_axis_bm_mx := 489992.7;  gcp_y_axis_bm_my := 3989992.9;
+                *)
+
+                // 2. Set base translation origin from (0,0) point
+                ResultMatrix.XOrigin := gcp_origin_mx;
+                ResultMatrix.YOrigin := gcp_origin_my;
+
+                // 3. Process the X-Axis movements (GCP 2 to GCP 3)
+                deltaX_X := gcp_x_axis_bm_mx - gcp_origin_mx;
+                deltaX_Y := gcp_x_axis_bm_my - gcp_origin_my;
+
+                distX  := Sqrt(Sqr(deltaX_X) + Sqr(deltaX_Y));
+                angleX := ArcTan2(deltaX_Y, deltaX_X);
+                scaleX := distX / (gcp_x_axis_bm_px - gcp_origin_px);
+
+                // 4. Process the Y-Axis movements (GCP 2 to GCP 1)
+                deltaY_X := gcp_y_axis_bm_mx - gcp_origin_mx;
+                deltaY_Y := gcp_y_axis_bm_my - gcp_origin_my;
+
+                distY  := Sqrt(Sqr(deltaY_X) + Sqr(deltaY_Y));
+                angleY := ArcTan2(deltaY_Y, deltaY_X);
+                scaleY := distY / (gcp_y_axis_bm_py - gcp_origin_py);
+
+                // 5. Build affine transformation coefficients
+                ResultMatrix.PixelWidth  := scaleX * Cos(angleX);
+                ResultMatrix.ColRotation := scaleX * Sin(angleX);
+                ResultMatrix.RowRotation := scaleY * Cos(angleY);
+                ResultMatrix.PixelHeight := scaleY * Sin(angleY);
+
+                // Output formatting matching standard GDAL structure
+                writeLineToDebugFile('Computed Affine Matrix Coefficients:');
+                writeLineToDebugFile(Format('GT(0) X Origin:       %10.4f', [ResultMatrix.XOrigin]));
+                writeLineToDebugFile(Format('GT(1) Pixel Width:    %10.4f', [ResultMatrix.PixelWidth]));
+                writeLineToDebugFile(Format('GT(2) Row Rotation:   %10.4f', [ResultMatrix.RowRotation]));
+                writeLineToDebugFile(Format('GT(3) Y Origin:       %10.4f', [ResultMatrix.YOrigin]));
+                writeLineToDebugFile(Format('GT(4) Col Rotation:   %10.4f', [ResultMatrix.ColRotation]));
+                writeLineToDebugFile(Format('GT(5) Pixel Height:   %10.4f', [ResultMatrix.PixelHeight]));
+              end;
+
+
+
+      function AddGCP(x,y : integer; var px,py,mx,my : double) : shortstring;
+      var
+         XUTM,YUTM : float64;
+      begin
+         DEMglb[DEM].DEMGridtoUTM(x,y,mx,my);
+         px := x;
+         py := pred(DEMglb[DEM].DEMheader.NumRow)-y;
+         //Result := ' -gcp ' + IntToStr(x) + ' ' + IntToStr(pred(DEMglb[DEM].DEMheader.NumRow)-y) + ' ' + RealToString(xutm,-12,-1) +  ' ' + RealToString(yutm,-12,-1);
+      end;
+
+   var
+      cmd,t_srsstring,aLine : shortstring;
+      affine_fName : PathStr;
+      XUTM,YUTM : float64;
+   begin
+      {$IfDef RecordRotate} WriteLineToDebugFile('RotateTiff in ' + DEMglb[DEM].AreaName); {$EndIf}
+
+      AddGCP(0,pred(DEMglb[DEM].DEMheader.NumRow), gcp_origin_px, gcp_origin_py, gcp_origin_mx, gcp_origin_my);
+      AddGCP(pred(DEMglb[DEM].DEMheader.NumCol),pred(DEMglb[DEM].DEMheader.NumRow),gcp_x_axis_bm_px, gcp_x_axis_bm_py, gcp_x_axis_bm_mx, gcp_x_axis_bm_my);
+      AddGCP(0,0,gcp_y_axis_bm_px, gcp_y_axis_bm_py, gcp_y_axis_bm_mx, gcp_y_axis_bm_my);
+      ComputeTransform;
+       DEMglb[DEM].DEMGridtoUTM(0,0,XUTM,YUTM);
+       DEMglb[DEM].DEMheader.DEMUsed := UTMBasedDEM;
+       DEMglb[DEM].DEMheader.DataSpacing := SpaceMeters;
+       DEMglb[DEM].DEMheader.DEMxSpacing := DEMglb[DEM].AverageXSpace;
+       DEMglb[DEM].DEMheader.DEMySpacing := DEMglb[DEM].AverageYSpace;
+       DEMglb[DEM].DEMheader.SWCornerX := xutm;
+       DEMglb[DEM].DEMheader.SWCornerY := yutm;
+      affine_fname := MDtempDir + 'affine_utm_' + DEMglb[DEM].AreaName + '.tif';
+      DEMglb[DEM].SaveAsGeotiffWithAffine(ResultMatrix,true,affine_fName);
+      DEMglb[DEM].ReloadDEM(true);
+
+
+(*
+      type
+  TAffineMatrix = record
+    XOrigin: Double; // GT(0)
+    PixelWidth: Double; // GT(1)
+    RowRotation: Double; // GT(2)
+    YOrigin: Double; // GT(3)
+    ColRotation: Double; // GT(4)
+    PixelHeight: Double; // GT(5)
+  end;
+*)
+
+
+(*
+      temp_gcp_fname := MDtempDir + 'rot_utm_' + DEMglb[DEM].AreaName + '.tif';
+      cmd := GDAL_translate_name + AddGCP(0,0) +
+                                   AddGCP(0,pred(DEMglb[DEM].DEMheader.NumRow)) +
+                                   AddGCP(pred(DEMglb[DEM].DEMheader.NumCol),pred(DEMglb[DEM].DEMheader.NumRow)) +
+                                   AddGCP(pred(DEMglb[DEM].DEMheader.NumCol),0) + ' ' +
+                                   DEMglb[DEM].GeotiffDEMName  + ' ' +
+                                   temp_gcp_fname;
+      {$IfDef RecordRotate} WriteLineToDebugFile(cmd); {$EndIf}
+
+      //WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+      final_gcp_Name := MDtempDir + 'final_gcp_rot_utm_' + DEMglb[DEM].AreaName + '.tif';
+      t_srsstring := ' -t_srs EPSG:' + '326' + AddDayMonthLeadingZero(DEMglb[DEM].DEMHeader.UTMzone);
+      cmd := GDAL_warp_name + ' -order 1 ' + GDAL_Geotiff_str + t_srsstring + ' ' +  temp_gcp_fname + ' ' + final_gcp_Name;
+      {$IfDef RecordRotate} WriteLineToDebugFile(cmd); {$EndIf}
+      //WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+
+      cmd := GDAL_warp_name + ' -of ' + ' -order 1 -s_srs "EPSG:4326" ' +  t_srsstring +
+            AddGCP(0,0) +
+            AddGCP(0,pred(DEMglb[DEM].DEMheader.NumRow)) +
+            AddGCP(pred(DEMglb[DEM].DEMheader.NumCol),pred(DEMglb[DEM].DEMheader.NumRow)) +
+            AddGCP(pred(DEMglb[DEM].DEMheader.NumCol),0) + ' ' +
+            final_gcp_Name + ' ' + DEMglb[DEM].GeotiffDEMName;
+      {$IfDef RecordRotate} WriteLineToDebugFile(cmd); {$EndIf}
+      WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+*)
+
+(*
+
+gdal_translate \
+  -gcp 100 200 450120 4235600 \
+  -gcp 950 210 458900 4235550 \
+  -gcp 120 890 450180 4228100 \
+  -gcp 960 900 458950 4228050 \
+  input.tif temp_gcp.tif
+*)
+   end;
 
 
     function ExtractFromMonsterTIFFforBoundingBox(InName : PathStr; bb : sfBoundBox; OpenMap : boolean; ShortName : shortstring; OutfName : PathStr = '') : integer;
@@ -265,6 +406,7 @@ const
           if OpenMap then CreateDEMSelectionMap(Result,true,true,MDDef.DefaultElevationColors);
        end;
      end;
+
 
 procedure GDAL_info_forCOGsInTable;
 //user must create dBase table with the grid names and web COG links

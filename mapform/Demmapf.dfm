@@ -1516,7 +1516,7 @@ object MapForm: TMapForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 256
+    Left = 264
     Top = 50
     object File1: TMenuItem
       Caption = '&File'
@@ -2121,8 +2121,28 @@ object MapForm: TMapForm
             OnClick = Currentversion121Click
           end
         end
+        object OpenTopographyglobalDEM1: TMenuItem
+          Caption = 'Open Topography global DEM'
+          GroupIndex = 1
+          object OpenTopographyglobalDEM2: TMenuItem
+            Caption = 'CopDEMN'
+            OnClick = OpenTopographyglobalDEM2Click
+          end
+          object AW3D301: TMenuItem
+            Caption = 'AW3D30'
+            OnClick = AW3D301Click
+          end
+          object AW3D302: TMenuItem
+            Caption = 'GEDTM30'
+            OnClick = AW3D302Click
+          end
+          object Othen1: TMenuItem
+            Caption = 'Other'
+            OnClick = Othen1Click
+          end
+        end
         object ListCOGS1: TMenuItem
-          Caption = 'List COGS (4326)'
+          Caption = 'vsicurl Download COGS (4326 projection only)'
           GroupIndex = 1
           OnClick = ListCOGS1Click
         end
@@ -2287,7 +2307,6 @@ object MapForm: TMapForm
         end
         object SRTMwaterbodies2: TMenuItem
           Caption = 'SRTM water bodies'
-          OnClick = SRTMwaterbodies2Click
         end
         object LC100landcoverwaterbodies1: TMenuItem
           Caption = 'LC100 landcover water bodies'
@@ -4151,6 +4170,10 @@ object MapForm: TMapForm
             OnClick = knss2Click
           end
         end
+        object FFTtools1: TMenuItem
+          Caption = 'FFT tools'
+          OnClick = FFTtools1Click
+        end
         object LinedetectionHoughtransform1: TMenuItem
           Caption = 'Line detection (Hough transform)'
           OnClick = LinedetectionHoughtransform1Click
@@ -4399,8 +4422,35 @@ object MapForm: TMapForm
         Caption = 'Heat map'
         OnClick = Heatmap1Click
       end
+      object Twogridcomparisons: TMenuItem
+        Caption = 'Two grid comparisons'
+        object Differencemap2: TMenuItem
+          Caption = 'Difference map'
+          OnClick = Differencemap2Click
+        end
+        object Scatterplotoftwogrids2: TMenuItem
+          Caption = 'Scatter plot of two grids'
+          OnClick = Scatterplotoftwogrids2Click
+        end
+        object Correlationbothwaysifinterpolationrequired1: TMenuItem
+          Caption = 'Correlation both ways if interpolation required'
+          OnClick = Correlationbothwaysifinterpolationrequired1Click
+        end
+        object Percentages1: TMenuItem
+          Caption = 'Co-occurrence, Percentages'
+          OnClick = Percentages1Click
+        end
+        object Counts1: TMenuItem
+          Caption = 'Co-occurrence, Counts'
+          OnClick = Counts1Click
+        end
+        object Missingdata1: TMenuItem
+          Caption = 'Missing data locations in one grid'
+          OnClick = Missingdata1Click
+        end
+      end
       object Comparemultiplegridstothisone1: TMenuItem
-        Caption = 'Compare multiple grids'
+        Caption = 'Multiple grid comparison'
         object Comparemultiplegridstothisone2: TMenuItem
           Caption = 'Histograms'
           OnClick = Comparemultiplegridstothisone2Click
@@ -4433,32 +4483,9 @@ object MapForm: TMapForm
           Caption = '3D drape multiple grids on this DEM'
           OnClick = N3DdrapemultiplegridsonthisDEM1Click
         end
-      end
-      object Twogridcomparisons: TMenuItem
-        Caption = 'Two grid comparisons'
-        object Differencemap2: TMenuItem
-          Caption = 'Difference map'
-          OnClick = Differencemap2Click
-        end
-        object Scatterplotoftwogrids2: TMenuItem
-          Caption = 'Scatter plot of two grids'
-          OnClick = Scatterplotoftwogrids2Click
-        end
-        object Correlationbothwaysifinterpolationrequired1: TMenuItem
-          Caption = 'Correlation both ways if interpolation required'
-          OnClick = Correlationbothwaysifinterpolationrequired1Click
-        end
-        object Percentages1: TMenuItem
-          Caption = 'Co-occurrence, Percentages'
-          OnClick = Percentages1Click
-        end
-        object Counts1: TMenuItem
-          Caption = 'Co-occurrence, Counts'
-          OnClick = Counts1Click
-        end
-        object Missingdata1: TMenuItem
-          Caption = 'Missing data locations in one grid'
-          OnClick = Missingdata1Click
+        object FFTPSD2: TMenuItem
+          Caption = 'FFT PSD'
+          OnClick = FFTPSD2Click
         end
       end
       object IDFeatures1: TMenuItem
@@ -5411,7 +5438,7 @@ object MapForm: TMapForm
       OnClick = Overlays1Click
     end
     object ableofcontents1: TMenuItem
-      Caption = 'Table of contents'
+      Caption = 'Table of contents (databases only)'
       OnClick = ableofcontents1Click
     end
     object Gridgraticule1: TMenuItem

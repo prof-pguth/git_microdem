@@ -66,6 +66,8 @@ unit GeoTiff;
       //{$Define RecordMultiGrids}
       //{$Define RecordMinMax}
       //{$Define RecordNLCD}
+      {$Define TrackImageWidth}
+      //{$Define RecordGeoti
       //{$Define RecordGeotiffRow}    //potential major slowdown
       //{$Define FullDEMinit}         //potential major slowdown
       //{$Define NoGeotiffProjection}  //Jan 2024 added to track down problem opening a Geotiff
@@ -184,6 +186,7 @@ type
             procedure GetTIFFRowRGB(Row : integer;  var TheRow : tLongRGB);
             function DisplayInBitmap : tMyBitmap;
          {$EndIf}
+         {$IfDef TrackImageWidth} procedure RecordImageSize(Where : shortstring);  {$EndIf}
    end;
 
    function GeoTIFFTagName(Tag : integer) : ShortString;
@@ -250,9 +253,17 @@ uses
 function Geotiff_UTMzone(fName : PathStr) : integer;
 var
    Lat,Long : float64;
+   TiffImage : tTIFFImage;
+   success : boolean;
 begin
    Result := -99;
-   if GeotiffCentroidLatLong(fName,Lat,Long) then begin
+
+   if FileExists(fName) then begin
+      TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
+      Result := TiffImage.MapProjection.projUTMZone;
+      TiffImage.Destroy;
+   end;
+   if (Result = -99) and GeotiffCentroidLatLong(fName,Lat,Long) then begin
       Result := GetUTMZone(Long);
    end;
    {$IfDef RecordUTM} WriteLineToDebugFile('Geotiff ' + ExtractFileName(fName) + '  UTM zone=' + IntToStr(Result)); {$EndIf}
@@ -299,6 +310,13 @@ begin
    {$IfDef RecordGeotiffRewrite} WriteLineToDebugFile('RewriteGeotiffIfRequired out for  ' + TIFFFileName); {$EndIf}
 end;
 
+
+{$IfDef TrackImageWidth}
+    procedure tTIFFImage.RecordImageSize(Where : shortstring);
+    begin
+       WriteLineToDebugFile(Where + ', tiff image ' + IntToStr(TiffHeader.ImageWidth) + 'x' + IntToStr(TiffHeader.ImageLength));
+    end;
+{$EndIf}
 
 function tTIFFImage.TiledImage : boolean;
 begin
@@ -682,41 +700,58 @@ end;
 
 {$IfDef VCL}
 
-      procedure tTIFFImage.GetTIFFRowRGB(Row : integer; var TheRow : tLongRGB);
-      var
-         x : integer;
-         TheRawRow : ^tRow8Bit;
-      begin
-         SeekFileOffset(Row);
-         if (TiffHeader.PhotometricInterpretation in [1,2]) and (TiffHeader.SamplesPerPixel > 1) then begin
-             if (TiffHeader.BitsPerSample in [15,16]) then begin
-             //this has problems 8/13/23
-               FileRead(TiffHandle,Row16bit^,ImageBytesPerRow);
-               for x := 0 to pred(TiffHeader.ImageWidth) do begin
-                   TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
-                   TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
-                   TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2] div 256;
-               end;
-            end
-            else begin
-                FileRead(TiffHandle,Row8Bit^,ImageBytesPerRow);
-                for x := 0 to pred(TiffHeader.ImageWidth) do begin
-                   TheRow[x].rgbtRed := Row8Bit^[x*TiffHeader.SamplesPerPixel];
-                   TheRow[x].rgbtGreen := Row8Bit^[x*TiffHeader.SamplesPerPixel+1];
-                   TheRow[x].rgbtBlue := Row8Bit^[x*TiffHeader.SamplesPerPixel+2];
-                end;
-            end;
-         end
-         else begin
-            New(TheRawRow);
-            GetTiffRow(1,Row,TheRawRow^);
-            for x := 0 to TiffHeader.ImageWidth do TheRow[x] := TIFFImageColor[TheRawRow^[x]];
-            Dispose(TheRawRow);
+procedure tTIFFImage.GetTIFFRowRGB(Row : integer; var TheRow : tLongRGB);
+var
+   x,offset1,offset2 : integer;
+   TheRawRow : ^tRow8Bit;
+begin
+   {$IfDef TrackImageWidth} if (Row = 0) then RecordImageSize('tTIFFImage.GetTIFFRowRGB'); {$EndIf}
+   SeekFileOffset(Row);
+   if (TiffHeader.PhotometricInterpretation in [1,2]) and (TiffHeader.SamplesPerPixel > 1) then begin
+       if (TiffHeader.BitsPerSample in [15,16]) then begin
+       //this has problems 8/13/23; unclear if it is fixed
+         FileRead(TiffHandle,Row16bit^,ImageBytesPerRow);
+         for x := 0 to pred(TiffHeader.ImageWidth) do begin
+             TheRow[x].rgbtRed := Row16bit^[x*TiffHeader.SamplesPerPixel] div 256;
+             TheRow[x].rgbtGreen := Row16bit^[x*TiffHeader.SamplesPerPixel+1] div 256;
+             TheRow[x].rgbtBlue := Row16bit^[x*TiffHeader.SamplesPerPixel+2] div 256;
          end;
+      end
+      else begin
+          {$IfDef TrackImageWidth} if (Row = 0) then WriteLineToDebugFile('tTIFFImage.GetTIFFRowRGB, ImageBytesPerRow=' + IntToStr(ImageBytesPerRow)); {$EndIf}
+          FileRead(TiffHandle,Row8Bit^,ImageBytesPerRow);
+          if (TiffHeader.PlanarConfiguration = 1) then begin
+             for x := 0 to pred(TiffHeader.ImageWidth) do begin
+                TheRow[x].rgbtRed := Row8Bit^[x*TiffHeader.SamplesPerPixel];
+                TheRow[x].rgbtGreen := Row8Bit^[x*TiffHeader.SamplesPerPixel+1];
+                TheRow[x].rgbtBlue := Row8Bit^[x*TiffHeader.SamplesPerPixel+2];
+             end;
+          end
+          else begin
+             Offset1 := TiffHeader.ImageWidth;
+             Offset2 := 2 * TiffHeader.ImageWidth;
+             {$IfDef TrackImageWidth} if (Row = 0) then WriteLineToDebugFile('tTIFFImage.GetTIFFRowRGB, offsets' + IntegerToString(Offset1,8) + IntegerToString(Offset2,8)); {$EndIf}
+             for x := 0 to pred(TiffHeader.ImageWidth) do begin
+                TheRow[x].rgbtRed := Row8Bit^[x];
+                TheRow[x].rgbtGreen := Row8Bit^[Offset1 + x];
+                TheRow[x].rgbtBlue := Row8Bit^[Offset2 + x];
+                {$IfDef TrackImageWidth} var i : integer; for i := 2 to 4 do begin if (Row = TiffHeader.ImageLength div i) and (x = TiffHeader.ImageWidth div i) then
+                   WriteLineToDebugFile(ColorString(TheRow[x])); end; {$EndIf}
+             end;
+          end;
       end;
+   end
+   else begin
+      New(TheRawRow);
+      GetTiffRow(1,Row,TheRawRow^);
+      for x := 0 to TiffHeader.ImageWidth do TheRow[x] := TIFFImageColor[TheRawRow^[x]];
+      Dispose(TheRawRow);
+   end;
+end;
 
 
       function tTIFFImage.DisplayInBitmap : tMyBitmap;
+      //used for opening a tiff to display as image, and not geotiff
       var
          x,y : integer;
          TheRow : tLongRGB;
@@ -1969,7 +2004,10 @@ var
                            HeaderLogList.Insert(1,MenuStr);
                         end;
                      end;
-               277 : SamplesPerPixel := TiffKeys[j].KeyOffset;
+               277 : begin
+                        SamplesPerPixel := TiffKeys[j].KeyOffset;
+                        TStr := IntToStr(SamplesPerPixel);
+                     end;
                278 : begin
                         RowsPerStrip := TiffKeys[j].KeyOffset;
                      end;
@@ -2005,7 +2043,13 @@ var
                         //Seek(TiffFile,TiffKeys[j].KeyOffset);
                         //TStr := RealToString(MakeDouble,-12,-4);
                       end;
-               284 : PlanarConfiguration := TiffKeys[j].KeyOffset;
+               284 : begin
+                         PlanarConfiguration := TiffKeys[j].KeyOffset;
+                         case PlanarConfiguration of
+                            1 : TStr := 'Chunky';
+                            2 : TStr := 'Planar/Separate';
+                         end;
+                     end;
                285 : begin end;
                296 : begin
                          //case TiffKeys[j].KeyOffset of
@@ -2021,7 +2065,7 @@ var
                323 : TileHeight := TiffKeys[j].KeyOffset;
                //324 : TileOffsets := TiffKeys[j].KeyOffset;  //crashes, and not needed
                338 : begin
-                        ExtraSample := TiffKeys[j].LengthIm;
+                        ExtraSample := TiffKeys[j].KeyOffset;
                         TStr := '  ExtraSample ' + IntToStr(ExtraSample);
                      end;
                339 : SampleFormat := tSampleFormat(pred(TiffKeys[j].KeyOffset));
@@ -2177,7 +2221,8 @@ var
                          if (UpperCase(TStr) <> 'NAN') and IsNumeric(TStr) then CurrentMissing := StrToFloat(Tstr);
                       end;
             end {case};
-            TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + '  ' + IntToStr(TiffKeys[j].KeyOffset) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
+            TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + '  ' +
+                IntegerToString(TiffKeys[j].KeyOffset,10) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
             HeaderLogList.Add(TStr);
             {$If Defined(RecordProcessingHeader) or Defined(RecordKeys)} WriteLineToDebugFile(TStr); {$EndIf}
          end {for j};
@@ -2513,7 +2558,7 @@ var
 
 var
    Lat,Long : float64;
-begin
+begin {constructor tTIFFImage.CreateGeotiff}
    Success := false;
    if (Not(FileExists(inFileName))) or (GetFileSize(inFileName) = 0) then begin
       {$If Defined(RecordGeotiff) or Defined(RecordGeotiffFailures)} WriteLineToDebugFile('Read GEOTIFF file missing: ' + inFileName); {$EndIf}
@@ -2711,6 +2756,7 @@ begin
    {$IfDef TrackPixelIs} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, ' + RasterPixelIsString(TiffHeader.RasterPixelIs)); {$EndIf}
    {$IfDef RecordUTM} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, UTM zone=' + IntToStr(MapProjection.projUTMzone)); {$EndIf}
    {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('Read done: '); {$EndIf}
+   {$IfDef TrackImageWidth} RecordImageSize('End constructor tTIFFImage'); {$EndIf}
 
    if ShowHeader and (not HeavyDutyProcessing) then begin
       ShowInNotepadPlusPlus(HeaderLogList,'MD_metadata_' + ExtractFileName(InFileName));
@@ -2723,7 +2769,7 @@ begin
    end;
    Success := true;
    {$If Defined(RecordGeotiff) or Defined(RecordJustMetadata)} WriteLineToDebugFile('TiffImageCreate out'); {$EndIf}
-end;
+end {constructor tTIFFImage.CreateGeotiff};
 
 
 destructor tTIFFImage.Destroy;

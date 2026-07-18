@@ -15,6 +15,7 @@ begin
    Result := 1.0 * StrToInt(Copy(TimeStr,12,2)) + StrToInt(Copy(TimeStr,15,2)) / 60 + StrToInt(Copy(TimeStr,18,2)) / 3600;
 end;
 
+
 procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
 {
       <trkpt lat="38.991316203" lon="-76.502945870">
@@ -107,6 +108,61 @@ begin
    end;
 end;
 
+procedure ConvertTimeStringToDecimalHours(DBonTable : integer; InputHoursMinSec : boolean);
+//2026-05-27T00:18:45Z            //google takeout export
+//2026-06-13T18:11:27.000-04:00   //fitbit exports
+var
+   TStr,TimeFName : ShortString;
+   Hours : float64;
+   i,rc : integer;
+begin
+   {$If Defined(RecordEditsDone) or Defined(RecordEditDBProblems)} WriteLineToDebugFile('Tdbtablef.TimefieldHHMMSStohours1Click in ' + GISdb[DBonTable].dbName + ' Time field to decimal hours'); {$EndIf}
+    if not InputHoursMinSec then begin
+       if GISdb[DBonTable].MyData.FieldExists('TIME') then TimeFName := 'TIME'
+       else if GISdb[DBonTable].MyData.FieldExists('TIMESTAMP') then TimeFName := 'TIMESTAMP'
+       else exit;
+    end;
+    if GISdb[DBonTable].AddFieldToDataBase(ftFloat,'DEC_HOURS',12,6) then begin
+       {$IfDef RecordEditDB} WriteLineToDebugFile('dec_hours added'); {$EndIf}
+    end;
+
+    GISdb[DBonTable].ClearGISFilter;
+    GISdb[DBonTable].EmpSource.Enabled := false;
+    ShowHourglassCursor;
+    GISdb[DBonTable].MyData.First;
+    rc := ProgressIncrement(GISdb[DBonTable].MyData.FiltRecsInDB);
+    i := 0;
+    while not GISdb[DBonTable].MyData.EOF do begin
+       if (i mod rc = 0) then UpdateProgressBar(i/GISdb[DBonTable].MyData.FiltRecsInDB);
+       inc(i);
+       GISdb[DBonTable].MyData.Edit;
+       if not InputHoursMinSec then begin
+          TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString(TimeFName));
+          if ANSIContainsText(TStr,':') then begin
+             if TStr[5] = '-' then begin
+                Hours := DecimalHoursFromTimeStr(TStr);
+             end
+             else begin
+                if (TStr[2] = ':') then Tstr := '0' + TStr;
+                Hours := 1.0 * StrToInt(Copy(TStr,1,2)) + StrToInt(Copy(TStr,4,2)) / 60 + StrToInt(Copy(TStr,7,2)) / 3600;
+                if (Length(TStr) > 8) and ANSIContainsText(TStr,'PM') then Hours := Hours + 12;
+             end;
+          end
+          else begin
+             TStr := GISdb[DBonTable].MyData.GetFieldByNameAsString(TimeFName);
+             while (length(TStr) < 6) do Tstr := '0' + TStr;
+             Hours := 1.0 * StrToInt(Copy(TStr,1,2)) + StrToInt(Copy(TStr,3,2)) / 60 + StrToInt(Copy(TStr,5,2)) / 3600;
+          end;
+       end
+       else begin
+           Hours := GISdb[DBonTable].MyData.GetFieldByNameAsInteger('HOUR') + GISdb[DBonTable].MyData.GetFieldByNameAsInteger('MINUTE') /60 + GISdb[DBonTable].MyData.GetFieldByNameAsInteger('SECOND') /3600;
+       end;
+       GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DEC_HOURS',Hours);
+       GISdb[DBonTable].MyData.Next;
+    end;
+    GISdb[DBonTable].ShowStatus;
+   {$If Defined(RecordEditsDone) or Defined(RecordEditDBProblems)} WriteLineToDebugFile('Tdbtablef.TimefieldHHMMSStohours1Click out'); {$EndIf}
+end;
 
 
 function FitBitTCXtoStringList(fName : PathStr; var ID : shortstring) : tStringList;
@@ -207,11 +263,8 @@ begin
            end;
            if str = '</PLACEMARK>' then begin
               Adding := false;
-              //Table.Insert;
               ShapeFileCreator.RecordName := NameStr;
               ShapeFileCreator.ProcessRecordForShapeFile;
-              //Table.SetFieldByNameAsString('NAME',NameStr);
-              //Table.Post;
            end;
         end;
         inc(i);

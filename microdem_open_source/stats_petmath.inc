@@ -9,6 +9,12 @@
 {   include file for petmath             }
 {________________________________________}
 
+
+{$IfDef IncludeFriedman}    //only included via
+   {$I stats_petmath.inc}
+{$EndIf}
+
+
 //  https://stackoverflow.com/questions/50394952/code-for-chi-square-distribution-function-in-delphi
 
          function LnGamma(x : float64) : float64;
@@ -59,7 +65,6 @@
 {==============================================================================================================================}
 
 
-
 //http://delphiforfun.org/programs/delphi_techniques/ChiSquaredRNGTesting.htm   downloaded 9/3/2022
 //unit U_ChiSquare_RNG_Testing;
 {Copyright © 2013, Gary Darby,  www.DelphiForFun.org
@@ -108,6 +113,7 @@ BEGIN
    //gammln := sngl(tmp+ln(stp*ser))
    gammln := tmp+ln(stp*ser);
 END;
+
 
 PROCEDURE gcf(a,x: float64; VAR gammcf,gln: float64);
 //PLG note: p.162,p.706 "Numerical Recipes in Pascal"
@@ -231,9 +237,6 @@ END;
 {******************************************************}
 {  End of "Numerical Recipes in Pascal" Includes       }
 {******************************************************}
-
-
-
 
 
 

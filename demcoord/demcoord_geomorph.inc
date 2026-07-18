@@ -1192,7 +1192,7 @@ begin
 
          Graph.AutoScaleAndRedrawDiagram;
          if (Valid >= 4) then begin
-            Graph.FitGraph(true,2,Graph.GraphDraw.DataFilesPlotted.Strings[0], a,b,r,n);
+            Graph.FitGraph({true,}fitLinear,2,Graph.GraphDraw.DataFilesPlotted.Strings[0], a,b,r,n);
             FracDim := (2 - b);
             TStr := RealToString(FracDim,-6,2) + ' ';
             if DoResults then begin
@@ -1434,31 +1434,6 @@ begin
       Results := tStringList.Create;
    end;
 
-   (*
-   if MDDef.VariogramOptionsRecord.DoSlopes then begin
-      SlopeNorthSouth := -999;
-      SlopeEastWest   := -999;
-      SlopeNESW       := -999;
-      SlopeNWSE       := -999;
-      for i := 0 to pred(ThisGraph.GraphDraw.DataFilesPlotted.Count) do begin
-         ThisGraph.BestSegmentFitGraph(2,ThisGraph.GraphDraw.DataFilesPlotted.Strings[i], a,b,r,n,3,0.10);
-         if (b > 0.01) and (b < 10) then case i  of
-            0 : SlopeNorthSouth := b;
-            1 : SlopeEastWest   := b;
-            2 : SlopeNESW       := b;
-            3 : SlopeNWSE       := b;
-         end;
-      end;
-      Results.Add('Variogram Slopes and fractal Dimensions, ' + AreaName);
-      Results.Add('N-S:'+ RealToString(SlopeNorthSouth,10,4) + RealToString(FracDimFromSlope2(SlopeNorthSouth),10,3));
-      Results.Add('NE-SW:'+ RealToString(SlopeNESW,8,4) + RealToString(FracDimFromSlope2(SlopeNESW),10,3));
-      Results.Add('E-W:'+ RealToString(SlopeEastWest,10,4) + RealToString(FracDimFromSlope2(SlopeEastWest),10,3));
-      Results.Add('SE-NW:'+ RealToString(SlopeNWSE,8,4) + RealToString(FracDimFromSlope2(SlopeNWSE),10,3));
-      Results.Add('');
-      {$IfDef RecordVariogram} WriteStringListToDebugFile(Results); {$EndIf}
-      if not MDDef.VariogramOptionsRecord.DoGraph then ThisGraph.Close;
-   end;
-   *)
    if MDDef.VariogramOptionsRecord.DoGamma then begin
       VariogramGamma(GridLimits,EastWest,NorthSouth,NESW,NWSE);
       Results.Add('Variogram Gammas, ' + AreaName);

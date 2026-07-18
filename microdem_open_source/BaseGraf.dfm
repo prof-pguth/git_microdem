@@ -157,7 +157,7 @@ object ThisBaseGraph: TThisBaseGraph
     object SpeedButton5: TSpeedButton
       Left = 75
       Top = 0
-      Width = 25
+      Width = 38
       Height = 22
       Hint = 'Drag resize'
       Glyph.Data = {
@@ -172,9 +172,9 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton5Click
     end
     object SpeedButton8: TSpeedButton
-      Left = 100
+      Left = 113
       Top = 0
-      Width = 17
+      Width = 21
       Height = 22
       Hint = 'Force redraw'
       Glyph.Data = {
@@ -189,7 +189,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton8Click
     end
     object LegendSpeedButton: TSpeedButton
-      Left = 117
+      Left = 134
       Top = 0
       Width = 23
       Height = 22
@@ -210,7 +210,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = LegendSpeedButtonClick
     end
     object SpeedButton6: TSpeedButton
-      Left = 140
+      Left = 157
       Top = 0
       Width = 23
       Height = 22
@@ -229,7 +229,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton6Click
     end
     object SpeedButton9: TSpeedButton
-      Left = 163
+      Left = 180
       Top = 0
       Width = 23
       Height = 22
@@ -250,7 +250,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton9Click
     end
     object SpeedButton10: TSpeedButton
-      Left = 186
+      Left = 203
       Top = 0
       Width = 23
       Height = 22
@@ -270,7 +270,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton10Click
     end
     object IDSpeedButton: TSpeedButton
-      Left = 209
+      Left = 226
       Top = 0
       Width = 23
       Height = 22
@@ -280,7 +280,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = IDSpeedButtonClick
     end
     object SpeedButton11: TSpeedButton
-      Left = 232
+      Left = 249
       Top = 0
       Width = 23
       Height = 22
@@ -297,7 +297,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton11Click
     end
     object SpeedButton15: TSpeedButton
-      Left = 255
+      Left = 272
       Top = 0
       Width = 23
       Height = 22
@@ -314,7 +314,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton15Click
     end
     object SpeedButton12: TSpeedButton
-      Left = 278
+      Left = 295
       Top = 0
       Width = 23
       Height = 22
@@ -323,7 +323,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton12Click
     end
     object SpeedButton13: TSpeedButton
-      Left = 301
+      Left = 318
       Top = 0
       Width = 23
       Height = 22
@@ -333,7 +333,7 @@ object ThisBaseGraph: TThisBaseGraph
       OnClick = SpeedButton13Click
     end
     object SpeedButton14: TSpeedButton
-      Left = 324
+      Left = 341
       Top = 0
       Width = 23
       Height = 22
@@ -537,16 +537,13 @@ object ThisBaseGraph: TThisBaseGraph
         Caption = '&View data'
         OnClick = Viewdata1Click
       end
-      object Linearfit2: TMenuItem
+      object Linearfit1: TMenuItem
         Caption = 'Linear fit'
-        object Linearfit1: TMenuItem
-          Caption = 'Entire data set'
-          OnClick = Linearfit1Click
-        end
-        object Ongraphdataonly1: TMenuItem
-          Caption = 'On graph data only'
-          OnClick = Ongraphdataonly1Click
-        end
+        OnClick = Linearfit1Click
+      end
+      object Powerlawfit1: TMenuItem
+        Caption = 'Power law fit'
+        OnClick = Powerlawfit1Click
       end
       object FindpeakYvalueineachseries1: TMenuItem
         Caption = 'Find peak Y value in each series (mode)'
@@ -620,7 +617,7 @@ object ThisBaseGraph: TThisBaseGraph
     Top = 88
   end
   object PopupMenu1: TPopupMenu
-    Left = 304
+    Left = 312
     Top = 64
     object Rescalegraph1: TMenuItem
       Caption = 'Rescale graph'

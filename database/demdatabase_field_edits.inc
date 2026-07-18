@@ -258,82 +258,69 @@ begin
    ShowStatus;
 end;
 
-function TGISdataBaseModule.AddNavFieldDefinitions : boolean;
-var
-   f1,f2,f3,f4{,TStr,zfield} : ShortString;
-   dd : integer;
-begin
-    if MDDef.UseMeters then begin
-       f1 := 'DISTANCE_M';
-       f2 := 'CUM_M';
-       f3 := 'SPEED_MPS';
-       dd := 2;
-    end
-    else begin
-       f1 := 'DIST_KM';
-       f2 := 'CUM_KM';
-       f3 := 'SPEED_KPH';
-       dd := 4;
-    end;
-
-    if MDdef.AddSpeed then begin
-       if MyData.FieldExists('DEC_HOURS') or MyData.FieldExists('DEC_DAYS') or MyData.FieldExists('DEC_YEAR') then begin
-          if MyData.FieldExists('DEC_HOURS') then begin
-             f4 := 'DEC_HOURS';
-          end
-          else if MyData.FieldExists('DEC_DAYS') then begin
-             f4 := 'DEC_DAYS';
-          end
-          else if MyData.FieldExists('DEC_YEAR') then begin
-             f4 := 'DEC_YEAR';
-          end
-       end
-       else begin
-          Result := not AnswerIsYes('DEC_HOURS or DAYS or YEAR required to compute speed; do you want to fix that first');
-          if not Result then exit;
-          MDdef.AddSpeed := false;
-       end;
-       AddFieldToDataBase(ftFloat,f3,12,2);
-    end;
-    if MDdef.AddAzimuth then AddFieldToDataBase(ftFloat,'AZIMUTH',6,2);
-    if MDdef.AddDist then AddFieldToDataBase(ftFloat,f1,8,dd);
-    if MDdef.AddCumDist then AddFieldToDataBase(ftFloat,f2,8,dd);
-    if MDdef.Add3DDist then begin
-       AddFieldToDataBase(ftFloat,'DIST_3D_M',8,dd);
-       AddFieldToDataBase(ftFloat,'CUM_3D_M',8,dd);
-       AddFieldToDataBase(ftFloat,'DZ_M',8,2);
-       AddFieldToDataBase(ftFloat,'GAIN_M',8,2);
-       AddFieldToDataBase(ftFloat,'DROP_M',8,2);
-    end;
-    Result := true;
-    {$IfDef RecordNavigation} WriteLineToDebugFile('Fields added'); {$EndIf}
-end;
-
 
 procedure TGISdataBaseModule.AddNavFields;
 var
    z,LastZ,Lat,Long,LastLat,LastLong,Az,Dist,FirstAz,CumDist,CumDist3d,Factor,h1,h2,tf,dz : float64;
    f1,f2,f3,f4,zfield : ShortString;
    dd,i,rc : integer;
-begin
+
+      function AddNavFieldDefinitions : boolean;
+      begin
+          if MDDef.UseMeters then begin
+             f1 := 'DISTANCE_M';
+             f2 := 'CUM_M';
+             f3 := 'SPEED_MPS';
+             Factor := 1;
+             tf := 24*3600;
+             dd := 2;
+          end
+          else begin
+             f1 := 'DIST_KM';
+             f2 := 'CUM_KM';
+             f3 := 'SPEED_KPH';
+             dd := 4;
+             Factor := 0.001;
+             tf := 24;
+          end;
+
+          if MDdef.AddSpeed then begin
+             if MyData.FieldExists('DEC_HOURS') or MyData.FieldExists('DEC_DAYS') or MyData.FieldExists('DEC_YEAR') then begin
+                if MyData.FieldExists('DEC_HOURS') then begin
+                   f4 := 'DEC_HOURS';
+                end
+                else if MyData.FieldExists('DEC_DAYS') then begin
+                   f4 := 'DEC_DAYS';
+                end
+                else if MyData.FieldExists('DEC_YEAR') then begin
+                   f4 := 'DEC_YEAR';
+                end
+             end
+             else begin
+                Result := not AnswerIsYes('DEC_HOURS or DAYS or YEAR required to compute speed; do you want to fix that first');
+                if not Result then exit;
+                MDdef.AddSpeed := false;
+             end;
+             AddFieldToDataBase(ftFloat,f3,12,2);
+          end;
+          if MDdef.AddAzimuth then AddFieldToDataBase(ftFloat,'AZIMUTH',6,2);
+          if MDdef.AddDist then AddFieldToDataBase(ftFloat,f1,8,dd);
+          if MDdef.AddCumDist then AddFieldToDataBase(ftFloat,f2,8,dd);
+          if MDdef.Add3DDist then begin
+             AddFieldToDataBase(ftFloat,'DIST_3D_M',8,dd);
+             AddFieldToDataBase(ftFloat,'CUM_3D_M',8,dd);
+             AddFieldToDataBase(ftFloat,'DZ_M',8,2);
+             AddFieldToDataBase(ftFloat,'GAIN_M',8,2);
+             AddFieldToDataBase(ftFloat,'DROP_M',8,2);
+          end;
+          Result := true;
+          {$IfDef RecordNavigation} WriteLineToDebugFile('Fields added'); {$EndIf}
+      end {function TGISdataBaseModule.AddNavFieldDefinitions};
+
+
+begin {TGISdataBaseModule.AddNavFields}
     {$IfDef RecordNavigation} WriteLineToDebugFile('TGISdataBaseModule.AddNavFields in'); {$EndIf}
     if not AddNavFieldDefinitions then exit;
-    if MDDef.UseMeters then begin
-       f1 := 'DISTANCE_M';
-       f2 := 'CUM_M';
-       f3 := 'SPEED_MPS';
-       Factor := 1;
-       tf := 24*3600;
-       dd := 2;
-    end
-    else begin
-       f1 := 'DIST_KM';
-       f2 := 'CUM_KM';
-       Factor := 0.001;
-       f3 := 'SPEED_KPH';
-       tf := 24;
-       dd := 4;
-    end;
     if MDdef.AddSpeed then begin
        if MyData.FieldExists('DEC_HOURS') or MyData.FieldExists('DEC_DAYS') or MyData.FieldExists('DEC_YEAR') then begin
           if MyData.FieldExists('DEC_HOURS') then begin
@@ -500,18 +487,30 @@ var
    Overwrite : boolean;
    TStr : ShortString;
    ft : tFieldType;
-   fLength,Decs,i,j : integer;
+   fLength,Decs,i,j,ExistingFields : integer;
 begin
     if (TheFields.Count > 0) then begin
        {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('TGISdataBaseModule.FillFieldsFromJoinedTable in, add fields=' + IntToStr(TheFields.Count) + ' from ' + LinkTable.FullTableName); {$EndIf}
        Overwrite := true;
+       ExistingFields := 0;
        for j := pred(TheFields.Count) downto 0 do begin
          CopyField := TheFields.Strings[j];
          if not LinkTable.FieldExists(CopyField) then begin
-            MessageToContinue('Field ' + CopyField + ' missing in ' + LinkTable.FullTableName + ', not copied');
-            TheFields.Delete(j);
+            inc(ExistingFields);
          end;
        end;
+       if (ExistingFields > 1) and AnswerIsYes('Overwrite ' + IntToStr(ExistingFields) + ' existing fields') then begin
+       end
+       else begin
+           for j := pred(TheFields.Count) downto 0 do begin
+             CopyField := TheFields.Strings[j];
+             if not LinkTable.FieldExists(CopyField) then begin
+                MessageToContinue('Field ' + CopyField + ' missing in ' + LinkTable.FullTableName + ', not copied');
+                TheFields.Delete(j);
+             end;
+           end;
+       end;
+
        if not ForceOverwrite then begin
          for j := pred(TheFields.Count) downto 0 do begin
             CopyField := TheFields.Strings[j];

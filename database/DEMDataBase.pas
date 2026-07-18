@@ -19,11 +19,12 @@
       //{$Define GraphLineWidth}
       //{$Define RecordCSVexport}
       //{$Define WarCrimes}
+      //{$Define RecordGPX}
 
       //{$Define RecordSeqIndex}
       //{$Define RecordClustering}
       //{$Define RecordCloseDB}
-      //{$Define RecordCopyFieldLinkDB}
+      {$Define RecordCopyFieldLinkDB}
       //{$Define RecordLegend}
       //{$Define RecordDBNumericPlot}
       //{$Define RecordHyperion}
@@ -474,7 +475,7 @@ type
         procedure AddFieldGroupToTable(What : shortstring);
         procedure FillFieldsFromJoinedTable(var TheFields : tStringList; ForceOverWrite : boolean);
         procedure AddNavFields;
-        function AddNavFieldDefinitions : boolean;
+        //function AddNavFieldDefinitions : boolean;
         procedure AddCentroidsToFile(Quick : boolean = false);
 
         procedure AssignSymbol(aSymbol : tFullSymbolDeclaration);
@@ -655,7 +656,7 @@ type
          function Stationtimeseries : tThisBaseGraph;
          function MakeGraph(Graphtype : tdbGraphType; Ask : boolean = true; MultSeries : tStringList = Nil) : TThisbasegraph;
          function ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil;
-              FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = true) : TThisbasegraph;
+              FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = false) : TThisbasegraph;
 
          procedure MonthlyWindPlotCurrentPoint;
 
@@ -712,8 +713,10 @@ procedure InitializeDEMdbs;
 {$EndIf}
 
 {$IfDef VCL}
-   function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; {LocalMapOnly : boolean = false;} MapOwner : tMapForm = nil) : boolean;
+   function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : boolean;
    function OpenMultipleDataBases(WhatFor : ANSIstring; fName : Pathstr = ''; ShowTable : boolean = true) : integer;
+   function ImportExerciseTrack(FileWanted : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : integer;
+
    function TotalNumOpenDatabase : integer;
    function CopyDatabaseAndOpen(GIS : TGISdataBaseModule; OpenLink : boolean = true) : integer;
    procedure OpenDBForModalEdit(fName : PathStr);
@@ -754,7 +757,7 @@ var
    GISdb : array[1..MaxDataBase] of TGISdataBaseModule;
 
    {$IfDef UseDBPlotOrder}
-      DBPlotOrder :  array[1..MaxDataBase] of byte;
+       DBPlotOrder :  array[1..MaxDataBase] of byte;
    {$Else}
       OpenDBsIndex : integer;
    {$EndIf}
@@ -901,6 +904,16 @@ uses
    {$include demdatabase_drainage_basin.inc}
 {$EndIf}
 
+function IsThisGPSTrackFile(FileWanted : PathStr) : boolean;
+var
+   Ext : ExtStr;
+begin
+    Ext := UpperCase(ExtractFileExt(FileWanted));
+    Result := ExtEquals(Ext,'.gpx') or
+              ExtEquals(Ext,'.fit') or
+              ExtEquals(Ext,'.tcx') or
+             (ExtEquals(Ext,'.csv') and StrUtils.AnsiContainsText(FileWanted,'gps_location_') );
+end;
 
 
 procedure TGISdataBaseModule.ExportToCSV(fName : PathStr; SepChar : ANSIchar; ThinFactor : integer = 1);
@@ -1086,7 +1099,7 @@ var
          end;
       end;
 
-begin
+begin {procedure MakeLinesFromPoints}
    LastLat := 99;
    LastLong := 999;
    if (fName = '') then GetFileNameDefaultExt('New shape file',DBNameMask,FName,false);
@@ -1159,7 +1172,7 @@ begin
       ShapeFileCreator.CloseShapeFiles;
       GISDataBase.TheMapOwner.OpenDBonMap('',fName);
    end;
-end;
+end {procedure MakeLinesFromPoints};
 
 
 function ValidDBfName(fName : PathStr) : boolean;
@@ -2452,7 +2465,7 @@ end;
                FieldResults(WantedField);
             end;
             EmpSource.Enabled := true;
-         end;
+         end {procedure TGISdataBaseModule.DisplayFieldStatistics};
 
 
          function TGISdataBaseModule.ExtractDBtoCSV(ThinFactor : integer; SepChar : ANSIchar) : tStringList;
@@ -2473,15 +2486,6 @@ end;
                end;
             end;
 
-(*
-            for j := 0 to pred(dbTablef.DBGrid1.Columns.Count) do begin
-               {$IfDef RecordCSVexport} WriteLineToDebugFile('field=' + IntToStr(j) + '  visible=' + TrueOrFalse(dbTablef.DBGrid1.Columns[j].Visible) ); {$EndIf}
-               if (dbTablef.DBGrid1.Columns[j].Visible) then begin
-                  {$IfDef RecordCSVexport} WriteLineToDebugFile('   field=' + dbTablef.DBGrid1.Columns[j].Field.FieldName ); {$EndIf}
-                  CopyFields.Add(dbTablef.DBGrid1.Columns[j].Field.FieldName);
-               end;
-            end;
-*)
             EmpSource.Enabled := false;
 
             ApplicationProcessMessages;
@@ -2524,7 +2528,7 @@ end;
             CopyFields.Destroy;
             EndProgress;
             EmpSource.Enabled := true;
-         end;
+         end {function TGISdataBaseModule.ExtractDBtoCSV};
 
          procedure TGISdataBaseModule.ExtractXYZtoCSV(fName : PathStr; SepChar : ANSIchar);
          var
@@ -3917,8 +3921,15 @@ function OpenNumberedGISDataBase(var GISNum : integer; fName : PathStr; ShowTabl
 var
    i : integer;
    CreateDB : tCreateDataBase;
-begin
+begin {function OpenNumberedGISDataBase}
    {$IfDef RecordOpenDataBase} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenNumberedGISDataBase in ' + fName); {$EndIf}
+   if IsThisGPSTrackFile(fName) then begin
+      {$IfDef RecordGPX} WriteLineToDebugFile('OpenNumberedGISDataBase calls ImportExerciseTrack ' + fName); {$EndIf}
+      ImportExerciseTrack(fName,ShowTable,Mapowner);
+      exit;
+      //will be back with a DBF if import succeeds
+   end;
+
    Result := FileExists(fName) and FindOpenDataBase(GISNum);
    if Result then begin
       //Result := OpenGISDataBase(GISNum,'',fName,ShowTable,MapOwner);
@@ -3956,7 +3967,7 @@ begin
       end;
    end;
    {$IfDef RecordOpenDataBase} if (UpperCase(ExtractFilePath(fName)) <> UpperCase(MDTempDir)) then WriteLineToDebugFile('OpenNumberedGISDataBase ' + IntToStr(GISNum) + ' out ' + fName); {$EndIf}
-end;
+end {function OpenNumberedGISDataBase};
 
 
 function TGISdataBaseModule.NumericFieldLinkPossible(fName : ShortString) : boolean;
@@ -5129,6 +5140,116 @@ begin
 end;
 
 
+function ImportExerciseTrack(FileWanted : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : integer;
+var
+   Ext : ExtStr;
+   i : integer;
+   sl : tStringList;
+   CheckDeleteUnusedFields : boolean;
+   BasePath,tName : PathStr;
+   ID : shortstring;
+
+      procedure AddNav;
+      begin
+         if MDDef.AddFitNav then begin
+            GISDB[i].AddNavFields;
+            GISDB[i].ApplyGISFilter('DIST_KM<0.0004');
+            GISDB[i].DeleteAllSelectedRecords;
+            {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
+         end;
+      end;
+
+begin
+    if IsThisGPSTrackFile(FileWanted) then begin
+       {$IfDef RecordGPX} WriteLineToDebugFile('ImportExerciseTrack in, ' + FileWanted); {$EndIf}
+       Ext := UpperCase(ExtractFileExt(FileWanted));
+       ShowHourglassCursor;
+       try
+          SaveBackupDefaults;
+          MDDef.UseMeters := false;
+          MDdef.AddSpeed := true;
+          MDdef.Add3DDist := false;
+          HeavyDutyProcessing := true;
+          SetColorForProcessing;
+          BasePath := 'c:\mapdata\tracks\';
+          SafeMakeDir(BasePath);
+          if ExtEquals(Ext,'.TCX') then begin
+             sl := FitBitTCXtoStringList(FileWanted,ID);
+             FileWanted := BasePath + ID + '.dbf';
+             if FileExists(FileWanted) then begin
+                sl.Destroy;
+             end
+             else begin
+               i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
+               AddNav;
+               CloseSingleDB(i);
+             end;
+          end
+          else if ExtEquals(Ext,'.csv') then begin
+               sl := tStringList.Create;
+               sl.LoadFromFile(FileWanted);
+               FileWanted := BasePath + ExtractFileNameNoExt(FileWanted) + '.dbf';
+               FileWanted := StringReplace(FileWanted,'gps_location','gps_track',[rfReplaceAll, rfIgnoreCase]);
+               i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
+               if ValidDB(i) then begin
+                   {$IfDef RecordGPX} WriteLineToDebugFile('DB created'); {$EndIf}
+                   GISDB[i].ApplyGISFilter('DATASOURCE=' + QuotedStr('Fitbit App'));  //because files have duplicates, from Fitbit and the phone'
+                   GISDB[i].DeleteAllSelectedRecords;
+                   {$IfDef RecordGPX} WriteLineToDebugFile('Duplicates removed'); {$EndIf}
+                   ConvertTimeStringToDecimalHours(i,false);
+                   {$IfDef RecordGPX} WriteLineToDebugFile('Converted time'); {$EndIf}
+                   AddNav;
+                   CloseSingleDB(i);
+               end
+               else begin
+                   {$IfDef RecordGPX} WriteLineToDebugFile('ImportExerciseTrack GPSBabel_fit2gpx fail'); {$EndIf}
+               end;
+          end
+          else if ExtEquals(Ext,'.gpx') or ExtEquals(Ext,'.fit') then begin
+            if ExtEquals(Ext,'.gpx') then begin
+               {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
+               tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+               CopyFile(FileWanted,tName);
+               CheckDeleteUnusedFields := true;
+            end
+            else if ExtEquals(Ext,'.fit') then begin
+               {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
+               tName := BasePath + ExtractFileName(FileWanted);
+               MoveFile(FileWanted,tName);
+               FileWanted := tName;
+               {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
+               tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+               if GPSBabel_fit2gpx(FileWanted,tName) then begin
+                   {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
+                   if GetFileSize(tName) < 500 then begin
+                      Result := 0;
+                      exit;
+                  end;
+               end
+               else begin
+                  {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
+                  Result := 0;
+                  exit;
+               end;
+            end;
+            if FileExists(tName) then begin
+               FileWanted := BasePath;
+               {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
+               GPXtoDBF(tName,FileWanted);
+               {$IfDef RecordFIT} WriteLineToDebugFile('GPX processed ' + FileWanted); {$EndIf}
+               OpenNumberedGISDataBase(Result,FileWanted,ShowTable,MapOwner);
+            end;
+          end;
+       finally
+          RestoreBackupDefaults;
+          HeavyDutyProcessing := false;
+          SetColorForWaiting;
+       end;
+    end;
+end;
+
+
+
 function TGISdataBaseModule.InitializeTheTable(WhatDataBase : shortstring; FileWanted : PathStr = '') : boolean;
 label
    Retry;
@@ -5173,73 +5294,6 @@ begin
     InitializeDBValues;
     Result := true;
     CheckDeleteUnusedFields := false;
-
-    if ExtEquals(Ext,'.gpx') or ExtEquals(Ext,'.fit') or ExtEquals(Ext,'.tcx') then begin
-       try
-          SaveBackupDefaults;
-          MDDef.UseMeters := false;
-          MDdef.AddSpeed := true;
-          MDdef.Add3DDist := false;
-          HeavyDutyProcessing := true;
-          WMdem.Color := clInactiveCaption;
-          BasePath := 'c:\mapdata\tracks\';
-          SafeMakeDir(BasePath);
-          if ExtEquals(Ext,'.TCX') then begin
-             sl := FitBitTCXtoStringList(FileWanted,ID);
-             FileWanted := BasePath + ID + '.dbf';
-             if FileExists(FileWanted) then begin
-             sl.Destroy;
-             end
-             else begin
-               i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
-               if MDDef.AddFitNav then begin
-                  GISDB[i].AddNavFields;
-                  GISDB[i].ApplyGISFilter('DIST_KM<0.0004');
-                  GISDB[i].DeleteAllSelectedRecords;
-                  {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
-               end;
-               CloseSingleDB(i);
-             end;
-          end
-          else if ExtEquals(Ext,'.gpx') then begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
-             tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-             CopyFile(FileWanted,tName);
-             CheckDeleteUnusedFields := true;
-          end
-          else if ExtEquals(Ext,'.fit') then begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
-             tName := BasePath + ExtractFileName(FileWanted);
-             MoveFile(FileWanted,tName);
-             FileWanted := tName;
-             {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
-             tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
-             if GPSBabel_fit2gpx(FileWanted,tName) then begin
-                 {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
-                 if GetFileSize(tName) < 500 then begin
-                    Result := false;
-                    exit;
-                end;
-             end
-             else exit;
-          end;
-          if FileExists(tName) then begin
-             FileWanted := BasePath;
-             {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
-             GPXtoDBF(tName,FileWanted);
-             {$IfDef RecordFIT} WriteLineToDebugFile('GPX processed ' + FileWanted); {$EndIf}
-          end
-          else begin
-             {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
-             Result := false;
-             exit;
-          end;
-       finally
-          RestoreBackupDefaults;
-          HeavyDutyProcessing := false;
-          WMdem.Color := clScrollBar;
-       end;
-    end;
 
     {$IfDef VCL}
        if ExtEquals(Ext,'.shz') then begin

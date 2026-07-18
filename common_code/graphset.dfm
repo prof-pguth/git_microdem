@@ -325,7 +325,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet1
+    ActivePage = TabSheet4
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -350,6 +350,7 @@ object GraphSettingsForm: TGraphSettingsForm
         Height = 17
         Caption = 'Log'
         TabOrder = 0
+        OnClick = CheckBox4Click
       end
       object XMinEdit: TEdit
         Left = 80
@@ -414,7 +415,7 @@ object GraphSettingsForm: TGraphSettingsForm
       end
       object YMinLabel: TLabel
         Left = 23
-        Top = 59
+        Top = 72
         Width = 35
         Height = 13
         Caption = 'Min y '
@@ -470,6 +471,15 @@ object GraphSettingsForm: TGraphSettingsForm
         Caption = 'Y axis string labels'
         TabOrder = 5
         OnClick = CheckBox8Click
+      end
+      object CheckBox10: TCheckBox
+        Left = 155
+        Top = 87
+        Width = 97
+        Height = 17
+        Caption = 'Log'
+        TabOrder = 6
+        OnClick = CheckBox10Click
       end
     end
     object TabSheet3: TTabSheet
@@ -547,13 +557,74 @@ object GraphSettingsForm: TGraphSettingsForm
         Visible = False
       end
       object BitBtn6: TBitBtn
-        Left = 28
+        Left = 3
         Top = 76
         Width = 141
         Height = 25
         Caption = 'Graph background'
         TabOrder = 2
         OnClick = BitBtn6Click
+      end
+      object RadioGroup2: TRadioGroup
+        Left = 173
+        Top = 3
+        Width = 107
+        Height = 105
+        Caption = 'Color scale'
+        Items.Strings = (
+          'Grayscale'
+          'Rainbow'
+          'Terrain'
+          'Spectrum'
+          'Chloropleth')
+        TabOrder = 3
+        OnClick = RadioGroup2Click
+      end
+      object ComboBox4: TComboBox
+        Left = 157
+        Top = 114
+        Width = 145
+        Height = 21
+        TabOrder = 4
+        Text = 'ComboBox4'
+        OnChange = ComboBox4Change
+        Items.Strings = (
+          'Blue-Purple-Red 255 step'
+          'CET-C1'
+          'CET-C2'
+          'CET-C6'
+          'CET-C7'
+          'CET-CBC1'
+          'CET-CBC2 (color blind)'
+          'CET-CBD1 (color blind)'
+          'CET-CBL1 (color blind)'
+          'CET-CBL2 (color blind)'
+          'CET-D01'
+          'CET-D01A'
+          'CET-D02'
+          'CET-D03'
+          'CET-D04'
+          'CET-D06'
+          'CET-D07'
+          'CET-D08'
+          'CET-D09'
+          'CET-D10'
+          'CET-D11'
+          'CET-D12'
+          'CET-D13'
+          'Gemini topography'
+          'Google-turbo-256'
+          'inferno (color blind)'
+          'kindlmann'
+          'magma (color blind)'
+          'Moreland-cool-warm-257'
+          'Parula'
+          'plasma'
+          'plasma (color blind)'
+          'Sidescan gold 256 step'
+          'Terrain 250 steps'
+          'turbo (color blind)'
+          'virdis (color blind)')
       end
     end
     object HistogramTabSheet: TTabSheet

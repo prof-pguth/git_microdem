@@ -106,6 +106,8 @@ const
 
 const
    DEMIX_vert_datum_code : integer = 0;
+   HRDEMresolutionFilter : shortstring = ' AND GRID_M >= 2';
+
 
 const
    udCreateTiles = 1;
@@ -278,7 +280,6 @@ var
 
 
 //inventory and reports
-   procedure InventoryDBwithDSMandDTMbyArea;
    procedure InventoryDEMIXdifferenceStats;
    procedure CheckTestDEMs;
    procedure VerifyTestDEMcoverages;
@@ -291,7 +292,6 @@ var
    procedure InventoryCriteriaEachDEMIXtile(DB : integer);
    procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
    procedure FindTilesInAreaForCoast;
-   procedure InventoryAllDEMIXdata;
    procedure PruneMisnamedReferenceDTMs;
    procedure InventoryAreasAndTilesByCountry(DB : integer);
 
@@ -535,7 +535,6 @@ begin
    CountryDatums := ProgramRootDir + 'national_datum_codes.dbf';
    if FileExists(CountryDatums) then begin
       db := tMyData.Create(CountryDatums);
-      //AreaName := UpperCase(AreaName);
       Country := UpperCase(Copy(AreaName,1,3));
       db.ApplyFilter('COUNTRY=' + QuotedStr(Country));
       if (db.FiltRecsInDB > 0) then begin
@@ -583,6 +582,7 @@ function ExpandFullFilterName(fName : shortstring) : PathStr;
 begin
    Result := DEMIXsettingsDir + 'filters_' + fName + '.dbf';
 end;
+
 
 procedure LoadTwoDEMIXfilters(var ComboBox6,ComboBox7 : tComboBox);
 var

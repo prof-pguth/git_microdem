@@ -439,7 +439,7 @@ begin
       CloseSingleDB(TigerDB);
    end
    else begin
-      MessageToContinue('No Tiger index ' + TigerIndex);
+      {$IfDef RecordTigerIndex} WriteLineToDebugFile('No Tiger index ' + TigerIndex); {$EndIf}
    end;
    {$IfDef RecordTigerIndex} WriteLinetoDebugFile('Find all TIGER done ' + OpenDBString); {$EndIf}
 end;

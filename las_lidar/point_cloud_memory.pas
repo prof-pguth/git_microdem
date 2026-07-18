@@ -103,9 +103,9 @@ type
          procedure LoadFromASCIIFile(fName : PathStr);
          procedure LoadFromLASFile(BaseMap : tMapForm; fName : PathStr);
          procedure LoadFromLVISFile(fName : PathStr);
-         procedure SetPolarCoords(xc,yc,zc : float64);
          procedure ExtractPointsNearHere(Lat,Long,FullBoxSizeMeters : float64);
          procedure ExportCSV(fName : PathStr);
+         procedure SetPolarCoords(xc,yc,zc : float64);
          function AddPointToMemory(x,y,z : float64) : boolean;  {$IfDef NoInLine} {$Else} inline; {$EndIf}
          procedure PlotSlice(Cloud : integer; var BMPMemory : tBMPMemory; TheGraph : tThisBaseGraph; c1,c2,c3 : integer; LowLimit,HighLimit : float64;  var NPts : integer; ThreadTimer : integer = 0);
          procedure TranslateAndRotate(dx,dy,Angle : float64);

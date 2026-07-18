@@ -2,7 +2,7 @@ object wmdem: Twmdem
   Left = 0
   Top = 262
   Caption = 'GIS program loading'
-  ClientHeight = 1313
+  ClientHeight = 1333
   ClientWidth = 2418
   Color = clScrollBar
   DefaultMonitor = dmDesktop
@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -1676,7 +1675,7 @@ object wmdem: Twmdem
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 1294
+    Top = 1314
     Width = 2418
     Height = 19
     Panels = <
@@ -2484,7 +2483,7 @@ object wmdem: Twmdem
       OnClick = GDALSRSinfo1Click
     end
     object GDALinfoforCOGfiles1: TMenuItem
-      Caption = 'GDALinfo for COG files'
+      Caption = 'GDALinfo for COG files vsicurl'
       OnClick = GDALinfoforCOGfiles1Click
     end
     object OGRinfo1: TMenuItem
@@ -2776,7 +2775,7 @@ object wmdem: Twmdem
     end
   end
   object ToolsPopupMenu3: TPopupMenu
-    Left = 352
+    Left = 360
     Top = 200
     object CompressDecompress1: TMenuItem
       Caption = 'Compress/Decompress'
@@ -2969,13 +2968,20 @@ object wmdem: Twmdem
         Caption = 'List of subdirectories, relative names'
         OnClick = Listofsubdirectoriesrelativenames1Click
       end
-      object Copyfile1: TMenuItem
-        Caption = 'Copy files with name match'
-        OnClick = Copyfile1Click
-      end
-      object Movefileswithnamematch1: TMenuItem
-        Caption = 'Move files with name match'
-        OnClick = Movefileswithnamematch1Click
+      object Operationsonfilesmatchingpartofname1: TMenuItem
+        Caption = 'Operations on files matching part of name'
+        object Copyfile1: TMenuItem
+          Caption = 'Copy files'
+          OnClick = Copyfile1Click
+        end
+        object Movefileswithnamematch1: TMenuItem
+          Caption = 'Move files'
+          OnClick = Movefileswithnamematch1Click
+        end
+        object Recyclefiles1: TMenuItem
+          Caption = 'Recycle files'
+          OnClick = Recyclefiles1Click
+        end
       end
       object Inser1: TMenuItem
         Caption = 'Batch change part of names'
@@ -2999,6 +3005,10 @@ object wmdem: Twmdem
       object Addversionnumbertoallfilesinapath1: TMenuItem
         Caption = 'Add suffix to all files in a path'
         OnClick = Addversionnumbertoallfilesinapath1Click
+      end
+      object Addprefilstoalldirectories1: TMenuItem
+        Caption = 'Add prefix to all directories'
+        OnClick = Addprefilstoalldirectories1Click
       end
       object extreplaceinallfilesindirectory1: TMenuItem
         Caption = 'Text replace in all files in directory'
@@ -3440,11 +3450,15 @@ object wmdem: Twmdem
     end
   end
   object DEMIXdbCreatePopupMenu: TPopupMenu
-    Left = 1000
-    Top = 288
+    Left = 1048
+    Top = 280
     object Graphevaluationandscores1: TMenuItem
       Caption = 'Start DEMIX graph analysis'
       OnClick = Graphevaluationandscores1Click
+    end
+    object StartDSMDTMcomparison1: TMenuItem
+      Caption = 'Start DSM/DTM comparison'
+      OnClick = StartDSMDTMcomparison1Click
     end
     object N56: TMenuItem
       Caption = '-'
@@ -3913,17 +3927,6 @@ object wmdem: Twmdem
     end
     object Inventories1: TMenuItem
       Caption = 'Inventories and file management'
-      object InventoryallDEMIXdatafiles1: TMenuItem
-        Caption = 'Inventory all DEMIX data files'
-        OnClick = InventoryallDEMIXdatafiles1Click
-      end
-      object Inventory3DEPtiles1: TMenuItem
-        Caption = 'Inventory 3DEP source DEM tiles'
-      end
-      object CheckreferenceDEMs1: TMenuItem
-        Caption = 'Inventory reference DEMs (number DTM/DSM by area)'
-        OnClick = CheckreferenceDEMs1Click
-      end
       object ChecktestDEMs1: TMenuItem
         Caption = 
           'Inventory test and referene DEMs by test area (missing .TIF by a' +
@@ -3997,6 +4000,10 @@ object wmdem: Twmdem
     object nMAEtest1: TMenuItem
       Caption = 'nMAE test'
       OnClick = nMAEtest1Click
+    end
+    object MonsterDEMtilee1: TMenuItem
+      Caption = 'Monster DEM tile extraction (hard wired under development)'
+      OnClick = MonsterDEMtilee1Click
     end
     object N53: TMenuItem
       Caption = '-'

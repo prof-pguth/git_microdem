@@ -1098,6 +1098,10 @@ object dbtablef: Tdbtablef
       Caption = 'Compare DSM/DTM'
       OnClick = CompareDSMDTM1Click
     end
+    object DSMDTMpowerlawforalltiles1: TMenuItem
+      Caption = 'DSM/DTM power law for all HRDEM tiles'
+      OnClick = DSMDTMpowerlawforalltiles1Click
+    end
     object DSMDTMcomparison1: TMenuItem
       Caption = 'Less useful DSM/DTM comparison'
       object GraphscompringDSMDTMslopes1: TMenuItem
@@ -2576,7 +2580,6 @@ object dbtablef: Tdbtablef
         end
         object AddDEMIXUTMtilename1: TMenuItem
           Caption = 'Add DEMIX UTM tile name'
-          OnClick = AddDEMIXUTMtilename1Click
         end
       end
       object AddUTMcoordfields1: TMenuItem
@@ -3909,7 +3912,6 @@ object dbtablef: Tdbtablef
       end
       object IdentifyDSMandDTM1: TMenuItem
         Caption = 'Identify DSM and DTM'
-        Enabled = False
         OnClick = IdentifyDSMandDTM1Click
       end
       object AddDSMDTMpair1: TMenuItem

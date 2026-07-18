@@ -31,6 +31,7 @@ unit dem_indexes;
      //{$Define RecordClosing}
      //{$Define RecordTileNameDecoding}
      //{$Define ListIndexFileName}
+     {$Define LoadLibraryFail}
    {$EndIf}
 {$EndIf}
 
@@ -70,7 +71,7 @@ procedure GetMapLibraryDataLimits(var MinLat,MaxLat,MinLong,MaxLong : float64);
 procedure CreateMapLibrary(Memo1 : tMemo);
 procedure ShowMapLibraryDataAtPoint(Lat,Long : float64);
 
-function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tStringList; //overload;
+//function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tStringList; //overload;
 
 procedure AdjustMapLibraryDataBaseSeries;
 procedure PickDEMSeries(var sName : ShortString; WhatFor : shortstring);
@@ -954,18 +955,23 @@ end;
 
 function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tStringList;
 
-      function GetMapLibraryDataInBoundingBox(theFilter : string) : tStringList;
+     //function GetMapLibraryDataInBoundingBox(theFilter : string) : tStringList;
       var
          fName : PathStr;
          IndexDataOnline : tMyData;
+         theFilter : string;
       begin
          {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(RecordIndexProblems)} WriteLineToDebugFile('GetDataInBoundingBox in DB filter: ' + theFilter); {$EndIf}
+         theFilter := '(' + MakeGeoFilterFromBoundingBox(bb) + ') AND SERIES = ' + QuotedStr(Series);
          fName := MapLibraryFName;
          IndexDataOnline := tMyData.Create(fName);
          IndexDataOnline.ApplyFilter(theFilter);
          Result := tStringList.Create;
          Result.Sorted := true;
-         if (IndexDataOnline.RecordCount > 0) then begin
+         if (IndexDataOnline.RecordCount = 0) then begin
+            {$If Defined(LoadLibraryFail)} WriteLineToDebugFile('GetListOfDataInBoxInSeries fail, ' + theFilter); {$EndIf}
+         end
+         else begin
             Result.Duplicates := dupIgnore;
             while not IndexDataOnline.EOF do begin
                fName := IndexDataOnline.GetFieldByNameAsString('FILENAME');
@@ -983,10 +989,10 @@ function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tSt
             {$EndIf}
          end;
          IndexDataOnline.Destroy;
-      end;
+     //end;
 
-begin
-   Result := GetMapLibraryDataInBoundingBox('(' + MakeGeoFilterFromBoundingBox(bb) + ') AND SERIES = ' + QuotedStr(Series));
+//begin
+   //Result := GetMapLibraryDataInBoundingBox('(' + MakeGeoFilterFromBoundingBox(bb) + ') AND SERIES = ' + QuotedStr(Series));
 end;
 
 
@@ -1328,7 +1334,10 @@ begin {function LoadMapLibraryBox}
            {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Merge Series: ' + MergeSeriesName); {$EndIf}
            DataInSeries := GetListOfDataInBoxInSeries(MergeSeriesName,bb);
            {$If Defined(RecordIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Files found: ' + IntToStr(DataInSeries.Count)); {$EndIf}
-           if (DataInSeries.Count > 0) then begin
+           if (DataInSeries.Count = 0) then begin
+              {$If Defined(LoadLibraryFail)} WriteLineToDebugFile('LoadMapLibraryBox fail, ' + sfBoundBoxToString(bb)); {$EndIf}
+           end
+           else begin
               DataType := UpperCase(IndexSeriesTable.GetFieldByNameAsString('DATA_TYPE'));
               LoadTheDEMs(DataInSeries);
               {$If Defined(RecordMerge) or Defined(LoadLibrary)} WriteLineToDebugFile('LoadTheDEMs completed'); {$EndIf}

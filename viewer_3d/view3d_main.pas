@@ -244,43 +244,51 @@ uses
       nevadia_main,
    {$EndIf}
 
-   FPointCloud,
+   {$IfDef UseFPointCloud}
+      FPointCloud,
+   {$EndIf}
 
-   Petmar,PetImage,PetImage_Form,PetMath,Math,DEMDefs,DEMCoord, New_Petmar_Movie,
+   Petmar,PetImage,PetImage_Form,PetMath,Math,DEMDefs,DEMCoord,
+   New_Petmar_Movie,
    BaseMap;
 
 var
   Down : TPointF;
 
 
-function StartFMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true) : TView3DForm;
-var
-   i : integer;
-begin
-   Result := TView3DForm.Create(Application);
-   Result.LinkZScaling := LinkZScaling;
-   Result.ViewOnlyOneLayerAtTime := ViewSeveral;
-   Result.ShowDataSetsToPickGroupBox2.Visible := ViewSeveral;
-   Result.NumSingle := 0;
-   Result.PointRepeatFactor := 1;
-   for i := 0 to pred(FileList.Count) do begin;
-     Result.AddLayer(FileList.Strings[i]);
-   end;
-   Result.ListBox1.Visible := (View3DForm.NumSingle > 1);
-   Result.Button3.Visible := (View3DForm.NumSingle > 1);
-   Result.ArrangePanels;
-   {$If Defined(Start3DView)} WriteLineToDebugFile('StartFMX3dViewer out, window at ' + IntToStr(View3dForm.Left) + 'x' + IntToStr(View3dForm.Top)); {$EndIf}
-end;
-
 
 procedure FMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true);
+
+        function StartFMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true) : TView3DForm;
+        var
+           i : integer;
+        begin
+           Result := TView3DForm.Create(Application);
+           Result.LinkZScaling := LinkZScaling;
+           Result.ViewOnlyOneLayerAtTime := ViewSeveral;
+           Result.ShowDataSetsToPickGroupBox2.Visible := ViewSeveral;
+           Result.NumSingle := 0;
+           Result.PointRepeatFactor := 1;
+           for i := 0 to pred(FileList.Count) do begin;
+             Result.AddLayer(FileList.Strings[i]);
+           end;
+           Result.ListBox1.Visible := (Result.NumSingle > 1);
+           Result.Button3.Visible := (Result.NumSingle > 1);
+           Result.ArrangePanels;
+           {$If Defined(Start3DView)} WriteLineToDebugFile('StartFMX3dViewer out, window at ' + IntToStr(Result.Left) + 'x' + IntToStr(Result.Top)); {$EndIf}
+        end;
+
 begin
-   if MDDef.New3Dviewer then begin
-      Startfmxu_point_cloud_viewer(FileList);
-   end
-   else begin
+   {$IfDef UseFPointCloud}
+       if MDDef.New3Dviewer then begin
+          Startfmxu_point_cloud_viewer(FileList);
+       end
+       else begin
+          View3DForm := StartFMX3dViewer(ViewSeveral,FileList,LinkZScaling);
+       end;
+   {$Else}
       View3DForm := StartFMX3dViewer(ViewSeveral,FileList,LinkZScaling);
-   end;
+   {$EndIf}
    FileList.Destroy;
    {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
 end;
@@ -536,7 +544,7 @@ begin
          {$If Defined(AddLayer)} writeLineToDebugFile('ListBox1.Items.Add ' + ExtractFileName(GridName)); {$EndIf}
          ListBox1.Items.Add(ExtractFileNameNoExt(GridName));
          ListBox1.ItemIndex := -1;
-         inc(View3DForm.NumSingle);
+         inc(NumSingle);
       end;
    end;
 end;

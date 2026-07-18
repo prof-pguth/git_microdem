@@ -602,8 +602,8 @@ end;
                MaxHorizAxis := MaxRefCount;
                MaxVertAxis := MaxCount;
                PadAxis(MinVertAxis,MaxVertAxis);
-               ForceAxisFit(HorizAxisFunctionType,HorizCycleCuts,NumHorizCycles,MinHorizAxis,MaxHorizAxis,XWindowSize,50);
-               ForceAxisFit(VertAxisFunctionType,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis,YWindowSize,25);
+               ForceAxisFit(HorizAxisFunctionType,HorizCycleCuts,NumHorizCycles,MinHorizAxis,MaxHorizAxis,XWindowSize,50,GraphDraw.ForceHorizCycleSize,GraphDraw.ForceHorizTickIncr);
+               ForceAxisFit(VertAxisFunctionType,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis,YWindowSize,25,GraphDraw.ForceVertCycleSize,GraphDraw.ForceVertTickIncr);
                Result.SetUpGraphForm;
                RedrawDiagram11Click(Nil);
             end {with};
@@ -1550,7 +1550,7 @@ var
                  if WantOut then break;
                end;
            end
-           else begin
+           else begin //single band grayscale
                for y := 0 to pred(Bitmap.Height) do begin
                   if ShowSatProgress and (y mod 100 = 0) then UpdateProgressBar(y/pred(Bitmap.Height));
                   GetSatRow16bit(SatView.BandInWindow, DiffYOffset[1] + round(y/pred(Bitmap.Height)*pred(DiffRows[1])),SatRow[1]^);

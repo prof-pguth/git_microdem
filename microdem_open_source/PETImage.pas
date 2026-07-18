@@ -464,8 +464,6 @@ begin
    Samples.Add('PALETTE,N');   //,ICON');
    for i := 0 to pred(Palettes.Count) do begin
       db.ApplyFilter('PALETTE=' + QuotedStr(Palettes.strings[i]));
-
-
       Samples.Add(Palettes.strings[i] + ',' + IntToStr(db.FiltRecsInDB) );  //+ ',' + ProgramRootDir + 'palettes\' + Palettes.strings[i] + '.png');
    end;
 

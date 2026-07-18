@@ -585,7 +585,7 @@ type
     SideScanButton: TSpeedButton;
     SubbottomSpeedButton: TSpeedButton;
     Greatcircleroute1: TMenuItem;
-    SRTMwaterbodies2: TMenuItem;
+    //SRTMwaterbodies2: TMenuItem;
     BlendPanel: TPanel;
     TrackBar2: TTrackBar;
     Panel3: TPanel;
@@ -1719,6 +1719,13 @@ type
     Featurefrequency1: TMenuItem;
     OSMpoints2: TMenuItem;
     OSMbuildings2: TMenuItem;
+    FFTtools1: TMenuItem;
+    FFTPSD2: TMenuItem;
+    OpenTopographyglobalDEM1: TMenuItem;
+    OpenTopographyglobalDEM2: TMenuItem;
+    AW3D301: TMenuItem;
+    AW3D302: TMenuItem;
+    Othen1: TMenuItem;
     procedure Multipleparameters1Click(Sender: TObject);
     procedure Mask1Click(Sender: TObject);
     procedure Smallcirclethroughpoint1Click(Sender: TObject);
@@ -2029,7 +2036,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Setmappixelsize1Click(Sender: TObject);
     procedure StratcolButtonClick(Sender: TObject);
     procedure DEMreflectance1Click(Sender: TObject);
-    procedure SRTMwaterbodies2Click(Sender: TObject);
+    //procedure SRTMwaterbodies2Click(Sender: TObject);
     procedure TrackBar2Change(Sender: TObject);
     procedure CancelBtnClick(Sender: TObject);
     procedure SpeedButton12Click(Sender: TObject);
@@ -2954,6 +2961,12 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure NGAfeatrurefreequency1Click(Sender: TObject);
     procedure OSMpoints2Click(Sender: TObject);
     procedure OSMbuildings2Click(Sender: TObject);
+    procedure FFTtools1Click(Sender: TObject);
+    procedure FFTPSD2Click(Sender: TObject);
+    procedure OpenTopographyglobalDEM2Click(Sender: TObject);
+    procedure AW3D301Click(Sender: TObject);
+    procedure AW3D302Click(Sender: TObject);
+    procedure Othen1Click(Sender: TObject);
  private
     MouseUpLat,MouseUpLong,
     MouseDownLat,MouseDownLong,
@@ -3404,7 +3417,7 @@ function PlotExtremeZValues(ExtremeZDEM : integer; MapForm : tMapForm; Memo1 : t
     function DEMIXtilesOnDEM(DEM : integer; RecordFill : tStringList = Nil) : tStringList;
     function NumFilledDEMIXtilesOnDEM(DEM : integer) : integer;
     function DEMIX_UTM_tileName(AreaName : shortstring; FileName : PathStr) : shortstring;
-    function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
+    //function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
     function GetDEMIX_GeoTileName(inLat,inLong : float64) : shortstring;
     //function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
     function DEMIX_NoVerticalShift(AreaName : shortstring) : boolean;
@@ -9940,7 +9953,6 @@ begin
 end;
 
 
-
 procedure BroadcastLatLong(Handle : tHandle; Lat,Long : float64);
 var
    k : integer;
@@ -9999,6 +10011,7 @@ begin
    LoadSecondGrid(g2Change);
 end;
 
+
 procedure TMapForm.LoadCHMgrid1Click(Sender: TObject);
 begin
    LoadSecondGrid(g2CHM);
@@ -10034,15 +10047,6 @@ begin
    {$IfDef RecordGISDB} WriteLineToDebugFile('TMapForm.LoadDataBaseFile out'); {$EndIf}
 {$EndIf}
 end;
-
-(*
-function TMapForm.LoadDEMIXtileOutlines(var DEMIXfName: PathStr;
-  WantBoundBoxGeo: sfBoundBox; AddGridFull, AddTileSize,
-  OpenTable: boolean): integer;
-begin
-
-end;
-*)
 
 
 procedure TMapForm.Loadgrouping1Click(Sender: TObject);
@@ -12378,7 +12382,7 @@ end;
 procedure TMapForm.DEMIXtilenames1Click(Sender: TObject);
 begin
     MessageToContinue('DEMIX tiles at ' + LatLongDegreeToString(RightClickLat,RightClickLong) + MessLineBreak +
-       'UTM: ' + GetUTM_DEMIXTile(RightClickLat,RightClickLong) + MessLineBreak +
+       //'UTM: ' + GetUTM_DEMIXTile(RightClickLat,RightClickLong) + MessLineBreak +
        'Geo: ' + GetDEMIX_GeoTileName(RightClickLat,RightClickLong));
 end;
 
@@ -14595,6 +14599,7 @@ begin
    {$EndIf}
 end;
 
+
 {$IfDef ExTiger}
 {$Else}
 procedure TMapForm.TigerRoadMask(RoadProximity : integer; NearRoadsMask : boolean; DBNum : integer = 0; PC : integer = 100);
@@ -15511,6 +15516,23 @@ begin
    end;
 end;
 
+
+procedure TMapForm.FFTPSD2Click(Sender: TObject);
+var
+   RefDEM : integer;
+   TestDEMs : tDEMBooleanArray;
+begin
+   if GetDEM(RefDEM,true,'Reference DEM') then begin
+      TestDEMs := GetMultipleDEMsFromList('DEMs to match coverage');
+      TestDEMs[RefDEM] := false;
+      fft_Compare(RefDEM,TestDEMs);
+   end;
+end;
+
+procedure TMapForm.FFTtools1Click(Sender: TObject);
+begin
+   fft_tools(true,MapDraw.DEMonMap);
+end;
 
 procedure TMapForm.SetMapPixelSize(PixelSize : float64);
 var
@@ -22529,6 +22551,14 @@ begin
    DEMelevationcolors1Click(Sender);
 end;
 
+procedure TMapForm.Othen1Click(Sender: TObject);
+var
+   aDEM : shortstring;
+begin
+    GetString('DEM name',aDEM,true,ReasonableTextChars);
+    LoadOpenTopographyGlobalDEM(aDEM,MapDraw.MapCorners.BoundBoxGeo,'',true);
+end;
+
 procedure TMapForm.Other1Click(Sender: TObject);
 begin
    DEMGlb[MapDraw.DEMonMap].AssignVerticalDatum(0);
@@ -22746,7 +22776,7 @@ begin
    {$IfDef RecordSave} WriteLineToDebugFile('TMapForm.CurrentsubsetGeotiff1Click'); {$EndIf}
    fName := WriteDEMDir + 'sub-' + DEMGlb[MapDraw.DEMonMap].AreaName;
    GetFileNameDefaultExt('subset DEM','DEM Tiff|*.tif',fName);
-   DEMGlb[MapDraw.DEMonMap].SaveGridSubsetGeotiff(MapDraw.MapAreaDEMGridLimits,fName);
+   DEMGlb[MapDraw.DEMonMap].SaveGridSubsetGeotiff(fName,MapDraw.MapAreaDEMGridLimits);
    if AnswerIsYes('Load subset ' + ExtractFilename(fName)) then OpenNewDEM(fName);
 end;
 
@@ -23785,6 +23815,11 @@ begin
 end;
 
 
+procedure TMapForm.OpenTopographyglobalDEM2Click(Sender: TObject);
+begin
+    LoadOpenTopographyGlobalDEM('COP30',MapDraw.MapCorners.BoundBoxGeo,'',true);
+end;
+
 procedure TMapForm.Downhillvectors1Click(Sender : TObject);
 begin
    {$IfDef ExDrainage}
@@ -24110,6 +24145,16 @@ begin
    ChangeDEMNowDoing(SeekingAverageProfile);
 end;
 
+
+procedure TMapForm.AW3D301Click(Sender: TObject);
+begin
+    LoadOpenTopographyGlobalDEM('AW3D30',MapDraw.MapCorners.BoundBoxGeo,'',true);
+end;
+
+procedure TMapForm.AW3D302Click(Sender: TObject);
+begin
+    LoadOpenTopographyGlobalDEM('GEDTM30',MapDraw.MapCorners.BoundBoxGeo,'',true);
+end;
 
 procedure TMapForm.Fansensitivity1Click(Sender: TObject);
 begin
@@ -25744,7 +25789,7 @@ begin
     PETMAR.DisplayAndPurgeStringList(Results,'Points around selection');
 end;
 
-
+(*
 procedure TMapForm.SRTMwaterbodies2Click(Sender: TObject);
 var
    xg,yg,Col,Row : integer;
@@ -25772,7 +25817,7 @@ begin
    MapDraw.MapType := OldMapType;
    RespondToChangedDEM;
 end;
-
+*)
 
 procedure TMapForm.SSIM1Click(Sender: TObject);
 var

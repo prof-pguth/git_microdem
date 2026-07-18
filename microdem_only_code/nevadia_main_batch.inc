@@ -18,7 +18,7 @@
 procedure PermformNAEtest;
 //experimental, and obviously very much hardwired
 const
-   ParamList = 'DEMIX_TILE,AREA_NAME,DEM,ELEV_FUV,ELEV_NMEA,ELVD_MAE,STD_ELEV,SLOPE_FUV,SLPD_NMAE,SLPD_MAE,STD_SLOPE,ROUGH_FUV,ROUGH_NMAE,ROUGH_MAE,STD_ROUGH,AVG_SLOPE,BARREN_PC,FOREST_PC';
+   ParamList = 'DEMIX_TILE,AREA,DEM,ELEV_FUV,ELEV_NMAE,ELVD_MAE,STD_ELEV,SLOPE_FUV,SLPD_NMAE,SLPD_MAE,STD_SLOPE,ROUGH_FUV,ROUGH_NMAE,ROUGH_MAE,STD_ROUGH,AVG_SLOPE,BARREN_PC,FOREST_PC';
 var
    fName,StatsFName,FUVfName,DiffDistFName,OutName : PathStr;
    i,Recs1,Recs2,StatDB,FUVdb,DDdb : integer;
@@ -50,21 +50,28 @@ var
          aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLOPE');
          GISdb[FUVdb].ApplyGISFilter(aFilter);
          FUVslope := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
-
          aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLPD_MAE');
          GISdb[DDdb].ApplyGISFilter(aFilter);
          MAE2 := GISdb[DDdb].MyData.GetFieldByNameAsFloat(aDEM);
          StdDev2 := GISdb[StatDB].MyData.GetFieldByNameAsFloat('STD_SLOPE');
          nMAE2 := MAE2 / StdDev2;
 
-         aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('RUFF');
-         GISdb[FUVdb].ApplyGISFilter(aFilter);
-         FUVrough := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
-         aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLPD_MAE');
-         GISdb[DDdb].ApplyGISFilter(aFilter);
-         MAE3 := GISdb[DDdb].MyData.GetFieldByNameAsFloat(aDEM);
-         StdDev3 := GISdb[StatDB].MyData.GetFieldByNameAsFloat('STD_ROUGH');
-         nMAE3 := MAE3 / StdDev3;
+         if GISdb[StatDB].MyData.FieldExists('STD_ROUGH') then begin
+             aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('RUFF');
+             GISdb[FUVdb].ApplyGISFilter(aFilter);
+             FUVrough := GISdb[FUVdb].MyData.GetFieldByNameAsFloat(aDEM);
+             aFilter := 'DEMIX_TILE=' + QuotedStr(TileName) + ' AND CRITERION=' + QuotedStr('SLPD_MAE');
+             GISdb[DDdb].ApplyGISFilter(aFilter);
+             MAE3 := GISdb[DDdb].MyData.GetFieldByNameAsFloat(aDEM);
+             StdDev3 := GISdb[StatDB].MyData.GetFieldByNameAsFloat('STD_ROUGH');
+             nMAE3 := MAE3 / StdDev3;
+         end
+         else begin
+            nMAE3 := -999;
+            MAE3 := -999;
+            FUVrough := -999;
+            StdDev3 := -999;
+         end;
 
          aLine := TileName + ',' + AreaName + ',' + aDEM + ',' +
              RealToString(FUVelev,-12,-6) + ',' + RealToString(nMAE,-12,-4) + ',' + RealToString(MAE,-12,-2) + ',' + RealToString(StdDev,-12,-4) + ',' +
@@ -76,17 +83,18 @@ var
       end;
 
 
-begin
+begin {procedure PermformNAEtest}
   StatsFName := 'H:\demix_db_4.1\demix_db_4.1_tile_stats_DB_05_25_26.dbf';
   FUVfName := 'H:\demix_db_4.1\demix_db_4.1_mixed_fuv_DB_04_14_26.dbf';
   DiffDistFName := 'H:\demix_db_4.1\demix_db_4.1_diff_distrib_DB_04_14_26.dbf';
-  OutName := 'H:\demix_db_4.1\demix_db_4.1_nMEA.dbf';
+  OutName := 'H:\demix_db_4.1\demix_db_4.1_nMAE.dbf';
 
+  (*
   StatsFName := 'H:\demix_db_4.2\demix_db_4.2_tile_stats_DB_05_30_26.dbf';
   FUVfName := 'H:\demix_db_4.2\demix_db_4.2_mixed_fuv_DB_05_29_26.dbf';
   DiffDistFName := 'H:\demix_db_4.2\demix_db_4.2_diff_distrib_DB_05_30_26.dbf';
-  OutName := 'H:\demix_db_4.2\demix_db_4.2_nMEA.dbf';
-
+  OutName := 'H:\demix_db_4.2\demix_db_4.2_nMAE.dbf';
+  *)
 
   if FileExists(StatsFName) and FileExists(FUVfName) and FileExists(DiffDistFName) then begin
      if OpenNumberedGISDataBase(StatDB,StatsFName) and OpenNumberedGISDataBase(FUVdb,FUVfName) and OpenNumberedGISDataBase(DDdb,DiffDistFName) then begin
@@ -124,8 +132,11 @@ begin
         SetColorForWaiting;
         wmDEM.SetPanelText(2,'',true);
      end;
+  end
+  else begin
+     MessageToContinue('Missing files');
   end;
-end;
+end {procedure PermformNAEtest};
 
 
 
@@ -803,7 +814,10 @@ end {procedure PrepList10x10kmTiles};
                   TestDEM := DatumShiftAlos(TestDEM,aDEM,TestName);
                end;
                DEMGlb[TestDEM].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
-               DEMGlb[TestDEM].SaveGridSubsetGeotiff(DEMGlb[TestDEM].SpecifyDEMGridLimitsFromGeoBoundBox(bb),TestName);
+               DEMGlb[TestDEM].SaveGridSubsetGeotiff(TestName,DEMGlb[TestDEM].SpecifyDEMGridLimitsFromGeoBoundBox(bb));
+           end
+           else begin
+              {$IfDef RecordDEMIX} WriteLineToDebugFile('Could not load ' + TestName + '   for ' + sfBoundBoxToString(bb)); {$EndIf};
            end;
            wmDEM.SetPanelText(1,AreaProgress,true);  //since library load might overwrite
         end;
@@ -909,8 +923,8 @@ begin {procedure MakeReferenceDEM}
               MakeThisReferenceDEM;
           end
           else begin
-             {$IfDef RecordDEMIX} if not ValidDEM(SourceDEM) then HighLightLineToDebugFile('Ref DEM creation, missing' + SourceEGMName); {$EndIf};
-             {$IfDef RecordDEMIX} if not ValidDEM(TestDEM) then HighLightLineToDebugFile('Ref DEM creation, missing' + TestName); {$EndIf};
+             {$IfDef RecordDEMIX} if not ValidDEM(SourceDEM) then HighLightLineToDebugFile('Ref DEM creation, missing SourceEGM ' + SourceEGMName); {$EndIf};
+             {$IfDef RecordDEMIX} if not ValidDEM(TestDEM) then HighLightLineToDebugFile('Ref DEM creation, missing Test DEM ' + TestName); {$EndIf};
           end;
          {$If Defined(TimeMakeMaps)} WriteLineToDebugFile('Make ref DEM ' + RefName + '   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
       end;
@@ -932,7 +946,7 @@ var
 
    procedure MoveDEMstoSourceDir;
    var
-      i : integer;
+      i,DEM : integer;
       fName : PathStr;
       TileSubDirs,TheTiles : tStringList;
    begin
@@ -948,12 +962,20 @@ var
               if (theFiles.Count > 0) then begin
                  SafeMakeDir(SourceDir);
                  for i := 0 to pred(TheFiles.Count) do begin
+                    wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count) + ' check size',true);
                     fName := theFiles.Strings[i];
                     if StrUtils.AnsiContainsText(fName,'(1).tif') then begin
                        DeleteFileIfExists(fName);
                     end
                     else begin
-                       Petmar.MoveFile(fName,SourceDir + ExtractFileName(theFiles.Strings[i]));
+                       DEM := OpenNewDEM(fName,false);
+                       if (not ValidDEM(DEM)) or (DEMglb[DEM].ComputeMissingDataPercentage(DEMglb[DEM].FullDEMGridLimits) > 25) then begin
+                          DeleteFileIfExists(fName);
+                       end
+                       else begin
+                          Petmar.MoveFile(fName,SourceDir + ExtractFileName(theFiles.Strings[i]));
+                       end;
+                       CloseSingleDEM(DEM);
                     end;
                  end;
               end;
@@ -982,7 +1004,7 @@ var
           TestDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileSubDirs.Strings[i] + '\';
           LCname := TestDir + 'landcover.tif';
           if not FileExists(LCname) then begin
-             wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(TileSubDirs.Count),true);
+             wmDEM.SetPanelText(2,'Land cover ' + IntToStr(succ(i)) + '/' + IntToStr(TileSubDirs.Count),true);
              fName := TestDir + 'cop.tif';
              if FileExists(fName) then begin
                  wmDEM.SetPanelText(3,'Land cover ' + TileSubDirs.Strings[i],true);
@@ -1023,6 +1045,7 @@ var
                    wmDEM.SetPanelText(3,'Datum shift source ref DTM',true);
                    Result := true;
                    if GetVertHorizDatums(AreaName,fName,HorizEPSG,VertEPSG,UTMzone) then begin
+
                       GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName, VertEPSG,HorizEPSG,UTMzone);
                       if Not FileExists(SourceEGMName) then begin
                           {$IfDef RecordDEMIXDatumShift} HighlightLineToDebugFile('Datum shift fail: ' + FName); {$EndIf};
@@ -1038,6 +1061,7 @@ var
       begin
            {$IfDef RecordDEMIXDatumShiftFull} WriteLineToDebugFile('MergeTo10x10andPerformDatumShift in, ' + AreaName + ' tiles=' + IntToStr(TilesInArea)); {$EndIf};
            for i := 0 to pred(TilesInArea) do begin
+              HeavyDutyProcessing := true;
               wmDEM.SetPanelText(0,TimeToStr(Now),true);
               wmDEM.SetPanelText(1,AreaProgress,true);
               if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
@@ -1049,7 +1073,8 @@ var
                  end;
               end
               else UTM_Tile := DEMIX_UTM_tileName(AreaName,TheFiles.Strings[i]);
-              wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(TilesInArea) + '  ' + UTM_Tile,true);
+
+              wmDEM.SetPanelText(2,'Merge ' + IntToStr(succ(i)) + '/' + IntToStr(TilesInArea) + '  ' + UTM_Tile,true);
               TestDir := AreaDir + UTM_Tile + '_ref_test_dem\';
               SafeMakeDir(TestDir);
               SourceEGMName := WGS_EGMdir + UTM_Tile + '.tif';
@@ -1098,102 +1123,6 @@ var
                  end;
               end {for i};
               Result := true;
-
-(*
-                             AreaName := UpperCase(AreaName);
-                             wmDEM.SetPanelText(3,'Datum shift source ref DTM',true);
-                             if (Copy(AreaName,1,3) = 'MX_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '5703','NAD83',AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName)));
-                             end
-                             else if (Copy(AreaName,1,3) = 'DK_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '5799','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName)));
-                             end
-                             else if (Copy(AreaName,1,3) = 'EE_') then begin
-                               GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '','3301','34');    //true vertical datum 9663 not currently supported by GDAL
-                             end
-                             else if (Copy(AreaName,1,3) = 'FI_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '3900','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName)));
-                             end
-                             else if (Copy(AreaName,1,3) = 'DE_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '7837','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName)));   //vertical datum DHHN2016
-                             end
-                             else if (Copy(AreaName,1,3) = 'UK_') or (Copy(AreaName,1,3) = 'GB_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '5701','27700','30');
-                             end
-                             else if (Copy(AreaName,1,3) = 'CH_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '5728','2056','32');
-                             end
-                             else if (Copy(AreaName,1,3) = 'FR_') then begin
-                                VertEPSG := '';
-                                if StrUtils.AnsiContainsText(AreaName,'MARTINIQUE') then begin
-                                   //VertEPSG := '5154';
-                                   HorizEPSG := '32620';
-                                   UTMzone := '20';
-                                end
-                                else if StrUtils.AnsiContainsText(AreaName,'REUNION') then begin
-                                   //VertEPSG := '5156';
-                                   HorizEPSG := '2975';
-                                   UTMzone := '39S';
-                                end
-                                else if StrUtils.AnsiContainsText(AreaName,'MAYOTTE') then begin
-                                   //VertEPSG := '5191';
-                                   HorizEPSG := '4471';
-                                   UTMzone := '38S';
-                                end
-                                else if StrUtils.AnsiContainsText(AreaName,'GUIANA') then begin
-                                   HorizEPSG := '2972';
-                                   UTMzone := '22';
-                                end
-                                else begin
-                                   VertEPSG := '5720';
-                                   HorizEPSG := '2154';
-                                   UTMzone := AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName));
-                                end;
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, VertEPSG,HorizEPSG,UTMzone);
-                             end
-                             else if (Copy(AreaName,1,3) = 'NZ_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '','2193',AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName)));  //GDAL cannot do EPSG 1169
-                             end
-                             else if (Copy(AreaName,1,3) = 'NL_') then begin
-                                GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(MergefName,SourceEGMName, '5799','28992','32');
-                             end
-                             else begin
-                                 {$IfDef RecordDEMIX} HighlightLineToDebugFile('Country not covered for  ' + SourceEGMName);  {$EndIf};
-                                 exit;
-                             end;
-                             if (Not FileExists(SourceEGMName)) then begin
-                                 {$IfDef RecordDEMIXDatumShift} HighlightLineToDebugFile('Failed to create ' + SourceEGMName);  {$EndIf};
-                             end;
-                         end;
-                     end;
-                     ThisTileFiles.Destroy;
-                 end
-                 else begin
-                     wmDEM.SetPanelText(3,'Datum shift source ref DEM',true);
-                     fName := TheFiles.strings[i];
-                     {$IfDef RecordDEMIXDatumShiftFull} if (TilesInArea > 1) then WriteLineToDebugFile('Datum shift source DTM ' + ExtractFileNameNoExt(fName)); {$EndIf};
-                     if (UpperCase(Copy(AreaName,1,3)) = 'ES_') then begin
-                        GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName, '5782','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(fName)));
-                     end
-                     else if (UpperCase(Copy(AreaName,1,3)) = 'IC_') then begin
-                        GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName,'9397','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(fName)));
-                     end
-                     else if (UpperCase(Copy(AreaName,1,3)) = 'NO_') then begin
-                        //UTMzone := Copy(ExtractFileNameNoExt(fName),6,2);
-                        GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName,'5941','ETRS89',AddDayMonthLeadingZero(Geotiff_UTMzone(fName)));
-                     end
-                     else if (UpperCase(Copy(AreaName,1,3)) = 'CA_') or (UpperCase(Copy(AreaName,1,3)) = 'US_')then begin
-                        GDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName, IntToStr(VertCSNAVD88),'NAD83',AddDayMonthLeadingZero(Geotiff_UTMzone(fName)));
-                     end
-                     else begin //US data
-                        SGDAL_Tools.ShiftAFile_UTM_WGS84_EGM2008(fName,SourceEGMName, IntToStr(VertCSNAVD88),'NAD83',AddDayMonthLeadingZero(Geotiff_UTMzone(fName)));
-                     end;
-                     if (Not FileExists(SourceEGMName)) then begin
-                         {$IfDef RecordDEMIX} HighlightLineToDebugFile('Failed to create ' + SourceEGMName); {$EndIf};
-                     end;
-                 end;
-               end;
-*)
               {$IfDef RecordDEMIXDatumShiftFull} WriteLineToDebugFile('Finished datum shift: ' + UTM_Tile); {$EndIf};
            end;
           {$IfDef RecordDEMIXDatumShiftFull} WriteLineToDebugFile('MergeTo10x10andPerformDatumShift out, ' + AreaName); {$EndIf};
@@ -1204,6 +1133,7 @@ var
         //this will nominally be 1 m resolution based on source data
         begin
            {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('MakeSourceHRDEM_WGS84_EGM2008 in: ' + AreaName + '  ' + AvailablePhysicalMemoryString); {$EndIf};
+           HeavyDutyProcessing := true;
            if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
                TileSubDirs := GetSubDirsInDirectory(MergesDirFName);
                TilesInArea := TileSubDirs.Count;
@@ -1252,7 +1182,7 @@ var
                       LoadNewDEM(TestDEM,TestName,false);
                    end
                    else begin
-                      {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('Need to make Test DEM for ' + aDEM); {$EndIf};
+                      {$If Defined(RecordDEMIXMakeTestEveryDEM) or Defined(RecordTestDEMmissing)} WriteLineToDebugFile('Need to make Test DEM for ' + aDEM + ' ' + TestName); {$EndIf};
                       wmDEM.SetPanelText(3,DEMProgress + ' Test DEM ' + aDEM,true);
                       MakeTestDEM(aDEM,TestDEM,SourceEGMName,TestName);
                    end;
@@ -1275,7 +1205,6 @@ begin {procedure UTMbasedtilescreation}
    TileSubDirs := DEMIX_GetListOfTileSubDirsInArea(AreaName,false);
 
    {$IfDef RecordDEMIX} WriteLineToDebugFile('UTMbasedtilescreation Start: ' + AreaName + ' tiles=' + IntToStr(TileSubDirs.Count) + '  ' +  AvailablePhysicalMemoryString); {$EndIf};
-   //HeavyDutyProcessing := true;
    NoDBPlots := true;
    theDEMs := GetListOfTestDEMsinUse;
    AreaDirectoryNames(AreaName);
@@ -1304,38 +1233,51 @@ var
    RefDTM,LC, k : integer;
 
 
-         (*
-         procedure InitializeStringLists;
-         const
-            TileStatsString = ',COUNTRY,LAT,LONG,AVG_ELEV,STD_ELEV,AVG_SLOPE,STD_SLOPE,AVG_ROUGH,STD_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC,MIN_ELEV,MAX_ELEV';
-         begin
-            TileStats := tStringList.Create;
-            TileStats.Add('AREA,DEMIX_TILE' + TileStatsString);
-         end;
-         *)
-
          procedure FinalizeStringLists;
          begin
             {$IfDef TrackAverageStats} TileStats.SaveToFile(DEMIXSettingsDir + 'tilestats.csv'); AreaStats.SaveToFile(DEMIXSettingsDir + 'areastats.csv'); {$EndIf}
-            if (TileStats.count > 1) then begin
-               TileStats.SaveToFile(TileStatsfName);
-               TileStats.Destroy;
-            end
-            else begin
-               {$IfDef RecordDEMIX} HighlightLineToDebugFile('No Summary stats for ' + TileStatsfName); {$EndIf}
-               TileStats.Destroy;
-            end;
+            if (TileStats <> Nil) then begin
+                if (TileStats.count > 1) then begin
+                   TileStats.SaveToFile(TileStatsfName);
+                   TileStats.Destroy;
+                end
+                else begin
+                   {$IfDef RecordDEMIX} HighlightLineToDebugFile('No Summary stats for ' + TileStatsfName); {$EndIf}
+                   TileStats.Destroy;
+                end;
+                end;
          end;
+
+(*
+               lc := LoadLC10LandCover(LCname,bb,false,true);
+               SimplifiedLandCoverPercentages(lc,DEMGlb[LC].FullDEMGridLimits,ForestPC,UrbanPC,BarrenPC,WaterPC);
+
+               if (DEMGlb[LC].DEMHeader.ElevUnits = euWorldCover10m) then begin
+                  ForestEdge := DEMGlb[LC].PercentageEdgePixels(10,EdgeAll);
+               end
+               else ForestEdge := -999;
+
+               if (Results = Nil) then begin
+                   Results := tStringList.Create;
+                   Results.Add('DEMIX_TILE,LAT,LONG,AVG_SLOPE,FOREST_PC,BARREN_PC,URBAN_PC,WATER_PC,EDGE_FORST,EDGE_ALL');
+               end;
+
+               Results.Add(TileName + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
+                  RealToString(Avg_slope,-8,-2) + ',' + RealToString(ForestPC,-8,-2) + ',' + RealToString(BarrenPC,-8,-2) + ',' +
+                  RealToString(UrbanPC,-8,-2) + ',' + RealToString(WaterPC,-8,-2) + ',' + RealToString(ForestEdge,-8,-2) + ',' + RealToString(EdgeAll,-8,-2));
+
+            end;
+*)
 
 
          procedure GetTileStatistics(RefDEM,LandCoverGrid : integer);
 
              procedure InitializeStringLists;
              const
-                TileStatsString = ',COUNTRY,LAT,LONG,AVG_ELEV,STD_ELEV,AVG_SLOPE,STD_SLOPE,AVG_ROUGH,STD_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC,MIN_ELEV,MAX_ELEV';
+                TileStatsString = 'AREA,DEMIX_TILE,COUNTRY,LAT,LONG,AVG_ELEV,STD_ELEV,AVG_SLOPE,STD_SLOPE,AVG_ROUGH,STD_ROUGH,RELIEF,FOREST_PC,URBAN_PC,BARREN_PC,WATER_PC,MIN_ELEV,MAX_ELEV,EDGE_FORST,EDGE_ALL';
              begin
                 TileStats := tStringList.Create;
-                TileStats.Add('AREA,DEMIX_TILE' + TileStatsString);
+                TileStats.Add(TileStatsString);
              end;
 
          var
@@ -1344,10 +1286,10 @@ var
            Lat,Long : float64;
            aLine : shortstring;
            ForestPC,UrbanPC,BarrenPC,WaterPC : float32;
-           Relief,GridFull : float32;
+           Relief,ForestEdge,EdgeAll: float32;
          begin
             if ValidDEM(RefDEM) and ValidDEM(LandCoverGrid) then begin
-               if TileStats = nil then InitializeStringLists;                
+               if TileStats = nil then InitializeStringLists;
                InitializeMomentVar(ElevMomentVar);
                InitializeMomentVar(SlopeMomentVar);
                InitializeMomentVar(RoughMomentVar);
@@ -1362,14 +1304,23 @@ var
                   Moment(zs^,RoughMomentVar,msAll);
                   {$IfDef TrackAverageStats} WriteLineToDebugFile(AreaName + '  ' + DEMIXTile +  '  ' + ShortMomentResultsToString(RoughMomentVar));  {$EndIf}
                   SimplifiedLandCoverPercentages(LandCoverGrid,DEMGlb[LandCoverGrid].FullDEMGridLimits,ForestPC,UrbanPC,BarrenPC,WaterPC);
-                  GridFull := -999;
+                  if (DEMGlb[LC].DEMHeader.ElevUnits = euWorldCover10m) then begin
+                     ForestEdge := DEMGlb[LC].PercentageEdgePixels(10,EdgeAll);
+                  end
+                  else begin
+                     ForestEdge := -999;
+                     EdgeAll := -999;
+                  end;
+
+                  //GridFull := -999;
                   aline := AreaName + ',' + DEMIX_TileNameFromSubDir(DEMIX_Tile) + ',' + Country + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
                      RealToString(ElevMomentVar.Mean,-12,-2) + ',' + RealToString(ElevMomentVar.Std_dev,-12,-2) + ',' +
                      RealToString(SlopeMomentVar.Mean,-12,-2)  + ',' + RealToString(SlopeMomentVar.Std_dev,-12,-2) + ',' +
                      RealToString(RoughMomentVar.Mean,-12,-2)  + ',' + RealToString(RoughMomentVar.Std_dev,-12,-2) + ',' +
                      RealToString(Relief,-12,-2) + ',' + RealToString(ForestPC,-12,-2)  + ',' + RealToString(UrbanPC,-12,-2) + ',' +
                      RealToString(BarrenPC,-12,-2) + ',' + RealToString(WaterPC,-12,-2)  + ','  + RealToString(ElevMomentVar.MinZ,-12,-2)  + ','  +
-                     RealToString(ElevMomentVar.MaxZ,-12,-2);
+                     RealToString(ElevMomentVar.MaxZ,-12,-2) + ',' + RealToString(ForestEdge,-8,-2) + ',' + RealToString(EdgeAll,-8,-2);
+
                   TileStats.Add(aLine);
                end;
                Dispose(zs);
@@ -2043,32 +1994,6 @@ begin
    end;
    fName := MDTempDir + 'HRDEM_source_files.dbf';
    PetDBUtils.StringList2CSVtoDB(Report,fName);
-
-(*
-   Report := tStringList.Create;
-   Report.Add('AREA,SourceName,TILE_SIZE,LAT,LONG,MEGA_PIXELS,PC_FULL');
-   TileList := nil;
-   for i := 0 to pred(theAreas.count) do begin
-      AreaName := theAreas.Strings[i];
-      wmDEM.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(TheAreas.Count) + '  ' + AreaName,true);
-      SourceDir := MDDef.DEMIX_BaseDir + AreaName + '\';
-      Petmar.FindMatchingFiles(SourceDir,'*.tif',TileList,2);
-      for j := 0 to pred(TileList.count) do begin
-         TileName := TileList.Strings[j];
-         aline := AreaName + ',' + ExtractFileNameNoExt(TileName) + ',';
-         wmDEM.SetPanelText(2,IntToStr(succ(j)) + '/' + IntToStr(TileList.Count) + '  ' + TileName,true);
-         DEM := OpenNewDEM(TileName,false);
-         MP := (DEMGLb[DEM].DEMHeader.NumCol * DEMGLb[DEM].DEMHeader.NumRow) / 1024 / 1024;
-         Missing := DEMglb[DEM].ComputeMissingDataPercentage(DEMGlb[DEM].FullDEMGridLimits);
-         DEMglb[DEM].DEMCenterPoint(Lat,Long);
-         aline := aline + DEMGlb[DEM].DEM_size_km + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' + RealToString(MP,-8,-4) + ',' + RealToString(100-Missing,-8,-2);
-         CloseSingleDEM(DEM);
-         Report.Add(Aline);
-      end;
-   end;
-   fName := MDTempDir + 'source_files.dbf';
-   PetDBUtils.StringList2CSVtoDB(Report,fName);
-*)
 end {procedure DEMIX_FileFill};
 
 
@@ -2250,7 +2175,7 @@ var
                   Result := false;
                   if (TestName = 'ALOS') then begin
                      LoadNewDEM(DEM,fName,false);
-                     DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),fName);
+                     DEMGlb[DEM].SaveGridSubsetGeotiff(fName,DEMGlb[DEM].sfBoundBox2tGridLimits(bb));
                      CloseSingleDEM(TestDEM);
                      aLine := aLine + ' (subset)';
                   end;
@@ -2410,14 +2335,14 @@ begin {procedure TakeCareOfInvalidTiles}
                     if not ValidDEM(ALOS) then begin
                        WriteLineToDebugFile('Point 1, ALOS still bad');
                     end;
-                    DEMGlb[ALOS].SaveGridSubsetGeotiff( DEMGlb[ALOS].sfBoundBox2tGridLimits(bb),fName);
+                    DEMGlb[ALOS].SaveGridSubsetGeotiff(fName,DEMGlb[ALOS].sfBoundBox2tGridLimits(bb));
                     WriteLineToDebugFile('Subset ' + fName + '   ' + SmartMemorySizeBytes(Petmar.GetFileSize(fName)));
                     CloseSingleDEM(ALOS);
                 end;
                 if (Petmar.GetFileSize(fName) < 10000) then begin
                    ALOS := LoadMapLibraryBox(true,bb,'AW3D30-FEB2025',false);
                    if ValidDEM(ALOS) then begin
-                      DEMGlb[ALOS].SaveGridSubsetGeotiff( DEMGlb[ALOS].sfBoundBox2tGridLimits(bb),fName);
+                      DEMGlb[ALOS].SaveGridSubsetGeotiff(fName, DEMGlb[ALOS].sfBoundBox2tGridLimits(bb));
                       WriteLineToDebugFile('Library load ' + fName + '   ' + SmartMemorySizeBytes(Petmar.GetFileSize(fName)));
                       CloseSingleDEM(ALOS);
                    end;
@@ -2642,13 +2567,13 @@ begin
        Vat := tStringList.Create;
        Vat.add('VALUE,NAME,N,USE,COLOR');
        j := 0;
-          for Cat1 := 0 to pred(Labels1.Count) do begin
-             for Cat2 := 0 to pred(Labels2.Count) do begin
-                i := 10*succ(Cat1) + succ(Cat2);
-                Vat.Add(IntToStr(i) + ',' + Labels1.Strings[Cat1] + ' and ' + Labels2.Strings[Cat2] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(WinGraphColors(j)));
-                inc(j);
-             end;
-          end;
+        for Cat1 := 0 to pred(Labels1.Count) do begin
+           for Cat2 := 0 to pred(Labels2.Count) do begin
+              i := 10*succ(Cat1) + succ(Cat2);
+              Vat.Add(IntToStr(i) + ',' + Labels1.Strings[Cat1] + ' and ' + Labels2.Strings[Cat2] + ',' + IntToStr(Hist[i]) + ',Y,' + IntToStr(WinGraphColors(j)));
+              inc(j);
+           end;
+        end;
 
         fName2 := NextFileNumber(MDTempDir,DEMGlb[BinMap].AreaName,'.tif');
         DEMGlb[BinMap].SaveAsGeotiff(fName2);
@@ -2814,7 +2739,7 @@ begin
 end;
 
 
-procedure DEMIX_UTM_based_processing(Option : integer; ForceAllAreas : boolean = false);
+procedure DEMIX_UTM_based_processing(Option : integer; ForceAllAreas : boolean = false; AddChars : boolean = false);
 var
    fName,AreaLock : PathStr;
    AreaName,aLine : ShortString;
@@ -2852,10 +2777,41 @@ var
            {$IfDef RecordDEMIX} writeLineToDebugFile('Done MergeThem: ' + fName); {$EndIf}
        end;
 
+       procedure DoCollection(CollectionDir : PathStr; var SecondRound : tStringList);
+       var
+          //dbName,
+          dbDir : PathStr;
+          TheFiles : tStringList;
+          i : integer;
+       begin
+           TheFiles := nil;
+           {$IfDef RecordDEMIX} writeLineToDebugFile('Do Collection loop='  + '  ' + CollectionDir); {$EndIf}
+           if (Option in [udMergeTileStats]) then begin
+              //dbName := '_tile_stats_DB_';
+              dbDir := 'aa_tile_stats\';
+           end
+           else if (Option in [udMergeMixedFUV]) then begin
+              //dbName := '_mixed_fuv_DB_';
+              dbDir := 'aa_fuv_results\';
+           end
+           else if (Option in [udMergeDiffDist]) then begin
+              //dbName := '_diff_distrib_DB_';
+              dbDir := 'aa_diff_dist_results\';
+           end;
+           //fName := MDDef.DEMIX_BaseDir + CollectionName + dbName + CurrentTimeForFileName(false) + '.dbf';
+           Petmar.FindMatchingFiles(CollectionDir + dbDir,'*.csv',TheFiles,2);
+           {$IfDef RecordDEMIX} writeLineToDebugFile(CollectionDir + dbDir + '  files=' + IntToStr(TheFiles.Count)); {$EndIf}
+           //SecondRound.add(MergeThem(fname, Collections.strings[aCollection],(Collections.Count > 0),(Option=udMergeTileStats)));
+           //fName := MDDef.DEMIX_BaseDir + LastSubDir(MDDef.DEMIX_BaseDir) + dbName + CurrentTimeForFileName(false) + '.dbf';
+           for i := 0 to pred(TheFiles.Count) do SecondRound.Add(TheFiles.Strings[i]);
+           TheFiles.Destroy;
+       end;
+
 var
    Collections,SecondRound : tStringList;
    CollectionDir : PathStr;
-   dbName,dbDir,
+   dbName,
+   //dbDir,
    CollectionName : shortstring;
    aCollection : integer;
 begin {procedure DEMIX_UTM_based_processing}
@@ -2878,43 +2834,36 @@ begin {procedure DEMIX_UTM_based_processing}
    theFiles := nil;
 
    if (Option in [udMergeMixedFUV,udMergeDiffDist,udMergeTileStats]) then begin
-      {$IfDef RecordDEMIX} writeLineToDebugFile('Merge ' + IntToStr(Option)); {$EndIf}
+      {$IfDef RecordDEMIX} writeLineToDebugFile('Merge option=' + IntToStr(Option)); {$EndIf}
       wmDEM.SetPanelText(2,'Start merge',true);
       Collections := GetCollections;
       SecondRound := tStringList.Create;
-      for aCollection := 0 to pred(Collections.Count) do begin
-         TheFiles := nil;
-         if (Collections.Count = 0) then begin
-            CollectionDir :=  MDDef.DEMIX_BaseDir;
-            CollectionName := '';
-         end
-         else begin
-            CollectionDir :=  MDDef.DEMIX_BaseDir + Collections.strings[aCollection] + '\';
-            CollectionName := Collections.strings[aCollection] + '_';
-            wmDEM.SetPanelText(1,Collections.strings[aCollection],true);
-         end;
-           {$IfDef RecordDEMIX} writeLineToDebugFile('Collection loop=' + IntToStr(aCollection) + '  ' + CollectionDir); {$EndIf}
+      {$IfDef RecordDEMIX} writeLineToDebugFile('Collections=' + IntToStr(Collections.Count)); {$EndIf}
+      if (Collections.Count = 0) then begin
+         CollectionDir := MDDef.DEMIX_BaseDir;
+         CollectionName := '';
+         DoCollection(CollectionDir,SecondRound);
+      end
+      else for aCollection := 0 to pred(Collections.Count) do begin
+          CollectionDir := MDDef.DEMIX_BaseDir + Collections.strings[aCollection] + '\';
+          CollectionName := Collections.strings[aCollection] + '_';
+          wmDEM.SetPanelText(1,Collections.strings[aCollection],true);
+          DoCollection(CollectionDir,SecondRound);
+       end;
+      {$IfDef RecordDEMIX} writeLineToDebugFile('SecondRound.Count =' + IntToStr(SecondRound.Count)); {$EndIf}
+       if (SecondRound.Count > 0) then begin
            if (Option in [udMergeTileStats]) then begin
               dbName := '_tile_stats_DB_';
-              dbDir := 'aa_tile_stats\';
            end
            else if (Option in [udMergeMixedFUV]) then begin
               dbName := '_mixed_fuv_DB_';
-              dbDir := 'aa_fuv_results\';
            end
            else if (Option in [udMergeDiffDist]) then begin
               dbName := '_diff_distrib_DB_';
-              dbDir := 'aa_diff_dist_results\';
            end;
-           fName := MDDef.DEMIX_BaseDir + CollectionName + dbName + CurrentTimeForFileName(false) + '.dbf';
-           Petmar.FindMatchingFiles(CollectionDir + dbDir,'*.csv',TheFiles,2);
-           {$IfDef RecordDEMIX} writeLineToDebugFile(CollectionDir + dbDir + '  files=' + IntToStr(TheFiles.Count)); {$EndIf}
-           SecondRound.add(MergeThem(fname, Collections.strings[aCollection],(Collections.Count > 0),True));
-           fName := MDDef.DEMIX_BaseDir + LastSubDir(MDDef.DEMIX_BaseDir) + dbName + CurrentTimeForFileName(false) + '.dbf';
-       end;
-       if (Collections.Count > 0) then begin
+          fName := MDDef.DEMIX_BaseDir + LastSubDir(MDDef.DEMIX_BaseDir) + dbName + CurrentTimeForFileName(false) + '.dbf';
           db := MergeMultipleCSVorTextFiles(nil,SecondRound,fname);
-          GISdb[db].ExportToCSV(ChangeFileExt(fName,'.csv'),',');
+          //GISdb[db].ExportToCSV(ChangeFileExt(fName,'.csv'),',');
        end;
        CloseAllDataBases;
        Collections.Destroy;

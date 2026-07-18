@@ -19,6 +19,7 @@ unit petdbutils;
       //{$Define RecordCSVParse}
       //{$Define RecordFullCSV}      //major slowdown
       //{$Define RecordProcessCSVLine}  //major slowdown
+      //{$Define RecordGPX}
 
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
@@ -33,7 +34,6 @@ unit petdbutils;
       //{$Define RecordStringFromTable}
       //{$Define RecordGAZ}
       //{$Define RecordKML}
-      //{$Define RecordGPX}
       //{$Define RecordFullGPX}      //major slowdown, but shows the line that is causing an error
    {$EndIf}
 
@@ -159,6 +159,7 @@ procedure QuickGraphFromStringList(var sl : tStringList; xf,yf,Capt : shortstrin
    procedure StringGridToCSVFile(fName : PathStr; StringGrid : tStringGrid; Results : tStringList = Nil);
 {$EndIf}
 
+procedure ConvertTimeStringToDecimalHours(DBonTable : integer; InputHoursMinSec : boolean);
 
    function CSVFileImportToDB(fName : PathStr  = ''; SpecialGaz : tCSVImport = csvNormal) : PathStr;
    function StringList2CSVtoDB(Results : tstringList; fName : Pathstr = ''; CloseFile : boolean = false; SaveCSVfile : boolean = false; OpenTable : boolean = true) : integer;
@@ -1186,7 +1187,7 @@ var
    RecordValues : tStringList;
    j : int64;
    LinesToMoveToStringGrid,NumDupesIgnored,
-   NumRules,fs,//skip,
+   NumRules,fs,
    OnLine,i,k,n,Len,Decs,BadFieldNames : integer;
    LongV : float64;
    SepChar : Char;

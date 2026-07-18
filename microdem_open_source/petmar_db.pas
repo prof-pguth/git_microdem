@@ -22,7 +22,7 @@ unit petmar_db;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    //{$Define RecordMakeDir}
-   //{$Define RecordFieldPresent}
+   {$Define RecordFieldPresent}
    //{$Define DBrewrite}
    //{$Define RecordOpenDB}
    //{$Define RecordFullOpenDB}
@@ -223,7 +223,8 @@ type
         function FindFieldMax(FieldDesired : shortString) : float64;
         function FindFieldMin(FieldDesired : shortString) : float64;
         function FieldStdDev(FieldDesired : shortstring) : float64;
-        function FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;
+        function FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float32) : boolean;  overload;
+        function FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;  overload;
         procedure FindMultipleFieldsRange(DEMs : tStringList; var RowMinZ,RowMaxZ : float64);
 
         function GetFieldStatistics(FieldDesired : ShortString) : tMomentVar;
@@ -551,7 +552,7 @@ end;
 
 function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIString; FieldLength : integer; FieldDecimals : integer = 0) : boolean;
 
-      {$IfDef UseFireDacSQLlite}
+    {$IfDef UseFireDacSQLlite}
       procedure CheckSQLLite;
       var
          aline : ANSIstring;
@@ -608,7 +609,7 @@ function tMyData.InsureFieldPresentAndAdded(ft : TFieldType; FieldName : ANSIStr
              TheClientDataSet := tClientDataSet.Create(Application);
              TheClientDataSet.LoadFromFile(FullTableName);
              TheClientDataSet.LogChanges := false;
-             {$IfDef RecordFieldPresent} WriteLineToDebugFile('Done ' + IntToStr(j) + ' '); {$EndIf}
+             {$IfDef RecordFieldPresent} WriteLineToDebugFile('Done NewClientDataSet opened'); {$EndIf}
           end;
       end;
    {$EndIf}
@@ -656,12 +657,7 @@ begin
       CheckBDETable;
       {$IfDef UseTCLientDataSet} CheckSQLlite; {$EndIf}
       {$IfDef UseTCLientDataSet} CheckTCLientDataSet {$EndIf}
-      {$IfDef UseFDMemTable}
-         if (FDMemTable <> nil) then begin
-            MessageToContine('Not enabled');
-            exit;
-         end;
-      {$EndIf}
+      {$IfDef UseFDMemTable} if (FDMemTable <> nil) then MessageToContine('Not enabled'); {$EndIf}
    end;
    {$IfDef RecordFieldPresent} WriteLineToDebugFile('InsureFieldPresentAndAdded out,  recs=' + IntToStr(RecordCount)); {$EndIf}
 end;
@@ -697,6 +693,7 @@ begin
    FindFieldRange(FieldDesired,Result,aMaxVal);
 end;
 
+
 function tMyData.FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float64) : boolean;
 var
    Num  : integer;
@@ -716,6 +713,25 @@ begin
    result := Num > 0;
 end;
 
+
+function tMyData.FindFieldRange(FieldDesired : shortString; var aMinVal,aMaxVal : float32) : boolean;
+var
+   Num  : integer;
+   fval : float32;
+begin
+   First;
+   aMaxVal := -99e99;
+   aMinVal := +99e99;
+   Num := 0;
+   while not eof do begin
+      if CarefullyGetFieldByNameAsFloat32(FieldDesired,fval) then begin
+         Petmath.CompareValueToExtremes(fVal,aMinVal,aMaxVal);
+         inc(Num);
+      end;
+      Next;
+   end;
+   result := Num > 0;
+end;
 
 
 procedure tMyData.ProgressVars(var rc,nc : integer);
@@ -934,11 +950,13 @@ function tMyData.PlatformColorFromTable : tPlatformColor;
          var
             i : integer;
             HexColor : shortstring;
+            SepChar : ansichar;
          begin
             CheckColorField := false;
             if FieldExists(fName) then begin
                if IsStringField(fName) then begin
                   HexColor := GetFieldByNameAsString(fName);
+                  ReplaceCharacter(HexColor,'#','$');
                   PlatformColorFromTable := RGBtrip(StrToInt('$' + Copy(HexColor,2,2)),StrToInt('$' + Copy(HexColor,4,2)),StrToInt('$' + Copy(HexColor,6,2)));
                end
                else if CarefullyGetFieldByNameAsInteger(fName,i) then begin

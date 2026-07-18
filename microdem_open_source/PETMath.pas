@@ -10,7 +10,6 @@ unit PETMATH;
 {________________________________________}
 
 
-
 {$I nevadia_defines.inc}
 
 
@@ -93,6 +92,7 @@ procedure CalculateTransformationMatrix(dx1,dy1,dx2,dy2,dx3,dy3,ux1,uy1,ux2,uy2,
 
 procedure HeapSort(n: integer; var ra: array of float64); overload;  {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
 procedure HeapSort(n: integer; var ra: array of float32); overload;
+procedure HeapSort(n: integer; var ra: array of integer); overload;
 
 procedure SortStringListNumerically(var SL : tStringList);
 
@@ -146,10 +146,8 @@ function Quantile(QWant : integer; var x : array of float32; n: integer; Already
 function CalculateIQR(n: integer; var ra: array of float32) : float32;
 
 
-
 const
   MomentStr = 'NAME,MIN,PC1,PC2,PC5,Q1,MEDIAN,MEAN,Q3,PC95,PC98,PC99,MAX,AVG_DEV,STD_DEV,SKEWNESS,CURTOSIS,NPTS';
-
 
 procedure Moment(var data : array of float32; var MomentVar : tMomentVar; MomentStop : tMomentStop);
 procedure InitializeMomentVar(var MomentVar : tMomentVar);
@@ -158,12 +156,11 @@ procedure MomentReport(Variable : shortString; var data : bfarray32; n : integer
 function MomentResultsToString(MomentVar : tMomentVar) : shortstring;
 function ShortMomentResultsToString(MomentVar : tMomentVar) : shortstring;
 
-
 procedure VarCovar(var x,y : array of float32; NPts : integer; var correlation,covar : float64);
 procedure NewVarCovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
 
 procedure Fit(var x,y : array of float32; ndata : integer; var a,b,siga,sigb,r : float64);
-procedure FitOnRange(var x,y : array of float32; {FirstPoint,LastPoint : integer;} ndata : integer; VAR a,b,siga,sigb,r : float64);
+procedure PowerFit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
 
 function VectorAverage(Num : integer; var Readings : farray; var Mag : float64) : float64;
 
@@ -1200,13 +1197,21 @@ begin
 end;
 
 
-procedure fit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
+procedure PowerFit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
+//
+var
+   i : integer;
 begin
-   FitOnRange(x,y,{1,ndata,}ndata,a,b,siga,sigb,r);
+   for i := 0 to pred(NData) do begin
+      x[i] := ln(x[i]);
+      y[i] := ln(y[i]);
+   end;
+   Fit(x,y,ndata,a,b,siga,sigb,r);
+   a := exp(a);
 end;
 
 
-procedure FitOnRange(var x,y : array of float32; {FirstPoint,LastPoint : integer; var} ndata : integer; var a,b,siga,sigb,r : float64);
+procedure fit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
 // from Press and others, Numerical Recipes, 14.2
 // a is intercept, b is slope, with respective goodness-of-fit
 VAR
@@ -1231,40 +1236,48 @@ BEGIN
          Inc(ValidData);
       end;
    END;
-   {$IfDef RecordFitProblems} WriteLineToDebugFile('Valid points=' + IntToStr(ValidData) + '  sx=' + RealToString(sx,-18,-8) + '  sy=' + RealToString(sy,-18,-8)); {$EndIf}
-   //ss := ndata;
+   if (ValidData <= 2) then begin
+      a := -999;
+      b := -999;
+      siga := -999;
+      sigb := -999;
+      r := -999;
+   end
+   else begin
+       {$IfDef RecordFitProblems} WriteLineToDebugFile('Valid points=' + IntToStr(ValidData) + '  sx=' + RealToString(sx,-18,-8) + '  sy=' + RealToString(sy,-18,-8)); {$EndIf}
 
-   sxoss := sx / ndata;
-   syoss := sy / ndata;
-   {$IfDef RecordFitProblems} WriteLineToDebugFile('sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8)); {$EndIf}
+       sxoss := sx / ndata;
+       syoss := sy / ndata;
+       {$IfDef RecordFitProblems} WriteLineToDebugFile('sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8)); {$EndIf}
 
-   for i := 0 to pred(NData) do begin
-      if (Math.IsNAN(x[i])) or (Math.IsNAN(y[i])) then begin
+       for i := 0 to pred(NData) do begin
+          if (Math.IsNAN(x[i])) or (Math.IsNAN(y[i])) then begin
 
-      end
-      else begin
-        t := x[i] - sxoss;
-        ty := y[i] - syoss;
-        st2 := st2 + sqr(t);
-        sty2 := sty2 + sqr(ty);
-        b := b + t * y[i];
-        sxy := sxy + t * ty;
-      end;
-   END;
-   b := b/st2;
-   a := (sy-sx*b) / ValidData;
-   siga := sqrt((1.0 + sqr(sx) / (ValidData * st2)) / ValidData);
-// siga := sqrt((1.0+sx*sx/(ss*st2))/ss);
+          end
+          else begin
+            t := x[i] - sxoss;
+            ty := y[i] - syoss;
+            st2 := st2 + sqr(t);
+            sty2 := sty2 + sqr(ty);
+            b := b + t * y[i];
+            sxy := sxy + t * ty;
+          end;
+       END;
+       b := b/st2;
+       a := (sy-sx*b) / ValidData;
+       siga := sqrt((1.0 + sqr(sx) / (ValidData * st2)) / ValidData);
+    // siga := sqrt((1.0+sx*sx/(ss*st2))/ss);
 
-   sigb := sqrt(1.0 / st2);
-   r := sxy / sqrt(st2 * sty2);
+       sigb := sqrt(1.0 / st2);
+       r := sxy / sqrt(st2 * sty2);
 
-   {$IfDef RecordFitProblems}
-      WriteLineToDebugFile('PROCEDURE fit out, r=' + RealToString(r,-12,-6));
-      WriteLineToDebugFile('siga=' + RealToString(siga,18,8) + '  sigb=' + RealToString(sigb,18,8));
-      WriteLineToDebugFile('b=' + RealToString(b,18,8) + '  st2=' + RealToString(st2,18,8) + ' sty2=' + RealToString(sty2,18,8));
-      WriteLineToDebugFile('sx=' + RealToString(sx,18,8) + ' sy=' + RealToString(sy,18,8)  + '  sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8));
-   {$EndIf}
+       {$IfDef RecordFitProblems}
+          WriteLineToDebugFile('PROCEDURE fit out, r=' + RealToString(r,-12,-6));
+          WriteLineToDebugFile('siga=' + RealToString(siga,18,8) + '  sigb=' + RealToString(sigb,18,8));
+          WriteLineToDebugFile('b=' + RealToString(b,18,8) + '  st2=' + RealToString(st2,18,8) + ' sty2=' + RealToString(sty2,18,8));
+          WriteLineToDebugFile('sx=' + RealToString(sx,18,8) + ' sy=' + RealToString(sy,18,8)  + '  sxoss=' + RealToString(sxoss,18,8) +'  syoss=' + RealToString(syoss,18,8));
+       {$EndIf}
+   end;
 END;
 
 
@@ -1966,10 +1979,48 @@ begin
 end;
 
 
+PROCEDURE HeapSort(n: integer; var ra: array of integer);  {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
+VAR
+   l,j,ir,i: integer;
+   rra : integer;
+BEGIN
+   if n <= 1 then exit;
+   l := (n DIV 2)+1;
+   ir := n;
+   WHILE true DO BEGIN
+      IF (l > 1) THEN BEGIN
+         l := l-1;
+         rra := ra[pred(l)];
+      END
+      ELSE BEGIN
+         rra := ra[pred(ir)];
+         ra[pred(ir)] := ra[pred(1)];
+         ir := ir-1;
+         IF (ir = 1) THEN BEGIN
+            ra[pred(1)] := rra;
+            exit;
+         END
+      END;
+      i := l;
+      j := l+l;
+      WHILE (j <= ir) DO BEGIN
+         IF (j < ir) THEN
+            IF (ra[pred(j)] < ra[pred(j+1)]) THEN j := j+1;
+         IF (rra < ra[pred(j)]) THEN BEGIN
+            ra[pred(i)] := ra[pred(j)];
+            i := j;
+            j := j+j;
+         END
+         ELSE j := ir+1;
+      END;
+      ra[pred(i)] := rra;
+   END;
+END;
+
 PROCEDURE HeapSort(n: integer; var ra: array of float32);  {after Press and others, 1986, Numerical Recipes, Cambridge University Press}
 VAR
    l,j,ir,i: integer;
-   rra : float64;
+   rra : float32;
 BEGIN
    if n <= 1 then exit;
    l := (n DIV 2)+1;

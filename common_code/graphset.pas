@@ -12,6 +12,8 @@ unit Graphset;
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
       //{$Define RecordGrafSize}
+      {$Define RecordPalette}
+
    {$ELSE}
 
    {$ENDIF}
@@ -104,6 +106,9 @@ type
     Label15: TLabel;
     Label16: TLabel;
     Edit19: TEdit;
+    CheckBox10: TCheckBox;
+    RadioGroup2: TRadioGroup;
+    ComboBox4: TComboBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -128,6 +133,10 @@ type
     procedure Edit7Change(Sender: TObject);
     procedure Edit9Change(Sender: TObject);
     procedure Edit18Change(Sender: TObject);
+    procedure CheckBox4Click(Sender: TObject);
+    procedure CheckBox10Click(Sender: TObject);
+    procedure RadioGroup2Click(Sender: TObject);
+    procedure ComboBox4Change(Sender: TObject);
   private
     { Private declarations }
   public
@@ -168,6 +177,8 @@ begin
          CheckBox6.Checked := GraphDraw.CorrectScaling;
 
          CheckBox8.Checked := OwningGraph.GraphDraw.ShowGraphLeftLabels;
+         CheckBox4.Checked := OwningGraph.GraphDraw.HorizAxisFunctionType = Log10Axis;
+         CheckBox10.Checked := OwningGraph.GraphDraw.VertAxisFunctionType = Log10Axis;
 
          Edit7.Text := IntToStr(GraphDraw.LeftMargin);
          Edit8.Text := IntToStr(GraphDraw.TopMargin);
@@ -183,6 +194,9 @@ begin
          YLabelEdit.Text := GraphDraw.VertLabel;
          YMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinVertAxis,-18,-6);
          YMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxVertAxis,-18,-6);
+
+         RadioGroup2.ItemIndex := MDDef.GraphZColorScheme;
+         ComboBox4.Text := MDdef.GraphPalette;
 
          (*
          if (GraphDraw.DBFLineFilesPlotted <> Nil) and (GraphDraw.DBFLineFilesPlotted.Count > 0) then begin
@@ -260,6 +274,18 @@ begin
       XMinEdit.Text := RealToString(OwningGraph.GraphDraw.MinHorizAxis,-18,-6);
       XMaxEdit.Text := RealToString(OwningGraph.GraphDraw.MaxHorizAxis,-18,-6);
    end;
+end;
+
+procedure TGraphSettingsForm.CheckBox10Click(Sender: TObject);
+begin
+    if CheckBox10.Checked then OwningGraph.GraphDraw.VertAxisFunctionType := Log10Axis
+    else OwningGraph.GraphDraw.VertAxisFunctionType := LinearAxis;
+end;
+
+procedure TGraphSettingsForm.CheckBox4Click(Sender: TObject);
+begin
+    if CheckBox4.Checked then OwningGraph.GraphDraw.HorizAxisFunctionType := Log10Axis
+    else OwningGraph.GraphDraw.HorizAxisFunctionType := LinearAxis;
 end;
 
 procedure TGraphSettingsForm.CheckBox7Click(Sender: TObject);
@@ -358,6 +384,7 @@ begin
    ReadDefault('Vert tick interval', OwningGraph.GraphDraw.ForceVertTickIncr);
 end;
 
+
 procedure TGraphSettingsForm.BitBtn2Click(Sender: TObject);
 begin
    if (OwningGraph <> Nil) then OwningGraph.Font1Click(Sender);
@@ -442,6 +469,23 @@ begin
 end;
 
 
+
+procedure TGraphSettingsForm.RadioGroup2Click(Sender: TObject);
+begin
+   MDDef.GraphZColorScheme := RadioGroup2.ItemIndex;
+   if (MDDef.GraphZColorScheme = LegChloropleth) then begin
+      //DefineColorArray('virdis (color blind)',OwningGraph.ColorDefTable.ZTableEntries,OwningGraph.ColorDefTable.zTableColors,false);
+      DefineColorArray('MDDef.GraphPalette',OwningGraph.ColorDefTable.ZTableEntries,OwningGraph.ColorDefTable.zTableColors,false);
+      {$IfDef RecordPalette}
+         var i : integer;
+         for I := 1 to OwningGraph.ColorDefTable.ZTableEntries do begin
+            WriteLineToDebugFile(IntegerToString(i,4) + '  ' + ColorString(OwningGraph.ColorDefTable.zTableColors[i]));
+         end;
+      {$EndIf}
+   end;
+   OwningGraph.RedrawDiagram11Click(Nil);
+end;
+
 procedure TGraphSettingsForm.RedrawSpeedButton12Click(Sender: TObject);
 begin
    CheckSettings;
@@ -475,6 +519,14 @@ begin
    XLabelEdit.Text := ComboBox3.Text;
 end;
 
+
+procedure TGraphSettingsForm.ComboBox4Change(Sender: TObject);
+begin
+   MDDef.GraphPalette := ComboBox4.Text;
+   MDDef.GraphZColorScheme := LegChloropleth;
+   DefineColorArray(MDDef.GraphPalette,OwningGraph.ColorDefTable.ZTableEntries,OwningGraph.ColorDefTable.zTableColors,false);
+   OwningGraph.RedrawDiagram11Click(Nil);
+end;
 
 
 procedure TGraphSettingsForm.Edit16Change(Sender: TObject);

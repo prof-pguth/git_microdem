@@ -29,7 +29,6 @@ object DragonPlotForm: TDragonPlotForm
     Height = 40
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 496
     object BitBtn3: TBitBtn
       Left = 130
       Top = 6
@@ -101,7 +100,7 @@ object DragonPlotForm: TDragonPlotForm
     Top = 20
     Width = 428
     Height = 153
-    ActivePage = TabSheet9
+    ActivePage = TabSheet8
     TabOrder = 1
     object TabSheet1: TTabSheet
       Caption = 'Single'
@@ -1089,27 +1088,21 @@ object DragonPlotForm: TDragonPlotForm
     Top = 328
     object DP11: TMenuItem
       Caption = 'DP-1'
-      OnClick = DP11Click
     end
     object DP21: TMenuItem
       Caption = 'DP-2'
-      OnClick = DP21Click
     end
     object DP31: TMenuItem
       Caption = 'DP-3'
-      OnClick = DP31Click
     end
     object DP41: TMenuItem
       Caption = 'DP-4'
-      OnClick = DP41Click
     end
     object DP51: TMenuItem
       Caption = 'DP-5'
-      OnClick = DP51Click
     end
     object DP61: TMenuItem
       Caption = 'DP-6'
-      OnClick = DP61Click
     end
   end
 end

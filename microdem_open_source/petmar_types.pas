@@ -268,7 +268,7 @@ type
       SetPointProcedure = Procedure(BitMap : tMyBitmap; x,y : integer; color : TColor);    {used for passing procedural parameters}
    {$EndIf}
 
-   tLegendColors = integer;  //(LegGrays,LegRainbows,LegTerrain,LegSpectrum,LegChloropleth);
+   tLegendColors = byte;
 
    tSymbols256  = array[0..255] of tFullSymbolDeclaration;
    tbytes256 = array[0..255] of byte;

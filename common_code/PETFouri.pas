@@ -196,12 +196,6 @@ begin
    end;
    cof[0] := 0;
 
-   {$IfDef MemProblems}
-      //DoResults := true;
-   {$Else}
-      //DoResults := (not SkipDrawing);
-   {$EndIf}
-
    //if DoResults then begin
       Results := tStringList.Create;
       Results.Add(Title);
@@ -224,7 +218,7 @@ begin
 
          with FFTGraph,MEMPowerDefaults do begin
             OpenDataFile(rfile,'');
-            ACaption := Title + ' Power spectrum by Maximum Entropy Method';
+            FFTgraph.ACaption := Title + ' Power spectrum by Maximum Entropy Method';
             {if (not CreateGraphHidden) then} Caption := ACaption;
             fdt := FirstFreq;
             while (fdt <= LastFreq) do begin
@@ -249,7 +243,7 @@ begin
       RedrawDiagram11Click(Nil);
       MomentVar.NPts := 0;
       for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
-         FitGraph(true,2,GraphDraw.DataFilesPlotted.Strings[i], a,b,r,n);
+         FitGraph({true,}fitLinear,2,GraphDraw.DataFilesPlotted.Strings[i], a,b,r,n);
          if (abs(b) > 0.01) and (abs(b) < 10) then begin
             Results.Add(RealToString(b,8,3)+ RealToString(r,8,3));
             Slopes^[MomentVar.NPts] := b;
@@ -264,8 +258,7 @@ begin
       Results.Add('Median slope:  ' + RealToString(MomentVar.Median,-18,-3));
       Results.Add('');
       Results.Add('Fractal dimension: ' + RealToString(FracDimFromSlope2(Slope),-18,-3));
-      //if (not SkipDrawing)then
-         Petmar.DisplayAndPurgeStringList(Results,'MEM Power Spectrum Slopes');
+      Petmar.DisplayAndPurgeStringList(Results,'MEM Power Spectrum Slopes');
    Dispose(DataArray);
    Dispose(Slopes);
 end;
@@ -276,7 +269,7 @@ begin
    Double := true;
    ZeroPad := true;
    SegExp := 11;
-   while Math.IntPower(2,SegExp) > TotalNumberPoints do dec(SegExp);
+   while (Math.IntPower(2,SegExp) > TotalNumberPoints) do dec(SegExp);
    SegSize := round(IntPower(2,SegExp));
    WindowFunction := Welch;
    NewAxes := true;
@@ -315,6 +308,7 @@ var
    FFTFile : file of float64;
 
    PROCEDURE four1(var data: gl4marray; nn,isign: integer);
+   //based on routine from Press and others, 1999, Numerical recipes, p.754
    var
       ii,jj,n,mmax,m,j,istep,i  : integer;
       wtemp,wr,wpr,wpi,wi,theta,
@@ -369,7 +363,6 @@ var
 
 
    procedure spctrm(var p : glmarray; m,k : integer; ovrlap : boolean; WindowFunction : WindowType);
-   //based on routine from Press and others, 1999, Numerical recipes
    var
       mm,m44,m43,m4,kk,joffn,joff,j2,j,jj: integer;
       w,sumw,facp,facm,den: float64;
@@ -447,6 +440,7 @@ var
    MaxPower,
    MinY,MaxY : float64;
 
+
    procedure PowerTable(Reorder : boolean);
    var
       t : float64;
@@ -520,46 +514,44 @@ var
       rfile  : file;
       v      : array[1..2] of float32;
    begin
-      with GraphDraw,Image1.Canvas do begin
-         if NewAxes then begin
-            MinVertAxis := MinY;
-            MaxVertAxis := MaxY;
-            if GraphPeriod then begin
-               MinHorizAxis := (2*SegSize*BinTime/pred(SegSize));
-               MaxHorizAxis := (2*SegSize*BinTime);
-               HorizLabel := 'Period ' + BinUnits;
-            end
-            else begin
-               MaxHorizAxis := pred(SegSize)/(2*SegSize*BinTime);
-               MinHorizAxis := 1/(2*succ(SegSize)*BinTime); {0.5 / BinTime;}
-               HorizLabel := 'Frequency ' + BinUnits + '^-1';
-            end;
-            HorizAxisFunct := Log10;
-            VertAxisFunct := Log10;
-            HorizAxisFunctionType := Log10Axis;
-            VertAxisFunctionType := Log10Axis;
-            VertLabel := 'Power';
-            NewAxes := false;
-            {if not CreateGraphHidden then} Caption := 'FFT Power Spectrum--' + ACaption;
-         end;
+       if NewAxes then begin
+          GraphDraw.MinVertAxis := MinY;
+          GraphDraw.MaxVertAxis := MaxY;
+          if GraphPeriod then begin
+             GraphDraw.MinHorizAxis := (2*SegSize*BinTime/pred(SegSize));
+             GraphDraw.MaxHorizAxis := (2*SegSize*BinTime);
+             GraphDraw.HorizLabel := 'Period ' + BinUnits;
+          end
+          else begin
+             GraphDraw.MaxHorizAxis := pred(SegSize)/(2*SegSize*BinTime);
+             GraphDraw.MinHorizAxis := 1/(2*succ(SegSize)*BinTime); {0.5 / BinTime;}
+             GraphDraw.HorizLabel := 'Frequency ' + BinUnits + '^-1';
+          end;
+          GraphDraw.HorizAxisFunct := Log10;
+          GraphDraw.VertAxisFunct := Log10;
+          GraphDraw.HorizAxisFunctionType := Log10Axis;
+          GraphDraw.VertAxisFunctionType := Log10Axis;
+          GraphDraw.VertLabel := 'Power';
+          NewAxes := false;
+          Caption := 'FFT Power Spectrum--' + ACaption;
+       end;
 
-         {$IfDef FFTGraphProblems} WriteLineToDebugFile('GraphPowerSpectrum, ' + AxisRange); {$EndIf}
+       {$IfDef FFTGraphProblems} WriteLineToDebugFile('GraphPowerSpectrum, ' + AxisRange); {$EndIf}
 
-         SetUpGraphForm;
-         OpenDataFile(rfile,'');
-         for i := 3 to SegSize do begin
-            v[2] := p[i];
-            v[1] := pred(i) / (2 * SegSize*BinTime);
-            if GraphPeriod then v[1] := 1 / v[1];
-            BlockWrite(rfile,v,1);
-         end;
-         CloseFile(RFile);
-         RedrawDiagram11Click(Nil);
-      end {with};
+       SetUpGraphForm;
+       OpenDataFile(rfile,'');
+       for i := 3 to SegSize do begin
+          v[2] := p[i];
+          v[1] := pred(i) / (2 * SegSize*BinTime);
+          if GraphPeriod then v[1] := 1 / v[1];
+          BlockWrite(rfile,v,1);
+       end;
+       CloseFile(RFile);
+       RedrawDiagram11Click(Nil);
    end;
 
 
-begin
+begin {function TFFTGraph.ComputeAndDraw}
    {$IfDef FFTGraphProblems} WriteLineToDebugFile('Compute and draw in'); {$EndIf}
    try
       Result := false;
@@ -586,7 +578,7 @@ begin
       closeFile(FFTfile);
    end;
    {$IfDef FFTGraphProblems} WriteLineToDebugFile('Compute and draw out'); {$EndIf}
-end;
+end {function TFFTGraph.ComputeAndDraw};
 
 
 function TFFTGraph.NewOptions;
@@ -743,11 +735,11 @@ var
    Results : tStringList;
 begin
    assignFile(infile,GraphDraw.DataFilesPlotted.Strings[0]);
-   reset(infile,2*SizeOf(float64));
+   reset(infile,2*SizeOf(float32));
 
    fName := MDTempDir + 'qq_fft_xyz.tmp';
    assignFile(outfile,fName);
-   rewrite(outfile,2*SizeOf(float64));
+   rewrite(outfile,2*SizeOf(float32));
 
    while not EOF(infile) do begin
       BlockRead(infile,v,1);
@@ -757,7 +749,7 @@ begin
    end;
    CloseFile(InFile);
    CloseFile(OutFile);
-   FitGraph(true,2,fName,a,b,r, n);
+   FitGraph({true,}fitLinear,2,fName,a,b,r, n);
    SysUtils.DeleteFile(fName);
 
    if ShowResults then begin

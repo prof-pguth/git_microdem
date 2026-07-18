@@ -119,18 +119,30 @@ const
 function WinningPiesByCriteria(dbOnTable : integer; Criteria,DEMs : tStringList; LLtext : shortstring) : tThisBaseGraph;
 function TileCharacteristicsPieGraph(dbOnTable : integer; Label1s,Labels2 : tStringList; MaxPieCircle : float32; PieRatio : boolean; BottomLegendFName : PathStr) : tThisBaseGraph;
 
-procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
-function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
-function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphCompareInterpolation(db : integer) : tThisBaseGraph;
-function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; UseArcSecSpacing : boolean = true) : tThisBaseGraph;
 procedure GridOfTerrainScatterPlots(DB : integer; ColorBy,Compares,DEMs : tStringList);
-procedure GraphTwoParameterGridsByDEMresolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Comparisons : tStringList);
-procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
+procedure GraphMultipleParamsByDEMResolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Resolutions,Comparisons : tStringList);
+//procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
 procedure BestDEMonScatterPlotTwoParameters(DB : integer; Criteria,DEMs : tstringList);
-procedure GraphTwoParameterGridsByAverageSlopeAndResolution(db : integer; DEMIXtileFieldName : shortstring; MultSeries : tStringList; AllTiles : boolean = false);
+procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,MultSeries : tStringList; AllTiles : boolean = false);
 procedure ScatterPlotTwoDEMs(db : integer; DEM1,DEM2 : shortstring; Criteria : tStringList);
+
+procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; Resolutions : tStringList; var Results : tStringList);
+function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
+function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
+function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; Resolutions : tStringList) : tThisBaseGraph;
+procedure ComputePowerFitForAllTiles(db : integer);
+function OneGraphSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring) : tThisBaseGraph;
+procedure ManyGraphsSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring);
+
+
+function GraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring) : tThisBaseGraph;
+procedure GridGraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring);
+function GraphFUVTwoDEMs(db : integer; DEMs,Params : tStringList) : tThisBaseGraph;
+procedure GridGraphFUVTwoDEMs(db : integer; DEMs,Params : tStringList);
+procedure GridScatterPlotByDEMResolution(db : integer; Criterion,Coloring : shortstring);
+
 
 
 implementation
@@ -141,6 +153,250 @@ uses
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
    DEMIX_control,DEMIX_Definitions;
+
+
+
+procedure StartGraphGrid(db : integer; var BaseFilter,ResString : shortstring; var Filters1,Labels1,Filters2,Labels2 : tStringList);
+begin
+   SetColorForProcessing;
+   BaseFilter := GISdb[db].MyData.Filter;
+   ImportLandParamFilters(MDDef.DEMIX_filter1_fName,Filters1,Labels1);
+   ImportLandParamFilters(MDDef.DEMIX_filter2_fName,Filters2,Labels2);
+   if GISdb[db].MyData.FieldExists('GRID_SEC') then ResString := 'GRID_SEC' else ResString := 'GRID_M';
+   GISdb[db].dbOpts.XField := ResString;
+   GISdb[db].EmpSource.Enabled := false;
+end;
+
+
+procedure EndGraphGrid(gr : t2Dgrapharray; db : integer; BaseFilter : shortstring; var Filters1,Labels1,Filters2,Labels2 : tStringList; LegendBMP : tMyBitmap = nil);
+const
+   StartX = 75;
+   StartY = 75;
+var
+   BigBitmap,Bitmap : tMyBitmap;
+   xsize,ysize,f1,f2,XPanel,YPanel,Offset,x,y : integer;
+begin
+   xsize := 0;
+   ySize := 0;
+   for f1 := 0 to pred(Filters1.Count) do begin
+      for f2 := 0 to pred(Filters2.Count) do begin
+         if gr[f1,f2] <> Nil then begin
+            if (gr[f1,f2].GraphDraw.XWindowSize > xsize) then xsize := gr[f1,f2].GraphDraw.XWindowSize;
+            if (gr[f1,f2].GraphDraw.YWindowSize > ysize) then Ysize := gr[f1,f2].GraphDraw.YWindowSize;
+         end;
+      end;
+   end;
+
+   XPanel := XSize + 20;
+   YPanel := YSize + 20;
+
+   CreateBitmap(BigBitmap,StartX + Filters2.Count * XPanel, StartY + Filters1.Count * YPanel);
+   BigBitmap.Canvas.Font.Size := 24;
+   BigBitmap.Canvas.Font.Style := [fsBold];
+   for f1 := 0 to pred(Filters1.Count) do begin
+      Offset := (YPanel - BigBitmap.Canvas.TextWidth(Labels1.Strings[f1])) div 2;
+      TextOutVertical(BigBitmap.Canvas,2,StartY + succ(F1) * YPanel - Offset,Labels1.Strings[f1]);
+   end;
+
+   for f2 := 0 to pred(Filters2.Count) do begin
+      Offset := (XPanel - BigBitmap.Canvas.TextWidth(Labels1.Strings[f2])) div 2;
+      BigBitmap.Canvas.TextOut(StartX + f2 * XPanel + Offset,2,Labels2.Strings[f2]);
+   end;
+
+   for f1 := 0 to pred(Filters1.Count) do begin
+      for f2 := 0 to pred(Filters2.Count) do begin
+         if (gr[f1,f2] <> Nil) and CopyImageToBitmap(gr[f1,f2].Image1,Bitmap) then begin
+            BigBitMap.Canvas.Draw(StartX + f2 * XPanel, StartY + F1 * YPanel,Bitmap);
+            Bitmap.Free;
+         end;
+      end;
+   end;
+   GetImagePartOfBitmap(BigBitmap);
+   if (LegendBMP <> Nil) then begin
+      x := (BigBitMap.Width - LegendBMP.Width) div 2;
+      y := BigBitmap.Height + 20;
+      BigBitmap.Height := BigBitMap.Height + 20 + LegendBMP.Height;
+      BigBitmap.Canvas.Draw(x,y, LegendBMP);
+   end;
+
+   DisplayBitmap(BigBitmap,'graph_grid');
+   Filters1.Destroy;
+   Labels1.Destroy;
+   Filters2.Destroy;
+   Labels2.Destroy;
+
+   GISdb[db].ApplyGISFilter(BaseFilter);
+   SetColorForWaiting;
+   wmdem.ClearStatusBarPanelText;
+end;
+
+
+
+function GraphFUVTwoDEMs(db : integer; DEMs,Params : tStringList) : tThisBaseGraph;
+var
+   //Tiles : tStringList;
+   rfiles : array[0..10] of file;
+   i,j : integer;
+   BaseFilter : shortstring;
+   v : array[1..2] of float32;
+begin {function GraphFUVTwoDEMs}
+   //SetColorForProcessing;
+   BaseFilter := GISdb[db].MyData.Filter;
+   GISdb[db].EmpSource.Enabled := false;
+   //Tiles := GISdb[db].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
+   Result := tThisBaseGraph.Create(Application);
+   Result.GraphDraw.HorizLabel := DEMs.Strings[0];
+   Result.GraphDraw.VertLabel := DEMs.Strings[1];
+   Result.GraphDraw.MaxHorizAxis := -99e38;
+   Result.GraphDraw.MinHorizAxis :=  99e38;
+   Result.GraphDraw.MaxVertAxis := -99e38;
+   Result.GraphDraw.MinVertAxis :=  99e38;
+   Result.GraphDraw.Draw1to1Line := true;
+   Result.GraphDraw.LRcornerText := 'Tiles=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB('DEMIX_TILE'));
+
+   for j := 0 to pred(Params.Count) do begin
+      Result.OpenDataFile(rfiles[j],Params.Strings[j]);
+   end;
+   Result.Caption := DEMs.Strings[0] + '_' + DEMs.strings[1];
+   //for i := 0 to pred(Tiles.Count) do begin
+      for j := 0 to pred(Params.Count) do begin
+        GISdb[db].ApplyGISFilter(PETdbUtils.AddAndIfNeeded(BaseFilter) + 'CRITERION=' +  QuotedStr(Params.Strings[j]));
+        GISdb[db].EmpSource.Enabled := false;
+        while not GISdb[db].MyData.eof do begin
+            v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[0]);
+            v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[1]);
+            BlockWrite(Rfiles[j],v,1);
+            CompareValueToExtremes(v[1],Result.GraphDraw.MinHorizAxis,Result.GraphDraw.MaxHorizAxis);
+            CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
+            GISdb[db].MyData.Next;
+        end;
+     end;
+   //end;
+   for j := 0 to pred(Params.Count) do CloseFile(rfiles[j]);
+   Result.GraphDraw.SetShowAllPoints(true,MDDef.DEMIXsymsize);
+   Result.FormResize(Nil);
+   //Tiles.Destroy;
+   GISdb[db].ClearGISFilter;
+   GISdb[db].MyData.Filter := BaseFilter;
+   //SetColorForWaiting;
+end {function GraphFUVTwoDEMs};
+
+
+procedure GridGraphFUVTwoDEMs(db : integer; DEMs,Params :tStringList);
+var
+   BaseFilter,ResString,TheFigureFilter : shortstring;
+   Filters1,Labels1,Filters2,Labels2 : tStringList;
+   gr : t2Dgrapharray;
+   f1,f2 : integer;
+begin
+   {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs in'); {$EndIf}
+   StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
+   GISdb[db].EmpSource.Enabled := false;
+   for f1 := 0 to pred(Filters1.Count) do begin
+      wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
+      for f2 := 0 to pred(Filters2.Count) do begin
+         TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
+         GISdb[db].ApplyGISFilter(TheFigureFilter);
+         GISdb[db].EmpSource.Enabled := false;
+         if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+             {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile(TheFigureFilter); {$EndIf}
+             wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
+             gr[f1,f2] := GraphFUVTwoDEMs(db,DEMs,Params);
+         end
+         else gr[f1,f2] := Nil;
+      end;
+   end;
+   {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs graphs created'); {$EndIf}
+   EndGraphGrid(gr, db,BaseFilter, Filters1,Labels1,Filters2,Labels2,gr[0,0].MakeLegend);
+   {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs out'); {$EndIf}
+end;
+
+
+procedure GridGraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring);
+var
+   BaseFilter,ResString,TheFigureFilter : shortstring;
+   Filters1,Labels1,Filters2,Labels2 : tStringList;
+   gr : t2Dgrapharray;
+   f1,f2 : integer;
+begin
+   StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
+   GISdb[db].EmpSource.Enabled := false;
+   for f1 := 0 to pred(Filters1.Count) do begin
+      wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
+      for f2 := 0 to pred(Filters2.Count) do begin
+         TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
+         GISdb[db].ApplyGISFilter(TheFigureFilter);
+         GISdb[db].EmpSource.Enabled := false;
+         if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+             wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
+             gr[f1,f2] := GraphFUVTwoCriteria(db,DEMs,Param1,Param2);
+         end
+         else gr[f1,f2] := Nil;
+      end;
+   end;
+   EndGraphGrid(gr, db,BaseFilter, Filters1,Labels1,Filters2,Labels2,gr[0,0].MakeLegend);
+end;
+
+
+function GraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring) : tThisBaseGraph;
+var
+   Tiles : tStringList;
+   rfiles : array[0..10] of file;
+   i,j : integer;
+   BaseFilter : shortstring;
+
+      procedure OneDEM(j : integer; DEM : shortString);
+      var
+         v : array[1..2] of float32;
+      begin
+         if GISdb[db].MyData.GetFieldByNameAsString('CRITERION') = Param1 then v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(DEM)
+         else v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEM);
+         GISdb[db].MyData.Next;
+         if GISdb[db].MyData.GetFieldByNameAsString('CRITERION') = Param2 then v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEM)
+         else v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(DEM);
+         BlockWrite(Rfiles[j],v,1);
+         CompareValueToExtremes(v[1],Result.GraphDraw.MinHorizAxis,Result.GraphDraw.MaxHorizAxis);
+         CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
+      end;
+
+
+begin {function GraphFUVTwoCiteria}
+   //SetColorForProcessing;
+   BaseFilter := GISdb[db].MyData.Filter;
+   GISdb[db].EmpSource.Enabled := false;
+   Tiles := GISdb[db].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
+   Result := tThisBaseGraph.Create(Application);
+   Result.GraphDraw.HorizLabel := Param1 + '_FUV';
+   Result.GraphDraw.VertLabel := Param2 + '_FUV';
+   Result.GraphDraw.MaxHorizAxis := -99e38;
+   Result.GraphDraw.MinHorizAxis :=  99e38;
+   Result.GraphDraw.MaxVertAxis := -99e38;
+   Result.GraphDraw.MinVertAxis :=  99e38;
+   Result.GraphDraw.LRcornerText := 'Tiles=' + IntToStr(Tiles.Count);
+
+   Result.GraphDraw.Draw1to1Line := true;
+   for j := 0 to pred(DEMs.Count) do begin
+      Result.OpenDataFile(rfiles[j],DEMs.Strings[j],ConvertPlatformColorToTColor(DEMIXColorFromDEMName(DEMs.Strings[j])));
+   end;
+   Result.Caption := Param1 + '_' + Param2;
+   for i := 0 to pred(Tiles.Count) do begin
+      GISdb[db].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(Tiles.Strings[i]) + ' AND (CRITERION=' +  QuotedStr(Param1) + ' OR CRITERION=' +  QuotedStr(Param2) + ')');
+      GISdb[db].EmpSource.Enabled := false;
+      if (GISdb[db].MyData.FiltRecsInDB = 2) then begin
+         for j := 0 to pred(DEMs.Count) do begin
+            OneDEM(j,DEMs.Strings[j]);
+         end;
+      end;
+   end;
+   for j := 0 to pred(DEMs.Count) do CloseFile(rfiles[j]);
+   Result.GraphDraw.SetShowAllPoints(true,MDDef.DEMIXsymsize);
+   Result.FormResize(Nil);
+   Tiles.Destroy;
+   GISdb[db].ClearGISFilter;
+   GISdb[db].MyData.Filter := BaseFilter;
+   //SetColorForWaiting;
+end {function GraphFUVTwoCiteria};
+
 
 
 function NumTilesString(DB : integer) : shortstring;
@@ -1852,7 +2108,7 @@ begin
       end;
 
       Graph.RedrawDiagram11Click(Nil);
-      GISdb[DBonTable].EmpSource.Enabled := true;
+      //GISdb[DBonTable].EmpSource.Enabled := true;
       Graph.GraphDraw.HorizLabel := RemoveUnderscores(Graph.GraphDraw.HorizLabel) +  '  (n=' + IntToStr(NPts) + ')';
    end;
 end;

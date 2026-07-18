@@ -62,6 +62,7 @@ type
     ComboBox3: TComboBox;
     CheckBox5: TCheckBox;
     CheckBox7: TCheckBox;
+    BitBtn1: TBitBtn;
     procedure BitBtn3Click(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);
     procedure HelpBtnClick(Sender: TObject);
@@ -72,11 +73,12 @@ type
     procedure CheckBox4Click(Sender: TObject);
     procedure CheckBox5Click(Sender: TObject);
     procedure CheckBox7Click(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
     FieldsInDB : tStringList;
     DBonTable : integer;
-    LocalKML,SingleRecordOnly : boolean;
+    LocalKML,SingleRecordOnly,Cancel : boolean;
     kml : KML_Creator.tKMLCreator;
     SepExpField : ShortString;
     function DoExport : PathStr;
@@ -343,7 +345,6 @@ begin
 end;
 
 
-
 function ConvertToKML(DBonTable : integer; ThumbNailDir : PathStr; kml : KML_Creator.tKMLCreator = Nil; SingleRecordOnly : boolean = false; SepExpField : ShortString = '') : PathStr;
 var
    kml_opts_fm: Tkml_opts_fm;
@@ -414,8 +415,8 @@ begin {function ConvertToKML}
    end;
 
    if (not MDDef.KMLDefaultDB) then kml_opts_fm.ShowModal;
-
-   Result := kml_opts_fm.DoExport;
+   if kml_opts_fm.Cancel then Result := ''
+   else Result := kml_opts_fm.DoExport;
 
    kml_opts_fm.Free;
    {$IfDef KMLProblems} WriteLinetoDebugFile('ConvertToKML out'); {$EndIf}
@@ -831,6 +832,11 @@ begin
 end;
 
 
+procedure Tkml_opts_fm.BitBtn1Click(Sender: TObject);
+begin
+   Cancel := true;
+   Close;
+end;
 
 procedure Tkml_opts_fm.BitBtn3Click(Sender: TObject);
 begin
@@ -877,6 +883,7 @@ begin
    CheckBox7.Checked := MDDef.ZipKMLfiles;
    Edit6.Text := IntToStr(MDDef.ThumbSize);
    Edit8.Text := IntToStr(MDDef.DB2KMKLThin);
+   Cancel := false;
    IconFName := '';
 end;
 

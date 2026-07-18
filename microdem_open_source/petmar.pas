@@ -116,9 +116,6 @@ var
       procedure EndThreadTimers;
       procedure StartSingleThreadTimer(Capt : ShortString = '');
 
-      //procedure InsureFormIsOnScreen(TheForm : Forms.tForm);
-     // procedure PlaceFormInCorner(Owner,TheForm : Forms.tForm; FormPosition :  byte = lpSEMap);
-
       procedure HardwareOnLine;
       procedure PETMARAboutBox(ProgramName : ANSIstring; Modifier : ANSIstring = '');
 
@@ -163,8 +160,6 @@ var
            {angle measured in tenths degree, math convention: starts with east and runs counterclockwise}
 
       procedure DisplayNevadella(Canvas : TCanvas; xoff,yoff,size : integer; Color : TColor);
-      //procedure CheckFormPlacement(TheForm : Forms.tForm); //MonitorDesired : integer = 0);
-      //procedure PlaceFormAtMousePosition(TheForm : Forms.tForm);
 
       function LocalIP: string;
 
@@ -223,6 +218,9 @@ var
          function SpectrumColorFunct(z,Min,Max : float64) : tColor; inline;
          function RainbowColorFunct(z,Min,Max : float64) : TColor; inline;
          function TerrainTColor(z,aMin,aMax : float64) : TColor;
+
+
+         function ChloroplethPlatformColor(ColorDefTable : tColorTableDefinitions; z,aMin,aMax : float64) : TPlatformColor;
          function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor; inline;
          function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
          function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor; inline;
@@ -641,8 +639,8 @@ var
    fName,NewName : PathStr;
 begin
    repeat
-      GetDOSPath('files to add ' + What,aPath);
       if PrefixWanted then What := 'prefix' else what := 'suffix';
+      GetDOSPath('files to add ' + What,aPath);
       ShowHourglassCursor;
       FilesWanted := tStringList.Create;
       FindMatchingFiles(aPath,'*.*',FilesWanted,2);
@@ -1690,6 +1688,7 @@ end;
             end;
          end;
 
+
          procedure ModalEditWindow(FName : PathStr; WindowCaption : ANSIstring);
          var
             EditWindow : TPetEditF;
@@ -2174,7 +2173,7 @@ end;
 
          var
             i : integer;
-         begin
+         begin {procedure DisplayNevadella}
             with Canvas do begin
                Pen.Width := 1;
                Pen.Color := Color;
@@ -2201,7 +2200,7 @@ end;
                   end;
                end;
             end {with};
-         end;
+         end {procedure DisplayNevadella};
 
 
          function MonthColor(i : integer) : TPlatformColor;
@@ -2549,7 +2548,7 @@ begin
    Result := '';
    if (LegendStr <> '') and (Length(LegendStr) > 1) then begin
       Result := LegendStr;
-      if AlsoFileNextNumber and (Result[length(Result)-1] = '_') then Delete(Result,length(Result)-1,2);
+      if AlsoFileNextNumber and (Result[length(Result)-1] = '_') and (Result[length(Result)] in ['1'..'9']) then Delete(Result,length(Result)-1,2);
       ReplaceCharacter(Result,'_',' ');
    end;
 end;
@@ -3813,7 +3812,7 @@ begin
          try
             RmDir(fName);
          except
-            on Exception do begin end;
+            on Exception do MessageToContinue('Unable to delete ' + fName);
          end;
       end;
    end;
@@ -4095,7 +4094,7 @@ begin
          TStr := tStringList.Create;
          while length(Mess) > 0 do TStr.Add(BeforeSpecifiedCharacterANSI(Mess,#13,false,true));
          if (TStr.Count > 20) then begin
-            DisplayAndPurgeStringList(TStr,'');
+            ShowInNotepadPlusPlus(TStr,'');
          end
          else begin
             StringListToContinue(SaveOutPut,TStr);

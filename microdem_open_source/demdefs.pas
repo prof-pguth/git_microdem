@@ -138,6 +138,17 @@ type
 type
    tvdShift = (vdWGS84toEGM2008,vdEGM2008toWGS84,vdEGM96toEGM2008);
 
+type
+  tAffineMatrix = record
+    XOrigin: Double; // GT(0)
+    PixelWidth: Double; // GT(1)
+    RowRotation: Double; // GT(2)
+    YOrigin: Double; // GT(3)
+    ColRotation: Double; // GT(4)
+    PixelHeight: Double; // GT(5)
+  end;
+
+
 {$IfDef ExPointCloud}
 {$Else}
    type
@@ -1394,11 +1405,11 @@ type
    end;
 
 const
-   MaxOverlays = 12;
+   MaxOverlays = 11;
 type
-   tOverlayOrder = (ovoUnused,ovoTiger,ovoGazetteer,ovoContours,ovoGrids,ovoPLSS,ovoDatabases,ovoSRTMWater,ovoCartoDB,ovoFans,ovoContoursDEM2,ovoWorldOutlines,ovoUSOutlines,ovoTissot,ovoSecondGrid,ovoVectors,ovoOSM);
+   tOverlayOrder = (ovoUnused,ovoTiger,ovoGazetteer,ovoContours,ovoGrids,ovoPLSS,ovoDatabases,ovoCartoDB,ovoFans,ovoContoursDEM2,ovoWorldOutlines,ovoUSOutlines,ovoTissot,ovoSecondGrid,ovoVectors,ovoOSM);
 const
-   LayerName : array[tOverlayOrder] of ShortString = ('Unused','Tiger','Gazetteer','Contours','Grids','PLSS','Databases','SRTMWater',
+   LayerName : array[tOverlayOrder] of ShortString = ('Unused','Tiger','Gazetteer','Contours','Grids','PLSS','Databases',
        'CartoDB','Fans','ContoursDEM2','WorldOutlines','USOutlines','Tissot indicatrices','Second DEM/grid','Vectors','OSM');
 const
    smDefault = -1;
@@ -1795,9 +1806,6 @@ type
           DoMinCurve,
           DoSlopeCurve,
           DoPlanCurve,
-          //DoUpOpen,
-          //DoDownOpen,
-          //DoDiffOpen,
 
           DoRelief1,
           DoAvgElev,
@@ -2144,13 +2152,6 @@ type
        ShadeOpts : tShadeOpts;
        DBsOnAllMaps : boolean;
        DbMinIntFieldSize : byte;
-       (*
-       NumOffsets : int32;
-       OffsetDistance : float32;
-       OffsetBearings : array[1..5] of float32;
-       OffsetLineWidth : byte;
-       OffsetColor : tPlatformColor;
-       *)
        UTCOffset : int16;
        TZFromLong : boolean;
        LandCoverMaskSize : byte;
@@ -2242,6 +2243,7 @@ type
        KMLImageOpts : byte;
 
        //GoogleAPIKey : shortstring;
+       OpenTopoAPI_Key : shortstring;
 
        ErosionCycles,
        ImageDiffThreshhold : byte;
@@ -2632,6 +2634,8 @@ type
       DefMarginLegend : byte;
       GraphTickSize,
       DefaultGraphXSize,DefaultGraphYSize : int32;
+      GraphPalette : shortstring;
+
       NoHistFreqLabels : boolean;
       FrameLineWidth : byte;
       GraphDensityXBlock,

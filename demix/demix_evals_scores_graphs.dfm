@@ -44,8 +44,8 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Complex graph bins'
   end
   object Label5: TLabel
-    Left = 424
-    Top = 503
+    Left = 407
+    Top = 507
     Width = 81
     Height = 15
     Caption = 'Graph columns'
@@ -99,7 +99,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = CheckBox3Click
   end
   object BitBtn3: TBitBtn
-    Left = 287
+    Left = 256
     Top = 598
     Width = 161
     Height = 25
@@ -199,7 +199,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn12Click
   end
   object BitBtn2: TBitBtn
-    Left = 8
+    Left = 112
     Top = 598
     Width = 138
     Height = 25
@@ -208,7 +208,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn2Click
   end
   object BitBtn23: TBitBtn
-    Left = 167
+    Left = 16
     Top = 598
     Width = 90
     Height = 25
@@ -226,9 +226,9 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnChange = Edit4Change
   end
   object Edit5: TEdit
-    Left = 511
+    Left = 504
     Top = 500
-    Width = 42
+    Width = 49
     Height = 23
     TabOrder = 16
     Text = 'Edit5'
@@ -337,7 +337,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
   object GroupBox2: TGroupBox
     Left = 384
     Top = 8
-    Width = 185
+    Width = 198
     Height = 231
     Caption = 'Test DEMs'
     TabOrder = 21
@@ -428,7 +428,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = RadioGroup9Click
   end
   object BitBtn22: TBitBtn
-    Left = 464
+    Left = 423
     Top = 598
     Width = 105
     Height = 25
@@ -1006,5 +1006,32 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Grid of terrain scatterplots'
     TabOrder = 52
     OnClick = BitBtn47Click
+  end
+  object BitBtn48: TBitBtn
+    Left = 838
+    Top = 617
+    Width = 158
+    Height = 25
+    Caption = 'Scatter plot criteria, 2 DEMs'
+    TabOrder = 53
+    OnClick = BitBtn48Click
+  end
+  object BitBtn49: TBitBtn
+    Left = 840
+    Top = 648
+    Width = 151
+    Height = 25
+    Caption = 'Grid FUV 2 criteria'
+    TabOrder = 54
+    OnClick = BitBtn49Click
+  end
+  object BitBtn50: TBitBtn
+    Left = 838
+    Top = 679
+    Width = 151
+    Height = 25
+    Caption = 'Grid FUV 2 DEMs'
+    TabOrder = 55
+    OnClick = BitBtn50Click
   end
 end

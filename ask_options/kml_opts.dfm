@@ -362,4 +362,14 @@ object kml_opts_fm: Tkml_opts_fm
     TabOrder = 25
     OnClick = CheckBox7Click
   end
+  object BitBtn1: TBitBtn
+    Left = 107
+    Top = 353
+    Width = 94
+    Height = 27
+    Kind = bkCancel
+    NumGlyphs = 2
+    TabOrder = 26
+    OnClick = BitBtn1Click
+  end
 end

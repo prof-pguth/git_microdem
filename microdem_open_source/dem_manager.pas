@@ -60,6 +60,7 @@ uses
        forms,shlobj,vcl.controls,
     {$EndIf}
     sysutils,System.UITypes,StrUtils,Classes,
+    System.ioUtils,
     Petmar_types,Petmar,DEMMapDraw,DEMDefs;
 
 
@@ -167,6 +168,7 @@ function GetLC10_fileName(Lat,Long : float32) : PathStr;
 
 function WebExtractGEDTMorEDTM(aDEM : shortstring;  bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
 function IsThisWebExtractDEM(aDEm : shortstring) : boolean;
+function LoadOpenTopographyGlobalDEM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
 
 
 const
@@ -288,6 +290,32 @@ begin
     else MessageToContinue('At it again; GEDTM download failure');
 end;
 
+function LoadOpenTopographyGlobalDEM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
+//https://portal.opentopography.org/apidocs/#/Public/getGlobalDem
+var
+   cmd : shortstring;
+   DownloadDir : PathStr;
+   Files : tStringList;
+begin
+   if (MDDef.OpenTopoAPI_Key = '') then begin
+      GetString('OpenTopography API key',MDDef.OpenTopoAPI_Key,false,ReasonableTextChars);
+   end;
+   cmd := 'https://portal.opentopography.org/API/globaldem?demtype=' + aDEM + '&south=' + RealToString(bb.YMin,-12,-3) + '&north=' + RealToString(bb.YMax,-12,-3) +
+     '&west=' + RealToString(bb.XMin,-12,-3) + '&east=' + RealToString(bb.xMax,-12,-3) + '&outputFormat=GTiff&API_Key=' + MDDef.OpenTopoAPI_Key; // -H accept: */*';
+   ExecuteFile('chrome',cmd,'');
+   DownloadDir := System.IOUtils.TPath.GetDownloadsPath + '\';
+   repeat
+       Delay(1000);
+       Petmar.FindMatchingFiles(DownloadDir,'appRasterSelectAPIService*.tif',Files);
+   until (Files.Count = 1);
+   SaveName := DownLoadDir + 'ot_'+ aDEM + '_' + RealToString(bb.YMin,-12,-2) + '_' + RealToString(bb.YMax,-12,-2) + '_' + RealToString(bb.XMin,-12,-2) + '_' + RealToString(bb.xMax,-12,-2) + '.tif';
+   RenameFile(Files.Strings[0], SaveName);
+
+   OpenNewDEM(SaveName,true);
+   //"C:\Users\pguth\Downloads\appRasterSelectAPIService1783880780324-1914613180.tif"
+
+end;
+
 
 
 function LandCoverTileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
@@ -374,10 +402,10 @@ end;
 
 procedure DEMHeaderTable;
 const
-   NumParams = 28;
+   NumParams = 29;
    Params : array[0..NumParams] of shortstring = ('DEM_NAME','DEM_USED','PRECISION','SPACE_UNIT','Z_UNITS','HEMISPHERE','NUM_COL','NUM_ROW',
         'PIXEL_IS','H_DATUM','VERT_DATUM','UTM_ZONE','MIN_Z','MAX_Z','X_SPACE','Y_SPACE','SW_CORNER_X','SW_CORNER_Y','WKT','GeoTIIF_3072',
-        'GeoTIIF_2048','SPACING_M','DEM_SIZE','PIXEL_GEOMETRY','FILE_SIZE','VOID_PERCENT','GRID_ELEVS','SW_X_SEC','SW_Y_SEC');
+        'GeoTIIF_2048','SPACING_M','DEM_SIZE','PIXEL_GEOMETRY','FILE_SIZE','VOID_PERCENT','GRID_ELEVS','SW_X_SEC','SW_Y_SEC','DEM_FORMAT');
 var
    i,j,Decs : integer;
    DEMsWanted : tDEMbooleanArray;
@@ -435,7 +463,12 @@ var
                26 : TStr := IntToStr(DEMglb[i].DEMheader.NumCol * DEMglb[i].DEMheader.NumRow);
                27 : if DEMGlb[i].DEMHeader.DEMUsed = ArcSecDEM then TStr := LongToString(DEMGlb[i].DEMHeader.SWCornerX,DecSeconds);
                28 : if DEMGlb[i].DEMHeader.DEMUsed = ArcSecDEM then TStr := LatToString(DEMGlb[i].DEMHeader.SWCornerY,DecSeconds);
-
+               29 : begin
+                       TStr := UpperCase(ExtractFileExt(DEMGlb[i].DEMfileName));
+                       if (TStr = '.DEM') then TStr := 'MD DEM'
+                       else if (TStr = '.TIF') then TStr := 'Geotiff'
+                       else TStr := 'Other';
+                    end;
             end;
             aLine := aline + ',' + tStr;
          end;

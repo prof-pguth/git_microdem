@@ -282,9 +282,6 @@ function ExpandIconFileName(var fName : PathStr) : boolean;
 {$EndIf}
 
 function LengthConversion(Code : integer) : float64;
-function ThisIsETRS89(Tstr : ANSIstring) : boolean;
-function ThisIsWGS84(Tstr : ANSIstring) : boolean;
-function ThisIsNAD83(Tstr : ANSIstring) : boolean;
 
 procedure QuadTickNearestHere(var Lat,Long : float64; QuadTickSize : float64);  inline;
 function FindUTMZone(ASCIIProjectionData :  ANSIString; var UTMzone : int16; var Hemi : ANSIchar) : boolean;
@@ -911,25 +908,6 @@ begin
        Linear_Foot_9002 : Result := 0.3048;
        Linear_Foot_US_Survey_9003 : Result := 1200/3937;
    end;
-end;
-
-
-function ThisIsETRS89(Tstr : ANSIstring) : boolean;
-begin
-   Result := StrUtils.AnsiContainsText(TStr,'ETRS') and StrUtils.AnsiContainsText(TStr,'89');
-end;
-
-
-function ThisIsWGS84(Tstr : ANSIstring) : boolean;
-begin
-   Result := (StrUtils.AnsiContainsText(TStr,'WGS') and StrUtils.AnsiContainsText(TStr,'84')) or  StrUtils.AnsiContainsText(TStr,'GRS 1980') or
-       StrUtils.AnsiContainsText(TStr,'GRS80') or (StrUtils.AnsiContainsText(TStr,'SIRGAS-ROU98'));
-end;
-
-
-function ThisIsNAD83(Tstr : ANSIstring) : boolean;
-begin
-   Result := StrUtils.AnsiContainsText(TStr,'NAD') and StrUtils.AnsiContainsText(TStr,'83');
 end;
 
 
@@ -3762,6 +3740,9 @@ begin
       AParameter('Graph','ShowPieN',ShowPieN,true);
       AParameter('Graph','GraphTickSize',GraphTickSize,15);
       AParameter('Graph','GraphZColorScheme',GraphZColorScheme,LegSpectrum);
+      AParameter('Graph','GraphPalette',GraphPalette,'virdis (color blind)');
+
+
 
       AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);
@@ -4022,6 +4003,9 @@ begin
          //AParameter('Web','GeocodeAddress',GeocodeAddress,'');
          //AParameter('Web','GoogleAPIKey',GoogleAPIKey,'');
       {$EndIf}
+
+      AParameter('Web','OpenTopoAPI_Key',OpenTopoAPI_Key,'');
+
 
       {$IfDef ExWMS}
       {$Else}
@@ -4648,7 +4632,7 @@ begin
     TM_RGB_fname := ProgramRootDir + 'tm_rgb_v3' + DefaultDBExt;
     CSVImportRulesFName := ProgramRootDir + 'CSV_IMPORT_RULES_v4'+ DefaultDBExt;
     SatBandNames := ProgramRootDir + 'sat_band_names_v20' + DefaultDBExt;
-    ColorBrewerName := ProgramRootDir + 'color_palettes_v13' + DefaultDBExt;
+    ColorBrewerName := ProgramRootDir + 'color_palettes_v14' + DefaultDBExt;
     HardLimitColorPaletteFName := ProgramRootDir + 'hard_limit_color_palettes' + DefaultDBExt;
     TableDefinitionsFileName := ProgramRootDir + 'MD_TABLE_DEF_v2' + DefaultDBExt;
     GazOptFName := ProgramRootDir + 'gaz_symbols_v3' + DefaultDBExt;
@@ -4656,7 +4640,6 @@ begin
     RangeCircleSizesfName := ProgramRootDir + 'range_circles' + DefaultDBExt;
     WKT_GCS_Proj_fName := ProgramRootDir + 'wkt_proj\gcs_wgs84.prj';
     Z_units_fName := ProgramRootDir + 'microdem_z_units.dbf';
-
 
     {$IfDef ExMagVar}
     {$Else}

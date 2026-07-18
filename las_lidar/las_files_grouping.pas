@@ -209,7 +209,6 @@ begin
 end;
 
 
-
 function tLas_files.IndexTableName : PathStr;
 begin
    Result :=  ExtractFilePath(LAS_fNames[0]) + LastSubDir(ExtractFilePath(LAS_fNames[0])) + '_lidar_tile_index.dbf';
@@ -1138,7 +1137,7 @@ var
 
 var
    TStr : shortstring;
-begin
+begin {procedure tLas_files.CloudStatistics}
    {$IfDef RecordLASHist} WriteLineToDebugFile('tLas_files.CloudStatistics in ' + ExtractFilePath(LAS_fNames[0])); {$EndIf}
    IndexTable := Nil;
    if (CloudStats = csLoadStats) and FileExists(IndexTableName) then begin
@@ -1155,6 +1154,7 @@ begin
          exit;
       end;
    end;
+   SetColorForProcessing;
 
       Tiles := tStringList.Create;
       Tiles.Add('LAT,LONG,TILE,POINTS,DENSITY,LAT_HI,LAT_LOW,LONG_HI,LONG_LOW,MAX_ELEV,MIN_ELEV,ELEV_1,ELEV_99,MAX_TIME,MIN_TIME,' +
@@ -1211,8 +1211,9 @@ begin
       Dispose(PointCloudID);
       Dispose(Intensities);
       Dispose(NIRs);
+      SetColorForWaiting;
    {$IfDef RecordLASHist} WriteLineToDebugFile('tLas_files.CloudStatistics out'); {$EndIf}
-end;
+end {procedure tLas_files.CloudStatistics};
 
 
 function tLas_files.OpenGLLasPoints(var NewName : PathStr; BaseMap : tMapForm; Mask : tMyBitmap = Nil) : boolean;
