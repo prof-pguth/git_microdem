@@ -19,11 +19,11 @@ unit petdbutils;
       //{$Define RecordCSVParse}
       //{$Define RecordFullCSV}      //major slowdown
       //{$Define RecordProcessCSVLine}  //major slowdown
-      //{$Define RecordGPX}
+      {$Define RecordGPX}
 
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
-      //{$Define RecordCSVimport}
+      {$Define RecordCSVimport}
       //{$Define RecordRange}
       //{$Define RecordGetField}
       //{$Define RecordFieldPresent}
@@ -106,10 +106,6 @@ procedure CopyDBTable(FromDBF,ToDBF : PathStr);
    function PointVeryCloseGeoFilter(LatFieldName,LongFieldName : string16; Lat,Long : float64; Bit : float64 = 0.0001) : AnsiString;
 
 
-procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
-
-
-//procedure FindPointFileGeoLimits(Table : tMyData; var HiLat,LowLong,LowLat,HighLong : float64);
 
 function PointBoundBoxGeo(Lat,Long : float64) : sfBoundBox;
 
@@ -178,6 +174,11 @@ function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
 {$EndIf}
 
 
+function ImportExerciseTrack(var FileWanted : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : integer;
+procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
+function IsThisGPSTrackFile(FileWanted : PathStr) : boolean;
+
+
 var
    OutsideCSVImport,
    WeKnowTheHeader,
@@ -199,7 +200,8 @@ uses
    text_report_options,
    Nevadia_Main,
 {$EndIf}
-
+   DEMdef_routines,
+   MD_use_tools,
    DEMDataBase,
    PETImage;
 

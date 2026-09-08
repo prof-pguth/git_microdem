@@ -35,10 +35,11 @@
       //{$Define RecordNumberOpenMaps}
       //{$Define RecordMapDrawLegends}
       //{$Define TrackHorizontalDatum}
+      //{$Define RecordOpenVectorMap}
       //{$Define RecordFan}
       //{$Define RecordVAT}
       //{$Define RecordOSM}
-      {$Define RecordDBsIndex}
+      //{$Define RecordDBsIndex}
       //{$Define RecordMapType}
       //{$Define FanDrawProblems)
       //{$Define WorldFileOverlay}
@@ -511,7 +512,7 @@ type
       {$IfDef VCL}
         procedure DrawSecondGrid(var Bitmap : tMyBitmap; Grid2 : integer);
         procedure PlotVectorOverlay(Bitmap : tMyBitmap; FName : PathStr);
-        procedure OverlaySRTMWaterBodies(Bitmap : tMyBitmap; WaterMask : boolean = false);
+        //procedure OverlaySRTMWaterBodies(Bitmap : tMyBitmap; WaterMask : boolean = false);
 
         {$IfDef AllowGeomorphometry}
            procedure OverlayCategories(Bitmap : tMyBitmap; TerrainCategory : tTerrainCatDefinition);

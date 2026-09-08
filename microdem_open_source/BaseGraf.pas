@@ -697,7 +697,7 @@ var
    GraphSeriesFiles : tStringList;
    Min,Max : float64;
    TStr : shortstring;
-   CreateDB : tCreateDataBase;
+   //CreateDB : tCreateDataBase;
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph in'); {$EndIf}
   Result := nil;
@@ -1213,7 +1213,7 @@ begin {DrawScaledPieCharts}
    end;
    sTable.Destroy;
    {$IfDef RecordGrafFromDB} WriteLineToDebugFile('TThisBaseGraph.DrawScaledPieCharts out'); {$EndIf}
-end;
+end {DrawScaledPieCharts};
 
 
 procedure TThisBaseGraph.DrawScaledColoredSymbols(Bitmap : tMyBitmap);
@@ -1305,7 +1305,7 @@ begin
       end;
    end
    else MessageToContinue('Database missing');
-end;
+end {procedure TThisBaseGraph.DrawBoxPlo};
 
 
 function StartBoxPlot(DBonTable : integer; LLtext : shortstring = ''; HLabel : shortString = ''; MinHoriz : float32 = 1; MaxHoriz : float32 = -1) : tThisBaseGraph;
@@ -1359,7 +1359,7 @@ begin
        GISdb[DBonTable].ShowStatus;
    end
    else MessageToContinue('DB missing required fields');
-end;
+end {function StartBoxPlot};
 
 
       function GetAxisDecimals(inc : float32) : integer;

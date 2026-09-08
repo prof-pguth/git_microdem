@@ -303,6 +303,11 @@ function FindSingleWKTinDirectory(thePath : PathStr) : PathStr;
    procedure GetMapParametersSPCSOption(var ProjFileName : PathStr; var Hemi : ANSIchar; var UTMZone : int16; var DatCode : ShortString; var  PName :  tProjType; var GeoLatLong : boolean; UTMZoneOnly : boolean = false; AreaName : shortString = '');
 {$EndIf}
 
+function ThisIsETRS89(Tstr : ANSIstring) : boolean;
+function ThisIsWGS84(Tstr : ANSIstring) : boolean;
+function ThisIsNAD83(Tstr : ANSIstring) : boolean;
+
+
 
 const
    PointConvertDebug : boolean = false;
@@ -330,6 +335,7 @@ uses
       Nevadia_Main,
    {$EndIf}
    DEMPickDatum,
+   Equal_Earth_Projection,
    DEMDef_routines;
 
 const
@@ -340,16 +346,15 @@ const
    eeA4 = 0.003796;
    eeM  = 0.86602540378;  //(0.5 * sqrt(3));
 
-
 {$I basemap_datum.inc}
 
 {$I basemap_vincenty.inc}
+
 
 procedure tMapProjection.WriteProjectionSummaryToDebugFile(why : shortstring);
 begin
    WriteLineToDebugFile(Why + ' Pname=' + GetProjName + ' ' + KeyDatumParams);
 end;
-
 
 
 function tMapProjection.ProjectionUsingWKT : boolean;
@@ -468,12 +473,10 @@ begin
 end;
 
 
-
 function UTMString(xutm,yutm : float64) : shortstring;
 begin
    Result := 'xutm=' + RealToString(xutm,-18,1) + '   yutm=' + RealToString(yutm,-18,1)
 end;
-
 
 
 function HemiFromLat(Lat : float64) : ANSIchar;
@@ -1357,9 +1360,6 @@ begin
             if (LatHemi = 'S') then false_north := 10000000;
          end
          else if (PName in [AlbersEqAreaConicalEllipsoid]) then begin
-//PROJCS["NAD83 / Conus Albers",GEOGCS["NAD83",DATUM["North_American_Datum_1983",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],
-//TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4269"]],
-//PROJECTION["Albers_Conic_Equal_Area"],PARAMETER["standard_parallel_1",29.5],PARAMETER["standard_parallel_2",45.5],PARAMETER["latitude_of_center",23],PARAMETER["longitude_of_center",-96],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH],AUTHORITY["EPSG","5070"]]
             lat0 := 23 * Petmar_types.DegToRad;
             long0 := (-96) * Petmar_types.DegToRad;
             Phi1 := 29.5 * Petmar_types.DegToRad;
@@ -1392,8 +1392,6 @@ begin
       end;
 
       if (ProjMapScale = Nan) then ProjMapScale := 0.9996;
-
-     //{$IfDef RecordProjectionParameters} WriteLineToDebugFile('call SetTMConstants'); {$EndIf}
       SetDatumAndTMConstants;
 
       CosLatCent := cos(Lat0);
@@ -1459,7 +1457,6 @@ begin
 end {proc GetProjectParameters};
 
 
-
 function tMapProjection.TissotEnabled : boolean;
 begin
    Result := PName in [AlbersEqAreaConicalEllipsoid,LambertConformalConicEllipse, Mercator,WebMercator,MercatorEllipsoid,UTMEllipsoidal,GeneralTransverseMercator,
@@ -1485,12 +1482,6 @@ begin
    Result := PName in [MercatorEllipsoid,AlbersEqAreaConicalEllipsoid,UTMEllipsoidal,SinusEllipsoidal,LambertConformalConicEllipse,UK_OS,Finn_GK,GeneralTransverseMercator,PolarStereographicEllipsoidal,IrishGrid];
 end;
 
-(*
-function tMapProjection.CylindricalProjection : boolean;
-begin
-   Result := false;
-end;
- *)
 
 function tMapProjection.GetProjName : shortstring;
 begin

@@ -413,11 +413,11 @@ var
    DEMs : array[0..25] of integer;
 begin
    Grids := Nil;
-   TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileName + '_ref_test_dem\';
+   TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileName + RefTestStr;
    FindMatchingFiles(TileDir,'*.tif',Grids,0);
    if (Grids.Count = 0) then begin
       GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
-      TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileName + '_ref_test_dem\';
+      TileDir := MDDef.DEMIX_BaseDir + AreaName + '\' + TileName + RefTestStr;
       FindMatchingFiles(TileDir,'*.tif',Grids,0);
    end;
 

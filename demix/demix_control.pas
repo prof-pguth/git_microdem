@@ -221,6 +221,8 @@ procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
        procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
    {$EndIf}
 
+procedure FindDSMslopeLessThanDEM(DBonTable : integer);
+
 
 
 implementation
@@ -259,6 +261,8 @@ var
       {$I open_demix_area.inc}
    {$EndIf}
 
+   {$I demix_dsm_dtm_compare.inc}
+
 
 const
    MICRODEMcurvature = true;  //if not, using Whitebox
@@ -286,7 +290,6 @@ begin
     else begin
        MessageToContinue('No mode for criteria defined, mode=' + IntToStr(Mode));
     end;
-
     FUVMode := Mode;
 end;
 
@@ -294,7 +297,7 @@ end;
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 begin
    DEMIX_criteria_tolerance_fName := '';
-   if ValidDB(db) then begin
+   if ValidDB(db) and GISdb[db].MyData.FieldExists('CRITERION') then begin
       if AnsiContainsText(UpperCase(GISdb[db].dbName),'PARTIALS') then DEMIX_CriteriaToleranceFNameFromMode(udFUVpartials)
       else if AnsiContainsText(UpperCase(GISdb[db].dbName),'CURVATURES') then DEMIX_CriteriaToleranceFNameFromMode(udFUVCurves)
       else if AnsiContainsText(UpperCase(GISdb[db].dbName),'MIXED') then DEMIX_CriteriaToleranceFNameFromMode(udFUVcalc)
@@ -595,7 +598,7 @@ begin
 
          {$If Defined(RecordCartoFull)} WriteLineToDebugFile('TMapForm.ClipDEMtoFullDEMIXTiles, map full tiles ' + sfBoundBoxToString(bb,8)); {$EndIf}
          if (NewName = '') then NewName := DEMGlb[DEM].DEMFileName;
-         DEMGlb[DEM].SaveGridSubsetGeotiff(DEMGlb[DEM].sfBoundBox2tGridLimits(bb),NewName);
+         DEMGlb[DEM].SaveGridSubsetGeotiff(NewName,DEMGlb[DEM].sfBoundBox2tGridLimits(bb));
          DEMGlb[DEM].DEMFileName := NewName;
          DEMGlb[DEM].SelectionMap.ReloadDEMClick(Nil);
          {$If Defined(RecordCarto)} aLine := aline + ' clipped ' + DEMGlb[DEM].ColsRowsString;   WriteLineToDebugFile(aLine); {$EndIf}

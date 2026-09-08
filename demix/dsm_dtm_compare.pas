@@ -48,13 +48,6 @@ uses
 
 type
   TCompareDSM_DTMform = class(TForm)
-    BitBtn1: TBitBtn;
-    BitBtn2: TBitBtn;
-    BitBtn3: TBitBtn;
-    BitBtn4: TBitBtn;
-    BitBtn5: TBitBtn;
-    BitBtn6: TBitBtn;
-    BitBtn7: TBitBtn;
     BitBtn8: TBitBtn;
     BitBtn9: TBitBtn;
     RadioGroup2: TRadioGroup;
@@ -83,13 +76,9 @@ type
     BitBtn17: TBitBtn;
     BitBtn19: TBitBtn;
     BitBtn20: TBitBtn;
-    procedure BitBtn1Click(Sender: TObject);
-    procedure BitBtn2Click(Sender: TObject);
-    procedure BitBtn3Click(Sender: TObject);
-    procedure BitBtn4Click(Sender: TObject);
-    procedure BitBtn5Click(Sender: TObject);
-    procedure BitBtn6Click(Sender: TObject);
-    procedure BitBtn7Click(Sender: TObject);
+    BitBtn2: TBitBtn;
+    BitBtn6: TBitBtn;
+    //CheckBox1: TCheckBox;
     procedure BitBtn8Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
@@ -110,6 +99,10 @@ type
     procedure BitBtn17Click(Sender: TObject);
     procedure BitBtn19Click(Sender: TObject);
     procedure BitBtn20Click(Sender: TObject);
+    procedure BitBtn2Click(Sender: TObject);
+    procedure BitBtn6Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    //procedure CheckBox1Click(Sender: TObject);
   private
     { Private declarations }
     procedure GraphsCurrentRec;
@@ -156,23 +149,6 @@ begin
       CompareDSM_DTMform := TCompareDSM_DTMform.Create(Application);
       CompareDSM_DTMform.db := inDB;
       CompareDSM_DTMform.BaseFilter := GISdb[inDB].MyData.Filter;
-      CompareDSM_DTMform.OnRec := 0;
-      CompareDSM_DTMform.DTM_1sec := 0;
-      CompareDSM_DTMform.DSM_1sec := 0;
-      CompareDSM_DTMform.HRDTM := 0;
-      CompareDSM_DTMform.HRDSM := 0;
-      CompareDSM_DTMform.LCgrid := 0;
-      CompareDSM_DTMform.Edit1.Text := IntToStr(MDdef.DEMIX_MaxTilesInLegend);
-
-      MDDef.DEMIX_xsize := 725;
-      MDDef.DEMIX_ysize := 525;
-      CompareDSM_DTMform.BitBtn11.Caption := 'Graph size: ' + IntToStr(MDDef.DEMIX_xsize) + ' by ' + IntToStr(MDDef.DEMIX_ysize);
-
-      LoadTwoDEMIXfilters(CompareDSM_DTMform.ComboBox6,CompareDSM_DTMform.ComboBox7);
-
-      if MDDEF.DEMIX_UseMedian then CompareDSM_DTMform.RadioGroup2.ItemIndex := 1 else CompareDSM_DTMform.RadioGroup2.ItemIndex := 0;
-      if MDDef.DEMIX_MultiGraphCommonScaling then CompareDSM_DTMform.RadioGroup3.ItemIndex := 0 else CompareDSM_DTMform.RadioGroup3.ItemIndex := 1;
-
 
      if GISdb[indb].MyData.FieldExists('GRID_SEC') then ResString := 'GRID_SEC'
      else if GISdb[indb].MyData.FieldExists('GRID_M') then ResString := 'GRID_M'
@@ -187,11 +163,16 @@ begin
         CompareDSM_DTMform.Memo3.Lines := Resolutions;
      end;
 
+     //CompareDSM_DTMform.CheckBox1.Checked := MDDef.AllFilter1SameGraph;
+
       GISdb[inDB].EmpSource.Enabled := false;
       CompareDSM_DTMform.DEMIX_scale_compare := GISdb[inDB].MyData.FieldExists('DEM_1') and GISdb[inDB].MyData.FieldExists('DEM_2');
       CompareDSM_DTMform.LoadMemo1;
       if not GISdb[inDB].MyData.FieldExists(MDDef.DEMIX_SingleCriterion) then MDDef.DEMIX_SingleCriterion := CompareDSM_DTMform.ComboBox1.Items[0];
       CompareDSM_DTMform.ComboBox1.Text := MDDef.DEMIX_SingleCriterion;
+
+      if GISdb[inDB].MyData.FieldExists('DEMIX_TILE') then CompareDSM_DTMform.DEMIXtileFieldName := 'DEMIX_TILE'
+      else CompareDSM_DTMform.DEMIXtileFieldName := 'DTM_NAME';
 
       if CompareDSM_DTMform.DEMIX_scale_compare then begin
          if not GISdb[inDB].MyData.FieldExists('COMPARE') then begin
@@ -203,18 +184,10 @@ begin
                 GISdb[inDB].MyData.Next;
              end;
          end;
-         CompareDSM_DTMform.DEMIXtileFieldName := 'DEMIX_TILE';
-      end
-      else begin
-         CompareDSM_DTMform.DEMIXtileFieldName := 'DTM_NAME';
       end;
       CompareDSM_DTMform.theDTMs := GISdb[CompareDSM_DTMform.db].MyData.ListUniqueEntriesInDB(CompareDSM_DTMform.DEMIXtileFieldName);
       GISdb[inDB].ClearGISFilter;
-
-
       CompareDSM_DTMform.BitBtn15.Visible := GISdb[inDB].MyData.FieldExists('GRID_THIN') and GISdb[inDB].MyData.FieldExists('DSM_NAME') and GISdb[inDB].MyData.FieldExists('DTM_NAME');
-
-
       CompareDSM_DTMform.Show;
       {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('StartDSMandDTMcomparison out, ' + GISdb[inDB].DBname); {$EndIf}
   end
@@ -222,7 +195,6 @@ begin
      {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('StartDSMandDTMcomparison fail no tile characteristics, ' + GISdb[inDB].DBname); {$EndIf}
   end;
 end;
-
 
 procedure TCompareDSM_DTMform.ComboBox1Change(Sender: TObject);
 begin
@@ -256,6 +228,29 @@ end;
 procedure TCompareDSM_DTMform.Edit1Change(Sender: TObject);
 begin
    CheckEditString(Edit1.Text,MDdef.DEMIX_MaxTilesInLegend);
+end;
+
+
+procedure TCompareDSM_DTMform.FormCreate(Sender: TObject);
+begin
+    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.FormCreate in'); {$EndIf}
+    OnRec := 0;
+    DTM_1sec := 0;
+    DSM_1sec := 0;
+    HRDTM := 0;
+    HRDSM := 0;
+    LCgrid := 0;
+    Edit1.Text := IntToStr(MDdef.DEMIX_MaxTilesInLegend);
+
+    MDDef.DEMIX_xsize := 725;
+    MDDef.DEMIX_ysize := 525;
+    BitBtn11.Caption := 'Graph size: ' + IntToStr(MDDef.DEMIX_xsize) + ' by ' + IntToStr(MDDef.DEMIX_ysize);
+
+    LoadTwoDEMIXfilters(ComboBox6,ComboBox7);
+
+    if MDDEF.DEMIX_UseMedian then RadioGroup2.ItemIndex := 1 else RadioGroup2.ItemIndex := 0;
+    RadioGroup3.ItemIndex := MDDef.DEMIX_MultiGraphCommonScaling;
+    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.FormCreate out'); {$EndIf}
 end;
 
 
@@ -308,23 +303,32 @@ var
    i : integer;
 begin
    Memo1.Lines.Clear;
-   Comparisons := GISdb[db].MyData.ListUniqueEntriesInDB('COMPARE');
-   RemoveInvalidCriterion(Comparisons);
-   for i := 0 to pred(Comparisons.Count) do
-       Memo1.Lines.Add(Comparisons[i]);
-   if (Comparisons.Count < 2) then begin
-      Memo1.Enabled := false;
-      BitBtn10.Enabled := false;
-   end;
-   Comparisons.Destroy;
+   if GISdb[db].MyData.FieldExists('COMPARE') then begin
+       Memo1.Visible := true;
+       Comparisons := GISdb[db].MyData.ListUniqueEntriesInDB('COMPARE');
+       RemoveInvalidCriterion(Comparisons);
+       for i := 0 to pred(Comparisons.Count) do
+           Memo1.Lines.Add(Comparisons[i]);
+       if (Comparisons.Count < 2) then begin
+          Memo1.Enabled := false;
+          BitBtn10.Enabled := false;
+       end;
+       Comparisons.Destroy;
 
-   ReloadMemo2(db,Memo2,ComboBox1);
+       ReloadMemo2(db,Memo2,ComboBox1);
+   end
+   else begin
+      Memo1.Visible := false;
+   end;
 end;
 
 
 procedure TCompareDSM_DTMform.BitBtn10Click(Sender: TObject);
 begin
+   {$IfDef RecordDSM_DTM_Compare} HighlightLineToDebugFile('TCompareDSM_DTMform.BitBtn10Click in'); {$EndIf}
+   Self.Hide;
    GraphMultipleParamsByDEMResolution(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName,ResolutionsList,DEMComparingList);
+   Self.Show;
 end;
 
 
@@ -376,33 +380,17 @@ begin
    LoadMemo1;
 end;
 
-procedure TCompareDSM_DTMform.BitBtn1Click(Sender: TObject);
-begin
-   if (OnRec < pred(theDTMs.Count)) then begin
-      inc(onRec);
-      GraphsCurrentRec;
-   end;
-end;
-
-
 procedure TCompareDSM_DTMform.BitBtn20Click(Sender: TObject);
 begin
+   Self.Hide;
    GridScatterPlotByDEMResolution(db,MDDef.DEMIX_SingleCriterion,'EDGE_ALL');
+   Self.Show;
 end;
 
 procedure TCompareDSM_DTMform.BitBtn2Click(Sender: TObject);
-var
-   DSMname,DTMname : PathStr;
-   AreaName : shortstring;
 begin
-   AreaName := GISdb[DB].MyData.GetFieldByNameAsString('AREA');
-   DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + '\source\' + GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
-   DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + '\source\' + GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
-   HRDTM := OpenNewDEM(DTMName);
-   HRDSM := OpenNewDEM(DSMName);
-   if not ValidDEM(LCgrid) then LCgrid := LoadLC10LandCover('',DEMglb[HRDTM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
+   ManyGraphsSlopeVersusResolutionManyTiles(db,'DEM1_SLOPE');
 end;
-
 
 procedure TCompareDSM_DTMform.BitBtn38Click(Sender: TObject);
 begin
@@ -410,68 +398,37 @@ begin
 end;
 
 
-procedure TCompareDSM_DTMform.BitBtn3Click(Sender: TObject);
-begin
-   if (OnRec > 0) then begin
-      dec(onRec);
-      GraphsCurrentRec;
-   end;
-end;
-
-procedure TCompareDSM_DTMform.BitBtn4Click(Sender: TObject);
-begin
-   onRec:= 0;
-   GraphsCurrentRec;
-end;
-
-procedure TCompareDSM_DTMform.BitBtn5Click(Sender: TObject);
-begin
-   OnRec := pred(theDTMs.Count);
-   GraphsCurrentRec;
-end;
-
-
 procedure TCompareDSM_DTMform.BitBtn6Click(Sender: TObject);
 var
-   DSMname,DTMname : PathStr;
-   AreaName : shortstring;
+  BaseFilter,af : shortstring;
 begin
-   AreaName := GISdb[DB].MyData.GetFieldByNameAsString('AREA');
-   DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + '\' + GISdb[DB].MyData.GetFieldByNameAsString('COUNTRY') + '_' +
-        GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '_ref_test_dem\ref_dtm_srtm.tif';
-   DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + '\' + GISdb[DB].MyData.GetFieldByNameAsString('COUNTRY') + '_' +
-        GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '_ref_test_dem\ref_dtm_srtm.tif';
-   DTM_1sec := OpenNewDEM(DTMName);
-   DSM_1sec := OpenNewDEM(DSMName);
-   if not ValidDEM(LCgrid) then LCGrid := LoadLC10LandCover('',DEMglb[DTM_1sec].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
-end;
-
-
-procedure TCompareDSM_DTMform.BitBtn7Click(Sender: TObject);
-
-    procedure MakeSlopeMap(DEM : integer);
-    begin
-       if ValidDEM(DEM) then CreateEvansSlopeMapPercent(true,DEM);
-    end;
-
-begin
-   MakeSlopeMap(DTM_1sec);
-   MakeSlopeMap(DSM_1sec);
-   MakeSlopeMap(HRDTM);
-   MakeSlopeMap(HRDSM);
+   {$IfDef RecordDSM_DTM_Compare} HighlightLineToDebugFile('TCompareDSM_DTMform.BitBtn6Click in'); {$EndIf}
+   Self.Hide;
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion), DEMComparingList);
+   Self.Show;
 end;
 
 
 procedure TCompareDSM_DTMform.BitBtn8Click(Sender: TObject);
+var
+  BaseFilter,af : shortstring;
+  i : integer;
 begin
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,ComparingCriteriaList);
+   {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn8Click in'); {$EndIf}
+   Self.Hide;
+   //BaseFilter := GISdb[db].MyData.Filter;
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,ComparingCriteriaList,DEMcomparingList);
+   //GISdb[db].ApplyGISfilter(BaseFilter);
+   Self.Show;
 end;
 
 
 procedure TCompareDSM_DTMform.BitBtn9Click(Sender: TObject);
 begin
    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn9Click in'); {$EndIf}
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),true);
+   Self.Hide;
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),DEMcomparingList,true);
+   Self.Show;
 end;
 
 
@@ -480,6 +437,7 @@ var
    gr1,gr2 : tThisBaseGraph;
    TileStats : shortstring;
 begin
+   Self.Hide;
    if DEMIX_scale_compare then begin
       // July 2026, unclear if this works
        GISdb[db].ApplyGISFilter('TILE=' + QuotedStr(TheDTMs.Strings[onRec]));
@@ -501,6 +459,7 @@ begin
       gr1.Left := 1;
       gr1.Top := 50;
    end;
+   Self.Show;
 end;
 
 
@@ -511,7 +470,7 @@ end;
 
 procedure TCompareDSM_DTMform.RadioGroup3Click(Sender: TObject);
 begin
-   MDDef.DEMIX_MultiGraphCommonScaling := RadioGroup3.ItemIndex = 0;
+   MDDef.DEMIX_MultiGraphCommonScaling := RadioGroup3.ItemIndex;
 end;
 
 

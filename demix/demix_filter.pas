@@ -121,7 +121,7 @@ type
     threedembestrgm_checkbox: TCheckBox;
     CheckBox9: TCheckBox;
     CheckBox10: TCheckBox;
-    CheckBox11: TCheckBox;
+    //CheckBox11: TCheckBox;
     TabSheet4: TTabSheet;
     Label3: TLabel;
     AreaProgress: TEdit;
@@ -178,7 +178,7 @@ type
     procedure RadioGroup2Click(Sender: TObject);
     procedure CheckBox10Click(Sender: TObject);
     procedure ComboBox4Change(Sender: TObject);
-    procedure CheckBox11Click(Sender: TObject);
+    //procedure CheckBox11Click(Sender: TObject);
     procedure CheckBox16Click(Sender: TObject);
     procedure LoadCurrentAreaBitBtn5Click(Sender: TObject);
     procedure BitBtn32Click(Sender: TObject);
@@ -308,8 +308,8 @@ begin
       DemixFilterForm.ComboBox4.Items.LoadFromFile(AreaListFName);
    end;
 
-   DemixFilterForm.ComboBox1.Text := MDDef.DEMIX_default_tile;
-   DemixFilterForm.ComboBox4.Text := MDDef.DEMIX_default_area;
+   //DemixFilterForm.ComboBox1.Text := MDDef.DEMIX_default_tile;
+   //DemixFilterForm.ComboBox4.Text := MDDef.DEMIX_default_area;
 
    DemixFilterForm.Show;
    {$If Defined(RecordDEMIX) or Defined(TrackOpenHandles)} WriteOpenHandlestoDebugLog('DoDEMIXFilter out'); {$EndIf}
@@ -794,10 +794,6 @@ begin
    {$EndIf}
 end;
 
-procedure TDemixFilterForm.CheckBox11Click(Sender: TObject);
-begin
-   MDDef.DEMIX_default_half_sec_ref := CheckBox11.Checked;
-end;
 
 procedure TDemixFilterForm.CheckBox16Click(Sender: TObject);
 begin
@@ -858,12 +854,12 @@ end;
 
 procedure TDemixFilterForm.ComboBox1Change(Sender: TObject);
 begin
-   MDDef.DEMIX_default_tile := ComboBox1.Text;
+   //MDDef.DEMIX_default_tile := ComboBox1.Text;
 end;
 
 procedure TDemixFilterForm.ComboBox4Change(Sender: TObject);
 begin
-   MDDef.DEMIX_default_area := ComboBox4.Text;
+   //MDDef.DEMIX_default_area := ComboBox4.Text;
 end;
 
 procedure TDemixFilterForm.Edit1Change(Sender: TObject);
@@ -894,7 +890,7 @@ begin
    {$EndIf}
 
    CheckBox3.Checked := MDDef.LoadTestDEMs;
-   CheckBox11.Checked := MDDef.DEMIX_default_half_sec_ref;
+   //CheckBox11.Checked := MDDef.DEMIX_default_half_sec_ref;
 
    CheckBox16.Checked := MDDef.DEMIX_open_ref_DSM;
    CheckBox18.Checked := MDDef.DEMIX_overwrite_enabled;
@@ -1223,7 +1219,7 @@ var
 
 begin
    Result := true;
-   MDDef.DEMIX_default_area := AreaName;
+  // MDDef.DEMIX_default_area := AreaName;
    CurrentOperation.Text := 'Load DEMs for ' + AreaName;
    {$IfDef RecordDEMIXLoad} WriteLineToDebugFile('TDemixFilterForm.LoadDEMsForArea in ' + AreaName); {$EndIf}
    ZeroDEMs;

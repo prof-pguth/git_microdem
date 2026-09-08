@@ -125,22 +125,21 @@ procedure GraphMultipleParamsByDEMResolution(db : integer; Criterion,DEMIXtileFi
 //procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
 procedure BestDEMonScatterPlotTwoParameters(DB : integer; Criteria,DEMs : tstringList);
-procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,MultSeries : tStringList; AllTiles : boolean = false);
+procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons : tStringList; AllTiles : boolean = false);
 procedure ScatterPlotTwoDEMs(db : integer; DEM1,DEM2 : shortstring; Criteria : tStringList);
 
 procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; Resolutions : tStringList; var Results : tStringList);
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; Resolutions : tStringList) : tThisBaseGraph;
-procedure ComputePowerFitForAllTiles(db : integer);
 function OneGraphSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring) : tThisBaseGraph;
 procedure ManyGraphsSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring);
 
 
 function GraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring) : tThisBaseGraph;
 procedure GridGraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring);
-function GraphFUVTwoDEMs(db : integer; DEMs,Params : tStringList) : tThisBaseGraph;
-procedure GridGraphFUVTwoDEMs(db : integer; DEMs,Params : tStringList);
+function GraphFUVTwoDEMs(db : integer; DEMs,Criteria : tStringList) : tThisBaseGraph;
+procedure GridGraphFUVTwoDEMs(db : integer; DEMs,Params :tStringList);
 procedure GridScatterPlotByDEMResolution(db : integer; Criterion,Coloring : shortstring);
 
 
@@ -175,12 +174,55 @@ const
 var
    BigBitmap,Bitmap : tMyBitmap;
    xsize,ysize,f1,f2,XPanel,YPanel,Offset,x,y : integer;
+   GraphMaxY,GraphMinY : float32;
 begin
+   if MDDef.DEMIX_MultiGraphCommonScaling = 0 then begin
+       GraphMinY := 99e38;
+       GraphMaxY := -99e38;
+       for f1 := 0 to pred(Filters1.Count) do begin
+         for f2 := 0 to pred(Filters2.Count) do begin
+             if (gr[f1,f2] <> Nil) then begin
+                if (gr[f1,f2].GraphDraw.MaxVertAxis > GraphMaxY) then GraphMaxY := gr[f1,f2].GraphDraw.MaxVertAxis;
+                if (gr[f1,f2].GraphDraw.MinVertAxis < GraphMinY) then GraphMinY := gr[f1,f2].GraphDraw.MinVertAxis;
+             end;
+         end;
+       end;
+       for f1 := 0 to pred(Filters1.Count) do begin
+          for f2 := 0 to pred(Filters2.Count) do begin
+             if (gr[f1,f2] <> Nil) then begin
+                gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
+                gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
+                gr[f1,f2].RedrawDiagram11Click(Nil);
+             end;
+          end;
+       end;
+   end;
+   if MDDef.DEMIX_MultiGraphCommonScaling = 1 then begin
+       for f1 := 0 to pred(Filters1.Count) do begin
+         GraphMinY := 99e38;
+         GraphMaxY := -99e38;
+         for f2 := 0 to pred(Filters2.Count) do begin
+             if (gr[f1,f2] <> Nil) then begin
+                if (gr[f1,f2].GraphDraw.MaxVertAxis > GraphMaxY) then GraphMaxY := gr[f1,f2].GraphDraw.MaxVertAxis;
+                if (gr[f1,f2].GraphDraw.MinVertAxis < GraphMinY) then GraphMinY := gr[f1,f2].GraphDraw.MinVertAxis;
+             end;
+          end;
+          for f2 := 0 to pred(Filters2.Count) do begin
+             if (gr[f1,f2] <> Nil) then begin
+                gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
+                gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
+                gr[f1,f2].RedrawDiagram11Click(Nil);
+             end;
+          end;
+       end;
+   end;
+
+
    xsize := 0;
    ySize := 0;
    for f1 := 0 to pred(Filters1.Count) do begin
       for f2 := 0 to pred(Filters2.Count) do begin
-         if gr[f1,f2] <> Nil then begin
+         if (gr[f1,f2] <> Nil) then begin
             if (gr[f1,f2].GraphDraw.XWindowSize > xsize) then xsize := gr[f1,f2].GraphDraw.XWindowSize;
             if (gr[f1,f2].GraphDraw.YWindowSize > ysize) then Ysize := gr[f1,f2].GraphDraw.YWindowSize;
          end;
@@ -199,7 +241,7 @@ begin
    end;
 
    for f2 := 0 to pred(Filters2.Count) do begin
-      Offset := (XPanel - BigBitmap.Canvas.TextWidth(Labels1.Strings[f2])) div 2;
+      Offset := (XPanel - BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2;
       BigBitmap.Canvas.TextOut(StartX + f2 * XPanel + Offset,2,Labels2.Strings[f2]);
    end;
 
@@ -232,20 +274,17 @@ end;
 
 
 
-function GraphFUVTwoDEMs(db : integer; DEMs,Params : tStringList) : tThisBaseGraph;
+function GraphFUVTwoDEMs(db : integer; DEMs,Criteria : tStringList) : tThisBaseGraph;
 var
-   //Tiles : tStringList;
    rfiles : array[0..10] of file;
    i,j : integer;
    BaseFilter : shortstring;
    v : array[1..2] of float32;
 begin {function GraphFUVTwoDEMs}
-   //SetColorForProcessing;
    BaseFilter := GISdb[db].MyData.Filter;
    GISdb[db].EmpSource.Enabled := false;
-   //Tiles := GISdb[db].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
    Result := tThisBaseGraph.Create(Application);
-   Result.GraphDraw.HorizLabel := DEMs.Strings[0];
+   Result.GraphDraw.HorizLabel := DEMs[0];
    Result.GraphDraw.VertLabel := DEMs.Strings[1];
    Result.GraphDraw.MaxHorizAxis := -99e38;
    Result.GraphDraw.MinHorizAxis :=  99e38;
@@ -254,32 +293,29 @@ begin {function GraphFUVTwoDEMs}
    Result.GraphDraw.Draw1to1Line := true;
    Result.GraphDraw.LRcornerText := 'Tiles=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB('DEMIX_TILE'));
 
-   for j := 0 to pred(Params.Count) do begin
-      Result.OpenDataFile(rfiles[j],Params.Strings[j]);
+   for j := 0 to pred(Criteria.Count) do begin
+      Result.OpenDataFile(rfiles[j],Criteria.Strings[j]);
    end;
    Result.Caption := DEMs.Strings[0] + '_' + DEMs.strings[1];
-   //for i := 0 to pred(Tiles.Count) do begin
-      for j := 0 to pred(Params.Count) do begin
-        GISdb[db].ApplyGISFilter(PETdbUtils.AddAndIfNeeded(BaseFilter) + 'CRITERION=' +  QuotedStr(Params.Strings[j]));
-        GISdb[db].EmpSource.Enabled := false;
-        while not GISdb[db].MyData.eof do begin
-            v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[0]);
-            v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[1]);
-            BlockWrite(Rfiles[j],v,1);
-            CompareValueToExtremes(v[1],Result.GraphDraw.MinHorizAxis,Result.GraphDraw.MaxHorizAxis);
-            CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
-            GISdb[db].MyData.Next;
-        end;
-     end;
-   //end;
-   for j := 0 to pred(Params.Count) do CloseFile(rfiles[j]);
+   for j := 0 to pred(Criteria.Count) do begin
+      GISdb[db].ApplyGISFilter(PETdbUtils.AddAndIfNeeded(BaseFilter) + 'CRITERION=' +  QuotedStr(Criteria.Strings[j]));
+      GISdb[db].EmpSource.Enabled := false;
+      while not GISdb[db].MyData.eof do begin
+          v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[0]);
+          v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.Strings[1]);
+          BlockWrite(Rfiles[j],v,1);
+          CompareValueToExtremes(v[1],Result.GraphDraw.MinHorizAxis,Result.GraphDraw.MaxHorizAxis);
+          CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
+          GISdb[db].MyData.Next;
+      end;
+   end;
+   for j := 0 to pred(Criteria.Count) do CloseFile(rfiles[j]);
    Result.GraphDraw.SetShowAllPoints(true,MDDef.DEMIXsymsize);
    Result.FormResize(Nil);
-   //Tiles.Destroy;
    GISdb[db].ClearGISFilter;
    GISdb[db].MyData.Filter := BaseFilter;
-   //SetColorForWaiting;
 end {function GraphFUVTwoDEMs};
+
 
 
 procedure GridGraphFUVTwoDEMs(db : integer; DEMs,Params :tStringList);

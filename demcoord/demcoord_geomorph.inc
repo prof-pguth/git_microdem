@@ -662,7 +662,7 @@ begin
 end;
 
 
-function tDEMDataSet.QuickRelief(Col,Row,BoxSize : integer; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean;
+function tDEMDataSet.QuickReliefBox(Col,Row,BoxSize : integer; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean;
 var
    Limits : tGridLimits;
 begin
@@ -676,13 +676,18 @@ var
    z,ave : float32;
 begin
    Result := false;
+   BoxAreaExtremeElevations(Limits,BaseLevel,Summit,ave);
+   Relief := Summit - Baselevel;
+   Elev_relf := (ave-BaseLevel) / (Summit - BaseLevel);
    if GetElevMeters(Col,Row,z) then begin
-      BoxAreaExtremeElevations(Limits,BaseLevel,Summit,ave);
-      Relief := Summit - Baselevel;
+      // these are relative to elevation at the point passed in
       GeoRelief := Summit - z;
       Dropoff := z - BaseLevel;
-      Elev_relf := (ave-BaseLevel) / (Summit - BaseLevel);
       Result := true;
+   end
+   else begin
+      GeoRelief := -999;
+      Dropoff := -999;
    end;
 end;
 
@@ -1035,7 +1040,7 @@ begin
     Relief := -12;
     repeat
        ThisDistance := i * AverageSpace;
-       QuickRelief(xg,yg,round(ThisDistance),ThisRelief,Summit,BaseLevel,GeoRelief,Dropoff,AvgElev);
+       QuickReliefBox(xg,yg,round(ThisDistance),ThisRelief,Summit,BaseLevel,GeoRelief,Dropoff,AvgElev);
        if (ThisRelief > Relief) then begin
           Plat := 0;
           Relief := ThisRelief;
@@ -1530,7 +1535,7 @@ begin
          end;
          if UseSlope then Result := Result and (SlopeAspectRec.SlopePercent >= CatMinSlope) and (SlopeAspectRec.SlopePercent <= CatMaxSlope);
          if UseRelief then begin
-            QuickRelief(x,y,CatReliefRadius,Relief,Summit,BaseLevel,GeoRelief,Dropoff,AvgElev);
+            QuickReliefBox(x,y,CatReliefRadius,Relief,Summit,BaseLevel,GeoRelief,Dropoff,AvgElev);
             Result := Result and (Relief >= CatMinRelief) and (Relief <= CatMaxRelief);
          end;
          if UseAspect then Result := Result and ((SlopeAspectRec.Dir in CatAspects) or (SlopeAspectRec.SlopePercent < 0.0001));

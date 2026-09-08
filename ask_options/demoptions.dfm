@@ -6,6 +6,7 @@ inherited OptionsForm: TOptionsForm
   ClientHeight = 563
   ClientWidth = 793
   Position = poDefaultPosOnly
+  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
@@ -670,7 +671,6 @@ inherited OptionsForm: TOptionsForm
         Height = 17
         Caption = 'Enable grid network computing'
         TabOrder = 1
-        OnClick = CheckBox88Click
       end
       object CheckBox83: TCheckBox
         Left = 24

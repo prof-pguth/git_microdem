@@ -26,6 +26,7 @@ begin
     GISdb[DB].EmpSource.Enabled := false;
 end;
 
+
 procedure FinishScatterPlotParameters(db : integer; var Graph : tThisBaseGraph);
 begin
    Graph.DefaultClientWidth := MDDef.DEMIX_xsize;
@@ -61,9 +62,7 @@ var
        GISdb[db].MyData.First;
        repeat
           ThisWinners := WinnerAndTies(db,DEMs,Tolerance);
-          if MDdef.DEMIX_IgnoreTies and StrUtils.AnsiContainsText(ThisWinners,'-') then begin
-          end
-          else begin
+          begin
               for k := 0 to pred(DEMs.Count) do begin
                  aDEM := UpperCase(DEMs.Strings[k]);
                  if StrUtils.AnsiContainsText(ThisWinners,aDEM) then begin
@@ -95,9 +94,7 @@ var
           if GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.XField,v[1]) and
               GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.YField,v[2]) then begin
             ThisWinners := WinnerAndTies(db,DEMs,Tolerance);
-            if MDdef.DEMIX_IgnoreTies and StrUtils.AnsiContainsText(ThisWinners,'-') then begin
-            end
-            else begin
+            begin
                 for k := pred(DEMs.Count) downto 0 do begin
                    aDEM := UpperCase(DEMs.Strings[k]);
                    if StrUtils.AnsiContainsText(ThisWinners,aDEM) then begin
@@ -172,8 +169,6 @@ var
                 GISdb[DB].MyData.Next;
             end;
             closeFile(rFile);
-            //Result.MinZ := RowMinZ;
-           //Result.MaxZ := RowMaxZ;
             Result.MinZShow := Result.MinZ;
 
             {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('coloring from '+ RealToString(Result.Minz,-12,-2) + ' to ' + RealToString(Result.Maxz,-12,-2) ); {$EndIf}

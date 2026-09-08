@@ -4371,7 +4371,6 @@ object MapForm: TMapForm
         end
         object DEMIX1secresamplebyaveraging1: TMenuItem
           Caption = 'DEMIX 1 sec resample by averaging'
-          OnClick = DEMIX1secresamplebyaveraging1Click
         end
         object N1secand30mresamplesbyaveraging1: TMenuItem
           Caption = 'Aggregate this HRDEM to 1 sec and 30 m'
@@ -4400,7 +4399,6 @@ object MapForm: TMapForm
         end
         object ComapreUTMvsgeographic1: TMenuItem
           Caption = 'Comapre UTM vs geographic'
-          OnClick = ComapreUTMvsgeographic1Click
         end
         object DEMIXevaluatehalfsecondgrids1: TMenuItem
           Caption = 'Evaluate half second grids'

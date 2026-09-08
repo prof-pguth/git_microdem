@@ -19,7 +19,7 @@ unit dem_nlcd;
    //{$Define RecordNLCDLegend}
    //{$Define RecordBarGraphs}
    //{$Define RecordBatch}
-   {$Define RecordDEMIXlandcover}
+   //{$Define RecordDEMIXlandcover}
    //{$Define RecordBarGraphsDetailed}
    //{$Define RecordPaletteProblems}
 {$EndIf}
@@ -342,7 +342,7 @@ begin
       else begin
          Results := tStringList.Create;
          Title := 'PERCENT,NAME,COLOR,CODE';
-         if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
+         //if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
          Results.Add(Title);
          if (Stats <> Nil) then begin
             if (Stats.Count = 1) then begin
@@ -365,7 +365,7 @@ begin
 
             Title := RealToString(pc,8,2) + ',' + DEMGlb[DEM].NLCDCats^[x].LongName + ',' + IntToStr(ConvertPlatformColorToTColor(DEMGlb[DEM].NLCDCats^[x].Color)) +
                 ',' + IntToStr(x);
-            if MDDef.LongLandCoverResults then Title := Title + ',' + IntToStr(x) + ',' + IntToStr(Count[x]);
+            //if MDDef.LongLandCoverResults then Title := Title + ',' + IntToStr(x) + ',' + IntToStr(Count[x]);
             Results.Add(Title);
             {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
          end;

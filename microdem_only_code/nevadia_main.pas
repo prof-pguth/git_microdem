@@ -21,21 +21,24 @@
       //{$Define RecordCommandLine}
       //DEMIX conditionals
           {$Define RecordDEMIX}
-          {$Define RecordDEMIX_TileStats}
-          {$Define RecordDEMIXMakeRef}
-          {$Define RecordDEMIXMemory}
+          //{$Define RecordDEMIX_TileStats}
+          {$Define RecordDEMIXCollections}
+          //{$Define RecordDEMIXMakeRef}
+          //{$Define RecordDEMIXMemory}
           //{$Define RecordDEMIXFull}
+          //{$Define RecordDEMIXMerges}
           //{$Define RecordDEMIXMakeTest}
           //{$Define TimeMakeMaps}
           //{$Define RecordGridOpenProblems}
           //{$Define DEMIXtrackFUV}
+          //{$Define DEMIXdirectories
           //{$Define TrackMissingPercentages}
-          {$Define RecordRefDTM}
-          {$Define RecordTestDEMmissing}
+          //{$Define RecordRefDTM}
+          //{$Define RecordTestDEMmissing}
           //{$Define RecordDEMIXMakeRefFull}
           //{$Define RecordDEMIXDatumShift}
           //{$Define RecordDEMIXDatumShiftFull}
-          //{$Define RecordDEMIXMakeTestEveryDEM}
+          {$Define RecordDEMIXMakeTestEveryDEM}
           //{$Define RecordFUVcreateFull}
           //{$Define TrackOpenOneDEM}
       //{$Define RecordMerge}
@@ -49,7 +52,6 @@
       //{$Define TrackFormCreate}
       //{$Define RecordSatLoad}
       //{$Define RecordFileOps}
-      //{$Define RecordOpenVectorMap}
       //{$Define RecordShipwrecks}
       //{$Define Record3D}
       //{$Define RecordLabs}
@@ -491,11 +493,8 @@ type
     Noaddedlegends2: TMenuItem;
     N36: TMenuItem;
     N45: TMenuItem;
-    MergeSSIMandR2database1: TMenuItem;
     CheckfilesizesforSSIMimagemismatches1: TMenuItem;
-    ChecktestDEMs1: TMenuItem;
     Addprefixtoallfilesindirectory1: TMenuItem;
-    Inventorydifferencestats1: TMenuItem;
     MergeDEMIXtilestats1: TMenuItem;
     N48: TMenuItem;
     Channelnetworkmisspercentagesbytile1: TMenuItem;
@@ -519,13 +518,12 @@ type
     InsureallreferenceDTMscorrectlynamed1: TMenuItem;
     MaskwaterinreferenceDEMs1: TMenuItem;
     ComputeDEMIXtilestats1: TMenuItem;
-    VerifytestDEMcoverages1: TMenuItem;
+    //VerifytestDEMcoverages1: TMenuItem;
     rimreferencedatatoDEMIXtiles1: TMenuItem;
     N53: TMenuItem;
     Full3DEPprocessingchair1: TMenuItem;
     Partial3DEPsteps1: TMenuItem;
-    N39: TMenuItem;
-    Inventorychanneldatabyarea1: TMenuItem;
+    //Inventorychanneldatabyarea1: TMenuItem;
     MergeCanadianLidar1: TMenuItem;
     Reference1secDTMsfromCanadianlidar1: TMenuItem;
     Graphevaluationandscores1: TMenuItem;
@@ -538,15 +536,13 @@ type
     Skipeifpresent1: TMenuItem;
     Overwirte2: TMenuItem;
     Overwirte3: TMenuItem;
-    InventorySSIMFUVCSVfiles1: TMenuItem;
-    N40: TMenuItem;
     N42: TMenuItem;
     N47: TMenuItem;
     DeltaDTMfortestareas1: TMenuItem;
     Skipifexists3: TMenuItem;
     CreatefinalDB1: TMenuItem;
     N3DEPfileswithtag421121: TMenuItem;
-    Fixtileswith42114foottag1: TMenuItem;
+    //Fixtileswith42114foottag1: TMenuItem;
     N46: TMenuItem;
     OpenmapsforDEMIXtestarea1: TMenuItem;
     LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
@@ -561,7 +557,6 @@ type
     Skipifpresent1: TMenuItem;
     Mergegeomorphonevaluatioins1: TMenuItem;
     Skipifdone1: TMenuItem;
-    DeletereferenceDTMswithoutDTMinfilename1: TMenuItem;
     MovereferenceDSMs1: TMenuItem;
     DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem;
     Ridgesandvalleys1: TMenuItem;
@@ -620,7 +615,6 @@ type
     UTMbasedCVSfilesbyarea1: TMenuItem;
     Mergesmalltilesinto10kmUTMblocks1: TMenuItem;
     MovemergedtilereferenceandtestDEMs1: TMenuItem;
-    N25: TMenuItem;
     N44: TMenuItem;
     Download10x10kmblocks1: TMenuItem;
     UTMbasedfilefillreport1: TMenuItem;
@@ -678,6 +672,13 @@ type
     Recyclefiles1: TMenuItem;
     StartDSMDTMcomparison1: TMenuItem;
     Addprefilstoalldirectories1: TMenuItem;
+    DownloadDEMs1: TMenuItem;
+    N50: TMenuItem;
+    GetlistoffilesFrance1: TMenuItem;
+    Landcover1: TMenuItem;
+    CoastalDEMs1: TMenuItem;
+    ProcessOpenTopographydownloadsCH1: TMenuItem;
+    Both1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -980,9 +981,7 @@ type
     procedure Noaddedlegends2Click(Sender: TObject);
     procedure N45Click(Sender: TObject);
     procedure CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
-    procedure ChecktestDEMs1Click(Sender: TObject);
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
-    procedure Inventorydifferencestats1Click(Sender: TObject);
     procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
     procedure Overwriteifexits1Click(Sender: TObject);
@@ -995,21 +994,19 @@ type
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
     procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
     procedure ComputeDEMIXtilestats1Click(Sender: TObject);
-    procedure VerifytestDEMcoverages1Click(Sender: TObject);
+    //procedure VerifytestDEMcoverages1Click(Sender: TObject);
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
-    procedure Inventorychanneldatabyarea1Click(Sender: TObject);
+   //procedure Inventorychanneldatabyarea1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
     procedure Graphevaluationandscores1Click(Sender: TObject);
     procedure Overwirte1Click(Sender: TObject);
     procedure DEMIX2Click(Sender: TObject);
     procedure Overwirte2Click(Sender: TObject);
     procedure Overwirte3Click(Sender: TObject);
-    procedure InventorySSIMFUVCSVfiles1Click(Sender: TObject);
     procedure N42Click(Sender: TObject);
     procedure DeltaDTMfortestareas1Click(Sender: TObject);
     procedure CreatefinalDB1Click(Sender: TObject);
-    procedure N3DEPfileswithtag421121Click(Sender: TObject);
-    procedure Fixtileswith42114foottag1Click(Sender: TObject);
+    //procedure Fixtileswith42114foottag1Click(Sender: TObject);
     //procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
     procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
@@ -1023,7 +1020,6 @@ type
     procedure SSIMR21Click(Sender: TObject);
     procedure Skipifpresent1Click(Sender: TObject);
     procedure Mergegeomorphonevaluatioins1Click(Sender: TObject);
-    procedure DeletereferenceDTMswithoutDTMinfilename1Click(Sender: TObject);
     procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(Sender: TObject);
     procedure Mergeridgesandvalleys1Click(Sender: TObject);
     procedure Skipifpresent2Click(Sender: TObject);
@@ -1103,6 +1099,10 @@ type
     procedure Recyclefiles1Click(Sender: TObject);
     procedure StartDSMDTMcomparison1Click(Sender: TObject);
     procedure Addprefilstoalldirectories1Click(Sender: TObject);
+    procedure DownloadDEMs1Click(Sender: TObject);
+    procedure GetlistoffilesFrance1Click(Sender: TObject);
+    procedure ProcessOpenTopographydownloadsCH1Click(Sender: TObject);
+    procedure Both1Click(Sender: TObject);
     //procedure Inventory3DEPtiles1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -1638,11 +1638,6 @@ begin
    sl.Destroy;
 end;
 
-procedure Twmdem.ChecktestDEMs1Click(Sender: TObject);
-begin
-   CheckTestDEMs;
-end;
-
 procedure Twmdem.Tile1Click(Sender: TObject);
 begin
    Tile;
@@ -1684,11 +1679,6 @@ end;
 procedure Twmdem.Deletemergeddirectorieswithsmallnumberoffiles1Click(Sender: TObject);
 begin
    InventoryFilesIn10kMerges(true);
-end;
-
-procedure Twmdem.DeletereferenceDTMswithoutDTMinfilename1Click(Sender: TObject);
-begin
-    PruneMisnamedReferenceDTMs;
 end;
 
 procedure Twmdem.DeleteresultsCSVforareas1Click(Sender: TObject);
@@ -1773,6 +1763,7 @@ begin
    {$IfDef RecordHelp} WriteLineToDebugFile('Twmdem.Contents1Click for help'); {$EndIf}
    StopSplashing;
    fName := ChangeFileExt(Application.ExeName,'.chm');
+   UnblockFile(fName);
    DisplayHTMLTopic('html\microdem.htm');
 end;
 
@@ -1787,7 +1778,7 @@ var
          if ButtonName.Visible then begin
             ButtonName.Left := theLeft;
             inc(theLeft,ButtonName.Width);
-            if bname = '' then bname := 'unnamed';
+            if (bname = '') then bname := 'unnamed';
             {$If Defined(RecordButtonProblems) or Defined(RecordFirstRun)}
                if FirstRun then WriteLineToDebugFile(bName + '  ' + IntToStr(theLeft) + '  left=' + IntToStr(ButtonName.Left) + '  width=' + IntToStr(ButtonName.Width));
             {$EndIf}
@@ -2711,6 +2702,7 @@ end;
 
 procedure Twmdem.Allthreepimary1Click(Sender: TObject);
 begin
+   {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.Allthreepimary1Click, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir); {$EndIf}
    DEMIX_UTM_based_processing(udMergeTileStats);
    DEMIX_UTM_based_processing(udMergeMixedFUV);
    DEMIX_UTM_based_processing(udMergeDiffDist);
@@ -2795,12 +2787,6 @@ begin
    SlicerForm.BringToFront;
    SlicerForm.Left := Self.Left + 10;
    SlicerForm.Top := Self.Top + 10;
-end;
-
-
-procedure Twmdem.N3DEPfileswithtag421121Click(Sender: TObject);
-begin
-   FindFilesWith42112;
 end;
 
 
@@ -3091,6 +3077,117 @@ begin
    {$EndIf}
 end;
 
+
+
+procedure ExtractTarGzNative(const ArchivePath, DestDir: string);
+//uses  Winapi.ShellAPI, Winapi.Windows, System.SysUtils;
+var
+  Parameters: string;
+  SEInfo: TShellExecuteInfo;
+  ExitCode: DWORD;
+begin
+  // Ensure destination directory exists
+  if not ForceDirectories(DestDir) then
+    raise Exception.Create('Could not create destination directory.');
+
+  // Construct parameters: -xf to extract, -C to specify the target directory
+  Parameters := Format('-xf "%s" -C "%s"', [ArchivePath, DestDir]);
+
+  ZeroMemory(@SEInfo, SizeOf(SEInfo));
+  SEInfo.cbSize := SizeOf(TShellExecuteInfo);
+  SEInfo.fMask := SEE_MASK_NOCLOSEPROCESS or SEE_MASK_FLAG_NO_UI;
+  SEInfo.lpVerb := 'open';
+  SEInfo.lpFile := 'tar.exe';
+  SEInfo.lpParameters := PChar(Parameters);
+  SEInfo.nShow := SW_HIDE; // Keeps the console window invisible
+
+  if ShellExecuteEx(@SEInfo) then
+  begin
+    try
+      // Wait for the extraction process to finish
+      WaitForSingleObject(SEInfo.hProcess, INFINITE);
+      GetExitCodeProcess(SEInfo.hProcess, ExitCode);
+      if ExitCode <> 0 then
+        raise Exception.CreateFmt('tar.exe exited with error code: %d', [ExitCode]);
+    finally
+      CloseHandle(SEInfo.hProcess);
+    end;
+  end
+  else
+    raise Exception.Create('Failed to execute tar.exe. Ensure it is available in system PATH.');
+end;
+
+
+procedure Twmdem.ProcessOpenTopographydownloadsCH1Click(Sender: TObject);
+const
+   DTMName = 'output_be.tif';
+   DTMmetadata = 'Original_CH_50cmDEM_DTM_URLs.txt';
+   DSMName = 'output_hh.tif';
+   DSMmetadata = 'Original_CH_50cmDEM_DSM_URLs.txt';
+var
+   FilesWanted,Metadata : tStringList;
+   DefaultFilter : byte;
+   OutPath,fName,NewFName : PathStr;
+   NewName : shortString;
+   i : integer;
+
+      procedure RenameDEM(DEMName,DEMmetadata : PathStr);
+      var
+         NewName : PathStr;
+      begin
+         if FileExists(OutPath + DEMname) then begin
+            Metadata := tStringList.Create;
+            Metadata.LoadFromFile(OutPath + DEMmetadata);
+            NewName := Metadata.Strings[0];
+            ReplaceCharacter(NewName,'/','\');
+            //Delete(NewName,1,8);   //remote https://
+            //NewName := LastSubDir(NewName);
+            NewName := ExtractFileNameNoExt(NewName);
+            Metadata.Destroy;
+
+            NewfName := OutPath + NewName + '.tif';
+            DeleteFileIfExists(NewfName);
+            RenameFile(OutPath + DEMname,NewfName);
+
+            NewfName := OutPath + NewName + '_' + DEMmetadata;
+            DeleteFileIfExists(NewfName);
+            RenameFile(OutPath + DEMmetadata,NewfName);
+         end;
+      end;
+
+begin
+   {$IfDef RecordMIX} WriteLineToDebugFile('OT download of CH in'); {$EndIf}
+   DefaultFilter := 1;
+   FilesWanted := tStringList.Create;
+   if GetMultipleFiles('OT files from CH','tar.gz files|*.tar.gz',FilesWanted,DefaultFilter) then begin
+      SetColorForProcessing;
+      for i := 0 to pred(FilesWanted.count) do begin
+         fName := FilesWanted.Strings[i];
+         OutPath := ExtractFilePath(fName) + 'renamed_ch_files';
+         SafeMakeDir(OutPath);
+
+(*
+         MainGzip(fName);
+         //if DeleteTheFile then File2Trash(fName);
+         {$IfDef RecordMIX} WriteLineToDebugFile('gzip down'); {$EndIf}
+         Delete(fName,length(fName)-2,3);   //removes .gz
+
+         MainExtar(fName, OutPath);
+         //if DeleteTheFile then File2Trash(fName);
+         {$IfDef RecordMIX} WriteLineToDebugFile('Extar down'); {$EndIf}
+*)
+         ExtractTarGzNative(fName,Outpath);
+         OutPath := OutPath + '\';
+         RenameDEM(DTMName,DTMmetadata);
+         RenameDEM(DSMName,DSMmetadata);
+         //File2Trash(fName);
+      end;
+
+      SetColorForWaiting;
+   end;
+   FilesWanted.Destroy;
+   {$IfDef RecordMIX} WriteLineToDebugFile('OT download of CH out'); {$EndIf}
+end;
 
 procedure Twmdem.ProcessVDATUMshifts1Click(Sender: TObject);
 begin
@@ -3561,7 +3658,7 @@ MessageToContinue('Check carefully; last time this did not work');
        AreaName := LastSubDir(MergedDir);
        Merges := GetSubDirsInDirectory(MergedDir);
        for I := 0 to pred(Merges.Count) do begin
-           TileDir := MergedDir + Merges.Strings[i] + '\' +  Merges.Strings[i] +  '_ref_test_dem';
+           TileDir := MergedDir + Merges.Strings[i] + '\' +  Merges.Strings[i] +  RefTestStr;
            System.IOUtils.TDirectory.Move(TileDir,MergedDir);
            System.IOUtils.TDirectory.Delete(Dest + AreaName);
        end;
@@ -3588,7 +3685,7 @@ MessageToContinue('Check carefully; last time this did not work');
           Tiles := GetSubDirsInDirectory(ThisDir);
           for j := 0 to pred(Tiles.Count) do begin
              TileDir := ThisDir + Tiles.Strings[j];    // "G:\demix_utm_tiles\aa_hrd_merges\mx_mexico\mx_h11b12\mx_h11b12_ref_test_dem"
-             if StrUtils.AnsiContainsText(TileDir,'_ref_test_dem') then begin
+             if StrUtils.AnsiContainsText(TileDir,RefTestStr) then begin
                 ThisDest := Dest + {Merges.Strings[i] +} '\' + Tiles.Strings[j];
                 System.IOUtils.TDirectory.Move(TileDir,ThisDest);
              end;
@@ -3694,18 +3791,6 @@ begin
 end;
 
 
-
-procedure Twmdem.Inventorychanneldatabyarea1Click(Sender: TObject);
-begin
-   {$IfDef DEMIX_SAGA_channels} InventoryChannelDataByArea; {$EndIf}
-end;
-
-procedure Twmdem.Inventorydifferencestats1Click(Sender: TObject);
-begin
-   InventoryDEMIXdifferenceStats;
-end;
-
-
 procedure Twmdem.InventoryDILUVIUMbytestarea1Click(Sender: TObject);
 begin
    {$IfDef IncludeCoastalDEMs} CheckLowElevationAreas; {$EndIf}
@@ -3724,11 +3809,6 @@ end;
 procedure Twmdem.Inventorysourcefiles1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(udSourceFileSurvey);
-end;
-
-procedure Twmdem.InventorySSIMFUVCSVfiles1Click(Sender: TObject);
-begin
-   InventoryDEMIX_SSIM_FUV_Stats;
 end;
 
 procedure Twmdem.InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
@@ -4822,6 +4902,11 @@ begin
 end;
 
 
+procedure Twmdem.GetlistoffilesFrance1Click(Sender: TObject);
+begin
+   ExecuteFile('https://cartes.gouv.fr/telechargement/IGNF_MNT-LIDAR-HD', '', '');
+end;
+
 procedure Twmdem.OpenGeoPDF1Click(Sender: TObject);
 begin
    {$If Defined(ExGDAL) or Defined(ExGeoPDF)}
@@ -5090,6 +5175,11 @@ begin
    PrepList10x10kmTiles;
 end;
 
+
+procedure Twmdem.DownloadDEMs1Click(Sender: TObject);
+begin
+   DownloadListOfFiles;
+end;
 
 procedure Twmdem.DragonPlot1Click(Sender: TObject);
 begin
@@ -5430,10 +5520,6 @@ begin
    DEMIX_UTM_based_processing(udInvalidTiles);
 end;
 
-procedure Twmdem.Fixtileswith42114foottag1Click(Sender: TObject);
-begin
-   FixFilesWith42112;
-end;
 
 procedure Twmdem.Conicconversions1Click(Sender: TObject);
 begin
@@ -5519,7 +5605,7 @@ end;
 procedure Twmdem.UTMbasedtilescreation1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(udCreateTiles);   //first pass does datum shift
-   DEMIX_UTM_based_processing(udCreateTiles);   //second pass does reference and test DEMs
+   //DEMIX_UTM_based_processing(udCreateTiles);   //second pass does reference and test DEMs
 end;
 
 procedure Twmdem.UTMbasedtilestatistics1Click(Sender: TObject);
@@ -5758,6 +5844,12 @@ begin
 end;
 
 
+procedure Twmdem.Both1Click(Sender: TObject);
+begin
+   DEMIX_UTM_based_processing(udMergeDTMDSMcompare);
+   DEMIX_UTM_based_processing(udMergeCopDTMDSMcompare);
+end;
+
 procedure Twmdem.Opengl1tofrontClick(Sender: TObject);
 begin
    {$IfDef ExFMX3D}
@@ -5785,11 +5877,6 @@ begin
    Test.Free;
 end;
 
-
-procedure Twmdem.VerifytestDEMcoverages1Click(Sender: TObject);
-begin
-    VerifyTestDEMcoverages;
-end;
 
 procedure Twmdem.Verticalearthcurvature1Click(Sender: TObject);
 begin

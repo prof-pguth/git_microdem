@@ -24,7 +24,7 @@
 
    {$IFDEF DEBUG}
       //{$Define RecordFan}
-      {$Define RecordOSM}
+      //{$Define RecordOSM}
       //{$Define RecordDuplicate}
       //{$Define RecordBaseTitle}
       //{$Define RecordCreateReferenceDEM}
@@ -1330,7 +1330,7 @@ type
     AddanopenDEM1: TMenuItem;
     SubtractanopenDEM1: TMenuItem;
     Moviewithallmaps1: TMenuItem;
-    DEMIX1secresamplebyaveraging1: TMenuItem;
+    //DEMIX1secresamplebyaveraging1: TMenuItem;
     Samehorizontaldatum1: TMenuItem;
     Samehorizontaldatum2: TMenuItem;
     OpenGLwithallmaps1: TMenuItem;
@@ -1399,7 +1399,7 @@ type
     Changemap2: TMenuItem;
     PickseriesandloadDEMsfromlibrary1: TMenuItem;
     N52: TMenuItem;
-    ComapreUTMvsgeographic1: TMenuItem;
+    //ComapreUTMvsgeographic1: TMenuItem;
     NDVI3: TMenuItem;
     NBR1: TMenuItem;
     Elevationdifference1: TMenuItem;
@@ -2634,7 +2634,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure AddanopenDEM1Click(Sender: TObject);
     procedure SubtractanopenDEM1Click(Sender: TObject);
     procedure Moviewithallmaps1Click(Sender: TObject);
-    procedure DEMIX1secresamplebyaveraging1Click(Sender: TObject);
+    //procedure DEMIX1secresamplebyaveraging1Click(Sender: TObject);
     procedure Samehorizontaldatum1Click(Sender: TObject);
     procedure Samehorizontaldatum2Click(Sender: TObject);
     procedure OpenGLwithallmaps1Click(Sender: TObject);
@@ -2690,7 +2690,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     procedure Openbandforrasteranalysis1Click(Sender: TObject);
     procedure Changemap2Click(Sender: TObject);
     procedure PickseriesandloadDEMsfromlibrary1Click(Sender: TObject);
-    procedure ComapreUTMvsgeographic1Click(Sender: TObject);
+    //procedure ComapreUTMvsgeographic1Click(Sender: TObject);
     procedure MatchThiscoverageareaandsamepixelsize1Click(Sender: TObject);
     procedure NDVI3Click(Sender: TObject);
     procedure NBR1Click(Sender: TObject);
@@ -3378,7 +3378,7 @@ var
 procedure BroadcastLatLong(Handle : tHandle; Lat,Long : float64);
 procedure ChangeDEMNowDoing(WhatTo : tDEMDoingWhat; WhatNext : tDEMDoingWhat = JustWandering; ThisCapt : shortstring = '');
 function SetUpVectorMap(DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : integer;
-function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : tMapForm;
+//function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : tMapForm;
 
 function MakeRequiredAntennaMap(ProgTitle: shortString; CurDEM : integer;  W_Lat,W_Long : float64; ObserverTotalElevation : float64 = 0; MaxRange : float64 = 75000;
      DrawMap : boolean = true; StartAngle : float64 = 0; EndAngle : float64 = 360) : integer;
@@ -5829,7 +5829,7 @@ begin
    for j := 1 to 3 do LoadDataBaseFile(DBDir + 'route' + IntToStr(j) + DefaultDBExt);
 end;
 
-
+(*
 procedure TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
 begin
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Clic in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
@@ -5839,7 +5839,7 @@ begin
    ResampleForUTM_GeoComparison(MapDraw.DEMonMap);
    {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.ComapreUTMvsgeographic1Click out'); {$EndIf}
 end;
-
+*)
 
 procedure TMapForm.ComboBox1Change(Sender: TObject);
 var
@@ -12025,6 +12025,7 @@ function TMapForm.OpenDBonMap(WhatFor : shortstring; DefaultFile : PathStr; Disp
     ForceColor : tColor = -99; ForceLineWidth : byte = 0; HideFields : ShortString = '') : integer;
 var
    FileNames : tStringList;
+   fName : PathStr;
    i : integer;
 
        function OpenSingleDataBase : integer;
@@ -12044,7 +12045,7 @@ var
                    dbOpts.VisCols[i] := MyData.FieldsInDataBase[i] = HideFields;
                 end;
              end;
-             if OpenTable then GISdb[Result].dbTablef.HideColumns;
+             if OpenTable and DisplayNow then GISdb[Result].dbTablef.HideColumns;
              if GISdb[Result].CanPlot then begin
                 AddOverlay(Self,ovoDatabases);
                 if DisplayNow then DoFastMapRedraw;
@@ -12065,9 +12066,20 @@ begin {TMapForm.OpenDBonMap}
       if not GetMultipleFiles('Data bases ' + WhatFor,DBMaskString ,FileNames,MDDef.DefDBFilter) then Exit;
       try
          MapDraw.DeleteSingleMapLayer(MapDraw.BaseMapFName);
+
+         for i := 0 to pred(FileNames.Count) do begin
+            fName := FileNames.Strings[i];
+            if IsThisGPSTrackFile(fName) then begin
+              WMDEM.SetPanelText(1, IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + ' track import',true);
+              ImportExerciseTrack(fName,false,nil);
+              FileNames.Sorted := false;
+              FileNames.Strings[i] := fname;
+            end;
+         end;
+
          for i := 0 to pred(FileNames.Count) do begin
             DefaultFile := FileNames.Strings[i];
-            wmdem.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + '  ' + DefaultFile);
+            wmdem.SetPanelText(1,IntToStr(succ(i)) + '/' + IntToStr(FileNames.Count) + ' load ' + DefaultFile);
             ShlObj.SHAddToRecentDocs(SHARD_PATH, PChar(FileNames.Strings[i]));
             LastDataBase := DefaultFile;
             Result := OpenSingleDataBase;
@@ -12221,9 +12233,7 @@ end;
 {$IfDef RecordMapResize}
       procedure TMapForm.DebugMapSize;
       var
-        //Results : tStringList;
-        x1,y1{,x2,y2} : float64;
-        //Decs : integer;
+        x1,y1 : float64;
       begin
          WriteLineToDebugFile('');
          WriteLineToDebugFile(Caption);
@@ -12247,22 +12257,20 @@ procedure TMapForm.VerifyPointOnMap(WhatFor : string; var xg,yg,xutm,yutm : floa
 var
    lat,Long : float64;
 begin
-   //with MapDraw do begin
-      if (WhatFor = '') then WhatFor := WMDEM.StatusBar1.Panels[0].Text;
-      if (MapDraw.VectorIndex <> 0) then begin
-      end
-      else if MapDraw.DEMMap then DEMGlb[MapDraw.DEMonMap].VerifyDefaultPosition(WhatFor,xg,yg,xutm,yutm)
-      {$IfDef ExSat}
-              ;
-      {$Else}
-      else begin
-          SatImage[MapDraw.SatOnMap].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,xg,yg,Lat,Long);
-          GetLatLongDefault(SatImage[MapDraw.SatOnMap].ImageMapProjection,WhatFor,Lat,Long);
-          SatImage[MapDraw.SatOnMap].LatLongDegreeToSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,Lat,Long,xg,yg);
-          SatImage[MapDraw.SatOnMap].SatGridToUTM(SatImage[MapDraw.SatOnMap].BandForSize,xg,yg,xutm,yutm);
-      end;
-      {$EndIf}
-   //end;
+    if (WhatFor = '') then WhatFor := WMDEM.StatusBar1.Panels[0].Text;
+    if (MapDraw.VectorIndex <> 0) then begin
+    end
+    else if MapDraw.DEMMap then DEMGlb[MapDraw.DEMonMap].VerifyDefaultPosition(WhatFor,xg,yg,xutm,yutm)
+    {$IfDef ExSat}
+            ;
+    {$Else}
+    else begin
+        SatImage[MapDraw.SatOnMap].SatGridToLatLongDegree(SatImage[MapDraw.SatOnMap].BandForSize,xg,yg,Lat,Long);
+        GetLatLongDefault(SatImage[MapDraw.SatOnMap].ImageMapProjection,WhatFor,Lat,Long);
+        SatImage[MapDraw.SatOnMap].LatLongDegreeToSatGrid(SatImage[MapDraw.SatOnMap].BandForSize,Lat,Long,xg,yg);
+        SatImage[MapDraw.SatOnMap].SatGridToUTM(SatImage[MapDraw.SatOnMap].BandForSize,xg,yg,xutm,yutm);
+    end;
+    {$EndIf}
 end;
 
 
@@ -12364,19 +12372,11 @@ begin
    else LoadDEMIXtileOutlines(fName,MapDraw.MapCorners.BoundBoxGeo);
 end;
 
-procedure TMapForm.DEMIX1secresamplebyaveraging1Click(Sender: TObject);
-begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click in, ' + DEMGlb[MapDraw.DEMonMap].DEMFileName); {$EndIf}
-   //ResampleForDEMIXOneSecDEMs(true,false,MapDraw.DEMonMap,true,'',ResampleModeOneSec);
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIX)} WriteLineToDebugFile('TMapForm.DEMIX1secresamplebyaveraging1Click grids out'); {$EndIf}
-end;
-
 
 procedure TMapForm.DEMIX1secresamplewithGDAL1Click(Sender: TObject);
 begin
     GDAL_downsample_DEM_1sec(True,MapDraw.DEMonMap,MDTempDir + 'gdal_downsample.dem');
 end;
-
 
 
 procedure TMapForm.DEMIXtilenames1Click(Sender: TObject);
@@ -13642,7 +13642,7 @@ procedure TMapForm.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift:
 var
    i,FirstPoint,xpic,ypic,recsFound : integer;
    Lat,Long   : float64;
-   TStr : ShortString;
+  // TStr : ShortString;
 begin
    if ClosingIsHappening then exit;
    if (DEMNowDoing = JustWandering) and (Button = mbLeft) then begin
@@ -18536,7 +18536,7 @@ begin
 
       Results := tStringList.Create;
       Title := 'PERCENT,NAME,CODE,COLOR,USE';
-      if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
+      //if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
       Results.Add(Title);
       for x := 0 to MaxLasCat do if Count[x] > 0 then begin
          Title := RealToString(100 * Count[x]/Total,8,2) + ',' + LasCatName[x] + ',' + IntToStr(x) + ',' + IntToStr(ConvertPlatformColorToTColor(Las_rgb_colors[x])) + ',Y';
@@ -21053,7 +21053,7 @@ end;
 procedure TMapForm.ID2Click(Sender: TObject);
 var
    i,RecsFound : integer;
-   TStr : ShortString;
+   //TStr : ShortString;
 begin
    for i := 1 to MaxDataBase do begin
       if (GISdb[i] <> nil) and (GISdb[i].theMapOwner = Self) then begin

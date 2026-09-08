@@ -43,88 +43,33 @@ begin
    end;
 end;
 
-(*
-function GetUTM_DEMIXTile(Lat,Long : float64) : shortstring;
-var
-   xutm,yutm : float64;
-   Northing, Easting : integer;
-begin
-   RedefineWGS84DatumConstants(Lat,Long);
-   WGS84DatumConstants.LatLongDegreetoUTM(Lat,Long,xutm,yutm);
-   Northing := trunc(yutm) div 10000;
-   Easting := trunc(xutm) div 10000;
-   Result := 'UTM_' + AddDayMonthLeadingZero(WGS84DatumConstants.projUTMZone) + WGS84DatumConstants.LatHemi + '_x' + IntToStr(Easting) + 'y' + IntToStr(Northing);
-end;
-*)
-
-procedure ResampleForUTM_GeoComparison(DEM : integer; OutPath : PathStr = '');
-//   9/8/2023, check if this is really needed; only called by TMapForm.ComapreUTMvsgeographic1Click(Sender: TObject);
-var
-   NewDEM1, NewDEM2, NewDEM3 : integer;
-   fName : PathStr;
-begin
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile(''); WriteLineToDebugFile('ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-   SaveBackupDefaults;
-   MDDef.DefElevMap := mtDEMBlank;
-   MDDef.LidarGridProjection := ArcSecDEM;
-   MDDef.LasDEMPixelIs := PixelIsArea;
-
-   if (OutPath = '') then OutPath := ExtractFilePath(DEMGlb[DEM].DEMFileName);
-
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX 1 sec area'); {$EndIf}
-   MDdef.DefLidarGeoGridSizeX := 1;
-   MDdef.DefLidarGeoGridSizeY := 1;
-   fName := OutPath +  DEMGlb[DEM].AreaName + '_1sec.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   NewDEM1 := DEMGlb[DEM].ResampleByAveraging(true,fName);
-
-   MDDef.LidarGridProjection := UTMbasedDEM;
-   MDdef.DefLidarXGridSize := 30;
-   MDdef.DefLidarYGridSize := 30;
-   fName := OutPath +  DEMGlb[DEM].AreaName + '_30m.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   NewDEM2 := DEMGlb[DEM].ResampleByAveraging(true,fName);
-
-   MDDef.LidarGridProjection := UTMbasedDEM;
-   MDdef.DefLidarXGridSize := DEMGlb[NewDEM1].AverageSpace;
-   MDdef.DefLidarYGridSize := MDdef.DefLidarXGridSize;
-   fName := OutPath +  DEMGlb[DEM].AreaName + '_' + IntToStr(round(MDdef.DefLidarXGridSize)) + '_m.tif';
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('ResampleForDEMIX, ' + fName); {$EndIf}
-   NewDEM3 := DEMGlb[DEM].ResampleByAveraging(true,fName);
-
-   RestoreBackupDefaults;
-   {$If Defined(RecordCreateGeomorphMaps) or Defined(RecordDEMIXFull)} WriteLineToDebugFile('Out ResampleForDEMIX DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName); {$EndIf}
-end;
 
 
 const
    DEMIXLongLetters : array[0..9] of ANSIchar = ('A','B','C','D','F','G','H','J','K','L');
    DEMIXLatLetters  : array[0..9] of ANSIchar = ('M','P','Q','R','T','U','V','X','Y','Z');
 
-          function DEMIXXMinuteIncr(inLat : float64) : integer;
-          var
-             Lat : integer;
-          begin
-             if (inLat >= 0) then Lat := trunc(inLat + 0.001)
-             else Lat := round(abs(inLat)-1);
-             if (Lat < 50) then Result := 6
-             else if Lat < 60 then Result := 10
-             else if Lat < 70 then Result := 12
-             else if Lat < 80 then Result := 20
-             else if Lat < 85 then Result := 30
-             else Result := 60;
-          end;
+function DEMIXXMinuteIncr(inLat : float64) : integer;
+var
+   Lat : integer;
+begin
+   if (inLat >= 0) then Lat := trunc(inLat + 0.001)
+   else Lat := round(abs(inLat)-1);
+   if (Lat < 50) then Result := 6
+   else if Lat < 60 then Result := 10
+   else if Lat < 70 then Result := 12
+   else if Lat < 80 then Result := 20
+   else if Lat < 85 then Result := 30
+   else Result := 60;
+end;
 
 
 function GetDEMIX_GeoTileName(inLat,inLong : float64) : shortstring;
-//const
-   //SegsPerSide = 1;
 var
    xminutes,yminutes,LongHi,LowLat,HighLat,LongLow{,Wide,High} : float64;
    Lat,Long,FirstLat, LastLat, FirstLong, LastLong, yt,y,i,xtiles : integer;
    xch : integer;
    WantBoundBoxGeo : sfBoundBox;
-   //ShapeFileCreator : tShapeFileCreation;
 begin
    WantBoundBoxGeo := PointBoundBoxGeo(inLat,inLong);
    Result := '';

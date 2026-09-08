@@ -1995,7 +1995,7 @@ type
       MAD2K_Dirs4,
       MAD2K_StrengthDirection : boolean;
 
-      DEMIX_std_filters,
+      //DEMIX_std_filters,
       DEMIX_slope_filters,
       DEMIX_ruff_filters,
       DEMIX_barren_filters,
@@ -2007,9 +2007,10 @@ type
       DEMIX_combined_graph,
       PanelsByTestDEM,
       DEMIXsaveLSPmaps,
-      DEMIX_overwrite_enabled,
-      DEMIX_highlat,
-      DEMIX_default_half_sec_ref : boolean;
+      DEMIX_overwrite_enabled : boolean;
+      //DEMIX_highlat,
+      //DEMIX_default_half_sec_ref,
+     // AllFilter1SameGraph     : boolean;
       DEMIX_series_symbol,
       DEMIX_Mode,
       DEMIXsymsize,
@@ -2017,15 +2018,15 @@ type
       DEMIX_Tile_Full,
       DEMIX_groupWonLost : byte;
       DEMIX_BaseDir,
-      DEMIX_FullDBfName,
+      //DEMIX_FullDBfName,
       DEMIX_base_dir,
       DEMIX_tile_chars_fname,
-      DEMIX_criteria_fName,
+      //DEMIX_criteria_fName,
       DEMIX_filter1_fName,
       DEMIX_filter2_fName : PathStr;
-      DEMIX_SingleCriterion,
-      DEMIX_default_area,
-      DEMIX_default_tile   : shortstring;
+      DEMIX_SingleCriterion : shortstring;
+      //DEMIX_default_area,
+      //DEMIX_default_tile   : shortstring;
       DEMIXlegendFontSize,
       DEMIX_FUV_graph_width,
       DEMIX_xsize,DEMIX_ysize : integer;
@@ -2041,8 +2042,7 @@ type
       LoadRefDEMMaps,LoadTestDEMMaps,
       LoadRefDEMs,LoadTestDEMs,
       DEMIX_UseMedian,
-      DEMIX_MultiGraphCommonScaling,
-      DEMIX_IgnoreTies,
+      //DEMIX_IgnoreTies,
       //DEMIX_graph_Retired_DEMs,
       DEMIXCompositeImage,
       DEMIX_DoAirOrDirt,
@@ -2054,6 +2054,7 @@ type
       ProcessLoopsForward : boolean;
       DEMIX_MaxTilesInLegend,
       DEMIXUseBins : byte;
+      DEMIX_MultiGraphCommonScaling : byte;
 
       {$IfDef IncludeCoastalDEMs}
          DEMIX_U120DBfName,
@@ -2163,7 +2164,7 @@ type
 
        NumMasksToAdd : byte;
        DefVectorLineMult : float32;
-       ConnectRecordColoring : boolean;
+       //ConnectRecordColoring : boolean;
        HorizonColor : tPlatformColor;
        HorizonWidth : byte;
        ConnectArrowSpacing : byte;
@@ -2171,7 +2172,7 @@ type
        OptimaBoxSize : int16;
        ConvergingViews : boolean;
        DefWeaponsMinRange : float32;
-       JPEGQuality : int32;
+       //JPEGQuality : int32;
        DEMZunits : tDEMZunits;
 
        BlackLimit,
@@ -2187,7 +2188,7 @@ type
        FanOutLineWidth : byte;
        OutlineFans : boolean;
        ShowMasks : boolean;
-       LabelRegisterPoints : boolean;
+       //LabelRegisterPoints : boolean;
        MaxLabelDecimals : int16;
 
        RoadTrendRegion,
@@ -2735,15 +2736,15 @@ type
        AutoLoadVegGrid,
        AutoLoadVegDensityGrids,
        VegEffectsVoxels,
-       DiscardHighPointsVegDensity,
+       //DiscardHighPointsVegDensity,
        VegDensityGraphAverage : boolean;
 
        VegDensityHeights : byte;
        MaxVegHeight,
        VegDensityGraphMaxDensity : int16;
-       VegDensityBuildingPoints,
-       VegDensityGroundPoints,
-       VegDensityRandomizePoints : boolean;
+       //VegDensityBuildingPoints,
+       VegDensityGroundPoints : boolean;
+       //egDensityRandomizePoints : boolean;
        VegGridRandomizationDistance : float32;
 
        PixelSizeToShowCounties,
@@ -2764,7 +2765,7 @@ type
        US_Highway_Width : byte;
        US_River_Color : tPlatformColor;
        US_River_Width : byte;
-       US_FennemanColor : tPlatformColor;
+       //US_FennemanColor : tPlatformColor;
        //US_FennemanWidth : byte;
 
        XYZImport : tXYZImport;
@@ -2778,7 +2779,7 @@ type
        DEMIXSlopeCompute : tSlopeCurveCompute;
        SlopeCompute,
        CurveCompute : tSlopeCurveCompute;
-       CD2 : boolean;
+       //CD2 : boolean;
        AspectRegionSize : int32;
 
        DeleteAuxTiffFiles : boolean;
@@ -2826,10 +2827,9 @@ type
 
        QuantileRanges : boolean;
 
-
        ReportFanCoverage : boolean;
-       AutomaticNewMovieNames : boolean;
-       EnableGridNetworkComputing : boolean;
+       //AutomaticNewMovieNames : boolean;
+       //EnableGridNetworkComputing : boolean;
        GraphFanCoverage : boolean;
        DefaultTargetTerrainHug : boolean;
        DefaultObserverTerrainHug : boolean;
@@ -2908,15 +2908,15 @@ type
        LegendBarWidth,
        LegendTickSize : byte;
        tnHeight,tnQuality : SmallInt;
-       SinglePixel,
-       LongLandCoverResults : boolean;
+       SinglePixel : boolean;
+       //LongLandCoverResults : boolean;
        PtSlicerDefView : byte;
        LOSSliceBuffer : SmallInt;
        SlicerUseCorrectScaling,
        SlicerIHSMerge             : boolean;
        SliceColorOpt : tSliceColorOpt;
        SkipWebUpdates : Boolean;
-       RedistrictEvenness : byte;
+       //RedistrictEvenness : byte;
        LOSShowVoxelDensity,
        ShowCloudDensity  : boolean;
        ShowPointCloundOnProfile : tShowPointCloundOnProfile;

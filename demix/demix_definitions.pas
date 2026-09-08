@@ -20,6 +20,8 @@ unit demix_definitions;
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define TrackCriteriaList}
    {$Define RecordDSM_DTMpairs}
+   {$Define RecordDEMIX}
+   {$Define RecordDTM_DSM}
    //{$Define RecordNeoDEMIX}
    //{$Define RecordDEMIXFilters}
    //{$Define RecordDEMIXRefDEM}
@@ -55,6 +57,7 @@ unit demix_definitions;
    //{$Define RecordDEMIXSortGraph}
    //{$Define RecordGridCompare}
    //{$Define RecordUseTile}
+   //{$Define RecordDatums}
 
    //{$Define RecordDEMIXMovies}
    //{$Define ShowDEMIXWhatsOpen}
@@ -106,7 +109,6 @@ const
 
 const
    DEMIX_vert_datum_code : integer = 0;
-   HRDEMresolutionFilter : shortstring = ' AND GRID_M >= 2';
 
 
 const
@@ -141,13 +143,6 @@ const
    udCompareAverageSlopesByAlgorithm = 46;
    udInterpolatedFUVs = 47;
 
-//const
-   //fuvmMixed = udFUVCalc;
-   //fuvmPartials = udFUVpartials;
-   //fuvmCurves = udFUVcurves;
-   //fuvmDiffDist = udDiffDistribStat;
-
-
 
 const
    DEMIXOpenMap = false;
@@ -167,10 +162,11 @@ const
 
    NumTileCharacters = 13;
    TileCharacters : array[1..NumTileCharacters] of shortstring = ('AVG_ELEV','AVG_ROUGH','AVG_SLOPE','RELIEF','MIN_ELEV','MAX_ELEV',
-         'BARREN_PC','FOREST_PC','URBAN_PC','WATER_PC',
-         'BIOME_NAME','KOPPEN','CANOPY_HT');
+         'BARREN_PC','FOREST_PC','URBAN_PC','WATER_PC',  'BIOME_NAME','KOPPEN','CANOPY_HT');
 
    RefDEMType : array[1..2] of shortstring = ('DSM','DTM');
+
+   RefDEMFieldNames : array[1..6] of shortstring = ('RFDSM_ALOS','RFDTM_ALOS','RFDSM_SRTM','RFDTM_SRTM','RFDSM_COP','RFDTM_COP');
 
    NumLandTypes = 8;
    LandTypes : array[1..NumLandTypes] of shortstring = ('ALL','FLAT','GENTLE','STEEP','CLIFF','URBAN','FOREST','BARREN');
@@ -207,6 +203,7 @@ const
    Ref1SecPointStr = '_ref_1sec_point';
    Ref1SecAreaStr =  '_ref_1sec_area';
    Ref1_5SecPointStr = '_ref_1.5x1sec_point';
+   RefTestStr = '_ref_test_dem';
 
 
 const
@@ -218,7 +215,6 @@ const
    yasForest = 5;
    yasLatitude = 6;
    yasBestEvalColoredBySlope = 7;
-   //MovieByTestDEM : boolean = false;
 
 var
    RefDEMs,TestDEMs,
@@ -249,10 +245,7 @@ var
    DEMIX_area_dbName,
    DEMIX_Ref_Merge,
 
-   AreaListFName,
-    //GeodeticFName,IceSatFName,LandCoverFName,DEMIX_3DEP_Dir,DEMIX_diff_maps_dir,DEMIX_distrib_graph_dir,DEMIX_profile_test_dir,
-
-   LocalDatumAddFName,LocalDatumSubFName,
+   AreaListFName,LocalDatumAddFName,LocalDatumSubFName,
    RefDSMPointFName,RefDSMareaFName,RefDTMPointFName,RefDTMareaFName, COPRefDTMFName,COPRefDSMFName : PathStr;
 
 //create or edit database
@@ -263,11 +256,16 @@ var
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
+   procedure ComputePowerFitForAllTiles(db : integer);
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDiffDistDB;
    procedure MergeCSV(Mode : integer);
    procedure AddPercentPrimaryData(DBonTable : integer);
+   procedure IdentifyDSM_DTMpair(DBonTable : integer);
+   procedure ComputeWhereDSMandDTMshouldDiffer(dbOnTable : integer);
+   procedure IdentifyDSMorDTM(dbOnTable : integer);
+
 
 //clusters function
    procedure TileCharateristicsWhiskerPlotsByCluster(DBonTable : integer; NoFilteringToGetAllTiles : boolean; FilterToUse : tStringList = Nil; {UseStringsInCriterion : boolean = false;} SingleCriterion : shortstring = '');
@@ -280,19 +278,19 @@ var
 
 
 //inventory and reports
-   procedure InventoryDEMIXdifferenceStats;
-   procedure CheckTestDEMs;
-   procedure VerifyTestDEMcoverages;
+   //procedure InventoryDEMIXdifferenceStats;
+   //procedure InventoryTestRefDEMs;
+   //procedure VerifyTestDEMcoverages;
    procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
-   procedure InventoryDEMIX_SSIM_FUV_Stats;
+   //procedure InventoryDEMIX_FUV_Stats;
    procedure DeleteFilesForATestArea;
-   procedure FindFilesWith42112;
-   procedure FixFilesWith42112;
+   //procedure FindFilesWith42112;
+   //procedure FixFilesWith42112;
    procedure EvalRangeAndStatsByCriterion(DBonTable : integer; aField : shortstring = '');
    procedure InventoryCriteriaEachDEMIXtile(DB : integer);
-   procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
+   //procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
    procedure FindTilesInAreaForCoast;
-   procedure PruneMisnamedReferenceDTMs;
+   //procedure PruneMisnamedReferenceDTMs;
    procedure InventoryAreasAndTilesByCountry(DB : integer);
 
 
@@ -344,9 +342,7 @@ function AreDEMIXscoresInDB(db : integer) : boolean;
 procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
 procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
 
-procedure CriteriaInSSIM_FUV_db(db : integer);
-
-function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
+procedure CriteriaInFUVdb(db : integer);
 
 procedure ClusterCompositionByDBfield(DBonTable : integer);
 procedure ClusterFrequencyForSelectedField(DBonTable : integer);
@@ -359,13 +355,13 @@ procedure MakeTerrainGridsFromMICRODEM(DataDir : PathStr; DEMIndex : integer; Is
 function LinkedGraphofCriteriaEvaluations(DBonTable : integer; What : shortstring; ClusterOption : boolean): tThisBaseGraph;
 
 function ID_DEMIX_DB_type(db : integer) : byte;
+
 procedure MakeLandParamFilters(LandParam : shortstring; var GeomorphFilters,Labels : tStringList; BinSize : integer = 0);
 procedure ImportLandParamFilters(fName : PathStr; var GeomorphFilters,Labels : tStringList);
 procedure ImportLandParamFiltersLong(fName : PathStr; var GeomorphFilters,Labels,Lowers,Uppers : tStringList);
 
 function ContinueExperimentalDEMIX : boolean;
 function NoSuffixCriterion(Criterion : shortstring) : shortstring;
-function TileCharacteristicsInDB(DB : integer) : boolean;
 procedure TrackCriteriaList(UseLSPs : tStringList; Where : shortstring);
 
 function InsureFUVinLSPname(aName : shortstring) : shortstring;
@@ -403,16 +399,15 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
       procedure BatchCreateVectorChannelNewtwork(Overwrite : boolean; AreasWanted : tstringlist = nil);
       procedure ChannelNetworkMapComparison(Overwrite : boolean; AreaName,TestDEMName : shortstring);
       procedure MultistepChannelNetworks(Overwrite : boolean);
-      procedure InventoryChannelDataByArea;
+      //procedure InventoryChannelDataByArea;
    {$EndIf}
 
    {$IfDef ExternalProgramFUV_SSIM} function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean; {$EndIf}
 
    {$IfDef IncludeCoastalDEMs}
       DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms : PathStr;  //used for inventories, when mixing comparison modes
+      procedure CheckLowElevationAreas;
    {$EndIf}
-
-   {$IfDef IncludeCoastalDEMs} procedure CheckLowElevationAreas; {$EndIf}
 
 
 {$IfDef IncludeOldDEMIX_RefDEM_Create}
@@ -454,9 +449,21 @@ function ExtractKeyFilterName(fName : shortstring) : shortstring;
 function ExpandFullFilterName(fName : shortstring) : PathStr;
 function AreaWithMergingFiles(AreaName : shortstring) : boolean;
 
-
-function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
 function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var HorizDatum,VertDatum,UTMzone : shortstring) : boolean;
+
+
+
+procedure MakeCSVforGDEMslopes(DB : integer);
+function TileNameGDEMorHRDEM(db : integer) : shortstring;
+
+function DEMIX_HRDEM_DB(db : integer) : boolean;
+function DEMIX_GDEM_DB(db : integer) : boolean;
+function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
+function TileCharacteristicsInDB(DB : integer) : boolean;
+function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
+
+function HRDEMresolutionFilter(db : integer) : shortstring;
+
 
 
 implementation
@@ -492,6 +499,31 @@ uses
 {$EndIf}
 
 
+function HRDEMresolutionFilter(db : integer) : shortstring;
+begin
+   if GISdb[db].MyData.FieldExists('GRID_M') then Result := ' AND GRID_M >= 2'
+   else Result := '';
+end;
+
+
+function DEMIX_HRDEM_DB(db : integer) : boolean;
+begin
+   Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('THIN') and GISdb[db].MyData.FieldExists('GRID_M');
+end;
+
+function DEMIX_GDEM_DB(db : integer) : boolean;
+begin
+   Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('GRID_M') ;
+end;
+
+
+function TileNameGDEMorHRDEM(db : integer) : shortstring;
+begin
+    if GISdb[DB].MyData.FieldExists('DTM_NAME') then Result := 'DTM_NAME'
+    else Result := 'DEMIX_TILE';
+end;
+
+
 function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
 var
    CountryDatums : PathStr;
@@ -508,7 +540,7 @@ begin
          Result := UpperCase(db.GetFieldByNameAsString('MERGE')) = 'Y';
       end
       else begin
-         MessageToContinue('County = ' + Country + '  Missing ' + CountryDatums);
+         MessageToContinue('Country = ' + Country + '  Missing ' + CountryDatums);
       end;
       db.Destroy;
    end
@@ -517,20 +549,22 @@ begin
    end;
 end;
 
+
 function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var HorizDatum,VertDatum,UTMzone : shortstring) : boolean;
 var
    Country,Region : shortstring;
    CountryDatums : PathStr;
    db : tMyData;
 
-   procedure ReadValues;
-   begin
-      VertDatum  := db.GetFieldByNameAsString('VERT_DATUM');
-      HorizDatum := db.GetFieldByNameAsString('HORZ_DATUM');
-      UTMzone    := db.GetFieldByNameAsString('UTM_ZONE');
-   end;
+           procedure ReadValues;
+           begin
+              VertDatum  := db.GetFieldByNameAsString('VERT_DATUM');
+              HorizDatum := db.GetFieldByNameAsString('HORZ_DATUM');
+              UTMzone    := db.GetFieldByNameAsString('UTM_ZONE');
+           end;
 
 begin
+   {$IfDef RecordDatums} WriteLineToDebugFile('GetVertHorizDatums for ' + AreaName);  {$EndIf}
    Result := false;
    CountryDatums := ProgramRootDir + 'national_datum_codes.dbf';
    if FileExists(CountryDatums) then begin
@@ -547,19 +581,21 @@ begin
                if StrUtils.AnsiContainsText(AreaName,Region) then begin
                   ReadValues;
                end;
+               db.Next;
             end;
          end;
          if (UTMzone = '') then UTMzone := AddDayMonthLeadingZero(Geotiff_UTMzone(MergefName))
+      end
+      else begin
+         MessageToContinue('Missing country=' + Country + ' in ' + CountryDatums);
       end;
       db.Destroy;
    end
    else begin
       MessageToContinue('Missing ' + CountryDatums);
    end;
+   {$IfDef RecordDatums} WriteLineToDebugFile('GetVertHorizDatums out');  {$EndIf}
 end;
-
-
-
 
 
 function AreaWithMergingFiles(AreaName : shortstring) : boolean;
@@ -567,9 +603,8 @@ var
    CountryCode : shortstring;
 begin
    CountryCode := UpperCase(copy(AreaName,1,3));
-   Result := (CountryCode = 'CH_') or (CountryCode = 'FR_') or (CountryCode = 'NZ_') or (CountryCode = 'UK_');
+   Result := {(CountryCode = 'CH_') or} (CountryCode = 'FR_') or (CountryCode = 'NZ_') or (CountryCode = 'UK_');
 end;
-
 
 
 function ExtractKeyFilterName(fName : shortstring) : shortstring;
@@ -673,53 +708,54 @@ begin
    Result := '';
    Tile := UpperCase(Tile);
    Country := Copy(Tile,1,3);
-   if (Tile[3] <> '_') or (Country = 'US_') then begin
-      //US data, no country encoded
-      Result := 'DTM';
-   end
-   else begin
-       if (Country = 'FR_') then begin
-            if ANSIcontainsStr(Tile,'MNS') then Result := 'DSM'
-            else if ANSIcontainsStr(Tile,'MNT') then Result := 'DTM';
-       end;
-       if (Country = 'ES_') or (Country = 'IC_') then begin
-            if ANSIcontainsStr(Tile,'MDS') then Result := 'DSM'
-            else if ANSIcontainsStr(Tile,'MDT') then Result := 'DTM';
-       end;
-       if (Country = 'CA_') or (Country = 'UK_') then begin
-            if ANSIcontainsStr(Tile,'DSM') then Result := 'DSM'
-            else if ANSIcontainsStr(Tile,'DTM') then Result := 'DTM';
-       end;
-   end;
-   if (Result = '') then Result := 'DTM';
+   if ANSIcontainsStr(Tile,'DSM') or ANSIcontainsStr(Tile,'MDS') or ANSIcontainsStr(Tile,'MNS') or
+        ANSIcontainsStr(Tile,'DOM') or ANSIcontainsStr(Tile,'SURFACE3D')  then Result := 'DSM'
+   else if (Tile[3] <> '_') or (Country = 'US_') or ANSIcontainsStr(Tile,'DTM') or ANSIcontainsStr(Tile,'MDT') or
+        ANSIcontainsStr(Tile,'MNT') or ANSIcontainsStr(Tile,'ALTI3D') then Result := 'DTM';
 end;
 
 
 function GetDSMandDTMTileNamesFromLatLong(DBonTable : integer; Lat,Long : float64; var DTMName,DSMName : PathStr): boolean;
+//DB will be filtered with the records close to the first one
 var
    TStr : shortstring;
+   Found : integer;
+   Tolerance : float32;
 begin
-  if GISdb[DBonTable].MyData.FieldExists('CRITERION') then TStr := 'CRITERION=' + QuotedStr('SLOPE') + ' AND ' else TStr := '';
-  GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,0.015));
-  {$IfDef RecordDSM_DTMpairs} WriteLineToDebugFile(GISdb[DBonTable].MyData.Filter + '  matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));  {$EndIf}
-  DSMname := '';
-  DTMName := '';
-  Result := false;
-  if (GISdb[DBonTable].MyData.FiltRecsInDB = 2) then begin
-     TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
-     if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
-     GISdb[DBonTable].MyData.Next;
-     TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
-     if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
-     Result := (DSMname <> '') and (DTMname <> '');
-  end
-  else begin
-  end;
-  {$IfDef RecordDSM_DTMpairs}
-     if (GISdb[DBonTable].MyData.FiltRecsInDB > 2) then begin
-        WriteLineToDebugFile('Too many matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
-     end;
-  {$EndIf}
+    if GISdb[DBonTable].MyData.FieldExists('CRITERION') then TStr := 'CRITERION=' + QuotedStr('SLOPE') + ' AND ' else TStr := '';
+    Tolerance := 0.15;
+    repeat
+       GISdb[DBonTable].ApplyGISFilter(TStr + PointVeryCloseGeoFilter('LAT','LONG',Lat,Long,Tolerance));
+       Tolerance := Tolerance - 0.005;
+       Found := GISdb[DBonTable].MyData.FiltRecsInDB;
+    until (Found <= 2) or (Tolerance < 0.005);
+    DSMname := '';
+    DTMName := '';
+    Result := false;
+    TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+    if (Found = 2) then begin
+       if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
+       GISdb[DBonTable].MyData.Next;
+       TStr := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+       if IdentifyDEMIXtileAsDTMorDSM(TStr) = 'DSM' then DSMName := TStr else DTMName := TStr;
+       Result := (DSMname <> '') and (DTMname <> '');
+    end
+    else begin
+        {$IfDef RecordDSM_DTMpairs}
+            TStr := ' matches for ' + TStr + ' with ' + GISdb[DBonTable].MyData.Filter;
+            if (Found = 1) then begin
+               WriteLineToDebugFile('No' + TStr);
+            end
+            else if (Found > 2) then begin
+                WriteLineToDebugFile('Too many' + TStr + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB));
+                GISdb[DBonTable].MyData.First;
+                while not GISdb[DBonTable].MyData.eof do begin
+                   WriteLineToDebugFile('    ' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
+                   GISdb[DBonTable].MyData.Next;
+                end;
+            end;
+        {$EndIf}
+    end;
 end;
 
 

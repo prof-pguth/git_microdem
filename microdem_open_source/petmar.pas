@@ -495,11 +495,12 @@ procedure ClearTemporaryFileGroup(var SL : tStringList; Free : boolean = false);
 function AvailablePhysicalMemoryString : shortstring;
 function YorN(What : boolean) : ANSIchar; inline;
 
+procedure DownloadListOfFiles(Memo1 : tMemo = nil);
+
 
 implementation
 
 uses
-
 
 {$IfDef VCL}
    Nevadia_Main,
@@ -520,7 +521,7 @@ uses
    PETForm,      {form with common dialogs for use}
 {$EndIf}
 
-   DEMDefs,
+   DEMDefs, DEMdef_routines,
    {$IfDef ExGIS}
    {$Else}
       petdbutils,
@@ -530,6 +531,104 @@ uses
 
 var
    TerrainCuts : array[0..4,1..3] of integer;
+
+procedure DownloadListOfFiles(Memo1 : tMemo = nil);
+var
+   FileList,FilesWanted : tStringList;
+   NumSucc,NumFail, i,{j,}f,runs : Integer;
+   Input,OutPath : PathStr;
+   TStr,inName,OutName : AnsiString;
+   DefFilter : byte;
+
+       function FileAlreadyDownLoaded(fName : PathStr) : boolean;
+       //might already have extracted from laz to las, or reprojected las
+       begin
+          Result := FileExists(fName) or FileExists(ChangeFileExt(FName,'.las')) or FileExists(ChangeFileExt(FName,'_utm.las'));
+       end;
+
+begin
+   try
+      WMdem.Color := clInactiveCaption;
+      inPut := '';
+      DefFilter := 1;
+      FilesWanted := tStringList.Create;
+      FilesWanted.Add(System.IOUtils.TPath.GetDownloadsPath);
+      if GetMultipleFiles(' to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
+         for f := 0 to pred(FilesWanted.Count) do begin
+            Input := FilesWanted.Strings[f];
+            if FileExists(Input) then begin
+               TStr := IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count);
+               wmdem.SetPanelText(1,'List: ' + TStr,true);
+               Runs := 1;
+               FileList := tStringList.Create;
+               FileList.LoadFromFile(Input);
+               OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
+               SafeMakeDir(OutPath);
+               if Memo1 <> Nil then begin
+                   Memo1.Visible := true;
+                   Memo1.Lines.Add(TimeToStr(Now) + ' Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count) + '  ' + ExtractFileNameNoExt(Input));
+                   Memo1.Lines.Add('');
+                   Memo1.Lines.Add(TimeToStr(Now) + ' Check for files already downloaded, files= ' + IntToStr(FileList.Count));
+               end;
+               TStr := 'Started: ' + TimeToStr(Now);
+               wmdem.SetPanelText(0,TStr,true);
+               repeat
+                 NumSucc := 0;
+                 NumFail := 0;
+                 for i := pred(FileList.Count) downto 0 do begin
+                    InName := FileList.Strings[i];
+                    if FileAlreadyDownloaded(DEMdef_routines.TheOutputName(OutPath,InName,false)) then begin
+                       FileList.Delete(i);
+                    end;
+                 end;
+                if Memo1 <> Nil then Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
+
+                 for i := 0 to pred(FileList.Count) do begin
+                    TStr := IntToStr(succ(i)) + '/' + IntToStr(FileList.Count) + '  (' + RealToString(100*succ(i)/ FileList.Count,-8,1) + '%)';
+                    wmdem.SetPanelText(2,TStr);
+                    InName := FileList.Strings[i];
+                    if (InName <> '') then begin
+                       OutName := TheOutputName(OutPath,InName,false);
+                       if FileAlreadyDownloaded(OutName) then begin
+                       end
+                       else begin
+                          TStr := ExtractFileNameNoExt(OutName);
+                          if DownloadFileFromWeb(InName,OutName,false) then begin
+                             TStr := TStr + '  ' + SmartMemorySizeBytes(GetFileSize(OutName)) +  ' success';
+                             inc(NumSucc);
+                          end
+                          else begin
+                             TStr := '***** failure ' + TStr + ' failure *****';
+                             inc(NumFail);
+                          end;
+                          if Memo1 <> Nil then Memo1.Lines.Add(IntToStr(succ(I)) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
+                       end;
+                    end;
+                    if WantOut then begin
+                       if Memo1 <> Nil then Memo1.Lines.Add('Aborted');
+                       break;
+                    end;
+                 end;
+                 if Memo1 <> Nil then  begin
+                     Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail));
+                     Memo1.Lines.Add('');
+                     Memo1.Lines.Add('');
+                 end;
+                 if (NumFail = 0) then DeleteFileIfExists(Input);
+                 inc(Runs);
+               until Wantout or (NumFail = 0) or (Runs > 5);
+               FileList.Free;
+            end;
+         end;
+      end;
+      FilesWanted.Free;
+   finally
+      WMdem.Color := clScrollBar;
+      wmdem.ClearStatusBarPanelText;
+   end;
+end;
+
+
 
 
 {$I petmar_palettes_legends.inc}
@@ -888,6 +987,8 @@ procedure CleanUpFileName(var fname : PathStr);
 var
    i : integer;
 begin
+   fName := StringReplace(fName, '>', 'over',[rfIgnoreCase,rfReplaceAll]);
+   fName := StringReplace(fName, '<', 'under',[rfIgnoreCase,rfReplaceAll]);
    for i := Length(fName) downto 1 do begin
       if Not (fName[i] in ValidDosFileNameChars) then fName[i] := '_';
    end;
@@ -2718,9 +2819,11 @@ end;
 function LastSubDir(Dir : AnsiString) : PathStr;
 begin
    Result := Dir;
-   if length(Dir) > 0 then begin
-      if Dir[Length(Dir)] <> '\' then Dir := Dir + '\';
-      while StrUtils.AnsiContainsText(Dir,'\') do Result := BeforeSpecifiedCharacterANSI(Dir,'\',true,true);
+   if length(Result) > 0 then begin
+      if (Dir[Length(Result)] = '\') then Delete(Result,Length(Result),1);
+      while StrUtils.AnsiContainsText(Result,'\') do begin
+         BeforeSpecifiedCharacterANSI(Result,'\',true,true);
+      end;
    end;
 end;
 

@@ -1560,11 +1560,11 @@ begin
             {$Else}
                MyJPEG := TJPEGImage.Create;
                {$IfDef VCL}
-               if (MDdef.DefaultSaveImageType = 3) then begin
-                  ReadDefault('Compression (1 [best compression] -- 100 [best image quality])',MDDef.JPEGQuality);
-               end;
+               //if (MDdef.DefaultSaveImageType = 3) then begin
+                  //ReadDefault('Compression (1 [best compression] -- 100 [best image quality])',MDDef.JPEGQuality);
+               //end;
                {$EndIf}
-               MyJPEG.CompressionQuality := MDDef.JPEGQuality;
+               //MyJPEG.CompressionQuality := 50;
                {$IfDef RecordJPEG} WriteLineToDebugFile('Compression=' + IntToStr(SaveQuality) + '  for ' + SaveName); {$EndIf}
                MyJPEG.Assign(Bitmap);
                MyJPEG.SaveToFile(SaveName);

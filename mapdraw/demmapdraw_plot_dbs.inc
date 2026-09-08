@@ -10,7 +10,7 @@
 
 procedure TMapDraw.PlotDataBases(var Bitmap : tMyBitmap);
 var
-   i,j,db : integer;
+   {i,j,}db : integer;
    Overlay : tMyBitmap;
 begin
    if NoDBPlots or ClosingIsHappening or (not MapDrawValid) or ClosingMapNow then exit;
@@ -87,7 +87,8 @@ end;
 
 procedure TMapDraw.PlotDataBaseLegends(var Bitmap : tMyBitmap);
 var
-   i,j,db : integer;
+   i,j  : integer;
+   db : integer;
 begin
    {$IfDef UseDBPlotOrder}
        if (NumOpenDB > 0) then begin
@@ -190,7 +191,7 @@ end;
 
 procedure TMapDraw.LabelDataBases(var Bitmap : tMyBitmap);
 var
-   i,j,db : integer;
+   i,{j,}db : integer;
 begin
    {$IfDef RecordDBPlots} WriteLineToDebugFile('TMapDraw.LabelDataBases in'); {$EndIf}
    {$IfDef UseDBPlotOrder}
@@ -560,67 +561,23 @@ begin {procedure TMapDraw.PlotShapeFileGroup}
 end {procedure TMapDraw.PlotShapeFileGroup};
 
 
-
- procedure TMapDraw.SmartWorldOutline(Bitmap : tMyBitmap);
- var
-    //NEOverlay : tMyBitmap;
-    //fName : PathStr;
-    InScale : boolean;
- begin
-     if NaturalEarthOverlayFName = '' then NaturalEarthOverlayFName := NextFileNumber(MDTempDir, 'NE_overlay', OverlayFExt);
-     PlotShapeFileGroup(NaturalEarthLayer,'',NaturalEarthOverlayFName,bitmap);
-
-(*
-    {$IfDef RecordWorldOutline} WriteLineToDebugFile('TMapDraw.SmartWorldOutline in, pixel=' + RealToString(ScreenPixelSize,-12,-2) + ' m, smart scaling='+ TrueOrFalse(MDDef.NEautoScale)); {$EndIf}
-    CreateBitmap(NEOverlay,Bitmap.Width,Bitmap.Height);
-    if (NaturalEarthOverlayFName <> '') then begin
-      NEOverlay.LoadFromFile(NaturalEarthOverlayFName);
-    end
-    else begin
-       InScale := true;
-       NaturalEarthOverlayFName := NextFileNumber(MDTempDir, 'NE_overlay', OverlayFExt);
-       if (not MDDef.NEautoScale) or (ScreenPixelSize > MDDef.SmallScaleWorldOutlinePixelSize) {or AFullWorldMap} then begin
-          {$IfDef RecordWorldOutline} WriteLineToDebugFile('small scale ' + SmallScaleWorldOutlines); {$EndIf}
-          fName := SmallScaleWorldOutlines;
-       end
-       else if (ScreenPixelSize > MDDef.MedScaleWorldOutlinePixelSize) then begin
-          {$IfDef RecordWorldOutline} WriteLineToDebugFile('medium scale ' + MedScaleWorldOutlines); {$EndIf}
-          fName := MedScaleWorldOutlines;
-       end
-       else if (ScreenPixelSize > MDDef.LargeScaleWorldOutlinePixelSize) then begin
-          {$IfDef RecordWorldOutline} WriteLineToDebugFile('large scale ' + LargeScaleWorldOutlines); {$EndIf}
-          fName := LargeScaleWorldOutlines;
-       end
-       else begin
-          {$IfDef RecordWorldOutline} WriteLineToDebugFile('no scale and not drawn'); {$EndIf}
-          InScale := false;
-       end;
-       if Inscale then begin
-          PlotShapeFileGroup(fName,NEOverlay);
-          if GrayscaleWorldOutline then MakeTheBitmapGrayScale(NEOverlay);
-          if SubdueWorldOutline then MakeTheBitmapSubdued(NEOverlay);
-       end;
-
-       NEOverlay.SaveToFile(NaturalEarthOverlayFName);
-    end;
-    DrawAndDeleteOverlay(Bitmap,NEOverlay,100); //,0,0,true);
-*)
-end;
-
-
+procedure TMapDraw.SmartWorldOutline(Bitmap : tMyBitmap);
+begin
+   if (NaturalEarthOverlayFName = '') then NaturalEarthOverlayFName := NextFileNumber(MDTempDir, 'NE_overlay', OverlayFExt);
+   PlotShapeFileGroup(NaturalEarthLayer,'',NaturalEarthOverlayFName,bitmap);
+end {procedure TMapDraw.SmartWorldOutline};
 
 
 procedure TMapDraw.QuietPlotTIGERShapeFileOnMap(fName : PathStr; var Bitmap : tMyBitmap; RoadsOnly : boolean = false; MaskSize : integer = -1; StreamsOnly : boolean = false);
 var
    GISNum : integer;
 begin
-   {$IfDef RecordTiger} WriteLineToDebugFile('PlotTIGERShapeFileOnMap ' + fName); {$EndIf}
+   {$IfDef RecordTiger} WriteLineToDebugFile('QuietPlotTIGERShapeFileOnMap, ' + fName); {$EndIf}
    if OpenNumberedGISDataBase(GISNum,fName) then begin
       PlotTigerShapeFileOnMap(GISNum,Bitmap,RoadsOnly,MaskSize,StreamsOnly);
       CloseSingleDB(GISNum);
    end;
 end;
-
 
          procedure TMapDraw.PlotTigerShapeFileOnMap(DBNum : integer; var Bitmap : tMyBitmap; RoadsOnly : boolean = false; MaskSize : integer = -1; StreamsOnly : boolean = false);
          var
@@ -698,8 +655,6 @@ end;
                {$IfDef RecordTiger} WriteLineToDebugFile('out'); {$EndIf}
             end;
          end;
-
-
 
 
 procedure TMapDraw.PlotDBLegend(DBNum : integer; var Bitmap : tMyBitmap);

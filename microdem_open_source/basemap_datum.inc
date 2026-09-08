@@ -8,6 +8,26 @@
 {________________________________________}
 
 
+function ThisIsETRS89(Tstr : ANSIstring) : boolean;
+begin
+   Result := StrUtils.AnsiContainsText(TStr,'ETRS') and StrUtils.AnsiContainsText(TStr,'89');
+end;
+
+
+function ThisIsWGS84(Tstr : ANSIstring) : boolean;
+begin
+   Result := (StrUtils.AnsiContainsText(TStr,'WGS') and StrUtils.AnsiContainsText(TStr,'84')) or  StrUtils.AnsiContainsText(TStr,'GRS 1980') or
+       StrUtils.AnsiContainsText(TStr,'GRS80') or (StrUtils.AnsiContainsText(TStr,'SIRGAS-ROU98'));
+end;
+
+
+function ThisIsNAD83(Tstr : ANSIstring) : boolean;
+begin
+   Result := StrUtils.AnsiContainsText(TStr,'NAD') and StrUtils.AnsiContainsText(TStr,'83');
+end;
+
+
+
       function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
       begin
          if (HDatum = 'ETR89') then Result := 25800
@@ -136,6 +156,8 @@ var
    Mu,C2,C3,a1,Theta1,m1,M,Diff,tf,tf1,
    Sign,OldLat,sinc,cosc,Theta,rho,q,t    : float64;
    Reps,i : integer;
+   eeGeo : TGeoCoord;
+   eePoint : TPoint2D;
 
 
    {$IfDef RecordProjectionDetails}  //these are intended (and were used) to debug the equations, using the test cases in the Snyder book
@@ -168,7 +190,7 @@ var
    {$EndIf}
 
 
-begin
+begin {procedure tMapProjection.InverseProjectRadians}
    {$IfDef RecordProjectionDetails}
       if PointConvertDebug then begin
          WriteLineToDebugFile('');
@@ -386,6 +408,13 @@ begin
       Long := Long0 + x / a;
    end
    else if (PName = EqualEarth) then begin
+      eePoint.x := x;
+      eePoint.y := y;
+      eeGeo := EqualEarthInverse(eePoint,Long0,a);
+      Lat := eeGeo.Lat;
+      Long := eeGeo.Lon;
+
+(*
       x := x / a;
       y := y / a;
 
@@ -403,6 +432,7 @@ begin
       end;
       Lat := eeM * x * (eeA1 + 3 * eeA2 * l2 + l6 * (7 * eeA3 + 9 * eeA4 * l2)) / cos(l);
       Long := Long0 + arcsin(sin(l) / eeM);
+   *)
    end
    else begin
      if (PName = HammerProj) then d := 0.5 else d := 1;  //rho := sqrt(sqr(0.5 * x) + sqr(Y))
@@ -444,7 +474,7 @@ begin
          end;
      end;
    end;
-end;
+end {procedure tMapProjection.InverseProjectRadians};
 
 
 procedure tMapProjection.ForwardProjectRadians(Lat,Long : float64; var x,y : float64; Check : boolean = true);
@@ -454,6 +484,9 @@ var
    Theta,DeltaTheta,ThetaPrime,G,Q,P,
    HalfLambdaDif,K,SinPhi,CosPhi,x1,y1,K1,
    LambdaDif,SinLambdaDif,CosLambdaDif,CosC,B       : float64;
+   eeGeo : TGeoCoord;
+   eePoint : TPoint2D;
+
 
            {$IfDef RecordProjectionDetails}   //these are intended (and were used) to debug the equations, using the test cases in the Snyder book
               procedure PolarStereographicDebug;
@@ -533,8 +566,7 @@ var
             {$EndIf}
 
 
-
-begin
+begin {procedure tMapProjection.ForwardProjectRadians}
    {$IfDef ForwardProject} WriteLineToDebugFile('tMapProjection.ForwardProjectRadians in'); {$EndIf}
    if Check then begin
       while (Long > Pi) do Long := Long - TwoPi;
@@ -607,7 +639,7 @@ begin
                                        x := ProjMapScale * rho * sin(Theta);
                                        y := ProjMapScale * Rho0 - rho * cos(Theta);
                                        AddFalseEastingsNorthings(x,y);
-                                       {$IfDef RecordProjectionDetails} if PointConvertDebug then  LCCDebug; {$EndIf}
+                                       {$IfDef RecordProjectionDetails} if PointConvertDebug then LCCDebug; {$EndIf}
                                     end;
                                  except
                                     on Exception do ;
@@ -660,11 +692,19 @@ begin
                             y := a * ( (1-e2/4 - 3*e2*e2/64 - 5*e2*e2*e2/256) * Lat - (3*e2/8 + 3*e2*e2/32 + 45*e2*e2*e2/1024) * sin(2*Lat) + (15*e2*e2/256+45*e2*e2*e2/1024) * sin(4*lat) - (35*e2*e2*e2/3072) * sin(6 * lat) );
                          end;
       EqualEarth    : begin
+                         eeGeo.Lat := Lat;
+                         eeGeo.Lon := Long;
+                         eePoint := EqualEarthForward(eeGeo,Long0,a);
+                         x := eePoint.x;
+                         y := eePoint.y;
+
+                         (*
                          l := arcsin(eeM * sin(Lat));
                          l2 := l * l;
                          l6 := l2 * l2 * l2;
                          x := LambdaDif * cos(l) / (eeM * (eeA1 + 3 * eeA2 * l2 + l6 * (7 * eeA3 + 9 * eeA4 * l2))) * a;
                          y := l * (eeA1 + eeA2 * l2 + l6 * (eeA3 + eeA4 * l2)) * a;
+                         *)
                       end;
       VanDerGrinten : begin {Snyder, 1987, p.241}
                       Theta := Math.arcsin(abs(2*Lat/pi));
@@ -769,7 +809,7 @@ begin
                    end;
    end {case};
    {$IfDef RawProject} WriteLineToDebugFile('tMapProjection.RawProjectRadians out'); {$EndIf}
-end;
+end {procedure tMapProjection.ForwardProjectRadians};
 
 
 

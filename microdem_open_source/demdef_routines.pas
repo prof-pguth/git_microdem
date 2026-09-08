@@ -391,7 +391,7 @@ end;
    function TheOutputName(OutPath,InName : PathStr; RemoveExt : boolean) : PathStr;
    //takes a web address to download a file, and gets just the name of the file
    var
-      TStr : shortstring;
+      //TStr : shortstring;
       j : integer;
    begin
        if StrUtils.AnsiContainsText(InName,'FILENAME=') then begin
@@ -2474,11 +2474,11 @@ var
    begin
       with MDIniFile,MDDef do begin
          AParameter('DEMIX','DEMIX_mode',DEMIX_Mode,dmNotYetDefined);
-         AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
+         //AParameter('DEMIX','DEMIX_high',DEMIX_highlat,true);
          AParameter('DEMIX','DEMIX_base_dir',DEMIX_base_dir,'');
-         AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
+         //AParameter('DEMIX','DEMIX_default_area',DEMIX_default_area,'');
          AParameter('DEMIX','DEMIX_SingleCriterion',DEMIX_SingleCriterion,'SLPD_FUV');
-         AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
+        //AParameter('DEMIX','DEMIX_default_tile',DEMIX_default_tile,'');
          AParameter('DEMIX','DEMIX_groupWonLost',DEMIX_groupWonLost,0);
          AParameter('DEMIX','DEMIXsymsize',DEMIXsymsize,2);
          AParameter('DEMIX','DEMIX_Line_Width',DEMIX_Line_Width,1);
@@ -2495,8 +2495,10 @@ var
          AParameter('DEMIX','DEMIX_open_radials',DEMIX_open_radials,5);
          AParameter('DEMIX','DEM_ruff_window',DEM_ruff_window,5);
          AParameter('DEMIX','DEMIXsaveLSPmaps',DEMIXsaveLSPmaps,false);
+        //AParameter('DEMIX','AllFilter1SameGraph',AllFilter1SameGraph,false);
 
-         AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
+
+         //AParameter('DEMIX','DEMIX_default_half_sec_ref',DEMIX_default_half_sec_ref,false);
          AParameter('DEMIX','DEMIX_open_ref_DEM',DEMIX_open_ref_DSM,true);
          AParameter('DEMIX','DEMIX_Tile_Full',DEMIX_Tile_Full,50);
          AParameter('DEMIX','LoadRefDEMMaps',LoadRefDEMMaps,true);
@@ -2508,7 +2510,7 @@ var
          AParameter('DEMIX','DEMIX_AllowCoastal',DEMIX_AllowCoastal,false);
          AParameter('DEMIX','DEMIX_Geo_Tiles',DEMIX_Geo_Tiles,false);
          AParameter('DEMIX','DEMIX_UseMedian',DEMIX_UseMedian,false);
-         AParameter('DEMIX','DEMIX_MultiGraphCommonScaling',DEMIX_MultiGraphCommonScaling,true);
+         AParameter('DEMIX','DEMIX_MultiGraphCommonScaling',DEMIX_MultiGraphCommonScaling,0);
          AParameter('DEMIX','DEMIX_slope_filters',DEMIX_slope_filters,false);
          AParameter('DEMIX','DEMIX_ruff_filters',DEMIX_ruff_filters,false);
          AParameter('DEMIX','DEMIX_barren_filters',DEMIX_barren_filters,false);
@@ -2530,8 +2532,6 @@ var
          AParameter('DEMIX','DEMIXlegendFontSize',DEMIXlegendFontSize,18);
          AParameter('DEMIX','DEMIXUseBins',DEMIXUseBins,6);
          AParameter('Slope','DEMIXSlopeCompute',DEMIXSlopeCompute.AlgorithmName,smEvansYoung);
-         AParameter('DEMIX','DEMIX_FullDBfName',DEMIX_FullDBfName,'');
-         AParameter('DEMIX','DEMIX_IgnoreTies',DEMIX_IgnoreTies,false);
          AParameter('DEMIX','DEMIX_filter1_fName',DEMIX_filter1_fName,'');
          AParameter('DEMIX','DEMIX_filter2_fName',DEMIX_filter2_fName,'');
          AParameter('DEMIX','DEMIX_MaxTilesInLegend',DEMIX_MaxTilesInLegend,4);
@@ -2761,7 +2761,7 @@ var
          //AColorParameter('Misc','OffsetColor',OffsetColor,claBlack);
          //AParameter('Misc','OffsetLineWidth',OffsetLineWidth,3);
 
-         AParameter('Misc','RedistrictEvenness',RedistrictEvenness,5);
+         //AParameter('Misc','RedistrictEvenness',RedistrictEvenness,5);
          AParameter('Misc','DrawRangeCircles',DrawRangeCircles,false);
          AParameter('Misc','PointSeparation',PointSeparation,1000);
          AParameter('Misc','DifferentiateHolesAndEdges',DifferentiateHolesAndEdges,false);
@@ -2777,7 +2777,7 @@ var
          AParameter('Misc','MergeHue',MergeHue,195);
          AParameter('Misc','CumulativeGraph',CumulativeGraph,false);
          AParameter('Misc','AutoElevationReset',AutoElevationReset,true);
-         AParameter('Misc','AutomaticNewMovieNames',AutomaticNewMovieNames,false);
+         //AParameter('Misc','AutomaticNewMovieNames',AutomaticNewMovieNames,false);
          AParameter('Misc','DrapeExactly',DrapeExactly,false);
          AParameter('Misc','ShowMasks',ShowMasks,false);
          AParameter('Misc','LabelRouteTurningPoints',LabelRouteTurningPoints,true);
@@ -3352,7 +3352,6 @@ var
          AParameter('MapDraw','UTMGridLineWidth',UTMGridLineWidth,1);
          AParameter('MapDraw','PanOverlap',PanOverlap,2);
          AParameter('MapDraw','CartMovieSteps', CartMovieSteps,2);
-         //AParameter('MapDraw','InvertGrayScale',InvertGrayScale,false);
          AParameter('MapDraw','MonochromeColor',MonochromeColor,0);
          AParameter('MapDraw','LargeScaleWorldOutlinePixelSize',LargeScaleWorldOutlinePixelSize,250);
          AParameter('MapDraw','MedScaleWorldOutlinePixelSize',MedScaleWorldOutlinePixelSize,1500);
@@ -3500,12 +3499,10 @@ var
          AParameter('MapGrid','HorizGratText',HorizGratText,true);
          AParameter('MapGrid','MDDef.MapTicks',MDDef.MapTicks,tixLatLong);
 
-         //AParameter('MapGrids','CoordUse',CoordUse,coordLatLong);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapGrid','CoordUse',ord(CoordUse));
          if (IniWhat = iniRead) then CoordUse := tCoordUse(IniFile.ReadInteger('MapGrid','CoordUse',ord(coordLatLong)));
          if (iniWhat = iniInit) then CoordUse := coordLatLong;
 
-         //AParameter('MapGrids','GraticuleUnits',GraticuleUnits,amDegree);
          if (IniWhat = iniWrite) then IniFile.WriteInteger('MapGrid','GraticuleUnits',ord(GraticuleUnits));
          if (IniWhat = iniRead) then GraticuleUnits := tAngleMeasure(IniFile.ReadInteger('MapGrid','GraticuleUnits',ord(amDegree)));
          if (iniWhat = iniInit) then GraticuleUnits := amDegree;
@@ -3709,7 +3706,7 @@ begin
    {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 4'); {$EndIf}
 
       AParameter('Digitize','RapidCycle',RapidCycle,true);
-      AParameter('Digitize','LabelRegisterPoints',LabelRegisterPoints,false);
+      //AParameter('Digitize','LabelRegisterPoints',LabelRegisterPoints,false);
       AParameter('Digitize','ContDigitizeSeparation',ContDigitizeSeparation,5);
       AColorParameter('Digitize','DigitizeColor',DigitizeColor,claRed);
       AParameter('Digitize','DigitizeWidth',DigitizeWidth,3);
@@ -3742,9 +3739,7 @@ begin
       AParameter('Graph','GraphZColorScheme',GraphZColorScheme,LegSpectrum);
       AParameter('Graph','GraphPalette',GraphPalette,'virdis (color blind)');
 
-
-
-      AParameter('Graph','JPEGQuality',JPEGQuality,50);
+      //AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);
       AParameter('Graph','DefaultGraphYSize',DefaultGraphYSize,400);
       AParameter('Graph','BigBM_nc',BigBM_nc,3);
@@ -3769,7 +3764,7 @@ begin
  
       {$IfDef VCL}
          AParameterShortFloat('Hardware','PrinterScale',PrinterScale,50000);
-         AParameter('Hardware','EnableGridNetworkComputing',EnableGridNetworkComputing,true);
+         //AParameter('Hardware','EnableGridNetworkComputing',EnableGridNetworkComputing,true);
          AParameter('Hardware','MaxThreadsForPC',MaxThreadsForPC,8);
          AParameter('Hardware','UpdateDelay',UpdateDelay,4);
          AParameter('Hardware','ShowWinExec',ShowWinExec,true);
@@ -3818,14 +3813,14 @@ begin
          AParameterShortFloat('KML','KML_Las_offset',KML_Las_offset,5);
       {$EndIf}
 
-      AParameter('LandCover','LongLandCoverResults',LongLandCoverResults,false);
+      //AParameter('LandCover','LongLandCoverResults',LongLandCoverResults,false);
       AParameter('Interpolation','ElevInterpolation',ElevInterpolation,piBilinear);
 
       {$If Defined(RecordINIfiles) or Defined(RecordINIfiles)} WriteLineToDebugFile('Breakpoint 6'); {$EndIf}
 
       AParameterShortFloat('LineDraw','DefVectorLineMult',DefVectorLineMult,10);
       AColorParameter('LineDraw','HorizonColor',HorizonColor,claBrown);
-      AParameter('LineDraw','ConnectRecordColoring',ConnectRecordColoring,false);
+      //AParameter('LineDraw','ConnectRecordColoring',ConnectRecordColoring,false);
       AParameter('LineDraw','HorizonWidth',HorizonWidth,3);
       AParameter('LineDraw','ConnectArrows',ConnectArrows,false);
       AParameter('LineDraw','ConnectArrowSpacing',ConnectArrowSpacing,5);
@@ -3854,7 +3849,6 @@ begin
       AParameter('MissData','AssumeMinus32767Missing',AssumeMinus32767Missing,false);
       AParameter('MissData','AssumeMinus999999Missing',AssumeMinus999999Missing,false);
       AParameter('MissData','AssumeNegativeValuesMissing',AssumeNegativeValuesMissing,false);
-
 
       AParameter('Stats','CR_MatrixEqualization',CR_MatrixEqualization,true);
       AParameter('Stats','CR_MDDef.CR_ColorPalette',CR_ColorPalette,1);
@@ -3972,8 +3966,6 @@ begin
          AParameter('StateCountyMaps','US_StateOutline_Width',US_StateOutline_Width,2);
          AColorParameter('StateCountyMaps','US_CountyOutline_Color',US_CountyOutline_Color,claBlack);
          AParameter('StateCountyMaps','US_CountyOutline_Width',US_CountyOutline_Width,1);
-         AColorParameter('StateCountyMaps','US_FennemanColor',US_FennemanColor,claBlack);
-         //AParameter('StateCountyMaps','US_FennemanWidth',US_FennemanWidth,1);
          AParameter('StateCountyMaps','US_Highway_Width',US_Highway_Width,2);
          AColorParameter('StateCountyMaps','US_Highway_Color',US_Highway_Color,claRed);
          AColorParameter('StateCountyMaps','US_River_Color',US_River_Color,claBlue);
@@ -3991,21 +3983,14 @@ begin
          AParameter('Veg','AutoLoadVegDensityGrids',AutoLoadVegDensityGrids,false);
          AParameter('Veg','VegEffectsVoxels',VegEffectsVoxels,true);
          AParameter('Veg','VegDensityGroundPoints',VegDensityGroundPoints,true);
-         AParameter('Veg','VegDensityBuildingPoints',VegDensityBuildingPoints,true);
-         AParameter('Veg','VegDensityRandomizePoints',VegDensityRandomizePoints,true);
+         //AParameter('Veg','VegDensityBuildingPoints',VegDensityBuildingPoints,true);
+         //AParameter('Veg','VegDensityRandomizePoints',VegDensityRandomizePoints,true);
          AParameter('Veg','VegDensityHeights',VegDensityHeights,45);
          AParameter('Veg','MaxVegHeight',MaxVegHeight,45);
          AParameterShortFloat('Veg','VegGridRandomizationDistance',VegGridRandomizationDistance,0.6);
       {$EndIf}
 
-      {$IfDef ExWebDownload}
-      {$Else}
-         //AParameter('Web','GeocodeAddress',GeocodeAddress,'');
-         //AParameter('Web','GoogleAPIKey',GoogleAPIKey,'');
-      {$EndIf}
-
       AParameter('Web','OpenTopoAPI_Key',OpenTopoAPI_Key,'');
-
 
       {$IfDef ExWMS}
       {$Else}

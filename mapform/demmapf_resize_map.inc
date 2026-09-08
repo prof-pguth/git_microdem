@@ -149,7 +149,6 @@ begin
       hzFullZoom : Result := MapDraw.RecenterMap(Lat,Long,-99);
    end;
    if Result then begin
-      //FormResize(Nil);
       DoCompleteMapRedraw;
    end;
    {$IfDef ReordMapResize} WriteLineToDebugFile('TMapForm.CenterMapOnLatLong out'); {$EndIf}

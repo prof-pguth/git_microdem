@@ -92,7 +92,6 @@ type
     USGSgazetteerdatabase1: TMenuItem;
     NIMAgazetteerdatabase1: TMenuItem;
     ASCIIremoveblanklines1: TMenuItem;
-    //IGERredistricting1: TMenuItem;
     N13: TMenuItem;
     N14: TMenuItem;
     BinaryrawDEM1: TMenuItem;
@@ -291,7 +290,6 @@ type
     procedure USGSgazetteerdatabase1Click(Sender: TObject);
     procedure NIMAgazetteerdatabase1Click(Sender: TObject);
     procedure ASCIIremoveblanklines1Click(Sender: TObject);
-    //procedure IGERredistricting1Click(Sender: TObject);
     procedure ASCIIreverseorder1Click(Sender: TObject);
     //procedure ISOGravity1Click(Sender: TObject);
     procedure Repairheaders1Click(Sender: TObject);
@@ -427,7 +425,13 @@ var
 
 procedure MergeICESat2Photons(BaseMap : tMapForm = nil);
 function MakeGraphFromSOESTtides(fName : PathStr; var Lat,Long : float64; var Year1,Year2 : integer; var StationName : shortString) :  TThisBaseGraph;
-procedure CopyFiles(JustCopyNotMove : boolean);
+
+const
+   foCopy = 1;
+   foMove = 2;
+   foRecycle = 3;
+
+procedure CopyFiles(FileOptions : integer);
 
 
 implementation
@@ -596,7 +600,7 @@ var
    LastCompressedFile,XYZName : PathStr;
 
 
-procedure CopyFiles(JustCopyNotMove : boolean);
+procedure CopyFiles(FileOptions : integer);
 var
    CopyFilesFromDir,CopyFilesToDir,
    SourceName, DestName : PathStr;
@@ -607,27 +611,28 @@ begin
    NameMustHave := 'dem';
    repeat
       GetDOSPath('input directory',CopyFilesFromDir);
-      GetDOSPath('output directory',CopyFilesToDir);
+      if FileOptions in [1..2] then GetDOSPath('output directory',CopyFilesToDir);
       PetMar.GetString('File name must contain',NameMustHave,false,ReasonableTextChars);
       NameMustHave := UpperCase(NameMustHave);
       NumCopied := 0;
-      StartProgressAbortOption('Copy');
       Files := Nil;
       Petmar.FindMatchingFiles(CopyFilesFromDir,'*.*',Files,10);
+      StartProgressAbortOption('Process files, n=' + IntToStr(Files.Count));
       for I := 0 to pred(Files.Count) do begin
         UpdateProgressBar(i/Files.Count);
         SourceName := Files.Strings[i];
         DestName := CopyFilesToDir + ExtractFileName(SourceName);
         if (NameMustHave = '') or (StrUtils.AnsiContainsText(ExtractFileName(UpperCase(SourceName)),NameMustHave)) then begin
-           if JustCopyNotMove then Petmar.CopyFile(SourceName,DestName)
-           else Petmar.MoveFile(SourceName,DestName);
+           if FileOptions = foCopy then Petmar.CopyFile(SourceName,DestName)
+           else if FileOptions = foMove then Petmar.MoveFile(SourceName,DestName)
+           else if FileOptions = foRecycle then File2Trash(SourceName);
            inc(NumCopied);
         end;
         if WantOut then break;
       end;
       Files.Free;
       EndProgress;
-   until not AnswerIsYes('Files copied: ' + IntToStr(NumCopied) + '; try again');
+   until not AnswerIsYes('Files processed: ' + IntToStr(NumCopied) + '; try again');
 end;
 
 
@@ -2965,105 +2970,8 @@ begin
 end;
 
 procedure TDemHandForm.OpenTopography1Click(Sender: TObject);
-var
-   FileList,FilesWanted : tStringList;
-   NumSucc,NumFail, i,j,f,runs : Integer;
-   Input,OutPath : PathStr;
-   TStr,inName,OutName : AnsiString;
-   DefFilter : byte;
-
-   function FileAlreadyDownLoaded(fName : PathStr) : boolean;
-   //might already have extracted from laz to las, or reprojected las
-   begin
-      Result := FileExists(fName) or FileExists(ChangeFileExt(FName,'.las')) or FileExists(ChangeFileExt(FName,'_utm.las'));
-   end;
-
-
 begin
-   try
-      WMdem.Color := clInactiveCaption;
-      Top := WMDEM.Top + 25;
-      Left := WMDEM.Left + 25;
-      inPut := '';
-      DefFilter := 1;
-      FilesWanted := tStringList.Create;
-      FilesWanted.Add(System.IOUtils.TPath.GetDownloadsPath);
-      if GetMultipleFiles(' to download','Text or csv*.txt;*.csv',FilesWanted,DefFilter) then begin
-         for f := 0 to pred(FilesWanted.Count) do begin
-            TStr := IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count);
-            wmdem.SetPanelText(3,TStr,true);
-            StatusBar1.Panels[3].Text := tStr;
-            Runs := 1;
-            Input := FilesWanted.Strings[f];
-            Memo1.Visible := true;
-            Memo1.Lines.Add(TimeToStr(Now) + ' Download list ' + IntToStr(succ(f)) + '/' + IntToStr(FilesWanted.Count) + '  ' + ExtractFileNameNoExt(Input));
-            Memo1.Lines.Add('');
-            if FileExists(Input) then begin
-               FileList := tStringList.Create;
-               FileList.LoadFromFile(Input);
-               OutPath := ExtractFilePath(Input) + ExtractFileNameNoExt(Input) + '\';
-               SafeMakeDir(OutPath);
-               Memo1.Visible := true;
-               Memo1.Lines.Add(TimeToStr(Now) + ' Check for files already downloaded, files= ' + IntToStr(FileList.Count));
-               TStr := 'Started: ' + TimeToStr(Now);
-               wmdem.SetPanelText(1,TStr,true);
-               StatusBar1.Panels[1].Text := TStr;
-               repeat
-                 NumSucc := 0;
-                 NumFail := 0;
-                 for i := pred(FileList.Count) downto 0 do begin
-                    InName := FileList.Strings[i];
-                    if FileAlreadyDownloaded(TheOutputName(OutPath,InName,false)) then begin
-                       FileList.Delete(i);
-                    end;
-                 end;
-                 Memo1.Lines.Add(TimeToStr(Now) + ' start download, files= ' + IntToStr(FileList.Count));
-
-                 for i := 0 to pred(FileList.Count) do begin
-                    TStr := IntToStr(succ(i)) + '/' + IntToStr(FileList.Count) + '  (' + RealToString(100*succ(i)/ FileList.Count,-8,1) + '%)';
-                    wmdem.SetPanelText(2,TStr);
-                    StatusBar1.Panels[2].Text := tStr;
-
-                    //https://data.geopf.fr/wms-r?SERVICE=WMS&VERSION=1.3.0&EXCEPTIONS=text/xml&REQUEST=GetMap&LAYERS=IGNF_LIDAR-HD_MNS_ELEVATION.ELEVATIONGRIDCOVERAGE.LAMB93&FORMAT=image/geotiff&STYLES=&CRS=EPSG:2154&BBOX=1008999.75,6499000.25,1009999.75,6500000.25&WIDTH=2000&HEIGHT=2000&FILENAME=LHD_FXX_1009_6500_MNS_O_0M50_LAMB93_IGN69.tif
-
-                    InName := FileList.Strings[i];
-                    if (InName <> '') then begin
-                       OutName := TheOutputName(OutPath,InName,false);
-                       if FileAlreadyDownloaded(OutName) then begin
-                       end
-                       else begin
-                          TStr := ExtractFileNameNoExt(OutName);
-                          if DownloadFileFromWeb(InName,OutName,false) then begin
-                             TStr := TStr + '  ' + SmartMemorySizeBytes(GetFileSize(OutName)) +  ' success';
-                             inc(NumSucc);
-                          end
-                          else begin
-                             TStr := '***** failure ' + TStr + ' failure *****';
-                             inc(NumFail);
-                          end;
-                          Memo1.Lines.Add(IntToStr(succ(I)) + '/' + IntToStr(FileList.Count) + '  ' + TimeToStr(Now) + ' ' + TStr);
-                       end;
-                    end;
-                    if WantOut then begin
-                       Memo1.Lines.Add('Aborted');
-                       break;
-                    end;
-                 end;
-                 Memo1.Lines.Add('Done; downloads=' + intToStr(NumSucc) + '  failures=' + IntToStr(NumFail));
-                 Memo1.Lines.Add('');
-                 Memo1.Lines.Add('');
-                 if (NumFail = 0) then DeleteFileIfExists(Input);
-                 inc(Runs);
-               until Wantout or (NumFail = 0) or (Runs > 5);
-               FileList.Free;
-            end;
-         end;
-      end;
-      FilesWanted.Free;
-   finally
-      WMdem.Color := clScrollBar;
-      wmdem.ClearStatusBarPanelText;
-   end;
+    DownloadListOfFiles(Memo1);
 end;
 
 

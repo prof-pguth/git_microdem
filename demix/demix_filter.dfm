@@ -705,7 +705,6 @@ object DemixFilterForm: TDemixFilterForm
         Height = 17
         Caption = 'Half second DEMs default'
         TabOrder = 6
-        OnClick = CheckBox11Click
       end
       object CheckBox18: TCheckBox
         Left = 40

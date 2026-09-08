@@ -163,7 +163,6 @@ type
     Recordscreencoordinates1: TMenuItem;
     Dipandstrikes1: TMenuItem;
     N10: TMenuItem;
-    //Redistrict1: TMenuItem;
     Recordedit1: TMenuItem;
     N11: TMenuItem;
     Coordinatestotextfile1: TMenuItem;
@@ -1008,7 +1007,6 @@ type
     CopDEMandLandcoverforthistile1: TMenuItem;
     Filterfor0valuesinanyevaluation1: TMenuItem;
     CriteriaforeachDEMIXtile1: TMenuItem;
-    PercentilesforCOPbycriterionforeachtile1: TMenuItem;
     Sumforallnumericfields1: TMenuItem;
     SortbyBESTEVAL1: TMenuItem;
     //AddlatlongfieldstoDB1: TMenuItem;
@@ -1083,7 +1081,14 @@ type
     Addcentroid1: TMenuItem;
     Xaxis1: TMenuItem;
     Yaxis1: TMenuItem;
-    DSMDTMpowerlawforalltiles1: TMenuItem;
+    PowerlawforHRDEMDSMDTM1: TMenuItem;
+    Graphslopes1: TMenuItem;
+    OpenHRDEMDSMDTMLandcover1: TMenuItem;
+    HRDEMslopeandslopedifferencemaps1: TMenuItem;
+    LoadtestandreferenceDEMs2: TMenuItem;
+    GDEMaveragetileslopebyresolution1: TMenuItem;
+    N63: TMenuItem;
+    DSMDTMpowerlawforalltiles2: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1177,7 +1182,6 @@ type
     procedure Recordscreencoordinates1Click(Sender: TObject);
     procedure Dipandstrikes1Click(Sender: TObject);
     procedure Edit1Change(Sender: TObject);
-    //procedure Redistrict1Click(Sender: TObject);
     procedure Recordedit1Click(Sender: TObject);
     procedure Coordinatestotextfile1Click(Sender: TObject);
     procedure N2Dgraphcolorcodetext1Click(Sender: TObject);
@@ -1841,7 +1845,6 @@ type
     procedure CopDEMandLandcoverforthistile1Click(Sender: TObject);
     procedure Filterfor0valuesinanyevaluation1Click(Sender: TObject);
     procedure CriteriaforeachDEMIXtile1Click(Sender: TObject);
-    procedure PercentilesforCOPbycriterionforeachtile1Click(Sender: TObject);
     procedure Sumforallnumericfields1Click(Sender: TObject);
     procedure SortbyBESTEVAL1Click(Sender: TObject);
     //procedure AddlatlongfieldstoDB1Click(Sender: TObject);
@@ -1882,7 +1885,6 @@ type
     procedure Limitdeimalsinmultiplefields1Click(Sender: TObject);
     procedure Create2Click(Sender: TObject);
     procedure AddDSMPCFORESTPCURBANPC1Click(Sender: TObject);
-    procedure DTDSMcomparison1Click(Sender: TObject);
     procedure AddDSMDTMpair1Click(Sender: TObject);
     procedure IdentifyDSMandDTM1Click(Sender: TObject);
     procedure DTMDSMcomparison1Click(Sender: TObject);
@@ -1903,7 +1905,13 @@ type
     procedure Addcentroid1Click(Sender: TObject);
     procedure Yaxis1Click(Sender: TObject);
     procedure Xaxis1Click(Sender: TObject);
-    procedure DSMDTMpowerlawforalltiles1Click(Sender: TObject);
+    procedure PowerlawforHRDEMDSMDTM1Click(Sender: TObject);
+    procedure Graphslopes1Click(Sender: TObject);
+    procedure OpenHRDEMDSMDTMLandcover1Click(Sender: TObject);
+    procedure HRDEMslopeandslopedifferencemaps1Click(Sender: TObject);
+    procedure LoadtestandreferenceDEMs2Click(Sender: TObject);
+    procedure GDEMaveragetileslopebyresolution1Click(Sender: TObject);
+    procedure DSMDTMpowerlawforalltiles2Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2132,17 +2140,37 @@ uses
    Tiger_address,
 
 {Main program MDI window for different programs that use this module}
-   Nevadia_Main;
+   Nevadia_Main, make_grid;
 {End of the MDI parent declaration}
 
 var
    HighlightCycle : integer;
    BroadCastingFilterChanges : boolean;
 
-   const
+const
    sfaMult = 1;
    sfaAdd = 2;
    sfaDiv = 3;
+
+
+procedure OpenHRDEMforCurrentRecord(db : integer; var DTM,DSM,LCgrid : integer);
+var
+   DSMname,DTMname,SubDir : PathStr;
+   AreaName : shortstring;
+begin
+   AreaName := GISdb[DB].MyData.GetFieldByNameAsString('AREA');
+
+   SubDir := '\wgs_egm\';
+
+   DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
+   DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
+
+   DTM := OpenNewDEM(DTMName);
+   DSM := OpenNewDEM(DSMName);
+   LCgrid := LoadLC10LandCover('',DEMglb[DSM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
+end;
+
+
 
 function PictureInDBField(FieldName : ShortString) : boolean;
 begin
@@ -2713,6 +2741,14 @@ procedure Tdbtablef.OpenDEMIXgraphs1Click(Sender: TObject);
 begin
    StartDEMIXgraphs(DBonTable);
 end;
+
+procedure Tdbtablef.OpenHRDEMDSMDTMLandcover1Click(Sender: TObject);
+var
+   DTM,DSM,LCgrid : integer;
+begin
+   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
+end;
+
 
 procedure Tdbtablef.Outlinecameraview1Click(Sender: TObject);
 begin
@@ -3544,8 +3580,9 @@ begin
       MaskDEMgrid1.Visible := CheckBox1.Checked and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
       AddXYbox1.Visible := GISdb[DBonTable].MyData.FieldExists('X1') and GISdb[DBonTable].MyData.FieldExists('Y2') and GISdb[DBonTable].MyData.FieldExists('X3') and GISdb[DBonTable].MyData.FieldExists('Y4');
       LidarWaveform1.Visible := GISdb[DBonTable].MyData.FieldExists('RH99');
-      DEMIX2.Visible := GISdb[DBonTable].MyData.FieldExists('DEMIX_TILE');
-      DTMDSMcomparison1.Visible := GISdb[dbOnTable].MyData.FieldExists('GRID_THIN') and GISdb[dbOnTable].MyData.FieldExists('DSM_NAME') and GISdb[dbOnTable].MyData.FieldExists('DTM_NAME');
+
+      DTMDSMcomparison1.Visible := DEMIX_HRDEM_DB(dbOnTable) or DEMIX_GDEM_DB(dbOnTable);
+      DEMIX2.Visible := GISdb[DBonTable].IsThisDEMIXdatabase;
       GridCellPopupMenu6.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -3823,7 +3860,7 @@ begin
       Closing := false;
       CanCloseIt := true;
    end;
-   Width := 600;
+   Width := 750;
    CheckFormPlacement(Self);
    Top := 0;
    Left := wmdem.Width - Width - 20;
@@ -3981,7 +4018,7 @@ end;
 procedure Tdbtablef.FormActivate(Sender: TObject);
 begin
    if ValidDB(DBonTable) and (not FormWorking) and (not Closing) then begin
-      {$IfDef RecordFormActivate} WriteLineToDebugFile('Tdbtablef.FormActivate in'); {$EndIf}
+      {$IfDef RecordFormActivate} WriteLineToDebugFile('Tdbtablef.FormActivate in ' + GISdb[DBonTable].DBname); {$EndIf}
       Button4.Enabled := CheckBox1.Checked;
       GISdb[DBonTable].ColorButtonForSymbol(BitBtn1);
       if (GISdb[DBonTable].TheMapOwner <> Nil) then begin
@@ -4018,7 +4055,6 @@ begin
            RoseDiagram1.Visible := false;
         end;
         PlotallXYFiles1.Visible := GISdb[DBonTable].MyData.FieldExists('XY_FILE');
-        //Redistrict1.Visible := (MDDef.ProgramOption = ExpertProgram) and GISdb[DBonTable].MyData.FieldExists('BLACK1') and GISdb[DBonTable].MyData.FieldExists('WHITE1');
         Elevationsatbenchmarks1.Visible := GISdb[DBonTable].MyData.FieldExists('Z');
         ShowJoin1.Visible := GISdb[DBonTable].LinkTable <> Nil;
         ClearJoin1.Visible := GISdb[DBonTable].LinkTable <> Nil;
@@ -5211,7 +5247,6 @@ begin
 end;
 
 
-
 procedure Tdbtablef.Addconstanttofield1Click(Sender: TObject);
 begin
    SingleFieldArithmetic(DBonTable,sfaAdd,'');
@@ -5368,72 +5403,29 @@ end;
 
 
 procedure Tdbtablef.AddDSMDTMpair1Click(Sender: TObject);
-var
-   Lat,Long : float64;
-   DTMName,DSMName : PathStr;
-   Found : boolean;
-   fl : integer;
-   Tile : shortstring;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.AddDSMDTMpair1Click in'); {$EndIf}
-   IdentifyDSMandDTM1Click(nil);
-   GISdb[DBonTable].ClearGISFilter;
-   SetColorForProcessing;
-   fl := GISdb[DBonTable].MyData.GetFieldLength('DEMIX_TILE');
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DEM_PAIR',3);
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DSM_NAME',fl+3);
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'DTM_NAME',fl+3);
-   GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr('NO'));
-   GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','',false);
-
-   repeat
-       GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
-       GISdb[DBonTable].EmpSource.Enabled := false;
-       if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-           wmdem.SetPanelText(1,'Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
-           Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
-           {$IfDef RecordDEMIX} WriteLineToDebugFile(Tile + '  Tiles to go: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
-           if GISdb[DBonTable].MyData.ValidLatLongFromTable(Lat,Long) and GetDSMandDTMTileNamesFromLatLong(DBonTable,Lat,Long,DTMName,DSMName) then begin
-               GISdb[DBonTable].ApplyGISFilter('DEMIX_TILE=' + QuotedStr(DSMName) + ' OR ' + 'DEMIX_TILE=' + QuotedStr(DTMName));
-               GISdb[DBonTable].FillFieldWithValue('DEM_PAIR','YES',false);
-               GISdb[DBonTable].FillFieldWithValue('DSM_NAME',DSMname,false);
-               GISdb[DBonTable].FillFieldWithValue('DTM_NAME',DTMname,false);
-           end
-           else begin
-                 GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
-                 //no match for first tile in the DB
-                 GISdb[DBonTable].MyData.Edit;
-                 GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_PAIR','NO');
-                 GISdb[DBonTable].MyData.SetFieldByNameAsString('DSM_NAME','');
-                 GISdb[DBonTable].MyData.SetFieldByNameAsString('DTM_NAME','');
-                 GISdb[DBonTable].MyData.Post;
-            end;
-            GISdb[DBonTable].ApplyGISFilter('DEM_PAIR=' + QuotedStr(''));
-       end;
-   until (GISdb[DBonTable].MyData.FiltRecsInDB = 0);
-   SetColorForWaiting;
-   GISdb[DBonTable].ClearGISFilter;
-   ShowStatus;
+   if StrUtils.AnsiContainsText(GISdb[dbOnTable].dbName,'tile_stats') then begin
+       IdentifyDSMandDTM1Click(nil);
+       FormWorking := true;
+       IdentifyDSM_DTMpair(DBonTable);
+       FormWorking := false;
+       ShowStatus;
+   end
+   else begin
+      MessageToContinue('Not tile stats DB');
+   end;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Tdbtablef.AddDSMDTMpair1Click out'); {$EndIf}
 end;
 
 
 procedure Tdbtablef.AddDSMPCFORESTPCURBANPC1Click(Sender: TObject);
-var
-   Urban,Forest : float32;
+//adds field DSM_PC with percentage of DEM where DSM and DTM should be different, urban and forest landcovers
 begin
    SetColorForProcessing;
-   ShowHourglassCursor;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'DSM_PC',8,2);
-   while not GISdb[DBonTable].MyData.eof do begin
-       GISdb[DBonTable].EmpSource.Enabled := false;
-       Urban := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('URBAN_PC');
-       Forest := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC');
-       GISdb[DBonTable].MyData.Edit;
-       GISdb[DBonTable].MyData.SetFieldByNameAsFloat('DSM_PC',Urban+Forest);
-       GISdb[DBonTable].MyData.Next;
-   end;
-   ShowDefaultCursor;
+   FormWorking := true;
+   ComputeWhereDSMandDTMshouldDiffer(dbOnTable);
+   FormWorking := false;
    SetColorForWaiting;
 end;
 
@@ -6944,6 +6936,20 @@ end;
 
 
 
+procedure Tdbtablef.HRDEMslopeandslopedifferencemaps1Click(Sender: TObject);
+var
+   DTM,DSM,LCgrid,DTMslope,DSMslope : integer;
+begin
+   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
+   if ValidDEM(DTM) and ValidDEM(DSM) then begin
+      DTMslope := Make_Grid.CreateEvansSlopeMapPercent(true,DTM);
+      DSMslope := Make_grid.CreateEvansSlopeMapPercent(true,DSM);
+      MakeDifferenceMap(DSMSlope,DTMSlope,DSMslope,DSM,true,false,false)
+   end;
+end;
+
+
+
 procedure Tdbtablef.GetReadyForGeologyGeometry;
 begin
    {$IfDef ExGeology}
@@ -7867,6 +7873,10 @@ end;
 
 procedure Tdbtablef.CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
 begin
+   if not (GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM')) then begin
+      if AnswerIsYes('DB requires fields DEM_PAIR and REF_DEM; add now') then AddDSMDTMpair1Click(Sender)
+      else exit;
+   end;
    MakeCSVforGDEMcompareDSMtoDTM(DBonTable);
 end;
 
@@ -9232,6 +9242,11 @@ begin
 end;
 
 
+procedure Tdbtablef.GDEMaveragetileslopebyresolution1Click(Sender: TObject);
+begin
+   MakeCSVforGDEMslopes(DBonTable);
+end;
+
 procedure Tdbtablef.Geomorphometryatlas1Click(Sender: TObject);
 begin
    {$IfDef ExGeology}
@@ -9520,8 +9535,8 @@ procedure Tdbtablef.ShowStatus;
 var
    tstr : shortstring;
 begin {procedure Tdbtablef.ShowStatus}
-   {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus in, db=' + IntToStr(dbOnTable)); {$EndIf}
-   if (Closing <> true) and ValidDB(DBonTable) then begin
+   {$IfDef RecordShowStatus} WriteLineToDebugFile('ShowStatus in, db=' + IntToStr(dbOnTable)); {$EndIf}
+   if (not FormWorking) and (Closing <> true) and ValidDB(DBonTable) then begin
       if GISdb[DBonTable].dbIsUnsaved then TStr := 'Unsaved--'
       else TStr := '';
       Caption := tstr + GISdb[DBonTable].dbName + ' data base';
@@ -9539,14 +9554,14 @@ begin {procedure Tdbtablef.ShowStatus}
       Zstatistics1.Visible := GISdb[DBonTable].ShapeFileType in [13,23];
       Addfontdefinition1.Visible := not GISdb[DBonTable].FontFieldExists;
       Insertpointsymbol1.Visible := not GISdb[DBonTable].PointSymbolFieldsPresent;
-      {$IfDef RecordShowStatus} WriteLineRoDebugFile('check num recs'); {$EndIf}
+      {$IfDef RecordShowStatus} WriteLineToDebugFile('check num recs'); {$EndIf}
       if GISdb[DBonTable].MyData.Filtered then begin
          if (GISdb[DBonTable].MyData.FiltRecsInDB = 0) then TStr := 'No Records match filter, from ' + IntToStr(GISdb[DBonTable].MyData.TotalRecsInDB)
          else TStr := 'Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '/' + IntToStr(GISdb[DBonTable].MyData.TotalRecsInDB);
       end
       else TStr := 'All Records displayed: ' + IntToStr(GISdb[DBonTable].MyData.TotalRecsInDB);
       StatusBar1.Panels[0].Text := TStr;
-      {$IfDef RecordShowStatus} WriteLineRoDebugFile('call arrange buttons'); {$EndIf}
+      {$IfDef RecordShowStatus} WriteLineToDebugFile('call arrange buttons'); {$EndIf}
       ArrangeButtons;
       if GISdb[DBonTable].LayerIsOn then  begin
          BitBtn28.Caption := '√';
@@ -9556,13 +9571,13 @@ begin {procedure Tdbtablef.ShowStatus}
          BitBtn28.Caption := 'X';
          BitBtn28.Font.Color := clRed;
       end;
-      {$IfDef RecordShowStatus} WriteLineRoDebugFile('call hide columns'); {$EndIf}
+      {$IfDef RecordShowStatus} WriteLineToDebugFile('call hide columns'); {$EndIf}
       HideColumns;
       EndProgress;
       ShowDefaultCursor;
       {$IfDef RecordStatus} WriteLineRoDebugFile('UpdateStatus EmpSource.Enabled=' + TrueOrFalse(GISdb[DBonTable].EmpSource.Enabled) + '  DBGrid1.Enabled=' + TrueOrFalse(DBGrid1.Enabled)); {$EndIf}
    end;
-   {$IfDef RecordShowStatus} WriteLineRoDebugFile('ShowStatus out'); {$EndIf}
+   {$IfDef RecordShowStatus} WriteLineToDebugFile('ShowStatus out'); {$EndIf}
  end {procedure Tdbtablef.ShowStatus};
 
 
@@ -10510,6 +10525,13 @@ begin
     TheTiles.Destroy;
     ShowStatus;
 end;
+
+
+procedure Tdbtablef.Graphslopes1Click(Sender: TObject);
+begin
+    GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString(TileNameGDEMorHRDEM(DBonTable)));
+end;
+
 
 procedure Tdbtablef.GraphSSIMFUVbycluster1Click(Sender: TObject);
 begin
@@ -11532,24 +11554,16 @@ begin
    ShowStatus;
 end;
 
+
 procedure Tdbtablef.IdentifyDSMandDTM1Click(Sender: TObject);
-var
-   Tile,TStr : shortstring;
 begin
    {$IfDef RecordDEMIX} WriteLineToDebugFile('IdentifyDSMandDTM1Click in'); {$EndIf}
+   FormWorking := true;
    SetColorForProcessing;
    ShowHourglassCursor;
-   GISdb[DBonTable].ClearGISFilter;
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'REF_DEM',3);
-   GISdb[DBonTable].MyData.First;
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   while not GISdb[DBonTable].MyData.eof do begin
-      Tile := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
-      GISdb[DBonTable].MyData.Edit;
-      GISdb[DBonTable].MyData.SetFieldByNameAsString('REF_DEM',IdentifyDEMIXtileAsDTMorDSM(Tile));
-      GISdb[DBonTable].MyData.Next;
-   end;
+   IdentifyDSMorDTM(dbOnTable);
    SetColorForWaiting;
+   FormWorking := false;
    ShowStatus;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('IdentifyDSMandDTM1Click out'); {$EndIf}
 end;
@@ -11984,7 +11998,7 @@ end;
 
 procedure Tdbtablef.InventoryFUVSSIMcriteriainDB1Click(Sender: TObject);
 begin
-   CriteriaInSSIM_FUV_db(dbOnTable);
+   CriteriaInFUVdb(dbOnTable);
 end;
 
 procedure Tdbtablef.IQR1Click(Sender: TObject);
@@ -12026,7 +12040,7 @@ begin
 end;
 
 
-procedure Tdbtablef.DSMDTMpowerlawforalltiles1Click(Sender: TObject);
+procedure Tdbtablef.DSMDTMpowerlawforalltiles2Click(Sender: TObject);
 begin
    ComputePowerFitForAllTiles(dbOnTable);
 end;
@@ -12034,12 +12048,6 @@ end;
 procedure Tdbtablef.DSMlessthanDTM1Click(Sender: TObject);
 begin
    FindDSMslopeLessThanDEM(DbOnTable);
-end;
-
-
-procedure Tdbtablef.DTDSMcomparison1Click(Sender: TObject);
-begin
-   GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME'));
 end;
 
 
@@ -12291,6 +12299,27 @@ begin
    LoadThisDEMIXTile(GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA'),GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'));
 end;
 
+
+procedure Tdbtablef.LoadtestandreferenceDEMs2Click(Sender: TObject);
+var
+   DSMname,DTMname,SubDir : PathStr;
+   AreaName : shortstring;
+   DT,DS,LCgrod : integer;
+begin
+   AreaName := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
+
+(*
+   DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + RefTestStr;
+   DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + RefTestStr;
+
+   DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
+   DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
+
+   DTM := OpenNewDEM(DTMName);
+   DSM := OpenNewDEM(DSMName);
+   LCgrid := LoadLC10LandCover('',DEMglb[DSM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
+*)
+end;
 
 procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
 var
@@ -12798,10 +12827,9 @@ begin
            GISdb[DBonTable].NeighborTable := tMyData.Create(fName);
            GISdb[DBonTable].NeighborLinkField := GISdb[DBonTable].NeighborTable.GetFieldName(0);
         end;
-
-        ShowStatus;
         GISdb[DBonTable].ClearGISFilter;
         CloseSingleDB(NewGIS);
+        ShowStatus;
    end;
    {$IfDef FindNeighbors} WriteLineRoDebugFile('Tdbtablef.Centr1Click out'); {$EndIf}
 end;
@@ -14938,6 +14966,11 @@ begin
    {$EndIf}
 end;
 
+procedure Tdbtablef.PowerlawforHRDEMDSMDTM1Click(Sender: TObject);
+begin
+   ComputePowerFitForAllTiles(dbOnTable);
+end;
+
 procedure Tdbtablef.PanoramaSpeedButtonClick(Sender: TObject);
 begin
    PanoramaView1Click(Sender);
@@ -14995,11 +15028,6 @@ begin
       GISdb[DBonTable].MyData.Next;
    end;
    ShowStatus;
-end;
-
-procedure Tdbtablef.PercentilesforCOPbycriterionforeachtile1Click(Sender: TObject);
-begin
-   InventoryPercentileByCriterionEachDEMIXtile(DBonTable);
 end;
 
 procedure Tdbtablef.Perimeterofeachrecord1Click(Sender: TObject);

@@ -1818,7 +1818,7 @@ end {Tpt_cloud_opts_fm.RedrawAllLayers};
 
 procedure Tpt_cloud_opts_fm.BitBtn1Click(Sender: TObject);
 begin
-    PopUpMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   PopUpMenu1.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
 
@@ -2014,7 +2014,7 @@ begin
          fName2 := MDTempDir + 'pdal_output_' + IntToStr(i) + '.las';
          cmd := 'pdal translate ' + fName +  ' -o ' + fName2 + ' ' + pdalMethod + ' -v 4';
          bFile.Add(cmd);
-         cmd := 'pdal translate ' + fName2 + ' -o ' + FinalName + ' -v 4 -f filters.reprojection --filters.reprojection.out_srs="EPSG:269' + Edit19.Text + '" --filters.reprojection.in_srs="EPSG:269' + Edit19.Text + '"';
+         cmd := 'pdal translate ' + fName2 + ' -o ' + FinalName + ' -v 4 -f filters.reprojection' {+ ' --filters.reprojection.out_srs="EPSG:269' + Edit19.Text + '" --filters.reprojection.in_srs="EPSG:269' + Edit19.Text + '"'};
       end;
 
       bFile.Add(Cmd);
@@ -2488,6 +2488,7 @@ begin
    GetDosPath('saved grids',AutoSaveDir);
    Label36.Caption := AutoSaveDir;
 end;
+
 
 procedure Tpt_cloud_opts_fm.BitBtn6Click(Sender: TObject);
 begin

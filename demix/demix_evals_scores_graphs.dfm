@@ -579,7 +579,6 @@ object eval_scores_graph_form: Teval_scores_graph_form
       Height = 17
       Caption = 'Ignore ties'
       TabOrder = 6
-      OnClick = CheckBox14Click
     end
   end
   object BitBtn38: TBitBtn
@@ -626,7 +625,6 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'Scatter plots, DEMs/criteria'
     Enabled = False
     TabOrder = 36
-    OnClick = BitBtn31Click
   end
   object GroupBox6: TGroupBox
     Left = 358
@@ -987,7 +985,6 @@ object eval_scores_graph_form: Teval_scores_graph_form
     Caption = 'GEDTM filtering'
     TabOrder = 50
     Visible = False
-    OnClick = BitBtn44Click
   end
   object CheckBox4: TCheckBox
     Left = 8
@@ -1026,7 +1023,7 @@ object eval_scores_graph_form: Teval_scores_graph_form
     OnClick = BitBtn49Click
   end
   object BitBtn50: TBitBtn
-    Left = 838
+    Left = 837
     Top = 679
     Width = 151
     Height = 25

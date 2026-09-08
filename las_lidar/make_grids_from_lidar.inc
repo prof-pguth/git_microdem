@@ -165,7 +165,7 @@ function MakeGridFromLidarPointCloud(TheCloudName : shortString; PCGridMaker : t
                 if (OutDir = '') then exit;
                 ReadDefault('Layers',MDDef.VegDensityHeights);
                 if (MDDef.VegDensityHeights > MaxVegLayers) then MDDef.VegDensityHeights := MaxVegLayers;
-                MDDef.DiscardHighPointsVegDensity := AnswerIsYes('Discard points above ' + IntToStr(MDDef.VegDensityHeights) + 'm');
+                //MDDef.DiscardHighPointsVegDensity := AnswerIsYes('Discard points above ' + IntToStr(MDDef.VegDensityHeights) + 'm');
 
                 StartProgress('open');
                 for i := 1 to MDDef.VegDensityHeights do begin

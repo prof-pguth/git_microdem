@@ -581,7 +581,7 @@ object GraphSettingsForm: TGraphSettingsForm
         OnClick = RadioGroup2Click
       end
       object ComboBox4: TComboBox
-        Left = 157
+        Left = 153
         Top = 114
         Width = 145
         Height = 21

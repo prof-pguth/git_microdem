@@ -84,7 +84,6 @@ begin
       CheckBox2.Checked := MDDef.USOutlinesOnImagery;
       ColorLineWidthBitBtn(BitBtn2,MDDef.US_CountyOutline_Color,MDDef.US_CountyOutline_Width);
       ColorLineWidthBitBtn(BitBtn3,MDDef.US_StateOutline_Color,MDDef.US_StateOutline_Width);
-      //ColorLineWidthBitBtn(BitBtn4,MDDef.US_FennemanColor,MDDef.US_FennemanWidth);
       ColorLineWidthBitBtn(BitBtn6,MDDef.US_Highway_Color,MDDef.US_Highway_Width);
       ColorLineWidthBitBtn(BitBtn7,MDDef.US_River_Color,MDDef.US_River_Width);
 

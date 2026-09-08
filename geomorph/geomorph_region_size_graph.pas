@@ -146,7 +146,7 @@ var
              exit;
          end
          else begin
-            Result := DEMGlb[CurDEM].QuickRelief(Col,Row,RegionM,Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf);
+            Result := DEMGlb[CurDEM].QuickReliefBox(Col,Row,RegionM,Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_relf);
             if (Param = rsSummit) then Relief1 := Summit
             else if (Param = rsRelief) then Relief1 := Relief
             else if (Param = rsBaseLevel) then Relief1 := BaseLevel

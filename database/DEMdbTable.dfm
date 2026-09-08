@@ -1098,9 +1098,9 @@ object dbtablef: Tdbtablef
       Caption = 'Compare DSM/DTM'
       OnClick = CompareDSMDTM1Click
     end
-    object DSMDTMpowerlawforalltiles1: TMenuItem
-      Caption = 'DSM/DTM power law for all HRDEM tiles'
-      OnClick = DSMDTMpowerlawforalltiles1Click
+    object DSMDTMpowerlawforalltiles2: TMenuItem
+      Caption = 'DSM/DTM power law for all tiles'
+      OnClick = DSMDTMpowerlawforalltiles2Click
     end
     object DSMDTMcomparison1: TMenuItem
       Caption = 'Less useful DSM/DTM comparison'
@@ -2176,11 +2176,26 @@ object dbtablef: Tdbtablef
       OnClick = Lidarwaveform1Click
     end
     object DTDSMcomparison1: TMenuItem
-      Caption = 'DTM/DSM graph comparison'
-      OnClick = DTDSMcomparison1Click
+      Caption = 'DTM/DSM graph comparison this tile'
+      object OpenHRDEMDSMDTMLandcover1: TMenuItem
+        Caption = 'Open HRDEM DSM+DTM+Landcover'
+        OnClick = OpenHRDEMDSMDTMLandcover1Click
+      end
+      object HRDEMslopeandslopedifferencemaps1: TMenuItem
+        Caption = 'HRDEM slope and slope difference maps'
+        OnClick = HRDEMslopeandslopedifferencemaps1Click
+      end
+      object Graphslopes1: TMenuItem
+        Caption = 'Graph slopes multiple DEMs'
+        OnClick = Graphslopes1Click
+      end
+      object LoadtestandreferenceDEMs2: TMenuItem
+        Caption = 'Load test and reference DEMs'
+        OnClick = LoadtestandreferenceDEMs2Click
+      end
     end
     object DEMIX2: TMenuItem
-      Caption = 'DEMIX'
+      Caption = 'DEMIX this tile'
       object LoadtestandreferenceDEMs1: TMenuItem
         Caption = 'Load test and reference DEMs for tile'
         OnClick = LoadtestandreferenceDEMs1Click
@@ -3807,7 +3822,7 @@ object dbtablef: Tdbtablef
     end
   end
   object DEMIXPopupMenu1: TPopupMenu
-    Left = 672
+    Left = 664
     Top = 464
     object OpenDEMIXgraphs1: TMenuItem
       Caption = 'Open DEMIX graphs'
@@ -3827,6 +3842,17 @@ object dbtablef: Tdbtablef
         OnClick = CompareCopDEMtoDSMDTMandaggregate1Click
       end
       object N60: TMenuItem
+        Caption = '-'
+      end
+      object PowerlawforHRDEMDSMDTM1: TMenuItem
+        Caption = 'Power law for HRDEM DSM/DTM'
+        OnClick = PowerlawforHRDEMDSMDTM1Click
+      end
+      object GDEMaveragetileslopebyresolution1: TMenuItem
+        Caption = 'GDEM average tile slope by resolution'
+        OnClick = GDEMaveragetileslopebyresolution1Click
+      end
+      object N63: TMenuItem
         Caption = '-'
       end
       object TransposeSSIMR2forclusters1: TMenuItem
@@ -3993,10 +4019,6 @@ object dbtablef: Tdbtablef
       object CriteriaforeachDEMIXtile1: TMenuItem
         Caption = 'Criteria for each DEMIX tile'
         OnClick = CriteriaforeachDEMIXtile1Click
-      end
-      object PercentilesforCOPbycriterionforeachtile1: TMenuItem
-        Caption = 'Percentiles for COP by criterion for each tile'
-        OnClick = PercentilesforCOPbycriterionforeachtile1Click
       end
     end
     object DownloadextractDEMIXtilesfromCOGDEMs1: TMenuItem

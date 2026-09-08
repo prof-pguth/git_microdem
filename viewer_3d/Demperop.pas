@@ -77,7 +77,7 @@ type
     Edit18: TEdit;
     CheckBox11: TCheckBox;
     CheckBox12: TCheckBox;
-    CheckBox13: TCheckBox;
+    //CheckBox13: TCheckBox;
     CheckBox14: TCheckBox;
     CheckBox15: TCheckBox;
     Edit22: TEdit;
@@ -398,7 +398,7 @@ begin
            CheckEditString(Edit23.Text,View3D.FlyOpts.TargetFOV2);
         {$EndIf}
 
-        MDdef.AutomaticNewMovieNames := CheckBox13.Checked;
+        //MDdef.AutomaticNewMovieNames := CheckBox13.Checked;
         View3D.PersOpts.ViewShedFanWithPerspective := CheckBox16.Checked;
         View3D.PersOpts.PersVaryResolutionAlongRadial := CheckBox17.Checked;
         View3D.PersOpts.CloudBackground := CheckBox18.Checked;
@@ -573,7 +573,7 @@ begin
       CheckBox5.Checked := MDdef.AviationDangerColors;
       CheckBox6.Checked := OutlineCrests;
       CheckBox10.Checked := MDDef.DrapeExactly;
-      CheckBox13.Checked := MDdef.AutomaticNewMovieNames;
+      //CheckBox13.Checked := MDdef.AutomaticNewMovieNames;
       CheckBox16.Checked := ViewShedFanWithPerspective;
       CheckBox17.Checked := PersVaryResolutionAlongRadial;
       CheckBox18.Checked := CloudBackground;

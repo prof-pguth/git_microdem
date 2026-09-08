@@ -510,7 +510,7 @@ begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference in'); {$EndIf}
    GetTwoCompatibleGrids('Result = DEM1 - DEM2)',true,DEM2,DEM1,false,true);
    if (DEM1 <> 0) and (DEM2 <> 0) then begin
-      aName := 'Difference_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName;
+      aName := 'Difference_' + DEMGlb[DEM2].AreaName + '_-_' + DEMGlb[DEM1].AreaName;
       if PercentDifference then aName := 'Percent_' + aName;
 
       {$IfDef RecordDEMCompare} WriteLineToDebugFile(aName); {$EndIf}
@@ -570,7 +570,6 @@ var
    TStr : shortstring;
    rFile : file;
 
-
          procedure SetPoint(DEM,Col,Row : integer; z1,z2: float32);
          const
             DiffTol = 0.1;
@@ -582,10 +581,10 @@ var
             else begin
                DEMGlb[DEM].SetGridElevation(Col,Row,z1 - z2);
             end;
+            if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
          end;
 
-
-begin
+begin {function MakeDifferenceMap}
    if ValidDEM(Map1) and ValidDEM(Map2) then begin
       try
          {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)}
@@ -637,7 +636,6 @@ begin
                if IdenticalGrids then begin
                   if DEMGlb[ThisGrid].GetElevMetersOnGrid(Col,Row,z1) and DEMGlb[OtherGrid].GetElevMetersOnGrid(Col+xoff,Row+yoff,z2) then begin
                      SetPoint(Result,Col,Row,z1,z2);
-                     if ShowScatterPlot then ThisGraph.AddPointToDataBuffer(rfile,z1,z2);
                   end;
                end
                else begin
@@ -665,10 +663,10 @@ begin
             {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap) or Defined(TrackZRange)}
                WriteLineToDebugFile('MakeDifferenceMapofBoxRegion call setupmap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
             {$EndIf}
-            if PercentDifference then mt := mtDifferenceDiverge
-            else if MDDef.HighlightDiffMap = 0 then mt := mtElevSpectrum
-            else if MDDef.HighlightDiffMap = 1 then mt := mtGGRReflect
-            else if MDDef.HighlightDiffMap = 2 then mt := mtDifferenceDiverge;
+            if PercentDifference or (MDDef.HighlightDiffMap = 2) then mt := mtDifferenceDiverge
+            else if (MDDef.HighlightDiffMap = 0) then mt := mtElevSpectrum
+            else if (MDDef.HighlightDiffMap = 1) then mt := mtGGRReflect;
+            {$If Defined(RecordDiffMap)} WriteLineToDebugFile('Diff map highlight=' + IntToStr(MDDef.HighlightDiffMap) = 'mt=' + IntToStr(mt));  {$EndIf}
             DEMGlb[Result].SetupMap(true,mt);
             if MDDef.AutoMergeStartDEM and ValidDEM(GridToMergeShading) then begin
                DEMGlb[Result].SelectionMap.MergeAnotherDEMreflectance(GridToMergeShading,true);
@@ -677,7 +675,7 @@ begin
                WriteLineToDebugFile('MakeDifferenceMapofBoxRegion done ShowMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].zRange);
             {$EndIf}
          end;
-         DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMapBlock
+         DEMGlb[Result].CheckMaxMinElev;  //because it is reset somewhere in the ShowMap Block
 
          if ShowScatterPlot then begin
             CloseFile(rfile);
@@ -693,7 +691,7 @@ begin
    else begin
       {$If Defined(RecordDEMCompare) or Defined(RecordDiffMap)} WriteLineToDebugFile('MakeDifferenceMapofBoxRegion called with invalid grid'); {$EndIf}
    end;
-end;
+end {function MakeDifferenceMap};
 
 
 function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; NeighborhoodRadius : integer) : integer;

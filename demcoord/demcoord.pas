@@ -87,7 +87,7 @@ unit DEMCoord;
       //{$Define GeotiffSave}
       //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
-      //{$Define RecordDEMEdits}
+      {$Define RecordDEMEdits}
       //{$Define RecordGetGridLimits}
       //{$Define RecordHiResDEM}
       //{$Define TriPrismErrors}
@@ -107,6 +107,7 @@ unit DEMCoord;
       //{$Define RecordWorldFile}
       //{$Define RecordCloseDEM}
       //{$Define RecordGDAL}
+      {$Define RecordFragmentation}
       //{$Define RecordMerge}
       //{$Define RecordImport}
       //{$Define RecordShortDefineDatum}
@@ -335,13 +336,16 @@ type
          function MissingCol(Col : integer) : boolean;
          function MissingRow(Row : integer) : boolean;
          function MissingDataInGrid(XGrid,YGrid : integer) :  boolean;
-         function ValidNeighborsInBox(XGrid,YGrid,Size : integer) :  integer;
-         function ImmediateNeighborsMissing(XGrid,YGrid : integer) :  integer;
-         function ImmediateNeighborsSameCode(XGrid,YGrid : integer) :  integer;
          procedure DeleteMissingDataPoints(CheckMaxMin : boolean = true);
          function ComputeMissingDataPercentage(GridLimits : tGridLimits) : float64;
 
+         function ValidNeighborsInBox(XGrid,YGrid,Size : integer) :  integer;
+         function ImmediateNeighborsMissing(XGrid,YGrid : integer) :  integer;
+         function ImmediateNeighborsSameCode(XGrid,YGrid : integer) :  integer;
+
          function FilledGridBox(var GridLimits : tGridLimits) : boolean;
+         function FilledOutlineGridBox(var GridLimits : tGridLimits) : boolean;
+
          function SecondGridIdentical(Map2 : integer) : boolean;
          function SecondGridJustOffset(DEM2 : integer; var xoffset,yoffset : integer; ShowProblems : boolean = false) : boolean;
          function GetSamplingSize(GridLimits: tGridLimits) : integer;
@@ -414,6 +418,7 @@ type
          procedure SetEntireGridToConstant(z : float64);
          procedure ReclassifyRange(MinRange, MaxRange, NewZ : float64);
          procedure ShiftGlobalDEM(NewLeftLong : float64);
+         function PercentageEdgePixels(CodeChecking : integer; var EdgeAll : float32) : float32;
 
          function RGBfromLongWord(x,y : integer; var r,g,b : byte) : boolean;
          procedure RoundToByteRange;
@@ -514,8 +519,9 @@ type
          procedure SaveSpecifiedPartOfDEM(var FileName : PathStr; Limits : tGridLimits);
          procedure CSVforVDatum(Delta : float64 = -99;fName : PathStr = '');
          procedure SaveAsGeotiff(SaveName : PathStr = '');
+         procedure SaveAsGeotiffWithAffine(AffineMatrix : tAffineMatrix;  AddAffine : boolean; SaveName : PathStr = '');
          procedure SavePartOfDEMWithDataGeotiff(var FileName : PathStr);
-         procedure SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
+         procedure SaveGridSubsetGeotiff(fName : PathStr; DEMGridLimits : tGridLimits);
 
          function ResaveNewElevationPrecision(FilterCategory : tFilterCat) : integer;
          function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
@@ -549,7 +555,7 @@ type
          function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
          function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
-         function ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false{; Offset : integer = 0}) : integer;
+         function ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false) : integer;
          function HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
 
          function FilterThisDEM(OpenMap : boolean; FilterCategory : tFilterCat; BoxSize : integer = 0; FilterName : PathStr = '') : integer;
@@ -659,8 +665,8 @@ type
             function IsSpire(Col,Row,dx,dy : integer; var SpireHeightM : float32; var NumLower : integer) : boolean;
             function PointHasSpecifiedRelief(Col, Row, BoxSize,SampleFactor : integer; Relief: float64): boolean;
             procedure BoxStatsDB(BoxSize: integer = 0);
-            function QuickRelief(Col,Row : integer; Limits : tGridLimits; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean; overload;
-            function QuickRelief(Col,Row,BoxSize : integer; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean; overload;
+            function QuickRelief(Col,Row : integer; Limits : tGridLimits; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean;
+            function QuickReliefBox(Col,Row,BoxSize : integer; var Relief,Summit,BaseLevel,GeoRelief,Dropoff,Elev_Relf : float32) : boolean;
 
             {$IfDef MultipleCurvatureMethods}
                procedure WoodPointClassify(Col,Row : integer; var PointType : tPointType);
@@ -1616,8 +1622,6 @@ end;
 
 function tDEMDataSet.ReloadDEM(TransformtoNewDatum : boolean) : boolean;
 begin
-//revised 2 Feb 2025
-   //DEMAlreadyDefined := false;
    FreeDEMpointers(false);
    Result := ReadDEMNow(DEMFileName,TransformtoNewDatum);
 end;
@@ -1992,12 +1996,46 @@ begin
 end;
 
 
+function tDEMDataSet.PercentageEdgePixels(CodeChecking : integer; var EdgeAll : float32) : float32;
+var
+   Fixed,NumPixels,NumEdges,NumAll : int64;
+   x,y : integer;
+   z2 : float32;
+begin
+   {$IfDef RecordFragmentation} WritelineToDebugFile('tDEMDataSet.PercentageEdgePixel, leave ' + IntToStr(CodeChecking)); {$EndIf}
+
+   NumPixels := 0;
+   NumEdges := 0;
+   NumAll := 0;
+   MarkOutsideRangeMissing(CodeChecking - 0.0001, CodeChecking  + 0.001,Fixed,false);
+   {$IfDef RecordFragmentation} WritelineToDebugFile('Removed, '  + IntToStr(Fixed)); {$EndIf}
+   for x := 0 to pred(DEMheader.NumCol) do begin
+      for y := 0 to pred(DEMHeader.NumRow) do begin
+         inc(NumAll);
+         if GetElevMetersOnGrid(x,y,z2) then begin
+            inc(NumPixels);
+            if ImmediateNeighborsMissing(x,y) > 0 then begin
+               inc(NumEdges);
+            end;
+         end;
+      end;
+   end;
+   {$IfDef RecordFragmentation} WritelineToDebugFile('Edges=' + IntToStr(NumEdges) + ' forest=' + IntToStr(NumPixels)); {$EndIf}
+   EdgeAll := 100 * NumEdges / NumAll;
+   if NumPixels = 0 then Result := 0
+   else Result := 100 * NumEdges / NumPixels;
+   ReloadDEM(true);
+   {$IfDef RecordFragmentation} WritelineToDebugFile('Result=' + RealToString(Result,-12,-2)); {$EndIf}
+end;
+
+
 function tDEMDataSet.ImmediateNeighborsMissing(XGrid, YGrid: integer): integer;
+//will not count edges of the grid
 begin
     Result := -1;
     if GridInDataSetInteger(XGrid,YGrid) then begin
        Result := 0;
-       if MissingDataInGrid(pred(XGrid), pred(YGrid)) then inc(Result);
+       if MissingDataInGrid(pred(XGrid),pred(YGrid)) then inc(Result);
        if MissingDataInGrid(XGrid,pred(YGrid)) then inc(Result);
        if MissingDataInGrid(pred(XGrid),YGrid) then inc(Result);
        if MissingDataInGrid(succ(XGrid),succ(YGrid)) then inc(Result);
@@ -2015,10 +2053,10 @@ begin
    Result := 0;
    if GetElevMetersOnGrid(Xgrid,YGrid,z) then begin
        if GetElevMetersOnGrid(pred(XGrid),pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMetersOnGrid(XGrid, pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(XGrid,pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
        if GetElevMetersOnGrid(pred(XGrid),YGrid,z2) and (abs(z-z2) < 0.01) then inc(Result);
        if GetElevMetersOnGrid(succ(XGrid),succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
-       if GetElevMetersOnGrid(XGrid, succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
+       if GetElevMetersOnGrid(XGrid,succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
        if GetElevMetersOnGrid(succ(XGrid),YGrid,z2) and (abs(z-z2) < 0.01) then inc(Result);
        if GetElevMetersOnGrid(pred(XGrid),succ(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
        if GetElevMetersOnGrid(succ(XGrid),pred(YGrid),z2) and (abs(z-z2) < 0.01) then inc(Result);
@@ -2821,16 +2859,87 @@ end;
 function tDEMDataSet.FilledGridBox(var GridLimits : tGridLimits) : boolean;
 begin
    try
-      //ShowHourglassCursor;
-      //HeavyDutyProcessing := true;
       While MissingCol(GridLimits.XGridLow) and (GridLimits.XGridLow < GridLimits.XGridHigh) do inc(GridLimits.XGridLow);
       While MissingRow(GridLimits.YGridLow) and (GridLimits.YGridLow < GridLimits.YGridHigh) do inc(GridLimits.YGridLow);
-      While MissingCol(GridLimits.XGridHigh) and(GridLimits.XGridHigh > GridLimits.XGridLow) do dec(GridLimits.XGridHigh);
-      While MissingRow(GridLimits.YGridHigh) and(GridLimits.YGridHigh > GridLimits.YGridLow) do dec(GridLimits.YGridHigh);
+      While MissingCol(GridLimits.XGridHigh) and (GridLimits.XGridHigh > GridLimits.XGridLow) do dec(GridLimits.XGridHigh);
+      While MissingRow(GridLimits.YGridHigh) and (GridLimits.YGridHigh > GridLimits.YGridLow) do dec(GridLimits.YGridHigh);
       Result := (GridLimits.XGridHigh > GridLimits.XGridLow) and (GridLimits.YGridHigh > GridLimits.YGridLow);
    finally
-      //HeavyDutyProcessing := false;
-      //ShowDefaultCursor;
+   end;
+end;
+
+
+function tDEMDataSet.FilledOutlineGridBox(var GridLimits : tGridLimits) : boolean;
+var
+   x,y : integer;
+   aMissingValue : boolean;
+   xs,ys : array[1..4] of integer;
+begin
+   GridLimits := FullDEMGridLimits;
+   {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilledOutlineGridBox in ' + GridLimitsToString(GridLimits) + '  Missing=' + RealToString(ComputeMissingDataPercentage(GridLimits),-8,-2) ); {$EndIf}
+   Result := false;
+   if FilledGridBox(GridLimits) then begin
+      {$IfDef RecordDEMEdits} WriteLineToDebugFile('after filled box: ' + GridLimitsToString(GridLimits) + '  Missing=' + RealToString(ComputeMissingDataPercentage(GridLimits),-8,-2) ); {$EndIf}
+      xs[1] := GridLimits.XGridLow;
+      while MissingDataInGrid(xs[1],0) do inc(xs[1]);
+      xs[2] := GridLimits.XGridHigh;
+      while MissingDataInGrid(xs[2],0) do dec(xs[2]);
+      xs[3] := GridLimits.XGridLow;
+      while MissingDataInGrid(xs[3],pred(DEMheader.NumRow)) do inc(xs[3]);
+      xs[4] := GridLimits.XGridHigh;
+      while MissingDataInGrid(xs[4],pred(DEMheader.NumRow)) do dec(xs[4]);
+      HeapSort(4,xs);
+      GridLimits.XGridLow := xs[1];
+      GridLimits.XGridHigh := xs[4];
+
+      ys[1] := GridLimits.YGridLow;
+      while MissingDataInGrid(0,ys[1]) do inc(ys[1]);
+      ys[2] := GridLimits.YGridHigh;
+      while MissingDataInGrid(0,ys[2]) do dec(ys[2]);
+      ys[3] := GridLimits.YGridLow;
+      while MissingDataInGrid(pred(DEMheader.NumCol),ys[3]) do inc(ys[3]);
+      ys[4] := GridLimits.YGridHigh;
+      while MissingDataInGrid(pred(DEMheader.NumCol),ys[4]) do dec(ys[4]);
+      HeapSort(4,ys);
+      GridLimits.YGridLow := ys[1];
+      GridLimits.YGridHigh := ys[4];
+
+(*
+      {$IfDef RecordDEMEdits} WriteLineToDebugFile('after triangles ' + GridLimitsToString(GridLimits) + '  Missing=' + RealToString(ComputeMissingDataPercentage(GridLimits),-8,-2) ); {$EndIf}
+
+      repeat
+         aMissingValue := false;
+         x := GridLimits.XGridHigh;
+         for y := GridLimits.YGridLow to GridLimits.YGridHigh do if MissingDataInGrid(x,y) then aMissingValue := true;
+         if aMissingValue then dec(GridLimits.XGridHigh);
+      until (not aMissingValue) or (GridLimits.XGridHigh = GridLimits.XGridLow);
+      {$IfDef RecordDEMEdits} WriteLineToDebugFile('after x down: ' + GridLimitsToString(GridLimits)); {$EndIf}
+
+      repeat
+         aMissingValue := false;
+         x := GridLimits.XGridLow;
+         for y := GridLimits.YGridLow to GridLimits.YGridHigh do if MissingDataInGrid(x,y) then aMissingValue := true;
+         if aMissingValue then inc(GridLimits.XGridLow);
+      until (not aMissingValue) or (GridLimits.XGridHigh = GridLimits.XGridLow);
+      {$IfDef RecordDEMEdits} WriteLineToDebugFile('after x upx: ' + GridLimitsToString(GridLimits)); {$EndIf}
+
+      repeat
+         aMissingValue := false;
+         y := GridLimits.YGridHigh;
+         for x := GridLimits.XGridLow to GridLimits.XGridHigh do if MissingDataInGrid(x,y) then aMissingValue := true;
+         if aMissingValue then dec(GridLimits.YGridHigh);
+      until (not aMissingValue) or (GridLimits.YGridHigh = GridLimits.YGridLow);
+      {$IfDef RecordDEMEdits} WriteLineToDebugFile('after y down: ' + GridLimitsToString(GridLimits)); {$EndIf}
+
+      repeat
+         aMissingValue := false;
+         y := GridLimits.YGridLow;
+         for x := GridLimits.XGridLow to GridLimits.XGridHigh do if MissingDataInGrid(x,y) then aMissingValue := true;
+         if aMissingValue then inc(GridLimits.YGridLow);
+      until (not aMissingValue) or (GridLimits.YGridHigh = GridLimits.YGridLow);
+      {$IfDef RecordDEMEdits} WriteLineToDebugFile('after y up: ' + GridLimitsToString(GridLimits)); {$EndIf}
+*)
+      Result := (GridLimits.XGridHigh > GridLimits.XGridLow) and (GridLimits.YGridHigh > GridLimits.YGridLow);
    end;
 end;
 

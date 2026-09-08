@@ -26,7 +26,7 @@ unit gdal_tools;
       //{$Define RecordDatumShift}
       //{$Define RecordWKT}
       //{$Define RecordProjectionStrings}
-      //{$Define RecordDEMIXCompositeDatum}
+      {$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
       //{$Define RecordGDALOpen}
@@ -1420,7 +1420,6 @@ end;
 
       function GDALsubsetGridAndOpen(bb : sfBoundBox; LatLongBox : boolean; fName : PathStr; OpenMap : boolean; BaseOutPath : PathStr = '') : integer;
 
-
         function DoOneGrid(fName : PathStr) : integer;
         var
            OutPath,OutName : PathStr;
@@ -1484,7 +1483,7 @@ end;
          theFiles : tStringList;
          DefaultFilter : byte;
          i : integer;
-      begin
+      begin {function GDALsubsetGridAndOpen}
          if IsGDALFilePresent(GDAL_Translate_Name) then begin
             if (fName <> '') and FileExists(fname) then begin
                Result := DoOneGrid(fName);
@@ -1500,7 +1499,7 @@ end;
                LastImageName := fName;
             end;
          end;
-      end;
+      end {function GDALsubsetGridAndOpen};
 
 
       procedure GetFilesNamesForGDALtranslate(var InName,OutName : Pathstr; TempStorage : boolean = false; TrashOriginal : boolean = false);
@@ -1615,7 +1614,7 @@ end;
                if Recycle then RecycleNames.Add(InName);
             end;
 
-      begin
+      begin {procedure GDALConvertImagesToGeotiff}
          {$IfDef RecordReformat} WriteLineToDebugFile('GDALConvertImagesToGeotiff in'); {$EndIf}
          if IsGDALFilePresent(GDAL_translate_name) then begin
             FilesWanted := tStringList.Create;
@@ -1646,7 +1645,7 @@ end;
             FilesWanted.Free;
             {$IfDef RecordReformat} WriteLineToDebugFile('GDALConvertImagesToGeotiff out'); {$EndIf}
          end;
-      end;
+      end {procedure GDALConvertImagesToGeotiff};
 
 
       function ReprojectShapeFileToGeographic(var fName : Pathstr; aDir : PathStr) : boolean;
@@ -1728,13 +1727,11 @@ end;
       begin
 //convert a shapefile to geopackage
 //$ ogr2ogr -f GPKG filename.gpkg abc.shp
-//all the files (shapefile/geopackage) will be added to one geopackage.
+//all files (shapefile/geopackage) will be added to one geopackage.
 //$ ogr2ogr -f GPKG filename.gpkg ./path/to/dir
           cmd := GDAL_ogr_Name + ' -f GPKG ' + ChangeFileExt(fName,'.gpkg') + ' ' + fName  + ' -progress -t_srs EPSG:4326';
           GDALCommand(MDTempDir + 'shp2gkpg.bat',cmd);
       end;
-
-
 
       procedure GeneralConvertToWGS84Shapefile(fName : pathStr);
       var
@@ -1900,13 +1897,13 @@ begin
       end;
    end;
    if (DEMGlb[DEM].DEMHeader.VerticalCSTypeGeoKey = VertCSEGM96) and (DEMGlb[DEM].DEMHeader.DEMUsed = ArcSecDEM) then begin
-      //this goes from WGS84 EGM96 to WGS84 EGM2008
+      //goes from WGS84 EGM96 to WGS84 EGM200
       s_SRSstring := ' -s_srs EPSG:4326+' + IntToStr(VertCSEGM96);
       t_srsstring := ' -t_srs EPSG:4326+' + IntToStr(VertCSEGM2008);
    end
    else begin
        if (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'NAD83') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'WGS84') or (DEMGlb[DEM].DEMMapProj.h_DatumCode = 'ETRS89') and (DEMGlb[DEM].DEMHeader.DEMUsed = UTMBasedDEM) then begin
-          //this goes from NAD83 NAVD88 to WGS84 EGM2008
+          //goes from NAD83 NAVD88 to WGS84 EGM2008
           UTMZone := AddDayMonthLeadingZero(DEMGlb[DEM].DEMHeader.UTMzone);
           s_SRSstring := ' -s_srs EPSG:269' + UTMzone + '+' + IntToStr(VertCSNAVD88);
           t_srsstring := ' -t_srs EPSG:326' + UTMzone + '+' + IntToStr(VertCSEGM2008);
@@ -1927,22 +1924,22 @@ end;
     s_SRSstring,t_srsstring,OutVert : shortstring;
  begin
     if FileExists(SaveName) then begin
-       {$If Defined(Record3DEPXfull)} WriteLineToDebugFile('Already shifted=' + fName); {$EndIf}
+       {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('ShiftAFile_UTM_WGS84_EGM2008 Already shifted=' + fName); {$EndIf}
     end
     else begin
-       {$If Defined(Record3DEPX)} WriteLineToDebugFile('ShiftAFile=' + fName + '  horiz code=' + HorizCode); {$EndIf}
-          if HorizCode = 'NAD83' then begin
-             HorizCode := '269' + UTMZone;
-          end
-          else if HorizCode = 'WGS84' then begin
-             HorizCode := '269' + UTMZone;
-          end
-          else if HorizCode = 'ETRS89' then begin
-             HorizCode := '258' + UTMZone;
-          end
-          else if (HorizCode = 'GCS_WGS') then begin
-             HorizCode := '4326'
-          end;
+       {$If Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('ShiftAFile_UTM_WGS84_EGM2008 ShiftAFile=' + fName + '  horiz code=' + HorizCode); {$EndIf}
+      if HorizCode = 'NAD83' then begin
+         HorizCode := '269' + UTMZone;
+      end
+      else if HorizCode = 'WGS84' then begin
+         HorizCode := '269' + UTMZone;
+      end
+      else if HorizCode = 'ETRS89' then begin
+         HorizCode := '258' + UTMZone;
+      end
+      else if (HorizCode = 'GCS_WGS') then begin
+         HorizCode := '4326'
+      end;
        if (VertCode = 'NAVD88') then begin
           VertCode := '+' + IntToStr(VertCSNAVD88);
        end
@@ -1970,7 +1967,7 @@ var
    aName : PathStr;
 begin
    if UpperCase(ExtractFileExt(inName)) = '.TIF' then begin
-      {$If Defined(RecordProjectionStrings)} WriteLineToDebugFile('CompositeDatumShiftWithGDAL ' + s_SRSstring + ' ' + t_srsstring); {$EndIf}
+      {$If Defined(RecordProjectionStrings) or Defined(RecordDEMIXCompositeDatum)} WriteLineToDebugFile('CompositeDatumShiftWithGDAL ' + s_SRSstring + ' ' + t_srsstring); {$EndIf}
       StartGDALbatchFile(BatchFile);
       cmd := GDAL_warp_name + ' --config GDAL_CACHEMAX 1000 -wm 1000 --debug on -overwrite -multi -wo NUM_THREADS=8 -ot float32 ' +
           NoUnitShift + DoubleQuotedString(InName) + ' ' + DoubleQuotedString(SaveName) + s_SRSString + t_srsstring;

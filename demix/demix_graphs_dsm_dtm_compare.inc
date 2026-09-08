@@ -47,17 +47,22 @@ var
 begin
    VertRange := Graph.GraphDraw.MaxVertAxis - Graph.GraphDraw.MinVertAxis;
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('EndSingleGraph, VertRange='+ RealToString(VertRange,-12,-4)); {$EndIf}
-   Graph.GraphDraw.MinVertAxis := Graph.GraphDraw.MinVertAxis - 0.025 * VertRange;
-   Graph.GraphDraw.MaxVertAxis := Graph.GraphDraw.MaxVertAxis + 0.025 * VertRange;
-   Graph.GraphDraw.LeftMargin := 100;
-   Graph.GraphDraw.BottomMargin := 90;
-   Graph.GraphDraw.SetShowAllPoints(false);
-   Graph.GraphDraw.SetShowAllLines(true,4);
-   Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
-   Graph.DefaultClientWidth := MDDef.DEMIX_xsize;
-   Graph.DefaultClientHeight := MDDef.DEMIX_ysize;
-   Graph.GraphDraw.ForceNewSize := true;
-   Graph.FormResize(Nil);
+   if IsInfinity(VertRange) then begin
+      FreeAndNil(Graph);
+   end
+   else begin
+       Graph.GraphDraw.MinVertAxis := Graph.GraphDraw.MinVertAxis - 0.025 * VertRange;
+       Graph.GraphDraw.MaxVertAxis := Graph.GraphDraw.MaxVertAxis + 0.025 * VertRange;
+       Graph.GraphDraw.LeftMargin := 100;
+       Graph.GraphDraw.BottomMargin := 90;
+       Graph.GraphDraw.SetShowAllPoints(false);
+       Graph.GraphDraw.SetShowAllLines(true,4);
+       Graph.AutoScaleAndRedrawDiagram(false,false,false,false);
+       Graph.DefaultClientWidth := MDDef.DEMIX_xsize;
+       Graph.DefaultClientHeight := MDDef.DEMIX_ysize;
+       Graph.GraphDraw.ForceNewSize := true;
+       Graph.FormResize(Nil);
+   end;
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('EndSingleGraph out');  {$EndIf}
 end;
 
@@ -108,7 +113,7 @@ begin {procedure GridScatterPlotByDEMResolution}
        for f1 := 0 to pred(Filters1.Count) do begin
           wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
           for f2 := 0 to pred(Filters2.Count) do begin
-             TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2] + HRDEMresolutionFilter;
+             TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2] + HRDEMresolutionFilter(db);
              GISdb[db].ApplyGISFilter(TheFigureFilter);
              GISdb[db].EmpSource.Enabled := false;
              {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TheFigureFilter=' + TheFigureFilter + '  n=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
@@ -127,15 +132,13 @@ end {procedure GridScatterPlotByDEMResolution};
 
 
 
-
-
-procedure GraphMultParamsByAvgSlope_DEMresolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,MultSeries : tStringList; AllTiles : boolean = false);
+procedure GraphMultParamsByAvgSlope_DEMresolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons : tStringList; AllTiles : boolean = false);
 //
 var
    Filters1,Labels1,Filters2,Labels2 : tStringList;
    TheFigureFilter,FigureLabel,TStr,BaseFilter,ResString: shortstring;
    fName : PathStr;
-   f1,f2 : integer;
+   f1,f2,c1 : integer;
    RowMinZ,RowMaxZ : float64;
    gr : t2Dgrapharray;
    MultTiles,Colors : tStringList;
@@ -143,40 +146,65 @@ var
 
    function MakeGraph : tThisBaseGraph;
    var
-      i,j,k,Onfile : integer;
+      i,j,k,Onfile,f1 : integer;
       rfile : file;
       LegendEntries : tStringList;
-      SeriesFilter,TStr,Criterion : shortstring;
+      SeriesFilter,TStr,Criterion,Filter : shortstring;
       v : array[1..2] of float32;
       amin,amax : float64;
       bmp : tMyBitmap;
       Symbol : tFullSymbolDeclaration;
+
+               procedure ParseDataFile;
+               begin
+                   GISdb[db].ApplyGISFilter(SeriesFilter);
+                   GISdb[db].EmpSource.Enabled := false;
+                   if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+                       repeat
+                            v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(ResString);
+                            if (GISdb[db].MyData.FiltRecsInDB = 1) then begin
+                               v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(Criterion);
+                            end
+                            else begin
+                               if MDDEF.DEMIX_UseMedian then v[2] := GISdb[db].MyData.FieldMedian(Criterion)
+                               else v[2] := GISdb[db].MyData.FieldAverage(Criterion);
+                            end;
+                            BlockWrite(Rfile,v,1);
+                            GISdb[db].MyData.Next;
+                       until GISdb[db].MyData.eof;
+                   end;
+               end;
+
+
+
    begin {function MakeGraph}
       Result := StartIndividualGraph(db,Resolutions);
          if AllTiles then TStr := ''
          else begin
             if MDDEF.DEMIX_UseMedian then TStr := 'Median' else TStr := 'Mean';
          end;
-         Result.GraphDraw.VertLabel := TStr + ' ' + MultSeries.Strings[0];
-         for i := 1 to pred(MultSeries.Count) do begin
-             Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + MultSeries.Strings[i];
+         Result.GraphDraw.VertLabel := TStr + ' ' + Criteria.Strings[0];
+         for i := 1 to pred(Criteria.Count) do begin
+            Result.GraphDraw.VertLabel := Result.GraphDraw.VertLabel + '/' + Criteria.Strings[i];
          end;
 
          if (FigureLabel <> '') then Result.GraphDraw.LRCornerText := FigureLabel
          else Result.GraphDraw.LRCornerText := BaseFilter + ' (n=' + IntToStr(MultTiles.Count) + ')';
 
         if AllTiles then begin
+           {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Draw curves for each tiles'); {$EndIf}
            for k := 0 to pred(MultTiles.Count) do begin
              Symbol.DrawingSymbol := FilledBox;
              Symbol.Size := 5;
-             if (MultSeries.Count > 1) then Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j))
+             if (Criteria.Count > 1) then Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j))
              else Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(k));
-             GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(MultTiles.Strings[k]) + HRDEMresolutionFilter);
+             Filter := AddAndIfNeeded(BaseFilter) + TileNameGDEMorHRDEM(db) + '=' + QuotedStr(MultTiles.Strings[k]) + HRDEMresolutionFilter(db);
+             GISdb[db].ApplyGISFilter(Filter);
              GISdb[db].EmpSource.Enabled := false;
              OnFile := Result.OpenPointSymbolFile(rfile,MultTiles.Strings[k],Symbol,4);
              GISdb[db].MyData.First;
              repeat
-                if GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.XField,v[1]) and GISdb[db].GetFloat32FromTableLink(MultSeries.Strings[0],v[2]) then begin
+                if GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.XField,v[1]) and GISdb[db].GetFloat32FromTableLink(Criteria.Strings[0],v[2]) then begin
                    CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
                    BlockWrite(Rfile,v,1);
                 end;
@@ -184,14 +212,49 @@ var
              until GISdb[db].MyData.eof;
              CloseFile(rfile);
            end;
-            if (MultTiles.Count <= MDDef.DEMIX_MaxTilesInLegend) then Result.GraphDraw.InsideMarginLegend := lpNEMap;
+           if (MultTiles.Count <= MDDef.DEMIX_MaxTilesInLegend) then Result.GraphDraw.InsideMarginLegend := lpNEMap;
         end
-        else begin
-            if (MultSeries.Count > 1) then begin
+        else if (Comparisons.Count = 1)  then begin
+           {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Criteria.Count = 1'); {$EndIf}
+           for f1 := 0 to pred(Comparisons.Count) do begin
+               Symbol.DrawingSymbol := FilledBox;
+               Symbol.Size := 5;
+               Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(f1));
+               Criterion := Criteria.Strings[f1];
+               Result.OpenPointSymbolFile(rFile,Comparisons.strings[f1],Symbol,4);
+               for k := 0 to pred(Resolutions.Count) do begin
+                   SeriesFilter := TheFigureFilter + ' AND COMPARE=' + QuotedStr(Comparisons.strings[f1]) + ' AND ' + ResString + '=' + Resolutions.Strings[k]  + HRDEMresolutionFilter(db);
+                   ParseDataFile;
+               end;
+               CloseFile(rfile);
+           end;
+           //end {for f1};
+        end
+        else if (Criteria.Count = 1)  then begin
+           {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Criteria.Count = 1'); {$EndIf}
+           //for f1 := 0 to pred(Filters1.Count) do begin
+               Criterion := Criteria.Strings[f1];
+
+               Symbol.DrawingSymbol := FilledBox;
+               Symbol.Size := 5;
+               Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(f1));
+               Result.OpenPointSymbolFile(rFile,Criterion,Symbol,4);
+               for k := 0 to pred(Resolutions.Count) do begin
+                   SeriesFilter := TheFigureFilter + ' AND ' + Filters1.strings[f1] + ' AND ' + ResString + '=' + Resolutions.Strings[k]  + HRDEMresolutionFilter(db);
+                   GISdb[db].ApplyGISFilter(SeriesFilter);
+                   ParseDataFile;
+               end;
+               CloseFile(rfile);
+           //end {for f1};
+        end
+        else if (Criteria.Count > 1) then  begin
+           {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Mulitple criteria mean/median on graph'); {$EndIf}
+
+            if (Criteria.Count > 1) then begin
                 LegendEntries := tStringList.Create;
                 Colors := tStringList.Create;
-                for j := 0 to pred(MultSeries.Count) do begin
-                   LegendEntries.Add(MultSeries.Strings[j]);
+                for j := 0 to pred(Criteria.Count) do begin
+                   LegendEntries.Add(Criteria.Strings[j]);
                    Colors.Add(IntToStr(WinGraphColors(j)));
                    {$If Defined(LegendColors)} WriteLineToDebugFile('Legend:  ' + IntToStr(j) + '  ' + MultSeries.Strings[j] + '  ' + ColorToString(WinGraphColors(j))); {$EndIf}
                 end;
@@ -205,88 +268,83 @@ var
                 Result.GraphDraw.InsideMarginLegend := lpNEMap;
             end;
 
-         for j := 0 to pred(MultSeries.Count) do begin
-             Symbol.DrawingSymbol := FilledBox;
-             Symbol.Size := 5;
-             Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j));
-             Criterion := MultSeries.Strings[j];
-             Result.OpenPointSymbolFile(rfile,MultSeries.Strings[j],Symbol,4);
-             for k := 0 to pred(Resolutions.Count) do begin
-               if (StrToFloat(Resolutions[k]) > 1.9) then begin
-                   SeriesFilter := TheFigureFilter + ' AND ' + ResString + '=' + Resolutions.Strings[k];
-                   GISdb[db].ApplyGISFilter(SeriesFilter);
-                   GISdb[db].EmpSource.Enabled := false;
-                   if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
-                       repeat
-                            v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(ResString);
-                            if (GISdb[db].MyData.FiltRecsInDB = 1) then begin
-                               v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(Criterion);
-                            end
-                            else begin
-                               if MDDEF.DEMIX_UseMedian then v[2] := GISdb[db].MyData.FieldMedian(Criterion)
-                               else v[2] := GISdb[db].MyData.FieldAverage(Criterion);
-                            end;
-                            if v[2] < Result.GraphDraw.MinVertAxis then Result.GraphDraw.MinVertAxis := v[2];
-                            if v[2] > Result.GraphDraw.MaxVertAxis then Result.GraphDraw.MaxVertAxis := v[2];
-                            BlockWrite(Rfile,v,1);
-                            GISdb[db].MyData.Next;
-                       until GISdb[db].MyData.eof;
-                   end;
-               end;
-             end;
-             CloseFile(rfile);
-         end;
+             for j := 0 to pred(Criteria.Count) do begin
+                 Symbol.DrawingSymbol := FilledBox;
+                 Symbol.Size := 5;
+                 Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j));
+                 Criterion := Criteria.Strings[j];
+                 Result.OpenPointSymbolFile(rfile,Criterion,Symbol,4);
+                 for k := 0 to pred(Resolutions.Count) do begin
+                     SeriesFilter := TheFigureFilter + ' AND ' + ResString + '=' + Resolutions.Strings[k]  + HRDEMresolutionFilter(db);
+                     ParseDataFile;
+                 end;
+                 CloseFile(rfile);
+              end {for j};
+       end
+       else begin
+           MessageToContinue('Not covered option');
        end;
        {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('MakeGraph, data files created '+ Result.GraphDraw.AxisRange); {$EndIf}
-       //Result.GraphDraw.MinVertAxis := RowMinZ;
-       //Result.GraphDraw.MaxVertAxis := RowMaxZ;
-       (*
-        Result.MinZ := RowMinZ;
-        Result.MaxZ := RowMaxZ;
-        Result.MinZShow := Result.MinZ;
-       *)
        EndSingleGraph(result);
    end {function MakeGraph};
 
 
 begin {procedure GraphTwoParameterGridsByAverageSlopeAndResolution}
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphTwoParameterGridsByAverageSlopeAndResolution'); {$EndIf}
+   {$IfDef RecordDEMIX} if AllTiles then TStr := 'all tiles' else TStr := 'averages of tiles'; WriteLineToDebugFile('GraphTwoParameterGridsByAverageSlopeAndResolution, ' + TStr); {$EndIf}
    StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
    GISdb[db].EmpSource.Enabled := false;
+   {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Criteria=' + IntToStr(Criteria.Count)); {$EndIf}
+   {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Comparisons=' + IntToStr(Comparisons.Count)); {$EndIf}
    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Resolutions=' + IntToStr(Resolutions.Count)); {$EndIf}
-   for f1 := 0 to pred(Filters1.Count) do begin
-       wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
-       TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1];
-       GISdb[db].ApplyGISFilter(TheFigureFilter);
-       GISdb[db].EmpSource.Enabled := false;
-       RowMinZ := 99e38;
-       RowMaxZ := -99e38;
-       for f2 := 0 to pred(Filters2.Count) do begin
-         TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
-         GISdb[db].ApplyGISFilter(TheFigureFilter);
-         FigureLabel := PETdbUtils.AddAndIfNeeded(BaseFilter) + {Labels1.strings[f1] + ' & ' + Labels2.strings[f2] +} ' n=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB(DEMIXtileFieldName));
-         GISdb[db].EmpSource.Enabled := false;
-         {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Filter=' + TheFigureFilter + ' ' + FigureLabel); {$EndIf}
 
-         if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
-            wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
-            MultTiles := GISdb[db].MyData.ListUniqueEntriesInDB(DEMIXtileFieldName);
-            gr[f1,f2] := MakeGraph;
-            if gr[f1,f2].GraphDraw.MaxVertAxis > RowMaxz then RowMaxz := gr[f1,f2].GraphDraw.MaxVertAxis;
-            if gr[f1,f2].GraphDraw.MinVertAxis < RowMinz then RowMinz := gr[f1,f2].GraphDraw.MinVertAxis;
-         end
-         else gr[f1,f2] := Nil;
+   for f2 := 0 to pred(Filters2.Count) do
+     for f1 := 0 to pred(Filters1.Count) do gr[f1,f2] := Nil;
+
+(*
+   if MDDef.AllFilter1SameGraph then begin
+       {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('MDDef.AllFilter1SameGraph'); {$EndIf}
+       Filters1.Clear;
+       Labels1.Clear;
+       for C1 := 0 to pred(Comparisons.Count) do begin
+           for f2 := 0 to pred(Filters2.Count) do begin
+             TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters2.strings[f2];
+             GISdb[db].ApplyGISFilter(TheFigureFilter);
+             FigureLabel := BaseFilter + '   n=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB(DEMIXtileFieldName));
+             GISdb[db].EmpSource.Enabled := false;
+             {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Filter=' + TheFigureFilter + ' ' + FigureLabel); {$EndIf}
+             if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+                wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
+                gr[0,f2] := MakeGraph;
+             end;
+          end {for f2};
+          Filters1.Add(Comparisons.Strings[0]);
+          Labels1.Add(Comparisons.Strings[0]);
       end;
-       for f2 := 0 to pred(Filters2.Count) do begin
-          if gr[f1,f2] <> Nil then begin
-             gr[f1,f2].GraphDraw.MaxVertAxis := RowMaxz;
-             gr[f1,f2].GraphDraw.MinVertAxis := RowMinz;
-             gr[f1,f2].RedrawDiagram11Click(Nil);
-          end;
+   end
+   else *)
+   begin
+       for f1 := 0 to pred(Filters1.Count) do begin
+           wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
+           TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1];
+           GISdb[db].ApplyGISFilter(TheFigureFilter);
+           GISdb[db].EmpSource.Enabled := false;
+           for f2 := 0 to pred(Filters2.Count) do begin
+             TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
+             GISdb[db].ApplyGISFilter(TheFigureFilter);
+             FigureLabel := PETdbUtils.AddAndIfNeeded(BaseFilter) + ' n=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB(DEMIXtileFieldName));
+             GISdb[db].EmpSource.Enabled := false;
+             {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Filter=' + TheFigureFilter + '  label=' + FigureLabel); {$EndIf}
+
+             if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+                wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter + '  res=' + IntToStr(GISdb[db].MyData.FiltRecsInDB),true);
+                MultTiles := GISdb[db].MyData.ListUniqueEntriesInDB(DEMIXtileFieldName);
+                if (MultTiles.Count > 0) then gr[f1,f2] := MakeGraph;
+                MultTiles.Destroy;
+             end;
+          end {for f2};
        end;
    end;
    EndGraphGrid(gr,db, BaseFilter,Filters1,Labels1,Filters2,Labels2);
-   MultSeries.Destroy;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('procedure GraphTwoParameterGridsByAverageSlopeAndResolution out'); {$EndIf}
 end {procedure GraphTwoParameterGridsByAverageSlopeAndResolution};
 
@@ -294,7 +352,7 @@ end {procedure GraphTwoParameterGridsByAverageSlopeAndResolution};
 
 procedure GraphMultipleParamsByDEMResolution(db : integer; Criterion,DEMIXtileFieldName : shortstring; Resolutions,Comparisons : tStringList);
 
-   function MakeGraphByResolution(db : integer; FigureLabel,TheFigureFilter,ResString,Criterion : shortstring; Comparisons,Resolutions : tStringList) : tThisBaseGraph;
+   function MakeGraphByResolution(db : integer; FigureLabel,TheFigureFilter,ResString,Criterion : shortstring; Resolutions : tStringList) : tThisBaseGraph;
    var
       i,j,k : integer;
       rfile : file;
@@ -351,11 +409,9 @@ var
    gr : t2Dgrapharray;
 begin {procedure GraphMultipleParamsByDEMResolution}
    if TileCharacteristicsInDB(DB) then begin
-
        GISdb[db].EmpSource.Enabled := false;
        StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
        {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphMultipleParamsByDEMResolution in, Criterion=' + Criterion + '  Comparisons=' + IntToStr(Comparisons.Count)); {$EndIf}
-
        GISdb[db].EmpSource.Enabled := false;
        {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('Resolutions=' + IntToStr(Resolutions.Count)); {$EndIf}
        for f1 := 0 to pred(Filters1.Count) do begin
@@ -368,7 +424,7 @@ begin {procedure GraphMultipleParamsByDEMResolution}
              if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
                  FigureLabel := PETdbUtils.AddAndIfNeeded(BaseFilter) + ' tiles=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB(DEMIXtileFieldName));
                  wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
-                 gr[f1,f2] := MakeGraphByResolution(db,FigureLabel,TheFigureFilter,ResString,Criterion,Comparisons,Resolutions);
+                 gr[f1,f2] := MakeGraphByResolution(db,FigureLabel,TheFigureFilter,ResString,Criterion,Resolutions);
              end
              else gr[f1,f2] := Nil;
           end;
@@ -377,7 +433,6 @@ begin {procedure GraphMultipleParamsByDEMResolution}
        {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphMultipleParamsByDEMResolution out'); {$EndIf}
    end;
 end {procedure GraphMultipleParamsByDEMResolution};
-
 
 
 (*
@@ -541,84 +596,32 @@ begin
 end {function GraphDEMIX_CompareDSMandDTMslopes};
 
 
-procedure ComputePowerFitForAllTiles(db : integer);
-//input is HRDEM DB for grid spacings in meters; uses only those >= 2 m spacing
-//makes DB with the statistics for a power law fit for the DSM and DTM
-var
-   TileList,Results : tStringList;
-   DTMName,aline,BaseFilter : shortstring;
-   fName : PathStr;
-   i : integer;
-
-   procedure OneKindDEM(theDEM : shortString);
-   var
-      x,y : array[0..25] of float32;
-      a,b,siga,sigb,r : float64;
-      n : integer;
-   begin
-      n := -1;
-      GISdb[db].MyData.First;
-      while not GISdb[db].MyData.eof do begin
-         inc(n);
-         x[n] := GISdb[db].MyData.GetFieldByNameAsFloat('GRID_M');
-         y[n] := GISdb[db].MyData.GetFieldByNameAsFloat(theDEM);
-         GISdb[db].MyData.Next;
-      end;
-      PowerFit(x,y,n,a,b,siga,sigb,r);
-      aline := aLine + ',' + RealToString(sqr(r),-12,-4) + ',' + RealToString(a,-12,-4) + ',' + RealToString(b,-12,-4);
-   end;
-
-
-begin {procedure ComputePowerFitForAllTiles}
-   if GISdb[db].MyData.FieldExists('GRID_M') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('DTM_NAME') then begin
-      {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('ComputePowerFitForAllTiles in'); {$EndIf}
-       BaseFilter := GISdb[db].MyData.Filter;
-       GISdb[db].EmpSource.Enabled := false;
-       TileList := GISdb[db].MyData.ListUniqueEntriesInDB('DTM_NAME');
-       Results := tStringList.Create;
-       Results.Add('DEMIX_TILE,AREA,LAT,LONG,AVG_SLOPE,BARREN_PC,FOREST_PC,DSM_R2,DSM_A,DSM_B,DTM_R2,DTM_A,DTM_B');
-       for I := 0 to pred(TileList.Count) do begin
-          DTMname := TileList.Strings[i];
-          wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(TileList.Count) + ' ' + DTMname,true);
-          aLine := DTMName + ',' + GISdb[db].MyData.GetFieldByNameAsString('AREA') + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('LAT')  + ',' + GISdb[db].MyData.GetFieldByNameAsString('LONG') + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('AVG_SLOPE') + ',' + GISdb[db].MyData.GetFieldByNameAsString('BARREN_PC') + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('FOREST_PC') ;
-          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(DTMName) + ' AND GRID_M>=2');
-          GISdb[db].EmpSource.Enabled := false;
-          OneKindDEM('DSM_SLOPE');
-          OneKindDEM('DTM_SLOPE');
-          Results.Add(aLine);
-       end;
-       fName := MDtempDir + 'slope_power_law.dbf';
-       StringList2CSVtoDB(Results,fName);
-       wmdem.ClearStatusBarPanelText;
-       GISdb[db].ApplyGISFilter(BaseFilter);
-       {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('ComputePowerFitForAllTiles out'); {$EndIf}
-   end
-   else begin
-      MessageToContinue('Required DSM/DTM fields missing');
-   end;
-end {procedure ComputePowerFitForAllTiles};
-
 
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 //graph for single DEMIX tile, with grid spacing on x-axis and average slope on y-axis, for DSM and DTM as two series
 var
    MultSeries : tStringList;
    BaseFilter,xlabel : shortstring;
+   i : integer;
+
+   procedure TryAddingSeries(fName : shortstring);
+   begin
+       if GISdb[db].MyData.FieldExists(fName) and (not GISdb[db].MyData.FieldAllBlanks(fName)) then MultSeries.Add(fName);
+   end;
+
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphCompareDSMandDTMslopes in'); {$EndIf}
   Result := nil;
-  if GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('DTM_NAME') then begin
+  if true {DEMIX_HRDEM_DB(db)} then begin
       BaseFilter := GISdb[db].MyData.Filter;
-      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(DTMName));
+      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + TileNameGDEMorHRDEM(db) + '=' + QuotedStr(DTMName));
       if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
-         //if GISdb[db].MyData.FieldExists('GRID_SEC') then GISdb[db].dbOpts.XField := 'GRID_SEC' else GISdb[db].dbOpts.XField := 'GRID_M' ;
           GISdb[db].dbOpts.XField := XSpacingField(db,xLabel);
           MultSeries := tStringList.Create;
-          MultSeries.Add('DSM_SLOPE');
-          MultSeries.Add('DTM_SLOPE');
+          TryAddingSeries('DSM_SLOPE');
+          TryAddingSeries('DTM_SLOPE');
+          for i := 1 to 6 do TryAddingSeries(RefDEMFieldNames[i]);
+
           Result := GISdb[db].ActuallyDrawGraph(dbgtN2DgraphMultSeries,MultSeries);
           Result.GraphDraw.MinHorizAxis := 0;
           Result.GraphDraw.MinVertAxis := 0;
@@ -639,25 +642,73 @@ end;
 function OneGraphSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring) : tThisBaseGraph;
 //graph for multiple DEMIX tiles, with grid spacing on x-axis and average slope on y-axis,
 var
-   MultSeries,TheTiles : tStringList;
+   MultSeries,TheTiles,TheCompares : tStringList;
    BaseFilter,Tile,XField : shortstring;
    i : integer;
    rfile : file;
    v : array[1..2] of float32;
+
+   procedure StartGraph;
+   begin
+      BaseFilter := GISdb[db].MyData.Filter;
+      Result := tThisBaseGraph.Create(Application);
+      XField := XSpacingField(db,Result.GraphDraw.HorizLabel);
+      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + HRDEMresolutionFilter(db));
+   end;
+
+   procedure EndGraph;
+   begin
+      Result.GraphDraw.VertLabel := Parameter;
+      Result.GraphDraw.LeftMargin := 90;
+      Result.GraphDraw.BottomMargin := 80;
+      Result.GraphDraw.SetShowAllLines(true);
+      Result.GraphDraw.SetShowAllPoints(false);
+      //Result.GraphDraw.InsideMarginLegend := lpNEMap;
+      Result.GraphDraw.LRcornerText := ' Tiles=' + IntToStr(TheTiles.Count);
+      Result.RedrawDiagram11Click(Nil);
+      GISdb[db].ApplyGISFilter(BaseFilter);
+   end;
+
+var
+   DEMsdone : tstringlist;
+   DEM1,DEM2 : shortstring;
+   rfile2 : file;
+   j : integer;
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphCompareDSMandDTMslopes in'); {$EndIf}
   Result := nil;
-  if GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('DTM_NAME') then begin
-      BaseFilter := GISdb[db].MyData.Filter;
+  if (Parameter = 'DEM1_SLOPE') then begin
+     StartGraph;
+(*
+     TheTiles := GISdb[db].MyData.ListUniqueEntriesInDB('DEMIX_TILE');
+     TheCompares := GISdb[db].MyData.ListUniqueEntriesInDB('COMPARE');
+     DEMsDone := tStringList.Create;
+      for i := 0 to pred(TheTiles.Count) do begin
+          Tile := TheTiles.Strings[i];
+          for j := 0 to Compares.Count do begin
+             GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DEMIX_TILE=' + QuotedStr(Tile) + ' AND COMPARE=' +  QuotedStr(Compares.Strings[j]);
+             GISdb[db].EmpSource.Enabled := false;
+             DEM1 := GISdb[db].MyData.GetFieldByNameAsString('DEM_1');
+             DEM2 := GISdb[db].MyData.GetFieldByNameAsString('DEM_2');
+             if DEMsDone.IndexOf(DEM1) then DEMsDone.Add(DEM1) else DEM1 := '';
+             if DEMsDone.IndexOf(DEM2) then DEMsDone.Add(DEM2) else DEM2 := '';
+             if DEM1 <> '' then Result.OpenDataFile(rfile,Tile + '_' + DEM1);
+             if DEM2 <> '' then Result.OpenDataFile(rfile2,Tile + '_' + DEM2);
+
+          end;
+      end;
+*)
+     EndGraph;
+  end
+  else if GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('DTM_NAME') then begin
+      StartGraph;
       TheTiles := GISdb[db].MyData.ListUniqueEntriesInDB('DTM_NAME');
-      Result := tThisBaseGraph.Create(Application);
-      XField := XSpacingField(db,Result.GraphDraw.HorizLabel);
-      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'GRID_M >= 2');
       GISdb[db].MyData.FindFieldRange(XField,Result.GraphDraw.MinHorizAxis,Result.GraphDraw.MaxHorizAxis);
       GISdb[db].MyData.FindFieldRange(Parameter,Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
       for i := 0 to pred(TheTiles.Count) do begin
           Tile := TheTiles.Strings[i];
-          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(Tile) + HRDEMresolutionFilter);
+          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(Tile) + HRDEMresolutionFilter(db));
+          GISdb[db].EmpSource.Enabled := false;
           if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
              Result.OpenDataFile(rfile,Tile);
              GISdb[db].MyData.First;
@@ -671,16 +722,7 @@ begin
              CloseFile(rfile);
           end;
       end;
-      Result.GraphDraw.VertLabel := Parameter;
-      Result.GraphDraw.LeftMargin := 90;
-      Result.GraphDraw.BottomMargin := 80;
-      Result.GraphDraw.SetShowAllLines(true);
-      Result.GraphDraw.SetShowAllPoints(false);
-
-      //Result.GraphDraw.InsideMarginLegend := lpNEMap;
-      Result.GraphDraw.LRcornerText := ' Tiles=' + IntToStr(TheTiles.Count);
-      Result.RedrawDiagram11Click(Nil);
-     GISdb[db].ApplyGISFilter(BaseFilter);
+      EndGraph;
   end
   else MessageToContinue('Required DSM/DTM fields missing');
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphCompareDSMandDTMslopes out'); {$EndIf}
@@ -736,9 +778,7 @@ begin
       BaseFilter := GISdb[db].MyData.Filter;
       GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(DTMName));
       if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
-          //if GISdb[db].MyData.FieldExists('GRID_SEC') then GISdb[db].dbOpts.XField := 'GRID_SEC' else GISdb[db].dbOpts.XField := 'GRID_M' ;
           GISdb[db].dbOpts.XField := XSpacingField(db,xlabel);
-
           MultSeries := tStringList.Create;
           MultSeries := tStringList.Create;
           CheckLSPinDB(LSP + '_LE90');
@@ -839,8 +879,7 @@ var
             end;
 
             if HRDEM then begin
-               if Thin < 5 then Dec := -1 else Dec := 0;
-
+               if (Thin < 5) then Dec := -1 else Dec := 0;
                aline := CountryStr + ExtractFileNameNoExt(DTMname) + ',' + CountryStr + ExtractFileNameNoExt(DSMname) + ',' + CompareName + ',' +
                     Area + ',' + Copy(CountryStr,1,2) + ',' + IntToStr(Thin) + ',' + RealToString(DEMglb[DEM1].AverageSpace,-8,Dec) + ',' +RealToString(Lat,-12,-6) + ',' +
                     RealToString(Long,-12,-6) + ',' + RealToString(ms1,-12,-2) + ',' + RealToString(ms2,-12,-2) + ',' +  RealToString(ms1-ms2,-12,-2) + ',' + TileStats;
@@ -869,9 +908,9 @@ var
             Results.Add(aline);
          end {procedure ComparePair};
 
-
          function Thinned(Thin : integer) : boolean;
          begin
+            wmDEM.SetPanelText(3,'Thin ' + IntToStr(Thin),true);
             DTMthin := DEMglb[DTM].ThinThisDEM(false,'',Thin,true);
             DSMthin := DEMglb[DSM].ThinThisDEM(false,'',Thin,true);
             Result := ComparePair(DSMthin,DTMthin,Thin);
@@ -896,63 +935,65 @@ begin {procedure MakeSingleAreaDSMDTMcomparison}
   SetColorForProcessing;
   DTM := OpenNewDEM(DTMName,false);
   DSM := OpenNewDEM(DSMName,false);
-  DEMglb[DTM].DEMCenterPoint(Lat,Long);
-  DEMglb[DSM].DEMCenterPoint(Lat2,Long2);
-  VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,DistanceMeters,Bearing);
-  if (DistanceMeters > 1000) then begin
-     {$IfDef RecordCompareDSMandDTM} HighlightLineToDebugFile(RealToString(0.001 * DistanceMeters,-8,-2) + 'km apart  ' + DSMname + '  ' + DTMName); {$EndIf}
-     //this should not be happening, but still trying to figure out why it does
-  end
-  else begin
-      if (Results = Nil) then begin
-         Results := tStringList.Create;
-         TStr :=  LSPparamsString('ELVD') + LSPparamsString('SLPD');  //+ LSPparamsString('RRID');
-         TileAverages := ',AVG_SLOPE,BARREN_PC,FOREST_PC';
-         if HRDEM then begin
-            aLine := 'DTM_NAME,DSM_NAME,COMPARE,AREA,COUNTRY,GRID_THIN,GRID_M,LAT,LONG,DSM_SLOPE,DTM_SLOPE,DIFF_SLOPE';
-         end
-         else begin
-            aLine := 'DEM_1,DEM_2,COMPARE,AREA,DEMIX_TILE,GRID_THIN,GRID_SEC,LAT,LONG,DEM1_SLOPE,DEM2_SLOPE';
-         end;
-         Results.Add(aLine + TileAverages + TStr);
+  if ValidDEM(DTM) and ValidDEM(DSM) then begin
+      DEMglb[DTM].DEMCenterPoint(Lat,Long);
+      DEMglb[DSM].DEMCenterPoint(Lat2,Long2);
+      VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,DistanceMeters,Bearing);
+      if (DistanceMeters > 2500) then begin
+         {$IfDef RecordCompareDSMandDTM} HighlightLineToDebugFile(RealToString(0.001 * DistanceMeters,-8,-2) + 'km apart  ' + DSMname + '  ' + DTMName); {$EndIf}
+         //this should not be happening, but still trying to figure out why it does
+      end
+      else begin
+          if (Results = Nil) then begin
+             Results := tStringList.Create;
+             TStr :=  LSPparamsString('ELVD') + LSPparamsString('SLPD');  //+ LSPparamsString('RRID');
+             TileAverages := ',AVG_SLOPE,BARREN_PC,FOREST_PC';
+             if HRDEM then begin
+                aLine := 'DTM_NAME,DSM_NAME,COMPARE,AREA,COUNTRY,GRID_THIN,GRID_M,LAT,LONG,DSM_SLOPE,DTM_SLOPE,DIFF_SLOPE';
+             end
+             else begin
+                aLine := 'DEM_1,DEM_2,COMPARE,AREA,DEMIX_TILE,GRID_THIN,GRID_SEC,LAT,LONG,DEM1_SLOPE,DEM2_SLOPE';
+             end;
+             Results.Add(aLine + TileAverages + TStr);
+          end;
+          if ComparePair(DSM,DTM,1) then begin
+            if HRDEM then begin  //HRDEM comparison in meters
+               if (DEMglb[DTM].AverageSpace < 0.75) then begin //0.5 m HRDEM
+                  Mult := 4;
+                  Thinned(2);
+                  Thinned(4);
+               end
+               else if (DEMglb[DTM].AverageSpace < 1.25) then begin //1 m HRDEM
+                  Mult := 2;
+                  Thinned(2);
+               end
+               else Mult := 1;
+               Thinned(2*Mult);
+               Thinned(3*Mult);
+               Thinned(4*Mult);
+               Thinned(5*Mult);
+               Thinned(8*Mult);
+               Thinned(10*Mult);
+               Thinned(12*Mult);
+               Thinned(15*Mult);
+               Thinned(20*Mult);
+               Thinned(25*Mult);
+               Thinned(30*Mult);
+             end
+             else begin    //arc second GDEM comparison
+                Thinned(1);
+                Thinned(2);
+                Thinned(3);
+                Thinned(4);
+                Thinned(5);
+                Thinned(6);
+                Thinned(8);
+                Thinned(10);
+                Thinned(12);
+             end;
+          end;
+          if (OutName <> '') then db := StringList2CSVtoDB(Results,OutName);
       end;
-      if ComparePair(DSM,DTM,1) then begin
-        if HRDEM then begin  //HRDEM comparison in meters
-           if (DEMglb[DTM].AverageSpace < 0.75) then begin //0.5 m HRDEM
-              Mult := 4;
-              Thinned(2);
-              Thinned(4);
-           end
-           else if (DEMglb[DTM].AverageSpace < 1.25) then begin //1 m HRDEM
-              Mult := 2;
-              Thinned(2);
-           end
-           else Mult := 1;
-           Thinned(2*Mult);
-           Thinned(3*Mult);
-           Thinned(4*Mult);
-           Thinned(5*Mult);
-           Thinned(8*Mult);
-           Thinned(10*Mult);
-           Thinned(12*Mult);
-           Thinned(15*Mult);
-           Thinned(20*Mult);
-           Thinned(25*Mult);
-           Thinned(30*Mult);
-         end
-         else begin    //arc second GDEM comparison
-            Thinned(1);
-            Thinned(2);
-            Thinned(3);
-            Thinned(4);
-            Thinned(5);
-            Thinned(6);
-            Thinned(8);
-            Thinned(10);
-            Thinned(12);
-         end;
-      end;
-      if (OutName <> '') then db := StringList2CSVtoDB(Results,OutName);
   end;
   CloseSingleDEM(DTM);
   CloseSingleDEM(DSM);

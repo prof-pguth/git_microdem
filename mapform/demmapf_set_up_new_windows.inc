@@ -152,10 +152,57 @@ end;
 
 
 function SetUpVectorMap(DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : integer;
+
+
+    function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : tMapForm;
+
+             procedure SetProjection(WantProjection : tProjType);
+             begin
+                  Result.MapDraw.PrimMapProj.PName := WantProjection;
+                  SetUpDefaultNewProjection(Result.MapDraw.PrimMapProj);
+                  Result.MapDraw.PrimMapProj.GetProjectParameters;
+             end;
+
+    begin
+       Result := TMapForm.Create(Application);
+       with Result do begin
+           MapDraw.MapOwner := moVectorMap;
+           if WorldOutline then AddOverlay(Result,ovoWorldOutlines);
+           MapDraw.VectorIndex := i;
+           MapDraw.MakeMapGrayscale := MDDef.DefGrayVectMap;
+           MapDraw.SubdueBase := MDDef.DefSubdueVectMap;
+           if (WantProjection <> undefinedProj) then begin
+               SetProjection(WantProjection);
+           end
+           else if (ProjName = '') then begin
+              if (MDdef.DefaultVectorMapProjection = dvmDefined) then begin
+              end
+              else begin
+                 case MDdef.DefaultVectorMapProjection of
+                    dvmMercator         :  SetProjection(MercatorEllipsoid);
+                    dvmConicalArea      :  SetProjection(AlbersEqAreaConicalEllipsoid);
+                    dvmConicalConformal :  SetProjection(LambertConformalConicEllipse);
+                 end;
+              end;
+           end;
+           {$IfDef RecordOpenVectorMap} if (ProjName <> '') then WriteLineToDebugFile('After setting, ProjName=' + ProjName); {$EndIf}
+
+           Result.MapDraw.PrimMapProj.PName := MapDraw.PrimMapProj.PName;
+           MapDraw.BaseTitle := MapDraw.PrimMapProj.GetProjName;
+           MapDraw.AdjustProjectionForUTMZone('New vector map',MDDef.PreferPrimaryDatum,MDDef.DefaultUTMZone,MDDef.DefaultLatHemi);
+           {$If Defined(RecordOpenVectorMap)} WriteLineToDebugFile('New vector map: ' + MapDraw.PrimMapProj.GetProjName); {$EndIf}
+
+           MapDraw.SetFullMapCoverage;
+           MapDraw.ResetMarginalia;
+           if DrawIt then DoCompleteMapRedraw;
+        end;
+    end;
+
+
 var
    i : integer;
-begin
-   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('SetUpVectorMap in'); {$EndIf}
+begin {function SetUpVectorMap}
+   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('SetUpVectorMap in,,ProjName=' + ProjName); {$EndIf}
    i := 0;
    repeat
        inc(i);
@@ -169,61 +216,13 @@ begin
       Result := i;
       VectorMap[i] := SetUpANewVectorMap(i,DrawIt,WorldOutline,WantProjection,ProjName);
    end;
-   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('SetUpVectorMap out'); {$EndIf}
-end;
-
-
-function SetUpANewVectorMap(i : integer; DrawIt,WorldOutline : boolean; WantProjection : tProjType = undefinedProj; ProjName : PathStr = '') : tMapForm;
-
-         procedure SetProjection(WantProjection : tProjType);
-         begin
-              Result.MapDraw.PrimMapProj.PName := WantProjection;
-              SetUpDefaultNewProjection(Result.MapDraw.PrimMapProj);
-              Result.MapDraw.PrimMapProj.GetProjectParameters;
-         end;
-
-begin
-   {$IfDef RecordOpenVectorMap} writeLineToDebugFile('SetUpANewVectorMap in, ProjName=' + ProjName); {$EndIf}
-   Result := TMapForm.Create(Application);
-   with Result do begin
-       MapDraw.MapOwner := moVectorMap;
-       if WorldOutline then AddOverlay(Result,ovoWorldOutlines);
-       MapDraw.VectorIndex := i;
-       MapDraw.MakeMapGrayscale := MDDef.DefGrayVectMap;
-       MapDraw.SubdueBase := MDDef.DefSubdueVectMap;
-       if (WantProjection <> undefinedProj) then begin
-           SetProjection(WantProjection);
-       end
-       else if (ProjName = '') then begin
-          if (MDdef.DefaultVectorMapProjection = dvmDefined) then begin
-          end
-          else begin
-             case MDdef.DefaultVectorMapProjection of
-                dvmMercator         :  SetProjection(MercatorEllipsoid);
-                dvmConicalArea      :  SetProjection(AlbersEqAreaConicalEllipsoid);
-                dvmConicalConformal :  SetProjection(LambertConformalConicEllipse);
-             end;
-          end;
-       end;
-       {$IfDef RecordOpenVectorMap} if (ProjName <> '') then WriteLineToDebugFile('After setting, ProjName=' + ProjName); {$EndIf}
-
-       Result.MapDraw.PrimMapProj.PName := MapDraw.PrimMapProj.PName;
-       MapDraw.BaseTitle := MapDraw.PrimMapProj.GetProjName;
-       MapDraw.AdjustProjectionForUTMZone('New vector map',MDDef.PreferPrimaryDatum,MDDef.DefaultUTMZone,MDDef.DefaultLatHemi);
-       {$If Defined(RecordOpenVectorMap)} WriteLineToDebugFile('New vector map: ' + MapDraw.PrimMapProj.GetProjName); {$EndIf}
-
-       MapDraw.SetFullMapCoverage;
-       MapDraw.ResetMarginalia;
-       if DrawIt then DoCompleteMapRedraw;
-    end;
-    {$IfDef RecordOpenVectorMap} writeLineToDebugFile('SetUpANewVectorMap out, ProjName=' + ProjName); {$EndIf}
-end;
+   {$IfDef RecordOpenVectorMap} WriteLineToDebugFile('SetUpVectorMap out, Map geo limits: ' +  sfBoundBoxToString(VectorMap[i].MapDraw.MapCorners.BoundBoxGeo,4)); {$EndIf}
+end {function SetUpVectorMap};
 
 
 procedure CreateDEMSelectionMap(DEM : integer; DrawIt : boolean = true; usePC : boolean = true; inMapType : tMapType = mtElevRainbow);
 var
    mt : tMapType;
-
 
       function GetWantedMapType : tMapType;
       var
@@ -318,6 +317,7 @@ begin {CreateDEMSelectionMap}
       {$IfDef RecordMapProj}
          WriteLineToDebugFile('CreateDEMSelectionMap out, DEM=' + DEMglb[DEM].DEMMapProj.GetProjName + ' Map=' + DEMGlb[DEM].SelectionMap.MapDraw.PrimMapProj.GetProjName);
       {$EndIf}
+      {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('CreateDEMSelectionMap out, MapCaption=' + DEMGlb[DEM].SelectionMap.Caption); {$EndIf}
    {$EndIf}
 end {CreateDEMSelectionMap};
 
@@ -327,6 +327,8 @@ begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap) or Defined(RecordNumberOpenMaps) }
       WriteLineToDebugFile('CreateANewDEMMapWindow in, DEM=' + IntToStr(CurDEM) + '  maptype=' + IntToStr(ord(mt)) + '  current maps=' + IntToStr(NumOpenMaps));
    {$EndIf}
+   {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('CreateANewDEMMapWindow, MapCaption=' + MapCaption); {$EndIf}
+
    Result := TMapForm.Create(Application);
    DEMGlb[CurDEM].SelectionMap.MapDraw.CopyMapParams(Result.MapDraw,false);
    Result.MapDraw.FirstMapDrawing := false;
@@ -343,7 +345,7 @@ begin
    {$EndIf}
    {$IfDef RecordMapProj} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].DEMMapProj.GetProjName); {$EndIf}
    {$IfDef TrackDEMelevRange} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, DEM=' + DEMGlb[CurDEM].AreaName + '  DEM ' + DEMGlb[CurDEM].zRange); {$EndIf}
-
+   {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow in, basetitle=' + MapDraw.BaseTitle + ' AreaName=' + DEMglb[CurDEM].AreaName + ' MapCaption=' + MapCaption); {$EndIf}
    try
       if Selection then begin
          MapDraw.MapOwner := moDEMSelectionMap;
@@ -353,21 +355,23 @@ begin
       MapDraw.Long0_360 := DEMGlb[CurDEM].DEMBoundBoxGeo.xmax > 181;
       MapDraw.BaseTitle := MapCaption;
       MapDraw.UsePercentiles := UsePC;
+      {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('Just set basetitle=' + MapDraw.BaseTitle); {$EndIf}
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow in'); {$EndIf}
 
       MapDraw.DefineNewDEMMap(CurDEM,mt);
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow after DefineNewDEMmap current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow New map defined'); {$EndIf}
       {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow DefineNewDEMMap over, mt=' + IntToStr(mt)); {$EndIf}
+      {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('Defined new map, basetitle=' + MapDraw.BaseTitle); {$EndIf}
+
       if MDDef.NEAutoDEM then AddOverlay(Self,ovoWorldOutlines);
       SetMapOverlays;
       MapDraw.ResetMarginalia;
       MapDraw.ScaleMapElevationsToDEM;
       {$IfDef TrackDEMelevRange} WriteLineToDebugFile('Map z range ' + MapDraw.MapZRangeString); {$EndIf}
-
       {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow after ResetMarginalia current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow before DrawIt, mt=' + IntToStr(mt)); {$EndIf}
+
       if DrawIt then begin
          try
             {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow Drawing'); {$EndIf}
@@ -385,8 +389,7 @@ begin
    {$If Defined(RecordSetup) or Defined(RecordCreateSelectionMap)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow exit ' + MapCaption + '  ' + MapDraw.MapSizeString); {$EndIf}
    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out for ' + DEMGlb[CurDEM].AreaName + ' current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('SetUpNewDEMMapWindow out'); {$EndIf}
-   {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out ' + MapDraw.BaseTitle); {$EndIf}
-
+   {$If Defined(RecordBaseTitle)} WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, basetitle=' + MapDraw.BaseTitle + ' AreaName=' + DEMglb[CurDEM].AreaName); {$EndIf}
    {$IfDef RecordMapProj}
       WriteLineToDebugFile('TMapForm.SetUpNewDEMMapWindow out, DEM=' + DEMGlb[MapDraw.DEMonMap].DEMMapProj.GetProjName + '  Map=' + MapDraw.PrimMapProj.GetProjName);
    {$EndIf}
@@ -404,7 +407,6 @@ end;
 
 
       procedure CreateNewSatSubsetWindow(inSatView : tSatView; var ResultMap : tMapForm; CurSat : integer; mt : tMapType; MapCaption : ShortString; Roamable,Selection,ReallyDraw : boolean; UseDEM : integer = 0);
-
 
          procedure SetUpTheNewMap(var ThisMap : tMapForm);
          var

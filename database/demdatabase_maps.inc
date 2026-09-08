@@ -138,12 +138,14 @@ end;
                    end;
                    inc(n);
                    if ValidLatLongFromTable(Lat,Long) and ValidLat2Long2FromTable(Lat2,Long2) then begin
+                      (*
                       if (MDDef.ConnectRecordColoring) then begin
                          if GetFloat32FromTableLink(dbOpts.SymSizeField,Value) then begin
                             if (Value > MaxComboBox1) then Value := MaxComboBox1;
                             Bitmap.Canvas.Pen.Width := round(dbOpts.ScaledSymMinSize + (dbOpts.ScaledSymMaxSize - dbOpts.ScaledSymMinSize) * ((Value-MinComboBox1)/(MaxComboBox1-MinComboBox1)));
                          end;
                       end;
+                      *)
                       TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat2,Long2,xp2,yp2);
                       TheMapOwner.MapDraw.LatLongDegreeToScreen(Lat,Long,xpic,ypic);
                       DrawLine(Bitmap,xp2,yp2,xpic,ypic);
@@ -304,9 +306,7 @@ end;
 
                if UseLink or MyData.IsStringField(dbOpts.FloatColorField) or MyData.IsIntegerField(dbOpts.FloatColorField) then begin
                   EmpSource.Enabled := false;
-                  //if (StringCategories = Nil) then begin
-                     StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
-                  //end;
+                  StringCategories := MyData.FindUniqueEntriesLinkPossible(LinkTable,dbOpts.LinkFieldThisDB,dbOpts.LinkFieldOtherDB,dbOpts.FloatColorField);
                   {$IfDef RecordDBPlot} WriteLineToDebugFile('strings in field=' + IntToStr(StringCategories.Count)); {$EndIf}
 
                   DefineColorTableValues(dbOpts.DBColorPaletteName,0,pred(StringCategories.Count),ColorDefTable);
@@ -391,8 +391,8 @@ end;
 
             procedure TGISdataBaseModule.PlotVectorsOnMap(var Bitmap : tMyBitmap);
             var
-               Lat,Long,Lat2,Long2,Dir,Mag,{Value,}xf,yf,dLong,LongCent,ve,vn{,cv} : float64;
-               Recs, {err,}i,{j,}x1,y1,x2,y2,Dist,rc : integer;
+               Lat,Long,Lat2,Long2,Dir,Mag,xf,yf,dLong,LongCent,ve,vn{,cv} : float64;
+               Recs,i,x1,y1,x2,y2,Dist,rc : integer;
                Color : tPlatformColor;
                PlotIt : boolean;
             begin

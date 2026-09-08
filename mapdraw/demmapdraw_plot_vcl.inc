@@ -418,67 +418,6 @@
          end;
 
 
-         procedure TMapDraw.OverlaySRTMWaterBodies(Bitmap : tMyBitmap; WaterMask : boolean = false);
-
-               function SRTMWaterBodyFileName(Lat,Long : integer) : PathStr;
-               //these names came for the CD's with the data from the early 2000's
-               //names for the files at https://earthexplorer.usgs.gov/ are different from these, w087n41n.shp
-               //https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-water-body?qt-science_center_objects=0#qt-science_center_objects
-               const
-                  ContinentLetters : array[1..6] of char = ('n','s','a','e','f','1');
-               var
-                  i : integer;
-                  TStr1,TStr2 : Shortstring;
-               begin
-                  if (Long < 0) then TStr2 := 'west\swbdwest\w' else TStr2 := 'east\swbdeast\e';
-                  TStr2 := TStr2  + IntegerToString(abs(Long),3);
-                  if (Lat < 0) then TStr1 := 's' else TStr1 := 'n';
-                  TStr1 := MainMapData + 'srtm-swbd\' + TStr2 + TStr1 + IntegerToString(abs(lat),2);
-                  for i := 1 to Length(TStr1) do if TStr1[i] = ' ' then TStr1[i] := '0';
-                  for i := 1 to 6 do begin
-                     Result := TStr1 + ContinentLetters[i] + '.zip';
-                     if FileExists(Result) then exit;
-                  end;
-                  Result := '';
-               end;
-
-         var
-            fName : PathStr;
-            Dir   : DirStr;
-            bName : NameStr;
-            Ext   : ExtStr;
-            Lat,Long,
-            Lat1,Long1,Lat2,Long2 : integer;
-         begin
-            HighLightDBOnWorld := false;
-            Lat1 := trunc(MapCorners.BoundBoxGeo.ymin + 0.01);
-            if (Lat1 < 0) then dec(lat1);
-            Lat2 := succ(trunc(MapCorners.BoundBoxGeo.ymax - 0.025));
-            if (Lat2 < 0) then dec(lat2);
-            Long1 := trunc(MapCorners.BoundBoxGeo.xmin + 0.01);
-            if (Long1 < 0) then dec(Long1);
-            Long2 := succ(trunc(MapCorners.BoundBoxGeo.xmax - 0.025));
-            if (Long2 < 0) then dec(Long2);
-
-            if ShowSatProgress then StartProgress('Water');
-            for Long := Long1 to pred(Long2) do begin
-               if ShowSatProgress then UpdateProgressBar((Long - Long1) / (Long2 - Long1));
-               for Lat := Lat1 to pred(Lat2) do begin
-                  fName := SRTMWaterBodyFileName(Lat,Long);
-                  if (fName <> '')  then begin
-                     if FileExists(fName) and ZipMasterUnzip(fName,MDTempDir) then begin
-                        FSplit(Fname,dir,bname,ext);
-                        fName := MDTempDir + bName + '.shp';
-                        QuickShapeFileDisplay(Bitmap,fName,false,ConvertPlatformColorToTColor(MDDef.WaterColor));
-                        Petmar.DeleteMultipleFiles(MDTempDir,bName + '*');
-                     end;
-                  end;
-               end;
-            end;
-            HighLightDBOnWorld := true;
-            if ShowSatProgress then EndProgress;
-         end;
-
 
          procedure tMapDraw.PlotMapLibrary(var Bitmap : tMyBitmap);
 
@@ -1406,7 +1345,7 @@
 
          procedure tMapDraw.DrawMapOverlays(var inBitmap : tMyBitmap);
          var
-            i,j : integer;
+            i{,j} : integer;
             DBsDone : boolean;
          begin
             {$If Defined(RecordFullMapDraw) or Defined(RecordTiming) or Defined(RecordOverlays)} WriteLineToDebugFile('tMapDraw.DrawMapOverlays in ' + BaseTitle  + '  ' + MapSizeString); {$EndIf}
@@ -1415,7 +1354,7 @@
                {$IfDef RecordOverlays} WriteLineToDebugFile(' Map layer: ' + LayerName[OverLayOrder[i]]); {$EndIf}
 
                case OverLayOrder[i] of
-                   ovoSRTMWater   : OverlaySRTMWaterBodies(inBitmap);
+                   //ovoSRTMWater   : OverlaySRTMWaterBodies(inBitmap);
                    ovoContours    : OverlayContours(inBitmap);
                    ovoContoursDEM2 : DrawContoursInArea(inBitMap,MapOverlays.ConInt,DEM2onMap);
                    ovoGrids       : DrawGridLines(inBitmap);

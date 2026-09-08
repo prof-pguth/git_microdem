@@ -9,6 +9,130 @@
 {________________________________________}
 
 
+function IsThisGPSTrackFile(FileWanted : PathStr) : boolean;
+var
+   Ext : ExtStr;
+begin
+    Ext := UpperCase(ExtractFileExt(FileWanted));
+    Result := ExtEquals(Ext,'.gpx') or
+              ExtEquals(Ext,'.fit') or
+              ExtEquals(Ext,'.tcx') or
+             (ExtEquals(Ext,'.csv') and StrUtils.AnsiContainsText(FileWanted,'gps_location_') );
+end;
+
+
+
+function ImportExerciseTrack(var FileWanted : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : integer;
+var
+   Ext : ExtStr;
+   i : integer;
+   sl : tStringList;
+   CheckDeleteUnusedFields : boolean;
+   BasePath,tName : PathStr;
+   ID : shortstring;
+
+      procedure AddNav;
+      begin
+         if MDDef.AddFitNav then begin
+            GISDB[i].AddNavFields;
+            GISDB[i].ApplyGISFilter('DIST_KM<0.0004');
+            GISDB[i].DeleteAllSelectedRecords;
+            {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
+         end;
+      end;
+
+begin
+    if IsThisGPSTrackFile(FileWanted) then begin
+       {$IfDef RecordGPX} WriteLineToDebugFile('ImportExerciseTrack in, ' + FileWanted); {$EndIf}
+       Ext := UpperCase(ExtractFileExt(FileWanted));
+       ShowHourglassCursor;
+       try
+          SaveBackupDefaults;
+          MDDef.UseMeters := false;
+          MDdef.AddSpeed := true;
+          MDdef.Add3DDist := false;
+          HeavyDutyProcessing := true;
+          SetColorForProcessing;
+          BasePath := 'c:\mapdata\tracks\';
+          SafeMakeDir(BasePath);
+          tName := FileWanted;
+          if ExtEquals(Ext,'.TCX') then begin
+             sl := FitBitTCXtoStringList(FileWanted,ID);
+             {$IfDef RecordGPX} WriteLineToDebugFile('FitBitTCXtoStringList, recs=' + IntToStr(sl.count)); {$EndIf}
+             FileWanted := BasePath + ID + '.dbf';
+             if FileExists(FileWanted) then begin
+                sl.Destroy;
+                File2Trash(tName);
+             end
+             else begin
+               i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
+               AddNav;
+               CloseSingleDB(i);
+             end;
+          end
+          else if ExtEquals(Ext,'.csv') then begin
+               sl := tStringList.Create;
+               sl.LoadFromFile(FileWanted);
+               FileWanted := BasePath + ExtractFileNameNoExt(FileWanted) + '.dbf';
+               FileWanted := StringReplace(FileWanted,'gps_location','gps_track',[rfReplaceAll, rfIgnoreCase]);
+               i := StringList2CSVtoDB(sl,FileWanted,false,false,false);
+               if ValidDB(i) then begin
+                   {$IfDef RecordGPX} WriteLineToDebugFile('DB created'); {$EndIf}
+                   GISDB[i].ApplyGISFilter('DATASOURCE=' + QuotedStr('Fitbit App'));  //because files have duplicates, from Fitbit and the phone'
+                   GISDB[i].DeleteAllSelectedRecords;
+                   {$IfDef RecordGPX} WriteLineToDebugFile('Duplicates removed'); {$EndIf}
+                   ConvertTimeStringToDecimalHours(i,false);
+                   {$IfDef RecordGPX} WriteLineToDebugFile('Converted time'); {$EndIf}
+                   AddNav;
+                   CloseSingleDB(i);
+               end
+               else begin
+                   {$IfDef RecordGPX} WriteLineToDebugFile('ImportExerciseTrack GPSBabel_fit2gpx fail'); {$EndIf}
+               end;
+          end
+          else if ExtEquals(Ext,'.gpx') or ExtEquals(Ext,'.fit') then begin
+            if ExtEquals(Ext,'.gpx') then begin
+               {$IfDef RecordFIT} WriteLineToDebugFile('open GPX, picked: ' + FileWanted); {$EndIf}
+               tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+               CopyFile(FileWanted,tName);
+               CheckDeleteUnusedFields := true;
+            end
+            else if ExtEquals(Ext,'.fit') then begin
+               {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, picked: ' + FileWanted); {$EndIf}
+               tName := BasePath + ExtractFileName(FileWanted);
+               MoveFile(FileWanted,tName);
+               FileWanted := tName;
+               {$IfDef RecordFIT} WriteLineToDebugFile('open FIT, copied to: ' + FileWanted); {$EndIf}
+               tName := MDtempDir + ExtractFileNameNoExt(FileWanted) + '.gpx';
+               if GPSBabel_fit2gpx(FileWanted,tName) then begin
+                   {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx created ' + tName); {$EndIf}
+                   if (GetFileSize(tName) < 500) then begin
+                      Result := 0;
+                      exit;
+                  end;
+               end
+               else begin
+                  {$IfDef RecordFIT} WriteLineToDebugFile('GPSBabel_fit2gpx failed'); {$EndIf}
+                  Result := 0;
+                  exit;
+               end;
+            end;
+            if FileExists(tName) then begin
+               FileWanted := BasePath;
+               {$IfDef RecordFIT} WriteLineToDebugFile('call GPXtoDBF'); {$EndIf}
+               GPXtoDBF(tName,FileWanted);
+               {$IfDef RecordFIT} WriteLineToDebugFile('GPX processed ' + FileWanted); {$EndIf}
+               //OpenNumberedGISDataBase(Result,FileWanted,ShowTable,MapOwner);
+            end;
+          end;
+       finally
+          RestoreBackupDefaults;
+          HeavyDutyProcessing := false;
+          SetColorForWaiting;
+       end;
+    end;
+end;
+
 
 function DecimalHoursFromTimeStr(TimeStr : ANSIstring) : float32;
 begin
@@ -67,6 +191,12 @@ begin
    if FileExists(inName) and ValidPath(OutName) then begin
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, in for ' + inName); {$EndIf}
       ShowHourglassCursor;
+      OutName := OutName + ExtractFileNameNoExt(inName) + '.dbf';
+      if FileExists(OutName) then begin
+         File2Trash(inName);
+         exit;
+      end;
+
       FileInMemory := tStringList.Create;
       FileInMemory.LoadFromFile(inName);
       OutList := tStringList.Create;
@@ -88,17 +218,21 @@ begin
             ElevStr := '';
          end;
       end;
-      {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, parsed');  OutList.SaveToFile(MDtempDir + 'gpx_stringlist.txt'); {$EndIf}
-      OutName := OutName + ExtractFileNameNoExt(inName) + '.dbf';
+      {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, parsed, lines=' + IntToStr(Outlist.Count)); {$EndIf}
+      {$IfDef RecordFullGPX} OutList.SaveToFile(MDtempDir + 'gpx_stringlist.txt'); {$EndIf}
 
-      GISNum := StringList2CSVtoDB(OutList,OutName);
-      {$IfDef RecordGPX} WriteLineToDebugFile('StringListCSVtoTable done'); {$EndIf}
-      if MDDef.AddFitNav then begin
-         GISDB[GisNUM].AddNavFields;
-         {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
+      GISNum := StringList2CSVtoDB(OutList,OutName,false,false,false);
+      if ValidDB(GISNum) then begin
+          {$IfDef RecordGPX} WriteLineToDebugFile('StringListCSVtoTable done'); {$EndIf}
+          if MDDef.AddFitNav then begin
+             GISDB[GisNUM].AddNavFields;
+             {$IfDef RecordGPX} WriteLineToDebugFile('AddNavFields done'); {$EndIf}
+          end;
+          CloseSingleDB(GISnum);
+      end
+      else begin
+           {$IfDef RecordGPX} WriteLineToDebugFile('StringListCSVtoTable fail'); {$EndIf}
       end;
-      CloseSingleDB(GISnum);
-
       FileInMemory.Destroy;
       {$IfDef RecordGPX} WriteLineToDebugFile('GPXtoDBF, out for ' + outName); {$EndIf}
    end
@@ -210,10 +344,12 @@ begin
        Check('VALUE',HeartStr);
        Check('DISTANCEMETERS',DistStr);
        if (str = '</TRACKPOINT>') then begin
-          ReplaceCharacter(ID,':','_');
-          ElevStr := RealToString(StrToFloat(ElevStr),-12,2);
-          DecHours := DecimalHoursFromTimeStr(TimeStr);
-          Result.Add(LatStr + ',' + LongStr + ',' + TimeStr + ',' + ElevStr + ',' + HeartStr + ',' + RealToString(DecHours,-12,-6));
+          if (LatStr <> '') and (LongStr <> '') then begin
+              ReplaceCharacter(ID,':','_');
+              ElevStr := RealToString(StrToFloat(ElevStr),-12,2);
+              DecHours := DecimalHoursFromTimeStr(TimeStr);
+              Result.Add(LatStr + ',' + LongStr + ',' + TimeStr + ',' + ElevStr + ',' + HeartStr + ',' + RealToString(DecHours,-12,-6));
+          end;
        end;
     end;
    FileInMemory.Destroy;

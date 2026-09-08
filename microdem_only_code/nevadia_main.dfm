@@ -3465,9 +3465,30 @@ object wmdem: Twmdem
     end
     object HDREMdownloadmanagement1: TMenuItem
       Caption = 'HDREM download management'
+      object ProcessOpenTopographydownloadsCH1: TMenuItem
+        Caption = 'Process OpenTopography downloads (CH)'
+        OnClick = ProcessOpenTopographydownloadsCH1Click
+      end
+      object GetlistoffilesFrance1: TMenuItem
+        Caption = 'Get list of files (France)'
+        OnClick = GetlistoffilesFrance1Click
+      end
       object CleanupFrenchlistof1x1kmfiles1: TMenuItem
-        Caption = 'Subset download list of 1x1 km files into 10x10 tiles'
+        Caption = 
+          'Remove 1x1 km tiles for partial 10x10 km DEMIX tiles, add DSM/DT' +
+          'M'
         OnClick = CleanupFrenchlistof1x1kmfiles1Click
+      end
+      object DownloadDEMs1: TMenuItem
+        Caption = 'Download DEMs'
+        OnClick = DownloadDEMs1Click
+      end
+      object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
+        Caption = 'Moves tiles into 10 km UTM block directories'
+        OnClick = Mergesmalltilesinto10kmUTMblocks1Click
+      end
+      object N50: TMenuItem
+        Caption = '-'
       end
       object Download10x10kmblocks1: TMenuItem
         Caption = 'Prep Download 10x10 km blocks (requires source code changes)'
@@ -3542,17 +3563,6 @@ object wmdem: Twmdem
       object N71: TMenuItem
         Caption = '-'
       end
-      object UTMbasedmergepartialsintoDB1: TMenuItem
-        Caption = 'Partials into DB'
-        OnClick = UTMbasedmergepartialsintoDB1Click
-      end
-      object UTMbasedmergecurvaturesintoDB1: TMenuItem
-        Caption = 'Curvatures into DB'
-        OnClick = UTMbasedmergecurvaturesintoDB1Click
-      end
-      object N37: TMenuItem
-        Caption = '-'
-      end
       object UTMbasedMergeDSMDTMcomparison1: TMenuItem
         Caption = 'HRDEM DSM/DTM comparison'
         OnClick = UTMbasedMergeDSMDTMcomparison1Click
@@ -3561,23 +3571,27 @@ object wmdem: Twmdem
         Caption = 'GDEM DTM/DSM compare'
         OnClick = MergeCOPALOSDTMDSMcompare1Click
       end
-    end
-    object N25: TMenuItem
-      Caption = '-'
-    end
-    object DeleteresultsCSVforareas1: TMenuItem
-      Caption = 'Delete results CSV for areas to recompute'
-      OnClick = DeleteresultsCSVforareas1Click
-    end
-    object Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem
-      Caption = 'Delete merged directories with small number of files'
-      OnClick = Deletemergeddirectorieswithsmallnumberoffiles1Click
+      object Both1: TMenuItem
+        Caption = 'Both HRDEM/GDEM comparisons'
+        OnClick = Both1Click
+      end
+      object N37: TMenuItem
+        Caption = '-'
+      end
+      object UTMbasedmergepartialsintoDB1: TMenuItem
+        Caption = 'Partials into DB'
+        OnClick = UTMbasedmergepartialsintoDB1Click
+      end
+      object UTMbasedmergecurvaturesintoDB1: TMenuItem
+        Caption = 'Curvatures into DB'
+        OnClick = UTMbasedmergecurvaturesintoDB1Click
+      end
     end
     object N44: TMenuItem
       Caption = '-'
     end
     object UTMbasedCVSfilesbyarea1: TMenuItem
-      Caption = 'CSV files by area report'
+      Caption = 'Inventory CSV files by area '
       OnClick = UTMbasedCVSfilesbyarea1Click
     end
     object UTMbasedfilefillreport1: TMenuItem
@@ -3599,17 +3613,20 @@ object wmdem: Twmdem
     object N38: TMenuItem
       Caption = '-'
     end
-    object InventoryofLC10files1: TMenuItem
-      Caption = 'Inventory LC10 files'
-      OnClick = InventoryofLC10files1Click
-    end
-    object Compare10mand100mlandcover1: TMenuItem
-      Caption = 'Compare 10 m and 100 m landcover'
-      OnClick = Compare10mand100mlandcover1Click
-    end
-    object Percentlandcovercategories1: TMenuItem
-      Caption = 'Create grids with percent landcover categories'
-      OnClick = Percentlandcovercategories1Click
+    object Landcover1: TMenuItem
+      Caption = 'Landcover'
+      object InventoryofLC10files1: TMenuItem
+        Caption = 'Inventory LC10 files'
+        OnClick = InventoryofLC10files1Click
+      end
+      object Compare10mand100mlandcover1: TMenuItem
+        Caption = 'Compare 10 m and 100 m landcover'
+        OnClick = Compare10mand100mlandcover1Click
+      end
+      object Percentlandcovercategories1: TMenuItem
+        Caption = 'Create grids with percent landcover categories'
+        OnClick = Percentlandcovercategories1Click
+      end
     end
     object N68: TMenuItem
       Caption = '-'
@@ -3652,12 +3669,16 @@ object wmdem: Twmdem
       Caption = 'Clone EXE (for multithreading)'
       OnClick = CloneEXEformultithreading1Click
     end
+    object DeleteresultsCSVforareas1: TMenuItem
+      Caption = 'Delete results CSV for areas to recompute'
+      OnClick = DeleteresultsCSVforareas1Click
+    end
+    object Deletemergeddirectorieswithsmallnumberoffiles1: TMenuItem
+      Caption = 'Delete merged directories with small number of files'
+      OnClick = Deletemergeddirectorieswithsmallnumberoffiles1Click
+    end
     object N66: TMenuItem
       Caption = '-'
-    end
-    object Mergesmalltilesinto10kmUTMblocks1: TMenuItem
-      Caption = 'Moves tiles into 10 km UTM block directories'
-      OnClick = Mergesmalltilesinto10kmUTMblocks1Click
     end
     object MovemergedtilereferenceandtestDEMs1: TMenuItem
       Caption = 'Move merged tile reference and test DEMs'
@@ -3874,7 +3895,6 @@ object wmdem: Twmdem
           end
           object Fixtileswith42114foottag1: TMenuItem
             Caption = 'Fix tiles with 42114 foot tag'
-            OnClick = Fixtileswith42114foottag1Click
           end
         end
         object Merge1secreferenceDEMsfromVisioterra1: TMenuItem
@@ -3927,47 +3947,24 @@ object wmdem: Twmdem
     end
     object Inventories1: TMenuItem
       Caption = 'Inventories and file management'
-      object ChecktestDEMs1: TMenuItem
-        Caption = 
-          'Inventory test and referene DEMs by test area (missing .TIF by a' +
-          'rea)'
-        OnClick = ChecktestDEMs1Click
-      end
-      object VerifytestDEMcoverages1: TMenuItem
-        Caption = 'Verify test DEM coverages (center locations)'
-        OnClick = VerifytestDEMcoverages1Click
-      end
-      object Inventorydifferencestats1: TMenuItem
-        Caption = 'Inventory difference distribution  stats (DEMIX-classic DB)'
-        OnClick = Inventorydifferencestats1Click
-      end
-      object Inventorychanneldatabyarea1: TMenuItem
-        Caption = 'Inventory channel data by area'
-        Enabled = False
-        OnClick = Inventorychanneldatabyarea1Click
-      end
-      object InventorySSIMFUVCSVfiles1: TMenuItem
-        Caption = 'Inventory SSIM/FUV CSV files'
-        OnClick = InventorySSIMFUVCSVfiles1Click
-      end
-      object N40: TMenuItem
-        Caption = '-'
-      end
-      object InventoryDILUVIUMbytestarea1: TMenuItem
-        Caption = 'Inventory low elevation test area'
-        OnClick = InventoryDILUVIUMbytestarea1Click
-      end
-      object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
-        Caption = 'Diluvium DEM and DEMIX DB overlap'
-        Enabled = False
-      end
-      object DEMIXtilesperareaandcoastalsubset1: TMenuItem
-        Caption = 'DEMIX estimated tiles per area and coastal subset'
-        OnClick = DEMIXtilesperareaandcoastalsubset1Click
-      end
-      object DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem
-        Caption = 'DEMIX tiles in each area for FULL, U120, U80, and and U10'
-        OnClick = DEMIXtilesineachareaforFULLU120U80andandU101Click
+      object CoastalDEMs1: TMenuItem
+        Caption = 'Coastal DEMs'
+        object InventoryDILUVIUMbytestarea1: TMenuItem
+          Caption = 'Inventory low elevation test area'
+          OnClick = InventoryDILUVIUMbytestarea1Click
+        end
+        object DiluviumDEMandDEMIXDBoverlap1: TMenuItem
+          Caption = 'Diluvium DEM and DEMIX DB overlap'
+          Enabled = False
+        end
+        object DEMIXtilesperareaandcoastalsubset1: TMenuItem
+          Caption = 'DEMIX estimated tiles per area and coastal subset'
+          OnClick = DEMIXtilesperareaandcoastalsubset1Click
+        end
+        object DEMIXtilesineachareaforFULLU120U80andandU101: TMenuItem
+          Caption = 'DEMIX tiles in each area for FULL, U120, U80, and and U10'
+          OnClick = DEMIXtilesineachareaforFULLU120U80andandU101Click
+        end
       end
       object N47: TMenuItem
         Caption = '-'
@@ -3976,13 +3973,8 @@ object wmdem: Twmdem
         Caption = 'Delete computed files for test area'
         OnClick = N42Click
       end
-      object DeletereferenceDTMswithoutDTMinfilename1: TMenuItem
-        Caption = 'Delete reference DTMs without DTM in file name'
-        OnClick = DeletereferenceDTMswithoutDTMinfilename1Click
-      end
       object N3DEPfileswithtag421121: TMenuItem
         Caption = '3DEP files with tag 42112'
-        OnClick = N3DEPfileswithtag421121Click
       end
       object MovereferenceDSMs1: TMenuItem
         Caption = 'Move reference DSMs'
@@ -4006,13 +3998,6 @@ object wmdem: Twmdem
       OnClick = MonsterDEMtilee1Click
     end
     object N53: TMenuItem
-      Caption = '-'
-    end
-    object MergeSSIMandR2database1: TMenuItem
-      Caption = 'Merge SSIM and R2 database'
-      Enabled = False
-    end
-    object N39: TMenuItem
       Caption = '-'
     end
     object Experimentaltargetsforelimination1: TMenuItem

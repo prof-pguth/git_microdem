@@ -32,6 +32,7 @@ unit md_use_tools;
       //{$Define RecordReformat}
       //{$Define RecordMapProj}
       //{$Define RecordWBT_DEM}
+      {$Define RecordFFT}
    {$Else}
    {$EndIf}
 {$EndIf}
@@ -213,6 +214,9 @@ procedure laslibReproject(ask : boolean);
 procedure AddEGMtoDBfromSphHarmonics(DBonTable : integer; Do2008 : boolean);
 
 function RUN_LSPcalculator(DEM : integer; Options : shortstring; OpenMap : boolean = true; degree : integer = 3) : integer;
+procedure fft_tools(OpenMap : boolean; DEM : integer);
+function fft_Compare(RefDEM : integer; TestDEMs : tDEMBooleanArray; rt : float32 = 0.75) : PathStr;
+
 
 procedure ExpandOutName(InName : PathStr; BaseName : shortString; var OutName : PathStr);
 
@@ -241,6 +245,9 @@ const
 {$i saga_wrapper.inc}
 
 {$I wbt_wrapper.inc}
+
+{$I grass_wrapper.inc}
+
 
 {$If Defined(ExLAStools) or Defined(ExPointCloud)}
 {$Else}
@@ -303,6 +310,190 @@ begin
          {$IfDef RecordLSPcalculator} WriteLineToDebugFile('could not find ' + OutName); {$EndIf}
      end;
    end;
+end;
+
+
+var
+   BaseDir : PathStr;
+
+
+function CMD_FFT_process(DEM : integer; var ResultsDir : PathStr) : shortstring;
+begin
+   ResultsDir := MDtempDir + 'fft_results_' + DEMglb[DEM].AreaName;
+   Result := BaseDir + 'fft-process --input ' + DEMGlb[DEM].GeotiffDEMName +  ' --output ' + ResultsDir + ' >' + ResultsDir + '_process.txt';
+   {$IfDef RecordFFT} WriteLineToDebugFile(Result); {$EndIf}
+end;
+
+function FFT_process(DEM : integer) : PathStr;
+//https://github.com/xiceph/physical-geomorphometry-tools/tree/main/fft-tools/packages/fft-process
+var
+   cmd : shortstring;
+begin
+   wmDEM.SetPanelText(3, 'Process: ' + DEMglb[DEM].AreaName ,true);
+   cmd := CMD_FFT_process(DEM,Result);
+   //result := MDtempDir + 'fft_results_' + DEMglb[DEM].AreaName;
+   //cmd := BaseDir + 'fft-process --input ' + DEMGlb[DEM].GeotiffDEMName +  ' --output ' + result + ' >' + Result + '_process.txt';
+   {$IfDef RecordFFT} WriteLineToDebugFile(cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+   {$IfDef RecordFFT} WriteLineToDebugFile('Returned'); {$EndIf}
+end;
+
+
+function FFT_polar(DEM : integer; FFTResult : PathStr) : PathStr;
+var
+   cmd : shortstring;
+begin
+   wmDEM.SetPanelText(3, 'Polar: ' + DEMglb[DEM].AreaName ,true);
+   Result := MDtempDir + 'fft_results_' + DEMglb[DEM].AreaName + '\polar';
+   cmd := BaseDir + 'fft-polar --input ' + FFTresult + ' --output ' + Result;
+   {$IfDef RecordFFT} WriteLineToDebugFile(cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+end;
+
+
+procedure FFT_analyze(DEM : integer; PolarResult : PathStr; var Summary,Spectrum : PathStr);
+var
+   cmd : shortstring;
+begin
+   wmDEM.SetPanelText(3, 'Analyze: ' + DEMglb[DEM].AreaName ,true);
+   Summary := MDtempDir + 'fft_results_' + DEMglb[DEM].AreaName + '\summary.csv';
+   Spectrum := MDTempDir + 'fft_results_' + DEMglb[DEM].AreaName + '\spectrum.html';
+   cmd := BaseDir + 'fft-analyze --input ' + PolarResult + ' --output ' + Summary + ' --mode radial-mean --plot ' + Spectrum;
+   {$IfDef RecordFFT} WriteLineToDebugFile(cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+end;
+
+
+function FFT_filter(DEM : integer; FFTresult : PathStr) : PathStr;
+var
+   cmd : shortstring;
+begin
+   wmDEM.SetPanelText(3, 'Filter: ' + DEMglb[DEM].AreaName ,true);
+   Result := MDTempDir + 'fft_results_' + DEMglb[DEM].AreaName + '\filtered';
+   cmd := BaseDir + 'fft-filter --input ' + FFTresult + ' --output ' + Result + ' --min-wavelength 20 --max-wavelength 500 --taper-width 0.2';
+   {$IfDef RecordFFT} WriteLineToDebugFile(cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+   {$IfDef RecordFFT} WriteLineToDebugFile('Returned'); {$EndIf}
+end;
+
+
+function FFT_inverse_DEM(DEM : integer; Filtered : PathStr) : PathStr;
+var
+   cmd : shortstring;
+begin
+   wmDEM.SetPanelText(3, 'Inverse: ' + DEMglb[DEM].AreaName ,true);
+   Result := MDTempDir + 'fft_results_' + DEMglb[DEM].AreaName + '\filtered_dem.tif';
+   cmd := BaseDir + 'fft-inverse --input ' + Filtered + ' --output ' + Result;
+   {$IfDef RecordFFT} WriteLineToDebugFile(cmd); {$EndIf}
+   WinExecAndWait32(cmd,true,MDdef.ShowWinExec);
+end;
+
+
+procedure fft_tools(OpenMap : boolean; DEM : integer);
+//https://github.com/xiceph/physical-geomorphometry-tools/tree/main/fft-tools
+var
+   Summary,Spectrum,Filtered,FilteredDEM,
+   FFTresult,PolarResult : PathStr;
+   cmd : shortstring;
+begin
+   {$IfDef RecordFFT} WriteLineToDebugFile('procedure fft_tools in ' + DEMglb[DEM].AreaName); {$EndIf}
+   SetColorForProcessing;
+   BaseDir := 'F:\gis_software\xiceph\';
+   FindDriveWithPath(BaseDir);
+   FFTresult := FFT_process(DEM);
+   PolarResult := FFT_polar(DEM,FFTresult);
+   FFT_analyze(DEM,PolarResult,Summary,Spectrum);
+   Filtered := FFT_filter(DEM,FFTresult);
+   FilteredDEM := FFT_inverse_DEM(DEM,Filtered);
+
+   SetColorForWaiting;
+   {$IfDef RecordFFT} WriteLineToDebugFile('procedure fft_tools out ' + DEMglb[DEM].AreaName); {$EndIf}
+end;
+
+
+
+
+function fft_Compare(RefDEM : integer; TestDEMs : tDEMBooleanArray; rt : float32 = 0.75) : PathStr;
+//https://github.com/xiceph/physical-geomorphometry-tools/tree/main/fft-tools/packages/fft-compare
+//https://github.com/xiceph/physical-geomorphometry-tools/tree/main/fft-tools
+
+
+
+   function CheckForGeoDEM(DEM : integer) : integer;
+   var
+      XUTM,YUTM : float64;
+      futmName,mdName : PathStr;
+      tDEM : integer;
+      GridLimits : tGridLimits;
+   begin
+      if (DEMglb[DEM].DEMheader.DEMUsed = ArcSecDEM) then begin
+         futmName := MDtempDir + 'futm_' + DEMglb[DEM].AreaName + '.tif';
+         if not FileExists(futmName) then begin
+             DEMglb[DEM].DEMGridtoUTM(0,0,XUTM,YUTM);
+             DEMglb[DEM].DEMheader.DEMUsed := UTMBasedDEM;
+             DEMglb[DEM].DEMheader.DataSpacing := SpaceMeters;
+             DEMglb[DEM].DEMheader.DEMxSpacing := DEMglb[DEM].AverageXSpace;
+             DEMglb[DEM].DEMheader.DEMySpacing := DEMglb[DEM].AverageYSpace;
+             DEMglb[DEM].DEMheader.SWCornerX := xutm;
+             DEMglb[DEM].DEMheader.SWCornerY := yutm;
+             DEMglb[DEM].FilledOutlineGridBox(GridLimits);
+             mdName := ChangeFileExt(futmName,'.dem');
+             DEMglb[DEM].SaveSpecifiedPartOfDEM(mdName,GridLimits);
+             DEMglb[DEM].ReloadDEM(true);
+             tDEM := OpenNewDEM(mdName,false);
+             DEMglb[tDEM].SaveAsGeotiff(futmName);
+             CloseSingleDEM(tDEM);
+         end;
+         Result := OpenNewDEM(futmName,true);
+      end
+      else Result := DEM;
+   end;
+
+var
+   RefResult,fName : PathStr;
+   CompareName,cmd : shortstring;
+   BatFile : tStringList;
+   DEM,NumTests : integer;
+   CorrectTestDEMs : array[1..10] of integer;
+   TestResult : array[1..10] of PathStr;
+begin
+   {$IfDef RecordFFT} WriteLineToDebugFile('procedure fft_compare in, ref= ' + DEMglb[RefDEM].AreaName); {$EndIf}
+   SetColorForProcessing;
+   RefDEM := CheckForGeoDEM(RefDEM);
+   for DEM := 1 to 10 do CorrectTestDEMs[DEM] := 0;
+   NumTests := 0;
+   for DEM := 1 to MaxDEMDataSets do begin
+      if TestDEMs[DEM] and ValidDEM(DEM) then begin
+         inc(NumTests);
+         CorrectTestDEMs[NumTests] := CheckForGeoDEM(DEM);
+      end;
+   end;
+
+   {$IfDef RecordFFT} WriteLineToDebugFile('procedure fft_compare in ' + CompareName); {$EndIf}
+   BaseDir := 'F:\gis_software\xiceph\';
+   FindDriveWithPath(BaseDir);
+
+   BatFile := tStringList.Create;
+   BatFile.Add(CMD_FFT_process(RefDEM,RefResult));
+   for DEM := 1 to NumTests do begin
+      CompareName := DEMglb[RefDEM].AreaName + '_' + DEMglb[CorrectTestDEMs[DEM]].AreaName;
+      BatFile.Add(CMD_FFT_process(CorrectTestDEMs[DEM],TestResult[DEM]));
+      Result := MDtempDir + 'fft_compare_' + CompareName;
+      cmd := BaseDir + 'fft-compare --input-a ' + RefResult + ' --input-b ' + TestResult[DEM] + ' --output ' + Result + ' --plot ' + Result + '\' + CompareName + '.html' +
+         ' --retention-threshold ' + RealToString(rt,-8,2) + ' --coherence-threshold 0.5' + ' >' + Result + '_compare_results.txt';
+      BatFile.Add(cmd);
+   end;
+   fName := mdTempDir + 'compare_' + CompareName + '.bat';
+   BatFile.SaveToFile(fName);
+   WinExecAndWait32(fName,true,MDdef.ShowWinExec);
+
+   for DEM := 1 to NumTests do begin
+      CompareName := DEMglb[RefDEM].AreaName + '_' + DEMglb[CorrectTestDEMs[DEM]].AreaName;
+      Result := MDtempDir + 'fft_compare_' + CompareName;
+      System.SysUtils.RenameFile(Result + '\comparison_summary.csv', Result + '\' + CompareName + '_comparison.csv');
+   end;
+   SetColorForWaiting;
+   {$IfDef RecordFFT} WriteLineToDebugFile('procedure fft_compare out, ref= ' + DEMglb[RefDEM].AreaName); {$EndIf}
 end;
 
 
@@ -369,8 +560,7 @@ var
    tName : PathStr;
    ext : ExtStr;
 begin
-  {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('FusionTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
-
+   {$IfDef RecordUseOtherPrograms} WriteLineToDebugFile('FusionTinCreate, infile=' + InName + '  outfile=' + OutName); {$EndIf}
    tName := NextFileNumber(MDtempDir,'fusion_int_dem_', '.dtm');
    cmd := ProgramRootDir + 'fusion\tinsurfacecreate ' + tName + ' ' + RealToString(GridSize,-12,-2) + ' m m 1 ' +  IntToStr(GridZone) + ' 2 2 ' + InName;
    WinExecAndWait32(cmd);
@@ -556,183 +746,6 @@ end;
 
 
 
-
-const
-   GetGrassExtensions : boolean = false;
-
-
-function ExecuteGrassAndOpenMap(var BatchFile : tstringList; BatchName,OutName : PathStr; eu : tElevUnit; mt : tMapType; OpenMap : boolean = true) : integer;
-begin
-   {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap, bf=' + BatchName); {$EndIf}
-   BatchName := Petmar.NextFileNumber(MDTempDir,BatchName,'.bat');
-   BatchFile.Add(ClearGRASSdirectory);
-   EndBatchFile(BatchName,batchfile);
-
-   {$IfDef RecordWBT} WriteLineToDebugFile('Batch file over'); {$EndIf}
-   if FileExists(OutName) then begin
-      Result := OpenNewDEM(OutName,false);
-      DEMGlb[Result].DEMheader.ElevUnits := eu;
-      if not PossibleElevationUnits(DEMGlb[Result].DEMheader.ElevUnits) then DEMGlb[Result].DEMHeader.VerticalCSTypeGeoKey := VertCSUndefined;
-      if OpenMap then CreateDEMSelectionMap(Result,true,true,mt);
-      {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap map opened'); {$EndIf}
-      {$If Defined(RecordMapProj)} WriteLineToDebugFile('ExecuteGrassAndOpenMap ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].DEMMapProj.GetProjName); {$EndIf}
-   end
-   else MessageToContinue('Grass failure, try command in DOS window: ' + BatchName);
-   {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteGrassAndOpenMap out'); {$EndIf}
-end;
-
-
-function AssembleGrassCommand(InName : PathStr; GridName,CommandName,NewLayer,BatchName : ShortString; eu : tElevUnit; mt : tMapType;
-   OutName : PathStr = ''; OpenMap : boolean = true; TypeStr : shortstring = '32') : integer;
-var
-   BatchFile : tStringList;
-
-      procedure StartGrassBatchFile(var BatchFile : tStringList; InName : PathStr);
-      begin
-         BatchFile := tStringList.Create;
-         BatchFile.Add(ClearGrassDirectory);
-         //if (GrassEXE = 'grass83') then begin
-            BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
-            BatchFile.Add(SetGDALdataStr);
-            BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-            BatchFile.Add(MDDef.GRASSexe + ' -c ' + InName + ' ' + MDTempDir + 'grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
-         //end;
-      end;
-
-begin
-  if FileExistsErrorMessage(InName) then begin
-     if (OutName = '') then OutName := MDTempDir + GridName + ExtractFileNameNoExt(InName) + '.tif';
-
-     BatchFile := tStringList.Create;
-     BatchFile.Add(ClearGrassDirectory);
-     BatchFile.Add('call "C:\OSGeo4W\bin\o4w_env.bat"');
-     BatchFile.Add(SetGDALdataStr);
-     BatchFile.Add('set USE_PATH_FOR_GDAL_PYTHON=YES');
-     BatchFile.Add(MDDef.GrassEXE + ' -c ' + InName + ' ' + MDTempDir + 'grass1\ --exec r.in.gdal input=' + InName + ' output=mymap |more');
-     BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec ' + CommandName  + ' |more');
-     BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec r.out.gdal input=' + NewLayer + ' out=' + OutName + ' type=Float' + TypeStr + ' --overwrite --quiet |more');
-
-     if GetGrassExtensions then begin   //add these to get the extensions; they need to be done with a grass workspace set up, so they are here
-        BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.vector.ruggedness |more');
-        BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.tri |more');
-        BatchFile.Add(MDDef.GrassEXE + ' ' + MDTempDir + 'grass1\PERMANENT --exec g.extension r.tpi |more');
-        GetGrassExtensions := false;
-     end;
-     Result := ExecuteGrassAndOpenMap(BatchFile,BatchName,OutName,eu,mt,OpenMap);
-  end;
-end;
-
-
-function GrassVectorRuggedness(InName : PathStr; WindowSize : integer; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_vector_ruggedness_' + FilterSizeStr(WindowSize) + '_','r.vector.ruggedness elevation=mymap output=rugged ' +
-      'size=' + IntToStr(WindowSize) +  ' nprocs=-1','rugged','GrassVectorRugged_',euUndefined,mtElevSpectrum,OutName);
-end;
-
-
-procedure GetGrassExtensionsNow(InName : PathStr);
-begin
-   GetGrassExtensions := true;
-   GrassSlopeMap(InName);
-end;
-
-
-function GrassDownsampleAverage(InName : PathStr) : integer;
-begin
-   //this requires a region, which will define the new spacing
-   //unclear if would change the projection, say from UTM to geographic
-   Result := AssembleGrassCommand(InName,'grass_downsample_','r.resamp.stats elevation=mymap slope=slope format=percent','slope','GrassSlope_',euMeters,mtElevSpectrum);
-end;
-
-
-function GrassTRIMap(OpenMap : boolean; InName : PathStr; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_TRI_','r.tri input=mymap output=tri ','tri','GrassTRI_',euUndefined,mtElevSpectrum,OutName,OpenMap);
-end;
-
-
-function GrassTPIMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-//r.tpi input=elevation@PERMANENT minradius=1 maxradius=25 steps=5 output=tpi
-//maxradius=25 fails (but might work in the user interface for GRASS?
-//variants of the option below, trying to get for just a single radius, failed
-//Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=5 steps=2 output=tpi','tpi','GrassTPI_',Undefined,mtElevSpectrum,'64');
-   Result := AssembleGrassCommand(InName,'grass_TPI_','r.tpi input=mymap minradius=1 maxradius=15 steps=5 output=tpi','tpi','GrassTPI_',euUndefined,mtElevSpectrum,OutName,OpenMap,'64');
-end;
-
-
-function GrassSlopeMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-//uses Horn algorithm
-begin
-   Result := AssembleGrassCommand(InName,'grass_slope_','r.slope.aspect elevation=mymap slope=slope format=percent','slope','GrassSlope_',euPercentSlope,MDDef.DefSlopeMap,OutName,OpenMap);
-end;
-
-function GrassAspectMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_aspect_','r.slope.aspect elevation=mymap aspect=aspect format=percent -n','aspect','GrassAspect_',euAspectDeg,mtDEMaspect,OutName,OpenMap);
-end;
-
-
-//additional GRASS curvatures in
-//   https://grass.osgeo.org/grass83/manuals/r.param.scale.html
-//   https://grass.osgeo.org/grass83/manuals/v.surf.rst.html
-
-function Grass_dx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_dx_partial_','r.slope.aspect elevation=mymap dx=dx','dx','GrassDX_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
-end;
-
-
-function Grass_dy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_dy_partial_','r.slope.aspect elevation=mymap dy=dy','dy','GrassDY_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
-end;
-
-function Grass_dxx_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_dxx_partial_','r.slope.aspect elevation=mymap dxx=dxx','dxx','GrassDXX_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
-end;
-
-
-function Grass_dyy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_dyy_partial_','r.slope.aspect elevation=mymap dyy=dyy','dyy','GrassDYY_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
-end;
-
-
-function Grass_dxy_partial(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_dxy_partial_','r.slope.aspect elevation=mymap dxy=dxy','dxy','GrassDXY_',euPerMeter,mtElevSpectrum,OutName,OpenMap);
-end;
-
-
-function GrassProfileCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_profile_curvature_','r.slope.aspect elevation=mymap pcurvature=pcurve','pcurve','GrassProfCurv_',euPerMeter,MDDef.DefCurveMap,OutName,OpenMap);
-end;
-
-
-function GrassTangentialCurvatureMap(InName : PathStr; OpenMap : boolean = true; OutName : PathStr = '') : integer;
-begin
-   Result := AssembleGrassCommand(InName,'grass_tangential_curvature_','r.slope.aspect elevation=mymap tcurvature=tcurve','tcurve','GrassTang_',euPerMeter,MDDef.DefCurveMap,OutName,OpenMap);
-end;
-
-procedure GRASS_partialDerivatives(DEM : integer; var Grids : tPartialGrids;  OpenMap : boolean = true);
-var
-   i : integer;
-begin
-   grids[1] := Grass_dx_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[2] := Grass_dy_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[3] := Grass_dxx_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[4] := Grass_dxy_partial(DEMGlb[DEM].GeotiffDEMName);
-   grids[5] := Grass_dyy_partial(DEMGlb[DEM].GeotiffDEMName);
-   for i := 1 to 5 do begin
-      DEMglb[Grids[i]].MultiplyGridByConstant(-1);
-      DEMglb[Grids[i]].CheckMaxMinElev;
-   end;
-end;
-
-
 {$IfDef ExRVT}
 {$Else}
 
@@ -872,37 +885,5 @@ finalization
 end.
 
 
-
-
-(*
-procedure TauDEMOp(DEM : integer); //TauDEM : tTauDEM);
-var
-   NewDEMName,NewDir : PathStr;
-   bfile : tStringList;
-begin
-   {$IfDef RecordSaveProblems} WriteLineToDebugFile('TauDEMOp in'); {$EndIf}
-
-   TaudemDir := 'C:\Program Files\TauDEM\TauDEM5Exe\';
-   if ValidPath(TauDEMDir) then begin
-      NewDir := ExtractFilePath(DEMGlb[DEM].DEMFileName) + 'taudem\';
-      SafeMakeDir(NewDir);
-      NewDEMName := NewDir + ExtractFileNameNoExt(DEMGlb[DEM].DEMFileName) + '.tif';
-      DEMGlb[DEM].SaveAsGeotiff(NewDEMName);
-      bfile := tStringList.Create;
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'PitRemove.exe') + ' ' + NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'D8FlowDir.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'DInfFlowDir.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'AreaD8.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'AreaDInf.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'Gridnet.exe') + ' ' +  NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'PeukerDouglas.exe') + ' ' + NewDEMName);
-      //not working yet
-      //bFile.Add(ExtractShortPathName(TauDEMDir + 'streamnet.exe') + ' ' + NewDEMName);
-      bFile.Add(ExtractShortPathName(TauDEMDir + 'TWI.exe') + ' ' + NewDEMName);
-      EndBatchFile(MDTempDir + 'taudem.bat',bfile);
-   end
-   else MessageToContinue('Requires ' + TauDEMDir);
-end;
-*)
 
 

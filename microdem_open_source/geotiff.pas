@@ -66,7 +66,7 @@ unit GeoTiff;
       //{$Define RecordMultiGrids}
       //{$Define RecordMinMax}
       //{$Define RecordNLCD}
-      {$Define TrackImageWidth}
+      //{$Define TrackImageWidth}
       //{$Define RecordGeoti
       //{$Define RecordGeotiffRow}    //potential major slowdown
       //{$Define FullDEMinit}         //potential major slowdown
@@ -256,11 +256,13 @@ var
    TiffImage : tTIFFImage;
    success : boolean;
 begin
+   {$IfDef RecordUTM} WriteLineToDebugFile('Geotiff_UTMzone for ' + fName); {$EndIf}
    Result := -99;
 
    if FileExists(fName) then begin
+      // constructor CreateGeotiff(Metadataonly : boolean; NoGeo : boolean; inFileName : PathStr; var Success : boolean; ShowHeader : boolean = false; GetHistogram : boolean = true; BandNum : integer = 0);
       TiffImage := tTiffImage.CreateGeotiff(true,false,fName,Success,false,false);
-      Result := TiffImage.MapProjection.projUTMZone;
+      if Success then Result := TiffImage.MapProjection.projUTMZone;
       TiffImage.Destroy;
    end;
    if (Result = -99) and GeotiffCentroidLatLong(fName,Lat,Long) then begin
@@ -1844,6 +1846,7 @@ var
       TStr,TStr34737 : ANSIstring;
       b : array[1..8] of byte;
 
+
       {$If Defined(RecordFullGeotiff) or Defined(RecordKeys)}
          procedure WriteKey(j : integer);
          begin
@@ -1881,7 +1884,7 @@ var
          {$IfDef RecordGeotiff} WriteLineToDebugFile('ReadTiffTags first j loop done'); WriteLineToDebugFile(''); {$EndIf}
 
          EntriesRead := 0;
-         for j := 1 to NumEnt do begin
+         for j := 1 to TiffHeader.NumEnt do begin
             {$If Defined(RecordFullGeotiff) or Defined(RecordKeys)} WriteKey(j); {$EndIf}
             inc(EntriesRead);
             TStr := '';
@@ -2221,6 +2224,15 @@ var
                          if (UpperCase(TStr) <> 'NAN') and IsNumeric(TStr) then CurrentMissing := StrToFloat(Tstr);
                       end;
             end {case};
+            if j=13 then begin
+               {$If Defined(RecordKeys)} WriteLineToDebugFile(IntegerToString(TiffKeys[j].Tag,8)); {$EndIf}
+               {$If Defined(RecordKeys)} WriteLineToDebugFile(TIFFTypeName(TiffKeys[j].fType)); {$EndIf}
+               {$If Defined(RecordKeys)} WriteLineToDebugFile(IntegerToString(TiffKeys[j].LengthIm,8)); {$EndIf}
+               {$If Defined(RecordKeys)} WriteLineToDebugFile(IntegerToString(TiffKeys[j].KeyOffset,10)); {$EndIf}
+               {$If Defined(RecordKeys)} WriteLineToDebugFile(TiffTagName(TiffKeys[j].Tag)); {$EndIf}
+               {$If Defined(RecordKeys)} WriteLineToDebugFile(TStr); {$EndIf}
+            end;
+
             TStr := IntegerToString(TiffKeys[j].Tag,8) + '   ' + TIFFTypeName(TiffKeys[j].fType) + IntegerToString(TiffKeys[j].LengthIm,8) + '  ' +
                 IntegerToString(TiffKeys[j].KeyOffset,10) + '  ' + TiffTagName(TiffKeys[j].Tag) + '  ' + TStr;
             HeaderLogList.Add(TStr);

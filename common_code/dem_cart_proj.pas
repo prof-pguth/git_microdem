@@ -225,7 +225,7 @@ var
               if CheckBox21.Checked then begin
                  VectorMap[LastVectorMap].MapDraw.PrimMapProj.Lat0 := LatC;
               end;
-           if  CheckBox21.Checked or CheckBox4.Checked or CheckBox17.Checked or CheckBox27.Checked then begin
+              if (Proj in [EqualEarth,Mercator,MercatorEllipsoid,WebMercator]) or CheckBox21.Checked then begin
                  VectorMap[LastVectorMap].MapDraw.PrimMapProj.Long0 := LongC;
                  {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map reset long cent=' + RadToDegString(VectorMap[LastVectorMap].MapDraw.PrimMapProj.long0)); {$EndIf}
               end;

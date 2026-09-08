@@ -549,10 +549,7 @@ end;
              pUse : tRGBTriple;
              BMPMemory : tBMPMemory;
              GridLimits : tGridLimits;
-             {$IfDef NoParallelFor}
-             {$Else}
-                Limits : tGridLimitsArray;
-             {$EndIf}
+             {$IfDef NoParallelFor} {$Else} Limits : tGridLimitsArray; {$EndIf}
           begin
              {$If Defined(RecordDrawSecondGrid) or Defined(RecordMapDraw) or Defined(RecordMapLayers)} WriteLineToDebugFile('TMapDraw.MapLayerFromSecondGrid, dem=' + IntToStr(DEM2onMap)); {$EndIf}
              CreateBitmap(Result,MapXSize,MapYSize);
@@ -663,8 +660,8 @@ end;
 
 procedure TMapDraw.SetUpElevationColorTable;
 var
-   i,j,tf : integer;
-   r,g,b : byte;
+   i,{j,}tf : integer;
+   //r,g,b : byte;
    ColorTable : tMyData;
 
          procedure ColorsForLegends(Min,Max : float32);

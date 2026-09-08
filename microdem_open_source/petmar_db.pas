@@ -22,7 +22,7 @@ unit petmar_db;
 
 {$IfDef RecordProblems}  //normally only defined for debugging specific problems
    //{$Define RecordMakeDir}
-   {$Define RecordFieldPresent}
+   //{$Define RecordFieldPresent}
    //{$Define DBrewrite}
    //{$Define RecordOpenDB}
    //{$Define RecordFullOpenDB}
@@ -950,7 +950,7 @@ function tMyData.PlatformColorFromTable : tPlatformColor;
          var
             i : integer;
             HexColor : shortstring;
-            SepChar : ansichar;
+            //SepChar : ansichar;
          begin
             CheckColorField := false;
             if FieldExists(fName) then begin

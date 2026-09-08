@@ -138,7 +138,7 @@ type
     Label15: TLabel;
     Edit10: TEdit;
     Label21: TLabel;
-    Edit11: TEdit;
+    //Edit11: TEdit;
     OutlineButton: TBitBtn;
     CheckBox120: TCheckBox;
     CheckBox29: TCheckBox;
@@ -230,9 +230,9 @@ type
     GroupBox3: TGroupBox;
     Label29: TLabel;
     CheckBox90: TCheckBox;
-    CheckBox94: TCheckBox;
+    //CheckBox94: TCheckBox;
     Edit28: TEdit;
-    CheckBox104: TCheckBox;
+    //CheckBox104: TCheckBox;
     Label37: TLabel;
     Edit29: TEdit;
     TabSheet21: TTabSheet;
@@ -426,7 +426,7 @@ type
     procedure Button22Click(Sender: TObject);
     procedure BitBtn14Click(Sender: TObject);
     procedure BitBtn18Click(Sender: TObject);
-    procedure CheckBox88Click(Sender: TObject);
+    //procedure CheckBox88Click(Sender: TObject);
     procedure BitBtn25Click(Sender: TObject);
     procedure BitBtn26Click(Sender: TObject);
     procedure BitBtn27Click(Sender: TObject);
@@ -968,7 +968,7 @@ begin
    Edit5.Text := RealToString(MDDef.HistogramTailClipSize,-18,-4);
    Edit6.Text := RealToString(MDdef.MercShiftLongLimit,-12,-4);
    Edit8.Text := IntToStr(MDdef.FillHoleRadius);
-   Edit11.Text := IntToStr(MDDef.JPEGQuality);
+   //Edit11.Text := IntToStr(MDDef.JPEGQuality);
    //Edit12.Text := IntToStr(MDDef.DEMIX_full);
 
    CheckBox28.Checked := MDDef.ShowPLSS;
@@ -1000,7 +1000,6 @@ begin
    Edit27.Text := IntToStr(MDDef.GeoJSONG_zdec);
    Edit34.Text := IntToStr(MDDef.GeoJSONP_xydec);
    Edit35.Text := IntToStr(MDDef.GeoJSONP_zdec);
-
 
    Label47.Caption := SlopeMethodName(MDDef.CurveCompute);
    Label49.Caption := SlopeMethodName(MDDef.SlopeCompute);
@@ -1097,7 +1096,7 @@ begin
    CheckBox85.Checked := MDDef.MakeOGLMovie;
    CheckBox86.Checked := MDDef.BackupEXEbeforeUpdate;
 
-   CheckBox88.Checked := MDDef.EnableGridNetworkComputing;
+   //CheckBox88.Checked := MDDef.EnableGridNetworkComputing;
 
    CheckBox89.Checked := MDDef.MapNameBelowComposite;
 
@@ -1110,7 +1109,7 @@ begin
       CheckBox93.Checked := MDDef.SonarMapDef.CustomPalette;
    {$EndIf}
 
-   CheckBox94.Checked := MDDef.VegDensityRandomizePoints;
+   //CheckBox94.Checked := MDDef.VegDensityRandomizePoints;
    CheckBox95.Checked := MDDef.AlwaysShowMapCoordinates;
 
    CheckBox96.Checked := MDDef.AvoidTextOverprints;
@@ -1125,7 +1124,7 @@ begin
    CheckBox102.Checked := MDDef.DeleteJP2;
    CheckBox103.Checked := MDDef.ShowPointClouds;
 
-   CheckBox104.Checked := MDDef.VegDensityBuildingPoints;
+   //CheckBox104.Checked := MDDef.VegDensityBuildingPoints;
    CheckBox106.Checked := MDDef.ShowDEMIX;
    CheckBox107.Checked := MDDef.TerrainCatPercentages;
 
@@ -1474,13 +1473,13 @@ begin
    MDDef.MakeOGLMovie := CheckBox85.Checked;
    MDDef.BackupEXEbeforeUpdate := CheckBox86.Checked;
 
-   MDDef.EnableGridNetworkComputing := CheckBox88.Checked;
+   //MDDef.EnableGridNetworkComputing := CheckBox88.Checked;
 
    MDDef.MapNameBelowComposite := CheckBox89.Checked;
 
    MDDef.VegDensityGroundPoints := CheckBox90.Checked;
    MDDef.AssumeNegativeValuesMissing := CheckBox91.Checked;
-   MDDef.VegDensityRandomizePoints := CheckBox94.Checked;
+   //MDDef.VegDensityRandomizePoints := CheckBox94.Checked;
    MDDef.AlwaysShowMapCoordinates := CheckBox95.Checked;
 
    MDDef.AvoidTextOverprints := CheckBox96.Checked;
@@ -1492,7 +1491,7 @@ begin
    MDDef.RotatingEarthOutlines := CheckBox101.Checked;
    MDDef.DeleteJP2 := CheckBox102.Checked;
    MDDef.ShowPointClouds := CheckBox103.Checked;
-   MDDef.VegDensityBuildingPoints := CheckBox104.Checked;
+   //MDDef.VegDensityBuildingPoints := CheckBox104.Checked;
    MDDef.ShowDEMIX := CheckBox106.Checked;
 
    MDDef.TerrainCatPercentages := CheckBox107.Checked;
@@ -1586,7 +1585,7 @@ begin
    CheckEditString(Edit6.Text,MDdef.MercShiftLongLimit);
 
    CheckEditString(Edit8.Text,MDdef.FillHoleRadius);
-   CheckEditString(Edit11.Text,MDDef.JPEGQuality);
+   //CheckEditString(Edit11.Text,MDDef.JPEGQuality);
    //CheckEditString(Edit12.Text,MDDef.DEMIX_full);
 
    //MDDef.DefaultServerIP := Edit13.Text;
@@ -1923,11 +1922,12 @@ begin
 
 end;
 *)
+(*
 procedure TOptionsForm.CheckBox88Click(Sender: TObject);
 begin
    LabelDirectories;
 end;
-
+*)
 
 procedure TOptionsForm.BitBtn25Click(Sender: TObject);
 begin

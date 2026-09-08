@@ -125,7 +125,9 @@ procedure StartCompression(aMessage : shortstring = '');
 var
    petcompressform : Tpetcompressform;
 begin
-    petcompressform  := Tpetcompressform.Create(Application);
+    petcompressform := Tpetcompressform.Create(Application);
+    InsureFormIsOnScreen(petcompressform);
+
     petcompressform.Memo1.Lines.Add(aMessage);
     petcompressform.ShowModal;
 end;

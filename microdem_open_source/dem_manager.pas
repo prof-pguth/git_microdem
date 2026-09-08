@@ -287,8 +287,11 @@ begin
     if ValidDEM(Result) then begin
        SaveGEDTMFamilyDEM(Result,SaveName);  //add EGM2008 code, add MD elevation code for meters, kill ASCII tag 42112
     end
-    else MessageToContinue('At it again; GEDTM download failure');
+    else begin
+       HighlightLineToDebugFile('At it again; GEDTM download failure ' + sfBoundBoxToString(bb,2));
+    end;
 end;
+
 
 function LoadOpenTopographyGlobalDEM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
 //https://portal.opentopography.org/apidocs/#/Public/getGlobalDem
@@ -310,10 +313,7 @@ begin
    until (Files.Count = 1);
    SaveName := DownLoadDir + 'ot_'+ aDEM + '_' + RealToString(bb.YMin,-12,-2) + '_' + RealToString(bb.YMax,-12,-2) + '_' + RealToString(bb.XMin,-12,-2) + '_' + RealToString(bb.xMax,-12,-2) + '.tif';
    RenameFile(Files.Strings[0], SaveName);
-
    OpenNewDEM(SaveName,true);
-   //"C:\Users\pguth\Downloads\appRasterSelectAPIService1783880780324-1914613180.tif"
-
 end;
 
 
