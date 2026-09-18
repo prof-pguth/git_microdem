@@ -2536,6 +2536,11 @@ var
          AParameter('DEMIX','DEMIX_filter2_fName',DEMIX_filter2_fName,'');
          AParameter('DEMIX','DEMIX_MaxTilesInLegend',DEMIX_MaxTilesInLegend,4);
 
+         AParameterShortFloat('DEMIX','GDEMminRes',GDEMminRes,1);
+         AParameterShortFloat('DEMIX','GDEMmaxRes',GDEMmaxRes,6);
+         AParameterShortFloat('DEMIX','HRDEMminRes',HRDEMminRes,2);
+         AParameterShortFloat('DEMIX','HRDEMmaxRes',HRDEMmaxRes,60);
+
          {$IfDef IncludeCoastalDEMs}
              AParameter('DEMIX','MakeCOP_ALOS_diffMaps',MakeCOP_ALOS_diffMaps,false);
              AParameter('DEMIX','MakeCOP_ALOS_Cat_Maps',MakeCOP_ALOS_Cat_Maps,false);

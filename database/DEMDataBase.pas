@@ -202,7 +202,7 @@ type
   tAddDEM = (adPickNearest,adElevDiff,adElevInterp,adElevNearest,adSlope,adElevAllGrids,adDeltaAllGrids,adElevNearestInt,adAvgElevInWindow);
   tdbGraphType = (dbgtN2Dgraph1,dbgtN2Dgraphsimplelines1, dbgtCluster1,dbgtMultiplegraphmatrix1, dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude,dbgtByLongitude2,
      dbgtN2Dgraph2series,dbgtN2DgraphMultSeries,{dgbtN2Dgraph2yaxes,}dbgtPlot1series1,dbgtPlotforsubsamples1,
-     dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield1,dbgtPlotFieldDifference,
+     dbgtN2Dgraphcolorcodetext, dbgtN2DgraphcolorNumericField,dbgtN2DgraphCOLORfield,dbgtPlotFieldDifference,
      dbgtByLatitude2,dbgtN2Dgraph2yaxes1,dbgtPlot,dbgtUnspecified);
 
   tDBSaveOptions = record
@@ -484,6 +484,7 @@ type
         procedure TrimOneStringField(SelectedColumn : shortstring);
         procedure TrimAllStringFields;
         procedure LimitFieldDecimals(SelectedColumn : shortstring; NumDec : integer);
+        procedure DeleteUnusedFields;
 
      //export database
         procedure ExportToXML(fName : PathStr);
@@ -514,8 +515,6 @@ type
 
      procedure WriteDisplaySymbology(TheData : tMyData);
      procedure ClearImage;
-
-     procedure DeleteUnusedFields;
 
      procedure PointsForLineAreaDB(AddFirst,AddLast,AddTurns : boolean; DistApart : float64 = -99);
      procedure ExtractPointsFromLineAndAddXYZ;
@@ -2553,7 +2552,7 @@ end;
             Extract := ExtractDBtoCSV(ThinFactor,',');
             PetDBUtils.StringList2CSVtoDB(Extract,fName,true);
             ShowStatus;
-            if (not BatchRun) then begin
+            if (not BatchRun) and (theMapOwner <> Nil) then begin
                if SimplePointFile and (ThinFactor = 1) and (not MyData.Filtered) and AnswerIsYes('Create shape file') then begin
                   SavePointShapeFile(true,fName);
                end;
@@ -2646,6 +2645,8 @@ end;
 
                dbTablef.DEMIX1.Visible := MDDef.ShowDEMIX and IsThisDEMIXdatabase;
                dbTablef.BitBtn24.Visible := dbTablef.DEMIX1.Visible;
+               dbTablef.BitBtn25.Visible := MyData.FieldExists('GRID_SEC') or MyData.FieldExists('GRID_M') or
+                 StrUtils.AnsiContainsText(dbName,'power_law') or StrUtils.AnsiContainsText(dbName,'linear_fit') ;
 
                if MDDef.DBMinimizeOnOpen then dbTablef.WindowState := wsMinimized;
 

@@ -690,6 +690,10 @@ object ThisBaseGraph: TThisBaseGraph
       Caption = 'Paste from clipboard'
       OnClick = Pastefromclipboard1Click
     end
+    object Matchothergraphs1: TMenuItem
+      Caption = 'Match other graphs'
+      OnClick = Matchothergraphs1Click
+    end
     object N3: TMenuItem
       Caption = '-'
     end

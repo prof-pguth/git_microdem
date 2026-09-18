@@ -263,7 +263,7 @@ end;
 {$EndIf}
 
 
-
+(*
 procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
 var
    Areas : tStringList;
@@ -281,7 +281,7 @@ begin
       EndDEMIXProcessing;
    end;
 end;
-
+*)
 
 function LoadDEMIXCandidateDEMs(AreaName : ShortString; OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
 var
@@ -383,6 +383,7 @@ begin
    end;
 end;
 
+(*
 procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
 var
    bb : sfBoundBox;
@@ -403,7 +404,7 @@ begin
    grid := LoadLandcoverForDEMIXarea(AreaName);
    if ValidDEM(grid) and (TileName <> '') then DEMglb[grid].SelectionMap.SubsetAndZoomMapFromGeographicBounds(bb);
 end;
-
+*)
 
 procedure LoadThisDEMIXTile(AreaName : shortstring; TileName : shortstring; OpenMaps : boolean = true);
 var

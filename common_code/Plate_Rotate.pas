@@ -190,8 +190,8 @@ type
 
 var
    PickRotationForm : Plate_Rotate.TPickRotationForm;
-   RotationData : VectorType;
-   PlateRotationMatrix : MatrixType;
+   RotationData : tVector64;
+   PlateRotationMatrix : tMatrix64;
    RotationMa,RotationRate : float64;
 
 

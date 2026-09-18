@@ -19,11 +19,11 @@ unit petdbutils;
       //{$Define RecordCSVParse}
       //{$Define RecordFullCSV}      //major slowdown
       //{$Define RecordProcessCSVLine}  //major slowdown
-      {$Define RecordGPX}
+      //{$Define RecordGPX}
 
       //{$Define RecordDataBaseImage}
       //{$Define RecordOpenDB}
-      {$Define RecordCSVimport}
+      //{$Define RecordCSVimport}
       //{$Define RecordRange}
       //{$Define RecordGetField}
       //{$Define RecordFieldPresent}

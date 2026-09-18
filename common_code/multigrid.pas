@@ -1563,7 +1563,7 @@ begin
                    yf[Band] := z;
                 end;
              end;
-             PetMath.Fit(xf,yf,NumGrids, a,b,siga,sigb,r);
+             PetMath.LinearFit(xf,yf,NumGrids, a,b,siga,sigb,r);
              DEMGlb[R_DEM].SetGridElevation(x,y,sqr(r));
              DEMGlb[Slope_DEM].SetGridElevation(x,y,b);
           end;

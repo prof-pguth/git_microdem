@@ -747,7 +747,6 @@ end;
 initialization
    {$IfDef MessageStartupProblems} MessageToContinue('start compress_form'); {$EndIf}
 finalization
-   {$IfDef RecordCompressionProblems} WriteLineToDebugFile('RecordCompressionProblems active in compress_form'); {$EndIf}
 end.
 
 

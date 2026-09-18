@@ -182,7 +182,7 @@ type
 
          //map operations
             procedure LabelNthPointOnMap(BaseMap : tMapForm; var Bitmap : tMyBitmap; N : int32; Symbol : tDrawingSymbol; SymSize : int32; Color  : tPlatformColor; ReallyLabel : boolean);
-            procedure RotateAndPlotSingleRecord(MapForm : tMapDraw; Bitmap : tMyBitmap; RecNum : int32;  RotationMatrix : MatrixType);
+            procedure RotateAndPlotSingleRecord(MapForm : tMapDraw; Bitmap : tMyBitmap; RecNum : int32;  RotationMatrix : tMatrix64);
             function PlotSingleRecordMap(MapForm : tMapDraw; var Bitmap : tMyBitmap; RecNum : int32) : boolean;  {$IfDef InlinePlots} inline; {$EndIf}
             procedure PlotBoundingBox(MapForm : tMapForm);
             procedure PlotPointCloudOnMap(BaseMap : tMapForm; var Bitmap : tMyBitmap; MinAreaZ : float64 = 99; MaxAreaZ : float64 = -99; SymSize : integer = 2);
@@ -194,7 +194,7 @@ type
             procedure ScreenLocationOfPointRecordGraph(GraphForm : TThisBaseGraph; RecNo : int32; var xpic,ypic : int32);
 
          {$IfDef VCL}
-            procedure RotateToNewShapefile(fName : PathStr;  RotationMatrix : MatrixType);
+            procedure RotateToNewShapefile(fName : PathStr;  RotationMatrix : tMatrix64);
          {$EndIf}
    end;
 
@@ -837,11 +837,11 @@ begin
 end;
 
 
-procedure tShapeFile.RotateAndPlotSingleRecord(MapForm : tMapDraw; Bitmap : tMyBitmap; RecNum : int32; RotationMatrix : MatrixType);  //RotationData : VectorType);
+procedure tShapeFile.RotateAndPlotSingleRecord(MapForm : tMapDraw; Bitmap : tMyBitmap; RecNum : int32; RotationMatrix : tMatrix64);
 var
    PolyLinePoints  : ^tPolyLinePts;
    i,j,k,EndPt,NumPts   : int32;
-   InitVec,FinalVec : VectorType;
+   InitVec,FinalVec : tVector64;
    Lat,Long : float64;
 begin
    {$If Defined(RecordShapeFileLineProblems) or Defined(RecordRotation)} writeLineToDebugFile('PlotSingeRecord RecNo: '+ IntToStr(RecNum)); {$EndIf}
@@ -873,10 +873,10 @@ begin
   end;
 end;
 
-procedure tShapeFile.RotateToNewShapefile(fName : PathStr;  RotationMatrix : MatrixType);
+procedure tShapeFile.RotateToNewShapefile(fName : PathStr;  RotationMatrix : tMatrix64);
 var
    i,j,k   : int32;
-   InitVec,FinalVec : VectorType;
+   InitVec,FinalVec : tVector64;
    Lat,Long : float64;
    fName2 : PathStr;
    ShapeFileCreator : tShapeFileCreation;

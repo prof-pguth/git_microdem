@@ -555,7 +555,7 @@ begin
           end;
 
           TStr := MyData.GetFieldByNameAsString(dbOpts.LinkFieldThisDB);
-          if (TStr <> '') and FindValidJoin(TStr) then begin
+          if FindValidJoin(TStr) then begin
              {$IfDef RecordCopyFieldLinkDB} WriteLineToDebugFile('LinkField=' + dbOpts.LinkFieldThisDB + '/' + dbOpts.LinkFieldOtherDB  + ' value=' + Tstr); {$EndIf}
              MyData.Edit;
              for j := 0 to pred(TheFields.Count) do begin

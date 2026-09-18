@@ -122,15 +122,15 @@ function AzimuthToDirection(Azimuth : float64) : ShortString;
 
 function CompassAngleToRadians(Angle : float64) : float64; inline; {compass angles run clockwise from north; the computer uses radians running counterclockwise from east   }
 
-procedure PlaneEquationFromPointAndNormal(x1,y1,z1 : float32; Normal: VectorType;  var XC,YC,ZC,Constant : float32);
+procedure PlaneEquationFromPointAndNormal(x1,y1,z1 : float32; Normal: tVector64;  var XC,YC,ZC,Constant : float32);
 procedure PlaneEquationFromThreePoints(var x1,y1,z1,x2,y2,z2,x3,y3,z3 : float32;  var XC,YC,ZC,Constant : float32);
-procedure FindVectorNormalToPlane(DipDirect,Dip : float64; var N : VectorType);
+procedure FindVectorNormalToPlane(DipDirect,Dip : float64; var N : tVector64);
 function NearLine(const Target, Point1, Point2 : TPoint) : boolean;
 
-procedure LatLongToCartesian(Lat,Long : float64; var A : VectorType);  {converts lat-long pair (in radians) to cartesian vector; conventions from p.110, Cox & Hart}
-procedure CartesianToLatLong(A : VectorType; var Lat,Long : float64);  {converts cartesian vector representing point into lat-long pair; conventions p.110, Cox & Hart} {supplements arc tan to get correct quadrant}
-procedure RotatePoint(R : MatrixType; var Init,Final : VectorType);
-procedure RotationMatrix(PLat,PLong,Omega : float64; var R : MatrixType);  {calculate Rotation Matrix from pole and angular rotation, all in radians}
+procedure LatLongToCartesian(Lat,Long : float64; var A : tVector64);  {converts lat-long pair (in radians) to cartesian vector; conventions from p.110, Cox & Hart}
+procedure CartesianToLatLong(A : tVector64; var Lat,Long : float64);  {converts cartesian vector representing point into lat-long pair; conventions p.110, Cox & Hart} {supplements arc tan to get correct quadrant}
+procedure RotatePoint(R : tMatrix64; var Init,Final : tVector64);
+procedure RotationMatrix(PLat,PLong,Omega : float64; var R : tMatrix64);  {calculate Rotation Matrix from pole and angular rotation, all in radians}
 
 function ZeroSeconds(Value : float64) : boolean;
 
@@ -159,7 +159,7 @@ function ShortMomentResultsToString(MomentVar : tMomentVar) : shortstring;
 procedure VarCovar(var x,y : array of float32; NPts : integer; var correlation,covar : float64);
 procedure NewVarCovar(var x,y : array of float32; NPts : integer; var correlation,covar,Mean1,Mean2,StdDev1,StdDev2 : float64);
 
-procedure Fit(var x,y : array of float32; ndata : integer; var a,b,siga,sigb,r : float64);
+procedure LinearFit(var x,y : array of float32; ndata : integer; var a,b,siga,sigb,r : float64);
 procedure PowerFit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
 
 function VectorAverage(Num : integer; var Readings : farray; var Mag : float64) : float64;
@@ -1127,6 +1127,16 @@ END {NearLine};
 
 
 function GetTickInt(PixelsHigh,LabelSpacing : integer; ElevRange : float64) : float64;
+var
+   Trial,Wanted : float64;
+
+   function CheckSpacing(Trial,Tick : float64) : boolean;
+   begin
+      Result := Trial < Tick;
+      if Result then Wanted := Tick;
+   end;
+
+
 begin
    Result := 0.00001;
    if (PixelsHigh / (ElevRange) * Result) < LabelSpacing then Result := 0.0001;
@@ -1156,6 +1166,40 @@ begin
    if (PixelsHigh / (ElevRange) * Result) < LabelSpacing then Result := 250000;
    if (PixelsHigh / (ElevRange) * Result) < LabelSpacing then Result := 500000;
    if (PixelsHigh / (ElevRange) * Result) < LabelSpacing then Result := 1000000;
+
+   Trial := ElevRange / 5;
+   if CheckSpacing(Trial,0.0001) then Result := Wanted
+   else if  CheckSpacing(Trial,0.001) then Result := Wanted
+   else if  CheckSpacing(Trial,0.0025) then Result := Wanted
+   else if  CheckSpacing(Trial,0.005) then Result := Wanted
+   else if  CheckSpacing(Trial,0.01) then Result := Wanted
+   else if  CheckSpacing(Trial,0.025) then Result := Wanted
+   else if  CheckSpacing(Trial,0.05) then Result := Wanted
+   else if  CheckSpacing(Trial,0.1) then Result := Wanted
+   else if  CheckSpacing(Trial,0.2) then Result := Wanted
+   else if  CheckSpacing(Trial,0.5) then Result := Wanted
+   else if  CheckSpacing(Trial,1) then Result := Wanted
+   else if  CheckSpacing(Trial,2) then Result := Wanted
+   else if  CheckSpacing(Trial,5) then Result := Wanted
+   else if  CheckSpacing(Trial,10) then Result := Wanted
+   else if  CheckSpacing(Trial,25) then Result := Wanted
+   else if  CheckSpacing(Trial,50) then Result := Wanted
+   else if  CheckSpacing(Trial,100) then Result := Wanted
+   else if  CheckSpacing(Trial,200) then Result := Wanted
+   else if  CheckSpacing(Trial,500) then Result := Wanted
+   else if  CheckSpacing(Trial,1000) then Result := Wanted
+   else if  CheckSpacing(Trial,2000) then Result := Wanted
+   else if  CheckSpacing(Trial,5000) then Result := Wanted
+   else if  CheckSpacing(Trial,10000) then Result := Wanted
+   else if  CheckSpacing(Trial,25000) then Result := Wanted
+   else if  CheckSpacing(Trial,50000) then Result := Wanted
+   else if  CheckSpacing(Trial,50000) then Result := Wanted
+   else if  CheckSpacing(Trial,100000) then Result := Wanted
+   else if  CheckSpacing(Trial,250000) then Result := Wanted
+   else if  CheckSpacing(Trial,500000) then Result := Wanted
+   else if  CheckSpacing(Trial,1000000) then Result := Wanted
+
+
 end;
 
 
@@ -1206,12 +1250,12 @@ begin
       x[i] := ln(x[i]);
       y[i] := ln(y[i]);
    end;
-   Fit(x,y,ndata,a,b,siga,sigb,r);
+   LinearFit(x,y,ndata,a,b,siga,sigb,r);
    a := exp(a);
 end;
 
 
-procedure fit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
+procedure LinearFit(var x,y : array of float32; ndata : integer; VAR a,b,siga,sigb,r : float64);
 // from Press and others, Numerical Recipes, 14.2
 // a is intercept, b is slope, with respective goodness-of-fit
 VAR
@@ -1382,7 +1426,7 @@ begin
 end {proc PlaneEquationFromThreePoints};
 
 
-procedure PlaneEquationFromPointAndNormal(x1,y1,z1 : float32; Normal: VectorType; var XC,YC,ZC,Constant : float32);
+procedure PlaneEquationFromPointAndNormal(x1,y1,z1 : float32; Normal: tVector64; var XC,YC,ZC,Constant : float32);
 begin
    XC := Normal[3];
    YC := Normal[2];
@@ -1391,7 +1435,7 @@ begin
 end {proc PlaneEquationFromThreePoints};
 
 
-procedure FindVectorNormalToPlane(DipDirect,Dip : float64; var N : VectorType);
+procedure FindVectorNormalToPlane(DipDirect,Dip : float64; var N : tVector64);
 begin
    N[1] := cosDeg(180-Dip);
    N[2] := -cosDeg(DipDirect) * sinDeg(Dip);
@@ -1764,7 +1808,7 @@ begin
 end;
 
 
-procedure LatLongToCartesian(Lat,Long : float64; var A : VectorType);
+procedure LatLongToCartesian(Lat,Long : float64; var A : tVector64);
 {converts lat-long pair to cartesian vector representing the conventions from p.110, Cox & Hart}
 begin
    A[1] := cos(Lat) * cos(Long);
@@ -1773,7 +1817,7 @@ begin
 end;
 
 
-procedure CartesianToLatLong(A : VectorType; var Lat,Long : float64);
+procedure CartesianToLatLong(A : tVector64; var Lat,Long : float64);
 {converts cartesian vector representing point into lat-long pair conventions p.110, Cox & Hart  supplements arc tan to get correct quadrant}
 begin
    Lat := Math.arcsin(A[3]);
@@ -1792,7 +1836,7 @@ begin
 end;
 
 
-procedure RotatePoint(R : MatrixType; var Init,Final : VectorType);
+procedure RotatePoint(R : tMatrix64; var Init,Final : tVector64);
 var
    j,k : integer;
 begin
@@ -1803,11 +1847,11 @@ begin
 end;
 
 
-procedure RotationMatrix(PLat,PLong,Omega : float64; var R : MatrixType);
+procedure RotationMatrix(PLat,PLong,Omega : float64; var R : tMatrix64);
 {calculate Rotation Matrix from pole and angular rotation, all in radians}
 var
    i,j : integer;
-   E   : VectorType;
+   E   : tVector64;
    CosOmega,SinOmega : float64;
 begin
    {$IfDef RecordMatrixOps} WriteLineToDebugFile('RotationMatrix for lat=' + RealToString(Plat,-8,-4) + ' long=' + RealToString(Plong,-8,-4) + ' omega=' + RealToString(Omega,-8,-4)); {$EndIf}

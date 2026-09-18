@@ -772,8 +772,6 @@ end;
 
 initialization
 finalization
-  {$IfDef FFTGraphProblems} WriteLineToDebugFile('FFTGraphProblems active in petfouri'); {$EndIf}
-  {$IfDef MemProblems} WriteLineToDebugFile('MEMProblems active in petfouri'); {$EndIf}
 end.
 
 

@@ -2923,6 +2923,10 @@ type
        LOSMinPitch : float32;
        LOSMaxPitch : float32;
 
+       GDEMminRes,GDEMmaxRes,
+       HRDEMminRes,HRDEMmaxRes : float32;
+
+
        TerrainProfileColor,
        LOSConnectionColor,
        MaskedAirspaceColor,
@@ -2997,7 +3001,7 @@ type
 
 type
    (*
-   tNormal  = array[0..MaxElevArraySize] of VectorType32;  {runs S->N}
+   tNormal  = array[0..MaxElevArraySize] of tVector32;  {runs S->N}
    tNormalPointer = ^tNormal;
    tNormals = array[0..MaxColsInRAM] of tNormalPointer;
    tNormalsPointer = ^tNormals;
@@ -3036,7 +3040,7 @@ type
    tSSOvars = record
       AvgElev,AvgSlope,MaxSlope,s1s2,s2s3,Shape,Strength,StdDevSlope,StdDevElev,ElevRange,QueensAspect,RoughnessFactor,AvgAspect,AspectStrength  : float64;
       x1sq,y1sq,z1sq : float64;
-      TheDips,TheDipDirs : VectorType;
+      TheDips,TheDipDirs : tVector64;
       NumPts,NumMissing,AspPts : Integer;
       V : tTrendVector;
    end;

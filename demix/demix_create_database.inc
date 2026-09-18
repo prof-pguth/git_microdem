@@ -93,9 +93,7 @@ var
    Area,BaseFilter,TStr,theFilter,TileStats : shortstring;
    i,j,Thin,DEMthin : integer;
    AvgSlope : array[1..10] of float64;
-   //RefALOS_DSM,RefALOS_DTM,AlosName,
-   fName{,RefDSMName,RefDTMName,CopNAME,FathomName,cName,tName} : PathStr;
-   //COP,ALOS,FATHOM,GEDTM,RFDSM_ALOS,RFDTM_ALOS,RFDSM_SRTM,RFDTM_SRTM,RFDSM_COP,RFDTM_COP : integer;
+   fName : PathStr;
 
        function TryOpenDEM(DEM : shortString; TileName : PathStr) : integer;
        var
@@ -110,13 +108,10 @@ var
    DEMs : array[1..10] of integer;
 begin {procedure MakeCSVforGDEMslopes}
   {$IfDef TrackAverageStats} WriteLineToDebugFile('MakeCSVforGDEMslopes in'); {$EndIf}
-SetColorForProcessing;
-WantShowProgress := false;
-HeavyDutyProcessing := true;
-wmDEM.SetPanelText(0,TimeToStr(Now) + ' started',true);
-    Results := tStringList.Create;
-    //                                                                            1   2    3       4      5          6          7          8          9        10
-    Results.Add('AREA,DEMIX_TILE,LAT,LONG,AVG_SLOPE,BARREN_PC,FOREST_PC,GRID_SEC,COP,ALOS,FATHOM,GEDTM,RFDSM_ALOS,RFDTM_ALOS,RFDSM_SRTM,RFDTM_SRTM,RFDSM_COP,RFDTM_COP');
+    SetColorForProcessing;
+    WantShowProgress := false;
+    HeavyDutyProcessing := true;
+    wmDEM.SetPanelText(0,TimeToStr(Now) + ' started',true);
 
     theFilter := AddAndIfNeeded(BaseFilter) + 'REF_DEM=' + QuotedStr('DTM') + ' AND DEM_PAIR=' + QuotedStr('YES');
     GISdb[db].ApplyGISFilter(theFilter);
@@ -131,9 +126,7 @@ wmDEM.SetPanelText(0,TimeToStr(Now) + ' started',true);
        DSM_TILE := GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME');
        wmDEM.SetPanelText(1,IntToStr(i) + '/' + IntToStr(TheTiles.Count) + ' ' + Area,true);
        TileStats := Area + ',' + DEMIX_TILE + ',' + GISdb[DB].MyData.GetFieldByNameAsString('LAT') + ',' + GISdb[db].MyData.GetFieldByNameAsString('LONG') + ',' +
-                    GISdb[db].MyData.GetFieldByNameAsString('AVG_SLOPE') + ',' +
-                    GISdb[db].MyData.GetFieldByNameAsString('BARREN_PC') + ',' +
-                    GISdb[db].MyData.GetFieldByNameAsString('FOREST_PC');
+                    CommonTileStats(db);
        DEMs[1] := TryOpenDEM('cop',DEMIX_TILE);
        DEMs[2] := TryOpenDEM('alos',DEMIX_TILE);
        DEMs[3] := TryOpenDEM('fathom',DEMIX_TILE);
@@ -178,24 +171,166 @@ wmDEM.SetPanelText(0,TimeToStr(Now) + ' started',true);
 end;
 
 
+procedure MakeCSVforGDEM_average_tile_slope(DBonTable : integer);
+var
+   Areas,Results,Tiles : tStringList;
+   AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
+   aLine : array[1..6] of shortstring;
+   DEMs : array[1..6] of integer;
+   i,j,DEM,Thin : integer;
+   AllValid : boolean;
+   RefALOS_DSM,RefALOS_DTM,AlosName,BaseDir,CSVdir,
+   fName,RefDSMName,RefDTMName,CopNAME,FathomName,cName,tName : PathStr;
+
+          procedure TryOpening(DEM : integer; fName : PathStr);
+          begin
+             if FileExists(fName) then begin
+                DEMs[DEM] := OpenNewDEM(fName,false);
+             end
+             else AllValid := false;
+             if Not ValidDEM(DEMs[DEM]) then AllValid := false;
+          end;
+
+   procedure AddAThinLevel(thin : integer);
+   var
+      DEM,ThinDEM,aDEM : integer;
+      Mean,Std : float32;
+   begin
+      aLine[thin] := aline[thin] + ',' + IntToStr(Thin);
+      for DEM := 1 to 5 do begin
+          aDEM := DEMs[DEM];
+          if (thin = 1) then begin
+             DEMglb[aDEM].GetSlopeMeanStd(DEMglb[aDEM].FullDEMGridLimits,Mean,Std);
+             aLine[thin] := aline[thin] + ',' + RealToString(Mean,-8,-2);
+          end
+          else begin
+              ThinDEM := DEMglb[aDEM].ThinThisDEM(false,'',Thin,true);
+              DEMglb[ThinDEM].GetSlopeMeanStd(DEMglb[ThinDEM].FullDEMGridLimits,Mean,Std);
+              aLine[thin] := aLine[thin] + ',' + RealToString(Mean,-8,-2);
+              CloseSingleDEM(ThinDEM);
+          end;
+      end;
+   end;
+
+
+begin
+  {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} HighlightLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM in ' + GISdb[dbOnTable].dbName); {$EndIf}
+   try
+       SetColorForProcessing;
+       WantShowProgress := false;
+       HeavyDutyProcessing := true;
+       if (MDDef.DEMIX_BaseDir = '') then MDDef.DEMIX_BaseDir := ExtractFilePath(GISdb[DBonTable].dbFullName);
+       BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
+       GISdb[DBonTable].ApplyGISFilter(BaseFilter );
+       Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
+       //BaseDir := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_gdem_compare_dsm_dtm\';
+       CSVdir := ExtractFilePath(GISdb[dbOnTable].DBfullName) + 'aa_gdem_slope_by_dem_resolution\';
+       SafeMakeDir(CSVDir);
+       for I := 0 to pred(Areas.Count) do begin
+          AreaName := Areas.Strings[i];
+          fName := CSVdir + AreaName + '_gdem_compare_tile_slope.csv';
+          if FileExists(fName) then begin
+
+          end
+          else begin
+
+            TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
+            wmDEM.SetPanelText(1,TStr,true);
+            Results := tStringList.Create;
+            Results.Add('DEMIX_TILE,AREA,COUNTRY,LAT,LONG,CRITERION,AVG_SLOPE,BARREN_PC,FOREST_PC,GRID_SEC,REF_DSM,REF_DTM,COP,ALOS,FATHOM');
+
+            theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
+            GISdb[DBonTable].ApplyGISFilter(theFilter);
+            {$IfDef RecordDTM_DSM} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName + '  filter=' + theFilter + '  tiles=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
+            j := 0;
+            while not GISdb[DBonTable].MyData.eof do begin
+                inc(j);
+                wmDEM.SetPanelText(0,TimeToStr(Now),true);
+                wmDEM.SetPanelText(2,IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' ' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME'),true);
+                cname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + RefTestStr +'\';
+                RefDSMName := cName + 'ref_dsm_cop.tif';
+                if not FileExists(RefDSMname) then RefDSMName := cName + 'ref_dsm_srtm.tif';;
+
+                RefALOS_DSM := cName + 'ref_dsm_alos.tif';
+
+                cname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + RefTestStr +'\';
+                RefDTMName := cName + 'ref_dtm_cop.tif';
+                if not FileExists(RefDTMname) then RefDTMName := cName + 'ref_dtm_srtm.tif';;
+                RefALOS_DTM := cName + 'ref_dtm_alos.tif';
+
+                CopName := cName + 'cop.tif';
+                ALOSname := CName + 'alos.tif';
+                Fathomname := cName + 'fathom.tif';
+
+                AllValid := true;
+                TryOpening(1,RefDSMName);
+                TryOpening(2,RefDTMName);
+                TryOpening(3,CopName);
+                TryOpening(4,alosName);
+                TryOpening(5,FathomName);
+
+                if AllValid then begin //loop processes a tile
+                    for thin := 1 to 6 do begin
+                       aLine[thin] := GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + ',' + AreaName + ',' +  GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + ',' +
+                           GISdb[DBonTable].MyData.GetFieldByNameAsString('LAT') + ',' +
+                           GISdb[DBonTable].MyData.GetFieldByNameAsString('LONG') + ',RES_SLOPE,' + CommonTileStats(DBonTable);
+                    end;
+                    for thin := 1 to 6 do begin
+                        AddAThinLevel(thin);
+                    end;
+                    for thin := 1 to 6 do begin
+                       Results.Add(aline[thin]);
+                       aline[thin] := '';
+                    end;
+                end
+                else begin
+                   {$If Defined(RecordDTM_DSM)} WriteLineToDebugFile('MissingDEMs, ' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME')); {$EndIf}
+                end;
+
+                for DEM := 1 to 5 do begin
+                   CloseSingleDEM(DEMS[DEM]);
+                end;
+                GISdb[DBonTable].MyData.Next;
+             end {while};
+             Results.SaveToFile(fName);
+             Results.Destroy;
+          end;
+       end {for i};
+   finally
+       wmDEM.ClearStatusBarPanelText;
+       GISdb[DBonTable].ClearGISFilter;
+       SetColorForWaiting;
+       ShowDefaultCursor;
+       HeavyDutyProcessing := false;
+   end;
+   {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} WriteLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM out, saved ' + fName); {$EndIf}
+end;
+
 
 procedure MakeCSVforGDEMcompareDSMtoDTM(DBonTable : integer);
 var
-   Areas,Results : tStringList;
+   Areas,Results,Tiles : tStringList;
    AreaName,BaseFilter,TStr,theFilter,TileStats : shortstring;
+   Success,Failures,
    i,j : integer;
    RefALOS_DSM,RefALOS_DTM,AlosName,BaseDir,
    fName,RefDSMName,RefDTMName,CopNAME,FathomName,cName,tName : PathStr;
 begin
   {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} HighlightLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM in ' + GISdb[dbOnTable].dbName); {$EndIf}
+  if not (GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM')) then begin
+      if AnswerIsYes('DB requires fields DEM_PAIR and REF_DEM; add now') then IdentifyDSM_DTMpair(DBonTable)
+      else exit;
+   end;
+   try
        SetColorForProcessing;
        WantShowProgress := false;
        HeavyDutyProcessing := true;
+       if (MDDef.DEMIX_BaseDir = '') then MDDef.DEMIX_BaseDir := ExtractFilePath(GISdb[DBonTable].dbFullName);
        BaseFilter := 'DEM_PAIR=' + QuotedStr('YES') + ' AND REF_DEM=' + QuotedStr('DTM') ;
        GISdb[DBonTable].ApplyGISFilter(BaseFilter );
        Areas := GISdb[DBonTable].MyData.ListUniqueEntriesInDB('AREA');
        BaseDir := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'aa_gdem_compare_dsm_dtm\';
-       SafeMakeDir(fName);
+       //SafeMakeDir(fName);
        for I := 0 to pred(Areas.Count) do begin
           AreaName := Areas.Strings[i];
           TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
@@ -209,35 +344,33 @@ begin
               theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
               {$IfDef RecordDTM_DSM} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName + '  filter=' + theFilter); {$EndIf}
               GISdb[DBonTable].ApplyGISFilter(theFilter);
+              Success := 0;
+              Failures := 0;
               j := 0;
               while not GISdb[DBonTable].MyData.eof do begin
-                  wmDEM.SetPanelText(0,TimeToStr(Now),true);
                   inc(j);
-                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
-                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME');
-                  if UpperCase(copy(tname,1,3)) <> UpperCase(cName) then tName := cname + tName;
-                  RefDSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'ref_dsm_cop.tif';
-                  if not FileExists(RefDSMname) then RefDSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'ref_dsm_srtm.tif';
-                  RefALOS_DSM := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'ref_dsm_alos.tif';
+                  wmDEM.SetPanelText(0,TimeToStr(Now),true);
+                  cname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + RefTestStr +'\';
+                  RefDSMName := cName + 'ref_dsm_cop.tif';
+                  if not FileExists(RefDSMname) then RefDSMName := cName + 'ref_dsm_srtm.tif';;
 
-                  cname := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY') + '_' ;
-                  tName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME');
-                  if UpperCase(copy(tname,1,3)) <> UpperCase(cName) then tName := cname + tName;
-                  RefDTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'ref_dtm_cop.tif';
-                  if not FileExists(RefDTMname) then RefDTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'ref_dtm_srtm.tif';
-                  RefALOS_DTM := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'ref_dtm_alos.tif';
+                  RefALOS_DSM := cName + 'ref_dsm_alos.tif';
 
-                  CopName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'cop.tif';
-                  ALOSname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'alos.tif';
-                  Fathomname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + tName + RefTestStr +'\' + 'fathom.tif';
+                  cname := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + RefTestStr +'\';
+                  RefDTMName := cName + 'ref_dtm_cop.tif';
+                  if not FileExists(RefDTMname) then RefDTMName := cName + 'ref_dtm_srtm.tif';;
+                  RefALOS_DTM := cName + 'ref_dtm_alos.tif';
+
+                  CopName := cName + 'cop.tif';
+                  ALOSname := CName + 'alos.tif';
+                  Fathomname := cName + 'fathom.tif';
 
                   if FileExists(RefDSMName) and FileExists(RefDTMname) and FileExists(CopName) then begin
                       TStr := IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(RefDTMname);
                       wmDEM.SetPanelText(2,TStr,true);
+                      inc(Success);
                       {$IfDef RecordDTM_DSM} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
-                      TileStats := RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
-                                   RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
-                                   RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
+                      TileStats := CommonTileStats(dbOnTable);
                       MakeSingleAreaDSMDTMcomparison(false,CopName,RefDSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
                       MakeSingleAreaDSMDTMcomparison(false,Copname,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
                       MakeSingleAreaDSMDTMcomparison(false,FathomName,RefDSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
@@ -247,21 +380,40 @@ begin
                       MakeSingleAreaDSMDTMcomparison(false,ALOSName,RefALOS_DTM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
                   end
                   else begin
-                     MessageToContinue('File missing ' + RefDSMName + '   ' + RefDTMName + '   ' + CopName);
+                     inc(Failures);
+                     TStr := 'Files missing: ';
+                     if not FileExists(RefDSMName) then TStr := TStr + RefDSMName + '  ';
+                     if not FileExists(RefDTMName) then TStr := TStr + RefDTMName + '  ';
+                     if not FileExists(CopName) then TStr := TStr + CopName + '  ';
+                     HighLightLineToDebugFile(TStr);
                   end;
                   GISdb[DBonTable].MyData.Next;
-              end;
+              end {while};
               if (Results <> nil) and (Results.Count > 1) then begin
                  Results.SaveToFile(fName);
                  Results.Destroy;
               end;
+             {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} WriteLineToDebugFile(AreaName + '  good=' + IntToStr(Success) + '  fail=' + IntToStr(Failures)); {$EndIf}
           end;
        end;
+   finally
        wmDEM.ClearStatusBarPanelText;
        GISdb[DBonTable].ClearGISFilter;
        SetColorForWaiting;
+       ShowDefaultCursor;
        HeavyDutyProcessing := false;
+   end;
    {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} WriteLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM out, saved ' + fName); {$EndIf}
+end;
+
+
+procedure ChangeDBtoPrivateVersionForMultithreading(var db : integer);
+var
+   fName : PathStr;
+begin
+   fName := NextFileNumber(MDtempdir,'multithread_working_db_','.dbf');
+   GISdb[db].SaveCurrentDBaseSubset(fName);
+   OpenNumberedGISDataBase(db,fName,false);
 end;
 
 
@@ -270,7 +422,7 @@ procedure MakeCSVforHRDEMComparison(DB : integer);
 var
    Areas,Results : tStringList;
    AreaName,BaseFilter,TStr,theFilter,TileStats,Common,Country,IncomingFilter : shortstring;
-   i,j : integer;
+   i,j,inDB : integer;
    fName,DSMName,DTMName,AreaLock,BaseDir : PathStr;
 begin
    {$IfDef RecordDEMIX} HighLightLineToDebugFile('MakeCSVforHRDEMComparison in ' + GISdb[db].DBName); {$EndIf}
@@ -278,6 +430,7 @@ begin
        IdentifyDSM_DTMpair(DB);
    end;
    if GISdb[db].MyData.FieldExists('DEM_PAIR') and GISdb[db].MyData.FieldExists('REF_DEM') then begin
+       inDB := DB;
        WantShowProgress := false;
        HeavyDutyProcessing := true;
        SetColorForProcessing;
@@ -287,81 +440,85 @@ begin
        Areas := GISdb[db].MyData.ListUniqueEntriesInDB('AREA');
        BaseDir := ExtractFilePath(GISdb[db].DBFullName) + 'aa_hrdem_compare_dsm_dtm\';
        SafeMakeDir(BaseDir);
-       for I := 0 to pred(Areas.Count) do begin
-          AreaName := Areas.Strings[i];
-          fName := BaseDir + AreaName + '_compare_dsm_dtm' + {CurrentTimeForFileName(false) +} '.csv';
-          if FileExists(fName) then begin
-          end
-          else begin
-              //AreaLock := BaseDir + AreaName + '\aa_arealocked.txt';
-              TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
-              wmDEM.SetPanelText(1,TStr,true);
-              {$IfDef RecordDTM_DSM} WriteLineToDebugFile(TStr + '  creating'); {$EndIf}
-              //Areas.SaveToFile(AreaLock);
-              theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
-              GISdb[db].ApplyGISFilter(theFilter);
-              if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
-                  Results := nil;
-                  j := 0;
-                  while not GISdb[db].MyData.eof do begin
-                      wmDEM.SetPanelText(0,TimeToStr(Now),true);
-                      inc(j);
-                      Country := UpperCase(GISdb[db].MyData.GetFieldByNameAsString('COUNTRY'));
-                      (*
-                      if AreaWithMergingFiles(AreaName) then begin
-                         Common := ExtractFilePath(GISdb[db].DBFullName) + AreaName + '\merges\';
-                         DSMName := GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME');
-                         DSMName := Common + DSMName + '\' + RemoveAreaFromTileName(AreaName,DSMName) + '.tif';
+       {$IfDef RecordDEMIX} HighLightLineToDebugFile('Areas=' + IntToStr(Areas.Count)); {$EndIf}
+       if (Areas.Count = 0) then begin
+          MessageToContinue('No areas in ' + GISdb[db].dbName);
+       end
+       else begin
+           ChangeDBtoPrivateVersionForMultithreading(db);
+           for I := pred(Areas.Count) downto 0 do begin
+              AreaName := Areas.Strings[i];
+              fName := BaseDir + AreaName + '_compare_dsm_dtm' + {CurrentTimeForFileName(false) +} '.csv';
+              if FileExists(fName) then Areas.Delete(i);
+           end;
+           for I := 0 to pred(Areas.Count) do begin
+              wmDEM.SetPanelText(0,TimeToStr(Now) + ' HRDEM',true);
+              AreaName := Areas.Strings[i];
+              fName := BaseDir + AreaName + '_compare_dsm_dtm' + '.csv';
+              AreaLock := ExtractFilePath(GISdb[indb].DBFullName) + AreaName + '\aa_arealocked.txt';
+              if not FileExists(AreaLock) then begin
+                Areas.SaveToFile(AreaLock);
+                if not FileExists(fName) then begin
+                  TStr := IntToStr(succ(i)) + '/' + IntToStr(Areas.Count) + ' ' + AreaName;
+                  wmDEM.SetPanelText(1,TStr,true);
+                  theFilter := AddAndIfNeeded(BaseFilter) + 'AREA=' + QuotedStr(AreaName);
+                  {$IfDef RecordDTM_DSM} WriteLineToDebugFile(TStr + '  creating with ' + theFilter); {$EndIf}
+                  GISdb[db].ApplyGISFilter(theFilter);
+                  if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
+                      Results := nil;
+                      j := 0;
+                      while not GISdb[db].MyData.eof do begin
+                          wmDEM.SetPanelText(0,TimeToStr(Now),true);
+                          inc(j);
+                          Country := UpperCase(GISdb[db].MyData.GetFieldByNameAsString('COUNTRY'));
 
-                         DTMName := GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME');
-                         DTMName := Common + DTMName + '\' + RemoveAreaFromTileName(AreaName,DTMName) + '.tif';
-                         {$IfDef RecordDTM_DSM} WriteLineToDebugFile(DSMname + DTMName); {$EndIf}
-                      end
-                      else begin
-                         Common := ExtractFilePath(GISdb[db].DBFullName) + AreaName + '\source\';
-                         DSMName := Common + RemoveCountryFromTileName(GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME')) + '.tif';
-                         DTMName := Common + RemoveCountryFromTileName(GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME')) + '.tif';
-                      end;
-                      *)
-                      Common := ExtractFilePath(GISdb[db].DBFullName) + AreaName + '\wgs_egm\';
-                      DSMName := Common + GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
-                      DTMName := Common + GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
+                          Common := ExtractFilePath(GISdb[inDB].DBFullName) + AreaName + '\wgs_egm\';
+                          DSMName := Common + GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
+                          DTMName := Common + GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
 
-                      TStr := IntToStr(j) + '/' + IntToStr(GISdb[db].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
-                      wmDEM.SetPanelText(2,TStr,true);
-                      {$IfDef RecordDTM_DSM} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
-                      TileStats := RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
-                                   RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
-                                   RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
-                      MakeSingleAreaDSMDTMcomparison(true,DSMname,DTMName,'',AreaName,Country,TileStats,Nil,Results);
-                      GISdb[db].MyData.Next;
-                  end {while};
-                 {$IfDef RecordDTM_DSM} WriteLineToDebugFile('Tiles=' + IntToStr(Results.Count) + '  ' + fName); {$EndIf}
-                 //DeleteFileIfExists(AreaLock);
-                 Results.SaveToFile(fName);
-                 Results.Destroy;
-             end;
-          end;
+                          TStr := IntToStr(j) + '/' + IntToStr(GISdb[db].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
+                          wmDEM.SetPanelText(2,TStr,true);
+                          {$IfDef RecordDTM_DSM} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
+                          (*
+                          TileStats := RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
+                                       RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
+                                       RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
+                          *)
+                          MakeSingleAreaDSMDTMcomparison(true,DSMname,DTMName,'',AreaName,Country,CommonTileStats(db),Nil,Results);
+                          GISdb[db].MyData.Next;
+                      end {while};
+                     {$IfDef RecordDTM_DSM} if Results <> Nil then WriteLineToDebugFile('Tiles=' + IntToStr(Results.Count) + '  ' + fName); {$EndIf}
+                     Results.SaveToFile(fName);
+                     Results.Destroy;
+                  end;
+                  DeleteFileIfExists(AreaLock);
+                //end;
+              end;
+           end;
        end;
+       CloseSingleDB(db);
        wmDEM.ClearStatusBarPanelText;
-       GISdb[db].ApplyGISFilter(IncomingFilter);
+       GISdb[indb].ApplyGISFilter(IncomingFilter);
        SetColorForWaiting;
-       HeavyDutyProcessing := true;
+       HeavyDutyProcessing := false;
+       ShowDefaultCursor;
+       {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforHRDEMComparison out'); {$EndIf}
+     end
    end
    else begin
       MessageToContinue('DB missing required fields DEM_PAIR and REF_DEM');
+      {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforHRDEMComparison fail, missing fields'); {$EndIf}
    end;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('MakeCSVforComparingDSMandDTMbyScale out'); {$EndIf}
 end;
 
-procedure ComputePowerFitForAllTiles(db : integer);
-//input is HRDEM DB for grid spacings in meters; uses only those >= 2 m spacing
-//makes DB with the statistics for a power law fit for the DSM and DTM
+procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
+//input is GDEM or HRDEM DB for grid spacings in meters; uses only those spacings currently
+//makes DB with statistics for a power law fit for the DEMs hard coded into theDEMs string list
 var
-   TileList,Results : tStringList;
-   DTMName,aline,BaseFilter : shortstring;
+   TileList,Results,theDEMs : tStringList;
+   DTMName,aline,BaseFilter,SpacingField,TileField,ResName,TStr,af,aDEM : shortstring;
    fName : PathStr;
-   i : integer;
+   i,j : integer;
 
          procedure OneKindDEM(theDEM : shortString);
          var
@@ -373,39 +530,75 @@ var
             GISdb[db].MyData.First;
             while not GISdb[db].MyData.eof do begin
                inc(n);
-               x[n] := GISdb[db].MyData.GetFieldByNameAsFloat('GRID_M');
+               x[n] := GISdb[db].MyData.GetFieldByNameAsFloat(SpacingField);
                y[n] := GISdb[db].MyData.GetFieldByNameAsFloat(theDEM);
                GISdb[db].MyData.Next;
             end;
-            PowerFit(x,y,n,a,b,siga,sigb,r);
-            aline := aLine + ',' + RealToString(sqr(r),-12,-4) + ',' + RealToString(a,-12,-4) + ',' + RealToString(b,-12,-4);
+            if PowerLaw then begin
+               PowerFit(x,y,n,a,b,siga,sigb,r);
+               aline := aLine + ',' + RealToString(sqr(r),-12,-4) + ',' + RealToString(a,-12,-4) + ',' + RealToString(b,-12,-4);
+            end
+            else begin
+               LinearFit(x,y,n,a,b,siga,sigb,r);
+               aline := aLine + ',' + RealToString(sqr(r),-12,-4) + ',' + RealToString(a,-12,-4) + ',' + RealToString(b,-12,-4);
+            end;
          end;
 
-
 begin {procedure ComputePowerFitForAllTiles}
-   if GISdb[db].MyData.FieldExists('GRID_M') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('DTM_NAME') then begin
+   if (GISdb[db].MyData.FieldExists('GRID_M') or GISdb[db].MyData.FieldExists('GRID_SEC')) then begin
       {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('ComputePowerFitForAllTiles in'); {$EndIf}
-      SetColorForProcessing;
+       theDEMs := CreatePowerLawList(db);
+       if GISdb[db].MyData.FieldExists('GRID_M') then begin
+          SpacingField := 'GRID_M';
+          ResName := 'HRDEM';
+          TileField := 'DTM_NAME';
+          aLine := 'DTM_NAME,DSM_NAME,';
+       end
+       else if GISdb[db].MyData.FieldExists('GRID_SEC') then begin
+          SpacingField := 'GRID_SEC';
+          ResName := 'GDEM';
+          TileField := 'DEMIX_TILE';
+          aLine := 'DEMIX_TILE,';
+       end;
+       aline := aLine + 'AREA,COUNTRY,LAT,LONG,AVG_SLOPE,BARREN_PC,FOREST_PC';
+       if PowerLaw then begin
+          for i := 0 to pred(theDEMs.Count) do begin
+             aLine := aline + ',' + theDEMs.strings[i] + '_R2'  + ',' + theDEMs.strings[i] + '_A'  + ',' + theDEMs.strings[i] + '_B';
+          end;
+       end
+       else begin
+          for i := 0 to pred(theDEMs.Count) do begin
+             aLine := aline + ',' + theDEMs.strings[i] + '_R2'  + ',' + theDEMs.strings[i] + '_B'  + ',' + theDEMs.strings[i] + '_M';
+          end;
+       end;
+       Results := tStringList.Create;
+       Results.Add(aLine);
+
+       SetColorForProcessing;
        BaseFilter := GISdb[db].MyData.Filter;
        GISdb[db].EmpSource.Enabled := false;
-       TileList := GISdb[db].MyData.ListUniqueEntriesInDB('DTM_NAME');
-       Results := tStringList.Create;
-       Results.Add('DTM_NAME,DSM_NAME,AREA,COUNTRY,LAT,LONG,AVG_SLOPE,BARREN_PC,FOREST_PC,DSM_R2,DSM_A,DSM_B,DTM_R2,DTM_A,DTM_B');
+       TileList := GISdb[db].MyData.ListUniqueEntriesInDB(TileField);
        for I := 0 to pred(TileList.Count) do begin
           DTMname := TileList.Strings[i];
           wmDEM.SetPanelText(2,IntToStr(succ(i)) + '/' + IntToStr(TileList.Count) + ' ' + DTMname,true);
-          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(DTMName) + ' AND GRID_M>=2');
+          af := AddAndIfNeeded(BaseFilter) + TileField + '=' + QuotedStr(DTMname) + HRDEMresolutionFilter(db);
+          GISdb[db].ApplyGISFilter(af);
           GISdb[db].EmpSource.Enabled := false;
-          aLine := DTMName + ',' + GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME')  + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('AREA') + ',' + GISdb[db].MyData.GetFieldByNameAsString('COUNTRY') + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('LAT')  + ',' + GISdb[db].MyData.GetFieldByNameAsString('LONG') + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('AVG_SLOPE') + ',' + GISdb[db].MyData.GetFieldByNameAsString('BARREN_PC') + ',' +
-             GISdb[db].MyData.GetFieldByNameAsString('FOREST_PC') ;
-          OneKindDEM('DSM_SLOPE');
-          OneKindDEM('DTM_SLOPE');
+          if (TileField = 'DTM_NAME') then TStr := GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME')  + ','
+          else TStr := '';
+          aLine := DTMName + ',' + TStr + GISdb[db].MyData.GetFieldByNameAsString('AREA') + ',' + GISdb[db].MyData.GetFieldByNameAsString('COUNTRY') + ',' +
+             GISdb[db].MyData.GetFieldByNameAsString('LAT')  + ',' + GISdb[db].MyData.GetFieldByNameAsString('LONG') + ',' + CommonTileStats(db);
+          for j := 0 to pred(theDEMs.Count) do begin
+             aDEM := theDEMs.Strings[j];
+             if not GISdb[db].MyData.FieldExists(aDEM) then aDEM := aDEM + '_SLOPE';   //for the HRDEM case
+             OneKindDEM(aDEM);
+          end;
           Results.Add(aLine);
        end;
-       fName := ExtractFilePath(GISdb[db].dbFullName) + 'slope_power_law_' + CurrentTimeForFileName(false) + '.dbf';
+       theDEMs.Destroy;
+       if PowerLaw then TStr := 'power_law_' else TStr := 'linear_fit_';
+       fName := ExtractFilePath(GISdb[db].dbFullName) + ResName + '_' + TStr + 'DEMIX_DB_4.3_' + CurrentTimeForFileName(false) + '.dbf';
+       Results.SaveToFile(MDtempDir + 'power_law_fit_results.csv');
        StringList2CSVtoDB(Results,fName);
        wmdem.ClearStatusBarPanelText;
        GISdb[db].ApplyGISFilter(BaseFilter);
@@ -413,7 +606,7 @@ begin {procedure ComputePowerFitForAllTiles}
        {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('ComputePowerFitForAllTiles out'); {$EndIf}
    end
    else begin
-      MessageToContinue('Required DSM/DTM fields missing');
+      MessageToContinue('Required spacing field missing');
    end;
 end {procedure ComputePowerFitForAllTiles};
 
@@ -2081,6 +2274,32 @@ begin {FindTilesInAreaForCoast}
       EndDEMIXProcessing;
    end;
    {$IfDef RecordDEMIX} WriteLineToDebugFile('End FindTilesInAreaForCoast'); {$EndIf}
+end;
+
+
+procedure AddCountryColorToDB(DBonTable : integer);
+var
+   OneTile : shortstring;
+   theFields : tStringList;
+   Table : tMyData;
+   i : integer;
+   fName : PathStr;
+begin
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('AddCountryColorToDB'); {$EndIf}
+   fName := DEMIXSettingsDir + 'country_colors.dbf';
+   GISdb[DBonTable].ClearLinkTable(true);
+   theFields := tStringList.Create;
+   theFields.Add('COLOR');
+   GISdb[DBonTable].dbOpts.LinkTableName := fname;
+   GISdb[DBonTable].dbOpts.LinkFieldThisDB := 'COUNTRY';
+   GISdb[DBonTable].dbOpts.LinkFieldOtherDB := 'COUNTRY';
+   GISDb[DBonTable].ClearGISFilter;
+   GISDb[DBonTable].EmpSource.Enabled := false;
+   ShowHourglassCursor;
+   GISdb[DBonTable].LinkSecondaryTable(GISdb[DBonTable].dbOpts.LinkTableName);
+   GISdb[DBonTable].FillFieldsFromJoinedTable(TheFields,true);
+   GISDb[DBonTable].ShowStatus;
+   GISdb[DBonTable].ClearLinkTable(true);
 end;
 
 

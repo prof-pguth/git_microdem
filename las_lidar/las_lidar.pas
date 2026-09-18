@@ -224,7 +224,7 @@ type
    tLidarPoints8 = array[1..MaxLASPtsToRead] of tLidarPointType8;
 
    tSFColorArray  = array[1..3] of float32;
-   tCatSet = set of byte;
+   //tCatSet = set of byte;
    tBigBuffer = array[1..MaxLASPtsToRead*60] of byte;  //found one with 51
 
    tLAS_data = class

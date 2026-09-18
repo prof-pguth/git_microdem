@@ -142,6 +142,7 @@ const
    udMergeCopDTMDSMcompare = 45;
    udCompareAverageSlopesByAlgorithm = 46;
    udInterpolatedFUVs = 47;
+   udMergeGDEMslopeResolution = 48;
 
 
 const
@@ -205,7 +206,6 @@ const
    Ref1_5SecPointStr = '_ref_1.5x1sec_point';
    RefTestStr = '_ref_test_dem';
 
-
 const
    yasBestEval = 0;
    yasSlope = 1;
@@ -256,7 +256,7 @@ var
    function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
-   procedure ComputePowerFitForAllTiles(db : integer);
+   procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDiffDistDB;
@@ -278,19 +278,11 @@ var
 
 
 //inventory and reports
-   //procedure InventoryDEMIXdifferenceStats;
-   //procedure InventoryTestRefDEMs;
-   //procedure VerifyTestDEMcoverages;
    procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
-   //procedure InventoryDEMIX_FUV_Stats;
    procedure DeleteFilesForATestArea;
-   //procedure FindFilesWith42112;
-   //procedure FixFilesWith42112;
    procedure EvalRangeAndStatsByCriterion(DBonTable : integer; aField : shortstring = '');
    procedure InventoryCriteriaEachDEMIXtile(DB : integer);
-   //procedure InventoryPercentileByCriterionEachDEMIXtile(DB : integer);
    procedure FindTilesInAreaForCoast;
-   //procedure PruneMisnamedReferenceDTMs;
    procedure InventoryAreasAndTilesByCountry(DB : integer);
 
 
@@ -454,6 +446,7 @@ function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var Ho
 
 
 procedure MakeCSVforGDEMslopes(DB : integer);
+procedure MakeCSVforGDEM_average_tile_slope(DBonTable : integer);
 function TileNameGDEMorHRDEM(db : integer) : shortstring;
 
 function DEMIX_HRDEM_DB(db : integer) : boolean;
@@ -464,6 +457,31 @@ function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
 
 function HRDEMresolutionFilter(db : integer) : shortstring;
 
+function DEMIX_GetListOfPossibleAreas(AreaName : shortstring) : tStringList;
+function DEMIX_GetListOfTileSubDirsInArea(AreaName : shortstring) : tStringList; //these have '_ref_test_dem' plus the tile name
+function DEMIX_TileNameFromSubDir(Tile : shortstring) : shortstring;
+function DEMIX_GetListOfTileNamesInArea(AreaName : shortstring) : tStringList;
+procedure AreaDirectoryNames(AreaName : shortstring; var AreaDir,WGS_EGMdir,SourceDir,MergesDirFName : PathStr);
+function DSMandDTMtileNameMatch(DSMname,DTMname : shortString) : boolean;
+procedure AddCountryColorToDB(DBonTable : integer);
+function CountryColor(Country : shortstring) : tColor;
+
+function CommonTileStats(DBonTable : integer) : shortstring;
+function CreatePowerLawList(db : integer) : tStringList;
+
+const //Demix Database types
+  ddtNot = 0;
+  ddtTileStats = 1;
+  ddtMixedFUV = 11;
+  ddtDiffDist = 12;
+  ddtHRDEMcompare = 21;
+  ddtHRDEMpowerlaw = 22;
+  ddtGDEMcompare = 31;
+  ddtGDEMsloperes = 32;
+  ddtGDEMpowerlaw = 33;
+  ddtGDEMlinearfit = 34;
+
+function CheckDEMIXdbType(db : integer; var ItsType : byte; WantedTypes : tByteSet; WhatFor : shortString = '') : boolean;
 
 
 implementation
@@ -499,10 +517,155 @@ uses
 {$EndIf}
 
 
+function CheckDEMIXdbType(db : integer; var ItsType : byte; WantedTypes : tByteset; WhatFor : shortString = '') : boolean;
+begin
+   if StrUtils.AnsiContainsText(GISdb[db].dbName,'tile_stats') then ItsType := ddtTileStats
+   else if StrUtils.AnsiContainsText(GISdb[db].dbName,'mixed_fuv') then ItsType := ddtMixedFUV
+   else if StrUtils.AnsiContainsText(GISdb[db].dbName,'diff_dist') then ItsType := ddtDiffDist
+   else if StrUtils.AnsiContainsText(GISdb[db].dbName,'HRDEM') then begin
+      if StrUtils.AnsiContainsText(GISdb[db].dbName,'DSM_DTM_compare') then ItsType := ddtHRDEMcompare
+      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'power_law') then ItsType := ddtHRDEMPowerLaw;
+   end
+   else if StrUtils.AnsiContainsText(GISdb[db].dbName,'GDEM') then begin
+      if StrUtils.AnsiContainsText(GISdb[db].dbName,'DSM_DTM_compare') then ItsType := ddtGDEMcompare
+      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'slope_resolution') then ItsType := ddtGDEMsloperes
+      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'linear_fit') then ItsType := ddtGDEMlinearfit
+      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'power_law') then ItsType := ddtGDEMpowerlaw;
+   end
+   else ItsType := ddtNot;
+   Result := ItsType in WantedTypes;
+   if (not Result) and (WhatFor <> '') then begin
+      //this means that we are just disabling menu choices
+      MessageToContinue(GISdb[db].dbName + ', DB file not appropriate for ' + WhatFor);
+   end;
+end;
+
+
+function CommonTileStats(DBonTable : integer) : shortstring;
+begin
+     Result := RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
+               RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
+               RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
+end;
+
+
+
+function CountryColor(Country : shortstring) : tColor;
+var
+   OneTile : shortstring;
+   theFields : tStringList;
+   Table : tMyData;
+   i : integer;
+   fName : PathStr;
+begin
+   fName := DEMIXSettingsDir + 'country_colors.dbf';
+   Table := tMyData.Create(fName);
+   Table.ApplyFilter ('COUNTRY=' + QuotedStr(Copy(Country,1,2)));
+   if Table.FiltRecsInDB <> 1 then begin
+      Result := clBlack;
+   end
+   else begin
+      Result := Table.TColorFromTable;
+   end;
+   Table.Destroy;
+end;
+
+
+function CreatePowerLawList(db : integer) : tStringList;
+begin
+   Result:= tStringList.Create;
+   if GISdb[db].MyData.FieldExists('GRID_M') or ANSIcontainsText(GISdb[db].dbName,'HRDEM') then begin
+      Result.Add('DSM');
+      Result.Add('DTM');
+   end
+   else if GISdb[db].MyData.FieldExists('GRID_SEC') or ANSIcontainsText(GISdb[db].dbName,'GDEM') then begin
+      Result.Add('COP');
+      Result.Add('ALOS');
+      Result.Add('FATHOM');
+      Result.Add('REF_DTM');
+      Result.Add('REF_DSM');
+   end;
+end;
+
+
+procedure AreaDirectoryNames(AreaName : shortstring; var AreaDir,WGS_EGMdir,SourceDir,MergesDirFName : PathStr);
+begin
+   AreaDir := MDDef.DEMIX_BaseDir + AreaName + '\';
+   WGS_EGMdir := AreaDir + 'wgs_egm\';
+   SourceDir := AreaDir + 'source\';
+   MergesDirFName := AreaDir + 'merges\';
+end;
+
+
+function DEMIX_GetListOfPossibleAreas(AreaName : shortstring) : tStringList;
+var
+   i : integer;
+   sd : shortstring;
+   AreaDir,WGS_EGMdir,SourceDir,MergesDirFName : PathStr;
+begin
+   AreaDirectoryNames(AreaName,AreaDir,WGS_EGMdir,SourceDir,MergesDirFName);
+   Result := GetSubDirsInDirectory(AreaDir);
+   {$IfDef DEMIXdirectories} WriteLineToDebugFile('DEMIX_GetListOfPossibleArea found=' + IntToStr(Result.Count) + ' in ' + AreaDir); {$EndIf};
+   for I := pred(Result.Count) downto 0 do begin
+      sd := UpperCase(Result.Strings[i]);
+
+      if ValidPath(AreaDir + 'SOURCE_REF_TEST_DEM') then begin
+         RMDir(AreaDir + 'SOURCE_REF_TEST_DEM');
+      end;
+
+      if (Copy(sd,1,3) = 'AA_') or (Copy(sd,1,3) = 'DB_') or (sd = 'WGS_EGM') or (sd = 'SOURCE') or (sd = 'MERGES') then begin
+         Result.Delete(i);
+         {$IfDef DEMIXdirectories} WriteLineToDebugFile('******* delete: ' + sd); {$EndIf};
+      end
+      else begin
+         {$IfDef DEMIXdirectories} WriteLineToDebugFile('Keep: ' + sd); {$EndIf};
+      end;
+   end;
+   {$IfDef DEMIXdirectories} WriteLineToDebugFile('DEMIX_GetListOfPossibleArea cleaned=' + IntToStr(Result.Count) + ' in ' + AreaDir); {$EndIf};
+end;
+
+
+function DEMIX_GetListOfTileSubDirsInArea(AreaName : shortstring) : tStringList;
+//these have '_ref_test_dem' plus the tile name
+var
+  i : integer;
+  TiffsThere : tStringList;
+  TileDir : PathStr;
+   AreaDir,WGS_EGMdir,SourceDir,MergesDirFName : PathStr;
+begin
+   AreaDirectoryNames(AreaName,AreaDir,WGS_EGMdir,SourceDir,MergesDirFName);
+   Result := DEMIX_GetListOfPossibleAreas(AreaName);
+   TiffsThere := tStringList.Create;
+   for i := pred(Result.Count) downto 0 do begin
+         TileDir := AreaDir + Result.Strings[i];
+         Petmar.FindMatchingFiles(TileDir,'*.tif',TiffsThere,1);
+         if (TiffsThere.Count = 0) then Result.Delete(i);
+   end;
+   TiffsThere.Destroy;
+end;
+
+
+function DEMIX_TileNameFromSubDir(Tile : shortstring) : shortstring;
+begin
+   Result := StringReplace(Tile,RefTestStr,'',[rfReplaceAll, rfIgnoreCase]);
+end;
+
+
+function DEMIX_GetListOfTileNamesInArea(AreaName : shortstring) : tStringList;
+var
+  i : integer;
+begin
+   Result := DEMIX_GetListOfTileSubDirsInArea(AreaName);
+   for i := pred(Result.Count) downto 0 do begin
+      Result.Strings[i] := DEMIX_TileNameFromSubDir(Result.Strings[i]);
+   end;
+end;
+
+
 function HRDEMresolutionFilter(db : integer) : shortstring;
 begin
-   if GISdb[db].MyData.FieldExists('GRID_M') then Result := ' AND GRID_M >= 2'
-   else Result := '';
+   if GISdb[db].MyData.FieldExists('GRID_M') then Result := ' AND GRID_M >=' + RealToString(MDDef.HRDEMminRes,-5,-2) + ' AND GRID_M <=' + RealToString(MDDef.HRDEMmaxRes,-5,-2)
+   else Result := ' AND GRID_SEC >=' + RealToString(MDDef.GDEMminRes,-5,-2) + ' AND GRID_SEC <=' + RealToString(MDDef.GDEMmaxRes,-5,-2);
 end;
 
 
@@ -698,6 +861,46 @@ function RemoveAreaFromTileName(Area,Tile : shortString) : shortstring;
 begin
    Result := Tile;
    Delete(Result,1,succ(Length(Area)));
+end;
+
+
+function DSMandDTMtileNameMatch(DSMname,DTMname : shortString) : boolean;
+
+    procedure CommonActions(var Name : shortstring);
+    begin
+       Name := UpperCase(Name);
+       name := StringReplace(name,'_','',[rfReplaceAll, rfIgnoreCase]);
+       name := StringReplace(name,'-','',[rfReplaceAll, rfIgnoreCase]);
+       if Copy(Name,1,2) = 'UK' then begin
+          name := StringReplace(name,'NW','',[rfReplaceAll, rfIgnoreCase]);
+          name := StringReplace(name,'NE','',[rfReplaceAll, rfIgnoreCase]);
+          name := StringReplace(name,'SE','',[rfReplaceAll, rfIgnoreCase]);
+          name := StringReplace(name,'SW','',[rfReplaceAll, rfIgnoreCase]);
+          name := StringReplace(name,'FZ','',[rfReplaceAll, rfIgnoreCase]);
+       end;
+       if (Copy(Name,1,2) = 'ES') or  (Copy(Name,1,2) = 'IC')  then begin
+          name := StringReplace(name,'PM2','',[rfReplaceAll, rfIgnoreCase]);
+          name := StringReplace(name,'COB2','',[rfReplaceAll, rfIgnoreCase]);
+          name := StringReplace(name,'HU','H',[rfReplaceAll, rfIgnoreCase]);
+       end;
+    end;
+
+
+begin
+    CommonActions(DSMname);
+    DSMname := StringReplace(DSMname,'DSM','',[rfReplaceAll, rfIgnoreCase]);
+    DSMname := StringReplace(DSMname,'MDS','',[rfReplaceAll, rfIgnoreCase]);
+    DSMname := StringReplace(DSMname,'MNS','',[rfReplaceAll, rfIgnoreCase]);
+    DSMname := StringReplace(DSMname,'DOM','',[rfReplaceAll, rfIgnoreCase]);
+    DSMname := StringReplace(DSMname,'SURFACE3D','',[rfReplaceAll, rfIgnoreCase]);
+
+    CommonActions(DTMname);
+    DTMname := StringReplace(DTMname,'DTM','',[rfReplaceAll, rfIgnoreCase]);
+    DTMname := StringReplace(DTMname,'MDT','',[rfReplaceAll, rfIgnoreCase]);
+    DTMname := StringReplace(DTMname,'MNT','',[rfReplaceAll, rfIgnoreCase]);
+    DTMname := StringReplace(DTMname,'ALTI3D','',[rfReplaceAll, rfIgnoreCase]);
+    Result := DSMname = DTMname;
+    //if not Result then WriteLineToDebugFile(DSMname + '   ' + DTMName);
 end;
 
 

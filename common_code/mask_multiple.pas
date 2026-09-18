@@ -64,7 +64,7 @@ end;
 
 procedure TMask_mult_form.OKBtnClick(Sender: TObject);
 var
-   values : set of byte;
+   values : tByteSet;
    i,x,y,zi : integer;
    z : float32;
    b : byte;

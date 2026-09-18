@@ -141,12 +141,12 @@ object TigerOverlayOptions: TTigerOverlayOptions
     TabFont.Name = 'MS Sans Serif'
     TabFont.Style = []
     TabOrder = 10
-    ExplicitWidth = 326
     object TTabPage
       Left = 4
       Top = 24
       Caption = 'Roads'
       ExplicitWidth = 318
+      ExplicitHeight = 0
       object Label13: TLabel
         Left = 280
         Top = 160
@@ -288,6 +288,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Top = 24
       Caption = 'Boundaries'
       ExplicitWidth = 318
+      ExplicitHeight = 0
       object CheckBox8: TCheckBox
         Left = 16
         Top = 16
@@ -311,6 +312,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Top = 24
       Caption = 'Others'
       ExplicitWidth = 318
+      ExplicitHeight = 0
       object BitBtn9: TBitBtn
         Left = 160
         Top = 16
@@ -401,6 +403,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Top = 24
       Caption = 'Autoscaling'
       ExplicitWidth = 318
+      ExplicitHeight = 0
       object Label1: TLabel
         Left = 0
         Top = 8
@@ -584,6 +587,7 @@ object TigerOverlayOptions: TTigerOverlayOptions
       Top = 24
       Caption = 'Files'
       ExplicitWidth = 318
+      ExplicitHeight = 0
       object Label12: TLabel
         Left = 12
         Top = 21

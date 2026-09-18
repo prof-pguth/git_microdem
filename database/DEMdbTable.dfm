@@ -227,6 +227,15 @@ object dbtablef: Tdbtablef
       TabOrder = 16
       OnClick = BitBtn24Click
     end
+    object BitBtn25: TBitBtn
+      Left = 783
+      Top = 1
+      Width = 75
+      Height = 25
+      Caption = 'DSM/DTM'
+      TabOrder = 17
+      OnClick = BitBtn25Click
+    end
   end
   object Panel3: TPanel
     Left = 0
@@ -1093,29 +1102,6 @@ object dbtablef: Tdbtablef
     object PlotallXYFiles1: TMenuItem
       Caption = 'Plot all XY Files'
       OnClick = PlotallXYFiles1Click
-    end
-    object CompareDSMDTM1: TMenuItem
-      Caption = 'Compare DSM/DTM'
-      OnClick = CompareDSMDTM1Click
-    end
-    object DSMDTMpowerlawforalltiles2: TMenuItem
-      Caption = 'DSM/DTM power law for all tiles'
-      OnClick = DSMDTMpowerlawforalltiles2Click
-    end
-    object DSMDTMcomparison1: TMenuItem
-      Caption = 'Less useful DSM/DTM comparison'
-      object GraphscompringDSMDTMslopes1: TMenuItem
-        Caption = 'Separate graphs comparing DSM/DTM slopes for all tiles'
-        OnClick = GraphscompringDSMDTMslopes1Click
-      end
-      object GraphscompartingDSMDTMdifferencedistribtuions1: TMenuItem
-        Caption = 'Graphs comparing DSM/DTM difference distributions for all tiles'
-        OnClick = GraphscompartingDSMDTMdifferencedistribtuions1Click
-      end
-      object DSMlessthanDTM1: TMenuItem
-        Caption = 'DSM < DTM'
-        OnClick = DSMlessthanDTM1Click
-      end
     end
     object ICESat21: TMenuItem
       Caption = 'ICESat-2'
@@ -2085,6 +2071,32 @@ object dbtablef: Tdbtablef
         OnClick = Recordboundingbox1Click
       end
     end
+    object DTDSMcomparison1: TMenuItem
+      Caption = 'DTM/DSM graph comparison this tile'
+      object OpenHRDEMDSMDTMLandcover1: TMenuItem
+        Caption = 'Open HRDEM DSM+DTM+Landcover'
+        OnClick = OpenHRDEMDSMDTMLandcover1Click
+      end
+      object HRDEMslopeandslopedifferencemaps1: TMenuItem
+        Caption = 'HRDEM slope and slope difference maps'
+        OnClick = HRDEMslopeandslopedifferencemaps1Click
+      end
+      object Graphslopes1: TMenuItem
+        Caption = 'Graph slopes multiple DEMs'
+        OnClick = Graphslopes1Click
+      end
+      object LoadtestandreferenceDEMs2: TMenuItem
+        Caption = 'Load test and reference 1 sec DEMs'
+        OnClick = LoadtestandreferenceDEMs2Click
+      end
+    end
+    object DEMIX2: TMenuItem
+      Caption = 'DEMIX this tile'
+      object LoadtestandreferenceDEMs1: TMenuItem
+        Caption = 'Load test and reference 1 sec DEMs for tile'
+        OnClick = LoadtestandreferenceDEMs1Click
+      end
+    end
     object Calculate1: TMenuItem
       Caption = 'Calculate'
       object Linelength2: TMenuItem
@@ -2174,36 +2186,6 @@ object dbtablef: Tdbtablef
     object Lidarwaveform1: TMenuItem
       Caption = 'LVIS waveform'
       OnClick = Lidarwaveform1Click
-    end
-    object DTDSMcomparison1: TMenuItem
-      Caption = 'DTM/DSM graph comparison this tile'
-      object OpenHRDEMDSMDTMLandcover1: TMenuItem
-        Caption = 'Open HRDEM DSM+DTM+Landcover'
-        OnClick = OpenHRDEMDSMDTMLandcover1Click
-      end
-      object HRDEMslopeandslopedifferencemaps1: TMenuItem
-        Caption = 'HRDEM slope and slope difference maps'
-        OnClick = HRDEMslopeandslopedifferencemaps1Click
-      end
-      object Graphslopes1: TMenuItem
-        Caption = 'Graph slopes multiple DEMs'
-        OnClick = Graphslopes1Click
-      end
-      object LoadtestandreferenceDEMs2: TMenuItem
-        Caption = 'Load test and reference DEMs'
-        OnClick = LoadtestandreferenceDEMs2Click
-      end
-    end
-    object DEMIX2: TMenuItem
-      Caption = 'DEMIX this tile'
-      object LoadtestandreferenceDEMs1: TMenuItem
-        Caption = 'Load test and reference DEMs for tile'
-        OnClick = LoadtestandreferenceDEMs1Click
-      end
-      object CopDEMandLandcoverforthistile1: TMenuItem
-        Caption = 'CopDEM and Land cover for this tile'
-        OnClick = CopDEMandLandcoverforthistile1Click
-      end
     end
     object Insertnewrecordatdistancebearing1: TMenuItem
       Caption = 'Insert new record at distance/bearing'
@@ -3834,18 +3816,26 @@ object dbtablef: Tdbtablef
     object Createnewtables1: TMenuItem
       Caption = 'Create new tables'
       object DTMDSMcomparison1: TMenuItem
-        Caption = 'HRDEM DTM/DSM comparison'
+        Caption = 'HRDEM DTM/DSM comparison (CSV)'
         OnClick = DTMDSMcomparison1Click
       end
       object CompareCopDEMtoDSMDTMandaggregate1: TMenuItem
-        Caption = 'GDEM comparision ref DSM/DTM '
+        Caption = 'GDEM comparision ref DSM/DTM  (CSV)'
         OnClick = CompareCopDEMtoDSMDTMandaggregate1Click
+      end
+      object GDEMaveragetileslopeCSV1: TMenuItem
+        Caption = 'GDEM average tile slope (CSV)'
+        OnClick = GDEMaveragetileslopeCSV1Click
+      end
+      object BothHRDEMandGDEMcomparisons1: TMenuItem
+        Caption = 'Both HRDEM and GDEM comparisons (CSV)'
+        OnClick = BothHRDEMandGDEMcomparisons1Click
       end
       object N60: TMenuItem
         Caption = '-'
       end
       object PowerlawforHRDEMDSMDTM1: TMenuItem
-        Caption = 'Power law for HRDEM DSM/DTM'
+        Caption = 'Power law for tile slope versus resolution'
         OnClick = PowerlawforHRDEMDSMDTM1Click
       end
       object GDEMaveragetileslopebyresolution1: TMenuItem
@@ -3933,6 +3923,10 @@ object dbtablef: Tdbtablef
         Caption = 'Add Koppen'
         OnClick = AddKoppen1Click
       end
+      object Addcountrycolors1: TMenuItem
+        Caption = 'Add country colors'
+        OnClick = Addcountrycolors1Click
+      end
       object N61: TMenuItem
         Caption = '-'
       end
@@ -3950,6 +3944,10 @@ object dbtablef: Tdbtablef
       object Removerowsmissinganyevaluations1: TMenuItem
         Caption = 'Remove rows missing any evaluations'
         OnClick = Removerowsmissinganyevaluations1Click
+      end
+      object Cleanupdoublecountriesintilenames1: TMenuItem
+        Caption = 'Clean up double countries or full area  in tile names'
+        OnClick = Cleanupdoublecountriesintilenames1Click
       end
       object N59: TMenuItem
         Caption = '-'
@@ -3990,6 +3988,10 @@ object dbtablef: Tdbtablef
         Caption = 'Filter for evaluations > 1'
         OnClick = Filterforevaluations11Click
       end
+    end
+    object VerifyDTMDSMpairmatch1: TMenuItem
+      Caption = 'Verify DTM/DSM pair match'
+      OnClick = VerifyDTMDSMpairmatch1Click
     end
     object AssignDEMIXDEMcolors1: TMenuItem
       Caption = 'Assign DEMIX DEM colors'
@@ -4228,6 +4230,63 @@ object dbtablef: Tdbtablef
     object Dividefieldbyconstant2: TMenuItem
       Caption = 'Divide field by constant'
       OnClick = Dividefieldbyconstant2Click
+    end
+  end
+  object DSMDTMpopup: TPopupMenu
+    Left = 832
+    Top = 480
+    object CompareDSMDTM1: TMenuItem
+      Caption = 'Compare DSM/DTM graphs'
+      OnClick = CompareDSMDTM1Click
+    end
+    object DSMDTMpowerlawforalltiles2: TMenuItem
+      Caption = 'Create DB with power law for all tiles and DEMs'
+      OnClick = DSMDTMpowerlawforalltiles2Click
+    end
+    object CreateDBwithlinearfitforalltilesandDEMs1: TMenuItem
+      Caption = 'Create DB with linear fit for all tiles and DEMs'
+      OnClick = CreateDBwithlinearfitforalltilesandDEMs1Click
+    end
+    object Powerlawgraphs1: TMenuItem
+      Caption = 'Graphs DEM resolution versus fit parameters'
+      object ByAVGSLOPE1: TMenuItem
+        Caption = 'By AVG_SLOPE'
+        OnClick = ByAVGSLOPE1Click
+      end
+      object ByBARRENPC1: TMenuItem
+        Caption = 'By BARREN_PC'
+        OnClick = ByBARRENPC1Click
+      end
+      object ByFORESTPC1: TMenuItem
+        Caption = 'By FOREST_PC'
+        OnClick = ByFORESTPC1Click
+      end
+    end
+    object DSMDTMcomparison1: TMenuItem
+      Caption = 'Less useful DSM/DTM comparison'
+      object GraphscompringDSMDTMslopes1: TMenuItem
+        Caption = 'Separate graphs comparing DSM/DTM slopes for all tiles'
+        OnClick = GraphscompringDSMDTMslopes1Click
+      end
+      object GraphscompartingDSMDTMdifferencedistribtuions1: TMenuItem
+        Caption = 'Graphs comparing DSM/DTM difference distributions for all tiles'
+        OnClick = GraphscompartingDSMDTMdifferencedistribtuions1Click
+      end
+      object DSMlessthanDTM1: TMenuItem
+        Caption = 'DSM < DTM'
+        OnClick = DSMlessthanDTM1Click
+      end
+    end
+    object N64: TMenuItem
+      Caption = '-'
+    end
+    object Cleanupdoublecountryintilenames1: TMenuItem
+      Caption = 'Clean up double country in tile names'
+      OnClick = Cleanupdoublecountryintilenames1Click
+    end
+    object Addcountrycolors2: TMenuItem
+      Caption = 'Add country colors'
+      OnClick = Addcountrycolors2Click
     end
   end
 end

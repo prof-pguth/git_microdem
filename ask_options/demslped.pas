@@ -200,8 +200,6 @@ end;
 
 initialization
 finalization
-  {$IfDef SlopeEditProblems} WriteLineToDebugFile('SlopeEditProblems active in demslped'); {$EndIf}
-  {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing dsmslped'); {$EndIf}
 end.
 
 

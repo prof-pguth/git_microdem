@@ -157,7 +157,7 @@ procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
 
 function DEMsinIndex(Index : tDEMIXindexes) : integer;
 
-procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
+//procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
 procedure OpenDEMIXAreaMaps;
 
 procedure GetAreaDEMNames(TestAreaName : shortstring);
@@ -218,7 +218,7 @@ procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
        function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
        function LoadDEMIXCandidateDEMs(AreaName : ShortString;  OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
        procedure LoadThisDEMIXTile(AreaName,TileName : shortstring; OpenMaps : boolean = true);
-       procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
+       //procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
    {$EndIf}
 
 procedure FindDSMslopeLessThanDEM(DBonTable : integer);

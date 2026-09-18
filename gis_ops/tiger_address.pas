@@ -158,7 +158,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordTigerProblems} WriteLineToDebugFile('RecordTigerProblems active in tiger_address'); {$EndIf}
 end.
 
 

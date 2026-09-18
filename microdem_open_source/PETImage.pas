@@ -782,12 +782,7 @@ begin
    {$IfDef RecordBigBitmap} WriteLineToDebugFile('AllGraphsOneImage in'); {$EndIf}
    Findings := tStringList.Create;
    BottomMargin := 45;
-   NumGraphs := 0;
-   for i := pred(WMDEM.MDIChildCount) downto 0 do begin
-      if WMDEM.MDIChildren[i] is TThisBaseGraph then begin
-         inc(NumGraphs);
-      end;
-   end;
+   NumGraphs := NumOpenGraphs;
    ThisGraph := 0;
    for i := pred(WMDEM.MDIChildCount) downto 0 do begin
       if WMDEM.MDIChildren[i] is TThisBaseGraph then begin

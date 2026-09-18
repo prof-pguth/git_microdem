@@ -43,8 +43,8 @@ procedure DipAndStrikeFromThreePoints(x1,y1,z1,x2,y2,z2,x3,y3,z3 : float32; var 
 procedure CalculateThickness(var XUTM1,YUTM1,Elv1,XUTM2,YUTM2,Elv2 : float32;  Dip,DipDir : integer; var Thick : float32);
 procedure ApparentDip(Dip,Strike : integer; Azimuth : integer; var AppDip : float32);  {AppDip = apparent dip in plane of section}
 
-procedure DipStrikeToCartesian(Dip,Strike : float32; var A : VectorType);
-procedure CartesianToDipStrike(A : VectorType; var Dip,Strike : float32);
+procedure DipStrikeToCartesian(Dip,Strike : float32; var A : tVector64);
+procedure CartesianToDipStrike(A : tVector64; var Dip,Strike : float32);
 
 {$IfDef VCL}
    procedure GetStrikeAndDip(Message : shortstring; var DipAndStrike : shortstring; var Dip,Strike,DipDirect : float32);
@@ -60,7 +60,7 @@ uses
   Petmar;
 
 
-procedure DipStrikeToCartesian(Dip,Strike : float32; var A : VectorType);
+procedure DipStrikeToCartesian(Dip,Strike : float32; var A : tVector64);
 {conventions from p.19, Fisher, Lewis, & Embleton}
 var
    Lat,Long : float64;
@@ -71,7 +71,7 @@ begin
 end;
 
 
-procedure CartesianToDipStrike(A : VectorType; var Dip,Strike : float32);
+procedure CartesianToDipStrike(A : tVector64; var Dip,Strike : float32);
 var
    Dip64,Strike64 : float64;
 begin
@@ -95,7 +95,7 @@ end;
 
 
 
-procedure VectorToDipStrike(x : VectorType;  var DipDir,Dip : float64);
+procedure VectorToDipStrike(x : tVector64;  var DipDir,Dip : float64);
 {input is vector normal to plane; procedure returns dip and dip direction of plane}
 var
    Angle : float64;
@@ -112,7 +112,7 @@ begin
 end {proc VectorToDipStrike};
 
 
-procedure VectorToDipStrike32(x : VectorType32;  var DipDir,Dip : float32);
+procedure VectorToDipStrike32(x : tVector32;  var DipDir,Dip : float32);
 {input is vector normal to plane; procedure returns dip and dip direction of plane}
 var
    Angle : float32;
@@ -216,7 +216,7 @@ end;
 procedure DipAndStrikeFromThreePoints(x1,y1,z1,x2,y2,z2, x3,y3,z3 : float32; var DipAndStrike,Slope : string16; var Dip,Strike,DipDir : float32);
 var
    Constant : float32;    {constants for equation of plane}
-   Normal   : VectorType32;
+   Normal   : tVector32;
 begin
    PlaneEquationFromThreePoints(x1,y1,z1,x2,y2,z2,x3,y3,z3,Normal[3],Normal[2],Normal[1],Constant);
    VectorToDipStrike32(Normal,DipDir,Dip);

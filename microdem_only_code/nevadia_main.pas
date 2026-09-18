@@ -545,7 +545,7 @@ type
     //Fixtileswith42114foottag1: TMenuItem;
     N46: TMenuItem;
     OpenmapsforDEMIXtestarea1: TMenuItem;
-    LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
+    //LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
     Mergechannelnetworkevaluations1: TMenuItem;
     Changemode1: TMenuItem;
     DEMIXtilesperareaandcoastalsubset1: TMenuItem;
@@ -679,6 +679,7 @@ type
     CoastalDEMs1: TMenuItem;
     ProcessOpenTopographydownloadsCH1: TMenuItem;
     Both1: TMenuItem;
+    GDEMsloperesolutioncomparisons1: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -1009,7 +1010,7 @@ type
     //procedure Fixtileswith42114foottag1Click(Sender: TObject);
     //procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
-    procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
+    //procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
     procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
     procedure Changemode1Click(Sender: TObject);
     procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
@@ -1103,6 +1104,7 @@ type
     procedure GetlistoffilesFrance1Click(Sender: TObject);
     procedure ProcessOpenTopographydownloadsCH1Click(Sender: TObject);
     procedure Both1Click(Sender: TObject);
+    procedure GDEMsloperesolutioncomparisons1Click(Sender: TObject);
     //procedure Inventory3DEPtiles1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -1744,11 +1746,6 @@ begin
    MakeDEMsummaryTable;
 end;
 
-
-procedure Twmdem.LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
-begin
-   OpenCopDEMandLandcoverForArea;
-end;
 
 procedure Twmdem.Loadimage1Click(Sender: TObject);
 begin
@@ -4191,7 +4188,7 @@ end;
 procedure Twmdem.CloneEXEformultithreading1Click(Sender: TObject);
 begin
    CloneEXE1Click(Sender);
-   DEMIX_UTM_based_processing(udClearAreaLocks);
+   //DEMIX_UTM_based_processing(udClearAreaLocks);
 end;
 
 procedure Twmdem.CloseAlldataandwindows1Click(Sender: TObject);
@@ -4839,6 +4836,11 @@ end;
 procedure Twmdem.GDALWKT1Click(Sender: TObject);
 begin
    GeotiffMetadata(mdGDAL,ExtractFilePath(LastImageName));
+end;
+
+procedure Twmdem.GDEMsloperesolutioncomparisons1Click(Sender: TObject);
+begin
+  DEMIX_UTM_based_processing(udMergeGDEMslopeResolution);
 end;
 
 procedure Twmdem.Geoid1Click(Sender: TObject);

@@ -164,7 +164,7 @@ type
 
        procedure SemiVariogramOptions;
        procedure SemiVariogram(DEMtoUse : integer; GridLimits: tGridLimits);
-       procedure FastFourierTransform(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float64; CloseGraphs : boolean = false);
+       procedure DEM_FFT(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float64; CloseGraphs : boolean = false);
 
        procedure MakeGeomporphDBforPolygons(DBonTable : integer);
        procedure MakeGeomporphDBforPoints(DBonTable : integer);
@@ -1105,7 +1105,7 @@ begin
             inc(Col);
          end;
          if (Npts > 25) then begin
-            fit(x^,y^,NPts,a,b,siga,sigb,r);
+            LinearFit(x^,y^,NPts,a,b,siga,sigb,r);
             r := r*r;
             if (R > MaxR) then begin
                MaxR := R;
@@ -2492,7 +2492,7 @@ begin
    end;
    {$IfDef TrackCovarianceFull} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids call fit, NPTs=' + IntToStr(NPts)); {$EndIf}
    if (NPts = 0) then Result := Nan
-   else fit(xs^,ys^,NPts,a,b,siga,sigb,Result);
+   else LinearFit(xs^,ys^,NPts,a,b,siga,sigb,Result);
    Dispose(xs);
    Dispose(ys);
    {$IfDef TrackCovariance} if TrackFailure then WriteLineToDebugFile('CorrelationTwoGrids out, ' + DEMGlb[dem1].AreaName + '  ' + DEMGlb[dem2].AreaName + '  r=' + RealToString(Result,-8,-4)); {$EndIf}
@@ -3451,9 +3451,7 @@ end;
 {$EndIf}
 
 
-{$IfDef ExGeoStats}
-{$Else}
-procedure FastFourierTransform(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float64; CloseGraphs : boolean = false);
+procedure DEM_FFT(WantedDEM : integer; GridLimits: tGridLimits; var SlopeByColumn,SlopeByRow : float64; CloseGraphs : boolean = false);
 var
    FFTFile : file;
    FName   : PathStr;
@@ -3470,7 +3468,7 @@ var
             Size := 2;
             While (Size < NumRecs) do Size := Size * 2;
             assignFile(FFTfile,FName);
-            rewrite(FFTFile,Size * SizeOf(float64));
+            rewrite(FFTFile,Size * SizeOf(float32));
             for x := 0 to MaxElevArraySize do Vals[x] := 0;
             Good := 0;
             Bad := 0;
@@ -3486,18 +3484,15 @@ var
             Slope := -9999;
             {$IfDef RecordFFT} WriteLineToDebugFile('FFT set up graph (good/bad): ' + IntToStr(Good) + '/' + IntToStr(Bad)); {$EndIf}
             if (Good > 3 * Bad) then begin
-               FFTGraph := TFFTGraph.Create(Application);
-               with FFTGraph,GraphDraw do begin
-                  ACaption :=  'FFT Power spectrum: ' + Title + DEMGlb[WantedDEM].AreaName;
-                  {if (not BaseGraf.CreateGraphHidden) then} FFTGraph.Caption := ACaption;
-                  FFTFileName := FName;
-                  TotalNumberPoints := Size;
-                  Double := false;
-                  PowerTables := false;
-                  ShowGraphProgress := false;
-                  BinTime := AverageSpace;
-                  BinUnits := ' (' + ElevUnitsAre(DEMGlb[WantedDEM].DEMheader.ElevUnits) + ')';
-               end;
+                FFTGraph := TFFTGraph.Create(Application);
+                FFTgraph.ACaption :=  'FFT Power spectrum: ' + Title + DEMGlb[WantedDEM].AreaName;
+                FFTGraph.Caption := FFTgraph.ACaption;
+                FFTGraph.FFTFileName := FName;
+                FFTGraph.TotalNumberPoints := Size;
+                FFTGraph.PowerTables := false;
+                FFTGraph.ShowGraphProgress := false;
+                FFTGraph.BinTime := AverageSpace;
+                FFTGraph.BinUnits := ' (' + ElevUnitsAre(DEMGlb[WantedDEM].DEMheader.ElevUnits) + ')';
                {$IfDef RecordFFT} WriteLineToDebugFile('FFT set up graph initialized'); {$EndIf}
                if FFTGraph.FastFourierTransform then begin
                   {$IfDef RecordFFT} WriteLineToDebugFile('FFTGraph.FastFourierTransform done'); {$EndIf}
@@ -3508,9 +3503,9 @@ var
          end;
 
 
-begin
+begin {DEM_FFT}
    {$IfDef RecordFFT} WriteLineToDebugFile('FastFourierTransform in, WantedDEM=' + IntToStr(WantedDEM) + '  '  + DEMGlb[WantedDEM].AreaName); {$EndIf}
-   fName := MDTempDir + 'tempfft1.zzz';
+   fName := MDTempDir + DEMGlb[WantedDEM].AreaName + 'tempfft1.zzz';
    SetUpAnalysis(succ(GridLimits.XGridHigh-GridLimits.XGridLow));
    y := GridLimits.YGridLow;
    while y < GridLimits.YGridHigh do begin
@@ -3527,7 +3522,7 @@ begin
    end;
    SetUpGraph(' by row ',DEMGlb[WantedDEM].AverageXSpace,SlopeByColumn);
 
-   fName := MDTempDir + 'tempfft2.zzz';
+   fName := MDTempDir + DEMGlb[WantedDEM].AreaName + 'tempfft2.zzz';
    SetUpAnalysis(succ(GridLimits.YGridHigh-GridLimits.YGridLow));
    x := GridLimits.XGridLow;
    while (x < GridLimits.XGridHigh) do  begin
@@ -3544,7 +3539,7 @@ begin
    end;
    SetUpGraph(' by column ',DEMGlb[WantedDEM].AverageYSpace,SlopeByRow);
    {$IfDef RecordFFT} WriteLineToDebugFile('FastFourierTransform out'); {$EndIf}
-end;
+end {DEM_FFT};
 
 
 procedure SemiVariogramOptions;
@@ -3584,8 +3579,6 @@ begin
    DEMGlb[DEMToUse].ComputeVariogram(GridLimits);
    {$IfDef RecordGridScatterGram} WriteLineToDebugFile('SemiVariogram for DEM=' + intToStr(DEMtoUse) + ' out'); {$EndIf}
 end {proc SemiVariogram};
-
-{$EndIf}
 
 
 procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);

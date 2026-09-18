@@ -3575,6 +3575,10 @@ object wmdem: Twmdem
         Caption = 'Both HRDEM/GDEM comparisons'
         OnClick = Both1Click
       end
+      object GDEMsloperesolutioncomparisons1: TMenuItem
+        Caption = 'GDEM slope/resolution  comparisons'
+        OnClick = GDEMsloperesolutioncomparisons1Click
+      end
       object N37: TMenuItem
         Caption = '-'
       end
@@ -3714,7 +3718,6 @@ object wmdem: Twmdem
       end
       object LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem
         Caption = 'Load CopDEM and landcover for test area'
-        OnClick = LoadCpopDEMandLNDCOERFORTEXTAREA1Click
       end
       object Compareconvergenceindexfortestarea1: TMenuItem
         Caption = 'Compare convergence index for test area'

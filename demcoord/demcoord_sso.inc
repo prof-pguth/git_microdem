@@ -201,7 +201,7 @@ var
    SlopeAspectRec : tSlopeAspectRec;
    AspectStats : tAspectStats;
    M,S  : ^tTrendMatrix;
-   s2   : VectorType;
+   s2   : tVector64;
    TStr : shortstring;
 
          function ComputeEigenVectors: boolean;
@@ -455,13 +455,13 @@ end {tDEMDataSet.SSOComputations};
             V : tTrendVector;
             M,S,tm  : ^tTrendMatrix;
             TStr : shortString;
-            TheDipDirs : VectorType;
+            TheDipDirs : tVector64;
 
 
                   procedure PerformPointComputations(aCol,aRow : integer);
                   var
                      j,k : integer;
-                     s2 : VectorType;
+                     s2 : tVector64;
                      SlopAsp : tSlopeAspectRec;
                   begin
                      if GetSlopeAndAspect(MDDef.SlopeCompute,aCol,aRow,SlopAsp) then begin
@@ -479,7 +479,7 @@ end {tDEMDataSet.SSOComputations};
          var
             x,y,MinX,MaxX,MinY,MaxY,NewMinX,NewMaxX,NewMinY,NewMaxY,RegionM : integer;
             First : boolean;
-            s2    : VectorType;
+            s2    : tVector64;
          begin
             {$If Defined(ShowDEMSSOCalc) or Defined(ShowFullDEMSSOCalc)} WriteLineToDebugFile('tDEMDataSet.SSOByRegionSize in, col=' + IntToStr(Col) + ' row'+IntToStr(Row)); {$EndIf}
             Result := false;

@@ -195,7 +195,7 @@ begin {procedure GridOfTerrainScatterPlots}
        else begin
            SpaceFilter := '';
        end;
-
+       ZeroGraphArray(gr);
        FileList := tStringList.Create;
        for j := 0 to pred(ColorBy.Count) do begin
            {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile(IntToStr(j) + ' color=' + ColorBy.Strings[j]); {$EndIf}

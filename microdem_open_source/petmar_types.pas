@@ -308,14 +308,15 @@ const
 type
    bfarray32 = array[0..bfArrayMaxSize] of float32;
    fArray = array[0..MaxFArrayPts] of float64;
-   VectorType = array[1..3] of float64;
-   VectorType32 = array[1..3] of float32;
-   MatrixType = array[1..3,1..3] of float64;
+   tVector64 = array[1..3] of float64;
+   tVector32 = array[1..3] of float32;
+   tMatrix64 = array[1..3,1..3] of float64;
    CircleFreqType = array[0..360] of integer;
    ElevArray = array[1..5] of integer;  {elevations surrounding a point: 1=SW, 2=SE, 3=NE, 4=NW, 5=1=SW}
    OneBySixFloatArray = array[1..6] of float64;
    tFloatArray1000 = array[0..1000] of float32;
    tElevFloatarray= array[1..5] of float32;
+   tByteSet = set of byte;
 
 {variables used for contouring;  values can be modified to change memory requirements}
 const

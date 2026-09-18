@@ -43,7 +43,7 @@ type
       procedure WhereIsPointOnNet(What : tPoleOrLine; Dip,DipDirect : float32; var xd,yd : integer);
       procedure AdjustForHemisphere(x,y : float64; var xcoord,ycoord : float64);
    public
-    Sum : VectorType;
+    Sum : tVector64;
     PlotRad,
     XPlotCent,YPlotCent,
     NumDataPoints : integer;
@@ -1210,9 +1210,6 @@ end {proc PlotPlaneIntersections};
 initialization
    NetForm := Nil;
 finalization
-   {$IfDef NetDraw} WriteLineToDebugFile('NetDrawProblems active in NetMainW'); {$EndIf}
-   {$IfDef ContourNet}   WriteLineToDebugFile('ContourNet active in NetMainW');  {$EndIf}
-   {$IfDef TrackVisual}  MessageToContinue('TrackVisual active in NetMainW');  {$EndIf}
 end.
 
 

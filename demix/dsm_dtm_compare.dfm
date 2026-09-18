@@ -41,6 +41,20 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     Height = 15
     Caption = 'Single criterion'
   end
+  object Label5: TLabel
+    Left = 584
+    Top = 416
+    Width = 22
+    Height = 15
+    Caption = 'Max'
+  end
+  object Label6: TLabel
+    Left = 584
+    Top = 440
+    Width = 21
+    Height = 15
+    Caption = 'Min'
+  end
   object BitBtn8: TBitBtn
     Left = 186
     Top = 376
@@ -278,5 +292,69 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     Caption = 'Grid for median or mean, 1 criterion'
     TabOrder = 23
     OnClick = BitBtn6Click
+  end
+  object Edit2: TEdit
+    Left = 630
+    Top = 413
+    Width = 59
+    Height = 23
+    TabOrder = 24
+    Text = 'Edit2'
+    OnChange = Edit2Change
+  end
+  object Edit3: TEdit
+    Left = 632
+    Top = 440
+    Width = 57
+    Height = 23
+    TabOrder = 25
+    Text = 'Edit3'
+    OnChange = Edit3Change
+  end
+  object Memo4: TMemo
+    Left = 568
+    Top = 481
+    Width = 96
+    Height = 97
+    Lines.Strings = (
+      'ALOS'
+      'COP'
+      'FATHOM'
+      'REF_DTM'
+      'REF_DSM')
+    ScrollBars = ssVertical
+    TabOrder = 26
+  end
+  object BitBtn1: TBitBtn
+    Left = 488
+    Top = 615
+    Width = 263
+    Height = 25
+    Caption = 'Single criterion by DEM spacing, many DEMs'
+    TabOrder = 27
+    OnClick = BitBtn1Click
+  end
+  object BitBtn3: TBitBtn
+    Left = 489
+    Top = 646
+    Width = 264
+    Height = 25
+    Caption = 'Alll tiles, 1 criterion, 1 DEM, by DEM spacing'
+    TabOrder = 28
+    OnClick = BitBtn3Click
+  end
+  object ComboBox2: TComboBox
+    Left = 568
+    Top = 584
+    Width = 96
+    Height = 23
+    TabOrder = 29
+    Text = 'COP'
+    Items.Strings = (
+      'ALOS'
+      'COP'
+      'FATHOM'
+      'REF_DTM'
+      'REF_DSM')
   end
 end

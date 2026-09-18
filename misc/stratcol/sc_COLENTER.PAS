@@ -283,6 +283,5 @@ end;
 
 initialization
 finalization
-   {$IfDef ColEntryProblems} WriteLineToDebugFile('ColEntryProblems active in sc_colenter'); {$EndIf}
 end.
 

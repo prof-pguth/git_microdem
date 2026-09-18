@@ -10,7 +10,7 @@
 
 
 function TGISdataBaseModule.ActuallyDrawGraph(Graphtype : tdbGraphType; MultSeries : tStringList = Nil; MultTiles : tStringList = nil;
-     FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = true) : TThisbasegraph;
+     FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = false) : TThisbasegraph;
 var
   i,j,k,TimeCount,OnFile : integer;
   Hist : array[0..1000] of integer;
@@ -51,9 +51,12 @@ var
      end;
 
      procedure OpenGraphFiles;
+     var
+        FileName : PathStr;
      begin
+        FileName := dbOpts.XField + '_by_' + dbOpts.YField;
         if (GraphType = dbgtPlot) or (GraphType = dbgtPlot1series1) then begin
-           Result.OpenPointSymbolFile(rfile,'',dbOpts.Symbol);
+           Result.OpenPointSymbolFile(rfile,FileName,dbOpts.Symbol);
         end
         else if (GraphType = dbgtN2Dgraph2series) then begin
            Result.MainSymbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
@@ -62,14 +65,14 @@ var
            Result.OpenPointSymbolFile(rfile2,dbOpts.ZField,Result.MainSymbol);
         end
         else if (GraphType in[dbgtN2DgraphcolorNumericField]) then begin
-           Result.OpenXYZFile(rfile);
+           Result.OpenXYZFile(rfile,FileName);
         end
-        else if (GraphType in[dbgtCluster1,dbgtN2DgraphCOLORfield1,dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2,dbgtN2Dgraphcolorcodetext]) then begin
-           Result.OpenXYColorFile(rfile);
+        else if (GraphType in[dbgtCluster1,dbgtN2DgraphCOLORfield,dbgtByLatitude1,dbgtByLongitude1,dbgtByLatitude2,dbgtByLongitude2,dbgtN2Dgraphcolorcodetext]) then begin
+           Result.OpenXYColorFile(rfile,FileName);
            if (GraphType = dbgtByLatitude2) or ( GraphType = dbgtByLongitude2) then Result.GraphDraw.CorrectScaling := true;
         end
         else if (GraphType = dbgtN2Dgraphsimplelines1) then begin
-           Result.OpenDataFile(rfile,'');
+           Result.OpenDataFile(rfile,FileName);
            Result.GraphDraw.ShowLine[0] := true;
            Result.GraphDraw.ShowPoints[0] := false;
         end
@@ -78,7 +81,7 @@ var
            Result.MainSymbol.Color := dbOpts.LineColor;
            Result.MainSymbol.DrawingSymbol := dbOpts.Symbol.DrawingSymbol;
            Result.MainSymbol.Size := 3;
-           Result.OpenPointSymbolFile(rfile,'',Result.MainSymbol);
+           Result.OpenPointSymbolFile(rfile,FileName,Result.MainSymbol);
         end;
      end;
 
@@ -275,6 +278,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
         DBFieldUniqueEntries(dbOpts.StringColorField,DataThere);
         BaseFilter := MyData.Filter;
         DoSettingsForSpecialTypes;
+        Result.GraphDraw.SetShowAllPoints(true,5);
         for j := 0 to pred(DataThere.Count) do begin
            TStr := DataThere.Strings[j];
            if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := QuotedStr(TStr);
@@ -282,7 +286,6 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
            MyData.ApplyFilter(TStr);
 
            Result.GraphDraw.Symbol[j].DrawingSymbol := FilledBox;
-           Result.GraphDraw.Symbol[j].Size := 4;
            Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
            if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := DataThere.Strings[j]
            else TStr := 'Code_' + DataThere.Strings[j];
@@ -306,7 +309,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
             EmpSource.Enabled := false;
             ShowHourglassCursor;
             if (j > 0) and (dbTablef <> Nil) then dbtablef.BitBtn4Click(nil);   //(Graphtype);
-            Result.GraphDraw.Symbol[j].Size := 3;
+            Result.GraphDraw.Symbol[j].Size := 5;
             Result.GraphDraw.LineSize256[j] := 1;
             inc(j);
 
@@ -336,17 +339,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                   end
                   else GoodPoint := true;
                   if GoodPoint then begin
-                     if (GraphType = dbgtCluster1) or ( GraphType = dbgtN2DgraphCOLORfield1) then v[3] := MyData.TColorFromTable;
-                     (*
-                     if (GraphType = dbgtN2Dgraphcolorcoded1) then begin
-                        if dbtablef.RedGrayGraph then begin
-                           if MyData.GetFieldByNameAsString(dbOpts.ZField) = 'Y' then v[3] := 1 else v[3] := 0;
-                        end
-                        else begin
-                           GetFloat32FromTableLink(dbOpts.ZField,v[3]);
-                        end;
-                     end;
-                     *)
+                     if (GraphType = dbgtCluster1) or ( GraphType = dbgtN2DgraphCOLORfield) then v[3] := MyData.TColorFromTable;
                      {$IfDef ExGeology}
                      {$Else}
                         if (GraphType = dbgtByLatitude1) or (GraphType = dbgtByLongitude1) or (GraphType = dbgtByLatitude2) or (GraphType = dbgtByLongitude2) then begin
@@ -362,23 +355,8 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
                             end;
                         end;
                      {$EndIf}
-                     (*
-                     if (GraphType = dbgtN2DgraphcolorNumericField) {or (GraphType = dbgtN2Dgraphcolorcodetext)} then begin
-                        TStr := '';
-                        //if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := GetStringFromTableLinkPossible(dbOpts.StringColorField,false);
-                        if (GraphType = dbgtN2DgraphcolorNumericField) then TStr := GetStringFromTableLinkPossible(dbOpts.NumericColorField,false);
-                        GoodPoint := Tstr <> '';
-                        if GoodPoint and (GraphType = dbgtN2Dgraphcolorcodetext) then begin
-                           for k := 0 to pred(DataThere.Count) do
-                              if (DataThere.Strings[k] = TStr) then break;
-                            inc(Hist[k]);
-                            v[3] := ConvertPlatformColorToTColor(Result.GraphDraw.FileColors256[succ(k Mod 256)]);
-                        end;
-                     end;
-                     *)
                      if (GraphType = dbgtN2DgraphcolorNumericField) then begin
                         GetFloat32FromTableLink(dbOpts.NumericColorField,v[3]);
-                        //GoodPoint := true;
                      end;
                      if GoodPoint then BlockWrite(Rfile,v,1);
                      if (GraphType = dbgtN2Dgraph2series) and GetFloat32FromTableLink(dbOpts.ZField,v[2]) then begin
@@ -405,17 +383,6 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
         Result.AutoScaleAndRedrawDiagram(true,true,false,false);
      end;
     {$IfDef RecordDBGraphs} WriteLineToDebugFile('Graph draw over ' + Result.GraphDraw.AxisRange); {$EndIf}
-
-(*  removed Feb 2 2026
-     if (GraphType = dbgtN2Dgraphcolorcodetext) then begin
-        for k := 0 to pred(DataThere.Count) do begin
-           TStr := dbOpts.StringColorField + '=' + DataThere.Strings[k] + ' (n=' + IntToStr(Hist[k]) + ')';
-           //Result.GraphDraw.LegendList.Add(Tstr);
-        end;
-        Result.SetMenus;
-     end;
-*)
-
      if (GraphType = dbgtCluster1) or ( GraphType = dbgtMultiplegraphmatrix1) then begin
         CopyImageToBitmap(Result.Image1,bmp);
         dbtablef.AllGraphBitmap.Canvas.Draw(dbtablef.xdrawspot,dbtablef.ydrawspot,bmp);
@@ -865,7 +832,6 @@ begin
         end;
      end;
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram done prep'); {$EndIf}
-
      Result := CreateMultipleHistogram(UseNumbers,FilesList,LegendList,MenuStr,'Histogram ' + MenuStr + TheDBName + ' ' + MyData.Filter,100,BinSize);
      {$IfDef RecordDataBaseTiming} WriteLineToDebugFile('TGISDataBase.CreateHistogram out'); {$EndIf}
 end;

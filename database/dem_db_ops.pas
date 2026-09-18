@@ -359,7 +359,7 @@ var
                      dbOpts.YField := FieldsToUse[j];
                      Petmar.TextOutVertical(AllGraphBitmap.Canvas,5,YDrawspot + 25 + AllGraphBitmap.Canvas.TextWidth(dbOpts.YField),RemoveUnderscores(dbOpts.YField));
                      if FieldExists('CLUSTER') then dbOpts.ZField := 'CLUSTER' else dbOpts.ZField := 'MASK';
-                     gr := GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield1,false);
+                     gr := GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield,false);
                      gr.GraphDraw.HorizLabel := '';
                      gr.GraphDraw.VertLabel := '';
                      gr.GraphDraw.ResetMargins := true;

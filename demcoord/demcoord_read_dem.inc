@@ -516,7 +516,8 @@ begin
 end;
 
 
-function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true;
+            Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
 var
    OK : boolean;
    NewHeader : tDEMheader;

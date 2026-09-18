@@ -92,6 +92,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordGetAngleProblems} WriteLineToDebugFile('RecordGetAngleProblems active in GetAngle'); {$EndIf}
 end.
 

@@ -17,7 +17,7 @@ unit demix_graphs;
    {$Define RecordDEMIX}
    {$Define RecordDSM_DTM_Compare}
    {$Define RecordCompareDSMandDTM}
-   {$Define RecordDSM_DTM_CompareFull}
+   //{$Define RecordDSM_DTM_CompareFull}
    {$Define RecordDEMIXGraph}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
@@ -125,7 +125,7 @@ procedure GraphMultipleParamsByDEMResolution(db : integer; Criterion,DEMIXtileFi
 //procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
 procedure BestDEMonScatterPlotTwoParameters(DB : integer; Criteria,DEMs : tstringList);
-procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons : tStringList; AllTiles : boolean = false);
+procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons,DEMs : tStringList; AllTiles : boolean = false);
 procedure ScatterPlotTwoDEMs(db : integer; DEM1,DEM2 : shortstring; Criteria : tStringList);
 
 procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; Resolutions : tStringList; var Results : tStringList);
@@ -134,6 +134,7 @@ function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tT
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; Resolutions : tStringList) : tThisBaseGraph;
 function OneGraphSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring) : tThisBaseGraph;
 procedure ManyGraphsSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring);
+procedure GraphFitsForRangeOfScales(dbonTable : integer; Y_Axis : shortstring);
 
 
 function GraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param2 : shortstring) : tThisBaseGraph;
@@ -166,111 +167,6 @@ begin
    GISdb[db].EmpSource.Enabled := false;
 end;
 
-
-procedure EndGraphGrid(gr : t2Dgrapharray; db : integer; BaseFilter : shortstring; var Filters1,Labels1,Filters2,Labels2 : tStringList; LegendBMP : tMyBitmap = nil);
-const
-   StartX = 75;
-   StartY = 75;
-var
-   BigBitmap,Bitmap : tMyBitmap;
-   xsize,ysize,f1,f2,XPanel,YPanel,Offset,x,y : integer;
-   GraphMaxY,GraphMinY : float32;
-begin
-   if MDDef.DEMIX_MultiGraphCommonScaling = 0 then begin
-       GraphMinY := 99e38;
-       GraphMaxY := -99e38;
-       for f1 := 0 to pred(Filters1.Count) do begin
-         for f2 := 0 to pred(Filters2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                if (gr[f1,f2].GraphDraw.MaxVertAxis > GraphMaxY) then GraphMaxY := gr[f1,f2].GraphDraw.MaxVertAxis;
-                if (gr[f1,f2].GraphDraw.MinVertAxis < GraphMinY) then GraphMinY := gr[f1,f2].GraphDraw.MinVertAxis;
-             end;
-         end;
-       end;
-       for f1 := 0 to pred(Filters1.Count) do begin
-          for f2 := 0 to pred(Filters2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
-                gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
-                gr[f1,f2].RedrawDiagram11Click(Nil);
-             end;
-          end;
-       end;
-   end;
-   if MDDef.DEMIX_MultiGraphCommonScaling = 1 then begin
-       for f1 := 0 to pred(Filters1.Count) do begin
-         GraphMinY := 99e38;
-         GraphMaxY := -99e38;
-         for f2 := 0 to pred(Filters2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                if (gr[f1,f2].GraphDraw.MaxVertAxis > GraphMaxY) then GraphMaxY := gr[f1,f2].GraphDraw.MaxVertAxis;
-                if (gr[f1,f2].GraphDraw.MinVertAxis < GraphMinY) then GraphMinY := gr[f1,f2].GraphDraw.MinVertAxis;
-             end;
-          end;
-          for f2 := 0 to pred(Filters2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
-                gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
-                gr[f1,f2].RedrawDiagram11Click(Nil);
-             end;
-          end;
-       end;
-   end;
-
-
-   xsize := 0;
-   ySize := 0;
-   for f1 := 0 to pred(Filters1.Count) do begin
-      for f2 := 0 to pred(Filters2.Count) do begin
-         if (gr[f1,f2] <> Nil) then begin
-            if (gr[f1,f2].GraphDraw.XWindowSize > xsize) then xsize := gr[f1,f2].GraphDraw.XWindowSize;
-            if (gr[f1,f2].GraphDraw.YWindowSize > ysize) then Ysize := gr[f1,f2].GraphDraw.YWindowSize;
-         end;
-      end;
-   end;
-
-   XPanel := XSize + 20;
-   YPanel := YSize + 20;
-
-   CreateBitmap(BigBitmap,StartX + Filters2.Count * XPanel, StartY + Filters1.Count * YPanel);
-   BigBitmap.Canvas.Font.Size := 24;
-   BigBitmap.Canvas.Font.Style := [fsBold];
-   for f1 := 0 to pred(Filters1.Count) do begin
-      Offset := (YPanel - BigBitmap.Canvas.TextWidth(Labels1.Strings[f1])) div 2;
-      TextOutVertical(BigBitmap.Canvas,2,StartY + succ(F1) * YPanel - Offset,Labels1.Strings[f1]);
-   end;
-
-   for f2 := 0 to pred(Filters2.Count) do begin
-      Offset := (XPanel - BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2;
-      BigBitmap.Canvas.TextOut(StartX + f2 * XPanel + Offset,2,Labels2.Strings[f2]);
-   end;
-
-   for f1 := 0 to pred(Filters1.Count) do begin
-      for f2 := 0 to pred(Filters2.Count) do begin
-         if (gr[f1,f2] <> Nil) and CopyImageToBitmap(gr[f1,f2].Image1,Bitmap) then begin
-            BigBitMap.Canvas.Draw(StartX + f2 * XPanel, StartY + F1 * YPanel,Bitmap);
-            Bitmap.Free;
-         end;
-      end;
-   end;
-   GetImagePartOfBitmap(BigBitmap);
-   if (LegendBMP <> Nil) then begin
-      x := (BigBitMap.Width - LegendBMP.Width) div 2;
-      y := BigBitmap.Height + 20;
-      BigBitmap.Height := BigBitMap.Height + 20 + LegendBMP.Height;
-      BigBitmap.Canvas.Draw(x,y, LegendBMP);
-   end;
-
-   DisplayBitmap(BigBitmap,'graph_grid');
-   Filters1.Destroy;
-   Labels1.Destroy;
-   Filters2.Destroy;
-   Labels2.Destroy;
-
-   GISdb[db].ApplyGISFilter(BaseFilter);
-   SetColorForWaiting;
-   wmdem.ClearStatusBarPanelText;
-end;
 
 
 
@@ -328,6 +224,7 @@ begin
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs in'); {$EndIf}
    StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
    GISdb[db].EmpSource.Enabled := false;
+   ZeroGraphArray(gr);
    for f1 := 0 to pred(Filters1.Count) do begin
       wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
       for f2 := 0 to pred(Filters2.Count) do begin
@@ -338,12 +235,11 @@ begin
              {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile(TheFigureFilter); {$EndIf}
              wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
              gr[f1,f2] := GraphFUVTwoDEMs(db,DEMs,Params);
-         end
-         else gr[f1,f2] := Nil;
+         end;
       end;
    end;
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs graphs created'); {$EndIf}
-   EndGraphGrid(gr, db,BaseFilter, Filters1,Labels1,Filters2,Labels2,gr[0,0].MakeLegend);
+   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].MakeLegend);
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs out'); {$EndIf}
 end;
 
@@ -357,6 +253,7 @@ var
 begin
    StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
    GISdb[db].EmpSource.Enabled := false;
+   ZeroGraphArray(gr);
    for f1 := 0 to pred(Filters1.Count) do begin
       wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
       for f2 := 0 to pred(Filters2.Count) do begin
@@ -366,11 +263,10 @@ begin
          if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
              wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
              gr[f1,f2] := GraphFUVTwoCriteria(db,DEMs,Param1,Param2);
-         end
-         else gr[f1,f2] := Nil;
+         end;
       end;
    end;
-   EndGraphGrid(gr, db,BaseFilter, Filters1,Labels1,Filters2,Labels2,gr[0,0].MakeLegend);
+   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].MakeLegend);
 end;
 
 

@@ -2112,7 +2112,7 @@ begin
 var
    XUTM1,XUTM2,YUTM1,YUTM2,NTol,STol,ETol,WTol,Elv1,
    ContactXC,ContactYC,ContactZC,ContactConstant : float64;
-   Normal1   : VectorType;
+   Normal1   : tVector64;
 
       procedure IntersectionThreePlanes(var XC1,YC1,ZC1,Con1,XC2,YC2,ZC2,Con2,XC3,YC3,ZC3,Con3 : float64;  var XInt,YInt,ZInt : float64);
       var
@@ -2704,6 +2704,7 @@ initialization
    NoDBplots := false;
 finalization
 end.
+
 
 
 

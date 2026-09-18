@@ -1366,7 +1366,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordMakeTables} WriteLineToDebugFile('RecordMakeTables Active in make_table'); {$EndIf}
 end.
 
 

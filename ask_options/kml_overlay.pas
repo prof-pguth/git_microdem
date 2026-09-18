@@ -185,6 +185,4 @@ end;
 
 initialization
 finalization
-   {$IfDef KMLProblems} WriteLineToDebugFile('KMLProblems active in kml_overlay'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing kml_overlay'); {$EndIf}
 end.

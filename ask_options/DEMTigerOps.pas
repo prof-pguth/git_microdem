@@ -408,5 +408,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordTigerOps} WriteLineToDebugFile('RecordTigerOps active in demtigerops'); {$EndIf}
 end.

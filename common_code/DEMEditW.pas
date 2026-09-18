@@ -342,7 +342,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordEditProblems} WriteLineToDebugFile('RecordEditProblem active in demeditw'); {$EndIf}
 end.
 
 
