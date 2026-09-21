@@ -570,6 +570,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordFloodBasin} WriteLineToDebugFile('RecordFloodBasin active in basin_flooding'); {$EndIf}
-   {$IfDef RecordFloodingProblems} WriteLineToDebugFile('RecordFloodingProblems active in basin_flooding'); {$EndIf}
 end.

@@ -117,5 +117,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordMGTProblems} WriteLineToDebugFile('RecordMGTProblems active in mag_prof');{$EndIf}
 end.

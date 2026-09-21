@@ -250,7 +250,7 @@ begin
         end;
         Memo1.Lines.Add('Done ' + TimeToStr(Now));
         fName := ExtractFilePath(DEMGlb[OriginalGrid].DEMFileName) + ptTrim(DEMGlb[OriginalGrid].AreaName) + '_to_' + ptTrim(DEMGlb[MovedGrid].AreaName) + '_feature_migration.csv';
-        BaseMap.StringListtoLoadedDatabase(Results,fName);
+        BaseMap.StringListToDBonMap(Results,fName);
      end;
 
    finally

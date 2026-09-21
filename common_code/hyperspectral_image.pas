@@ -451,8 +451,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordHyperspectral} WriteLineToDebugFile('RecordHyperspectral active in hypespectral_image'); {$EndIf}
-   {$IfDef TimeHyperspectral} WriteLineToDebugFile('TimeHyperspectral active in hypespectral_image'); {$EndIf}
 end.
 
 

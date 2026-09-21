@@ -61,7 +61,7 @@ begin
        if (SpaceSec > 1.05) then begin
           if ValidDEM(WhatGroup[-1]) then Result := WhatGroup[-1]
           else begin
-             {$IfDef RecordDEMIX} HighlightLineToDebugFile('SpaceSec=' + RealToString(SpaceSec,-8,-3) + '  Missing high lat ref DEM for ' + DEMglb[WhatGroup[i]].AreaName); {$EndIf}
+             {$IfDef RecordDEMIX} HighLightInDebugFile('SpaceSec=' + RealToString(SpaceSec,-8,-3) + '  Missing high lat ref DEM for ' + DEMglb[WhatGroup[i]].AreaName); {$EndIf}
           end;
        end
        else begin
@@ -97,7 +97,7 @@ procedure ShowDEMIXgrids(WhatFor : shortstring; PointGrids,AreaGrids : tDEM_int_
   end;
 
 begin
-    HighlightLineToDebugFile(WhatFor);
+    HighLightInDebugFile(WhatFor);
     OneModel(NumPtDEMs,PointGrids);
     OneModel(NumAreaDEMs,AreaGrids);
 end;

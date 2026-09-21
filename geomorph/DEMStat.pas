@@ -31,6 +31,7 @@ unit DEMStat;
       //{$Define RecordCovarianceFail}
       //{$Define RecordMultipleLSP}
       //{$Define RecordSSIMFull}
+      {$Define RecordRightClick}
       //{$Define RecordDEMIXTimeCriterion}
       //{$Define RecordSSO}
       //{$Define RecordHistogram}
@@ -792,7 +793,7 @@ begin
          while not GISdb[FeaturesDB].MyData.eof do begin
             ID := GISdb[FeaturesDB].MyData.GetFieldByNameAsInteger('VALUE');
             LLtext := GISdb[FeaturesDB].MyData.GetFieldByNameAsString('NAME');
-            {$IfDef RecordSSO} HighlightLineToDebugFile('Feature=' + IntToStr(ID)); {$EndIf}
+            {$IfDef RecordSSO} HighLightInDebugFile('Feature=' + IntToStr(ID)); {$EndIf}
             fName := NextFileNumber(MDTempDir,'sso_features_' + IntToStr(ID) + '_','.png');
             if DEMGLB[ElevDEM].SSOComputations(DEMGLB[ElevDEM].FullDEMGridLimits,SSOvars,true,fName,'',FeatureDEM,ID,LLtext) then begin
                GISdb[FeaturesDB].MyData.Edit;
@@ -1362,46 +1363,106 @@ end;
 
 procedure PointSlopesByRegionSize(DEM : integer; RightClickLat,RightClickLong : float64);
 var
-   xDEMg1,yDEMg1 : float64;
+   xDEMg1,yDEMg1,AvgSlope : float64;
    Findings : tStringList;
    xField,yField,aCapt,
    TStr,location : shortString;
-   i,db,Col,Row : integer;
+   i,db,Col,Row,NumPts,DEM2,db2,Radius : integer;
+   ag : byte;
    graph : tThisBaseGraph;
+   agName,MainName,DecName : PathStr;
+   SlopeAsp : tSlopeAspectRec;
 
-         procedure GetTheSlopes(BoxSize : integer);
-         var
-            SlopeAsp : tSlopeAspectRec;
+         procedure GetTheSlopes(BoxSize : integer; var Radius : integer);
          begin
             MDDef.SlopeCompute.WindowRadius := BoxSize;
             if DEMGlb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
-               Findings.Add(Location + ',' + IntToStr(BoxSize) + ',' + RealToString(BoxSize* DEMGlb[DEM].AverageYSpace,-12,-2) + ',' +
+               Findings.Add(Location + ',' + IntToStr(BoxSize) + ',' + RealToString(BoxSize* DEMGlb[DEM].AverageSpace,-12,-2) + ',' +
                      RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDirTrue,-8,2));
             end;
+            Radius := BoxSize;
          end;
 
+         procedure DoDEMarray(DEMarray : tDEMarray; OutName : PathStr; Color : tColor);
+         var
+            i : integer;
+         begin
+             Findings := tStringList.Create;
+             Findings.Add('Dist_m,Slope_pc');
+             for i := 0 to 25 do begin
+                if ValidDEM(DEMArray[i]) then begin
+                    DEM2 := DEMArray[i];
+                    DEMGlb[DEM2].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xDEMg1,yDEMg1);
+                    Col := round(xDEMg1);
+                    Row := round(yDEMg1);
+                    if DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
+                       Findings.Add(RealToString(DEMglb[DEM2].AverageSpace,-12,-2) + ',' + RealToString(SlopeAsp.SlopePercent,-12,-2));
+                       {$IfDef RecordRightClick} WriteLineToDebugFile(DEMGlb[DEMArray[i]].AreaName +  '  Aggregated='+ IntToStr(i) + '  ' + RealToString(SlopeAsp.SlopePercent,-12,-2) + '%' + '  ' +
+                           DEMglb[DEM2].DEMLocationString(Col,Row)); {$EndIf}
+                    end
+                    else begin
+                       {$IfDef RecordRightClick} WriteLineToDebugFile('No slope ' + DEMGlb[DEMArray[i]].AreaName +  '  Aggregated='+ IntToStr(i) + '  ' +
+                          IntToStr(Col) + '  ' + IntToStr(Row) + DEMglb[DEM2].DEMLocationString(Col,Row));
+                       {$EndIf}
+                    end;
+                end;
+             end;
+             if (Findings.Count > 1) then begin
+                 db2 := StringList2CSVtoDB(Findings,OutName);
+                 GISdb[db2].AddSeriesToScatterGram(ExtractFileNameNoExt(OutName),Graph,Color,xField,YField,true);
+                 CloseSingleDB(db2);
+             end;
+           end;
+
+
 begin
+   {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize in'); {$EndIf}
+
    DEMDef_routines.SaveBackupDefaults;
-   Findings := tStringList.Create;
    Location := LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod);
 
    DEMGlb[DEM].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xDEMg1,yDEMg1);
    Col := round(xDEMg1);
    Row := round(yDEMg1);
-
+(*
+   if DEMGlb[DEM].AverageSpace < 0.75 then NumPts := 120
+   else if DEMGlb[DEM].AverageSpace < 1.5 then NumPts := 60
+   else if DEMGlb[DEM].AverageSpace < 2.5 then NumPts := 45
+   else if DEMGlb[DEM].AverageSpace < 5 then NumPts := 35
+   else NumPts := 25;
+*)
+   Findings := tStringList.Create;
    Findings.Add('Location,Region,Dist_m,Slope_pc,Slope_deg,Aspect_deg');
-   for i := 1 to 25 do GetTheSlopes(i);
-   TStr := NextFileNumber(MDTempDir,DEMGlb[DEM].AreaName + '_Slope_by_region_','.dbf');
+   i := 1;
+   repeat
+      GetTheSlopes(i,Radius);
+      inc(i);
+   until Radius > 75;
+   MainName := NextFileNumber(MDTempDir,'Region_size_','.dbf');
+   AgName := NextFileNumber(MDTempDir,'Aggregated_DEM_','.dbf');
+   DecName := NextFileNumber(MDTempDir,'Decimated_DEM_','.dbf');
    xField := 'DIST_M';
    yField := 'SLOPE_PC';
    aCapt := 'Slopes by region at ' + Location;
 
-   StringList2CSVtoDB(Findings,TStr);
-   Graph := GISDB[db].CreateScatterGram('test',xField,yField,clRed,true,aCapt);
+   db := StringList2CSVtoDB(Findings,MainName);
+   Graph := GISDB[db].CreateScatterGram(MainName,xField,yField,clRed,true,aCapt);
    Graph.GraphDraw.MinVertAxis := 0;
    Graph.GraphDraw.LLCornerText := Location;
    Graph.RedrawDiagram11Click(Nil);
+   CloseSingleDB(db);
+
+   if AggregatedArray then begin
+       {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+       DoDEMarray(AggregatedDEMarray,AgName,clLime);
+   end;
+
+   if DecimatedArray then begin
+       {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+       DoDEMarray(DecimatedDEMarray,DecName,clRed);
+   end;
    DEMDef_routines.RestoreBackupDefaults;
+   {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize out'); {$EndIf}
 end;
 
 
@@ -2553,7 +2614,7 @@ var
    sum, sp : array[1..2] of float64;
    spc : float64;
 begin
-   {$If Defined(RecordCovariance)} HighlightLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
+   {$If Defined(RecordCovariance)} HighLightInDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
    IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff,true);
    NPts := 0;
    spc := 0;
@@ -2645,7 +2706,7 @@ begin
       MeanAbsDiff := MeanAbsDiff / Npts;
 
       if IsNAN(r) then begin
-         {$If Defined(RecordCovarianceFail)} HighLightLineToDebugFile('CovariancesFromTwoGrids is Nan'); {$EndIf}
+         {$If Defined(RecordCovarianceFail)} HighLightInDebugFile('CovariancesFromTwoGrids is Nan'); {$EndIf}
          r := 0;
       end;
 
@@ -2658,7 +2719,7 @@ begin
    end
    else begin
       r := -999;
-      {$If Defined(RecordCovarianceFail)} HighLightLineToDebugFile('CovariancesFromTwoGrids fail, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName); {$EndIf}
+      {$If Defined(RecordCovarianceFail)} HighLightInDebugFile('CovariancesFromTwoGrids fail, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName); {$EndIf}
       {$If Defined(RecordStat) or Defined(RecordCovariance) or Defined(RecordCovarianceFail)}
          if NoteFailure then WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName );
       {$EndIf}
@@ -2674,7 +2735,7 @@ var
    IdenticalGrids,MatchPt : boolean;
    Sum : float64;
 begin
-   {$If Defined(RecordCovariance)} HighlightLineToDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
+   {$If Defined(RecordCovariance)} HighLightInDebugFile('CovariancesFromTwoGrids in, grids=' + IntToStr(DEM1) + ' and ' + IntToStr(DEM2)); {$EndIf}
    IdenticalGrids := DEMGlb[DEM1].SecondGridJustOffset(DEM2,xoff,yoff,true);
    NPts := 0;
    Sum := 0;
@@ -2713,7 +2774,7 @@ begin
    end
    else begin
       MAD := -999;
-      {$If Defined(RecordCovarianceFail)} HighLightLineToDebugFile('CovariancesFromTwoGrids fail, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName); {$EndIf}
+      {$If Defined(RecordCovarianceFail)} HighLightInDebugFile('CovariancesFromTwoGrids fail, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName); {$EndIf}
       {$If Defined(RecordStat) or Defined(RecordCovariance) or Defined(RecordCovarianceFail)}
          if NoteFailure then WriteLineToDebugFile('CovariancesFromTwoGrids failed, npts=' + IntToStr(NPts) + ' DEM1=' + DEMglb[DEM1].AreaName +  ' DEM2=' + DEMglb[DEM2].AreaName );
       {$EndIf}

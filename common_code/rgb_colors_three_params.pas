@@ -239,7 +239,7 @@ begin
        {$IfDef RecordRGBIssuesFull} WriteLineToDebugFile('TRGB_form.DrawGridRGBMap out, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel)); {$EndIf}
     end
     else begin
-       {$IfDef RecordRGBIssues} HighlightLineToDebugFile('TRGB_form.DrawGridRGBMap failure, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel)); {$EndIf}
+       {$IfDef RecordRGBIssues} HighLightInDebugFile('TRGB_form.DrawGridRGBMap failure, DEM=' + IntToStr(DEM) + ' channel=' + IntToStr(Channel)); {$EndIf}
     end;
 end;
 
@@ -482,6 +482,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordRGBIssues} WriteLineToDebugFile('RecordRGBIssues active in rgb_colors_three_params'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing rgb_colors_three_params'); {$EndIf}
 end.

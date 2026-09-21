@@ -587,9 +587,6 @@ initialization
    DownCostDEM := 0;
    LCPJustDistance := false;
 finalization
-   {$IfDef RecordSetAccumPathPoints} WriteLineToDebugFile('RecordFullPath active in least_cost_path (big slowdown)'); {$EndIf}
-   {$IfDef RecordFullPath} WriteLineToDebugFile('RecordFullPath active in least_cost_path (big slowdown)'); {$EndIf}
-   {$IfDef RecordBasicsAccumPath} WriteLineToDebugFile('RecordBasicsAccumPath active in least_cost_path (big slowdown)'); {$EndIf}
 end.
 
 

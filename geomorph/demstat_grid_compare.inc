@@ -549,7 +549,7 @@ begin
          sl.Destroy;
          MessageToContinue('No points missing in just one grid');
       end
-      else MapForm.StringListToLoadedDatabase(sl, Petmar.NextFileNumber(MDTempDir, 'Missing_Data_Compare_', DefaultDBExt),true,false,true);
+      else MapForm.StringListToDBonMap(sl, Petmar.NextFileNumber(MDTempDir, 'Missing_Data_Compare_', DefaultDBExt),true,false,true);
    end
    else begin
       MessageToContinue('Requires two idential grids');

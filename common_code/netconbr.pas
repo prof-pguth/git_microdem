@@ -84,7 +84,4 @@ initialization
    LastX := 0;
    LastY := 0;
 finalization
-   {$IfDef RecordClosingProblems}
-   WriteLineToDebugFile('Closing netconbr');
-   {$EndIf}
 end.

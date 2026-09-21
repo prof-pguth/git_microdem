@@ -1049,7 +1049,6 @@ begin
 end;
 
 
-
 procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
 var
    HalfSec : integer;

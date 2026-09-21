@@ -342,7 +342,6 @@ begin
       else begin
          Results := tStringList.Create;
          Title := 'PERCENT,NAME,COLOR,CODE';
-         //if MDDef.LongLandCoverResults then Title := Title +  ',CATEGORY,NUMBER';
          Results.Add(Title);
          if (Stats <> Nil) then begin
             if (Stats.Count = 1) then begin
@@ -365,7 +364,6 @@ begin
 
             Title := RealToString(pc,8,2) + ',' + DEMGlb[DEM].NLCDCats^[x].LongName + ',' + IntToStr(ConvertPlatformColorToTColor(DEMGlb[DEM].NLCDCats^[x].Color)) +
                 ',' + IntToStr(x);
-            //if MDDef.LongLandCoverResults then Title := Title + ',' + IntToStr(x) + ',' + IntToStr(Count[x]);
             Results.Add(Title);
             {$IfDef TrackNLCD} WriteLineToDebugFile(Title); {$EndIf}
          end;
@@ -522,7 +520,7 @@ var
           Table := tMyData.Create(dbName);
           ItsDEMIX := Table.FieldExists('DEMIX_TILE') and Table.FieldExists('AREA');
           if ItsDEMIX then begin
-             CreateBitmap(bmp,2400,1200);  //100 + (Table.RecordCount * EntryHeight) + (pred(Areas.Count) * AreaBlank));
+             CreateBitmap(bmp,2400,1200);
              bmp.Canvas.Font.Size := 14;
              AreaWidth := 0;
              TileWidth := 0;
@@ -573,7 +571,7 @@ var
                 Name := RemoveUnderScores(AreaName);
                 {$IfDef RecordBarGraphs} WriteLineToDebugFile('Area=' + Name + ' at x=' + IntToStr(5) + '  y=' + IntToStr(Top)); {$EndIf}
                 if (SeriesStats.Count = 0) then begin
-                   SeriesStats.Add(ShortName{ + ',' + Name});
+                   SeriesStats.Add(ShortName);
                 end;
                 if IncludeTiles then begin
                    if IncludeAreaName then Bmp.Canvas.TextOut(5,Top + Table.FiltRecsInDB div 2 * EntryHeight,Name);
@@ -686,7 +684,6 @@ begin
    end;
    Result := (LandCover <> 0);
 end;
-
 
 
 procedure SetUpNLCDCategories(AskLimit : boolean; LandCover : integer; var Categories : tNLCDCats);

@@ -214,7 +214,7 @@ var
 
 
 begin
-  {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} HighlightLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM in ' + GISdb[dbOnTable].dbName); {$EndIf}
+  {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} HighLightInDebugFile('MakeCSVforGDEMcompareDSMtoDTM in ' + GISdb[dbOnTable].dbName); {$EndIf}
    try
        SetColorForProcessing;
        WantShowProgress := false;
@@ -316,7 +316,7 @@ var
    RefALOS_DSM,RefALOS_DTM,AlosName,BaseDir,
    fName,RefDSMName,RefDTMName,CopNAME,FathomName,cName,tName : PathStr;
 begin
-  {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} HighlightLineToDebugFile('MakeCSVforGDEMcompareDSMtoDTM in ' + GISdb[dbOnTable].dbName); {$EndIf}
+  {$If Defined(RecordDEMIX) or Defined(RecordDTM_DSM)} HighLightInDebugFile('MakeCSVforGDEMcompareDSMtoDTM in ' + GISdb[dbOnTable].dbName); {$EndIf}
   if not (GISdb[DBonTable].MyData.FieldExists('DEM_PAIR') and GISdb[DBonTable].MyData.FieldExists('REF_DEM')) then begin
       if AnswerIsYes('DB requires fields DEM_PAIR and REF_DEM; add now') then IdentifyDSM_DTMpair(DBonTable)
       else exit;
@@ -371,13 +371,13 @@ begin
                       inc(Success);
                       {$IfDef RecordDTM_DSM} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
                       TileStats := CommonTileStats(dbOnTable);
-                      MakeSingleAreaDSMDTMcomparison(false,CopName,RefDSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
-                      MakeSingleAreaDSMDTMcomparison(false,Copname,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
-                      MakeSingleAreaDSMDTMcomparison(false,FathomName,RefDSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
-                      MakeSingleAreaDSMDTMcomparison(false,FathomName,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
-                      MakeSingleAreaDSMDTMcomparison(false,RefDSMname,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
-                      MakeSingleAreaDSMDTMcomparison(false,ALOSName,RefALOS_DSM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
-                      MakeSingleAreaDSMDTMcomparison(false,ALOSName,RefALOS_DTM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Nil,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,CopName,RefDSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,Copname,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,FathomName,RefDSMname,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,FathomName,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,RefDSMname,RefDTMName,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,ALOSName,RefALOS_DSM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
+                      MakeSingleAreaDSMDTMcomparison(false,ALOSName,RefALOS_DTM,'',AreaName,GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE'),TileStats,Results);
                   end
                   else begin
                      inc(Failures);
@@ -385,7 +385,7 @@ begin
                      if not FileExists(RefDSMName) then TStr := TStr + RefDSMName + '  ';
                      if not FileExists(RefDTMName) then TStr := TStr + RefDTMName + '  ';
                      if not FileExists(CopName) then TStr := TStr + CopName + '  ';
-                     HighLightLineToDebugFile(TStr);
+                     HighLightInDebugFile(TStr);
                   end;
                   GISdb[DBonTable].MyData.Next;
               end {while};
@@ -425,7 +425,7 @@ var
    i,j,inDB : integer;
    fName,DSMName,DTMName,AreaLock,BaseDir : PathStr;
 begin
-   {$IfDef RecordDEMIX} HighLightLineToDebugFile('MakeCSVforHRDEMComparison in ' + GISdb[db].DBName); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('MakeCSVforHRDEMComparison in ' + GISdb[db].DBName); {$EndIf}
    if not(GISdb[db].MyData.FieldExists('DEM_PAIR') and GISdb[db].MyData.FieldExists('REF_DEM')) then begin
        IdentifyDSM_DTMpair(DB);
    end;
@@ -440,7 +440,7 @@ begin
        Areas := GISdb[db].MyData.ListUniqueEntriesInDB('AREA');
        BaseDir := ExtractFilePath(GISdb[db].DBFullName) + 'aa_hrdem_compare_dsm_dtm\';
        SafeMakeDir(BaseDir);
-       {$IfDef RecordDEMIX} HighLightLineToDebugFile('Areas=' + IntToStr(Areas.Count)); {$EndIf}
+       {$IfDef RecordDEMIX} HighLightInDebugFile('Areas=' + IntToStr(Areas.Count)); {$EndIf}
        if (Areas.Count = 0) then begin
           MessageToContinue('No areas in ' + GISdb[db].dbName);
        end
@@ -479,12 +479,7 @@ begin
                           TStr := IntToStr(j) + '/' + IntToStr(GISdb[db].MyData.FiltRecsInDB) + ' ' + ExtractFileNameNoExt(DTMname);
                           wmDEM.SetPanelText(2,TStr,true);
                           {$IfDef RecordDTM_DSM} WriteLineToDebugFile(AreaName + ' ' + TStr); {$EndIf}
-                          (*
-                          TileStats := RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('AVG_SLOPE'),-8,-2) + ',' +
-                                       RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('BARREN_PC'),-8,-2) + ',' +
-                                       RealToString(GISdb[db].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
-                          *)
-                          MakeSingleAreaDSMDTMcomparison(true,DSMname,DTMName,'',AreaName,Country,CommonTileStats(db),Nil,Results);
+                          MakeSingleAreaDSMDTMcomparison(true,DSMname,DTMName,'',AreaName,Country,CommonTileStats(db),Results);
                           GISdb[db].MyData.Next;
                       end {while};
                      {$IfDef RecordDTM_DSM} if Results <> Nil then WriteLineToDebugFile('Tiles=' + IntToStr(Results.Count) + '  ' + fName); {$EndIf}
@@ -512,7 +507,7 @@ begin
 end;
 
 procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
-//input is GDEM or HRDEM DB for grid spacings in meters; uses only those spacings currently
+//input is GDEM or HRDEM DB for grid spacings in meters or arc seconds; uses only those spacings currently
 //makes DB with statistics for a power law fit for the DEMs hard coded into theDEMs string list
 var
    TileList,Results,theDEMs : tStringList;
@@ -560,7 +555,7 @@ begin {procedure ComputePowerFitForAllTiles}
           TileField := 'DEMIX_TILE';
           aLine := 'DEMIX_TILE,';
        end;
-       aline := aLine + 'AREA,COUNTRY,LAT,LONG,AVG_SLOPE,BARREN_PC,FOREST_PC';
+       aline := aLine + 'AREA,COUNTRY,LAT,LONG,' + CommonTileStatsNames(DB);
        if PowerLaw then begin
           for i := 0 to pred(theDEMs.Count) do begin
              aLine := aline + ',' + theDEMs.strings[i] + '_R2'  + ',' + theDEMs.strings[i] + '_A'  + ',' + theDEMs.strings[i] + '_B';
@@ -609,8 +604,6 @@ begin {procedure ComputePowerFitForAllTiles}
       MessageToContinue('Required spacing field missing');
    end;
 end {procedure ComputePowerFitForAllTiles};
-
-
 
 
 const
@@ -687,7 +680,7 @@ begin
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'stats_by_' + aField + '_' ,DefaultDBExt);
    {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
+   GISdb[DBonTable].theMapOwner.StringListToDBonMap(Results,fName);
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].ShowStatus;
 end;
@@ -702,7 +695,7 @@ var
    theTiles,sl,Criteria : tStringList;
    fName: PathStr;
 begin
-   {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db in'); {$EndIf}
+   {$If Defined(RecordDEMIX)} HighLightInDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db in'); {$EndIf}
    try
       if GISdb[DBonTable].MyData.Filtered then begin
          if not AnswerIsYes('Transpose filtered DB') then GISdb[DBonTable].ClearGISFilter;
@@ -754,7 +747,7 @@ begin
       EndDEMIXProcessing;
       GISdb[DBonTable].ClearGISFilter;
    end;
-   {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db out, ' + fName); {$EndIf}
+   {$If Defined(RecordDEMIX)} HighLightInDebugFile('DEMIX_SSIM_FUV_transpose_kmeans_new_db out, ' + fName); {$EndIf}
 end;
 
 
@@ -900,7 +893,7 @@ var
                      sl.SaveToFile(fName);
                   end
                   else begin
-                     {$IfDef RecordComputeDEMIX_Diff_Dist} HighlightLineToDebugFile(fName + ' has no lines'); {$EndIf}
+                     {$IfDef RecordComputeDEMIX_Diff_Dist} HighLightInDebugFile(fName + ' has no lines'); {$EndIf}
                      fName := '';
                   end;
                   sl.Destroy;
@@ -1300,7 +1293,7 @@ var
       TStr : shortstring;
       CandidateBoundBoxGeo,bb : sfBoundBox;
    begin {ProcessDEMIXtestarea}
-      {$If Defined(RecordDEMIXFull)} HighlightLineToDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
+      {$If Defined(RecordDEMIXFull)} HighLightInDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
       ReportErrors := false;
       DEMIXtileDB := 0;
       LandCoverGrid := 0;
@@ -1309,7 +1302,7 @@ var
 //Change this for the new method used for FUV
       if LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,DEMIXOpenMap) then begin
          if LoadDEMIXCandidateDEMs(AreaName,DEMIXOpenMap) then begin
-            {$IfDef RecordDEMIXFull} HighLightLineToDebugFile('Start ' + AreaName); {$EndIf}
+            {$IfDef RecordDEMIXFull} HighLightInDebugFile('Start ' + AreaName); {$EndIf}
 
             DEMIXtileDB := DEMIXtileFill(DEMIXRefDEM,DEMGlb[DEMIXRefDEM].DEMBoundBoxGeo,false);
             {$IfDef RecordDEMIXFull} WriteLineToDebugFile('DTM on map tiles=' + IntToStr(GISdb[DEMIXtileDB].MyData.FiltRecsInDB)); {$EndIf}
@@ -1718,7 +1711,7 @@ begin {procedure RankDEMS}
        j := 0;
        GISdb[DBonTable].MyData.First;
        while not GISdb[DBonTable].MyData.eof do begin
-          {$If Defined(RecordDEMIXties)} HighLightLineToDebugFile('Loop =' + IntToStr(j)); {$EndIf}
+          {$If Defined(RecordDEMIXties)} HighLightInDebugFile('Loop =' + IntToStr(j)); {$EndIf}
           inc(j);
           if (j mod 25 = 0) then wmdem.SetPanelText(3,'Rank DEMs ' + IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
           GISdb[DBonTable].EmpSource.Enabled := false;
@@ -1982,11 +1975,11 @@ var
                      DeleteFileIfExists(fName);
                      fName := ChangeFileExt(fName,'.csv');
                      DeleteFileIfExists(fName);
-                     {$IfDef RecordDEMIX} HighlightLineToDebugFile('Summary stats written to ' + fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
+                     {$IfDef RecordDEMIX} HighLightInDebugFile('Summary stats written to ' + fName + '  lines=' + IntToStr(sl.Count)); {$EndIf}
                      Result := StringList2CSVtoDB(sl,fName);
                   end
                   else begin
-                     {$IfDef RecordDEMIX} HighlightLineToDebugFile('No Summary stats for ' + fName); {$EndIf}
+                     {$IfDef RecordDEMIX} HighLightInDebugFile('No Summary stats for ' + fName); {$EndIf}
                      fName := '';
                      sl.Destroy;
                      Result := 0;
@@ -2121,7 +2114,7 @@ var
       LandCoverFName : PathStr;
       CandidateBoundBoxGeo,bb : sfBoundBox;
    begin {ProcessDEMIXtestarea}
-      {$If Defined(RecordDEMIXFull)} HighlightLineToDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
+      {$If Defined(RecordDEMIXFull)} HighLightInDebugFile('ProcessDEMIXtestarea in ' + TestAreaName); {$EndIf}
       ReportErrors := false;
       DEMIXtileDB := 0;
       LandCoverGrid := 0;

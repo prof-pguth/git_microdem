@@ -325,7 +325,7 @@ object GraphSettingsForm: TGraphSettingsForm
     Top = 8
     Width = 313
     Height = 185
-    ActivePage = TabSheet4
+    ActivePage = TabSheet2
     TabOrder = 20
     object TabSheet1: TTabSheet
       Caption = 'X axis'
@@ -384,8 +384,8 @@ object GraphSettingsForm: TGraphSettingsForm
         TabOrder = 4
       end
       object ComboBox3: TComboBox
-        Left = 43
-        Top = 134
+        Left = 6
+        Top = 133
         Width = 145
         Height = 21
         TabOrder = 5
@@ -401,6 +401,24 @@ object GraphSettingsForm: TGraphSettingsForm
         Caption = 'Symmetrical about 0'
         TabOrder = 6
         OnClick = CheckBox9Click
+      end
+      object CheckBox11: TCheckBox
+        Left = 160
+        Top = 106
+        Width = 97
+        Height = 17
+        Caption = 'Line for 0'
+        TabOrder = 7
+        OnClick = CheckBox11Click
+      end
+      object CheckBox12: TCheckBox
+        Left = 160
+        Top = 129
+        Width = 97
+        Height = 17
+        Caption = 'Line for 1'
+        TabOrder = 8
+        OnClick = CheckBox12Click
       end
     end
     object TabSheet2: TTabSheet
@@ -480,6 +498,15 @@ object GraphSettingsForm: TGraphSettingsForm
         Caption = 'Log'
         TabOrder = 6
         OnClick = CheckBox10Click
+      end
+      object CheckBox13: TCheckBox
+        Left = 155
+        Top = 110
+        Width = 120
+        Height = 17
+        Caption = 'Show vert axis 1'
+        TabOrder = 7
+        OnClick = CheckBox13Click
       end
     end
     object TabSheet3: TTabSheet

@@ -134,6 +134,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordRangeCircles} WriteLineToDebugFile('RecordRangeCircles active in DEMrange'); {$EndIf}
 end.
 

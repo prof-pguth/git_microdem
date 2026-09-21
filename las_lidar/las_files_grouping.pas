@@ -612,7 +612,7 @@ begin
         if (Elevs[i] > 0) then sl.add(IntToStr(Elevs[i]) + ',' + IntToStr(i) + ',' + IntToStr(Vegs[i]) + ',' + IntToStr(Grounds[i])+ ',' + IntToStr(Builds[i]));
      end;
      fName := Petmar.NextFileNumber(MDtempDir,'las_hist','.dbf');
-     db := BaseMap.StringListtoLoadedDatabase(sl,fname);
+     db := BaseMap.StringListToDBonMap(sl,fname);
      TheGraph := GISDB[db].CreateScatterGram('Total','TOTAL','ELEV_M',clRed,true,'LAS elevation histogram');
      GISDB[db].AddSeriesToScatterGram('Vegetation',TheGraph,clLime,'VEG','ELEV_M',true);
      GISDB[db].AddSeriesToScatterGram('Ground',TheGraph,clBrown,'GROUND','ELEV_M',true);
@@ -1544,7 +1544,7 @@ begin
    i := 0;
    InitializeBoundingBox(GeoBBox);
    InitializeBoundingBox(UTMBBox);
-   {$IfDef RecordListFilesProcessed} if (BaseMapDraw <> Nil) then HighlightLineToDebugFile('Remove tiles, Map geo limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)
+   {$IfDef RecordListFilesProcessed} if (BaseMapDraw <> Nil) then HighLightInDebugFile('Remove tiles, Map geo limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxGeo,6)
                + '   utm limits=' + sfBoundBoxToString(BaseMapDraw.MapCorners.BoundBoxUTM,1));  {$EndIf}
    ToDo := Las_fNames.Count;
    for k := pred(Las_fNames.Count) downto 0 do begin

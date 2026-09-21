@@ -467,6 +467,7 @@ procedure AddCountryColorToDB(DBonTable : integer);
 function CountryColor(Country : shortstring) : tColor;
 
 function CommonTileStats(DBonTable : integer) : shortstring;
+function CommonTileStatsNames(DBonTable : integer) : shortstring;
 function CreatePowerLawList(db : integer) : tStringList;
 
 const //Demix Database types
@@ -548,6 +549,10 @@ begin
                RealToString(GISdb[DBonTable].MyData.GetFieldByNameAsFloat('FOREST_PC'),-8,-2);
 end;
 
+function CommonTileStatsNames(DBonTable : integer) : shortstring;
+begin
+    Result := 'AVG_SLOPE,BARREN_PC,FOREST_PC';
+end;
 
 
 function CountryColor(Country : shortstring) : tColor;

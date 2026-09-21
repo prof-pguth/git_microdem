@@ -814,7 +814,7 @@ end;
       i : integer;
    begin
       if GraphDraw.DataFilesPlotted.Count > 0 then begin
-          HighLightLineToDebugFile(WhereAt);
+          HighLightInDebugFile(WhereAt);
           for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
               WriteLineToDebugFile( IntToStr(i) + '  ' + ExtractFileNameNoExt(GraphDraw.DataFilesPlotted[i]) + '  ' + ' line='+ ColorString(GraphDraw.FileColors256[i]) +
                  ' point='+ ColorString(GraphDraw.Symbol[i].Color));
@@ -1099,7 +1099,7 @@ var
    Count : array[1..10] of integer;
    PC    : array[1..10] of float32;
 begin {procedure TThisBaseGraph.SetUpStackedHistogram}
-   {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram graph enter, DataBaseOnGraph=' + IntToStr(DataBaseOnGraph) + GraphDraw.AxisRange); {$EndIf}
+   {$IfDef RecordHistogram} HighLightInDebugFile('SetUpStackedHistogram graph enter, DataBaseOnGraph=' + IntToStr(DataBaseOnGraph) + GraphDraw.AxisRange); {$EndIf}
    Series := 0;
    while GISdb[DataBaseOnGraph].Mydata.FieldExists('SERIES_' + IntToStr(succ(Series))) do inc(Series);
    GISdb[DataBaseOnGraph].MyData.First;
@@ -1118,7 +1118,7 @@ begin {procedure TThisBaseGraph.SetUpStackedHistogram}
       GraphDraw.HorizLabel := fName;
       GraphDraw.MinHorizAxis := x1 - dx;
       GraphDraw.MaxHorizAxis := x2 + dx;
-      {$IfDef RecordHistogram} HighlightLineToDebugFile('SetUpStackedHistogram FirstTime set, ' + GraphDraw.AxisRange); {$EndIf}
+      {$IfDef RecordHistogram} HighLightInDebugFile('SetUpStackedHistogram FirstTime set, ' + GraphDraw.AxisRange); {$EndIf}
       GraphDraw.MinVertAxis := 0;
       if Percentage then begin
          GraphDraw.VertLabel := 'Percentage';

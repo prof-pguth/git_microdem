@@ -914,7 +914,7 @@ var
          DEMlist.Sorted := false;
          for i := pred(DEMList.Count) downto 0 do begin
             FName := DEMList.Strings[i];
-            {$If Defined(RecordMergeDetails)} HighLightLineToDebugFile('Check DEM ' + IntToStr(i) + '/' + IntToStr(DEMList.Count) + '  ' + fName); {$EndIf}
+            {$If Defined(RecordMergeDetails)} HighLightInDebugFile('Check DEM ' + IntToStr(i) + '/' + IntToStr(DEMList.Count) + '  ' + fName); {$EndIf}
             if not HeavyDutyProcessing then WMDEM.StatusBar1.Panels[0].Text := 'Merge still Check ' + IntToStr(succ(I)) + '/' + IntToStr(DEMList.Count);
             if FileExists(fName) then begin
                if NewArea(true,CurDEM,'',FName) then begin
@@ -963,7 +963,7 @@ var
                   CloseSingleDEM(CurDEM);
                end
                else begin
-                  {$IfDef RecordMerge} HighlightLineToDebugFile('DEM did not load, ' + fName); {$EndIf}
+                  {$IfDef RecordMerge} HighLightInDebugFile('DEM did not load, ' + fName); {$EndIf}
                   DEMlist.Delete(i);
                end;
             end
@@ -1249,12 +1249,6 @@ initialization
    {$IfDef MessageStartUpUnit} MessageToContinue('Startup dem_indexes'); {$EndIf}
    MergeSeriesName := '';
 finalization
-   {$IfDef RecordClosing} WriteLineToDebugFile('RecordClosing active in dem_indexes'); {$EndIf}
-   {$IfDef RecordIndex} WriteLineToDebugFile('RecordIndex active in dem_indexes'); {$EndIf}
-   {$IfDef RecordAutoZoom} WriteLineToDebugFile('RecordAutoZoom active in dem_indexes'); {$EndIf}
-   {$IfDef RecordMerge} WriteLineToDebugFile('RecordMerge active in dem_indexes'); {$EndIf}
-   {$IfDef RecordIndexFileNames} WriteLineToDebugFile('RecordIndexFileNames active in dem_indexes'); {$EndIf}
-   {$IfDef RecordClosing} WriteLineToDebugFile('Closing dem_indexes'); {$EndIf}
 end.
 
 

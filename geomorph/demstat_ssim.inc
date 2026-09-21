@@ -65,7 +65,7 @@ begin
        Results.Add(aLine);
        GISdb[db].MyData.Next;
     end;
-    DEMglb[DEM1].SelectionMap.StringListToLoadedDatabase(Results,Petmar.NextFileNumber(MDTempDir,'SSMI_comparison','.dbf'));
+    DEMglb[DEM1].SelectionMap.StringListToDBonMap(Results,Petmar.NextFileNumber(MDTempDir,'SSMI_comparison','.dbf'));
 end;
 
 
@@ -322,7 +322,7 @@ var
                    end;
                 end;
                 if (WhatsMissing <> '') then begin
-                   HighlightLineToDebugFile(Criterion + ' has missing data grids for ' + AreaName + '  ' + WhatsMissing);
+                   HighLightInDebugFile(Criterion + ' has missing data grids for ' + AreaName + '  ' + WhatsMissing);
                    Result := true;
                 end
                 else Result := false;;
@@ -524,7 +524,7 @@ begin {procedure DoSSIMandFUVForAnArea}
        OnCriterion := 0;
 
        {$If Defined(TimeGridsForArea)} Stopwatch2 := TStopwatch.StartNew; {$EndIf}
-       {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}
+       {$IfDef RecordDEMIX} HighLightInDebugFile('AreaSSIMandFUVComputations area=' + AreaName); {$EndIf}
        wmdem.SetPanelText(3, 'Load DEMs',true);
        ShowSatProgress :=  false;
        ResultsAnalysis := tStringList.Create;
@@ -590,7 +590,7 @@ begin {procedure DoSSIMandFUVForAnArea}
               {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Save to ' + SaveFNameAnalysis); {$EndIf}
            end
            else begin
-              {$IfDef RecordDEMIXFull} HighlightLineToDebugFile('No results for ' + SaveFNameAanlysis); {$EndIf}
+              {$IfDef RecordDEMIXFull} HighLightInDebugFile('No results for ' + SaveFNameAanlysis); {$EndIf}
            end;
            ResultsAnalysis.Free;
 
@@ -599,7 +599,7 @@ begin {procedure DoSSIMandFUVForAnArea}
           CleanUpTempDirectory;  //lot of files created by SAGA and WBT
        end
        else begin
-          {$IfDef RecordDEMIX} HighLightLineToDebugFile('Missing DEM files for area ' + AreaName); {$EndIf}
+          {$IfDef RecordDEMIX} HighLightInDebugFile('Missing DEM files for area ' + AreaName); {$EndIf}
        end;
        {$If Defined(TimeGridsForArea)} WriteLineToDebugFile(AreaName + ' completed ' + RealToString(Stopwatch2.Elapsed.TotalSeconds/3600,-12,-4) + ' hours');  {$EndIf}
     end;
@@ -615,7 +615,7 @@ var
 begin
    try
       GetDEMIXPaths(true);
-      {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations in, selected areas=' + IntToStr(Areas.Count)); {$EndIf}
+      {$IfDef RecordDEMIX} HighLightInDebugFile('AreaSSIMandFUVComputations in, selected areas=' + IntToStr(Areas.Count)); {$EndIf}
 
       if MDDef.DEMIX_Geo_Tiles then begin
           if MDDef.DoFUV then SafeMakeDir(FUVresultsDir);
@@ -645,7 +645,7 @@ begin
    finally
       EndDEMIXProcessing(0,true);
    end;
-   {$IfDef RecordDEMIX} HighLightLineToDebugFile('AreaSSIMandFUVComputations out'); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('AreaSSIMandFUVComputations out'); {$EndIf}
 end {procedure AreaSSIMandFUVComputations};
 
 

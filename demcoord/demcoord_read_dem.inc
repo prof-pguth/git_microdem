@@ -369,7 +369,7 @@ begin {tDEMDataSet.ReadDEMNow}
       Error := not ReadNewMicroDEMFormat(DEMFileName);
       if Error then Error := not TryGDAL(DEMFileName); //for USGS ASCII and maybe others
       if Error then begin
-         {$If Defined(RecordReadDEM) or Defined(RecordProblems)} HighlightLineToDebugFile('Deleting broken file: ' +  DEMFileName); {$EndIf}
+         {$If Defined(RecordReadDEM) or Defined(RecordProblems)} HighLightInDebugFile('Deleting broken file: ' +  DEMFileName); {$EndIf}
          File2Trash(DEMFileName);
       end;
    end

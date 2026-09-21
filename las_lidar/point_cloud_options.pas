@@ -783,7 +783,7 @@ begin
                if (Findings.Count > 1) then begin
                   fName := Petmar.NextFileNumber(MDtempDir,'las_pts_col_' + IntToStr(Col) + '_row_' + IntToStr(Row),'.dbf');
                   fName := ChangeFileExt(fName,'.csv');
-                  db := DEMGlb[DEM].SelectionMap.StringListToLoadedDatabase(Findings,fName,true,true);
+                  db := DEMGlb[DEM].SelectionMap.StringListToDBonMap(Findings,fName,true,true);
                   GISDB[db].DisplayFieldStatistics('ELEV');
                   Color := clLime;
                end
@@ -1508,7 +1508,7 @@ begin
          end;
       end;
       fName := PetMar.NextFileNumber(MDTempDir,'las_points_','.csv');
-      BaseMap.StringListtoLoadedDatabase(Results,fName);
+      BaseMap.StringListToDBonMap(Results,fName);
       EndProgress;
    end;
 end;

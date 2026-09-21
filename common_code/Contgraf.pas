@@ -754,9 +754,6 @@ initialization
    DoInit;
 finalization
    DoFinal;
-   {$IfDef RecordDetailedXYZProblems} WriteLineToDebugFile('RecordDetailedXYZProblems active in ContGraf'); {$EndIf}
-   {$IfDef RecordXYZProblems} WriteLineToDebugFile('RecordXYZProblems active in ContGraf'); {$EndIf}
-   {$IfDef RecordTINProblems} WriteLineToDebugFile('RecordTINProblems active in ContGraf'); {$EndIf}
 end.
 
 

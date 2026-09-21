@@ -554,7 +554,7 @@ end;
           end;
 
           fName := NextFileNumber(MDtempDir,TestDEMName + '_' + AreaName + '_channels_', '.dbf');
-          db := DEMGlb[BaseDEM].SelectionMap.StringListToLoadedDatabase(VectorResults,fName,false);
+          db := DEMGlb[BaseDEM].SelectionMap.StringListToDBonMap(VectorResults,fName,false);
           GISdb[db].dbOpts.dbAutoShow := dbasColorField;
           GISdb[db].dbOpts.Symbol.Size := 1;
           GISdb[db].RedrawLayerOnMap;

@@ -681,40 +681,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordTrendSurfaceProblems} WriteLineToDebugFile('RecordTrendSurfaceProblems active in demtrendopt'); {$EndIf}
-   {$IfDef RecordAllTrendSurfaceProblems} WriteLineToDebugFile('RecordAllTrendSurfaceProblems active in demtrendopt'); {$EndIf}
 end.
 
-
-
-(*
-procedure TrimTrendDeviations;
-var
-   CutDevs,Col,Row : integer;
-   TrimClose : boolean;
-begin
-   CutDevs := -500;
-   ReadDefault('Deviation from trend surface to cut',CutDevs);
-   TrimClose := AnswerIsYes('Trim points with deviation from trend surface');
-   StartProgress('Trim');
-   with DEMGlb[InDEM],HeadRecs do begin
-      for Col := 0 to pred(NumCol) do begin
-         if (Col mod 25 = 0) then UpdateProgressBar(Col/NumCol);
-         for Row := 0 to pred(NumRow) do if not DEMGlb[InDEM].MissingData(Col,Row) then begin
-            if TrimClose then begin
-               if abs(DEMGlb[DevDEM].GridElevMeters(Col,Row)) <= CutDevs then
-                  DEMGlb[InDEM].SetGridMissing(Col,Row);
-            end
-            else begin
-               if abs(DEMGlb[DevDEM].GridElevMeters(Col,Row)) >= CutDevs then
-                  DEMGlb[InDEM].SetGridMissing(Col,Row);
-            end;
-         end;
-      end;
-      EndProgress;
-      DEMGlb[InDEM].CheckMaxMinElev;
-      DEMGlb[InDEM].SelectionMap.DrawColoredMap1Click(Nil);
-   end;
-end;
-*)
 

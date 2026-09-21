@@ -884,10 +884,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordDEditProblems} WriteLineToDebugFile('RecordDEditProblems active in demeshowdbrecord'); {$EndIf}
-   {$IfDef RecordLinkProblems}  WriteLineToDebugFile('RecordLinkProblems active in demeshowdbrecord'); {$EndIf}
-   {$IfDef RecordCloseShowRecord} WriteLineToDebugFile('RecordCloseShowRecord active in demeshowdbrecord'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demshowdbrecord'); {$EndIf}
 end.
 
 

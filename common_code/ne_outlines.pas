@@ -207,8 +207,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordNaturalEarth} WriteLineToDebugFile('RecordNaturalEarth active in ne_outlines'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing ne_outlines'); {$EndIf}
 end.
 
 

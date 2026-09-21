@@ -263,7 +263,7 @@ begin
    end;
    if (Results <> Nil) then begin
       fName := Petmar.NextFileNumber(MDTempDir, 'Sat_block_', DefaultDBExt);
-      MapOwner.StringListToLoadedDatabase(Results,fName);
+      MapOwner.StringListToDBonMap(Results,fName);
    end
    else MapOwner.IHSmergeOntoMap(bmp);
    EndProgress;

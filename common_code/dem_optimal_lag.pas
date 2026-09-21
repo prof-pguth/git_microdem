@@ -147,7 +147,7 @@ begin
            end;
          end;
          fName := System.IOUtils.TPath.Combine(MDTempDir, ptTrim(DEMGlb[MainDEM].AreaName) + '_shift_' + IntToStr(MDDef.LagSearchRadius) + '.dbf');
-         db := DEMGlb[MainDEM].SelectionMap.StringListToLoadedDatabase(BigResults,fName);
+         db := DEMGlb[MainDEM].SelectionMap.StringListToDBonMap(BigResults,fName);
          Findings := tStringList.Create;
          Findings.Add('Shift from ' + DEMGlb[MainDEM].AreaName);
          Findings.Add('');
@@ -242,7 +242,7 @@ begin
    Region(MDDef.LagSearchRadius,false);
 
    fName := Petmar.NextFileNumber(MDTempDir, 'Lag_correlation_map_', DefaultDBExt);
-   db := DEMGlb[MainDEM].SelectionMap.StringListToLoadedDatabase(CorrelationMatrix,fName);
+   db := DEMGlb[MainDEM].SelectionMap.StringListToDBonMap(CorrelationMatrix,fName);
    GISdb[db].dbOpts.DBAutoShow := dbasColorByNumeric;
    GISdb[db].dbOpts.FloatColorField := 'R2';
    GISdb[db].RedrawLayerOnMap;

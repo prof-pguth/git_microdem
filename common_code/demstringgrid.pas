@@ -841,7 +841,4 @@ end;
 
 initialization
 finalization
-   {$IfDef StringGridSortProblems} WriteLineToDebugFile('StringGridSortProblems active in demstringgrid'); {$EndIf}
-   {$IfDef StringGridProblems} WriteLineToDebugFile('StringGridProblems active in demstringgrid'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demstringgrid out'); {$EndIf}
 end.

@@ -56,7 +56,7 @@ var
                end;
             end
             else begin
-               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing file ' + fName); {$EndIf};
+               {$IfDef RecordDEMIX} HighLightInDebugFile('Missing file ' + fName); {$EndIf};
                Result := false;
             end;
          end;
@@ -84,7 +84,7 @@ var
 
               if (NumFilledDEMIXtilesOnDEM(MaskDEM) = 0) then begin
                  Result := false;
-                 {$If Defined(RecordDEMIX)} HighlightLineToDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
+                 {$If Defined(RecordDEMIX)} HighLightInDebugFile('No filled Delta DEM tiles in ' + Area); {$EndIf}
               end;
               if Result and ValidDEM(MaskDEM) then begin
                  for i := dmxFirstPoint to NumPtDEMs do MaskToMatchUnderDEM(PointDEMs[i]);
@@ -168,7 +168,7 @@ begin {function OpenBothPixelIsDEMs}
                if (DEMGlb[PointDEMs[i]].GridCornerModel <> 'SRTM') then MessageToContinue(DEMGlb[PointDEMs[i]].AreaName + ' not geometric model SRTM');
             end
             else begin
-               {$If Defined(RecordDEMIXopenGrids)} HighLightLineToDebugFile('Failure opening ' + fName); {$EndIf}
+               {$If Defined(RecordDEMIXopenGrids)} HighLightInDebugFile('Failure opening ' + fName); {$EndIf}
             end;
          end;
          if ValidDEM(PointDEMs[-1]) then dmxFirstPoint := -1 else dmxFirstPoint := 0;
@@ -303,7 +303,7 @@ begin
          TestSeries[Ser] := DEMIXShort[i];
       end
       else begin
-         {$If Defined(RecordDEMIXFull)} HighlightLineToDebugFile('Missing test DEM= ' + fName); {$EndIf}
+         {$If Defined(RecordDEMIXFull)} HighLightInDebugFile('Missing test DEM= ' + fName); {$EndIf}
       end;
    end;
 
@@ -359,7 +359,7 @@ begin
       {$If Defined(RecordDEMIXload)} writeLineToDebugFile('ProcessDEMIXtestarea out, ref DEMs open with RefDEM=' + IntToStr(RefDEM) + ' and open DEMs=' + IntToStr(NumDEMDataSetsOpen)); {$EndIf}
    end
    else begin
-      {$IfDef RecordDEMIXload} HighlightLineToDebugFile('Failure, to open ref DEMs'); {$EndIf}
+      {$IfDef RecordDEMIXload} HighLightInDebugFile('Failure, to open ref DEMs'); {$EndIf}
    end;
 end;
 

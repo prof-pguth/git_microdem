@@ -120,7 +120,7 @@ begin
    end;
    EndProgress;
    fName := MDTempDir + 'summary_stats.csv';
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Findings,fName);
+   GISdb[DBonTable].theMapOwner.StringListToDBonMap(Findings,fName);
 {$EndIf}
 end;
 
@@ -644,7 +644,7 @@ var
       if GISdb[DBonTable].LatLongFieldsPresent and (GISdb[DBonTable].TheMapOwner <> Nil) then begin
          fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[DBonTable].dbFullName),'Cluster_stats_' + GISdb[DBonTable].dbName + '_',DefaultDBExt);
          {$IfDef RecordClustering} WriteLineToDebugFile('save and open ' + fName); {$EndIf}
-         GISdb[DBonTable].TheMapOwner.StringListToLoadedDatabase(NewDB,fName);
+         GISdb[DBonTable].TheMapOwner.StringListToDBonMap(NewDB,fName);
          GISdb[DBonTable].dbOpts.FloatColorField := 'CLUSTER';
          GISdb[DBonTable].dbOpts.dbAutoShow := dbasColorByString;
          GISdb[DBonTable].RedrawLayerOnMap;

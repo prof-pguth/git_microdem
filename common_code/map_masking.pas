@@ -717,10 +717,6 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordMapMasking} WriteLineToDebugFile('RecordMapMasking active in map_masking'); {$EndIf}
-   {$IfDef RecordGeomorphFilter} WriteLineToDebugFile('RecordGeomorphFilter active in map_masking'); {$EndIf}
-   {$IfDef RecordMapMaskBMPs} WriteLineToDebugFile('RecordMapMaskBMPs active in map_masking'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing map_masking out'); {$EndIf}
 end.
 
 

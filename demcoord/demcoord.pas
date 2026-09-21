@@ -66,7 +66,7 @@ unit DEMCoord;
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      //{$Define RecordMinMax}
+      //{$Define RecordMinMax}                                                  ie
       //{$Define RecordExtremeZ}
       //{$Define GeotiffCorner}
       //{$Define RecordHorizon}
@@ -87,7 +87,7 @@ unit DEMCoord;
       //{$Define GeotiffSave}
       //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
-      {$Define RecordDEMEdits}
+      //{$Define RecordDEMEdits}
       //{$Define RecordGetGridLimits}
       //{$Define RecordHiResDEM}
       //{$Define TriPrismErrors}
@@ -698,7 +698,7 @@ type
                procedure InitializeNormals;
                procedure DisposeNormals;
                function FigureEntropy : float64;
-               procedure ComputeVariogram(GridLimits: tGridLimits); //SkipDrawing : boolean);
+               procedure ComputeVariogram(GridLimits: tGridLimits);
                procedure VariogramGamma(GridLimits: tGridLimits; var EastWest,NorthSouth,NESW,NWSE : float32);
             {$EndIf}
         {$EndIf}
@@ -943,7 +943,7 @@ uses
       Decs : integer;
    begin
       if (DEMheader.DEMUsed = UTMBasedDEM) then Decs := -2 else Decs := -8;
-      HighlightLineToDebugFile(Where + '  '  + AreaName + '  ' + RasterPixelIsString(DEMHeader.RasterPixelIsGeoKey1025));
+      HighLightInDebugFile(Where + '  '  + AreaName + '  ' + RasterPixelIsString(DEMHeader.RasterPixelIsGeoKey1025));
       WriteLineToDebugFile('Geotiff NW corner:       ' + RealToString(GeotiffNWCornerX,-18,-8) + '/' +  RealToString(GeotiffNWCornerY,-18,-8) );
       WriteLineToDebugFile('DEM SW corner:           ' + RealToString(DEMHeader.DEMSWCornerX,-18,-8) + '/' +  RealToString(DEMHeader.DEMSWCornerY,-18,-8) );
       WriteLineToDebugFile('Centroid SW corner: ' + RealToString(CentroidSWCornerX,-18,-8) + '/' +  RealToString(CentroidSWCornerY,-18,-8) );
@@ -1330,12 +1330,12 @@ begin
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
    NewHeadRecs.ElevUnits := ElevUnits;
-  {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
    if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
       DEMGlb[Result].DEMMapProj.InitProjFomDEMHeader(DEMHeader,'DEM=' + IntToStr(Result));
       {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)}
-          WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, new ' + GridName + '  ' + DEMglb[Result].KeyParams(true));
+          WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, new ' + GridName + '  ' + DEMglb[Result].KeyParams(true) + ' ' + DEMglb[Result].SWcornerstring);
       {$EndIf}
    end;
 end;
@@ -2300,7 +2300,7 @@ function tDEMDataSet.sfBoundBox2tGridLimits(sfBoundBox : sfboundBox) : tGridLimi
 var
    xlo,xhi,ylo,yhi,xtra : float64;
 begin
-   {$IfDef RecordsfBoundBox2tGridLimits} HighlightLineToDebugFile('sfBoundBox2tGridLimits: ' + AreaName);  WriteLineToDebugFile('Geo: ' + sfBoundBoxToString(sfBoundBox));   {$EndIf}
+   {$IfDef RecordsfBoundBox2tGridLimits} HighLightInDebugFile('sfBoundBox2tGridLimits: ' + AreaName);  WriteLineToDebugFile('Geo: ' + sfBoundBoxToString(sfBoundBox));   {$EndIf}
    LatLongDegreeToDEMGrid(sfBoundBox.YMin,sfBoundBox.XMin,xlo,ylo);
    LatLongDegreeToDEMGrid(sfBoundBox.YMax,sfBoundBox.XMax,xhi,yhi);
    {$IfDef RecordsfBoundBox2tGridLimits} WriteLineToDebugFile('DEM Grid, x=' + RealToString(xlo,-12,-2) + ' to ' + RealToString(xhi,-12,-2) +  '  y=' + RealToString(ylo,-12,-2) + ' to ' + RealToString(yhi,-12,-2) ); {$EndIf}
@@ -3139,7 +3139,7 @@ begin
    else begin
       Result := false;
       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)}
-         HighlightLineToDebugFile(AreaName + '  Grid too large (Cols=' + IntToStr(DEMheader.NumCol) + ', rows=' + IntToStr(DEMheader.NumRow) + ')');
+         HighLightInDebugFile(AreaName + '  Grid too large (Cols=' + IntToStr(DEMheader.NumCol) + ', rows=' + IntToStr(DEMheader.NumRow) + ')');
       {$EndIf}
    end;
 end;
@@ -3811,7 +3811,7 @@ begin
       (abs(CentroidSWCornerY - DEMGlb[Map2].CentroidSWCornerY) < Tolerance));
    {$IfDef RecordGridIdenticalProblems}
       if not Result then begin
-         HighlightLineToDebugFile('Compare DEMs: ' + AreaName + ' to ' + DEMglb[Map2].AreaName);
+         HighLightInDebugFile('Compare DEMs: ' + AreaName + ' to ' + DEMglb[Map2].AreaName);
          WriteLineToDebugFile('  Rows: ' + IntToStr(DEMheader.NumRow) + '/' + IntToStr(DEMGlb[Map2].DEMheader.NumRow) + '  Cols: ' + IntToStr(DEMheader.NumCol) + '/' + IntToStr(DEMGlb[Map2].DEMheader.NumCol));
          WriteLineToDebugFile('  delta xspacing : ' + RealToString(abs(DEMheader.DEMxSpacing - DEMGlb[Map2].DEMheader.DEMxSpacing),-18,-6));
          WriteLineToDebugFile('  delta SW X: ' + RealToString(abs(DEMheader.DEMSWCornerX - DEMGlb[Map2].DEMheader.DEMSWCornerX),-18,-6));
@@ -4206,6 +4206,7 @@ end;
 
 
 procedure InitilializeDEMCoord;
+//called in demdef_routines
 var
    i : integer;
 begin
@@ -4221,7 +4222,6 @@ begin
       RoseGraph := Nil;
    {$EndIf}
 end;
-
 
 
 initialization

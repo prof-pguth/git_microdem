@@ -90,7 +90,7 @@ begin
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_freq_',DefaultDBExt);
    {$IfDef RecordClustering} WriteLineToDebugFile(fName); {$EndIf}
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,fName);
+   GISdb[DBonTable].theMapOwner.StringListToDBonMap(Results,fName);
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].dbTableF.RestoreHiddenColumns;
    GISdb[DBonTable].ShowStatus;
@@ -118,7 +118,7 @@ var
                 GISdb[DBonTable].EmpSource.Enabled := false;
                 if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
                    MomentVar := GISdb[DBonTable].GetFieldStatistics(Param);
-                   Stats.Add(ClusterName + ' (n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ')' +  MomentResultsToString(MomentVar));
+                   Stats.Add(ClusterName + GISdb[DBontable].NumRecsInDBstring +  MomentResultsToString(MomentVar));
                 end;
              end;
 

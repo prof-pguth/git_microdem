@@ -1501,7 +1501,7 @@ begin
 
    {$IfDef NoMapOptions}
    {$Else}
-      SelectionMap.StringListToLoadedDatabase(Results,fName);
+      SelectionMap.StringListToDBonMap(Results,fName);
    {$EndIf}
 end;
 

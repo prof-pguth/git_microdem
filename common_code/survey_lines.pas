@@ -143,7 +143,7 @@ var
 begin
    if (LinePoints.Count > 0) then begin
       fName := PetMar.NextFileNumber(MDtempDir,'tracks_','.csv');
-      MapOwner.StringListToLoadedDatabase(LinePoints,fName);
+      MapOwner.StringListToDBonMap(LinePoints,fName);
       LinePoints := tStringList.Create;
    end;
 end;

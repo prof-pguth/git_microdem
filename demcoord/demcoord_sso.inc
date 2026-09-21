@@ -157,7 +157,7 @@ end;
                 {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('No parallel for, DOSSOstrip'); {$EndIf}
                 DoSSOStrip(limits,Results[1]);
              {$EndIf}
-             Result := UseMap.StringListToLoadedDatabase(Results[1],fName,false,true);
+             Result := UseMap.StringListToDBonMap(Results[1],fName,false,true);
              GISdb[Result].dbOpts.dbAutoShow := dbasTerrainFabric;
              GISdb[Result].RedrawLayerOnMap;
              SetColorForWaiting;

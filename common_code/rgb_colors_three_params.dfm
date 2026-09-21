@@ -141,6 +141,7 @@ object RGB_form: TRGB_form
     Align = alLeft
     Caption = ' '
     TabOrder = 1
+    ExplicitHeight = 311
     object Label5: TLabel
       Left = 8
       Top = 88
@@ -196,6 +197,8 @@ object RGB_form: TRGB_form
     Align = alClient
     Caption = ' '
     TabOrder = 2
+    ExplicitWidth = 216
+    ExplicitHeight = 311
     object Label13: TLabel
       Left = 24
       Top = 54
@@ -251,6 +254,8 @@ object RGB_form: TRGB_form
     Align = alRight
     Caption = ' '
     TabOrder = 3
+    ExplicitLeft = 423
+    ExplicitHeight = 311
     object Label9: TLabel
       Left = 23
       Top = 88

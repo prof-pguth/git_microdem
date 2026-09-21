@@ -184,7 +184,7 @@ var
 
 begin {procedure GridOfTerrainScatterPlots}
    {$IfDef RecordCompareDSMandDTM}
-      HighLightLineToDebugFile('GridOfCriterionForMultipleDEMcomparisons in, ' + ' colorsby=' + IntToStr(ColorBy.Count) + ' Compares=' + IntToStr(Compares.Count));
+      HighLightInDebugFile('GridOfCriterionForMultipleDEMcomparisons in, ' + ' colorsby=' + IntToStr(ColorBy.Count) + ' Compares=' + IntToStr(Compares.Count));
       WriteLineToDebugFile('xfield=' + GISdb[DB].dbOpts.XField + '  yfield=' + GISdb[DB].dbOpts.YField);
    {$EndIf}
    if TileCharacteristicsInDB(DB) then begin

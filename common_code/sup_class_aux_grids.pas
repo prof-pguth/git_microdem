@@ -840,7 +840,7 @@ begin
    if GetFileNameDefaultExt('Grid list','CSV file|*.csv;*.dbf' ,FName) then begin
       fName := ChangeFileExt(fName,'.csv');
       {$IfDef SupClassAuxGrids} WriteLineToDebugFile('save, fname=' + fName);   {$EndIf}
-      db := BaseMap.StringListToLoadedDatabase(sl,fname);
+      db := BaseMap.StringListToDBonMap(sl,fname);
       GISdb[db].MyData.TrimAllStringFields;
       CloseSingleDB(db);
    end
@@ -1227,7 +1227,7 @@ begin
       GISDB[TrainingSetDB].MyData.ApplyFilter('');
       GISDB[TrainingSetDB].dbTablef.ShowStatus;
       fName := Petmar.NextFileNumber(MDTempDir, 'temp_','csv');
-      BaseMap.StringListToLoadedDatabase(Results,fName);
+      BaseMap.StringListToDBonMap(Results,fName);
    end;
    {$IfDef SupClassAuxGrids} WriteLineToDebugFile('TSupClassAuxGrids.BitBtn12Click out'); {$EndIf}
  end;
@@ -1255,6 +1255,5 @@ end;
 initialization
    ZeroGlobalVar;
 finalization
-   {$IfDef SupClassAuxGrids} WriteLineToDebugFile('SupClassAuxGrids active in sup_class_aux_grids'); {$EndIf}
 end.
        *

@@ -47,8 +47,6 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Edit3: TEdit;
-    BitBtn5: TBitBtn;
-    RadioGroup4: TRadioGroup;
     BitBtn6: TBitBtn;
     RadioGroup5: TRadioGroup;
     BitBtn12: TBitBtn;
@@ -157,8 +155,6 @@ type
     procedure Edit1Change(Sender: TObject);
     procedure Edit2Change(Sender: TObject);
     procedure Edit3Change(Sender: TObject);
-    procedure BitBtn5Click(Sender: TObject);
-    procedure RadioGroup4Click(Sender: TObject);
     procedure BitBtn6Click(Sender: TObject);
     procedure RadioGroup5Click(Sender: TObject);
     procedure BitBtn12Click(Sender: TObject);
@@ -181,7 +177,6 @@ type
     procedure BitBtn34Click(Sender: TObject);
     procedure BitBtn35Click(Sender: TObject);
     procedure Edit6Change(Sender: TObject);
-    //procedure RadioGroup8Click(Sender: TObject);
     procedure RadioGroup9Click(Sender: TObject);
     procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn10Click(Sender: TObject);
@@ -198,13 +193,10 @@ type
     procedure CheckBox5Click(Sender: TObject);
     procedure CheckBox6Click(Sender: TObject);
     procedure BitBtn26Click(Sender: TObject);
-    //procedure BitBtn31Click(Sender: TObject);
-    //procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn36Click(Sender: TObject);
     procedure BitBtn37Click(Sender: TObject);
     procedure ComboBox6Change(Sender: TObject);
     procedure ComboBox7Change(Sender: TObject);
-    //procedure CheckBox14Click(Sender: TObject);
     procedure CheckBox8Click(Sender: TObject);
     procedure CheckBox10Click(Sender: TObject);
     procedure CheckBox11Click(Sender: TObject);
@@ -222,7 +214,6 @@ type
     procedure BitBtn32Click(Sender: TObject);
     procedure BitBtn42Click(Sender: TObject);
     procedure BitBtn43Click(Sender: TObject);
-    //procedure BitBtn44Click(Sender: TObject);
     procedure CheckBox4Click(Sender: TObject);
     procedure Edit7Change(Sender: TObject);
     procedure BitBtn45Click(Sender: TObject);
@@ -391,7 +382,6 @@ begin
          Memo1.Lines := GISdb[Newdb].MyData.ListUniqueEntriesInDB('CRITERION');
       end;
       db := NewDB;
-      RadioGroup4.Enabled := GISdb[DB].MyData.FieldExists('ELEV_SSIM');
       RadioGroup9.Enabled := TileCharacteristicsInDB(NewDB);
       {$IfDef RecordChangeDB} WriteLineToDebugFile('ChangeDBonForm out ' + GISdb[db].dbName + ' ' + DEMIXModeName + '  ' + CriteriaFamily + '  ' + DEMIX_criteria_tolerance_fName); {$EndIf}
    end;
@@ -411,8 +401,8 @@ end;
 function Teval_scores_graph_form.MakeCriteriaList(All : boolean = false) : tStringList;
 var
    j : integer;
-   Criterion : shortstring;
-   sl2 : tStringList;
+   //Criterion : shortstring;
+   //sl2 : tStringList;
 begin
    Result := tStringList.Create;
    for j := 0 to pred(Memo1.Lines.Count) do begin
@@ -477,7 +467,7 @@ var
 
 
 begin
-  {$IfDef RecordDEMIX} HighlightLineToDebugFile('Teval_scores_graph_form.BitBtn10Click in'); {$EndIf}
+  {$IfDef RecordDEMIX} HighLightInDebugFile('Teval_scores_graph_form.BitBtn10Click in'); {$EndIf}
    if TileCharacteristicsInDB(DB) then begin
       BitBtn4Click(Sender);   //If needed loads db_U10,db_U80,db_U120,db_Full))
       GeomorphFilters := GeomorphFiltersFromMixed1(Labels);
@@ -855,7 +845,7 @@ procedure Teval_scores_graph_form.BitBtn32Click(Sender: TObject);
 var
    NewDB : integer;
 begin
-  {$IfDef RecordDEMIX} HighlightLineToDebugFile('Enter Teval_scores_graph_form.RadioGroup1Click, choice=' + IntToStr(ComboBox8.ItemIndex)); {$EndIf}
+  {$IfDef RecordDEMIX} HighLightInDebugFile('Enter Teval_scores_graph_form.RadioGroup1Click, choice=' + IntToStr(ComboBox8.ItemIndex)); {$EndIf}
   SetColorForProcessing;
   Self.Visible := false;
   if (ComboBox8.ItemIndex = 0) then begin
@@ -866,7 +856,7 @@ begin
   else DEMIX_evaluations_graph(DB,ComboBox8.ItemIndex,MakeDEMlist,MakeCriteriaList,true);
   SetColorForWaiting;
   Self.Visible := true;
-  {$IfDef RecordDEMIX} HighlightLineToDebugFile('Exit Teval_scores_graph_form.RadioGroup1Click, choice=' + IntToStr(ComboBox8.ItemIndex)); {$EndIf}
+  {$IfDef RecordDEMIX} HighLightInDebugFile('Exit Teval_scores_graph_form.RadioGroup1Click, choice=' + IntToStr(ComboBox8.ItemIndex)); {$EndIf}
 end;
 
 procedure Teval_scores_graph_form.BitBtn33Click(Sender: TObject);
@@ -956,7 +946,7 @@ var
    BigBitmap,
    Bitmap : tMyBitmap;
    CriteriaNameAdd,DEM,BaseFilter : shortstring;
-   Color : tColor;
+   //Color : tColor;
    MinHoriz,MaxHoriz : float64;
    gr : array[0..10] of tThisBaseGraph;
 begin
@@ -1235,10 +1225,6 @@ begin
    GridGraphFUVTwoDEMs(db,MakeDEMlist,MakeCriteriaList);
 end;
 
-procedure Teval_scores_graph_form.BitBtn5Click(Sender: TObject);
-begin
-   SSIM_FUV_scatterplot(db,RadioGroup4.Items[RadioGroup4.ItemIndex]);
-end;
 
 procedure Teval_scores_graph_form.BitBtn6Click(Sender: TObject);
 begin
@@ -1255,7 +1241,7 @@ procedure Teval_scores_graph_form.BitBtn8Click(Sender: TObject);
 var
   GeoFilters,Labels : tStringList;
 begin
-   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Teval_scores_graph_form.BitBtn8Click in'); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('Teval_scores_graph_form.BitBtn8Click in'); {$EndIf}
     BitBtn4Click(Sender);   //If needed loads db_U10,db_U80,db_U120,db_Full))
     Self.Visible := false;
     GeoFilters := GeomorphFiltersFromMixed1(Labels);
@@ -1409,9 +1395,9 @@ end;
 
 
 procedure Teval_scores_graph_form.FormCreate(Sender: TObject);
-var
-   DEMIXfilters : tStringList;
-   i : integer;
+//var
+   //DEMIXfilters : tStringList;
+   //i : integer;
 begin
    CheckBox1.Checked := MDDef.DEMIX_combined_graph;
    CheckBox2.Checked := MDDef.PanelsByTestDEM;
@@ -1480,11 +1466,6 @@ begin
 end;
 
 
-procedure Teval_scores_graph_form.RadioGroup4Click(Sender: TObject);
-begin
-   SSIM_FUV_scatterplot(db,RadioGroup4.Items[RadioGroup4.ItemIndex]);
-end;
-
 procedure Teval_scores_graph_form.RadioGroup5Click(Sender: TObject);
 begin
    MDDef.DemixSymSize := RadioGroup5.ItemIndex + 1;
@@ -1512,7 +1493,7 @@ var
          MinHoriz,MaxHoriz : float64;
          NewDB,i : integer;
          Suff,HL,fName,UseFilter,tstr : ShortString;
-         Value : integer;
+         //Value : integer;
          aMinVal,aMaxVal : float64;
          GeomorphFilters,Labels : tStringList;
       begin {function AverageWithFilter}
@@ -1584,9 +1565,10 @@ var
 
       procedure MultipleAverageRanksOrEvaluations(LeftMarginLabels : boolean; CriteriaInFilter : tStringList; Findings : tStringList = Nil); //var gr : t1DGraphArray);
       var
-         BigBitmap,bmp : tMyBitmap;
-         y,i,MaxLeft,MaxWide,NumGr : integer;
-         Title : shortstring;
+         //BigBitmap,         bmp : tMyBitmap;
+         //y,
+         i,MaxLeft,MaxWide,NumGr : integer;
+         //Title : shortstring;
          gr : t1DGraphArray;
          fName : PathStr;
       begin
@@ -1656,7 +1638,7 @@ begin {Teval_scores_graph_form.RadioGroup9Click}
     try
         GetDEMIXpaths(True);
         Self.Visible := false;
-        {$IfDef RecordDEMIX} HighlightLineToDebugFile('Enter Teval_scores_graph_form.RadioGroup9Click, choice=' + IntToStr(Choice) + ' DEMs=' + IntToStr(TheDEMs.Count)); {$EndIf}
+        {$IfDef RecordDEMIX} HighLightInDebugFile('Enter Teval_scores_graph_form.RadioGroup9Click, choice=' + IntToStr(Choice) + ' DEMs=' + IntToStr(TheDEMs.Count)); {$EndIf}
         case Choice of
            0 : if MDDef.DEMIX_average_criteria then AverageWithFilters(DB,'',Criteria,true) else MultipleByEachCriterion(Choice);
            1 : begin
@@ -1670,7 +1652,7 @@ begin {Teval_scores_graph_form.RadioGroup9Click}
         end;
     finally
       RadioGroup9.ItemIndex := -1;
-      {$IfDef RecordDEMIX} HighlightLineToDebugFile('Exit Teval_scores_graph_form.RadioGroup9Click, choice=' + IntToStr(Choice) + ' DEMs=' + IntToStr(TheDEMs.Count)); {$EndIf}
+      {$IfDef RecordDEMIX} HighLightInDebugFile('Exit Teval_scores_graph_form.RadioGroup9Click, choice=' + IntToStr(Choice) + ' DEMs=' + IntToStr(TheDEMs.Count)); {$EndIf}
       TheDEMs.Destroy;
       Criteria.Destroy;
       EndDEMIXProcessing(db);

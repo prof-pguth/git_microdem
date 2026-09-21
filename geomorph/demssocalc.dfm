@@ -5,38 +5,25 @@ inherited SSOCalcDlg: TSSOCalcDlg
   ClientHeight = 454
   ClientWidth = 632
   Position = poDefaultSizeOnly
-  StyleElements = [seFont, seClient, seBorder]
   OnCreate = FormCreate
-  ExplicitWidth = 648
-  ExplicitHeight = 493
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 476
     Top = 430
     Width = 129
     Height = 8
-    ExplicitLeft = 476
-    ExplicitTop = 430
-    ExplicitWidth = 129
-    ExplicitHeight = 8
   end
   inherited OKBtn: TButton
     Left = 151
     Top = 413
     Width = 36
     OnClick = OKBtnClick
-    ExplicitLeft = 151
-    ExplicitTop = 413
-    ExplicitWidth = 36
   end
   inherited CancelBtn: TButton
     Left = 193
     Top = 413
     Width = 53
     OnClick = CancelBtnClick
-    ExplicitLeft = 193
-    ExplicitTop = 413
-    ExplicitWidth = 53
   end
   object HelpBtn: TButton
     Left = 252

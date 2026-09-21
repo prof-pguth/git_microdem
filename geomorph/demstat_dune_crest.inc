@@ -22,7 +22,7 @@ var
             Point : ShortString;
             xg,yg : integer;
          begin
-            {$IfDef RecordDetailedTraceCrests} WriteLineToDebugFile('DoCrest in    TrendMult=' + IntToStr(TrendMult)); {$EndIf}
+            {$IfDef RecordDetailedTraceCrests} WriteLineToDebugFile('DoCrest in, TrendMult=' + IntToStr(TrendMult)); {$EndIf}
              Lat := StartLat;
              Long := StartLong;
              LastTrend := -999;
@@ -69,7 +69,7 @@ var
                              DEMGlb[ScratchDEM].LatLongDegreeToDEMGridInteger(Lat,Long,xg,yg);
                              if (not DEMGlb[ScratchDEM].MissingDataInGrid(xg,yg)) then begin
                                 LOSF.Close;
-                                {$IfDef RecordDetailedTraceCrests} WriteLineToDebugFile('Break out');  {$EndIf}
+                                {$IfDef RecordDetailedTraceCrests} WriteLineToDebugFile('Break out'); {$EndIf}
                                 exit;
                              end;
                           end;
@@ -209,16 +209,10 @@ begin
           yinc := round(MDDef.DuneSamplingInterval / AverageYSpace);
           Results := tStringList.Create;
           Results.Add('CREST_ID,LAT,LONG,Z,HEIGHT,LENGTH,TREND');
-          {$IfDef NoFanThreads}
-          {$Else}
-             StartThreadTimers('Thread Crests');
-          {$EndIf}
+          {$IfDef NoFanThreads} {$Else} StartThreadTimers('Thread Crests'); {$EndIf}
           x := GridLimits.XGridLow + xinc;
           while (x < GridLimits.XGridHigh - xinc) do  begin
-             {$IfDef NoFanThreads}
-             {$Else}
-                ThreadTimers.OverallGauge9.Progress := round(100 * (x - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow));
-             {$EndIf}
+             {$IfDef NoFanThreads} {$Else} ThreadTimers.OverallGauge9.Progress := round(100 * (x - GridLimits.XGridLow) / (GridLimits.XGridHigh - GridLimits.XGridLow)); {$EndIf}
              y := GridLimits.YGridLow + yinc;
              while (y < GridLimits.YGridHigh  - yinc) do begin
                 DEMGridToLatLongDegree(x,y,Lat,Long);
@@ -233,7 +227,7 @@ begin
                        MDDef.ForceCrestComputations := true;
                        //LOSF.LOSdraw.EraseFresnelDB := true;
                        {$IfDef RecordDetailedTraceCrests} WriteLineToDebugFile('LOSF'); {$EndIf}
-                       CrestsAlongProfile(LOSF, Results,Nil);   //Memo1);
+                       CrestsAlongProfile(LOSF, Results,Nil);
                        LOSF.Close;
                    end;
                 end;
@@ -247,12 +241,9 @@ begin
              Results.SaveToFile(ExtractFilePath(DEMFileName) + AreaName + '_crests_working.csv');
              //if CeaseThreads then break;
           end;
-          {$IfDef NoFanThreads}
-          {$Else}
-             EndThreadTimers;
-          {$EndIf}
+          {$IfDef NoFanThreads} {$Else} EndThreadTimers; {$EndIf}
           if (Results.Count > 1) then begin
-             StringListToLoadedDatabase(Results,NextFileNumber(ExtractFilePath(DEMFileName), AreaName + '_crests-','.csv'));
+             StringListToDBonMap(Results,NextFileNumber(ExtractFilePath(DEMFileName), AreaName + '_crests-','.csv'));
           end
           else begin
              Results.Free;

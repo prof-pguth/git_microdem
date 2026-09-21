@@ -369,7 +369,5 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordGetGridOpts} WriteLineToDebugFile('RecordGetGridOpts active in DEMGrPik'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing DEMgrPik'); {$EndIf}
 end.
 

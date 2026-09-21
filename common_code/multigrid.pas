@@ -858,7 +858,7 @@ begin
    {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph grids read'); {$EndIf}
    if (Findings.Count > 2) then begin
       fName := Petmar.NextFileNumber(MDTempDir,'monthly_graph_','.dbf');
-      db := MapOwner.StringListtoLoadedDatabase(Findings, fName);
+      db := MapOwner.StringListToDBonMap(Findings, fName);
 
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph db loaded'); {$EndIf}
       Result := GISdb[db].CreateScatterGram(TStr,GISdb[db].MonthFieldName,'PARAMETER',clRed,true,MG_Name + ' at ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees),'Month',MG_Name);
@@ -1153,7 +1153,7 @@ begin
        end;
        if (StatOpts in [soTable,soGraph]) then begin
           fName := GISdb[CurDB].GridStatsName(CurDEM,'.csv');
-          db := theMapOwner.StringListToLoadedDatabase(Results,fName);
+          db := theMapOwner.StringListToDBonMap(Results,fName);
           if (StatOpts in [soGraph]) then GISdb[db].dbTableF.Graphwithranges1Click(Nil);
        end
        else if (StatOpts in [soCumDist]) then begin
@@ -1274,7 +1274,7 @@ begin
       end;
       EndProgress;
       {$IfDef RecordMultiGrids} WriteStringListToDebugFile(Results); {$EndIf}
-      Result := MapOwner.StringListToLoadedDatabase(Results,fName);
+      Result := MapOwner.StringListToDBonMap(Results,fName);
    end;
 end;
 

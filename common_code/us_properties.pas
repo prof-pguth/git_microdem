@@ -132,8 +132,6 @@ initialization
    Rivers := 0;
 finalization
    CloseDataBases;
-   {$IfDef USpropertiesTrack} WriteLineToDebugFile('USpropertiesTrack in US_properties'); {$EndIf}
-   {$IfDef RecordDBClosing} WriteLineToDebugFile('RecordDBClosing in US_properties'); {$EndIf}
 end.
 
 

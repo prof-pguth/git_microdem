@@ -48,13 +48,13 @@
       //{$Define RecordBoundBox}
 
       //{$Define RecordSym}
+      //{$Define RecordDetailedSym}
       //{$Define RecordDBPlotDetailed}
       //{$Define RecordShapeFileGroup}
       //{$Define RecordFullOpenDB}
       //{$Define RecordFullShapeFileGroup}
       //{$Define RecordMonthlyFilter}
       //{$Define RecordLinkTable}
-      //{$Define RecordDetailedSym}
 
       //{$Define RecordRangeTable}
       //{$Define RecordAddField}
@@ -80,8 +80,7 @@
       //{$Define RecordMaskDEMShapeFile}
       //{$Define RecordZoomMap}
       //{$Define RecordIcons}
-      //{$Define RecordDBGraphs}
-      //{$Define RecordUnique}
+      {$Define RecordDBGraphs}
       //{$Define RecordQuadFill
 
       //{$Define RecordDBindexes}
@@ -90,7 +89,6 @@
       //{$Define ShowOtherDBsWithSameFilter}
       //{$Define RecordDataBasePlotProblemsEveryPoint}
       //{$Define RecordDBCount}
-      //{$Define RecordGISvectors}
       //{$Define RecordCurrentRecord}
       //{$Define RecordStationTimeSeries}
       //{$Define RecordDataBase}
@@ -4119,7 +4117,7 @@ begin
       else fName := '_pts_along_lines_';
       fName := Petmar.NextFileNumber(ExtractFilePath(DBFullName),ExtractFileNameNoExt(DBFullName) + fName,'.csv');
       {$IfDef VCL}
-         theMapOwner.StringListtoLoadedDatabase(Results,fName);
+         theMapOwner.StringListToDBonMap(Results,fName);
       {$Else}
          Results.SaveToFile(fName);
          Results.Free;
@@ -4184,7 +4182,7 @@ begin
 
    fName := '_line_XYZ_points_';
    fName := Petmar.NextFileNumber(ExtractFilePath(DBFullName),ExtractFileNameNoExt(DBFullName) + fName,'.dbf');
-   theMapOwner.StringListtoLoadedDatabase(Results,fName);
+   theMapOwner.StringListToDBonMap(Results,fName);
 end;
 
 
@@ -4761,10 +4759,7 @@ procedure TGISdataBaseModule.DBFieldUniqueEntries(FieldName : shortstring; var F
 
 
 begin
-   //{$IfDef RecordUnique} WriteLineToDebugFile('TGISdataBaseModule.DBFieldUniqueEntries in'); {$EndIf}
    EmpSource.Enabled := false;
-   //if (LinkTable <> Nil) and LinkedField(FieldName) then UseCorrectTable(LinkTable)
-   //else UseCorrectTable(MyData);
    FieldsInDB := Nil;
    if (LinkTable <> Nil) and LinkedField(FieldName) then FieldsInDB := LinkTable.ListUniqueEntriesInDB(FieldName)
    else FieldsInDB := MyData.ListUniqueEntriesInDB(FieldName);
@@ -5267,7 +5262,7 @@ begin
         MyData := tMyData.Create(dbFullName,DesiredDBMode);
      except
         On Exception do begin
-                       {$If Defined(RecordProblems)} HighLightLineToDebugFile(dbFullName + ' load failed'); {$EndIf}
+                       {$If Defined(RecordProblems)} HighLightInDebugFile(dbFullName + ' load failed'); {$EndIf}
                        Self.Destroy;
                        Result := false;
                        exit;

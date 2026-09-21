@@ -906,7 +906,4 @@ end;
 
 initialization
 finalization
-   {$IfDef KMLProblems} WriteLineToDebugFile('KMLProblems active in kml_opts'); {$EndIf}
-   {$IfDef ShowKMLProofing} WriteLineToDebugFile('ShowKMLProofing active in kml_opts'); {$EndIf}
-   {$IfDef RecorClosing} WriteLineToDebugFile('Closing kml_opts out'); {$EndIf}
 end.

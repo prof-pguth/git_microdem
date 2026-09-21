@@ -196,5 +196,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordLVIS} WriteLineToDebugFile('RecordLVIS active in lvis_form'); {$EndIf}
 end.

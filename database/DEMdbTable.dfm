@@ -2071,6 +2071,16 @@ object dbtablef: Tdbtablef
         OnClick = Recordboundingbox1Click
       end
     end
+    object DEMIX2: TMenuItem
+      Caption = 'DEMIX this tile'
+      object LoadtestandreferenceDEMs1: TMenuItem
+        Caption = 'Load test and reference 1 sec DEMs for tile'
+        OnClick = LoadtestandreferenceDEMs1Click
+      end
+      object CompareCOPtopointandareareferenceDEMs1: TMenuItem
+        Caption = 'Compare COP to point and area reference DEMs'
+      end
+    end
     object DTDSMcomparison1: TMenuItem
       Caption = 'DTM/DSM graph comparison this tile'
       object OpenHRDEMDSMDTMLandcover1: TMenuItem
@@ -2088,13 +2098,6 @@ object dbtablef: Tdbtablef
       object LoadtestandreferenceDEMs2: TMenuItem
         Caption = 'Load test and reference 1 sec DEMs'
         OnClick = LoadtestandreferenceDEMs2Click
-      end
-    end
-    object DEMIX2: TMenuItem
-      Caption = 'DEMIX this tile'
-      object LoadtestandreferenceDEMs1: TMenuItem
-        Caption = 'Load test and reference 1 sec DEMs for tile'
-        OnClick = LoadtestandreferenceDEMs1Click
       end
     end
     object Calculate1: TMenuItem
@@ -3842,6 +3845,10 @@ object dbtablef: Tdbtablef
         Caption = 'GDEM average tile slope by resolution'
         OnClick = GDEMaveragetileslopebyresolution1Click
       end
+      object BestreferenceDEMforCOP1: TMenuItem
+        Caption = 'Best reference DEM for COP'
+        OnClick = BestreferenceDEMforCOP1Click
+      end
       object N63: TMenuItem
         Caption = '-'
       end
@@ -4069,33 +4076,40 @@ object dbtablef: Tdbtablef
       Caption = 'Graphs all SSIM/FUV range by DEMs and clusters (very slow)'
       OnClick = Clusterdiversity1Click
     end
-    object Clustersensitivity1: TMenuItem
-      Caption = 'Cluster sensitivity'
-      Enabled = False
-      OnClick = Clustersensitivity1Click
-    end
-    object GraphofPrimaryDataFractionbyClusters1: TMenuItem
-      Caption = 'Graph of Primary Data Fraction by Clusters'
-      OnClick = GraphofPrimaryDataFractionbyClusters1Click
-    end
-    object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
-      Caption = 'Cluster whisker plots for tile characteristics'
-      object Alltiles1: TMenuItem
-        Caption = 'All tiles'
-        OnClick = Alltiles1Click
+    object Clusters1: TMenuItem
+      Caption = 'Clusters'
+      object Clustersensitivity1: TMenuItem
+        Caption = 'Cluster sensitivity'
+        Enabled = False
+        OnClick = Clustersensitivity1Click
       end
-      object Byclusters1: TMenuItem
-        Caption = 'By clusters'
-        OnClick = Byclusters1Click
+      object GraphofPrimaryDataFractionbyClusters1: TMenuItem
+        Caption = 'Graph of Primary Data Fraction by Clusters'
+        OnClick = GraphofPrimaryDataFractionbyClusters1Click
       end
-      object Winlosstie1: TMenuItem
-        Caption = 'Win/loss/tie'
-        OnClick = Winlosstie1Click
+      object Clusterwhiskerplotsforslopeandroughness1: TMenuItem
+        Caption = 'Cluster whisker plots for tile characteristics'
+        object Alltiles1: TMenuItem
+          Caption = 'All tiles'
+          OnClick = Alltiles1Click
+        end
+        object Byclusters1: TMenuItem
+          Caption = 'By clusters'
+          OnClick = Byclusters1Click
+        end
+        object Winlosstie1: TMenuItem
+          Caption = 'Win/loss/tie'
+          OnClick = Winlosstie1Click
+        end
       end
-    end
-    object Areasinclusters1: TMenuItem
-      Caption = 'Areas in clusters'
-      OnClick = Areasinclusters1Click
+      object Areasinclusters1: TMenuItem
+        Caption = 'Areas in clusters'
+        OnClick = Areasinclusters1Click
+      end
+      object MapsbyclusterandDEM1: TMenuItem
+        Caption = 'Maps by cluster and DEM'
+        OnClick = MapsbyclusterandDEM1Click
+      end
     end
     object N49: TMenuItem
       Caption = '-'
@@ -4116,13 +4130,6 @@ object dbtablef: Tdbtablef
       object Pointfilter2: TMenuItem
         Caption = 'ALL points'
       end
-    end
-    object N55: TMenuItem
-      Caption = '-'
-    end
-    object MapsbyclusterandDEM1: TMenuItem
-      Caption = 'Maps by cluster and DEM'
-      OnClick = MapsbyclusterandDEM1Click
     end
     object N48: TMenuItem
       Caption = '-'

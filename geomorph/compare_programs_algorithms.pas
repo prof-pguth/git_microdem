@@ -377,7 +377,7 @@ var
        var
           i : integer;
        begin
-          HighLightLineToDebugFile(What);
+          HighLightInDebugFile(What);
           for i := 1 to MaxDEMDataSets do begin
              if DEMlist[i] and ValidDEM(i) then WriteLineToDebugFile(DEMGlb[i].AreaName + ' ' + DEMGlb[i].DEMMapProj.GetProjName);
           end;

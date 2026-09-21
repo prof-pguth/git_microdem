@@ -396,14 +396,14 @@ end;
                Color : tPlatformColor;
                PlotIt : boolean;
             begin
-               {$If Defined(RecordSymProblems) or Defined(RecordGISvectors)} WriteLineToDebugFile('tGISdataBaseModule.PlotVectorsOnMap ' + dbName + '  filter=' + MyData.Filter); {$EndIf}
+               {$If Defined(RecordSymProblems)} WriteLineToDebugFile('tGISdataBaseModule.PlotVectorsOnMap ' + dbName + '  filter=' + MyData.Filter); {$EndIf}
 
                if MyData.FieldExists(dbOpts.DirField) then begin
-                  {$If Defined(RecordSymProblems) or Defined(RecordGISvectors)} WriteLineToDebugFile('Mag=' + dbOpts.MagField + '  Dir=' + dbOpts.DirField); {$EndIf}
+                  {$If Defined(RecordSymProblems)} WriteLineToDebugFile('Mag=' + dbOpts.MagField + '  Dir=' + dbOpts.DirField); {$EndIf}
                   if dbOpts.GISVectorsByMaxSpeed then begin
                      dbOpts.ColorMax := dbopts.GISVectorsMaxSpeed;
                      dbOpts.ColorMin := 0;
-                     {$If Defined(RecordSymProblems) or Defined(RecordGISvectors)} WriteLineToDebugFile('Color by speed range, ' + RealToString(dbOpts.ColorMax,-12,-4)); {$EndIf}
+                     {$If Defined(RecordSymProblems)} WriteLineToDebugFile('Color by speed range, ' + RealToString(dbOpts.ColorMax,-12,-4)); {$EndIf}
                   end;
 
                   if dbOpts.WindAutoSpace then begin
@@ -483,7 +483,7 @@ end;
                   EmpSource.Enabled := true;
                end;
 
-               {$If Defined(RecordSymProblems) or Defined(RecordGISvectors)} WriteLineToDebugFile('tGISdataBaseModule.PlotVectorsOnMap out'); {$EndIf}
+               {$If Defined(RecordSymProblems)} WriteLineToDebugFile('tGISdataBaseModule.PlotVectorsOnMap out'); {$EndIf}
             end;
 
             procedure TGISdataBaseModule.PlotDefaultSymbols(MapDraw : tMapDraw; var Bitmap : tMyBitmap);

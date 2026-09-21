@@ -331,7 +331,7 @@ UserData : beam, single value for the entire track  GT1R = 1 GT1L = 2 GT2R = 3 G
    end;
    FreeLASRecordMemory;
    fName := Petmar.NextFileNumber(MDTempDir, 'points_around_','.csv');
-   MapOwner.StringListToLoadedDatabase(outf,fName);
+   MapOwner.StringListToDBonMap(outf,fName);
    EndProgress;
 end;
 

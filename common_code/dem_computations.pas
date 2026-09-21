@@ -372,7 +372,7 @@ var
          end;
       end;
       fName := Petmar.NextFileNumber(MDTempDir, DEMGlb[CurDEM].AreaName + '_Grid_spacing_','.dbf');
-      db := DEMGlb[CurDEM].SelectionMap.StringListToLoadedDatabase(Results,fName);
+      db := DEMGlb[CurDEM].SelectionMap.StringListToDBonMap(Results,fName);
       GISDB[db].EmpSource.Enabled := false;
       GISDB[db].MyData.FindFieldRange('DX_M',dx_min,dx_max);
       GISDB[db].MyData.FindFieldRange('DY_M',dy_min,dy_max);
@@ -407,7 +407,7 @@ begin
       end;
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'DEM_summary_','.dbf');
-   DEMGlb[CurDEM].SelectionMap.StringListToLoadedDatabase(Summary,fName);
+   DEMGlb[CurDEM].SelectionMap.StringListToDBonMap(Summary,fName);
 end;
 
 

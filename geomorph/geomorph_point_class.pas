@@ -416,6 +416,4 @@ end;
 
 initialization
 finalization
-   {$If Defined(RecordPointClass)} WriteLineToDebugFile('RecordPointClass active in geomorph_point_class'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing geomorph_point_class out'); {$EndIf}
 end.

@@ -212,5 +212,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordAnaglyph} WriteLineToDebugFile('RecordAnaglyph active in drg_analgyph'); {$EndIf}
 end.

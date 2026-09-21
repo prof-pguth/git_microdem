@@ -383,7 +383,7 @@ begin
 
    if (PeakResults.Count > 2) then begin
       fName := NextFileNumber(MDTempDir,'peaks_rad_' + IntToStr(Round(MDDef.PeakRadius)) + '_ht_' + IntToStr(Round(MDDef.PeakHeight)) + '_v_', '.dbf');
-      db := MapOwner.StringListToLoadedDatabase(PeakResults,fname);
+      db := MapOwner.StringListToDBonMap(PeakResults,fname);
       GISdb[db].dbOpts.Symbol := MDdef.PeakSymbol;
       if CheckBox2.Checked then begin
          GISdb[db].dbOpts.DBAutoShow := dbasColorByString;
@@ -563,7 +563,7 @@ begin
       end;
       EndProgress;
       fName := Petmar.NextFileNumber(MDTempDir, DEMGlb[MapOwner.MapDraw.DEMonMap].AreaName + '_bldg_corner_','.csv');
-      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToLoadedDatabase(SpireResults,fName);
+      DEMGlb[MapOwner.MapDraw.DEMonMap].SelectionMap.StringListToDBonMap(SpireResults,fName);
       Memo1.Lines.Add('');
       Memo1.Lines.Add('Bldg height >= ' + RealToString(MDDef.BuildingMinHeight,-8,-2) + ' m');
       Memo1.Lines.Add('Corners in DEM: ' + IntToStr(OnMap));

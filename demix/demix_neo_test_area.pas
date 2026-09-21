@@ -422,7 +422,7 @@ var
             end
             else begin
                Findings.Destroy;
-               {$IfDef RecordDEMIXneo} HighLightLineToDebugFile('Fail DoOneParameter=' + ItsName); {$EndIf}
+               {$IfDef RecordDEMIXneo} HighLightInDebugFile('Fail DoOneParameter=' + ItsName); {$EndIf}
             end;
          end;
 
@@ -434,7 +434,7 @@ var
 
 
 begin {procedure MakeGraphDifferentDistributionsAllLandCover}
-   {$IfDef RecordDEMIXneo} HighLightLineToDebugFile('Start CrossScaleDEMComparison, Mode=' + IntToStr(DEMIXNeoMode)); {$EndIf}
+   {$IfDef RecordDEMIXneo} HighLightInDebugFile('Start CrossScaleDEMComparison, Mode=' + IntToStr(DEMIXNeoMode)); {$EndIf}
    DEMIXanalysismode := DEMIXneo;
    MDDef.DEMIX_mode := dmFull;
    MDDef.DoSSIM := false;
@@ -460,7 +460,7 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
 
       if DEMIXNeoMode in [4] then begin
          //this option is more hard-wired different from the traditional mode
-         HighlightLineToDebugFile('Start Difference distributions');
+         HighLightInDebugFile('Start Difference distributions');
          ComputeDEMIX_Diff_Dist_tile_stats(Overwrite,Areas);
          GISdb[NewFormatDEMIXDB].ClearGISFilter;
       end;
@@ -469,7 +469,7 @@ begin {procedure MakeGraphDifferentDistributionsAllLandCover}
          MDDef.DoSSIM := false;
          MDDef.DoFUV := true;
          //this option should be les hard-wired new code
-         HighlightLineToDebugFile('Start FUV distributions');
+         HighLightInDebugFile('Start FUV distributions');
          AreaSSIMandFUVComputations(Overwrite,false,Areas);
          GISdb[NewFormatDEMIXDB].ClearGISFilter;
       end;

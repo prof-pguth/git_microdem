@@ -109,6 +109,9 @@ type
     CheckBox10: TCheckBox;
     RadioGroup2: TRadioGroup;
     ComboBox4: TComboBox;
+    CheckBox11: TCheckBox;
+    CheckBox12: TCheckBox;
+    CheckBox13: TCheckBox;
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -137,6 +140,9 @@ type
     procedure CheckBox10Click(Sender: TObject);
     procedure RadioGroup2Click(Sender: TObject);
     procedure ComboBox4Change(Sender: TObject);
+    procedure CheckBox11Click(Sender: TObject);
+    procedure CheckBox12Click(Sender: TObject);
+    procedure CheckBox13Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -179,6 +185,9 @@ begin
          CheckBox8.Checked := OwningGraph.GraphDraw.ShowGraphLeftLabels;
          CheckBox4.Checked := OwningGraph.GraphDraw.HorizAxisFunctionType = Log10Axis;
          CheckBox10.Checked := OwningGraph.GraphDraw.VertAxisFunctionType = Log10Axis;
+         CheckBox11.Checked := OwningGraph.GraphDraw.ShowHorizAxis0;
+         CheckBox12.Checked := OwningGraph.GraphDraw.ShowHorizAxis1;
+         CheckBox13.Checked := OwningGraph.GraphDraw.ShowVertAxis0;
 
          Edit7.Text := IntToStr(GraphDraw.LeftMargin);
          Edit8.Text := IntToStr(GraphDraw.TopMargin);
@@ -198,17 +207,6 @@ begin
          RadioGroup2.ItemIndex := MDDef.GraphZColorScheme;
          ComboBox4.Text := MDdef.GraphPalette;
 
-         (*
-         if (GraphDraw.DBFLineFilesPlotted <> Nil) and (GraphDraw.DBFLineFilesPlotted.Count > 0) then begin
-            ComboBox3.Visible := true;
-            fName := GraphDraw.DBFLineFilesPlotted.Strings[0];
-            MyTable := tMyData.Create(fName);
-            PetdbUtils.GetFields(MyTable,VisCols,NumericFieldTypes,FieldsInDB,true);
-            for i := 0 to pred(FieldsInDB.Count) do ComboBox3.Items.Add(FieldsInDB.Strings[i]);
-            ComboBox3.Text := '';
-            MyTable.Destroy;
-         end;
-         *)
          if (GraphDraw.XYZFilesPlotted <> Nil) and (GraphDraw.XYZFilesPlotted.Count > 0) then begin
             Label1.Visible := true;
             Label4.Visible := true;
@@ -280,6 +278,24 @@ procedure TGraphSettingsForm.CheckBox10Click(Sender: TObject);
 begin
     if CheckBox10.Checked then OwningGraph.GraphDraw.VertAxisFunctionType := Log10Axis
     else OwningGraph.GraphDraw.VertAxisFunctionType := LinearAxis;
+end;
+
+procedure TGraphSettingsForm.CheckBox11Click(Sender: TObject);
+begin
+   OwningGraph.GraphDraw.ShowHorizAxis0:= CheckBox11.Checked;
+   RedrawSpeedButton12Click(Sender);
+end;
+
+procedure TGraphSettingsForm.CheckBox12Click(Sender: TObject);
+begin
+   OwningGraph.GraphDraw.ShowHorizAxis1 := CheckBox12.Checked;
+   RedrawSpeedButton12Click(Sender);
+end;
+
+procedure TGraphSettingsForm.CheckBox13Click(Sender: TObject);
+begin
+   OwningGraph.GraphDraw.ShowVertAxis0 := CheckBox13.Checked;
+   RedrawSpeedButton12Click(Sender);
 end;
 
 procedure TGraphSettingsForm.CheckBox4Click(Sender: TObject);

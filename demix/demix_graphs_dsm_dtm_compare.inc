@@ -909,7 +909,7 @@ begin
 end {function GraphDSMandDTMdifferences};
 
 
-procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; Resolutions : tStringList; var Results : tStringList);
+procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; {Resolutions : tStringList;} var Results : tStringList);
 //shortens for legends, and avoids duplicates with CopDEM when spacing changes
 var
    db,DTM,DSM,DTMthin,DSMthin : integer;
@@ -1010,6 +1010,7 @@ var
             Results.Add(aline);
          end {procedure ComparePair};
 
+
          function Thinned(Thin : integer) : boolean;
          begin
             wmDEM.SetPanelText(3,'Thin ' + IntToStr(Thin),true);
@@ -1031,7 +1032,7 @@ var
 begin {procedure MakeSingleAreaDSMDTMcomparison}
   {$IfDef RecordCompareDSMandDTMfull} WriteLineToDebugFile('CompareDSMandDTM ' + DSMname + '  ' + DTMName); {$EndIf}
   if (not FileExists(DTMName)) or (not FileExists(DSMname)) then begin
-     HighlightLineToDebugFile('Missing file: ' + DSMname + ' or ' + DTMName);
+     HighLightInDebugFile('Missing file: ' + DSMname + ' or ' + DTMName);
      exit;
   end;
   SetColorForProcessing;
@@ -1042,7 +1043,7 @@ begin {procedure MakeSingleAreaDSMDTMcomparison}
       DEMglb[DSM].DEMCenterPoint(Lat2,Long2);
       VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,DistanceMeters,Bearing);
       if (DistanceMeters > 2500) then begin
-         {$IfDef RecordCompareDSMandDTM} HighlightLineToDebugFile(RealToString(0.001 * DistanceMeters,-8,-2) + 'km apart  ' + DSMname + '  ' + DTMName); {$EndIf}
+         {$IfDef RecordCompareDSMandDTM} HighLightInDebugFile(RealToString(0.001 * DistanceMeters,-8,-2) + 'km apart  ' + DSMname + '  ' + DTMName); {$EndIf}
          //this should not be happening, but still trying to figure out why it does
       end
       else begin

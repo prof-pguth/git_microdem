@@ -140,6 +140,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordMemPower} WriteLineToDebugFile('RecordMemPower active in mem_power_spect'); {$EndIf}
-   {$IfDef RecordFullMemPower} WriteLineToDebugFile('RecordFullMemPower active in mem_power_spect'); {$EndIf}
 end.

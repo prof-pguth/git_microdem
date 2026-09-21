@@ -13,7 +13,6 @@ unit GIS_Scaled_symbols;
    //{$Define RecordSym}
    //{$Define RecordLegend}
    //{$Define RecordQuickFilter}
-   //{$Define RecordGISvectors}
    //{$Define RecordFormSetup}
    //{$Define RecordColorPalette}
    //{$Define RecordLayerSymbology}

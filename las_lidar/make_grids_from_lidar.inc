@@ -32,13 +32,13 @@ begin
              pt_cloud_opts_fm.BitBtn50Click(Nil);
           end
           else begin
-             {$IfDef RecordProblems} HighlightLineToDebugFile('No LAS files in ' + Clouds.Strings[i]); {$EndIf}
+             {$IfDef RecordProblems} HighLightInDebugFile('No LAS files in ' + Clouds.Strings[i]); {$EndIf}
           end;
           pt_cloud_opts_fm_Close;
           CloseAllWindowsAndData;
        end
        else begin
-          {$IfDef RecordProblems} HighlightLineToDebugFile('Invalid dirctory  ' + Clouds.Strings[i]); {$EndIf}
+          {$IfDef RecordProblems} HighLightInDebugFile('Invalid dirctory  ' + Clouds.Strings[i]); {$EndIf}
        end;
    end;
    {$IfDef LidarGlobalDEMs} WriteLineToDebugFile('Twmdem.CreateDEMsfromlidar1Click out'); {$EndIf}

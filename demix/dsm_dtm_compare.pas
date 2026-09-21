@@ -383,7 +383,7 @@ end;
 
 procedure TCompareDSM_DTMform.BitBtn10Click(Sender: TObject);
 begin
-   {$IfDef RecordDSM_DTM_Compare} HighlightLineToDebugFile('TCompareDSM_DTMform.BitBtn10Click in'); {$EndIf}
+   {$IfDef RecordDSM_DTM_Compare} HighLightInDebugFile('TCompareDSM_DTMform.BitBtn10Click in'); {$EndIf}
    Self.Hide;
    GraphMultipleParamsByDEMResolution(db,MDDef.DEMIX_SingleCriterion,DEMIXtileFieldName,ResolutionsList,DEMComparingList);
    Self.Show;
@@ -474,7 +474,7 @@ procedure TCompareDSM_DTMform.BitBtn6Click(Sender: TObject);
 var
   BaseFilter,af : shortstring;
 begin
-   {$IfDef RecordDSM_DTM_Compare} HighlightLineToDebugFile('TCompareDSM_DTMform.BitBtn6Click in'); {$EndIf}
+   {$IfDef RecordDSM_DTM_Compare} HighLightInDebugFile('TCompareDSM_DTMform.BitBtn6Click in'); {$EndIf}
    Self.Hide;
    GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),DEMComparingList,Nil);
    Self.Show;

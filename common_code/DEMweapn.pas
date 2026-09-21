@@ -339,6 +339,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordFanOptions} WriteLineToDebugFile('RecordFanOptions active in demweapn'); {$EndIf}
-   {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demweapn out'); {$EndIf}
 end.

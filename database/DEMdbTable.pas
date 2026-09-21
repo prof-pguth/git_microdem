@@ -13,6 +13,7 @@
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
+       {$Define RecordDEMIX}
        //{$Define RecordDetailedDEMIX}
        //{$Define RecordCloseDB}
        //{$Define RecordEditSymbols}
@@ -1009,8 +1010,6 @@ type
     CriteriaforeachDEMIXtile1: TMenuItem;
     Sumforallnumericfields1: TMenuItem;
     SortbyBESTEVAL1: TMenuItem;
-    //AddlatlongfieldstoDB1: TMenuItem;
-    N55: TMenuItem;
     MapsbyclusterandDEM1: TMenuItem;
     N56: TMenuItem;
     Removerowsmissinganyevaluations1: TMenuItem;
@@ -1104,6 +1103,9 @@ type
     ByAVGSLOPE1: TMenuItem;
     ByBARRENPC1: TMenuItem;
     ByFORESTPC1: TMenuItem;
+    Clusters1: TMenuItem;
+    CompareCOPtopointandareareferenceDEMs1: TMenuItem;
+    BestreferenceDEMforCOP1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1462,7 +1464,6 @@ type
     procedure Addbeachballicons1Click(Sender: TObject);
     procedure Ridgecountaroundpoint1Click(Sender: TObject);
     procedure Changefieldtype1Click(Sender: TObject);
-    //procedure Geocodeaddresses1Click(Sender: TObject);
     procedure Maskfieldbystring1Click(Sender: TObject);
     procedure Both1Click(Sender: TObject);
     procedure Addlatlongfromshpfile1Click(Sender: TObject);
@@ -1524,7 +1525,6 @@ type
     procedure Gradient1Click(Sender: TObject);
     procedure RecordtoKML1Click(Sender: TObject);
     procedure Legned1Click(Sender: TObject);
-    //procedure Geocodelatlong1Click(Sender: TObject);
     procedure N2Dgraphallopendatabaseslines1Click(Sender: TObject);
     procedure Gridstatistics1Click(Sender: TObject);
     procedure Graphwithranges1Click(Sender: TObject);
@@ -1585,7 +1585,6 @@ type
     procedure RadiusfromDB1Click(Sender: TObject);
     procedure ValuesfromDB1Click(Sender: TObject);
     procedure N2Dgraph2yaxes1Click(Sender: TObject);
-    //procedure Featurestatistics1Click(Sender: TObject);
     procedure Beachballscolorandsize1Click(Sender: TObject);
     procedure Recordnumber1Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -1817,13 +1816,10 @@ type
     procedure MaskallopenDEMgrids1Click(Sender: TObject);
     procedure Currenttest1Click(Sender: TObject);
     procedure Evaluationrangeforcriterion1Click(Sender: TObject);
-    //procedure SSIMtodissimilarity1Click(Sender: TObject);
     procedure Addtilecharacteristics1Click(Sender: TObject);
     procedure Ascending2Click(Sender: TObject);
     procedure Descending2Click(Sender: TObject);
-    //procedure GraphSSIMR2foratile1Click(Sender: TObject);
     procedure Clustercomposition1Click(Sender: TObject);
-    //procedure TransposeSSIMFUVforclusters1Click(Sender: TObject);
     procedure ilecharacteristicsbytileforCopDEM1Click(Sender: TObject);
     procedure ClustersperDEMIXtile1Click(Sender: TObject);
     procedure Clusterdiversity1Click(Sender: TObject);
@@ -1860,18 +1856,13 @@ type
     procedure CriteriaforeachDEMIXtile1Click(Sender: TObject);
     procedure Sumforallnumericfields1Click(Sender: TObject);
     procedure SortbyBESTEVAL1Click(Sender: TObject);
-    //procedure AddlatlongfieldstoDB1Click(Sender: TObject);
     procedure MapsbyclusterandDEM1Click(Sender: TObject);
     procedure Removerowsmissinganyevaluations1Click(Sender: TObject);
     procedure Averagetilecharacteristicsbycluster1Click(Sender: TObject);
-    //procedure Winpercentagebycriterion1Click(Sender: TObject);
-    //procedure Winpercentagesbyarea1Click(Sender: TObject);
-    //procedure GraphwinningpercentagebyDEM1Click(Sender: TObject);
     procedure OpenDEMIXgraphs1Click(Sender: TObject);
     procedure Graphofcriteriaforareaortile1Click(Sender: TObject);
     procedure GraphofPrimaryDataFractionbyClusters1Click(Sender: TObject);
     procedure AddcountryareafieldstoDB1Click(Sender: TObject);
-    //procedure AddcolorsforFULLU120U80U101Click(Sender: TObject);
     procedure SortandreplaceDB2Click(Sender: TObject);
     procedure Descending3Click(Sender: TObject);
     procedure Winlosstie1Click(Sender: TObject);
@@ -1879,20 +1870,12 @@ type
     procedure LATEXtable1Click(Sender: TObject);
     procedure AddKoppenclass1Click(Sender: TObject);
     procedure Numberoftestareasandtilesbycountry1Click(Sender: TObject);
-    //procedure RemoveSCRfields1Click(Sender: TObject);
     procedure Differentrankingsbytile1Click(Sender: TObject);
     procedure Sortandreplacedatabase2Click(Sender: TObject);
-    //procedure AddCopDEMaverageslopeinarea1Click(Sender: TObject);
     procedure AddDEMIXtileboundingbox1Click(Sender: TObject);
     procedure AddMGRSboundingbox1Click(Sender: TObject);
-    //procedure Graphforatile1Click(Sender: TObject);
-    //procedure GraphbyDEM1Click(Sender: TObject);
-    //procedure Grandbytilecharacterisitic1Click(Sender: TObject);
     procedure Addstringtoendofeachrecord1Click(Sender: TObject);
-    //procedure AddDEMIXUTMtilename1Click(Sender: TObject);
     procedure Cret1Click(Sender: TObject);
-    //procedure N59Click(Sender: TObject);
-    //procedure FindmisplacedGEDTMv12testDEMs1Click(Sender: TObject);
     procedure Capitalize1Click(Sender: TObject);
     procedure IQR1Click(Sender: TObject);
     procedure Limitdeimalsinmultiplefields1Click(Sender: TObject);
@@ -1902,8 +1885,7 @@ type
     procedure IdentifyDSMandDTM1Click(Sender: TObject);
     procedure DTMDSMcomparison1Click(Sender: TObject);
     procedure GraphscompringDSMDTMslopes1Click(Sender: TObject);
-    procedure GraphscompartingDSMDTMdifferencedistribtuions1Click(
-      Sender: TObject);
+    procedure GraphscompartingDSMDTMdifferencedistribtuions1Click(Sender: TObject);
     procedure CompareDSMDTM1Click(Sender: TObject);
     procedure DSMlessthanDTM1Click(Sender: TObject);
     procedure CompareCopDEMtoDSMDTMandaggregate1Click(Sender: TObject);
@@ -1937,6 +1919,7 @@ type
     procedure ByAVGSLOPE1Click(Sender: TObject);
     procedure ByBARRENPC1Click(Sender: TObject);
     procedure ByFORESTPC1Click(Sender: TObject);
+    procedure BestreferenceDEMforCOP1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2587,7 +2570,7 @@ begin
        if WantOut then break;
     end;
     fName := ExtractFilePath(GISdb[DBonTable].DBFullName) + 'Norm_' +  GISdb[DBonTable].dbName;
-    GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Output,fName);
+    GISdb[DBonTable].theMapOwner.StringListToDBonMap(Output,fName);
    FieldsUsed.Free;
    ShowStatus;
    wmDEM.StatusBar1.Panels[0].Text := '';
@@ -7929,6 +7912,7 @@ begin
    MakeCSVforGDEMcompareDSMtoDTM(DBonTable);
 end;
 
+
 procedure Tdbtablef.CompareDSMDTM1Click(Sender: TObject);
 begin
    StartDSMandDTMcomparison(DBonTable);
@@ -8638,7 +8622,7 @@ begin
                   RealToString(Quantile(95,Values,MomentVar.NPts,true),-12,Decs) + ',' +
                   IntToStr(MyData.GetFieldByNameAsInteger('COLOR')));
           end;
-          theMapOwner.StringListToLoadedDatabase(Results,fName);
+          theMapOwner.StringListToDBonMap(Results,fName);
        end;
        ClearGISFilter;
        Self.BringToFront;
@@ -8962,7 +8946,7 @@ begin
      ShowSatProgress := true;
      fName := MDTempDir + GISdb[DBonTable].DBName + '_vector_average.csv';
      {$IfDef AverageNeighbors} WriteLineRoDebugFile('fName=' + fName); {$EndIf}
-     theMapOwner.StringListToLoadedDatabase(Results,fName);
+     theMapOwner.StringListToDBonMap(Results,fName);
      GISdb[DBonTable].MyData.ApplyFilter('');
      ShowStatus;
   end;
@@ -10332,7 +10316,7 @@ begin
          DoPoint(bb.ymin,bb.Xmin);
          DoPoint(bb.ymin,bb.Xmax);
       end;
-      GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Results,NextFileNumber(MDTempdir,'record_bounding_box_','.dbf'));
+      GISdb[DBonTable].theMapOwner.StringListToDBonMap(Results,NextFileNumber(MDTempdir,'record_bounding_box_','.dbf'));
   // end;
 end;
 
@@ -11669,7 +11653,7 @@ var
          end;
 
 begin
-   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Tdbtablef.iesbyopinions1Click in'); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('Tdbtablef.iesbyopinions1Click in'); {$EndIf}
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ALOS_TIE',4);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ASTER_TIE',4);
     GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COP_TIE',4);
@@ -11704,7 +11688,7 @@ begin
     end;
 
    ShowStatus;
-   {$IfDef RecordDEMIX} HighlightLineToDebugFile('Tdbtablef.iesbyopinions1Click out'); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('Tdbtablef.iesbyopinions1Click out'); {$EndIf}
 end;
 
 procedure Tdbtablef.Includedebuglog1Click(Sender: TObject);
@@ -12204,6 +12188,143 @@ begin
    {$EndIf}
 end;
 
+procedure Tdbtablef.BestreferenceDEMforCOP1Click(Sender: TObject);
+const
+   OpenMaps = false;
+   CornerCheck = false;
+var
+   RefDir,fName,EGMDir : PathStr;
+   AreaName,Country,TileName,LatStr,LongStr,Criterion,aLine,Best1,Best2 : shortstring;
+   Results : tstringlist;
+   xoffset,yoffset,i,Count : integer;
+   v : array[1..4] of float64;
+   Fathom,ALOS,COP,RefSRTM,RefPoint,RefALOS,RefEGM,slope1,slope2,slope3,slope4 : integer;
+
+   function OpenaDEM(fName : PathStr) : integer;
+   //allows checking the file name during debug
+   begin
+      Result := OpenNewDEM(fName,OpenMaps);
+      {$IfDef RecordDEMIXFull}
+         HighLightInDebugFile('Opened ' + DEMglb[Result].AreaName + ' ' + DEMglb[Result].KeyParams + ' '  + DEMglb[Result].SWcornerString);
+      {$EndIf}
+   end;
+
+
+   procedure CornerDiffences(DEM1,DEM2 : integer);
+   var
+      DistanceMeters,Bearing,Lat1,Long1,Lat2,Long2 : float64;
+      aline : shortstring;
+   begin
+       aline := 'corner km from ' + DEMglb[DEM1].AreaName;
+       DEMglb[DEM1].DEMGridToLatLongDegree(0,0,Lat1,Long1);
+       DEMglb[DEM2].DEMGridToLatLongDegree(0,0,Lat2,Long2);
+       VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+       aline := aline + ' SW=' + RealToString(DistanceMeters * 0.001,-8,4);
+       DEMglb[DEM1].DEMGridToLatLongDegree(0,pred(DEMglb[DEM1].DEMheader.NumRow),Lat1,Long1);
+       DEMglb[DEM2].DEMGridToLatLongDegree(0,pred(DEMglb[DEM2].DEMheader.NumRow),Lat2,Long2);
+       VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+       aline := aline + ' NW=' + RealToString(DistanceMeters * 0.001,-8,4);
+       DEMglb[DEM1].DEMGridToLatLongDegree(pred(DEMglb[DEM1].DEMheader.NumCol),pred(DEMglb[DEM1].DEMheader.NumRow),Lat1,Long1);
+       DEMglb[DEM2].DEMGridToLatLongDegree(pred(DEMglb[DEM2].DEMheader.NumCol),pred(DEMglb[DEM2].DEMheader.NumRow),Lat2,Long2);
+       VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+       aline := aline + ' NE=' + RealToString(DistanceMeters * 0.001,-8,4);
+       DEMglb[DEM1].DEMGridToLatLongDegree(pred(DEMglb[DEM1].DEMheader.NumCol),0,Lat1,Long1);
+       DEMglb[DEM2].DEMGridToLatLongDegree(pred(DEMglb[DEM2].DEMheader.NumCol),0,Lat2,Long2);
+       VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+       aline := aline + ' SE=' + RealToString(DistanceMeters * 0.001,-8,4);
+       WriteLineToDebugFile(aline + '   elevs=' + IntToStr(DEMglb[DEM2].ValidElevsInDEM) + '  ' + DEMglb[DEM2].AreaName);
+   end;
+
+    procedure FindBest;
+    begin
+        if (v[1] < v[2]) then Best1 := 'DTM_SRTM' else Best1 := 'DTM_POINT';
+
+        if (v[1] < v[2]) and (v[1] < v[3]) and (v[1] < v[4]) then Best2 := 'DTM_SRTM';
+        if (v[2] < v[1]) and (v[2] < v[3]) and (v[2] < v[4]) then Best2 :=  'DTM_POINT';
+        if (v[3] < v[1]) and (v[3] < v[2]) and (v[3] < v[4]) then Best2 :=  'DTM_ALOS';
+        if (v[4] < v[1]) and (v[4] < v[2]) and (v[4] < v[3]) then Best2 :=  'REV_ALOS';
+    end;
+
+begin
+   SetColorForProcessing;
+   WantShowProgress := false;
+   GISdb[DBonTable].ApplyGISFilter('REF_DEM=' + QuotedStr('DTM') + ' AND LAT<50');
+   GISdb[DBonTable].EmpSource.Enabled := false;
+
+   Results := tStringList.Create;
+   Results.Add('DEMIX_TILE,AREA,COUNTRY,LAT,LONG,' + CommonTileStatsNames(DBonTable) + ',CRITERION,DTM_SRTM,DTM_POINT,DTM_ALOS,REV_ALOS,BEST_COP,BEST_ALL');
+   Count := 0;
+   while not GISdb[DBonTable].MyData.eof do begin
+       inc(Count);
+       wmDEM.SetPanelText(1,IntToStr(Count) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
+
+       Country := GISdb[DBonTable].MyData.GetFieldByNameAsString('COUNTRY');
+       AreaName := GISdb[DBonTable].MyData.GetFieldByNameAsString('AREA');
+       TileName := GISdb[DBonTable].MyData.GetFieldByNameAsString('DEMIX_TILE');
+       LatStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('LAT');
+       LongStr := GISdb[DBonTable].MyData.GetFieldByNameAsString('LONG');
+
+       RefDir := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName  + '\' + TileName  + RefTestStr + '\';
+       EGMDir := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName  + '\wgs_egm\';
+
+       RefEGM := OpenaDEM(EGMDir + TileName + '.tif');
+       COP := OpenaDEM(RefDir + 'cop.tif');
+       RefSRTM := OpenaDEM(RefDir + 'ref_DTM_srtm.tif');
+       RefALOS := OpenaDEM(RefDir + 'ref_DTM_alos.tif');
+       {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Try clone DEM=' + IntToStr(Cop)); {$EndIf}
+       RefPoint := DEMglb[RefSRTM].CloneAndOpenGridSetMissing(FloatingPointDEM,'ref_point',euMeters);
+       {$IfDef RecordDEMIXFull} HighLightInDebugFile('Try fill holes ' + DEMglb[RefPoint].AreaName +  ' ' + DEMglb[RefPoint].KeyParams + ' '  + DEMglb[Refpoint].SWcornerString);   {$EndIf}
+       DEMGlb[RefPoint].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[RefPoint].FullDEMGridLimits,RefEGM,hfOnlyHole);
+       if OpenMaps then CreateDEMSelectionMap(RefPoint,true,MDDef.DefElevsPercentile,MDdef.DefElevMap);
+
+       if CornerCheck then begin
+          Fathom := OpenaDEM(RefDir + 'fathom.tif');
+          ALOS := OpenaDEM(RefDir + 'alos.tif');
+          CornerDiffences(RefEGM,COP);
+          CornerDiffences(RefEGM,ALOS);
+          CornerDiffences(RefEGM,Fathom);
+          CornerDiffences(RefEGM,RefSRTM);
+          CornerDiffences(RefEGM,RefPoint);
+       end;
+
+        v[1] := GetFUVForPairGrids(DEMglb[RefSRTM].FullDEMGridLimits,RefSRTM,Cop);
+        v[2] := GetFUVForPairGrids(DEMglb[RefPoint].FullDEMGridLimits,RefPoint,Cop);
+        v[3] := GetFUVForPairGrids(DEMglb[RefALOS].FullDEMGridLimits,RefALOS,Cop);
+        v[4] := GetFUVForPairGrids(DEMglb[RefALOS].FullDEMGridLimits,COP,RefALOS);
+        FindBest;
+
+
+       aline := TileName + ',' + AreaName + ',' + Country + ',' + LatStr + ',' + LongStr +',' + CommonTileStats(DBonTable) + ',ELEV_FUV';
+       for i := 1 to 4 do aLine := aline + ',' + RealToString(v[i],8,6);
+       Results.Add(aline + ',' + Best1 + ',' + Best2);
+
+        slope1 := CreateEvansSlopeMapPercent(false,COP);
+        slope2 := CreateEvansSlopeMapPercent(false,RefSRTM);
+        slope3 := CreateEvansSlopeMapPercent(false,RefPoint);
+        slope4 := CreateEvansSlopeMapPercent(false,RefALOS);
+        v[1] := GetFUVForPairGrids(DEMglb[Slope1].FullDEMGridLimits,Slope1,Slope2);
+        v[2] := GetFUVForPairGrids(DEMglb[Slope1].FullDEMGridLimits,Slope1,Slope3);
+        v[3] := GetFUVForPairGrids(DEMglb[Slope1].FullDEMGridLimits,Slope1,Slope4);
+        v[4] := GetFUVForPairGrids(DEMglb[Slope1].FullDEMGridLimits,Slope4,Slope1);
+       FindBest;
+       aline := TileName + ',' + AreaName + ',' + Country + ',' + LatStr + ',' + LongStr +',' + CommonTileStats(DBonTable) + ',SLOPE_FUV';
+       for i := 1 to 4 do aLine := aline + ',' + RealToString(v[i],8,6);
+       Results.Add(aline + ',' + Best1 + ',' + Best2);
+
+       CloseAllDEMs;
+
+       GISdb[dbOnTable].MyData.Next;
+   end;
+
+   fName := Petmar.NextFileNumber(ExtractFilePath(GISdb[dbOnTable].dbFullName),'cop_best_reference_','.dbf');
+   StringList2CSVtoDB(Results, fName);
+   wmDEM.StatusBar1.Panels[0].Text := '';
+    SetColorForWaiting;
+    GISdb[DBonTable].EmpSource.Enabled := true;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Out'); {$EndIf}
+
+end;
+
 procedure Tdbtablef.Showarearecords1Click(Sender: TObject);
 var
    Bitmap : tMyBitmap;
@@ -12420,18 +12541,6 @@ begin
 
    theDir := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName  + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME')  + RefTestStr + '\';
    Process(theDir, 'ref_DSM');
-
-(*
-   DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + RefTestStr;
-   DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + '\' + GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + RefTestStr;
-
-   DTMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DBonTable].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
-   DSMName := ExtractFilePath(GISdb[DBonTable].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DBonTable].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
-
-   DTM := OpenNewDEM(DTMName);
-   DSM := OpenNewDEM(DSMName);
-   LCgrid := LoadLC10LandCover('',DEMglb[DSM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
-*)
 end;
 
 procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
@@ -12771,7 +12880,7 @@ begin
    end;
    GISdb[DBonTable].MyData.ApplyFilter('');
    fName := Petmar.NextFileNumber(MDTempDir, 'Cluster_legend_',DefaultDBExt);
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(Legend,fName);
+   GISdb[DBonTable].theMapOwner.StringListToDBonMap(Legend,fName);
 {$EndIf}
 end;
 
@@ -13951,7 +14060,7 @@ begin
       end;
       GISdb[DBonTable].ClearGISFilter;
       cf.Insert(0,'NAME,CLASS,COLOR,NPTS,USE');
-      GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(cf, ExtractFilePath(GISdb[DBonTable].dbFullName) + 'training_definitions.csv');
+      GISdb[DBonTable].theMapOwner.StringListToDBonMap(cf, ExtractFilePath(GISdb[DBonTable].dbFullName) + 'training_definitions.csv');
    //end;
    ShowStatus;
 end;
@@ -14353,7 +14462,7 @@ begin
       GISdb[DBonTable].MyData.Next;
    end;
    fName := NextFileNumber(MDTempDir,'test_site_limits_','.csv');
-   GISdb[DBonTable].theMapOwner.StringListToLoadedDatabase(sl,fName);
+   GISdb[DBonTable].theMapOwner.StringListToDBonMap(sl,fName);
 end;
 
 procedure Tdbtablef.CreateDBwithlinearfitforalltilesandDEMs1Click(Sender: TObject);

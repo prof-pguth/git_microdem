@@ -422,7 +422,7 @@ begin
             end;
       {$EndIf}
       EndProgress;
-      it := theBaseMap.StringListToLoadedDatabase(Findings[1],fName);
+      it := theBaseMap.StringListToDBonMap(Findings[1],fName);
    end;
    {$IfDef ShowDEMSSOCalc} WriteLineToDebugFile('tSSOCalcDlg.BitBtn7Click out');  {$EndIf}
 end;
@@ -440,7 +440,7 @@ begin
     CrestsAlongProfile(theLOSView,Results,Memo1);
     if (Results.Count > 1) then  begin
        fName := NextFileNumber(MDTempDir, DEMGlb[theLOSView.LOSdraw.DEMonView].AreaName + '_dune_crests-',DefaultDBExt);
-       theLOSView.BaseMap.StringListToLoadedDatabase(Results,fName);
+       theLOSView.BaseMap.StringListToDBonMap(Results,fName);
     end
     else begin
        Results.Free;

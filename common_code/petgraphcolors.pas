@@ -234,5 +234,4 @@ end;
 
 initialization
 finalization
-   {$IfDef RecordGraphColors} WriteLineToDebugFile('RecordGraphColors active in PetGraphColors'); {$EndIf}
 end.

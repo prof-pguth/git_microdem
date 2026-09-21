@@ -197,7 +197,7 @@ begin
          EndProgress;
          if (Output <> Nil) then begin
             Output.SaveToFile(MDTempDir + 'alt.txt');
-            MapOwner.StringListToLoadedDatabase(Output,fName);
+            MapOwner.StringListToDBonMap(Output,fName);
          end;
       finally
          ShowDefaultCursor;

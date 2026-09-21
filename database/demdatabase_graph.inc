@@ -719,54 +719,59 @@ end;
 
 
 procedure TGISdataBaseModule.AddSeriesToScatterGram(fName : PathStr; Graph : TThisbasegraph; Color : tColor; anXField,anYField : ShortString;  Connect : boolean = false);
+//fname will be the base for the file created in MDtempDir by the Graph.Openxxx routines
 var
   rFile : file;
   v : array[1..2] of float32;
 begin
-   ShowHourglassCursor;
-   //Graph.GraphDraw.LegendList.Add(anXField);
-   if Connect then begin
-      Graph.OpenDataFile(rfile,fName);
-   end
-   else begin
-      Graph.MainSymbol.Size := 3;
-      Graph.MainSymbol.Color := ConvertTColorToPlatformColor(Color);
-      Graph.OpenPointSymbolFile(rfile,'',Graph.MainSymbol);
-   end;
-   MyData.First;
-   repeat
-      if GetFloat32FromTableLink(anXField,v[1]) and GetFloat32FromTableLink(anYField,v[2]) then begin
-         BlockWrite(Rfile,v,1);
-      end;
-      MyData.Next;
-   until MyData.EOF;
-   CloseFile(rfile);
-   ShowDefaultCursor;
-   Graph.AutoScaleAndRedrawDiagram;
+     ShowHourglassCursor;
+     if Connect then begin
+        Graph.OpenDataFile(rfile,fName);
+     end
+     else begin
+        Graph.MainSymbol.Size := 3;
+        Graph.MainSymbol.Color := ConvertTColorToPlatformColor(Color);
+        Graph.OpenPointSymbolFile(rfile,fName,Graph.MainSymbol);
+     end;
+     MyData.First;
+     repeat
+        if GetFloat32FromTableLink(anXField,v[1]) and GetFloat32FromTableLink(anYField,v[2]) then begin
+           BlockWrite(Rfile,v,1);
+        end;
+        MyData.Next;
+     until MyData.EOF;
+     CloseFile(rfile);
+     ShowDefaultCursor;
+     Graph.AutoScaleAndRedrawDiagram;
 end;
 
 
 function TGISdataBaseModule.CreateScatterGram(fName : PathStr; anXField,anYField : ShortString; Color : tColor = clRed; Connect : boolean = false; Capt : shortstring = '';
     H_lab : shortstring = ''; V_lab : shortString = ''; NormProb : boolean = false) : TThisbasegraph;
 begin
-   {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram in'); {$EndIf}
-   EmpSource.Enabled := false;
-   Result := TThisbasegraph.Create(Application);
-   if (Capt = '') then Result.Caption := anXField + ' vs ' + anYField + ' from ' + dbName
-   else Result.Caption := Capt;
-   if NormProb then begin
-      Result.GraphDraw.VertAxisFunctionType := LongCumulativeNormalAxis;
-   end;
-   Result.GraphDraw.SetShowAllLines(Connect);
-   Result.GraphDraw.LineSize256[1] := 1;
-   Result.SetUpGraphForm;
-   if (H_lab = '') then Result.GraphDraw.HorizLabel := RemoveUnderscores(anXField)
-   else Result.GraphDraw.HorizLabel := H_Lab;
-   if (V_lab = '') then Result.GraphDraw.VertLabel := RemoveUnderscores(anYField)
-   else Result.GraphDraw.VertLabel := V_Lab;
-   {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram labels set'); {$EndIf}
-   if (Color > 0) then AddSeriesToScatterGram(fName,Result,Color,anXField,anYField,Connect);
-   {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram out'); {$EndIf}
+    if FileExists(fName) then begin
+       {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram in ' + fName); {$EndIf}
+       EmpSource.Enabled := false;
+       Result := TThisbasegraph.Create(Application);
+       if (Capt = '') then Result.Caption := anXField + ' vs ' + anYField + ' from ' + dbName
+       else Result.Caption := Capt;
+       if NormProb then begin
+          Result.GraphDraw.VertAxisFunctionType := LongCumulativeNormalAxis;
+       end;
+       Result.GraphDraw.SetShowAllLines(Connect);
+       Result.GraphDraw.LineSize256[1] := 1;
+       Result.SetUpGraphForm;
+       if (H_lab = '') then Result.GraphDraw.HorizLabel := RemoveUnderscores(anXField)
+       else Result.GraphDraw.HorizLabel := H_Lab;
+       if (V_lab = '') then Result.GraphDraw.VertLabel := RemoveUnderscores(anYField)
+       else Result.GraphDraw.VertLabel := V_Lab;
+       {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram labels set'); {$EndIf}
+       if (Color > 0) then AddSeriesToScatterGram(ExtractFileNameNoExt(fName),Result,Color,anXField,anYField,Connect);
+       {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram out'); {$EndIf}
+    end
+    else begin
+       {$IfDef RecordDBGraphs} writeLineToDebugFile('TGISdataBaseModule.CreateScatterGram missing file=' + fName); {$EndIf}
+    end;
 end;
 
 

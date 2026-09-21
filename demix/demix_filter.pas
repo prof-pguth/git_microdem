@@ -678,7 +678,7 @@ begin
                Bitmap.Free;
             end
             else begin
-               {$IfDef RecordGeomorphMaps} HighlightLineToDebugFile('No ref DEM for ' + DEMGlb[i].AreaName); {$EndIf}
+               {$IfDef RecordGeomorphMaps} HighLightInDebugFile('No ref DEM for ' + DEMGlb[i].AreaName); {$EndIf}
             end;
          end;
       end;
@@ -1234,7 +1234,7 @@ begin
          TStr := 'Found: ' + IntToStr(DEMsinIndex(TestDEMs)) + ' test DEMs; need ' + IntToStr(NumDEMIXtestDEM) + ' for ' + AreaName;
          Memo8.Lines.Add(TStr);
          {$IfDef RecordDEMIX}
-            HighlightLineToDebugFile(TStr);
+            HighLightInDebugFile(TStr);
             for i := 1 to MaxDemixDEM do begin
                if ValidDEM(TestDEMs[i]) then WriteLineToDebugFile('Found: ' + DEMGlb[TestDEMs[i]].AreaName);
             end;

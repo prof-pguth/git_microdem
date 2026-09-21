@@ -584,7 +584,7 @@ begin
 
    if (OutName = '') then OutName := Petmar.NextFileNumber(MDTempDir,'horizon_block_' + LatLongToStringForFileName(Lat,Long) + '_Up_' + RealToString(ObsAboveGround,-8,-2) + 'm','.dbf');
    if (MapForm <> Nil) then begin
-      Result := MapForm.StringListToLoadedDatabase(Results,OutName,OpenDB,false);
+      Result := MapForm.StringListToDBonMap(Results,OutName,OpenDB,false);
       GISdb[Result].dbOpts.DBAutoShow := dbasConnectSeqPts;
       GISdb[Result].dbOpts.LineColor := MDDef.HorizonColor;
       GISdb[Result].dbOpts.LineWidth := MDDef.HorizonWidth;
@@ -709,7 +709,7 @@ begin
    end;
    EndProgress;
    fName := Petmar.NextFileNumber(MDTempDir, 'sun_altitude_noon_',DefaultDBExt);
-   db := BaseMap.StringListToLoadedDatabase(SunResults,fName);
+   db := BaseMap.StringListToDBonMap(SunResults,fName);
    TheGraph := GISdb[db].CreateScatterGram('test','JULIAN_DAY','MAX_ALT',clRed,false,'Local noon solar altitude ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
    TheGraph.GraphDraw.MaxVertAxis := 90;
    TheGraph.GraphDraw.MinVertAxis := -15;
@@ -932,7 +932,7 @@ begin
       end;
    end;
    fName := Petmar.NextFileNumber(MDTempDir, 'sunrise_',DefaultDBExt);
-   db := MapForm.StringListToLoadedDatabase(Results,fName);
+   db := MapForm.StringListToDBonMap(Results,fName);
    TheGraph := GISDB[db].CreateScatterGram('Hours daylight','JULIAN_DAY','DAY_HOURS',clRed,false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
    TheGraph.GraphDraw.MaxVertAxis := 24;
    TheGraph.GraphDraw.MinVertAxis := 0;
@@ -1117,7 +1117,7 @@ begin {function SunAndHorizon}
       if (Results <> Nil) then Petmar.DisplayAndPurgeStringList(Results,'Sun Position');
       if ValidDEM(DEM) then begin
          fName := Petmar.NextFileNumber(MDTempDir, 'terrain_mask_' + LatLongToStringForFileName(latitude,longitude)  + '_',DefaultDBExt);
-         BaseMap.StringListToLoadedDatabase(SunResults,fName);
+         BaseMap.StringListToDBonMap(SunResults,fName);
       end;
    end
    else if (MDDef.SunlightSingleDay = 1) then begin
@@ -1140,7 +1140,7 @@ begin {function SunAndHorizon}
       end;
       EndProgress;
       fName := Petmar.NextFileNumber(MDTempDir, 'terrain_mask_',DefaultDBExt);
-      db := BaseMap.StringListToLoadedDatabase(SunResults,fName);
+      db := BaseMap.StringListToDBonMap(SunResults,fName);
       {$IfDef RecordHorizon} WriteLineToDebugFile('DB created and loaded'); {$EndIf}
       TheGraph := GISdb[db].CreateScatterGram('JULIAN_DAY','DAYLIGHT',clRed,false,'Daylight duration at ' + LatLongDegreeToString(Latitude,Longitude,VeryShortDegrees));
       TheGraph.GraphDraw.MaxVertAxis := 24;

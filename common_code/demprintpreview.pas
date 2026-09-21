@@ -229,6 +229,5 @@ end;
 
 initialization
 finalization
-{$IfDef RecordPrintProblem} WriteLineToDebugFile('RecordPrintProblem active in demprintpreview');  {$EndIf}
 end.
 
