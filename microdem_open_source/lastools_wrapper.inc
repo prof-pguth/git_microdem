@@ -137,16 +137,16 @@ var
 begin
    Result := true;
    if not FileExists(fName) then begin
-      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('GetGDALFileNames in, but not in ' + fName); {$EndIf}
+      {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighLightInDebugFile('GetGDALFileNames in, but not in ' + fName); {$EndIf}
       FindPath('LAStools_BinDir',':\gis_software\LAStools\bin\',LAStools_BinDir);
       BaseName := ExtractFileName(fName);
       fName := LAStools_BinDir + BaseName;
       if not FileExists(fName) then begin
-         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('File not in ' + fName); {$EndIf}
+         {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighLightInDebugFile('File not in ' + fName); {$EndIf}
          if GetDOSPath('LAStools binary directory, something like ' +  LAStools_BinDir,LAStools_BinDir) then begin
             fName := LAStools_BinDir + BaseName;
             if not FileExists(fName) then begin
-               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighlightLineToDebugFile('After user said, but no go for  ' + fName); {$EndIf}
+               {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(OpenLasTools)} HighLightInDebugFile('After user said, but no go for  ' + fName); {$EndIf}
                MessageToContinue('Could not find ' + fName);
                Result := false;
             end;

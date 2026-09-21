@@ -45,7 +45,7 @@ begin
    end
    else begin
       TStr := 'Whitebox failure, try command in DOS window: ' + cmd;
-      if HeavyDutyProcessing then HighlightLineToDebugFile(TStr)
+      if HeavyDutyProcessing then HighLightInDebugFile(TStr)
       else MessageToContinue(TStr);
    end;
    {$IfDef RecordWBT} WriteLineToDebugFile('ExecuteWBandOpenMap out'); {$EndIf}

@@ -1093,7 +1093,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             procedure SetCornersAndSpacing;
             begin
               {$If Defined(RecordInitDEM) or Defined(GeotiffCorner)}
-                 HighlightLineToDebugFile(WantDEM.AreaName);
+                 HighLightInDebugFile(WantDEM.AreaName);
                  WriteLineToDebugFile('ScaleX=' + RealToString(TiffHeader.ScaleX,-18,-6) + ' ScaleY=' + RealToString(TiffHeader.ScaleY,-18,-6) +
                       ' ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) +
                       ' RasterX=' + RealToString(TiffHeader.RasterX,-18,-6) + ' RasterY=' + RealToString(TiffHeader.RasterY,-18,-6) );
@@ -2084,13 +2084,13 @@ var
                            SMin := MakeDouble;
                         end;
                         TStr := RealToString(SMin,-12,-4);
-                        //HighlightLineToDebugFile('smin=' + TStr);
+                        //HighLightInDebugFile('smin=' + TStr);
                       end;
                341 : begin
                         FileSeek(TiffHandle,TiffKeys[j].KeyOffset,0);
                         if TiffKeys[j].FType = 11 then SMax := MakeSingle else if TiffKeys[j].FType = 12 then SMax := MakeDouble;
                         TStr := RealToString(SMax,-12,-4);
-                        //HighlightLineToDebugFile('smax=' + TStr);
+                        //HighLightInDebugFile('smax=' + TStr);
                       end;
               33432 : TStr := LogASCIIdata(TiffKeys[j].KeyOffset,TiffKeys[j].LengthIm); {ModelPixelScaleTag}
               33550 : begin {ModelPixelScaleTag}

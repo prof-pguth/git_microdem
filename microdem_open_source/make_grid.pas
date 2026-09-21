@@ -1187,7 +1187,7 @@ var
    z : float32;
    TStr : shortstring;
 begin
-   {$If Defined(RecordDEMIXhillshades)} HighLightLineToDebugFile('CreateHillshadeMap for DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName + ' ' + DEMGlb[DEM].KeyParams(true));  {$EndIf}
+   {$If Defined(RecordDEMIXhillshades)} HighLightInDebugFile('CreateHillshadeMap for DEM=' + IntToStr(DEM) + '  ' + DEMGlb[DEM].AreaName + ' ' + DEMGlb[DEM].KeyParams(true));  {$EndIf}
    if (SaveName = '') then TStr := 'hillshade_' + DEMGlb[DEM].AreaName
    else TStr := ExtractFileNameNoExt(SaveName);
    Result := DEMGlb[DEM].CloneAndOpenGridSetMissing(FloatingPointDEM,TStr,euHillshade);

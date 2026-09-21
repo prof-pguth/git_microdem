@@ -320,7 +320,7 @@ begin
 
     if (OutName <> '') or GetFileNameDefaultExt('Merged CSV files','*.dbf',OutName) then begin
        if (BaseMap = Nil) then Result := StringList2CSVtoDB(s11,OutName,true)
-       else Result := BaseMap.StringListToLoadedDatabase(s11,OutName);
+       else Result := BaseMap.StringListToDBonMap(s11,OutName);
        CloseSingleDB(Result);
        OpenNumberedGISDataBase(Result,OutName,true);
     end;

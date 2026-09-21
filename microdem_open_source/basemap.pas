@@ -752,7 +752,7 @@ begin
           end
           else if (tCode = 269) or (tCode = 321) then begin  //US state plane, NAD83
              H_DatumCode := 'NAD83';
-             {$IfDef RecordProblems} HighlightLineToDebugFile('SPCS only supported with WKT'); {$EndIf}  //Message, since there might also be good WKT in the file
+             {$IfDef RecordProblems} HighLightInDebugFile('SPCS only supported with WKT'); {$EndIf}  //Message, since there might also be good WKT in the file
           end
           else begin
              {$IfDef RecordOpenFromTiff3072} WriteLineToDebugFile('OpenFromTiff3072 Unhandled Code ' + IntToStr(TiffOffset)); {$EndIf}
@@ -789,7 +789,7 @@ end;
 
 procedure tMapProjection.ProcessGeotiffKey(wKeyID,wValueOffset : word);
 var
-   hFactor,vFactor : float64;
+   hFactor : float64;
 begin
    if (wKeyID = 1024) then ModelType := wValueOffset;
    if (wKeyID = 2048) then ProcessTiff2048(wValueOffset);
@@ -811,10 +811,7 @@ begin
    if (wKeyID = 3086) then false_east := hfactor * GeotiffDoubles[wValueOffset];
    if (wKeyID = 3087) then false_north := hfactor * GeotiffDoubles[wValueOffset];
    if (wKeyID = 4096) then ProcessTiff4096(wValueOffset);
-   if (wKeyID = 4099) then begin
-      VerticalUnitsGeoKey := wValueOffset;
-      vFactor := LengthConversion(wValueOffset);
-   end;
+   if (wKeyID = 4099) then VerticalUnitsGeoKey := wValueOffset;
 end;
 
 

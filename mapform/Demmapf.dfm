@@ -4681,6 +4681,14 @@ object MapForm: TMapForm
           end
         end
       end
+      object CreateAggregatedDEMs1: TMenuItem
+        Caption = 'Create set of aggregated DEMs'
+        OnClick = CreateAggregatedDEMs1Click
+      end
+      object CreatesetofthinneddecimatedDEMs1: TMenuItem
+        Caption = 'Create set of thinned/decimated DEMs'
+        OnClick = CreatesetofthinneddecimatedDEMs1Click
+      end
     end
     object Imageanalysis1: TMenuItem
       Caption = 'Image analysis'

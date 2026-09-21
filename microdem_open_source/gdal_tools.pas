@@ -635,7 +635,7 @@ label
      end;
 
 begin
-   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighlightLineToDebugFile('GetGDALFileNames in'); {$EndIf}
+   {$If Defined(RecordGDAL) or Defined(RecordGDALOpen)} HighLightInDebugFile('GetGDALFileNames in'); {$EndIf}
    Result := true;
    if ValidPath(GDALtools_Dir) and SetRest then begin
       {$If Defined(RecordGDAL) or Defined(RecordGDALOpen) or Defined(RecordProblems)} WriteLineToDebugFile('GDAL valid, ' + GDALtools_Dir + '  ' + GetGDALversion); {$EndIf}
@@ -740,7 +740,7 @@ begin
     end
     else cmd := GDAL_dem_name + cmd + DEMGlb[InputDEM].GDAL_ScaleFactorString;
     if WinExecAndWait32(cmd) = -1 then begin
-      {$IfDef RecordProblems} HighlightLineToDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
+      {$IfDef RecordProblems} HighLightInDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
        Result := 0;
        MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
     end
@@ -1037,7 +1037,7 @@ begin
    else MapType := mtElevSpectrum;
    cmd := GDAL_Warp_Name  + SpaceStr + IntString + InName + ' ' + OutName;
     if WinExecAndWait32(cmd) = -1 then begin
-      {$IfDef RecordProblems} HighlightLineToDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
+      {$IfDef RecordProblems} HighLightInDebugFile('Failure GDALCommand, cmd = ' + cmd); {$EndIf}
        Result := 0;
        MessageToContinue('GDAL failure, ' + RunDOSwindow + cmd);
     end

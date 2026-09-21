@@ -98,6 +98,13 @@ var
 
 function FanCoverage(CoverName : PathStr) : float64;
 
+var
+   AntDEM,FlyDEM,GrazeDEM,CurveDEM : integer;
+
+function MakeRequiredAntennaMap(ProgTitle: shortString; CurDEM : integer; W_Lat,W_Long : float64; ObserverTotalElevation : float64 = 0;
+    MaxRange : float64 = 75000; DrawMap : boolean = true; StartAngle : float64 = 0; EndAngle : float64 = 360) : integer;
+
+
 implementation
 
 uses
@@ -896,6 +903,134 @@ begin
     except   //eat all exceptions
     end;
 end;
+
+
+
+function MakeRequiredAntennaMap(ProgTitle: shortString; CurDEM : integer; W_Lat,W_Long : float64; ObserverTotalElevation : float64 = 0;
+    MaxRange : float64 = 75000; DrawMap : boolean = true; StartAngle : float64 = 0; EndAngle : float64 = 360) : integer;
+var
+   Col,Row,StartCol,StartRow,EndCol,EndRow,xg,yg : integer;
+   NeedZ,xgrids,ygrids,dists : ^bfarray32;
+   wx,wy : float64;
+
+         procedure DoRadial(x,y : integer);
+         var
+            PixLong,PointOnRay : integer;
+            PointElev,LastPointElev : float32;
+            Lat2,Long2,Slope2,Pitch, Heading : float64;
+         begin
+            {$IfDef RecordFullReqAnt} WriteLineToDebugFile('Do radial in'); {$EndIf}
+            with DEMGlb[CurDEM] do begin
+               PixLong := round(2 * DistanceMetersBetweenPoints(wx,wy,x,y,Heading) / AverageXSpace);
+               if (Heading < StartAngle) or (Heading > EndAngle) then exit;
+               {$IfDef RecordFullReqAnt} WriteLineToDebugFile('DoRadial PixLong done');{$EndIf}
+               DEMGridToLatLongDegree(x,y,Lat2,Long2);
+
+               LatLongDegreePointsRequiredAntenna(PixLong,W_Lat,W_Long,ObserverTotalElevation,Lat2,Long2,xgrids^,ygrids^,dists^,NeedZ^);
+               {$IfDef RecordFullReqAnt} WriteLineToDebugFile('DoRadial GetStraightRoute done'); {$EndIf}
+               GetElevMeters(xgrids^[0],ygrids^[0],LastPointElev);
+               for PointOnRay := 1 to PixLong do begin
+                  if GetElevMeters(xgrids^[PointOnRay],ygrids^[PointOnRay],PointElev) then begin
+                     xg := round(xgrids^[PointOnRay]);
+                     yg := round(ygrids^[PointOnRay]);
+                     if MDDef.DoReqAntHigh then begin
+                        DEMGlb[AntDEM].SetGridElevation(xg,yg,NeedZ^[PointOnRay]);
+                     end;
+                     if MDDef.DoEarthCurvature then begin
+                        DEMGlb[CurveDEM].SetGridElevation(xg,yg,DropEarthCurve(Dists^[PointOnRay]) );
+                     end;
+                     if MDDef.DoGrazingAngle then begin
+                        if NeedZ^[PointOnRay] < 1 then  begin  //leave undefined wherer masked
+                           Slope2 := ArcTan((PointElev - LastPointElev) / (Dists^[PointOnRay] - Dists^[pred(PointOnRay)])) / DegToRad;
+                           Pitch := -ArcTan((ObserverTotalElevation - PointElev - DropEarthCurve(Dists^[PointOnRay]) ) /Dists^[PointOnRay]) / DegToRad;
+                           DEMGlb[GrazeDEM].SetGridElevation(xg,yg,Slope2+Pitch);
+                           LastPointElev := PointElev;
+                        end;
+                     end;
+                     if MDDef.DoReqFlyHigh then begin  //must be last since redefine NeedZ value
+                        if (NeedZ^[PointOnRay] < MDdef.MinTerrainFlyAbove) then NeedZ^[PointOnRay] := MDdef.MinTerrainFlyAbove;
+                        NeedZ^[PointOnRay] := PointElev + NeedZ^[PointOnRay];
+                        DEMGlb[FlyDEM].SetGridElevation(xg,yg,NeedZ^[PointOnRay]);
+                     end;
+                  end;
+                  if (Dists^[PointOnRay] > MaxRange) then break;
+               end;
+            end {with};
+         end;
+
+
+         procedure SetUpMap(LogDEM : integer);
+         begin
+            {$IfDef RecordReqAnt} WriteLineToDebugFile('Coverage area  ' + DEMGlb[LogDEM].KeyParams); {$EndIf}
+            DEMGlb[LogDEM].SetUpMap(true,mtElevSpectrum);
+            DEMGlb[LogDEM].SelectionMap.SaveDEM1.Visible := false;
+         end;
+
+
+begin {function MakeRequiredAntennaMap}
+   {$IfDef RecordReqAnt} WriteLineToDebugFile('MakeRequiredAntennaMap'); {$EndIf}
+   New(xgrids);
+   New(ygrids);
+   New(dists);
+   New(NeedZ);
+   DEMGlb[CurDEM].LatLongDegreeToDEMGrid(W_Lat,W_Long,wx,wy);
+
+   StartCol := trunc(wx - MaxRange / DEMGlb[CurDEM].AverageXSpace);
+   EndCol := succ(round(wx + MaxRange / DEMGlb[CurDEM].AverageXSpace));
+   StartRow := trunc(wy - MaxRange / DEMGlb[CurDEM].AverageYSpace);
+   EndRow := succ(round(wy + MaxRange / DEMGlb[CurDEM].AverageYSpace));
+
+   DEMGlb[CurDEM].ClipDEMGridInteger(StartCol,StartRow);
+   DEMGlb[CurDEM].ClipDEMGridInteger(EndCol,EndRow);
+
+   {$IfDef RecordReqAnt} WriteLineToDebugFile('Setup done'); {$EndIf}
+   AntDEM := 0;
+   FlyDEM := 0;
+
+   if MDDef.DoEarthCurvature then  begin
+      CurveDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Earth curvature (m)',euUndefined);
+   end;
+
+   if MDDef.DoReqAntHigh then begin
+      AntDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Antenna required (m)',euMeters);
+      Result := AntDEM;
+   end;
+
+   if MDDef.DoReqFlyHigh then FlyDEM  := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM,'Flying height (m)',euMeters);
+
+   if MDDef.DoGrazingAngle then begin
+      GrazeDEM := DEMGlb[CurDEM].CloneAndOpenGridSetMissing(FloatingPointDEM, 'Grazing angle (' + '°' + ')',euDegrees);
+   end;
+
+    StartProgress(ProgTitle + ' Cols (1/2)');
+    for Col := StartCol to EndCol do begin
+       if (Col mod 100 = 0) then UpdateProgressBar((Col-StartCol)/(EndCol-StartCol));
+       DoRadial(Col,StartRow);
+       DoRadial(Col,EndRow);
+    end;
+
+    StartProgress(ProgTitle + ' Rows (2/2)');
+    for Row := StartRow to EndRow do begin
+       if (Row mod 100 = 0) then UpdateProgressBar((Row-StartRow)/(EndRow-StartRow));
+       DoRadial(StartCol,Row);
+       DoRadial(EndCol,Row);
+    end;
+    EndProgress;
+
+    if DrawMap then begin
+       if MDDef.DoReqAntHigh then SetUpMap(AntDEM);
+       if MDDef.DoReqFlyHigh then SetUpMap(FlyDEM);
+       if MDDef.DoGrazingAngle then SetUpMap(GrazeDEM);
+       if MDDef.DoEarthCurvature then SetUpMap(CurveDEM);
+    end;
+
+   Dispose(xgrids);
+   Dispose(ygrids);
+   Dispose(dists);
+   Dispose(NeedZ);
+
+   {$IfDef RecordReqAnt} WriteLineToDebugFile('MakeRequiredAntennaMap out'); {$EndIf}
+end {function MakeRequiredAntennaMap};
 
 
 

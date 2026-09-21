@@ -288,7 +288,7 @@ begin
        SaveGEDTMFamilyDEM(Result,SaveName);  //add EGM2008 code, add MD elevation code for meters, kill ASCII tag 42112
     end
     else begin
-       HighlightLineToDebugFile('At it again; GEDTM download failure ' + sfBoundBoxToString(bb,2));
+       HighLightInDebugFile('At it again; GEDTM download failure ' + sfBoundBoxToString(bb,2));
     end;
 end;
 
@@ -559,7 +559,7 @@ procedure WriteDEMListToDebug(Title : shortString; FileDEMList : tDEMBooleanArra
 var
    j : integer;
 begin
-   HighlightLineToDebugFile(Title);
+   HighLightInDebugFile(Title);
    for j := 1 to MaxDEMDataSets do begin
       if FileDEMlist[j] then begin
          if ValidDEM(j) then WriteLineToDebugFile(IntegerToString(j,3) + '  ' + DEMglb[j].AreaName)
@@ -1622,7 +1622,7 @@ procedure OpenDEMsToDebugFile(Why : shortstring);
 var
    i : integer;
 begin
-   HighlightLineToDebugFile(why);
+   HighLightInDebugFile(why);
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
          writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');

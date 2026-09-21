@@ -441,7 +441,7 @@ var
    procedure OpenDebugFile;  //(ProgramName : PathStr);
    procedure ClearDebugLog;
    procedure WriteLineToDebugFile(TheLine : AnsiString);
-   procedure HighlightLineToDebugFile(TheLine : AnsiString);
+   procedure HighLightInDebugFile(TheLine : AnsiString);
 
    procedure WriteStringsToDebugFile(HeaderLog : tStrings; LineNumbers : boolean = false);
    procedure WriteStringListToDebugFile(HeaderLog : tStringList; LineNumbers : boolean = false);
@@ -946,7 +946,7 @@ end;
       Result := MDdef.MDRecordDebugLog and (DebugFileName <> '') and (not ThreadsWorking) and (TheDebugLog <> Nil);
    end;
 
-   procedure HighlightLineToDebugFile(TheLine : AnsiString);
+   procedure HighLightInDebugFile(TheLine : AnsiString);
    begin
       WriteLineToDebugFile('');
       WriteLineToDebugFile('**********');

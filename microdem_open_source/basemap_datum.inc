@@ -152,10 +152,10 @@ const
 var
    Iteration : integer;
    e1_2,e1_3,e1_4 : float64;
-   l,l2,l6,delta, fy, fpy,c1,
-   Mu,C2,C3,a1,Theta1,m1,M,Diff,tf,tf1,
+   //l,l2,l6,delta, fy, fpy,
+   c1,Mu,C2,C3,a1,Theta1,m1,M,Diff,tf,tf1,
    Sign,OldLat,sinc,cosc,Theta,rho,q,t    : float64;
-   Reps,i : integer;
+   Reps{,i} : integer;
    eeGeo : TGeoCoord;
    eePoint : TPoint2D;
 
@@ -480,7 +480,7 @@ end {procedure tMapProjection.InverseProjectRadians};
 procedure tMapProjection.ForwardProjectRadians(Lat,Long : float64; var x,y : float64; Check : boolean = true);
 {computes x,y coordinates from Lat,Long}
 var
-   T,tf,rho,Beta,l,l2,l6,M,esinlat,
+   T,tf,rho,Beta,{l,l2,l6,}M,esinlat,
    Theta,DeltaTheta,ThetaPrime,G,Q,P,
    HalfLambdaDif,K,SinPhi,CosPhi,x1,y1,K1,
    LambdaDif,SinLambdaDif,CosLambdaDif,CosC,B       : float64;

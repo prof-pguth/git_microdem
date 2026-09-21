@@ -361,7 +361,7 @@ procedure TMapDraw.PlotShapeFileGroup(LayerType : integer; IndexFName,LayerSaved
          GISNum : integer;
       begin
           if not FileExists(IndexFName) then begin
-             {$If Defined(RecordShapeFileGroup) or Defined(RecordOSM)} HighlightLineToDebugFile('TMapDraw.PlotShapeFileGroupOnMap No file requested'); {$EndIf}
+             {$If Defined(RecordShapeFileGroup) or Defined(RecordOSM)} HighLightInDebugFile('TMapDraw.PlotShapeFileGroupOnMap No file requested'); {$EndIf}
              exit;
           end;
           if BaseDir <> '' then begin
@@ -511,7 +511,7 @@ begin {procedure TMapDraw.PlotShapeFileGroup}
     else begin
         CreateBitmap(Bitmap,inBitmap.Width,inBitmap.Height);
         if (LayerType = OSMlayer) then begin
-           {$If Defined(RecordShapeFileGroup) or Defined(RecordOSM)} HighlightLineToDebugFile('PlotShapeFileGroup in ' + IndexFName); {$EndIf}
+           {$If Defined(RecordShapeFileGroup) or Defined(RecordOSM)} HighLightInDebugFile('PlotShapeFileGroup in ' + IndexFName); {$EndIf}
            for i := 0 to pred(OSMShapesUp.Count) do begin
                IndexFName := OSMShapesUp.Strings[i];
                {$If Defined(RecordOSM)} WriteLineToDebugFile('OSMthread all but roads, ' + IndexFName); {$EndIf}

@@ -182,12 +182,6 @@ type
     AdminOptionsButton: TButton;
     BitBtn1: TBitBtn;
     PopupMenu2: TPopupMenu;
-    //DP11: TMenuItem;
-    //DP21: TMenuItem;
-    //DP31: TMenuItem;
-    //DP41: TMenuItem;
-    //DP51: TMenuItem;
-    //DP61: TMenuItem;
     KMLdelaysec1: TMenuItem;
     OpenGoogleEarth1: TMenuItem;
     Button1: TButton;
@@ -259,12 +253,6 @@ type
     procedure Edit23Change(Sender: TObject);
     procedure Edit6Change(Sender: TObject);
     procedure Edit8Change(Sender: TObject);
-    //procedure DP11Click(Sender: TObject);
-    //procedure DP21Click(Sender: TObject);
-    //procedure DP31Click(Sender: TObject);
-    //procedure DP41Click(Sender: TObject);
-    //procedure DP51Click(Sender: TObject);
-    //procedure DP61Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure KMLdelaysec1Click(Sender: TObject);
     procedure OpenGoogleEarth1Click(Sender: TObject);
@@ -353,6 +341,7 @@ uses
    Get_PLSS,
    Petmar_db,
    Petmar_ini_file,
+   Weapons_fan_thread,
    DEMOptions,
    BaseMap,
    Sun_position,
@@ -1420,7 +1409,7 @@ begin
    csv := tstringlist.Create;
    csv.add('NAME,LAT,LONG');
    csv.Add(Name + ',' + RealToString(Lat,-12,-7) + ',' + RealToString(Long,-12,-7));
-   db := UseMap.StringListToLoadedDatabase(csv,MDTempDir + 'Shot_Location.dbf',false,true,false);
+   db := UseMap.StringListToDBonMap(csv,MDTempDir + 'Shot_Location.dbf',false,true,false);
    GISdb[db].ExportToKML(false,true);
    CloseSingleDB(db);
    {$IfDef RecordKML} WriteLineToDebugFile('PushPinInGoogleEarth out'); {$EndIf}
@@ -1447,8 +1436,6 @@ begin
    bmp.SaveToFile(KMLLogo1FileName);
    Bmp.Free;
    {$IfDef RecordKML} WriteLineToDebugFile('TDragonPlotForm.BitBtn11Click two logos done'); {$EndIf}
-
-   //fName := Petmar.NextFileNumber(MDTempDir,'sighting_',DefaultDBExt);
 
    MDDef.KML_DB_tables := false;
    MDDef.KMLOutputOption := 0;
@@ -1493,6 +1480,8 @@ begin
    {$IfDef RecordClosing} WriteLineToDebugFile('TDragonPlotForm.FormClose in'); {$EndIf}
    CloseWindows;
    Action := caFree;
+   MDdef.ShowMainToolbar := true;
+   MDDef.DBMinimizeOnOpen := false;
    {$IfDef RecordClosing} WriteLineToDebugFile('TDragonPlotForm.FormClose out'); {$EndIf}
 end;
 

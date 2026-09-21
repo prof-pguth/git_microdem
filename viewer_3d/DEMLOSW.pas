@@ -421,7 +421,7 @@ end;
       for i := 1 to MaxDEMDataSets do begin
          if ValidDEM(i) then begin
             if LOSDraw.ShowProfile[i] then TStr := 'show' else Tstr := 'hide';
-            HighlightLineToDebugFile(Stage);
+            HighLightInDebugFile(Stage);
             WriteLineToDebugFile(IntToStr(i) + '  ' + DEMGlb[i].AreaName + ' ' + TStr);
          end;
       end;

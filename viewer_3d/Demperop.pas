@@ -955,8 +955,6 @@ end;
 
 initialization
 finalization
-  {$IfDef PerspectiveProblems} WriteLineToDebugFile('PerspectiveProblems active in demperop'); {$EndIf}
-  {$IfDef RecordClosingProblems} WriteLineToDebugFile('Closing demperop'); {$EndIf}
 end.
 
 

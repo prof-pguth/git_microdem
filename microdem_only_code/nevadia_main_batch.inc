@@ -532,7 +532,7 @@ begin
           FullTileFiles.Duplicates := dupIgnore;
           ListOfFiles := tStringList.Create;
           ListOfFiles.LoadFromFile(SaveName);
-          {$IfDef RecordDEMIXMerges} HighLightLineToDebugFile('At start files=' + IntToStr(ListOfFiles.Count)); {$EndIf}
+          {$IfDef RecordDEMIXMerges} HighLightInDebugFile('At start files=' + IntToStr(ListOfFiles.Count)); {$EndIf}
           repeat
              TileName := AfterSpecifiedString(ListOfFiles.Strings[0],'FILENAME=');
              TileName := GetTileNameFromFileName(AreaName,ExtractFileName(TileName));
@@ -568,7 +568,7 @@ begin
              end;
              ThisTileFiles.Clear;
           until (ListOfFiles.Count = 0);
-          //HighLightLineToDebugFile('Final files=' + IntToStr(ListOfFiles.Count));
+          //HighLightInDebugFile('Final files=' + IntToStr(ListOfFiles.Count));
           ListOfFiles.Destroy;
           ThisTileFiles.Destroy;
           FullTileFiles.SaveToFile(SaveName);
@@ -791,7 +791,7 @@ var
             {$IfDef RecordDEMIXMakeRef} if not ValidDEM(TestDEM) then WriteLineToDebugFile('Ref DEM creation, problem loading ' + TestName); {$EndIf};
          end
          else begin
-            {$IfDef RecordDEMIX} HighLightLineToDebugFile('Ref DEM creation, missing' + TestName); {$EndIf};
+            {$IfDef RecordDEMIX} HighLightInDebugFile('Ref DEM creation, missing' + TestName); {$EndIf};
          end;
       end;
       Result := ValidDEM(TestDEM);
@@ -810,7 +810,7 @@ var
                {$IfDef RecordDEMIXMakeRefFull} WriteLineToDebugFile('Source ' + DEMglb[RefDEM].AreaName + '  ' + DEMglb[RefDEM].zRange); {$EndIf};
             end
             else begin
-               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing ref DEM for' + RefName); {$EndIf};
+               {$IfDef RecordDEMIX} HighLightInDebugFile('Missing ref DEM for' + RefName); {$EndIf};
             end;
         end;
     end;
@@ -837,7 +837,7 @@ begin {procedure MakeReferenceDEM}
       end;
       RefName := IdentifyDEMIXtileAsDTMorDSM(ExtractFileNameNoExt(SourceEGMName));
       if (RefName = '') then begin
-         HighlightLineToDebugFile('ID fail for RefName' + SourceEGMName);
+         HighLightInDebugFile('ID fail for RefName' + SourceEGMName);
       end;
       RefName := TestDir + 'ref_' + RefName + '_' + Mode + '.tif';
       if (not FileExists(RefName)) then begin
@@ -868,8 +868,8 @@ begin {procedure MakeReferenceDEM}
               MakeThisReferenceDEM;
           end
           else begin
-             {$IfDef RecordDEMIX} if not ValidDEM(SourceDEM) then HighLightLineToDebugFile('Ref DEM creation, missing SourceEGM ' + SourceEGMName); {$EndIf};
-             {$IfDef RecordDEMIX} if not ValidDEM(TestDEM) then HighLightLineToDebugFile('Ref DEM creation, missing Test DEM ' + TestName); {$EndIf};
+             {$IfDef RecordDEMIX} if not ValidDEM(SourceDEM) then HighLightInDebugFile('Ref DEM creation, missing SourceEGM ' + SourceEGMName); {$EndIf};
+             {$IfDef RecordDEMIX} if not ValidDEM(TestDEM) then HighLightInDebugFile('Ref DEM creation, missing Test DEM ' + TestName); {$EndIf};
           end;
          {$If Defined(TimeMakeMaps)} WriteLineToDebugFile('Make ref DEM ' + RefName + '   ' + RealToString(Stopwatch.Elapsed.TotalSeconds,-12,-4) + ' sec'); {$EndIf}
       end;
@@ -965,7 +965,7 @@ var
                      else begin
                         DEMglb[SourceDEM].DEMCenterPoint(Lat,Long);
                         TStr := 'Land cover not available for ' + AreaName + ' ' + LatLongDegreeToString(Lat,Long) + '  ' + GetLC10_fileName(Lat,Long);
-                        {$IfDef RecordDEMIX} HighLightLineToDebugFile(TStr); {$EndIf};
+                        {$IfDef RecordDEMIX} HighLightInDebugFile(TStr); {$EndIf};
                         MissingLandCover.Add(TStr);
                      end;
                     {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Finished land cover: ' + UTM_Tile); {$EndIf};
@@ -1005,7 +1005,7 @@ var
                               end;
                            end
                            else begin
-                              {$IfDef RecordDEMIXDatumShift}HighlightLineToDebugFile('Country Datum Missing for: ' + FName); {$EndIf};
+                              {$IfDef RecordDEMIXDatumShift}HighLightInDebugFile('Country Datum Missing for: ' + FName); {$EndIf};
                               Result := false;
                            end;
                            {$IfDef RecordDEMIXDatumShift}WriteLineToDebugFile('Datum shift out: ' + FName); {$EndIf};
@@ -1055,14 +1055,14 @@ var
                                 if (ProjName <> '') then ProjName := '-a_srs ' + ProjName;
                              end;
                              if (ThisTileFiles.Count = 0) then begin
-                                {$IfDef RecordDEMIXDatumShift} HighlightLineToDebugFile('Could not find files to merge in ' + MergeDir); {$EndIf};
+                                {$IfDef RecordDEMIXDatumShift} HighLightInDebugFile('Could not find files to merge in ' + MergeDir); {$EndIf};
                              end
                              else begin
                                  {$IfDef RecordDEMIXDatumShiftFull} WriteLineToDebugFile('Merging Tiles=' + IntToStr(ThisTileFiles.Count) + ' in ' + MergeDir); {$EndIf}
                                  GDAL_Tools.UseGDAL_VRT_to_merge(MergefName,ThisTileFiles,ProjName);
                                  if not FileExists(MergefName) then begin
                                     //probably a Geotiff file read error in one of the the files
-                                    {$IfDef RecordDEMIXDatumShift} HighlightLineToDebugFile('Could not merge, files=' + IntToStr(ThisTileFiles.Count) + ' in ' + MergeFName + '  ' + UTM_Tile); {$EndIf};
+                                    {$IfDef RecordDEMIXDatumShift} HighLightInDebugFile('Could not merge, files=' + IntToStr(ThisTileFiles.Count) + ' in ' + MergeFName + '  ' + UTM_Tile); {$EndIf};
                                     Result := false;
                                  end
                                  else begin
@@ -1160,7 +1160,7 @@ var
                {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Finished DEMs ' + UTM_Tile); {$EndIf};
             end
             else begin
-               {$IfDef RecordDEMIX} HighlightLineToDebugFile('Missing ' + SourceEGMName); {$EndIf};
+               {$IfDef RecordDEMIX} HighLightInDebugFile('Missing ' + SourceEGMName); {$EndIf};
             end;
          end;
       end
@@ -1209,7 +1209,7 @@ var
                    TileStats.Destroy;
                 end
                 else begin
-                   {$IfDef RecordDEMIX} HighlightLineToDebugFile('No Summary stats for ' + TileStatsfName); {$EndIf}
+                   {$IfDef RecordDEMIX} HighLightInDebugFile('No Summary stats for ' + TileStatsfName); {$EndIf}
                    TileStats.Destroy;
                 end;
             end;
@@ -1290,7 +1290,7 @@ begin {procedure DEMIX_tile_statistics}
     else begin
       TileStats := Nil;
       TileList := DEMIX_GetListOfTileSubdirsInArea(AreaName);
-      {$IfDef RecordDEMIX_TileStats} HighlightLineToDebugFile(AreaName + '  tiles=' + IntToStr(TileList.Count)); {$EndIf}
+      {$IfDef RecordDEMIX_TileStats} HighLightInDebugFile(AreaName + '  tiles=' + IntToStr(TileList.Count)); {$EndIf}
       for k := 0 to pred(TileList.count) do begin
          DEMIX_tile := TileList.Strings[k];
          {$IfDef RecordDEMIX_TileStats} WriteLineToDebugFile(DEMIX_tile); {$EndIf}
@@ -1707,18 +1707,18 @@ var
                                       aline := aLine + ',' + RealToString(LSPvalue,-12,8);
                                   end
                                   else begin
-                                     HighLightLineToDebugFile('Missing test LSP' + IntToStr(TestLSPs[k]) + '  criterion = ' + Criterion + '  ' + AreaName + '  ' + UTM_Tile );
+                                     HighLightInDebugFile('Missing test LSP' + IntToStr(TestLSPs[k]) + '  criterion = ' + Criterion + '  ' + AreaName + '  ' + UTM_Tile );
                                      goto MissingData;
                                   end;
                                end;
                            end
                            else begin
-                               HighLightLineToDebugFile('Missing ref dem=' + IntToStr(UseRef) + '  criterion = ' + Criterion);
+                               HighLightInDebugFile('Missing ref dem=' + IntToStr(UseRef) + '  criterion = ' + Criterion);
                                goto MissingData;
                            end;
                        end
                        else begin
-                          HighLightLineToDebugFile('Missing testdem, ' + theDEMs[k] + '  criterion = ' + Criterion);
+                          HighLightInDebugFile('Missing testdem, ' + theDEMs[k] + '  criterion = ' + Criterion);
                           goto MissingData;
                        end;
                     end;
@@ -1757,7 +1757,7 @@ begin {procedure UTMbasedFUV}
       theDEMs := GetListOfTestDEMsinUse;
    end;
 
-   {$IfDef RecordDEMIXFull} HighlightLineToDebugFile(AreaProgress + ' Start UTMbasedFUV,' + ' mode=' + IntToStr(Option) + ' tiles=' + IntToStr(TileList.Count) +  ' test DEMs=' + IntToStr(theDEMs.Count)); {$EndIf};
+   {$IfDef RecordDEMIXFull} HighLightInDebugFile(AreaProgress + ' Start UTMbasedFUV,' + ' mode=' + IntToStr(Option) + ' tiles=' + IntToStr(TileList.Count) +  ' test DEMs=' + IntToStr(theDEMs.Count)); {$EndIf};
 
    fuvResults := nil;
    for i := 0 to pred(TileList.Count) do begin
@@ -2096,11 +2096,12 @@ const
 var
    i,j,k,DEM,TestDEM,EGMref,lc : integer;
    AreaName,aLine : shortstring;
-   SourceEGMName,fName,TileDirName,AreaLock : PathStr;
-   theDEMs, Findings,TileDirs : tStringList;
+   SourceEGMName,fName,TileDirName{,AreaLock} : PathStr;
+   //theDEMs, Findings,TileDirs : tStringList;
    Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing: float64;
    bb : sfBoundBox;
-   HaveSRTMref,HaveALOSref,OneBad : boolean;
+   //HaveSRTMref,HaveALOSref,
+   OneBad : boolean;
 
 
        function CheckCentroidDistance(BaseDEM : integer; TestName : shortstring) : boolean;
@@ -2818,7 +2819,7 @@ begin {procedure DEMIX_UTM_based_processing}
       GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
    end;
    {$IfDef RecordDEMIX}
-      HighlightLineToDebugFile('DEMIX_UTM_based_processing in, option=' + IntToStr(Option) + AvailablePhysicalMemoryString + '  DEMIX_baseDir=' + MDDef.DEMIX_BaseDir);
+      HighLightInDebugFile('DEMIX_UTM_based_processing in, option=' + IntToStr(Option) + AvailablePhysicalMemoryString + '  DEMIX_baseDir=' + MDDef.DEMIX_BaseDir);
    {$EndIf}
 
    GetDEMIXpaths(True);
@@ -2957,7 +2958,7 @@ begin {procedure DEMIX_UTM_based_processing}
                DeleteFileIfExists(AreaLock);
             end
             else if FileExists(AreaLock) then begin
-                {$IfDef RecordDEMIX} HighlightLineToDebugFile(theAreas.Strings[i] + ' Area locked for ' + IntToStr(theAreas.Count)); {$EndIf}
+                {$IfDef RecordDEMIX} HighLightInDebugFile(theAreas.Strings[i] + ' Area locked for ' + IntToStr(theAreas.Count)); {$EndIf}
             end
             else begin
                 theAreas.SaveToFile(AreaLock);
@@ -2989,7 +2990,7 @@ begin {procedure DEMIX_UTM_based_processing}
    wmDEM.ClearStatusBarPanelText;
    NoDBPlots := false;
    RestoreBackupDefaults;
-   {$IfDef RecordDEMIX} HighLightLineToDebugFile('DEMIX_UTM_based_processing out, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir + AvailablePhysicalMemoryString); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('DEMIX_UTM_based_processing out, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir + AvailablePhysicalMemoryString); {$EndIf}
 end {procedure DEMIX_UTM_based_processing};
 
 

@@ -518,12 +518,10 @@ type
     InsureallreferenceDTMscorrectlynamed1: TMenuItem;
     MaskwaterinreferenceDEMs1: TMenuItem;
     ComputeDEMIXtilestats1: TMenuItem;
-    //VerifytestDEMcoverages1: TMenuItem;
     rimreferencedatatoDEMIXtiles1: TMenuItem;
     N53: TMenuItem;
     Full3DEPprocessingchair1: TMenuItem;
     Partial3DEPsteps1: TMenuItem;
-    //Inventorychanneldatabyarea1: TMenuItem;
     MergeCanadianLidar1: TMenuItem;
     Reference1secDTMsfromCanadianlidar1: TMenuItem;
     Graphevaluationandscores1: TMenuItem;
@@ -567,7 +565,6 @@ type
     UTMprojection1: TMenuItem;
     AddEXIFtagsworkinprogress1: TMenuItem;
     N57: TMenuItem;
-    //CompareUTMandgeographicslopes1: TMenuItem;
     Howbigisanarcsecond1: TMenuItem;
     Createcompositebitmap2: TMenuItem;
     DEMIXNeo1: TMenuItem;
@@ -760,8 +757,6 @@ type
     procedure Horizontalearthcurvature1Click(Sender: TObject);
     procedure OpenTIGERcountrymap1Click(Sender: TObject);
     procedure Openproject1Click(Sender: TObject);
-    //procedure CTD1Click(Sender: TObject);
-    //procedure Lightdata1Click(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
     procedure OpenDatabase1Click(Sender: TObject);
@@ -804,9 +799,7 @@ type
     procedure CopyDBFstoXML1Click(Sender: TObject);
     procedure BackupprogramEXE1Click(Sender: TObject);
     procedure Stereopair1Click(Sender: TObject);
-    //procedure XTFindex1Click(Sender: TObject);
     procedure Findmatchingfiles1Click(Sender: TObject);
-    //procedure XTFsidescan1Click(Sender: TObject);
     procedure Fullworldimage1Click(Sender: TObject);
     procedure Micronetquiz1Click(Sender: TObject);
     procedure SheepRange1Click(Sender: TObject);
@@ -854,7 +847,6 @@ type
     procedure SpeedButton6Click(Sender: TObject);
     procedure EditDEMHeader1Click(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
-    //procedure Seismicviewing1Click(Sender: TObject);
     procedure RestorepreviousprogramEXE1Click(Sender: TObject);
     procedure DBFfile1Click(Sender: TObject);
     procedure GeoPDF1Click(Sender: TObject);
@@ -864,7 +856,6 @@ type
     procedure XML1Click(Sender: TObject);
     procedure OpenGeoPDFimagelayer1Click(Sender: TObject);
     procedure Allindividuallayers1Click(Sender: TObject);
-    //procedure Legislativeredistricting1Click(Sender: TObject);
     procedure Zipatoneeditor1Click(Sender: TObject);
     procedure Superimposedtopoprofiles1Click(Sender: TObject);
     procedure Other3Dpointclouds1Click(Sender: TObject);
@@ -913,7 +904,6 @@ type
     procedure Geoid2Click(Sender: TObject);
     procedure Platetectonics1Click(Sender: TObject);
     procedure Quickplatetectonicsmaps1Click(Sender: TObject);
-   //procedure Seismicfencediagram1Click(Sender: TObject);
     procedure Slidesorter1Click(Sender: TObject);
     procedure Movefileswithnamematch1Click(Sender: TObject);
     procedure RenameJPEGswithcreationtime1Click(Sender: TObject);
@@ -968,7 +958,6 @@ type
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
     procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
-    //procedure Subsetlarge3DEPareas1Click(Sender: TObject);
     procedure Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
     procedure Modesofdifferencedistributions1Click(Sender: TObject);
     procedure Advancedanalysis1Click(Sender: TObject);
@@ -995,9 +984,7 @@ type
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
     procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
     procedure ComputeDEMIXtilestats1Click(Sender: TObject);
-    //procedure VerifytestDEMcoverages1Click(Sender: TObject);
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
-   //procedure Inventorychanneldatabyarea1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
     procedure Graphevaluationandscores1Click(Sender: TObject);
     procedure Overwirte1Click(Sender: TObject);
@@ -1007,15 +994,11 @@ type
     procedure N42Click(Sender: TObject);
     procedure DeltaDTMfortestareas1Click(Sender: TObject);
     procedure CreatefinalDB1Click(Sender: TObject);
-    //procedure Fixtileswith42114foottag1Click(Sender: TObject);
-    //procedure Onedegreetilestocovertestareas1Click(Sender: TObject);
     procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
-    //procedure LoadCpopDEMandLNDCOERFORTEXTAREA1Click(Sender: TObject);
     procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
     procedure Changemode1Click(Sender: TObject);
     procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
     procedure InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
-    //procedure InventoryallDEMIXdatafiles1Click(Sender: TObject);
     procedure Combineallcombinedimages1Click(Sender: TObject);
     procedure CoastalDEMfortestareas1Click(Sender: TObject);
     procedure SSIMR21Click(Sender: TObject);
@@ -1027,7 +1010,6 @@ type
     procedure Open4elevationrangeDEMIXDBs1Click(Sender: TObject);
     procedure UTMprojection1Click(Sender: TObject);
     procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
-    //procedure CompareUTMandgeographicslopes1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
     procedure MultipleDEMsonearea015secscale1Click(Sender: TObject);

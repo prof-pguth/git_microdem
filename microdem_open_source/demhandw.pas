@@ -291,7 +291,6 @@ type
     procedure NIMAgazetteerdatabase1Click(Sender: TObject);
     procedure ASCIIremoveblanklines1Click(Sender: TObject);
     procedure ASCIIreverseorder1Click(Sender: TObject);
-    //procedure ISOGravity1Click(Sender: TObject);
     procedure Repairheaders1Click(Sender: TObject);
     procedure Cardfileimport1Click(Sender: TObject);
     procedure ICOADSLMRF1Click(Sender: TObject);
@@ -354,7 +353,6 @@ type
     procedure XYZItoLAS1Click(Sender: TObject);
     procedure MaskDEMs1Click(Sender: TObject);
     procedure Assignprojection1Click(Sender: TObject);
-    //procedure MrSIDtotiff1Click(Sender: TObject);
     procedure Resizeimages1Click(Sender: TObject);
     procedure ASCIIremovelineswithsubstring1Click(Sender: TObject);
     procedure GDALwarpGeotifftoUTMNAD831Click(Sender: TObject);
@@ -384,8 +382,6 @@ type
     procedure IFfiles1Click(Sender: TObject);
     procedure AssignbyEPSGandreprojecttoUTM1Click(Sender: TObject);
     procedure ASCIIreplaceheaderline1Click(Sender: TObject);
-    //procedure Addcolors1Click(Sender: TObject);
-    //procedure Addgroundclassifiedpoints1Click(Sender: TObject);
     procedure Plateboundaryfile1Click(Sender: TObject);
     procedure ASCIIremovelinesinsecondfile1Click(Sender: TObject);
     procedure Chromelist1Click(Sender: TObject);
@@ -401,8 +397,6 @@ type
     procedure CSVmergefiles1Click(Sender: TObject);
     procedure OGRshapefilestoGKPG1Click(Sender: TObject);
     procedure VerticaldatumshiftoverwriteDEMgrid1Click(Sender: TObject);
-    //procedure DiluviumDEMreprot1Click(Sender: TObject);
-    //procedure emplatedownload1Click(Sender: TObject);
     procedure MICRODEMformat1Click(Sender: TObject);
     procedure Verifyfilesinmaplibrary1Click(Sender: TObject);
     procedure GDALassignprojectionviaEPSG1Click(Sender: TObject);
@@ -565,7 +559,7 @@ begin
       fName := ExtractFilePath(fname) + 'merge_photons'  + '.dbf';
       if GetFileNameDefaultExt('Merged Photon CSV files','*.dbf',FName) then begin
          if (BaseMap = Nil) then StringList2CSVtoDB(s11,fName,true)
-         else BaseMap.StringListToLoadedDatabase(s11,fName);
+         else BaseMap.StringListToDBonMap(s11,fName);
       end;
       LastDataBase := fName;
       wmDEM.SetPanelText(0,'');

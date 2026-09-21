@@ -738,7 +738,7 @@ end;
    procedure IniMemOverwriteCheck(Where : shortstring);
    begin
       if (MDDef.PerspOpts.PersWidth = 0) and (MDDef.PerspOpts.PersWidth = 0) then begin
-         {$IfDef RecordProblems} HighlightLineToDebugFile('Corrupt INI file ' + Where); {$EndIf}
+         {$IfDef RecordProblems} HighLightInDebugFile('Corrupt INI file ' + Where); {$EndIf}
          RecreateINIfile;
          wmdem.Viewdebuglog1Click(Nil);
          MessageToContinue('Please forward Debug log to Prof Guth (just popped up in Notepad)');
