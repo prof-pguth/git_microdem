@@ -91,9 +91,9 @@ uses
     dbGrids,
     VCL.ExtCtrls,VCL.Forms, VCL.Graphics, VCL.Controls,
     WinAPI.Windows,
-    Petmar,Petmar_types,BaseGraf,
-    DEMDefs,
-    DEMIX_definitions;
+    Petmar,Petmar_types,PetMath,
+    BaseGraf,
+    DEMDefs,DEMIX_definitions;
 
 const
    DEMIX_initialized : boolean = false;
@@ -136,8 +136,6 @@ const
    procedure SummarizeEGM96toEGM2008shifts;
    procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);   //brown dirtball for STM, blue airball for DSM
 
-procedure MergeDEMIXtileStats;
-
 
 //rankings, winners, tolerances
     procedure CompareRankings(DBonTable : integer);
@@ -146,7 +144,6 @@ procedure MergeDEMIXtileStats;
     procedure DifferentRankingsByTile(DBonTable : integer);
     function WinnerAndTies(DB : integer; DEMs : tStringList; Tolerance : float32) : shortstring;
     function CriterionTieTolerance(Criterion : shortstring) : float32;
-
 
 function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
 function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
@@ -157,7 +154,6 @@ procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
 
 function DEMsinIndex(Index : tDEMIXindexes) : integer;
 
-//procedure OpenCopDEMandLandcoverForArea(CopLand : boolean = true);
 procedure OpenDEMIXAreaMaps;
 
 procedure GetAreaDEMNames(TestAreaName : shortstring);
@@ -165,7 +161,6 @@ procedure GetAreaDEMNames(TestAreaName : shortstring);
 function ExtraToSpreadDEMs(DEMName : shortString; Extra : float32) : float32;
 function PickWineContestDBLocation(Force : boolean = false) : boolean;
 procedure PickDEMIXMode;
-
 
 function DEMIXMomentStatsString(MomentVar : tMomentVar) : shortstring;
 function DEMIXShortenDEMName(DEMName : shortstring) : shortstring;
@@ -181,15 +176,10 @@ const
    NumScales = 4;
    Scales : array[1..NumScales] of shortstring = ('0.15sec','0.25sec','0.5sec','1sec');
 
-   function GetFileNamesOfDEMinUse(var DataDir : PathStr) : tStringList;
-
-procedure LandCoverBreakdowPointCloud;
 
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
-//procedure GEDTM_problems(dbOnTable : integer);
-procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
 
 
 {$IfDef IncludeEarlyDEMIXmaps}
@@ -231,7 +221,7 @@ uses
    Nevadia_Main,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
-   DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
+   DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,
    MD_use_tools,
    DEMIX_graphs,
    Pick_DEMIX_mode,
@@ -266,19 +256,6 @@ var
 
 const
    MICRODEMcurvature = true;  //if not, using Whitebox
-
-
-procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
-//the decimeters must have been fixed first
-//removes Geotiff code 42112
-//also saves vertical datum
-begin
-    DEMGlb[DEM1].CheckMaxMinElev;
-    DEMGlb[DEM1].DEMHeader.ElevUnits := euMeters;
-    DEMGlb[DEM1].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
-    DEMGlb[DEM1].SaveAsGeotiff(fName1);
-end;
-
 
 
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
@@ -408,123 +385,6 @@ begin
 end;
 
 
-function GetFileNamesOfDEMinUse(var DataDir : PathStr) : tStringList;
-var
-   TestDEMs,DEMFiles : tStringList;
-   i,j : integer;
-begin
-   GetDEMIXpaths;
-   if not ValidPath(DataDir) then begin
-      DataDir := 'J:\aaa_neo_eval\oxnard\0.15_sec_tests\';
-      GetDOSPath('with DEMs',DataDir);
-   end;
-   TestDEMs := GetListOfTestDEMsinUse;
-   TestDEMs.Insert(0,'ref_DTM');
-
-   DEMFiles := Nil;
-   FindMatchingFiles(DataDir,'*.tif',DEMfiles);
-
-   Result := tStringList.Create;
-   for i := 0 to pred(TestDEMs.Count) do begin
-      for j := 0 to pred(DEMfiles.Count) do begin
-          if (Uppercase(ExtractFileNameNoExt(DEMfiles.Strings[j])) = UpperCase(TestDEMs.Strings[i])) then begin
-             Result.Add(DEMfiles.Strings[j]);
-          end;
-      end;
-   end;
-   DEMFiles.Destroy;
-   TestDEMs.Destroy;
-   {$IfDef RecordRangeScales} WriteLineToDebugFile('DEMNs'); WriteStringListToDebugFile(Result,true); {$EndIf}
-end;
-
-
-
-procedure LandCoverBreakdowPointCloud;
-var
-   MaskDEM, RefDEM,ESA_LC10 : integer;
-   DataDir,fName : PathStr;
-   Area : shortstring;
-   Findings : tStringList;
-   aLine : shortstring;
-
-      procedure OneLandCover(LandType : shortstring; Code : integer);
-      var
-         Fixed,Fixed2 : int64;
-         j : integer;
-      begin
-         {$IfDef RecordRangeScales} HighlightLineToDebugFile('OneLandCover, start ' + LandType); {$EndIf}
-         if (Code <> 0) then begin
-            wmDEM.SetPanelText(1,'Mask grids',true);
-            {$IfDef TrackElevationPointers} CheckElevationPointers('Start Masking ' + LandType); {$EndIf}
-            DEMGLb[ESA_LC10].MarkOutsideRangeMissing(Code-0.01,Code+0.01,Fixed,false);
-            if (Code <> 0) then begin
-              //for j := 1 to LastLSP do begin
-                 if ValidDEM(RefDEM) and ValidDEM(MaskDEM) then begin
-                    MaskGridFromSecondGrid(RefDEM,ESA_LC10, msSecondMissing);
-                    MaskGridFromSecondGrid(MaskDEM,ESA_LC10, msSecondMissing);
-                 end;
-              //end;
-            end;
-         end;
-         Fixed := DEMglb[RefDEM].ComputeNumberValidPoints(DEMglb[RefDEM].FullDEMGridLimits);
-         Fixed2 := DEMglb[MaskDEM].ComputeNumberValidPoints(DEMglb[MaskDEM].FullDEMGridLimits);
-         aline := Area + ', ,' + LandType + ',' + IntToStr(Fixed) + ',' + IntToStr(Fixed2);
-         Findings.Add(aline);
-         if (Code <> 0) then begin
-            wmDEM.SetPanelText(1,'UnMask LSPs',true);
-            {$IfDef TrackElevationPointers} CheckElevationPointers('Start UnMasking ' + LandType); {$EndIf}
-            DEMGLb[ESA_LC10].ReloadDEM(true);
-            //for j := 1 to LastLSP do begin
-               DEMGlb[RefDEM].ReloadDEM(true);
-               DEMGlb[MaskDEM].ReloadDEM(true);
-            //end;
-         end;
-         {$IfDef TrackElevationPointers} CheckElevationPointers('LSPs, after ' + LandType) {$EndIf}
-      end;
-
-
-begin {procedure LandCoverBreakdownPointCloud}
-   {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale in'); {$EndIf}
-   GetDEMIXpaths;
-   SetColorForProcessing;
-   LockStatusBar := true;
-
-   //theParams := OpenFUVOrderedParams;
-
-   Area := 'oxnard';
-   DataDir := 'J:\aaa_neo_eval\' + Area + '\';
-   GetDOSPath('with DEMs',DataDir);
-
-   Findings := tStringList.Create;
-   aLine := 'AREA,DEMIX_TILE,LANDCOVER,REF_DTM,PC_DTM';
-   Findings.Add(aLine);
-
-     {$IfDef RecordRangeScales} WriteLineToDebugFile('FUVforRangeScale Landcover options'); {$EndIf}
-      MaskDEM := OpenNewDEM(DataDir + 'Point_Cloud_dtm.tif',false,'mask DTM');  //this is not working yet
-      RefDEM := OpenNewDEM(DataDir + 'ref_dtm.tif',false,'reference DTM');
-       DEMglb[RefDEM].DEMFileName := MDTempDir + ExtractFileName(DEMglb[RefDEM].DEMFileName);
-       DEMglb[RefDEM].WriteNewFormatDEM(DEMglb[RefDEM].DEMFileName);
-       DEMglb[MaskDEM].DEMFileName := MDTempDir + ExtractFileName(DEMglb[MaskDEM].DEMFileName);
-       DEMglb[MaskDEM].WriteNewFormatDEM(DEMglb[MaskDEM].DEMFileName);
-
-      ESA_LC10 := LoadLC10LandCover('',DEMGlb[RefDEM].DEMBoundBoxGeo,false);
-      {$IfDef TrackElevationPointers} CheckElevationPointers('LSPs loaded'); {$EndIf}
-      OneLandCover('All',0);
-      OneLandCover('Forest',10);
-      OneLandCover('Shrub',20);
-      OneLandCover('Grassland',30);
-      OneLandCover('Urban',50);
-      OneLandCover('Barren',60);
-      CloseSingleDEM(ESA_LC10);
-      CloseSingleDEM(RefDEM);
-      CloseSingleDEM(MaskDEM);
-   fName := MDtempDir + 'Compare_point_cloud_DTM_landcover.dbf';
-   StringList2CSVtoDB(Findings,fName,true);
-   LockStatusBar := false;
-   SetColorForWaiting;
-end {procedure LandCoverBreakdownPointCloud};
-
-
 procedure PickDEMIXMode;
 var
   PickDEMIXmodeForm: TPickDEMIXmodeForm;
@@ -615,45 +475,6 @@ begin
     if (DEMName = 'COP') or (DEMName = 'SRTM') then Result := Extra
     else if (DEMName = 'FABDEM') or (DEMName = 'NASA') then Result := -Extra
     else Result := 0;
-end;
-
-
-
-procedure MergeDEMIXtileStats;
-
-
-         function GetListOfDEMIXtileStats : tStringList;
-         var
-            i : integer;
-            FName : PathStr;
-         begin
-            Result := tStringList.Create;
-            FindMatchingFiles(Diff_dist_results_dir,'*.csv',Result);
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('GetListOfDEMIXtileStats, total csv files=' + IntToStr(Result.Count)); {$EndIf}
-            for i := pred(Result.Count) downto 0 do begin
-               fName := UpperCase(ExtractFileNameNoExt(Result.Strings[i]));
-               if (not StrUtils.AnsiContainsText(fName,'DEMIX_TILES_USED')) or (StrUtils.AnsiContainsText(fName,'SUMMARY')) then begin
-                  Result.Delete(i);
-               end
-               else begin
-                  {$If Defined(RecordDEMIX)} WriteLineToDebugFile(fName); {$EndIf}
-               end;
-            end;
-            {$If Defined(RecordDEMIX)} WriteLineToDebugFile('GetListOfDEMIXtileStats, desired csv files=' + IntToStr(Result.Count)); {$EndIf}
-         end;
-
-
-var
-   TheFiles : tStringList;
-   fName : PathStr;
-begin
-   TheFiles := GetListOfDEMIXtileStats;
-   {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Twmdem.MergeDEMIXtilestats1 tile stat files=' + IntToStr(TheFiles.Count)); {$EndIf}
-   if (TheFiles.Count > 1) then begin
-      fName := Diff_dist_results_dir + 'DEMIX_TILES_USED_SUMMARY.dbf';
-      StringList2CSVtoDB(TheFiles,fName,true);
-   end
-   else TheFiles.Free;
 end;
 
 
@@ -1463,148 +1284,6 @@ begin
    else if (eval2 + Tolerance < Eval1) then Result := DEM2
    else Result := 'TIE';
 end;
-
-
-procedure DoDEMIX_DifferenceMaps(AreaName,ShortName,LongName : shortString; var Graph1,Graph2 : tThisBaseGraph);
-var
-   TestGrid,DSMgrid,DTMGrid,
-   i,UseDSM,UseDTM : integer;
-   Min,Max,BinSize : float32;
-   DSMElevFiles,DSMLegendFiles,DTMElevFiles,DTMLegendFiles : tStringList;
-
-
-      procedure ModifyGraph(Graph : tThisBaseGraph);
-      begin
-         Graph.RedrawDiagram11Click(Nil);
-         Graph.Image1.Canvas.Draw(Graph.GraphDraw.LeftMargin+15,Graph.GraphDraw.TopMargin+10,Graph.MakeLegend);
-      end;
-
-
-     procedure MakeDifferenceGrid(RefGrid : integer; RefType : shortstring; LegendFiles,ElevFiles : tStringList);
-
-            function SaveValuesFromGrid(DEM : integer; What : shortstring) : ShortString;
-            var
-               Col,Row,Npts :integer;
-               zs : ^bfarray32;
-               z : float32;
-            begin
-               New(ZS);
-               NPts := 0;
-               for Col := 0 to pred(DEMGlb[DEM].DEMHeader.NumCol) do begin
-                  for Row := 0 to pred(DEMGlb[DEM].DEMHeader.NumRow) do begin
-                     if DEMGlb[DEM].GetElevMetersOnGrid(col,row,z) then begin
-                       zs^[Npts] := z;
-                       inc(NPts);
-                     end;
-                  end;
-               end;
-
-               if (NPts > 0) then begin
-                  Result := DEMIXtempfiles + DEMGlb[DEM].AreaName + '_' + AreaName + '.z';
-                  SaveSingleValueSeries(npts,zs^,Result);
-               end;
-               Dispose(zs);
-            end;
-
-     var
-        DiffGrid : integer;
-        fName : PathStr;
-     begin
-         DiffGrid := MakeDifferenceMap(RefGrid,TestGrid,RefGrid,0,true,false,false);
-         DEMglb[DiffGrid].AreaName := AreaName + '_' + TestSeries[i] + '_' + ShortName + '_' + RefType;
-         fName := DEMIXtempfiles + DEMglb[DiffGrid].AreaName + '.dem';
-         DEMglb[DiffGrid].WriteNewFormatDEM(fName);
-         ElevFiles.Add(SaveValuesFromGrid(DiffGrid,ShortName + '_' + RefType + '_'));
-         LegendFiles.Add(TestSeries[i]);
-         CloseSingleDEM(DiffGrid);
-         if (ShortName <> 'elvd') then begin
-            fName := AreaName + '_percent_diff_' + TestSeries[i] + '_' + ShortName + '_' + RefType;
-            DiffGrid := PercentDifferentTwoGrids(RefGrid,TestGrid,fName);
-            fName := DEMIXtempfiles + fName + '.dem';
-            DEMglb[DiffGrid].WriteNewFormatDEM(fName);
-            CloseSingleDEM(RefGrid);
-         end;
-     end;
-
-
-
-begin {procedure DoDEMIX_DifferenceMaps}
-   {$IfDef RecordDEMIX} HighlightLineToDebugFile('start differences ' + LongName); {$EndIf}
-   MDDef.DefaultGraphXSize := 1000;
-   MDDef.DefaultGraphYSize := 600;
-   DTMElevFiles := tStringList.Create;
-   DTMLegendFiles := tStringList.Create;
-   DSMElevFiles := tStringList.Create;
-   DSMLegendFiles := tStringList.Create;
-
-   for I := 1 to MaxDEMIXDEM do begin
-      if ValidDEM(TestDEMs[i]) then begin
-         GetReferenceDEMsForTestDEM(TestSeries[i],UseDSM,UseDTM);
-
-         if (ShortName = 'elvd') then begin
-            TestGrid := TestDEMs[i];
-            DTMGrid := UseDTM;
-         end;
-         if (ShortName = 'slpd') then begin
-            TestGrid := CreateSlopeMap(TestDEMs[i]);
-            DTMGrid := CreateSlopeMap(UseDTM);
-         end;
-         if (ShortName = 'rufd') then begin
-            TestGrid := CreateRoughnessSlopeStandardDeviationMap(false,TestDEMs[i],3);
-            DTMGrid := CreateRoughnessSlopeStandardDeviationMap(false,UseDTM,3);
-         end;
-
-         {$IfDef RecordDEMIX} writeLineToDebugFile(Testseries[i] + ' DTMs ' + DEMGlb[DTMgrid].AreaName + '  ' + DEMGlb[Testgrid].AreaName + ' ' + IntToStr(DTMGrid) + '/' + IntToStr(TestGrid)); {$EndIf}
-
-         MakeDifferenceGrid(DTMGrid,'dtm',DTMLegendFiles,DTMElevFiles);
-
-         if (UseDSM <> 0) then begin
-            if (ShortName = 'elvd') then begin
-               DSMGrid := UseDSM;
-            end;
-            if (ShortName = 'slpd') then begin
-               DSMGrid := CreateSlopeMap(UseDSM);
-            end;
-            if (ShortName = 'rufd') then begin
-               DSMGrid := CreateRoughnessSlopeStandardDeviationMap(false,UseDSM,3);
-            end;
-            {$IfDef RecordDEMIX} writeLineToDebugFile(Testseries[i] + ' DSMs ' + DEMGlb[DSMgrid].AreaName + '  ' + DEMGlb[Testgrid].AreaName + ' ' + IntToStr(DSMGrid) + '/' + IntToStr(TestGrid)); {$EndIf}
-            MakeDifferenceGrid(DSMGrid,'dsm',DSMLegendFiles,DSMElevFiles);
-         end;
-         if (ShortName <> 'elvd') then CloseSingleDEM(Testgrid);
-         {$IfDef RecordDEMIX} WriteLineToDebugFile('After ' + TestSeries[i] + ', Open grids now=' + IntToStr(NumDEMDataSetsOpen) ); {$EndIf}
-      end;
-   end;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('start graphs'); {$EndIf}
-
-   if (ShortName = 'elvd') then begin
-      Min := -50;
-      Max := 50;
-      BinSize := 0.25;
-   end
-   else if (ShortName = 'slpd') then begin
-      Min := -50;
-      Max := 50;
-      BinSize := 0.25;
-   end
-   else if (ShortName = 'rufd') then begin
-      Min := -20;
-      Max := 20;
-      BinSize := 0.15;
-   end;
-
-   Graph1 := CreateMultipleHistogram(MDDef.CountHistograms,DTMElevFiles,DTMLegendFiles,AreaName + ' DTM ' + LongName + ' difference','DTM ' + LongName + ' difference distribution',100,Min,Max,BinSize);
-   ModifyGraph(Graph1);
-   if (DSMElevFiles.Count > 0) then begin
-      Graph2 := CreateMultipleHistogram(MDDef.CountHistograms,DSMElevFiles,DSMLegendFiles,AreaName + ' DSM ' + LongName + ' difference','DSM ' + LongName + ' difference distribution',100,Min,Max,BinSize);
-      ModifyGraph(Graph2);
-   end
-   else begin
-      Graph2 := Nil;
-   end;
-   {$IfDef RecordDEMIX} writeLineToDebugFile('done differences'); {$EndIf}
-end {procedure DoDEMIX_DifferenceMaps};
-
 
 
 initialization

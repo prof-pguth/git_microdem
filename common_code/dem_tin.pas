@@ -499,8 +499,8 @@ begin
    {$Else}
       {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.create CreateNewGraph(PlotForm2)'); {$EndIf}
       CreateNewGraph(PlotForm2);
-      PlotForm2.MinZ := ContourData^.zMin;
-      PlotForm2.MaxZ := ContourData^.zMax;
+      PlotForm2.GraphDraw.MinZ := ContourData^.zMin;
+      PlotForm2.GraphDraw.MaxZ := ContourData^.zMax;
       PlotForm2.WhatsOnGraph := TriangulationContour;
       PlotForm2.TinfName:= TriFName;
       PlotForm2.TIN := self;

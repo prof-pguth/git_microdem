@@ -55,6 +55,14 @@ uses
 
    Petmar_types;
 
+type
+   tMomentVar = record
+      NPts,Missing : int64;
+      MinZ,MaxZ,mean,avg_dev,std_dev,svar,skew,curt,median,rmse,mae,LE90,
+      Q1,Q3,
+      PC1,PC2,PC5,PC95,PC98,PC99 : float64;
+   end;
+
 
 function HeadingOfLine(dx,dy : float64) : float64; inline;
 

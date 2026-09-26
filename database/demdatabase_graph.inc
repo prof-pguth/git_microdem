@@ -183,6 +183,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      for i := 0 to 1000 do Hist[i] := 0;
      MultFiles := MyData.FieldExists('SEP_FILE');
      Result := TThisbasegraph.Create(Application);
+     {$IfDef RecordDBGraphs} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph graph created'); {$EndIf}
      if MDDef.StatGrafReverseYAxis then Result.GraphDraw.NormalCartesianY := false;
      if (GraphType = dbgtN2Dgraph2yaxes1) then begin
         Result.GraphDraw.GraphType := gtTwoVertAxes;
@@ -197,7 +198,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      else begin
         if (GraphType = dbgtN2DgraphcolorNumericField) then begin
            TStr := ' (color from ' + RemoveUnderscores(dbOpts.NumericColorField) + ') ';
-           Result.zUnits := dbOpts.NumericColorField;
+           Result.GraphDraw.zUnits := dbOpts.NumericColorField;
         end
         else if (GraphType = dbgtN2Dgraphcolorcodetext) then TStr := ' (color from ' + RemoveUnderscores(dbOpts.StringColorField) + ') '
         else TStr := '';
@@ -286,7 +287,8 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
            MyData.ApplyFilter(TStr);
 
            Result.GraphDraw.Symbol[j].DrawingSymbol := FilledBox;
-           Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
+           if MyData.FieldExists('COLOR') then Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(MyData.GetFieldByNameAsInteger('COLOR'))
+           else Result.GraphDraw.Symbol[j].Color := ConvertTColorToPlatformColor(WinGraphColors(j));
            if (MyData.GetFieldType(dbOpts.StringColorField) = ftString) then TStr := DataThere.Strings[j]
            else TStr := 'Code_' + DataThere.Strings[j];
            TStr := TStr + NumRecsInDBstring;
@@ -374,7 +376,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      if (GraphType = dbgtMultiplegraphmatrix1) then begin
         Result.GraphDraw.MaxHorizAxis := dbtablef.ForceXMax;
         Result.GraphDraw.MaxVertAxis := dbtablef.ForceYMax;
-        Result.RedrawDiagram11Click(Nil);
+        Result.RedrawDiagram;
         Result.Linearfit1Click(Nil);
      end
      else begin
@@ -393,6 +395,7 @@ begin {function TGISdataBaseModule.ActuallyDrawGraph}
      FreeAndNil(DataThere);
      LastGraph := Result;
      LastGraphType := GraphType;
+     Result.RedrawDiagram;
      {$IfDef RecordDBGraphs} WriteLineToDebugFile('TGISdataBaseModule.ActuallyDrawGraph out'); {$EndIf}
      {$IfDef TrackColors} Result.GraphColorsRecord('TGISdataBaseModule.ActuallyDrawGraph out'); {$EndIf}
      {$If Defined(GraphLineWidth)} Result.RecordLineWidths('ActuallyDrawGraph out'); {$EndIf}
@@ -492,7 +495,7 @@ begin
               Hists[j].GraphDraw.MaxVertAxis := MaxY;
               Hists[j].GraphDraw.BottomMargin := 50;
               Hists[j].GraphDraw.LeftMargin := 60;
-              Hists[j].RedrawDiagram11Click(Nil);
+              Hists[j].RedrawDiagram;
 
               fName := MDTempDir + 'hist_' + IntToStr(j) + '.bmp';
               PixList.Add(fName);
@@ -940,4 +943,63 @@ begin
      MyData.ApplyFilter(OldFilter);
 end;
 
+
+procedure WhereIsItDSMorDTMorTie(db : integer);
+var
+   MultSeries,Criteria : tStringList;
+   BaseFilter,DEM : shortstring;
+   gr : t1DGraphArray;
+   Tolerance : float64;
+   i : integer;
+   BigBitmap : tMyBitmap;
+
+   function MakeCriterionGraph(aFilter : shortstring; URtext : shortstring) : tThisBaseGraph;
+   begin
+      GISdb[db].ApplyGISFilter(aFilter);
+      GISdb[db].EmpSource.Enabled := false;
+      Result := nil;
+       if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
+          GISdb[db].dbOpts.XField := 'BARREN_PC';
+          GISdb[db].dbOpts.YField := 'AVG_SLOPE';
+    		  GISdb[db].dbOpts.StringColorField := 'DSM_OR_DTM';
+          MultSeries := tStringList.Create;
+          MultSeries.Add('DSM');
+          MultSeries.Add('TIE');
+          MultSeries.Add('DTM');
+
+          Result := GISdb[db].ActuallyDrawGraph(dbgtN2Dgraphcolorcodetext,MultSeries);
+          Result.GraphDraw.MinHorizAxis := 0;
+          Result.GraphDraw.MaxHorizAxis := 100;
+          Result.GraphDraw.MinVertAxis := 0;
+          Result.GraphDraw.MaxVertAxis := 100;
+          Result.GraphDraw.LeftMargin := 90;
+          Result.GraphDraw.BottomMargin := 80;
+          Result.GraphDraw.InsideMarginLegend := lpNWMap;
+          Result.GraphDraw.TopRightInsideLabel := URtext;
+          Result.RedrawDiagram;
+      end;
+      GISdb[db].EmpSource.Enabled := true;
+   end;
+
+begin
+  {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphCompareDSMandDTMslopes in'); {$EndIf}
+    if ANSIcontainsText(GISdb[db].dbName,'ALOS') then DEM := 'ALOS'
+    else if ANSIcontainsText(GISdb[db].dbName,'COP') then DEM := 'COP'
+    else DEM := '';
+
+    BaseFilter := GISdb[db].MyData.Filter;
+	  gr[0] := MakeCriterionGraph('',DEM);
+	  Criteria := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
+	  for i := 0 to pred(Criteria.Count) do begin
+       GetToleranceForCriterion(Criteria.Strings[i],Tolerance);
+	     Gr[succ(i)] := MakeCriterionGraph('CRITERION=' + QuotedStr(Criteria.Strings[i]),DEM + ' tol=' + RealToString(Tolerance,-10,-6));
+	  end;
+    CreateBitmap(BigBitmap,10,10);
+	  BigBitmap.LoadFromFile(MergeGraphPanelsHorizontal(5,gr,true,''));
+    DisplayBitmap(BigBitmap,'');
+    BigBitmap.Destroy;
+    GISdb[db].ApplyGISFilter(BaseFilter);
+
+  {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphCompareDSMandDTMslopes out'); {$EndIf}
+end;
 

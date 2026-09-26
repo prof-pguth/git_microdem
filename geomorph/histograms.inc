@@ -579,10 +579,10 @@ begin
          Graph3 := StartStackedHistogram(DB,true);
          Graph3.GraphDraw.VertLabel := l1 + ' percentages';
          Graph3.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
-         Graph3.GraphDraw.MarginsGood := true;
+         //Graph3.GraphDraw.MarginsGood := true;
          Graph3.Caption := l1 + ' Category percentages in histogram bins';
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage call redraw: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
-         Graph3.RedrawDiagram11Click(Nil);
+         Graph3.RedrawDiagram;
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph percentage done: ' +  Graph3.GraphDraw.AxisRange); {$EndIf}
 
          //Graph2 := StartStackedHistogram(DB,false);
@@ -590,13 +590,13 @@ begin
          //Graph2.GraphDraw.LeftMargin := Result.GraphDraw.LeftMargin;
          //Graph2.GraphDraw.MarginsGood := true;
          //Graph2.Caption := l1 + ' Category percentages in histogram bins';
-         //Graph2.RedrawDiagram11Click(Nil);
+         //Graph2.RedrawDiagram;
          {$If Defined(RecordHistogram)} HighlightLineToDebugFile('Stacked percents graph counts: ' +  Graph2.GraphDraw.AxisRange); {$EndIf}
 
          //Result.GraphDraw.MaxHorizAxis := Graph2.GraphDraw.MaxHorizAxis;
          {$If Defined(RecordHistogram)} WriteLineToDebugFile('Reset Hist: ' +  Result.GraphDraw.AxisRange); {$EndIf}
          //Result.GraphDraw.MarginsGood := true;
-         //Result.RedrawDiagram11Click(Nil);
+         //Result.RedrawDiagram;
          {$If Defined(RecordHistogram)} WriteLineToDebugFile('Done StackedPercents, Redrawn Hist graph: ' +  Result.GraphDraw.AxisRange); {$EndIf}
       end;
       *)

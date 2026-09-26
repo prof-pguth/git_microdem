@@ -373,12 +373,12 @@ begin
       for DEM := 1 to MaxDEMDataSets do begin
          if ValidDEM(DEM) then begin
             gl := DEMGlb[DEM].SpecifyDEMGridLimitsFromGeoBoundBox(DEMGlb[MapOwner.MapDraw.DEMonMap].DEMBoundBoxGeo);
-            FindPeaks(DEM,gl,PeakResults,Memo1);
+            DEMstat.FindPeaks(DEM,gl,PeakResults,Memo1);
          end;
       end;
    end
    else begin
-      FindPeaks(MapOwner.MapDraw.DEMonMap,GridLimits,PeakResults,Memo1);
+      DEMstat.FindPeaks(MapOwner.MapDraw.DEMonMap,GridLimits,PeakResults,Memo1);
    end;
 
    if (PeakResults.Count > 2) then begin

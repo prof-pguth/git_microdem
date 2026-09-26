@@ -495,7 +495,7 @@ type
     N45: TMenuItem;
     CheckfilesizesforSSIMimagemismatches1: TMenuItem;
     Addprefixtoallfilesindirectory1: TMenuItem;
-    MergeDEMIXtilestats1: TMenuItem;
+    //MergeDEMIXtilestats1: TMenuItem;
     N48: TMenuItem;
     Channelnetworkmisspercentagesbytile1: TMenuItem;
     SSIM2: TMenuItem;
@@ -586,10 +586,10 @@ type
     N60: TMenuItem;
     PicktestDEMs1: TMenuItem;
     N61: TMenuItem;
-    N62: TMenuItem;
+    //N62: TMenuItem;
     N64: TMenuItem;
     N65: TMenuItem;
-    ComparelandcoverinpointcloudDTM1: TMenuItem;
+    //ComparelandcoverinpointcloudDTM1: TMenuItem;
     Addlegendonlylastgraph1: TMenuItem;
     N63: TMenuItem;
     UTMbasedtilescreation1: TMenuItem;
@@ -972,7 +972,7 @@ type
     procedure N45Click(Sender: TObject);
     procedure CheckfilesizesforSSIMimagemismatches1Click(Sender: TObject);
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
-    procedure MergeDEMIXtilestats1Click(Sender: TObject);
+    //procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
     procedure Overwriteifexits1Click(Sender: TObject);
     procedure Overwirteifexists1Click(Sender: TObject);
@@ -1026,9 +1026,9 @@ type
     procedure Areaevaluations1Click(Sender: TObject);
     procedure N60Click(Sender: TObject);
     procedure PicktestDEMs1Click(Sender: TObject);
-    procedure N62Click(Sender: TObject);
+    //procedure N62Click(Sender: TObject);
     procedure N64Click(Sender: TObject);
-    procedure ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
+   // procedure ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
     procedure Addlegendonlylastgraph1Click(Sender: TObject);
     procedure UTMbasedtilescreation1Click(Sender: TObject);
     procedure UTMbasedFUVcalculations1Click(Sender: TObject);
@@ -2804,19 +2804,6 @@ begin
 end;
 
 
-procedure Twmdem.N62Click(Sender: TObject);
-var
-   theDEMs : tStringList;
-   DataDir,fName : PathStr;
-   i,j : integer;
-begin
-    DataDir := '';
-    theDEMs := GetFileNamesOfDEMinUse(DataDir);
-    for i := 0 to pred(TheDEMs.Count) do begin
-       fName := TheDEMs[i];
-       LoadNewDEM(j,fName,true);
-    end;
-end;
 
 procedure Twmdem.N64Click(Sender: TObject);
 const
@@ -4604,11 +4591,6 @@ begin
    DEMIX_UTM_based_processing(udMergeCopDTMDSMcompare);
 end;
 
-procedure Twmdem.MergeDEMIXtilestats1Click(Sender: TObject);
-begin
-   MergeDEMIXtileStats;
-end;
-
 
 procedure Twmdem.Mergegeomorphonevaluatioins1Click(Sender: TObject);
 begin
@@ -6230,12 +6212,6 @@ procedure Twmdem.CompareinterpolatedFUVs1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(udInterpolatedFUVs);
 end;
-
-procedure Twmdem.ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
-begin
-   LandCoverBreakdowPointCloud;
-end;
-
 
 procedure Twmdem.Compareslope1Click(Sender: TObject);
 begin

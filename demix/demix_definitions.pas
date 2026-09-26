@@ -252,8 +252,8 @@ var
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
-   procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
-   function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
+   //procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
+   //function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
    procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
@@ -263,7 +263,8 @@ var
    procedure MergeCSV(Mode : integer);
    procedure AddPercentPrimaryData(DBonTable : integer);
    procedure IdentifyDSM_DTMpair(DBonTable : integer);
-   procedure ComputeWhereDSMandDTMshouldDiffer(dbOnTable : integer);
+   procedure DSM_DTM_DifferFromLandcover(dbOnTable : integer);
+   procedure DSM_gt_DTM_1(db : integer);
    procedure IdentifyDSMorDTM(dbOnTable : integer);
 
 
@@ -331,8 +332,8 @@ var
 procedure TrimReferenceDEMsToDEMIXtiles;
 
 function AreDEMIXscoresInDB(db : integer) : boolean;
-procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
-procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
+//procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
+//procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
 
 procedure CriteriaInFUVdb(db : integer);
 
@@ -470,6 +471,13 @@ function CommonTileStats(DBonTable : integer) : shortstring;
 function CommonTileStatsNames(DBonTable : integer) : shortstring;
 function CreatePowerLawList(db : integer) : tStringList;
 
+//procedure FindBestReferenceDEMforCopDEM(db : integer);
+//procedure ResultsBestReferenceDEMforCopDEM(db : integer);
+procedure FindBestReferenceDEM(db : integer; DEM : shortstring);
+function DEMIXcreationString(db : integer) : shortstring;
+procedure GetToleranceForCriterion(Criterion : shortstring; var Tolerance : float64);
+
+
 const //Demix Database types
   ddtNot = 0;
   ddtTileStats = 1;
@@ -516,6 +524,23 @@ uses
 {$IfDef IncludeVectorCriteria}
    {$include demix_channels.inc}
 {$EndIf}
+
+
+procedure GetToleranceForCriterion(Criterion : shortstring; var Tolerance : float64);
+begin
+  if Criterion = 'ELEV_FUV' then Tolerance := 0.000100
+  else if Criterion = 'ELEV_MAE' then Tolerance := 0.01
+  else if Criterion = 'SLOPE_FUV' then Tolerance := 0.02
+  else if Criterion = 'SLOPE_MAE' then Tolerance := 0.5
+  else Tolerance := 0.0000001;
+end;
+
+
+function DEMIXcreationString(db : integer) : shortstring;
+begin
+   Result := 'DEMIX_DB_4.3_' + CurrentTimeForFileName(false);
+end;
+
 
 
 function CheckDEMIXdbType(db : integer; var ItsType : byte; WantedTypes : tByteset; WhatFor : shortString = '') : boolean;
@@ -1186,68 +1211,6 @@ begin
          exit;
       end;
    end;
-end;
-
-
-procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
-var
-   i,Opinions : integer;
-   Criterion : shortstring;
-   LowScore : float32;
-begin
-   if (not AreDEMIXscoresInDB(DB)) then begin
-      RankDEMS(db,nil);
-   end;
-
-   GISdb[DB].EmpSource.Enabled := false;
-   for i := 1 to NumDEMIXtestDEM do Scores[i] := 0;
-   Opinions := 0;
-   while not GISdb[DB].MyData.eof do begin
-      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
-      if (CriteriaList.IndexOf(Criterion) <> -1) then begin
-         inc(Opinions);
-         for i := 1 to DEMs.Count do begin
-            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMs[pred(i)] + '_SCR');
-         end;
-      end;
-      GISdb[DB].MyData.Next;
-   end;
-   for I := 1 to NumDEMIXtestDEM do Scores[i] := Scores[i] / Opinions;
-   LowScore := 999;
-   WinnerString := '';
-   for I := 1 to DEMs.Count do begin
-      if Scores[i] < LowScore - 0.001 then begin
-         LowScore := Scores[i];
-         WinnerString := DEMs[i];
-         NumTies := 1;
-      end
-      else if Scores[i] < LowScore + 0.001 then begin
-         WinnerString := WinnerString + ';' + DEMs[i];
-         inc(NumTies);
-      end;
-   end;
-end;
-
-
-procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
-var
-   Criterion : shortstring;
-   i,Opinions : integer;
-begin
-   GISdb[DB].EmpSource.Enabled := false;
-   for i := 1 to NumDEMIXtestDEM do Scores[i] := 0;
-   Opinions := 0;
-   while not GISdb[DB].MyData.eof do begin
-      Criterion := GISdb[DB].MyData.GetFieldByNameAsString('CRITERION');
-      if (CriteriaList.IndexOf(Criterion) <> -1) then begin
-         inc(Opinions);
-         for i := 1 to DEMs.Count do begin
-            Scores[i] := Scores[i] + GISdb[DB].MyData.GetFieldByNameAsFloat(DEMs[pred(i)]);
-         end;
-      end;
-      GISdb[DB].MyData.Next;
-   end;
-   for i := 1 to DEMs.Count do Scores[i] := Scores[i] / Opinions;
 end;
 
 

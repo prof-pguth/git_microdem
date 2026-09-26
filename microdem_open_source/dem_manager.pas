@@ -11,7 +11,7 @@ unit dem_manager;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef DEBUG}
-      //{$Define RecordCloseDEM}
+      {$Define RecordCloseDEM}
       //{$Define RecordCleanUpTempDir}
       //{$Define TrackHorizontalDatum}
       //{$Define ShortRecordCloseDEM}
@@ -276,6 +276,18 @@ end;
 
 
 function WebExtractGEDTMorEDTM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
+
+         procedure SaveGEDTMFamilyDEM(DEM1 : integer; fName1 : PathStr);
+         //the decimeters must have been fixed first
+         //removes Geotiff code 42112
+         //also saves vertical datum
+         begin
+             DEMGlb[DEM1].CheckMaxMinElev;
+             DEMGlb[DEM1].DEMHeader.ElevUnits := euMeters;
+             DEMGlb[DEM1].DEMHeader.VerticalCSTypeGeoKey := VertCSEGM2008;
+             DEMGlb[DEM1].SaveAsGeotiff(fName1);
+         end;
+
 var
    fName : PathStr;
 begin
@@ -288,7 +300,7 @@ begin
        SaveGEDTMFamilyDEM(Result,SaveName);  //add EGM2008 code, add MD elevation code for meters, kill ASCII tag 42112
     end
     else begin
-       HighLightInDebugFile('At it again; GEDTM download failure ' + sfBoundBoxToString(bb,2));
+       HighLightInDebugFile('GEDTM download failure ' + sfBoundBoxToString(bb,2));
     end;
 end;
 

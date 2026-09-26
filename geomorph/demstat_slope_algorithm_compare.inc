@@ -189,7 +189,7 @@ end;
          MDDef.SlopeCompute.UsePoints := Use;
 
          Grid1 := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute,true));
-         Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,false,false,SlopeMethodName(MDDef.SlopeCompute,true) + '_' + Title);
+         Diff := MakeDifferenceMap(Grid1,Grid2,Grid1,0,true,SlopeMethodName(MDDef.SlopeCompute,true) + '_' + Title);
          DEMGlb[Diff].SelectionMap.MapDraw.MapType := mtElevSpectrum;
          DEMGlb[Diff].SelectionMap.N11view1Click(Nil);
 
@@ -248,7 +248,7 @@ var
        MDDef.SlopeCompute.LSQorder := Order;
        MDDef.SlopeCompute.WindowRadius := Window;
        Grid1 := CreateSlopeMapPercentAlgorithm(MDDef.SlopeCompute,OpenMap,DEM,MDtempDir + SlopeMethodName(MDDef.SlopeCompute));
-       Diff := MakeDifferenceMap(Grid1,Evans,Grid1,0,true,false,true,'Evans compared to ' + SlopeMethodName(MDDef.SlopeCompute));
+       Diff := MakeDifferenceMap(Grid1,Evans,Grid1,0,true,'Evans compared to ' + SlopeMethodName(MDDef.SlopeCompute));
        CleanUpMap(Grid1);
        CleanUpMap(Diff);
 

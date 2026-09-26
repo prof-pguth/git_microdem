@@ -2074,11 +2074,12 @@ object dbtablef: Tdbtablef
     object DEMIX2: TMenuItem
       Caption = 'DEMIX this tile'
       object LoadtestandreferenceDEMs1: TMenuItem
-        Caption = 'Load test and reference 1 sec DEMs for tile'
+        Caption = 'Load all test and reference 1 sec DEMs'
         OnClick = LoadtestandreferenceDEMs1Click
       end
       object CompareCOPtopointandareareferenceDEMs1: TMenuItem
         Caption = 'Compare COP to point and area reference DEMs'
+        OnClick = CompareCOPtopointandareareferenceDEMs1Click
       end
     end
     object DTDSMcomparison1: TMenuItem
@@ -2098,6 +2099,10 @@ object dbtablef: Tdbtablef
       object LoadtestandreferenceDEMs2: TMenuItem
         Caption = 'Load test and reference 1 sec DEMs'
         OnClick = LoadtestandreferenceDEMs2Click
+      end
+      object MapcomparingtestDEMtoDSMandDTM1: TMenuItem
+        Caption = 'Map comparing test DEM to DSM and DTM'
+        OnClick = MapcomparingtestDEMtoDSMandDTM1Click
       end
     end
     object Calculate1: TMenuItem
@@ -3845,9 +3850,20 @@ object dbtablef: Tdbtablef
         Caption = 'GDEM average tile slope by resolution'
         OnClick = GDEMaveragetileslopebyresolution1Click
       end
-      object BestreferenceDEMforCOP1: TMenuItem
-        Caption = 'Best reference DEM for COP'
-        OnClick = BestreferenceDEMforCOP1Click
+      object BestrefrenceDEMs1: TMenuItem
+        Caption = 'Best refrence DEMs'
+        object BestreferenceDEMforALOS1: TMenuItem
+          Caption = 'ALOS'
+          OnClick = BestreferenceDEMforALOS1Click
+        end
+        object BestreferenceDEMforCOP1: TMenuItem
+          Caption = ' COP'
+          OnClick = BestreferenceDEMforCOP1Click
+        end
+        object Both2: TMenuItem
+          Caption = 'Both'
+          OnClick = Both2Click
+        end
       end
       object N63: TMenuItem
         Caption = '-'
@@ -3914,6 +3930,10 @@ object dbtablef: Tdbtablef
         Caption = 'Add tile characteristics to DB'
         OnClick = Addtilecharacteristics1Click
       end
+      object AddDSMDTM1m1: TMenuItem
+        Caption = 'Add DSM - DTM  > 1m'
+        OnClick = AddDSMDTM1m1Click
+      end
       object AddDSMPCFORESTPCURBANPC1: TMenuItem
         Caption = 'Add DSM_PC (FOREST_PC + URBAN_PC)'
         OnClick = AddDSMPCFORESTPCURBANPC1Click
@@ -3962,7 +3982,6 @@ object dbtablef: Tdbtablef
       object RankDEMs1: TMenuItem
         Caption = 'Rank DEMs (scores/opinions) and list best by criterion and tile'
         Enabled = False
-        OnClick = RankDEMs1Click
       end
       object AddCOPALOSpercentprimarydata1: TMenuItem
         Caption = 'Add COP/ALOS PDF (percent primary data fraction)'
@@ -4036,6 +4055,10 @@ object dbtablef: Tdbtablef
     end
     object N51: TMenuItem
       Caption = '-'
+    end
+    object GraphwheretilebestrepresentsDSMorDTM1: TMenuItem
+      Caption = 'Graph where tile best represents DSM or DTM'
+      OnClick = GraphwheretilebestrepresentsDSMorDTM1Click
     end
     object Graphinterpolationresults1: TMenuItem
       Caption = 'Graph interpolation results'
@@ -4237,6 +4260,10 @@ object dbtablef: Tdbtablef
     object Dividefieldbyconstant2: TMenuItem
       Caption = 'Divide field by constant'
       OnClick = Dividefieldbyconstant2Click
+    end
+    object AbsoluteValue1: TMenuItem
+      Caption = 'Absolute value'
+      OnClick = AbsoluteValue1Click
     end
   end
   object DSMDTMpopup: TPopupMenu

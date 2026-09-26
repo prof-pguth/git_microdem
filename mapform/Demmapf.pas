@@ -4074,7 +4074,7 @@ begin
             Result.GraphDraw.LineSize256[1] := 4;
             Result.Width := 500;
             Result.Height := 400;
-            Result.RedrawDiagram11Click(Nil);
+            Result.RedrawDiagram;
          end;
       end;
    {$EndIf}
@@ -4103,7 +4103,7 @@ begin
          Result.Caption := 'Water budget: ' + Result.Caption + ' ' + TStr;
          Result.Width := 500;
          Result.Height := 400;
-         Result.RedrawDiagram11Click(Nil);
+         Result.RedrawDiagram;
       end;
    end;
 {$EndIf}
@@ -6404,7 +6404,7 @@ begin
        if (i <> MapDraw.DEMonMap) and DEMsWanted[i] and ValidDEM(i) then begin
           inc(j);
           {$IfDef RecordScattergram} WriteLineToDebugFile('Grids: ' + DEMGlb[MapDraw.DEMonMap].AreaName + ' and  ' +  DEMGlb[i].AreaName); {$EndIf}
-          DiffMaps[j] := MakeDifferenceMap(MapDraw.DEMonMap,i,MapDraw.DEMonMap,0,true,false,false);
+          DiffMaps[j] := MakeDifferenceMap(MapDraw.DEMonMap,i,MapDraw.DEMonMap,0);
           Maps.Add(DEMGlb[DiffMaps[j]].SelectionMap.Caption);
        end;
     end;
@@ -6432,7 +6432,7 @@ begin
    try
       HeavyDutyProcessing := true;
       for i := 1 to MaxDEMDataSets do if DoDEM[i] then begin
-         NewDEM := MakeDifferenceMap(MapDraw.DEMonMap,i,MapDraw.DEMonMap,0,true,false,false,'Delta ' + DEMGlb[i].AreaName + '_minus_' + DEMGlb[MapDraw.DEMonMap].AreaName);
+         NewDEM := MakeDifferenceMap(MapDraw.DEMonMap,i,MapDraw.DEMonMap,0,true,'Delta ' + DEMGlb[i].AreaName + '_minus_' + DEMGlb[MapDraw.DEMonMap].AreaName);
          Results.Add(DEMGlb[i].AreaName + ',' + RealToString(DEMGlb[NewDEM].SelectionMap.ComputeRMSE,-12,2));
       end;
    finally
@@ -7350,7 +7350,7 @@ begin
    db := StringListToDBonMap(Results,fName);
    Graph := GISdb[db].CreateScatterGram('test','PERCENTILE','VALUE',clRed,true);
    Graph.GraphDraw.LLcornerText := DEMGlb[MapDraw.DEMonMap].AreaName;
-   Graph.RedrawDiagram11Click(Nil);
+   Graph.RedrawDiagram;
 end;
 
 
@@ -8779,6 +8779,11 @@ begin
    {$If Defined(RecordCheckProperTix)} WriteLineToDebugFile(Caption + ' CheckProperTix in'); {$EndIf}
    {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.CheckProperTix in, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 
+   if HeavyDutyProcessing or SkipMenuUpdating or Help1.Visible or (MapDraw = Nil) then begin
+      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.CheckProperTix quick out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+      exit;
+   end;
+
    if (FormStyle = fsNormal) and (not CreateHiddenMap) then begin
       FormStyle := fsMDIChild;
       if (MapDraw <> Nil) then begin
@@ -8789,11 +8794,6 @@ begin
    end
    else begin
       {$If Defined(RecordNumberOpenMaps) or Defined(RecordCheckProperTix)} WriteLineToDebugFile('tMapForm.CheckProperTix cannot make MDI child, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-   end;
-
-   if SkipMenuUpdating or Help1.Visible or (MapDraw = Nil) then begin
-      {$If Defined(RecordNumberOpenMaps)} WriteLineToDebugFile('tMapForm.CheckProperTix quick out, current open maps=' + IntToStr(NumOpenMaps)); {$EndIf}
-      exit;
    end;
 
    if MDDef.ShowMapToolbar then Panel1.Height := 27
@@ -10187,7 +10187,7 @@ begin
       {$IfDef RecordHyperionReflectanceGraph} WriteLineToDebugFile('TMapForm.SatelliteDNsatpoint2Click graph set, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
       graph.GraphDraw.LLcornerText := LatLongDegreeToString(RightClickLat,RightClickLong);
       Graph.GraphDraw.MaxVertAxis := 4000;
-      Graph.RedrawDiagram11Click(Nil);
+      Graph.RedrawDiagram;
       {$IfDef RecordHyperionReflectanceGraph} WriteLineToDebugFile('TMapForm.SatelliteDNsatpoint2Click done, current maps=' + IntToStr(NumOpenMaps)); {$EndIf}
    end
    else SatDNsatPoint(LastX,LastY);
@@ -14734,7 +14734,7 @@ begin
       StreamGraph.GraphDraw.LabelPointsAtop := MDDef.LabelRouteTurningPoints and (StreamGraph.GraphDraw.GraphTopLabels.Count < 25);
       StreamGraph.GraphDraw.GraphDrawn := true;
       StreamGraph.SetUpGraphForm;
-      StreamGraph.RedrawDiagram11Click(Nil);
+      StreamGraph.RedrawDiagram;
       ChangeDEMNowDoing(JustWandering);
    end;
 end;
@@ -17474,7 +17474,7 @@ begin
        VegGraph.GraphDraw.MaxVertAxis := DEMGlb[MapDraw.DEMonMap].VegDensityLayers[1].LayersPresent;
        VegGraph.GraphDraw.MaxHorizAxis := MDDef.VegDensityGraphMaxDensity;
        VegGraph.CanCloseGraph := false;
-       VegGraph.RedrawDiagram11Click(Nil);
+       VegGraph.RedrawDiagram;
        Vegetationdensitygraph1.Checked := true;
     end
     else begin
@@ -22309,7 +22309,7 @@ begin
          Graph.GraphDraw.MaxHorizAxis := 12;
          Graph.GraphDraw.MinHorizAxis := 1;
          Graph.GraphDraw.VertLabel := 'Min/mean/max Temp (' + '°' + 'C)';
-         Graph.RedrawDiagram11Click(Nil);
+         Graph.RedrawDiagram;
       end;
    {$EndIf}
 end;
@@ -23665,8 +23665,8 @@ var
          Graph.GraphDraw.HorizLabel := 'Radial distance (m)';
          Graph.GraphDraw.LLcornerText := DEMglb[DEM].AreaName + ' up open=' + RealToString(Upward,-12,-2) + ' down open=' + RealToString(Downward,-12,-2) + ' ' +
             LatLongDegreeToString(RightClickLat,RightClickLong,ShortDegrees);
-         Graph.GraphDraw.BottomMargin := 100;
-         Graph.GraphDraw.MarginsGood := true;
+         //Graph.GraphDraw.BottomMargin := 100;
+         //Graph.GraphDraw.MarginsGood := true;
          Graph.Caption := Graph.GraphDraw.LLcornerText;
          Graph.AutoScaleAndRedrawDiagram;
        end;
@@ -24135,7 +24135,7 @@ begin
    ThisGraph.Caption := 'Age-depth Curve';
    ThisGraph.GraphDraw.HorizLabel := 'Age (Ma)';
    ThisGraph.GraphDraw.VertLabel := 'Depth (m)';
-   ThisGraph.RedrawDiagram11Click(Nil);
+   ThisGraph.RedrawDiagram;
 end;
 
 
@@ -25338,7 +25338,7 @@ begin
    ThisGraph.GraphDraw.HorizLabel := 'Age (Ma)';
    ThisGraph.GraphDraw.VertLabel := 'Sediment thickness (m)';
    ThisGraph.GraphDraw.NormalCartesianY := false;
-   ThisGraph.RedrawDiagram11Click(Nil);
+   ThisGraph.RedrawDiagram;
 {$EndIf}
 end;
 

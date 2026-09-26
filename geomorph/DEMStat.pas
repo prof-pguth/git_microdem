@@ -112,8 +112,8 @@ uses
    {$Else}
      DEMEros,Multigrid,
    {$EndIf}
-   DEMStringGrid,
-   DEMLosW,PETMAR,Petmar_types,BaseGraf,DEMDefs,DEMMapf;
+   PETMAR,Petmar_types,Petmath,
+   DEMStringGrid,DEMLosW,BaseGraf,DEMDefs,DEMMapf;
 
 
 const
@@ -256,6 +256,8 @@ procedure LSP_gridMultipleDEMs(Which : integer; OpenMap : boolean = true);
 procedure OpennessSensitivity;
 procedure SlopeCurvatureSensitivityWindowSize(WhichLSP : integer);
 procedure Compare_one_dem_mult_windows(DEM : integer);
+function CornerDiffences(DEM1,DEM2 : integer) : shortstring; //computes the distance in km between the four corners of the two DEMs
+
 
 
 const
@@ -312,8 +314,7 @@ uses
    basemap,
    DEM_NLCD,
    GDAL_tools,
-   md_use_tools,
-   PETMath;
+   md_use_tools;
 
 const
    InsuffDEMrelief = 'Insufficient DEM relief';
@@ -555,7 +556,7 @@ var
                   CloseFile(Rfile2);
                   CloseFile(Rfile3);
                end;
-               Result.RedrawDiagram11Click(Nil);
+               Result.RedrawDiagram;
             end {for CurDEM};
          end;
       end;
@@ -889,7 +890,7 @@ var
                 Graph.GraphDraw.MinVertAxis := theMin;
                 Graph.GraphDraw.HorizLabel := '';
                 Graph.GraphDraw.VertLabel := '';
-                Graph.RedrawDiagram11Click(Nil);
+                Graph.RedrawDiagram;
                 CopyImageToBitmap(Graph.Image1,Result);
                 Graph.Destroy;
              end;
@@ -900,7 +901,7 @@ var
             DiffMap : integer;
          begin
             {$IfDef RecordGridScattergramFull} WriteLineToDebugFile('Start difference map, Grids: ' + DEMGlb[i].AreaName + ' and  ' +  DEMGlb[j].AreaName); {$EndIf}
-            DiffMap := MakeDifferenceMap(i,j,i,0,true,false,false);
+            DiffMap := MakeDifferenceMap(i,j,i,0);
             CopyImageToBitmap(DEMGlb[DiffMap].SelectionMap.Image1,Result);
             if First then begin
                LegendBitmap := DEMGlb[DiffMap].SelectionMap.MapDraw.DrawLegendOnBitmap;
@@ -1449,7 +1450,7 @@ begin
    Graph := GISDB[db].CreateScatterGram(MainName,xField,yField,clRed,true,aCapt);
    Graph.GraphDraw.MinVertAxis := 0;
    Graph.GraphDraw.LLCornerText := Location;
-   Graph.RedrawDiagram11Click(Nil);
+   Graph.RedrawDiagram;
    CloseSingleDB(db);
 
    if AggregatedArray then begin
@@ -3149,7 +3150,7 @@ end {procedure ElevMomentReport};
       ThisGraph.GraphDraw.SetShowAllLines(true);
       ThisGraph.GraphDraw.SetShowAllPoints(false);
       ThisGraph.GraphDraw.MaxHorizAxis := 360;
-      ThisGraph.RedrawDiagram11Click(Nil);
+      ThisGraph.RedrawDiagram;
    end;
 
 
@@ -3736,6 +3737,31 @@ begin
    IPColor[15] := RGB(0,59,91);
    IPColor[16] := RGB(242,254,190);
 end;
+
+
+function CornerDiffences(DEM1,DEM2 : integer) : shortstring; //computes the distance in km between the four corners of the two DEMs
+var
+  DistanceMeters,Bearing,Lat1,Long1,Lat2,Long2 : float64;
+begin
+   Result := 'corner km from ' + DEMglb[DEM1].AreaName;
+   DEMglb[DEM1].DEMGridToLatLongDegree(0,0,Lat1,Long1);
+   DEMglb[DEM2].DEMGridToLatLongDegree(0,0,Lat2,Long2);
+   VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+   Result := Result + ' SW=' + RealToString(DistanceMeters * 0.001,-8,4);
+   DEMglb[DEM1].DEMGridToLatLongDegree(0,pred(DEMglb[DEM1].DEMheader.NumRow),Lat1,Long1);
+   DEMglb[DEM2].DEMGridToLatLongDegree(0,pred(DEMglb[DEM2].DEMheader.NumRow),Lat2,Long2);
+   VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+   Result := Result + ' NW=' + RealToString(DistanceMeters * 0.001,-8,4);
+   DEMglb[DEM1].DEMGridToLatLongDegree(pred(DEMglb[DEM1].DEMheader.NumCol),pred(DEMglb[DEM1].DEMheader.NumRow),Lat1,Long1);
+   DEMglb[DEM2].DEMGridToLatLongDegree(pred(DEMglb[DEM2].DEMheader.NumCol),pred(DEMglb[DEM2].DEMheader.NumRow),Lat2,Long2);
+   VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+   Result := Result + ' NE=' + RealToString(DistanceMeters * 0.001,-8,4);
+   DEMglb[DEM1].DEMGridToLatLongDegree(pred(DEMglb[DEM1].DEMheader.NumCol),0,Lat1,Long1);
+   DEMglb[DEM2].DEMGridToLatLongDegree(pred(DEMglb[DEM2].DEMheader.NumCol),0,Lat2,Long2);
+   VincentyCalculateDistanceBearing(Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing);
+   Result := Result + ' SE=' + RealToString(DistanceMeters * 0.001,-8,4);
+end;
+
 
 
 initialization

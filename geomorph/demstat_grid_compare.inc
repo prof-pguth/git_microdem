@@ -387,7 +387,6 @@ begin
 
       EndProgress;
       if (NPts > 0) then begin
-         Result.GraphDraw.ResetMargins := true;
          Result.AutoScaleAndRedrawDiagram;
          Result.AddCorrelationToCorner;
          r := Result.GraphComputedR;

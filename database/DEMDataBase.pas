@@ -382,8 +382,6 @@ type
 
      DEMIXdbType : byte;
      DEMIX_useDEMs : tstringList;
-     //DEMIX_useCriteria,
-     //DEMIX_useCompare : tstringList;
 
      {$IfDef ExGeography}
      {$Else}
@@ -636,7 +634,7 @@ type
      //graphs
          procedure HistogramByCategory(WantXField,FilterField : shortstring; AutoRescale : boolean; Summary : tStringList = nil);
          function OldCreateHistogramFromDataBase(RegHist: boolean;  WantXField, WantYField, WantZField : shortString; AllDBs: boolean; BinSize : float64 = -99): TThisBaseGraph;
-         function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean) : TThisBaseGraph; //MinUse : float64 = 1; MaxUse : float64 = -1; BinSize : float64 = -99): TThisBaseGraph;
+         function CreateHistogramFromDataBase(RegHist: boolean; Fields : tStringList; AllDBs: boolean) : TThisBaseGraph;
          function CreateHistogramFromClustersInDataBase(WantXField: shortString;  UseClusters: boolean) : TThisBaseGraph;
 
          procedure SingleRose(AddTitle : shortString; Field1,Field2 : ShortString);
@@ -650,7 +648,6 @@ type
               FigureLabel : shortString = ''; MultCriteria : tStringList = nil; MultOnX : boolean = false) : TThisbasegraph;
 
          procedure MonthlyWindPlotCurrentPoint;
-
 
      {$IfDef ExGeography}
      {$Else}
@@ -771,6 +768,8 @@ var
 procedure MapWarCrimesDB(MapOwner : tMapForm; InputDB : integer; CountryMaps : boolean = false);
 procedure ProcessBuildings(MapOwner : tMapForm);
 procedure StatsWarCrimesDB(MapOwner : tMapForm; InputDB : integer);
+
+procedure WhereIsItDSMorDTMorTie(db : integer);
 
 
 implementation
@@ -5111,12 +5110,12 @@ function TGISdataBaseModule.InitializeTheTable(WhatDataBase : shortstring; FileW
 label
    Retry;
 var
-   fName,NewFile,BasePath,tName : PathStr;
+   fName,NewFile,BasePath : PathStr;
    i,j,k,l : integer;
    Dir : DirStr;
    bName : NameStr;
    Ext : ExtStr;
-   ID : shortstring;
+   //ID : shortstring;
    WasCSVImport,
    CheckDeleteUnusedFields,
    Success : boolean;

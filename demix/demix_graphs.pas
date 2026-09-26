@@ -70,7 +70,7 @@ function WinningPercentagesComparedToCOP(db : integer; CompareDEM : shortstring;
 
 procedure WhiskerPlotsByCluster(DB : integer; Criteria : tStringList);
 
-procedure PiesBestByTwoLandTypes(dbOnTable : integer; Pies : boolean; Criteria,DEMs : tStringList; Param1,Param2 : shortstring);
+procedure PiesBestByTwoLandTypes(dbOnTable : integer; Pies : boolean; Criteria,DEMs : tStringList; Land1,Land2 : shortstring);
 procedure MultipleScatterPlotsForCluster(dbOnTable : integer);
 procedure ScatterPlotForClusters(DBonTable : integer;  Field1,Field2 : shortstring);
 function AverageScoresGraph(db : integer; DEMs : tStringList; HL : shortstring; aDEMIXLegend : boolean; MinHoriz,MaxHoriz : float64) : tThisBaseGraph;
@@ -82,17 +82,17 @@ procedure FilterJustOneGraph(DBonTable : integer; Criteria,GeomorphFilters,Label
 procedure WinningComparedToBaseDEM(db : integer; BaseDEM : shortstring; GeomorphFilters,Labels,Criteria,DEms : tStringList);
 procedure BestEvalGraphPerCriterionMultipleFilters(db,db2 : integer; DEMField : shortstring; GeomorphFilters,Labels,Criteria : tStringList; CriteriaFamily : shortstring);
 
-procedure DEMIX_Area_ind_criteria_graph(DBonTable : integer; DEMs : tStringList);
+//procedure DEMIX_Area_ind_criteria_graph(DBonTable : integer; DEMs : tStringList);
 
 function NumTilesString(DB : integer) : shortstring;
 
 
 {$IfDef ExDEMIXexperimentalOptions}
 {$Else}
-   procedure DEMIX_AreaAverageScores_graph(DBonTable : integer; DEMs : tStringList; DoScores : boolean = true);
+   //procedure DEMIX_AreaAverageScores_graph(DBonTable : integer; DEMs : tStringList; DoScores : boolean = true);
 
    function MakeHistogramOfDifferenceDistribution(Tile,param,Ref : shortstring) : tThisBaseGraph;
-   function GraphAverageScoresByTile(DB : integer; DEMs,TileList,CriteriaList : tStringList): tThisBaseGraph;
+   //function GraphAverageScoresByTile(DB : integer; DEMs,TileList,CriteriaList : tStringList): tThisBaseGraph;
    procedure MultipleBestByParametersSortByValue(DBonTable,Option : integer; var DEMsTypeUsing,TilesUsing,LandTypesUsing,CandidateDEMsUsing,CriteriaUsing,TileParameters : tStringList; ByPointFilters : boolean = false);
    function DEMIX_SSIM_FUV_single_tile_graph(DBonTable : integer; tile : shortstring) :tThisBaseGraph;
 
@@ -237,7 +237,7 @@ begin
       end;
    end;
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs graphs created'); {$EndIf}
-   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].MakeLegend);
+   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend);
    {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile('GridGraphFUVTwoDEMs out'); {$EndIf}
 end;
 
@@ -264,7 +264,7 @@ begin
          end;
       end;
    end;
-   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].MakeLegend);
+   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend);
 end;
 
 
@@ -403,12 +403,11 @@ begin
 end;
 
 
-
 function OpenGraphForCriterionScoresOrEvaluations(DBonTable : integer; DEMs : tStringList; HorizAxisLabel,VertAxisField : shortstring;
    GraphEvaluation : boolean; BestCriteria : boolean = true) : tThisBaseGraph;
 var
    i : integer;
-   aMinVal,aMaxVal,Range : float64;
+   aMinVal,aMaxVal : float64;
 begin
    {$If Defined(RecordDEMIX_OpenGraph)} WriteLineToDebugFile('OpenGraphForCriterionScoresOrEvaluations, Criterion=' + HorizAxisLabel + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
    HorizAxisLabel := RemoveUnderscores(HorizAxisLabel);
@@ -483,8 +482,8 @@ end {function OpenGraphForCriterionScoresOrEvaluations};
         fName : PathStr;
         Bitmap : tMyBitmap;
      begin
-        Graph.GraphDraw.ResetMargins := true;
-        Graph.RedrawDiagram11Click(Nil);
+        //Graph.GraphDraw.ResetMargins := true;
+        Graph.RedrawDiagram(true);
         if AddLegends then Bitmap := Graph.AddLegendBesideGraph
         else CopyImageToBitmap(Graph.Image1,Bitmap);
         fName := NextFileNumber(MDtempDir,'finishgraph_','.bmp');
@@ -1040,7 +1039,7 @@ const
          var
             Legend,bmp : tMyBitmap;
          begin
-             Legend := gr[1].MakeLegend;
+             Legend := gr[1].GraphDraw.MakeLegend;
              CreateBitmap(bmp,gr[1].Width,Legend.Height + 10);
              bmp.Canvas.Draw((bmp.Width - Legend.Width) div 2,5,Legend);
              fName := NextFileNumber(MDtempDir,'gotilegeomorph_legend_','.bmp');
@@ -1324,7 +1323,7 @@ begin
          end;
          BigBitmap := tMyBitmap.Create;
          BigBitmap.LoadFromFile(MergeGraphPanelsHorizontal(GeomorphFilters.Count,gr,true,''));
-         Legend := gr[0].MakeLegend;
+         Legend := gr[0].GraphDraw.MakeLegend;
          Fname := NextFileNumber(MDtempDir,'FilterJustOneGraph_','.png');
          FinishBigBitMapWithLegend(BigBitmap,Legend,fName,false);
       finally
@@ -1358,7 +1357,7 @@ begin
             end;
          end;
          BigBitmap.LoadFromFile(MergeGraphPanelsHorizontal(GeomorphFilters.Count,gr,false,''));
-         Legend := gr[0].MakeLegend;
+         Legend := gr[0].GraphDraw.MakeLegend;
          Fname := NextFileNumber(MDtempDir,'FilterJustOneGraph_','.png');
          FinishBigBitMapWithLegend(BigBitmap,Legend,fName,false);
       finally
@@ -1828,7 +1827,7 @@ end {function WinningPiesByCriteria};
 
 
 
-procedure PiesBestByTwoLandTypes(dbOnTable : integer; Pies : boolean; Criteria,DEMs : tStringList; Param1,Param2 : shortstring);
+procedure PiesBestByTwoLandTypes(dbOnTable : integer; Pies : boolean; Criteria,DEMs : tStringList; Land1,Land2 : shortstring);
 var
    BaseFilter : shortString;
 
@@ -1844,13 +1843,9 @@ var
          ManyWins : array[0..15] of int16;
       end;
    var
-      i,j,k{,db} : integer;
-      //Rank,
+      i,j,k : integer;
       LocStr,ThisWinners,aDEM : shortString;
-      //Color : tColor;
-      //rfile : file;
       fName : PathStr;
-      //MaxEval,
       BestEval,XS,YS,Tolerance,Value : float32;
       v : array[1..3] of float32;
       Bins : array[1..MaxPossBins,1..MaxPossBins] of tBinRec;
@@ -1879,10 +1874,10 @@ var
      Result.Width := MDDef.DEMIX_xsize;
      Result.Height := MDDef.DEMIX_ysize;
      Result.GraphDraw.MaxVertAxis := 80;
-     Result.GraphDraw.VertLabel := 'Tile ' + Param2 + ' (%)';
-     Result.GraphDraw.HorizLabel := 'Tile ' + Param1 +  ' (%)';
+     Result.GraphDraw.VertLabel := 'Tile ' + Land2 + ' (%)';
+     Result.GraphDraw.HorizLabel := 'Tile ' + Land1 +  ' (%)';
      Result.GraphDraw.BottomMargin := 85;
-     if (Param1 = 'FOREST_PC') then Result.GraphDraw.NormalCartesianX := false;
+     if (Land1 = 'FOREST_PC') then Result.GraphDraw.NormalCartesianX := false;
 
      GISdb[DBonTable].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'CRITERION=' + QuotedStr(Criterion));
      GISdb[DBonTable].EmpSource.Enabled := false;
@@ -1890,8 +1885,8 @@ var
      {$If Defined(PiesByLandType)} WriteLineToDebugFile('n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + '  ' +  GISdb[DBonTable].MyData.Filter); {$EndIf}
 
      while not GISdb[DBonTable].MyData.eof do begin
-        v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Param1);
-        v[2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Param2);
+        v[1] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Land1);
+        v[2] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(Land2);
         i := succ(trunc(MDDef.DEMIXUseBins * (v[1] / Result.GraphDraw.MaxHorizAxis)));
         if (i > MDDef.DEMIXUseBins) then i := MDDef.DEMIXUseBins;
         j := succ(trunc(MDDef.DEMIXUseBins * (v[2] / Result.GraphDraw.MaxVertAxis)));
@@ -1970,7 +1965,7 @@ var
    LegendFName,fName : PathStr;
    TStr : shortstring;
 begin  {procedure PiesBestByTwoLandTypes}
-   if TileCharacteristicsInDB(DBonTable) and GISdb[DBonTable].MyData.FieldExists(Param1) and GISdb[DBonTable].MyData.FieldExists(Param2) then begin
+   if TileCharacteristicsInDB(DBonTable) and GISdb[DBonTable].MyData.FieldExists(Land1) and GISdb[DBonTable].MyData.FieldExists(Land2) then begin
       try
          {$If Defined(RecordDEMIXGraph) or Defined(PiesByLandType)} WriteLineToDebugFile('PiesBestByTwoLandTypes in,  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB) + ' DEMs=' + IntToStr(DEMs.Count)); {$EndIf}
          BaseFilter := GISdb[DBonTable].MyData.Filter;
@@ -1986,7 +1981,7 @@ begin  {procedure PiesBestByTwoLandTypes}
             Bitmap := DefaultHorizontalLegendOnBitmap(0,1,'','',LegRainbows);
          end
          else Bitmap := DEMIXTestDEMLegend(DEMs,true,MDDef.DEMIX_xsize);
-         LegendFName := NextFileNumber(MDtempDir,'Legend_BestBySlopeRough','.png');
+         LegendFName := NextFileNumber(MDtempDir,'Legend_PiesBestByTwoLandTypes','.png');
          SaveBitmap(Bitmap,LegendFName);
          Bitmap.Destroy;
          GISdb[DBonTable].ApplyGISFilter(BaseFilter);
@@ -2004,7 +1999,7 @@ begin  {procedure PiesBestByTwoLandTypes}
       end;
    end
    else begin
-      MessageToContinue('Fields missing: ' + Param1 + ' and ' + Param2);
+      MessageToContinue('Fields missing: ' + Land1 + ' and ' + Land2);
    end;
    {$If Defined(RecordDEMIXGraph)} WriteLineToDebugFile('BestBySlopeRough out'); {$EndIf}
 end {procedure PiesBestByTwoLandTypes};
@@ -2232,7 +2227,7 @@ begin {FilterJustOneGraph}
       {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('FilterJustOneGraph start merge'); {$EndIf}
       BigBitmap := tMyBitmap.Create;
       BigBitmap.LoadFromFile(MergeGraphPanelsHorizontal(Criteria.Count,gr,true,''));
-      Legend := gr[0].MakeLegend;
+      Legend := gr[0].GraphDraw.MakeLegend;
       Fname := NextFileNumber(MDtempDir,'FilterJustOneGraph_','.png');
       FinishBigBitMapWithLegend(BigBitmap,Legend,fName,false);
       ShowDefaultCursor;

@@ -316,7 +316,7 @@ var
                   AllGraphBitmap.Canvas.Draw((i mod 3) * 500, (i div 3) * 400,bmp);
                   FreeAndNil(Bmp);
                   if (i = pred(FieldsUsed)) then begin
-                     Bmp := Graph.MakeLegend;
+                     Bmp := Graph.GraphDraw.MakeLegend;
                   end;
                   Graph.Close;
                end;
@@ -362,8 +362,8 @@ var
                      gr := GISdb[DBonTable].MakeGraph(dbgtN2DgraphCOLORfield,false);
                      gr.GraphDraw.HorizLabel := '';
                      gr.GraphDraw.VertLabel := '';
-                     gr.GraphDraw.ResetMargins := true;
-                     gr.RedrawDiagram11Click(Nil);
+                     //gr.GraphDraw.ResetMargins := true;
+                     gr.RedrawDiagram(true);
 
                      CopyImageToBitmap(gr.Image1,bmp);
                      AllGraphBitmap.Canvas.Draw(xdrawspot,ydrawspot,bmp);

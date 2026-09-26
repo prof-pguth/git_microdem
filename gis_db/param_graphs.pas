@@ -141,7 +141,7 @@ begin
       GISdb[theDB].MyData.Next;
    end;
    ThisGraph.AutoScaleAndRedrawDiagram;;
-   bmp := ThisGraph.MakeLegend;
+   bmp := ThisGraph.GraphDraw.MakeLegend;
    Image1.Picture.Graphic := bmp;
    bmp.Free;
    GISdb[theDB].dbTablef.ShowStatus;

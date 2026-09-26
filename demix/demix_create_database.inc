@@ -10,7 +10,382 @@
 
 {$Define UseOldDifferenceDistributions}
 
-procedure ComputeWhereDSMandDTMshouldDiffer(dbOnTable : integer);
+
+//{$Define RecordBest}
+
+
+function DecsForCriterion(Criterion : shortString) : integer;
+begin
+   if AnsiContainsText(Criterion,'FUV') then Result := -8 else Result := -5;
+end;
+
+
+procedure FindBestReferenceDEM(db : integer; DEM : shortstring);
+const
+   NumCompared = 6;
+   NumCriteria = 5;
+   NumBests = 4;
+type
+   tCompareNames = array[1..NumCompared] of shortstring;
+   tBestNames = array[1..NumBests] of shortstring;
+const
+   CompareCriteria : array[1..NumCriteria] of shortstring = ('ALL','ELEV_FUV','ELEV_MAE','SLOPE_FUV','SLOPE_MAE');
+
+   AlosCompareNames : tCompareNames = ('DTM_ALOS','DTM_SRTM','REV_DTM_S','DSM_ALOS','REV_SRTM','REV_DSM_S');  //,'DTM_POINT');
+   AlosBestNames : tBestNames = ('BEST_ALL','BEST_ALOS','BEST_DTM','BEST_DSM');
+   CopCompareNames : tCompareNames = ('DTM_SRTM','DTM_ALOS','REV_DTM_A','DSM_SRTM','DSM_ALOS','REV_DSM_A');  //,'DTM_POINT');
+   CopBestNames : tBestNames = ('BEST_ALL','BEST_COP','BEST_DTM','BEST_DSM');
+
+type
+   tCompare64 = array[1..NumCompared] of float64;
+var
+   CompareNames : tCompareNames;
+   BestNames : tBestNames;
+
+
+    procedure FindBestComparison(Criterion : shortstring; v : tCompare64; var Best1,Best2,Best3,Best4,Diff12,Ties,WhoTies,CloserDSMorDTM : shortstring);
+    //Ties and Diff12 only done for the first criterion, all of them
+    const
+       AllOfThem : array[1..7] of byte = (1,2,3,4,5,6,7);
+       JustCop : array[1..2] of byte = (1,4);
+       JustDTM : array[1..3] of byte = (1,2,3);
+       JustDSM : array[1..3] of byte = (4,5,6);
+    var
+       Which,i,Test,NumTie : integer;
+       vt,vb,Diff,Tolerance : float64;
+       aline : shortstring;
+       ToSort : array[1..6] of float64;
+    begin
+        GetToleranceForCriterion('ELEV_FUV',Tolerance);
+        if abs(v[1] - v[4]) < Tolerance then CloserDSMorDTM := 'TIE'
+        else if v[1] < v[4] then CloserDSMorDTM := 'DTM'
+        else CloserDSMorDTM  := 'DSM';
+
+        for i := 1 to 6 do ToSort[i] := v[AllOfThem[i]];
+        HeapSort(6,ToSort);
+        Diff := ToSort[2] - ToSort[1];
+        Diff12 := RealToString(Diff,-12,DecsForCriterion(Criterion));
+        WhoTies := '';
+        for i := 1 to 6 do begin
+           Test := AllOfThem[i];
+           if v[Test] < ToSort[1] + Tolerance then begin
+              Best1 := CompareNames[Test];
+              break;
+           end;
+        end;
+        NumTie := 0;
+        WhoTies := '';
+        for i := 1 to 6 do begin
+           Test := AllOfThem[i];
+           if v[i] < ToSort[1] + Tolerance then begin
+              inc(NumTie);
+              WhoTies := WhoTies + CompareNames[Test] + '+';
+           end;
+        end;
+        Delete(WhoTies,length(WhoTies),1);
+        if NumTie = 1 then begin
+           Ties := '';
+        end
+        else Ties := IntToStr(NumTie) + ' ties';
+
+        {$IfDef RecordBest} WriteLineToDebugFile(BestNames[1] + '  ' + Best1 + '  ' + RealToString(ToSort[1],-12,6)); {$EndIf}
+
+        for i := 1 to 2 do ToSort[i] := v[JustCOP[i]];
+        HeapSort(2,ToSort);
+        for i := 1 to 2 do begin
+           Test := JustCop[i];
+           if v[Test] < ToSort[1] + Tolerance then begin
+              Best2 := CompareNames[Test];
+              break;
+           end;
+        end;
+        {$IfDef RecordBest} WriteLineToDebugFile(BestNames[2] + '  ' + Best2 + '  ' + RealToString(ToSort[1],-12,6)); {$EndIf}
+
+        for i := 1 to 3 do ToSort[i] := v[JustDTM[i]];
+        HeapSort(3,ToSort);
+        for i := 1 to 3 do begin
+           Test := JustDTM[i];
+           if v[Test] < ToSort[1] + Tolerance then begin
+              Best3 := CompareNames[Test];
+              break;
+           end;
+        end;
+        {$IfDef RecordBest} WriteLineToDebugFile(BestNames[3] + '  ' + Best3 + '  ' + RealToString(ToSort[1],-12,6)); {$EndIf}
+
+        for i := 1 to 3 do ToSort[i] := v[JustDSM[i]];
+        HeapSort(3,ToSort);
+        for i := 1 to 3 do begin
+           Test := JustDSM[i];
+           if v[Test] < ToSort[1] + Tolerance then begin
+              Best4 := CompareNames[Test];
+              break;
+           end;
+        end;
+        {$IfDef RecordBest} WriteLineToDebugFile(BestNames[4] + '  ' + Best4 + '  ' + RealToString(ToSort[1],-12,6)); {$EndIf}
+    end {procedure FindBestComparison};
+
+
+const
+   OpenMaps = false;
+var
+   DSMDir,fName,EGMDir,DTMDir : PathStr;
+   AreaName,Country,TileName,LatStr,LongStr,Criterion,aLine,Best1,Best2,Best3,Best4,Diff12,BestTies,WhoTies,CloserDSMorDTM,DSMTile : shortstring;
+   Results : tstringlist;
+   NewDB,i,Count : integer;
+   v : tCompare64;
+   mv : array[1..NumCompared] of tMomentVar;
+   MainDEM,MainDTMRef,RevDTMRef,MainDSMRef,RevDSMRef,
+   DSM_SRTM,DSM_ALOS,
+   COP,ALOS,RefSRTM,RefALOS : integer;
+
+   function OpenaDEM(fName : PathStr; NewAreaName : shortString = '') : integer; //allows checking file name during debug, and option to record in debug log
+   begin
+      Result := OpenNewDEM(fName,OpenMaps);
+      if (NewAreaName <> '') then DEMglb[Result].AreaName := NewAreaName;
+      {$IfDef RecordDEMIXFull}
+         HighLightInDebugFile('Opened ' + DEMglb[Result].AreaName + ' ' + DEMglb[Result].KeyParams + ' '  + DEMglb[Result].SWcornerString);
+      {$EndIf}
+   end;
+
+    procedure WriteLine(Criterion : shortString);
+    var
+       i : integer;
+    begin
+       aline := TileName + ',' + DSMTile  + ',' + AreaName + ',' + Country + ',' + LatStr + ',' + LongStr +',' + CommonTileStats(db) + ',' + Criterion;
+       for i := 1 to NumCompared do aLine := aline + ',' + RealToString(v[i],12,DecsForCriterion(Criterion));
+       aLine := aline + ',' + Best1  + ',' + Best2 + ',' + Best3 + ',' + Best4;
+       aLine := aline + ',' + BestTies + ',' + Diff12 + ',' + WhoTies + ',' + CloserDSMorDTM;
+       {$IfDef RecordBest} WriteLineToDebugFile(aline); {$EndIf}
+       Results.Add(aline);
+       WriteLineToDebugFile(IntToStr(Results.Count));
+    end;
+
+   procedure DoComparisons(Criterion1,Criterion2 : shortstring);
+   var
+      i : integer;
+   begin
+        v[1] := GetFUVForPairGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,MainDTMref);
+        v[2] := GetFUVForPairGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,RevDTMref);
+        v[3] := GetFUVForPairGrids(DEMglb[RevDTMref].FullDEMGridLimits,RevDTMref,MainDEM);
+        v[4] := GetFUVForPairGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,MainDSMref);
+        v[5] := GetFUVForPairGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,RevDTMRef);
+        v[6] := GetFUVForPairGrids(DEMglb[RevDTMRef].FullDEMGridLimits,RevDTMRef,MainDEM);
+        FindBestComparison(Criterion1,v,Best1,Best2,Best3,Best4,Diff12,BestTies,WhoTies,CloserDSMorDTM);
+        WriteLine(Criterion1);
+
+        mv[1] := GridDifferenceStatsTwoGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,MainDTMref);
+        mv[2] := GridDifferenceStatsTwoGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,RevDTMref);
+        mv[3] := GridDifferenceStatsTwoGrids(DEMglb[RevDTMref].FullDEMGridLimits,RevDTMref,MainDEM);
+        mv[4] := GridDifferenceStatsTwoGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,MainDSMref);
+        mv[5] := GridDifferenceStatsTwoGrids(DEMglb[MainDEM].FullDEMGridLimits,MainDEM,RevDTMRef);
+        mv[6] := GridDifferenceStatsTwoGrids(DEMglb[RevDTMRef].FullDEMGridLimits,RevDTMRef,MainDEM);
+        for i := 1 to NumCompared do v[i] := mv[i].mae;
+        FindBestComparison(Criterion2,v,Best1,Best2,Best3,Best4,Diff12,BestTies,WhoTies,CloserDSMorDTM);
+        WriteLine(Criterion2);
+   end;
+
+
+      procedure ResultsBestReferenceDEM(db : integer; DEMName : shortstring);
+      var
+         Results : tStringList;
+         aline,cf,BaseFilter : shortstring;
+         fName : PathStr;
+         i,Criterion,Best,Compare : integer;
+      begin
+         SetColorForWaiting;
+         BaseFilter := GISdb[db].MyData.Filter;
+
+         Results := tStringList.Create;
+         aline := 'CRITERION,BEST';
+         for i := 1 to NumCompared do aline := aline + ',' + CompareNames[i];
+         Results.Add(aline);
+
+          for Criterion := 1 to NumCriteria do begin
+             if Criterion = 1 then cf := ''
+             else cf := ' AND CRITERION=' + QuotedStr(CompareCriteria[Criterion]);
+             for Best := 1 to NumBests do begin
+                aline := CompareCriteria[Criterion] + ',' + BestNames[Best];
+                for Compare := 1 to NumCompared do begin
+                    GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + BestNames[Best] + '=' + QuotedStr(CompareNames[Compare]) + cf);
+                    GISdb[db].EmpSource.Enabled := false;
+                    aline := aline + ',' + IntToStr(GISdb[db].MyData.FiltRecsInDB);
+                end;
+                Results.Add(aline);
+             end;
+          end;
+          GISdb[db].ClearGISFilter;
+          GISdb[db].EmpSource.Enabled := true;
+          fName := ExtractFilePath(GISdb[db].dbFullName) + DEMName + '_summary_two_best_reference_' + DEMIXcreationString(db)  + '.dbf';
+          StringList2CSVtoDB(Results, fName);
+
+         Results := tStringList.Create;
+         aline := 'CRITERION,REF_DEM';
+         for i := 1 to NumBests do aline := aline + ',' + BestNames[i];
+         Results.Add(aline);
+          for Criterion := 1 to NumCriteria do begin
+             if Criterion = 1 then cf := ''
+             else cf := ' AND CRITERION=' + QuotedStr(CompareCriteria[Criterion]);
+             for Compare := 1 to NumCompared do begin
+                aline := CompareCriteria[Criterion] + ',' + CompareNames[Compare];
+                for Best := 1 to NumBests do begin
+                    GISdb[db].ApplyGISFilter(BestNames[Best] + '=' + QuotedStr(CompareNames[Compare]) + cf);
+                    GISdb[db].EmpSource.Enabled := false;
+                    aline := aline + ',' + IntToStr(GISdb[db].MyData.FiltRecsInDB);
+                end;
+                Results.Add(aline);
+             end;
+          end;
+          GISdb[db].ApplyGISFilter(BaseFilter);
+          GISdb[db].EmpSource.Enabled := true;
+          fName := ExtractFilePath(GISdb[db].dbFullName) + DEMName + '_summary_one_best_reference_' + DEMIXcreationString(db)  + '.dbf';
+          StringList2CSVtoDB(Results, fName);
+          SetColorForWaiting;
+      end {procedure ResultsBestReferenceDEM};
+
+
+
+begin {procedure FindBestReferenceDEMforALOS}
+   SetColorForProcessing;
+   HeavyDutyProcessing := true;
+   WantShowProgress := false;
+   GISdb[db].ApplyGISFilter('REF_DEM=' + QuotedStr('DTM') + ' AND LAT<50');
+   GISdb[db].EmpSource.Enabled := false;
+
+    if DEM = 'ALOS' then begin
+       CompareNames := ALOSCompareNames;
+       BestNames :=  ALOSBestNames;
+    end
+    else if DEM = 'COP' then begin
+       CompareNames := CopCompareNames;
+       BestNames := CopBestNames;
+    end;
+
+   Results := tStringList.Create;
+   aLine := 'DEMIX_TILE,DSM_NAME,AREA,COUNTRY,LAT,LONG,' + CommonTileStatsNames(db) + ',CRITERION';
+   for i := 1 to NumCompared do aline := aline + ',' + CompareNames[i];
+   for i := 1 to NumBests do aline := aline + ',' + BestNames[i];
+   Results.Add(aline + ',BEST_TIES,DBEST1_2,WHO_TIES,DSM_OR_DTM');
+   {$IfDef RecordBest} WriteLineToDebugFile(aline); {$EndIf}
+
+   Count := 0;
+   while not GISdb[db].MyData.eof do begin
+       inc(Count);
+       wmDEM.SetPanelText(1,IntToStr(Count) + '/' + IntToStr(GISdb[db].MyData.FiltRecsInDB),true);
+
+       Country := GISdb[db].MyData.GetFieldByNameAsString('COUNTRY');
+       AreaName := GISdb[db].MyData.GetFieldByNameAsString('AREA');
+       TileName := GISdb[db].MyData.GetFieldByNameAsString('DEMIX_TILE');
+       DSMTile := GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME');
+       LatStr := GISdb[db].MyData.GetFieldByNameAsString('LAT');
+       LongStr := GISdb[db].MyData.GetFieldByNameAsString('LONG');
+
+       DTMDir := ExtractFilePath(GISdb[db].DBFullName) + AreaName  + '\' + TileName  + RefTestStr + '\';
+       COP := OpenaDEM(DTMDir + 'cop.tif','COP');
+       ALOS := OpenaDEM(DTMDir + 'alos.tif','COP');
+       RefSRTM := OpenaDEM(DTMDir + 'ref_DTM_srtm.tif','DTM_srtm');
+       RefALOS := OpenaDEM(DTMDir + 'ref_DTM_alos.tif','DTM_alos');
+
+       DSMDir := ExtractFilePath(GISdb[db].DBFullName) + AreaName  + '\' + DSMTile + RefTestStr + '\';
+       DSM_SRTM := OpenaDEM(DSMDir + 'ref_DSM_srtm.tif','DSM_srtm');
+       DSM_ALOS := OpenaDEM(DSMDir + 'ref_DSM_alos.tif','DSM_alos');
+
+       if DEM = 'ALOS' then begin
+           MainDEM := ALOS;
+           MainDTMRef := RefALOS;
+           RevDTMRef := RefSRTM;
+           MainDSMRef := DSM_ALOS;
+           RevDSMRef := DSM_SRTM;
+       end
+       else if DEM = 'COP' then begin
+           MainDEM := Cop;
+           MainDTMRef := RefSRTM;
+           RevDTMRef := RefALOS;
+           MainDSMRef := DSM_SRTM;
+           RevDSMRef := DSM_ALOS;
+       end;
+        DoComparisons('ELEV_FUV','ELEV_MAE');
+
+        MainDEM := CreateEvansSlopeMapPercent(false,MainDEM);
+        MainDTMRef := CreateEvansSlopeMapPercent(false,MainDTMref);
+        RevDTMRef := CreateEvansSlopeMapPercent(false,MainDTMref);
+        MainDSMRef := CreateEvansSlopeMapPercent(false,MainDSMref);
+        RevDSMRef := CreateEvansSlopeMapPercent(false,DSM_ALOS);
+        DoComparisons('SLOPE_FUV','SLOPE_MAE');
+        CloseAllDEMs;
+        GISdb[db].MyData.Next;
+   end;
+
+   fName := ExtractFilePath(GISdb[db].dbFullName) + DEM + '_best_reference_' + DEMIXcreationString(db) + '.csv';
+   Results.SaveToFile(fName);
+   fName := ChangeFileExt(fName, '.dbf');
+   aline := 'saved ' + IntToStr(Results.Count) + ' to ' + fName;
+   newDB := StringList2CSVtoDB(Results, fName);
+   wmDEM.StatusBar1.Panels[0].Text := '';
+   GISdb[db].EmpSource.Enabled := true;
+
+   GISdb[NewDB].ApplyGISFilter(CompareNames[1] + '< 0.000001');
+   if GISdb[NewDB].MyData.FiltRecsinDB > 0 then begin
+      GISdb[NewDB].DeleteAllSelectedRecords;
+   end;
+   ResultsBestReferenceDEM(Newdb,DEM);
+   HeavyDutyProcessing := false;
+
+    SetColorForWaiting;
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('Out ' + aline); {$EndIf}
+end {procedure FindBestReferenceDEMforALOS};
+
+
+procedure DSM_gt_DTM_1(db : integer);
+//adds field DSM_PC with percentage of DEM where DSM and DTM should be different, urban and forest landcovers
+var
+   x,y,Total,Higher,Count,RefDSM,RefDTM : integer;
+   AreaName : shortstring;
+   DTMdir,DSMdir : PathStr;
+   z1,z2 : float32;
+begin
+   SetColorForProcessing;
+   ShowHourglassCursor;
+   WantShowProgress := false;
+   GISdb[DB].ClearGISFilter;
+   GISdb[DB].MyData.InsureFieldPresentAndAdded(ftFloat,'DSM_G1_DTM',8,2);
+
+   Count := 0;
+   while not GISdb[db].MyData.eof do begin
+       inc(Count);
+       wmDEM.SetPanelText(1,IntToStr(Count) + '/' + IntToStr(GISdb[db].MyData.FiltRecsInDB),true);
+       GISdb[DB].EmpSource.Enabled := false;
+       AreaName := GISdb[db].MyData.GetFieldByNameAsString('AREA');
+
+       DTMDir := ExtractFilePath(GISdb[db].DBFullName) + AreaName  + '\' + GISdb[db].MyData.GetFieldByNameAsString('DTM_NAME')  + RefTestStr + '\';
+       RefDTM := OpenNewDEM(DTMDir + 'ref_DTM_srtm.tif',false);
+
+       DSMDir := ExtractFilePath(GISdb[db].DBFullName) + AreaName  + '\' + GISdb[db].MyData.GetFieldByNameAsString('DSM_NAME')  + RefTestStr + '\';
+       RefDSM := OpenNewDEM(DSMDir + 'ref_DSM_srtm.tif',false);
+
+       Total := 0;
+       Higher := 0;
+       for x := 0 to pred(DEMglb[RefDSM].DEMheader.NumCol) do begin
+          for y := 0 to pred(DEMglb[RefDSM].DEMheader.NumRow) do begin
+             if DEMglb[RefDTM].GetElevMetersOnGrid(x,y,z1) and DEMglb[RefDSM].GetElevMetersOnGrid(x,y,z2) then begin
+                 inc(Total);
+                 if (z2 - z1 > 1) then inc(Higher);
+             end;
+          end;
+       end;
+       CloseSingleDEM(RefDTM);
+       CloseSingleDEM(RefDSM);
+       GISdb[DB].MyData.Edit;
+       GISdb[DB].MyData.SetFieldByNameAsFloat('DSM_G1_DTM',100 * Higher / Total);
+       GISdb[DB].MyData.Next;
+   end;
+    SetColorForWaiting;
+   ShowDefaultCursor;
+   WantShowProgress := true;
+   wmDEM.StatusBar1.Panels[1].Text := '';
+end;
+
+
+procedure DSM_DTM_DifferFromLandcover(dbOnTable : integer);
 //adds field DSM_PC with percentage of DEM where DSM and DTM should be different, urban and forest landcovers
 var
    Urban,Forest : float32;
@@ -28,7 +403,6 @@ begin
    end;
    ShowDefaultCursor;
 end;
-
 
 
 procedure IdentifyDSMorDTM(dbOnTable : integer);
@@ -1630,225 +2004,6 @@ begin
    end;
 end;
 
-
-procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
-const
-   IttyBitty = 0.00001;  //added for floating point funny business between Delphi and Python
-   MaxTestDEMs = 12;
-   DoScores = false;
-var
-   DEM,Value,N,j,Score,BestScore,UsedDEMs : integer;
-   Sum,fValue,BestValue,TieTolerance,Cop,alos,fab : float32;
-   fName : PathStr;
-   BestValueString,aLine,Which : shortstring;
-   Values : array[1..MaxTestDEMs] of float32;
-   RankDEMs : array[1..MaxTestDEMs] of shortstring;
-   Results,Scoring : tStringList;
-   TieToleranceTable : tMyData;
-
-       procedure FindTies(StartDEM : integer; var EndDEM : integer);
-       var
-          i,NumTies : integer;
-       begin
-          {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Find ties in, DEM=' + IntToStr(StartDEM)); {$EndIf}
-          BestValueString := RankDEMs[StartDEM];
-          BestScore := StartDEM;
-          EndDEM := StartDEM;
-          NumTies := 1;
-          while (Values[succ(EndDEM)] < (Values[StartDEM] + TieTolerance + IttyBitty)) and (succ(EndDEM) <= UsedDEMs) do begin
-             inc(EndDEM);
-             inc(NumTies);
-             if (StartDEM = 1) then begin
-                BestValueString := BestValueString + '-' + RankDEMs[EndDEM];
-             end;
-             BestScore := BestScore + EndDEM;
-          end;
-          if (StartDEM = 1) then begin
-             GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_LOW_SC',BestValueString);
-             GISdb[DBonTable].MyData.SetFieldByNameAsInteger('NUM_TIES',NumTies);
-             {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Find ties =' + BestValueString); {$EndIf}
-          end;
-          if DoScores then begin
-              for i := StartDEM to EndDEM do begin
-                 if GISdb[DBonTable].MyData.FieldExists(RankDEMs[i] + '_SCR') then begin
-                    GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_SCR',BestScore / NumTies);
-                    {$IfDef IncludeCOPwins} GISdb[DBonTable].MyData.SetFieldByNameAsFloat(RankDEMs[i] + '_WIN',StartDEM); {$EndIf}
-                 end
-                 else begin
-                    WriteLineToDebugFile(IntToStr(i) + '  ' + RankDEMs[i] + '  ' + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2));
-                    MessageToContinue('check this out!!');
-                 end;
-                 {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(RankDEMs[i] + RealToString(BestScore/NumTies,6,-2) + RealToString(Values[i],8,2)); {$EndIf}
-              end;
-          end;
-          {$If Defined(RecordDEMIXties)} WriteLineToDebugFile('Find ties out, EndDEM=' + IntToStr(EndDEM)); {$EndIf}
-       end;
-
-var
-   FirstDEM,l1,l2 : integer;
-   ts,Criterion : shortstring;
-   tv : float32;
-begin {procedure RankDEMS}
-    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('RankDEMS in, ' + GISdb[DBonTable].dbName); {$EndIf}
-    LoadDEMIXnames;
-
-    GISdb[DBonTable].AddFieldToDataBase(ftString,'DEM_LOW_SC',48);
-    if GISdb[DBonTable].MyData.GetFieldLength('DEM_LOW_SC') < 48 then GISdb[DBonTable].MyData.TrimField('DEM_LOW_SC',48);
-    if DoScores then begin
-      for DEM := 1 to MaxDEMIXDEM do begin
-         if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
-            GISdb[DBonTable].AddFieldToDataBase(ftFloat,DEMIXshort[DEM] + '_SCR',6,2);
-           {$IfDef IncludeCOPwins} GISdb[DBonTable].AddFieldToDataBase(ftFloat,AllDEMIXTheDEMs[DEM] + '_WIN',6,2); {$EndIf}
-         end;
-      end;
-    end;
-
-    GISdb[DBonTable].AddFieldToDataBase(ftFloat,'TOLERANCE',9,6);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NUM_TIES',2);
-
-    TieToleranceTable := tMyData.Create(fName);
-    if TieToleranceTable.FieldExists('CRITERION') and TieToleranceTable.FieldExists('TOLERANCE') then begin
-       j := 0;
-       GISdb[DBonTable].MyData.First;
-       while not GISdb[DBonTable].MyData.eof do begin
-          {$If Defined(RecordDEMIXties)} HighLightInDebugFile('Loop =' + IntToStr(j)); {$EndIf}
-          inc(j);
-          if (j mod 25 = 0) then wmdem.SetPanelText(3,'Rank DEMs ' + IntToStr(j) + '/' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB),true);
-          GISdb[DBonTable].EmpSource.Enabled := false;
-          Criterion := GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION');
-          GISdb[DBonTable].MyData.Edit;
-          if IsDEMIX_signedCriterion(Criterion) then begin
-             if DoScores then begin
-               for DEM := 1 to NumDEMIXtestDEM do begin
-                  GISdb[DBonTable].MyData.SetFieldByNameAsString(DEMIXshort[DEM] + '_SCR','');
-               end;
-             end;
-          end
-          else begin
-             //extract scores
-             UsedDEMs := 0;
-             for DEM := 1 to MaxDEMIXDEM do begin
-                if GISdb[DBonTable].MyData.FieldExists(DEMIXshort[DEM]) then begin
-                   inc(UsedDEMs);
-                   RankDEMs[UsedDEMs] := DEMIXShort[DEM];
-                   Values[UsedDEMs] := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(DEMIXshort[DEM]);     //rank dems is not being set
-                   {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(aLine); {$EndIf}
-                end;
-             end;
-
-             //Bubble sort scores
-             for l1 := 1 to (UsedDEMs - 1) do begin
-                for l2 := 1 to (UsedDEMs - 1) do begin
-                   if Values[l2] > Values[succ(l2)] then begin
-                      tv := Values[l2];
-                      ts := RankDEMs[l2];
-                      Values[l2] := Values[succ(l2)];
-                      RankDEMs[l2] := RankDEMs[succ(l2)];
-                      Values[succ(l2)] := tv;
-                      RankDEMs[succ(l2)] := ts;
-                   end;
-                end;
-             end;
-
-             TieTolerance := CriterionTieTolerance(Criterion);
-             GISdb[DBonTable].MyData.SetFieldByNameAsFloat('TOLERANCE',TieTolerance);
-
-             FirstDEM := 1;
-             repeat
-                {$If Defined(RecordDEMIXties)} WriteLineToDebugFile(''); {$EndIf}
-                FindTies(FirstDEM,DEM);
-                FirstDEM := succ(DEM);
-             until (DEM = UsedDEMs);
-          end;
-          GISdb[DBonTable].MyData.Next;
-       end;
-    end;
-    TieToleranceTable.Destroy;
-    GISdb[DBonTable].ShowStatus;
-    wmdem.SetPanelText(3,'',true);
-    {$If Defined(RecordDEMIX)} WriteLineToDebugFile('RankDEMS out, ' + GISdb[DBonTable].dbName); {$EndIf}
-end {procedure RankDEMS};
-
-
-
-function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
-var
-   i,DEM  : integer;
-   Findings : tStringList;
-   fName : PathStr;
-   Field,aLine : shortstring;
-   Sum,Average : float64;
-
-      procedure ProcessFilter(aName : shortstring);
-      var
-         DEM : integer;
-      begin
-        {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('Process filter in, ' + aName + ' Filter matches=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
-        if (GISdb[DBonTable].MyData.FiltRecsInDB > 0) then begin
-           aLine := aName + ',' + IntToStr(GISdb[DBonTable].NumUniqueEntriesInDBLinkPossible('DEMIX_TILE'));
-           for DEM := 1 to DEMs.Count do begin
-              Field := DEMs.strings[pred(DEM)] + Ext;
-              {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(Field); {$EndIf}
-              GISdb[DBonTable].EmpSource.Enabled := false;
-              if GISdb[DBonTable].MyData.FieldExists(Field) then begin
-                 ShowHourglassCursor;
-                 if MDDef.DEMIX_UseMedian then Average := GISdb[DBonTable].MyData.FieldMedian(Field)
-                 else Average := GISdb[DBonTable].MyData.FieldAverage(Field);
-                 aline := aline + ',' + RealToString(Average,-12,-4);
-              end;
-           end;
-           Findings.Add(aline);
-        end
-        else begin
-           {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('no records match filter ' + GISdb[DBonTable].MyData.Filter); {$EndIf}
-        end;
-      end;
-
-var
-  TheFilter : shortstring;
-begin {function AverageScoresOfDEMs}
-    {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('AverageScoresOfDEMs in, ' + GISdb[DBonTable].dbName + ' Criteria filter = ' + CriteriaFilter); {$EndIf}
-    aLine := 'FILTER,NUM_TILES';
-    ShowHourglassCursor;
-    for DEM := 1 to DEMs.Count do begin
-       aline := aline + ',' + DEMs.strings[pred(DEM)];
-    end;
-    Findings := tStringList.Create;
-    Findings.Add(aline);
-
-    if (Filters = Nil) then begin
-       if (CriteriaFilter <> '') then GISdb[DBonTable].ApplyGISFilter(CriteriaFilter);
-       ProcessFilter('all');
-    end
-    else begin
-       for I := 0 to pred(Filters.Count) do begin
-          {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(IntToStr(i) + '  ' + Filters.strings[i] + '   ' + Filters.strings[i]); {$EndIf}
-          if (Filters.strings[i] = '') then begin
-             GISdb[DBonTable].ClearGISFilter;
-             if (CriteriaFilter <> '') then GISdb[DBonTable].ApplyGISFilter(CriteriaFilter);
-             ProcessFilter('all')
-          end
-          else begin
-             theFilter := Filters.strings[i];
-             if (CriteriaFilter <> '') then begin
-                theFilter := CriteriaFilter + ' AND ' + TheFilter;
-             end;
-             GISdb[DBonTable].ApplyGISFilter(theFilter);
-             ProcessFilter(Labels.strings[i]);
-          end;
-       end;
-    end;
-    if (Filters <> Nil) then GISdb[DBonTable].ClearGISFilter;
-    GISdb[DBonTable].ShowStatus;
-    if (Findings.Count > 1) then begin
-       fName := NextFileNumber(MDTempDir,GISdb[DBonTable].dbName + '_average_scores_','.dbf');
-       result := StringList2CSVtoDB(Findings,fName);
-    end
-    else begin
-       //{$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile(IntToStr(i) + '  ' + Filters.strings[i] + '   ' + Filters.strings[i]); {$EndIf}
-    end;
-    {$If Defined(RecordDEMIXFilters)} WriteLineToDebugFile('DEMIXScoreDEMs out, ' + GISdb[DBonTable].dbName); {$EndIf}
-end {function AverageScoresOfDEMs};
 
 
 procedure ModeOfDifferenceDistributions;

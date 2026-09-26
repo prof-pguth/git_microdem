@@ -100,15 +100,16 @@ end;
 
       procedure ReplaceBitmapWithSubset(var Bitmap : tMyBitmap; Left,Right,Top,Bottom : integer);
       var
-         NewBitmap : tMyBitmap;
+         ScratchBitmap : tMyBitmap;
       begin
-         CreateBitmap(NewBitmap,Bitmap.Width,Bitmap.Height);
-         NewBitmap.Canvas.Draw(0,0,Bitmap);
+         CreateBitmap(ScratchBitmap,Bitmap.Width,Bitmap.Height);
+         ScratchBitmap.Canvas.Draw(0,0,Bitmap);
          Bitmap.Free;
          CreateBitmap(Bitmap,Right - Left, Bottom - Top);
          ClearBitmap(Bitmap,clNearWhite);
-         Bitmap.Canvas.CopyRect(Rect(0,0,Bitmap.Width,Bitmap.Height),NewBitmap.Canvas,Rect(Left,Top,Right,Bottom));
-         NewBitmap.Free;
+         //writeLineToDebugFile('Original:  ' + BitmapSize(ScratchBitmap) + '  replaced=' + BitmapSize(Bitmap));
+         Bitmap.Canvas.CopyRect(Rect(0,0,Bitmap.Width,Bitmap.Height),ScratchBitmap.Canvas,Rect(Left,Top,Right,Bottom));
+         ScratchBitmap.Free;
       end;
 
 

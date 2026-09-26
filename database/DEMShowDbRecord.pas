@@ -295,8 +295,10 @@ procedure Tshowrecordform.ShowRecords;
 var
    DEMGridSize,
    fLoX,fHiX,fLoY,fHiY,k,i,err : integer;
-   xDEMg,yDEMg, xSATg,ySATg : float64;
-   xg1,yg1,s1s2,s2s3,Trend,RoughnessFactor,Lat,Long : float64;
+   //xDEMg,yDEMg, xSATg,ySATg : float64;
+   xg1,yg1,
+   s1s2,s2s3,Trend,RoughnessFactor,
+   Lat,Long : float64;
    z : float32;
    TStr2 : String;
    TStr : ShortString;

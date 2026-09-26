@@ -29,7 +29,6 @@ object wmdem: Twmdem
     Left = 0
     Top = 0
     Width = 2418
-    Height = 29
     AutoSize = True
     ButtonHeight = 32
     ButtonWidth = 34
@@ -3409,7 +3408,6 @@ object wmdem: Twmdem
         end
         object ComparelandcoverinpointcloudDTM1: TMenuItem
           Caption = 'Compare land cover in point cloud DTM'
-          OnClick = ComparelandcoverinpointcloudDTM1Click
         end
       end
       object Multipletiles1: TMenuItem
@@ -3428,7 +3426,6 @@ object wmdem: Twmdem
       end
       object N62: TMenuItem
         Caption = 'Open DEMs'
-        OnClick = N62Click
       end
       object N59: TMenuItem
         Caption = '-'
@@ -3936,7 +3933,6 @@ object wmdem: Twmdem
       end
       object MergeDEMIXtilestats1: TMenuItem
         Caption = 'Merge DEMIX tile stats'
-        OnClick = MergeDEMIXtilestats1Click
       end
     end
     object N58: TMenuItem

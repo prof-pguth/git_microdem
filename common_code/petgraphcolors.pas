@@ -175,7 +175,7 @@ end;
 procedure Tgraphcolorsform.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    Action := caFree;
-   TheGraph.RedrawDiagram11Click(Nil);
+   TheGraph.RedrawDiagram;
 end;
 
 procedure Tgraphcolorsform.BitBtn10Click(Sender: TObject);
@@ -207,19 +207,19 @@ end;
 
 procedure Tgraphcolorsform.PlotScaledSymbolsButtonClick(Sender: TObject);
 begin
-   TheGraph.RedrawDiagram11Click(Nil);
+   TheGraph.RedrawDiagram;
 end;
 
 procedure Tgraphcolorsform.CheckBox1Click(Sender: TObject);
 begin
    TheGraph.GraphDraw.SetShowAllPoints(CheckBox1.Checked);
-   TheGraph.RedrawDiagram11Click(Nil);
+   TheGraph.RedrawDiagram;
 end;
 
 procedure Tgraphcolorsform.CheckBox2Click(Sender: TObject);
 begin
    TheGraph.GraphDraw.SetShowAllLines(CheckBox2.Checked);
-   TheGraph.RedrawDiagram11Click(Nil);
+   TheGraph.RedrawDiagram;
 end;
 
 procedure Tgraphcolorsform.CheckBox3Click(Sender: TObject);

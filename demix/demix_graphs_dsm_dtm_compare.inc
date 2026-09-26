@@ -74,7 +74,6 @@ begin
 
        EndGraphGrid(gr,Labels2,theDEMs,Nil,'Grid for ' + GISdb[DBonTable].dbName);
    end;
-   //theDEMs.Destroy;
 end;
 
 
@@ -148,7 +147,7 @@ procedure GridScatterPlotByDEMResolution(db : integer; Criterion,Coloring : shor
       v : array[1..3] of float32;
    begin
       Result := StartIndividualGraph(db,Nil);
-      Result.GraphDraw.LRcornerText := {'Criterion=' + Criterion + '  ' +} FigureLabel;
+      Result.GraphDraw.TopRightInsideLabel := {'Criterion=' + Criterion + '  ' +} FigureLabel;
       Result.GraphDraw.RainbowColors := true;
       Result.GraphDraw.VertLabel := Criterion;
       {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile(Result.GraphDraw.LRcornerText); {$EndIf}
@@ -158,7 +157,7 @@ procedure GridScatterPlotByDEMResolution(db : integer; Criterion,Coloring : shor
             BlockWrite(Rfile,v,1);
             Petmath.CompareValueToExtremes(v[1],Result.GraphDraw.MinHorizAxis,Result.GraphDraw.MaxHorizAxis);
             Petmath.CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
-            Petmath.CompareValueToExtremes(v[3],Result.MinZ,Result.MaxZ);
+            Petmath.CompareValueToExtremes(v[3],Result.GraphDraw.MinZ,Result.GraphDraw.MaxZ);
          end;
          GISdb[db].MyData.Next;
       end;
@@ -177,11 +176,12 @@ var
    gr : t2Dgrapharray;
 begin {procedure GridScatterPlotByDEMResolution}
    if TileCharacteristicsInDB(DB) then begin
+       {$IfDef RecordDEMIX} WriteLineToDebugFile('GridScatterPlotByDEMResolution in, Criterion=' + Criterion); {$EndIf}
+       BaseFilter := GISdb[db].MyData.Filter;
        ZeroGraphArray(gr);
        GridCaption := Criterion + ' Grid';
        GISdb[db].EmpSource.Enabled := false;
        StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
-       {$IfDef RecordDEMIX} WriteLineToDebugFile('GridScatterPlotByDEMResolution in, Criterion=' + Criterion); {$EndIf}
        GISdb[db].EmpSource.Enabled := false;
        for f1 := 0 to pred(Filters1.Count) do begin
           wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
@@ -198,6 +198,7 @@ begin {procedure GridScatterPlotByDEMResolution}
           end;
        end;
        EndGraphGrid(gr,Labels1,Labels2,Nil,GridCaption);
+       GISdb[db].ApplyGISfilter(BaseFilter);
        {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphMultipleParamsByDEMResolution out'); {$EndIf}
    end;
 end {procedure GridScatterPlotByDEMResolution};
@@ -530,7 +531,7 @@ begin {procedure GraphMultipleParamsByDEMResolution}
              end;
           end;
        end;
-       EndGraphGrid(gr,{BaseFilter,}Labels1,Labels2,gr[0,0].MakeLegend);
+       EndGraphGrid(gr,{BaseFilter,}Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend);
        {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphMultipleParamsByDEMResolution out'); {$EndIf}
    end;
 end {procedure GraphMultipleParamsByDEMResolution};
@@ -597,7 +598,7 @@ var
       Result.GraphDraw.LeftMargin := 90;
       Result.GraphDraw.BottomMargin := 90;
       Result.GraphDraw.InsideMarginLegend := lpNone;
-      Result.RedrawDiagram11Click(Nil);
+      Result.RedrawDiagram;
       fName := NextFileNumber(MDtempdir,'fuv_grid_lines','.bmp');
       SaveImageAsBMP(Result.Image1,fName);
       DEMIX_Tiles.Destroy;
@@ -691,7 +692,7 @@ begin
        Result.GraphDraw.LeftMargin := 90;
        Result.GraphDraw.BottomMargin := 90;
        Result.GraphDraw.InsideMarginLegend := lpNEMap;
-       Result.RedrawDiagram11Click(Nil);
+       Result.RedrawDiagram;
    end;
    {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphDEMIX_CompareDSMandDTMslopes out'); {$EndIf}
 end {function GraphDEMIX_CompareDSMandDTMslopes};
@@ -730,7 +731,7 @@ begin
           Result.GraphDraw.BottomMargin := 80;
           Result.GraphDraw.InsideMarginLegend := lpNEMap;
           Result.GraphDraw.LRcornerText := DTMName;
-          Result.RedrawDiagram11Click(Nil);
+          Result.RedrawDiagram;
           Result.CurveFit(fitPower);
       end;
       GISdb[db].ApplyGISFilter(BaseFilter);
@@ -766,7 +767,7 @@ var
       Result.GraphDraw.SetShowAllPoints(false);
       //Result.GraphDraw.InsideMarginLegend := lpNEMap;
       Result.GraphDraw.LRcornerText := ' Tiles=' + IntToStr(TheTiles.Count);
-      Result.RedrawDiagram11Click(Nil);
+      Result.RedrawDiagram;
       GISdb[db].ApplyGISFilter(BaseFilter);
    end;
 
@@ -855,7 +856,7 @@ begin
          end;
       end;
    end;
-   EndGraphGrid(gr, {BaseFilter,}Labels1,Labels2,gr[0,0].MakeLegend);
+   EndGraphGrid(gr, {BaseFilter,}Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend);
 end;
 
 
@@ -899,7 +900,7 @@ begin
               Result.GraphDraw.BottomMargin := 80;
               Result.GraphDraw.InsideMarginLegend := lpNEMap;
               Result.GraphDraw.LRcornerText := DTMName;
-              Result.RedrawDiagram11Click(Nil);
+              Result.RedrawDiagram;
               GISdb[db].ApplyGISFilter(BaseFilter);
           end;
       end;

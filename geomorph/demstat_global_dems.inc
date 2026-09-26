@@ -304,7 +304,7 @@ begin {proc ElevationSlopePlot}
    for j := 1 to MaxDataBase do if ValidDB(j) then begin
       Graph := GraphPlot(j);
    end;
-   bmp := Graph.MakeLegend;
+   bmp := Graph.GraphDraw.MakeLegend;
    fName := Petmar.NextFileNumber(MDTempDir,'elev_Slope_','.bmp');
    Bmp.saveToFile(fName);
    BMP.free;
@@ -625,14 +625,14 @@ var
                HistFields.Destroy;
                g2.GraphDraw.VertLabel := 'Fraction';
                g2.GraphDraw.HorizLabel := TheTitle + '  ' + RemoveUnderscores(GISdb[thedb].dbName) + ' (n=' + IntToStr(GISdb[theDB].MyData.FiltRecsInDB) + ')';
-               g2.HighlightBox := true;
+               g2.GraphDraw.HighlightBox := true;
                g2.RedrawDiagram11Click(Nil);
                if DoBigBitmap then begin
                   fName := Petmar.NextFileNumber(MDTempDir,'hist_series_','.bmp');
                   SaveImageAsBMP(g2.Image1,fName);
                   s2.Add(fName);
                   if (LegendFName = '') then begin
-                     bmp := g2.MakeLegend;
+                     bmp := g2.GraphDraw.MakeLegend;
                      LegendFName := Petmar.NextFileNumber(MDTempDir,'legend_','.bmp');
                      SaveBitmap(bmp,LegendFName);
                      bmp.Free;

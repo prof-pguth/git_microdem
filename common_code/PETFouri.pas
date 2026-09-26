@@ -21,8 +21,9 @@ interface
 uses
   Windows,
   Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,Math,
-  Menus, ExtCtrls,
-  Petmath,Petmar_types,BASEGRAF,PETMAR, Buttons, ToolWin, ComCtrls;
+  Menus, ExtCtrls, Buttons, ToolWin, ComCtrls,
+  DEMDefs,
+  Petmath,Petmar_types,BASEGRAF,PETMAR;
 
 type
   WindowType = (Parzen,Square,Welch);
@@ -75,7 +76,6 @@ implementation
 
 uses
    FourOpF,
-
    Nevadia_Main;
 
 

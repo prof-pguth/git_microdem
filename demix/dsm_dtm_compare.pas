@@ -157,6 +157,7 @@ begin
    Memo2.Lines.Clear;
    ComboBox1.Items.Clear;
    if GISdb[db].MyData.FieldExists('CRITERION') then begin
+      GISdb[DB].EmpSource.Enabled := false;
       MultSeries := GISdb[db].MyData.ListUniqueEntriesInDB('CRITERION');
    end
    else begin
@@ -168,6 +169,7 @@ begin
        ComboBox1.Items.Add(MultSeries[i]);
    end;
    MultSeries.Destroy;
+   GISdb[DB].EmpSource.Enabled := true;
 end;
 
 
@@ -207,7 +209,7 @@ begin
         CompareDSM_DTMform.Memo3.Lines := Resolutions;
      end;
 
-     ReloadMemo2(indb,CompareDSM_DTMform.Memo2,CompareDSM_DTMform.ComboBox1);
+      ReloadMemo2(indb,CompareDSM_DTMform.Memo2,CompareDSM_DTMform.ComboBox1);
 
       GISdb[inDB].EmpSource.Enabled := false;
       CompareDSM_DTMform.DEMIX_scale_compare := GISdb[inDB].MyData.FieldExists('DEM_1') and GISdb[inDB].MyData.FieldExists('DEM_2');
@@ -229,6 +231,7 @@ begin
              end;
          end;
       end;
+      GISdb[inDB].EmpSource.Enabled := false;
       CompareDSM_DTMform.theDTMs := GISdb[CompareDSM_DTMform.db].MyData.ListUniqueEntriesInDB(CompareDSM_DTMform.DEMIXtileFieldName);
       GISdb[inDB].ClearGISFilter;
       CompareDSM_DTMform.BitBtn15.Visible := GISdb[inDB].MyData.FieldExists('GRID_THIN') and GISdb[inDB].MyData.FieldExists('DSM_NAME') and GISdb[inDB].MyData.FieldExists('DTM_NAME');

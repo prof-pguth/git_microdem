@@ -12,8 +12,8 @@ procedure SetScatterPlotParameters(db : integer; var Graph : tThisBaseGraph);
 begin
     GISdb[db].dbOpts.XField := 'BARREN_PC';
     GISdb[db].dbOpts.YField := 'AVG_SLOPE';
-    Graph.MinZ := 99e38;
-    Graph.MaxZ := -99e38;
+    Graph.GraphDraw.MinZ := 99e38;
+    Graph.GraphDraw.MaxZ := -99e38;
     Graph.GraphDraw.MinVertAxis := -2;
     Graph.GraphDraw.MaxVertAxis := 90;
     Graph.GraphDraw.MinHorizAxis := -2;
@@ -22,7 +22,7 @@ begin
     Graph.GraphDraw.VertLabel := GISdb[db].dbOpts.YField;
     Graph.GraphDraw.BottomMargin := 75;
     Graph.GraphDraw.LeftMargin := 90;
-    Graph.ZUnits := GISdb[DB].dbOpts.NumericColorField;
+    Graph.GraphDraw.ZUnits := GISdb[DB].dbOpts.NumericColorField;
     GISdb[DB].EmpSource.Enabled := false;
 end;
 
@@ -161,7 +161,7 @@ var
                    GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.YField,v[2]) and
                    GISdb[DB].GetFloat32FromTableLink(GISdb[DB].dbOpts.NumericColorField,v[3]) then begin
                       BlockWrite(Rfile,v,1);
-                      CompareValueToExtremes(v[3],Result.MinZ, Result.MaxZ);
+                      CompareValueToExtremes(v[3],Result.GraphDraw.MinZ, Result.GraphDraw.MaxZ);
                 end
                 else begin
                     {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('Missing point ');  {$EndIf}
@@ -169,9 +169,9 @@ var
                 GISdb[DB].MyData.Next;
             end;
             closeFile(rFile);
-            Result.MinZShow := Result.MinZ;
+            Result.GraphDraw.MinZShow := Result.GraphDraw.MinZ;
 
-            {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('coloring from '+ RealToString(Result.Minz,-12,-2) + ' to ' + RealToString(Result.Maxz,-12,-2) ); {$EndIf}
+            {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('coloring from '+ RealToString(Result.GraphDraw.Minz,-12,-2) + ' to ' + RealToString(Result.GraphDraw.Maxz,-12,-2) ); {$EndIf}
             Result.GraphDraw.Symbol[0].Size := 5;
             Result.GraphDraw.LRcornerText := LRText;
             Result.GraphDraw.InsideMarginLegend := lpNEMap;

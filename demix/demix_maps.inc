@@ -15,8 +15,8 @@ type
    tHist = array[0..8] of int64;
 const
    Colors : array[0..8] of tColor = (clBlue,clGreen,clAqua,
-                                           clYellow,clLime,clTeal,
-                                           clPurple,clFuchsia,clBrown);
+                                     clYellow,clLime,clTeal,
+                                     clPurple,clFuchsia,clBrown);
  var
    i,Higher,Lower : integer;
    x,y : integer;
@@ -202,7 +202,7 @@ begin
 end;
 
 
-unction BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
+function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
 var
    i,What : integer;
    RefZ,CopZ,ALOSZ : float32;

@@ -46,6 +46,7 @@ unit BaseGraf;
        //{$Define RecordFit}
        //{$Define RecordVertCycles}
        //{$Define RecordHorizCycles}
+       {$Define RecordMergePanels}
    {$ELSE}
 
    {$ENDIF}
@@ -106,7 +107,9 @@ type
    tGraphDraw = class
        protected
        private
+          function GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
        public
+         GraphFont : tFont;
          HorizAxisFunct,VertAxisFunct               : RealToRealFunction;
          HorizAxisFunctionType,VertAxisFunctionType : tAxisFunction;
          ForceVertCycleSize,
@@ -133,7 +136,7 @@ type
          NumHorizCycles,NumVertCycles,
          Day1,Month1,Year1,Day2,Month2,Year2 : int32;
          HorizCycleCuts,VertCycleCuts : tCycleCut;
-         LLcornerText,LRcornerText,
+         LLcornerText,LRcornerText,TopRightInsideLabel,
          TopLeftLabel,TopLabel,HorizLabel,VertLabel,ThirdLabel,VertLabel2,UpperLeftText : ShortString;
          MarginsGood,
          AnnualCycle,
@@ -163,20 +166,21 @@ type
          ShowVertAxis0,
          RighJustifyHorizLabel,
          VertGraphBottomLabels,
-         ResetMargins,
+         //ResetMargins,
          MultiPanelGraph,
          SingleGraphSymbology,
          DrawInsideLines,
          GrayAllDataFilesFirst,
          LLcornerTextAtEdge,
          PieRatio,
+         HighlightBox,
          SimpleYAxis : boolean;
          GraphDrawn     : boolean;
          InsideMarginLegend : byte;
          GraphBackgroundColor,
          AxisColor : TColor;
          GraphAxes : tGraphAxes;
-
+         MaxZ,MinZ,MinZShow   : float32;
          MinYLabels,MaxYLabels,YLabelIncr : float32;
 
          GraphType : tGraphType;
@@ -190,6 +194,7 @@ type
          Symbol         : array[0..MaxGraphSeries] of tFullSymbolDeclaration;
          FileColors256  : array[0..MaxGraphSeries] of tPlatformColor;
          LineSize256    : array[0..MaxGraphSeries] of byte;
+         DataPlotsVisible : array[0..MaxGraphSeries] of boolean;
 
          SatBands       : shortstring;
 
@@ -205,6 +210,7 @@ type
          XYColorFilesPlotted,
          DataFilesPlotted,
          DBFPointFilesPlotted : tStringList;    {list of temporary files with data plotted on graph.  Files deleted when window closes.}
+         ZUnits : shortstring;
 
           constructor Create;
           destructor Destroy;
@@ -213,6 +219,7 @@ type
           function GraphY2(y : float32) : integer; {$IfDef NoInLine} {$Else} inline; {$EndIf}
           function AxisRange : shortstring;
           procedure SetMargins(Bitmap : tMyBitmap);
+          procedure SetMyBitmapColors(var Bitmap : tMyBitmap; i : integer);
 
           procedure SetAllDrawingSymbols(DrawingSymbol : tDrawingSymbol);
           procedure SetShowAllLines(setting : boolean; LineWidth : integer = 2);
@@ -222,6 +229,10 @@ type
           function InvGraphX(x : integer) : float32;
           function PtOnGraph(x,y : float32) : boolean; overload;  inline;
           function PtOnGraph(x,y : integer) : boolean; overload;  inline;
+
+          procedure WindowGraphAxes(Bitmap : tMyBitmap; DrawInside : boolean);
+          procedure GraphLabels(var Bitmap : tMyBitmap);
+          function MakeLegend : tMyBitmap;
 
           procedure DefaultAxisFit(AxisFunctionType : tAxisFunction; NumPoints : integer; var x : array of float32; var CycleCuts : tCycleCut; var NumCycles : integer; var Min,Max : float32;
               PixelsHigh,PixelsPerTick : integer; TickSpacing,TickInc : float32);
@@ -437,9 +448,7 @@ type
     procedure Matchothergraphs1Click(Sender: TObject);
   private
     { Private declarations }
-     DataPlotsVisible : array[0..MaxGraphSeries] of boolean;
      procedure WindowACCORD(Canvas : TCanvas; ContInterval,NumContourLines,NumDataPoints : integer; Pnt : tPointerPnt; XMin,YMin,ZMin,DataX : float32; ColorFunction : ColorFunctionType; SaveTIN : PathStr = '');
-     procedure SetMyBitmapColors(var Bitmap : tMyBitmap; i : integer);
      procedure MakePointDensityGraph(DensityShow : tDensityShow);
      procedure FilterDBatCurrentPoint;
      procedure ShowSatelliteBands(Bitmap : tMyBitmap);
@@ -447,8 +456,6 @@ type
      procedure PlotBarGraphFromDB(Bitmap : tMyBitmap);
      procedure DrawScaledColoredSymbols(Bitmap : tMyBitmap);
      procedure DrawScaledPieCharts(Bitmap : tMyBitmap);
-     procedure GraphLabels(var Bitmap : tMyBitmap);
-     function GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
   public
     { Public declarations }
      GraphDraw : tGraphDraw;
@@ -461,13 +468,12 @@ type
      RedrawingNow,
      RedrawNow,
      SizingWindow,
-     HighlightBox,
      SlicerOverlay,
      HistogramChanged,
      NoDrawingGraph,
      MouseIsDown : boolean;
      MainSymbol : tFullSymbolDeclaration;
-     VertCompare,UserContourInterval,MaxZ,MinZ,MinZShow   : float32;
+     VertCompare,UserContourInterval  : float32;
      sx,sy,TernarySymSize,BoxLineWidth,PointsInDataBuffer,
      CurrentOverlay,FirstX,FirstY,LastX,LastY : integer;
      RoseColor  : tColor;
@@ -482,7 +488,6 @@ type
      DBFXFieldName,
      DBFYFieldName,
      XField,YField,
-     ZUnits,
      GraphFilter : shortstring;
      DataBaseFilter : string;
      GraphComputedEquation : shortstring;
@@ -506,6 +511,8 @@ type
      procedure ClosePointDataFile(var rfile : file);
      procedure ClearDataOnGraph(Free : boolean = false);
      procedure SetMenus;
+
+     procedure RedrawDiagram(ResetMargins : boolean = false);
 
      function AddLegendBesideGraph : tMyBitmap;
      procedure CopyGraphSettings;
@@ -532,8 +539,6 @@ type
      procedure CurveFit(WhatFit : integer);
      procedure FitGraph(WhatFit,nt : integer; fName : PathStr; var a,b,r : float64; var n  : integer; ReverseAxes : boolean = false; Results : tStringList = nil);
 
-     function MakeLegend : tMyBitmap;
-
      procedure InverseProjectTernaryComposition(xp,yp : integer;  var comp1, comp2, comp3 : float32);
 
      procedure ACCORD(Bitmap : tMyBitmap; ContInterval,NumContourLines,NumDataPoints : integer; Pnt : tPointerPnt; XMin,YMin,ZMin,DataX : float32; ColorFunction : ColorFunctionType; SaveTIN : PathStr);
@@ -554,7 +559,7 @@ type
      procedure HideMenus;
      procedure SetBackgroundRegion(xlo,ylo,xhigh,yhigh : float32);
      procedure WriteDataSeriesASCII(XAxis,ASCII : boolean; var fftfilename : PathStr; var TotalNumberPoints : integer; DefSeries : integer = -1);
-     procedure WindowGraphAxes(Bitmap : tMyBitmap; DrawInside : boolean);
+     //procedure WindowGraphAxes(Bitmap : tMyBitmap; DrawInside : boolean);
      procedure AddCorrelationToCorner;
      procedure CreateGraphSymbologyFile(MultSeries : tStringList);
      {$IfDef TrackColors} procedure GraphColorsRecord(WhereAt : shortstring);  {$EndIf}
@@ -603,7 +608,8 @@ procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelN
 function CreateMultipleSeriesGraph(db : integer; SingleAxisField : shortstring = ''; MultSeries : tStringList = nil; MultOnX : boolean = true) : tThisBaseGraph;
 
 procedure ZeroGraphArray(var gr :t2Dgrapharray);
-procedure EndGraphGrid(var gr : t2Dgrapharray; {db : integer; {BaseFilter : shortstring;} var {Filters1,}Labels1,{Filters2,}Labels2 : tStringList; LegendBMP : tMyBitmap = nil; Caption : shortstring = '');
+procedure EndGraphGrid(var gr : t2Dgrapharray; var Labels1,Labels2 : tStringList; LegendBMP : tMyBitmap = nil; Caption : shortstring = '');
+procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
 
 
 implementation
@@ -677,135 +683,7 @@ var
    BestFitLineWidth : integer;
    FilterTerms : integer;
 
-
-   procedure ZeroGraphArray(var gr :t2Dgrapharray);
-   var
-      f1,f2 : integer;
-   begin
-      for f2 := 0 to Max2DGraphArray do
-         for f1 := 0 to Max2DGraphArray do gr[f1,f2] := Nil;
-   end;
-
-
-procedure EndGraphGrid(var gr : t2Dgrapharray; var Labels1,Labels2 : tStringList; LegendBMP : tMyBitmap = nil; Caption : shortstring = '');
-const
-   StartX = 75;
-   StartY = 75;
-var
-   CollarBitmap,BigBitmap,Bitmap : tMyBitmap;
-   xsize,ysize,f1,f2,XPanel,YPanel,Offset,x,y,MaxLeftMargin : integer;
-   GraphMaxY,GraphMinY : float32;
-begin
-   MaxLeftMargin := 0;
-   for f1 := 0 to pred(Labels1.Count) do begin
-     for f2 := 0 to pred(Labels2.Count) do begin
-         if (gr[f1,f2] <> Nil) then begin
-            if (gr[f1,f2].GraphDraw.LeftMargin > MaxLeftMargin) then MaxLeftMargin := gr[f1,f2].GraphDraw.LeftMargin;
-         end;
-     end;
-   end;
-
-   if (MDDef.DEMIX_MultiGraphCommonScaling = 0) then begin
-       GraphMinY := 99e38;
-       GraphMaxY := -99e38;
-       for f1 := 0 to pred(Labels1.Count) do begin
-         for f2 := 0 to pred(Labels2.Count) do begin
-                 if (gr[f1,f2] <> Nil) then begin
-                if (gr[f1,f2].GraphDraw.MaxVertAxis > GraphMaxY) then GraphMaxY := gr[f1,f2].GraphDraw.MaxVertAxis;
-                if (gr[f1,f2].GraphDraw.MinVertAxis < GraphMinY) then GraphMinY := gr[f1,f2].GraphDraw.MinVertAxis;
-             end;
-         end;
-       end;
-       for f1 := 0 to pred(Labels1.Count) do begin
-         for f2 := 0 to pred(Labels2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
-                gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
-                gr[f1,f2].RedrawDiagram11Click(Nil);
-             end;
-          end;
-       end;
-   end;
-
-   if (MDDef.DEMIX_MultiGraphCommonScaling = 1) then begin
-       for f1 := 0 to pred(Labels1.Count) do begin
-         GraphMinY := 99e38;
-         GraphMaxY := -99e38;
-         for f2 := 0 to pred(Labels2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                if (gr[f1,f2].GraphDraw.MaxVertAxis > GraphMaxY) then GraphMaxY := gr[f1,f2].GraphDraw.MaxVertAxis;
-                if (gr[f1,f2].GraphDraw.MinVertAxis < GraphMinY) then GraphMinY := gr[f1,f2].GraphDraw.MinVertAxis;
-             end;
-          end;
-          for f2 := 0 to pred(Labels2.Count) do begin
-             if (gr[f1,f2] <> Nil) then begin
-                gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
-                gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
-                gr[f1,f2].RedrawDiagram11Click(Nil);
-             end;
-          end;
-       end;
-   end;
-
-   xsize := 0;
-   ySize := 0;
-   for f1 := 0 to pred(Labels1.Count) do begin
-      for f2 := 0 to pred(Labels2.Count) do begin
-         if (gr[f1,f2] <> Nil) then begin
-            if (gr[f1,f2].GraphDraw.XWindowSize > xsize) then xsize := gr[f1,f2].GraphDraw.XWindowSize;
-            if (gr[f1,f2].GraphDraw.YWindowSize > ysize) then Ysize := gr[f1,f2].GraphDraw.YWindowSize;
-         end;
-      end;
-   end;
-
-   XPanel := XSize + 20;
-   YPanel := YSize + 20;
-
-   CreateBitmap(BigBitmap,StartX + Labels2.Count * XPanel, StartY + Labels1.Count * YPanel);
-   BigBitmap.Canvas.Font.Size := 24;
-   BigBitmap.Canvas.Font.Style := [fsBold];
-   for f1 := 0 to pred(Labels1.Count) do begin
-      Offset := (YPanel - BigBitmap.Canvas.TextWidth(Labels1.Strings[f1])) div 2;
-      TextOutVertical(BigBitmap.Canvas,2,StartY + succ(F1) * YPanel - Offset,Labels1.Strings[f1]);
-   end;
-
-   for f2 := 0 to pred(Labels2.Count) do begin
-      Offset := (XPanel - BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2;
-      BigBitmap.Canvas.TextOut(StartX + f2 * XPanel + Offset,2,Labels2.Strings[f2]);
-   end;
-
-   for f1 := 0 to pred(Labels1.Count) do begin
-      for f2 := 0 to pred(Labels2.Count) do begin
-         if (gr[f1,f2] <> Nil) and CopyImageToBitmap(gr[f1,f2].Image1,Bitmap) then begin
-            BigBitMap.Canvas.Draw(StartX + f2 * XPanel, StartY + F1 * YPanel,Bitmap);
-            Bitmap.Free;
-         end;
-      end;
-   end;
-   GetImagePartOfBitmap(BigBitmap);
-   CreateBitmap(CollarBitmap,BigBitmap.Width + 4,BigBitmap.Height + 4);
-   CollarBitmap.Canvas.Draw(2,2,BigBitmap);
-   BigBitmap.Destroy;
-
-   if (LegendBMP <> Nil) then begin
-      x := (CollarBitMap.Width - LegendBMP.Width) div 2;
-      y := CollarBitmap.Height + 20;
-      CollarBitmap.Height := CollarBitMap.Height + 20 + LegendBMP.Height;
-      CollarBitmap.Canvas.Draw(x,y, LegendBMP);
-   end;
-
-   if (Caption = '') then Caption := 'graph_grid';
-
-   DisplayBitmap(CollarBitmap,Caption);
-   //Filters1.Destroy;
-   Labels1.Destroy;
-   //Filters2.Destroy;
-   Labels2.Destroy;
-
-   //GISdb[db].ApplyGISFilter(BaseFilter);
-   SetColorForWaiting;
-   wmdem.ClearStatusBarPanelText;
-end;
+{$I basegraph_multi_graph_panels.inc}
 
 
 {$IfDef TrackColors}
@@ -872,138 +750,13 @@ begin
       Result.GraphDraw.BottomMargin := 80;
       Result.GraphDraw.LRcornerText := GISdb[db].MyData.Filter;
       Result.GraphDraw.SetShowAllLines(false);
-      Result.RedrawDiagram11Click(Nil);
+      Result.RedrawDiagram;
 
       Result.CreateGraphSymbologyFile(Result.GraphDraw.DataFilesPlotted);
   end;
   MultSeries.Destroy;
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('CreateMultipleSeriesGraph out'); {$EndIf}
 end;
-
-
-function MergeBitmapsHorizontal(theFiles : tStringList) : PathStr;
-var
-   i : integer;
-   BigBitMap,Bitmap : tMyBitmap;
-   fName : PathStr;
-begin
-   if (theFiles.Count = 1) then begin
-      Result := theFiles[i];
-   end
-   else begin
-       for i := 0 to pred(theFiles.Count) do begin
-          fName := theFiles[i];
-          Bitmap := LoadBitmapFromFile(fName);
-          if (i = 0) then begin
-             CreateBitmap(BigBitMap,Bitmap.Width,theFiles.Count * (Bitmap.Height + 15))
-          end;
-          BigBitmap.Canvas.Draw(0,i * (Bitmap.Height + 15),Bitmap);
-          Bitmap.Destroy;
-       end;
-       Result := NextFileNumber(MDtempdir,'Horiz_panel_','.bmp');
-       SaveBitmap(BigBitmap,Result);
-       BigBitMap.Destroy;
-   end;
-end;
-
-
-function MergeGraphPanelsHorizontal(nGraphs : integer;  Graphs : t1DGraphArray; RemoveLeftLabels : boolean; LegendFName : PathStr; LRtext : shortstring = '') : PathStr;
-var
-   i,StartX,DestX,PixWide : integer;
-   BigBitMap,Bitmap : tMyBitmap;
-   Dest,Source : tRect;
-begin
-   CopyImageToBitmap(Graphs[0].Image1,BigBitmap);
-   for i := 1 to pred(nGraphs) do begin
-      CopyImageToBitmap(Graphs[i].Image1,Bitmap);
-      if RemoveLeftLabels then begin
-        StartX := graphs[i].GraphDraw.LeftMargin;
-        PixWide := Bitmap.Width - graphs[i].GraphDraw.LeftMargin;
-      end
-      else begin
-         StartX := 0;
-         PixWide := Bitmap.Width;
-      end;
-      DestX := BigBitMap.Width + 15;
-      BigBitMap.Width := DestX + PixWide;
-      Dest := rect(DestX,0,DestX+PixWide,BigBitMap.Height);
-      Source := rect(StartX,0,Bitmap.Width,Bitmap.Height);
-      BigBitmap.Canvas.CopyRect(Dest,Bitmap.Canvas,Source);
-      Bitmap.Destroy;
-   end;
-   DrawLegendBelowBigBitmap(BigBitmap,LegendFName,LRtext);
-   Result := NextFileNumber(MDtempdir,'Horiz_panel_','.bmp');
-   SaveBitmap(BigBitmap,Result);
-   BigBitMap.Destroy;
-end;
-
-
-function MergeGraphPanelsVertical(nGraphs : integer;  Graphs : t1DGraphArray; RemoveLeftLabels : boolean; Legend : tMyBitmap = nil) : PathStr;
-var
-   i,StartX,StartY,PixWide : integer;
-   BigBitMap,Bitmap : tMyBitmap;
-   fName : PathStr;
-begin
-   for i := 0 to pred(nGraphs) do begin
-      CopyImageToBitmap(Graphs[i].Image1,Bitmap);
-      if i = 0 then begin
-         CreateBitmap(BigBitMap,Bitmap.Width,Bitmap.Height + 15);
-         StartY := 0;
-      end
-      else begin
-         StartY := BigBitmap.Height;
-         BigBitmap.Height := BigBitmap.Height + Bitmap.Height + 15;
-      end;
-      if RemoveLeftLabels then begin
-        StartX := graphs[i].GraphDraw.LeftMargin;
-        PixWide := Bitmap.Width - graphs[i].GraphDraw.LeftMargin;
-      end
-      else begin
-         StartX := 0;
-         PixWide := Bitmap.Width;
-      end;
-      BigBitmap.Canvas.CopyRect(Rect(0,StartY,PixWide,StartY + BitMap.Height),Bitmap.Canvas,Rect(StartX,0,Bitmap.Width,Bitmap.Height));
-      Bitmap.Destroy;
-   end;
-   fName := NextFileNumber(MDtempDir,'legend_','.bmp');
-   BigBitmap.SaveToFile(fName);
-   DrawLegendBelowBigBitmap(BigBitmap,fName);
-
-   GetImagePartOfBitmap(BigBitmap);
-   if (Legend <> Nil) then begin
-       BigBitMap.Height := BigBitMap.Height + 15 + Legend.Height;
-       BigBitmap.Canvas.Draw((BigBitmap.Width - Legend.Width) div 2,BigBitmap.Height - Legend.Height,Legend);
-       Legend.Destroy;
-   end;
-   Result := NextFileNumber(MDtempdir,'Graph_panels_','.bmp');
-   BigBitmap.SaveToFile(Result);
-   BigBitMap.Destroy;
-end;
-
- procedure MergeVerticalPanels(Findings : tStringList; Legend : tMyBitmap; PanelName : shortstring);
-  var
-     BigBitmap,Bitmap : tMyBitmap;
-     i : integer;
-  begin
-     Bigbitmap := tMyBitmap.Create;
-     Bigbitmap.LoadFromFile(Findings.strings[0]);
-
-     for I := 1 to pred(Findings.Count) do begin
-        bitmap := tMyBitmap.Create;
-        bitmap.LoadFromFile(Findings.strings[i]);
-        BigBitmap.Width :=  BigBitmap.Width + 15 + Bitmap.Width;
-        BigBitmap.Canvas.Draw(BigBitmap.Width - Bitmap.Width, 0, Bitmap);
-        Bitmap.Destroy;
-     end;
-     if (Legend <> Nil) then begin
-         BigBitMap.Height := BigBitMap.Height + 15 + Legend.Height;
-         BigBitmap.Canvas.Draw((BigBitmap.Width - Legend.Width) div 2,BigBitmap.Height - Legend.Height,Legend);
-         Legend.Destroy;
-     end;
-     DisplayBitmap(BigBitmap,PanelName);
-     Findings.Destroy;
-  end;
-
 
 procedure TThisBaseGraph.CreateGraphSymbologyFile(MultSeries : tStringList);
 var
@@ -1041,7 +794,7 @@ begin
 end;
 
 
-function TThisBaseGraph.GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
+function TGraphDraw.GetLegendLabelFromFileName(UseFileNames : boolean; TStr : shortstring) : shortstring;
 begin
     Result := TStr;
     if StrUtils.AnsiContainsText(UpperCase(Result),'BF-PET_') then Result := ''
@@ -1217,7 +970,7 @@ var
          StartAngle := EndAngle;
       end;
 
-      procedure GetCoords;
+      procedure GetCoordsToCenterGraph;
       begin
          x := sTable.GetFieldByNameAsFloat('X');
          y := sTable.GetFieldByNameAsFloat('Y');
@@ -1236,27 +989,21 @@ var
          v2,v3,v4,World,tf : float32;
          FourPies : boolean;
 
+             procedure DoOne(value : float32; StartAngle,EndAngle : float32; color : tColor);
+             begin
+                if GraphDraw.PieRatio then tf := value/World/GraphDraw.MaxPieCircle
+                else tf := value/GraphDraw.MaxPieCircle;
+                if tf > 1 then tf := 1;
+                size := round(tf * rad1);
+                ReallyDraw(StartAngle,EndAngle,color);
+             end;
 
-         procedure DoOne(value : float32; StartAngle,EndAngle : float32; color : tColor);
-         begin
-            if GraphDraw.PieRatio then tf := value/World/GraphDraw.MaxPieCircle
-            else tf := value/GraphDraw.MaxPieCircle;
-            if tf > 1 then tf := 1;
-            size := round(tf * rad1);
-            ReallyDraw(StartAngle,EndAngle,color);
-         end;
-
-      begin
+      begin {procedure DEMIX_DB_representative}
          MaxSizeX := round(0.45 * (GraphDraw.GraphX(2) - GraphDraw.GraphX(1)));
          MaxSizeY := round(0.45 * (GraphDraw.GraphY(2) - GraphDraw.GraphY(1)));
          if MaxSizeX > MaxSizeY then rad1 := MaxSizeY else rad1 := MaxSizeX;
          FourPies := sTable.FieldExists('DB_V2_PC');
          while not sTable.eof do begin
-               if FourPies then begin
-                  v2 := sTable.GetFieldByNameAsFloat('DB_V2_PC');
-                  v3 := sTable.GetFieldByNameAsFloat('DB_V3_PC');
-                  v4 := sTable.GetFieldByNameAsFloat('DB_V4_PC');
-               end;
                World := sTable.GetFieldByNameAsFloat('WORLD_PC');
                xi := GraphDraw.GraphX(sTable.GetFieldByNameAsFloat('X'));
                yi := GraphDraw.GraphY(sTable.GetFieldByNameAsFloat('Y'));
@@ -1266,10 +1013,13 @@ var
                Bitmap.Canvas.Ellipse(xi-rad2,yi-rad2,xi+rad2,yi+rad2);  //50% circle
 
               if FourPies then begin
-                  DoOne(v2,0,90,v2_color);
-                  DoOne(v3,90,180,v3_color);
-                  DoOne(v4,180,270,v4_color);
-                  DoOne(World,270,360,World_color);
+                 v2 := sTable.GetFieldByNameAsFloat('DB_V2_PC');
+                 v3 := sTable.GetFieldByNameAsFloat('DB_V3_PC');
+                 v4 := sTable.GetFieldByNameAsFloat('DB_V4_PC');
+                 DoOne(v2,0,90,v2_color);
+                 DoOne(v3,90,180,v3_color);
+                 DoOne(v4,180,270,v4_color);
+                 DoOne(World,270,360,World_color);
               end
               else begin
                   DoOne(World,0,360,World_color);
@@ -1282,7 +1032,47 @@ var
               end;
             stable.Next;
          end;
-      end;
+      end {procedure DEMIX_DB_representative};
+
+
+       procedure Win0Graph;
+       var
+          i : integer;
+       begin
+          nPies := 0;
+          OldSize := Bitmap.Canvas.Font.Size;
+          while sTable.FieldExists('WIN_' + IntToStr(nPies)) do inc(nPies);
+          dec(nPies);
+          BinSize := 360 / succ(nPies);
+          MaxSizeX := GraphDraw.GraphX(0.5 * (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis)) - GraphDraw.GraphX(0.5 * (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) - sTable.GetFieldByNameAsFloat('X_SIZE') );
+          MaxSizeY := GraphDraw.GraphY(0.5 * (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis)) - GraphDraw.GraphY(0.5 * (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) - sTable.GetFieldByNameAsFloat('Y_SIZE') );
+          if (MaxSizeX < MaxSizeY) then MaxSize := MaxSizeX else MaxSize := MaxSizeY;
+          rad1 := MaxSize;
+          rad2 := rad1 div 2;
+          while not sTable.eof do begin
+             GetCoordsToCenterGraph;
+             Bitmap.Canvas.Pen.Color := clSilver;
+             Bitmap.Canvas.Brush.Style := bsClear;
+             Bitmap.Canvas.Ellipse(xi-rad1,yi-rad1,xi+rad1,yi+rad1);  //100% circle
+             Bitmap.Canvas.Ellipse(xi-rad2,yi-rad2,xi+rad2,yi+rad2);  //50% circle
+             for i := 0 to nPies do begin
+                 win := sTable.GetFieldByNameAsInteger('WIN_' + IntToStr(i));
+                 if (win > 0) then begin
+                    aColor := sTable.GetFieldByNameAsInteger('COLOR_' + IntToStr(i));
+                    Size := round(MaxSize * Win / NT);
+                    ReallyDraw(i * BinSize, succ(i) * BinSize,aColor);
+                 end;
+             end;
+             if MDDef.ShowPieN then begin
+                Bitmap.Canvas.Brush.Style := bsClear;
+                Bitmap.Canvas.Font.Size := 10;
+                nCount := 'n=' + IntToStr(nt);
+                Bitmap.Canvas.TextOut(xi+rad1,yi-rad1,nCount);
+             end;
+             sTable.Next;
+          end;
+          Bitmap.Canvas.Font.Size := OldSize;
+       end {procedure Win0Graph};
 
 
 begin {DrawScaledPieCharts}
@@ -1292,47 +1082,15 @@ begin {DrawScaledPieCharts}
       DEMIX_DB_representative;
    end
    else if sTable.FieldExists('WIN_0') then begin
-      nPies := 0;
-      OldSize := Bitmap.Canvas.Font.Size;
-      while sTable.FieldExists('WIN_' + IntToStr(nPies)) do inc(nPies);
-      dec(nPies);
-      BinSize := 360 / succ(nPies);
-      MaxSizeX := GraphDraw.GraphX(0.5 * (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis)) - GraphDraw.GraphX(0.5 * (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) - sTable.GetFieldByNameAsFloat('X_SIZE') );
-      MaxSizeY := GraphDraw.GraphY(0.5 * (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis)) - GraphDraw.GraphY(0.5 * (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) - sTable.GetFieldByNameAsFloat('Y_SIZE') );
-      if (MaxSizeX < MaxSizeY) then MaxSize := MaxSizeX else MaxSize := MaxSizeY;
-      rad1 := MaxSize;
-      rad2 := rad1 div 2;
-      while not sTable.eof do begin
-         GetCoords;
-         Bitmap.Canvas.Pen.Color := clSilver;
-         Bitmap.Canvas.Brush.Style := bsClear;
-         Bitmap.Canvas.Ellipse(xi-rad1,yi-rad1,xi+rad1,yi+rad1);  //100% circle
-         Bitmap.Canvas.Ellipse(xi-rad2,yi-rad2,xi+rad2,yi+rad2);  //50% circle
-         for i := 0 to nPies do begin
-             win := sTable.GetFieldByNameAsInteger('WIN_' + IntToStr(i));
-             if (win > 0) then begin
-                aColor := sTable.GetFieldByNameAsInteger('COLOR_' + IntToStr(i));
-                Size := round(MaxSize * Win / NT);
-                ReallyDraw(i * BinSize, succ(i) * BinSize,aColor);
-             end;
-         end;
-         if MDDef.ShowPieN then begin
-            Bitmap.Canvas.Brush.Style := bsClear;
-            Bitmap.Canvas.Font.Size := 10;
-            nCount := 'n=' + IntToStr(nt);
-            Bitmap.Canvas.TextOut(xi+rad1,yi-rad1,nCount);
-         end;
-         sTable.Next;
-      end;
-      Bitmap.Canvas.Font.Size := OldSize;
+      Win0Graph;
    end
-   else begin
+   else begin //win-loss-tie pies
      MinSize := 4;
      MaxSize := GraphDraw.GraphX(sTable.GetFieldByNameAsFloat('X_SIZE') / 1.3) - GraphDraw.GraphX(0);
      sTable.First;
      while not sTable.eof do begin
         MaxN := round(sTable.FindFieldMax('NTOTAL'));
-        GetCoords;
+        GetCoordsToCenterGraph;
         if (nt > 0) then begin
            x := sTable.GetFieldByNameAsFloat('X');
            y := sTable.GetFieldByNameAsFloat('Y');
@@ -1491,7 +1249,7 @@ begin
           GISDB[DBonTable].MyData.Next;
        end;
 
-       Result.RedrawDiagram11Click(Nil);
+       Result.RedrawDiagram;
        {$If Defined(RecordDEMIX)} WriteLineToDebugFile('Graphsforwinecontest1Click out'); {$EndIf}
        GISdb[DBonTable].ClearGISFilter;
        GISdb[DBonTable].ShowStatus;
@@ -1554,7 +1312,7 @@ begin
          (WMDEM.MDIChildren[i] as TThisBaseGraph).GraphDraw.YWindowSize := GraphDraw.YWindowSize;
          (WMDEM.MDIChildren[i] as TThisBaseGraph).GraphDraw.LeftMargin := GraphDraw.LeftMargin;
          (WMDEM.MDIChildren[i] as TThisBaseGraph).GraphDraw.BottomMargin := GraphDraw.BottomMargin;
-         (WMDEM.MDIChildren[i] as TThisBaseGraph).RedrawDiagram11Click(Nil);
+         (WMDEM.MDIChildren[i] as TThisBaseGraph).RedrawDiagram;
       end;
    end;
 end;
@@ -1624,10 +1382,12 @@ begin
    {$IfDef RecordGrafDensity} WriteLineToDebugFile('TThisBaseGraph.Pointdensity1Click in, '); {$EndIf}
    CreateBitmap(Bitmap,succ(GraphDraw.XWindowSize),succ(GraphDraw.YWindowSize));
    Bitmap.Canvas.Font := FontDialog1.Font;
+(*
    if GraphDraw.ResetMargins then begin
       GraphDraw.SetMargins(Bitmap);
       GraphDraw.ResetMargins := false;
    end;
+*)
 
    DrawGraph(BitMap);
    New(Counter);
@@ -1731,14 +1491,14 @@ begin
          end;
       end;
       Dispose(NeighborHood);
-   GraphLabels(Bitmap);
+   GraphDraw.GraphLabels(Bitmap);
 
    Image1.Picture.Graphic := Bitmap;
    Bitmap.Free;
    Dispose(Counter);
    end;
    {$IfDef RecordGrafDensity} WriteLineToDebugFile('TThisBaseGraph.Pointdensity1Click out'); {$EndIf}
-end;
+end {procedure TThisBaseGraph.MakePointDensityGraph};
 
 
 procedure TThisBaseGraph.Matchothergraphs1Click(Sender: TObject);
@@ -1789,12 +1549,12 @@ begin
    Table.Destroy;
 end;
 
-procedure TThisBaseGraph.SetMyBitmapColors(var Bitmap : tMyBitmap; i : integer);
+procedure TGraphDraw.SetMyBitmapColors(var Bitmap : tMyBitmap; i : integer);
 begin
    if (i > 255) then i := succ(i mod 255);
-   Bitmap.Canvas.Pen.Width := GraphDraw.LineSize256[i];
-   Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[i]);
-   Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[i]);
+   Bitmap.Canvas.Pen.Width := LineSize256[i];
+   Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(FileColors256[i]);
+   Bitmap.Canvas.Brush.Color := ConvertPlatformColorToTColor(FileColors256[i]);
    Bitmap.Canvas.Font.Color := Bitmap.Canvas.Pen.Color;
    {$IfDef GraphSymbology} WritelineToDebugFile('TThisBaseGraph.SetMyBitmapColors, fn='+ IntToStr(I) + '  color=' +IntToStr(Bitmap.Canvas.Pen.Color)); {$EndIf}
 end;
@@ -1919,13 +1679,13 @@ end;
 procedure TThisBaseGraph.Sentinel21Click(Sender: TObject);
 begin
    GraphDraw.SatBands := 'Sentinel-2';
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.Sentinel22Click(Sender: TObject);
 begin
    GraphDraw.SatBands := 'WV2';
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 
@@ -2104,13 +1864,13 @@ end;
 procedure TThisBaseGraph.extinlowerleftcorner1Click(Sender: TObject);
 begin
    GetString('Text in lower left corner',GraphDraw.LLcornerText,false,ReasonableTextChars);
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.extinlowerrightcorner1Click(Sender: TObject);
 begin
    GetString('Text in lower right corner',GraphDraw.LRcornerText,false,ReasonableTextChars);
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 function tGraphDraw.PtOnGraph(x,y : float32) : boolean;
@@ -2507,11 +2267,12 @@ end {proc Accord};
 
 
 
-procedure TThisBaseGraph.WindowGraphAxes(Bitmap : tMyBitmap; DrawInside : boolean);
+procedure TGraphDraw.WindowGraphAxes(Bitmap : tMyBitmap; DrawInside : boolean);
 const
    MinTickValue = 0.000001;
 var
    AxisDecimals,LastLabelEnd : integer;
+   MarginsChanged : boolean;
 
       procedure SetNormProbAxisIfNeeded(AxisFunctionType : tAxisFunction; var AxisFunct : RealToRealFunction;  var CycleCuts : tCycleCut; var NumCycles : integer;  var MinAxis,MaxAxis : float32);
       var
@@ -2548,15 +2309,13 @@ var
 
                procedure WriteMonth;
                begin
-                  with GraphDraw do begin
                      Time := JulDay(Month,1,Year);
                      X := GraphX(Time);
                      if (x < XWindowSize) then begin
                         BitmapTextOut(Bitmap,x+2,YWindowSize-BottomMargin + 4,Copy(MonthName[Month],1,ms));
-                        if ((Month = 1) or (Month = Month1)) and (not AnnualCycle) and GraphDraw.ShowYears then
+                        if ((Month = 1) or (Month = Month1)) and (not AnnualCycle) and ShowYears then
                            BitmapTextOut(Bitmap,x+2,YWindowSize-BottomMargin + 12 + Bitmap.Canvas.TextHeight('1'),IntegerToString(Year,4));
                      end;
-                  end {with};
                end;
 
                function YearString(Year : integer) : shortstring;
@@ -2567,21 +2326,21 @@ var
 
       begin {proc TimeAxis}
          with Bitmap.Canvas do begin
-            if GraphDraw.AnnualCycle then begin
-               GraphDraw.MinHorizAxis := JulDay(1,1,1996);
-               GraphDraw.MaxHorizAxis := JulDay(12,31,1996);
+            if AnnualCycle then begin
+               MinHorizAxis := JulDay(1,1,1996);
+               MaxHorizAxis := JulDay(12,31,1996);
             end
             else begin
-               GraphDraw.MinHorizAxis := JulDay(GraphDraw.Month1,GraphDraw.Day1,GraphDraw.Year1);
-               GraphDraw.MaxHorizAxis := JulDay(GraphDraw.Month2,GraphDraw.Day2,GraphDraw.Year2);
+               MinHorizAxis := JulDay(Month1,Day1,Year1);
+               MaxHorizAxis := JulDay(Month2,Day2,Year2);
             end;
 
-            GraphDraw.ScrMaxHorizAxis := GraphDraw.MaxHorizAxis;
-            GraphDraw.ScrMinHorizAxis := GraphDraw.MinHorizAxis;
-            Bitmap.Canvas.Font.Color := GraphDraw.AxisColor;
+            ScrMaxHorizAxis := MaxHorizAxis;
+            ScrMinHorizAxis := MinHorizAxis;
+            Bitmap.Canvas.Font.Color := AxisColor;
 
-            Range := GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis;   {range in days}
-            case (GraphDraw.Year2-GraphDraw.Year1) of
+            Range := MaxHorizAxis - MinHorizAxis;   {range in days}
+            case (Year2-Year1) of
                0..5 : YearInc := 1;
                6..20 : YearInc := 2;
                21..50 : YearInc := 5;
@@ -2589,9 +2348,9 @@ var
             end;
 
             if (Range < 1000) then begin
-               Month := GraphDraw.Month1;
-               Year  := GraphDraw.Year1;
-               if GraphDraw.GraphX(JulDay(succ(Month),1,Year)) - GraphDraw.GraphX(JulDay(Month,1,Year)) < 50  then ms := 1 else ms := 3;
+               Month := Month1;
+               Year  := Year1;
+               if GraphX(JulDay(succ(Month),1,Year)) - GraphX(JulDay(Month,1,Year)) < 50  then ms := 1 else ms := 3;
                WriteMonth;
                repeat
                   inc(Month);
@@ -2600,69 +2359,69 @@ var
                      inc(Year);
                   end;
                   WriteMonth;
-                  if GraphDraw.DrawInsideLines then begin
-                     if GraphDraw.GraphAxes in [FullGrid,XFullGridOnly] then begin
-                        if (x <= GraphDraw.XWindowSize) then for i:= 0 to GraphDraw.YWindowSize-GraphDraw.BottomMargin do
-                           if (i mod GraphDraw.FullLineFraction = 0) then Pixels[x,i] := GraphDraw.AxisColor;
+                  if DrawInsideLines then begin
+                     if GraphAxes in [FullGrid,XFullGridOnly] then begin
+                        if (x <= XWindowSize) then for i:= 0 to YWindowSize-BottomMargin do
+                           if (i mod FullLineFraction = 0) then Pixels[x,i] := AxisColor;
                      end
                      else begin
-                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+MDDef.GraphTickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                        DrawLine(Bitmap,x,YWindowSize-BottomMargin+MDDef.GraphTickSize,x,YWindowSize-BottomMargin-MDDef.GraphTickSize);
                         DrawLine(Bitmap,x,0,x,2*MDDef.GraphTickSize);
                      end;
                   end;
-               until (Year > GraphDraw.Year2);
+               until (Year > Year2);
             end
             else if (Range < 25000) then begin
-               Year := GraphDraw.Year1;
-               if (GraphDraw.Month1 = 1) and (GraphDraw.Day1 = 1) then begin
+               Year := Year1;
+               if (Month1 = 1) and (Day1 = 1) then begin
                   Time := JulDay(1,1,Year);
-                  X := GraphDraw.GraphX(Time);
-                  if (x < GraphDraw.XWindowSize) then BitmapTextOut(Bitmap,x+2,GraphDraw.YWindowSize-GraphDraw.BottomMargin + 4,YearString(Year));
+                  X := GraphX(Time);
+                  if (x < XWindowSize) then BitmapTextOut(Bitmap,x+2,YWindowSize-BottomMargin + 4,YearString(Year));
                end;
                repeat
                   inc(Year,YearInc);
                   Time := JulDay(1,1,Year);
-                  X := GraphDraw.GraphX(Time);
-                  if (x < GraphDraw.XWindowSize) then begin
-                     BitmapTextOut(Bitmap,x+2,GraphDraw.YWindowSize-GraphDraw.BottomMargin + 4,YearString(Year));
+                  X := GraphX(Time);
+                  if (x < XWindowSize) then begin
+                     BitmapTextOut(Bitmap,x+2,YWindowSize-BottomMargin + 4,YearString(Year));
                   end;
-                  if GraphDraw.DrawInsideLines then begin
-                     if GraphDraw.GraphAxes in [FullGrid,XFullGridOnly] then begin
-                        if (x <= GraphDraw.XWindowSize) then for i:= 0 to GraphDraw.YWindowSize-GraphDraw.BottomMargin do
-                           if (i mod GraphDraw.FullLineFraction = 0) then Pixels[x,i] := GraphDraw.AxisColor;
+                  if DrawInsideLines then begin
+                     if GraphAxes in [FullGrid,XFullGridOnly] then begin
+                        if (x <= XWindowSize) then for i:= 0 to YWindowSize-BottomMargin do
+                           if (i mod FullLineFraction = 0) then Pixels[x,i] := AxisColor;
                      end
                      else begin
-                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+MDDef.GraphTickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                        DrawLine(Bitmap,x,YWindowSize-BottomMargin+MDDef.GraphTickSize,x,YWindowSize-BottomMargin-MDDef.GraphTickSize);
                         DrawLine(Bitmap,x,0,x,MDDef.GraphTickSize);
                      end;
                   end;
-               until (Year >= GraphDraw.Year2);
+               until (Year >= Year2);
             end
             else begin
-               Year := 5 * (GraphDraw.Year1 div 5);
+               Year := 5 * (Year1 div 5);
                repeat
                   Time := JulDay(1,1,Year);
-                  X := GraphDraw.GraphX(Time);
-                  if (x < GraphDraw.XWindowSize) then Bitmap.Canvas.TextOut(x+2,GraphDraw.YWindowSize-GraphDraw.BottomMargin + 4,YearString(Year));
-                  if GraphDraw.DrawInsideLines then begin
-                     if GraphDraw.GraphAxes in [FullGrid,XFullGridOnly] then begin
-                        if (x <= GraphDraw.XWindowSize) then for i:= 0 to GraphDraw.YWindowSize-GraphDraw.BottomMargin do
-                           if (i mod GraphDraw.FullLineFraction = 0) then Pixels[x,i] := GraphDraw.AxisColor;
+                  X := GraphX(Time);
+                  if (x < XWindowSize) then Bitmap.Canvas.TextOut(x+2,YWindowSize-BottomMargin + 4,YearString(Year));
+                  if DrawInsideLines then begin
+                     if GraphAxes in [FullGrid,XFullGridOnly] then begin
+                        if (x <= XWindowSize) then for i:= 0 to YWindowSize-BottomMargin do
+                           if (i mod FullLineFraction = 0) then Pixels[x,i] := AxisColor;
                      end
                      else begin
-                        DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin+MDDef.GraphTickSize,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+                        DrawLine(Bitmap,x,YWindowSize-BottomMargin+MDDef.GraphTickSize,x,YWindowSize-BottomMargin-MDDef.GraphTickSize);
                         DrawLine(Bitmap,x,0,x,MDDef.GraphTickSize);
                      end;
                   end;
                   inc(Year,YearInc);
-               until (Year >= GraphDraw.Year2);
+               until (Year >= Year2);
             end;
 
-            Pen.Color := GraphDraw.AxisColor;
+            Pen.Color := AxisColor;
             if (Range < 100) then begin
-               for Longx := Round(GraphDraw.MinHorizAxis) to round(GraphDraw.MaxHorizAxis) do begin
-                  x := GraphDraw.GraphX(LongX);
-                  DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
+               for Longx := Round(MinHorizAxis) to round(MaxHorizAxis) do begin
+                  x := GraphX(LongX);
+                  DrawLine(Bitmap,x,YWindowSize-BottomMargin,x,YWindowSize-BottomMargin-MDDef.GraphTickSize);
                   DrawLine(Bitmap,x,0,x,MDDef.GraphTickSize);
                   CalDat(LongX,Month,Day,Year);
 
@@ -2671,20 +2430,20 @@ var
                   else if (Range < 20) then Modder := 2
                   else if (Range < 50) then Modder := 5
                   else if (Range < 100) then Modder := 10;
-                  if (Modder > 0) and (x > GraphDraw.LeftMargin + 40) and (x < GraphDraw.XWindowSize) and (Day < 30) then
-                     Bitmap.Canvas.TextOut(x,GraphDraw.YWindowSize-GraphDraw.BottomMargin + 2,IntegerToString(Month) + '/' + IntegerToString(Day));
+                  if (Modder > 0) and (x > LeftMargin + 40) and (x < XWindowSize) and (Day < 30) then
+                     Bitmap.Canvas.TextOut(x,YWindowSize-BottomMargin + 2,IntegerToString(Month) + '/' + IntegerToString(Day));
                end;
             end;
             if (Range < 3) then begin
-               for Longx := trunc(GraphDraw.MinHorizAxis) to succ(round(GraphDraw.MaxHorizAxis)) do begin
+               for Longx := trunc(MinHorizAxis) to succ(round(MaxHorizAxis)) do begin
                   for i := 1 to 23 do begin
-                     x := GraphDraw.GraphX(LongX + i /24);
+                     x := GraphX(LongX + i /24);
                      if i in [6,12,18] then begin
-                        BitmapTextOut(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin + 2,IntToStr(i));
+                        BitmapTextOut(Bitmap,x,YWindowSize-BottomMargin + 2,IntToStr(i));
                         y := 2*MDDef.GraphTickSize;
                      end
                      else y := MDDef.GraphTickSize;
-                     DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-y);
+                     DrawLine(Bitmap,x,YWindowSize-BottomMargin,x,YWindowSize-BottomMargin-y);
                      DrawLine(Bitmap,x,0,x,y);
                   end;
                end;
@@ -2703,18 +2462,17 @@ var
             var
                i : integer;
             begin
-                X := GraphDraw.GraphX(Max);
-                if (x <= GraphDraw.XWindowSize) then for i := GraphDraw.TopMargin to GraphDraw.YWindowSize-GraphDraw.BottomMargin do
-                    if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[x,i] := GraphDraw.AxisColor;
+                X := GraphX(Max);
+                if (x <= XWindowSize) then for i := TopMargin to YWindowSize-BottomMargin do
+                    if (i mod FullLineFraction = 0) then Bitmap.Canvas.Pixels[x,i] := AxisColor;
             end;
 
             procedure GraphTick(Max : float32; var x : integer);
             var
                TStr : ShortString;
             begin
-               x := GraphDraw.GraphX(Max);
-               //if (x >= GraphDraw.LeftMargin) and (x <= GraphDraw.LeftMargin + GraphDraw.XWindowSize) then begin
-                  if GraphDraw.LabelXFromLog then begin
+               x := GraphX(Max);
+                  if LabelXFromLog then begin
                      if (Frac(Max) < 0.001) then begin
                         DashLineHorizAxis(Max);
                         Max := Math.Power(10,Max);
@@ -2722,33 +2480,33 @@ var
                      else exit;
                   end;
 
-                  if (not GraphDraw.ShowGraphBottomLabels) then begin
-                      LabelYStart := GraphDraw.YWindowSize - GraphDraw.BottomMargin + MDDef.GraphTickSize;
+                  if (not ShowGraphBottomLabels) then begin
+                      LabelYStart := YWindowSize - BottomMargin + MDDef.GraphTickSize;
 
-                      if (GraphDraw.NumHorizCycles = 1) then begin
+                      if (NumHorizCycles = 1) then begin
                            PerCen := Min;
-                           while (PerCen <= GraphDraw.MaxHorizAxis) do begin
-                              if  (PerCen >= GraphDraw.MinHorizAxis) then begin
-                                  x := GraphDraw.GraphX(PerCen);
-                                  TStr := RealToString(PerCen,-12,AxisDecimals);
-                                  DrawLine(Bitmap,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin + MDDef.GraphTickSize,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin - MDDef.GraphTickSize);
-                                  LabelWidth := Bitmap.Canvas.TextWidth(Tstr);
-                                  LabelXStart := x-LabelWidth div 2;
-                                  Bitmap.Canvas.TextOut(LabelXStart,LabelYStart,TStr);
-                              end;
+                           while (PerCen <= MaxHorizAxis) and (PerCen >= MinHorizAxis) do begin
+                              x := GraphX(PerCen);
+                              TStr := RealToString(PerCen,-12,AxisDecimals);
+                              DrawLine(Bitmap,x,YWindowSize - BottomMargin + MDDef.GraphTickSize,x,YWindowSize - BottomMargin - MDDef.GraphTickSize);
+                              LabelWidth := Bitmap.Canvas.TextWidth(Tstr);
+                              LabelXStart := x-LabelWidth div 2;
+                              if LabelXStart < LeftMargin then LabelXStart := LeftMargin + 4;
+                              if LabelXStart > XWindowSize - RightMargin - LabelWidth - 4 then
+                                 LabelXStart := XWindowSize - RightMargin - LabelWidth - 4;
+                              Bitmap.Canvas.TextOut(LabelXStart,LabelYStart,TStr);
                               PerCen := PerCen + Incr;
                            end {while};
-
                       end
                       else begin
                          TStr := RealToString(Max,-12,AxisDecimals);
-                         DrawLine(Bitmap,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin + MDDef.GraphTickSize,x,GraphDraw.YWindowSize - GraphDraw.BottomMargin - MDDef.GraphTickSize);
+                         DrawLine(Bitmap,x,YWindowSize - BottomMargin + MDDef.GraphTickSize,x,YWindowSize - BottomMargin - MDDef.GraphTickSize);
                          LabelWidth := Bitmap.Canvas.TextWidth(Tstr);
                          LabelXStart := x-LabelWidth div 2;
-                         if (LabelXStart < GraphDraw.LeftMargin) then LabelXStart := GraphDraw.LeftMargin;
+                         if (LabelXStart < LeftMargin) then LabelXStart := LeftMargin;
 
-                         if GraphDraw.NormalCartesianX then begin
-                            if (LabelXStart > LastLabelEnd) and (LabelXStart +LabeLWidth < GraphDraw.XWindowSize) then begin
+                         if NormalCartesianX then begin
+                            if (LabelXStart > LastLabelEnd) and (LabelXStart +LabeLWidth < XWindowSize) then begin
                                Bitmap.Canvas.TextOut(LabelXStart,LabelYStart,TStr);
                                LastLabelEnd := LabelXStart + LabelWidth + 10;
                             end;
@@ -2761,7 +2519,6 @@ var
                          end;
                       end;
                   end;
-               //end;
             end;
 
 
@@ -2771,41 +2528,37 @@ var
          Incr := CycleCuts[3];
          AxisDecimals := GetAxisDecimals(incr);
          {$If Defined(RecordHorizCycles)}
-            WriteLineToDebugFile('HorizAxesForGraph in axes: ' + RealToString(GraphDraw.MinHorizAxis,-18,-6) + ' to ' + RealToString(GraphDraw.MaxHorizAxis,-18,-6));
+            WriteLineToDebugFile('HorizAxesForGraph in axes: ' + RealToString(MinHorizAxis,-18,-6) + ' to ' + RealToString(MaxHorizAxis,-18,-6));
             WriteLineToDebugFile('HorizAxesForGraph in cycle: ' + RealToString(Min,-18,-6) + ' to ' + RealToString(Max,-18,-6) + ' inc=' + RealToString(Incr,-18,-6) + '  dec=' + IntToStr(AxisDecimals));
          {$EndIf}
 
-         if (GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid]) or (abs(Max-Min) < MinTickValue) then exit;
-         if GraphDraw.LabelXFromLog then begin
+         if (GraphAxes in [XTimeYFullGrid,XTimeYPartGrid]) or (abs(Max-Min) < MinTickValue) then exit;
+         if LabelXFromLog then begin
          end
          else begin
-            //if GraphDraw.DrawInsideLines then begin
-                //Min := trunc(Min / inc) * inc;
+         (*
                 PerCen := Min;
                 while (PerCen <= Max + MinTickValue) do begin
-                   X := GraphDraw.GraphX(PerCen);
-                   if (x >= GraphDraw.LeftMargin) and (x <= GraphDraw.LeftMargin + GraphDraw.XWindowSize) then begin
-                      DrawLine(Bitmap,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
-                      DrawLine(Bitmap,x,GraphDraw.TopMargin,x,GraphDraw.TopMargin + MDDef.GraphTickSize);
+                   X := GraphX(PerCen);
+                   if (x >= LeftMargin) and (x <= LeftMargin + XWindowSize) then begin
+                      DrawLine(Bitmap,x,YWindowSize-BottomMargin,x,YWindowSize-BottomMargin-MDDef.GraphTickSize);
+                      DrawLine(Bitmap,x,TopMargin,x,TopMargin + MDDef.GraphTickSize);
                    end;
                    PerCen := PerCen + Incr;
                 end {while};
 
-               if (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
+               if (GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
                   //draws vertical lines across graph area for major divisions
                   DashLineHorizAxis(Max);
                end;
-           // end;
+         *)
          end;
 
-         //label, but only first and last in cycle
-         if GraphDraw.NormalCartesianX then begin
-            GraphTick(Max,x);
-            if (First) then GraphTick(Min,x);
+         if NormalCartesianX then begin
+            if (First) then GraphTick(Min,x) else GraphTick(Max,x);
          end
          else begin
-            GraphTick(Min,x);
-            if (First) then GraphTick(Max,x);
+            if (First) then GraphTick(Max,x) else GraphTick(Min,x);
          end;
          {$IfDef RecordFullGrafAxes} WriteLineToDebugFile('HorizAxesForGraph out'); {$EndIf}
       end {HorizAxesForGraph};
@@ -2821,33 +2574,35 @@ var
             var
                i,y : integer;
             begin
-                y := GraphDraw.GraphY(Max);
-                for i := GraphDraw.LeftMargin to GraphDraw.XWindowSize - GraphDraw.RightMargin do
-                   if (i mod GraphDraw.FullLineFraction = 0) then Bitmap.Canvas.Pixels[i,y] := GraphDraw.AxisColor;
+                y := GraphY(Max);
+                for i := LeftMargin to XWindowSize - RightMargin do
+                   if (i mod FullLineFraction = 0) then Bitmap.Canvas.Pixels[i,y] := AxisColor;
             end;
 
             procedure DrawRightSide(y2 : integer);
             begin
-               Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin - 5,y2);
-               Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin + 5,y2);
+               Bitmap.Canvas.MoveTo(XWindowSize - RightMargin - 5,y2);
+               Bitmap.Canvas.LineTo(XWindowSize - RightMargin + 5,y2);
                y2 := y2 - Bitmap.Canvas.TextHeight(TStr) div 2;
-               if (y2 >= 0) then Bitmap.Canvas.TextOut(GraphDraw.XWindowSize - GraphDraw.RightMargin + 8,y2,TStr);
+               if (y2 >= 0) then Bitmap.Canvas.TextOut(XWindowSize - RightMargin + 8,y2,TStr);
             end;
 
 
             procedure DrawLeftSide(Y : integer);
             var
-               PW : integer;
+               PW,LabelHeight : integer;
             begin
-               Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin - 5,y);
-               Bitmap.Canvas.LineTo(GraphDraw.LeftMargin + 5,y);
+               Bitmap.Canvas.MoveTo(LeftMargin - 5,y);   Bitmap.Canvas.LineTo(LeftMargin + 5,y);
                y := y - Bitmap.Canvas.TextHeight(TStr) div 2;
-               if (y >= 0) then begin
-                  Bitmap.Canvas.TextOut(GraphDraw.LeftMargin - 5 - Bitmap.Canvas.TextWidth(TStr),y,TStr);
+               //if (y >= 0) then begin
+                  LabelHeight := Bitmap.Canvas.TextHeight(TStr);
+                  if y > (YWindowSize - BottomMargin - LabelHeight - 4) then y := YWindowSize - BottomMargin - LabelHeight - 4;
+                  if Y < (TopMargin + 4) then y := TopMargin + 4;
+                  Bitmap.Canvas.TextOut(LeftMargin - 5 - Bitmap.Canvas.TextWidth(TStr),y,TStr);
                   PW := Bitmap.Canvas.TextWidth(TStr);
                   if (PW > MaxVertAxisLabel) then MaxVertAxisLabel := PW;
                   YAxisLabels := YAxisLabels + 1;
-               end;
+               //end;
             end;
 
 
@@ -2856,97 +2611,99 @@ var
          i,y,y2 : integer;
          Drawn : boolean;
       begin {procedure VertPartOfGraph}
-         {$If Defined(RecordVertCycles)} WriteLineToDebugFile('VertPartOfGraph, min=' + RealToString(Min,-12,-4) + ' max=' + RealToString(Max,-12,-4) + ' inc=' +RealToString(Inc,-12,-4)); {$EndIf}
          Min := CycleCuts[1];
          Max := CycleCuts[2];
          Inc := CycleCuts[3];
-         if GraphDraw.GraphAxes in [XFullGridOnly,XPartGridOnly] then exit;
-         //if ((Max - Min) > 1) and (abs(Max - round(Max)) < 0.0001) and (abs(Min - round(Min)) < 0.0001) then AxisDecimals := 0
-         //else AxisDecimals := GetAxisDecimals(inc);
+         {$If Defined(RecordVertCycles)} WriteLineToDebugFile('VertPartOfGraph, min=' + RealToString(Min,-12,-4) + ' max=' + RealToString(Max,-12,-4) + ' inc=' +RealToString(Inc,-12,-4)); {$EndIf}
+         if GraphAxes in [XFullGridOnly,XPartGridOnly] then exit;
          AxisDecimals := GetAxisDecimals(inc);
          YAxisLabels := 0;
 
-         {$If Defined(RecordFullGrafAxes)} WriteLineToDebugFile('VertPartOfGraph, ScrVertRange=' + RealToString(GraphDraw.ScrVertRange,-12,-2)); {$EndIf}
+         {$If Defined(RecordFullGrafAxes)} WriteLineToDebugFile('VertPartOfGraph, ScrVertRange=' + RealToString(ScrVertRange,-12,-2)); {$EndIf}
 
-         if GraphDraw.DrawInsideLines and (GraphDraw.GraphType <> gtTwoVertAxes) then begin
+         if DrawInsideLines and (GraphType <> gtTwoVertAxes) then begin
              if First then begin
+                 (*
                  PerCen := Max;
-                 while (PerCen >= Min) and (PerCen >= GraphDraw.MinVertAxis) do begin
-                    y := GraphDraw.GraphY(PerCen);
-                    Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);  Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+MDDef.GraphTickSize,y);
-                    Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize,y); Bitmap.Canvas.LineTo(GraphDraw.XWindowSize-MDDef.GraphTickSize,y);
+                 while (PerCen >= Min) and (PerCen >= MinVertAxis) do begin
+                    y := GraphY(PerCen);
+                    Bitmap.Canvas.MoveTo(LeftMargin,y);  Bitmap.Canvas.LineTo(LeftMargin+MDDef.GraphTickSize,y);
+                    Bitmap.Canvas.MoveTo(XWindowSize,y); Bitmap.Canvas.LineTo(XWindowSize-MDDef.GraphTickSize,y);
                     PerCen := PerCen - Inc;
                  end {while};
+                 *)
              end
              else begin
                  PerCen := Min;
-                 while (PerCen <= Max + Inc - MinTickValue) and (PerCen <= GraphDraw.MaxVertAxis) do begin
-                    y := GraphDraw.GraphY(PerCen);
-                    if false and DrawInside and (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) then begin
+                 while (PerCen <= Max + Inc - MinTickValue) and (PerCen <= MaxVertAxis) do begin
+                    y := GraphY(PerCen);
+                    if false and DrawInside and (GraphAxes in [PartGrid,XTimeYPartGrid]) then begin
                        DashLineVertAxis(PerCen);
                     end
                     else begin
-                       Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);  Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+MDDef.GraphTickSize,y);
-                       Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize,y); Bitmap.Canvas.LineTo(GraphDraw.XWindowSize-MDDef.GraphTickSize,y);
+                       Bitmap.Canvas.MoveTo(LeftMargin,y);  Bitmap.Canvas.LineTo(LeftMargin+MDDef.GraphTickSize,y);
+                       Bitmap.Canvas.MoveTo(XWindowSize,y); Bitmap.Canvas.LineTo(XWindowSize-MDDef.GraphTickSize,y);
                     end {if};
                     PerCen := PerCen + Inc;
                  end {while};
              end;
 
-             if (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
+             if (GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
                 //draws dotted horizontal lines across graph area for major divisions
                 DashLineVertAxis(Max);
              end;
          end;
 
-             if (GraphDraw.GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
+             if (GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
                 //draws dotted horizontal lines across graph area for major divisions
                 DashLineVertAxis(Max);
              end;
 
              MaxVertAxisLabel := 0;
-              if First or (GraphDraw.NumVertCycles = 1) then begin
-                 repeat
+              if First or (NumVertCycles = 1) then begin
+                 //repeat
                      YAxisLabels := 0;
                      PerCen := Max;
-                     while (PerCen >= Min) and (PerCen >= GraphDraw.MinVertAxis) do begin
+                     while (PerCen > MaxVertAxis) do PerCen := PerCen - Inc;
+                     while (PerCen >= MinVertAxis) and (PerCen <= MaxVertAxis) do begin
                         TStr := RealToString(PerCen,12,AxisDecimals);
                          if RightSide then begin
-                            DrawRightSide(GraphDraw.GraphY2(Percen));
+                            DrawRightSide(GraphY2(Percen));
                          end
                          else begin
-                            DrawLeftSide(GraphDraw.GraphY(Percen));
+                            DrawLeftSide(GraphY(Percen));
                          end;
                         PerCen := PerCen - Inc;
                      end {while};
-                     if YAxisLabels <= 1 then Inc := Inc / 2;
-                 until YAxisLabels > 1;
+                     //if YAxisLabels <= 1 then Inc := Inc / 2;
+                 //until YAxisLabels > 1;
              end
              else begin
                  PerCen := Min + Inc;
-                 while (PerCen <= Max + Inc - MinTickValue) and (PerCen <= GraphDraw.MaxVertAxis) do begin
+                 while (PerCen <= Max + Inc - MinTickValue) and (PerCen <= MaxVertAxis) do begin
                     TStr := RealToString(Percen,12,AxisDecimals);
                     if RightSide then begin
-                       DrawRightSide(GraphDraw.GraphY2(Percen));
+                       DrawRightSide(GraphY2(Percen));
                     end
                     else begin
-                       DrawLeftSide(GraphDraw.GraphY(Percen));
+                       DrawLeftSide(GraphY(Percen));
                     end;
                     PerCen := PerCen + Inc;
                  end {while};
              end;
 
-             MaxVertAxisLabel := MaxVertAxisLabel + 2 + Bitmap.Canvas.TextHeight(RemoveUnderscores(GraphDraw.VertLabel));
-             if MaxVertAxisLabel > GraphDraw.LeftMargin then begin
-                GraphDraw.LeftMargin := MaxVertAxisLabel;
+             MaxVertAxisLabel := MaxVertAxisLabel + 2 + Bitmap.Canvas.TextHeight(RemoveUnderscores(VertLabel));
+             if MaxVertAxisLabel > LeftMargin then begin
+                LeftMargin := MaxVertAxisLabel;
+                MarginsChanged := true;
              end;
       end {proc VertPartOfGraph};
 
 
       procedure DefaultColors;
       begin
-         Bitmap.Canvas.Pen.Color := GraphDraw.AxisColor;
-         Bitmap.Canvas.Font.Color := GraphDraw. AxisColor;
+         Bitmap.Canvas.Pen.Color := AxisColor;
+         Bitmap.Canvas.Font.Color :=  AxisColor;
          Bitmap.Canvas.Pen.Width := MDDef.FrameLineWidth;
          Bitmap.Canvas.Brush.Style := bsClear;
       end;
@@ -2954,10 +2711,10 @@ var
       procedure DrawYAxisTicks(y : integer);
       begin
          Bitmap.Canvas.Pen.Color := clBlack;
-         Bitmap.Canvas.MoveTo(GraphDraw.LeftMargin,y);
-         Bitmap.Canvas.LineTo(GraphDraw.LeftMargin+MDDef.GraphTickSize,y);
-         Bitmap.Canvas.MoveTo(GraphDraw.XWindowSize - GraphDraw.RightMargin,y);
-         Bitmap.Canvas.LineTo(GraphDraw.XWindowSize - GraphDraw.RightMargin - MDDef.GraphTickSize,y);
+         Bitmap.Canvas.MoveTo(LeftMargin,y);
+         Bitmap.Canvas.LineTo(LeftMargin+MDDef.GraphTickSize,y);
+         Bitmap.Canvas.MoveTo(XWindowSize - RightMargin,y);
+         Bitmap.Canvas.LineTo(XWindowSize - RightMargin - MDDef.GraphTickSize,y);
       end;
 
 
@@ -2966,38 +2723,40 @@ var
    yf : float32;
    TStr : shortstring;
 begin {proc CreateGraphAxes}
-   {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes in, ' + GraphDraw.AxisRange); {$EndIf}
-    if GraphDraw.NormalCartesianX then LastLabelEnd := 0
+   {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes in, ' + AxisRange); {$EndIf}
+repeat
+    MarginsChanged := false;
+    if NormalCartesianX then LastLabelEnd := 0
     else LastLabelEnd := Bitmap.Width;
 
-    SetNormProbAxisIfNeeded(GraphDraw.HorizAxisFunctionType,GraphDraw.HorizAxisFunct,GraphDraw.HorizCycleCuts,GraphDraw.NumHorizCycles,GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
-    GraphDraw.ScrMaxHorizAxis := GraphDraw.HorizAxisFunct(GraphDraw.MaxHorizAxis);
-    GraphDraw.ScrMinHorizAxis := GraphDraw.HorizAxisFunct(GraphDraw.MinHorizAxis);
-    GraphDraw.ScrHorizRange := (GraphDraw.ScrMaxHorizAxis - GraphDraw.ScrMinHorizAxis);
-    GraphDraw.XPixelSize := GraphDraw.ScrHorizRange /(GraphDraw.XWindowSize - GraphDraw.LeftMargin - GraphDraw.RightMargin);
-    if GraphDraw.NormalCartesianX then LastLabelEnd := 0
-    else LastLabelEnd := GraphDraw.XWindowSize;
-    {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes x axis set, ' + GraphDraw.AxisRange); {$EndIf}
+    SetNormProbAxisIfNeeded(HorizAxisFunctionType,HorizAxisFunct,HorizCycleCuts,NumHorizCycles,MinHorizAxis,MaxHorizAxis);
+    ScrMaxHorizAxis := HorizAxisFunct(MaxHorizAxis);
+    ScrMinHorizAxis := HorizAxisFunct(MinHorizAxis);
+    ScrHorizRange := (ScrMaxHorizAxis - ScrMinHorizAxis);
+    XPixelSize := ScrHorizRange /(XWindowSize - LeftMargin - RightMargin);
+    if NormalCartesianX then LastLabelEnd := 0
+    else LastLabelEnd := XWindowSize;
+    {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes x axis set, ' + AxisRange); {$EndIf}
 
     if HighlightBox then begin
        Bitmap.Canvas.Pen.Color := RGB(235,255,208);
        Bitmap.Canvas.Brush.Color := RGB(235,255,208);
        Bitmap.Canvas.Brush.Style := bsSolid;
        Bitmap.Canvas.Pen.Width := 1;
-       Bitmap.Canvas.Rectangle(GraphDraw.LeftMargin,GraphDraw.GraphY(1), GraphDraw.XWindowSize,GraphDraw.GraphY(0));
+       Bitmap.Canvas.Rectangle(LeftMargin,GraphY(1), XWindowSize,GraphY(0));
     end;
 
     DefaultColors;
     Bitmap.Canvas.Brush.Style := bsClear;
-    Bitmap.Canvas.Rectangle(GraphDraw.LeftMargin,GraphDraw.TopMargin,GraphDraw.XWindowSize-GraphDraw.RightMargin,succ(GraphDraw.YWindowSize - GraphDraw.BottomMargin));
+    Bitmap.Canvas.Rectangle(LeftMargin,TopMargin,XWindowSize-RightMargin,succ(YWindowSize - BottomMargin));
 
-    if GraphDraw.ShowGraphBottomLabels and (GraphDraw.GraphBottomLabels <> Nil) and (GraphDraw.GraphBottomLabels.Count > 0) then begin
+    if ShowGraphBottomLabels and (GraphBottomLabels <> Nil) and (GraphBottomLabels.Count > 0) then begin
        ts := Bitmap.Canvas.Font.Size;
-       if not GraphDraw.VertGraphBottomLabels then begin
-         for I := 1 to GraphDraw.GraphBottomLabels.Count do begin
-            TStr := RemoveUnderScores(GraphDraw.GraphBottomLabels.Strings[pred(i)]);
+       if not VertGraphBottomLabels then begin
+         for I := 1 to GraphBottomLabels.Count do begin
+            TStr := RemoveUnderScores(GraphBottomLabels.Strings[pred(i)]);
             x1 := StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true));
-            x1 := GraphDraw.GraphX(x1+1) - GraphDraw.GraphX(x1);
+            x1 := GraphX(x1+1) - GraphX(x1);
             x1 := 7 * x1 div 8;
             while Bitmap.Canvas.TextWidth(TStr) > x1 do begin
                Bitmap.Canvas.Font.Size := Bitmap.Canvas.Font.Size - 1;
@@ -3005,112 +2764,111 @@ begin {proc CreateGraphAxes}
          end;
        end;
 
-       for I := 1 to GraphDraw.GraphBottomLabels.Count do begin
-          TStr := RemoveUnderScores(GraphDraw.GraphBottomLabels.Strings[pred(i)]);
-          x1 := GraphDraw.GraphX(StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true)));
-          DrawLine(Bitmap,x1,GraphDraw.YWindowSize-GraphDraw.BottomMargin,x1,GraphDraw.YWindowSize-GraphDraw.BottomMargin-MDDef.GraphTickSize);
-          DrawLine(Bitmap,x1,GraphDraw.TopMargin,x1,GraphDraw.TopMargin + MDDef.GraphTickSize);
-          if GraphDraw.VertGraphBottomLabels then begin
+       for I := 1 to GraphBottomLabels.Count do begin
+          TStr := RemoveUnderScores(GraphBottomLabels.Strings[pred(i)]);
+          x1 := GraphX(StrToInt(BeforeSpecifiedCharacterANSI(Tstr,',',true,true)));
+          DrawLine(Bitmap,x1,YWindowSize-BottomMargin,x1,YWindowSize-BottomMargin-MDDef.GraphTickSize);
+          DrawLine(Bitmap,x1,TopMargin,x1,TopMargin + MDDef.GraphTickSize);
+          if VertGraphBottomLabels then begin
              x1 := x1-Bitmap.Canvas.TextHeight(TStr) div 2;
-             y1 := Bitmap.Height - GraphDraw.BottomMargin + 5;
+             y1 := Bitmap.Height - BottomMargin + 5;
              y1 := y1 + Bitmap.Canvas.TextWidth(Tstr);
              TextOutVertical(Bitmap.Canvas,x1,y1,TStr);
           end
           else begin
-             Bitmap.Canvas.TextOut(x1-Bitmap.Canvas.TextWidth(Tstr) div 2, GraphDraw.YWindowSize - GraphDraw.BottomMargin + 6, TStr);
+             Bitmap.Canvas.TextOut(x1-Bitmap.Canvas.TextWidth(Tstr) div 2, YWindowSize - BottomMargin + 6, TStr);
           end;
        end;
        Bitmap.Canvas.Font.Size := ts;
     end
     else begin
-        if (not (GraphDraw.GraphAxes in [NoGrid,YFullGridOnly])) then begin
-           //AxisDecimals := GetAxisDecimals(GraphDraw.MaxHorizAxis-GraphDraw.MinHorizAxis);
-           for i := 1 to GraphDraw.NumHorizCycles do begin
-              HorizAxesForGraph(GraphDraw.HorizCycleCuts[i],i=1);
+        if (not (GraphAxes in [NoGrid,YFullGridOnly])) then begin
+           for i := 1 to NumHorizCycles do begin
+              HorizAxesForGraph(HorizCycleCuts[i],i=1);
            end;
         end;
     end;
 
-    if (GraphDraw.HorizLabel <> '') then begin
-        if GraphDraw.RighJustifyHorizLabel then begin
-           x1 := GraphDraw.XWindowSize - 5 - Bitmap.Canvas.TextWidth(GraphDraw.HorizLabel);
+    if (HorizLabel <> '') then begin
+        if RighJustifyHorizLabel then begin
+           x1 := XWindowSize - 5 - Bitmap.Canvas.TextWidth(HorizLabel);
         end
         else begin
-           if ((GraphDraw.XWindowSize - GraphDraw.LeftMargin - GraphDraw.RightMargin) > Bitmap.Canvas.TextWidth(GraphDraw.HorizLabel)) then
-              x1 := GraphDraw.LeftMargin + (GraphDraw.XWindowSize - GraphDraw.LeftMargin - GraphDraw.RightMargin - Bitmap.Canvas.TextWidth(GraphDraw.HorizLabel)) div 2
-           else x1 := (GraphDraw.XWindowSize - Bitmap.Canvas.TextWidth(GraphDraw.HorizLabel)) div 2;
+           if ((XWindowSize - LeftMargin - RightMargin) > Bitmap.Canvas.TextWidth(HorizLabel)) then
+              x1 := LeftMargin + (XWindowSize - LeftMargin - RightMargin - Bitmap.Canvas.TextWidth(HorizLabel)) div 2
+           else x1 := (XWindowSize - Bitmap.Canvas.TextWidth(HorizLabel)) div 2;
         end;
-        Bitmap.Canvas.TextOut(x1,GraphDraw.YWindowSize - GraphDraw.BottomMargin + 6 + Bitmap.Canvas.TextHeight('8'),RemoveUnderscores(GraphDraw.HorizLabel));
+        Bitmap.Canvas.TextOut(x1,YWindowSize - BottomMargin + 6 + Bitmap.Canvas.TextHeight('8'),RemoveUnderscores(HorizLabel));
     end;
 
-      if (GraphDraw.GraphType = gtTwoVertAxes) then begin
-         GraphDraw.ScrMaxVertAxis2 := GraphDraw.VertAxisFunct(GraphDraw.MaxVertAxis2);
-         GraphDraw.ScrMinVertAxis2 := GraphDraw.VertAxisFunct(GraphDraw.MinVertAxis2);
-         GraphDraw.ScrVertRange2 := (GraphDraw.ScrMaxVertAxis2 - GraphDraw.ScrMinVertAxis2);
+      if (GraphType = gtTwoVertAxes) then begin
+         ScrMaxVertAxis2 := VertAxisFunct(MaxVertAxis2);
+         ScrMinVertAxis2 := VertAxisFunct(MinVertAxis2);
+         ScrVertRange2 := (ScrMaxVertAxis2 - ScrMinVertAxis2);
 
-         Bitmap.Canvas.Font.Color := ConvertPlatformColorToTColor(GraphDraw.Symbol[2].Color);
+         Bitmap.Canvas.Font.Color := ConvertPlatformColorToTColor(Symbol[2].Color);
 
-         GraphDraw.ForceAxisFit(GraphDraw.VertAxisFunctionType,GraphDraw.VertCycleCuts,GraphDraw.NumVertCycles,GraphDraw.MinVertAxis2,GraphDraw.MaxVertAxis2,GraphDraw.YWindowSize-GraphDraw.BottomMargin,25,GraphDraw.ForceVertCycleSize,GraphDraw.ForceVertTickIncr);
-         for i := 1 to GraphDraw.NumVertCycles do begin
-            VertPartOfGraph(GraphDraw.VertCycleCuts[i],i=1,i=GraphDraw.NumVertCycles,true);
+         ForceAxisFit(VertAxisFunctionType,VertCycleCuts,NumVertCycles,MinVertAxis2,MaxVertAxis2,YWindowSize-BottomMargin,25,ForceVertCycleSize,ForceVertTickIncr);
+         for i := 1 to NumVertCycles do begin
+            VertPartOfGraph(VertCycleCuts[i],i=1,i=NumVertCycles,true);
          end;
-         if GraphDraw.YWindowSize - GraphDraw.BottomMargin > Bitmap.Canvas.TextWidth(GraphDraw.VertLabel2) then
-            y1 := GraphDraw.YWindowSize - GraphDraw.BottomMargin - ((GraphDraw.YWindowSize - GraphDraw.BottomMargin - Bitmap.Canvas.TextWidth(GraphDraw.VertLabel2)) div 2)
-         else y1 := GraphDraw.YWindowSize - ((GraphDraw.YWindowSize - Bitmap.Canvas.TextWidth(GraphDraw.VertLabel2)) div 2);
-         TextOutVertical(Bitmap.Canvas,GraphDraw.XWindowSize - 2 - Bitmap.Canvas.TextHeight(GraphDraw.VertLabel2),y1,RemoveUnderscores(GraphDraw.VertLabel2));
+         if YWindowSize - BottomMargin > Bitmap.Canvas.TextWidth(VertLabel2) then
+            y1 := YWindowSize - BottomMargin - ((YWindowSize - BottomMargin - Bitmap.Canvas.TextWidth(VertLabel2)) div 2)
+         else y1 := YWindowSize - ((YWindowSize - Bitmap.Canvas.TextWidth(VertLabel2)) div 2);
+         TextOutVertical(Bitmap.Canvas,XWindowSize - 2 - Bitmap.Canvas.TextHeight(VertLabel2),y1,RemoveUnderscores(VertLabel2));
 
-         Bitmap.Canvas.Font.Color := ConvertPlatformColorToTColor(GraphDraw.Symbol[1].Color);
-         GraphDraw.ForceAxisFit(GraphDraw.VertAxisFunctionType,GraphDraw.VertCycleCuts,GraphDraw.NumVertCycles,GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis,GraphDraw.YWindowSize-GraphDraw.BottomMargin,25,GraphDraw.ForceVertCycleSize,GraphDraw.ForceVertTickIncr);
+         Bitmap.Canvas.Font.Color := ConvertPlatformColorToTColor(Symbol[1].Color);
+         ForceAxisFit(VertAxisFunctionType,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis,YWindowSize-BottomMargin,25,ForceVertCycleSize,ForceVertTickIncr);
          {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes 2d y axis set'); {$EndIf}
       end;
 
-      SetNormProbAxisIfNeeded(GraphDraw.VertAxisFunctionType,GraphDraw.VertAxisFunct,GraphDraw.VertCycleCuts,GraphDraw.NumVertCycles,GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
-      GraphDraw.ScrMaxVertAxis := GraphDraw.VertAxisFunct(GraphDraw.MaxVertAxis);
-      GraphDraw.ScrMinVertAxis := GraphDraw.VertAxisFunct(GraphDraw.MinVertAxis);
-      GraphDraw.ScrVertRange := GraphDraw.ScrMaxVertAxis - GraphDraw.ScrMinVertAxis;
-      GraphDraw.YPixelSize := GraphDraw.ScrVertRange / (GraphDraw.YWindowSize - GraphDraw.TopMargin - GraphDraw.BottomMargin);
-      {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes primary y axis set, ' + GraphDraw.AxisRange); {$EndIf}
+      SetNormProbAxisIfNeeded(VertAxisFunctionType,VertAxisFunct,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis);
+      ScrMaxVertAxis := VertAxisFunct(MaxVertAxis);
+      ScrMinVertAxis := VertAxisFunct(MinVertAxis);
+      ScrVertRange := ScrMaxVertAxis - ScrMinVertAxis;
+      YPixelSize := ScrVertRange / (YWindowSize - TopMargin - BottomMargin);
+      {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes primary y axis set, ' + AxisRange); {$EndIf}
 
-      if (GraphDraw.GraphLeftLabels <> Nil) and (GraphDraw.GraphLeftLabels.Count > 0) and GraphDraw.ShowGraphLeftLabels then begin
-          for I := 1 to GraphDraw.GraphLeftLabels.Count do begin
-             TStr := GraphDraw.GraphLeftLabels.Strings[pred(i)];
+      if (GraphLeftLabels <> Nil) and (GraphLeftLabels.Count > 0) and ShowGraphLeftLabels then begin
+          for I := 1 to GraphLeftLabels.Count do begin
+             TStr := GraphLeftLabels.Strings[pred(i)];
              if StrUtils.AnsiContainsText(TStr,',') then yf := StrToFloat(BeforeSpecifiedCharacterANSI(Tstr,',',true,true))
              else yf := i;
-             y := GraphDraw.GraphY(yf);
+             y := GraphY(yf);
              Bitmap.Canvas.TextOut(5,y-Bitmap.Canvas.TextHeight(TStr) div 2,RemoveUnderScores(TStr));
              DrawYAxisTicks(y);
           end;
       end
-      else if not (GraphDraw.GraphAxes in [NoGrid,XPartGridOnly]) then begin
+      else if not (GraphAxes in [NoGrid,XPartGridOnly]) then begin
          {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes VertPartOfGraph start'); {$EndIf}
-         if GraphDraw.SimpleYAxis then begin
-            yf := GraphDraw.MinYLabels;
-            while yf <= GraphDraw.MaxYLabels do begin
-               y := GraphDraw.GraphY(yf);
+         if SimpleYAxis then begin
+            yf := MinYLabels;
+            while yf <= MaxYLabels do begin
+               y := GraphY(yf);
                DrawYAxisTicks(y);
                Tstr := RealToString(yf,-12,-2);
-               Bitmap.Canvas.TextOut(GraphDraw.LeftMargin - 5 - Bitmap.Canvas.TextWidth(Tstr),y-Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
-               yf := yf + GraphDraw.YLabelIncr;
+               Bitmap.Canvas.TextOut(LeftMargin - 5 - Bitmap.Canvas.TextWidth(Tstr),y-Bitmap.Canvas.TextHeight(TStr) div 2,TStr);
+               yf := yf + YLabelIncr;
             end;
          end
          else begin
-             for i := 1 to GraphDraw.NumVertCycles do begin
+             for i := 1 to NumVertCycles do begin
                 {$If Defined(RecordVertCycles)}
-                   WriteLineToDebugFile('VertCycle ' + IntToStr(i) + '/' + IntToStr(GraphDraw.NumVertCycles) + '  axis: ' + RealToString(GraphDraw.MinVertAxis,-12,-6) + ' to ' + RealToString(GraphDraw.MaxVertAxis,-12,-6));
+                   WriteLineToDebugFile('VertCycle ' + IntToStr(i) + '/' + IntToStr(NumVertCycles) + '  axis: ' + RealToString(MinVertAxis,-12,-6) + ' to ' + RealToString(MaxVertAxis,-12,-6));
                 {$EndIf}
-                VertPartOfGraph(GraphDraw.VertCycleCuts[i],i=1,i=GraphDraw.NumVertCycles);
+                VertPartOfGraph(VertCycleCuts[i],i=1,i=NumVertCycles);
              end;
          end;
-         {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes VertPartOfGraph done, ' + GraphDraw.AxisRange); {$EndIf}
+         {$If Defined(RecordGrafAxis)} WriteLineToDebugFile('tThisBaseGraph.CreateGraphAxes VertPartOfGraph done, ' + AxisRange); {$EndIf}
       end;
 
-      if GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then TimeAxis;
+      if GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then TimeAxis;
 
-      if GraphDraw.YWindowSize - GraphDraw.BottomMargin > Bitmap.Canvas.TextWidth(GraphDraw.VertLabel) then
-         y1 := GraphDraw.YWindowSize - GraphDraw.BottomMargin - ((GraphDraw.YWindowSize - GraphDraw.BottomMargin - Bitmap.Canvas.TextWidth(GraphDraw.VertLabel)) div 2)
-      else y1 := GraphDraw.YWindowSize - ((GraphDraw.YWindowSize - Bitmap.Canvas.TextWidth(GraphDraw.VertLabel)) div 2);
+      if YWindowSize - BottomMargin > Bitmap.Canvas.TextWidth(VertLabel) then
+         y1 := YWindowSize - BottomMargin - ((YWindowSize - BottomMargin - Bitmap.Canvas.TextWidth(VertLabel)) div 2)
+      else y1 := YWindowSize - ((YWindowSize - Bitmap.Canvas.TextWidth(VertLabel)) div 2);
 
-      if (GraphDraw.VertLabel = 'POTET/Precip (mm)') then begin
+      if (VertLabel = 'POTET/Precip (mm)') then begin
          Bitmap.Canvas.Font.Color := clRed;
          TextOutVertical(Bitmap.Canvas,3,y1,'POTET');
          y1 := y1 - Bitmap.Canvas.TextWidth('POTET');
@@ -3123,48 +2881,50 @@ begin {proc CreateGraphAxes}
          Bitmap.Canvas.Font.Color := clBlack;
          TextOutVertical(Bitmap.Canvas,3,y1,' (mm)');
       end
-      else TextOutVertical(Bitmap.Canvas,3,y1,RemoveUnderscores(GraphDraw.VertLabel));
+      else TextOutVertical(Bitmap.Canvas,3,y1,RemoveUnderscores(VertLabel));
 
       {$IfDef RecordGraf} WriteLineToDebugFile('tThisBaseGraph.WindowGraphAxes in,  xsize=' + IntToStr(xWindowSize)); {$EndIf}
 
       Bitmap.Canvas.Brush.Style := bsClear;
       Bitmap.Canvas.Pen.Width := 1;
-      Bitmap.Canvas.Rectangle(GraphDraw.LeftMargin,GraphDraw.YWindowSize-GraphDraw.BottomMargin, GraphDraw.XWindowSize,GraphDraw.TopMargin);
+      Bitmap.Canvas.Rectangle(LeftMargin,YWindowSize-BottomMargin, XWindowSize,TopMargin);
 
       if DrawInside then begin  //we do not want these to overprint data point
-        if GraphDraw.ShowVertAxis0 and (GraphDraw.MinVertAxis < 0) and (GraphDraw.MaxVertAxis > 0) then begin
-           DrawLine(Bitmap,GraphDraw.LeftMargin,GraphDraw.GraphY(0),GraphDraw.XWindowSize-GraphDraw.RightMargin,GraphDraw.GraphY(0));
-        end;
+         if ShowVertAxis0 and (MinVertAxis < 0) and (MaxVertAxis > 0) then begin
+            DrawLine(Bitmap,LeftMargin,GraphY(0),XWindowSize-RightMargin,GraphY(0));
+         end;
 
-         if GraphDraw.ShowHorizAxis0 and (GraphDraw.MinHorizAxis < 0) and (GraphDraw.MaxHorizAxis > 0) then begin
-            DrawLine(Bitmap,GraphDraw.GraphX(0),GraphDraw.TopMargin,GraphDraw.GraphX(0),GraphDraw.YWindowSize-GraphDraw.BottomMargin);
+         if ShowHorizAxis0 and (MinHorizAxis < 0) and (MaxHorizAxis > 0) then begin
+            DrawLine(Bitmap,GraphX(0),TopMargin,GraphX(0),YWindowSize-BottomMargin);
          end;
-         if GraphDraw.ShowHorizAxis1 and (GraphDraw.MinHorizAxis < 1) and (GraphDraw.MaxHorizAxis > 1) then begin
-            DrawLine(Bitmap,GraphDraw.GraphX(1),GraphDraw.TopMargin,GraphDraw.GraphX(1),GraphDraw.YWindowSize-GraphDraw.BottomMargin);
+         if ShowHorizAxis1 and (MinHorizAxis < 1) and (MaxHorizAxis > 1) then begin
+            DrawLine(Bitmap,GraphX(1),TopMargin,GraphX(1),YWindowSize-BottomMargin);
          end;
-         if GraphDraw.Draw1to1Line then begin
+         if Draw1to1Line then begin
              Bitmap.Canvas.Pen.Color := clSilver;
              Bitmap.Canvas.Pen.Width := 1 + MDDef.FrameLineWidth;
-             if (GraphDraw.MinHorizAxis > GraphDraw.MinVertAxis) then
-                Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinHorizAxis),GraphDraw.GraphY(GraphDraw.MinHorizAxis))
-             else Bitmap.Canvas.MoveTo(GraphDraw.GraphX(GraphDraw.MinVertAxis),GraphDraw.GraphY(GraphDraw.MinVertAxis));
-             if GraphDraw.MaxHorizAxis > GraphDraw.MaxVertAxis then
-                Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxVertAxis),GraphDraw.GraphY(GraphDraw.MaxVertAxis))
-             else Bitmap.Canvas.LineTo(GraphDraw.GraphX(GraphDraw.MaxHorizAxis),GraphDraw.GraphY(GraphDraw.MaxHorizAxis));
+             if (MinHorizAxis > MinVertAxis) then
+                Bitmap.Canvas.MoveTo(GraphX(MinHorizAxis),GraphY(MinHorizAxis))
+             else Bitmap.Canvas.MoveTo(GraphX(MinVertAxis),GraphY(MinVertAxis));
+             if MaxHorizAxis > MaxVertAxis then
+                Bitmap.Canvas.LineTo(GraphX(MaxVertAxis),GraphY(MaxVertAxis))
+             else Bitmap.Canvas.LineTo(GraphX(MaxHorizAxis),GraphY(MaxHorizAxis));
              {$If Defined(Record1to1)} Bitmap.SaveToFile(NextFileNumber(MDtempDir,'Draw_graph_1to1_','.bmp')); {$EndIf}
          end;
       end;
 
-      if GraphDraw.DrawRegion then begin
+      if DrawRegion then begin
          Bitmap.Canvas.Brush.Color := clSilver;
          Bitmap.Canvas.Brush.Style := bsSolid;
          Bitmap.Canvas.Pen.Color := clSilver;
          Bitmap.Canvas.Pen.Width := 3;
-         Bitmap.Canvas.Rectangle(GraphDraw.GraphX(GraphDraw.RegionXLo),GraphDraw.GraphY(GraphDraw.RegionYLo),GraphDraw.GraphX(GraphDraw.RegionXHi),GraphDraw.GraphY(GraphDraw.RegionYHi));
+         Bitmap.Canvas.Rectangle(GraphX(RegionXLo),GraphY(RegionYLo),GraphX(RegionXHi),GraphY(RegionYHi));
       end;
       Bitmap.Canvas.Pen.Width := 1;
+
    //end;
-   {$If Defined(RecordGrafAxis) or Defined(RecordGraf)} WriteLineToDebugFile('tThisBaseGraph.WindowGraphAxes out, ' + GraphDraw.AxisRange); {$EndIf}
+until not MarginsChanged;
+   {$If Defined(RecordGrafAxis) or Defined(RecordGraf)} WriteLineToDebugFile('tThisBaseGraph.WindowGraphAxes out, ' + AxisRange); {$EndIf}
 end {proc CreateGraphAxes};
 
 
@@ -3297,7 +3057,7 @@ begin
 
    {$If Defined(RecordGraf) or Defined(RecordGrafSize)} WriteLineToDebugFile('TThisBaseGraph.DrawGraph axis fit over ' + GraphDraw.AxisRange); {$EndIf}
    if (Bitmap <> Nil) then begin
-      WindowGraphAxes(Bitmap,DrawInside);
+      GraphDraw.WindowGraphAxes(Bitmap,DrawInside);
    end;
 
 
@@ -3371,8 +3131,8 @@ begin
             MinVertAxis2 := 99e99;
             MaxVertAxis2 := -99e99;
          end;
-        MinZ := 99e39;
-        MaxZ := -99e39;
+        GraphDraw.MinZ := 99e39;
+        GraphDraw.MaxZ := -99e39;
         if (GraphType = gtTwoVertAxes) then begin
             assignFile(tf,XYZFilesPlotted[0]);
             reset(tf,3*SizeOf(float32));
@@ -3436,7 +3196,7 @@ begin
                   for i := 1 to NumRead do begin
                      if DoHoriz then Petmath.CompareValueToExtremes(Coords3^[(3*i)-2],GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
                      if DoVert then Petmath.CompareValueToExtremes(Coords3^[pred(3*i)],GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
-                     Petmath.CompareValueToExtremes(Coords3^[(3*i)],MinZ,MaxZ);
+                     Petmath.CompareValueToExtremes(Coords3^[(3*i)],GraphDraw.MinZ,GraphDraw.MaxZ);
                   end;
                end;
                Dispose(Coords3);
@@ -3452,13 +3212,13 @@ begin
                   for i := 1 to NumRead do begin
                      if DoHoriz then Petmath.CompareValueToExtremes(Coords3^[(3*i)-2],GraphDraw.MinHorizAxis,GraphDraw.MaxHorizAxis);
                      if DoVert then Petmath.CompareValueToExtremes(Coords3^[pred(3*i)],GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
-                     Petmath.CompareValueToExtremes(Coords3^[(3*i)],MinZ,MaxZ);
+                     Petmath.CompareValueToExtremes(Coords3^[(3*i)],GraphDraw.MinZ,GraphDraw.MaxZ);
                   end;
                end;
                Dispose(Coords3);
                CloseFile(tf);
-               MinZShow := MinZ;
-               {$If Defined(RecordScaling)} WriteLineToDebugFile('Autoscale Z range:  ' + RealToString(MinZ,-8,-4) + ' To ' + RealToString(MaxZ,-8,-4)); {$EndIf}
+               GraphDraw.MinZShow := GraphDraw.MinZ;
+               {$If Defined(RecordScaling)} WriteLineToDebugFile('Autoscale Z range:  ' + RealToString(GraphDraw.MinZ,-8,-4) + ' To ' + RealToString(GraphDraw.MaxZ,-8,-4)); {$EndIf}
             end;
          end;
          {$If Defined(RecordGraf) or Defined(RecordScaling)} WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram ranges set ' + GraphDraw.AxisRange); {$EndIf}
@@ -3475,7 +3235,7 @@ begin
                for i := 1 to NumRead do begin
                   Petmath.CompareValueToExtremes(Coords3^[(3*i)-2],MinHorizAxis,MaxHorizAxis);
                   Petmath.CompareValueToExtremes(Coords3^[pred(3*i)],MinVertAxis,MaxVertAxis);
-                  Petmath.CompareValueToExtremes(Coords3^[(3*i)],MinZ,MaxZ);
+                  Petmath.CompareValueToExtremes(Coords3^[(3*i)],GraphDraw.MinZ,GraphDraw.MaxZ);
                end;
             end;
             Dispose(Coords3);
@@ -3489,7 +3249,7 @@ begin
       SetUpGraphForm;
       {$If Defined(RecordScaling)} WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram call RedrawDiagram11Click'); {$EndIf}
       {$IfDef TrackColors} GraphColorsRecord('TThisBaseGraph.AutoScaleAndRedrawDiagram finish'); {$EndIf}
-      RedrawDiagram11Click(Nil);
+      RedrawDiagram;
    end;
    {$If Defined(RecordGrafSize) or Defined(RecordScaling)}
       WriteLineToDebugFile('TThisBaseGraph.AutoScaleAndRedrawDiagram out Client size, ' + FormClientSize(Self) + ' ' + ImageSize(Image1) + '  ' + GraphDraw.AxisRange);
@@ -3520,7 +3280,7 @@ begin
          if (xs > ys) then ClientWidth := round( (GraphDraw.MaxHorizAxis - GraphDraw.MinHorizAxis) / ys) +  GraphDraw.LeftMargin
          else ClientHeight := round( (GraphDraw.MaxVertAxis - GraphDraw.MinVertAxis) / xs * GraphDraw.VertExag) +  GraphDraw.BottomMargin;
       end;
-      if GraphDraw.GraphDrawn then RedrawDiagram11Click(Nil);
+      if GraphDraw.GraphDrawn then RedrawDiagram;
       SizingWindow := false;
       {$IfDef RecordFormResize} WriteLinetoDebugFile('TThisBaseGraph.FormResize out ' + FormClientSize(self)); {$EndIf}
    end;
@@ -3543,7 +3303,7 @@ end;
 procedure TThisBaseGraph.Pasteontograph1Click(Sender: TObject);
 begin
    {$IfDef RecordClipboard} WritelineToDebugFile('TThisBaseGraph.Pasteontograph1Click'); {$EndIf}
-   LegendBitmap := MakeLegend;
+   LegendBitmap := GraphDraw.MakeLegend;
    CopyImageToBitmap(Image1,SavedGraphImage);
    GraphDoing := gdDragEdit;
 end;
@@ -3551,7 +3311,7 @@ end;
 procedure TThisBaseGraph.Pasteontograph2Click(Sender: TObject);
 begin
    {$IfDef RecordClipboard} WritelineToDebugFile('TThisBaseGraph.Pasteontograph2Click'); {$EndIf}
-   DisplayBitmap(MakeLegend,'Legend',true);
+   DisplayBitmap(GraphDraw.MakeLegend,'Legend',true);
 end;
 
 
@@ -3692,8 +3452,8 @@ begin
                 yf := Coords^[pred(3*i)];
                 if GraphDraw.PtOnGraph(xf,yf) then  begin
                    zf := Coords^[(3*i)];
-                   if GraphDraw.RainBowColors and (zf >= MinZShow) then begin
-                      GraphDraw.Symbol[0].Color := RainbowRGBFunct(zf,Minz,MaxZ);
+                   if GraphDraw.RainBowColors and (zf >= GraphDraw.MinZshow) then begin
+                      GraphDraw.Symbol[0].Color := RainbowRGBFunct(zf,GraphDraw.MinZ,GraphDraw.MaxZ);
                    end
                    else GraphDraw.Symbol[0].Color := ConvertTColorToPlatformColor(round(zf));
                    xp := GraphDraw.GraphX(xf);
@@ -3726,7 +3486,7 @@ begin
     GraphDraw.MaxVertAxis := 2* MaxRange;
     GraphDraw.MinVertAxis := -2 * MaxRange;
     SetUpGraphForm;
-    RedrawDiagram11Click(Nil);
+    RedrawDiagram;
 end;
 
 
@@ -3780,7 +3540,7 @@ begin
       end
       else begin
          if GraphDraw.ZColorLegend then begin
-            sBitmap := DefaultHorizontalLegendOnBitmap(MinZ,MaxZ,'','',LegRainbows);
+            sBitmap := DefaultHorizontalLegendOnBitmap(GraphDraw.MinZ,GraphDraw.MaxZ,'','',LegRainbows);
             DisplayBitmap(sBitmap,'Color legend');
             sBitmap.Free;
          end;
@@ -3803,7 +3563,7 @@ begin
                    yf := Coords^[pred(3*i)];
                    if GraphDraw.PtOnGraph(xf,yf) then begin
                       zf := Coords^[(3*i)];
-                      if (ZF >= MinZShow) then begin
+                      if (ZF >= GraphDraw.MinZshow) then begin
                         if GraphDraw.RainBowColors then begin
                            if GraphDraw.RedGray then begin
                               Plot := (run = 1) and (round(zf) = 0) or (run = 2) and (round(zf) = 1);
@@ -3811,11 +3571,11 @@ begin
                            else Plot := true;
                            if Plot then begin
                               case MDDef.GraphZColorScheme of
-                                 LegGrays      : GraphDraw.Symbol[0].Color := ConvertTColorToPlatformColor(GrayColorFunct(zf,Minz,Maxz));
-                                 LegRainbows   : GraphDraw.Symbol[0].Color := RainbowRGBFunct(zf,Minz,MaxZ);
-                                 LegTerrain    : GraphDraw.Symbol[0].Color := TerrainRGBFunct(zf,Minz,MaxZ);
-                                 LegSpectrum   : GraphDraw.Symbol[0].Color := SpectrumRGBFunct(zf,Minz,MaxZ);
-                                 LegChloropleth : GraphDraw.Symbol[0].Color := ChloroplethPlatformColor(ColorDefTable,zf,Minz,MaxZ);
+                                 LegGrays      : GraphDraw.Symbol[0].Color := ConvertTColorToPlatformColor(GrayColorFunct(zf,GraphDraw.MinZ,GraphDraw.MaxZ));
+                                 LegRainbows   : GraphDraw.Symbol[0].Color := RainbowRGBFunct(zf,GraphDraw.MinZ,GraphDraw.MaxZ);
+                                 LegTerrain    : GraphDraw.Symbol[0].Color := TerrainRGBFunct(zf,GraphDraw.MinZ,GraphDraw.MaxZ);
+                                 LegSpectrum   : GraphDraw.Symbol[0].Color := SpectrumRGBFunct(zf,GraphDraw.MinZ,GraphDraw.MaxZ);
+                                 LegChloropleth : GraphDraw.Symbol[0].Color := ChloroplethPlatformColor(ColorDefTable,zf,GraphDraw.MinZ,GraphDraw.MaxZ);
                               end;
                               ScreenSymbol(Bitmap.Canvas, GraphDraw.GraphX(xf), GraphDraw.GraphY(yf),GraphDraw.Symbol[0]);
                            end;
@@ -4193,7 +3953,7 @@ begin
       {$IfDef RecordMenuMisdirect} WriteLineToDebugFile('TThisBaseGraph.Graphsettings2Click'); {$EndIf}
       ChangeGraphSettingsClick(Nil);
       if SettingsChanged then begin
-         RedrawDiagram11Click(Nil);
+         RedrawDiagram;
          if GraphDraw.CorrectScaling then FormResize(nil);
       end;
    end;
@@ -4330,20 +4090,20 @@ begin
      GraphDraw.LLlegend := false;
      GraphDraw.InsideMarginLegend := MDDef.DefMarginLegend;
      GraphDraw.LRcornerText := '';
+     GraphDraw.TopRightInsideLabel := '';
      GraphDraw.MarginsGood := false;
 
      MapOwner := nil;
      RedrawNow := false;
-     HighlightBox := false;
+     GraphDraw.HighlightBox := false;
      BoxLineWidth := 2;
      RangeGraphName := '';
      BarGraphDBName := '';
      ThisGraphSymbologyFName := '';
-     //XYColorDBName := '';
      GraphFilter := '';
      SlicerOverlay := false;
      HistogramChanged := false;
-     GraphDraw.ResetMargins := false;
+     //GraphDraw.ResetMargins := false;
      GraphComputedR := -999;
      GraphComputedMAbD := -999;
      GraphComputedMAvD := -999;
@@ -4351,8 +4111,7 @@ begin
      GraphDraw.GrayAllDataFilesFirst := false;
      DefineColorArray(MDDef.GraphPalette,ColorDefTable.ZTableEntries,ColorDefTable.zTableColors,false);
 
-
-     for i := 0 to MaxGraphSeries do DataPlotsVisible[i] := false;
+     for i := 0 to MaxGraphSeries do GraphDraw.DataPlotsVisible[i] := false;
 
      MainMenu1.AutoMerge := Not SkipMenuUpdating;
 
@@ -4360,6 +4119,8 @@ begin
 
      DefaultClientWidth := MDDef.DefaultGraphXSize;
      DefaultClientHeight := MDDef.DefaultGraphYSize;
+     ClientWidth := DefaultClientWidth;
+     ClientHeight := DefaultClientHeight;
 
      if CreateSmallGraph then begin
         DefaultClientWidth := DefaultClientWidth div 2;
@@ -4368,8 +4129,6 @@ begin
         HideToolbar(true);
      end;
 
-     ClientWidth := DefaultClientWidth;
-     ClientHeight := DefaultClientHeight;
      GraphDoing := gdDoingNothing;
      MainSymbol.DrawingSymbol := FilledBox;
      MainSymbol.Color := claRed;
@@ -4381,7 +4140,7 @@ begin
      Image1.Stretch := true;             //Required for Delphi 6 "feature"
      ScrollBox1.AutoScroll := false;
      BaseCaption := '';
-     ZUnits := '';
+     GraphDraw.ZUnits := '';
      VertCompare := 1;
      MouseIsDown := false;
      RedrawingNow := false;
@@ -4397,8 +4156,8 @@ begin
      CreateBitmap(Bitmap,succ(GraphDraw.XWindowSize),Succ(GraphDraw.YWindowSize));
      Image1.Picture.Graphic := Bitmap;
      Bitmap.Free;
-     MinZ := 9e39;
-     MaxZ := -9e39;
+     GraphDraw.MinZ := 9e39;
+     GraphDraw.MaxZ := -9e39;
      CanCloseGraph := true;
      FontDialog1.Font.Style := [fsBold];
      CheckFormPlacement(Self);
@@ -4413,7 +4172,7 @@ begin
 procedure TThisBaseGraph.Font1Click(Sender: TObject);
 begin
    if FontDialog1.Execute then begin
-      RedrawDiagram11Click(Nil);
+      RedrawDiagram;
       {$IfDef MICRODEM}
          GetMyFontFromWindowsFont(MDDef.DefaultGraphFont,FontDialog1.Font);
       {$EndIf}
@@ -4577,7 +4336,7 @@ begin
    EndCount;
    CloseFile(Rfile);
    CloseFile(Infile);
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 
@@ -4710,15 +4469,15 @@ begin
    aMovie := tStringList.Create;
    GraphDraw.MultiPanelGraph := (not Movie);
    GraphDraw.GrayAllDataFilesFirst := true;
-   for j := 0 to MaxGraphSeries do DataPlotsVisible[j] := false;
+   for j := 0 to MaxGraphSeries do GraphDraw.DataPlotsVisible[j] := false;
    if ShowFirstLayerOnAnimation then begin
-      DataPlotsVisible[0] := true;
+      GraphDraw.DataPlotsVisible[0] := true;
    end;
    for j := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
-      DataPlotsVisible[j] := true;
-      GraphDraw.LRcornerText := GetLegendLabelFromFileName(true,ExtractFileNameNoExt(GraphDraw.DataFilesPlotted.Strings[j]));
-      RedrawDiagram11Click(Nil);
-      DataPlotsVisible[j] := false;
+      GraphDraw.DataPlotsVisible[j] := true;
+      GraphDraw.LRcornerText := GraphDraw.GetLegendLabelFromFileName(true,ExtractFileNameNoExt(GraphDraw.DataFilesPlotted.Strings[j]));
+      RedrawDiagram;
+      GraphDraw.DataPlotsVisible[j] := false;
       CopyImageToBitmap(Image1,Bitmap);
       if Movie then begin
          fName2 := NextFileNumber(MDtempDir,'_frame_','.bmp');
@@ -4756,9 +4515,9 @@ begin
       SaveBitmap(BigBitmap,Result);
       DisplayBitmap(Result,'Panel_Graph');
    end;
-   for j := 0 to MaxGraphSeries do DataPlotsVisible[j] := true;
+   for j := 0 to MaxGraphSeries do GraphDraw.DataPlotsVisible[j] := true;
    GraphDraw.MultiPanelGraph := false;
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end {function TThisBaseGraph.AnimateGraph};
 
 procedure TThisBaseGraph.AlongXaxis1Click(Sender: TObject);
@@ -4806,7 +4565,7 @@ begin
    end;
    CloseFile(Rfile);
    CloseFile(Infile);
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 
@@ -5407,7 +5166,7 @@ begin
              GraphDraw.MinVertAxis := GraphDraw.InvGraphY(FirstY);
              GraphDraw.MaxVertAxis := GraphDraw.InvGraphY(Y);
           end;
-          RedrawDiagram11Click(Nil);
+          RedrawDiagram;
           DragResize1.Checked := false;
        end;
     end;
@@ -5446,7 +5205,7 @@ end;
 procedure TThisBaseGraph.SpeedButton14Click(Sender: TObject);
 begin
    ClearDataOnGraph;
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.SpeedButton15Click(Sender: TObject);
@@ -5522,10 +5281,10 @@ end;
 
 procedure TThisBaseGraph.Zcolorrange1Click(Sender: TObject);
 begin
-   ReadDefault('Min z to show on graph',MinZShow);
-   ReadDefault('Min z for color scale',MinZ);
-   ReadDefault('Max z for color scale',MaxZ);
-   RedrawDiagram11Click(Nil);
+   ReadDefault('Min z to show on graph',GraphDraw.MinZshow);
+   ReadDefault('Min z for color scale',GraphDraw.MinZ);
+   ReadDefault('Max z for color scale',GraphDraw.MaxZ);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.Zcolorscalelegend1Click(Sender: TObject);
@@ -5609,7 +5368,7 @@ end;
 
 procedure TThisBaseGraph.SpeedButton8Click(Sender: TObject);
 begin
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.SpeedButton9Click(Sender: TObject);
@@ -5623,7 +5382,7 @@ end;
 procedure TThisBaseGraph.Spot51Click(Sender: TObject);
 begin
    GraphDraw.SatBands := 'SPOT5';
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 
@@ -5669,7 +5428,7 @@ begin
       if GraphDraw.ShowPoints[0] then PlotPointFile(BitMap,fName,GraphDraw.Symbol[i]);
    end
    else begin
-      SetMyBitmapColors(Bitmap,i);
+      GraphDraw.SetMyBitmapColors(Bitmap,i);
       if GraphDraw.ShowLine[i] then begin
          Bitmap.Canvas.Pen.Width := GraphDraw.LineSize256[i];
          Bitmap.Canvas.Pen.Color := ConvertPlatformColorToTColor(GraphDraw.FileColors256[i]);
@@ -5682,40 +5441,45 @@ begin
 end;
 
 
-       procedure TThisBaseGraph.GraphLabels(var Bitmap : tMyBitmap);
+       procedure TGraphDraw.GraphLabels(var Bitmap : tMyBitmap);
        var
           StartAt,MaxWidth,
           xi,yi,tw,ts: integer;
           bmp : tMyBitmap;
           TStr : shortstring;
        begin
-          if (GraphDraw.UpperLeftText <> '') then begin
-             Bitmap.Canvas.TextOut(GraphDraw.LeftMargin + 12, GraphDraw.TopMargin + 8, RemoveUnderScores(GraphDraw.UpperLeftText));
+          if (UpperLeftText <> '') then begin
+             Bitmap.Canvas.TextOut(LeftMargin + 12, TopMargin + 8, RemoveUnderScores(UpperLeftText));
           end;
-          if (GraphDraw.TopLabel <> '') then begin
+          if (TopLabel <> '') then begin
              Bitmap.Canvas.Brush.Style := bsClear;
              ts := Bitmap.Canvas.Font.Size;
-             tw := Bitmap.Canvas.TextWidth(RemoveUnderScores(GraphDraw.TopLabel));
-             while (tw + 10 > (Bitmap.Width - GraphDraw.LeftMargin)) do begin
+             tw := Bitmap.Canvas.TextWidth(RemoveUnderScores(TopLabel));
+             while (tw + 10 > (Bitmap.Width - LeftMargin)) do begin
                 Bitmap.Canvas.Font.Size := Bitmap.Canvas.Font.Size - 1;
-                tw := Bitmap.Canvas.TextWidth(RemoveUnderScores(GraphDraw.TopLabel));
+                tw := Bitmap.Canvas.TextWidth(RemoveUnderScores(TopLabel));
              end;
-             Bitmap.Canvas.TextOut(GraphDraw.LeftMargin + (Bitmap.Width-GraphDraw.LeftMargin-tw) div 2, 5, RemoveUnderScores(GraphDraw.TopLabel));
+             Bitmap.Canvas.TextOut(LeftMargin + (Bitmap.Width-LeftMargin-tw) div 2, 5, RemoveUnderScores(TopLabel));
              Bitmap.Canvas.Font.Size := ts;
           end;
-          if (GraphDraw.TopLeftLabel <> '') then begin
-             Bitmap.Canvas.TextOut(0, 5, RemoveUnderScores(GraphDraw.TopLeftLabel));
+          if (TopLeftLabel <> '') then begin
+             Bitmap.Canvas.TextOut(0, 5, RemoveUnderScores(TopLeftLabel));
           end;
-          if (GraphDraw.LLcornerText <> '') then begin
-             TStr := RemoveUnderScores(GraphDraw.LLCornerText);
+          if (TopRightInsideLabel <> '') then begin
+             yi := TopMargin + 5;
+             xi := XWindowSize - RightMargin - Bitmap.Canvas.TextWidth(TopRightInsideLabel)-5;
+             Bitmap.Canvas.TextOut(xi, yi, RemoveUnderScores(TopRightInsideLabel));
+          end;
+          if (LLcornerText <> '') then begin
+             TStr := RemoveUnderScores(LLCornerText);
              ts := Bitmap.Canvas.Font.Size;
              tw := Bitmap.Canvas.TextWidth(TStr);
-             if GraphDraw.LLcornerTextAtEdge then begin
+             if LLcornerTextAtEdge then begin
                 StartAt := 0;
                 MaxWidth := Bitmap.Width;
              end
              else begin
-                 StartAt := GraphDraw.LeftMargin;
+                 StartAt := LeftMargin;
                  MaxWidth := Bitmap.Width - StartAt;
              end;
              while (tw + 10 > MaxWidth) do begin
@@ -5726,41 +5490,45 @@ end;
              Bitmap.Canvas.TextOut(StartAt, Bitmap.Height - Bitmap.Canvas.TextHeight(TStr),TStr);
              Bitmap.Canvas.Font.Size := ts;
           end;
-          if (GraphDraw.LRcornerText <> '') then begin
+          if (LRcornerText <> '') then begin
              Bitmap.Canvas.Font.Color := clBlack;
-             Bitmap.Canvas.TextOut(Bitmap.Width - 1 - Bitmap.Canvas.TextWidth(GraphDraw.LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(GraphDraw.LRcornerText), RemoveUnderScores(GraphDraw.LRcornerText));
+             Bitmap.Canvas.TextOut(Bitmap.Width - 1 - Bitmap.Canvas.TextWidth(LRcornerText), Bitmap.Height - Bitmap.Canvas.TextHeight(LRcornerText), RemoveUnderScores(LRcornerText));
           end;
 
-          if GraphDraw.LLlegend or (GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap,lpNEMap,lpNWMap]) then begin
+          if LLlegend or (InsideMarginLegend in [lpSWMap,lpSEMap,lpNEMap,lpNWMap]) then begin
              bmp := MakeLegend;
              if (BMP <> nil) then begin
-                 if GraphDraw.LLlegend then begin
+                 if LLlegend then begin
                     xi := 2;
                     yi := Bitmap.Height {- 2} - Bmp.Height;
                  end
                  else begin
-                       if GraphDraw.InsideMarginLegend in [lpSWMap,lpSEMap] then yi := GraphDraw.YWindowSize - GraphDraw.BottomMargin - bmp.Height
-                       else yi := GraphDraw.TopMargin {+ 15};
-                       if GraphDraw.InsideMarginLegend in [lpNWMap,lpSWMap] then xi := GraphDraw.LeftMargin {+ 15}
-                       else xi := GraphDraw.XWindowSize - GraphDraw.RightMargin - bmp.Width {- 15};
+                       if InsideMarginLegend in [lpSWMap,lpSEMap] then yi := YWindowSize - BottomMargin - bmp.Height
+                       else yi := TopMargin {+ 15};
+                       if InsideMarginLegend in [lpNWMap,lpSWMap] then xi := LeftMargin {+ 15}
+                       else xi := XWindowSize - RightMargin - bmp.Width {- 15};
                  end;
                  {$If Defined(RecordLegends)} WritelineToDebugFile('Draw legend inside graph, at x=' + IntToStr(xi) + '  y=' + IntToStr(yi)); bmp.SaveToFile(MDtempDir + 'legend.bmp'); {$EndIf}
                  Bitmap.Canvas.Draw(xi,yi,bmp);
                  bmp.Free;
              end;
           end
-          else if FileExists(GraphDraw.BottomLegendFName) and (not GraphDraw.MultiPanelGraph) then begin
-             BMP := LoadBitmapFromFile(GraphDraw.BottomLegendFName);
+          else if FileExists(BottomLegendFName) and (not MultiPanelGraph) then begin
+             BMP := LoadBitmapFromFile(BottomLegendFName);
              yi := Bitmap.Height - BMP.Height - 4;
              xi := (Bitmap.Width - BMP.Width) div 2;
              Bitmap.Canvas.Draw(Xi,yi,Bmp);
              BMP.Free;
           end;
-         {$If Defined(RecordGrafSize) or Defined(RecordScaling) or Defined(RecordGrafAxes)} WriteLineToDebugFile('RedrawDiagram11Click done, bitmap=' + BitmapSize(Bitmap) + '  ' + GraphDraw.AxisRange); {$EndIf}
+         {$If Defined(RecordGrafSize) or Defined(RecordScaling) or Defined(RecordGrafAxes)} WriteLineToDebugFile('RedrawDiagram11Click done, bitmap=' + BitmapSize(Bitmap) + '  ' + AxisRange); {$EndIf}
       end;
 
-
 procedure TThisBaseGraph.RedrawDiagram11Click(Sender: TObject);
+begin
+   RedrawDiagram;
+end;
+
+procedure TThisBaseGraph.RedrawDiagram(ResetMargins : boolean = false);
 var
    BitMap : tMyBitmap;
    LastXi,LastYi,LastYi2,
@@ -5789,9 +5557,8 @@ begin
        end
        else begin
           CreateBitmap(Bitmap,ClientWidth,ClientHeight - Panel1.Height - ToolBar1.Height);
-          if GraphDraw.ResetMargins then begin
+          if ResetMargins then begin
              GraphDraw.SetMargins(Bitmap);
-             GraphDraw.ResetMargins := false;
           end;
 
           {$If Defined(RecordGrafSize) or Defined(RecordScaling)} WriteLineToDebugFile('RedrawDiagram11Click =' + BitmapSize(Bitmap) + '  '  + FormClientSize(Self) + '  ' + ImageSize(Image1)); {$EndIf}
@@ -5802,7 +5569,7 @@ begin
           Bitmap.Canvas.Pen.Mode := pmCopy;
           if GraphDraw.GraphDrawn then begin
              if (GraphDraw.GraphType = gtTadpole) then begin
-                SetMyBitmapColors(Bitmap,1);
+                GraphDraw.SetMyBitmapColors(Bitmap,1);
                 DrawGraph(BitMap);
                 PlotXYZFile(BitMap,GraphDraw.XYZFilesPlotted.Strings[0]);
              end
@@ -5938,7 +5705,7 @@ begin
                           {$IfDef TrackColors} WriteLineToDebugFile('GraphDraw.GrayAllDataFilesFirst done gray');  WriteLineToDebugFile(''); {$EndIf}
                           {$IfDef TrackColorsSaveBitmaps} SaveBitmap(Bitmap,MDTempDir + 'grayscale_done.bmp'); {$EndIf}
                           for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
-                             if (i > MaxGraphSeries) or DataPlotsVisible[i] then begin
+                             if (i > MaxGraphSeries) or GraphDraw.DataPlotsVisible[i] then begin
                                 PlotSingleDataFile(Bitmap,i,GraphDraw.DataFilesPlotted.Strings[i]);
                                 {$IfDef TrackColorSaveBitmaps} SaveBitmap(Bitmap,MDTempDir + 'layer_' + IntToStr(i) + '.bmp'); {$EndIf}
                              end;
@@ -5996,7 +5763,7 @@ begin
           end;
 
           ReDrawNow := true;
-          GraphLabels(Bitmap);
+          GraphDraw.GraphLabels(Bitmap);
           Bitmap.SaveToFile(SaveGraphName);
           Image1.Picture.Graphic := Bitmap;
        end;
@@ -6034,20 +5801,20 @@ end;
 procedure TThisBaseGraph.Labelpointsatopprofile1Click(Sender: TObject);
 begin
    GraphDraw.LabelPointsAtop := not GraphDraw.LabelPointsAtop;
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 
 procedure TThisBaseGraph.Landsat1Click(Sender: TObject);
 begin
    GraphDraw.SatBands := 'TM8';
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.Landsat2Click(Sender: TObject);
 begin
    GraphDraw.SatBands := 'TM';
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 
@@ -6189,7 +5956,7 @@ begin {procedure TThisBaseGraph.FitGraph}
       GraphComputedEquation := 'y=' + RealToString(a,-12,-4) + '*x^' + RealToString(b,-12,-4);
    end;
 
-   GraphComputedEquation := GraphComputedEquation + ' r=' + RealToString(r,-12,-4) + ' r²=' + RealToString(sqr(r),-12,-4);
+   GraphComputedEquation := GraphComputedEquation + ' r²=' + RealToString(sqr(r),-12,-4);
 
    if Results <> Nil then begin
       if ReverseAxes then begin
@@ -6231,7 +5998,7 @@ var
           FitGraph(WhatFit,nt,fName, a,b,r,n);
           DrawBestFitLineOnGraph(a,b);
           GraphComputedR := r;
-          Results.Add(GetLegendLabelFromFileName(true,fName));
+          Results.Add(GraphDraw.GetLegendLabelFromFileName(true,fName));
              if GraphDraw.GraphAxes in [XTimeYFullGrid,XTimeYPartGrid] then begin
                 Results.Add('Slope: ' + RealToString(b,-18,-8)  + ' /day');
                 Results.Add('Slope: ' + RealToString(b*365.25,-18,-8)  + ' /yr');
@@ -6247,9 +6014,9 @@ var
              FittedSlope := b;
           Results.Add('');
           if GraphDraw.DataFilesPlotted.Count + GraphDraw.XYZFilesPlotted.Count = 1 then begin
-             if MDDef.AddFUVtoR2 then TStr := '  FUV=' + RealToString(1- sqr(r),-8,5) else TStr := '';
+             if MDDef.AddFUVtoR2 then TStr := ' FUV=' + RealToString(1- sqr(r),-8,5) else TStr := '';
              GraphDraw.UpperLeftText := 'r²=' + RealToString(sqr(r),-8,5) + TStr;
-             RedrawDiagram11Click(Nil);
+             RedrawDiagram;
           end;
        end;
 
@@ -6289,7 +6056,7 @@ begin
    ScrollGraph := true;
    ClientWidth := Round(BlowUp * ClientWidth);
    ClientHeight := Round(BlowUp * ClientHeight);
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
    SizingWindow := false;
 end;
 
@@ -6324,7 +6091,7 @@ begin
 end;
 
 
-function TThisBaseGraph.MakeLegend : tMyBitmap;
+function TGraphDraw.MakeLegend : tMyBitmap;
 
    function MakeTheLegend(Flist : tstringList; UseFileNames : boolean = true) : tMyBitmap;
    const
@@ -6339,23 +6106,23 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
          MaxLen := 0;
          NumF := 0;
          CreateBitmap(Result,1500,ItemHigh*fList.Count+4);
-         ClearBitmap(Result,GraphDraw.GraphBackgroundColor);
+         ClearBitmap(Result,GraphBackgroundColor);
          for i := pred(fList.Count) downto 0 do begin
             Tstr := GetLegendLabelFromFileName(UseFileNames,ExtractFileNameNoExt(flist.Strings[i]));
-            if (TStr <> '') and (DataPlotsVisible[i] or GraphDraw.ShowLine[i] or GraphDraw.ShowPoints[i]) then begin
+            if (TStr <> '') and (DataPlotsVisible[i] or ShowLine[i] or ShowPoints[i]) then begin
                  inc(NumF);
                  SetMyBitmapColors(Result,i);
                  {$If Defined(GraphSymbology) or Defined(RecordLegends)} WritelineToDebugFile(IntToStr(i) + '   ' + fList.Strings[i]+ '  = '+ ColorString(Result.Canvas.Font.Color)); {$EndIf}
                  Result.Canvas.Font.Style := [fsBold];
-                 Result.Canvas.Font.Name := FontDialog1.Font.Name;
-                 Result.Canvas.Font.Size := FontDialog1.Font.Size;
-                 if GraphDraw.ShowLine[i] then begin
+                 Result.Canvas.Font.Name := GraphFont.Name;
+                 Result.Canvas.Font.Size := GraphFont.Size;
+                 if ShowLine[i] then begin
                     Result.Canvas.MoveTo(5,pred(NumF) * ItemHigh + 12);
                     Result.Canvas.LineTo(45,pred(NumF) * ItemHigh + 12);
                  end;
 
-                 if GraphDraw.ShowPoints[i] then begin
-                    Petmar.ScreenSymbol(Result.Canvas,30,pred(NumF) * ItemHigh + 12,GraphDraw.Symbol[i]);
+                 if ShowPoints[i] then begin
+                    Petmar.ScreenSymbol(Result.Canvas,30,pred(NumF) * ItemHigh + 12,Symbol[i]);
                  end;
                  Len := Result.Canvas.TextWidth(TStr);
                  if (Len > MaxLen) then MaxLen := Len;
@@ -6374,23 +6141,23 @@ function TThisBaseGraph.MakeLegend : tMyBitmap;
    end;
 
 
-begin {function TThisBaseGraph.MakeLegend}
+begin {function TGraphDraw.MakeLegend}
    Result := nil;
-   if FileExists(GraphDraw.BottomLegendFName) then begin
-      Result := LoadBitmapFromFile(GraphDraw.BottomLegendFName);
+   if FileExists(BottomLegendFName) then begin
+      Result := LoadBitmapFromFile(BottomLegendFName);
    end
-   else if (GraphDraw.XYZFilesPlotted <> Nil) and (GraphDraw.XYZFilesPlotted.Count > 0) then begin
+   else if (XYZFilesPlotted <> Nil) and (XYZFilesPlotted.Count > 0) then begin
       Result := DefaultHorizontalLegendOnBitmap(MinZ,MaxZ,ZUnits,'',MDDef.GraphZColorScheme,MDDef.GraphPalette);
    end
-   else if (GraphDraw.LegendList <> Nil) then Result := MakeTheLegend(GraphDraw.LegendList,false)
-   else if (GraphDraw.DataFilesPlotted <> Nil) then Result := MakeTheLegend(GraphDraw.DataFilesPlotted);
+   else if (LegendList <> Nil) then Result := MakeTheLegend(LegendList,false)
+   else if (DataFilesPlotted <> Nil) then Result := MakeTheLegend(DataFilesPlotted);
    {$If Defined(GraphSymbology) or Defined(RecordLegends)} WritelineToDebugFile('Legend created, ' + BitmapSizeString(Result)); {$EndIf}
-end {function TThisBaseGraph.MakeLegend};
+end {function TGraphDraw.MakeLegend};
 
 
 procedure TThisBaseGraph.Legend1Click(Sender: TObject);
 begin
-   AssignBitmapToClipBoard(MakeLegend);
+   AssignBitmapToClipBoard(GraphDraw.MakeLegend);
    if (Sender <> CopyToClipboard3) then begin
       {$IfDef RecordClipboard} WritelineToDebugFile('TThisBaseGraph.Legend1Click'); {$EndIf}
       Pastefromclipboard1Click(Sender);
@@ -6469,7 +6236,7 @@ var
   x : integer;
 begin
     CopyImageToBitmap(Image1,Result);
-    bmp := MakeLegend;
+    bmp := GraphDraw.MakeLegend;
     if bmp <> Nil then begin
        x := Result.Width + 10;
        Result.Width := x + bmp.Width;
@@ -6491,7 +6258,7 @@ begin
    {$Else}
       ReadDefault('Minimum range to show (m)',MDDef.LidarPanClose);
       ReadDefault('Maximum range to show (m)',MDDef.LidarPanFar);
-      RedrawDiagram11Click(Nil);
+      RedrawDiagram;
    {$EndIf}
 end;
 
@@ -6503,7 +6270,7 @@ end;
 procedure TThisBaseGraph.Abortcurrentoperation1Click(Sender: TObject);
 begin
    MouseIsDown := false;
-   RedrawDiagram11Click(Nil);
+   RedrawDiagram;
 end;
 
 procedure TThisBaseGraph.Bestfitlinecolor1Click(Sender: TObject);

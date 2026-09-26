@@ -153,6 +153,8 @@ procedure BitmapRemoveGrays(var Bitmap : tMyBitmap; Limit : byte);
 procedure BitmapRemoveNonGrays(var Bitmap : tMyBitmap; Tolerance : byte);
 procedure BitmapWhiteToNearWhite(var Bitmap : tMyBitmap);
 
+procedure DrawCollarAroundBitmap(var Bitmap : tMyBitmap);
+
 function IsBitmapMonochrome(var Bitmap : tMyBitmap) : boolean;
 
 procedure FindImagePartOfBitmap(var Bitmap : tMyBitmap; var Left,Right,Top,Bottom : integer);
@@ -304,8 +306,7 @@ procedure LoadWinGraphColors;
 procedure PickWinGraphColors;
 procedure CreatePaletteSampleTable;
 
-procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
-
+//procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
 
 
 implementation
@@ -382,33 +383,6 @@ type
 {$IfDef VCL}
    {$I petimage_vcl.inc}
 {$EndIf}
-
-
-procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
-var
-   LegBMP : tMyBitmap;
-   x,y : integer;
-begin
-    if (Legend <> '') then begin
-        LegBMP := LoadBitmapFromFile(Legend);
-        if (LegBMP.Height < 75) then begin
-           BigBmp.Height := BigBmp.Height + LegBMP.Height + 5;
-           y := BigBmp.Height - LegBMP.Height - 4;
-           x := (BigBmp.Width - LegBMP.Width) div 2;
-        end;
-        BigBmp.Canvas.Draw(X,y,LegBmp);
-        LegBMP.Free;
-    end;
-    if (LRText <> '') then begin
-       LRText := RemoveUnderscores(LRText);
-       BigBmp.Canvas.Font.Style := [fsBold];
-       BigBmp.Canvas.Font.Size := 24;
-       while (BigBmp.Canvas.TextWidth(LRText) > BigBmp.Width - 10) do BigBmp.Canvas.Font.Size := BigBmp.Canvas.Font.Size - 1;
-       x := BigBmp.Width - 10 - BigBmp.Canvas.TextWidth(LRText);
-       y := BigBmp.Height - 5 - BigBmp.Canvas.TextHeight(LRText);
-       BigBmp.Canvas.TextOut(x,y,LRText);
-    end;
-end;
 
 
 
@@ -791,7 +765,7 @@ begin
          fName := (WMDEM.MDIChildren[i] as TThisBaseGraph).Caption + '_';
          if LegendOnRight then begin
             if LegendEachGraph or (ThisGraph = NumGraphs) then begin
-                bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).MakeLegend;
+                bmp := (WMDEM.MDIChildren[i] as TThisBaseGraph).GraphDraw.MakeLegend;
                 if bmp <> Nil then begin
                    x := Bitmap.Width + 10;
                    Bitmap.Width := x + bmp.Width;
@@ -1193,7 +1167,19 @@ begin
 end;
 
 
-
+procedure DrawCollarAroundBitmap(var Bitmap : tMyBitmap);
+var
+   CollarBitmap : tMyBitmap;
+begin
+   GetImagePartOfBitmap(Bitmap);
+   CreateBitmap(CollarBitmap,Bitmap.Width + 4, Bitmap.Height + 4);
+   CollarBitmap.Canvas.Draw(2,2,Bitmap);
+   Bitmap.Width := CollarBitmap.Width;
+   Bitmap.Height := CollarBitmap.Height;
+   Bitmap.Canvas.Draw(2,2,CollarBitmap);
+   CreateBitmap(CollarBitmap,Bitmap.Width + 4,Bitmap.Height + 4);
+   CollarBitmap.Destroy;
+end;
 
 
 procedure BitmapRemoveNonGrays(var Bitmap : tMyBitmap; Tolerance : byte);

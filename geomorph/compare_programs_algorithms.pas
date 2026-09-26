@@ -105,7 +105,7 @@ const
       var
          Diff,DiffCat : integer;
       begin
-         Diff := MakeDifferenceMap(DEM1,DEM2,DEM1,0,OpenMap,false,false,Name);
+         Diff := MakeDifferenceMap(DEM1,DEM2,DEM1,0,OpenMap,Name,false,false);
          DiffCat := DifferenceCategoryMap(Diff,Name,OpenMap);
          MDDef.SSObyPole := true;
          SSOforVATgrid(DiffCat,0,DEM);

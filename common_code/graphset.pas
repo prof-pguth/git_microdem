@@ -170,7 +170,7 @@ var
    VisCols : Array100Boolean;
 begin
     with OwningGraph do begin
-         GraphDraw.MarginsGood := true;
+         //GraphDraw.MarginsGood := true;
          Edit13.Text := OwningGraph.GraphDraw.VertLabel2;
          ComboBox1.ItemIndex := ord(GraphDraw.GraphAxes);
          ComboBox2.Visible := GraphDraw.VertAxisFunctionType in [ShortCumNormalAxis,CumulativeNormalAxis,LongCumulativeNormalAxis,LongerCumulativeNormalAxis];
@@ -212,8 +212,8 @@ begin
             Label4.Visible := true;
             Edit5.Visible := true;
             Edit6.Visible := true;
-            Edit5.Text := RealToString(MinZ,-12,-6);
-            Edit6.Text := RealToString(MaxZ,-12,-6);
+            Edit5.Text := RealToString(GraphDraw.MinZ,-12,-6);
+            Edit6.Text := RealToString(GraphDraw.MaxZ,-12,-6);
          end;
          if ComboBox2.Visible then begin
             case GraphDraw.VertAxisFunctionType of
@@ -288,7 +288,7 @@ end;
 
 procedure TGraphSettingsForm.CheckBox12Click(Sender: TObject);
 begin
-   OwningGraph.GraphDraw.ShowHorizAxis1 := CheckBox12.Checked;
+   OwningGraph.GraphDraw.ShowVertAxis0 := CheckBox12.Checked;
    RedrawSpeedButton12Click(Sender);
 end;
 

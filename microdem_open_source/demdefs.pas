@@ -687,6 +687,17 @@ type
       XGridLow,YGridLow,XGridHigh,YGridHigh : Int32;
    end;
 
+   tMEMPowerDefaults = packed record
+      NumProfiles,
+      NumPoles         : SmallInt;
+      ValidDataRequired,
+      FirstFreq,
+      LastFreq         : float32;
+      LogLogPlot       : boolean;
+   end;
+
+
+
 {$IfDef ExDTED}
 {$Else}
    tUHL = array[1..80] of AnsiChar;

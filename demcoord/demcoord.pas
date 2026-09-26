@@ -177,7 +177,8 @@ uses
    System.Diagnostics,System.Threading,System.SyncObjs,System.UITypes,
    Classes,SysUtils,Math,StrUtils,System.IOUtils,
 
-   Petmar_types,PETMAR,BaseMap,
+   Petmar_types,PETMAR,PetMath,
+   BaseMap,
    DEMdefs;
 
 type
@@ -885,7 +886,7 @@ uses
       //fPointCloud,
    {$EndIf}
 
-   PETMath,
+
    DEM_Manager,
    map_overlays,
    DEMDef_routines,

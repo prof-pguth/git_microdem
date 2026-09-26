@@ -541,13 +541,13 @@ begin
    MDDef.HighlightDiffMap := 2;
    if (RadioGroup1.ItemIndex = 0) then begin
       for i := 1 to NumPtDEMs do begin
-          MakeDifferenceMap(PointDEMs[i],PointDEMs[0],PointDEMs[0],0,true,false,false);
+          MakeDifferenceMap(PointDEMs[i],PointDEMs[0],PointDEMs[0],0,true);
       end;
    end
    else begin
       for i := 1 to NumPtDEMs do begin
-          MakeDifferenceMap(PointGrids[i],PointGrids[0],PointGrids[0],0,true,false,false);
-          if RadioGroup1.ItemIndex = 3 then MakeDifferenceMap(PointGrids2[i],PointGrids2[0],PointGrids2[0],0,true,false,false);;
+          MakeDifferenceMap(PointGrids[i],PointGrids[0],PointGrids[0],0);
+          if RadioGroup1.ItemIndex = 3 then MakeDifferenceMap(PointGrids2[i],PointGrids2[0],PointGrids2[0],0);
       end;
    end;
 end;

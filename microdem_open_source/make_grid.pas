@@ -155,8 +155,8 @@ function MakeGridFullNeighborhoods(DEM : integer; OpenMap : boolean; Neighborhoo
 
 function GridDiffernces(PercentDifference : boolean = false) : integer;
 procedure GridDifferncesBothInterpolationBasis(PercentDifference : boolean = false);
-function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = '';
-       PercentDifference : boolean = false) : integer;
+function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap : boolean = true; TheAreaName : ShortString = '';
+       ShowHistogram : boolean = false; ShowScatterPlot : boolean= false; PercentDifference : boolean = false) : integer;
 
 procedure PickAspectDifferenceMap(DEM,Window : integer);
 
@@ -515,7 +515,7 @@ begin
 
       {$IfDef RecordDEMCompare} WriteLineToDebugFile(aName); {$EndIf}
       SetGridDiffernceProperties(DEM1,DEM2,GridForResult);
-      Result := MakeDifferenceMap(DEM1,DEM2,DEM1,0,MDDef.ShowGridDiffMap,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,aName,PercentDifference);
+      Result := MakeDifferenceMap(DEM1,DEM2,DEM1,0,MDDef.ShowGridDiffMap,aName,MDDef.ShowGridDiffHistogram,MDDef.ShowScatterPlot,PercentDifference);
       if MDDef.ShowDiffDistStats then GridDfferenceStats(Result);
       {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridDifference out'); {$EndIf}
    end
@@ -539,16 +539,16 @@ begin
      if DEMGlb[DEM1].GridCornerModel = DEMGlb[DEM2].GridCornerModel then begin
         MessageToContinue('Same Grid Corner model for both DEMs, ' + DEMGlb[DEM1].GridCornerModel);
         aName := TStr + 'Difference_' + DEMGlb[DEM2].AreaName + '-' + DEMGlb[DEM1].AreaName;
-        Diff1 := MakeDifferenceMap(DEM1,DEM2,DEM1,0,true,false,false,aName,PercentDifference);
+        Diff1 := MakeDifferenceMap(DEM1,DEM2,DEM1,0,true,aName,false,false,PercentDifference);
         MDDef.DivergenceRange := MaxFloat(-DEMglb[Diff1].FindPercentileElev(5),DEMglb[Diff1].FindPercentileElev(95));
         DEMGlb[Diff1].SelectionMap.DoBaseMapRedraw;
      end
      else begin
         aName := TStr + 'Difference_' + DEMGlb[DEM2].AreaName + '_minus_' + DEMGlb[DEM1].AreaName + '_projection';
-        Diff1 := MakeDifferenceMap(DEM1,DEM2,DEM1,0,true,false,false,aName,PercentDifference);
+        Diff1 := MakeDifferenceMap(DEM1,DEM2,DEM1,0,true,aName,false,false,PercentDifference);
 
         aName := TStr + 'Difference_' + DEMGlb[DEM2].AreaName+ '_projection_minus_' + DEMGlb[DEM1].AreaName;
-        Diff2 := MakeDifferenceMap(DEM1,DEM2,DEM2,0,true,false,false,aName,PercentDifference);
+        Diff2 := MakeDifferenceMap(DEM1,DEM2,DEM2,0,true,aName,false,false,PercentDifference);
 
         MDDef.DivergenceRange := MaxFloat(-DEMglb[Diff1].FindPercentileElev(5),DEMglb[Diff1].FindPercentileElev(95),-DEMglb[Diff2].FindPercentileElev(5),DEMglb[Diff2].FindPercentileElev(95));
         DEMGlb[Diff1].SelectionMap.DoBaseMapRedraw;
@@ -560,7 +560,8 @@ begin
 end;
 
 
-function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap,ShowHistogram,ShowScatterPlot : boolean; TheAreaName : ShortString = ''; PercentDifference : boolean = false) : integer;
+function MakeDifferenceMap(Map1,Map2,GridResoltionToUse,GridToMergeShading : integer; ShowMap : boolean = true; TheAreaName : ShortString = '';
+       ShowHistogram : boolean = false; ShowScatterPlot : boolean= false; PercentDifference : boolean = false) : integer;
 var
    Col,Row,mt,OtherGrid,ThisGrid,xoff,yoff  : integer;
    z1,z2 : float32;
@@ -939,7 +940,7 @@ begin
           exit;
        end;
     end;
-    Result := MakeDifferenceMap(PreNBR,PostNBR,PreNBR,0,true,false,false,AreaName);
+    Result := MakeDifferenceMap(PreNBR,PostNBR,PreNBR,0,true,AreaName);
     DEMGlb[Result].DEMHeader.ElevUnits := euDNBR;
     DEMGlb[Result].SelectionMap.MapDraw.MapType := mtElevFromTable;
     ElevationFixedPalette := 'dNBR';

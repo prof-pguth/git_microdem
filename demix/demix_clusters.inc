@@ -288,7 +288,7 @@ var
          Graph[i].GraphDraw.SetShowAllLines(true, 2);
          Graph[i].GraphDraw.SetShowAllPoints(false);
          Graph[i].GraphDraw.FileColors256[1] := ConvertTColorToPlatformColor(Color);
-         Graph[i].RedrawDiagram11Click(Nil);
+         Graph[i].RedrawDiagram;
       end;
 
    procedure GraphByDEMs;
@@ -414,7 +414,7 @@ function DEMIX_SSIM_FUV_cluster_sensitivity_graph(DBonTable : integer) : tThisBa
                   GISdb[DBonTable].MyData.Next;
                end;
                for j := 1 to NCrits do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + Crits[j]);
-               Result.RedrawDiagram11Click(Nil);
+               Result.RedrawDiagram;
             end;
          end;
 *)
@@ -488,7 +488,7 @@ end;
                   GISdb[DBonTable].MyData.Next;
                end;
                for j := 1 to CritList.Count do Result.GraphDraw.GraphLeftLabels.Add(IntToStr(j) + ',' + CritList.Strings[pred(j)]);
-               Result.RedrawDiagram11Click(Nil);
+               Result.RedrawDiagram;
             end;
          end;
 

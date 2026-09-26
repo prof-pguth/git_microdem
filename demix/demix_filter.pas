@@ -231,9 +231,10 @@ uses
    DEMmapf, nevadia_main, PetDBUtils,
    DEMIX_Graphs;
 
+(*
 var
    LoadRefDEMMaps,LoadTestDEMMaps : boolean;
-
+*)
 
 procedure ExpandCumulativeRangeForThisGrid(DEM : integer; var Min,Max : float32);
 begin
@@ -364,7 +365,7 @@ var
             Param := 'elev';
          end;
          {$IfDef RecordDEMIX} WriteLineToDebugFile('test DEM=' + DEMGlb[DEM1].AreaName + ' ' + DEMGlb[DEM1].zRange + ' ref DEM=' + DEMGlb[DEM2].AreaName + ' ' + DEMGlb[DEM2].zRange); {$EndIf}
-         Result := MakeDifferenceMap(DEM1,DEM2,RefDEMs[i],BackgroundGrid,true,false,false,TestDEMseriesName + '_' + Param + '_Delta_to_Reference_' + theDEMtype);  //DEMGlb[DEM2].AreaName);
+         Result := MakeDifferenceMap(DEM1,DEM2,RefDEMs[i],BackgroundGrid,true,TestDEMseriesName + '_' + Param + '_Delta_to_Reference_' + theDEMtype);  //DEMGlb[DEM2].AreaName);
          CloseSingleDEM(SlopeRef);
          CloseSingleDEM(SlopeTest);
          CloseSingleDEM(RuffRef);

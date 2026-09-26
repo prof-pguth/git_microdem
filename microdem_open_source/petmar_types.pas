@@ -329,24 +329,6 @@ type
    tRPnt = array[1..MaxContourPoints] of float64;
    tPointerPnt = array[1..5] of ^tRPnt;
    tMomentStop = (msAll,msAfterMean,msAfterStdDev,msBeforeMedian,msIncludeLE90);
-
-   tMEMPowerDefaults = packed record
-      NumProfiles,
-      NumPoles         : SmallInt;
-      ValidDataRequired,
-      FirstFreq,
-      LastFreq         : float32;
-      LogLogPlot       : boolean;
-   end;
-   tMomentVar = record
-      NPts,Missing : int64;
-      MinZ,MaxZ,mean,avg_dev,std_dev,svar,skew,curt,median,rmse,mae,LE90,
-      Q1,Q3,
-      PC1,PC2,PC5,PC95,PC98,PC99 : float64;
-   end;
-
-
-
 var
    ThumbnailDir,
    ProgramRootDir,

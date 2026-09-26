@@ -504,7 +504,7 @@ object GraphSettingsForm: TGraphSettingsForm
         Top = 110
         Width = 120
         Height = 17
-        Caption = 'Show vert axis 1'
+        Caption = 'Show vert axis 0'
         TabOrder = 7
         OnClick = CheckBox13Click
       end
