@@ -1168,18 +1168,12 @@ end;
       iYear,iMonth,iDay : word;
       Sym : tFullSymbolDeclaration;
       Time : shortstring;
+      fName : PathStr;
+      Table : tMyData;
    begin
       Sym.Color := claDarkGrey;
       Sym.Size := 5;
       Sym.DrawingSymbol := FilledCircle;
-      (*
-      if Today then begin
-         imonth := 0;
-      end
-      else begin
-         iMonth := -99;
-      end;
-      *)
 
       if Today then DecodeDate(Now,iYear,iMonth,iDay)
       else begin
@@ -1189,21 +1183,21 @@ end;
          iYear := UsersFavoriteYear;
       end;
 
-      db := MoonPositionDB(View3D.ViewerLat,View3D.ViewerLong, iyear,imonth,iday);
-
-      GISdb[db].MyData.First;
-      while not GISdb[db].MyData.eof do begin
-         Alt := GISdb[db].MyData.GetFieldByNameAsFloat('ALTITUDE');
+      fName := MoonPositionDB(View3D.ViewerLat,View3D.ViewerLong, iyear,imonth,iday);
+      Table := tMyData.Create(fName);
+      while not Table.eof do begin
+         Alt := Table.GetFieldByNameAsFloat('ALTITUDE');
          if (Alt > 0) then begin
-            Az := GISdb[db].MyData.GetFieldByNameAsFloat('AZIMUTH');
-            Time := GISdb[db].MyData.GetFieldByNameAsString('TIME');
+            Az := Table.GetFieldByNameAsFloat('AZIMUTH');
+            Time := Table.GetFieldByNameAsString('TIME');
             SymbolAtPitchAzimith(alt,az,Sym,true);
             View3D.AzimuthToScreen(Az,x);
             View3D.PitchToScreen(Alt,y);
             Image1.Canvas.TextOut(x,y,Time);
          end;
-         GISdb[db].MyData.Next;
+         Table.Next;
       end;
+      Table.Destroy;
    end;
 
 

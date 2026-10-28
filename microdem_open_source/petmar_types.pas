@@ -377,7 +377,7 @@ function LinkImageString(f2 : ShortString) : shortstring;
    var
       BuildString : shortString;
 
-   function RGB(r,g,b : byte) : integer;
+   //function RGB(r,g,b : byte) : integer;
 {$EndIf}
 
 
@@ -395,9 +395,6 @@ function BeforeSpecifiedCharacter(var InputString : String; ch : Char; TrimIt : 
 
 function AfterSpecifiedCharacter(Input : AnsiString; ch : Ansichar) : AnsiString;
 
-function ConvertPlatformColorToTColor(aColor : tPlatformColor) : tColor;
-function ConvertTColorToPlatformColor(aColor : tColor) : tPlatformColor;
-procedure ConvertPlatformColorToRGB(aColor : tPlatformColor; var r,g,b : byte);
 
 
 {$IfDef MSWindows}
@@ -420,11 +417,10 @@ function ASymbol(Sym : tDrawingSymbol;  Color : TPlatformColor;  Size : byte) : 
 var
    TheDebugLog : tstringlist;
    DebugFileName  : PathStr;
-   procedure OpenDebugFile;  //(ProgramName : PathStr);
+   procedure OpenDebugFile;
    procedure ClearDebugLog;
    procedure WriteLineToDebugFile(TheLine : AnsiString);
    procedure HighLightInDebugFile(TheLine : AnsiString);
-
    procedure WriteStringsToDebugFile(HeaderLog : tStrings; LineNumbers : boolean = false);
    procedure WriteStringListToDebugFile(HeaderLog : tStringList; LineNumbers : boolean = false);
 {$EndIf}
@@ -472,7 +468,7 @@ uses
       Petmar_db,
    {$EndIf}
 
-  {$ifDef MICRODEM}
+  {$IfDef MICRODEM}
     BaseMap, DEMDefs,  DEMDef_routines,
   {$EndIf}
    Petmar;
@@ -917,15 +913,15 @@ end;
 
    procedure ClearDebugLog;
    begin
-      if MDdef.MDRecordDebugLog then begin
+      //if MDdef.MDRecordDebugLog then begin
          TheDebugLog.Clear;
          WriteLineToDebugFile('Debug log cleared');
-      end;
+      //end;
    end;
 
    function OKwriteDebugLog : boolean;  inline;
    begin
-      Result := MDdef.MDRecordDebugLog and (DebugFileName <> '') and (not ThreadsWorking) and (TheDebugLog <> Nil);
+      Result := {MDdef.MDRecordDebugLog and} (DebugFileName <> '') and (not ThreadsWorking) and (TheDebugLog <> Nil);
    end;
 
    procedure HighLightInDebugFile(TheLine : AnsiString);
@@ -962,7 +958,7 @@ end;
                TheDebugLog.Add(TStr + HeaderLog.Strings[i]);
             end;
             TheDebugLog.SaveToFile(DebugFilename);
-            ApplicationProcessMessages;
+            //ApplicationProcessMessages;
          finally
          end;
       end;
@@ -981,7 +977,7 @@ end;
             TheDebugLog.Add(TStr + HeaderLog.Strings[i]);
          end;
          TheDebugLog.SaveToFile(DebugFilename);
-         ApplicationProcessMessages;
+         //ApplicationProcessMessages;
       finally
       end;
    end;
@@ -989,106 +985,12 @@ end;
 {$EndIf}
 
 
-function ConvertPlatformColorToTColor(aColor : tPlatformColor) : tColor;
-begin
-   {$IfDef VCL}
-      Result := RGB(aColor.rgbtRed,aColor.rgbtGreen,aColor.rgbtBlue);
-   {$EndIf}
-
-   {$IfDef FMX}
-      Result := (tAlphaColorRec(aColor).R) + 256 * (tAlphaColorRec(aColor).G) + 256 * 256 * (tAlphaColorRec(aColor).B) ;
-   {$EndIf}
-end;
-
-procedure ConvertPlatformColorToRGB(aColor : tPlatformColor; var r,g,b : byte);
-begin
-   {$IfDef VCL}
-      r := aColor.rgbtRed;
-      g := aColor.rgbtGreen;
-      b := aColor.rgbtBlue;
-   {$EndIf}
-
-   {$IfDef FMX}
-      r := (tAlphaColorRec(aColor).R);
-      g := (tAlphaColorRec(aColor).G);
-      b := (tAlphaColorRec(aColor).B);
-   {$EndIf}
-end;
-
-
-function ConvertTColorToPlatformColor(aColor : tColor) : tPlatformColor;
-var
-   r,g,b : byte;
-begin
-   GetRGBfromTColor(aColor,r,g,b);
-   Result := RGBtrip(r,g,b);
-end;
-
-
-{$IfDef FMX}
-
-   function RGB(r,g,b : byte) : integer;
-   begin
-      Result := r  + g * 256 + b * 256*256;
-   end;
-
-   procedure FMXinit;
-   begin
-      clNearWhite := RGB(254,254,254);
-      clRed := claRed;
-      clWhite := claWhite;
-      clBlack := claBlack;
-      clLime := claLime;
-      clBlue := claBlue;
-      clNavy := claNavy;
-      clDkGray := claDarkGrey;
-      clSilver := claSilver;
-      clFuchsia := claFuchsia;
-      clPurple := claPurple;
-      clAqua := claAqua;
-      clTeal := claTeal;
-      clGreen := claGreen;
-      clYellow := claYellow;
-      clOlive := claOlive;
-      clMaroon := claMaroon;
-      claNearWhite := ConvertTColorToPlatFormColor(clNearWhite);
-   end;
-{$EndIf}
-
-
-{$IfDef VCL}
-   procedure VCLinit;
-   begin
-      clNearWhite := RGB(254,254,254);
-
-      claCyan := ConvertTColorToPlatFormColor(RGB(0,255,255));
-      claRed := ConvertTColorToPlatFormColor(clRed);
-      claWhite := ConvertTColorToPlatFormColor(clWhite);
-      claNearWhite := ConvertTColorToPlatFormColor(clNearWhite);
-      claBlack := ConvertTColorToPlatFormColor(clBlack);
-      claLime := ConvertTColorToPlatFormColor(clLime);
-      claBlue := ConvertTColorToPlatFormColor(clBlue);
-      claNavy := ConvertTColorToPlatFormColor(clNavy);
-      claDarkGrey := ConvertTColorToPlatFormColor(clGray);
-      claSilver := ConvertTColorToPlatFormColor(clSilver);
-      claFuchsia := ConvertTColorToPlatFormColor(clFuchsia);
-      claPurple := ConvertTColorToPlatFormColor(clPurple);
-      claAqua := ConvertTColorToPlatFormColor(clAqua);
-      claTeal := ConvertTColorToPlatFormColor(clTeal);
-      claGreen := ConvertTColorToPlatFormColor(clGreen);
-      claYellow := ConvertTColorToPlatFormColor(clYellow);
-      claOlive := ConvertTColorToPlatFormColor(clOlive);
-      claMaroon := ConvertTColorToPlatFormColor(clMaroon);
-   end;
-{$EndIf}
 
 
 initialization
    AFormat := System.SysUtils.TFormatSettings.Create;
    AFormat.LongTimeFormat := 'hh:mm:ss.zzz';
    {$IfDef MessageStartupProblems} MessageToContinue('Startup petmar_types'); {$EndIf}
-   {$IfDef FMX} FMXinit; {$EndIf}
-   {$IfDef VCL} VCLinit; {$EndIf}
 finalization
    {$If Defined(RecordClosing)} WriteLineToDebugFile('Closing petmar_types in dbfn=' + DebugFileName); {$EndIf}
 end.

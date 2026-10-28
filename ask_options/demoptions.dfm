@@ -3,26 +3,21 @@ inherited OptionsForm: TOptionsForm
   Top = 230
   BorderStyle = bsSizeable
   Caption = ''
-  ClientHeight = 563
-  ClientWidth = 793
+  ClientHeight = 594
+  ClientWidth = 830
   Position = poDefaultPosOnly
-  StyleElements = [seFont, seClient, seBorder]
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
-  ExplicitWidth = 809
-  ExplicitHeight = 602
   TextHeight = 15
   inherited Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 793
-    Height = 505
+    Width = 830
+    Height = 536
     Align = alClient
-    ExplicitLeft = 0
-    ExplicitTop = 1
-    ExplicitWidth = 535
-    ExplicitHeight = 529
+    ExplicitWidth = 242
+    ExplicitHeight = 41
   end
   inherited OKBtn: TButton
     Left = 8
@@ -30,25 +25,19 @@ inherited OptionsForm: TOptionsForm
     Width = 49
     Visible = False
     OnClick = OKBtnClick
-    ExplicitLeft = 8
-    ExplicitTop = 432
-    ExplicitWidth = 49
   end
   inherited CancelBtn: TButton
     Left = 63
     Top = 432
     Width = 61
     Visible = False
-    ExplicitLeft = 63
-    ExplicitTop = 432
-    ExplicitWidth = 61
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 793
-    Height = 505
-    ActivePage = TabSheet14
+    Width = 830
+    Height = 536
+    ActivePage = TabSheet9
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -129,8 +118,8 @@ inherited OptionsForm: TOptionsForm
       object StringGrid1: TStringGrid
         Left = 0
         Top = 0
-        Width = 785
-        Height = 455
+        Width = 822
+        Height = 486
         Align = alClient
         ColCount = 2
         ScrollBars = ssVertical
@@ -850,32 +839,13 @@ inherited OptionsForm: TOptionsForm
         Caption = 'Ternary percentages must sum to 100%'
         TabOrder = 5
       end
-      object BitBtn21: TBitBtn
-        Left = 16
-        Top = 272
-        Width = 177
-        Height = 25
-        Caption = 'Get geology data'
-        Enabled = False
-        TabOrder = 6
-        OnClick = BitBtn21Click
-      end
-      object BitBtn33: TBitBtn
-        Left = 16
-        Top = 303
-        Width = 177
-        Height = 25
-        Caption = 'Get geography data'
-        Enabled = False
-        TabOrder = 7
-      end
       object CheckBox53: TCheckBox
         Left = 280
         Top = 96
         Width = 265
         Height = 17
         Caption = 'Geography databases to RAM'
-        TabOrder = 8
+        TabOrder = 6
       end
       object CheckBox57: TCheckBox
         Left = 280
@@ -883,7 +853,7 @@ inherited OptionsForm: TOptionsForm
         Width = 216
         Height = 17
         Caption = 'Geology databases to RAM'
-        TabOrder = 9
+        TabOrder = 7
       end
       object CheckBox46: TCheckBox
         Left = 280
@@ -891,17 +861,7 @@ inherited OptionsForm: TOptionsForm
         Width = 265
         Height = 17
         Caption = 'Show old climate stations DB'
-        TabOrder = 10
-      end
-      object BitBtn22: TBitBtn
-        Left = 16
-        Top = 334
-        Width = 177
-        Height = 25
-        Caption = 'Get ETOPO1/Blue Marble'
-        Enabled = False
-        TabOrder = 11
-        OnClick = BitBtn22Click
+        TabOrder = 8
       end
       object CheckBox93: TCheckBox
         Left = 280
@@ -909,16 +869,7 @@ inherited OptionsForm: TOptionsForm
         Width = 216
         Height = 17
         Caption = 'Custom sidescan palette'
-        TabOrder = 12
-      end
-      object BitBtn42: TBitBtn
-        Left = 16
-        Top = 400
-        Width = 177
-        Height = 25
-        Caption = 'Get Natural Earth Vectors'
-        Enabled = False
-        TabOrder = 13
+        TabOrder = 9
       end
     end
     object TabSheet8: TTabSheet
@@ -1348,29 +1299,13 @@ inherited OptionsForm: TOptionsForm
           Height = 23
           TabOrder = 4
         end
-        object CheckBox19: TCheckBox
-          Left = 16
-          Top = 151
-          Width = 161
-          Height = 17
-          Caption = 'New drapes'
-          TabOrder = 5
-        end
-        object CheckBox50: TCheckBox
-          Left = 16
-          Top = 176
-          Width = 193
-          Height = 17
-          Caption = 'New OpenGL viewer'
-          TabOrder = 6
-        end
         object CheckBox145: TCheckBox
           Left = 16
           Top = 200
           Width = 185
           Height = 17
           Caption = 'OpenGL clean overlays'
-          TabOrder = 7
+          TabOrder = 5
         end
         object CheckBox167: TCheckBox
           Left = 16
@@ -1378,7 +1313,7 @@ inherited OptionsForm: TOptionsForm
           Width = 113
           Height = 17
           Caption = 'New 3D viewer'
-          TabOrder = 8
+          TabOrder = 6
         end
       end
       object RadioGroup34: TRadioGroup
@@ -1739,62 +1674,6 @@ inherited OptionsForm: TOptionsForm
           Height = 17
           Caption = 'Do CHMs'
           TabOrder = 1
-        end
-        object CheckBox154: TCheckBox
-          Left = 16
-          Top = 70
-          Width = 169
-          Height = 17
-          Caption = 'Do air or dirt maps'
-          TabOrder = 2
-        end
-        object CheckBox158: TCheckBox
-          Left = 16
-          Top = 93
-          Width = 185
-          Height = 17
-          Caption = 'Do elevation differences'
-          TabOrder = 3
-        end
-        object CheckBox162: TCheckBox
-          Left = 16
-          Top = 116
-          Width = 169
-          Height = 17
-          Caption = 'Do slope differences'
-          TabOrder = 4
-        end
-        object CheckBox169: TCheckBox
-          Left = 16
-          Top = 139
-          Width = 193
-          Height = 17
-          Caption = 'Do roughness differences'
-          TabOrder = 5
-        end
-        object CheckBox180: TCheckBox
-          Left = 16
-          Top = 162
-          Width = 193
-          Height = 17
-          Caption = 'Do half second DEMs'
-          TabOrder = 6
-        end
-        object CheckBox25: TCheckBox
-          Left = 16
-          Top = 185
-          Width = 209
-          Height = 17
-          Caption = 'Elevation parmeter graphs'
-          TabOrder = 7
-        end
-        object CheckBox181: TCheckBox
-          Left = 16
-          Top = 208
-          Width = 161
-          Height = 17
-          Caption = 'Composite images'
-          TabOrder = 8
         end
       end
       object CheckBox161: TCheckBox
@@ -3147,8 +3026,8 @@ inherited OptionsForm: TOptionsForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 505
-    Width = 793
+    Top = 536
+    Width = 830
     Height = 58
     Align = alBottom
     TabOrder = 3

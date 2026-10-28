@@ -330,7 +330,6 @@ type
     CheckBox13: TCheckBox;
     //CheckBox80: TCheckBox;
     CheckBox28: TCheckBox;
-    BitBtn21: TBitBtn;
     BitBtn28: TBitBtn;
     BitBtn30: TBitBtn;
     Label14: TLabel;
@@ -349,7 +348,6 @@ type
     CheckBox102: TCheckBox;
     CheckBox103: TCheckBox;
     CheckBox46: TCheckBox;
-    BitBtn22: TBitBtn;
     Label18: TLabel;
     Edit4: TEdit;
     CheckBox54: TCheckBox;
@@ -379,15 +377,7 @@ type
     GroupBox18: TGroupBox;
     //Edit12: TEdit;
     DTfilllabel: TLabel;
-    //CheckBox5: TCheckBox;
-    CheckBox154: TCheckBox;
-    CheckBox158: TCheckBox;
-    CheckBox162: TCheckBox;
-    CheckBox169: TCheckBox;
-    CheckBox180: TCheckBox;
-    CheckBox25: TCheckBox;
     CheckBox44: TCheckBox;
-    CheckBox181: TCheckBox;
     CheckBox89: TCheckBox;
     Label41: TLabel;
     Edit36: TEdit;
@@ -457,12 +447,10 @@ type
     procedure BitBtn5Click(Sender: TObject);
     procedure BitBtn37Click(Sender: TObject);
     procedure BitBtn38Click(Sender: TObject);
-    procedure BitBtn21Click(Sender: TObject);
     procedure BitBtn28Click(Sender: TObject);
     procedure BitBtn30Click(Sender: TObject);
     //procedure BitBtn33Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
-    procedure BitBtn22Click(Sender: TObject);
     procedure BitBtn29Click(Sender: TObject);
     procedure BitBtn40Click(Sender: TObject);
     procedure BitBtn41Click(Sender: TObject);
@@ -1043,7 +1031,7 @@ begin
       CheckBox23.Checked := MDDef.RouteGeotiffExportGDAL;
    {$EndIf}
 
-   CheckBox25.Checked := MDDef.DEMIX_DoElevParamGraphs;
+   //CheckBox25.Checked := MDDef.DEMIX_DoElevParamGraphs;
    CheckBox29.Checked := MDdef.AutoAssignNameField;
    CheckBox30.Checked := MDdef.MGRSandLatLongWhileRoam;
    CheckBox31.Checked := MDdef.MDRecordDebugLog;
@@ -1175,7 +1163,7 @@ begin
    CheckBox159.Checked := MDDef.MapLimitDB;
    CheckBox161.Checked := MDDef.ProcessLoopsForward;
    CheckBox167.Checked := MDDef.New3Dviewer;
-   CheckBox181.Checked := MDDef.DEMIXCompositeImage;
+   //CheckBox181.Checked := MDDef.DEMIXCompositeImage;
 
    CheckBox300.Checked := MDDef.SeaLevelToMissing;
 
@@ -1236,11 +1224,11 @@ begin
    {$EndIf}
 
    //CheckBox5.Checked := MDDef.DEMIX_DoCHM;
-   CheckBox154.Checked := MDDef.DEMIX_DoAirOrDirt;
-   CheckBox158.Checked := MDDef.DEMIX_DoElevDiff;
-   CheckBox162.Checked := MDDef.DEMIX_DoSlopeDiff;
-   CheckBox169.Checked := MDDef.DEMIX_DoRuffDiff;
-   CheckBox180.Checked := MDDef.DEMIX_DoHalfSecDEMs;
+   //CheckBox154.Checked := MDDef.DEMIX_DoAirOrDirt;
+   //CheckBox158.Checked := MDDef.DEMIX_DoElevDiff;
+   //CheckBox162.Checked := MDDef.DEMIX_DoSlopeDiff;
+   //CheckBox169.Checked := MDDef.DEMIX_DoRuffDiff;
+   //CheckBox180.Checked := MDDef.DEMIX_DoHalfSecDEMs;
 
    if MdDEF.DefaultUTMZone in [1..60] then Label1.Caption := IntToStr(MdDEF.DefaultUTMZone) + '  (' + UTMZoneExtent(MdDEF.DefaultUTMZone) + ')';
    Label6.Caption := 'Windows reports processors=' + IntToStr(GetNumberProcessors);
@@ -1410,7 +1398,7 @@ begin
    MDdef.DeleteAuxTiffFiles := CheckBox21.Checked;
 
    MDdef.DefaultEditDBsInGrid := CheckBox22.Checked;
-   MDDef.DEMIX_DoElevParamGraphs := CheckBox25.Checked;
+   //MDDef.DEMIX_DoElevParamGraphs := CheckBox25.Checked;
 
    //MDdef.WrapETOPO := CheckBox26.Checked;
    MDDef.ShowPLSS := CheckBox28.Checked;
@@ -1567,12 +1555,12 @@ begin
    MDDef.ProcessLoopsForward := CheckBox161.Checked;
 
    //MDDef.DEMIX_DoCHM := CheckBox5.Checked;
-   MDDef.DEMIX_DoAirOrDirt := CheckBox154.Checked;
-   MDDef.DEMIX_DoElevDiff  := CheckBox158.Checked;
-   MDDef.DEMIX_DoSlopeDiff := CheckBox162.Checked;
-   MDDef.DEMIX_DoRuffDiff := CheckBox169.Checked;
-   MDDef.DEMIX_DoHalfSecDEMs := CheckBox180.Checked;
-   MDDef.DEMIXCompositeImage := CheckBox181.Checked;
+   //MDDef.DEMIX_DoAirOrDirt := CheckBox154.Checked;
+   //MDDef.DEMIX_DoElevDiff  := CheckBox158.Checked;
+   //MDDef.DEMIX_DoSlopeDiff := CheckBox162.Checked;
+   //MDDef.DEMIX_DoRuffDiff := CheckBox169.Checked;
+   //MDDef.DEMIX_DoHalfSecDEMs := CheckBox180.Checked;
+   //MDDef.DEMIXCompositeImage := CheckBox181.Checked;
 
    MDdef.StatSampleIncr := UpDown1.Position;
 
@@ -1898,36 +1886,6 @@ begin
      ChangeSlopeMapOptions(Nil);
   {$EndIf}
 end;
-
-procedure TOptionsForm.BitBtn21Click(Sender: TObject);
-begin
-  {$If Defined(ExGeology) or Defined(ExLabDownloads)}
-  {$Else}
-     GeologyGetData(true);
-  {$EndIf}
-end;
-
-procedure TOptionsForm.BitBtn22Click(Sender: TObject);
-begin
-   {$IfDef AllowUSNAdataDownloads}
-      GetETOPO1(true);
-      GetBlueMarble(true);
-   {$EndIf}
-end;
-
-(*
-procedure TOptionsForm.CheckBox106Click(Sender: TObject);
-begin
-  inherited;
-
-end;
-*)
-(*
-procedure TOptionsForm.CheckBox88Click(Sender: TObject);
-begin
-   LabelDirectories;
-end;
-*)
 
 procedure TOptionsForm.BitBtn25Click(Sender: TObject);
 begin

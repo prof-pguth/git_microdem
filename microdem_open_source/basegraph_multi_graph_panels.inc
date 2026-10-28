@@ -7,10 +7,6 @@
 {     include file for base_graph        }
 {________________________________________}
 
-const
-    mgsNone = 0;
-    mgsByRow = 1;
-    mgsAll = 2;
 
    procedure ZeroGraphArray(var gr : t2Dgrapharray);
    var
@@ -25,6 +21,7 @@ procedure EndGraphGrid(var gr : t2Dgrapharray; var Labels1,Labels2 : tStringList
 const
    StartX = 75;
    StartY = 75;
+   WhiteBetweenRowColumn = 15;
 var
    BigBitmap,Bitmap : tMyBitmap;
    xsize,ysize,f1,f2,XPanel,YPanel,Offset,x,y,MaxLeftMargin,CutonLeft,CutonBase,FullX,FullY : integer;
@@ -68,7 +65,6 @@ begin
              if (gr[f1,f2] <> Nil) then begin
                 gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
                 gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
-                gr[f1,f2].RedrawDiagram;
              end;
           end;
        end;
@@ -89,10 +85,20 @@ begin
              if (gr[f1,f2] <> Nil) then begin
                 gr[f1,f2].GraphDraw.MaxVertAxis := GraphMaxY;
                 gr[f1,f2].GraphDraw.MinVertAxis := GraphMinY;
-                gr[f1,f2].RedrawDiagram;
              end;
           end;
        end;
+   end;
+
+   for f1 := 0 to pred(Labels1.Count) do begin
+      for f2 := 0 to pred(Labels2.Count) do begin
+         if (gr[f1,f2] <> Nil) then begin
+            gr[f1,f2].GraphDraw.XWindowSize := xsize;
+            gr[f1,f2].GraphDraw.YWindowSize := ysize;
+            gr[f1,f2].GraphDraw.LeftMargin := MaxLeftMargin;
+            //gr[f1,f2].RedrawDiagram;
+         end;
+      end;
    end;
 
    for f1 := 0 to pred(Labels1.Count) do begin
@@ -118,10 +124,11 @@ begin
       Offset := Y + (Fully - CutOnBase) - (Fully - CutOnBase - BigBitmap.Canvas.TextWidth(Labels1.Strings[f1])) div 2;
       TextOutVertical(BigBitmap.Canvas,2, Offset,Labels1.Strings[f1]);
       x := StartX;
+
       for f2 := 0 to pred(Labels2.Count) do begin
          if (f1 = 0) then begin //put column labels on
-            if (f2 = 0) then Offset := (X + CutOnLeft + BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2
-            else Offset := X + BigBitmap.Canvas.TextWidth(Labels2.Strings[f2]) div 2;
+            if (f2 = 0) then Offset := X + gr[f1,f2].GraphDraw.LeftMargin + (FullX-CutOnLeft - BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2
+            else Offset := X + (FullX-CutOnLeft-BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2;
             BigBitmap.Canvas.TextOut(Offset,2,Labels2.Strings[f2]);
          end;
          if (gr[f1,f2] = Nil) then begin
@@ -132,10 +139,10 @@ begin
                WriteLineToDebugFile('');
                WriteLineToDebugFile('f1=' + IntToStr(f1) + ' f2=' + IntToStr(f2) + '  Incoming: ' + BitmapSizeString(OneGraphBMP));
             {$EndIf}
-            if (MDDef.DEMIX_MultiGraphCommonScaling in [mgsByRow,mgsAll]) and (f2 > 0) then begin
+            if (MDDef.DEMIX_MultiGraphCommonScaling in [mgsByRow,mgsAll,mgsNone]) and (f2 > 0) then begin
                ReplaceBitmapWithSubset(OneGraphBMP,CutOnLeft,pred(OneGraphBMP.Width),0,pred(OneGraphBMP.Height));
             end;
-            if {(MDDef.DEMIX_MultiGraphCommonScaling in [mgsAll]) and} (f1 < pred(Labels1.Count)) then begin
+            if (f1 < pred(Labels1.Count)) {and (MDDef.DEMIX_MultiGraphCommonScaling <> mgsNone)} then begin
                OneGraphBMP.Height := OneGraphBMP.Height - CutOnBase;
             end;
             {$IfDef RecordMergePanels}
@@ -146,33 +153,13 @@ begin
             BigBitMap.Canvas.Draw(x,y,OneGraphBMP);
             OneGraphBMP.destroy;
          end;
-         if (MDDef.DEMIX_MultiGraphCommonScaling in [mgsByRow,mgsAll]) and (f2 > 0) then inc(x,FullX-CutOnLeft + 15)
-         else inc(x,FullX + 15);
+         if (MDDef.DEMIX_MultiGraphCommonScaling in [mgsByRow,mgsAll]) and (f2 > 0) then inc(x,FullX-CutOnLeft + WhiteBetweenRowColumn)
+         else inc(x,FullX + WhiteBetweenRowColumn);
       end;
-      {if (f1 < pred(Labels1.Count)) then} inc(y,FullY-CutOnBase + 15)
-      //else inc(y,FullY + 15);
+      if (f1 < pred(Labels1.Count)) then inc(y,FullY-CutOnBase + WhiteBetweenRowColumn)
+      else inc(y,FullY + WhiteBetweenRowColumn)
    end;
 
-(*
-   for f1 := 0 to pred(Labels1.Count) do begin
-      Offset := (YPanel - BigBitmap.Canvas.TextWidth(Labels1.Strings[f1])) div 2;
-      TextOutVertical(BigBitmap.Canvas,2,StartY + succ(F1) * YPanel - Offset,Labels1.Strings[f1]);
-   end;
-
-   for f2 := 0 to pred(Labels2.Count) do begin
-      Offset := (XPanel - BigBitmap.Canvas.TextWidth(Labels2.Strings[f2])) div 2;
-      BigBitmap.Canvas.TextOut(StartX + f2 * XPanel + Offset,2,Labels2.Strings[f2]);
-   end;
-
-   for f1 := 0 to pred(Labels1.Count) do begin
-      for f2 := 0 to pred(Labels2.Count) do begin
-         if (gr[f1,f2] <> Nil) and CopyImageToBitmap(gr[f1,f2].Image1,Bitmap) then begin
-            BigBitMap.Canvas.Draw(StartX + f2 * XPanel, StartY + F1 * YPanel,Bitmap);
-            Bitmap.Free;
-         end;
-      end;
-   end;
-*)
    if (LegendBMP <> Nil) then begin
       x := (BigBitMap.Width - LegendBMP.Width) div 2;
       y := BigBitmap.Height + 20;

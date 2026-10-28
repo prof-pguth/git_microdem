@@ -173,7 +173,7 @@ object ProjectionDemForm: TProjectionDemForm
       Top = 65
       Width = 174
       Height = 17
-      Caption = 'Cylindrical equal area'
+      Caption = 'Cylindrical equal area (Lambert)'
       TabOrder = 4
       OnClick = CheckBox1Click
     end

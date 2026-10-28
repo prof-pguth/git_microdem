@@ -14,6 +14,7 @@
    //{$Define RecordMaskDEMShapeFile}
    {$IfDef Debug}
        {$Define RecordDEMIX}
+       {$Define RecordDSM_DTM}
        //{$Define RecordDetailedDEMIX}
        //{$Define RecordCloseDB}
        //{$Define RecordEditSymbols}
@@ -624,7 +625,7 @@ type
     Openallclassfiles1: TMenuItem;
     Wavelengthmeanallclasses1: TMenuItem;
     WavelengthStdDevallclasses1: TMenuItem;
-    ClassBanddiscrimination1: TMenuItem;
+    //ClassBanddiscrimination1: TMenuItem;
     Gridcumulativedistributions1: TMenuItem;
     Creategriddistancetoclasscentroid1: TMenuItem;
     N28: TMenuItem;
@@ -1113,6 +1114,17 @@ type
     Both2: TMenuItem;
     GraphwheretilebestrepresentsDSMorDTM1: TMenuItem;
     MapcomparingtestDEMtoDSMandDTM1: TMenuItem;
+    Linearfitfortileslopeversusresolution1: TMenuItem;
+    PredictedDTMslopes1: TMenuItem;
+    GraphcomparingDTMslopeandpredictedbyresolution1: TMenuItem;
+    Addtodatabasetable1: TMenuItem;
+    N55: TMenuItem;
+    CreateDBwithpowerlawbyaverageslopebins1: TMenuItem;
+    ComputepredictedDTMslopesv21: TMenuItem;
+    CreatenewDB1: TMenuItem;
+    N65: TMenuItem;
+    N66: TMenuItem;
+    hinnedslopeandslopedifferencemaps1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1539,7 +1551,7 @@ type
     procedure Openallclassfiles1Click(Sender: TObject);
     procedure Wavelengthmeanallclasses1Click(Sender: TObject);
     procedure WavelengthStdDevallclasses1Click(Sender: TObject);
-    procedure ClassBanddiscrimination1Click(Sender: TObject);
+    //procedure ClassBanddiscrimination1Click(Sender: TObject);
     procedure Gridcumulativedistributions1Click(Sender: TObject);
     procedure Creategriddistancetoclasscentroid1Click(Sender: TObject);
     procedure Pickgridandaddnearestvalue1Click(Sender: TObject);
@@ -1934,6 +1946,13 @@ type
     procedure GraphwheretilebestrepresentsDSMorDTM1Click(Sender: TObject);
     procedure CompareCOPtopointandareareferenceDEMs1Click(Sender: TObject);
     procedure MapcomparingtestDEMtoDSMandDTM1Click(Sender: TObject);
+    procedure Linearfitfortileslopeversusresolution1Click(Sender: TObject);
+    procedure PredictedDTMslopes1Click(Sender: TObject);
+    procedure GraphcomparingDTMslopeandpredictedbyresolution1Click(
+      Sender: TObject);
+    procedure CreateDBwithpowerlawbyaverageslopebins1Click(Sender: TObject);
+    procedure ComputepredictedDTMslopesv21Click(Sender: TObject);
+    procedure hinnedslopeandslopedifferencemaps1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2246,8 +2265,8 @@ var
             Points^[i].x := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].dbOpts.XField);
             Points^[i].y := GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].dbOpts.YField);
             Points^[i].z := Mult * GISdb[DBonTable].MyData.GetFieldByNameAsFloat(GISdb[DBonTable].dbOpts.ZField);
-            if (NumericColorField <> '') then Points^[i].Int := round(255* ((GISdb[DBonTable].MyData.GetFieldByNameAsFloat(NumericColorField)-MinColor)/(MaxColor-MinColor)))
-            else Points^[i].Int := round(255* ((Points^[i].z-Min)/zRange));
+            if (NumericColorField <> '') then Points^[i].Int1 := round(255* ((GISdb[DBonTable].MyData.GetFieldByNameAsFloat(NumericColorField)-MinColor)/(MaxColor-MinColor)))
+            else Points^[i].Int1 := round(255* ((Points^[i].z-Min)/zRange));
             GISdb[DBonTable].MyData.Next;
         end;
         GeometryFName := Petmar.NextFileNumber(MDTempDir, GISdb[DBonTable].DBName + '_','.xyzib');
@@ -2283,44 +2302,6 @@ begin {procedure ThreeDGraph}
    {$IfDef RecordOpenGL} WriteLineToDebugFile('Tdbtablef.N3Dgraph1Click out'); {$EndIf}
 end {procedure ThreeDGraph};
 
-
-procedure TraceRoute3D(DBonTable : integer);
-{$IfDef ExFMX3D}
-begin
-{$Else}
-var
-   OutForm : TView3DForm;
-   Lat,Long,xutm,yutm : float64;
-   z : float32;
-begin
-   if GISdb[DBonTable].LayerIsOn then GISdb[DBonTable].ToggleLayer(false);
-   GISdb[DBonTable].theMapOwner.Image1.Canvas.Pixels[0,0] := clRed;
-   OutForm := MapTo3DView(GISdb[DBonTable].TheMapOwner.MapDraw,10000);
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   GISdb[DBonTable].MyData.First;
-   while not GISdb[DBonTable].MyData.eof do begin
-      if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
-         if DEMGlb[GISdb[DBonTable].theMapOwner.MapDraw.DEMonMap].GetElevFromLatLongDegree(Lat,Long,z) then begin
-            GISdb[DBonTable].theMapOwner.MapDraw.LatLongDegreeToUTM(Lat,Long,xutm,yutm);
-            OutForm.AddPointWithSpecificColor(xutm,yutm,z+1,0,0);
-            OutForm.AddPointWithSpecificColor(xutm+1,yutm+1,z+1,0,0);
-            OutForm.AddPointWithSpecificColor(xutm+1,yutm-1,z+1,0,0);
-            OutForm.AddPointWithSpecificColor(xutm-1,yutm+1,z+1,0,0);
-            OutForm.AddPointWithSpecificColor(xutm-1,yutm-1,z+1,0,0);
-            Delay(250);
-            OutForm.Activate;
-            if (GISdb[DBonTable].MyData.GetFieldByNameAsString('HEADING') <> '') then begin
-               OutForm.Layout3D1.RotationAngle.Y := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('HEADING') + 90;
-            end;
-            OutForm.Show;
-         end;
-      end;
-      GISdb[DBonTable].MyData.Next;
-   end;
-   OutForm.Show;
-   GISdb[DBonTable].ShowStatus;
-{$EndIf}
-end;
 
 
 procedure Tdbtablef.SingleFieldArithmetic(DBonTable,Operation : integer; CheckField : shortstring);
@@ -2757,7 +2738,7 @@ begin
     Self.BringToFront;
     Wavelengthmeanallclasses1.Enabled := true;
     WavelengthStdDevallclasses1.Enabled := true;
-    ClassBanddiscrimination1.Enabled := true;
+    //ClassBanddiscrimination1.Enabled := true;
 {$EndIf}
 end;
 
@@ -3073,6 +3054,21 @@ begin
    end;
 end;
 
+
+procedure Tdbtablef.hinnedslopeandslopedifferencemaps1Click(Sender: TObject);
+var
+   DTM,DSM,LCgrid,DSMthin,DTMthin,DTMslope,DSMslope,Thin,DiffMap : integer;
+begin
+   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
+   Thin := GISdb[dbOnTable].MyData.GetFieldByNameAsInteger('GRID_THIN');
+   if ValidDEM(DTM) and ValidDEM(DSM) then begin
+      DTMthin := DEMglb[DTM].ThinThisDEM(true,'',Thin,true);
+      DSMthin := DEMglb[DSM].ThinThisDEM(true,'',Thin,true);
+      DTMslope := Make_Grid.CreateEvansSlopeMapPercent(true,DTMthin);
+      DSMslope := Make_grid.CreateEvansSlopeMapPercent(true,DSMthin);
+      DiffMap := MakeDifferenceMap(DSMSlope,DTMSlope,DSMslope,DSM)
+   end;
+end;
 
 procedure Tdbtablef.hisDBall3groupings1Click(Sender: TObject);
 begin
@@ -3458,26 +3454,6 @@ begin
            end;
         end;
 
-(*
-        procedure GetLineColorAndWidth(var LineColor : tPlatFormColor; var LineSize : integer);
-        procedure SetLineColorAndWidth(LineColor : tPlatFormColor; LineSize : integer);
-
-        procedure DefinePointSymbol(var Symbol : tDrawingSymbol; var SymbolSize : byte; var SymbolColor : tPlatformColor); overload;
-        procedure DefinePointSymbol(var Symbol : tFullSymbolDeclaration); overload;
-        procedure PostPointSymbol(Symbol : tDrawingSymbol; SymbolSize : byte; SymbolColor : tPlatformColor); overload;
-        procedure PostPointSymbol(Symbol : tFullSymbolDeclaration); overload;
-
-       Table.Insert;
-       Table.SetFieldByNameAsString('NAME',MultSeries.Strings[i]);
-       Table.SetFieldByNameAsString('SHOW_LINE',YorN(GraphDraw.ShowLine[i]));
-       Table.SetFieldByNameAsString('SHOW_POINT',YorN(GraphDraw.ShowPoints[i]));
-       Table.SetLineColorAndWidth(GraphDraw.FileColors256[i],GraphDraw.LineSize256[i]);
-       Table.PostPointSymbol(GraphDraw.Symbol[i]);
-       Table.Post;
-
-
-*)
-
         if PictureInDBField(aField) then begin
            Colorpoint1Click(Nil);
         end;
@@ -3581,12 +3557,7 @@ begin
       Normalizedbasinprofile1.Visible := (ShapeFileType in [3,13,23]);
       Exportlinetopointdatabase1.Visible := (ShapeFileType in [1,3,13,23]);
       CompareshapefileandDEMprofiles1.Visible := ShapeFile3D(ShapeFileType) and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
-      LidarWaveform1.Visible := GISdb[DBonTable].MyData.FieldExists('RH100');
-      {$IfDef ExSidescan}
-         //Loadsidescanimage1.Visible := false;
-      {$Else}
-         //Loadsidescanimage1.Visible := SideScanIndex;
-      {$EndIf}
+      LidarWaveform1.Visible := GISdb[DBonTable].MyData.FieldExists('RH99');
 
       RangeCircles1.Visible:= ItsaPointDB;
       EditIcon1.Visible := IconPresent and CheckBox1.Checked;
@@ -3598,10 +3569,15 @@ begin
       Markholes1.Visible := (AreaShapeFile(ShapeFileType));
       MaskDEMgrid1.Visible := CheckBox1.Checked and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
       AddXYbox1.Visible := GISdb[DBonTable].MyData.FieldExists('X1') and GISdb[DBonTable].MyData.FieldExists('Y2') and GISdb[DBonTable].MyData.FieldExists('X3') and GISdb[DBonTable].MyData.FieldExists('Y4');
-      LidarWaveform1.Visible := GISdb[DBonTable].MyData.FieldExists('RH99');
 
       DTMDSMcomparison1.Visible := DEMIX_HRDEM_DB(dbOnTable) or DEMIX_GDEM_DB(dbOnTable);
+      OpenHRDEMDSMDTMLandcover1.Visible := DEMIX_HRDEM_DB(dbOnTable);
+      HRDEMslopeandslopedifferencemaps1.Visible := DEMIX_HRDEM_DB(dbOnTable);
+      hinnedslopeandslopedifferencemaps1.Visible := DEMIX_HRDEM_DB(dbOnTable);
       DEMIX2.Visible := GISdb[DBonTable].IsThisDEMIXdatabase;
+      LoadtestandreferenceDEMs2.Visible := DEMIX_GDEM_DB(dbOnTable);
+      MapcomparingtestDEMtoDSMandDTM1.Visible := DEMIX_GDEM_DB(dbOnTable);
+
       GridCellPopupMenu6.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
    end;
 end;
@@ -3806,7 +3782,8 @@ var
 begin
    DSMDTMpowerlawforalltiles2.Enabled := CheckDEMIXdbType(dbOnTable,dbType,[ddtHRDEMcompare,ddtGDEMsloperes],'');
    CreateDBwithlinearfitforalltilesandDEMs1.Enabled := DSMDTMpowerlawforalltiles2.Enabled;
-   Powerlawgraphs1.Enabled := CheckDEMIXdbType(dbOnTable,dbType,[ddtHRDEMpowerlaw,ddtGDEMpowerlaw,ddtGDEMlinearfit],'');
+   PredictedDTMslopes1.Enabled := CheckDEMIXdbType(dbOnTable,dbType,[ddtHRDEMcompare],'');
+   Powerlawgraphs1.Enabled := CheckDEMIXdbType(dbOnTable,dbType,[ddtHRDEMpowerlaw,ddtHRDEMlinearfit,ddtGDEMpowerlaw,ddtGDEMlinearfit],'');
    DSMDTMpopup.PopUp(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
@@ -3941,6 +3918,7 @@ procedure Tdbtablef.BitBtn4Click(Sender: TObject);
 begin
    {$IfDef RecordDataBase} WriteLineToDebugFile('Tdbtablef.BitBtn4Click--DB filter selected'); {$EndIf}
    if ValidDB(DBonTable) then GISdb[DBonTable].DisplayTable(GISdb[DBonTable].MyData.Filter);
+   if (GISdb[DBonTable].TheMapOwner <> Nil) then GISdb[DBonTable].TheMapOwner.MapDraw.ClearGISLayer(DBonTable);
    ShowStatus;
 end;
 
@@ -7005,7 +6983,6 @@ begin
 end;
 
 
-
 procedure Tdbtablef.HRDEMslopeandslopedifferencemaps1Click(Sender: TObject);
 var
    DTM,DSM,LCgrid,DTMslope,DSMslope : integer;
@@ -7017,7 +6994,6 @@ begin
       MakeDifferenceMap(DSMSlope,DTMSlope,DSMslope,DSM)
    end;
 end;
-
 
 
 procedure Tdbtablef.GetReadyForGeologyGeometry;
@@ -7566,6 +7542,11 @@ begin
    theFields.Destroy;
 end;
 
+procedure Tdbtablef.Linearfitfortileslopeversusresolution1Click(Sender: TObject);
+begin
+   ComputePowerFitForAllTiles(dbOnTable,false);
+end;
+
 procedure Tdbtablef.Linearinterpolateacrossgaps1Click(Sender: TObject);
 var
    YField,ZField : ShortString;
@@ -7983,6 +7964,41 @@ begin
 end;
 
 
+procedure Tdbtablef.ComputepredictedDTMslopesv21Click(Sender: TObject);
+var
+   PredictedSlope,SpaceMeters,SlopeDTM,SlopeOneSec,b,a : float32;
+   Table : tMyData;
+   aFilter : shortstring;
+   fName : PathStr;
+begin
+   SetColorForProcessing;
+   fName := 'F:\demix_db_4.3\HRDEM_power_law_by_slope_bins_DEMIX_DB_4.3_10_02_26.dbf';
+   Table := tMyData.Create(fName);
+
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'PRED_DTM_2',6,2);
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'PRED_DIFF2',6,2);
+
+   while not GISdb[DBonTable].MyData.eof do begin
+      SpaceMeters := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('GRID_M');
+      SlopeOneSec := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE');
+      SlopeDTM := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DTM_SLOPE');
+      aFilter := 'MIN_SLOPE<' + RealToString(SlopeOneSec,-8,-1) + ' AND MAX_SLOPE>' + RealToString(SlopeOneSec,-8,-1);
+      Table.ApplyFilter(aFilter);
+      b := Table.GetFieldByNameAsFloat('DTM_B');
+      a := 2.874 + 1.156 * SlopeOneSec;
+      PredictedSlope := a * Math.Power(SpaceMeters,b);
+
+      GISdb[DBonTable].MyData.Edit;
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('PRED_DTM_2',PredictedSlope);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('PRED_DIFF2',PredictedSlope-SlopeDTM);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   Table.Destroy;
+   GISdb[DBonTable].EmpSource.Enabled := true;
+   SetColorForWaiting;
+end;
+
 procedure Tdbtablef.Concatenatestringfields1Click(Sender: TObject);
 var
    db_concatenate : db_field_concatenate.Tdb_concatenate;
@@ -8104,7 +8120,7 @@ end;
 
 procedure Tdbtablef.Bycategory1Click(Sender: TObject);
 begin
-      GISdb[DBonTable].HistogramByCategory('','',false);
+  GISdb[DBonTable].HistogramByCategory('','',false);
 end;
 
 
@@ -10547,6 +10563,18 @@ begin
 end;
 
 
+procedure Tdbtablef.GraphcomparingDTMslopeandpredictedbyresolution1Click(Sender: TObject);
+var
+   TileName,BaseFilter : shortstring;
+begin
+   BaseFilter := GISdb[dbOnTable].MyData.Filter;
+   TileName := GISdb[dbOnTable].MyData.GetFieldByNameAsString('DTM_NAME');
+   {$IfDef RecordDSM_DTM} WriteLineToDebugFile('GraphcomparingDTMslopeandpredictedbyresolution1 ' + 'DTM_NAME=' + QuotedStr(TileName));  {$EndIf}
+   GISdb[dbOnTable].ApplyGISFilter('DTM_NAME=' + QuotedStr(TileName));
+   GraphPredictedAndRealSlopes(dbOnTable);
+   GISdb[dbOnTable].ApplyGISFilter(BaseFilter);
+end;
+
 
 procedure Tdbtablef.Graphicallymovepoints1Click(Sender: TObject);
 var
@@ -10686,7 +10714,7 @@ begin
    ThisGraph.GraphDraw.VertLabel := 'Class';
    ThisGraph.SetUpGraphForm;
    ThisGraph.RangeGraphName := GISdb[DBonTable].dbFullName;
-   ThisGraph.RedrawDiagram11Click(Sender);
+   ThisGraph.RedrawDiagram;
    if MDDef.QuantileRanges then TStr := 'quantiles' else TStr := '1 std dev';
    ThisGraph.Caption := 'Class Ranges (' + TStr + ')';
 end;
@@ -11444,7 +11472,7 @@ begin
      end
      else begin
         ProcessFile;
-        if (Sender = Normalizedbasinprofile1) then Result.RedrawDiagram11Click(Nil)
+        if (Sender = Normalizedbasinprofile1) then Result.RedrawDiagram
         else Result.AutoScaleAndRedrawDiagram;
      end;
    end;
@@ -12519,7 +12547,6 @@ var
    WalesDTM,OutName : PathStr;
    x,y : float32;
    i : integer;
-   cmd : shortstring;
    bb : sfBoundBox;
 begin
    if GISdb[DBonTable].MyData.FieldExists('X_PROJ') and GISdb[DBonTable].MyData.FieldExists('Y_PROJ') then begin
@@ -12538,19 +12565,7 @@ begin
           bb.ymin := TileSize *round(y / TileSize);
           bb.ymax := bb.ymin + TileSize;
           OutName := ExtractFilePath(GISdb[DBonTable].DBfullName) + GISdb[DBonTable].DBname + '_' + IntToStr(round(x / TileSize)) + '_' + IntToStr(round(y/ TileSize)) + '.tif';
-          //ExtractFromMonsterTIFFforBoundingBox(WalesDTM, bb,false,OutName,OutName);
-
           GDALsubsetGridAndOpen(bb,false,WalesDTM,false,OutName);
-
-          (*
-          cmd := GDAL_Translate_Name + ' ' + GDALextentBoxUTM(bb) + ' ' + WalesDTM + ' ' + OutName;
-          {$IfDef RecordDEMIX} WriteLineToDebugFile('cmd=' + cmd); {$EndIf}
-          GDALcommand(MDTempDir + 'raster_subset.bat',cmd);
-
-          repeat
-             Delay(2500);
-          until FileExists(OutName);
-          *)
           GISdb[DBonTable].MyData.Next;
        end;
        EndProgress;
@@ -12558,49 +12573,6 @@ begin
    end;
 end;
 
-procedure Tdbtablef.ClassBanddiscrimination1Click(Sender: TObject);
-{$IfDef ExSat}
-begin
-{$Else}
-begin
-   MessageToContinue('currently disabled');
-   (*
-var
-   Band,Class1,Class2 : integer;
-   Results,Results2 : tStringList;
-   TStr : AnsiString;
-   Found : boolean;
-   BandDiscriminations : array[1..MaxBands] of integer;
-begin
-   Results := tStringList.Create;
-   for Band := 1 to MaxBands do BandDiscriminations[Band] := 0;
-   with GISdb[DBonTable],SatImage[TheMapOwner.MapDraw.SatOnMap],SelectionMap do begin
-       for Class1 := 1 to NumClass do begin
-          for Class2 := 1 to NumClass do begin
-               if Class1 <> Class2 then begin
-                   TStr := Classes[Class1].ClassName + '  ' + Classes[Class2].ClassName;
-                   Found := false;
-                   for Band := 1 to NumBands do begin
-                       if (Classes[Class1].ClassLowLimit[Band] >  Classes[Class2].ClassHighLimit[Band]) or
-                                (Classes[Class2].ClassLowLimit[Band] > Classes[Class1].ClassHighLimit[Band]) then begin
-                           Found := true;
-                           inc(BandDiscriminations[Band]);
-                           TStr := TStr + IntegerToString(Band,4);
-                       end;
-                   end;
-                   if Found then Results.Add(Tstr);
-               end;
-          end;
-       end;
-       Results2 := tStringList.Create;
-       for Band := 1 to NumBands do
-          if BandDiscriminations[Band] > 0 then Results2.Add(IntegerToString(Band,4) + IntegerToString(BandDiscriminations[Band] div 2, 12));
-       Petmar.DisplayAndPurgeStringList(Results,'Class discrimination bands');
-       Petmar.DisplayAndPurgeStringList(Results2,'Band discriminations');
-   end;
-*)
-{$EndIf}
-end;
 
 procedure Tdbtablef.Cleanupdoublecountriesintilenames1Click(Sender: TObject);
 //some tile names have duplicate country codes, and I have been unable to find the problem
@@ -13239,6 +13211,42 @@ begin
    InventoryCriteriaEachDEMIXtile(DBonTable);
 end;
 
+
+function PredictSlope(SlopeOneSec,SpaceMeters : float32) : float32;
+var
+   PredictedA,PredictedB : float32;
+begin
+    PredictedA := 1.28755927 + 1.0917487 * SlopeOneSec;
+    PredictedB := -0.295 * Math.Power(SlopeOneSec,-0.431);
+    Result := PredictedA * Math.Power(SpaceMeters,PredictedB);
+end;
+
+procedure Tdbtablef.PredictedDTMslopes1Click(Sender: TObject);
+var
+   PredictedSlope,SlopeDTM,SpaceMeters,SlopeOneSec : float32;
+begin
+   SetColorForProcessing;
+   GISdb[DBonTable].EmpSource.Enabled := false;
+   GISdb[DBonTable].MyData.First;
+
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'PRED_DTM_S',6,2);
+   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'PRED_DIFF',6,2);
+
+   while not GISdb[DBonTable].MyData.eof do begin
+      SpaceMeters := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('GRID_M');
+      SlopeOneSec := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE');
+      SlopeDTM := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DTM_SLOPE');
+      PredictedSlope := PredictSlope(SlopeOneSec,SpaceMeters);
+      GISdb[DBonTable].MyData.Edit;
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('PRED_DTM_S',PredictedSlope);
+      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('PRED_DIFF',PredictedSlope-SlopeDTM);
+      GISdb[DBonTable].MyData.Next;
+   end;
+   GISdb[DBonTable].EmpSource.Enabled := true;
+   SetColorForWaiting;
+end;
+
+
 procedure Tdbtablef.Principalcomponents1Click(Sender: TObject);
 {$IfDef ExGeostats}
 begin
@@ -13264,10 +13272,7 @@ end;
 
 procedure Tdbtablef.Proportionalsquares1Click(Sender: TObject);
 begin
-   {$IfDef ExAdvancedGIS}
-   {$Else}
-      GISdb[DBonTable].GISProportionalSymbols(dbasTTFontSymbol);
-   {$EndIf}
+   GISdb[DBonTable].GISProportionalSymbols(dbasTTFontSymbol);
 end;
 
 
@@ -13845,7 +13850,8 @@ end;
 procedure Tdbtablef.Exportlinetopointdatabase1Click(Sender: TObject);
 var
    i      : integer;
-   LastZ,z,Dist,CumDist,Az,LastLat,LastLong,
+   //LastZ,
+   z,Dist,CumDist,Az,LastLat,LastLong,
    Lat,Long : float64;
    fName : PathStr;
    Table : tMyData;
@@ -13876,7 +13882,7 @@ begin
 
       LastLat := Lat;
       LastLong := Long;
-      LastZ := z;
+      //LastZ := z;
    end;
    Table.Destroy;
    GISdb[DBonTable].TheMapOwner.LoadDataBaseFile(fName)
@@ -14398,6 +14404,11 @@ begin
    MakeDBForParamStats(opByDEM,DBonTable);
 end;
 
+procedure Tdbtablef.CreateDBwithpowerlawbyaverageslopebins1Click(Sender: TObject);
+begin
+   ComputePowerBySlopeBins(dbOnTable);
+end;
+
 procedure Tdbtablef.CreateDEM1Click(Sender: TObject);
 var
    bbox : sfBoundBox;
@@ -14688,7 +14699,7 @@ begin
 end;
 
 
-function WhichReferenceIsItCloserTo(TestDEM,RefDTM,RefDSM: integer; Tolerance : float32; AName : shortString) : integer;
+function WhichReferenceIsItCloserTo(OpenMap : boolean; TestDEM,RefDTM,RefDSM: integer; Tolerance : float32; AName : shortString) : integer;
 var
    i,What : integer;
    RefDSMz,TestZ,RefDTMz : float32;
@@ -14725,26 +14736,88 @@ begin
    aName := ChangeFileExt(aname,'_vat.dbf');
    StringList2CSVtoDB(vat,AName,true);
    DEMGlb[Result].VATFileName := AName;
-   DEMglb[Result].SetupMap(true,mtDEMVATTable);
+   CreateDEMSelectionMap(Result,true,false,mtDEMVATTable);
+   //DEMglb[Result].SetupMap(OpenMap,mtDEMVATTable);   //
    {$IfDef DEMIXmaps} WriteLineToDebugFile('BestCopOrALOSmap out'); {$EndIf}
 end;
 
 
+procedure LoadTestandRefs(db : integer; DEM : shortString; var Test,Ref_DTM,REF_DSM : integer);
+var
+   Lat,Long : float64;
+begin
+   {$IfDef TrackMissingMap} WriteLineToDebugFile('======================== LoadTestandRefs'); DebugWriteOpenGridsMaps('start LoadTestandRefs');  {$EndIf}
+   if DEM = 'COP' then begin
+      Test := OpenNewDEM(DEMIX_DTMtestrefdir(db) + 'cop.tif');
+      DEMglb[Test].DEMCenterPoint(Lat,Long);
+      if Lat > 50 then begin
+         Ref_DTM := OpenNewDEM(DEMIX_DTMtestrefdir(db) + 'ref_dtm_cop.tif');
+         Ref_DSM := OpenNewDEM(DEMIX_DSMtestrefdir(db) + 'ref_dsm_cop.tif');
+      end
+      else begin
+         Ref_DTM := OpenNewDEM(DEMIX_DTMtestrefdir(db) + 'ref_dtm_srtm.tif');
+         Ref_DSM := OpenNewDEM(DEMIX_DSMtestrefdir(db) + 'ref_dsm_srtm.tif');
+      end;
+   end;
+   if DEM = 'ALOS' then begin
+      Test := OpenNewDEM(DEMIX_DTMtestrefdir(db) + 'alos.tif');
+      DEMglb[Test].DEMCenterPoint(Lat,Long);
+      Ref_DTM := OpenNewDEM(DEMIX_DTMtestrefdir(db) + 'ref_dtm_alos.tif');
+      Ref_DSM := OpenNewDEM(DEMIX_DSMtestrefdir(db) + 'ref_dsm_alos.tif');
+   end;
+   {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('end LoadTestandRefs');  {$EndIf}
+end;
+
 
 procedure Tdbtablef.MapcomparingtestDEMtoDSMandDTM1Click(Sender: TObject);
 var
-   LC,Cop,CHM,Ref_DTM,REF_DSM,WhichBest : integer;
-   fName : PathStr;
-begin
-   Cop := OpenNewDEM(DEMIX_DTMtestrefdir(dbOnTable) + 'cop.tif');
-   LC := OpenNewDEM(DEMIX_DTMtestrefdir(dbOnTable) + 'landcover.tif');
-   Ref_DTM := OpenNewDEM(DEMIX_DTMtestrefdir(dbOnTable) + 'ref_dtm_srtm.tif');
-   Ref_DSM := OpenNewDEM(DEMIX_DSMtestrefdir(dbOnTable) + 'ref_dsm_srtm.tif');
-   WhichBest := WhichReferenceIsItCloserTo(Cop,Ref_DTM,Ref_DSM,1,'COP_closer_to');
-   CHM := MakeDifferenceMap(Ref_DSM,Ref_DTM,Ref_DTM,Ref_DTM,true,'CHM');
-   fName := MDtempDir + 'chm.tif';
-   DEMglb[CHM].SaveAsGeotiff(fName);
+   LC,Test,CHM,Ref_DTM,REF_DSM,WhichBest,TestSlope,DSMslope,DTMslope : integer;
+
+   procedure DoOneGDEM(DEM : shortstring);
+   //one maps for the CHM disappears, but can still be accessed.  Despite a lot of effort the cause cannot be determined
+   var
+      fName : PathStr;
+      //DEMstoUse : tStringList;
+      theDEMs : tByteSet;
+   begin
+      LoadTestandRefs(dbOnTable,DEM,Test,Ref_DTM,REF_DSM);
+
+      {$IfDef TrackMissingMap} WriteLineToDebugFile('========================'); DebugWriteOpenGridsMaps('start LC');  {$EndIf}
+      LC := OpenNewDEM(DEMIX_DTMtestrefdir(dbOnTable) + 'landcover.tif');
+
+      {$IfDef TrackMissingMap} WriteLineToDebugFile('======================== Which Best'); DebugWriteOpenGridsMaps('start WhichBest');  {$EndIf}
+      WhichBest := WhichReferenceIsItCloserTo(false,Test,Ref_DTM,Ref_DSM,1,DEM + '_elev_closer_to');
+
+      HighlightInDebugFile(IntToStr(WhichBest) + '  ' + DEMglb[WhichBest].SelectionMap.Caption);
+
+      writestringlisttoDebugFile(GetWhatsOpen);
+
+      {$IfDef TrackMissingMap} WriteLineToDebugFile('========================CHM'); DebugWriteOpenGridsMaps('start CHM');  {$EndIf}
+      CHM := MakeDifferenceMap(Ref_DSM,Ref_DTM,Ref_DTM,Ref_DTM,true,'CHM');
+      {$IfDef TrackMissingMap} if DEMGlb[CHM].SelectionMap = Nil then WriteLineToDebugFile('Back home, SelectionMap = Nil'); {$EndIf}
+
+      HighlightInDebugFile('Grid=' + IntToStr(CHM) + '  ' + DEMglb[CHM].SelectionMap.Caption);
+
+      {$IfDef TrackMissingMap} WriteLineToDebugFile('========================Slope'); DebugWriteOpenGridsMaps('start slope');  {$EndIf}
+      TestSlope := CreateEvansSlopeMapPercent(True,Test);
+      DTMSlope := CreateEvansSlopeMapPercent(True,Ref_DSM);
+      DSMSlope := CreateEvansSlopeMapPercent(True,Ref_DTM);
+
+      theDEMs := [LC,CHM,WhichBest];
+      NewBigimagewithallmaps(3,fName,theDEMs);
+
+      WhichBest := WhichReferenceIsItCloserTo(false,TestSlope,DTMslope,DSMslope,1,DEM + '_slope_closer_to');
+      CHM := MakeDifferenceMap(DSMslope,DTMslope,Ref_DTM,Ref_DTM,true,'Diff_slope_DSM_DTM');
+      theDEMs := [Test,CHM,WhichBest];
+      NewBigimagewithallmaps(3,fName,theDEMs);
+   end;
+
+
+begin {procedure DoOneGDEM}
+   DoOneGDEM('COP');
+   DoOneGDEM('ALOS');
 end;
+
 
 procedure Tdbtablef.MapsbyclusterandDEM1Click(Sender: TObject);
 begin
@@ -14868,7 +14941,6 @@ var
    sfc : tShapeFileCreation;
    fName,tile : PathStr;
    db : integer;
-   //Lat,Long : float64;
    bb : sfBoundBox;
 begin
    GISdb[DBonTable].MyData.First;
@@ -14890,7 +14962,6 @@ begin
       fName := GISdb[DB].ExportToKML(true,true);
       RestoreBackupDefaults;
       Petmar.CopyFile(fName,MDTempDir + ExtractFileName(fName));
-      //ZipShapefile(DB,false,false);     //this won't work on the USGS web sites, which was the whole point of creating it
       CloseSingleDB(db);
       GISdb[DBonTable].MyData.Next;
    end;
@@ -15026,9 +15097,6 @@ end;
 
 
 procedure Tdbtablef.Pointcloudpoints1Click(Sender: TObject);
-{$ifDef ExPointCloud}
-begin
-{$Else}
 var
    Lat,Long : float64;
    LasData : Las_Lidar.tLAS_data;
@@ -15038,19 +15106,14 @@ begin
       LasData.ExportIcesat(GISdb[DBonTable].TheMapOwner,Lat,Long);
       LasData.Destroy;
    end;
-{$EndIf}
 end;
 
 
 procedure Tdbtablef.Pointcloudstatistics1Click(Sender: TObject);
-{$ifDef ExPointCloud}
-begin
-{$Else}
 var
    Lat,Long : float64;
 begin
    if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then SlicerForm.MemoryPointCloud[1].GetRegionStats(Lat,Long);
-{$EndIf}
 end;
 
 

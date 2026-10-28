@@ -140,7 +140,7 @@ begin
   if MDDef.AutoIncGeoColor then begin
      inc(CurrentColorNumber);
      if (CurrentColorNumber > 10) then CurrentColorNumber := 0;
-     MDDef.GeoContactColor := LineColors10[CurrentColorNumber];
+     MDDef.GeoContactColor := ConvertTColorToPlatformColor(WinGraphColors(CurrentColorNumber));
      ColorLineWidthBitBtn(BitBtn1,MDDef.GeoContactColor,MDDef.GeoContactWidth);
   end;
 end;
@@ -198,7 +198,7 @@ end;
 procedure TTrendPick.FormCreate(Sender: TObject);
 begin
    CurrentColorNumber := 0;
-   MDDef.GeoContactColor := LineColors10[CurrentColorNumber];
+   MDDef.GeoContactColor := ConvertTColorToPlatformColor(WinGraphColors(CurrentColorNumber));
    ColorLineWidthBitBtn(BitBtn1,MDDef.GeoContactColor,MDDef.GeoContactWidth);
 
    PlaceFormAtMousePosition(Self);
@@ -644,7 +644,7 @@ begin {procedure tTrendSurf.ComputeTrendSurface}
          end {for Col};
          closeFile(rfile);
          EndProgress;
-         ThisGraph.RedrawDiagram11Click(Nil);
+         ThisGraph.RedrawDiagram;
       end;
       if MDDef.TrendHistDev then SingleDEMHistogram(DevDEM);
    end;

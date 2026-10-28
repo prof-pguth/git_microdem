@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1081
+  ClientHeight = 1121
   ClientWidth = 2404
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 2404
-    Height = 1054
+    Height = 1094
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -207,7 +207,7 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1009
+      Top = 1049
       Width = 2400
       Height = 41
       Align = alBottom
@@ -4681,13 +4681,27 @@ object MapForm: TMapForm
           end
         end
       end
-      object CreateAggregatedDEMs1: TMenuItem
-        Caption = 'Create set of aggregated DEMs'
-        OnClick = CreateAggregatedDEMs1Click
-      end
-      object CreatesetofthinneddecimatedDEMs1: TMenuItem
-        Caption = 'Create set of thinned/decimated DEMs'
-        OnClick = CreatesetofthinneddecimatedDEMs1Click
+      object CreatesetofDEMsrangeofscales1: TMenuItem
+        Caption = 'Create set of DEMs range of scales'
+        object CreateAggregatedDEMs1: TMenuItem
+          Caption = 'Mean aggregation'
+          OnClick = CreateAggregatedDEMs1Click
+        end
+        object CreatesetofthinneddecimatedDEMs1: TMenuItem
+          Caption = 'Thinned/decimated'
+          OnClick = CreatesetofthinneddecimatedDEMs1Click
+        end
+        object Both2: TMenuItem
+          Caption = 'Both'
+          OnClick = Both2Click
+        end
+        object N92: TMenuItem
+          Caption = '-'
+        end
+        object N93: TMenuItem
+          Caption = 'Point slopes by DEM resolution'
+          OnClick = N93Click
+        end
       end
     end
     object Imageanalysis1: TMenuItem
@@ -5603,8 +5617,8 @@ object MapForm: TMapForm
         OnClick = Pointcloudtodatabase1Click
       end
       object PointcloudtoOpenGL1: TMenuItem
+        AutoCheck = True
         Caption = 'Point cloud to OpenGL'
-        OnClick = PointcloudtoOpenGL1Click
       end
       object DrapecurrentmaptoOpenGL1: TMenuItem
         Caption = 'Drape current map to OpenGL'
@@ -5616,15 +5630,6 @@ object MapForm: TMapForm
       object N60: TMenuItem
         Caption = 'Export map with legend on right'
         OnClick = N60Click
-      end
-    end
-    object Geocode1: TMenuItem
-      Caption = 'Geocode'
-      object Addresstolatlong1: TMenuItem
-        Caption = 'Address to lat/long'
-      end
-      object Geocodeaddress1: TMenuItem
-        Caption = 'Lat/long to address'
       end
     end
     object Draw1: TMenuItem
@@ -5739,10 +5744,6 @@ object MapForm: TMapForm
         Caption = 'Openness visualization'
         OnClick = Opennessvisualization1Click
       end
-    end
-    object Mapdirectsolarillumination1: TMenuItem
-      Caption = 'Terrain blocking sun and satellites'
-      OnClick = Mapdirectsolarillumination1Click
     end
     object Physicalgeography1: TMenuItem
       Caption = 'Physical geography'
@@ -5897,6 +5898,10 @@ object MapForm: TMapForm
         Caption = 'Sun position'
         OnClick = Sunposition1Click
       end
+    end
+    object Mapdirectsolarillumination1: TMenuItem
+      Caption = 'Terrain blocking sun and satellites'
+      OnClick = Mapdirectsolarillumination1Click
     end
     object Extractpointcloudreturns1: TMenuItem
       Caption = 'Extract point cloud returns'
@@ -6261,7 +6266,6 @@ object MapForm: TMapForm
     Top = 184
     object Globaltectonicsmap1: TMenuItem
       Caption = 'Global tectonics map'
-      OnClick = Globaltectonicsmap1Click
     end
     object Plateboundaries1: TMenuItem
       Caption = 'Plate boundaries'

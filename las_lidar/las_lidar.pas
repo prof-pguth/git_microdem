@@ -337,7 +337,7 @@ type
          function MeetsFilter(ShotNumber : integer) : boolean; {$IfDef NoInLine} {$Else} inline; {$EndIf}
 
          {$IfDef MSWindows}
-            function OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
+            //function OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
             procedure SplitLASfile;
             procedure ExportXYZ(Output : tLASAsciiOutput; ScaleFactor : float64 = -99; CenterOutput : boolean = true);
             procedure ExportXYZ_DB(LatLong : boolean; fName : PathStr; MaxPoint : int64);
@@ -568,15 +568,12 @@ begin
          while not Table.Eof do begin
             Code := Table.GetFieldByNameAsInteger('CODE');
             Color := Table.GetFieldByNameAsInteger('COLOR');
-            {$IfDef RecordLASColors} writeLineToDebugFile('code=' + IntToStr(Code)); {$EndIf}
-
             {$IfDef ExportColors}
                Petmar.GetRGBfromTColor(Color,r,g,b);
                rs := rs + IntToStr(r) + ',';
                gs := gs + IntToStr(g) + ',';
                bs := bs + IntToStr(b) + ',';
             {$EndIf}
-
             LasCatName[Code] := Table.GetFieldByNameAsString('NAME');
             DefineColor(Las_ogl_colors[Code],LAS_RGB_colors[Code],Color);
             Table.Next;
@@ -593,8 +590,7 @@ begin
       LasColorsDone := true;
       {$IfDef RecordLASColors}
          writelineToDebugFile('Colors in initial definition');
-         for Color := 0 to MaxLASCat do writelineToDebugFile(IntegerToString(color,2) + IntegerToString(LAS_RGB_colors[Color].rgbtred,5) +
-            IntegerToString(LAS_RGB_colors[Color].rgbtgreen,5) +  IntegerToString(LAS_RGB_colors[Color].rgbtblue,5));
+         for Color := 0 to MaxLASCat do writelineToDebugFile(IntegerToString(color,2) + '  ' + ColorString(LAS_RGB_colors[Color]));
       {$EndIf}
    end;
 end;
@@ -1380,16 +1376,6 @@ begin
 end;
 
 
-procedure tLAS_data.GetColorAndElevation(j : integer; MinAreaZ,MaxAreaZ : float64; var ColorRGB : tPlatformColor; var ze : float64);
-begin
-   ze := ExpandLAS_Z(j);
-   if (MDDef.ls.ColorCoding = lasccElevation) then begin
-      ColorRGB := Petmar.TerrainRGBFunct(ze,MinAreaZ,MaxAreaZ);
-   end
-   else GetColor(j,MinAreaZ,MaxAreaZ,ColorRGB);
-end;
-
-
 function tLAS_data.GetNIRWord(j : integer; var n : Word) : boolean;
 begin
    if (LidarPoints8 <> Nil) then begin
@@ -1454,13 +1440,22 @@ begin
     else Result := RGBTrip(255,0,0);
 end;
 
+procedure tLAS_data.GetColorAndElevation(j : integer; MinAreaZ,MaxAreaZ : float64; var ColorRGB : tPlatformColor; var ze : float64);
+begin
+   ze := ExpandLAS_Z(j);
+   if (MDDef.ls.ColorCoding = lasccElevation) then begin
+      ColorRGB := Petmar.TerrainRGBFunct(ze,MinAreaZ,MaxAreaZ);
+   end
+   else GetColor(j,MinAreaZ,MaxAreaZ,ColorRGB);
+end;
+
+
 
 procedure tLAS_data.GetColor(j : integer; MinAreaZ,MaxAreaZ : float64; var Color : tPlatformColor);
 var
    Category,rf,Return,Channel : integer;
    ze,ScanAngle : float64;
 begin
-    //Color := MDDef.MissingDataColor;
     try
        if (MDDef.ls.ColorCoding = lasccElevation) then begin
           ze := ExpandLAS_Z(j);

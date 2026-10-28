@@ -101,8 +101,6 @@ var
 
 procedure InitializeMICRODEM;
 
-//function PickCurvature : integer;
-
 
 //operations on file names
    function IsThisATIGERshapefile(fName : PathStr) : boolean;
@@ -329,6 +327,7 @@ procedure InitLatLongBoundBox(var LatLow,LongLow,LatHi,LongHi : float64);
 
 function PossibleElevationUnits(What : byte) : boolean;
 
+
 const
   GiveMICRODEM_credit : boolean = true;
 function MD_Made_string : shortstring;
@@ -385,7 +384,6 @@ begin
    if GiveMICRODEM_credit then Result := 'md_'
    else Result := '';
 end;
-
 
 
    function TheOutputName(OutPath,InName : PathStr; RemoveExt : boolean) : PathStr;
@@ -2485,13 +2483,13 @@ var
          AParameter('DEMIX','DEMIX_xsize',DEMIX_xsize,900);
          AParameter('DEMIX','DEMIX_ysize',DEMIX_ysize,600);
          AParameter('DEMIX','DEMIX_FUV_graph_width',DEMIX_FUV_graph_width,800);
-         AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
-         AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
-         AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
-         AParameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
-         AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
-         AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
-         AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
+         //AParameter('DEMIX','DEMIX_DoAirOrDirt',DEMIX_DoAirOrDirt,true);
+         //AParameter('DEMIX','DEMIX_DoElevDiff',DEMIX_DoElevDiff,true);
+         //AParameter('DEMIX','DEMIX_DoSlopeDiff',DEMIX_DoSlopeDiff,true);
+         //arameter('DEMIX','DEMIX_DoRuffDiff',DEMIX_DoRuffDiff,true);
+         //AParameter('DEMIX','DEMIX_DoHalfSecDEMs',DEMIX_DoHalfSecDEMs,true);
+         //AParameter('DEMIX','DEMIX_DoElevParamGraphs',DEMIX_DoElevParamGraphs,true);
+         //AParameter('DEMIX','DEMIXCompositeImage',DEMIXCompositeImage,true);
          AParameter('DEMIX','DEMIX_open_radials',DEMIX_open_radials,5);
          AParameter('DEMIX','DEM_ruff_window',DEM_ruff_window,5);
          AParameter('DEMIX','DEMIXsaveLSPmaps',DEMIXsaveLSPmaps,false);
@@ -3743,6 +3741,9 @@ begin
       AParameter('Graph','GraphTickSize',GraphTickSize,15);
       AParameter('Graph','GraphZColorScheme',GraphZColorScheme,LegSpectrum);
       AParameter('Graph','GraphPalette',GraphPalette,'virdis (color blind)');
+
+      AColorParameter('Graph','BestFitLineColor',BestFitLineColor,claBlack);
+      AParameter('Graph','BestFitLineWidth',BestFitLineWidth,2);
 
       //AParameter('Graph','JPEGQuality',JPEGQuality,50);
       AParameter('Graph','DefaultGraphXSize',DefaultGraphXSize,600);

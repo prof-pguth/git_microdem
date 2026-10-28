@@ -251,11 +251,11 @@ begin {procedure FindBestReferenceDEMforALOS}
    GISdb[db].ApplyGISFilter('REF_DEM=' + QuotedStr('DTM') + ' AND LAT<50');
    GISdb[db].EmpSource.Enabled := false;
 
-    if DEM = 'ALOS' then begin
+    if (DEM = 'ALOS') then begin
        CompareNames := ALOSCompareNames;
        BestNames :=  ALOSBestNames;
     end
-    else if DEM = 'COP' then begin
+    else if (DEM = 'COP') then begin
        CompareNames := CopCompareNames;
        BestNames := CopBestNames;
     end;
@@ -408,7 +408,8 @@ end;
 procedure IdentifyDSMorDTM(dbOnTable : integer);
 //adds REF_DEM field to database
 var
-   Tile,TStr : shortstring;
+   Tile,TStr,fName : shortstring;
+
 begin
    GISdb[DBonTable].ClearGISFilter;
    GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftString,'REF_DEM',3);
@@ -457,7 +458,6 @@ begin
    SetColorForWaiting;
    GISdb[DBonTable].ClearGISFilter;
 end;
-
 
 
 procedure MakeCSVforGDEMslopes(DB : integer);
@@ -861,7 +861,6 @@ begin
                      Results.Destroy;
                   end;
                   DeleteFileIfExists(AreaLock);
-                //end;
               end;
            end;
        end;
@@ -966,7 +965,7 @@ begin {procedure ComputePowerFitForAllTiles}
        end;
        theDEMs.Destroy;
        if PowerLaw then TStr := 'power_law_' else TStr := 'linear_fit_';
-       fName := ExtractFilePath(GISdb[db].dbFullName) + ResName + '_' + TStr + 'DEMIX_DB_4.3_' + CurrentTimeForFileName(false) + '.dbf';
+       fName := ExtractFilePath(GISdb[db].dbFullName) + ResName + '_' + TStr + DEMIXcreationString(db) + '.dbf';
        Results.SaveToFile(MDtempDir + 'power_law_fit_results.csv');
        StringList2CSVtoDB(Results,fName);
        wmdem.ClearStatusBarPanelText;
@@ -978,6 +977,85 @@ begin {procedure ComputePowerFitForAllTiles}
       MessageToContinue('Required spacing field missing');
    end;
 end {procedure ComputePowerFitForAllTiles};
+
+
+procedure ComputePowerBySlopeBins(db : integer);
+//input is GDEM or HRDEM DB for grid spacings in meters or arc seconds; uses only those spacings currently
+//makes DB with statistics for a power law fit for the DEMs hard coded into theDEMs string list
+var
+   TileList,Results,theDEMs : tStringList;
+   DTMName,aline,BaseFilter,SpacingField,TileField,ResName,TStr,af,sf : shortstring;
+   fName : PathStr;
+   i,j,n,MaxSlope,MinSlope : integer;
+
+         procedure OneKindDEM;
+         var
+            x,y : array[0..2500] of float32;
+            a,b,siga,sigb,r : float64;
+            n : integer;
+         begin
+            n := -1;
+            GISdb[db].MyData.First;
+            while not GISdb[db].MyData.eof do begin
+               inc(n);
+               x[n] := GISdb[db].MyData.GetFieldByNameAsFloat(SpacingField);
+               y[n] := GISdb[db].MyData.GetFieldByNameAsFloat('DTM_SLOPE');
+               GISdb[db].MyData.Next;
+            end;
+               PowerFit(x,y,n,a,b,siga,sigb,r);
+               aline := aLine + ',' + RealToString(sqr(r),-12,-4) + ',' + RealToString(a,-12,-4) + ',' + RealToString(b,-12,-4);
+         end;
+
+begin {procedure ComputePowerBySlopeBins}
+   if (GISdb[db].MyData.FieldExists('GRID_M') or GISdb[db].MyData.FieldExists('GRID_SEC')) then begin
+      {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('ComputePowerFitForAllTiles in'); {$EndIf}
+       theDEMs := CreatePowerLawList(db);
+       if GISdb[db].MyData.FieldExists('GRID_M') then begin
+          SpacingField := 'GRID_M';
+          ResName := 'HRDEM';
+          TileField := 'DTM_NAME';
+       end
+       else if GISdb[db].MyData.FieldExists('GRID_SEC') then begin
+          SpacingField := 'GRID_SEC';
+          ResName := 'GDEM';
+          TileField := 'DEMIX_TILE';
+          aLine := 'DEMIX_TILE,';
+       end;
+       aLine := 'SLOPES,MIN_SLOPE,MAX_SLOPE,N,DTM_R2,DTM_A,DTM_B';
+
+       Results := tStringList.Create;
+       Results.Add(aLine);
+
+       SetColorForProcessing;
+       BaseFilter := GISdb[db].MyData.Filter;
+       GISdb[db].EmpSource.Enabled := false;
+       MaxSlope := 75;
+       repeat
+          MinSlope := MaxSlope - 5;
+          sf := 'AVG_SLOPE<' + IntToStr(MaxSlope) + ' AND AVG_SLOPE>' + IntToStr(MinSlope);
+          wmDEM.SetPanelText(2,sf,true);
+          af := AddAndIfNeeded(BaseFilter) + sf + HRDEMresolutionFilter(db);
+          GISdb[db].ApplyGISFilter(af);
+          n := GISdb[db].MyData.NumUniqueEntriesInDB(TileField);
+          aLine := sf + ',' + IntToStr(MinSlope) + ',' + IntToStr(MaxSlope) + ',' +IntToStr(n);
+          GISdb[db].EmpSource.Enabled := false;
+          OneKindDEM;
+          Results.Add(aLine);
+          dec(MaxSlope,5);
+       until MaxSlope <= 1;
+
+       fName := ExtractFilePath(GISdb[db].dbFullName) + RESName + '_power_law_by_slope_bins_' + DEMIXcreationString(db) + '.dbf';
+       //Results.SaveToFile(MDtempDir + 'power_law_fit_results.csv');
+       StringList2CSVtoDB(Results,fName);
+       wmdem.ClearStatusBarPanelText;
+       GISdb[db].ApplyGISFilter(BaseFilter);
+       SetColorForWaiting;
+       {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('ComputePowerFitForAllTiles out'); {$EndIf}
+   end
+   else begin
+      MessageToContinue('Required spacing field missing');
+   end;
+end {procedure ComputePowerBySlopeBins};
 
 
 const

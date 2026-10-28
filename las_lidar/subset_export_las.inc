@@ -119,7 +119,7 @@ begin
    EndProgress;
 end;
 
-
+(*
 function tLAS_data.OldExportBinary(Layer : integer; var GeometryFName,ColorsFName : PathStr; ExportFilter : tLASClassificationCategory = lccAll) : boolean;
 //exports LAS point cloud to binary files for use in FMX viewer
 var
@@ -154,7 +154,7 @@ begin
 
                 if MDdef.ls.ColorCoding = lasccCloudID then Color := MDDef.CloudMapSymbol[Layer].Color
                 else GetColor(j,LasHeader.MinZ,LasHeader.MaxZ,Color);
-                Points^[NPTs].Int := Color.rgbtRed;
+                Points^[NPTs].Int1 := Color.rgbtRed;
                 Points^[NPTs].Int2 := Color.rgbtGreen;
                 Points^[NPTs].Int3 := Color.rgbtBlue;
                 if (NPts >= MaxPts) then break;
@@ -165,16 +165,17 @@ begin
    end;
    FreeLASRecordMemory;
    if (GeometryFName = '') then GeometryFName := Petmar.NextFileNumber(MDTempDir, 'cloud_slicer_','.xyzib');
+   ColorsFName := ChangeFileExt(GeometryFName,'.bmp');
    case MDdef.ls.ColorCoding of
-         lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray);
-         lasccPointSourceID,
-         lasccUserData  : case Layer of
-                             1 : ColorsFName := Palette256Bitmap(p256RedRamp);
-                             2 : ColorsFName := Palette256Bitmap(p256GreenRamp);
-                             3 : ColorsFName := Palette256Bitmap(p256BlueRamp);
-                             else ColorsFName := Palette256Bitmap(p256Gray);
-                          end;
-         else ColorsFName := FullPaletteBitmap;
+      lasccIntensity : ColorsFName := Palette256Bitmap(p256Gray,ColorsFName);
+      lasccPointSourceID,
+      lasccUserData  : case Layer of
+                          1 : ColorsFName := Palette256Bitmap(p256RedRamp,ColorsFName);
+                          2 : ColorsFName := Palette256Bitmap(p256GreenRamp,ColorsFName);
+                          3 : ColorsFName := Palette256Bitmap(p256BlueRamp,ColorsFName);
+                          else ColorsFName := Palette256Bitmap(p256Gray,ColorsFName);
+                       end;
+      else ColorsFName := FullPaletteBitmap;
    end;
 
    result := (NPts > 0);
@@ -189,7 +190,7 @@ begin
    EndProgress;
    {$IfDef RecordLASexport} writeLineToDebugFile('tLAS_data.OldExportBinary out pts done, NPTs=' + IntToStr(Npts)); {$EndIf}
 end;
-
+*)
 
 procedure tLAS_data.ExportXYZ(Output : tLASAsciiOutput; ScaleFactor : float64 = -99; CenterOutput : boolean = true);
 var

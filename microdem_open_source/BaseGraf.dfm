@@ -344,37 +344,8 @@ object ThisBaseGraph: TThisBaseGraph
   object MainMenu1: TMainMenu
     Left = 24
     Top = 48
-    object File1: TMenuItem
-      Caption = '&File (Graph)'
-      GroupIndex = 1
-      object Separatehistograms1: TMenuItem
-        Caption = 'Separate histograms'
-        OnClick = Separatehistograms1Click
-      end
-      object Saveimage1: TMenuItem
-        Caption = '&Save image'
-        OnClick = Saveimage1Click
-      end
-      object Copytoclipboard1: TMenuItem
-        Caption = 'Copy to clipboard'
-        OnClick = Copytoclipboard1Click
-      end
-      object Showtoolbar1: TMenuItem
-        Caption = 'Show toolbar'
-        Checked = True
-        OnClick = Showtoolbar1Click
-      end
-      object Legend1: TMenuItem
-        Caption = 'Legend'
-        OnClick = Legend1Click
-      end
-      object Close1: TMenuItem
-        Caption = '&Close'
-        OnClick = Close1Click
-      end
-    end
     object Rescale1: TMenuItem
-      Caption = 'Res&cale'
+      Caption = 'Rescale graph'
       GroupIndex = 1
       Hint = 'Modify graph'
       object Graphsettings2: TMenuItem
@@ -410,7 +381,6 @@ object ThisBaseGraph: TThisBaseGraph
       object Bestfitlinecolor1: TMenuItem
         Caption = 'Best fit line color'
         GroupIndex = 1
-        OnClick = Bestfitlinecolor1Click
       end
       object Labelpointsatopprofile1: TMenuItem
         Caption = 'Label points atop profile'
@@ -439,7 +409,7 @@ object ThisBaseGraph: TThisBaseGraph
       end
     end
     object Edit1: TMenuItem
-      Caption = 'Edit points'
+      Caption = 'Edit graph points'
       GroupIndex = 1
       object Freedrag1: TMenuItem
         Caption = 'Free drag'
@@ -493,6 +463,40 @@ object ThisBaseGraph: TThisBaseGraph
           OnClick = Medianalongx1Click
         end
       end
+      object Linearfit1: TMenuItem
+        Caption = 'Linear fit'
+        OnClick = Linearfit1Click
+      end
+      object Powerlawfit1: TMenuItem
+        Caption = 'Power law fit'
+        OnClick = Powerlawfit1Click
+      end
+      object PointDensity2: TMenuItem
+        Caption = 'Point Density'
+        object Pointdensity1: TMenuItem
+          Caption = 'All points'
+          OnClick = Pointdensity1Click
+        end
+        object Xaxis1: TMenuItem
+          Caption = 'X- axis'
+          OnClick = Xaxis1Click
+        end
+        object Yaxis1: TMenuItem
+          Caption = 'Y-axis'
+          OnClick = Yaxis1Click
+        end
+      end
+      object Viewdata1: TMenuItem
+        Caption = '&View data'
+        OnClick = Viewdata1Click
+      end
+      object Fitfouriercurve1: TMenuItem
+        Caption = 'Fit fourier curve'
+        object Aongxaxis1: TMenuItem
+          Caption = 'Aong x axis'
+          OnClick = Aongxaxis1Click
+        end
+      end
       object FFT1: TMenuItem
         Caption = '&FFT'
         object AlongXaxis1: TMenuItem
@@ -522,28 +526,13 @@ object ThisBaseGraph: TThisBaseGraph
           OnClick = Alongxaxis3Click
         end
       end
-      object Fitfouriercurve1: TMenuItem
-        Caption = 'Fit fourier curve'
-        object Aongxaxis1: TMenuItem
-          Caption = 'Aong x axis'
-          OnClick = Aongxaxis1Click
-        end
+      object Separatehistograms1: TMenuItem
+        Caption = 'Separate histograms'
+        OnClick = Separatehistograms1Click
       end
       object Scale1: TMenuItem
         Caption = 'Scale &Y axis'
         OnClick = Scale1Click
-      end
-      object Viewdata1: TMenuItem
-        Caption = '&View data'
-        OnClick = Viewdata1Click
-      end
-      object Linearfit1: TMenuItem
-        Caption = 'Linear fit'
-        OnClick = Linearfit1Click
-      end
-      object Powerlawfit1: TMenuItem
-        Caption = 'Power law fit'
-        OnClick = Powerlawfit1Click
       end
       object FindpeakYvalueineachseries1: TMenuItem
         Caption = 'Find peak Y value in each series (mode)'
@@ -556,21 +545,6 @@ object ThisBaseGraph: TThisBaseGraph
       object Zcolorscalelegend1: TMenuItem
         Caption = 'Z color scale legend'
         OnClick = Zcolorscalelegend1Click
-      end
-      object PointDensity2: TMenuItem
-        Caption = 'Point Density'
-        object Pointdensity1: TMenuItem
-          Caption = 'All points'
-          OnClick = Pointdensity1Click
-        end
-        object Xaxis1: TMenuItem
-          Caption = 'X- axis'
-          OnClick = Xaxis1Click
-        end
-        object Yaxis1: TMenuItem
-          Caption = 'Y-axis'
-          OnClick = Yaxis1Click
-        end
       end
     end
     object Option1: TMenuItem
@@ -587,19 +561,6 @@ object ThisBaseGraph: TThisBaseGraph
         Caption = 'Contour Line Width'
         GroupIndex = 1
         OnClick = ContourLineWidth1Click
-      end
-    end
-    object Hidden1: TMenuItem
-      Caption = 'Hidden'
-      GroupIndex = 3
-      Visible = False
-      object ChangeGraphSettings: TMenuItem
-        Caption = 'ChangeGraphSettings'
-        OnClick = ChangeGraphSettingsClick
-      end
-      object RedrawDiagram11: TMenuItem
-        Caption = 'RedrawDiagram1'
-        OnClick = RedrawDiagram11Click
       end
     end
   end

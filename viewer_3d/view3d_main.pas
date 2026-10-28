@@ -9,11 +9,18 @@ unit view3d_main;
 
 {$I nevadia_defines.inc}
 
+//{$Define UseFPointCloud}
+
+{$Define NoMouseMove}
+
 {$IfDef RecordProblems}   //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define Record3d}
-      //{$Define AddLayer}
-      //{$Define Start3DView}
+      {$Define Record3d}
+      {$Define AddLayer}
+      {$Define Record3dRender}
+      {$Define Record_scaling}
+      {$Define Start3DView}
+      {$Define RecordFormIssues}
       //{$Define ShortRecord}
       //{$Define RecordMoves}
       //{$Define Record3dDetailed}
@@ -29,19 +36,17 @@ Original code
 
 Modified for XE7                       Peter Larson 6th January 2016
 Modified for Points instead of Mesh    7th January 2016
-Removed all references to a mesh       8th January 2016
+Removed all references to mesh         8th January 2016
 
 Works with no problems in DX Seattle   Peter Guth 8 Jan 2016
 Add import of random point cloud       Peter Guth 8 Jan 2016
 
 Remove functions, so it only displays GIS data  Peter Guth 17 Jan 2017
-Accepts two command line parameters, so it works with VCL MICRODEM which creates the data files and calls FMX program
 Takes two kinds of data; file extension tells program which it is dealing with:
     1.  .XYZB: Any map in MICRODEM with an associated DEM, exported with XYZ points, and a drape texture with 2D bitmap (this but not the next could use a mesh, which might not show holes when zooming in)
     2.  .XYXIB: Point cloud, with one 1D bitmap for lidar texture of classification or intensity
 
 Added to MICRODEM code base
-Command line parameters removed, April 2024
 ------------------------------------------------------------------------------}
 
 
@@ -77,7 +82,7 @@ const
 type
   TView3DForm = class(TForm3D)
     Camera1: TCamera;
-    Light1: TLight;
+    //Light1: TLight;
     Layer3D1: TLayer3D;
     Layout3D1: TLayout3D;
     GridXY: TGrid3D;
@@ -151,7 +156,6 @@ type
     procedure Layout3D1Render(Sender: TObject; Context: TContext3D);
     procedure CheckBox1Change(Sender: TObject);
     procedure Form3DCreate(Sender: TObject);
-    procedure Form3DActivate(Sender: TObject);
     procedure CornerButton1Click(Sender: TObject);
     procedure CornerButton2Click(Sender: TObject);
     procedure RotationResetClick(Sender: TObject);
@@ -194,44 +198,38 @@ type
   private
      procedure MakeFramesForMovie(var MovieFiles : tStringList);
   public
-     xRange,yRange,zRange,
-     ve1,ye1,rMinX,rMaxX,rMinY,rMaxY : double;
+     xRange,yRange,zRange,ScalingGISzAxis,ScalingGISyAxis,rMinX,rMaxX,rMinY,rMaxY : double;
      rMinZ,rMaxZ : float32;
-     DrapeFile : array[1..MaxClouds] of shortstring;
+     DrapeFile : array[1..MaxClouds] of PathStr;
      MouseIsDown,LinkZScaling,Grayscale,ViewOnlyOneLayerAtTime : boolean;
      NumSingle,CurCloud,ExtraPoints,PointRepeatFactor : integer;
-     NPtsUsed,NPtsAllocated  : array[1..MaxClouds] of integer;
+     NPtsUsed,NPtsAllocated : array[1..MaxClouds] of integer;
      Material : array[1..MaxClouds] of TTextureMaterialSource;  // Texture to be used
      VertexBuffer : array[1..MaxClouds] of tVertexBuffer;       // Vertex buffer for points
      IndexBuffer : array[1..MaxClouds] of TIndexBuffer;         // Index buffer to point to verticies
      ShowCloud : array[1..MaxClouds] of boolean;
      CloudName : array[1..MaxClouds] of ShortString;
      procedure SetScaling;
-     function ScaledX(inX : double) : single; inLine;
-     function ScaledY(inY : double) : single; inLine;
-     function ScaledZ(inZ : double) : single; inLine;
+     function ScaledGISX(inX : double) : single; inLine;
+     function ScaledGISY(inY : double) : single; inLine;
+     function ScaledGISZ(inZ : double) : single; inLine;
      procedure AddPointWithTextureBitmap(x,y,z : double); inline;
-     procedure AddPointWithSpecificColor(x,y,z : double; xc,yc : integer); inline;
+     procedure AddPointWithSpecificColor(x,y,z : double); inline;
      procedure SaveVertex(x,y,z : double); inline;
-     procedure GeneratePoints(PointsFile,DrapeFile : PathStr);
-     procedure Initialize(PointsToAllocate : integer);
+     procedure Initialize(PointsToAllocate : integer; GridName : PathStr);
      procedure ArrangePanels;
-     procedure AddSphere;
      procedure ScaleViewToMapExtent(MapDraw : tMapDraw);
      procedure AddMap(aMapDraw : tMapDraw);
-     procedure AddLayer(GridName : PathStr);
+     procedure AddPointCloudLayer(GridName : PathStr);
   end;
-
 
 const
    MaxX = 30;
 var
-   View3DForm : TView3DForm;
-   Map3D      : TView3DForm;
+   View3DForm, Map3D      : TView3DForm;
 
 
-function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
-
+function MapTo3DView(GeometryFileName : PathStr) : TView3DForm;
 procedure FMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true);
 
 
@@ -248,7 +246,8 @@ uses
       FPointCloud,
    {$EndIf}
 
-   Petmar,PetImage,PetImage_Form,PetMath,Math,DEMDefs,DEMCoord,
+   Petmar,PetImage,PetImage_Form,PetMath,Math,
+   DEMDefs,DEMCoord,DEMDef_routines,
    New_Petmar_Movie,
    BaseMap;
 
@@ -258,19 +257,23 @@ var
 
 
 procedure FMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true);
+var
+   fName : PathStr;
 
         function StartFMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScaling : boolean = true) : TView3DForm;
         var
            i : integer;
         begin
+           {$IfDef Record3d} HighlightInDebugFile('StartFMX3dViewer in,  layers=' + IntToStr(FileList.Count)); {$EndIf}
            Result := TView3DForm.Create(Application);
            Result.LinkZScaling := LinkZScaling;
            Result.ViewOnlyOneLayerAtTime := ViewSeveral;
            Result.ShowDataSetsToPickGroupBox2.Visible := ViewSeveral;
            Result.NumSingle := 0;
            Result.PointRepeatFactor := 1;
-           for i := 0 to pred(FileList.Count) do begin;
-             Result.AddLayer(FileList.Strings[i]);
+           for i := 0 to pred(FileList.Count) do begin
+              {$IfDef Record3d} HighlightInDebugFile('AddPointCloudLayer ' + FileList.Strings[i]); {$EndIf}
+              Result.AddPointCloudLayer(FileList.Strings[i]);
            end;
            Result.ListBox1.Visible := (Result.NumSingle > 1);
            Result.Button3.Visible := (Result.NumSingle > 1);
@@ -279,19 +282,272 @@ procedure FMX3dViewer(ViewSeveral : boolean; FileList : tStringList; LinkZScalin
         end;
 
 begin
-   {$IfDef UseFPointCloud}
-       if MDDef.New3Dviewer then begin
-          Startfmxu_point_cloud_viewer(FileList);
-       end
-       else begin
-          View3DForm := StartFMX3dViewer(ViewSeveral,FileList,LinkZScaling);
-       end;
-   {$Else}
-      View3DForm := StartFMX3dViewer(ViewSeveral,FileList,LinkZScaling);
-   {$EndIf}
-   FileList.Destroy;
-   {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
+    //ExplorexyziFile(FileList.Strings[0]);
+    if MDDef.New3Dviewer then begin
+       {$IfDef Record3d} HighlightInDebugFile('FMX3dViewer new viewer in'); {$EndIf}
+       fName := NextFileNumber(MDtempDir,'3d_viewer_flist_','.txt');
+       FileList.SaveToFile(fName);
+       ExecuteFile(ProgramRootDir + 'MD_PointCloudViewer.exe',fName);
+    end
+    else begin
+       {$IfDef Record3d} HighlightInDebugFile('FMX3dViewer old viewer in'); {$EndIf}
+       View3DForm := StartFMX3dViewer(ViewSeveral,FileList,LinkZScaling);
+    end;
+    FileList.Destroy;
+    {$IfDef VCL} wmDem.SetMenusForVersion; {$EndIf}
 end;
+
+
+procedure TView3DForm.AddPointCloudLayer(GridName : PathStr);
+
+
+      procedure GeneratePoints;
+      //PLG code to read real GIS/elevation data set
+      var
+        P : TPoint3D;
+        NP,Pts : Integer;
+        NeedRange : boolean;
+
+            procedure LoadMapWithColorByCodes;
+            var
+               PointXYZColor : ^tPointXYZIArray;
+               tfile : File;
+               i,x,y,z,pfd2 : integer;
+               Color2D : boolean;
+               xf,yf : float64;
+               c : TAlphaColorRec;
+               {$IfDef Record_scaling} xsmin,xsmax,ysmin,ysmax,zsmin,zsmax : float32; {$Endif}
+            begin
+                 if FileExists(GridName) then begin
+                    {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes in ' + GridName); {$EndIf}
+                    assignFile(tfile,GridName);
+                    reset(tFile,sizeOf(tPointXYZI));
+                    new(PointXYZColor);
+                    BlockRead(tfile,PointXYZColor^,MaxPts,Pts);
+                    CloseFile(tFile);
+
+                    if NeedRange then begin
+                       //get range of real world coordinates in data set
+                       for i := 1 to Pts do begin
+                          if (abs(PointXYZColor^[i].x) < 0.01) and (abs(PointXYZColor^[i].y) < 0.01) then begin
+                             HighlightInDebugFile('Zero location, pt=' + IntToStr(i));
+                          end
+                          else begin
+                             CompareValueToExtremes(PointXYZColor^[i].x, rMinX,rMaxX );
+                             CompareValueToExtremes(PointXYZColor^[i].y, rMinY,rMaxY );
+                             CompareValueToExtremes(PointXYZColor^[i].z, rMinZ,rMaxZ );
+                          end;
+                       end;
+                       {$If Defined(Record3dRange) or Defined(Record_Scaling)}
+                          WriteLineToDebugFile('In file, xRange=' + RealToString(rminX,-12,1) + ' to ' +  RealToString(rmaxX,-12,1) +
+                                               '  yRange=' + RealToString(rminY,-12,1) + ' to ' +  RealToString(rmaxY,-12,1) +
+                                               '  zRange=' + RealToString(rminZ,-12,1) + ' to ' +  RealToString(rmaxZ,-12,1) );
+                       {$EndIf}
+                    end;
+                    {$IfDef Record_scaling}
+                       xsmin := 99e38;
+                       xsmax := -99e38;
+                       ysmin := 99e38;
+                       ysmax := -99e38;
+                       zsmin := 99e38;
+                       zsmax := -99e38;
+                    {$Endif}
+
+
+                   Initialize(Pts,GridName);
+                   Color2D := (DrapeFile[CurCloud] = FullPaletteBitmap);
+                   SetScaling;
+
+                   NP := 0;
+                   pfd2 := PointRepeatFactor div 2;
+                   for i := 1 to Pts do begin
+                     if (abs(PointXYZColor^[i].x) > 0.01) and (abs(PointXYZColor^[i].y) > 0.01) then begin
+                        if (PointRepeatFactor = 1) then begin
+                           //we use coordinates with x and y horizontal, and z vertical
+                           P.x := ScaledGISX(PointXYZColor^[i].x);
+                           P.y := -ScaledGISZ(PointXYZColor^[i].z);
+                           P.z := ScaledGISY(PointXYZColor^[i].y);
+                           VertexBuffer[CurCloud].Vertices[NP] := P*25;    // Save vertex
+                           if Color2D then begin
+                              RGBtoXYFloat(PointXYZColor^[i].Int1,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
+                              VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
+                           end
+                           else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int1/255); // Set texture value from color ramp
+                           IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
+                           NP := NP+1;
+                            {$IfDef Record_scaling}
+                               CompareValueToExtremes(P.x,xsmin,xsmax);
+                               CompareValueToExtremes(P.y,ysmin,ysmax);
+                               CompareValueToExtremes(P.z,zsmin,zsmax);
+                            {$Endif}
+                        end
+                        else begin
+                           //we use coordinates with x and y horizontal, and z vertical
+                           for x := -pfd2 to pfd2 do begin
+                              for y := -pfd2 to pfd2 do begin
+                                 for z := -pfd2 to pfd2 do begin
+                                    P.x := ScaledGISX(PointXYZColor^[i].x) + x * 0.05;
+                                    P.z := -ScaledGISY(PointXYZColor^[i].y) + y * 0.05;
+                                    P.y := ScaledGISZ(PointXYZColor^[i].z) + z * 0.05;
+                                    VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
+                                    if Color2D then begin
+                                       RGBtoXYFloat(PointXYZColor^[i].Int1,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
+                                       VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
+                                    end
+                                    else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int1/255); // Set texture value from color ramp
+                                    IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
+                                    NP := NP+1;
+                                 end;
+                              end;
+                           end;
+                         end;
+                      end;
+                   end;
+                   Dispose(PointXYZColor);
+                   {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes out'); {$EndIf}
+                   {$IfDef Record_scaling}
+                       WriteLineToDebugFile('  P.x:' + RealToString(xsmin,-12,-2) + ' to ' + RealToString(xsmax,-12,-2) +
+                                            '  P.y:' + RealToString(ysmin,-12,-2) + ' to ' + RealToString(ysmax,-12,-2) +
+                                            '  P.z:' + RealToString(zsmin,-12,-2) + ' to ' + RealToString(zsmax,-12,-2));
+                    {$Endif}
+               end;
+            end {procedure LoadMapWithColorByCodes};
+
+      var
+         Ext : shortstring;
+      begin {procedure GeneratePoints}
+         {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.GeneratePoints in, CurCloud=' + IntToStr(CurCloud)); {$EndIf}
+         {$IfDef Android} Layer3D1.Width := 80; {$EndIf}
+
+         if (CurCloud = 0) then begin
+            {$IfDef Record3d} WriteLineToDebugFile('set default range'); {$EndIf}
+            rMinX := 99e38;
+            rMaxX := -99e38;
+            rMinY := 99e38;
+            rMaxY := -99e38;
+            rMinZ := 99e38;
+            rMaxZ := -99e38;
+            NeedRange := true;
+         end
+         else begin
+            NeedRange := false;
+         end;
+
+         Ext := UpperCase(ExtractFileExt(GridName));
+         if (Ext = '.XYZB') then begin
+            MessageToContinue('did not think we needed this');
+            //LoadPointsWithFullDrapeMap;
+         end
+         else if (Ext = '.XYZIB') or (Ext = '.XYZI') then begin
+            LoadMapWithColorByCodes;
+         end
+         else begin
+            MessageToContinue('File not supported, ' + GridName);
+         end;
+         NPtsUsed[CurCloud] := Pts;
+         {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.GeneratePoints out, pts=' + IntToStr(NPtsUsed[CurCloud])); {$EndIf}
+      end {procedure GeneratePoints};
+
+       procedure DoCheckBox(CheckBox : tCheckBox);
+       begin
+          CheckBox.Visible := true;
+          CheckBox.Text := ExtractFileNameNoExt(GridName);
+       end;
+
+begin {procedure TView3DForm.AddPointCloudLayer}
+   if FileExists(GridName) then begin
+      {$If Defined(AddLayer)} writeLineToDebugFile('Add Layer Grid=' + GridName + ' now CurCloud=' + IntToStr(CurCloud)); {$EndIf}
+      GeneratePoints;
+      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('Points generated for CurCloud=' + IntToStr(CurCloud)); {$EndIf}
+
+      if ViewOnlyOneLayerAtTime then begin
+         case CurCloud of
+            1 : DoCheckBox(CheckBox2);
+            2 : DoCheckBox(CheckBox3);
+            3 : DoCheckBox(CheckBox4);
+            4 : DoCheckBox(CheckBox5);
+            5 : DoCheckBox(CheckBox6);
+         end;
+      end
+      else begin
+         {$If Defined(AddLayer)} writeLineToDebugFile('ListBox1.Items.Add ' + ExtractFileName(GridName)); {$EndIf}
+         ListBox1.Items.Add(ExtractFileNameNoExt(GridName));
+         ListBox1.ItemIndex := -1;
+         inc(NumSingle);
+      end;
+   end;
+end {procedure TView3DForm.AddPointCloudLayer};
+
+
+procedure TView3DForm.SaveVertex(x,y,z : double);
+var
+   P : array[0..0] of TPoint3D;
+begin
+   P[0].x := ScaledGISX(x);
+   P[0].z := ScaledGISY(y);
+   P[0].y := ScaledGISZ(z);
+   VertexBuffer[CurCloud].Vertices[NPtsUsed[CurCloud]] := P[0]*25;   // Save vertex
+   inc(NPtsUsed[CurCloud]);
+end;
+
+
+procedure TView3DForm.AddPointWithTextureBitmap(x,y,z : double);
+begin
+   VertexBuffer[CurCloud].TexCoord0[NPtsUsed[CurCloud]] := PointF((x - rMinx)/ XRange,1-(y - rMiny)/ YRange);
+   IndexBuffer[CurCloud][NPtsUsed[CurCloud]] := NPtsUsed[CurCloud];       // Set index to vertex
+   SaveVertex(x,y,z);
+end;
+
+
+procedure TView3DForm.AddPointWithSpecificColor(x,y,z : double{; xc,yc : integer});
+begin
+   VertexBuffer[CurCloud].TexCoord0[NPtsUsed[CurCloud]] := System.Types.PointF(0,0);
+   IndexBuffer[CurCloud][NPtsUsed[CurCloud]] := NPtsUsed[CurCloud];       // Set index to vertex
+   SaveVertex(x,y,z);
+end;
+
+
+procedure TView3DForm.Initialize(PointsToAllocate : integer; GridName : PathStr);
+var
+   k : integer;
+   NeededPoints : int64;
+   BMP : TBitmap;
+   Data : tBitmapData;
+begin
+   {$IfDef Record3d} writeLineToDebugFile('TView3DForm.Initialize in'); {$EndIf}
+   if (CurCloud < MaxClouds) then begin
+      inc(CurCloud);
+      NeededPoints := PointsToAllocate * PointRepeatFactor * PointRepeatFactor * PointRepeatFactor;
+      NPtsAllocated[CurCloud] := NeededPoints;
+      ShowCloud[CurCloud] := true;
+      NPtsUsed[CurCloud] := 0;
+      {$IfDef Record3d} WriteLineToDebugFile('Cloud=' + IntToStr(CurCloud) + ' can have pts=' + IntToStr(PointsToAllocate)); {$EndIf}
+      if DrapeFile[CurCloud] = '' then begin
+         DrapeFile[CurCloud] := ChangeFileExt(GridName,'.bmp');
+         if not FileExists(DrapeFile[CurCloud]) then DrapeFile[CurCloud] := FullPaletteBitmap;
+      end;
+
+      //##################### Create vertex and index buffers ###################
+      // Create vertex buffer with vertex data and texture value for each vertex
+      // Second parameter is number of verticies
+      VertexBuffer[CurCloud] := TVertexBuffer.Create([tVertexFormat.Vertex,tVertexFormat.TexCoord0],NeededPoints);
+      // Create index buffer, paramter 1 is number of indexes, the second i size of data type (32 bits)
+      IndexBuffer[CurCloud] := TIndexBuffer.Create(NeededPoints,tIndexFormat.UInt32);  //## Points
+      {$IfDef Record3dFull} WriteLineToDebugFile('TIndexBuffer.Create done'); {$EndIf}
+
+      //--------------------- Create texture ------------------------------------
+
+      //##################### Set up texture to be used #########################
+      Material[CurCloud] := TTextureMaterialSource.Create(Self);
+      Material[CurCloud].Texture.LoadFromFile(DrapeFile[CurCloud]);
+
+      Caption := '3D viewer' + ViewerVersion + ' --' + SmartNumberPoints(PointsToAllocate) + ' points';
+      {$IfDef Record3dFull} writeLineToDebugFile('call set scaling'); {$EndIf}
+      if (CurCloud = 1) then SetScaling;
+      {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.Initialize out with ' + SmartNumberPoints(PointsToAllocate) + ' points'); {$EndIf}
+   end;
+end {TView3DForm.Initialize};
+
 
 
 procedure TView3DForm.AddMap(aMapDraw : tMapDraw);
@@ -306,16 +562,16 @@ begin
       exit;
    end;
 
-   {$IfDef VCL} StartProgress('Export '+ aMapDraw.BaseTitle); {$EndIf}
+   //{$IfDef VCL} StartProgress('Export '+ aMapDraw.BaseTitle); {$EndIf}
    Pts := aMapDraw.MapXSize * aMapDraw.MapYSize + ExtraPoints;
    if (Pts >= MaxPts) then Pts := MaxPts;
    DrapeFile[succ(CurCloud)] := aMapDraw.FullMapfName;
-   Initialize(Pts);
+   Initialize(Pts,'');
 
    for x := 0 to pred(aMapDraw.MapXSize) do begin
-      {$IfDef VCL} if (x mod 100 = 0) then UpDateProgressBar(x/aMapDraw.MapXSize); {$EndIf}
+      //{$IfDef VCL} if (x mod 100 = 0) then UpDateProgressBar(x/aMapDraw.MapXSize); {$EndIf}
       for y := 0 to pred(aMapDraw.MapYSize) do begin
-         if (aMapDraw.DEM2OnMap <> 0) then begin
+         if ValidDEM(aMapDraw.DEM2OnMap) then begin
             aMapDraw.ScreenToDEMGrid(x,y,xgrid,ygrid);
             DEMGlb[aMapDraw.DEMonMap].DEMGridToLatLongDegree(xgrid,ygrid,Lat,Long);
             Good := DEMGlb[aMapDraw.DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z);
@@ -330,7 +586,8 @@ begin
         if (NPtsUsed[CurCloud] >= NPtsAllocated[CurCloud]) then break;
       end;
    end;
-   {$IfDef VCL} EndProgress; {$EndIf}
+
+   //{$IfDef VCL} EndProgress; {$EndIf}
    if ViewOnlyOneLayerAtTime then begin
       ListBox1.Visible := true;
       ListBox1.Items.Add(aMapDraw.BaseTitle);
@@ -358,152 +615,65 @@ begin
    ArrangePanels;
    Show;
    {$If Defined(AddLayer)} WriteLineToDebugFile('TView3DForm.AddMap, CurCloud=' + IntToStr(CurCloud) + '  ' + aMapDraw.BaseTitle + '  pts=' + IntToStr(NPtsUsed[CurCloud] )); {$EndIf}
-end;
+end {procedure TView3DForm.AddMap};
 
 
-function OldMapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
-begin
-   {$IfDef Record3d} WriteLineToDebugFile('MapTo3DView in, ' + MapDraw.BaseTitle); {$EndIf}
-   ShowHourglassCursor;
-   Result := TView3DForm.Create(Application);
-   Result.ShowDataSetsToPickGroupBox2.Visible := false;
-   Result.Button3.Visible := false;
-   Result.ExtraPoints := ExtraPoints;
-   Result.ViewOnlyOneLayerAtTime := true;
-   Result.ScaleViewToMapExtent(MapDraw);
-   Result.AddMap(MapDraw);
-   {$IfDef Record3d} WriteLineToDebugFile('MapTo3DView out'); {$EndIf}
-end;
-
-
-
-function MapTo3DView(MapDraw : tMapDraw;  ExtraPoints : integer = 0) : TView3DForm;
+function MapTo3DView(GeometryFileName : PathStr) : TView3DForm;
 var
-   Points : ^tPointXYZIArray;
-   MemReq : int64;
-   x,y,i : integer;
-   Good : boolean;
    GeometryFName : PathStr;
-   z : float32;
-   xu,yu,xgrid,ygrid,Lat,Long : float64;
-   Color : tPlatformColor;
-   BMPMem : tBMPMemory;
-   Bitmap : tMyBitmap;
    FileList : tStringList;
-   OutF : file;
 begin
    FileList := tStringList.Create;
-   Bitmap := LoadBitmapFromFile(MapDraw.FullMapfName);
-   BMPMem := tBMPMemory.Create(Bitmap);
-
-   MemReq := MapDraw.MapXSize * MapDraw.MapXSize * SizeOf(tPointXYZI);
-   GetMem(Points,MemReq);
-   i := 0;
-   StartProgress('Load 3D');
-   for x := 0 to pred(MapDraw.MapXSize) do begin
-      {$IfDef VCL} if (x mod 100 = 0) then UpDateProgressBar(x/MapDraw.MapXSize); {$EndIf}
-      for y := 0 to pred(MapDraw.MapYSize) do begin
-         if ValidDEM(MapDraw.DEM2OnMap) then begin
-            MapDraw.ScreenToDEMGrid(x,y,xgrid,ygrid);
-            DEMGlb[MapDraw.DEMonMap].DEMGridToLatLongDegree(xgrid,ygrid,Lat,Long);
-            Good := DEMGlb[MapDraw.DEM2onMap].GetElevFromLatLongDegree(Lat,Long,z);
-         end
-         else begin
-            Good := MapDraw.ScreenToElev(x,y,z);
-         end;
-         if Good then begin
-            MapDraw.ScreenToUTM(x,y,xu,yu);
-            Color := BMPMem.GetPixelColor(x,y);
-            inc(i);
-            Points^[i].x := xu;
-            Points^[i].y := yu;
-            Points^[i].z := z;
-            Points^[i].Int3 := Color.rgbtRed;
-            Points^[i].Int2 := Color.rgbtGreen;
-            Points^[i].Int  := Color.rgbtBlue;
-            //AddPointWithTextureBitmap(xu,yu,z);
-         end;
-      end;
-   end;
-   BMPMem.Destroy;
-   Bitmap.Destroy;
-   GeometryFName := Petmar.NextFileNumber(MDTempDir, 'Map3D_','.xyzib');
    FileList.Add(GeometryFName);
-   AssignFile(Outf,GeometryFName);
-   rewrite(Outf,1);
-   BlockWrite(OutF,Points^,MemReq);
-   CloseFile(outf);
-   EndProgress;
-   FreeMem(Points,MemReq);
-   FMX3dViewer(false,FileList);
+   {$IfDef TrackMapColors} WriteStringListToDebugFile(ColorsUsed);  ColorsUsed.Destroy;  {$EndIf}
 end;
 
 
+procedure TView3DForm.MakeFramesForMovie(var MovieFiles : tStringList);
 
+    procedure SaveFrame(fName : PathStr = '');
+    begin
+       PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,false,true);
+       MovieFiles.Add(fName);
+       Delay(500);
+    end;
 
-procedure TView3DForm.AddSphere;
+    procedure DoCheckBox(theBox : tCheckBox; Cloud : integer);
+    begin
+       if theBox.Visible then begin
+          theBox.IsChecked := true;
+          ShowCloud[Cloud] := true;
+          SaveFrame;
+          theBox.IsChecked := false;
+          ShowCloud[Cloud] := false;
+       end;
+    end;
+
 var
-   Sphere1 : tSphere;
-   TextureMaterialSource1 : tTextureMaterialSource;
+   i : integer;
 begin
-   Sphere1 := tSphere.Create(Layer3D1);
-   Sphere1.Position.x := 0;
-   Sphere1.Position.y := 0;
-   Sphere1.Position.z := 0;
-
-   Sphere1.Scale.x := 1;
-   Sphere1.Scale.y := 1;
-   Sphere1.Scale.z := 1;
-
-   Sphere1.Height := 5;
-   Sphere1.Width := 5;
-   Sphere1.Depth := 5;
-
-   TextureMaterialSource1 := tTextureMaterialSource.Create(Sphere1);
-   TextureMaterialSource1.Texture.LoadFromFile('c:\temp\blue.bmp');
-   Sphere1.MaterialSource := TextureMaterialSource1;
-   Sphere1.Visible := true;
-
-(*
-procedure TForm1.DummyObjectRender(Sender: TObject; Context: TContext3D);
-//https://stackoverflow.com/questions/34762386/delphi-firemonkey-draw-and-fill-an-arbitrary-3d-shape-or-polygon
-var
-  MyPolygon: TPolygon;
-  I: Integer;
-begin
-  Context.BeginScene;
-  try
-
-    // creates the polygon
-    SetLength(MyPolygon, 8);
-
-    MyPolygon[0] := TPointF.Create(1, -1);
-    MyPolygon[1] := TPointF.Create(1, 1);
-    MyPolygon[2] := TPointF.Create(0, 1);
-    MyPolygon[3] := TPointF.Create(-1, 0.5);
-    MyPolygon[4] := TPointF.Create(-1, 0);
-    MyPolygon[5] := TPointF.Create(-0.5, 0);
-    MyPolygon[6] := TPointF.Create(-0.5, -1);
-    MyPolygon[7] := TPointF.Create(1, -1);
-
-    // Draw the polygon lines
-    for I := 0 to Length(MyPolygon) - 1 do
-      if I = Length(MyPolygon) - 1 then
-        Context.DrawLine(TPoint3D.Create(MyPolygon[I].X, MyPolygon[I].Y, 0),
-          TPoint3D.Create(MyPolygon[0].X, MyPolygon[0].Y, 0), 1, TAlphaColorRec.Red)
-      else
-        Context.DrawLine(TPoint3D.Create(MyPolygon[I].X, MyPolygon[I].Y, 0),
-          TPoint3D.Create(MyPolygon[I + 1].X, MyPolygon[I + 1].Y, 0), 1, TAlphaColorRec.Red);
-
-    // Fill the polygon shape
-    Context.FillPolygon(TPoint3D.Create(0, 0, 0), TPoint3D.Create(2, 2, 0), MyPolygon.MaxEntents, MyPolygon,
-      TMaterialSource.ValidMaterial(ColorMaterialSource1), 1);
-
-  finally
-    Context.EndScene;
-  end;
-end;
-*)
+   MovieFiles := tStringList.Create;
+   if ViewOnlyOneLayerAtTime then begin
+      for i := 0 to pred(ListBox1.Items.Count) do begin
+         ListBox1.ItemIndex := i;
+         ListBox1Change(Button3);
+         SaveFrame(ListBox1.Items[i] + '.png');
+      end;
+   end
+   else begin
+      CheckBox2.IsChecked := false;
+      CheckBox3.IsChecked := false;
+      CheckBox4.IsChecked := false;
+      CheckBox5.IsChecked := false;
+      CheckBox6.IsChecked := false;
+      DoCheckBox(CheckBox2,1);
+      DoCheckBox(CheckBox3,2);
+      DoCheckBox(CheckBox4,3);
+      DoCheckBox(CheckBox5,4);
+      DoCheckBox(CheckBox6,5);
+      CheckBox2.IsChecked := true;
+      ShowCloud[1] := true;
+   end;
 end;
 
 
@@ -515,38 +685,6 @@ begin
       MakeFramesForMovie(MovieFiles);
       MakeBigBitmap(MovieFiles,'');
    {$EndIf}
-end;
-
-
-procedure TView3DForm.AddLayer(GridName : PathStr);
-
-       procedure DoCheckBox(CheckBox : tCheckBox);
-       begin
-          CheckBox.Visible := true;
-          CheckBox.Text := ExtractFileNameNoExt(GridName);
-       end;
-
-begin
-   if (GridName <> '') then begin
-      {$If Defined(AddLayer)} writeLineToDebugFile('OK, Grid=' + GridName + ' now CurCloud=' + IntToStr(CurCloud)); {$EndIf}
-      GeneratePoints(GridName,'');
-      {$If Defined(Record3D) or Defined(ShortRecord)} writeLineToDebugFile('Points generated for CurCloud=' + IntToStr(CurCloud)); {$EndIf}
-      if ViewOnlyOneLayerAtTime then begin
-         case CurCloud of
-            1 : DoCheckBox(CheckBox2);
-            2 : DoCheckBox(CheckBox3);
-            3 : DoCheckBox(CheckBox4);
-            4 : DoCheckBox(CheckBox5);
-            5 : DoCheckBox(CheckBox6);
-         end;
-      end
-      else begin
-         {$If Defined(AddLayer)} writeLineToDebugFile('ListBox1.Items.Add ' + ExtractFileName(GridName)); {$EndIf}
-         ListBox1.Items.Add(ExtractFileNameNoExt(GridName));
-         ListBox1.ItemIndex := -1;
-         inc(NumSingle);
-      end;
-   end;
 end;
 
 
@@ -620,54 +758,6 @@ begin
    {$IfDef VCL}
       PetImage.CopyToWindowToClipBoard(round(Layer3D1.Width));
    {$EndIf}
-end;
-
-
-procedure TView3DForm.MakeFramesForMovie(var MovieFiles : tStringList);
-
-    procedure SaveFrame(fName : PathStr = '');
-    begin
-       PetImage.SaveScreenCapture(round(Layer3D1.Width),fName,false,true);
-       MovieFiles.Add(fName);
-       Delay(500);
-    end;
-
-    procedure DoCheckBox(theBox : tCheckBox; Cloud : integer);
-    begin
-       if theBox.Visible then begin
-          theBox.IsChecked := true;
-          ShowCloud[Cloud] := true;
-          SaveFrame;
-          theBox.IsChecked := false;
-          ShowCloud[Cloud] := false;
-       end;
-    end;
-
-var
-   i : integer;
-begin
-   MovieFiles := tStringList.Create;
-   if ViewOnlyOneLayerAtTime then begin
-      for i := 0 to pred(ListBox1.Items.Count) do begin
-         ListBox1.ItemIndex := i;
-         ListBox1Change(Button3);
-         SaveFrame(ListBox1.Items[i] + '.png');
-      end;
-   end
-   else begin
-      CheckBox2.IsChecked := false;
-      CheckBox3.IsChecked := false;
-      CheckBox4.IsChecked := false;
-      CheckBox5.IsChecked := false;
-      CheckBox6.IsChecked := false;
-      DoCheckBox(CheckBox2,1);
-      DoCheckBox(CheckBox3,2);
-      DoCheckBox(CheckBox4,3);
-      DoCheckBox(CheckBox5,4);
-      DoCheckBox(CheckBox6,5);
-      CheckBox2.IsChecked := true;
-      ShowCloud[1] := true;
-   end;
 end;
 
 
@@ -851,12 +941,13 @@ begin
    xRange := (rMaxx - rMinx);
    yRange := (rMaxy - rMiny);
    zRange := (rMaxz - rMinz);
-   if LinkZScaling then ve1 := zRange / xRange
-   else ve1 := 1;
-   ye1 := yRange / xRange;
-   {$IfDef Record3d}
-      WriteLineToDebugFile('xRange=' + RealToString(rminX,12,2) + ' to' +  RealToString(rmaxX,12,2) + '  yRange=' + RealToString(rminY,12,2) + ' to' +  RealToString(rmaxY,12,2));
-      WriteLineToDebugFile('zRange=' + RealToString(rminZ,12,2) + ' to' +  RealToString(rmaxZ,12,2) + '  vel=' + RealToString(ve1,12,4) + '   yel=' + RealToString(ye1,12,4));
+   {if LinkZScaling then} ScalingGISZAxis := zRange / xRange;
+   //else ScalingGISZAxis := 1;
+   ScalingGISyAxis := yRange / xRange;
+
+   {$IfDef Record_scaling}
+      WriteLineToDebugFile('Set scaling x=' + RealToString(rminX,-12,2) + ' to ' +  RealToString(rmaxX,-12,2) + '  y=' + RealToString(rminY,-12,2) + ' to ' +  RealToString(rmaxY,-12,2) +
+         ' z=' + RealToString(rminZ,-12,2) + ' to ' +  RealToString(rmaxZ,-12,2) + ' ScalingZ=' + RealToString(ScalingGISZAxis,-12,4) + ' ScalingY=' + RealToString(ScalingGISYAxis,-12,4));
    {$EndIf}
 end;
 
@@ -898,268 +989,19 @@ begin
    Camera.RotationAngle.y := TrackBar6.Value;
 end;
 
-function tView3DForm.ScaledX(inX : double) : single;
+function tView3DForm.ScaledGISX(inX : double) : single;
 begin
    Result := -1.0 * MaxX + (inx - rMinX) / XRange * 2 * MaxX;
 end;
 
-function tView3DForm.ScaledY(inY : double) : single;
+function tView3DForm.ScaledGISY(inY : double) : single;
 begin
-   Result := -1.0 * MaxX + ye1 * (inY - rMinY) / yRange * 2 * MaxX;
+   Result := -1.0 * MaxX - ScalingGISYAxis * (inY - rMinY) / yRange * 2 * MaxX;
 end;
 
-function tView3DForm.ScaledZ(inZ : double) : single;
+function tView3DForm.ScaledGISZ(inZ : double) : single;
 begin
-   Result := 1.0 * MaxX - Ve1 * (inz - rMinz) / ZRange * 2 * MaxX;
-end;
-
-
-procedure TView3DForm.SaveVertex(x,y,z : double);
-var
-   P : array[0..0] of TPoint3D;
-begin
-   P[0].x := ScaledX(x);
-   P[0].z := ScaledY(y);
-   P[0].y := ScaledZ(z);
-   VertexBuffer[CurCloud].Vertices[NPtsUsed[CurCloud]] := P[0]*25;   // Save vertex
-   inc(NPtsUsed[CurCloud]);
-end;
-
-
-procedure TView3DForm.AddPointWithTextureBitmap(x,y,z : double);
-begin
-   VertexBuffer[CurCloud].TexCoord0[NPtsUsed[CurCloud]] := PointF((x - rMinx)/ XRange,1-(y - rMiny)/ YRange);
-   IndexBuffer[CurCloud][NPtsUsed[CurCloud]] := NPtsUsed[CurCloud];                                // Set index to vertex
-   SaveVertex(x,y,z);
-end;
-
-
-procedure TView3DForm.AddPointWithSpecificColor(x,y,z : double; xc,yc : integer);
-begin
-   VertexBuffer[CurCloud].TexCoord0[NPtsUsed[CurCloud]] := System.Types.PointF(0,0);
-   IndexBuffer[CurCloud][NPtsUsed[CurCloud]] := NPtsUsed[CurCloud];                                // Set index to vertex
-   SaveVertex(x,y,z);
-end;
-
-
-procedure TView3DForm.Initialize(PointsToAllocate : integer);
-var
-   k : integer;
-   NeededPoints : int64;
-   BMP : TBitmap;
-   Data : tBitmapData;
-begin
-   {$IfDef Record3d} writeLineToDebugFile('TView3DForm.Initialize in'); {$EndIf}
-   if (CurCloud < MaxClouds) then begin
-      inc(CurCloud);
-      NeededPoints := PointsToAllocate * PointRepeatFactor * PointRepeatFactor * PointRepeatFactor;
-      NPtsAllocated[CurCloud] := NeededPoints;
-      ShowCloud[CurCloud] := true;
-      NPtsUsed[CurCloud] := 0;
-      {$IfDef Record3d} WriteLineToDebugFile('Cloud=' + IntToStr(CurCloud) + ' can have pts=' + IntToStr(PointsToAllocate)); {$EndIf}
-      //##################### Create vertex and index buffers ###################
-      // Create vertex buffer with vertex data and a texture value for each vertex
-      // Second parameter is number of verticies
-        VertexBuffer[CurCloud] := TVertexBuffer.Create([tVertexFormat.Vertex,tVertexFormat.TexCoord0],NeededPoints);
-      // Create index buffer, paramter 1 is number of indexes, the second i size of data type (32 bits)
-      {$IfDef Record3d} WriteLineToDebugFile('TVertexBuffer.Create done'); {$EndIf}
-
-      IndexBuffer[CurCloud] := TIndexBuffer.Create(NeededPoints,tIndexFormat.UInt32);      //## Points
-      {$IfDef Record3d} WriteLineToDebugFile('TIndexBuffer.Create done'); {$EndIf}
-
-      //--------------------- Create texture ------------------------------------
-
-      //##################### Set up texture to be used #########################
-      Material[CurCloud] := TTextureMaterialSource.Create(Self);
-
-      if (DrapeFile[CurCloud] = '') then begin
-         //##################### Create bitmap that will be used as texture map
-         //simple color ramp
-              BMP := TBitmap.Create(1,360);
-              BMP.Map(tMapAccess.ReadWrite,Data) ;    // Set read/write access to the bitmap
-            //##################### Populate bitmap with texture values ###########
-              for k := 0 to 359 do Begin
-                Data.SetPixel(0,k,CorrectColor(HSLtoRGB(k/360,0.75,0.5)));
-              End;
-              BMP.Unmap(Data);
-              Material[CurCloud].Texture := BMP;
-       end
-       else begin
-          //can be color ramp, say for lidar intensity with grayscale, or point classification
-          //can be any map displayed in MICRODEM
-          Material[CurCloud].Texture.LoadFromFile(DrapeFile[CurCloud]);
-       end;
-       Caption := '3D viewer' + ViewerVersion + ' --' + SmartNumberPoints(PointsToAllocate) + ' points';
-       {$IfDef Record3d} writeLineToDebugFile('call set scaling'); {$EndIf}
-       if (CurCloud = 1) then SetScaling;
-       {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.Initialize out with ' + SmartNumberPoints(PointsToAllocate) + ' points'); {$EndIf}
-   end;
-end;
-
-
-procedure TView3DForm.GeneratePoints;
-var
-  P : TPoint3D;
-  NP,Pts : Integer;
-  NeedRange : boolean;
-
-      procedure LoadPointsWithFullDrapeMap;
-      //PLG code to read real elevation data set
-      type
-         tPointXYZColor = record
-            x,y,z : single;
-         end;
-         tPointXYZColorArray = array[1..MaxPts] of tPointXYZColor;
-      var
-         PointXYZColor : ^tPointXYZColorArray;
-         i : integer;
-         tfile : File;
-      begin
-          {$IfDef Record3d} WriteLineToDebugFile('LoadPointsWithFullDrapeMap in'); {$EndIf}
-          assignFile(tfile,PointsFile);
-          reset(tFile,sizeOf(tPointXYZColor));
-           new(PointXYZColor);
-           BlockRead(tfile,PointXYZColor^,MaxPts,Pts);
-           if NeedRange then begin //get range of real world coordinates in data set
-              for i := 1 to Pts do begin
-                 CompareValueToExtremes(PointXYZColor^[i].x, rMinX,rMaxX );
-                 CompareValueToExtremes(PointXYZColor^[i].y, rMinY,rMaxY );
-                 CompareValueToExtremes(PointXYZColor^[i].z, rMinZ,rMaxZ );
-              end;
-              {$IfDef Record3d} WriteLineToDebugFile('LoadPointsWithFullDrapeMap, z range=' + RealToString(rMinz,-12,-2) +  ' to ' + RealToString(rMaxz,-12,-2)); {$EndIf}
-           end;
-          Initialize(Pts);
-          NP := 0;
-          for i := 1 to Pts do begin
-            //use GIS coordinates with x and y horizontal, and z vertical, which are different from the
-            P.x := ScaledX(PointXYZColor^[i].x);
-            P.z := ScaledY(PointXYZColor^[i].y);
-            P.y := ScaledZ(PointXYZColor^[i].z);
-            VertexBuffer[1].Vertices[NP] := P*25;   // Save vertex
-            if (DrapeFile[1] = '') then begin  // Set texture value from elevation color ramp
-               VertexBuffer[1].TexCoord0[NP] := PointF(0,(PointXYZColor^[i].z - rMinz)/ (ZRange));
-            end
-            else begin // Set texture value from draped bitmap
-               VertexBuffer[1].TexCoord0[NP] := PointF((PointXYZColor^[i].x - rMinx)/ (XRange),1-(PointXYZColor^[i].y - rMiny)/ (YRange));
-            end;
-            IndexBuffer[1][NP] := NP;      // Set index to vertex
-            NP := NP+1;
-          end;
-          CloseFile(tFile);
-          Dispose(PointXYZColor);
-          {$IfDef Record3d} WriteLineToDebugFile('LoadPointsWithFullDrapeMap out'); {$EndIf}
-      end;
-
-
-      procedure LoadMapWithColorByCodes(Color2D : boolean);
-      //PLG code to read real elevation data set
-      var
-         PointXYZColor : ^tPointXYZIArray;
-         tfile : File;
-         i,x,y,z,pfd2 : integer;
-         xf,yf : float64;
-      begin
-           if FileExists(PointsFile) then begin
-              {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes in ' + PointsFile); {$EndIf}
-              assignFile(tfile,PointsFile);
-              reset(tFile,sizeOf(tPointXYZI));
-              new(PointXYZColor);
-              BlockRead(tfile,PointXYZColor^,MaxPts,Pts);
-              CloseFile(tFile);
-
-              if NeedRange then begin
-                 //get range of real world coordinates in data set
-                 for i := 1 to Pts do begin
-                    CompareValueToExtremes(PointXYZColor^[i].x, rMinX,rMaxX );
-                    CompareValueToExtremes(PointXYZColor^[i].y, rMinY,rMaxY );
-                    CompareValueToExtremes(PointXYZColor^[i].z, rMinZ,rMaxZ );
-                 end;
-                 {$IfDef Record3d}
-                    WriteLineToDebugFile('xRange=' + RealToString(rminX,12,2) + ' to' +  RealToString(rmaxX,12,2) + '  yRange=' + RealToString(rminY,12,2) + ' to' +  RealToString(rmaxY,12,2));
-                    WriteLineToDebugFile('zRange=' + RealToString(rminZ,12,2) + ' to' +  RealToString(rmaxZ,12,2) );
-                 {$EndIf}
-              end;
-
-             Initialize(Pts);
-
-             SetScaling;
-
-             NP := 0;
-             pfd2 := PointRepeatFactor div 2;
-             for i := 1 to Pts do begin
-               if (PointRepeatFactor = 1) then begin
-                  //we use coordinates with x and y horizontal, and z vertical
-                  P.x := ScaledX(PointXYZColor^[i].x);
-                  P.z := ScaledY(PointXYZColor^[i].y);
-                  P.y := ScaledZ(PointXYZColor^[i].z);
-                  VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
-                  if Color2D then begin
-                     RGBtoXYFloat(PointXYZColor^[i].Int,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
-                     VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
-                  end
-                  else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int/255); // Set texture value from color ramp
-                  IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
-                  NP := NP+1;
-               end
-               else begin
-                  //we use coordinates with x and y horizontal, and z vertical
-                  for x := -pfd2 to pfd2 do begin
-                     for y := -pfd2 to pfd2 do begin
-                        for z := -pfd2 to pfd2 do begin
-                           P.x := ScaledX(PointXYZColor^[i].x) + x * 0.05;
-                           P.z := ScaledY(PointXYZColor^[i].y) + y * 0.05;
-                           P.y := ScaledZ(PointXYZColor^[i].z) + z * 0.05;
-                           VertexBuffer[CurCloud].Vertices[NP] := P*25;                   // Save vertex
-                           if Color2D then begin
-                              RGBtoXYFloat(PointXYZColor^[i].Int,PointXYZColor^[i].Int2,PointXYZColor^[i].Int3,xf,yf);
-                              VertexBuffer[CurCloud].TexCoord0[NP] := PointF(xf,yf);
-                           end
-                           else VertexBuffer[CurCloud].TexCoord0[NP] := PointF(0,PointXYZColor^[i].Int/255); // Set texture value from color ramp
-                           IndexBuffer[CurCloud][NP] := NP;                                // Set index to vertex
-                           NP := NP+1;
-                        end;
-                     end;
-                  end;
-                end;
-             end;
-             Dispose(PointXYZColor);
-             {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes out'); {$EndIf}
-         end
-         else begin
-           {$IfDef Record3d} WriteLineToDebugFile('LoadMapWithColorByCodes missing file ' + PointsFile); {$EndIf}
-         end;
-      end;
-
-var
-   Ext : shortstring;
-begin
-   {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.GeneratePoints in, CurCloud=' + IntToStr(CurCloud)); {$EndIf}
-   {$IfDef Android}
-      Layer3D1.Width := 80;
-   {$EndIf}
-
-   if (CurCloud = 0) then begin
-      {$IfDef Record3d} WriteLineToDebugFile('set default range'); {$EndIf}
-      rMinX := 99e38;
-      rMaxX := -99e38;
-      rMinY := 99e38;
-      rMaxY := -99e38;
-      rMinZ := 99e38;
-      rMaxZ := -99e38;
-      NeedRange := true;
-   end
-   else NeedRange := false;
-
-   Ext := UpperCase(ExtractFileExt(PointsFile));
-   if (Ext = '.XYZB') then LoadPointsWithFullDrapeMap
-   else if (Ext = '.XYZIB') or (Ext = '.XYZI') then begin
-      LoadMapWithColorByCodes(DrapeFile = FullPaletteBitmap);
-   end
-   else begin
-      MessageToContinue('File not supported, ' + PointsFile);
-   end;
-   NPtsUsed[CurCloud] := Pts;
-   {$IfDef Record3d} WriteLineToDebugFile('TView3DForm.GeneratePoints out, pts=' + IntToStr(NPtsUsed[CurCloud])); {$EndIf}
+   Result := -1.0 * MaxX - ScalingGISZAxis * (inz - rMinz) / ZRange * 2 * MaxX;
 end;
 
 
@@ -1170,14 +1012,14 @@ procedure TView3DForm.Layout3D1Render(Sender: TObject; Context: TContext3D);
 var
    i : integer;
 begin
-   {$IfDef Record3dDetailed} WriteLineToDebugFile('TView3DForm.Layout3D1Render in'); {$EndIf}
+   {$IfDef Record3dRender} WriteLineToDebugFile('TView3DForm.Layout3D1Render in'); {$EndIf}
    for i := MaxClouds downto 1 do begin
       if (NPtsUsed[i] > 0) and ShowCloud[i] then begin
-         {$IfDef Record3dDetailed} WriteLineToDebugFile('Draw cloud ' + IntToStr(i)); {$EndIf}
+         {$IfDef Record3dRender} WriteLineToDebugFile('Draw cloud ' + IntToStr(i)); {$EndIf}
          Context.DrawPoints(VertexBuffer[i],IndexBuffer[i],Material[i].Material,1);
       end;
    end;
-   {$IfDef Record3dDetailed} WriteLineToDebugFile('TView3DForm.Layout3D1Render out'); {$EndIf}
+   {$IfDef Record3dRender} WriteLineToDebugFile('TView3DForm.Layout3D1Render out'); {$EndIf}
 end;
 
 
@@ -1267,11 +1109,6 @@ begin
    Layout3D1.Position.Z := Layout3D1.Position.Z - MDDef.OGLDefs.MoveIncr;
 end;
 
-procedure TView3DForm.Form3DActivate(Sender: TObject);
-begin
-end;
-
-
 procedure TView3DForm.Form3DClose(Sender: TObject; var Action: TCloseAction);
 var
    i : integer;
@@ -1326,6 +1163,8 @@ end;
 
 procedure TView3DForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
+   {$IfDef NoMouseMove} exit; {$EndIf}
+   {$IfDef RecordFormIssues} WriteLineToDebugFile(' TView3DForm.FormMouseDown'); {$EndIf}
    Down := PointF(X, Y);
    MouseIsDown := true;
    MouseCapture;
@@ -1333,25 +1172,31 @@ end;
 
 procedure TView3DForm.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
-   //Down := PointF(X, Y);
-   MouseIsDown := false;
+   {$IfDef NoMouseMove} exit; {$EndIf}
+   {$IfDef RecordFormIssues} WriteLineToDebugFile(' TView3DForm.FormMouseUp');   {$EndIf}
    ReleaseCapture;
+   MouseIsDown := false;
 end;
 
 
 procedure TView3DForm.FormMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Single);
 begin
+   {$IfDef NoMouseMove} exit; {$EndIf}
+   //{$IfDef RecordFormIssues} WriteLineToDebugFile(' TView3DForm.FormMouseMove x=' + RealToString(x,-12,-2) + ' y=' + RealToString(y,-12,-2));  {$EndIf}
    if MouseIsDown then begin
       Layout3D1.RotationAngle.X := Layout3D1.RotationAngle.X - ((Y - Down.Y) * 0.1);      //was 0.3
       Layout3D1.RotationAngle.Y := Layout3D1.RotationAngle.Y + ((X - Down.X) * 0.1);
       Down := PointF(X, Y);
+   end
+   else if (x < 0) and (y < 0) then begin
+      MouseIsDown := false;
    end;
 end;
 
 
 procedure TView3DForm.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
 begin
-   Camera1.Position.Vector := Camera1.Position.Vector + Vector3D(0, 0, 1) * ((WheelDelta / 120) * 0.3)
+   Camera1.Position.Vector := Camera1.Position.Vector + Vector3D(0, 0, 1) * ((WheelDelta / 120) * 0.3);
 end;
 
 

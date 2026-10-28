@@ -27,7 +27,9 @@ uses
 
    System.UITypes, System.UIConsts,System.Types,
    FMX.Types3D,FMX.Types,
-   Petmar_types,petmar,PetMar_db,Petmath;
+   Petmar_types,petmar,
+   //PetMar_db,
+   Petmath;
 
 const
    GoogleAPIsURL = 'https://maps.googleapis.com/maps/api/geocode/xml?';   //need for geocoding and not free
@@ -72,7 +74,7 @@ type
    end;
    tPointXYZI = record
       x,y,z : double;
-      int,int2,int3 : byte;
+      int1,int2,int3 : byte;
    end;
    tColoredPoint = record
       x,y,z : single;
@@ -81,6 +83,7 @@ type
 
    tPointXYZArray = array[1..MaxPts] of tPointXYZ;
    tPointXYZIArray = array[1..MaxPts] of tPointXYZI;
+   pPointXYZIArray =  ^tPointXYZIArray;
    tColoredPointBuffer = array[1..MaxPts] of tColoredPoint;
 
 const
@@ -2055,13 +2058,13 @@ type
       DEMIX_UseMedian,
       //DEMIX_IgnoreTies,
       //DEMIX_graph_Retired_DEMs,
-      DEMIXCompositeImage,
-      DEMIX_DoAirOrDirt,
-      DEMIX_DoElevDiff,
-      DEMIX_DoSlopeDiff,
-      DEMIX_DoRuffDiff,
-      DEMIX_DoElevParamGraphs,
-      DEMIX_DoHalfSecDEMs,
+      //DEMIXCompositeImage,
+      //DEMIX_DoAirOrDirt,
+      //DEMIX_DoElevDiff,
+      //DEMIX_DoSlopeDiff,
+      //DEMIX_DoRuffDiff,
+      //DEMIX_DoElevParamGraphs,
+      //DEMIX_DoHalfSecDEMs,
       ProcessLoopsForward : boolean;
       DEMIX_MaxTilesInLegend,
       DEMIXUseBins : byte;
@@ -2647,6 +2650,8 @@ type
       GraphTickSize,
       DefaultGraphXSize,DefaultGraphYSize : int32;
       GraphPalette : shortstring;
+      BestFitLineColor : tPlatformColor;
+      BestFitLineWidth : byte;
 
       NoHistFreqLabels : boolean;
       FrameLineWidth : byte;
@@ -3060,7 +3065,7 @@ type
 var
    MDdef            : tDefaultRecord;
    BackupMDDef      : ^tDefaultRecord;
-   LineColors10 : array[0..10] of tPlatformColor;
+   //LineColors10 : array[0..10] of tPlatformColor;
 
    {$IfDef VCL}
       AspColorNE,AspColorE,AspColorSE,AspColorS,AspColorSW,AspColorW,AspColorNW,AspColorN : TRGBTriple;
@@ -3359,6 +3364,7 @@ initialization
       SedTypeDEM := 0;
    {$EndIf}
    AutoZoomDEMs := false;
+   (*
    LineColors10[0] := claRed;
    LineColors10[1] := claLime;
    LineColors10[2] := claBlue;
@@ -3370,6 +3376,7 @@ initialization
    LineColors10[8] := claYellow;
    LineColors10[9] := claOlive;
    LineColors10[10] := claMaroon;
+   *)
 finalization
 end.
 

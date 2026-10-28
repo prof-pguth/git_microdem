@@ -252,8 +252,6 @@ var
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
-   //procedure RankDEMS(DBonTable : integer; TheDEMs : tStringList);
-   //function AverageScoresOfDEMs(DBonTable : integer; DEMs : tStringList; CriteriaFilter : shortstring; Ext : ExtStr = '_SCR'; Filters : tStringList = nil; Labels : tStringList = Nil) : integer;
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
    procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
@@ -332,8 +330,6 @@ var
 procedure TrimReferenceDEMsToDEMIXtiles;
 
 function AreDEMIXscoresInDB(db : integer) : boolean;
-//procedure ComputeAverageScoresForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats; var NumTies : integer; var WinnerString : shortstring);
-//procedure ComputeAverageEvaluationsForSelectedCriteria(db : integer; DEMs,CriteriaList : tStringList; var Scores : tDEMIXfloats);
 
 procedure CriteriaInFUVdb(db : integer);
 
@@ -470,9 +466,8 @@ function CountryColor(Country : shortstring) : tColor;
 function CommonTileStats(DBonTable : integer) : shortstring;
 function CommonTileStatsNames(DBonTable : integer) : shortstring;
 function CreatePowerLawList(db : integer) : tStringList;
+procedure ComputePowerBySlopeBins(db : integer);
 
-//procedure FindBestReferenceDEMforCopDEM(db : integer);
-//procedure ResultsBestReferenceDEMforCopDEM(db : integer);
 procedure FindBestReferenceDEM(db : integer; DEM : shortstring);
 function DEMIXcreationString(db : integer) : shortstring;
 procedure GetToleranceForCriterion(Criterion : shortstring; var Tolerance : float64);
@@ -485,6 +480,7 @@ const //Demix Database types
   ddtDiffDist = 12;
   ddtHRDEMcompare = 21;
   ddtHRDEMpowerlaw = 22;
+  ddtHRDEMlinearfit = 23;
   ddtGDEMcompare = 31;
   ddtGDEMsloperes = 32;
   ddtGDEMpowerlaw = 33;
@@ -550,7 +546,8 @@ begin
    else if StrUtils.AnsiContainsText(GISdb[db].dbName,'diff_dist') then ItsType := ddtDiffDist
    else if StrUtils.AnsiContainsText(GISdb[db].dbName,'HRDEM') then begin
       if StrUtils.AnsiContainsText(GISdb[db].dbName,'DSM_DTM_compare') then ItsType := ddtHRDEMcompare
-      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'power_law') then ItsType := ddtHRDEMPowerLaw;
+      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'power_law') then ItsType := ddtHRDEMPowerLaw
+      else if StrUtils.AnsiContainsText(GISdb[db].dbName,'linear') then ItsType := ddtHRDEMlinearFit;
    end
    else if StrUtils.AnsiContainsText(GISdb[db].dbName,'GDEM') then begin
       if StrUtils.AnsiContainsText(GISdb[db].dbName,'DSM_DTM_compare') then ItsType := ddtGDEMcompare
@@ -701,12 +698,12 @@ end;
 
 function DEMIX_HRDEM_DB(db : integer) : boolean;
 begin
-   Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('THIN') and GISdb[db].MyData.FieldExists('GRID_M');
+   Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('GRID_M');
 end;
 
 function DEMIX_GDEM_DB(db : integer) : boolean;
 begin
-   Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('GRID_M') ;
+   Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('GRID_SEC') ;
 end;
 
 
@@ -785,7 +782,7 @@ begin
       db.Destroy;
    end
    else begin
-      MessageToContinue('Missing ' + CountryDatums);
+      MessageToContinue('Missing db ' + CountryDatums);
    end;
    {$IfDef RecordDatums} WriteLineToDebugFile('GetVertHorizDatums out');  {$EndIf}
 end;
@@ -805,6 +802,7 @@ begin
    Result := StringReplace(fName, 'filters_', '',[rfIgnoreCase]);
    Result := StringReplace(Result, '.dbf', '',[rfIgnoreCase]);
 end;
+
 
 function ExpandFullFilterName(fName : shortstring) : PathStr;
 begin
@@ -844,7 +842,6 @@ begin
    end;
    DEMIXFilters.Destroy;
 end;
-
 
 
 procedure RemoveInvalidCriterion(var sl : TStringList);

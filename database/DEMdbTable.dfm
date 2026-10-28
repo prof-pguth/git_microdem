@@ -770,7 +770,6 @@ object dbtablef: Tdbtablef
       object ClassBanddiscrimination1: TMenuItem
         Caption = 'Class/Band discrimination'
         Enabled = False
-        OnClick = ClassBanddiscrimination1Click
       end
       object N28: TMenuItem
         Caption = '-'
@@ -2083,7 +2082,7 @@ object dbtablef: Tdbtablef
       end
     end
     object DTDSMcomparison1: TMenuItem
-      Caption = 'DTM/DSM graph comparison this tile'
+      Caption = 'DTM/DSM graph/map comparison this tile'
       object OpenHRDEMDSMDTMLandcover1: TMenuItem
         Caption = 'Open HRDEM DSM+DTM+Landcover'
         OnClick = OpenHRDEMDSMDTMLandcover1Click
@@ -2092,9 +2091,9 @@ object dbtablef: Tdbtablef
         Caption = 'HRDEM slope and slope difference maps'
         OnClick = HRDEMslopeandslopedifferencemaps1Click
       end
-      object Graphslopes1: TMenuItem
-        Caption = 'Graph slopes multiple DEMs'
-        OnClick = Graphslopes1Click
+      object hinnedslopeandslopedifferencemaps1: TMenuItem
+        Caption = 'Thinned slope and slope difference maps'
+        OnClick = hinnedslopeandslopedifferencemaps1Click
       end
       object LoadtestandreferenceDEMs2: TMenuItem
         Caption = 'Load test and reference 1 sec DEMs'
@@ -2103,6 +2102,17 @@ object dbtablef: Tdbtablef
       object MapcomparingtestDEMtoDSMandDTM1: TMenuItem
         Caption = 'Map comparing test DEM to DSM and DTM'
         OnClick = MapcomparingtestDEMtoDSMandDTM1Click
+      end
+      object N55: TMenuItem
+        Caption = '-'
+      end
+      object Graphslopes1: TMenuItem
+        Caption = 'Graph slopes multiple DEMs'
+        OnClick = Graphslopes1Click
+      end
+      object GraphcomparingDTMslopeandpredictedbyresolution1: TMenuItem
+        Caption = 'Graph comparing DTM slope and predicted by resolution'
+        OnClick = GraphcomparingDTMslopeandpredictedbyresolution1Click
       end
     end
     object Calculate1: TMenuItem
@@ -3846,6 +3856,10 @@ object dbtablef: Tdbtablef
         Caption = 'Power law for tile slope versus resolution'
         OnClick = PowerlawforHRDEMDSMDTM1Click
       end
+      object Linearfitfortileslopeversusresolution1: TMenuItem
+        Caption = 'Linear fit for tile slope versus resolution'
+        OnClick = Linearfitfortileslopeversusresolution1Click
+      end
       object GDEMaveragetileslopebyresolution1: TMenuItem
         Caption = 'GDEM average tile slope by resolution'
         OnClick = GDEMaveragetileslopebyresolution1Click
@@ -4273,14 +4287,6 @@ object dbtablef: Tdbtablef
       Caption = 'Compare DSM/DTM graphs'
       OnClick = CompareDSMDTM1Click
     end
-    object DSMDTMpowerlawforalltiles2: TMenuItem
-      Caption = 'Create DB with power law for all tiles and DEMs'
-      OnClick = DSMDTMpowerlawforalltiles2Click
-    end
-    object CreateDBwithlinearfitforalltilesandDEMs1: TMenuItem
-      Caption = 'Create DB with linear fit for all tiles and DEMs'
-      OnClick = CreateDBwithlinearfitforalltilesandDEMs1Click
-    end
     object Powerlawgraphs1: TMenuItem
       Caption = 'Graphs DEM resolution versus fit parameters'
       object ByAVGSLOPE1: TMenuItem
@@ -4295,6 +4301,42 @@ object dbtablef: Tdbtablef
         Caption = 'By FOREST_PC'
         OnClick = ByFORESTPC1Click
       end
+    end
+    object N66: TMenuItem
+      Caption = '-'
+    end
+    object CreatenewDB1: TMenuItem
+      Caption = 'Create new DB'
+      object DSMDTMpowerlawforalltiles2: TMenuItem
+        Caption = 'Create DB with power law for all tiles and DEMs'
+        OnClick = DSMDTMpowerlawforalltiles2Click
+      end
+      object CreateDBwithlinearfitforalltilesandDEMs1: TMenuItem
+        Caption = 'Create DB with linear fit for all tiles and DEMs'
+        OnClick = CreateDBwithlinearfitforalltilesandDEMs1Click
+      end
+      object CreateDBwithpowerlawbyaverageslopebins1: TMenuItem
+        Caption = 'Create DB with power law by average slope bins'
+        OnClick = CreateDBwithpowerlawbyaverageslopebins1Click
+      end
+    end
+    object Addtodatabasetable1: TMenuItem
+      Caption = 'Add to database table'
+      object PredictedDTMslopes1: TMenuItem
+        Caption = 'Compute predicted DTM slopes'
+        OnClick = PredictedDTMslopes1Click
+      end
+      object ComputepredictedDTMslopesv21: TMenuItem
+        Caption = 'Compute predicted DTM slopes v2'
+        OnClick = ComputepredictedDTMslopesv21Click
+      end
+      object Addcountrycolors2: TMenuItem
+        Caption = 'Add country colors'
+        OnClick = Addcountrycolors2Click
+      end
+    end
+    object N65: TMenuItem
+      Caption = '-'
     end
     object DSMDTMcomparison1: TMenuItem
       Caption = 'Less useful DSM/DTM comparison'
@@ -4317,10 +4359,6 @@ object dbtablef: Tdbtablef
     object Cleanupdoublecountryintilenames1: TMenuItem
       Caption = 'Clean up double country in tile names'
       OnClick = Cleanupdoublecountryintilenames1Click
-    end
-    object Addcountrycolors2: TMenuItem
-      Caption = 'Add country colors'
-      OnClick = Addcountrycolors2Click
     end
   end
 end

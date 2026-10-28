@@ -99,7 +99,8 @@ implementation
 {$R *.dfm}
 
 uses
-   Nevadia_main,DEMDefs,Make_Tables,DEMCoord,Petmath,Petmar,Petmar_geology,
+   Nevadia_main,DEMDefs,Make_Tables,DEMCoord,
+   Petmath,Petmar,Petmar_geology,PetImage,
    BaseMap,
    DEMdips,DEM_Manager,DEMDataBase;
 
@@ -112,7 +113,7 @@ begin
       ThreePointer.CheckBox4.Checked := MDDef.AutoIncGeoColor;
       ThreePointer.CurrentColorNumber := 0;
       ThreePointer.Show;
-      MDDef.GeoContactColor := LineColors10[ThreePointer.CurrentColorNumber];
+      MDDef.GeoContactColor := ConvertTColorToPlatformColor(WinGraphColors(ThreePointer.CurrentColorNumber));
    end;
 end;
 
@@ -273,7 +274,7 @@ begin
   if MDDef.AutoIncGeoColor then begin
      inc(CurrentColorNumber);
      if (CurrentColorNumber > 10) then CurrentColorNumber := 0;
-     MDDef.GeoContactColor := LineColors10[CurrentColorNumber];
+     MDDef.GeoContactColor := ConvertTColorToPlatformColor(WinGraphColors(CurrentColorNumber));
      ColorLineWidthBitBtn(BitBtn1,MDDef.GeoContactColor,MDDef.GeoContactWidth);
   end;
 end;

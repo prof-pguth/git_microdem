@@ -8,7 +8,7 @@ inherited FFTGraph: TFFTGraph
   end
   inherited ToolBar1: TToolBar
     object SeekPeakButton: TSpeedButton
-      Left = 353
+      Left = 364
       Top = 0
       Width = 25
       Height = 22
@@ -25,7 +25,7 @@ inherited FFTGraph: TFFTGraph
       OnClick = SeekPeakButtonClick
     end
     object fftbutton: TSpeedButton
-      Left = 378
+      Left = 389
       Top = 0
       Width = 23
       Height = 22
@@ -46,7 +46,7 @@ inherited FFTGraph: TFFTGraph
       OnClick = fftbuttonClick
     end
     object SlopeSpeedButton: TSpeedButton
-      Left = 401
+      Left = 412
       Top = 0
       Width = 23
       Height = 22
@@ -61,12 +61,10 @@ inherited FFTGraph: TFFTGraph
     end
   end
   inherited MainMenu1: TMainMenu
-    inherited File1: TMenuItem
-      inherited Close1: TMenuItem
-        OnClick = nil
-      end
+    inherited Option1: TMenuItem
+      GroupIndex = 3
     end
-    object Reprocess1: TMenuItem [4]
+    object Reprocess1: TMenuItem
       Caption = 'Reprocess  FFT'
       GroupIndex = 3
       object Changeparameters1: TMenuItem
@@ -74,8 +72,10 @@ inherited FFTGraph: TFFTGraph
         OnClick = Changeparameters1Click
       end
     end
-    inherited Option1: TMenuItem
+    object File1: TMenuItem
       GroupIndex = 3
+      object Close1: TMenuItem
+      end
     end
   end
 end

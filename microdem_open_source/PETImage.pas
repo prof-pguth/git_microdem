@@ -262,7 +262,7 @@ procedure AllGraphsOneImage(NumCols : integer = -99; legendOnRight : boolean = f
 type
    tPalette256 = (p256LasClass,p256Gray,p256Terrain,p256Spectrum,p256RedRamp,p256GreenRamp,p256BlueRamp);
 
-function Palette256Bitmap(Palette256 : tPalette256) : PathStr;
+function Palette256Bitmap(Palette256 : tPalette256; fName : PathStr) : PathStr;
 function FullPaletteBitmap : PathStr;
 procedure RGBtoXY(r,g,b : byte; var x,y : integer);     inline;
 procedure RGBtoXYFloat(r,g,b : byte; var x,y : float64);  inline;
@@ -300,7 +300,7 @@ var
    NumWinGraphColors : integer;
    WinGraphColorArray : array[0..255] of tColor;
 
-function WinGraphColors(i : integer) : tColor;
+function WinGraphColors(i : integer) : tColor; inline;
 
 procedure LoadWinGraphColors;
 procedure PickWinGraphColors;
@@ -386,7 +386,7 @@ type
 
 
 
-function WinGraphColors(i : integer) : tColor; inline;
+function WinGraphColors(i : integer) : tColor;
 begin
     Result := WinGraphColorArray[succ(i mod succ(NumWinGraphColors))];
 end;
@@ -975,7 +975,7 @@ begin
 end;
 
 
-function Palette256Bitmap(Palette256 : tPalette256) : PathStr;
+function Palette256Bitmap(Palette256 : tPalette256; fName : PathStr) : PathStr;
 var
    BMP : tMyBitmap;
    BMPMemory : tBMPMemory;
@@ -983,43 +983,37 @@ var
 begin
    CreateBitmap(bmp,1,256);
    BMPMemory := tBMPMemory.Create(bmp);
-   {$IfDef ExPointCloud}
-   {$Else}
-      if (Palette256 = p256LasClass) then begin
-         Result := ProgramRootDir + 'las_palette256.bmp';
-         for i := 0 to MaxLasCat do BMPMemory.SetPixelColor(0,i,LAS_RGB_colors[i]);
-      end;
-   {$EndIf}
+   Result := fname;
+   if (Palette256 = p256LasClass) then begin
+      //Result := MDtempDir + 'las_palette256.bmp';
+      for i := 0 to MaxLasCat do BMPMemory.SetPixelColor(0,i,LAS_RGB_colors[i]);
+   end;
    if (Palette256 = p256Gray) then begin
-      Result := ProgramRootDir + 'gray_palette256.bmp';
+      //Result := MDtempDir + 'gray_palette256.bmp';
       for i := 0 to 255 do BMPMemory.SetPixelRGB(0,i,i,i,i);
    end
    else if (Palette256 = p256RedRamp) then begin
-      Result := ProgramRootDir + 'red_palette256.bmp';
+      //Result := MDtempDir + 'red_palette256.bmp';
       for i := 0 to 255 do BMPMemory.SetPixelRGB(0,i,i,0,0);
    end
    else if (Palette256 = p256GreenRamp) then begin
-      Result := ProgramRootDir + 'green_palette256.bmp';
+      //Result := MDtempDir + 'green_palette256.bmp';
       for i := 0 to 255 do BMPMemory.SetPixelRGB(0,i,0,i,0);
    end
    else if (Palette256 = p256BlueRamp) then begin
-      Result := ProgramRootDir + 'blue_palette256.bmp';
+      //Result := MDtempDir + 'blue_palette256.bmp';
       for i := 0 to 255 do BMPMemory.SetPixelRGB(0,i,0,0,i);
    end
    else if (Palette256 = p256Spectrum) then begin
-      {$IfDef VCL}
-         Result := ProgramRootDir + 'spectrum_palette256.bmp';
-         for i := 0 to 255 do BMPMemory.SetPixelColor(0,i,ConvertTColorToPlatformColor(SpectrumColorFunct(i,0,255)));
-      {$EndIf}
+      //Result := MDtempDir + 'spectrum_palette256.bmp';
+      for i := 0 to 255 do BMPMemory.SetPixelColor(0,i,ConvertTColorToPlatformColor(SpectrumColorFunct(i,0,255)));
    end
    else if (Palette256 = p256Terrain) then begin
-      {$IfDef VCL}
-         Result := ProgramRootDir + 'terrain_palette256.bmp';
-         for i := 0 to 255 do BMPMemory.SetPixelColor(0,i,ConvertTColorToPlatformColor(TerrainTColor(i,0,255)));
-      {$EndIf}
+      //Result := MDtempDir + 'terrain_palette256.bmp';
+      for i := 0 to 255 do BMPMemory.SetPixelColor(0,i,ConvertTColorToPlatformColor(TerrainTColor(i,0,255)));
    end;
    BMPMemory.Destroy;
-   if not FileExists(Result) then BMP.SaveToFile(Result);
+   BMP.SaveToFile(Result);
    BMP.Free;
 end;
 
