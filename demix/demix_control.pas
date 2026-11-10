@@ -14,7 +14,7 @@ unit demix_control;
 
 {$Define IncludeCurvatureLSPs}
 //{$Define OpenDEMIXAreaAndCompare}
-{$Define IncludeOldDEMopen}
+//{$Define IncludeOldDEMopen}
 
 
 
@@ -133,7 +133,6 @@ const
    procedure RecognizeDEMIXVersion(DB : integer);
 
    function GetCountryForArea(Area : shortString) : shortstring;
-   procedure SummarizeEGM96toEGM2008shifts;
    procedure SetDirtAirballBackground(var Result : tThisBaseGraph; DEMType : shortstring);   //brown dirtball for STM, blue airball for DSM
 
 
@@ -145,8 +144,6 @@ const
     function WinnerAndTies(DB : integer; DEMs : tStringList; Tolerance : float32) : shortstring;
     function CriterionTieTolerance(Criterion : shortstring) : float32;
 
-function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
-function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
 procedure SetParamsForDEMIXmode;
 
@@ -154,7 +151,6 @@ procedure ReinterpolateTestDEMtoHalfSec(var DEM : integer; OpenMap : boolean);
 
 function DEMsinIndex(Index : tDEMIXindexes) : integer;
 
-procedure OpenDEMIXAreaMaps;
 
 procedure GetAreaDEMNames(TestAreaName : shortstring);
 
@@ -180,6 +176,7 @@ const
 procedure Get_DEMIX_CriteriaToleranceFName(db : integer);
 function GetListDEMIXOrderedCriteria(DEMIX_criteria_tolerance_fName : PathStr) : tStringList;
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
+function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boolean;
 
 
 {$IfDef IncludeEarlyDEMIXmaps}
@@ -189,6 +186,8 @@ procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
        function BestCopOrALOSmap(RefDEM,ALOS,Cop : integer; Tolerance : float32; AName : shortString) : integer;
        function RGBBestOfThreeMap(RefDEM,ALOS,Cop,Fab,Merge : integer; Tolerance : float32; AName : shortString) : integer;
        procedure NumHighLowNeighborsMaps(DEM,Radius : integer; Tolerance : float32; var HighNeigh,LowNeigh : integer);
+       function LoadLandcoverForDEMIXarea(AreaName : shortstring; OpenMap : boolean = true) : integer;
+       procedure OpenDEMIXAreaMaps;
 {$EndIf}
 
 {$IfDef FUV_RangeScales}
@@ -201,6 +200,7 @@ procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
 
    {$IfDef OldDEMIXroutines}
       procedure TransposeDEMIXwinecontestGraph(DBonTable : integer);
+      procedure SummarizeEGM96toEGM2008shifts;
    {$EndIf}
 
    {$IfDef IncludeOldDEMopen}
@@ -208,11 +208,9 @@ procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);
        function LoadDEMIXReferenceDEMs(AreaName : shortstring; var RefDEM : integer; OpenMaps : boolean = true) : boolean;
        function LoadDEMIXCandidateDEMs(AreaName : ShortString;  OpenMaps : boolean = false; AllCandidates : boolean = true) : boolean;
        procedure LoadThisDEMIXTile(AreaName,TileName : shortstring; OpenMaps : boolean = true);
-       //procedure LoadCopAndLancoverForDEMIXTile(AreaName : shortstring; TileName : shortstring = '');
    {$EndIf}
 
 procedure FindDSMslopeLessThanDEM(DBonTable : integer);
-
 
 
 implementation
@@ -229,7 +227,6 @@ uses
 
 var
    DoHorizontalShift : boolean;
-
 
    {$IfDef IncludeOldDEMopen}
       {$I demix_open_dems.inc}
@@ -962,16 +959,11 @@ begin
 
 
    if (MDDef.DEMIX_mode = dmFull) then begin
-      //NumPtDEMs := 6;
-      //NumAreaDEMs := 1;
       AreaListFName := DEMIXSettingsDir + 'areas_list.txt';
       DEMIXModeName := 'FULL';
       DEMIX_Under_ref_dtm := '';
       DEMIX_Under_test_dems := '';
    end;
-   //NumDEMIXtestDEM := NumPtDEMs + NumAreaDEMs;
-
-   //DEMListFName := DEMIXSettingsDir + 'dems_' + DEMIXModeName + '.txt';
    if DEMIXanalysismode in [DEMIXtraditional] then begin
       Diff_dist_results_dir := DEMIX_Base_DB_Path + DEMIXModeName + '_diff_dist_results\';
       SSIMresultsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_ssim_results\';
@@ -989,8 +981,6 @@ begin
       ChannelMissesDir := DEMIX_Base_DB_Path + DEMIXModeName + '_channel_misses\';
    {$EndIf}
    GeomorphonsDir := DEMIX_Base_DB_Path + DEMIXModeName + '_geomorphons\';
-
-   //MDDef.DEMIX_Tile_Full := 25;
    {$If Defined(RecordDEMIXStart) or Defined(RecordDEMIXversion)} WriteLineToDebugFile('SetParamsForDEMIXmode out, DEMIX_mode=' + IntToStr(MDDef.DEMIX_mode) + ' ' + DEMIXModeName); {$EndIf}
 end;
 
@@ -1096,10 +1086,6 @@ begin
    DEMIX_Ref_Merge := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_merge\';
    DEMIX_Ref_Half_sec := DEMIX_Base_DB_Path + 'wine_contest_v2_ref_0.5sec\';
    DEMIX_diff_dist  := DEMIX_Base_DB_Path + 'wine_contest_v2_diff_dist\';
-   //DEMIX_profile_test_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_topo_profiles\';
-  // DEMIX_distrib_graph_dir := DEMIX_Base_DB_Path + 'wine_contest_v2_difference_distrib_graphs\';
-   //DEMIX_3DEP_Dir := DEMIX_Base_DB_Path + 'wine_contest_v2_3dep\';
-   //DEMIX_diff_maps_dir  := DEMIX_Base_DB_Path + 'wine_contest_difference_maps\';
 
    {$IfDef DEMIX_SAGA_channels}
       DEMIX_test_DEMs_no_sink := DEMIX_Base_DB_Path + 'area_test_dems_no_sink\';
@@ -1126,7 +1112,6 @@ begin
        SafeMakeDir(saga_out_ref_dir);
        SafeMakeDir(saga_out_test_dir);
    {$EndIf}
-
 
    DEMIX_final_DB_dir := DEMIX_Base_DB_Path + 'wine_contest_database\';
    SafeMakeDir(DEMIX_final_DB_dir);
@@ -1222,56 +1207,6 @@ begin
    Table.Destroy;
 end;
 
-
-procedure SummarizeEGM96toEGM2008shifts;
-var
-   Files,Summary : tStringList;
-   i,DEM,Geoid : integer;
-   TStr : shortstring;
-   fName : PathStr;
-
-   procedure AddPoint(col,row : integer);
-   var
-      Lat,Long : float64;
-      z : float32;
-   begin
-      DEMglb[DEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-      DEMGlb[Geoid].GetElevFromLatLongDegree(Lat,Long,z);
-      TStr := Tstr + ',' + RealToString(z,-12,-2);
-   end;
-
-begin
-   GetDEMIXpaths(false);
-   Geoid := OpenNewDEM(GeoidDiffFName,false);
-
-   Summary := tstringlist.create;
-   Summary.Add('AREA,SHIFT_NW,SHIFT_NE,SHIFT_CENT,SHIFT_SE,SHIFT_SW');
-   Files := nil;
-   Petmar.FindMatchingFiles(DEMIX_Ref_Half_sec,'*.tif',Files,0);
-   StartProgress('EGM96 shift summary');
-   for i := 0 to pred(Files.Count) do begin
-      UpdateProgressbar(i/Files.Count);
-      fName := Files.Strings[i];
-      if StrUtils.AnsiContainsText(UpperCase(fname),'_DSM') then begin
-      end
-      else begin
-         DEM := OpenNewDEM(fName,false);
-         TStr := ExtractFileNameNoExt(fName);
-         AddPoint(DEMglb[DEM].DEMHeader.NumRow,0);
-         AddPoint(DEMglb[DEM].DEMHeader.NumRow,DEMglb[DEM].DEMHeader.NumCol);
-         AddPoint(DEMglb[DEM].DEMHeader.NumRow div 2,DEMglb[DEM].DEMHeader.NumCol div 2);
-         AddPoint(0,0);
-         AddPoint(DEMglb[DEM].DEMHeader.NumCol,0);
-         Summary.Add(TStr);
-         CloseSingleDEM(DEM);
-      end;
-   end;
-   CloseAllDEMs;
-   Files.Destroy;
-   EndProgress;
-   fName := NextFileNumber(MDTempDir,'EGM96_shift_summary','.dbf');
-   StringList2CSVtoDB(Summary,fName);
-end;
 
 
 function GetWinnerBetweenTwoDEMs(dbOnTable : integer; DEM1,DEM2 : shortstring; Tolerance : float32) : shortstring;

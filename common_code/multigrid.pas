@@ -93,7 +93,7 @@ type
       procedure LoadLandsatMultigrid(SatImageIndex: integer; LoadAll : boolean);
       procedure LoadHyperion;
       procedure LoadMultigridsFromStringList(TheFilesSL : tStringList);
-      function OpenNewGrid(theName: ShortString; zUnits :  tElevUnit; Precision : tDEMprecision): integer;
+      function OpenNewGrid(theName: ShortString; zUnits :  tElevUnit; Precision : byte): integer;
 
       procedure SaveMultigrids;
       procedure ReinterpolateAllToSameResolution;
@@ -864,7 +864,7 @@ begin
       Result := GISdb[db].CreateScatterGram(TStr,GISdb[db].MonthFieldName,'PARAMETER',clRed,true,MG_Name + ' at ' + LatLongDegreeToString(Lat,Long,VeryShortDegrees),'Month',MG_Name);
       Result.GraphDraw.LLcornerText := LatLongDegreeToString(Lat,Long,VeryShortDegrees) + ' ' + Tstr;
       Result.GraphDraw.ShowLine[1] := true;
-      Result.RedrawDiagram11Click(Nil);
+      Result.RedrawDiagram;
       {$IfDef RecordMultiGrids} WriteLineToDebugFile('tMultiGridArray.AnnualParameterGraph scattergram created'); {$EndIf}
       CloseSingleDB(db);
    end
@@ -1160,7 +1160,7 @@ begin
           aGraph.GraphDraw.DataFilesPlottedTable := Petmar.NextFileNumber(MDTempDir, 'prob_dist_',DefaultDBExt);
           StringList2CSVtoDB(Results,aGraph.GraphDraw.DataFilesPlottedTable,true);
           aGraph.GraphDraw.DataFilesPlotted.Clear;
-          aGraph.RedrawDiagram11Click(Nil);
+          aGraph.RedrawDiagram;
        end;
        ClearGISFilter;
    end;
@@ -1747,7 +1747,7 @@ begin
 end;
 
 
-function tMultiGridArray.OpenNewGrid(theName : ShortString; zUnits : tElevUnit; Precision : tDEMprecision) : integer;
+function tMultiGridArray.OpenNewGrid(theName : ShortString; zUnits : tElevUnit; Precision : byte) : integer;
 var
    NewHeader : tDEMheader;
 begin

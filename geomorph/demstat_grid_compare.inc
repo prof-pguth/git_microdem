@@ -503,9 +503,9 @@ end;
 
 procedure MissingPointsInGrids(MapForm : tMapForm; DEM1 : integer = 0; DEM2 : integer = 0);
 var
-   Incr,Col,Row : integer;
-   Total : int64;
-   Lat,Long,XGrid,YGrid : float64;
+   {Incr,}Col,Row : integer;
+   //Total : int64;
+   Lat,Long{,XGrid,YGrid} : float64;
    z1,z2 : float32;
    GridLimits : tGridLimits;
    sl : tStringList;
@@ -746,7 +746,7 @@ begin
    MessageToContinue('Changed: ' + IntToStr(Change) + ' pixels, ' + RealToString ( 100 * Change / (Change + NoChange), -8,2) + '% of grid');
    if ShowSatProgress then EndProgress;
    DEMGlb[Result].SetupMap(true);
-end;
+end {function MakeChangeMap};
 
 
 procedure MakeElevSlopeAspectDifferenceMap;
@@ -760,7 +760,7 @@ var
    dp,z1,z2 : float32;
    Lat,Long,fc,fr : float64;
    IdenticalGrids : boolean;
-   ThisGraph : TThisBaseGraph;
+   //ThisGraph : TThisBaseGraph;
    SlopeAspect1,SlopeAspect2 : tSlopeAspectRec;
 
             function OpenOneResult(NewName : Shortstring; gt : tElevUnit) : integer;

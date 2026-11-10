@@ -11,7 +11,7 @@ unit dem_manager;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IfDef DEBUG}
-      {$Define RecordCloseDEM}
+      //{$Define RecordCloseDEM}
       //{$Define RecordCleanUpTempDir}
       //{$Define TrackHorizontalDatum}
       //{$Define ShortRecordCloseDEM}
@@ -128,6 +128,8 @@ procedure MakeDBwithLC10FileInventory;
     procedure OpenLidarMulti(theDir : PathStr = '');
 {$EndIf}
 
+function NumOpenMaps : integer;
+
 procedure GeotiffMetadata(MDVersion : tMDVersion; fName : PathStr);
 
 function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolean;
@@ -151,6 +153,9 @@ function LoadDatumShiftGrids(var LocalToWGS84,WGS84toEGM2008 : integer) : boolea
    procedure EditDEMHeader;
 
    procedure FastRedrawAllMaps;
+   procedure ForceCompleteRedrawAllMaps;
+
+   procedure DebugWriteOpenGridsMaps(where : shortstring);
 
    function FileExistsErrorMessage(InName : PathStr) : boolean;
 
@@ -267,6 +272,11 @@ uses
    DEMDef_routines,
    DEMhandW,
    BaseMap;
+
+Procedure DebugWriteOpenGridsMaps(where : shortstring);
+begin
+   WriteLineToDebugFile(Where + '   Grids Open= '+ IntToStr(NumDEMDataSetsOpen) + '  maps open=' + IntToStr(NumOpenMaps));
+end;
 
 
 function IsThisWebExtractDEM(aDEm : shortstring) : boolean;
@@ -994,6 +1004,18 @@ end;
        end;
     end;
 
+   procedure ForceCompleteRedrawAllMaps;
+   var
+      i : integer;
+   begin
+      for i := 0 to pred(WMDEM.MDIChildCount) do
+         if WMDEM.MDIChildren[i] is tMapForm then begin
+            (WMDEM.MDIChildren[i] as TMapForm).DoCompleteMapRedraw;
+         end;
+   end;
+
+
+
    procedure EditDEMHeader;
    var
       FileName : PathStr;
@@ -1584,45 +1606,18 @@ end;
          end;
       end;
 
-{$If Defined(ExLabDownLoads)}
-{$Else}
-
-      procedure DownloadandUnzipDataFileIfNotPresent(pName : PathStr; Force : boolean = false);
-      //pname is a subdirectory of c:\mapdata\, without the final backslash
-      var
-         pName2 : PathStr;
-      begin
-         {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
-         StopSplashing;
-         if (not Force) and ValidPath(MainMapData + pname) then begin
-            {$IfDef RecordDownload} WriteLineToDebugFile('DownloadandUnzipDataFileIfNotPresent, already there'); {$EndIf}
-            exit;
-         end;
-
-         pName2 := pName + '.7z';
-         {$IfDef RecordDownload} WriteLineToDebugFile('Try 7z'); {$EndIf}
-         if not DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false) then begin
-            {$IfDef RecordDownload} WriteLineToDebugFile('Try zip'); {$EndIf}
-            pName2 := pName + '.zip';
-            DownloadFileFromWeb(WebDataDownLoadDir + pName2,MainMapData + pName2,false);
-         end;
-         pName2 := MainMapData + pName2;
-         if FileExists(pName2) then begin
-            UnzipSingleFile(pName2);
-            File2Trash(pName2);
-            {$IfDef RecordDownload} WriteLineToDebugFile('success DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
-         end
-         else begin
-            {$IfDef RecordDownload} WriteLineToDebugFile('failure DownloadandUnzipDataFileIfNotPresent for ' + PName); {$EndIf}
-            MessageToContinue('Download fail, ' + pName);
-         end;
-      end;
-{$EndIf}
 
 {$EndIf}
 
+function NumOpenMaps : integer;
+var
+   i : integer;
+begin
+   Result := 0;
+   for i := pred(WMDEM.MDIChildCount) downto 0 do
+      if (WMDEM.MDIChildren[i] is DEMMapf.tMapForm) then inc(Result);
 
-
+end;
 
 function OpenDBString : shortstring;
 begin
@@ -1658,7 +1653,7 @@ var
             if (WMDEM.MDIChildren[i] is wType) then inc(nf);
          if (nf > 0) then begin
             Result.Add('');
-            Result.Add(wName + ' open');
+            Result.Add(wName + ' open (n=' + IntToStr(nf) + ')');
             for i := pred(WMDEM.MDIChildCount) downto 0 do begin
                if WMDEM.MDIChildren[i] is wType then begin
                   if (wType = DEMMapf.tMapForm) then Extra := (WMDEM.MDIChildren[i] as TMapForm).MapDraw.MapSizeString
@@ -1676,7 +1671,7 @@ begin
    Result := tStringList.Create;
 
    if (NumDEMDataSetsOpen > 0) then begin
-      Result.Add('DEMs/grids open');
+      Result.Add('DEMs/grids open (n=' + IntToStr(NumDEMDataSetsOpen) + ')');
       for i := 1 to MaxDEMDataSets do begin
          if ValidDEM(i) then begin
             Result.Add(IntegerToString(i,5) + ' ' + DEMGlb[i].AreaName + ' (' + DEMGlb[i].ColsRowsString + ' ' +  DEMGlb[i].DemSizeString + ' ' + DEMGlb[i].zRange + DEMGlb[i].HorizontalDEMSpacing + ')');
@@ -1688,7 +1683,7 @@ begin
    {$Else}
       if (NumSatImageOpen > 0) then begin
          Result.Add('');
-         Result.Add('Images open');
+         Result.Add('Images open (n=' + IntToStr(NumSatImageOpen) + ')');
          for i := 1 to MaxSatAllowed do begin
             if (SatImage[i] <> Nil) then begin
                Result.Add(IntegerToString(i,5) + '  ' + SatImage[i].SceneBaseName);

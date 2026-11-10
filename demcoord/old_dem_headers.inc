@@ -16,7 +16,7 @@ type
 type
    tHeaderRecordv3 = packed record  //for a DEM, version 3, introduced 22 May 2010
       DEMUsed      : tDEMAvailable;
-      DEMPrecision : tDEMprecision;
+      DEMPrecision : byte;
       DataSpacing  : tSpacingUnit;
       MaxElev,                    {max elevation in data set}
       MinElev,                    {min elevation in data set}
@@ -55,7 +55,7 @@ type
 
    tHeaderRecordV2 = packed record  //for a DEM, version 2, introduced 17 May 2004
       DEMUsed      : tDEMAvailable;
-      DEMPrecision : tDEMprecision;
+      DEMPrecision : byte;
       DataSpacing  : tSpacingUnit;
       NumCol,                    {number of columns in data set}
       NumRow       : int16;      {number of rows in data set}

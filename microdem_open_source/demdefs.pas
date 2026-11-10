@@ -862,11 +862,16 @@ const
    nmTRIK = 8;
    nmRRI = 9;
 
+   //tDEMprecision
+   SmallIntDEM = 0;
+   FloatingPointDEM = 1;
+   ByteDEM = 2;
+   WordDEM = 3;
+   LongWordDEM = 4;
 
 type
    tDigitizeDatum = byte;
 
-   tDEMprecision = (SmallIntDEM,FloatingPointDEM,ByteDEM,WordDEM,LongWordDEM);
 
    tProjType = (AlbersEqAreaConicalEllipsoid,Cassini,EquiDistantCylindrical,Gnomonic,HammerProj,LamAzEqArea,Mercator,MercatorEllipsoid,Mollweide,
       OrthoProj,PolarStereographicEllipsoidal,SinusProj,SinusEllipsoidal,OldStereographic,UTMEllipsoidal,VanDerGrinten,MillerCylindrical,
@@ -875,7 +880,7 @@ type
 
    tDEMheader = packed record  //for a DEM, version 4, introduced July 2014
       DEMUsed      : byte;
-      DEMPrecision : tDEMprecision;
+      DEMPrecision : byte;
       DataSpacing  : tSpacingUnit;
       ElevUnits    : tElevUnit;
       h_DatumCode : ShortString;
@@ -3016,12 +3021,6 @@ type
 
 
 type
-   (*
-   tNormal  = array[0..MaxElevArraySize] of tVector32;  {runs S->N}
-   tNormalPointer = ^tNormal;
-   tNormals = array[0..MaxColsInRAM] of tNormalPointer;
-   tNormalsPointer = ^tNormals;
-   *)
    tNormals = array[1..3] of integer;  //the normals are now stored in three grids to simplify compuations
 
    tShortFloatCol = array[0..MaxElevArraySize] of float32;

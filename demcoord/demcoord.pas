@@ -71,7 +71,7 @@ unit DEMCoord;
       //{$Define GeotiffCorner}
       //{$Define RecordHorizon}
       //{$Define RecordZRange}
-      //{$Define RecordDEMMemoryAllocations}
+      {$Define RecordDEMMemoryAllocations}
       //{$Define RecordFilter}
       //{$Define RecordReadMDDEM}
       //{$Define RecordLatSpacingValues}
@@ -81,7 +81,7 @@ unit DEMCoord;
       //{$Define RecordNLCD}
       //{$Define RecordMoments}
       //{$Define RecordSetup}
-      //{$Define RecordCreateNewDEM}
+      {$Define RecordCreateNewDEM}
       //{$Define RecordMapDraw}
       //{$Define RecordProjectionParameters}
       //{$Define GeotiffSave}
@@ -107,7 +107,7 @@ unit DEMCoord;
       //{$Define RecordWorldFile}
       //{$Define RecordCloseDEM}
       //{$Define RecordGDAL}
-      {$Define RecordFragmentation}
+      //{$Define RecordFragmentation}
       //{$Define RecordMerge}
       //{$Define RecordImport}
       //{$Define RecordShortDefineDatum}
@@ -233,7 +233,7 @@ type
          VATFileName      : PathStr;
          GeotiffImageDesc : shortstring;
          Zpercens         : ^tFloatArray1000;
-         Normals               : tNormals;
+         Normals          : tNormals;
          DEMBoundBoxGeo,
          DEMBoundBoxProjected,
          DEMBoundBoxDataGrid,
@@ -449,10 +449,7 @@ type
             procedure ExpandSpecifiedZRange;
             procedure RoundZRangeByPercentileToByte;
             procedure GetRectangleFromDEMGrid(var GridLimits : tGridLimits);
-            {$IfDef ExNLCD}
-            {$Else}
-               procedure CheckForLandCover;
-            {$EndIf}
+            function CheckForLandCover : boolean;
          {$EndIf}
 
          {$IfDef ExDEMReports}
@@ -553,8 +550,8 @@ type
 
          procedure AssignVerticalDatum(NewVertDatumCode : integer);
 
-         function CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
-         function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+         function CloneAndOpenGridSetMissing(NewPrecision : byte; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+         function ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : byte; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 
          function ThinThisDEM(OpenMap : boolean = true; fName : PathStr = ''; ThinFactor : integer = 0; DoItByAveraging : boolean = false) : integer;
          function HalfPixelAggregation(fName : PathStr; PixelIs : byte; SaveFile : boolean; Offset : integer = 0) : integer;
@@ -758,7 +755,7 @@ procedure ReadASCIIArcGrid(FileName : PathStr; WantedDEM : tDEMDataSet; var Erro
 procedure ReadFusionDTM(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean);
 
 function MakeNewBlankDEMMap(LatCorner,LongCorner,LatSize,LongSize : float64; xpixels,ypixels : integer; OpenMap : boolean = true) : integer;
-function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true; Resolution : byte = FloatingPointDEM; Spacing : float64 = -99) : integer;
 
 procedure ConvertUKOSDEMtoUTM(BigDEM : integer; ToUTM : boolean);
 function UK_OS_projection(fName : PathStr) : boolean;
@@ -823,7 +820,7 @@ var
    DEMGlb : tDEMDataSetArray;
    GhostContour  : float64;
    RouteTiffThroughGDAL,
-   OpeningNewGrid,
+   //OpeningNewGrid,
    SkipSphericalCheck,
    SubsequentDEM,
    FoundFootContours : boolean;
@@ -1313,7 +1310,7 @@ begin
 end;
 
 
-function tDEMDataSet.ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+function tDEMDataSet.ThinAndOpenGridSetMissing(ThinFactor : integer; NewPrecision : byte; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
    NewHeadRecs : tDEMheader;
 begin
@@ -1323,7 +1320,7 @@ begin
 end;
 
 
-function tDEMDataSet.CloneAndOpenGridSetMissing(NewPrecision : tDEMprecision; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
+function tDEMDataSet.CloneAndOpenGridSetMissing(NewPrecision : byte; Gridname : shortstring; ElevUnits : tElevUnit) : integer;
 var
    NewHeadRecs : tDEMheader;
 begin
@@ -2194,7 +2191,7 @@ end;
 function tDEMDataSet.FigureOpenness(Col,Row,PixelsNS,PixelsEW,PixelsDia : integer; var  Upward,Downward : float64; var Graph : tThisBaseGraph) : boolean;
 var
    UpAngle,DownAngle,zp : float32;
-   RaysUsed,PixelsInDirection : integer;
+   RaysUsed{,PixelsInDirection} : integer;
 begin
    Result := IsSurroundedPoint(Col,Row);
    if Not Result then exit;
@@ -2229,8 +2226,8 @@ end;
 
 function tDEMDataSet.LandCoverGrid : boolean;
 begin
-   Result := DEMheader.ElevUnits in [euNLCD2001up,euLandFire,euNLCD1992,euGLOBCOVER,euGLC2000,euCCAP,euCCI_LC,euS2GLC,euNLCD_Change,euGLCS_LC100,euMeybeck,euGeomorphon,euIwahashi,
-      euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover,euCOPEDM,euCOPFLM,euTANEDM,euNeoEDM,euNeoFLM,euGRC_L1,euGRC_L2,euGRC_L3];
+   Result := DEMheader.ElevUnits in [euNLCD2001up,euLandFire,euNLCD1992,euGLOBCOVER,euGLC2000,euCCAP,euCCI_LC,euS2GLC,euNLCD_Change,euGLCS_LC100,euMeybeck,euGeomorphon,
+      euIwahashi,euESRI2020,euPennock,euWorldCover10m,euLCMAP,euSent2SLC,euSimpleLandCover,euCOPEDM,euCOPFLM,euTANEDM,euNeoEDM,euNeoFLM,euGRC_L1,euGRC_L2,euGRC_L3,euSimpleLandCover];
 end;
 
 function tDEMDataSet.ElevationDEM : boolean;
@@ -2547,12 +2544,11 @@ begin
 end;
 
 
-{$IfDef ExNLCD}
-{$Else}
-procedure tDEMDataSet.CheckForLandCover;
+function tDEMDataSet.CheckForLandCover : boolean;
 begin
-  {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover in'); {$EndIf}
-   if LandCoverGrid then begin
+  {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover in, ' + AreaName); {$EndIf}
+   Result := LandCoverGrid;
+   if Result then begin
       if (NLCDCats <> Nil) then begin
          Dispose(NLCDCats);
       end;
@@ -2561,7 +2557,6 @@ begin
    end;
   {$IfDef RecordNLCD} WriteLineToDebugFile('tDEMDataSet.CheckForLandCover out'); {$EndIf}
 end;
-{$EndIf}
 
 
 procedure tDEMDataSet.DefineDEMVariables(TransformToPreferDatum : boolean);
@@ -2872,8 +2867,8 @@ end;
 
 function tDEMDataSet.FilledOutlineGridBox(var GridLimits : tGridLimits) : boolean;
 var
-   x,y : integer;
-   aMissingValue : boolean;
+   //x,y : integer;
+   //aMissingValue : boolean;
    xs,ys : array[1..4] of integer;
 begin
    GridLimits := FullDEMGridLimits;
@@ -3066,6 +3061,7 @@ procedure tDEMDataSet.SetEntireGridMissing;
 var
    Col,Row : integer;
 begin
+   {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.SetEntireGridMissing, precision=' + IntToStr(DEMheader.DEMPrecision)); {$EndIf}
    for Col := 0 to pred(DEMheader.NumCol) do begin
       for Row := 0 to pred(DEMheader.NumRow) do begin
          SetGridElevation(Col,Row,ThisDEMMissingValue);
@@ -3078,19 +3074,22 @@ function tDEMDataSet.AllocateDEMMemory(InitDEM : byte; InitVal : float64 = 0) : 
 var
    Col, rc : int32;
 begin
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory (' + ColsRowsString + ')  proj=' + DEMmapProj.ProjDebugName); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory in (' + ColsRowsString + ')  proj=' + DEMmapProj.ProjDebugName); {$EndIf}
 
    if (DEMheader.NumCol <= MaxColsInRAM) and (DEMheader.NumRow <= MaxElevArraySize) then  begin
-      AllocateDEMMemory := true;
+      Result := true;
       if (DEMheader.DEMPrecision in [FloatingPointDEM,LongWordDEM]) then BytesPerElevation := 4
-      else if (DEMheader.DEMPrecision = ByteDEM) then BytesPerElevation := 1
       else if (DEMheader.DEMPrecision in [WordDEM,SmallIntDEM]) then BytesPerElevation := 2
+      else if (DEMheader.DEMPrecision = ByteDEM) then BytesPerElevation := 1
       else MessageToContinue('tDEMDataSet.BytesPerElevation unhandled case');
 
       if (InitDEM = InitDEMMissing) then InitVal := ThisDEMMissingValue;
       BytesPerColumn := BytesPerElevation * DEMheader.NumRow;
 
-      if Not DEMMemoryAlreadyAllocated then begin
+      if DEMMemoryAlreadyAllocated then begin
+         {$IfDef RecordDEMMemoryAllocations} MessageToContinue('tDEMDataSet.AllocateDEMMemory already done'); {$EndIf}
+      end
+      else begin
          DEMMemoryAlreadyAllocated := true;
          if (DEMheader.DEMPrecision = FloatingPointDEM) then begin
             {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, floats'); {$EndIf}
@@ -3132,7 +3131,7 @@ begin
          end;
          if ShowDEMReadingProgress then EndProgress;
       end;
-      {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, allocated'); {$EndIf}
+      {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, allocated, precision=' + IntToStr(DEMheader.DEMPrecision)); {$EndIf}
       if (InitDEM = InitDEMmissing) then SetEntireGridMissing
       else if (InitDEM = InitDEMvalue) then SetEntireGridToConstant(InitVal);
       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory out  proj=' + DEMmapProj.ProjDebugName); {$EndIf}
@@ -3140,7 +3139,7 @@ begin
    else begin
       Result := false;
       {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)}
-         HighLightInDebugFile(AreaName + '  Grid too large (Cols=' + IntToStr(DEMheader.NumCol) + ', rows=' + IntToStr(DEMheader.NumRow) + ')');
+         HighLightInDebugFile(AreaName + ' Grid too large (Cols=' + IntToStr(DEMheader.NumCol) + ', rows=' + IntToStr(DEMheader.NumRow) + ')');
       {$EndIf}
    end;
 end;
@@ -3780,6 +3779,7 @@ end;
 
 procedure tDEMDataSet.SetUpMap(CheckElevs : boolean; inMapType : tMapType = mtDEMBlank; UsePC : boolean = true);
 begin
+   {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('SetUpMap in'); {$EndIf}
    {$IfDef RecordSetup} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(ord(inMapType)) + '  DEM=' + IntToStr(ThisDEM)); {$EndIf}
    if CheckElevs then CheckMaxMinElev;
    {$If Defined(RecordSetup) or Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.SetUpMap ' + AreaName + '  DEM ' + zRange); {$EndIf}
@@ -3791,11 +3791,13 @@ begin
    {$IfDef VCL}
       {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + ' DEM=' + IntToStr(ThisDEM) + ' DEM ' + zRange); {$EndIf}
       CreateDEMSelectionMap(ThisDEM,true,UsePC,inMapType);
+      {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('SetUpMap done CreateDEMSelectionMap'); {$EndIf}
       {$IfDef RecordMapType} WriteLineToDebugFile(AreaName + ' tDEMDataSet.SetUpMap, maptype=' + IntToStr(inMapType) + ' DEM=' + IntToStr(ThisDEM) + ' DEM ' + zRange); {$EndIf}
       SelectionMap.Closable := true;
       SelectionMap.CheckProperTix;
       {$IfDef RecordSetup} WriteLineToDebugFile('tDEMDataSet.SetUpMap, projection=' + SelectionMap.MapDraw.PrimMapProj.GetProjName); {$EndIf}
    {$EndIf}
+   {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('SetUpMap out'); {$EndIf}
 end;
 
 
@@ -4227,7 +4229,7 @@ end;
 
 initialization
    SubsequentDEM := false;
-   OpeningNewGrid := false;
+   //OpeningNewGrid := false;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing read_dem in'); {$EndIf}
 end {unit}.

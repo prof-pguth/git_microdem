@@ -166,16 +166,16 @@
         <Icon_MainIcon>..\icons\md_logo.ico</Icon_MainIcon>
         <DCC_ExeOutput>C:\microdem\</DCC_ExeOutput>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_MinorVer>9</VerInfo_MinorVer>
+        <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_MajorVer>2026</VerInfo_MajorVer>
-        <VerInfo_Release>27</VerInfo_Release>
+        <VerInfo_Release>9</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.9.27.19;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.11.9.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <VerInfo_Build>19</VerInfo_Build>
+        <VerInfo_Build>1</VerInfo_Build>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <Debugger_RunParams>-NOAUTOOPEN</Debugger_RunParams>
     </PropertyGroup>
@@ -782,9 +782,6 @@
             <Form>ThreePointer</Form>
         </DCCReference>
         <DCCReference Include="..\viewer_3d\demlos_draw.pas"/>
-        <DCCReference Include="..\demix\demix_neo_test_area.pas">
-            <Form>New_area_evals_form</Form>
-        </DCCReference>
         <DCCReference Include="..\ask_options\ant_hts_ops.pas">
             <Form>ReqAntOptsForm</Form>
         </DCCReference>

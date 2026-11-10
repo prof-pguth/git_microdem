@@ -3201,7 +3201,7 @@ procedure CreateMedianDNgrid1Click(Sender: TObject);
     function SaveDEMtoDBF(fName : PathStr; zName : shortString = 'Z'; ThinFactor : integer = -99;  FilterZ : boolean = false; ReportOut : boolean = false) : PathStr;
 
     function DrawRidgeMask(Color : tColor; RidgeMask,DisplayAndPurge : boolean) : tMyBitmap;
-    function CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99;
+    function CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : byte = FloatingPointDEM; SpacingX : float64 = -99; SpacingY : float64 = -99;
        DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1; GridName : shortstring = '') : integer;
     function MakeTempGrid(OpenMap : boolean = false; GetParameters : boolean = false) : integer;
 
@@ -3789,22 +3789,22 @@ const
 var
    i : integer;
    Thin : byte;
-   TStr : shortstring;
+   //TStr : shortstring;
 begin
    SetColorForProcessing;
    for i := 1 to MaxAggregated do Result[i] := 0;
    AggregatedTile := DEMglb[DEM].AreaName;
    DEMglb[DEM].AreaName := 'Original_DEM';
    if DEMglb[DEM].AverageSpace < 0.6 then begin
-      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, thin 4 ' + AvailablePhysicalMemoryString); {$EndIf}
+      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, thin 4 ' + AvailPhysMemStr); {$EndIf}
       Result[0] := DEMglb[DEM].ThinThisDEM(OpenDEM,'',4,DoItByAveraging);
    end
    else if DEMglb[DEM].AverageSpace < 1.1 then begin
-      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, thin 2' + AvailablePhysicalMemoryString); {$EndIf}
+      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, thin 2' + AvailPhysMemStr); {$EndIf}
       Result[0] := DEMglb[DEM].ThinThisDEM(OpenDEM,'',2,DoItByAveraging);
    end
    else begin
-      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, no thin' + AvailablePhysicalMemoryString); {$EndIf}
+      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, no thin' + AvailPhysMemStr); {$EndIf}
       Result[0] := DEM;
    end;
    DEM := Result[0];
@@ -3821,7 +3821,7 @@ begin
       inc(i);
    end;
    SetColorForWaiting;
-   {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling out ' + AvailablePhysicalMemoryString); {$EndIf}
+   {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling out ' + AvailPhysMemStr); {$EndIf}
 end;
 
 
@@ -3959,9 +3959,10 @@ end;
 procedure NewBigimagewithallmaps(NumCols : integer; FileName : PathStr; MapsToUse : tByteSet);
 var
    BottomMargin,Len,
-   i,DEM,StartFont : integer;
+  // i,
+   DEM,StartFont : integer;
    Findings : tStringlist;
-   theCaption : shortstring;
+   //theCaption : shortstring;
    fName : PathStr;
    Bitmap : tMyBitmap;
    MouseRoamAllMaps : boolean;
@@ -12615,7 +12616,7 @@ var
 
 
 begin {procedure TMapForm.Image1MouseMove}
-    if DEMMergeInProgress or OpeningNewGrid or HeavyDutyProcessing or DEMIXProcessing or LoadingFromMapLibrary or ClosingIsHappening or ClosingEverything or (wmDEM = Nil) or (MapDraw = Nil) or WMDEM.ProgramClosing or MapDraw.ClosingMapNow then begin
+    if DEMMergeInProgress or HeavyDutyProcessing or DEMIXProcessing or LoadingFromMapLibrary or ClosingIsHappening or ClosingEverything or (wmDEM = Nil) or (MapDraw = Nil) or WMDEM.ProgramClosing or MapDraw.ClosingMapNow then begin
        {$IfDef RecordStreamModeDigitize} WriteLineToDebugFile('TMapForm.Image1MouseMove out fast 1'); {$EndIf}
        exit;
     end;
@@ -17188,12 +17189,12 @@ end;
 
 procedure TMapForm.Close1Click(Sender: TObject);
 begin
-   wmdem.ClosePopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   wmdem.Exit2Click(Sender);
 end;
 
 procedure TMapForm.Close2Click(Sender: TObject);
 begin
-   wmdem.ClosePopUpMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
+   wmdem.Exit2Click(Sender);
 end;
 
 procedure TMapForm.Closepolyline1Click(Sender: TObject);
@@ -21787,7 +21788,7 @@ end;
 
 
 
-function TMapForm.CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM;
+function TMapForm.CreateGridToMatchMap(What : tCreateGrid;  OpenMap : boolean = true; Resolution : byte = FloatingPointDEM;
     SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1; GridName : shortstring = '') : integer;
 var
    Lat,Long : float64;
@@ -25708,45 +25709,21 @@ begin
     PETMAR.DisplayAndPurgeStringList(Results,'Points around selection');
 end;
 
-(*
-procedure TMapForm.SRTMwaterbodies2Click(Sender: TObject);
-var
-   xg,yg,Col,Row : integer;
-   Bitmap : tMyBitmap;
-   p0 : pRGB;
-   waterrgb : TPlatformColor;
-   OldMapType : tMapType;
-begin
-   OldMapType := MapDraw.MapType;
-   MapDraw.MapType := mtDEMBlank;
-   ResizeByPercentage(100);
-   CloneImageToBitmap(Image1,Bitmap);
-   MapDraw.OverlaySRTMWaterBodies(Bitmap,true);
-   WaterRGB := MDDef.WaterColor;
-   for row := 0 to pred(Bitmap.Height) do begin
-      P0 := BitMap.ScanLine[Row];
-      for Col := 0 to pred(Bitmap.Width) do begin
-         if SameColor(p0[Col],WaterRGB) then begin
-            MapDraw.ScreenToDEMGridInteger(Col,Row,xg,yg);
-            DEMGlb[MapDraw.DEMonMap].SetGridMissing(xg,yg);
-         end;
-      end;
-   end;
-   FreeAndNil(Bitmap);
-   MapDraw.MapType := OldMapType;
-   RespondToChangedDEM;
-end;
-*)
 
 procedure TMapForm.SSIM1Click(Sender: TObject);
+{$IfDef IncludeSSIM}
 var
    DEM1,DEM2 : integer;
 begin
    GetTwoCompatibleGrids('SSIM',false, DEM1,DEM2,false);
    MakeSSIMMap(true,false,DEM1,DEM2,1,11);
+{$Else}
+begin
+{$EndIf}
 end;
 
 procedure TMapForm.SSIMcheckconstants1Click(Sender: TObject);
+{$IfDef IncludeSSIM}
 var
    DEM1,DEM2 : integer;
 begin
@@ -25757,18 +25734,25 @@ begin
    MakeSSIMMap(true,false,DEM1,DEM2,1,11,1,'Reduced_constants_by_10');
    SSIM_fudge := 1;
    MakeSSIMMap(true,false,DEM1,DEM2,1,11,1,'Standard_constants');
+{$Else}
+begin
+{$EndIf}
 end;
 
 
 procedure TMapForm.SSIMcheckthinning1Click(Sender: TObject);
 begin
+{$IfDef IncludeSSIM}
    SSIMcheck(true);
+{$EndIf}
 end;
 
 
 procedure TMapForm.SSIMcheckwindowsize1Click(Sender: TObject);
 begin
+{$IfDef IncludeSSIM}
    SSIMcheck(False);
+{$EndIf}
 end;
 
 procedure TMapForm.SSOcountingradiuscomparison1Click(Sender: TObject);

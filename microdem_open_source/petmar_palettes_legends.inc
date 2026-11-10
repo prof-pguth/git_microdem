@@ -10,296 +10,6 @@
 {________________________________________}
 
 
-function SelectedColorSchemeColorFunct(ColorScheme: tLegendColors; ColorTable : tColorTableDefinitions; z : float64; Min,Max : float64) : TColor;
-var
-   k : integer;
-begin
-   {$IfDef VCL}
-      case ColorScheme of
-         LegGrays      : Result := GrayColorFunct(z,Min,Max);
-         LegRainbows   : Result := RainbowColorFunct(z,Min,Max);
-         LegTerrain    : Result := TerrainTColor(z,Min,Max);
-         LegSpectrum   : Result := SpectrumColorFunct(z,Min,Max);
-         LegChloropleth : Result := ConvertPlatformColorToTColor(ColorFromZColorTable(ColorTable,z,k));
-         else begin end;
-      end;
-   {$EndIf}
-end;
-
-
-function ColorFromZColorTable(ZColorTable : tColorTableDefinitions; zj : float64; var k : integer) : tRGBTriple;
-var
-   i : integer;
-begin
-   {$IfDef VCL}
-      with ZColorTable do begin
-         if (ZTableEntries > 256) then begin
-            for i := 1 to ZTableEntries do begin
-               if (zj <= zBigTableValue^[i]) or (i = ZTableEntries) then begin
-                  Result := zBigTableColors^[i];
-                  k := i;
-                  exit;
-               end;
-            end;
-         end
-         else begin
-            for i := 1 to ZTableEntries do begin
-               {$IfDef RecordColorFromZColorTable} WriteLineToDebugFile('   ' + IntToStr(i) + '  ' + RealToString(zTableValue[i],-18,-4)); {$EndIf}
-               if (zj <= zTableValue[i]) or (i = ZTableEntries) then begin
-                  Result := zTableColors[i];
-                  k := i;
-                  exit;
-               end;
-            end;
-         end;
-      end;
-   {$EndIf}
-end;
-
-
-function GrayColorFunct(i : integer) : TColor;
-begin
-   Result := RGB(i,i,i);
-end;
-
-function GrayColorFunct(z,Min,Max : float64) : TColor;
-var
-   zi : integer;
-begin
-   zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
-   Result := RGB(zi,zi,zi);
-end;
-
-		 
-procedure GetTerrainRGBTrip(z,Min,Max : float64; var r,g,b : byte);  inline;
-var
-   zi : integer;
-
-      procedure InterpolateColor(c1,c2 : integer; Dist : float64; var r,g,b : byte); inline;
-      begin
-         r := TerrainCuts[c1,1] + round(Dist * (TerrainCuts[c2,1] - TerrainCuts[c1,1])) ;
-         g := TerrainCuts[c1,2] + round(Dist * (TerrainCuts[c2,2] - TerrainCuts[c1,2])) ;
-         b := TerrainCuts[c1,3] + round(Dist * (TerrainCuts[c2,3] - TerrainCuts[c1,3])) ;
-      end;
-
-begin
-   zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
-   case zi of
-      0..80 : InterpolateColor(0,1,zi/80,r,g,b);
-      81..170 : InterpolateColor(1,2,(zi-81)/90,r,g,b);
-      171..200 : InterpolateColor(2,3,(zi-171)/29,r,g,b);
-      201..255 : InterpolateColor(3,4,(zi-201)/54,r,g,b);
-      else begin
-         r := 0;
-         g := 0;
-         b := 0;
-      end;
-   end;
-end;
-
-
-function RainbowRGBFunct(z,MinV,MaxV : float64) : tPlatformColor;
-begin
-   Result := ConvertTColorToPlatformColor(RainbowColorFunct(z,MinV,MaxV));
-end;
-
-function SpectrumColorFunct(z,Min,Max : float64) : tColor;
-begin
-    Result := ConvertPlatformColorToTColor(SpectrumRGBFunct(z,Min,Max));
-end;
-
-
-function SpectrumRGBFunct(z,Min,Max : float64) : tPlatformColor;
-
-
-         PROCEDURE WavelengthToRGB(CONST Wavelength :  float64;  VAR R,G,B:  BYTE);  inline;
-         // Adapted from www.isc.tamu.edu/~astro/color.html
-         // SpectraLibrary
-         // Copyright (C) 1998, 2001, Earl F. Glynn, Overland Park, KS.
-         // Updated June 2001 for "FrequencyToRGB" and conversion routines.
-         // May be copied freely for non-commercial use.
-         // E-Mail:  EarlGlynn@att.net
-            CONST
-              Gamma        =   0.60;
-              IntensityMax = 255;
-            VAR
-              Blue  :  DOUBLE;
-              factor:  DOUBLE;
-              Green :  DOUBLE;
-              Red   :  DOUBLE;
-
-            FUNCTION Adjust(CONST Color, Factor:  DOUBLE):  INTEGER;  inline;
-            BEGIN
-              IF   Color = 0.0 THEN RESULT := 0     // Don't want 0^x = 1 for x <> 0
-              ELSE RESULT := ROUND(IntensityMax * Math.Power(Color * Factor, Gamma))
-            END {Adjust};
-
-          BEGIN
-
-            CASE TRUNC(Wavelength) OF
-              380..439:
-                BEGIN
-                  Red   := -(Wavelength - 440) / (440 - 380);
-                  Green := 0.0;
-                  Blue  := 1.0
-                END;
-
-              440..489:
-                BEGIN
-                  Red   := 0.0;
-                  Green := (Wavelength - 440) / (490 - 440);
-                  Blue  := 1.0
-                END;
-
-              490..509:
-                BEGIN
-                  Red   := 0.0;
-                  Green := 1.0;
-                  Blue  := -(Wavelength - 510) / (510 - 490)
-                END;
-
-              510..579:
-                BEGIN
-                  Red   := (Wavelength - 510) / (580 - 510);
-                  Green := 1.0;
-                  Blue  := 0.0
-                END;
-
-              580..644:
-                BEGIN
-                  Red   := 1.0;
-                  Green := -(Wavelength - 645) / (645 - 580);
-                  Blue  := 0.0
-                END;
-
-              645..780:
-                BEGIN
-                  Red   := 1.0;
-                  Green := 0.0;
-                  Blue  := 0.0
-                END;
-
-              ELSE
-                Red   := 0.0;
-                Green := 0.0;
-                Blue  := 0.0
-            END;
-
-            // Let intensity fall off near vision limits
-            CASE TRUNC(Wavelength) OF
-              380..419:  factor := 0.3 + 0.7*(Wavelength - 380) / (420 - 380);
-              420..700:  factor := 1.0;
-              701..780:  factor := 0.3 + 0.7*(780 - Wavelength) / (780 - 700)
-              ELSE       factor := 0.0
-            END;
-
-            R := Adjust(Red,   Factor);
-            G := Adjust(Green, Factor);
-            B := Adjust(Blue,  Factor)
-          END {WavelengthToRGB};
-
-var
-   r,g,b : byte;
-begin
-   if z < Min then z := Min;
-   if z > Max then z := Max;
-   z := 380 + 400 * (z - Min) / (Max - Min);
-   WavelengthToRGB(z,r,g,b);
-   Result := RGBtrip(r,g,b);
-end {function SpectrumRGBFunct};
-
-
-
-function TerrainRGBFunct(z,Min,Max : float64) : tPlatformColor;
-var
-   r,g,b : byte;
-begin
-   GetTerrainRGBTrip(z,Min,Max,r,g,b);
-   Result := RGBtrip(r,g,b);
-end;
-
-
-function OceanRGBFunct(z,Min,Max : float64) : tPlatformColor;
-var
-   zi : integer;
-begin
-   zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
-   if (zi < 130) then Result := RGBTrip(0,0,round(90 + zi))
-   else Result := RGBTrip(0,0,round(90 + (zi-130)));
-end;
-
-
-         function TerrainTColor(z,aMin,aMax : float64) : TColor;
-         var
-            r,g,b : byte;
-         begin
-            GetTerrainRGBTrip(z,aMin,aMax,r,g,b);
-            Result := RGB(r,g,b);
-         end;
-
-
-         function RainbowColorFunct(z,Min,Max : float64) : TColor;
-         const
-            FirstColor = 136;
-            ColorStep = 2;
-         var
-            zi : integer;
-         begin
-            if abs(Max-Min) < 0.0001 then Result := clRed
-            else begin
-               zi := ValidByteRange(round(255.0 * (z - Min) / (Max - Min)));
-               case zi of
-                  0..42 : RainbowColorFunct := RGB(0,0,FirstColor + ColorStep * zi); {blues}
-                  43..85 : RainbowColorFunct := RGB(0,FirstColor + ColorStep * (zi-43),FirstColor + ColorStep * (zi-43)); {Cyans}
-                  86..128 : RainbowColorFunct := RGB(0,FirstColor + ColorStep * (zi-86),0); {greens}
-                  129..171: RainbowColorFunct := RGB(FirstColor + ColorStep * (zi-129),FirstColor + ColorStep * (zi-129),0);  {yellows}
-                  172..214 : RainbowColorFunct := RGB(FirstColor + ColorStep * (zi-172),0,0);  {reds}
-                  215..255 : RainbowColorFunct := RGB(FirstColor + ColorStep * (zi-215),0,FirstColor + ColorStep * (zi-215));  {magentas}
-                  else RainBowColorFunct := clBlack;
-               end;
-            end;
-         end {function};
-
-
-function ChloroplethPlatformColor(ColorDefTable : tColorTableDefinitions; z,aMin,aMax : float64) : TPlatformColor;
-var
-   zi : integer;
-begin
-   if z > aMax then z := aMax;
-   zi := ValidByteRange(round(pred(ColorDefTable.ZTableEntries) * (z - aMin) / (aMax - aMin)));
-   Result := ColorDefTable.zTableColors[succ(zi)];
-end;
-
-
-         function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
-         var
-            ColorTable : tMyData;
-            i : integer;
-         begin
-            NumColors := 0;
-            if FileExists(ColorBrewerName) then begin
-               ColorTable := TMyData.Create(ColorBrewerName);
-               ColorTable.ApplyFilter('PALETTE=' + QuotedStr(Palette));
-               if (ColorTable.RecordCount = 0) then begin
-                  Palette := 'ColorBrewer Spectral-9';
-                  ColorTable.ApplyFilter('PALETTE=' + QuotedStr(Palette));
-               end;
-               NumColors := ColorTable.RecordCount;
-               if (NumColors > 255)then NumColors := 255;
-
-               for i := 1 to NumColors do begin
-                  if (i in [1..255]) then begin
-                     if Reverse then ColorsTable[NumColors - pred(i)] := ColorTable.PlatformColorFromTable
-                     else ColorsTable[i] := ColorTable.PlatformColorFromTable;
-                  end;
-                  ColorTable.Next;
-               end;
-               ColorTable.Destroy;
-            end;
-            Result := (NumColors > 0);
-         end;
-
-
         function DoLegendOnBitmap(Horizontal : boolean; Colors : tColors256; Values : array of float64; Units : shortstring; LegendTitle : shortstring = ''; LegendSize : integer = 1) : tMyBitmap;
          var
            Width,Height,Size,i,j,LastLabel,Dec,xloc,yloc,TopText,LabelsDrawn : integer;
@@ -333,7 +43,7 @@ end;
                end;
             end;
 
-         begin
+         begin {function DoLegendOnBitmap(}
             {$IfDef RecordLegends} if Horizontal then TStr := 'horizontal'else TStr := 'vertical'; WriteLineToDebugFile('DoLegendOnBitmap ' + TStr); {$EndIf}
 
             {$IfDef RecordDetailedLegends}
@@ -396,7 +106,9 @@ end;
                else if (Range < 0.0002) or (abs(Max) < 0.002) then Dec := 5
                else if (Range < 0.002) or (abs(Max) < 0.002) then Dec := 4
                else if (Range < 0.02) or (abs(Max) < 0.02) then Dec := 3
-               else Dec := 2;
+               else if (Range < 0.2) or (abs(Max) < 0.2) then Dec := 2
+               else if (Range < 2) or (abs(Max) < 2) then Dec := 1
+               else Dec := 0;
 
                if Min <= 0 then FirstTick := (trunc(Min / Tick)) * Tick
                else FirstTick := succ(trunc((Min-0.0001) / Tick)) * Tick;
@@ -463,7 +175,7 @@ end;
                end;
             end;
             PutBitmapInBox(Result);
-         end;
+         end {function DoLegendOnBitmap(};
 
 
          function HorizontalLegendOnBitmap(Colors : tColors256; Values : array of float64; Units,LegendTitle : shortstring; LegendSize : integer = 1): tMyBitmap;
@@ -571,6 +283,7 @@ begin
       CreateBitmap(Result,MaxWide,2000);
       LoadMyFontIntoWindowsFont(MDDef.LegendFont,Result.Canvas.Font);
       Result.Canvas.Font.Size := StartFontSize;
+      Result.Canvas.Font.Style := [fsBold];
       Left := 15;
       Top := 10;
       for i := 0 to pred(DEMsUsed.Count) do begin
@@ -579,6 +292,18 @@ begin
       PutBitmapInBox(Result);
       Dec(StartFontSize);
    until (Result.Width < MaxWide);
+end;
+
+function MakeColorScaleBitmap(width,height : integer; ColorScheme : tLegendColors; ColorTable : tColorTableDefinitions) : tMyBitmap;
+var
+   i,j : integer;
+begin
+   CreateBitmap(Result,width,height);
+   for i := 0 to pred(width) do begin
+      j := succ(trunc(ColorTable.ZTableEntries * i / Width));
+      Result.Canvas.Pen.Color := ConvertPlatformColorToTColor(ColorTable.ZTableColors[j]);
+      DrawLine(Result,i,0,i,pred(height));
+   end;
 end;
 
 

@@ -212,14 +212,6 @@ uses
 
 {$R *.dfm}
 
-procedure CloseMapTableOfContents(MapOwner : tMapForm);
-begin
-   if (MapOwner.MapTOCIndex <> 0) and (MapOwner <> Nil) then begin
-      if (MapTOC[MapOwner.MapTOCIndex] <> Nil) then MapTOC[MapOwner.MapTOCIndex].Close;
-      MapOwner.MapTOCIndex := 0;
-   end;
-end;
-
 procedure OpenMapTableOfContents;
 var
    NewTOC,i : integer;
@@ -227,7 +219,7 @@ begin
     {$IfDef RecordTOC} WriteLinetoDebugFile('Open TOC, map=' + MapOwner.Caption); {$EndIf}
     NewTOC := 0;
     for i := 1 to MaxTOC do begin
-       if MapTOC[i] = Nil then begin
+       if (MapTOC[i] = Nil) then begin
           NewTOC := i;
           break;
        end;
@@ -248,12 +240,22 @@ begin
 end;
 
 
+procedure CloseMapTableOfContents(MapOwner : tMapForm);
+begin
+   if (MapOwner.MapTOCIndex <> 0) and (MapOwner <> Nil) then begin
+      if (MapTOC[MapOwner.MapTOCIndex] <> Nil) then MapTOC[MapOwner.MapTOCIndex].Close;
+      MapOwner.MapTOCIndex := 0;
+   end;
+end;
+
+
 procedure MoveOverlayUp(ol : integer);
+begin
+(*
 var
    i : integer;
    b : byte;
 begin
-   {$IfDef UseDBPlotOrder}
    for i := 2 to 15 do begin
       if (DBPlotOrder[i] = ol) then begin
           b := DBPlotOrder[i];
@@ -262,7 +264,7 @@ begin
           exit;
       end;
    end;
-   {$EndIf}
+*)
 end;
 
 

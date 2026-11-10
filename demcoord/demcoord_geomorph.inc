@@ -299,13 +299,13 @@ begin
 end {proc GetSlopeAndAspect};
 
 
-var
-   aMethod : shortstring;
+//var
+   //aMethod : shortstring;
 
 
 function tDEMDataSet.GetSlopeAndAspect(HowCompute : tSlopeCurveCompute; Col,Row : integer; var SlopeAsp : tSlopeAspectRec; NeedAspect : boolean = true; NeedSecondOrder : boolean = false) : boolean;
 var
-   Ring2 : tSlopeAspectRec;
+   //Ring2 : tSlopeAspectRec;
    Lat,Long : float64;
 
          procedure GetAspect(var SlopeAsp : tSlopeAspectRec); {$IfDef NoCoordInline} {$Else} inline; {$EndIf}
@@ -359,7 +359,7 @@ var
                   SlopeAsp.Dir := AspectDir8FromAspect(SlopeAsp.AspectDirTrue);
                end;
             end;
-         end;
+         end {procedure GetAspect};
 
       procedure ComputeTrendSurfaceForSlopeAspect(var SlopeAsp : tSlopeAspectRec);
       {from a program in Davis, 1st ed, p.332; 2d ed does not have code}
@@ -551,7 +551,7 @@ begin
             end;
 
             if NeedSecondOrder then begin // second order partial derivatives needed for curvature
-               if {MDDef.CD2 or} (HowCompute.AlgorithmName in [smShary,smZevenbergenThorne,smEvansYoung,smHorn]) then begin
+               if (HowCompute.AlgorithmName in [smShary,smZevenbergenThorne,smEvansYoung,smHorn]) then begin
                   //CD2 method, getting the second order partials from just 3x3 window
                   if (MDDef.SlopeCompute.AlgorithmName = smZevenbergenThorne) then begin
                      zxx := (ze - 2 * z + zw) / (2 * sqr(dx));
@@ -569,7 +569,7 @@ begin
                      zxx := ( znw + zne + zsw + zse - 2 * (zn + zs) + 3 * (zw + ze) - 6 * z) / (5 * sqr(dx));
                      zyy := ( znw + zne + zne + zse - 2 * (zw + ze) + 3 * (zn + zs) - 6 * z) / (5 * sqr(dy));
                   end;
-                  zxy := (zne - znw + zsw - zse) / (4 * dx * dy);  //same for all 3 algorithms
+                  zxy := (zne - znw + zsw - zse) / (4 * dx * dy);  //same for all algorithms
                end
                else begin
                   (*

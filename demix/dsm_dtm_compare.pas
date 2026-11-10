@@ -86,6 +86,11 @@ type
     BitBtn1: TBitBtn;
     BitBtn3: TBitBtn;
     ComboBox2: TComboBox;
+    BitBtn4: TBitBtn;
+    BitBtn5: TBitBtn;
+    Edit4: TEdit;
+    Label7: TLabel;
+    BitBtn7: TBitBtn;
     //CheckBox1: TCheckBox;
     procedure BitBtn8Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
@@ -114,6 +119,9 @@ type
     procedure Edit3Change(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure BitBtn4Click(Sender: TObject);
+    procedure BitBtn5Click(Sender: TObject);
+    procedure BitBtn7Click(Sender: TObject);
     //procedure CheckBox1Click(Sender: TObject);
   private
     { Private declarations }
@@ -444,7 +452,7 @@ end;
 procedure TCompareDSM_DTMform.BitBtn1Click(Sender: TObject);
 begin
    Self.Hide;
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),Nil,DEMlist,false);
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),Nil,DEMlist,false,Edit4.Text);
    Self.Show;
 end;
 
@@ -469,7 +477,34 @@ end;
 procedure TCompareDSM_DTMform.BitBtn3Click(Sender: TObject);
 begin
    Self.Hide;
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),Nil,MakeStringListFromString(ComboBox2.Text),true);
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),Nil,
+      MakeStringListFromString(ComboBox2.Text),true,Edit4.Text);
+   Self.Show;
+end;
+
+procedure TCompareDSM_DTMform.BitBtn4Click(Sender: TObject);
+var
+   Criteria : tStringList;
+begin
+   {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn8Click in'); {$EndIf}
+   Self.Hide;
+   Criteria := tStringList.Create;
+   Criteria.Add('DSM_SLOPE');
+   Criteria.Add('DTM_SLOPE');
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,Criteria,DEMcomparingList,Nil,false,'Tile slope (%)');
+   Self.Show;
+end;
+
+procedure TCompareDSM_DTMform.BitBtn5Click(Sender: TObject);
+var
+   Criteria : tStringList;
+begin
+   {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn8Click in'); {$EndIf}
+   Self.Hide;
+   Criteria := tStringList.Create;
+   Criteria.Add('PRED_DTM_S');
+   Criteria.Add('DTM_SLOPE');
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,Criteria,DEMcomparingList,Nil,false,'Mean 1" Tile slope (%)');
    Self.Show;
 end;
 
@@ -479,16 +514,36 @@ var
 begin
    {$IfDef RecordDSM_DTM_Compare} HighLightInDebugFile('TCompareDSM_DTMform.BitBtn6Click in'); {$EndIf}
    Self.Hide;
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),DEMComparingList,Nil);
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),DEMComparingList,Nil,false,Edit4.Text);
    Self.Show;
 end;
 
+
+procedure TCompareDSM_DTMform.BitBtn7Click(Sender: TObject);
+const
+   DEMs : array[1..3] of shortstring = ('fathom','cop','alos');
+var
+   i : integer;
+   comparingList : tStringList;
+begin
+   {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn8Click in'); {$EndIf}
+   Self.Hide;
+   for I := 1 to 3 do begin
+      comparingList := tStringList.Create;
+      ComparingList.Add('ref_dsm_to_ref_dtm');
+      ComparingList.Add(DEMs[i] + '_to_ref_dtm');
+      ComparingList.Add(DEMs[i] + '_to_ref_dsm');
+      GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),comparingList,Nil,false,Edit4.Text);
+      ComparingList.Destroy;
+   end;
+   Self.Show;
+end;
 
 procedure TCompareDSM_DTMform.BitBtn8Click(Sender: TObject);
 begin
    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn8Click in'); {$EndIf}
    Self.Hide;
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,ComparingCriteriaList,DEMcomparingList,Nil);
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,ComparingCriteriaList,DEMcomparingList,Nil,false,Edit4.Text);
    Self.Show;
 end;
 
@@ -497,7 +552,7 @@ procedure TCompareDSM_DTMform.BitBtn9Click(Sender: TObject);
 begin
    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn9Click in'); {$EndIf}
    Self.Hide;
-   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),DEMcomparingList,Nil,true);
+   GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),DEMcomparingList,Nil,true,Edit4.Text);
    Self.Show;
 end;
 

@@ -163,7 +163,7 @@ var
        Graph : tThisBaseGraph;
        rfile : array[1..10] of file;
        v : array[1..2] of float32;
-       Symbol : tFullSymbolDeclaration;
+       //Symbol : tFullSymbolDeclaration;
        fName : PathStr;
        TieTolerance : float32;
 
@@ -504,7 +504,8 @@ const
 var
    AllTiles : tStringList;
    BigGraph : tstringList;
-   PickParam,ThisTile : shortstring;
+   //PickParam,
+   ThisTile : shortstring;
    WhatNow : integer;
    LegendfName,fName : PathStr;
 
@@ -512,14 +513,14 @@ var
          procedure MakeGraphForFilter(Param,LandType,DEMType : shortstring);
          var
             Graph : tThisBaseGraph;
-            Symbol : tFullSymbolDeclaration;
-            DEM,CurrentY,DEMis,i,j,k,NumAreas,NumTiles : integer;
+            //Symbol : tFullSymbolDeclaration;
+            DEM,CurrentY,DEMis,i,j,{k,}NumAreas,NumTiles : integer;
             rfile : array[1..10] of file;
             TileList : tStringList;
             v : array[1..2] of float32;
             Max : float32;
             aMinVal,aMaxVal : float64;
-            RefFilter,aFilter,TStr : shortstring;
+            RefFilter,{aFilter,}TStr : shortstring;
             bmp : tMyBitmap;
 
                procedure OnePercentage(aFilter : shortstring);

@@ -731,7 +731,7 @@ var
    procedure SetCategories(var Categories : tNLCDCats; LandCoverName : shortstring);
    var
       i : integer;
-      Tstr : shortstring;
+      //Tstr : shortstring;
    begin
       for i := 0 to MaxLandCoverCategories do begin
          Categories[i].ShortName := '';
@@ -757,9 +757,9 @@ var
          until CatTable.eof;
       end
       else begin
-          TStr := 'Land cover code=' + IntToStr(LandCover) + ' missing in ' + ' ' + LandCoverName;
-          MessageToContinue(TStr);
-          {$IfDef RecordProblems} WriteLineToDebugFile(TStr); {$EndIf}
+          //TStr := 'Land cover code=' + IntToStr(LandCover) + ' missing in ' + ' ' + LandCoverName;
+          //MessageToContinue(TStr);
+          //{$IfDef RecordProblems} WriteLineToDebugFile(TStr); {$EndIf}
       end;
    end;
 

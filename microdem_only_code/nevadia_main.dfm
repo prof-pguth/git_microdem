@@ -1720,14 +1720,6 @@ object wmdem: Twmdem
       object Introductorytutorials1: TMenuItem
         Caption = 'Introductory tutorials'
         GroupIndex = 6
-        object Legislativeredistricting1: TMenuItem
-          Caption = 'Legislative redistricting'
-          GroupIndex = 6
-        end
-        object N30: TMenuItem
-          Caption = '-'
-          GroupIndex = 6
-        end
         object Graysgame1: TMenuItem
           Caption = 'Grays game'
           GroupIndex = 6
@@ -1749,25 +1741,12 @@ object wmdem: Twmdem
           OnClick = Nyquist1Click
         end
       end
-      object GISlabs1: TMenuItem
-        Caption = 'GIS labs'
-        GroupIndex = 6
-        object Annapolisredistricting1: TMenuItem
-          Caption = 'Annapolis redistricting'
-        end
-        object Duckbeachsurveys1: TMenuItem
-          Caption = 'Duck beach surveys'
-        end
-      end
       object Remotesensinglabs1: TMenuItem
         Caption = 'Remote sensing labs'
         GroupIndex = 6
         object Spectrallibrary3: TMenuItem
           Caption = 'Spectral library'
           OnClick = Spectrallibrary3Click
-        end
-        object N19: TMenuItem
-          Caption = '-'
         end
       end
       object Physicalgeographylabs1: TMenuItem
@@ -3191,7 +3170,6 @@ object wmdem: Twmdem
     end
     object Platetectonics1: TMenuItem
       Caption = 'Plate tectonics global map'
-      OnClick = Platetectonics1Click
     end
     object Sealevelrise1: TMenuItem
       Caption = 'Sea level rise'
@@ -3231,7 +3209,6 @@ object wmdem: Twmdem
     Top = 312
     object Quickplatetectonicsmaps1: TMenuItem
       Caption = 'Quick plate tectonics maps'
-      OnClick = Quickplatetectonicsmaps1Click
     end
     object N34: TMenuItem
       Caption = '-'
@@ -3356,16 +3333,14 @@ object wmdem: Twmdem
       Caption = 'Landform categories legends'
       OnClick = Landformcategorieslegends1Click
     end
-    object Pixelbypixelmapstatistics1: TMenuItem
-      Caption = 'COP/ALOS Pixel by pixel map statistics'
-      OnClick = Pixelbypixelmapstatistics1Click
-    end
     object N63: TMenuItem
       Caption = '-'
     end
     object DEMIXNeo1: TMenuItem
       Caption = 'DEMIX Neo'
+      Enabled = False
       GroupIndex = 6
+      Visible = False
       object Areaevaluations1: TMenuItem
         Caption = 'Area interactive evaluations (under development)'
         OnClick = Areaevaluations1Click
@@ -3396,15 +3371,12 @@ object wmdem: Twmdem
         end
         object FUVforrangescales1: TMenuItem
           Caption = 'FUV for range scales (1 DEM to reference)'
-          OnClick = FUVforrangescales1Click
         end
         object FUVfor5DEMstoreference1: TMenuItem
           Caption = 'FUV for multiple test DEMs to reference'
-          OnClick = FUVfor5DEMstoreference1Click
         end
         object FUVbyLandcover1DEMtoreference1: TMenuItem
           Caption = 'FUV by Landcover, many test DEMs to reference'
-          OnClick = FUVbyLandcover1DEMtoreference1Click
         end
         object ComparelandcoverinpointcloudDTM1: TMenuItem
           Caption = 'Compare land cover in point cloud DTM'
@@ -3414,11 +3386,9 @@ object wmdem: Twmdem
         Caption = 'Multiple tiles'
         object Differencedistributionstatistics1: TMenuItem
           Caption = 'Difference distribution statistics'
-          OnClick = Differencedistributionstatistics1Click
         end
         object FUV2: TMenuItem
           Caption = 'FUV'
-          OnClick = FUV2Click
         end
       end
       object N61: TMenuItem
@@ -3443,7 +3413,6 @@ object wmdem: Twmdem
       end
       object N64: TMenuItem
         Caption = 'Curvatures comparison'
-        OnClick = N64Click
       end
     end
   end
@@ -3712,7 +3681,6 @@ object wmdem: Twmdem
       end
       object OpenmapsforDEMIXtestarea1: TMenuItem
         Caption = 'Open maps for DEMIX test area'
-        OnClick = OpenmapsforDEMIXtestarea1Click
       end
       object LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem
         Caption = 'Load CopDEM and landcover for test area'
@@ -3724,11 +3692,9 @@ object wmdem: Twmdem
         Caption = 'Process difference distribution statistics per tile '
         object Overwirte2: TMenuItem
           Caption = 'Overwrite'
-          OnClick = Overwirte2Click
         end
         object Overwirte3: TMenuItem
           Caption = 'Skip if present'
-          OnClick = Overwirte3Click
         end
       end
       object DEMIXmergeCSVfiles1: TMenuItem
@@ -3750,7 +3716,6 @@ object wmdem: Twmdem
       end
       object SSIMR21: TMenuItem
         Caption = 'FUV criteria calculation'
-        OnClick = SSIMR21Click
       end
       object N48: TMenuItem
         Caption = '-'
@@ -3836,7 +3801,6 @@ object wmdem: Twmdem
           Caption = 'Full chain, source  to reference DEMs'
           object Overwirte1: TMenuItem
             Caption = 'Overwrite'
-            OnClick = Overwirte1Click
           end
           object Skipeifpresent1: TMenuItem
             Caption = 'Skip if present'
@@ -3929,7 +3893,6 @@ object wmdem: Twmdem
       end
       object ComputeDEMIXtilestats1: TMenuItem
         Caption = 'Compute DEMIX tile and area summary stats'
-        OnClick = ComputeDEMIXtilestats1Click
       end
       object MergeDEMIXtilestats1: TMenuItem
         Caption = 'Merge DEMIX tile stats'
@@ -3940,7 +3903,10 @@ object wmdem: Twmdem
     end
     object MultipleDEMsonearea015secscale1: TMenuItem
       Caption = 'Multiple DEMs, one area, 0.15 sec scale'
-      OnClick = MultipleDEMsonearea015secscale1Click
+    end
+    object CommontilesDBversions4and431: TMenuItem
+      Caption = 'Common tiles, DB versions 4 and 4.3'
+      OnClick = CommontilesDBversions4and431Click
     end
     object N36: TMenuItem
       Caption = '-'
@@ -4015,7 +3981,6 @@ object wmdem: Twmdem
         Enabled = False
         object Overwirteifexists1: TMenuItem
           Caption = 'Overwrite if exists'
-          OnClick = Overwirteifexists1Click
         end
         object Skipifexits1: TMenuItem
           Caption = 'Skip if exits'
@@ -4038,7 +4003,6 @@ object wmdem: Twmdem
           Caption = 'Process GDAL shift for 3DEP for 1 m tiles'
           object Overwriteifexits3: TMenuItem
             Caption = 'Overwrite if exits'
-            OnClick = Overwriteifexits3Click
           end
           object Skipifexits2: TMenuItem
             Caption = 'Skip if exits'
@@ -4048,22 +4012,18 @@ object wmdem: Twmdem
           Caption = 'Create 3DEP 1 sec ref DEMs for 1 m tiles'
           object Overwriteifexists1: TMenuItem
             Caption = 'Overwrite if exists'
-            OnClick = Overwriteifexists1Click
           end
           object Overwriteifexists2: TMenuItem
             Caption = 'Skip if exists'
-            OnClick = Overwriteifexists2Click
           end
         end
         object Merge3DEPreferenceDEMsbyarea1: TMenuItem
           Caption = 'Merge 3DEP 1 m tiles to 1 sec  reference DEMs by area'
           object Overwriteifexits1: TMenuItem
             Caption = 'Overwrite if exits'
-            OnClick = Overwriteifexits1Click
           end
           object Overwriteifexits2: TMenuItem
             Caption = 'Skip if exists'
-            OnClick = Overwriteifexits2Click
           end
         end
       end
@@ -4088,7 +4048,6 @@ object wmdem: Twmdem
       end
       object SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem
         Caption = 'Summarize vertical datum shift for EGM96 test DEMs'
-        OnClick = SummarizeverticaldatumshiftforEGM96testDEMs1Click
       end
       object CheckfilesizesforSSIMimagemismatches1: TMenuItem
         Caption = 'Check file sizes for SSIM image mismatches (for Python)'

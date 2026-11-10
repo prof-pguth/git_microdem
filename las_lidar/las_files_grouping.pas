@@ -17,12 +17,12 @@ unit las_files_grouping;
 
 {$IfDef RecordProblems} //normally only defined for debugging specific problems
    {$IFDEF DEBUG}
-      //{$Define RecordLASfiles}
+      {$Define RecordLASfiles}
       //{$Define RecordLASplot}
       //{$Define TrackPointCloud}
       //{$Define RecordLASexport}
       //{$Define RecordListFilesProcessed}
-      //{$Define BasicOpens}
+      {$Define BasicOpens}
       //{$Define RecordLASKML}
       //{$Define RecordLASexport}
       //{$Define RecordMergeLASfilesDetailed}

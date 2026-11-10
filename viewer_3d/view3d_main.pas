@@ -315,7 +315,7 @@ procedure TView3DForm.AddPointCloudLayer(GridName : PathStr);
                i,x,y,z,pfd2 : integer;
                Color2D : boolean;
                xf,yf : float64;
-               c : TAlphaColorRec;
+               //c : TAlphaColorRec;
                {$IfDef Record_scaling} xsmin,xsmax,ysmin,ysmax,zsmin,zsmax : float32; {$Endif}
             begin
                  if FileExists(GridName) then begin
@@ -509,10 +509,10 @@ end;
 
 procedure TView3DForm.Initialize(PointsToAllocate : integer; GridName : PathStr);
 var
-   k : integer;
+  // k : integer;
    NeededPoints : int64;
-   BMP : TBitmap;
-   Data : tBitmapData;
+  // BMP : TBitmap;
+  // Data : tBitmapData;
 begin
    {$IfDef Record3d} writeLineToDebugFile('TView3DForm.Initialize in'); {$EndIf}
    if (CurCloud < MaxClouds) then begin

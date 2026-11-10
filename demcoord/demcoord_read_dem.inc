@@ -177,7 +177,7 @@ var
                    else if key = 'utmzone' then DEMheader.UTMZone := StrToInt(NextLine)
                    else if key = 'fipszone' then  //needed so it does not go to the drop down
                    else if (key = 'projtype') or (key = 'newproj') then DEMheader.DEMUsed := StrToInt(NextLine)
-                   else if key = 'precision' then DEMheader.DEMPrecision := tDEMprecision(StrToInt(NextLine))
+                   else if key = 'precision' then DEMheader.DEMPrecision := StrToInt(NextLine)
                    else if key = 'spaceunit' then DEMheader.DataSpacing := tSpacingUnit(StrToInt(NextLine))
                    else if key = 'elevunit' then DEMheader.ElevUnits := tElevUnit(StrToInt(NextLine))
                    else if key = 'digdatum' then aDigitizeDatum := StrToInt(NextLine)
@@ -517,7 +517,7 @@ end;
 
 
 function CreateNewGlobalGrid(PixelIs : integer = PixelIsPoint; OpenMap : boolean = true; GreenwhichLeft : boolean = true;
-            Resolution : tDEMprecision = FloatingPointDEM; Spacing : float64 = -99) : integer;
+            Resolution : byte = FloatingPointDEM; Spacing : float64 = -99) : integer;
 var
    OK : boolean;
    NewHeader : tDEMheader;
@@ -577,7 +577,7 @@ begin
    NewHeadRecs.SWCornerY := LatCorner;
    NewHeadRecs.h_datumcode := 'WGS84';
    {$IfDef RecordCreateNewDEM}
-      WriteLineToDebugFile('xll=' + RealToString(NewHeadRecs.DEMSWCornerX,-18,-8) + ' yll=' + RealToString(NewHeadRecs.DEMSWCornerY,-18,-8) + ' dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-8) + ' dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-8));
+      WriteLineToDebugFile('xll=' + RealToString(NewHeadRecs.SWCornerX,-18,-8) + ' yll=' + RealToString(NewHeadRecs.SWCornerY,-18,-8) + ' dy=' + RealToString(NewHeadRecs.DEMySpacing,-18,-8) + ' dx=' + RealToString(NewHeadRecs.DEMxSpacing,-18,-8));
    {$EndIf}
 
    Result := 0;
@@ -854,6 +854,7 @@ var
    SavedName : PathStr;
 begin
    {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('function LoadNewDEM in ' + FullFileName); {$EndIf}
+   {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('LoadNewDEM in'); {$EndIf}
    Result := false;
    DEMNowDoing := Calculating;
 
@@ -887,6 +888,8 @@ begin
         {$IfDef VCL}
            {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM 2 SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjName); {$EndIf}
            CreateDEMSelectionMap(WantedDEM,DrawTheMap,MDDef.DefElevsPercentile,mtDEMBlank);
+           {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('LoadNewDEM CreateDEMSelectionMap done'); {$EndIf}
+
            {$IfDef RecordZRange} WriteLineToDebugFile('LoadNewDEM Selection map over, '+ DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].Zrange); {$EndIf}
            {$If Defined(RecordReadDEM) or Defined(TimeLoadDEM)} WriteLineToDebugFile('LoadNewDEM done SetUpSelectionsMap ' + DEMGlb[WantedDEM].AreaName + '  ' + DEMGlb[WantedDEM].DEMmapProj.GetProjName); {$EndIf}
             if MDDef.USOutlinesOnDEMs then begin
@@ -915,6 +918,7 @@ begin
    {$If Defined(TrackHorizontalDatum)} DEMGlb[WantedDEM].TrackHorizontalDatumDebugLog('exit LoadNewDEM,'); {$EndIf}
    {$If Defined(TrackWKTstring)} writelineToDebugFile('LoadNewDEM out ' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
    {$IfDef TrackVerticalDatum} WriteLineToDebugFile('Load newDEM ' + DEMGlb[WantedDEM].AreaName + ' vdatum=' + IntToStr(DEMGlb[WantedDEM].DEMheader.VerticalCSTypeGeoKey)); {$EndIf}
+   {$IfDef TrackMissingMap} DebugWriteOpenGridsMaps('LoadNewDEM out'); {$EndIf}
 end {function LoadNewDEM};
 
 
@@ -922,7 +926,7 @@ function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader
 begin
    {$If Defined( RecordCreateNewDEM) or Defined(TrackWKTstring)} writelineToDebugFile('OpenAndZeroNewDEM ' + IntToStr(length(NewHeader.WKTString))); {$EndIf}
    try
-      OpeningNewGrid := true;
+      HeavyDutyProcessing := true;
       WantedDEM := 0;
       ShowHourglassCursor;
       OpenDEMDataStructures(WantedDEM);
@@ -932,7 +936,8 @@ begin
       DEMGlb[WantedDEM].DefineDEMVariables(TransformToNewDatum);
       DEMGlb[WantedDEM].DEMstatus := dsUnsaved;
    finally
-      OpeningNewGrid := false;
+      HeavyDutyProcessing := false;
+      ShowDefaultCursor;
    end;
    {$If Defined( RecordCreateNewDEM) or Defined(TrackWKTstring)} WritelineToDebugFile('Depart with DEMHeader.WKTString=' + IntToStr(length(DEMGlb[WantedDEM].DEMHeader.WKTString))); {$EndIf}
 end;
@@ -942,7 +947,7 @@ procedure OpenDEMDataStructures(var WantedDEM : integer);
 begin
    if (WantedDEM = 0) then repeat
       inc(WantedDEM);
-   until (WantedDEM > MaxDEMDataSets) or (DEMGlb[WantedDEM] = Nil);
+   until (WantedDEM > MaxDEMDataSets) or (not ValidDEM(WantedDEM));
    if (WantedDEM > MaxDEMDataSets) then begin
       {$IfDef RecordReadDEM} WriteLineToDebugFile(TooManyDEMsOpenString); {$EndIf}
       WantedDEM := 0;

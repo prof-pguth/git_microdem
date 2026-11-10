@@ -17,7 +17,8 @@ unit demix_graphs;
    {$Define RecordDEMIX}
    {$Define RecordDSM_DTM_Compare}
    {$Define RecordCompareDSMandDTM}
-   //{$Define RecordDSM_DTM_CompareFull}
+   {$Define RecordDSM_DTM_CompareFull}
+   {$Define RecordDSM_DTM_Compare_full}
    {$Define RecordDEMIXGraph}
    //{$Define RecordDEMIX_OpenGraph}
    //{$Define RecordDEMIX_evaluations_graph}
@@ -123,10 +124,11 @@ procedure GraphMultipleParamsByDEMResolution(db : integer; Criterion,DEMIXtileFi
 //procedure MakeGraphComparingFUVandArcSecondSpacing(db : integer; Criterion,DEMIXtileFieldName : shortstring);
 
 procedure BestDEMonScatterPlotTwoParameters(DB : integer; Criteria,DEMs : tstringList);
-procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons,DEMs : tStringList; AllTiles : boolean = false);
+procedure GraphMultParamsByAvgSlope_DEMResolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons,DEMs : tStringList;
+    AllTiles : boolean = false; VertLabel : shortstring = '');
 procedure ScatterPlotTwoDEMs(db : integer; DEM1,DEM2 : shortstring; Criteria : tStringList);
 
-procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; {Resolutions : tStringList;} var Results : tStringList);
+procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; ESA_LC10 : integer; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; {Resolutions : tStringList;} var Results : tStringList);
 function GraphCompareDSMandDTMslopes(db : integer; DTMName : shortstring) : tThisBaseGraph;
 function GraphDSMandDTMdifferences(db : integer; DTMName,LSP : shortstring) : tThisBaseGraph;
 function GraphDEMIX_CompareDSMandDTMslopes(db : integer; DEMIX_tile,TileStats : shortstring; Resolutions : tStringList) : tThisBaseGraph;
@@ -140,6 +142,7 @@ procedure GridGraphFUVTwoCriteria(db : integer; DEMs : tStringList; Param1,Param
 function GraphFUVTwoDEMs(db : integer; DEMs,Criteria : tStringList) : tThisBaseGraph;
 procedure GridGraphFUVTwoDEMs(db : integer; DEMs,Params :tStringList);
 procedure GridScatterPlotByDEMResolution(db : integer; Criterion,Coloring : shortstring);
+function GraphPredictedAndRealSlopes(db : integer) : tThisBaseGraph;
 
 
 
@@ -171,7 +174,8 @@ end;
 function GraphFUVTwoDEMs(db : integer; DEMs,Criteria : tStringList) : tThisBaseGraph;
 var
    rfiles : array[0..10] of file;
-   i,j : integer;
+   //i,
+   j : integer;
    BaseFilter : shortstring;
    v : array[1..2] of float32;
 begin {function GraphFUVTwoDEMs}
@@ -406,7 +410,7 @@ end;
 function OpenGraphForCriterionScoresOrEvaluations(DBonTable : integer; DEMs : tStringList; HorizAxisLabel,VertAxisField : shortstring;
    GraphEvaluation : boolean; BestCriteria : boolean = true) : tThisBaseGraph;
 var
-   i : integer;
+   //i : integer;
    aMinVal,aMaxVal : float64;
 begin
    {$If Defined(RecordDEMIX_OpenGraph)} WriteLineToDebugFile('OpenGraphForCriterionScoresOrEvaluations, Criterion=' + HorizAxisLabel + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
@@ -588,9 +592,9 @@ var
          end;
 
          GISdb[DBonTable].MyData.First;
-         i := 0;
+         //i := 0;
          while not GISdb[DBonTable].MyData.eof do begin
-            inc(i);
+            //inc(i);
             if GISdb[DBonTable].MyData.FieldExists('RESOLUTION') then begin
                TStr := 'RESOLUTION';
                Color := WinGraphColors(i);
@@ -1303,7 +1307,7 @@ end;
 
 procedure BestEvalGraphPerCriterionMultipleFilters(db,db2 : integer; DEMField : shortstring; GeomorphFilters,Labels,Criteria : tStringList; CriteriaFamily : shortstring);
 var
-   i,j : integer;
+   i{,j} : integer;
    HL,LLLabel : shortstring;
    fName : PathStr;
    gr :  t1DGraphArray;
@@ -1563,7 +1567,7 @@ begin {function WinningPercentagesComparedToCOP}
       StringList2CSVtoDB(GraphDB,fName,false);
       Result.BarGraphDBName := fName;
       if (not MDDef.DEMIX_combined_graph) then AddDemixLegend(Result,UseDEMs);
-      Result.RedrawDiagram11Click(Nil);
+      Result.RedrawDiagram;
       UseDEMs.Destroy;
      {$IfDef RecordDEMIXWins} WriteLineToDebugFile('WinningPercentagesComparedToCOP out'); {$EndIf};
 end;
@@ -1675,7 +1679,7 @@ begin
       Result.Height := Result.Height + 100;
       AddDemixLegend(Result,DEMs);
    end;
-   Result.RedrawDiagram11Click(Nil);
+   Result.RedrawDiagram;
    {$IfDef RecordAverageScoresGraph} WriteLineToDebugFile('AverageScoresGraph out, Caption=' + Result.Caption); {$EndIf};
 end;
 
@@ -1729,7 +1733,7 @@ const
 var
    WinsByCritDEM : array[1..MaxCriteria,0..MaxDEMS] of integer;
    nt : array[1..MaxCriteria] of integer;
-   i,j,k,Row : integer;
+   i,{j,}k,Row : integer;
    fName : PathStr;
    bmp : tMyBitmap;
    LocStr,Criterion,ThisWinners,aDEM,BaseFilter: shortstring;
@@ -2011,7 +2015,7 @@ procedure AddDEM_DrawingLayers(DBonTable : integer; DEMs : tStringList; Graph : 
 //if theSort is blank, the tiles or areas will be evenly spaced so they do not overprint
 //if theSort is a field in the DB, the tiles or areas will be spaced on a numerical axis by the field value
 var
-   NPts,i,j{,TileID} : integer;
+   NPts,i{,j,TileID} : integer;
    v : array[1..2] of float32;
    {val,}y,Max : float32;
 begin
@@ -2040,7 +2044,7 @@ begin
          Graph.GraphDraw.ShowHorizAxis1 := false;
       end;
 
-      Graph.RedrawDiagram11Click(Nil);
+      Graph.RedrawDiagram;
       //GISdb[DBonTable].EmpSource.Enabled := true;
       Graph.GraphDraw.HorizLabel := RemoveUnderscores(Graph.GraphDraw.HorizLabel) +  '  (n=' + IntToStr(NPts) + ')';
    end;
@@ -2049,8 +2053,8 @@ end;
 
 function GraphForOneCriterion(var PanelsName : PathStr; DBonTable : integer; DEMs : tStringList; Evaluations : boolean = true; HorizAxisLabel: shortstring = '';
      VertAxisField : shortstring = ''; VertAxisLabel : shortstring = ''; TopLabel : shortstring = '') : tThisBaseGraph;
-var
-  y,i,j{,DEM} : integer;
+//var
+  //y,i,j{,DEM} : integer;
   // Bitmap : tMyBitmap;
 begin
    {$If Defined(RecordDEMIX_evaluations_graph)} WriteLineToDebugFile('Enter GraphForOneCriterion, ' + HorizAxisLabel + '  n=' + IntToStr(GISdb[DBonTable].MyData.FiltRecsInDB)); {$EndIf}
@@ -2248,7 +2252,8 @@ var
       procedure GraphsColoredByTile;
       //   7/6/2025, this is not very effective and does not provide a very good graphic
       var
-         i,j : integer;
+         //i,
+         j : integer;
          y : integer;
          Slope : float32;
          gr : t1DGraphArray;
@@ -2363,8 +2368,6 @@ begin {DEMIX_evaluations_graph}
 end {DEMIX_evaluations_graph};
 
 
-
-
 procedure HistogramsAllCriteria(db : integer);
 var
    Criteria,DEMs : tStringList;
@@ -2383,14 +2386,13 @@ begin
          Graph.GraphDraw.Symbol[j].Color := (DEMIXColorFromDEMName(DEMIXShort[j]));
          Graph.GraphDraw.FileColors256[j] := (DEMIXColorFromDEMName(DEMIXShort[j]));
       end;
-      Graph.RedrawDiagram11Click(Nil);
+      Graph.RedrawDiagram;
    end;
    Criteria.Destroy;
    DEMs.Destroy;
    GISdb[DB].ClearGISFilter;
    GISdb[DB].EmpSource.Enabled := true;
 end;
-
 
 
 procedure ScatterPlotForClusters(DBonTable : integer;  Field1,Field2 : shortstring);

@@ -636,7 +636,7 @@ var
    i                : integer;
    newBMP : tMyBitmap;
 begin
-   if DEMMergeInProgress or OpeningNewGrid or HeavyDutyProcessing or LoadingFromMapLibrary or ClosingIsHappening or (wmDEM = Nil) or WMDEM.ProgramClosing then exit;
+   if DEMMergeInProgress or HeavyDutyProcessing or LoadingFromMapLibrary or ClosingIsHappening or (wmDEM = Nil) or WMDEM.ProgramClosing then exit;
    for i := 0 to 3 do WmDEM.StatusBar1.Panels[i].Text := '';
 
    if DragEdit then begin
@@ -1038,7 +1038,7 @@ with LOSdraw do begin
           {$Else}
              for i := 1 to 15 do CrossTrackProfile.GraphDraw.Symbol[i].Size := MDDef.CloudSymbol[1].Size;
           {$EndIf}
-          CrossTrackProfile.RedrawDiagram11Click(Nil);
+          CrossTrackProfile.RedrawDiagram;
           CrossTrackProfile.BringToFront;
        end;
    end;

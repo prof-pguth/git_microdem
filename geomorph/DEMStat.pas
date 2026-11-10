@@ -147,6 +147,7 @@ type
       procedure SlopeRegionSize(CurDEM : integer; DoRegionSize : boolean = true);
       procedure MakeElevSlopeAspectDifferenceMap;
       procedure PointSlopesByRegionSize(DEM : integer; RightClickLat,RightClickLong : float64);
+      procedure PointSlopesByDEMresolution(DEM : integer);
 
       procedure SingleDEMHistogram(WhichDEM : integer; Quick : boolean = false);
       procedure DoElevationHistograms;
@@ -196,18 +197,6 @@ type
    function GridCorrelationMatrix(Which : tGridCorrelationMatrix; NumDEM : integer; DEMsOrdered : tDEMIntegerArray; Title : shortstring; Incr : integer = 1; SaveName : PathStr = '') : DEMStringGrid.TGridForm; overload;
 
    procedure HistogramPointCloudAndGlobalDEMs(DB : integer = 0; Title : shortString = '');
-{$IfDef ExcludeDirtAirShots}
-{$Else}
-   procedure DirtAndAirShots(DB : integer; Title : shortString);
-{$EndIf}
-
-{$IfDef ExIceSat}
-{$Else}
-   procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean; LimitDecimals : boolean = false);
-   procedure IcesatPhotonConvert(Memo1 : tMemo);
-   procedure AddGlobalDEMs(dbOnTable : integer);
-   procedure AddEGMfields(dbOnTable : integer);
-{$EndIf}
 
    procedure CloudSummaryGlobalDEMs(DB : integer);
    function FiveSeriesGraph(DB : integer; Lat,Long,Tolerance : float64; DirField : shortstring) : TThisbasegraph;
@@ -229,12 +218,14 @@ type
 
    procedure ComputeKappa(RefGrid,TestGrid : integer; RefGridLimits : tGridLimits; var Kappa,OverallAccuracy,AvgUsers,AvgProd : float32);
 
-//ssim operations
+
+{$IfDef IncludeSSIM}
    function ComputeSSIM(DEM1,DEM2 : integer; gl1 : tGridLimits; var SSIM,Luminance,Contrast,Structure : float64) : boolean; //inline;
    procedure AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles : boolean; Areas : tStringList = nil);
    procedure NormalizeDEMforSSIM(DEM : integer; What : shortstring);
    function MakeSSIMMap(OpenMap,AlreadyNormalized : boolean; DEM1,DEM2,NumberOfGrids,WindowSize : integer; ThinFactor : integer = 1; AreaName : shortstring = '') : integer;
    procedure SSIMcheck(DoThinning : boolean);
+{$EndIf}
 
 procedure CompareResamplingFiltering(DEM : integer);
 procedure CompareWindowSizesForSlopeMap(DEM : integer);
@@ -246,9 +237,6 @@ procedure CompareThreeLSQ(DEM : integer);
 procedure CompareLSQSlopePointSelection(DEM : integer);
 procedure CompareLSQPointsUsedEffects(DEM : integer);
 
-{$IfDef SlopeWindowEdgeEffect} procedure CompareLSQEdgeEffects(DEM : integer); {$EndIf}
-
-
 procedure CompareLSPthenupsampletoUpsamplethenLSP;
 procedure CompareUpsampling(SlopeOption : boolean = false);
 
@@ -258,7 +246,17 @@ procedure SlopeCurvatureSensitivityWindowSize(WhichLSP : integer);
 procedure Compare_one_dem_mult_windows(DEM : integer);
 function CornerDiffences(DEM1,DEM2 : integer) : shortstring; //computes the distance in km between the four corners of the two DEMs
 
+{$IfDef SlopeWindowEdgeEffect} procedure CompareLSQEdgeEffects(DEM : integer); {$EndIf}
 
+{$IfDef ExcludeDirtAirShots} {$Else} procedure DirtAndAirShots(DB : integer; Title : shortString); {$EndIf}
+
+{$IfDef ExIceSat}
+{$Else}
+   procedure IcesatProcessCanopy(dbOnTable : integer; AddDEMs : boolean; LimitDecimals : boolean = false);
+   procedure IcesatPhotonConvert(Memo1 : tMemo);
+   procedure AddGlobalDEMs(dbOnTable : integer);
+   procedure AddEGMfields(dbOnTable : integer);
+{$EndIf}
 
 const
    SSIM_fudge : float64 = 1.0;
@@ -326,7 +324,9 @@ var
 
 {$I demstat_global_dems.inc}
 
-{$I demstat_ssim.inc}
+{$IfDef IncludeSSIM}
+   {$I demstat_ssim.inc}
+{$EndIf}
 
 {$I histograms.inc}
 
@@ -1343,22 +1343,16 @@ end;
 procedure AllAspects;
  var
     rg : tThisBaseGraph;
-    //fName : PathStr;
-    BMPlist : tStringList;
+    //BMPlist : tStringList;
     DEM : integer;
  begin
-    BMPlist := tStringList.Create;
+    //BMPlist := tStringList.Create;
     for DEM := 1 to MaxDEMDataSets do begin
-       if ValidDEM(DEM) then begin
-           if (DEMGlb[DEM].DEMHeader.ElevUnits = euAspectDeg) then begin
-              rg := CreateAspectRose(DEM);
-           end;
+       if ValidDEM(DEM) and (DEMGlb[DEM].DEMHeader.ElevUnits = euAspectDeg) then begin
+          rg := CreateAspectRose(DEM);
        end;
     end;
-   //if (BMPlist.Count > 0) then begin
-      MakeBigBitmap(BMPlist,'Aspect roses');
-   //end
-   //else BMPlist.Free;
+    //MakeBigBitmap(BMPlist,'Aspect roses');
 end;
 
 
@@ -1375,21 +1369,28 @@ var
    SlopeAsp : tSlopeAspectRec;
 
          procedure GetTheSlopes(BoxSize : integer; var Radius : integer);
+         var
+            aline : shortstring;
          begin
             MDDef.SlopeCompute.WindowRadius := BoxSize;
             if DEMGlb[DEM].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
-               Findings.Add(Location + ',' + IntToStr(BoxSize) + ',' + RealToString(BoxSize* DEMGlb[DEM].AverageSpace,-12,-2) + ',' +
-                     RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDirTrue,-8,2));
+               aLine := Location + ',' + IntToStr(BoxSize) + ',' + RealToString(2 * BoxSize * DEMGlb[DEM].AverageSpace,-12,-2) + ',' +
+                     RealToString(SlopeAsp.SlopePercent,-12,2) + ',' + RealToString(SlopeAsp.SlopeDegree,-12,2) + ',' + RealToString(SlopeAsp.AspectDirTrue,-8,2);
+               Findings.Add(aline);
+               {$IfDef RecordRightClick} WriteLineToDebugFile(aLine); {$EndIf}
             end;
             Radius := BoxSize;
          end;
 
+(*
          procedure DoDEMarray(DEMarray : tDEMarray; OutName : PathStr; Color : tColor);
          var
             i : integer;
          begin
+             StripInvalidPathNameChars(OutName,true);
+             MDDef.SlopeCompute.WindowRadius := 1;
              Findings := tStringList.Create;
-             Findings.Add('Dist_m,Slope_pc');
+             Findings.Add('GRID_M,Slope_pc');
              for i := 0 to 25 do begin
                 if ValidDEM(DEMArray[i]) then begin
                     DEM2 := DEMArray[i];
@@ -1398,7 +1399,7 @@ var
                     Row := round(yDEMg1);
                     if DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
                        Findings.Add(RealToString(DEMglb[DEM2].AverageSpace,-12,-2) + ',' + RealToString(SlopeAsp.SlopePercent,-12,-2));
-                       {$IfDef RecordRightClick} WriteLineToDebugFile(DEMGlb[DEMArray[i]].AreaName +  '  Aggregated='+ IntToStr(i) + '  ' + RealToString(SlopeAsp.SlopePercent,-12,-2) + '%' + '  ' +
+                       {$IfDef RecordRightClick} WriteLineToDebugFile(DEMGlb[DEMArray[i]].AreaName +  ' Aggregated='+ IntToStr(i) + '  ' + RealToString(SlopeAsp.SlopePercent,-12,-2) + '%' + '  ' +
                            DEMglb[DEM2].DEMLocationString(Col,Row)); {$EndIf}
                     end
                     else begin
@@ -1410,9 +1411,136 @@ var
              end;
              if (Findings.Count > 1) then begin
                  db2 := StringList2CSVtoDB(Findings,OutName);
-                 GISdb[db2].AddSeriesToScatterGram(ExtractFileNameNoExt(OutName),Graph,Color,xField,YField,true);
+                 if (Graph = Nil) then begin
+                    Graph := GISDB[db2].CreateScatterGram(OutName,'GRID_M',yField,clRed,true,aCapt);
+                    Graph.GraphDraw.MinVertAxis := 0;
+                    Graph.GraphDraw.LLCornerText := Location;
+                    Graph.RedrawDiagram;
+                 end
+                 else begin
+                    GISdb[db2].AddSeriesToScatterGram(ExtractFileNameNoExt(OutName),Graph,Color,'GRID_M',YField,true);
+                 end;
                  CloseSingleDB(db2);
+             end
+             else Findings.Destroy;
+           end;
+*)
+
+begin
+   {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize in'); {$EndIf}
+
+   DEMDef_routines.SaveBackupDefaults;
+   Location := LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod);
+   xField := 'DIST_M';
+   yField := 'SLOPE_PC';
+   aCapt := 'Slopes by region at ' + Location;
+   Graph := nil;
+
+(*
+   if AggregatedArray or DecimatedArray then begin
+      if AggregatedArray then begin
+          {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+          //AgName := NextFileNumber(MDTempDir,'Aggregated_DEM_','.dbf');
+
+          AgName := NextFileNumber(MDTempDir,Location,'.dbf');
+          DoDEMarray(AggregatedDEMarray,AgName,clLime);
+          for i := 1 to 24 do begin
+             Col := 10 + Random(200);
+             Row := 10 + Random(200);
+             DEMglb[DEM].DEMGridToLatLongDegree(Col,Row,RightClickLat,RightClickLong);
+             Location := LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod);
+             {$IfDef RecordRightClick} WriteLineToDebugFile('Loop i=' + IntToStr(i) + '  ' + Location); {$EndIf}
+             AgName := NextFileNumber(MDTempDir,Location,'.dbf');
+             DoDEMarray(AggregatedDEMarray,AgName,clLime);
+          end;
+      end;
+
+      if DecimatedArray then begin
+          {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+          DecName := NextFileNumber(MDTempDir,'Decimated_DEM_','.dbf');
+          DoDEMarray(DecimatedDEMarray,DecName,clRed);
+      end;
+   end
+   else begin
+*)
+      DEMGlb[DEM].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xDEMg1,yDEMg1);
+      Col := round(xDEMg1);
+      Row := round(yDEMg1);
+      Findings := tStringList.Create;
+      Findings.Add('Location,Region,Dist_m,Slope_pc,Slope_deg,Aspect_deg');
+      i := 1;
+      repeat
+         GetTheSlopes(i,Radius);
+         inc(i);
+      until Radius > 30;
+      MainName := NextFileNumber(MDTempDir,'Region_size_','.dbf');
+
+      db := StringList2CSVtoDB(Findings,MainName);
+      Graph := GISDB[db].CreateScatterGram(MainName,xField,yField,clRed,true,aCapt);
+      Graph.GraphDraw.MinVertAxis := 0;
+      Graph.GraphDraw.LLCornerText := Location;
+      Graph.RedrawDiagram;
+      CloseSingleDB(db);
+//   end;
+
+   DEMDef_routines.RestoreBackupDefaults;
+   {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize out'); {$EndIf}
+end;
+
+
+procedure PointSlopesByDEMresolution(DEM : integer);
+var
+   xDEMg1,yDEMg1,AvgSlope,Lat,Long : float64;
+   Findings : tStringList;
+   xField,yField,aCapt,
+   TStr,location : shortString;
+   i,db,Col,Row,NumPts,DEM2,db2,Radius,LastDEM : integer;
+   ag : byte;
+   graph : tThisBaseGraph;
+   agName,MainName,DecName : PathStr;
+   SlopeAsp : tSlopeAspectRec;
+
+
+         procedure DoDEMarray(DEMarray : tDEMarray; OutName : PathStr; Color : tColor);
+         var
+            i : integer;
+         begin
+             StripInvalidPathNameChars(OutName,true);
+             MDDef.SlopeCompute.WindowRadius := 1;
+             Findings := tStringList.Create;
+             Findings.Add('GRID_M,Slope_pc');
+             for i := MaxAggregated downto 0 do begin
+                if ValidDEM(DEMArray[i]) then begin
+                    DEM2 := DEMArray[i];
+                    DEMGlb[DEM2].LatLongDegreeToDEMGrid(Lat,Long,xDEMg1,yDEMg1);
+                    Col := round(xDEMg1);
+                    Row := round(yDEMg1);
+                    if DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
+                       Findings.Add(RealToString(DEMglb[DEM2].AverageSpace,-12,-2) + ',' + RealToString(SlopeAsp.SlopePercent,-12,-2));
+                       {$IfDef RecordRightClick} WriteLineToDebugFile(DEMGlb[DEMArray[i]].AreaName +  ' Aggregated='+ IntToStr(i) + '  ' + RealToString(SlopeAsp.SlopePercent,-12,-2) + '%' + '  ' +
+                           DEMglb[DEM2].DEMLocationString(Col,Row)); {$EndIf}
+                    end
+                    else begin
+                       {$IfDef RecordRightClick} WriteLineToDebugFile('No slope ' + DEMGlb[DEMArray[i]].AreaName +  '  Aggregated='+ IntToStr(i) + '  ' +
+                          IntToStr(Col) + '  ' + IntToStr(Row) + DEMglb[DEM2].DEMLocationString(Col,Row));
+                       {$EndIf}
+                    end;
+                end;
              end;
+             if (Findings.Count > 1) then begin
+                 db2 := StringList2CSVtoDB(Findings,OutName);
+                 if (Graph = Nil) then begin
+                    Graph := GISDB[db2].CreateScatterGram(OutName,'GRID_M',yField,clRed,true,aCapt);
+                    Graph.GraphDraw.MinVertAxis := 0;
+                    Graph.GraphDraw.LLCornerText := AggregatedTile;
+                    Graph.RedrawDiagram;
+                 end
+                 else begin
+                    GISdb[db2].AddSeriesToScatterGram(ExtractFileNameNoExt(OutName),Graph,Color,'GRID_M',YField,true);
+                 end;
+                 CloseSingleDB(db2);
+             end
+             else Findings.Destroy;
            end;
 
 
@@ -1420,48 +1548,37 @@ begin
    {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize in'); {$EndIf}
 
    DEMDef_routines.SaveBackupDefaults;
-   Location := LatLongDegreeToString(RightClickLat,RightClickLong,MDDef.OutPutLatLongMethod);
-
-   DEMGlb[DEM].LatLongDegreeToDEMGrid(RightClickLat,RightClickLong,xDEMg1,yDEMg1);
-   Col := round(xDEMg1);
-   Row := round(yDEMg1);
-(*
-   if DEMGlb[DEM].AverageSpace < 0.75 then NumPts := 120
-   else if DEMGlb[DEM].AverageSpace < 1.5 then NumPts := 60
-   else if DEMGlb[DEM].AverageSpace < 2.5 then NumPts := 45
-   else if DEMGlb[DEM].AverageSpace < 5 then NumPts := 35
-   else NumPts := 25;
-*)
-   Findings := tStringList.Create;
-   Findings.Add('Location,Region,Dist_m,Slope_pc,Slope_deg,Aspect_deg');
-   i := 1;
-   repeat
-      GetTheSlopes(i,Radius);
-      inc(i);
-   until Radius > 75;
-   MainName := NextFileNumber(MDTempDir,'Region_size_','.dbf');
-   AgName := NextFileNumber(MDTempDir,'Aggregated_DEM_','.dbf');
-   DecName := NextFileNumber(MDTempDir,'Decimated_DEM_','.dbf');
    xField := 'DIST_M';
    yField := 'SLOPE_PC';
    aCapt := 'Slopes by region at ' + Location;
-
-   db := StringList2CSVtoDB(Findings,MainName);
-   Graph := GISDB[db].CreateScatterGram(MainName,xField,yField,clRed,true,aCapt);
-   Graph.GraphDraw.MinVertAxis := 0;
-   Graph.GraphDraw.LLCornerText := Location;
-   Graph.RedrawDiagram;
-   CloseSingleDB(db);
-
-   if AggregatedArray then begin
-       {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
-       DoDEMarray(AggregatedDEMarray,AgName,clLime);
+   Graph := nil;
+   for i := MaxAggregated downto 0 do begin
+      LastDEM := AggregatedDEMarray[i];
+      if ValidDEM(LastDEM) then break;
    end;
 
-   if DecimatedArray then begin
-       {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
-       DoDEMarray(DecimatedDEMarray,DecName,clRed);
-   end;
+
+      if AggregatedArray then begin
+          {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+          //AgName := NextFileNumber(MDTempDir,'Aggregated_DEM_','.dbf');
+          for i := 1 to 25 do begin
+             Col := 10 + Random(DEMglb[LastDEM].DEMHeader.NumCol - 20);
+             Row := 10 + Random(DEMglb[LastDEM].DEMHeader.NumRow - 20);
+             DEMglb[LastDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+             DEMglb[LastDEM].SelectionMap.MapDraw.MapSymbolAtLatLongDegree(DEMglb[LastDEM].SelectionMap.Image1.Canvas,Lat,Long,FilledBox,4,claRed);
+             Location := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
+             {$IfDef RecordRightClick} WriteLineToDebugFile('Loop i=' + IntToStr(i) + '  ' + Location); {$EndIf}
+             AgName := NextFileNumber(MDTempDir,Location,'.dbf');
+             DoDEMarray(AggregatedDEMarray,AgName,clLime);
+          end;
+      end;
+
+      if DecimatedArray then begin
+          {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+          DecName := NextFileNumber(MDTempDir,'Decimated_DEM_','.dbf');
+          DoDEMarray(DecimatedDEMarray,DecName,clRed);
+      end;
+
    DEMDef_routines.RestoreBackupDefaults;
    {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize out'); {$EndIf}
 end;

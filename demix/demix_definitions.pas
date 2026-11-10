@@ -251,7 +251,6 @@ var
 //create or edit database
    procedure MakeDBForParamStats(Option,DBonTable : integer);
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
-   procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
    procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
@@ -277,7 +276,6 @@ var
 
 
 //inventory and reports
-   procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
    procedure DeleteFilesForATestArea;
    procedure EvalRangeAndStatsByCriterion(DBonTable : integer; aField : shortstring = '');
    procedure InventoryCriteriaEachDEMIXtile(DB : integer);
@@ -423,6 +421,7 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
 
        procedure TilesInEachElevRangeForTestAreas;
        procedure MaskWaterInReferenceAndTestDEMs;
+       procedure ComputeDEMIX_Summary_stats_DB(GeoTiles : boolean = true);
 {$EndIf}
 
 
@@ -468,7 +467,13 @@ function CommonTileStatsNames(DBonTable : integer) : shortstring;
 function CreatePowerLawList(db : integer) : tStringList;
 procedure ComputePowerBySlopeBins(db : integer);
 
-procedure FindBestReferenceDEM(db : integer; DEM : shortstring);
+{$IfDef IncludeRetired}
+   procedure FindBestReferenceDEM(db : integer; DEM : shortstring);
+   procedure TiesByOpinions(DBonTable : integer);
+   procedure ComputeDEMIX_Diff_Dist_tile_stats(Overwrite : boolean; AreasWanted : tStringList = nil);
+{$EndIf}
+
+
 function DEMIXcreationString(db : integer) : shortstring;
 procedure GetToleranceForCriterion(Criterion : shortstring; var Tolerance : float64);
 
@@ -487,6 +492,7 @@ const //Demix Database types
   ddtGDEMlinearfit = 34;
 
 function CheckDEMIXdbType(db : integer; var ItsType : byte; WantedTypes : tByteSet; WhatFor : shortString = '') : boolean;
+function ExpandDEMIXfieldName(Name : shortString) : shortstring;
 
 
 implementation
@@ -521,10 +527,32 @@ uses
    {$include demix_channels.inc}
 {$EndIf}
 
+{$IfDef IncludeRetired}
+   {$include demix_retired_crete_db.inc}
+{$EndIf}
+
+
+function ExpandDEMIXfieldName(Name : shortString) : shortstring;
+var
+   fName : PathStr;
+   Table : tMyData;
+begin
+   Result := Name;
+   fName := DEMIXSettingsDir + 'demix_expanded_field_names.dbf';
+   if FileExists(fName) then begin
+      Table := tMyData.Create(fName);
+      Table.ApplyFilter('FIELD_NAME=' + QuotedStr(Name));
+      if Table.RecordCount = 1 then begin
+         Result := Table.GetFieldByNameAsString('EXPANDED');
+      end;
+      Table.Destroy;
+   end;
+end;
+
 
 procedure GetToleranceForCriterion(Criterion : shortstring; var Tolerance : float64);
 begin
-  if Criterion = 'ELEV_FUV' then Tolerance := 0.000100
+  if (Criterion = 'ELEV_FUV') then Tolerance := 0.000100
   else if Criterion = 'ELEV_MAE' then Tolerance := 0.01
   else if Criterion = 'SLOPE_FUV' then Tolerance := 0.02
   else if Criterion = 'SLOPE_MAE' then Tolerance := 0.5
@@ -845,6 +873,7 @@ end;
 
 
 procedure RemoveInvalidCriterion(var sl : TStringList);
+//{$Define TrackRemove}
 var
    BadCriteria : tStringList;
    fName : PathStr;
@@ -853,16 +882,19 @@ var
 begin
    fName := DEMIXSettingsDir + 'invalid_criteria.txt';
    if FileExists(fName) then begin
+      {$IfDef TrackRemove} WriteLineToDebugFile('Enter RemoveInvalidCriterion'); WriteStringListToDebugFile(sl); {$EndIf}
       BadCriteria := tStringList.Create;
       BadCriteria.LoadFromFile(fName);
       for I := pred(sl.count) downto 0 do begin
           s := UpperCase(sl.strings[i]);
           bc := BadCriteria.IndexOf(s);
           if (bc <> -1) then begin
+             {$IfDef TrackRemove} WriteLineToDebugFile('Removed=' + sl.strings[i]);  {$EndIf}
              sl.Delete(i);
           end;
       end;
       BadCriteria.Destroy;
+      {$IfDef TrackRemove} WriteLineToDebugFile('Exit RemoveInvalidCriterion'); WriteStringListToDebugFile(sl); {$EndIf}
    end;
 end;
 

@@ -14,7 +14,8 @@ const
    Linear_PLfields : array[1..3] of shortstring = ('_B','_M','_R2');
    Power_PLfields : array[1..3] of shortstring = ('_A','_B','_R2');
 var
-   Results,theDEMs,Labels2 : tStringList;
+   //Results,
+   theDEMs,Labels2 : tStringList;
    i,j : integer;
    gr : t2Dgrapharray;
    GraphMode : tdbGraphType;
@@ -132,7 +133,8 @@ procedure GridScatterPlotByDEMResolution(db : integer; Criterion,Coloring : shor
    var
       i,j,k : integer;
       rfile : file;
-      SeriesFilter,TStr : shortstring;
+      //SeriesFilter,
+      TStr : shortstring;
       v : array[1..3] of float32;
    begin
       Result := StartIndividualGraph(db,Nil);
@@ -176,7 +178,7 @@ begin {procedure GridScatterPlotByDEMResolution}
           wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
           for f2 := 0 to pred(Filters2.Count) do begin
              TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2] + HRDEMresolutionFilter(db);
-             GISdb[db].ApplyGISFilter(TheFigureFilter);
+             GISdb[db].ApplyGISFilter(TheFigureFilter,false);
              GISdb[db].EmpSource.Enabled := false;
              {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TheFigureFilter=' + TheFigureFilter + '  n=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
              if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
@@ -186,12 +188,11 @@ begin {procedure GridScatterPlotByDEMResolution}
              end;
           end;
        end;
-       EndGraphGrid(gr,Labels1,Labels2,Nil,GridCaption);
+       EndGraphGrid(gr,Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend,GridCaption);
        GISdb[db].ApplyGISfilter(BaseFilter);
        {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphMultipleParamsByDEMResolution out'); {$EndIf}
    end;
 end {procedure GridScatterPlotByDEMResolution};
-
 
 
 procedure GraphMultParamsByAvgSlope_DEMresolution(db : integer; DEMIXtileFieldName : shortstring; Resolutions,Criteria,Comparisons,DEMs : tStringList;
@@ -200,9 +201,7 @@ procedure GraphMultParamsByAvgSlope_DEMresolution(db : integer; DEMIXtileFieldNa
 var
    Filters1,Labels1,Filters2,Labels2 : tStringList;
    TheFigureFilter,FigureLabel,TStr,BaseFilter,ResString,GridCaption: shortstring;
-   fName : PathStr;
    f1,f2,c1 : integer;
-   RowMinZ,RowMaxZ : float64;
    gr : t2Dgrapharray;
    MultTiles,Colors : tStringList;
    a,b,r : float64;
@@ -215,7 +214,6 @@ var
       rfile : file;
       LegendEntries : tStringList;
       SeriesFilter,TStr,Criterion,Filter : shortstring;
-      amin,amax : float64;
       bmp : tMyBitmap;
       Symbol : tFullSymbolDeclaration;
       v : array[1..2] of float32;
@@ -239,12 +237,12 @@ var
 
 
                begin
-                   GISdb[db].ApplyGISFilter(SeriesFilter);
+                   GISdb[db].ApplyGISFilter(SeriesFilter,false);
                    GISdb[db].EmpSource.Enabled := false;
-                   if (GISdb[db].MyData.FiltRecsInDB) = 0 then begin
-                       {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('No data for ' + SeriesFilter); {$EndIf}
-                   end
-                   else begin
+                   {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Recs=' + IntToStr((GISdb[db].MyData.FiltRecsInDB)) + ' for ' + SeriesFilter); {$EndIf}
+                   if (GISdb[db].MyData.FiltRecsInDB) > 0 then begin
+                      //GISdb[db].MyData.First;
+                      (*
                       if (DEMs = nil) then begin
                            repeat
                                 v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(ResString);
@@ -254,16 +252,35 @@ var
                            until GISdb[db].MyData.eof;
                       end
                       else begin
+                      *)
                           for I := 0 to pred(Resolutions.Count) do begin
-                             GISdb[db].ApplyGISFilter(SeriesFilter + ' AND ' + ResString + '=' + Resolutions.Strings[i]);
+                             GISdb[db].ApplyGISFilter(SeriesFilter + ' AND ' + ResString + '=' + Resolutions.Strings[i],false);
                              GISdb[db].EmpSource.Enabled := false;
-                              v[1] := StrToFloat(Resolutions.Strings[i]);
-                              GetV2;
-                              BlockWrite(Rfile,v,1);
-                           end;
-                      end;
+                             v[1] := StrToFloat(Resolutions.Strings[i]);
+                             GetV2;
+                             BlockWrite(Rfile,v,1);
+                          end;
+                      //end;
                    end;
                end {procedure ParseDataFile};
+
+               procedure StartLegend;
+               begin
+                  LegendEntries := tStringList.Create;
+                  Colors := tStringList.Create;
+               end;
+
+               procedure Endlegend;
+               begin
+                   MDDef.DEMIXlegendFontSize := 14;
+                   bmp := MakeLegend(LegendEntries,Colors);
+                   Result.GraphDraw.BottomLegendFName := NextFileNumber(MDTempDir,'series_label_','.bmp');
+                   SaveBitmap(bmp,Result.GraphDraw.BottomLegendFName);
+                   Result.GraphDraw.MultiPanelGraph := true;
+                   Colors.Destroy;
+                   LegendEntries.Destroy;
+                   bmp.Destroy;
+               end;
 
 
    begin {function MakeGraph}
@@ -294,10 +311,10 @@ var
                for k := 0 to pred(MultTiles.Count) do begin
                    Symbol.Color := ConvertTColorToPlatformColor(CountryColor(MultTiles.Strings[k]));
                    Filter := AddAndIfNeeded(BaseFilter) + TileNameGDEMorHRDEM(db) + '=' + QuotedStr(MultTiles.Strings[k]) + HRDEMresolutionFilter(db);
-                   GISdb[db].ApplyGISFilter(Filter);
+                   GISdb[db].ApplyGISFilter(Filter,false);
                    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile(Filter + '  n=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
                    GISdb[db].EmpSource.Enabled := false;
-                   OnFile := Result.OpenPointSymbolFile(rfile,MultTiles.Strings[k],Symbol,4);
+                   OnFile := Result.OpenPointSymbolFile(rfile,ExpandDEMIXfieldName(MultTiles.Strings[k]),Symbol,4);
                    repeat
                       if GISdb[db].GetFloat32FromTableLink(GISdb[db].dbOpts.XField,v[1]) and GISdb[db].GetFloat32FromTableLink(Criteria.Strings[0],v[2]) then begin
                          CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
@@ -315,10 +332,10 @@ var
                for k := 0 to pred(MultTiles.Count) do begin
                    Filter := AddAndIfNeeded(BaseFilter) + TileNameGDEMorHRDEM(db) + '=' + QuotedStr(MultTiles.Strings[k]) + HRDEMresolutionFilter(db);
                    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile(Filter); {$EndIf}
-                   GISdb[db].ApplyGISFilter(Filter);
+                   GISdb[db].ApplyGISFilter(Filter,false);
                    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile(Filter + '  n=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
                    GISdb[db].EmpSource.Enabled := false;
-                   OnFile := Result.OpenPointSymbolFile(rfile,MultTiles.Strings[k],Symbol,4);
+                   OnFile := Result.OpenPointSymbolFile(rfile,ExpandDEMIXfieldName(MultTiles.Strings[k]),Symbol,4);
                    repeat
                        v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(ResString);
                        v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(DEMs.strings[0]);
@@ -333,19 +350,26 @@ var
         else if (DEMs <> Nil) then begin
            for f1 := 0 to pred(DEMs.Count) do begin
                Symbol.Color := DEMIXColorFromDEMName(DEMs.strings[f1]);
-               Result.OpenPointSymbolFile(rFile,DEMs.strings[f1],Symbol,4);
                SeriesFilter := TheFigureFilter;
+               Result.OpenPointSymbolFile(rFile,DEMs.strings[f1],Symbol,4);
                ParseDataFile(DEMs.strings[f1]);
                CloseFile(rfile);
            end {for f1};
         end
         else if (Comparisons.Count > 1)  then begin
-           {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Criteria.Count = 1'); {$EndIf}
+           {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Comparisons.Count = 1'); {$EndIf}
+                StartLegend;
+                for j := 0 to pred(Comparisons.Count) do begin
+                   LegendEntries.Add(ExpandDEMIXfieldName(Comparisons.Strings[j]));
+                   Colors.Add(IntToStr(WinGraphColors(j)));
+                   {$If Defined(LegendColors)} WriteLineToDebugFile('Legend:  ' + IntToStr(j) + '  ' + MultSeries.Strings[j] + '  ' + ColorToString(WinGraphColors(j))); {$EndIf}
+                end;
+                EndLegend;
            for f1 := 0 to pred(Comparisons.Count) do begin
                Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(f1));
                Criterion := Criteria.Strings[0];
-               Result.OpenPointSymbolFile(rFile,Comparisons.strings[f1],Symbol,4);
                SeriesFilter := TheFigureFilter + ' AND COMPARE=' + QuotedStr(Comparisons.strings[f1]) + HRDEMresolutionFilter(db);
+               Result.OpenPointSymbolFile(rFile,Comparisons.strings[f1],Symbol,4);
                ParseDataFile(Criterion);
                CloseFile(rfile);
            end {for f1};
@@ -357,7 +381,7 @@ var
                DataFile := Result.OpenPointSymbolFile(rFile,Criterion,Symbol,4);
                for k := 0 to pred(Resolutions.Count) do begin
                    SeriesFilter := TheFigureFilter + {' AND ' + Filters1.strings[f1] + ' AND ' + HRDEMresolutionFilter(db) +} ' AND ' + ResString + '=' + Resolutions.Strings[k];
-                   GISdb[db].ApplyGISFilter(SeriesFilter);
+                   GISdb[db].ApplyGISFilter(SeriesFilter,false);
                    ParseDataFile(Criterion);
                end;
                CloseFile(rfile);
@@ -367,30 +391,22 @@ var
         else if (Criteria.Count > 1) then  begin
            {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Mulitple criteria mean/median on graph'); {$EndIf}
 
-            if (Criteria.Count > 1) then begin
-                LegendEntries := tStringList.Create;
-                Colors := tStringList.Create;
+            //if (Criteria.Count > 1) then begin
+                StartLegend;
                 for j := 0 to pred(Criteria.Count) do begin
-                   LegendEntries.Add(Criteria.Strings[j]);
+                   LegendEntries.Add(ExpandDEMIXfieldName(Criteria.Strings[j]));
                    Colors.Add(IntToStr(WinGraphColors(j)));
                    {$If Defined(LegendColors)} WriteLineToDebugFile('Legend:  ' + IntToStr(j) + '  ' + MultSeries.Strings[j] + '  ' + ColorToString(WinGraphColors(j))); {$EndIf}
                 end;
-                MDDef.DEMIXlegendFontSize := 12;
-                bmp := MakeLegend(LegendEntries,Colors);
-                Result.GraphDraw.BottomLegendFName := NextFileNumber(MDTempDir,'series_label_','.bmp');
-                SaveBitmap(bmp,Result.GraphDraw.BottomLegendFName);
-                Colors.Destroy;
-                LegendEntries.Destroy;
-                bmp.Destroy;
-                //Result.GraphDraw.InsideMarginLegend := lpNEMap;
-            end;
+                EndLegend;
+            //end;
 
              for j := 0 to pred(Criteria.Count) do begin
                  Symbol.DrawingSymbol := FilledBox;
                  Symbol.Size := 5;
                  Symbol.Color := ConvertTColorToPlatformColor(WinGraphColors(j));
                  Criterion := Criteria.Strings[j];
-                 Result.OpenPointSymbolFile(rfile,Criterion,Symbol,4);
+                 Result.OpenPointSymbolFile(rfile,ExpandDEMIXfieldName(Criterion),Symbol,4);
                  for k := 0 to pred(Resolutions.Count) do begin
                      SeriesFilter := TheFigureFilter + ' AND ' + ResString + '=' + Resolutions.Strings[k] + HRDEMresolutionFilter(db);
                      ParseDataFile(Criterion);
@@ -425,7 +441,7 @@ begin {procedure GraphMultParamsByAvgSlope_DEMresolution}
        wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
        for f2 := 0 to pred(Filters2.Count) do begin
          TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
-         GISdb[db].ApplyGISFilter(TheFigureFilter);
+         GISdb[db].ApplyGISFilter(TheFigureFilter,false);
          FigureLabel := PETdbUtils.AddAndIfNeeded(BaseFilter) + ' n=' + IntToStr(GISdb[db].MyData.NumUniqueEntriesInDB(DEMIXtileFieldName));
          GISdb[db].EmpSource.Enabled := false;
          {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Filter=' + TheFigureFilter + '  label=' + FigureLabel); {$EndIf}
@@ -451,7 +467,7 @@ begin {procedure GraphMultParamsByAvgSlope_DEMresolution}
          end;
       end {for f2};
    end;
-   EndGraphGrid(gr,Labels1,Labels2,Nil,GridCaption);
+   EndGraphGrid(gr,Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend,GridCaption);
    GISdb[db].ApplyGISFilter(BaseFilter);
    {$IfDef RecordDEMIX} WriteLineToDebugFile('procedure GraphMultParamsByAvgSlope_DEMresolution out'); {$EndIf}
 end {procedure GraphMultParamsByAvgSlope_DEMresolution};
@@ -482,7 +498,7 @@ procedure GraphMultipleParamsByDEMResolution(db : integer; Criterion,DEMIXtileFi
          for k := 0 to pred(Resolutions.Count) do begin
             {$IfDef RecordDSM_DTM_CompareFull} WriteLineToDebugFile(IntToStr(succ(k)) + '/' + IntToStr(Resolutions.Count) + ' resolution=' + Resolutions.Strings[k]); {$EndIf}
             SeriesFilter := TheFigureFilter + ' AND ' + ResString + '=' + Resolutions.Strings[k] + ' AND COMPARE=' + QuotedStr(Comparisons.Strings[i]);
-            GISdb[db].ApplyGISFilter(SeriesFilter);
+            GISdb[db].ApplyGISFilter(SeriesFilter,false);
             GISdb[db].EmpSource.Enabled := false;
             if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
                 v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(ResString);
@@ -527,7 +543,7 @@ begin {procedure GraphMultipleParamsByDEMResolution}
           wmDEM.SetPanelText(1,IntToStr(succ(f1)) + '/' + IntToStr(Filters1.Count),true);
           for f2 := 0 to pred(Filters2.Count) do begin
              TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
-             GISdb[db].ApplyGISFilter(TheFigureFilter);
+             GISdb[db].ApplyGISFilter(TheFigureFilter,false);
              GISdb[db].EmpSource.Enabled := false;
              {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TheFigureFilter=' + TheFigureFilter + '  n=' + IntToStr(GISdb[db].MyData.FiltRecsInDB)); {$EndIf}
              if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
@@ -537,7 +553,8 @@ begin {procedure GraphMultipleParamsByDEMResolution}
              end;
           end;
        end;
-       EndGraphGrid(gr,{BaseFilter,}Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend);
+       EndGraphGrid(gr,Labels1,Labels2,gr[0,0].GraphDraw.MakeLegend);
+       GISdb[db].ClearGISFilter;
        {$IfDef RecordDEMIX} WriteLineToDebugFile('GraphMultipleParamsByDEMResolution out'); {$EndIf}
    end;
 end {procedure GraphMultipleParamsByDEMResolution};
@@ -671,7 +688,7 @@ begin
     Result := nil;
     XField := XSpacingField(db,xlabel);
     BaseFilter := GISdb[db].MyData.Filter;
-    GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'TILE=' + QuotedStr(DEMIX_tile));
+    GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'TILE=' + QuotedStr(DEMIX_tile),false);
     GISdb[db].EmpSource.Enabled := false;
     if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
       Result := StartIndividualGraph(db,Resolutions);
@@ -681,7 +698,7 @@ begin
       Comparisons := Nil;
       Comparisons := GISdb[db].MyData.ListUniqueEntriesInDB('COMPARE');
       for i := 0 to pred(Comparisons.Count) do begin
-          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'TILE=' + QuotedStr(DEMIX_tile) + ' AND COMPARE=' + QuotedStr(Comparisons.Strings[i]));
+          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'TILE=' + QuotedStr(DEMIX_tile) + ' AND COMPARE=' + QuotedStr(Comparisons.Strings[i]),false);
           GISdb[db].EmpSource.Enabled := false;
           Result.OpenDataFile(rfile,Comparisons.Strings[i],WinGraphColors(i));
           while not GISdb[db].MyData.eof do begin
@@ -722,7 +739,7 @@ begin
   Result := nil;
   if true {DEMIX_HRDEM_DB(db)} then begin
       BaseFilter := GISdb[db].MyData.Filter;
-      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + TileNameGDEMorHRDEM(db) + '=' + QuotedStr(DTMName));
+      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + TileNameGDEMorHRDEM(db) + '=' + QuotedStr(DTMName),false);
       if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
           GISdb[db].dbOpts.XField := XSpacingField(db,xLabel);
           MultSeries := tStringList.Create;
@@ -750,7 +767,8 @@ end;
 function OneGraphSlopeVersusResolutionManyTiles(db : integer; Parameter : shortstring) : tThisBaseGraph;
 //graph for multiple DEMIX tiles, with grid spacing on x-axis and average slope on y-axis,
 var
-   MultSeries,TheTiles,TheCompares : tStringList;
+   //MultSeries,
+   TheTiles{,TheCompares} : tStringList;
    BaseFilter,Tile,XField : shortstring;
    i : integer;
    rfile : file;
@@ -777,11 +795,11 @@ var
       GISdb[db].ApplyGISFilter(BaseFilter);
    end;
 
-var
-   DEMsdone : tstringlist;
-   DEM1,DEM2 : shortstring;
-   rfile2 : file;
-   j : integer;
+//var
+   //DEMsdone : tstringlist;
+   //DEM1,DEM2 : shortstring;
+   //rfile2 : file;
+   //j : integer;
 begin
   {$IfDef RecordCompareDSMandDTM} WriteLineToDebugFile('GraphCompareDSMandDTMslopes in'); {$EndIf}
   Result := nil;
@@ -815,7 +833,7 @@ begin
       GISdb[db].MyData.FindFieldRange(Parameter,Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
       for i := 0 to pred(TheTiles.Count) do begin
           Tile := TheTiles.Strings[i];
-          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(Tile) + HRDEMresolutionFilter(db));
+          GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(Tile) + HRDEMresolutionFilter(db),false);
           GISdb[db].EmpSource.Enabled := false;
           if (GISdb[db].MyData.FiltRecsinDB > 0) then begin
              Result.OpenDataFile(rfile,Tile);
@@ -843,7 +861,7 @@ var
    Filters1,Labels1,Filters2,Labels2 : tStringList;
    f1,f2 : integer;
    gr : t2Dgrapharray;
-   BaseFilter,ResString,TheFigureFilter,FigureLabel : shortstring;
+   BaseFilter,ResString,TheFigureFilter{,FigureLabel} : shortstring;
 begin
    StartGraphGrid(db,BaseFilter,ResString,Filters1,Labels1,Filters2,Labels2);
    GISdb[db].EmpSource.Enabled := false;
@@ -854,7 +872,7 @@ begin
       GISdb[db].EmpSource.Enabled := false;
       for f2 := 0 to pred(Filters2.Count) do begin
          TheFigureFilter := PETdbUtils.AddAndIfNeeded(BaseFilter) + Filters1.strings[f1] + ' AND ' + Filters2.strings[f2];
-         GISdb[db].ApplyGISFilter(TheFigureFilter);
+         GISdb[db].ApplyGISFilter(TheFigureFilter,false);
          GISdb[db].EmpSource.Enabled := false;
          if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
             wmDEM.SetPanelText(2,IntToStr(succ(f2)) + '/' + IntToStr(Filters2.Count) + ' ' + TheFigureFilter,true);
@@ -883,7 +901,7 @@ begin
   if GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('DTM_NAME') then begin
       StringReplace(LSP,'_FUV','',[rfReplaceAll, rfIgnoreCase]);
       BaseFilter := GISdb[db].MyData.Filter;
-      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(DTMName));
+      GISdb[db].ApplyGISFilter(AddAndIfNeeded(BaseFilter) + 'DTM_NAME=' + QuotedStr(DTMName),false);
       if (GISdb[db].MyData.FiltRecsInDB > 0) then begin
           GISdb[db].dbOpts.XField := XSpacingField(db,xlabel);
           MultSeries := tStringList.Create;
@@ -916,13 +934,14 @@ begin
 end {function GraphDSMandDTMdifferences};
 
 
-procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; {Resolutions : tStringList;} var Results : tStringList);
+procedure MakeSingleAreaDSMDTMcomparison(HRDEM : boolean; ESA_LC10 : integer; DSMName,DTMname,OutName : PathStr; Area,Tile,TileStats : shortstring; var Results : tStringList);
 //shortens for legends, and avoids duplicates with CopDEM when spacing changes
 var
    db,DTM,DSM,DTMthin,DSMthin : integer;
-   MultSeries : tStringList;
+   //MultSeries : tStringList;
    CompareName,TStr,CountryStr,TileAverages : shortstring;
    Lat,Long,Lat2,Long2 : float64;
+   slope1fName,slope2fName : PathStr;
 
          function ComparePair(DEM1,DEM2,thin : integer) : boolean;
          var
@@ -958,23 +977,62 @@ var
                       WriteLineToDebugFile('r2=' + RealToString(r2,-12,-4) + '  ' + Area + ' ' + DSMName + '  ' + DTMname);
                    end;
                    mv := GridDifferenceStatsTwoGrids(DEMglb[DEM1].FullDEMgridLimits,DEM1,DEM2);
-                   aLine := aLine + ',' + RealToString(1-r2,-12,-8) + ',' + RealToString(mv.Mean,-8,-4) +  ',' + RealToString(mv.Median,-8,-2) +  ',' + RealToString(mv.Std_Dev,-8,-2) +  ',' +
-                       RealToString(mv.MAE,-8,-2) +  ',' + RealToString(mv.RMSE,-8,-2) +  ',' + RealToString(mv.LE90,-8,-2);
+                   aLine := aLine + ',' + RealToString(1-r2,-12,-8) + ',' + RealToString(mv.Mean,-8,-4) +  ',' + RealToString(mv.Median,-8,-2) +  ',' +
+                       RealToString(mv.Std_Dev,-8,-2) +  ',' + RealToString(mv.MAE,-8,-2) +  ',' + RealToString(mv.RMSE,-8,-2) +  ',' + RealToString(mv.LE90,-8,-2);
                    Result := true;
+                end;
+
+                procedure ComputeMAEbyLandcover(Grid1,Grid2 : integer);
+
+                     procedure OneLandCover(LandCoverCode : integer);
+                     var
+                        mv : tMomentVar;
+                        Fixed : int64;
+                     begin
+                         if (LandCoverCode <> 0) then begin
+                            DEMGLb[ESA_LC10].MarkOutsideRangeMissing(LandCoverCode-0.01,LandCoverCode+0.01,Fixed,false);
+                            MaskGridFromSecondGrid(Grid1,ESA_LC10, msSecondMissing);
+                            MaskGridFromSecondGrid(Grid2,ESA_LC10, msSecondMissing);
+                         end;
+                         mv := GridDifferenceStatsTwoGrids(DEMglb[Grid1].FullDEMgridLimits,Grid1,Grid2);
+                         aline := aline + ',' + RealToString(mv.MAE,-8,-2);
+                         if (LandCoverCode <> 0) then begin
+                            DEMGLb[ESA_LC10].ReloadDEM(true);
+                            DEMGlb[Grid1].ReloadDEM(true);
+                            DEMGlb[Grid2].ReloadDEM(true);
+                         end;
+                     end;
+
+                begin
+                   //WriteLineToDebugFile(aline);
+                   OneLandCover(0);
+                   OneLandCover(slcForest);
+                   OneLandCover(slcUrban);
+                   OneLandCover(slcBarren);
+                   //WriteLineToDebugFile(aline);
+                end {procedure ComputeMAEbyLandcover};
+
+                procedure CloseSlopes;
+                begin
+                   CloseSingleDEM(Slope1);
+                   CloseSingleDEM(Slope2);
+                   DeleteFileIfExists(slope1fName);
+                   DeleteFileIfExists(slope2fName);
                 end;
 
          begin  {procedure ComparePair}
             DEMglb[DEM1].DEMCenterPoint(Lat,Long);
-            slope1 := CreateEvansSlopeMapPercent(false,DEM1);
-            slope2 := CreateEvansSlopeMapPercent(false,DEM2);
+            slope1fName := MDtempDir + 'DTM_thinned_slope.dem';
+            slope2fName := MDtempDir + 'DSM_thinned_slope.dem';
+            slope1 := CreateEvansSlopeMapPercent(false,DEM1,slope1fName);
+            slope2 := CreateEvansSlopeMapPercent(false,DEM2,slope2fName);
             ms1 := GridMean(Slope1);
             ms2 := GridMean(Slope2);
             Result := true;
             if (Thin = 1) and HRDEM then begin
                if (ms1 - ms2) < -0.5 then begin
                   Result := false;
-                  CloseSingleDEM(Slope1);
-                  CloseSingleDEM(Slope2);
+                  CloseSlopes;
                   exit;
                end;
             end;
@@ -987,26 +1045,26 @@ var
             end;
             CountryStr := Copy(Area,1,2);
 
+            f1 := ExtractFileNameNoExt(DTMname);
+            f2 := ExtractFileNameNoExt(DSMname);
             if HRDEM then begin
                if (Thin < 5) then Dec := -1 else Dec := 0;
-               aline := CountryStr + ExtractFileNameNoExt(DTMname) + ',' + CountryStr + ',' + ExtractFileNameNoExt(DSMname) + ',' + CompareName + ',' +
-                    Area + ',' + Copy(CountryStr,1,2) + ',' + IntToStr(Thin) + ',' + RealToString(DEMglb[DEM1].AverageSpace,-8,Dec) + ',' +RealToString(Lat,-12,-6) + ',' +
-                    RealToString(Long,-12,-6) + ',' + RealToString(ms1,-12,-2) + ',' + RealToString(ms2,-12,-2) + ',' +  RealToString(ms1-ms2,-12,-2) + ',' + TileStats;
+               aline := f1 + ',' + f2 + ',' + CompareName + ',' + Area + ',' + Copy(CountryStr,1,2) + ',' + IntToStr(Thin) + ',' +
+                    RealToString(DEMglb[DEM1].AverageSpace,-8,Dec) + ',' +RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' +
+                    RealToString(ms1,-12,-2) + ',' + RealToString(ms2,-12,-2) + ',' +  RealToString(ms1-ms2,-12,-2) + ',' + TileStats;
+               //WriteLineToDebugFile(aLine);
             end
             else begin
                //'DEM_1,DEM_2,COMPARE,AREA,DEMIX_TILE,GRID_THIN,GRID_SEC,LAT,LONG,DEM1_SLOPE,DEM2_SLOPE';
-               f1 := ExtractFileNameNoExt(DTMname);
-               f2 := ExtractFileNameNoExt(DSMname);
                aline := f1 + ',' + f2 + ',' + CompareName + ',' + Area + ',' + CountryStr + ',' + Tile + ',' + IntToStr(Thin) + ',' +
-                     RealToString(3600*DEMglb[DEM1].DEMHeader.DEMySpacing,-8,-1) + ',' +
-                    RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' + RealToString(ms1,-12,-2) + ',' + RealToString(ms2,-12,-2) + ',' + TileStats;
+                    RealToString(3600*DEMglb[DEM1].DEMHeader.DEMySpacing,-8,-1) + ',' + RealToString(Lat,-12,-6) + ',' + RealToString(Long,-12,-6) + ',' +
+                    RealToString(ms1,-12,-2) + ',' + RealToString(ms2,-12,-2) + ',' + TileStats;
             end;
 
             ComputePair(DEM1,DEM2);   //for elevation
-
             ComputePair(Slope1,Slope2);
-            CloseSingleDEM(Slope1);
-            CloseSingleDEM(Slope2);
+            ComputeMAEbyLandcover(Slope1,Slope2);
+            CloseSlopes;
         (*
             grid1 := MakeRRIGrid(DEM1,false);
             grid2 := MakeRRIGrid(DEM2,false);
@@ -1019,13 +1077,20 @@ var
 
 
          function Thinned(Thin : integer) : boolean;
+         var
+            fName1,fName2 : PathStr;
          begin
+            wmDEM.SetPanelText(0,TimeToStr(now),true);
             wmDEM.SetPanelText(3,'Thin ' + IntToStr(Thin),true);
-            DTMthin := DEMglb[DTM].ThinThisDEM(false,'',Thin,true);
-            DSMthin := DEMglb[DSM].ThinThisDEM(false,'',Thin,true);
+            fName1 := MDtempDir + 'DTM_thinned.dem';
+            fName2 := MDtempDir + 'DSM_thinned.dem';
+            DTMthin := DEMglb[DTM].ThinThisDEM(false,fName1,Thin,true);
+            DSMthin := DEMglb[DSM].ThinThisDEM(false,fName2,Thin,true);
             Result := ComparePair(DSMthin,DTMthin,Thin);
             CloseSingleDEM(DTMthin);
             CloseSingleDEM(DSMthin);
+            DeleteFileIfExists(fName1);
+            DeleteFileIfExists(fName2);
          end;
 
          function LSPparamsString(LSP : shortstring) : shortstring;
@@ -1043,20 +1108,29 @@ begin {procedure MakeSingleAreaDSMDTMcomparison}
      exit;
   end;
   SetColorForProcessing;
+  HeavyDutyProcessing := true;
+  wmDEM.SetPanelText(0,TimeToStr(Now) + ' HRDEM',true);
   DTM := OpenNewDEM(DTMName,false);
   DSM := OpenNewDEM(DSMName,false);
-  if ValidDEM(DTM) and ValidDEM(DSM) then begin
+  if ValidDEM(DSM) then ESA_LC10 := LoadLC10LandCover('',DEMglb[DSM].DEMBoundBoxGeo,false)
+  else ESA_LC10 := 0;
+
+  if ValidDEM(DTM) and ValidDEM(DSM) and ValidDEM(ESA_LC10 ) then begin
+      SimplifyLandCoverGrid(ESA_LC10);
+      DEMglb[ESA_LC10].SaveAsGeotiff(DEMglb[ESA_LC10].DEMfileName);
       DEMglb[DTM].DEMCenterPoint(Lat,Long);
       DEMglb[DSM].DEMCenterPoint(Lat2,Long2);
       VincentyCalculateDistanceBearing(Lat,Long,Lat2,Long2,DistanceMeters,Bearing);
       if (DistanceMeters > 2500) then begin
          {$IfDef RecordCompareDSMandDTM} HighLightInDebugFile(RealToString(0.001 * DistanceMeters,-8,-2) + 'km apart  ' + DSMname + '  ' + DTMName); {$EndIf}
-         //this should not be happening, but still trying to figure out why it does
+         //this should not be happening, but still trying to figure out why it did
       end
       else begin
           if (Results = Nil) then begin
              Results := tStringList.Create;
              TStr :=  LSPparamsString('ELVD') + LSPparamsString('SLPD');  //+ LSPparamsString('RRID');
+             if ValidDEM(ESA_LC10) then TStr := tStr + ',SL_MAE_ALL,SL_MAE_FOR,SL_MAE_URB,SL_MAE_BAR';
+
              TileAverages := ',AVG_SLOPE,BARREN_PC,FOREST_PC';
              if HRDEM then begin
                 aLine := 'DTM_NAME,DSM_NAME,COMPARE,AREA,COUNTRY,GRID_THIN,GRID_M,LAT,LONG,DSM_SLOPE,DTM_SLOPE,DIFF_SLOPE';
@@ -1064,7 +1138,9 @@ begin {procedure MakeSingleAreaDSMDTMcomparison}
              else begin
                 aLine := 'DEM_1,DEM_2,COMPARE,AREA,COUNTRY,DEMIX_TILE,GRID_THIN,GRID_SEC,LAT,LONG,DEM1_SLOPE,DEM2_SLOPE';
              end;
-             Results.Add(aLine + TileAverages + TStr);
+             aline := aLine + TileAverages + TStr;
+             //WriteLineToDebugFile(aline);
+             Results.Add(aLine);
           end;
           if ComparePair(DSM,DTM,1) then begin
             if HRDEM then begin  //HRDEM comparison in meters
@@ -1107,6 +1183,9 @@ begin {procedure MakeSingleAreaDSMDTMcomparison}
   end;
   CloseSingleDEM(DTM);
   CloseSingleDEM(DSM);
+  CloseSingleDEM(ESA_LC10);
+  //SetColorForWaiting;
+  HeavyDutyProcessing := false;
 end {procedure MakeSingleAreaDSMDTMcomparison};
 
 

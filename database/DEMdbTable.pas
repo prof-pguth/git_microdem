@@ -2167,9 +2167,8 @@ uses
     demix_definitions,
     DEMIX_Control,
     DEMIX_graphs,
-    DEMIX_neo_test_area,
     DEMIX_evals_scores_graphs,
-
+    {$IfDef DEMIX_neo} demix_neo_test_area, {$EndIf}
    map_overlays,
    DEM_db_ops,
    db_display_options,
@@ -2201,10 +2200,9 @@ var
 begin
    AreaName := GISdb[DB].MyData.GetFieldByNameAsString('AREA');
    SubDir := '\wgs_egm\';
-   DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
-   DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + {AreaName + '_' +} GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
-   {$IfDef RecordDTMDSM} WriteLineToDebugFile('OpenHRDEMforCurrentRecord ' + DTMName); {$EndIf}
-   {$IfDef RecordDTMDSM} WriteLineToDebugFile('OpenHRDEMforCurrentRecord ' + DSMName); {$EndIf}
+   DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
+   DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
+   {$IfDef RecordDTMDSM} WriteLineToDebugFile('OpenHRDEMforCurrentRecord ' + DTMName + '  ' + DSMName); {$EndIf}
 
    DTM := OpenNewDEM(DTMName);
    DSM := OpenNewDEM(DSMName);
@@ -4784,8 +4782,10 @@ end;
 
 procedure Tdbtablef.Both2Click(Sender: TObject);
 begin
+{$IfDef IncludeRetired}
    FindBestReferenceDEM(dbOnTable,'ALOS');
    FindBestReferenceDEM(dbOnTable,'COP');
+{$EndIf}
 end;
 
 procedure Tdbtablef.BothHRDEMandGDEMcomparisons1Click(Sender: TObject);
@@ -11712,56 +11712,12 @@ end;
 
 
 procedure Tdbtablef.iesbyopinions1Click(Sender: TObject);
-var
-   entry : shortstring;
-   i,nTies,j : integer;
-
-         procedure DoOne(DEM : shortString);
-         var
-            n : integer;
-         begin
-            if ANSIcontainsStr(entry,DEM) then n := succ(nTies) else n := 0;
-            GISdb[DBonTable].MyData.SetFieldByNameAsInteger(DEM + '_TIE',n);
-         end;
-
 begin
-   {$IfDef RecordDEMIX} HighLightInDebugFile('Tdbtablef.iesbyopinions1Click in'); {$EndIf}
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ALOS_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'ASTER_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'COP_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'SRTM_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'NASA_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'FABDEM_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TANDEM_TIE',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftInteger,'TIES',4);
-    GISdb[DBonTable].AddFieldToDataBase(ftString,'CRIT_CAT',4);
-    GISdb[DBonTable].EmpSource.Enabled := false;
-    GISdb[DBonTable].MyData.First;
-    StartProgress('Tie numbers');
-    j := 0;
-    while not GISdb[DBonTable].MyData.eof do begin
-       inc(j);
-       UpdateProgressBar(j/GISdb[DBonTable].MyData.FiltRecsInDB);
-       entry := UpperCase(GISdb[DBonTable].MyData.GetFieldByNameAsString('DEM_LOW_SC'));
-       GISdb[DBonTable].MyData.Edit;
-       GISdb[DBonTable].MyData.SetFieldByNameAsString('DEM_LOW_SC',entry);
-       nTies := 0;
-       for i := 1 to Length(Entry) do if (Entry[i] = ',') then inc(NTies);
-       GISdb[DBonTable].MyData.SetFieldByNameAsInteger('TIES',succ(nTies));
-       GISdb[DBonTable].MyData.SetFieldByNameAsString('CRIT_CAT',Copy(GISdb[DBonTable].MyData.GetFieldByNameAsString('CRITERION'),1,4));
-       DoOne('ASTER');
-       DoOne('ALOS');
-       DoOne('NASA');
-       DoOne('SRTM');
-       DoOne('COP');
-       DoOne('FABDEM');
-       DoOne('TANDEM');
-       GISdb[DBonTable].MyData.Next;
-    end;
-
-   ShowStatus;
-   {$IfDef RecordDEMIX} HighLightInDebugFile('Tdbtablef.iesbyopinions1Click out'); {$EndIf}
+{$IfDef IncludeRetired}
+   TiesByOpinions(DBonTable);
+{$EndIf}
 end;
+
 
 procedure Tdbtablef.Includedebuglog1Click(Sender: TObject);
 begin
@@ -12261,12 +12217,16 @@ end;
 
 procedure Tdbtablef.BestreferenceDEMforALOS1Click(Sender: TObject);
 begin
+{$IfDef IncludeRetired}
    FindBestReferenceDEM(dbOnTable,'ALOS');
+{$EndIf}
 end;
 
 procedure Tdbtablef.BestreferenceDEMforCOP1Click(Sender: TObject);
 begin
+{$IfDef IncludeRetired}
    FindBestReferenceDEM(dbOnTable,'COP');
+{$EndIf}
 end;
 
 

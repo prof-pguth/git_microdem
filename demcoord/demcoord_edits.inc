@@ -152,7 +152,7 @@ end;
 
 
 
-function CreateGridToMatchDEM(NewName : shortstring;  DEM : integer; What : tCreateGrid;  OpenMap : boolean = true; Resolution : tDEMprecision = FloatingPointDEM;
+function CreateGridToMatchDEM(NewName : shortstring;  DEM : integer; What : tCreateGrid;  OpenMap : boolean = true; Resolution : byte = FloatingPointDEM;
    SpacingX : float64 = -99; SpacingY : float64 = -99; DesiredUTMZone : integer = -99; RasterPixelIs : byte = 1) : integer;
 var
    NewHeader : tDEMheader;

@@ -16,7 +16,7 @@ unit BaseGraf;
        //{$Define SavePlotFileProgress}
        //{$Define GraphSymbology}
        //{$Define Record1to1}
-       {$Define TrackLeftMargin}
+       //{$Define TrackLeftMargin}
        //{$Define TrackFormCreate}     //28 Oct 2024, attempt to track down creation of hidden graph form, but it locks up
        //{$Define RecordAnimateGraph}
        //{$Define RecordGraphMemoryAlocations}
@@ -945,7 +945,7 @@ var
    x,y,StartAngle,EndAngle,BinSize : float32;
    aColor : tColor;
    MaxSize,MaxSizeX,MaxSizeY,MinSize,MaxN,nPies,rad1,rad2,OldSize,
-   xi,yi,yint,size,nt,
+   xi,yi,{yint,}size,nt,
    win,tie,loss : integer;
    sTable : tMyData;
    nCount : shortstring;
@@ -2603,7 +2603,7 @@ var
                Bitmap.Canvas.LineTo(LeftMargin + 5,y);
                y := y - Bitmap.Canvas.TextHeight(TStr) div 2;
                LabelHeight := Bitmap.Canvas.TextHeight(TStr);
-               if y > (YWindowSize - BottomMargin - LabelHeight - 4) then y := YWindowSize - BottomMargin - LabelHeight - 4;
+               if y > (YWindowSize - BottomMargin - LabelHeight {- 2}) then y := YWindowSize - BottomMargin - LabelHeight {- 2};
                if Y < (TopMargin + 4) then y := TopMargin + 4;
                PW := Bitmap.Canvas.TextWidth(TStr) + 10;
                Bitmap.Canvas.TextOut(LeftMargin - 8 - PW,y,TStr);
@@ -2654,14 +2654,12 @@ var
              end;
 
              if (GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
-                //draws dotted horizontal lines across graph area for major divisions
-                DashLineVertAxis(Max);
+                DashLineVertAxis(Max); //draws dotted horizontal lines across graph area for major divisions
              end;
          end;
 
              if (GraphAxes in [PartGrid,XTimeYPartGrid]) and DrawInside then begin
-                //draws dotted horizontal lines across graph area for major divisions
-                DashLineVertAxis(Max);
+                DashLineVertAxis(Max); //draws dotted horizontal lines across graph area for major divisions
              end;
 
              MaxVertAxisLabel := 0;
@@ -2683,7 +2681,6 @@ var
              else begin
                  PerCen := Min + Inc;
                  while (PerCen <= Max + Inc - MinTickValue) and (PerCen <= MaxVertAxis) do begin
-                    //TStr := RealToString(Percen,-12,AxisDecimals);
                     if RightSide then begin
                        DrawRightSide(Percen);
                     end

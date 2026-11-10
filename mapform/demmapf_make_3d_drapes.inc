@@ -198,10 +198,12 @@ end;
 
 
 procedure TraceRoute3D(DBonTable : integer);
+(*
 var
    OutForm : TView3DForm;
    Lat,Long,xutm,yutm : float64;
    z : float32;
+*)
 begin
    MessageToContinue('Disabled');
 (*

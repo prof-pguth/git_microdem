@@ -221,7 +221,7 @@ type
     function MakeDEMlist : tStringList;
     function MakeCriteriaList(All : boolean = false) : tStringList;
     function GeomorphFiltersFromMixed1(var Labels : tStringList) : tStringList;
-    function MakeCriteriaFilter(UseCriteria : tStringList) : ShortString;
+    //function MakeCriteriaFilter(UseCriteria : tStringList) : ShortString;
     procedure LoadDEMsInMemo;
     procedure BoxCarFilters(NumFilter: integer);
   public
@@ -291,7 +291,7 @@ end;
  procedure StartDEMIXgraphs(DB : integer);
 var
   eval_scores_graph_form : Teval_scores_graph_form;
-  i : integer;
+  //i : integer;
   FieldsInDB : tStringList;
 begin
    GetDEMIXpaths(false,db);
@@ -361,8 +361,8 @@ end;
 
 
 procedure Teval_scores_graph_form.ChangeDBonForm(Newdb : integer);
-var
-   i : integer;
+//var
+   //i : integer;
 begin
    if ValidDB(NewDB) then begin
       Get_DEMIX_CriteriaToleranceFName(NewDB);
@@ -402,6 +402,7 @@ begin
    {$IfDef TrackCriteriaList}TrackCriteriaList(Result,'MakeCriteriaList'); {$EndIf}
 end;
 
+(*
 function Teval_scores_graph_form.MakeCriteriaFilter(UseCriteria : tStringList) : shortString;
 var
    j : integer;
@@ -417,12 +418,12 @@ begin
      Result := '(' + Result + ')';
    end;
 end;
-
+*)
 
 procedure Teval_scores_graph_form.BitBtn10Click(Sender: TObject);
 //graphs for each of the elevation range DBs (U10, U80,U120), win/loss versus basecompareDEM
 var
-   i,j,k,ColBigBitmap : integer;
+   i,j,{k,}ColBigBitmap : integer;
    HL : shortstring;
    aName : PathStr;
    Legend,BigBitmap : tMyBitmap;
@@ -511,7 +512,7 @@ var
    TheDEMs,Criteria,Findings,Filters1,DEMs2,GraphList,Labels1 : tStringList;
    aLine,DEM,ThisWinners,BaseFilter : shortstring;
    fName : PathStr;
-   db2,i,j,k,This,TotalWinners,Slope : integer;
+   db2,i,j,k,{This,Slope}TotalWinners : integer;
    Winners : array[0..50] of integer;
    Tolerance : float32;
 
@@ -563,7 +564,7 @@ var
           Result.Height := 100 + 25 * succ(Criteria.Count);
           //Result.GraphDraw.LeftMargin := 100;
           //Result.GraphDraw.MarginsGood := true;
-          Result.RedrawDiagram11Click(Nil);
+          Result.RedrawDiagram;
           FinishGraph(Result,GraphList);
         end;
     end;
@@ -925,7 +926,7 @@ end;
 
 procedure Teval_scores_graph_form.BoxCarFilters(NumFilter : integer);
 var
-   Filters1,Labels1,Filters2,Labels2,Stats,TheCriteria,theDEMs,GeomorphFilters : tStringList;
+   Filters1,Labels1,Filters2,Labels2,Stats,TheCriteria,theDEMs{GeomorphFilters}: tStringList;
    MomentVar : tMomentVar;
    fName,aName : PathStr;
    i,j,k,n,ndb : integer;
@@ -968,7 +969,7 @@ begin
                      gr[k].GraphDraw.MaxHorizAxis := MaxHoriz;
                      gr[k].GraphDraw.LLcornerTextAtEdge := false;
                      gr[k].Width := 700;
-                     gr[k].RedrawDiagram11Click(Nil);
+                     gr[k].RedrawDiagram;
                      AddGraphToBigBitmap(succ(n) + k * Filters2.Count,Filters2.Count,Filters1.Count,gr[k],BigBitmap);
                  end;
               end;
@@ -1000,7 +1001,7 @@ begin
                    gr[k].GraphDraw.MaxHorizAxis := MaxHoriz;
                    gr[k].GraphDraw.LLcornerTextAtEdge := false;
                    gr[k].Width := 700;
-                   gr[k].RedrawDiagram11Click(Nil);
+                   gr[k].RedrawDiagram;
                    AddGraphToBigBitmap(succ(j) + k * theCriteria.Count,theCriteria.Count,Filters1.Count,gr[k],BigBitmap);
                end;
                {$IfDef RecordBoxPlots} WriteLineToDebugFile(GISdb[db].MyData.Filter + ' done'); {$EndIf}

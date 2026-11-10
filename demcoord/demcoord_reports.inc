@@ -427,7 +427,7 @@ procedure SlopeMethodsReport(DEM,xp,yp : integer; Title : shortstring = '');
 var
    Results : tStringList;
    CurMethod : byte;
-   i,j,k : integer;
+   i,j{,k} : integer;
    //aLine : shortString;
    SAR : tSlopeAspectRec;
 

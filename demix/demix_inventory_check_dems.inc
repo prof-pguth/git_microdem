@@ -393,11 +393,12 @@ end;
 
 
 procedure TrimReferenceDEMsToDEMIXtiles;
+{$IfDef IncludeOldDEMopen}
+   else MessageToContinue('No valid DB');
 var
-   Areas{,Results} : tStringList;
+   Areas : tStringList;
    AreaName : shortstring;
-   //fName : PathStr;
-   i,j,{k,DEMs,}DEM : Integer;
+   i,j,DEM : Integer;
 begin
    GetDEMIXpaths(false);
    Areas := DEMIX_AreasWanted;
@@ -416,6 +417,9 @@ begin
    end;
    Areas.Free;
    EndDEMIXProcessing;
+{$Else}
+begin
+{$EndIf}
 end;
 
 

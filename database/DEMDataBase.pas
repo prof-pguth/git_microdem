@@ -549,35 +549,39 @@ type
      procedure CalculateAreaorCentroid(DoCentroid : boolean);
      procedure BackupDB;
 
-     //map operations
+     //map plotting  operations
          procedure PlotDefaultSymbols(MapDraw : tMapDraw; var Bitmap : tMyBitmap);
-         function DEMwithDBsMap : boolean;
-
-         procedure MakeNewMonthlyFilterAndRedraw(Month : integer);
-         procedure AssociateMap(MapForm : tMapForm);
-         procedure PlotDBStringField(var Bitmap : tMyBitmap; WantField : shortstring = '');
-         procedure PlotDBNumericField(var Bitmap : tMyBitmap);
-         procedure PlotFieldOnMap(aField : shortstring; Minx : float64 = 9999; MaxX : float64 = -9999);
-         procedure PlotSingleMonth(Month : integer);
-         procedure QueryBox(MapDraw : tMapDraw; x1,y1,x2,y2 : integer; DisplayOnTable : boolean);
-         procedure LabelRecordsOnMap(var Bitmap : tMyBitmap);
-         function IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean; ShowItModal : boolean = true; JustFilterDB : boolean = false) : tStringList;
-         function GetStringFromRecordAtLatLong(Lat,Long : float64; fName : shortString) : shortstring;
-         function FindAreaRecordWithPoint(Lat,Long : float64; AlreadyFiltered : boolean = true) : boolean;
-         procedure ConnectSequentialPoints(Bitmap : tMyBitmap);
-         procedure PlotRecord1to1Map(var NewMap : tMapForm; var Bitmap : tMyBitmap);
-         procedure IntervisibilityFromPoint(ChangeSymbol : boolean; FromLat,FromLong,CameraElevation,TowerHeight : float64);
-         procedure DisplayCurrentRecordOnMap(MapDraw : tMapDraw; Bitmap : tMyBitmap);
-         procedure DisplayTheRecord(j : integer; ShowItModal : boolean = true; CanEdit : boolean = false);
-         procedure PlotAndLabelPoints(Bitmap : tMyBitmap; Plot : boolean = true);
-         procedure PlotAndLabelCurrentRecord(Bitmap : tMyBitmap; Plot : boolean = true);
-
          procedure ConnectTwoPointsInSameRecord(var Bitmap : tMyBitmap);
          procedure PlotVectorsOnMap(var Bitmap : tMyBitmap);
          procedure PlotIcons(Var Bitmap : tMyBitmap);
          procedure PlotColorField(var Bitmap : tMyBitmap);
          procedure PlotZipATone(var Bitmap : tMyBitmap);
          procedure PlotProportionalSymbolsOnMap(var Bitmap : tMyBitmap);
+         procedure GISProportionalSymbols(dbShow : byte);
+         procedure PlotDBStringField(var Bitmap : tMyBitmap; WantField : shortstring = '');
+         procedure PlotDBNumericField(var Bitmap : tMyBitmap);
+         procedure PlotFieldOnMap(aField : shortstring; Minx : float64 = 9999; MaxX : float64 = -9999);
+         procedure PlotSingleMonth(Month : integer);
+         procedure LabelRecordsOnMap(var Bitmap : tMyBitmap);
+         procedure ConnectSequentialPoints(Bitmap : tMyBitmap);
+         procedure PlotAndLabelPoints(Bitmap : tMyBitmap; Plot : boolean = true);
+         procedure PlotAndLabelCurrentRecord(Bitmap : tMyBitmap; Plot : boolean = true);
+         procedure IntervisibilityFromPoint(ChangeSymbol : boolean; FromLat,FromLong,CameraElevation,TowerHeight : float64);
+         procedure DisplayCurrentRecordOnMap(MapDraw : tMapDraw; Bitmap : tMyBitmap); inline;
+
+
+
+     //map operations
+         function DEMwithDBsMap : boolean;
+
+         procedure MakeNewMonthlyFilterAndRedraw(Month : integer);
+         procedure AssociateMap(MapForm : tMapForm);
+         procedure QueryBox(MapDraw : tMapDraw; x1,y1,x2,y2 : integer; DisplayOnTable : boolean);
+         function IdentifyRecord(xpic,ypic : integer; Lat,Long : float64; var RecsFound : integer;  ShowRec,LabelRec : boolean; ShowItModal : boolean = true; JustFilterDB : boolean = false) : tStringList;
+         function GetStringFromRecordAtLatLong(Lat,Long : float64; fName : shortString) : shortstring;
+         function FindAreaRecordWithPoint(Lat,Long : float64; AlreadyFiltered : boolean = true) : boolean;
+         procedure PlotRecord1to1Map(var NewMap : tMapForm; var Bitmap : tMyBitmap);
+         procedure DisplayTheRecord(j : integer; ShowItModal : boolean = true; CanEdit : boolean = false);
 
          procedure ShowOtherDBsWithSameFilter(ShowFilter,ShowN,ShowThisDB : boolean);
          procedure ChangeLatLongLocation(Lat,Long : float64);
@@ -585,7 +589,6 @@ type
 
          procedure RedrawLayerOnMap;
          procedure SaveCurrentDBaseSubset(fName : PathStr; ThinFactor : integer = 1; BatchRun : boolean = false; ForceAsk : boolean = false);
-         procedure GISProportionalSymbols(dbShow : byte);
          procedure CloseGisScaledForm;
          procedure ZoommaptorecordWithBufferMeters(Buffer : float64);
          procedure Recentermaponrecord;
@@ -1568,7 +1571,7 @@ end;
 
 function TGISdataBaseModule.DEMwithDBsMap : boolean;
 begin
-   Result := (TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0) and (DEMGlb[TheMapOwner.MapDraw.DEMonMap] <> Nil);
+   Result := (TheMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap);
 end;
 
 
@@ -5119,10 +5122,58 @@ var
    WasCSVImport,
    CheckDeleteUnusedFields,
    Success : boolean;
-   sl,FieldsInDB : tStringList;
+   sl : tStringList;
    glIndexFile : file;
    MainFileHeader : sfMainFileHeader;
    {$IfDef RecordOpenDataBase} TStr : shortstring; {$EndIf}
+
+      procedure CheckForMultipleFields;
+      var
+         i,j,k,l : integer;
+         FieldsInDB : tStringList;
+      begin
+         GetFields(MyData,dbOpts.VisCols,[ftString],FieldsInDB);
+         for i := 1 to 5 do WWWFieldNames[i] := '';
+         AssignField(WWWFieldNames[1],'HYPERLINK');
+         AssignField(WWWFieldNames[1],'URL1');
+         AssignField(WWWFieldNames[1],'URL');
+         AssignField(WWWFieldNames[1],'WWW');
+
+         for i := 1 to 5 do ImageFieldNames[i] := '';
+         AssignField(ImageFieldNames[1],'IMAGE');
+
+         for i := 1 to 5 do IconFieldNames[i] := '';
+         AssignField(IconFieldNames[1],'ICONNAME');
+         AssignField(IconFieldNames[1],'ICON');
+
+         j := 0;  if WWWFieldNames[1] <> '' then inc(j);
+         k := 0;  if ImageFieldNames[1] <> '' then inc(k);
+         l := 0;  if IconFieldNames[1] <> '' then inc(l);
+
+         for I := 0 to pred(FieldsInDB.Count) do begin
+            if copy(FieldsInDB.Strings[i],1,4) = 'WWW_' then begin
+               inc(j);
+               WWWFieldNames[j] := FieldsInDB.Strings[i];
+            end;
+            if (FieldsInDB.Strings[i] <> 'IMAGE') then begin
+              if (copy(FieldsInDB.Strings[i],1,4) = 'IMG_') or (copy(FieldsInDB.Strings[i],1,5) = 'IMAGE') then begin
+                 inc(k);
+                 ImageFieldNames[k] := FieldsInDB.Strings[i];
+              end;
+            end;
+            if copy(FieldsInDB.Strings[i],1,5) = 'ICON_' then begin
+               inc(l);
+               IconFieldNames[l] := FieldsInDB.Strings[i];
+            end;
+         end;
+         WWWPresent := (WWWFieldNames[1] <> '');
+         ImagePresent := (ImageFieldNames[1] <> '');
+         IconPresent := (IconFieldNames[1] <> '');
+         if (dbOpts.IconField = '') then dbOpts.IconField := IconFieldNames[1];
+         FieldsInDB.Free;
+      end;
+
+
 begin
     if not FileExists(FileWanted) then begin
        {$IfDef RecordOpenDataBase} WriteLineToDebugFile('TGISDataBase.InitializeTheData try open missing ' + ExtractFileName(FileWanted)); {$EndIf}
@@ -5388,47 +5439,7 @@ begin
 
       {$IfDef RecordDataBaseLabels} WriteLineToDebugFile(DBName + ' Label Field: ' + DBOpts.LabelField); {$EndIf}
 
-      for i := 1 to 5 do WWWFieldNames[i] := '';
-      AssignField(WWWFieldNames[1],'HYPERLINK');
-      AssignField(WWWFieldNames[1],'URL1');
-      AssignField(WWWFieldNames[1],'URL');
-      AssignField(WWWFieldNames[1],'WWW');
-
-      for i := 1 to 5 do ImageFieldNames[i] := '';
-      AssignField(ImageFieldNames[1],'IMAGE');
-
-      for i := 1 to 5 do IconFieldNames[i] := '';
-      AssignField(IconFieldNames[1],'ICONNAME');
-      AssignField(IconFieldNames[1],'ICON');
-
-      GetFields(MyData,dbOpts.VisCols,[ftString],FieldsInDB);
-
-      j := 0;  if WWWFieldNames[1] <> '' then inc(j);
-      k := 0;  if ImageFieldNames[1] <> '' then inc(k);
-      l := 0;  if IconFieldNames[1] <> '' then inc(l);
-
-      for I := 0 to pred(FieldsInDB.Count) do begin
-         if copy(FieldsInDB.Strings[i],1,4) = 'WWW_' then begin
-            inc(j);
-            WWWFieldNames[j] := FieldsInDB.Strings[i];
-         end;
-         if (FieldsInDB.Strings[i] <> 'IMAGE') then begin
-           if (copy(FieldsInDB.Strings[i],1,4) = 'IMG_') or (copy(FieldsInDB.Strings[i],1,5) = 'IMAGE') then begin
-              inc(k);
-              ImageFieldNames[k] := FieldsInDB.Strings[i];
-           end;
-         end;
-         if copy(FieldsInDB.Strings[i],1,5) = 'ICON_' then begin
-            inc(l);
-            IconFieldNames[l] := FieldsInDB.Strings[i];
-         end;
-      end;
-      WWWPresent := (WWWFieldNames[1] <> '');
-      ImagePresent  := (ImageFieldNames[1] <> '');
-      IconPresent := (IconFieldNames[1] <> '');
-      if (dbOpts.IconField = '') then dbOpts.IconField := IconFieldNames[1];
-
-      FieldsInDB.Free;
+      CheckForMultipleFields;
 
       DEMIndex := MyData.FieldExists('DEM_NAME');
       FontFieldExists := MyData.FieldExists('FONT_NAME');
@@ -5472,7 +5483,6 @@ begin
         StratColPresent := MyData.FieldExists('COL_NAME');
         if StratColPresent then ColMainF := TColMainF.Create(Application);
      {$EndIf}
-
       TimeSeriesPresent := MyData.FieldExists('TIME_SER');
       GazDB := false;
       if XYZFile then begin

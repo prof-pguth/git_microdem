@@ -7,6 +7,58 @@ const
    LagStatsString = 'Lag_Max,Lag_Mean,Lag_STD,LAG_MED,LAG_LE90,LAG_NPTS';
 
 
+procedure SummarizeEGM96toEGM2008shifts;
+var
+   Files,Summary : tStringList;
+   i,DEM,Geoid : integer;
+   TStr : shortstring;
+   fName : PathStr;
+
+         procedure AddPoint(col,row : integer);
+         var
+            Lat,Long : float64;
+            z : float32;
+         begin
+            DEMglb[DEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+            DEMGlb[Geoid].GetElevFromLatLongDegree(Lat,Long,z);
+            TStr := Tstr + ',' + RealToString(z,-12,-2);
+         end;
+
+begin
+   GetDEMIXpaths(false);
+   Geoid := OpenNewDEM(GeoidDiffFName,false);
+
+   Summary := tstringlist.create;
+   Summary.Add('AREA,SHIFT_NW,SHIFT_NE,SHIFT_CENT,SHIFT_SE,SHIFT_SW');
+   Files := nil;
+   Petmar.FindMatchingFiles(DEMIX_Ref_Half_sec,'*.tif',Files,0);
+   StartProgress('EGM96 shift summary');
+   for i := 0 to pred(Files.Count) do begin
+      UpdateProgressbar(i/Files.Count);
+      fName := Files.Strings[i];
+      if StrUtils.AnsiContainsText(UpperCase(fname),'_DSM') then begin
+      end
+      else begin
+         DEM := OpenNewDEM(fName,false);
+         TStr := ExtractFileNameNoExt(fName);
+         AddPoint(DEMglb[DEM].DEMHeader.NumRow,0);
+         AddPoint(DEMglb[DEM].DEMHeader.NumRow,DEMglb[DEM].DEMHeader.NumCol);
+         AddPoint(DEMglb[DEM].DEMHeader.NumRow div 2,DEMglb[DEM].DEMHeader.NumCol div 2);
+         AddPoint(0,0);
+         AddPoint(DEMglb[DEM].DEMHeader.NumCol,0);
+         Summary.Add(TStr);
+         CloseSingleDEM(DEM);
+      end;
+   end;
+   CloseAllDEMs;
+   Files.Destroy;
+   EndProgress;
+   fName := NextFileNumber(MDTempDir,'EGM96_shift_summary','.dbf');
+   StringList2CSVtoDB(Summary,fName);
+end;
+
+
+
 
 (*
 function LoadDEMIXareaDefinitions(cfName : pathStr = '') : boolean;

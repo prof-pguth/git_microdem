@@ -250,7 +250,7 @@ end;
 
 
 procedure TileCharacterization;
-//hard coded for the three versions of the DEMIX DB
+//hard coded for the three versions of DEMIX DB
 const
    MaxPossBins = 9;     //in each direction
    DB2 = 2;
@@ -516,7 +516,8 @@ var
    ListOfFiles,ThisTileFiles,{SecondTiles,}FullTileFiles : tStringList;
    fName,AreaDir{,MergeDir,fname2,TileMergeDir} : PathStr;
    TileName,CheckTileName,AreaName,ChangeFrom,ChangeTo,SaveName{,TStr} : ANSIstring;
-   i,j,FilesNeeded : integer;
+   //i,
+   j,FilesNeeded : integer;
 begin
    FilesNeeded := 90;
    ReadDefault('Files needed in tile',FilesNeeded);
@@ -585,8 +586,8 @@ procedure MoveSmallTilesInto10KTiles;
 //must be from a country that is covered
 //moves files into folders in the merges directory
 var
-   thePath,fName,TilePath,FullDir{,NewDir} : PathStr;
-   theFiles,Area,AreaDirs : tStringList;
+   thePath,fName,TilePath{FullDir{,NewDir} : PathStr;
+   theFiles{,Area,AreaDirs} : tStringList;
    AreaName : shortstring;
    i : Integer;
 begin
@@ -852,7 +853,7 @@ begin {procedure MakeReferenceDEM}
           if ValidDEM(SourceDEM) and ValidDEM(TestDEM) then begin
               wmDEM.SetPanelText(3,DEMProgress + ' Ref DEM ' + Mode,true);
               {$IfDef RecordDEMIXMakeRefFull} WriteLineToDebugFile('Create ref DEM ' + RefName); {$EndIf};
-              SpacingArcSec := DEMGlb[TestDEM].DEMHeader.DEMxSpacing * 3600;
+              //SpacingArcSec := DEMGlb[TestDEM].DEMHeader.DEMxSpacing * 3600;
               if (SecondMode <> '') then begin
                   //first make high latitude version
                  RefName := TestDir + 'ref_dtm_' + Mode + '.tif';
@@ -884,7 +885,8 @@ var
    TestDir,SourceEGMName,fName,TestName,LCname,RefName : PathStr;
    UTM_Tile,aDEM,TStr,DEMProgress : shortstring;
    TheFiles,TheDEMs,TileSubDirs : tStringList;
-   i,j,SourceDEM,TestDEM,RefDEM,lc,TilesInArea : integer;
+   //i,j,
+   SourceDEM,TestDEM,RefDEM,lc,TilesInArea : integer;
    Lat,Long : float64;
    bb : sfBoundBox;
 
@@ -895,7 +897,7 @@ var
    var
       i,DEM : integer;
       fName : PathStr;
-      TileSubDirs,TheTiles : tStringList;
+      TileSubDirs{,TheTiles} : tStringList;
    begin
        {$IfDef RecordDEMIX} WriteLineToDebugFile('Start MoveDEMstoSourceDir ' + AreaName); {$EndIf}
        TileSubDirs := DEMIX_GetListOfTileSubDirsInArea(AreaName);
@@ -1095,7 +1097,7 @@ var
 
 
         begin {MakeSourceHRDEM_WGS84_EGM2008}
-           {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('MakeSourceHRDEM_WGS84_EGM2008 in: ' + AreaName + '  ' + AvailablePhysicalMemoryString); {$EndIf};
+           {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('MakeSourceHRDEM_WGS84_EGM2008 in: ' + AreaName + '  ' + AvailPhysMemStr); {$EndIf};
            HeavyDutyProcessing := true;
            if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
               {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('Merge required'); {$EndIf};
@@ -1112,7 +1114,7 @@ var
               TilesInArea := Thefiles.Count;
               Result := MergeTo10x10andPerformDatumShift(AreaName,TilesInArea,TheFiles);
            end;
-           {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('MakeSourceHRDEM_WGS84_EGM2008 out: ' + AreaName + '  ' + AvailablePhysicalMemoryString); {$EndIf};
+           {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('MakeSourceHRDEM_WGS84_EGM2008 out: ' + AreaName + '  ' + AvailPhysMemStr); {$EndIf};
         end {MakeSourceHRDEM_WGS84_EGM2008};
 
 
@@ -1173,7 +1175,7 @@ var
 
 begin {procedure UTMbasedtilescreation}
    MoveDEMstoSourceDir;
-   {$If Defined(RecordDEMIX) or Defined(RecordDEMIXMemory)} WriteLineToDebugFile('UTMbasedtilescreation Start: ' + AreaName + '  ' +  AvailablePhysicalMemoryString); {$EndIf};
+   {$If Defined(RecordDEMIX) or Defined(RecordDEMIXMemory)} WriteLineToDebugFile('UTMbasedtilescreation Start: ' + AreaName + '  ' +  AvailPhysMemStr); {$EndIf};
    NoDBPlots := true;
    theDEMs := GetListOfTestDEMsinUse;
    AreaDirectoryNames(AreaName,AreaDir,WGS_EGMdir,SourceDir,MergesDirFName);
@@ -1187,7 +1189,7 @@ begin {procedure UTMbasedtilescreation}
    MakeLandCoverGridForTile;
    CloseAllDEMs;
    wmDEM.ClearStatusBarPanelText;
-   {$If Defined(RecordDEMIX) or Defined(RecordDEMIXMemory)} WriteLineToDebugFile('UTMbasedtilescreation Done ' + UTM_Tile + '  open DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  open maps=' +  IntToStr(NumOpenMaps) + '  ' +  AvailablePhysicalMemoryString); {$EndIf};
+   {$If Defined(RecordDEMIX) or Defined(RecordDEMIXMemory)} WriteLineToDebugFile('UTMbasedtilescreation Done ' + UTM_Tile + '  open DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  open maps=' +  IntToStr(NumOpenMaps) + '  ' +  AvailPhysMemStr); {$EndIf};
 end {procedure UTMbasedtilescreation};
 
 
@@ -2094,9 +2096,10 @@ procedure TakeCareOfInvalidTiles(theAreas : tStringList);
 const
    FixIssues = false;
 var
-   i,j,k,DEM,TestDEM,EGMref,lc : integer;
+   //i,j,k,
+   i,j,DEM,TestDEM,EGMref,lc : integer;
    AreaName,aLine : shortstring;
-   SourceEGMName,fName,TileDirName{,AreaLock} : PathStr;
+   SourceEGMName,{fName,}TileDirName{,AreaLock} : PathStr;
    //theDEMs, Findings,TileDirs : tStringList;
    Lat1,Long1,Lat2,Long2,DistanceMeters,Bearing: float64;
    bb : sfBoundBox;
@@ -2819,7 +2822,7 @@ begin {procedure DEMIX_UTM_based_processing}
       GetDOSPath('DEMIX base directory',MDDef.DEMIX_BaseDir);
    end;
    {$IfDef RecordDEMIX}
-      HighLightInDebugFile('DEMIX_UTM_based_processing in, option=' + IntToStr(Option) + AvailablePhysicalMemoryString + '  DEMIX_baseDir=' + MDDef.DEMIX_BaseDir);
+      HighLightInDebugFile('DEMIX_UTM_based_processing in, option=' + IntToStr(Option) + AvailPhysMemStr + '  DEMIX_baseDir=' + MDDef.DEMIX_BaseDir);
    {$EndIf}
 
    GetDEMIXpaths(True);
@@ -2871,6 +2874,7 @@ begin {procedure DEMIX_UTM_based_processing}
    end
    else if (Option in [13,14,udMergeDTMDSMcompare,udMergeCopDTMDSMcompare,udMergeGDEMslopeResolution]) then begin
        theFiles := nil;
+       //GetDOSPath('DEMIX base dir',MDDef.DEMIX_BaseDir);
        if (Option in [udMergeDTMDSMcompare]) then begin
            MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'HRDEM_DSM_DTM_compare_' + LastSubDir(MDDef.DEMIX_BaseDir) + '_' + CurrentTimeForFileName(false) + '.dbf';
            WhereCSV := MDDef.DEMIX_BaseDir + 'aa_hrdem_compare_dsm_dtm\';
@@ -2882,8 +2886,8 @@ begin {procedure DEMIX_UTM_based_processing}
        if (Option in [udMergeGDEMslopeResolution]) then begin
            MDdef.DEMIX_tile_chars_fname := MDDef.DEMIX_BaseDir + 'GDEM_slope_resolution_' + LastSubDir(MDDef.DEMIX_BaseDir) +  '_' + CurrentTimeForFileName(false) + '.dbf';
            WhereCSV := MDDef.DEMIX_BaseDir + 'aa_gdem_slope_by_dem_resolution\';
-       end;
-       if (Option in [13,14]) then begin
+       end
+       else if (Option in [13,14]) then begin
            (*
            if (Option in [13]) then begin
                fName := DEMIX_final_DB_dir + 'UTM_curvatures_DEMIX_DB_' + LastSubDir(MDDef.DEMIX_BaseDir) + CurrentTimeForFileName(false) + '.dbf';
@@ -2897,9 +2901,14 @@ begin {procedure DEMIX_UTM_based_processing}
            end;
            *)
            MessageToContinue('Currently disabled');
+       end;
+       if ValidPath(WhereCSV) then begin
+          Petmar.FindMatchingFiles(WhereCSV,'*.csv',TheFiles,2);
        end
        else begin
           Petmar.FindMatchingFiles(WhereCSV,'*.csv',TheFiles,2);
+       end;
+       if theFiles.Count > 0 then begin
           MergeMultipleCSVorTextFiles(nil,theFiles,MDdef.DEMIX_tile_chars_fname);
        end;
    end
@@ -2928,7 +2937,7 @@ begin {procedure DEMIX_UTM_based_processing}
       end;
       if (Option in [udCreateTiles]) then MissingLandCover := tStringList.Create;
       if (TheAreas.Count > 0) then begin
-          {$IfDef RecordDEMIX} WriteLineToDebugFile('Selected areas=' + IntToStr(theAreas.Count) + '  ' + AvailablePhysicalMemoryString); {$EndIf}
+          {$IfDef RecordDEMIX} WriteLineToDebugFile('Selected areas=' + IntToStr(theAreas.Count) + '  ' + AvailPhysMemStr); {$EndIf}
           if (Option in [udFileFillReport]) then DEMIX_FileFill(theAreas)
           else if (Option = udTileBoundingBoxes) then DEMIX_Tile_BoundingBox(theAreas)
           else if Option in [udInvalidTiles] then TakeCareOfInvalidTiles(theAreas)
@@ -2990,7 +2999,7 @@ begin {procedure DEMIX_UTM_based_processing}
    wmDEM.ClearStatusBarPanelText;
    NoDBPlots := false;
    RestoreBackupDefaults;
-   {$IfDef RecordDEMIX} HighLightInDebugFile('DEMIX_UTM_based_processing out, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir + AvailablePhysicalMemoryString); {$EndIf}
+   {$IfDef RecordDEMIX} HighLightInDebugFile('DEMIX_UTM_based_processing out, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir + AvailPhysMemStr); {$EndIf}
 end {procedure DEMIX_UTM_based_processing};
 
 

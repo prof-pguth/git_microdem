@@ -159,6 +159,8 @@ begin
       if (f1 < pred(Labels1.Count)) then inc(y,FullY-CutOnBase + WhiteBetweenRowColumn)
       else inc(y,FullY + WhiteBetweenRowColumn)
    end;
+   GetImagePartOfBitmap(BigBitmap);
+
 
    if (LegendBMP <> Nil) then begin
       x := (BigBitMap.Width - LegendBMP.Width) div 2;

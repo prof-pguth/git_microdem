@@ -88,7 +88,7 @@ function tDEMDataSet.InterpolateBiCubicVisioTerra(xgrid,ygrid : float32; var z :
 
 var
    xg,yg,i : integer;
-   znw2,zn2,zne2,zne3,znw,zn,zne,zne4,zw,ze,ze2zsw,zs,zse,zse2,zsw,ze2,
+   znw2,zn2,zne2,zne3,znw,zn,zne,zne4,zw,ze,{ze2zsw,}zs,zse,zse2,zsw,ze2,
    xincr,yincr : float32;
    wx,wy,dx,dy : array[-1..2] of float32;
 begin

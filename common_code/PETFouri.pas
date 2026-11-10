@@ -158,7 +158,7 @@ procedure PowerSpectrumByMaximumEntropy(MEMPowerDefaults : tMEMPowerDefaults; va
 var
    DataFile : tStringList;
    DataFName: PathStr;
-   n,i,j,err : integer;
+   n,i,j{,err} : integer;
    MomentVar : tMomentVar;
    MaxPeriod,a,b,r,pm,fdt,MaxPower : float64;
    v         : array[1..2] of float32;
@@ -240,7 +240,7 @@ begin
 
    with FFTGraph do begin
       SetUpGraphForm;
-      RedrawDiagram11Click(Nil);
+      RedrawDiagram;
       MomentVar.NPts := 0;
       for i := 0 to pred(GraphDraw.DataFilesPlotted.Count) do begin
          FitGraph({true,}fitLinear,2,GraphDraw.DataFilesPlotted.Strings[i], a,b,r,n);
@@ -547,7 +547,7 @@ var
           BlockWrite(rfile,v,1);
        end;
        CloseFile(RFile);
-       RedrawDiagram11Click(Nil);
+       RedrawDiagram;
    end;
 
 
@@ -749,7 +749,7 @@ begin
    end;
    CloseFile(InFile);
    CloseFile(OutFile);
-   FitGraph({true,}fitLinear,2,fName,a,b,r, n);
+   FitGraph(fitLinear,2,fName,a,b,r, n);
    SysUtils.DeleteFile(fName);
 
    if ShowResults then begin

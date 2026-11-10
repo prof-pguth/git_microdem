@@ -565,7 +565,9 @@ begin
 end;
 
 
+
 procedure TDemixFilterForm.BitBtn34Click(Sender: TObject);
+{$IfDef IncludeOldDEMopen}
 var
    AreaName,TileName : shortstring;
 begin
@@ -580,6 +582,9 @@ begin
       end;
    end
    else MessageToContinue('No valid DB');
+{$Else}
+begin
+{$EndIf}
 end;
 
 
@@ -1156,6 +1161,8 @@ end;
 
 
 procedure TDemixFilterForm.LoadCurrentAreaBitBtn5Click(Sender: TObject);
+{$IfDef IncludeOldDEMopen}
+   else MessageToContinue('No valid DB');
 var
    AreaName : Petmar_types.shortstring;
    DEMIXRefDEM : integer;
@@ -1163,6 +1170,9 @@ begin
    AreaName := ComboBox4.Text;
    if MDDef.LoadRefDEMs then LoadDEMIXReferenceDEMs(AreaName,DEMIXRefDEM,MDDef.LoadRefDEMMaps);
    if MDDef.LoadTestDEMs then LoadDEMIXCandidateDEMs(AreaName,MDDef.LoadTestDEMMaps);
+{$Else}
+begin
+{$EndIf}
 end;
 
 

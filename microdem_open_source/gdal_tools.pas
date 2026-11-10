@@ -313,8 +313,8 @@ const
 
 
       function AddGCP(x,y : integer; var px,py,mx,my : double) : shortstring;
-      var
-         XUTM,YUTM : float64;
+      //var
+         //XUTM,YUTM : float64;
       begin
          DEMglb[DEM].DEMGridtoUTM(x,y,mx,my);
          px := x;
@@ -323,7 +323,7 @@ const
       end;
 
    var
-      cmd,t_srsstring,aLine : shortstring;
+      //cmd, t_srsstring,aLine : shortstring;
       affine_fName : PathStr;
       XUTM,YUTM : float64;
    begin
@@ -440,7 +440,7 @@ var
    fName,fName2,outName : PathStr;
    DefaultFilter : byte;
    BatchFile,FileNames : tStringList;
-   UTMzone,
+   //UTMzone,
    i : Integer;
    ch : ANSIchar;
    TStr2,outer,InProj,OutEPSG : shortString;
@@ -1046,8 +1046,8 @@ end;
 
 
 function GDAL_upsample_DEM(OpenMap : boolean; DEM : integer; Bilinear : boolean; Spacing : float32 = -99; OutName : PathStr = '') : integer;
-var
-   SpaceStr : shortString;
+//var
+   //SpaceStr : shortString;
 begin
    {$If Defined(RecordSave) or Defined(RecordGDAL)} WriteLineToDebugFile('GDAL_upsample_DEM in'); {$EndIf}
    if IsGDALFilePresent(GDAL_Warp_Name) then begin

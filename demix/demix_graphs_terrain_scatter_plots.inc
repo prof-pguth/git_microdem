@@ -21,7 +21,7 @@ begin
     Graph.GraphDraw.HorizLabel := GISdb[db].dbOpts.XField;
     Graph.GraphDraw.VertLabel := GISdb[db].dbOpts.YField;
     Graph.GraphDraw.BottomMargin := 75;
-    Graph.GraphDraw.LeftMargin := 90;
+    //Graph.GraphDraw.LeftMargin := 90;
     Graph.GraphDraw.ZUnits := GISdb[DB].dbOpts.NumericColorField;
     GISdb[DB].EmpSource.Enabled := false;
 end;
@@ -38,13 +38,13 @@ end;
 
 procedure BestDEMonScatterPlotTwoParameters(db : integer; Criteria,DEMs : tstringList);
 var
-   Compares,FileList : tStringList;
+   Compares{,FileList} : tStringList;
    i : integer;
    aDEM,Criterion,BaseFilter : shortstring;
-   fName,LegfName : PathStr;
+   fName{,LegfName} : PathStr;
    gr : tThisBaseGraph;
    Tolerance : float32;
-   bmp : tMyBitmap;
+   //bmp : tMyBitmap;
 
    function DoGraph : tThisBaseGraph;
    const

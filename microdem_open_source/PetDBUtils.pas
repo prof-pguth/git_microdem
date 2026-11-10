@@ -177,6 +177,8 @@ function dBaseSafeNameByDeletion(FieldName : shortstring) : shortstring;
 function ImportExerciseTrack(var FileWanted : PathStr; ShowTable : boolean = false; MapOwner : tMapForm = nil) : integer;
 procedure GPXtoDBF(inName : PathStr; var OutName : PathStr);
 function IsThisGPSTrackFile(FileWanted : PathStr) : boolean;
+function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
+procedure FillComboBoxWithColorPalettes(fName : PathStr; ComboBox1 : tComboBox);
 
 
 var
@@ -207,6 +209,52 @@ uses
 
 
 {$I petdbutils_import.inc}
+
+         procedure FillComboBoxWithColorPalettes(fName : PathStr; ComboBox1 : tComboBox);
+         var
+            I : integer;
+            ColorTable : tMyData;
+            DataThere : tStringList;
+         begin
+            if FileExists(fName) then begin
+               ColorTable := tMyData.Create(fName);
+               ColorTable.ApplyFilter('USE=' + QuotedStr('Y'));
+               DataThere := ColorTable.ListUniqueEntriesInDB('PALETTE');
+               for i := 0 to pred(DataThere.Count) do ComboBox1.Items.Add(DataThere.Strings[i]);
+               ColorTable.Destroy;
+               DataThere.Free;
+            end;
+         end;
+
+
+         function DefineColorArray(Palette : shortstring; var NumColors : integer; var ColorsTable : tZTableColors255; Reverse : boolean = false) : boolean;
+         var
+            ColorTable : tMyData;
+            i : integer;
+         begin
+            NumColors := 0;
+            if FileExists(ColorBrewerName) then begin
+               ColorTable := TMyData.Create(ColorBrewerName);
+               ColorTable.ApplyFilter('PALETTE=' + QuotedStr(Palette));
+               if (ColorTable.RecordCount = 0) then begin
+                  Palette := 'ColorBrewer Spectral-9';
+                  ColorTable.ApplyFilter('PALETTE=' + QuotedStr(Palette));
+               end;
+               NumColors := ColorTable.RecordCount;
+               if (NumColors > 255)then NumColors := 255;
+
+               for i := 1 to NumColors do begin
+                  if (i in [1..255]) then begin
+                     if Reverse then ColorsTable[NumColors - pred(i)] := ColorTable.PlatformColorFromTable
+                     else ColorsTable[i] := ColorTable.PlatformColorFromTable;
+                  end;
+                  ColorTable.Next;
+               end;
+               ColorTable.Destroy;
+            end;
+            Result := (NumColors > 0);
+         end;
+
 
 
 function MakeOrFilter(db : integer; WantedFieldName : shortstring; sl : tStringList) : shortstring;

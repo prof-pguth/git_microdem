@@ -282,9 +282,6 @@ type
     Normalizegrids1: TMenuItem;
     Addnormaliziedstatsforblockgridstotrainingset1: TMenuItem;
     Geomorphatlas1: TMenuItem;
-    GISlabs1: TMenuItem;
-    //Annapolisredistricting1: TMenuItem;
-    Duckbeachsurveys1: TMenuItem;
     Physicalgeographylabs1: TMenuItem;
     OpenDEMwithoutmap1: TMenuItem;
     Megathrusts1: TMenuItem;
@@ -320,7 +317,6 @@ type
     Unicodeicongenerator1: TMenuItem;
     Nyquist1: TMenuItem;
     Introductorytutorials1: TMenuItem;
-    N30: TMenuItem;
     OpenandmergeDEMdirectories1: TMenuItem;
     SpeedButton6: TSpeedButton;
     Edit1: TMenuItem;
@@ -398,7 +394,7 @@ type
     N32: TMenuItem;
     Geoid2: TMenuItem;
     N33: TMenuItem;
-    Platetectonics1: TMenuItem;
+    //Platetectonics1: TMenuItem;
     Quickplatetectonicsmaps1: TMenuItem;
     N34: TMenuItem;
     //Seismicfencediagram1: TMenuItem;
@@ -423,7 +419,6 @@ type
     CloseallDBs1: TMenuItem;
     Remotesensinglabs1: TMenuItem;
     Spectrallibrary3: TMenuItem;
-    N19: TMenuItem;
     RGBcolorlayers1: TMenuItem;
     GDALSRSinfo1: TMenuItem;
     WhiteboxGeotiff1: TMenuItem;
@@ -463,7 +458,6 @@ type
     Bringslicecontroltofront1: TMenuItem;
     Bringpointcloudcontroltofront1: TMenuItem;
     Viewlastexectiondebuglog1: TMenuItem;
-    Pixelbypixelmapstatistics1: TMenuItem;
     Metadata2: TMenuItem;
     OpenandmergeDEMsgridsverylarge1: TMenuItem;
     Mergesourcedatatiles1: TMenuItem;
@@ -474,7 +468,7 @@ type
     Addversionnumbertoallfilesinapath1: TMenuItem;
     DEMIXdbCreatePopupMenu: TPopupMenu;
     Perpendicularshortprofilesthroughpoint1: TMenuItem;
-    SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
+    //SummarizeverticaldatumshiftforEGM96testDEMs1: TMenuItem;
     GDALshiftFor3DEP1: TMenuItem;
     //Subsetlarge3DEPareas1: TMenuItem;
     Create3DEP1secrefDEMs1: TMenuItem;
@@ -511,13 +505,13 @@ type
     Skipifexits2: TMenuItem;
     Overwriteifexists1: TMenuItem;
     Overwriteifexists2: TMenuItem;
-    SSIMR21: TMenuItem;
+    //SSIMR21: TMenuItem;
     InventoryDILUVIUMbytestarea1: TMenuItem;
     Partialchannelnetworkprocessing1: TMenuItem;
     Channelnetworkmultistep1: TMenuItem;
     InsureallreferenceDTMscorrectlynamed1: TMenuItem;
     MaskwaterinreferenceDEMs1: TMenuItem;
-    ComputeDEMIXtilestats1: TMenuItem;
+    //ComputeDEMIXtilestats1: TMenuItem;
     rimreferencedatatoDEMIXtiles1: TMenuItem;
     N53: TMenuItem;
     Full3DEPprocessingchair1: TMenuItem;
@@ -542,7 +536,7 @@ type
     N3DEPfileswithtag421121: TMenuItem;
     //Fixtileswith42114foottag1: TMenuItem;
     N46: TMenuItem;
-    OpenmapsforDEMIXtestarea1: TMenuItem;
+    //OpenmapsforDEMIXtestarea1: TMenuItem;
     //LoadCpopDEMandLNDCOERFORTEXTAREA1: TMenuItem;
     Mergechannelnetworkevaluations1: TMenuItem;
     Changemode1: TMenuItem;
@@ -576,9 +570,9 @@ type
     Multipletiles1: TMenuItem;
     Differencedistributionstatistics1: TMenuItem;
     FUV2: TMenuItem;
-    FUVforrangescales1: TMenuItem;
+    //FUVforrangescales1: TMenuItem;
     FUVfor5DEMstoreference1: TMenuItem;
-    FUVbyLandcover1DEMtoreference1: TMenuItem;
+    //FUVbyLandcover1DEMtoreference1: TMenuItem;
     CorrelationmatricesamongallDEMsjustALLlandcover1: TMenuItem;
     CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1: TMenuItem;
     Areaevaluations1: TMenuItem;
@@ -587,7 +581,7 @@ type
     PicktestDEMs1: TMenuItem;
     N61: TMenuItem;
     //N62: TMenuItem;
-    N64: TMenuItem;
+    //N64: TMenuItem;
     N65: TMenuItem;
     //ComparelandcoverinpointcloudDTM1: TMenuItem;
     Addlegendonlylastgraph1: TMenuItem;
@@ -677,6 +671,7 @@ type
     ProcessOpenTopographydownloadsCH1: TMenuItem;
     Both1: TMenuItem;
     GDEMsloperesolutioncomparisons1: TMenuItem;
+    CommontilesDBversions4and431: TMenuItem;
     procedure Updatehelpfile1Click(Sender: TObject);
     procedure VRML1Click(Sender: TObject);
     procedure HypImageSpeedButtonClick(Sender: TObject);
@@ -902,8 +897,8 @@ type
     procedure Sedimenttypes1Click(Sender: TObject);
     procedure Sdeimentthickness1Click(Sender: TObject);
     procedure Geoid2Click(Sender: TObject);
-    procedure Platetectonics1Click(Sender: TObject);
-    procedure Quickplatetectonicsmaps1Click(Sender: TObject);
+    //procedure Platetectonics1Click(Sender: TObject);
+    //procedure Quickplatetectonicsmaps1Click(Sender: TObject);
     procedure Slidesorter1Click(Sender: TObject);
     procedure Movefileswithnamematch1Click(Sender: TObject);
     procedure RenameJPEGswithcreationtime1Click(Sender: TObject);
@@ -949,7 +944,6 @@ type
     procedure Bringslicecontroltofront1Click(Sender: TObject);
     procedure Bringpointcloudcontroltofront1Click(Sender: TObject);
     procedure Viewlastexectiondebuglog1Click(Sender: TObject);
-    procedure Pixelbypixelmapstatistics1Click(Sender: TObject);
     procedure Metadata2Click(Sender: TObject);
     procedure OpenandmergeDEMsgridsverylarge1Click(Sender: TObject);
     procedure Mergesourcedatatiles1Click(Sender: TObject);
@@ -957,7 +951,7 @@ type
     procedure OpenDEMIXdatabase1Click(Sender: TObject);
     procedure Addversionnumbertoallfilesinapath1Click(Sender: TObject);
     procedure Perpendicularshortprofilesthroughpoint1Click(Sender: TObject);
-    procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
+    //procedure SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
     procedure Merge1secreferenceDEMsfromVisioterra1Click(Sender: TObject);
     procedure Modesofdifferencedistributions1Click(Sender: TObject);
     procedure Advancedanalysis1Click(Sender: TObject);
@@ -974,34 +968,25 @@ type
     procedure Addprefixtoallfilesindirectory1Click(Sender: TObject);
     //procedure MergeDEMIXtilestats1Click(Sender: TObject);
     procedure MergemultipleTXTCSVintoDB1Click(Sender: TObject);
-    procedure Overwriteifexits1Click(Sender: TObject);
-    procedure Overwirteifexists1Click(Sender: TObject);
-    procedure Overwriteifexits2Click(Sender: TObject);
     procedure MICRODEMgridformat1Click(Sender: TObject);
-    procedure Overwriteifexits3Click(Sender: TObject);
-    procedure Overwriteifexists1Click(Sender: TObject);
-    procedure Overwriteifexists2Click(Sender: TObject);
     procedure InventoryDILUVIUMbytestarea1Click(Sender: TObject);
     procedure InsureallreferenceDTMscorrectlynamed1Click(Sender: TObject);
-    procedure ComputeDEMIXtilestats1Click(Sender: TObject);
+    //procedure ComputeDEMIXtilestats1Click(Sender: TObject);
     procedure rimreferencedatatoDEMIXtiles1Click(Sender: TObject);
     procedure Reference1secDTMsfromCanadianlidar1Click(Sender: TObject);
     procedure Graphevaluationandscores1Click(Sender: TObject);
-    procedure Overwirte1Click(Sender: TObject);
     procedure DEMIX2Click(Sender: TObject);
-    procedure Overwirte2Click(Sender: TObject);
-    procedure Overwirte3Click(Sender: TObject);
     procedure N42Click(Sender: TObject);
     procedure DeltaDTMfortestareas1Click(Sender: TObject);
     procedure CreatefinalDB1Click(Sender: TObject);
-    procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
+    //procedure OpenmapsforDEMIXtestarea1Click(Sender: TObject);
     procedure Mergechannelnetworkevaluations1Click(Sender: TObject);
     procedure Changemode1Click(Sender: TObject);
     procedure DEMIXtilesperareaandcoastalsubset1Click(Sender: TObject);
     procedure InventorytestandrefereneDEMsbytestarea1Click(Sender: TObject);
     procedure Combineallcombinedimages1Click(Sender: TObject);
     procedure CoastalDEMfortestareas1Click(Sender: TObject);
-    procedure SSIMR21Click(Sender: TObject);
+    //procedure SSIMR21Click(Sender: TObject);
     procedure Skipifpresent1Click(Sender: TObject);
     procedure Mergegeomorphonevaluatioins1Click(Sender: TObject);
     procedure DEMIXtilesineachareaforFULLU120U80andandU101Click(Sender: TObject);
@@ -1012,22 +997,17 @@ type
     procedure AddEXIFtagsworkinprogress1Click(Sender: TObject);
     procedure Howbigisanarcsecond1Click(Sender: TObject);
     procedure Createcompositebitmap2Click(Sender: TObject);
-    procedure MultipleDEMsonearea015secscale1Click(Sender: TObject);
     procedure CorrelationsingleDEMtoreferencealllandcovers1Click(Sender: TObject);
     procedure CorrelationmatrixamongallDEMsforALLpixels1Click(Sender: TObject);
     procedure Graphdifferencedistributionsalllandcovers1Click(Sender: TObject);
-    procedure Differencedistributionstatistics1Click(Sender: TObject);
-    procedure FUV2Click(Sender: TObject);
-    procedure FUVforrangescales1Click(Sender: TObject);
-    procedure FUVfor5DEMstoreference1Click(Sender: TObject);
-    procedure FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
+    //procedure FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
     procedure CorrelationmatricesamongallDEMsjustALLlandcover1Click(Sender: TObject);
     procedure CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(Sender: TObject);
     procedure Areaevaluations1Click(Sender: TObject);
     procedure N60Click(Sender: TObject);
     procedure PicktestDEMs1Click(Sender: TObject);
     //procedure N62Click(Sender: TObject);
-    procedure N64Click(Sender: TObject);
+    //procedure N64Click(Sender: TObject);
    // procedure ComparelandcoverinpointcloudDTM1Click(Sender: TObject);
     procedure Addlegendonlylastgraph1Click(Sender: TObject);
     procedure UTMbasedtilescreation1Click(Sender: TObject);
@@ -1087,6 +1067,7 @@ type
     procedure ProcessOpenTopographydownloadsCH1Click(Sender: TObject);
     procedure Both1Click(Sender: TObject);
     procedure GDEMsloperesolutioncomparisons1Click(Sender: TObject);
+    procedure CommontilesDBversions4and431Click(Sender: TObject);
     //procedure Inventory3DEPtiles1Click(Sender: TObject);
   private
     procedure SunViews(Which : integer);
@@ -1313,14 +1294,16 @@ uses
       demix_definitions,
       DEMIX_Control,
       demix_evals_scores_graphs,
-      ssim_fuv_control,
-      demix_neo_test_area,
       dsm_dtm_compare,
-      {$IfDef UseOldDEMIXFilter}
-          DEMIX_filter,
-      {$EndIf}
+      {$IfDef DEMIX_neo} demix_neo_test_area, {$EndIf}
+      {$IfDef UseOldDEMIXFilter} DEMIX_filter, {$EndIf}
       DEMIX_graphs,
    {$EndIf}
+
+   {$IfDef IncludeSSIM}
+      ssim_fuv_control,
+   {$EndIf}
+
 
    Las_files_grouping,
 
@@ -1797,12 +1780,6 @@ begin
       OpenDEMIXdatabase1.Visible := false;
    {$EndIf}
 
-   {$IfDef CopALOSCompare}
-      Pixelbypixelmapstatistics1.Visible := true;
-   {$Else}
-      Pixelbypixelmapstatistics1.Visible := false;
-   {$EndIf}
-
    {$IfDef ShowDEMIXNeo}
       DEMIXNeo1.Visible := true;
    {$Else}
@@ -1899,7 +1876,7 @@ begin
    OpenImage1.Visible := MDDef.ShowOpenImagery;
 
    Physicalgeographylabs1.Visible := (MDDef.ProgramOption = GeographyProgram) or MDDef.ShowLabs;
-   GISlabs1.Visible := MDDef.ShowLabs;
+   //GISlabs1.Visible := MDDef.ShowLabs;
 
    SpeedButton5.Visible := Geostatisticalanalysis1.Visible;
 
@@ -1945,11 +1922,6 @@ begin
    {$Else}
       HypImageSpeedButton.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowOpenImagery;
       Openhyperspectralimagery1.Visible := (MDDef.ProgramOption in [ExpertProgram,RemoteSensingProgram]) and MDDef.ShowOpenImagery;
-   {$EndIf}
-
-   {$IfDef CopALOSCompare}
-   {$Else}
-      Pixelbypixelmapstatistics1.Visible := false;
    {$EndIf}
 
    {$IfDef ExPointCloud}
@@ -2388,13 +2360,13 @@ var
 begin
    {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('start Twmdem.FormActivate, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
    {$If Defined(RecordFormResize) or Defined(RecordFormActivate)}
-      WriteLineToDebugFile('Twmdem.FormActivate in, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height) + '  ' + AvailablePhysicalMemoryString);
+      WriteLineToDebugFile('Twmdem.FormActivate in, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height) + '  ' + AvailPhysMemStr);
    {$EndIf}
 
    if FirstRun then begin
      InitializeMICRODEM;
      FirstRun := false;
-     {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over ' + AvailablePhysicalMemoryString); {$EndIf}
+     {$IfDef RecordFormActivate} WriteLineToDebugFile('Twmdem.FormActivate, initialize MD over ' + AvailPhysMemStr); {$EndIf}
      {$IfDef RecordDEMIX} writeLineToDebugFile('Twmdem.FormActivate, DEMIX_baseDir=' + MDDef.DEMIX_BaseDir); {$EndIf}
 
       if (not MDDef.RunOddballLocation) then begin
@@ -2472,7 +2444,7 @@ begin
 
      {$IfDef RecordProblems} WriteLineToDebugFile('MDdef.AutoOpen completed, Twmdem.FormActivate wsMaximized, width=' + IntToStr(Width) + '  & height=' + IntToStr(Height)); {$EndIf}
 
-     {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time ' + AvailablePhysicalMemoryString); {$EndIf}
+     {$IfDef RecordProblems} WriteLineToDebugFile('ending FormActivate, first time ' + AvailPhysMemStr); {$EndIf}
      {$If Defined(MessageStartup) or Defined(TrackFormCreate)} MessageToContinue('Twmdem.FormActivate ending first time'); {$EndIf}
    end {if FirstRun};
 
@@ -2603,7 +2575,7 @@ procedure Twmdem.Addprefilstoalldirectories1Click(Sender: TObject);
 var
    //FilesWanted : tStringList;
    j : integer;
-   version,what : shortstring;
+   version{,what} : shortstring;
    Paths : tStringList;
    fName,NewName : PathStr;
 begin
@@ -2701,7 +2673,9 @@ end;
 
 procedure Twmdem.Areaevaluations1Click(Sender: TObject);
 begin
-   StartAreaEvals;
+   {$IfDef DEMIX_neo}
+      StartAreaEvals;
+   {$EndIf}
 end;
 
 
@@ -2802,48 +2776,6 @@ begin
    GetDEMIXpaths;
    VerifyRecordsToUse(DEMIX_criteria_tolerance_fName,'PARAMETER');
 end;
-
-
-
-procedure Twmdem.N64Click(Sender: TObject);
-const
-   DEMs : array[1..4] of shortstring = ('ref_dtm','cop','fathom','gedtm');
-var
-   Paths : array[1..4] of PathStr;
-   TheGrids : array[1..4] of integer;
-   RefName,fName,BasePath : PathStr;
-   theDEMs,Findings : tStringList;
-   i,j,k : integer;
-   aLine : shortstring;
-begin
-   BasePath := 'J:\aaa_neo_eval\silver_peak_range\curvature\';
-   for i := 1 to 4 do Paths[i] := BasePath + DEMs[i] + '_d3\';
-   Findings := tStringList.Create;
-   aLine := 'CURVATURE';
-   for j := 2 to 4 do aline := aline + ',' + 'FUV_' + Uppercase(DEMs[j]);
-   Findings.Add(aLine);
-   TheDEMs := nil;
-   Petmar.FindMatchingFiles(Paths[1],'*.tif',TheDEMs,1);
-   for i := 0 to pred(TheDEMs.Count) do begin
-      RefName := TheDEMs.Strings[i];
-      LoadNewDEM(TheGrids[1],RefName,false);
-      aline := StringReplace(ExtractFileNameNoExt(RefName),'ref_dtm_','',[rfReplaceAll, rfIgnoreCase]);
-      for j := 2 to 4 do  begin
-        FName := Paths[j] + ExtractFileName(RefName);
-        fName := StringReplace(fName,DEMs[1],DEMs[j],[rfReplaceAll, rfIgnoreCase]);
-        LoadNewDEM(TheGrids[j],fName,false);
-        aline := aline + ',' + RealToString(GetFUVForPairGrids(DEMglb[TheGrids[1]].FullDEMGridLimits,TheGrids[1],TheGrids[j]),-12,6);
-      end;
-      WriteLineToDebugFile(aLine);
-      Findings.Add(aline);
-      for k := 1 to 4 do begin
-         CloseSingleDEM(j);
-      end;
-   end;
-   RefName := MDTempDir + 'curvature_fuvs.dbf';
-   StringList2CSVtoDB(Findings,RefName);
-end;
-
 
 procedure Twmdem.Newsatelliteimage1Click(Sender: TObject);
 begin
@@ -2985,7 +2917,9 @@ end;
 
 procedure Twmdem.Graphdifferencedistributionsalllandcovers1Click(Sender: TObject);
 begin
-   CrossScaleDEMComparison(3);
+   {$IfDef DEMIX_neo}
+      CrossScaleDEMComparison(3);
+   {$EndIf}
 end;
 
 procedure Twmdem.Graphevaluationandscores1Click(Sender: TObject);
@@ -3195,10 +3129,6 @@ begin
    {$EndIf}
 end;
 
-procedure Twmdem.Quickplatetectonicsmaps1Click(Sender: TObject);
-begin
-   Platetectonics1Click(Sender);
-end;
 
 procedure Twmdem.Magneticanomaliesgrid1Click(Sender: TObject);
 begin
@@ -3321,6 +3251,9 @@ begin
    Results := Nil;
    n := 0;
    x := LowerLeftX;
+   Results := tStringList.Create;
+   Results.Add('DEMIX_TILE,LAT,LONG,AVG_SLOPE,FOREST_PC,BARREN_PC,URBAN_PC,WATER_PC,EDGE_FORST,EDGE_ALL');
+
    while x  < UpperRightX do begin
       y := LowerLeftY;
       while y < UpperRightY do begin
@@ -3332,32 +3265,24 @@ begin
          bb.XMax := x + TileSize;
          bb.YMax := y + TileSize;
 
-            DEM := ExtractFromMonsterTIFFforBoundingBox(DTMName,bb,OpenMap,TileName);
-            if DEMglb[DEM].ComputeMissingDataPercentage(DEMglb[DEM].FullDEMGridLimits) < 50 then begin
+         DEM := ExtractFromMonsterTIFFforBoundingBox(DTMName,bb,OpenMap,TileName);
+         if DEMglb[DEM].ComputeMissingDataPercentage(DEMglb[DEM].FullDEMGridLimits) < 50 then begin
+            ThinDEM := DEMglb[DEM].ThinThisDEM(OpenMap,'',15,true);
+            DEMglb[ThinDEM].DEMCenterPoint(Lat,Long);
+            bb := DEMglb[DEM].DEMBoundBoxGeo;
+            Avg_slope := DEMglb[ThinDEM].AverageDEMslope(DEMglb[ThinDEM].FullDEMGridLimits);
+            LCname :=MDtempDir + 'tilename_landcover.tif';
+            lc := LoadLC10LandCover(LCname,bb,false,true);
+            SimplifiedLandCoverPercentages(lc,DEMGlb[LC].FullDEMGridLimits,ForestPC,UrbanPC,BarrenPC,WaterPC);
 
-               ThinDEM := DEMglb[DEM].ThinThisDEM(OpenMap,'',15,true);
-               DEMglb[ThinDEM].DEMCenterPoint(Lat,Long);
-               bb := DEMglb[DEM].DEMBoundBoxGeo;
-               Avg_slope := DEMglb[ThinDEM].AverageDEMslope(DEMglb[ThinDEM].FullDEMGridLimits);
-               LCname :=MDtempDir + 'tilename_landcover.tif';
-               lc := LoadLC10LandCover(LCname,bb,false,true);
-               SimplifiedLandCoverPercentages(lc,DEMGlb[LC].FullDEMGridLimits,ForestPC,UrbanPC,BarrenPC,WaterPC);
-
-               if (DEMGlb[LC].DEMHeader.ElevUnits = euWorldCover10m) then begin
-                  ForestEdge := DEMGlb[LC].PercentageEdgePixels(10,EdgeAll);
-               end
-               else ForestEdge := -999;
-
-               if (Results = Nil) then begin
-                   Results := tStringList.Create;
-                   Results.Add('DEMIX_TILE,LAT,LONG,AVG_SLOPE,FOREST_PC,BARREN_PC,URBAN_PC,WATER_PC,EDGE_FORST,EDGE_ALL');
-               end;
-
-               Results.Add(TileName + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
-                  RealToString(Avg_slope,-8,-2) + ',' + RealToString(ForestPC,-8,-2) + ',' + RealToString(BarrenPC,-8,-2) + ',' +
-                  RealToString(UrbanPC,-8,-2) + ',' + RealToString(WaterPC,-8,-2) + ',' + RealToString(ForestEdge,-8,-2) + ',' + RealToString(EdgeAll,-8,-2));
-
-            end;
+            if (DEMGlb[LC].DEMHeader.ElevUnits = euWorldCover10m) then begin
+               ForestEdge := DEMGlb[LC].PercentageEdgePixels(10,EdgeAll);
+            end
+            else ForestEdge := -999;
+            Results.Add(TileName + ',' + RealToString(Lat,-12,-3) + ',' + RealToString(Long,-12,-3) + ',' +
+               RealToString(Avg_slope,-8,-2) + ',' + RealToString(ForestPC,-8,-2) + ',' + RealToString(BarrenPC,-8,-2) + ',' +
+               RealToString(UrbanPC,-8,-2) + ',' + RealToString(WaterPC,-8,-2) + ',' + RealToString(ForestEdge,-8,-2) + ',' + RealToString(EdgeAll,-8,-2));
+         end;
 
          CloseAllDEMs;
          y := y + TileSize;
@@ -3496,10 +3421,6 @@ begin
    ExecuteFile(ppName, fName, ProgramRootDir);
 end;
 
-procedure Twmdem.SummarizeverticaldatumshiftforEGM96testDEMs1Click(Sender: TObject);
-begin
-   SummarizeEGM96toEGM2008shifts;
-end;
 
 procedure Twmdem.Superimposedtopoprofiles1Click(Sender: TObject);
 begin
@@ -3665,7 +3586,9 @@ end;
 
 procedure Twmdem.CorrelationmatricesamongallDEMsjustALLlandcover1Click(Sender: TObject);
 begin
-   CrossScaleDEMComparison(7);
+   {$IfDef DEMIX_neo}
+      CrossScaleDEMComparison(7);
+   {$EndIf}
 end;
 
 procedure Twmdem.Correlationmatrix1Click(Sender: TObject);
@@ -3677,20 +3600,25 @@ begin
    if GetFileFromDirectory('Correlation/distance matrix','*.csv',fName) then OpenCorrelationMatrix(ExtractFileNameNoExt(fName),fName);
 end;
 
-
 procedure Twmdem.CorrelationmatrixamongallDEMsforALLpixels1Click(Sender: TObject);
 begin
-   CrossScaleDEMComparison(1);
+   {$IfDef DEMIX_neo}
+      CrossScaleDEMComparison(1);
+   {$EndIf}
 end;
 
 procedure Twmdem.CorrelationmatrixsingleDEMtoallothersALLlandcoveronly1Click(Sender: TObject);
 begin
-   CrossScaleDEMComparison(7);
+   {$IfDef DEMIX_neo}
+      CrossScaleDEMComparison(7);
+   {$EndIf}
 end;
 
 procedure Twmdem.CorrelationsingleDEMtoreferencealllandcovers1Click(Sender: TObject);
 begin
-   CrossScaleDEMComparison(2);
+   {$IfDef DEMIX_neo}
+      CrossScaleDEMComparison(2);
+   {$EndIf}
 end;
 
 procedure Twmdem.Createcompositebitmap1Click(Sender: TObject);
@@ -3903,54 +3831,6 @@ begin
    end;
   {$EndIf}
 end;
-
-procedure Twmdem.Overwirte1Click(Sender: TObject);
-begin
-   //DEMIX_Ref_DEM_full_chain(True);
-end;
-
-procedure Twmdem.Overwirte2Click(Sender: TObject);
-begin
-   ComputeDEMIX_Diff_Dist_tile_stats(true);
-end;
-
-procedure Twmdem.Overwirte3Click(Sender: TObject);
-begin
-   ComputeDEMIX_Diff_Dist_tile_stats(false);
-end;
-
-
-procedure Twmdem.Overwirteifexists1Click(Sender: TObject);
-begin
-  //DEMIX_CreateReferenceDEMs(true,ResampleModeOneSec);
-end;
-
-procedure Twmdem.Overwriteifexists1Click(Sender: TObject);
-begin
-    //DEMIX_CreateReferenceDEMsFromSource(true);
-end;
-
-procedure Twmdem.Overwriteifexists2Click(Sender: TObject);
-begin
-   //DEMIX_CreateReferenceDEMsFromSource(false);
-end;
-
-procedure Twmdem.Overwriteifexits1Click(Sender: TObject);
-begin
-   //DEMIX_MergeReferenceDEMs(True);
-end;
-
-procedure Twmdem.Overwriteifexits2Click(Sender: TObject);
-begin
-   //DEMIX_MergeReferenceDEMs(false);
-end;
-
-procedure Twmdem.Overwriteifexits3Click(Sender: TObject);
-begin
-   //DEMIX_vert_datum_code := 5703;
-   //DEMIX_GDAL_Ref_DEM_datum_shift(true);
-end;
-
 
 procedure Twmdem.Exitprogram2Click(Sender: TObject);
 begin
@@ -4269,13 +4149,6 @@ procedure Twmdem.PicktestDEMs1Click(Sender: TObject);
 begin
    GetDEMIXpaths;
    VerifyRecordsToUse(DemixSettingsDir + 'demix_dems.dbf','SHORT_NAME');
-end;
-
-procedure Twmdem.Pixelbypixelmapstatistics1Click(Sender: TObject);
-begin
-   {$IfDef CopALOSCompare}
-      PixelByPixelCopAlos;
-   {$EndIf}
 end;
 
 procedure Twmdem.Percentlandcovercategories1Click(Sender: TObject);
@@ -4940,11 +4813,6 @@ begin
 end;
 
 
-procedure Twmdem.OpenmapsforDEMIXtestarea1Click(Sender: TObject);
-begin
-   OpenDEMIXAreaMaps;
-end;
-
 procedure Twmdem.Openmultigrids1Click(Sender: TObject);
 begin
    {$IfDef ExMultigrid}
@@ -5067,10 +4935,6 @@ begin
    OpenGazFile;
 end;
 
-procedure Twmdem.SSIMR21Click(Sender: TObject);
-begin
-   FUV_SSIM_work;
-end;
 
 procedure Twmdem.LOS2Click(Sender: TObject);
 begin
@@ -5079,50 +4943,11 @@ begin
 end;
 
 
-procedure Twmdem.MultipleDEMsonearea015secscale1Click(Sender: TObject);
-begin
-   //FUVforMultipleTestDEMstoReference;
-end;
-
-
 procedure Twmdem.MultProfSpeedButtonClick(Sender: TObject);
 begin
    SimpleProfiles;
 end;
 
-
-procedure Twmdem.Differencedistributionstatistics1Click(Sender: TObject);
-begin
-   CrossScaleDEMComparison(4);
-end;
-
-procedure Twmdem.FUV2Click(Sender: TObject);
-begin
-   CrossScaleDEMComparison(5);
-end;
-
-procedure Twmdem.FUVbyLandcover1DEMtoreference1Click(Sender: TObject);
-begin
-   {$IfDef FUV_RangeScales}
-      FUVforRangeScales(true);
-   {$Else}
-      MessageToContinue('Currently disabled');
-   {$EndIf}
-end;
-
-procedure Twmdem.FUVfor5DEMstoreference1Click(Sender: TObject);
-begin
-   //FUVforMultipleTestDEMstoReference;
-end;
-
-procedure Twmdem.FUVforrangescales1Click(Sender: TObject);
-begin
-   {$IfDef FUV_RangeScales}
-      FUVforRangeScales(false);
-   {$Else}
-      MessageToContinue('Currently disabled');
-   {$EndIf}
-end;
 
 procedure Twmdem.Differencetwobitmaps1Click(Sender: TObject);
 begin
@@ -5247,10 +5072,9 @@ procedure Twmdem.Sedimenttypegrid1Click(Sender: TObject);
 begin
    {$If Defined(ExGeology) or Defined(ExLabDownloads)}
   {$Else}
-      if (SedTypeDEM <> 0) and (DEMGlb[SedTypeDEM] <> Nil) and (DEMGlb[SedTypeDEM].DEMFileName = SedTypeFile) then begin
+      if ValidDEM(SedTypeDEM) and (DEMGlb[SedTypeDEM].DEMFileName = SedTypeFile) then begin
       end
       else begin
-         GeologyGetData;
          if FileExists(SedTypeFile) then begin
             OpenNewDEM(SedTypeFile);
             DEMGlb[LastDEMLoaded].VATLegend;
@@ -5274,8 +5098,6 @@ begin
    {$If Defined(ExGeology) or Defined(ExLabDownloads)}
    {$Else}
       if not ValidDEM(SedThickDEM) then begin
-         GeologyGetData;
-         //if not FileExists(SedThickFile) then DownloadFileFromWeb(WebDataDownLoadDir + ExtractFileName(SedThickFile),SedThickFile);
          SedThickDEM := OpenNewDEM(SedThickFile,false);
          if (SedThickDEM <> 0) then DEMGlb[LastDEMLoaded].SetUpMap(false,mtElevSpectrum);
       end;
@@ -5305,20 +5127,12 @@ begin
 end;
 
 
-procedure Twmdem.Platetectonics1Click(Sender: TObject);
-begin
-   //GetETOPO1;
-   PredBathySpeedButtonClick(Nil);
-   DEMGlb[LastDEMLoaded].SelectionMap.Globaltectonicsmap1Click(Nil);
-end;
-
 procedure Twmdem.NASABlueMarbleSpeedButtonClick(Sender: TObject);
 var
   NewSatImage : integer;
 begin
    {$IfDef ExSat}
    {$Else}
-      //GetBlueMarble;
       NewSatImage := OpenAndDisplaySatelliteScene(nil,BlueMarblefName,true,true,false);
       if NewSatImage <> 0 then begin
          SatImage[NewSatImage].SelectionMap.MapSubsetAllowed := false;
@@ -6203,6 +6017,42 @@ begin
 end;
 
 
+procedure Twmdem.CommontilesDBversions4and431Click(Sender: TObject);
+const
+   Extra = 0.01;
+var
+   fNameV4,fNameV43 : PathStr;
+   dbV4,dbV43 : tMyData;
+   CommonTiles : tStringList;
+   DEMIXtile : shortstring;
+   Lat,Long : float64;
+begin
+   fNameV4 := 'J:\wine_contest\wine_contest_database\DEMIX_DB_4_tile_stats_DB_11_15_25.dbf';
+   fNameV43 := 'F:\demix_db_4.3\demix_db_4.3_tile_stats_DB_09_09_26.dbf';
+   if FileExists(fNameV4) and FileExists(fNameV43) then begin
+      dbv4 := tMyData.Create(fNameV4);
+      dbv43 := tMyData.Create(fNameV43);
+      CommonTiles := tStringList.Create;
+      dbV43.ApplyFilter('REF_DEM=' + QuotedStr('DTM') + ' AND DEM_PAIR=' + QuotedStr('YES'));
+      while not dbV43.eof do begin
+         DEMIXtile := dbV43.GetFieldByNameAsString('DEMIX_TILE');   //version 4 DB has abbreviated tile names
+         Lat := dbV43.GetFieldByNameAsFloat('LAT');
+         Long := dbV43.GetFieldByNameAsFloat('LONG');
+         dbv4.ApplyFilter('LAT > ' + RealToString(Lat-Extra,-12,2) + ' AND LAT < ' + RealToString(Lat+Extra,-12,2)  +
+                          ' AND LONG > ' + RealToString(Long-Extra,-12,2) + ' AND LONG < ' + RealToString(Long+Extra,-12,2));
+         if (dbV4.FiltRecsInDB > 0) then CommonTiles.Add(DEMIXtile);
+         dbV43.Next;
+      end;
+      dbV4.Destroy;
+      dbV43.Destroy;
+      if CommonTiles.Count = 0 then begin
+         MessageToContinue('No common tiles');
+      end
+      else DisplayAndPurgeStringList(CommonTiles,'Common tiles, n=' + IntToStr(CommonTiles.Count));
+   end;
+end;
+
+
 procedure Twmdem.Compare10mand100mlandcover1Click(Sender: TObject);
 begin
    DEMIX_UTM_based_processing(udCompareLandcover);
@@ -6236,10 +6086,6 @@ begin
    {$EndIf}
 end;
 
-procedure Twmdem.ComputeDEMIXtilestats1Click(Sender: TObject);
-begin
-   ComputeDEMIX_Summary_stats_DB;
-end;
 
 procedure Twmdem.Openshapefilemap1Click(Sender: TObject);
 begin

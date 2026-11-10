@@ -55,9 +55,16 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     Height = 15
     Caption = 'Min'
   end
+  object Label7: TLabel
+    Left = 352
+    Top = 152
+    Width = 70
+    Height = 15
+    Caption = 'Vert axis label'
+  end
   object BitBtn8: TBitBtn
-    Left = 186
-    Top = 376
+    Left = 185
+    Top = 377
     Width = 250
     Height = 25
     Caption = 'Grid for median or mean, multiple criteria'
@@ -151,7 +158,7 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
   object BitBtn10: TBitBtn
     Left = 186
     Top = 345
-    Width = 234
+    Width = 246
     Height = 25
     Caption = 'Grid multiple pair comparisons, 1 criterion'
     TabOrder = 8
@@ -356,5 +363,39 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
       'FATHOM'
       'REF_DTM'
       'REF_DSM')
+  end
+  object BitBtn4: TBitBtn
+    Left = 375
+    Top = 215
+    Width = 251
+    Height = 25
+    Caption = 'Grid mean or median, DSM/DTM slope'
+    TabOrder = 30
+    OnClick = BitBtn4Click
+  end
+  object BitBtn5: TBitBtn
+    Left = 376
+    Top = 248
+    Width = 250
+    Height = 25
+    Caption = 'Grid, mean/median DTM/predicted slopes'
+    TabOrder = 31
+    OnClick = BitBtn5Click
+  end
+  object Edit4: TEdit
+    Left = 438
+    Top = 148
+    Width = 246
+    Height = 23
+    TabOrder = 32
+  end
+  object BitBtn7: TBitBtn
+    Left = 200
+    Top = 184
+    Width = 121
+    Height = 25
+    Caption = 'By DEM'
+    TabOrder = 33
+    OnClick = BitBtn7Click
   end
 end

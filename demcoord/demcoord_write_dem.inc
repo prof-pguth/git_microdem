@@ -56,7 +56,7 @@ begin
 end;
 
 
-procedure tDEMDataSet.SaveGridSubsetGeotiff(DEMGridLimits : tGridLimits; fName : PathStr = '');
+procedure tDEMDataSet.SaveGridSubsetGeotiff(fName : PathStr; DEMGridLimits : tGridLimits);
 var
    tName : PathStr;
    NewDEM : integer;
@@ -142,7 +142,7 @@ procedure tDEMDataSet.WriteNewFormatDEMwithLimits(Limits : tGridLimits; FileName
                    'lly=' + RealToString(NewHeadRecs.SWCornerY,-18,-8) + #13 +
                    'utmzone=' + IntToStr(NewHeadRecs.UTMZone) + #13 +
                    'newproj=' + IntToStr(NewHeadRecs.DEMUsed) + #13 +
-                   'precision=' + IntToStr(Ord(tDEMprecision(NewHeadRecs.DEMPrecision))) + #13 +
+                   'precision=' + IntToStr(NewHeadRecs.DEMPrecision) + #13 +
                    'spaceunit=' +IntToStr(Ord(tSpacingUnit(NewHeadRecs.DataSpacing))) + #13 +
                    'elevunit=' + IntToStr(Ord(tElevUnit(NewHeadRecs.ElevUnits))) + #13 +
                    'hemi=' + NewHeadRecs.LatHemi + #13 +
@@ -304,6 +304,15 @@ end {procedure tDEMDataSet.WriteNewFormatDEMwithLimits};
 
 
 procedure tDEMDataSet.SaveAsGeotiff(SaveName : PathStr = '');
+var
+   AffineMatrix : tAffineMatrix;
+begin
+   SaveAsGeotiffWithAffine(AffineMatrix,false,SaveName);
+end;
+
+
+procedure tDEMDataSet.SaveAsGeotiffWithAffine(AffineMatrix : tAffineMatrix;  AddAffine : boolean; SaveName : PathStr = '');
+//procedure tDEMDataSet.SaveAsGeotiff(SaveName : PathStr = ''; AddAffine : false; AffineMatrix : tAffineMatrix);
 var
    missing : double;
    WField : word;
@@ -481,12 +490,32 @@ begin
 
   // {$IfDef GeotiffSave} WriteLineToDebugFile('start 33922, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    {$IfDef GeotiffCorner} WriteLineToDebugFile('Write DEM,  NW cornerX=' + RealToString(DEMheader.DEMSWCornerX,-18,-6) + '  NW cornerY=' + RealToString(DEMheader.DEMSWCornerY + DEMheader.NumRow * DEMheader.DEMySpacing,-18,-6)); {$EndIf}
-   BlockWriteDouble(0);
-   BlockWriteDouble(0);
-   BlockWriteDouble(0);
-   BlockWriteDouble(GeotiffNWCornerX);
-   BlockWriteDouble(GeotiffNWCornerY);
-   BlockWriteDouble(0);
+   if AddAffine then begin
+       BlockWriteDouble(AffineMatrix.XOrigin);
+       BlockWriteDouble(AffineMatrix.PixelWidth);
+       BlockWriteDouble(AffineMatrix.RowRotation);
+       BlockWriteDouble(AffineMatrix.YOrigin);
+       BlockWriteDouble(AffineMatrix.ColRotation);
+       BlockWriteDouble(AffineMatrix.PixelHeight);
+   end
+   else begin
+       BlockWriteDouble(0);
+       BlockWriteDouble(0);
+       BlockWriteDouble(0);
+       BlockWriteDouble(GeotiffNWCornerX);
+       BlockWriteDouble(GeotiffNWCornerY);
+       BlockWriteDouble(0);
+
+(*
+    XOrigin: Double; // GT(0)
+    PixelWidth: Double; // GT(1)
+    RowRotation: Double; // GT(2)
+    YOrigin: Double; // GT(3)
+    ColRotation: Double; // GT(4)
+    PixelHeight: Double; // GT(5)
+*)
+
+   end;
 
    //{$IfDef GeotiffSave} WriteLineToDebugFile('start 34735 Geotiff keys, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    StreamWordFieldEntry(TIFFFile,1,1,0,pred(GeoKeyEntries));

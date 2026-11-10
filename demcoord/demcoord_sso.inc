@@ -18,7 +18,7 @@ begin
       {$If Defined(RecordSSOCalc)or Defined(RecordNormalInit)} WriteLineToDebugFile('tDEMDataSet.InitializeNormals normals already created'); {$EndIf}
    end
    else begin
-      {$If Defined(RecordDEMMemoryAllocations) or Defined(ShowDEMSSOCalc)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(VectorType))); {$EndIf}
+      {$If Defined(RecordDEMMemoryAllocations) or Defined(ShowDEMSSOCalc)} WriteLineToDebugFile('allocate tDEMDataSet.InitializeNormals, pointer size=' + IntToStr(DEMheader.NumRow * SizeOf(tVector32))); {$EndIf}
       for j := 1 to 3 do begin
          if not ValidDEM(Normals[j]) then begin
             Normals[j] := CloneAndOpenGridSetMissing(FloatingPointDEM,AreaName + '_normals_' + IntToStr(j),euUndefined);
@@ -196,7 +196,7 @@ var
    MaxZ,MinZ,SumElev,SumSlope,
    SumSqSlope,SumSqElev : float64;
    zf : float32;
-   fName : PathStr;
+   //fName : PathStr;
    Symbol : tFullSymbolDeclaration;
    SlopeAspectRec : tSlopeAspectRec;
    AspectStats : tAspectStats;

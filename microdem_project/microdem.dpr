@@ -278,7 +278,6 @@ uses
   edit_dip in '..\misc\geology\edit_dip.pas' {GetDipStrike},
   three_point_problem in '..\misc\geology\three_point_problem.pas' {ThreePointer},
   demlos_draw in '..\viewer_3d\demlos_draw.pas',
-  demix_neo_test_area in '..\demix\demix_neo_test_area.pas' {New_area_evals_form},
   ant_hts_ops in '..\ask_options\ant_hts_ops.pas' {ReqAntOptsForm},
   block_opts in '..\ask_options\block_opts.pas' {BlockOpsForm},
   cart_movie_options in '..\ask_options\cart_movie_options.pas' {CartMovieOptsForm},

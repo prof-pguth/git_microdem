@@ -87,7 +87,7 @@ end;
 
 procedure TMapDraw.PlotDataBaseLegends(var Bitmap : tMyBitmap);
 var
-   i,j  : integer;
+   //i,j  : integer;
    db : integer;
 begin
    {$IfDef UseDBPlotOrder}
@@ -191,7 +191,7 @@ end;
 
 procedure TMapDraw.LabelDataBases(var Bitmap : tMyBitmap);
 var
-   i,{j,}db : integer;
+   {i,j,}db : integer;
 begin
    {$IfDef RecordDBPlots} WriteLineToDebugFile('TMapDraw.LabelDataBases in'); {$EndIf}
    {$IfDef UseDBPlotOrder}

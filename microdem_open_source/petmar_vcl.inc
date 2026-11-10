@@ -11,7 +11,7 @@
 //some of these might work in Windows FireMonkey
 
 
-function AvailablePhysicalMemoryString : shortstring;
+function AvailPhysMemStr : shortstring;
 var
   vGlobalMemoryStatus : TMemoryStatus;
 begin

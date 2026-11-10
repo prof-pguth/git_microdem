@@ -18,7 +18,7 @@
       //{$Define RecordLASMemoryAlocations}
       //{$Define RecordLASprojection}
       //{$Define RecordTilePlotSummary}
-      //{$Define RecordLASfiles}
+      {$Define RecordLASfiles}
       //{$Define RecordWKT}
       //{$Define RecordVarLenRec}
       //{$Define RecordReadPoints}  //super slowdown
@@ -863,7 +863,8 @@ end;
 function tLAS_data.OverlapPoint(ShotNumber : integer) : boolean;
 begin
    if (LidarPointType in [0..5]) then Result := (LidarPoints0^[ShotNumber].Classification mod 32) = 12;
-   if (LidarPointType in [6..8]) then Result := (LidarPoints6^[ShotNumber].ClassificationFlags and 00010000) = 00010000;
+   //if (LidarPointType in [6..8]) then Result := (LidarPoints6^[ShotNumber].ClassificationFlags and 00010000) = 00010000;
+   if (LidarPointType in [6..8]) then Result := LASClassification(ShotNumber) = 12;
 end;
 
 

@@ -1085,7 +1085,7 @@ end;
 
 function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
 
-         function InitializeTiffDEM(WantDEM : tDEMDataSet; ForceType : boolean = false; TypeWanted : tDEMprecision = ByteDEM) : boolean;
+         function InitializeTiffDEM(WantDEM : tDEMDataSet; ForceType : boolean = false; TypeWanted : byte = ByteDEM) : boolean;
          var
             LandCover : integer;
 

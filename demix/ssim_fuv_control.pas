@@ -87,6 +87,7 @@ end;
 
 
 procedure FUV_SSIM_Processing(Mode : Byte; Overwrite,AreasInsteadOfTiles : boolean);
+{$IfDef IncludeSSIM}
 var
    Areas : tStringList;
 begin
@@ -97,6 +98,9 @@ begin
    Areas := DEMIX_AreasWanted(not MDDef.DEMIX_all_areas);
    AreaSSIMandFUVComputations(Overwrite,AreasInsteadOfTiles,Areas);
    Areas.Destroy;
+{$Else}
+begin
+{$EndIf}
 end;
 
 
