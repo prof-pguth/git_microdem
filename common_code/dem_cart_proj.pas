@@ -170,7 +170,7 @@ begin
    SetUpDefaultNewProjection(VectorMap[LastVectorMap].MapDraw.PrimMapProj);
    VectorMap[LastVectorMap].MapDraw.BaseTitle := aTitle;
    VectorMap[LastVectorMap].MapDraw.PrimMapProj.Lat0 := tilt * DegtoRad;
-   VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectParameters;
+   VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjParams;
    VectorMap[LastVectorMap].DoCompleteMapRedraw;
    VectorMap[LastVectorMap].Keylatitudes1Click(nil);
    StopSplashing;
@@ -235,14 +235,14 @@ var
               TStr := ComboBox2.Text;
               VectorMap[LastVectorMap].MapDraw.PrimMapProj.Phi1 := StrToFloat(Petmar_Types.BeforeSpecifiedCharacter(TStr,' ')) * Petmar_types.DegToRad;
               VectorMap[LastVectorMap].MapDraw.PrimMapProj.Lat0 := VectorMap[LastVectorMap].MapDraw.PrimMapProj.Phi1;
-              VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectParameters;
+              VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjParams;
               VectorMap[LastVectorMap].MapDraw.PrimMapProj.pNameModifier := Petmar_Types.AfterSpecifiedCharacter(TStr,' ');
               VectorMap[LastVectorMap].MapDraw.SetFullMapCoverage;
            end;
           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map=' + VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjName); {$EndIf}
            SetUpDefaultNewProjection(VectorMap[LastVectorMap].MapDraw.PrimMapProj,false);
           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map after set default long cent=' + RadToDegString(VectorMap[LastVectorMap].MapDraw.PrimMapProj.long0)); {$EndIf}
-           VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjectParameters;
+           VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjParams;
           {$IfDef RecordNewVectorMap} WriteLineToDebugFile('New Map after get parameters long cent=' + RadToDegString(VectorMap[LastVectorMap].MapDraw.PrimMapProj.long0)); {$EndIf}
            VectorMap[LastVectorMap].MapDraw.BaseTitle := VectorMap[LastVectorMap].MapDraw.PrimMapProj.GetProjName;
            VectorMap[LastVectorMap].DoCompleteMapRedraw;

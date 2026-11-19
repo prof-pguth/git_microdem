@@ -306,8 +306,6 @@ procedure LoadWinGraphColors;
 procedure PickWinGraphColors;
 procedure CreatePaletteSampleTable;
 
-//procedure DrawLegendBelowBigBitmap(var BigBMP : tMyBitmap; Legend : PathStr; LRText : shortstring = '');
-
 
 implementation
 

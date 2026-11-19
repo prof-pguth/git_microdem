@@ -31,7 +31,7 @@ unit DEMCoord;
    {$IFDEF DEBUG}
       //{$Define RecordDEMClose}
       //{$Define TrackVerticalDatum}
-      //{$Define TrackWKTstring}
+      {$Define TrackWKTstring}
       //{$Define RecordBoundingBox}
       //{$Define RecordReadDEM}
       //{$Define RecordDEMIXResample}
@@ -59,19 +59,19 @@ unit DEMCoord;
       //{$Define RecordHalfPixelShift}
       //{$Define RecordDEMEdits}
       //{$Define RecordClone}
-      //{$Define RecordGeotiff}
+      {$Define RecordGeotiff}
       //{$Define ShortDEMLoad}
       //{$Define RecordSaveAverageResampleDEMformat}
       //{$Define RecordDEMCreation}
       //{$Define RecordDEMDigitizeDatum}
       //{$Define TimeLoadDEM}
       //{$Define RecordZ2ndDEM}
-      //{$Define RecordMinMax}                                                  ie
+      //{$Define RecordMinMax}
       //{$Define RecordExtremeZ}
       //{$Define GeotiffCorner}
       //{$Define RecordHorizon}
       //{$Define RecordZRange}
-      {$Define RecordDEMMemoryAllocations}
+      //{$Define RecordDEMMemoryAllocations}
       //{$Define RecordFilter}
       //{$Define RecordReadMDDEM}
       //{$Define RecordLatSpacingValues}
@@ -81,10 +81,10 @@ unit DEMCoord;
       //{$Define RecordNLCD}
       //{$Define RecordMoments}
       //{$Define RecordSetup}
-      {$Define RecordCreateNewDEM}
+      //{$Define RecordCreateNewDEM}
       //{$Define RecordMapDraw}
       //{$Define RecordProjectionParameters}
-      //{$Define GeotiffSave}
+      {$Define GeotiffSave}
       //{$Define TimeLoadDEM}
       //{$Define RecordDefineDatum}
       //{$Define RecordDEMEdits}
@@ -302,7 +302,7 @@ type
              function HorizontalDEMSpacingInMeters : ShortString;
              function DEM_size_km : shortstring;
              function GridDefinition : ShortString;
-             function DEMSizeString : shortstring;
+             function DEMSizeStringMB : shortstring;
              function ColsRowsString : ShortString;
              function ZRange : ShortString;
              function GridCornerModel : shortstring;
@@ -522,8 +522,8 @@ type
          procedure SaveGridSubsetGeotiff(fName : PathStr; DEMGridLimits : tGridLimits);
 
          function ResaveNewElevationPrecision(FilterCategory : tFilterCat) : integer;
-         function RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr; overload;
-         function RectangleSubsetDEM(GridLimits : tGridLimits; OpenMaps : boolean) : integer; overload;
+         function SaveRectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr) : PathStr;
+         function RectangleSubsetDEM(GridLimits : tGridLimits; OpenMaps : boolean) : integer;
          function RectangleSubsetDEMInMemory(GridLimits : tGridLimits) : tDEMDataSet;
          procedure CutOutGeoBox(bb : sfBoundBox);
 
@@ -723,7 +723,7 @@ function ComputeLSQCurvature(DEM,CurveType,x,y : integer; var Curvature : float3
 procedure MaskGrid(Map : tMapForm; DEM : integer; MatchCriteria : boolean; OnlyMissing : boolean = false);
 
 function MaskValidPoint(Col,Row : integer) : boolean;
-function NumDEMDataSetsOpen : integer;
+function NumDEMsOpen : integer;
 procedure ZeroDEMHeader(var HeadRecs : tDEMheader; UTM : boolean);
 
 function ValidDEM(DEM : integer) : boolean; inline;
@@ -748,8 +748,8 @@ const
 function LoadNewDEM(var WantedDem : integer; var FullFileName : PathStr; CreateMap : boolean = true; DEMMessage : shortstring = 'New DEM';  MapTitleBar : shortstring = ''; DrawTheMap : boolean = true; ChangeDefaultName : boolean = true) : boolean;
 
 function NewArea(TransformToNewDatum : boolean; var ImportingDEM : integer; DEMMessage : shortstring; var TFile : PathStr; DEMtoUse : integer = 0) : boolean;
-procedure OpenDEMDataStructures(var WantedDEM : integer);
-function OpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
+procedure CreateOpenDEMDataStructures(var WantedDEM : integer);
+function CreateOpenAndZeroNewDEM(TransformToNewDatum : boolean; NewHeader : tDEMheader; var WantedDEM : integer; DEMname : ShortString; InitDEMMode : byte; InitialValue : float64 = 0) : boolean;
 
 procedure ReadASCIIArcGrid(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean; ReallyReadDEM : boolean);
 procedure ReadFusionDTM(FileName : PathStr; WantedDEM : tDEMDataSet; var Error : boolean);
@@ -1237,7 +1237,7 @@ begin
    end;
    if (fName = '') then fName := TStr + IntToStr(ThinFactor) + '_' + AreaName;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,fName,InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,fName,InitDEMmissing);
 
    StartProgress(DEMGlb[Result].AreaName);
    for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
@@ -1289,7 +1289,7 @@ begin
 
    if (fName = '') then fName := TStr + IntToStr(ThinFactor) + '_' + AreaName;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,ExtractFileNameNoExt(fName),InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,ExtractFileNameNoExt(fName),InitDEMmissing);
 
    StartProgress(DEMGlb[Result].AreaName);
    for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
@@ -1316,7 +1316,7 @@ var
 begin
    NewHeadRecs := CreateThinnedHeader(ThinFactor);
    NewHeadRecs.DEMPrecision := NewPrecision;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Thin_' + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,'Thin_' + IntToStr(ThinFactor) + '_' + AreaName,InitDEMmissing);
 end;
 
 
@@ -1324,17 +1324,23 @@ function tDEMDataSet.CloneAndOpenGridSetMissing(NewPrecision : byte; Gridname : 
 var
    NewHeadRecs : tDEMheader;
 begin
-   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid in, Original=' + KeyParams(true)); {$EndIf}
+   {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)}
+      DEMMapProj.WriteProjParamsToDebugFile('tDEMDataSet.CloneAndOpenGrid Original',true);
+   {$EndIf}
+   {$IfDef Track_MapProjScale} DEMMapProj.LogMapProjScale('tDEMDataSet.CloneAndOpenGrid Original grid'); {$EndIf}
    NewHeadRecs := DEMheader;
    NewHeadRecs.DEMPrecision := NewPrecision;
    NewHeadRecs.ElevUnits := ElevUnits;
    {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)} WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid off to OpenAndZero'); {$EndIf}
    Result := 0;
-   if OpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
+   if CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,Gridname,InitDEMMissing,0) then begin
+      {$IfDef RecordMapProj} DEMGlb[Result].DEMMapProj.WriteProjParamsToDebugFile('After open and zero',true); {$EndIf}
       DEMGlb[Result].DEMMapProj.InitProjFomDEMHeader(DEMHeader,'DEM=' + IntToStr(Result));
-      {$If Defined(RecordCreateNewDEM) or Defined(RecordClone) or Defined(RecordMapProj)}
+      {$If Defined(RecordCreateNewDEM) or Defined(RecordClone)}
           WriteLineToDebugFile('tDEMDataSet.CloneAndOpenGrid out, new ' + GridName + '  ' + DEMglb[Result].KeyParams(true) + ' ' + DEMglb[Result].SWcornerstring);
       {$EndIf}
+      {$IfDef RecordMapProj} DEMGlb[Result].DEMMapProj.WriteProjParamsToDebugFile('Cloned grid',true); {$EndIf}
+      {$IfDef Track_MapProjScale} DEMGlb[Result].DEMMapProj.LogMapProjScale('tDEMDataSet.CloneAndOpenGrid Cloned grid'); {$EndIf}
    end;
 end;
 
@@ -1460,7 +1466,7 @@ begin
 end;
 
 
-function NumDEMDataSetsOpen : integer;
+function NumDEMsOpen : integer;
 var
    i : integer;
 begin
@@ -1718,7 +1724,7 @@ begin
    Result := 'DEM size: ' + IntToStr(DEMheader.NumCol) + 'x' + IntToStr(DEMheader.NumRow);
 end;
 
-function tDEMDataSet.DEMSizeString : shortstring;
+function tDEMDataSet.DEMSizeStringMB : shortstring;
 var
    BytesPer : int64;
 begin
@@ -1861,46 +1867,38 @@ procedure tDEMDataSet.FreeDEMPointers(FreeMapProjection : boolean = true);
       var
          j    : integer;
       begin
+          {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = ' + GridPrecisionString); {$EndIf}
           if (DEMheader.DEMPrecision = FloatingPointDEM) then begin
-             {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = FloatingPointDEM'); {$EndIf}
              if (ShortFloatElevations <> Nil) then begin
                 for j := 0 to pred(DEMheader.NumCol) do FreeMem(ShortFloatElevations^[j],BytesPerColumn);
                 Dispose(ShortFloatElevations);
-                {$IfDef RecordCloseDEM} WriteLineToDebugFile('short floats cleared'); {$EndIf}
              end;
           end
           else if (DEMheader.DEMPrecision = ByteDEM) then begin
-             {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = ByteDEM'); {$EndIf}
              if (ByteElevations <> Nil) then begin
                 for j := 0 to pred(DEMheader.NumCol) do FreeMem(ByteElevations^[j],BytesPerColumn);
                 Dispose(ByteElevations);
-                {$IfDef RecordCloseDEM} WriteLineToDebugFile('bytes cleared'); {$EndIf}
              end;
           end
           else if (DEMheader.DEMPrecision = WordDEM) then begin
-             {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = WordDEM'); {$EndIf}
              if (WordElevations <> Nil) then begin
                 for j := 0 to pred(DEMheader.NumCol) do FreeMem(WordElevations^[j],BytesPerColumn);
                 Dispose(WordElevations);
-                {$IfDef RecordCloseDEM} WriteLineToDebugFile('words cleared'); {$EndIf}
              end;
           end
           else if (DEMheader.DEMPrecision = LongWordDEM) then begin
-             {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = LongWordDEM'); {$EndIf}
              if (LongWordElevations <> Nil) then begin
                 for j := 0 to pred(DEMheader.NumCol) do FreeMem(LongWordElevations^[j],BytesPerColumn);
                 Dispose(LongWordElevations);
-                {$IfDef RecordCloseDEM} WriteLineToDebugFile('longwords cleared'); {$EndIf}
              end;
           end
           else begin
-             {$IfDef RecordCloseDEM} WriteLineToDebugFile('HeadRecs.DEMPrecision = SmallIntDEM'); {$EndIf}
              if (SmallIntElevations <> Nil) then begin
                 for j := 0 to pred(DEMheader.NumCol) do FreeMem(SmallIntElevations^[j],BytesPerColumn);
                 Dispose(SmallIntElevations);
-                {$IfDef RecordCloseDEM} WriteLineToDebugFile('small ints cleared'); {$EndIf}
              end;
           end;
+          {$IfDef RecordCloseDEM} WriteLineToDebugFile('Cleared ' + GridPrecisionString); {$EndIf}
           if (XSpaceByDEMrow <> Nil) then FreeMem(XSpaceByDEMrow,4*DEMheader.NumRow);
           if (DiagSpaceByDEMrow <> Nil) then FreeMem(DiagSpaceByDEMrow,4*DEMheader.NumRow);
           CloseElevPercentiles;
@@ -2367,7 +2365,7 @@ begin
       fcSaveFloatingPoint : Title  := 'float32';
    end;
 
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_' + AreaName,InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_' + AreaName,InitDEMmissing);
    StartProgress(DEMGlb[Result].AreaName);
    for Row := 0 to pred(DEMGlb[Result].DEMheader.NumRow) do begin
       if (Col mod 100 = 0) then UpdateProgressBar(Col / pred(DEMGlb[Result].DEMheader.NumRow));
@@ -2771,7 +2769,7 @@ begin {tDEMDataSet.DefineDEMVariables}
 
    {$If Defined(RecordZRange)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + '  DEM ' + zRange); {$EndIf}
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)}  WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' in, proj=' + DEMmapProj.GetProjName); {$EndIf}
-   {$IfDef RecordProjectionParameters} DEMmapProj.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
+   {$IfDef RecordProjectionParameters} DEMmapProj.ProjParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in, pname=' + DEMmapProj.GetProjName); {$EndIf}
 
    if (XSpaceByDEMrow = Nil) then GetMem(XSpaceByDEMrow,4*DEMheader.NumRow);
@@ -2812,14 +2810,14 @@ begin {tDEMDataSet.DefineDEMVariables}
          DoSpacingCalcs;
       end;
    end;
-   {$IfDef RecordProjectionParameters} DEMmapProj.ProjectionParamsToDebugFile('after spacing checks'); {$EndIf}
+   {$IfDef RecordProjectionParameters} DEMmapProj.ProjParamsToDebugFile('after spacing checks'); {$EndIf}
 
    if (DEMSWcornerLat > 0) then DEMMapProj.LatHemi := 'N' else DEMMapProj.LatHemi := 'S';
 
    GridSpacingDetails(DEMBoundBoxDataGrid,AverageXSpace,AverageYSpace,AverageSpace,AverageGridTrue);
    AverageDiaSpace := Sqrt(Sqr(AverageXSpace) + Sqr(AverageYSpace));
    {$If Defined(RecordReadDEM) or Defined(RecordDefineDatum) or Defined(RecordCreateNewDEM)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables ' + AreaName + ' out, ' + DEMmapProj.KeyDatumParams); {$EndIf}
-   {$IfDef RecordDEMmapProj} DEMmapProj.ProjectionParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
+   {$IfDef RecordDEMmapProj} DEMmapProj.ProjParamsToDebugFile('tDEMDataSet.DefineDEMVariables in'); {$EndIf}
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables in, proj=' + DEMmapProj.GetProjName); {$EndIf}
    {$If Defined(RecordUKOS)} WriteLineToDebugFile('tDEMDataSet.DefineDEMVariables out, pname=' + DEMmapProj.GetProjName); {$EndIf}
    {$IfDef TrackSWcorner} WriteDEMCornersToDebugFile('DefineDEMVariables out, ' + AreaName); {$EndIf}
@@ -2981,6 +2979,7 @@ var
    z   : float32;
    x,y : integer;
 begin
+    {$IfDef Track_ProjUTMzone} DEMMapProj.LogMapProjUTMzone('Input DEM RectangleSubsetDEMinMemory'); {$EndIf}
     ClipDEMGridInteger(GridLimits.XGridLow,GridLimits.YGridLow);
     ClipDEMGridInteger(GridLimits.XGridHigh,GridLimits.YGridHigh);
     if FilledGridBox(GridLimits) then begin
@@ -3000,9 +2999,12 @@ begin
              if GetElevMeters(x,y,z) then Result.SetGridElevation(x-GridLimits.XGridLow,y-GridLimits.YGridLow,z);
           end;
        end;
+       Result.DefineDEMvariables(false);
        if ShowSatProgress and (GridLimits.XGridHigh - GridLimits.XGridLow > 4000) then EndProgress;
        CentroidSWCornerX := CentroidSWCornerX + GridLimits.XGridLow * DEMheader.DEMxSpacing;
        CentroidSWCornerY := CentroidSWCornerY + GridLimits.YGridLow * DEMheader.DEMySpacing;
+       {$IfDef Track_BaseMap_WKT} Result.DEMMapProj.LogMapWKT('RectangleSubsetDEMinMemory' ); {$EndIf}
+       {$IfDef Track_ProjUTMzone} Result.DEMMapProj.LogMapProjUTMzone('RectangleSubsetDEMinMemory'); {$EndIf}
     end
     else Result := Nil;
 end;
@@ -3013,41 +3015,29 @@ var
    fName : PathStr;
 begin
    fName := MDTempDir + 'tempdem.dem';
-   fName := RectangleSubsetDEM(GridLimits,fName);
+   fName := SaveRectangleSubsetDEM(GridLimits,fName);
    LoadNewDEM(Result,fName,OpenMaps);
 end;
 
 
-function tDEMDataSet.RectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr = '') : PathStr;
+function tDEMDataSet.SaveRectangleSubsetDEM(GridLimits : tGridLimits; FileName : PathStr) : PathStr;
 var
    NewDEM : tDEMDataSet;
    Ext : ExtStr;
 begin
    {$IfDef RecordWriteDEM} WriteLineToDebugFile('tDEMDataSet.RectangleSubsetDEM requested ' + GridLimitsString(GridLimits)); {$EndIf}
-
-    {$IfDef VCL}
-       if (FileName = '') then begin
-          FileName := WriteDEMDir + 'sub-' + AreaName;
-          GetFileNameDefaultExt('subset DEM','DEM|*.DEM',FileName);
-          DEMDefs.WriteDEMDir := ExtractFilePath(FileName);
-       end;
-    {$EndIf}
-
+    Result := '';
+    if (FileName = '') then begin
+       if not(GetFileNameDefaultExt('Rectangular subset','Geotiff|*.tif',FileName)) then exit;
+    end;
     NewDEM := RectangleSubsetDEMinMemory(GridLimits);
-    if (NewDEM = Nil) then begin
-       Result := '';
-    end
-    else begin
+    {$IfDef Track_BaseMap_WKT} NewDEM.DEMMapProj.LogMapWKT('SaveRectangleSubsetDEM ' + FileName); {$EndIf}
+    if (NewDEM <> Nil) then begin
       Result := FileName;
       Ext := UpperCase(ExtractFileExt(FileName));
       if ExtEquals(Ext, '.TIF') then begin
          NewDEM.SaveAsGeotiff(FileName);
       end
-      {$IfDef ExOddballDEMexports}
-      {$Else}
-         else if ExtEquals(Ext, '.BIL') then NewDEM.WriteBILFormatDEM(FileName)
-         else if ExtEquals(Ext, '.FLT') then NewDEM.WriteGridFloatFormatDEM(FileName)
-      {$EndIf}
       else NewDEM.WriteNewFormatDEM(FileName);
 
       DEMJustSubset := FileName;
@@ -3091,28 +3081,24 @@ begin
       end
       else begin
          DEMMemoryAlreadyAllocated := true;
+         {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, ' + GridPrecisionString); {$EndIf}
          if (DEMheader.DEMPrecision = FloatingPointDEM) then begin
-            {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, floats'); {$EndIf}
             New(ShortFloatElevations);
             ThisDEMMissingValue := MaxSmallInt;
          end
          else if (DEMheader.DEMPrecision = LongWordDEM) then begin
-             {$If Defined(RecordCreateNewDEM) or Defined(RecordDEMMemoryAllocations)} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, Longword'); {$EndIf}
             New(LongWordElevations);
             ThisDEMMissingValue := MaxLongWord;
          end
          else if (DEMheader.DEMPrecision = WordDEM) then begin
-            {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, word'); {$EndIf}
             New(WordElevations);
             ThisDEMMissingValue := MaxWord;
          end
          else if (DEMheader.DEMPrecision = ByteDEM) then begin
-            {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, bytes'); {$EndIf}
-            New(ByteElevations);
+             New(ByteElevations);
             ThisDEMMissingValue := 255;
          end
          else begin
-            {$IfDef RecordDEMMemoryAllocations} WriteLineToDebugFile('tDEMDataSet.AllocateDEMMemory, int16'); {$EndIf}
             New(SmallIntElevations);
             ThisDEMMissingValue := MaxSmallInt;
          end;
@@ -3249,7 +3235,9 @@ begin
          Lat  := 0;
          Long := 0;
       end
-      else DEMMapProj.InverseProjectDegrees(XGrid * DEMheader.DEMxSpacing + CentroidSWCornerX,YGrid *  DEMheader.DEMySpacing + CentroidSWCornerY,lat,long);
+      else begin
+         DEMMapProj.InverseProjectDegrees(XGrid * DEMheader.DEMxSpacing + CentroidSWCornerX,YGrid *  DEMheader.DEMySpacing + CentroidSWCornerY,lat,long);
+      end;
    end
    else begin
       MessageToContinue('should not be here in tDEMDataSet.DEMGridToLatLongDegree');
@@ -3858,7 +3846,7 @@ procedure tDEMDataSet.SetNewDEM(var NewDEM : integer);
 begin
    {$IfDef RecordCreateNewDEM} WriteLineToDebugFile('enter tDEMDataSet.SetNewDEM'); {$EndIf}
    NewDEM := 0;
-   OpenDEMDataStructures(NewDEM);
+   CreateOpenDEMDataStructures(NewDEM);
    DEMGlb[NewDEM].DEMheader := DEMheader;
    DEMGlb[NewDEM].AreaName := AreaName;
    DEMGlb[NewDEM].DEMheader.DEMPrecision := FloatingPointDEM;

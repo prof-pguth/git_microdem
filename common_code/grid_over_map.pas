@@ -1009,7 +1009,7 @@ begin
       NewHeadRecs := DEMGlb[2].DEMheader;
       NewHeadRecs.DEMPrecision := SmallIntDEM;
 
-      if not OpenAndZeroNewDEM(true,NewHeadRecs,MaskDEM,'Mask',InitDEMmissing) then exit;
+      if not CreateOpenAndZeroNewDEM(true,NewHeadRecs,MaskDEM,'Mask',InitDEMmissing) then exit;
       with DEMGlb[MaskDEM],DEMheader do begin
          //AreaName := 'Mask';
          ShortName := 'Mask';

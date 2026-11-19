@@ -767,7 +767,7 @@ begin
      PadAxis(GraphDraw.MinVertAxis,GraphDraw.MaxVertAxis);
      {$IfDef RecordSOESTtides} WriteLineToDebugFile('MakeGraphFromSOESTtides graph redraw'); {$EndIf}
      GraphDraw.GraphDrawn := true;
-     RedrawDiagram11Click(Nil);
+     RedrawDiagram;
    end;
    {$IfDef RecordSOESTtides} WriteLineToDebugFile('MakeGraphFromSOESTtides out'); {$EndIf}
 end;
@@ -1243,7 +1243,7 @@ begin
     LongSE := 80;
 
     GetLatLongDefault(WGS84DatumConstants,'NW corner',LatNW,LongNW);
-    GetLatLongDefault(WGS84DatumConstants,'NW corner',LatSE,LongSE);
+    GetLatLongDefault(WGS84DatumConstants,'SE corner',LatSE,LongSE);
     if AnswerIsYes('Geotiff') then Ext := '.tif' else Ext := '.dem';
 
     FilesWanted := tStringList.Create;
@@ -1256,7 +1256,7 @@ begin
           DEMGlb[BigDEM].LatLongDegreeToDEMGridInteger(LatSE,LongSE,GridLimits.XGridHigh,GridLimits.YGridLow);
           SafeMakeDir(ExtractFilePath(fName) + 'subset\');
           fName := ExtractFilePath(fName) + 'subset\' + DEMGlb[BigDEM].AreaName + Ext;
-          DEMGlb[BigDEM].RectangleSubsetDEM(GridLimits,fName);
+          DEMGlb[BigDEM].SaveRectangleSubsetDEM(GridLimits,fName);
           CloseSingleDEM(BigDEM);
        end;
     end;

@@ -16,6 +16,7 @@ unit dem_indexes;
      //{$Define RecordIndexProblems}
      //{$Define RecordLoadMapLibraryBox}
      //{$Define MergeSummary}
+     {$Define RecordMerges}
      //{$Define TrackPixelIs}
      //{$Define RecordDuplicatesInIndex}
      //{$Define TrackDEMCorners}
@@ -31,7 +32,7 @@ unit dem_indexes;
      //{$Define RecordClosing}
      //{$Define RecordTileNameDecoding}
      //{$Define ListIndexFileName}
-     {$Define LoadLibraryFail}
+     //{$Define LoadLibraryFail}
    {$EndIf}
 {$EndIf}
 
@@ -61,6 +62,9 @@ uses
    System.Math,System.UITypes,
    Petmar_types,PETMAR,PETMath,DEMDefs,BaseMap;
 
+function DataTypeFileName : PathStr;
+function SeriesIndexFileName  : PathStr;
+function MapLibraryFName  : PathStr;
 
 function LoadMapLibraryBox(Load : boolean; bb : sfBoundBox; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer; //overload;
 function LoadMapLibraryPoint(Load : boolean; Lat,Long : float64; WantSeries : shortstring = ''; DisplayIt : boolean = true) : integer;
@@ -71,8 +75,6 @@ procedure GetMapLibraryDataLimits(var MinLat,MaxLat,MinLong,MaxLong : float64);
 procedure CreateMapLibrary(Memo1 : tMemo);
 procedure ShowMapLibraryDataAtPoint(Lat,Long : float64);
 
-//function GetListOfDataInBoxInSeries(Series : shortString; bb : sfBoundBox) : tStringList; //overload;
-
 procedure AdjustMapLibraryDataBaseSeries;
 procedure PickDEMSeries(var sName : ShortString; WhatFor : shortstring);
 
@@ -81,9 +83,6 @@ procedure SetUpDataBaseForOperations(AllowNoDataMap : boolean = false);
 
 procedure CreateShapeFileGrouping(var fName : PathStr; var TheGroupingIndex : tMyData; Long : boolean; ShapeType : integer = 0);
 
-function DataTypeFileName : PathStr;
-function SeriesIndexFileName  : PathStr;
-function MapLibraryFName  : PathStr;
 procedure OpenIndexedSeriesTable(var IndexSeriesTable : tMyData);
 procedure CreateLandsatIndex(Browse : boolean);
 
@@ -153,7 +152,7 @@ end;
 
 function BoundingBoxFromFileName(fName : PathStr; var bb : sfBoundBox) : boolean;
 var
-   WorkName,WorkingString : ANSIstring;
+   WorkName,WorkingString,Lat,Long,Divider : ANSIstring;
    x,TileSize : integer;
 
    function Decode : boolean;
@@ -169,7 +168,7 @@ var
             bb.ymax := bb.ymin + TileSize;
             Result := true;
          end
-         else  if ((WorkingString[5] = 'N') or (WorkingString[5] = 'S')) and ((WorkingString[1] = 'E') or (WorkingString[1] = 'W')) then begin
+         else if ((WorkingString[5] = 'N') or (WorkingString[5] = 'S')) and ((WorkingString[1] = 'E') or (WorkingString[1] = 'W')) then begin
             bb.xmin := StrToInt(Copy(WorkingString,2,3));
             if WorkingString[1] = 'W' then bb.xmin := -bb.xmin;
             bb.ymin := StrToInt(Copy(WorkingString,6,2));
@@ -185,7 +184,18 @@ begin
    {$IfDef RecordTileNameDecoding} WriteLineToDebugFile('Decode ' + fName); {$EndIf}
    WorkName := UpperCase(ExtractFileNameNoExt(fName));
    Result := false;
-   if Length(WorkName) < 7 then exit;
+   if Length(WorkName) < 7 then begin
+      if (StrUtils.AnsiContainsText(UpperCase(WorkName),'N') or StrUtils.AnsiContainsText(UpperCase(WorkName),'N')) and
+         (StrUtils.AnsiContainsText(UpperCase(WorkName),'E') or StrUtils.AnsiContainsText(UpperCase(WorkName),'W')) then begin
+         if StrUtils.AnsiContainsText(UpperCase(WorkName),'E') then Divider := 'E' else Divider := 'W';
+         Lat := BeforeSpecifiedString(WorkName,Divider);
+         Long := Divider + AfterSpecifiedString(WorkName,Divider);
+         while length(Lat) < 3 do Insert('0',Lat,2);
+         while length(Long) < 4 do Insert('0',Long,2);
+         WorkName := Lat + Long;
+      end
+      else exit;
+   end;
    try
       if StrUtils.AnsiContainsText(UpperCase(fName),'MERIT') then TileSize := 5
       else if StrUtils.AnsiContainsText(UpperCase(fName),'_XSAR_') then TileSize := 10
@@ -235,7 +245,6 @@ begin
          Result := decode;
          exit;
       end;
-
 
       if (WorkName[4] = '_') then begin  //srtm n09_e038_1arc_v3.tif
          WorkingString := Copy(WorkName,1,3) + Copy(WorkName,5,4);
@@ -542,7 +551,6 @@ var
                        Where := AlreadyIndexed.IndexOf(fName);
                        if (Where = -1) then begin
                           {$IfDef ListIndexFileName} WriteLineToDebugFile(' file not indexed already'); {$EndIf}
-
                           if (DataType = 'DEMS') and ValidDEMExt(ext) then begin
                              if StrUtils.AnsiContainsText(fName,'original_') then begin
                                 SysUtils.DeleteFile(fName);
@@ -590,8 +598,8 @@ var
 
          {$IfDef RecordIndex} WriteLineToDebugFile('All data types done'); {$EndIf}
 
+         (*
          if TheTable.FieldExists('MONSTER') then begin
-
            IndexSeriesTable.ApplyFilter('');
            IndexSeriesTable.First;
            while not IndexSeriesTable.eof do begin
@@ -608,6 +616,7 @@ var
               else IndexSeriesTable.Delete;
            end;
          end;
+         *)
          IndexSeriesTable.Destroy;
          for i := 0 to 1 do wmdem.StatusBar1.Panels[i].Text := '';
          SkipMenuUpdating := false;
@@ -621,7 +630,8 @@ var
 begin {procedure CreateMapLibrary}
    {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary in'); {$EndIf}
    try
-      WMdem.Color := clInactiveCaption;
+      SetColorForProcessing;
+      HeavyDutyProcessing := true;
       ReportErrors := false;
       if (Memo1 <> Nil) then Memo1.Visible := true;
       PickMapIndexLocation;
@@ -640,7 +650,8 @@ begin {procedure CreateMapLibrary}
    finally
       ReportErrors := true;
       TheTable.Destroy;
-      WMdem.Color := clScrollBar;
+      HeavyDutyProcessing := false;
+      SetColorForWaiting;
       {$IfDef RecordIndex} WriteLineToDebugFile('CreateMapLibrary out'); {$EndIf}
    end;
 end {procedure CreateMapLibrary};
@@ -974,7 +985,7 @@ var
 
          {$If Defined(RecordMerge) or Defined(RecordMergeDetails) or Defined(RecordTimeMerge) } WriteLineToDebugFile('done first pass in MD DEM Merge, file count now=' + IntToStr(DEMlist.Count)); {$EndIf}
          NewHeader.ElevUnits := euMeters;
-         if OpenAndZeroNewDEM(false,NewHeader,Result,'Merge',InitDEMmissing) then begin
+         if CreateOpenAndZeroNewDEM(false,NewHeader,Result,'Merge',InitDEMmissing) then begin
             {$If Defined(RecordMerge) or Defined(RecordMergeDetails)} WriteLineToDebugFile('New DEM ' + IntToStr(Result) + ' opened'); {$EndIf}
             if (MergeSeriesName = '') then DEMGlb[Result].AreaName := 'merge_from_' + LastSubDir(ExtractFilePath(DEMList.Strings[0]))
             else DEMGlb[Result].AreaName := MergeSeriesName;
@@ -1103,9 +1114,9 @@ var
             fName : PathStr;
             i : integer;
          begin
-             {$If Defined(RecordIndex) or Defined (RecordDuplicatesInIndex)} WriteLineToDebugFile('Enter LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
+             {$If Defined(RecordIndex) or Defined(RecordDuplicatesInIndex)} WriteLineToDebugFile('Enter LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
              SortAndRemoveDuplicates(LoadList);
-             {$If Defined(RecordIndex) or Defined (RecordDuplicatesInIndex)} WriteLineToDebugFile('Sorted LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
+             {$If Defined(RecordIndex) or Defined(RecordDuplicatesInIndex)} WriteLineToDebugFile('Sorted LoadTheDEMs, count='+IntToStr(LoadList.Count)); {$EndIf}
              if not FileExists(LoadList.Strings[0]) then begin
                 LoadList.Sorted := false;
                 for i := 0 to pred(LoadList.Count) do begin
@@ -1114,6 +1125,11 @@ var
                    LoadList.Strings[i] := fName;
                 end;
              end;
+
+             {$IfDef RecordMerges}
+                WriteLineToDebugFile(WantSeries + '  ' + sfBoundBoxToString(bb,4));
+                WriteStringListToDebugFile(LoadList,true);
+             {$EndIf}
 
              for i := pred(LoadList.Count) downto 0 do begin
                 fName := LoadList.Strings[i];
@@ -1144,7 +1160,7 @@ var
                 if DisplayIt then DEMGlb[Result].SelectionMap.MapDraw.BaseTitle := MergedName;
              end;
              {$If Defined(TrackPixelIs)} WriteLineToDebugFile('Loaded ' + DEMGlb[Result].AreaName + '  ' + DEMGlb[Result].GridCornerModelAndPixelIsString); {$EndIf}
-             {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(WantDEM)); {$EndIf}
+             {$If Defined(RecordIndex) or Defined(RecordLoadMapLibraryBox)} WriteLineToDebugFile('Exit LoadTheDEMs, WantDEM=' + IntToStr(Result)); {$EndIf}
          end;
 
 var
@@ -1152,7 +1168,7 @@ var
    IndexSeriesTable : tMyData;
    DataType,Monster : ShortString;
 begin {function LoadMapLibraryBox}
-   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt) + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Enter LoadMapLibraryBox, display=' + TrueOrFalse(DisplayIt) + '  Open DEMs=, ' + IntToStr(NumDEMsOpen)); {$EndIf}
    try
       LoadingFromMapLibrary := true;
       ShowHourglassCursor;
@@ -1191,7 +1207,7 @@ begin {function LoadMapLibraryBox}
    finally
       LoadingFromMapLibrary := false;
    end;
-   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Out LoadMapLibraryBox; Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+   {$If Defined(RecordIndex) or Defined(RecordImageIndex) or Defined(LoadLibrary)} WriteLineToDebugFile('Out LoadMapLibraryBox; Open DEMs=, ' + IntToStr(NumDEMsOpen)); {$EndIf}
 end {function LoadMapLibraryBox};
 
 

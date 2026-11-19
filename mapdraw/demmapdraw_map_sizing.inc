@@ -175,7 +175,7 @@ var
                PrimMapProj.DefineDatumFromUTMZone(PrimMapProj.h_DatumCode,GetUTMZone(uMinLong),MDDef.DefaultLatHemi,'tMapDraw.CheckProjectionToUTM');
                PrimMapProj.lat0 :=  0;
                PrimMapProj.long0 := (-177 + pred(GetUTMZone(uMinLong)) * 6) *  DegToRad;
-               PrimMapProj.GetProjectParameters;
+               PrimMapProj.GetProjParams;
                BaseTitle := PrimMapProj.GetProjName;
                PrimMapProj.ForwardProjectDegrees(uMaxLat,uMinLong,MapCorners.BoundBoxProj.XMin,MapCorners.BoundBoxProj.YMax);
                PrimMapProj.ForwardProjectDegrees(uMinLat,uMaxLong,MapCorners.BoundBoxProj.XMax,MapCorners.BoundBoxProj.YMin);
@@ -352,8 +352,7 @@ begin
       {$If Defined(TrackHorizontalDatum)} DEMGlb[CurDEM].TrackHorizontalDatumDebugLog('TMapDraw.DefineNewDEMMap in'); {$EndIf}
 
       {$If Defined(ShowUTMZone)} WriteLineToDebugFile('TMapDraw.DefineNewDEMMap in, UTM=' + IntToStr(DEMGLB[CurDEM].DEMheader.UTMZone) + DEMGLB[CurDEM].DEMheader.LatHemi); {$EndIf}
-      //if DEMGLB[CurDEM].ElevationDEM then TStr := 'DEM' else TStr := 'Grid';
-      BaseTitle := RemoveUnderscores(DEMGLB[CurDEM].AreaName);
+      BaseTitle := RemoveUnderscores(DEMGLB[CurDEM].AreaName,false);
       DEMonMap := CurDEM;
       if (mt = mtDEMReflectElevMerge) then begin
          mt := mtGrayReflect;

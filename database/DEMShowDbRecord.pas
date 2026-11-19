@@ -295,7 +295,6 @@ procedure Tshowrecordform.ShowRecords;
 var
    DEMGridSize,
    fLoX,fHiX,fLoY,fHiY,k,i,err : integer;
-   //xDEMg,yDEMg, xSATg,ySATg : float64;
    xg1,yg1,
    s1s2,s2s3,Trend,RoughnessFactor,
    Lat,Long : float64;
@@ -467,7 +466,7 @@ begin
          Bmp.Free;
       end;
 
-      if GISDb[DBShown].MyData.FieldExists(GISDb[DBShown].ImageFieldNames[1]) and (not TabSheet5.TabVisible) then begin
+      if GISDb[DBShown].MyData.FieldExists(GISDb[DBShown].ImageFieldNames[1]) {and (not TabSheet5.TabVisible)} then begin
          ClearImage1;
          if GISDb[DBShown].GetRotatedImage(bmp,FullImageName) then begin
             bmp2 := StretchBitmapToFill(bmp,Image1.Width,Image1.Height);

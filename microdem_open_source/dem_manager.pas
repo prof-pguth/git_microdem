@@ -31,6 +31,7 @@ unit dem_manager;
       //{$Define RecordSatLoad}
       //{$Define RecordSimpleClose}
       //{$Define RecordSatDirOpen}
+      {$Define RecordClosingMaps}
    {$Else}
       //{$Define TimeLoadDEM}
    {$EndIf}
@@ -59,8 +60,7 @@ uses
     {$IfDef VCL}
        forms,shlobj,vcl.controls,
     {$EndIf}
-    sysutils,System.UITypes,StrUtils,Classes,
-    System.ioUtils,
+    sysutils,System.UITypes,StrUtils,Classes,System.ioUtils,
     Petmar_types,Petmar,DEMMapDraw,DEMDefs;
 
 
@@ -97,6 +97,17 @@ procedure DEMHeaderTable;
 
 procedure MakeDBwithLC10FileInventory;
 
+   procedure CheckGeoidNames;
+
+   procedure CloseAllImagery;
+   procedure CloseSingleSatelliteImage(var j : integer);
+   function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
+
+   {$IfDef VCL}
+      procedure PickAndOpenImagery(ImageType : tImageType);
+      procedure PickSatDirToOpen;
+   {$EndIf}
+
 {$IfDef ExIndexes}
 {$Else}
    const
@@ -111,17 +122,6 @@ procedure MakeDBwithLC10FileInventory;
    procedure InitCompareDEMs;
    function GetCompareNames : integer;
 {$EndIf}
-
-   procedure CheckGeoidNames;
-
-   procedure CloseAllImagery;
-   procedure CloseSingleSatelliteImage(var j : integer);
-   function OpenSatImageFromDirectory(LastSatDir : PathStr) : integer;
-
-   {$IfDef VCL}
-      procedure PickAndOpenImagery(ImageType : tImageType);
-      procedure PickSatDirToOpen;
-   {$EndIf}
 
 {$IfDef ExPointCloud}
 {$Else}
@@ -175,6 +175,7 @@ function WebExtractGEDTMorEDTM(aDEM : shortstring;  bb : sfBoundBox; SaveName : 
 function IsThisWebExtractDEM(aDEm : shortstring) : boolean;
 function LoadOpenTopographyGlobalDEM(aDEM : shortstring; bb : sfBoundBox; SaveName : PathStr; OpenMap : boolean) : integer;
 
+procedure gem_15_TileName(GetDSM : boolean; Lat,Long : float64; var DownFName,LocalFile : PathStr);
 
 const
    EGM96_grid : integer = 0;
@@ -273,9 +274,80 @@ uses
    DEMhandW,
    BaseMap;
 
+
+procedure gem_15_TileName(GetDSM : boolean; Lat,Long : float64; var DownFName,LocalFile : PathStr);
+{
+https://storage.googleapis.com/climate-and-sustainability/gem-15
+https://storage.googleapis.com/climate-and-sustainability/gem-15/m10_m100/wm91sm1/dsm/zall/mosaic.tif
+https://storage.googleapis.com/climate-and-sustainability/gem-15/p20_p60/w65s25/dsm/zall/mosaic.tif
+
+
+https://storage.googleapis.com/climate-and-sustainability/gem-15/p30_p40/ep35np35/dsm/zall/mosaic.tif
+//first directory is for the 10x10 deg block SW corner, lat then long
+//   m is west or south, p is east or positive
+//second directory is for the 1x1 degree SW corner, long then lat
+}
+const
+   BaseDir = 'https://storage.googleapis.com/climate-and-sustainability/gem-15/';
+   Ending = '/zall/mosaic.tif';
+var
+  OneDegLat,OneDegLong,TenDegLat,TenDegLong,DEMtype,
+  LatHemi,LongHemi,
+  Lat10,Long10,Lat1,Long1 : ShortString;
+
+  procedure FixTenDeg(var DegLong : shortstring);
+  begin
+      if DegLong <> '0' then DegLong := DegLong + '0';
+  end;
+
+begin
+   if (Lat > 0) then begin
+      LatHemi := 'N';
+      Lat10 := 'p';
+      Lat1 := 's';
+      OneDegLat := IntToStr(trunc(Lat));
+      TenDegLat := IntToStr(trunc(Lat / 10));
+   end
+   else begin
+      LatHemi := 'S';
+      Lat10 := 'm';
+      Lat1 := 'sm';
+      OneDegLat := IntToStr(trunc(abs(Lat)));
+      TenDegLat := IntToStr(succ(trunc(abs(Lat) / 10)));
+   end;
+   //while (length(TenDegLat) < 2) do TenDegLat := TenDegLat + '0';
+   if (Long > 0) then begin
+      LongHemi := 'E';
+      Long10 := 'p';
+      Long1 := 'w';
+      OneDegLong := IntToStr(trunc(Long));
+      TenDegLong := IntToStr(trunc(Long / 10));
+   end
+   else begin
+      LongHemi := 'W';
+      Long10 := 'm';
+      Long1 := 'wm';
+      OneDegLong := IntToStr(succ(trunc(abs(Long))));
+      TenDegLong := IntToStr(succ(trunc(abs(Long) / 10)));
+  end;
+  FixTenDeg(TenDegLong);
+  FixTenDeg(TenDegLat);
+   if GetDSM then DEMtype := 'dsm' else DEMtype := 'dtm';
+   DownFName := BaseDir + Lat10 + TenDegLat + '_' + Long10 + TenDegLong + '/' + Long1 + OneDegLong + Lat1 + OneDegLat + '/' + DEMtype + Ending;
+   LocalFile := MainMapData + 'indexed_data\dems\GEM15_' + DEMType + '\' + LatHemi + OneDegLat + LongHemi + OneDegLong + '.tif';
+   //writeLineToDebugFile(LatLongDegreeToString(Lat,Long,DecDegrees) + '  ' + DownFName + '  ' + LocalFile);
+   if not FileExists(LocalFile) then begin
+      if not DownloadFileFromWeb(DownFName,LocalFile,false) then begin
+         HighlightInDebugFile('Failure: ' + LatLongDegreeToString(Lat,Long,DecDegrees) + '  ' + DownFName + '  ' + LocalFile);
+      end;
+   end;
+end;
+
+
+
 Procedure DebugWriteOpenGridsMaps(where : shortstring);
 begin
-   WriteLineToDebugFile(Where + '   Grids Open= '+ IntToStr(NumDEMDataSetsOpen) + '  maps open=' + IntToStr(NumOpenMaps));
+   WriteLineToDebugFile(Where + '   Grids Open= '+ IntToStr(NumDEMsOpen) + '  maps open=' + IntToStr(NumOpenMaps));
 end;
 
 
@@ -340,34 +412,33 @@ end;
 
 
 
-function LandCoverTileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
-var
-   LatStr,LongStr : shortstring;
-begin
-   if (Long > 0) then begin
-      Long := TileSize * trunc(Long / TileSize);
-      LongStr := 'E' + RealToString(Long,3,0);
-   end
-   else begin
-      Long := TileSize * trunc((abs(Long) + TileSize) / TileSize);
-      LongStr := 'W' + RealToString(Long,3,0);
-   end;
-   if (Lat >= 0) then begin
-      Lat := TileSize * trunc(Lat / TileSize);
-      LatStr := 'N' + RealToString(Lat,2,0);
-   end
-   else begin
-      Lat := TileSize * trunc((abs(Lat) + TileSize) / TileSize);
-      LatStr := 'S' + RealToString(Lat,2,0);
-   end;
-   if LatFirst then Result := LatStr + LongStr
-   else Result := LongStr + LatStr;
-   ReplaceCharacter(Result,' ','0');
-end;
-
-
-
 function GetLC10_fileName(Lat,Long : float32) : PathStr;
+
+         function LandCoverTileBaseName(TileSize : integer; LatFirst : boolean; Lat,Long : float32) : shortstring;
+         var
+            LatStr,LongStr : shortstring;
+         begin
+            if (Long > 0) then begin
+               Long := TileSize * trunc(Long / TileSize);
+               LongStr := 'E' + RealToString(Long,3,0);
+            end
+            else begin
+               Long := TileSize * trunc((abs(Long) + TileSize) / TileSize);
+               LongStr := 'W' + RealToString(Long,3,0);
+            end;
+            if (Lat >= 0) then begin
+               Lat := TileSize * trunc(Lat / TileSize);
+               LatStr := 'N' + RealToString(Lat,2,0);
+            end
+            else begin
+               Lat := TileSize * trunc((abs(Lat) + TileSize) / TileSize);
+               LatStr := 'S' + RealToString(Lat,2,0);
+            end;
+            if LatFirst then Result := LatStr + LongStr
+            else Result := LongStr + LatStr;
+            ReplaceCharacter(Result,' ','0');
+         end;
+
 const
    TileSize = 3;
 var
@@ -910,7 +981,7 @@ begin
       ClosingIsHappening := true;
       if ValidDEM(DEMtoClose) then begin
          CloseString := 'CloseSingleDEM, dem=' + IntToStr(DEMtoClose) + '   ' + DEMGlb[DEMtoClose].AreaName;
-         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('In ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+         {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('In ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMsOpen)); {$EndIf}
 
          if (DEMtoClose = PredAgesDEM) then PredAgesDEM := 0;
          if (DEMtoClose = SedThickDEM) then SedThickDEM := 0;
@@ -926,7 +997,7 @@ begin
 
          DEMtoClose := 0;
 
-         {$If Defined(RecordCloseDEM) or Defined(RecordSimpleClose) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('CloseSingleDEM out OK ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMdatasetsOpen)); {$EndIf}
+         {$If Defined(RecordCloseDEM) or Defined(RecordSimpleClose) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('CloseSingleDEM out OK ' + CloseString + '  Open DEMs=, ' + IntToStr(NumDEMsOpen)); {$EndIf}
       end
       else begin
          {$If Defined(RecordCloseDEM) or Defined(ShortRecordCloseDEM)} WriteLineToDebugFile('No DEM to close, i=' + IntToStr(DEMtoClose)); {$EndIf}
@@ -979,16 +1050,17 @@ end;
     var
        i : integer;
     begin
-       {$IfDef RecordClosingData} WriteLineToDebugFile('CloseAllMaps in'); {$EndIf}
+       {$If Defined(RecordClosingData) or Defined(RecordClosingMaps)} WriteLineToDebugFile('CloseAllMaps in'); {$EndIf}
        if (WMDEM.MDIChildCount > 0) then begin
           DEMNowDoing := Calculating;
           for i := pred(WMDEM.MDIChildCount) downto 0 do begin
              if WMDEM.MDIChildren[i] is TMapForm then begin
-                {$IfDef RecordClosingData} WriteLineToDebugFile('Close ' + (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
+                {$If Defined(RecordClosingData) or Defined(RecordClosingMaps)} WriteLineToDebugFile('Close ' + (WMDEM.MDIChildren[i] as TMapForm).Caption); {$EndIf}
                 (WMDEM.MDIChildren[i] as TMapForm).Close;
              end;
           end;
        end;
+       {$If Defined(RecordClosingData) or Defined(RecordClosingMaps)} WriteLineToDebugFile('CloseAllMaps out'); {$EndIf}
     end;
 
     procedure FastRedrawAllMaps;
@@ -1124,6 +1196,9 @@ end;
          if (FName <> '') then begin
            {$If Defined(TimeLoadDEM)} WriteLineToDebugFile('OpenNewDEM passed DEM: ' + fName); {$EndIf}
            LoadNewDEM(Result,fName,LoadMap,'DEM/grid for ' + WhatFor);
+           {$IfDef Track_BaseMap_WKT} DEMglb[Result].DEMMapProj.LogMapWKT('OpenNewDEM ' + fName); {$EndIf}
+           {$IfDef Track_ProjUTMzone} DEMglb[Result].DEMMapProj.LogMapProjUTMzone('OpenNewDEM ' + fName); {$EndIf}
+
          end
          else begin
            {$If Defined(TimeLoadDEM)} WriteLineToDebugFile('OpenNewDEM in'); {$EndIf}
@@ -1504,7 +1579,7 @@ end;
       //var
          //xoffset,yoffset : integer;
       begin
-         if (NumDEMDataSetsOpen < 2) then begin
+         if (NumDEMsOpen < 2) then begin
             Result := false;
             DEM1 := 0;
             DEM2 := 0;
@@ -1514,7 +1589,7 @@ end;
             DEM1 := 1;
             DEM2 := 2;
             repeat
-               if AlwaysAsk or (NumDEMDataSetsOpen > 2) or (DEMGlb[1] = Nil) or (DEMGlb[2] = Nil) then begin
+               if AlwaysAsk or (NumDEMsOpen > 2) or (DEMGlb[1] = Nil) or (DEMGlb[2] = Nil) then begin
                   GetDEM(DEM1,false,'First grid (' + WhatFor + ')');
                   GetDEM(DEM2,false,'Second grid (' + WhatFor + ')');
                end;
@@ -1632,7 +1707,7 @@ begin
    HighLightInDebugFile(why);
    for i := 1 to MaxDEMDataSets do begin
       if ValidDEM(i) then begin
-         writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeString + ')');
+         writeLineToDebugFile(IntegerToString(i,5) + '  ' + DEMGlb[i].AreaName + '  (' + DEMGlb[i].ColsRowsString + '  ' +  DEMGlb[i].DemSizeStringMB + ')');
       end;
    end;
 end;
@@ -1670,11 +1745,11 @@ begin
    ApplicationProcessMessages;
    Result := tStringList.Create;
 
-   if (NumDEMDataSetsOpen > 0) then begin
-      Result.Add('DEMs/grids open (n=' + IntToStr(NumDEMDataSetsOpen) + ')');
+   if (NumDEMsOpen > 0) then begin
+      Result.Add('DEMs/grids open (n=' + IntToStr(NumDEMsOpen) + ')');
       for i := 1 to MaxDEMDataSets do begin
          if ValidDEM(i) then begin
-            Result.Add(IntegerToString(i,5) + ' ' + DEMGlb[i].AreaName + ' (' + DEMGlb[i].ColsRowsString + ' ' +  DEMGlb[i].DemSizeString + ' ' + DEMGlb[i].zRange + DEMGlb[i].HorizontalDEMSpacing + ')');
+            Result.Add(IntegerToString(i,5) + ' ' + DEMGlb[i].AreaName + ' (' + DEMGlb[i].ColsRowsString + ' ' +  DEMGlb[i].DemSizeStringMB + ' ' + DEMGlb[i].zRange + DEMGlb[i].HorizontalDEMSpacing + ')');
          end;
       end;
    end;

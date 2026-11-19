@@ -373,7 +373,7 @@ var
             TiffFile.Write(z,SizeOf(Double));
          end;
 
-begin
+begin {procedure tDEMDataSet.SaveAsGeotiffWithAffine}
    if (SaveName = '') then begin
       if (DEMFileName <> '') then SaveName := ChangeFileExt(DEMFileName,'.tif')
       else SaveName := areaName + '.tif';
@@ -471,7 +471,7 @@ begin
    {$EndIf}
    {end Geotiff}
 
-   {0 offset marking end} StreamLongInt(TIFFFile,0);
+   StreamLongInt(TIFFFile,0); //0 offset marking end
 
    //{$IfDef GeotiffSave} WriteLineToDebugFile('starting DEM write, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
    WriteTheDEM;
@@ -505,16 +505,6 @@ begin
        BlockWriteDouble(GeotiffNWCornerX);
        BlockWriteDouble(GeotiffNWCornerY);
        BlockWriteDouble(0);
-
-(*
-    XOrigin: Double; // GT(0)
-    PixelWidth: Double; // GT(1)
-    RowRotation: Double; // GT(2)
-    YOrigin: Double; // GT(3)
-    ColRotation: Double; // GT(4)
-    PixelHeight: Double; // GT(5)
-*)
-
    end;
 
    //{$IfDef GeotiffSave} WriteLineToDebugFile('start 34735 Geotiff keys, filepos=' + IntToStr(FilePos(TiffFile))); {$EndIf}
@@ -549,7 +539,7 @@ begin
    ShowDefaultCursor;
 
    {$IfDef GeotiffSave} WriteLineToDebugFile('tDEMDataSet.SaveAsGeotiff out'); {$EndIf}
-end;
+end {procedure tDEMDataSet.SaveAsGeotiffWithAffine};
 
 
 function tDEMDataSet.ExportASCII(x1,y1,x2,y2 : integer) : PathStr;

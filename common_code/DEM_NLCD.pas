@@ -610,7 +610,7 @@ var
           Table.Destroy;
        end
        else begin
-          CreateBitmap(bmp,1200,100 + NumDEMDataSetsOpen * 60);
+          CreateBitmap(bmp,1200,100 + NumDEMsOpen * 60);
           AddTitle;
           for j := 1 to MaxDEMDataSets do begin
             if ValidDEM(j) then begin

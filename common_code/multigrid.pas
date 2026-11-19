@@ -470,7 +470,6 @@ end;
 
 procedure OpenDailyTemps;
 begin
-   {$IfDef AllowUSNAdataDownloads}  ClimateGetData; {$EndIf}
    if (ValidPath(WorldClimate2Dir)) then begin
       if (MaxTempMG = 0) then MaxTempMG := OpenMonthlyMultiGrids('Maximum temperature',OpenMaps);
       if (TempMG = 0) then TempMG := OpenMonthlyMultiGrids('Average temperature (entire earth)',OpenMaps);
@@ -482,7 +481,6 @@ end;
 
 procedure OpenTempPrecipEvap;
 begin
-   {$IfDef AllowUSNAdataDownloads}  ClimateGetData; {$EndIf}
    if (ValidPath(WorldClimate2Dir)) then begin
       if (TempMG = 0) then TempMG := OpenMonthlyMultiGrids('Average temperature (entire earth)',OpenMaps);
       if (PrecipMG = 0) then PrecipMG := OpenMonthlyMultiGrids('Precipitation',OpenMaps);
@@ -1205,7 +1203,7 @@ begin
          for I := 1 to TiffHeader.SamplesPerPixel do begin
             if (i mod 10 = 0) then UpDateProgressBar(i/TiffHeader.SamplesPerPixel);
             ReallyReadDEM := true;
-            OpenDEMDataStructures(Grids[i]);
+            CreateOpenDEMDataStructures(Grids[i]);
             DEMGlb[Grids[i]].DEMheader.ElevUnits := euImagery;
          end;
          {$IfDef RecordMultiGrids} WriteLineToDebugFile('tTIFFImage.OpenMultipleGrids done setup'); {$EndIf}
@@ -1515,7 +1513,7 @@ begin
    StartProgress('ENVI read');
    for I := 1 to NumGrids do begin
      UpdateProgressBar(i/NumGrids);
-     OpenAndZeroNewDEM(true,DEMHeader,Grids[i],'',InitDEMnone);
+     CreateOpenAndZeroNewDEM(true,DEMHeader,Grids[i],'',InitDEMnone);
      for y := 0 to pred(DEMHeader.NumRow) do begin
         if DEMHeader.DEMPrecision = ByteDEM then begin
            BlockRead(inf,ByteArray,DEMHeader.NumCol);
@@ -1754,7 +1752,7 @@ begin
    NewHeader := DEMGlb[Grids[1]].DEMheader;
    NewHeader.DEMPrecision := Precision;
    NewHeader.ElevUnits := zUnits;
-   OpenAndZeroNewDEM(true,NewHeader,Result,ptTrim(theName),InitDEMnone);
+   CreateOpenAndZeroNewDEM(true,NewHeader,Result,ptTrim(theName),InitDEMnone);
    DEMGlb[Result].DefineDEMVariables(true);
    StartProgress(theName);
 end;

@@ -503,11 +503,11 @@ begin
    NewHeadRecs.ElevUnits := euUndefined;
 
    NewHeadRecs.DEMPrecision := ByteDEM;
-   if not OpenAndZeroNewDEM(true,NewHeadRecs,DownCostDEM,'',InitDEMvalue,0) then exit;
+   if not CreateOpenAndZeroNewDEM(true,NewHeadRecs,DownCostDEM,'',InitDEMvalue,0) then exit;
 
    NewHeadRecs.DEMPrecision := FloatingPointDEM;
-   if (not OpenAndZeroNewDEM(true,NewHeadRecs,AccumCostDEM,'',InitDEMvalue,0)) or  (not OpenAndZeroNewDEM(true,NewHeadRecs,FinalAccumCostDEM,'',InitDEMvalue,0)) or
-      (not OpenAndZeroNewDEM(true,NewHeadRecs,AccumDistanceDEM,'',InitDEMvalue,0)) or (not OpenAndZeroNewDEM(true,NewHeadRecs,FinalDistanceDEM,'',InitDEMvalue,0)) then exit;
+   if (not CreateOpenAndZeroNewDEM(true,NewHeadRecs,AccumCostDEM,'',InitDEMvalue,0)) or (not CreateOpenAndZeroNewDEM(true,NewHeadRecs,FinalAccumCostDEM,'',InitDEMvalue,0)) or
+      (not CreateOpenAndZeroNewDEM(true,NewHeadRecs,AccumDistanceDEM,'',InitDEMvalue,0)) or (not CreateOpenAndZeroNewDEM(true,NewHeadRecs,FinalDistanceDEM,'',InitDEMvalue,0)) then exit;
 
   //make sure all points have positive cost value--no free pixels
    for x := 0 to pred(DEMGlb[AccumCostDEM].DEMheader.NumCol) do begin

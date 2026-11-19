@@ -671,7 +671,7 @@ begin
       CapStr := '';
       BroadcastLatLong(Self.Handle,LOSdraw.ProfLats[x-LOSdraw.StartLOSLeft],LOSdraw.ProfLongs[x-LOSdraw.StartLOSLeft]);
       if LOSdraw.LOSVariety in [losAllDEMs,losAllDEMDropDown] then begin
-         for i := 1 to NumDEMDataSetsOpen do if ValidDEM(i) then  begin
+         for i := 1 to NumDEMsOpen do if ValidDEM(i) then  begin
             if DEMGLB[i].GetElevFromLatLongDegree(LOSdraw.ProfLats[x-LOSdraw.StartLOSLeft],LOSdraw.ProfLongs[x-LOSdraw.StartLOSLeft],Elev) then
                CapStr := CapStr + '      ' + DEMGLB[i].AreaName + '  ' + RealToString(Elev,-10,1) + ' m';
          end;
@@ -1091,7 +1091,7 @@ var
    MultiProf : boolean;
 begin
    with LOSDraw do begin
-      MultiProf := (LOSVariety in [losAllDEMs,losAllDEMDropDown]) and (NumDEMDataSetsOpen > 1);
+      MultiProf := (LOSVariety in [losAllDEMs,losAllDEMDropDown]) and (NumDEMsOpen > 1);
       AlgorithmAnalysis1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and  MDDef.ShowMethodCompare and (not MultiProf);
       SpacingAnalysis1.Visible := (MDDef.ProgramOption in [ExpertProgram]) and  MDDef.ShowMethodCompare and (not MultiProf);
       MeasureSlope1.Visible := (MDDef.ProgramOption in [ExpertProgram,GeologyProgram]);
@@ -1107,9 +1107,9 @@ begin
       Wavelengthheight1.Visible := (LOSProfileDB <> 0) and MDDef.ShowGeomorphometry and (MDDef.ProgramOption in [ExpertProgram]);
       Linesizeandcolors1.Visible := MultiProf;
       Grazingangles1.Visible := MDDef.DoGrazingFields;
-      AllopenDEMs1.Visible := (NumDEMDataSetsOpen > 1);
-      ProfilesonotherDEMs1.Visible := (NumDEMDataSetsOpen > 1);
-      Hideprofiles1.Visible := (NumDEMDataSetsOpen > 1);
+      AllopenDEMs1.Visible := (NumDEMsOpen > 1);
+      ProfilesonotherDEMs1.Visible := (NumDEMsOpen > 1);
+      Hideprofiles1.Visible := (NumDEMsOpen > 1);
       Profilelegends1.Visible := MultiProf;
       Profiledropdown1.Visible := LOSVariety in [losAllDEMs,losAllDEMDropDown];
 
@@ -1523,7 +1523,7 @@ var
    WhichDEM : integer;
 begin
    {$IfDef RecordLOSProblems} WriteLineToDebugFile('TDEMLOSF.Profilenames1Click');{$EndIf}
-   for WhichDEM := 1 to NumDEMDataSetsOpen do begin
+   for WhichDEM := 1 to NumDEMsOpen do begin
       if (DEMGlb[WhichDEM] <> Nil) then begin
          {$IfDef RecordLOSProblems} WriteLineToDebugFile('DEM=' + IntToStr(WhichDEM) + '   ' + LOSDraw.ProfileName[WhichDEM]);  {$EndIf}
          Petmar.GetString('Profile Name',LOSDraw.ProfileName[WhichDEM],false,ReasonableTextChars);
@@ -1555,9 +1555,9 @@ end;
 
 procedure TDEMLOSF.Profiledropdown1Click(Sender: TObject);
 begin
-   LOSdraw.MinAreaZ := LOSdraw.MinAreaZ + NumDEMDataSetsOpen * MDDef.DropDownPerProfile;
+   LOSdraw.MinAreaZ := LOSdraw.MinAreaZ + NumDEMsOpen * MDDef.DropDownPerProfile;
    ReadDefault('Profile drop down',MDDef.DropDownPerProfile);
-   LOSdraw.MinAreaZ := LOSdraw.MinAreaZ - NumDEMDataSetsOpen * MDDef.DropDownPerProfile;
+   LOSdraw.MinAreaZ := LOSdraw.MinAreaZ - NumDEMsOpen * MDDef.DropDownPerProfile;
    if (MDDef.DropDownPerProfile > 0) then LOSdraw.LOSVariety := losAllDEMDropDown
    else LOSdraw.LOSVariety := losAllDEMs;
    FormResize(Sender);

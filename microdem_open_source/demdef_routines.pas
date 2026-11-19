@@ -124,12 +124,11 @@ procedure InitializeMICRODEM;
 function StringToTerrainCategory(str : ShortString) : tTerrainCatDefinition;
 function TerrainCategoryToString(tc : tTerrainCatDefinition) : ShortString;
 
-//boolean functions to determine the map type
+//boolean functions to determine map type
    function IsReflectanceMap(MapType : tMapType) : boolean;
    function IsSlopeMap(MapType : tMapType) : boolean;
    function IsElevationMap(MapType : tMapType) : boolean;
    function IsOtherGridMap(MapType : tMapType) : boolean;
-
    function IsSatelliteMap(MapType : tMapType) : boolean;
    function IsSatelliteColorImage(MapType : tMapType) : boolean;
 
@@ -141,7 +140,6 @@ procedure SetCurvatureDefaults;
 procedure SetSlopedefaultColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 procedure SetDEMIXSlopeColors(var NumCats : SmallInt; var SlopeCut : ColorCutArrayType; var SlopeColors : tColorArray);
 
-
 //defaults and program settings
    procedure SetDefaults(SetDirectories : boolean = false);
    procedure SetExpertOptions(Expert : boolean);
@@ -149,7 +147,6 @@ procedure SetDEMIXSlopeColors(var NumCats : SmallInt; var SlopeCut : ColorCutArr
    procedure SetPhysicalGeographyDefaults;
    procedure SetRemoteSensingDefaults;
    procedure HideAllOceanOptions;
-
 
 procedure SaveBackupDefaults;
 procedure RestoreBackupDefaults;
@@ -167,7 +164,6 @@ procedure SetLOSDefaults;
    procedure SetAllSlopes(Setting : boolean);
    procedure SetAllOrganization(Setting : boolean);
 {$EndIf}
-
 
 {$IfDef ExTiger}
 {$Else}
@@ -207,7 +203,6 @@ procedure InitializeVegColors;
 function RidgeAlgorithmName : string;
 function ClassBoxName : string;
 function ExpandIconFileName(var fName : PathStr) : boolean;
-
 
 //bounding box inclusion
    function PointInBoundingBox(Lat,Long : float64; BBox : sfBoundBox) : boolean;  inline;
@@ -253,11 +248,6 @@ function ExpandIconFileName(var fName : PathStr) : boolean;
    procedure SetUpGazFile(var GazColors : tMyData; var NameStr : ShortString; FilterUse : boolean = true);
    function USGSGazeeteerFile(fName : PathStr) : boolean;
    procedure PickGazFeatures;
-{$EndIf}
-
-{$IfDef AllowUSNAdataDownloads}
-   procedure CheckFile(fName : PathStr);
-   procedure CheckRequiredFiles;
 {$EndIf}
 
 {$IfDef VCL}
@@ -330,6 +320,7 @@ function PossibleElevationUnits(What : byte) : boolean;
 
 const
   GiveMICRODEM_credit : boolean = true;
+
 function MD_Made_string : shortstring;
 
 var
@@ -4070,111 +4061,6 @@ begin
    end;
 end;
 
-
-   {$IfDef AllowUSNAdataDownloads}
-      procedure CheckRequiredFiles;
-      begin
-         {$IfDef VCL}
-            {$IfDef SQLiteDefaultDBs}
-               wmdem.ConvertDBFsfor64bit1Click(nil);
-            {$EndIf}
-            if MDDef.SkipWebUpdates then begin
-               {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles skipped'); {$EndIf}
-            end
-            else begin
-               {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles in'); {$EndIf}
-               CheckFile(ExtractFileName(TableDefinitionsFileName));
-               CheckFile(ExtractFileName(CSVImportRulesFName));
-               CheckFile(ExtractFileName(GazOptFName));
-               CheckFile(ExtractFileName(GT_Datum_fName));
-               CheckFile(ExtractFileName(GT_Ellipse_fName));
-               CheckFile(ExtractFileName(ColorBrewerName));
-               CheckFile(ExtractFileName(LandCoverSeriesFName));
-
-               CheckFile('KeyHH.exe');
-               CheckFile('md_movie.exe');
-               CheckFile('7z.exe');
-               CheckFile('7z.dll');
-
-
-               {$IfDef AllowUSNAdataDownloads}
-                  {$IfDef ExGeography}
-                  {$Else}
-                     CheckFile(ExtractFileName(MonthlyClimateFName));
-                     CheckFile(ExtractFileName(KoppenDefFName));
-                  {$EndIf}
-
-                  {$IfDef ExSat}
-                  {$Else}
-                     CheckFile(ExtractFileName(SatBandNames));
-                     CheckFile(ExtractFileName(TM_RGB_fname));
-                  {$EndIf}
-
-                  {$IfDef ExPointCloud}
-                  {$Else}
-                     CheckFile(ExtractFileName(LasRulesName));
-                  {$EndIf}
-
-                  {$IfDef ExMagVar}
-                  {$Else}
-                     CheckFile(ExtractFileName(www_mag_mod_fName));
-                  {$EndIf}
-
-                  {$IfDef ExPLSS}
-                  {$Else}
-                     CheckFile(ExtractFileName(PLSSMerfName));
-                  {$EndIf}
-
-                  {$IfDef ExOSM}
-                  {$Else}
-                     CheckFile(ExtractFileName(OSMRoadRules));
-                     CheckFile(ExtractFileName(OSMGroupRules));
-                  {$EndIf}
-
-                  {$IfDef ExTIGER}
-                  {$Else}
-                     CheckFile(ExtractFileName(TigerShapeRules));
-                     CheckFile(ExtractFileName(TigerIndex));
-                  {$EndIf}
-               {$EndIf}
-            end;
-            {$IfDef RecordUpdate} WriteLineToDebugFile('CheckRequiredFiles out, MainMapData=' + MainMapData); {$EndIf}
-         {$EndIf}
-      end;
-
-      procedure CheckFile(fName : PathStr);
-      var
-        OutName,OutName2,InName : ANSIstring;
-      begin
-         if (fName <> '') then begin
-            OutName := fName;
-            if UpperCase(ptcopy(OutName,1,3)) = 'C:\' then OutName2 := OutName
-            else OutName2 := ProgramRootDir + OutName;
-            if (FileExists(OutName2)) then exit;
-
-            {$IfDef SQLiteDefaultDBs}
-            if FileExtEquals(fName,'.db') then begin
-               OldName := ChangeFileExt(fName,'.dbf');
-               if FileExists(OldName) then begin
-                  ConvertDBFtoSQLite(OldName);
-                  exit;
-               end;
-            end;
-            {$EndIf}
-
-           if (copy(fname,1,7) = 'http://') or (copy(fname,1,8) = 'https://') then InName := fName
-           else InName := WebDataDownLoadDir + LowerCase(ExtractFileName(fName));
-
-           StopSplashing;
-
-           SetCursorPos(600,600);
-           if USNAComputer or AnswerIsYes('MICRODEM requires ' + fName +'; Allow automatic download now') then begin
-              {$IfDef RecordUpdate} WriteLineToDebugFile(LocalIP + ' CheckFile Copy ' + InName + ' to ' + OutName2); {$EndIf}
-              DownloadFileFromWeb(InName,OutName2);
-           end;
-        end;
-      end;
-   {$EndIf}
 {$EndIf}
 
 

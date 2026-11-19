@@ -541,15 +541,7 @@ uses
    DEM_Fan_Algorithm,
 {$EndIf}
 
-   {$IfDef ExDrainage}
-   {$Else}
-      //Drainage_opts,
-   {$EndIf}
-
-   {$IfDef ExPers}
-   {$Else}
-      DEMPersW,DEMPerOp,
-   {$EndIf}
+   DEMPersW,DEMPerOp,
 
    {$IfDef ExGeography}
    {$Else}
@@ -828,22 +820,15 @@ begin
 
    OnRow := 0;
    DrawRow(MainMap,'Main map directory',MainMapData);
-   DrawRow(MapLib,'Main map directory',MapLibDir);
+   DrawRow(MapLib,'Main library directory',MapLibDir);
    DrawRow(SAGArow,'SAGA EXE name',MDDef.SagaCMD);
    DrawRow(EtopoRow,'ETOPO DEM',ETOPODEMName);
    DrawRow(Viewsheds,'Viewshed dir',SaveViewShedDir);
    DrawRow(VectorMap,'Vector map name',VectorMapName);
    DrawRow(FWT,'GDAL',GDALtools_Dir);
-
-   //DrawRow(DEMIXbase,'DEMIX',MDDef.Demix_base_dir);
-   //DrawRow(TauDEM,'TauDEM',TauDEMDir);
-
    StringGrid1.RowCount := OnRow + 1;
    StringGrid1.ColWidths[0] := 120;
-
    GroupBox7.Enabled := CheckBox88.Checked;
-   //Edit13.Enabled := CheckBox88.Checked;
-   //Edit14.Enabled := CheckBox88.Checked;
    {$IfDef ShowDirectories} WriteLineToDebugFile('TOptionsForm.LabelDirectories MDdef.MainMapData= ' + MainMapData); {$EndIf}
 end;
 
@@ -853,7 +838,7 @@ procedure TOptionsForm.StringGrid1SelectCell(Sender: TObject; ACol, ARow: Intege
 begin
    if (Arow > 0) then begin
       {$IfDef ShowDirectories} WriteLineToDebugFile('TOptionsForm.StringGrid1SelectCell, arow=' + IntToStr(ARow));{$EndIf}
-      if Arow = MainMap then FindPath('Map library',':\mapdata\',MapLibDir);
+      if Arow = MainMap then FindPath('Map library',':\mapdata\',MainMapData);
       if Arow = MapLib then PickMapIndexLocation;
 
       if Arow = EtopoRow then GetFileFromDirectory('ETOPO DEM','*.dem',ETOPODEMName);
@@ -864,8 +849,6 @@ begin
          GDALtools_Dir := '';
          GetGDALFileNames;
       end;
-      //if Arow = DEMIXbase then demix_definitions.SetDEMIXdirs(true);
-      //if Arow = TauDEM then GetDOSPath('TauDEM',TauDEMDir);
    end;
    LabelDirectories;
 end;

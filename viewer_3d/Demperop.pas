@@ -680,7 +680,7 @@ begin
    BitBtn4.Enabled := CheckBox52.Checked;
    BitBtn2.Enabled := CheckBox18.Checked;
    Label24.Enabled := CheckBox18.Checked;
-   BitBtn3.Enabled := NumDEMDataSetsOpen > 2;
+   BitBtn3.Enabled := NumDEMsOpen > 2;
 
    Edit10.Enabled := RadioGroup2.ItemIndex = 1;
    Label2.Enabled := RadioGroup2.ItemIndex = 1;

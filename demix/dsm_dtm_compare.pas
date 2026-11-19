@@ -91,6 +91,7 @@ type
     Edit4: TEdit;
     Label7: TLabel;
     BitBtn7: TBitBtn;
+    BitBtn21: TBitBtn;
     //CheckBox1: TCheckBox;
     procedure BitBtn8Click(Sender: TObject);
     procedure BitBtn9Click(Sender: TObject);
@@ -122,6 +123,7 @@ type
     procedure BitBtn4Click(Sender: TObject);
     procedure BitBtn5Click(Sender: TObject);
     procedure BitBtn7Click(Sender: TObject);
+    procedure BitBtn21Click(Sender: TObject);
     //procedure CheckBox1Click(Sender: TObject);
   private
     { Private declarations }
@@ -242,7 +244,7 @@ begin
       GISdb[inDB].EmpSource.Enabled := false;
       CompareDSM_DTMform.theDTMs := GISdb[CompareDSM_DTMform.db].MyData.ListUniqueEntriesInDB(CompareDSM_DTMform.DEMIXtileFieldName);
       GISdb[inDB].ClearGISFilter;
-      CompareDSM_DTMform.BitBtn15.Visible := GISdb[inDB].MyData.FieldExists('GRID_THIN') and GISdb[inDB].MyData.FieldExists('DSM_NAME') and GISdb[inDB].MyData.FieldExists('DTM_NAME');
+      CompareDSM_DTMform.BitBtn15.Visible := DEMIX_HRDEM_DB(indb) or DEMIX_GDEM_DB(indb);
       CompareDSM_DTMform.Show;
       {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('StartDSMandDTMcomparison out, ' + GISdb[inDB].DBname); {$EndIf}
   end
@@ -463,6 +465,11 @@ begin
    Self.Show;
 end;
 
+procedure TCompareDSM_DTMform.BitBtn21Click(Sender: TObject);
+begin
+   ComputePowerFitForAllTiles(db);
+end;
+
 procedure TCompareDSM_DTMform.BitBtn2Click(Sender: TObject);
 begin
    ManyGraphsSlopeVersusResolutionManyTiles(db,'DEM1_SLOPE');
@@ -524,16 +531,16 @@ const
    DEMs : array[1..3] of shortstring = ('fathom','cop','alos');
 var
    i : integer;
-   comparingList : tStringList;
+   ComparingList : tStringList;
 begin
    {$IfDef RecordDSM_DTM_Compare} WriteLineToDebugFile('TCompareDSM_DTMform.BitBtn8Click in'); {$EndIf}
    Self.Hide;
    for I := 1 to 3 do begin
-      comparingList := tStringList.Create;
+      ComparingList := tStringList.Create;
       ComparingList.Add('ref_dsm_to_ref_dtm');
       ComparingList.Add(DEMs[i] + '_to_ref_dtm');
       ComparingList.Add(DEMs[i] + '_to_ref_dsm');
-      GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),comparingList,Nil,false,Edit4.Text);
+      GraphMultParamsByAvgSlope_DEMResolution(db,DEMIXtileFieldName,ResolutionsList,MakeStringListFromString(MDDef.DEMIX_SingleCriterion),ComparingList,Nil,false,Edit4.Text);
       ComparingList.Destroy;
    end;
    Self.Show;

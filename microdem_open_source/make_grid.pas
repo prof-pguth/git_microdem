@@ -20,6 +20,8 @@ unit make_grid;
       //{$Define CreateCurvature}
       //{$Define RecordTRI}
       {$Define RecordGridDiff}
+      {$Define RecordCreateReferenceDEM}
+      {$Define RecordMeanAggregate}
       //{$Define Record3DEPXFull}
       //{$Define RecordMapCreation}
       //{$Define RecordDEMIX_VAt}
@@ -136,9 +138,9 @@ function CreateFirstSecondThirdOrderPartialDerivatives(Method : tSlopeCurveCompu
 function MakeNEneighborGrid(CurDEM : integer; Normalize : byte; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 function MakeNEneighborGridDifferenceLinearBilinear(CurDEM : integer; OpenMap : boolean = true; OutName : PathStr = '') : integer;
 
-
 function UpsampleDEM(OpenMap : boolean; DEMforTemplate,DEMtoUpscale : integer; FName : PathStr = '') : integer;
 function ReinterpolateLatLongDEM(OpenMap : boolean; DEM : integer; var SpacingArcSec : float32; fName : PathStr = '') : integer;
+function MeanAggregateResampleDEM(OpenMap : boolean; HRDref,DEMtoMatch : integer; ResampleName : PathStr) : integer;
 
 
 {$IfDef ExExoticMaps}
@@ -202,13 +204,39 @@ uses
    {$EndIf}
    DEMweapn;
 
-var
-   CountInStrips : integer;
 
 {$IfDef ExPointCloud}
 {$Else}
     {$I ..\las_lidar\make_grids_from_lidar.inc}
 {$EndIf}
+
+
+function MeanAggregateResampleDEM(OpenMap : boolean; HRDref,DEMtoMatch : integer; ResampleName : PathStr) : integer;
+//aggregate the HRDref using geometry of the DEMtoMatch
+var
+   NPts : int64;
+   NewMatch : integer;
+begin
+   {$IfDef RecordMeanAggregate}
+      WriteLineToDebugFile('MeanAggregateResampleDEM');
+      WriteLineToDebugFile('   HRDdef: ' + DEMglb[HRDref].AreaName + '  ' + DEMglb[HRDref].KeyParams);
+      WriteLineToDebugFile('   Match:  ' + DEMglb[DEMtoMatch].AreaName + '  ' + DEMglb[DEMtoMatch].KeyParams);
+   {$EndIf}
+
+   wmDEM.SetPanelText(3,'Aggregate ' + IntToStr(DEMtoMatch) + ' ' + DEMGlb[DEMtoMatch].AreaName,true);
+   {$IfDef RecordCreateReferenceDEM} WriteLineToDebugFile(DEMGlb[HRDref].AreaName + '  aggregated as ' + ResampleName); {$EndIf}
+   //insure floating point (e.g. for ALOS)
+   if (DEMGlb[DEMtoMatch].DEMHeader.DEMPrecision = FloatingPointDEM) then NewMatch := DEMtoMatch
+   else NewMatch := DEMGlb[DEMtoMatch].ResaveNewElevationPrecision(fcSaveFloatingPoint);
+
+   Result := DEMGlb[DEMtoMatch].CloneAndOpenGridSetMissing(FloatingPointDEM,ExtractFileNameNoExt(ResampleName),DEMGlb[DEMtoMatch].DEMheader.ElevUnits);  //,false,1);
+
+   //mean aggregate the new DEM
+   Result := DEMGlb[HRDref].ResampleByAveraging(OpenMap,ResampleName,NewMatch);
+   {$IfDef RecordMeanAggregate}
+      WriteLineToDebugFile('  Resample:  ' + DEMglb[Result].AreaName + '  ' + DEMglb[Result].KeyParams);
+   {$EndIf}
+end;
 
 
 function CreateRoughnessSlopeStandardDeviationMap(OpenMap : boolean; DEM,DiameterMustBeOdd : integer; Square : boolean = true) : integer;
@@ -1704,7 +1732,7 @@ end;
 
 procedure MomentsGridStrip(CompLimits : tGridLimits; What : char; GridInc,XBoxGridSize,YBoxGridSize,CurDEM : integer; DEMs : tListOfDEMs);
 var
-   x,y : integer;
+   x,y,CountInStrips : integer;
    Limits : tGridLimits;
    SlopeDeg,SlopeCurvature,PlanCurvature,crossc,MaxCurve,MinCurve,
    Upward,Downward : float64;
@@ -1822,7 +1850,7 @@ end;
 
 function MakeMomentsGrid(CurDEM : integer; What : char; BoxSizeRadiusMeters : integer = -99; OpenMaps : boolean = true) : integer;
 var
-   XBoxGridSize,YBoxGridSize,ThinFactor,i : integer;
+   XBoxGridSize,YBoxGridSize,ThinFactor,i,CountInStrips : integer;
    TStr : ShortString;
    WantMapType : tMapType;
    fName,pName : PathStr;
@@ -1947,8 +1975,8 @@ begin {MakeMomentsGrid}
              {$IfDef CreateGeomorphMaps} WriteLineToDebugFile('Create map for DEM ' + IntToStr(MomentDEMs[i]) + ' ' + DEMGlb[MomentDEMs[i]].KeyParams); {$EndIf}
              DEMGlb[MomentDEMs[i]].SetUpMap(false,WantMapType,What in ['A','C','F']);
              MatchAnotherDEMMap(MomentDEMs[i],CurDEM);
-             {$IfDef CreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('Original grid',true); {$EndIf}
-             {$IfDef CreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjectionParamsToDebugFile('New grid',true); {$EndIf}
+             {$IfDef CreateGeomorphMaps} DEMGlb[CurDEM].SelectionMap.MapDraw.PrimMapProj.ProjParamsToDebugFile('Original grid',true); {$EndIf}
+             {$IfDef CreateGeomorphMaps} DEMGlb[MomentDEMs[i]].SelectionMap.MapDraw.PrimMapProj.ProjParamsToDebugFile('New grid',true); {$EndIf}
           end;
        end;
     end;
@@ -2127,7 +2155,7 @@ begin {function MakeSingleNewDerivativeMap}
 
      MDDef.StatSampleIncr := 1;
      AllMissing := ch in ['g'];
-     if OpenAndZeroNewDEM(true,NewHeadRecs,Result,'',InitDEMMissing,0) then begin
+     if CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,'',InitDEMMissing,0) then begin
          DEMGlb[CurDEM].ReflectanceParams;
          if (SampleBoxSize = 0) and (ch in ['B']) then begin
             GetSampleBoxSize(CurDEM,MDDef.GeomorphBoxSizeMeters);
@@ -2287,7 +2315,7 @@ end {function MakeSingleNewDerivativeMap};
 
 procedure AspectDifferenceMapStrip(WhichDEM,ResultDEM,RegionRadius : integer; GridLimits : tGridLimits);
 var
-   i,j : integer;
+   i,j,CountInStrips : integer;
    z1,z2,z3,z4,znw,zw,zsw,zn,z,zs,zne,ze,zse : float32;
 
    function ProcessPair(z1,z2 : float64) : float32;  inline;
@@ -2317,9 +2345,10 @@ end;
 
 
 function AspectDifferenceMap(WhichDEM,RegionRadius : integer; GridLimits : tGridLimits) : integer;
+var
+   CountInStrips : integer;
    {$IfDef NoParallelFor}
    {$Else}
-    var
       PartLimits : tGridLimitsArray;
       ResultDEM : integer;
    {$EndIf}
@@ -2353,7 +2382,7 @@ end;
 
 procedure RidgeMapStrip(WhichDEM,ResultDEM : integer; GridLimits : tGridLimits; RidgeTypeMap : tRidgeTypemap);
 var
-   i,j : integer;
+   i,j,CountInStrips : integer;
    z : float32;
    PointType : tPointType;
 begin
@@ -2380,7 +2409,7 @@ end;
 
 function CreateRidgeMap(WhichDEM : integer; GridLimits : tGridLimits;  RidgeTypeMap : tRidgeTypemap; Memo1 : tMemo = Nil) : integer;
 var
-   ResultDEM,i,j,NPts,NRidge,NValley  : integer;
+   ResultDEM,i,j,NPts,NRidge,NValley,CountInStrips  : integer;
    TStr : ShortString;
    VAT : tStringList;
    z  : float32;
@@ -2498,7 +2527,7 @@ end;
 
 function CreateIwashishiPikeMap(NewName : ShortString; BaseGrid,SlopeGrid,RoughGrid,ConvexGrid : integer) : integer;
 var
-   i,y,x,TotPts,Cat : integer;
+   i,y,x,TotPts,Cat,CountInStrips : integer;
    VAT : tStringList;
    Slope,Convex,Rough : float32;
    PartLimits : tGridLimits;

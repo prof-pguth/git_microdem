@@ -2,7 +2,7 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
   Left = 0
   Top = 0
   Caption = 'DSM DTM compare'
-  ClientHeight = 729
+  ClientHeight = 761
   ClientWidth = 770
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -397,5 +397,14 @@ object CompareDSM_DTMform: TCompareDSM_DTMform
     Caption = 'By DEM'
     TabOrder = 33
     OnClick = BitBtn7Click
+  end
+  object BitBtn21: TBitBtn
+    Left = 488
+    Top = 720
+    Width = 241
+    Height = 25
+    Caption = 'Power law fit all tiles'
+    TabOrder = 34
+    OnClick = BitBtn21Click
   end
 end

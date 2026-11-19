@@ -278,7 +278,6 @@ object DemHandForm: TDemHandForm
         Caption = 'Database'
         object IGERredistricting1: TMenuItem
           Caption = 'TIGER redistricting'
-          OnClick = IGERredistricting1Click
         end
         object ShiftXYZcoordinates1: TMenuItem
           Caption = 'Shift XYZ coordinates'

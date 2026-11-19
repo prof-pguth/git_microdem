@@ -21,7 +21,7 @@ var
 begin
    {$IfDef RecordComparisons} WriteLineToDebugFile('CompareUpsampling, SlopeOption=' + TrueOrFalse(SlopeOption));  {$EndIf}
 
-   if (NumDEMDataSetsOpen = 2) and ValidDEM(1) and ValidDEM(2) then begin
+   if (NumDEMsOpen = 2) and ValidDEM(1) and ValidDEM(2) then begin
       if DEMGlb[1].AverageSpace < DEMGlb[2].AverageSpace then begin
          HRD_DEM := 1;
          LowResDEM := 2;
@@ -203,7 +203,7 @@ end;
          Graph.GraphDraw.HorizLabel := 'Slope (%)--' + Title + ' Points';
          Graph.GraphDraw.VertLabel := 'Slope (%)--All Points';
          Graph.Caption := 'Scattergram_' + SlopeMethodName(MDDef.SlopeCompute);
-         Graph.RedrawDiagram11Click(Nil);
+         Graph.RedrawDiagram;
 
          CloseSingleDEM(Grid1);
          CloseSingleDEM(Grid2);
@@ -262,7 +262,7 @@ var
        Graph.GraphDraw.HorizLabel := 'Slope (%)--' + SlopeMethodName(MDDef.SlopeCompute);
        Graph.GraphDraw.VertLabel := 'Slope (%)--Evans';
        Graph.Caption := 'Scattergram_' + SlopeMethodName(MDDef.SlopeCompute);
-       Graph.RedrawDiagram11Click(Nil);
+       Graph.RedrawDiagram;
     end;
 
 begin

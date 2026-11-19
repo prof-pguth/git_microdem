@@ -335,6 +335,7 @@ type
     Edit35: TEdit;
     Edit36: TEdit;
     N5: TMenuItem;
+    CheckBox35: TCheckBox;
     procedure BitBtn14Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure RadioGroup1Click(Sender: TObject);
@@ -526,6 +527,7 @@ type
     procedure BitBtn65Click(Sender: TObject);
     procedure ArcsecondDTMDSMforrangeofscales1Click(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
+    procedure CheckBox35Click(Sender: TObject);
   private
     { Private declarations }
     MinAreaZ,MaxAreaZ : float64;
@@ -840,7 +842,7 @@ begin
                   end;
                end;
 
-               Graph.RedrawDiagram11Click(Nil);
+               Graph.RedrawDiagram;
                CreateBitmap(Leg,200,200);
                Leg.Canvas.Font.Size := 14;
                Top := 5;
@@ -2531,7 +2533,7 @@ var
          NewHeader.NumCol := round((bb.xmax - bb.xmin) / Spacing);
          NewHeader.NumRow := round((bb.ymax - bb.ymin) / Spacing);
 
-         OpenAndZeroNewDEM(false,NewHeader,Result,DEMName,InitDEMmissing);
+         CreateOpenAndZeroNewDEM(false,NewHeader,Result,DEMName,InitDEMmissing);
          {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid created, OpenAndZero ' + sfBoundBoxToString(DEMGlb[Result].DEMBoundBoxGeo,4)); {$EndIf}
          {$IfDef RecordMakeBaseMap} WriteLineToDebugFile('CreateNewUTMGrid ' + DEMGlb[Result].FullDEMParams); {$EndIf}
 
@@ -2983,6 +2985,11 @@ begin
    Edit32.Enabled := not MdDef.ForceSquarePixels;
    Label20.Enabled := not MdDef.ForceSquarePixels;
    Label33.Enabled := not MdDef.ForceSquarePixels;
+end;
+
+procedure Tpt_cloud_opts_fm.CheckBox35Click(Sender: TObject);
+begin
+   MDdef.New3dViewer := CheckBox35.Checked;
 end;
 
 procedure Tpt_cloud_opts_fm.CheckBox3Click(Sender: TObject);
@@ -3510,6 +3517,7 @@ begin
    CheckBox29.Checked := MDDef.LatLongSlices;
    CheckBox30.Checked := MDdef.AutoReDrawMapLAS;
    CheckBox32.Checked := MDDef.AutoThinByBlock;
+   CheckBox35.Checked := MDdef.New3dViewer;
 
    RadioGroup4.ItemIndex := MDDef.DTMoption;
    if MDDef.PickLASDirs then RadioGroup6.ItemIndex := 0 else RadioGroup6.ItemIndex := 1;
@@ -3560,6 +3568,7 @@ procedure Tpt_cloud_opts_fm.HelpBtnClick(Sender: TObject);
 begin
    DisplayHTMLTopic('html\pt_cld_opts.htm');
 end;
+
 
 procedure Tpt_cloud_opts_fm.RadioGroup1Click(Sender: TObject);
 begin
@@ -3615,19 +3624,19 @@ end;
 procedure Tpt_cloud_opts_fm.BitBtn8Click(Sender: TObject);
 var
    Cloud : integer;
+   TStr : shortstring;
    FileList : tStringList;
    OK,ViewMultiple,ExportDone,AlreadyLoaded,LASDestroy : Boolean;
-   //fName : array[1..5] of PathStr;
    i : Integer;
 
       procedure ExportCloud(Cloud : integer; BaseName : PathStr; ExportFilter : tLASClassificationCategory = lccAll);
       var
-         Fname,ColorName : PathStr;
+         Fname : PathStr;
       begin
          if (LasFiles[Cloud] <> Nil) and (LasFiles[Cloud].LAS_fnames.Count > 0) then begin
             if AlreadyLoaded then exit;
             FName := Petmar.NextFileNumber(MDTempDir, BaseName + '_','.xyzib');
-            if LasFiles[Cloud].ExportBinary(mlOnMask,BaseMap,Cloud,FName,ColorName,ExportFilter) then begin
+            if LasFiles[Cloud].ExportBinary(mlOnMask,BaseMap,Cloud,FName,ExportFilter) then begin
                OK := true;
                FileList.Add(fName);
             end;
@@ -3639,9 +3648,6 @@ begin
    ok := False;
    AlreadyLoaded := false;
    LASdestroy := true;
-   //for i := 1 to MaxClouds do begin
-      //fName[i] := '';
-   //end;
    if (Sender = BitBtn20) or (Sender = BitBtn27) or (Sender = BitBtn8) then begin
       ExportDone := false;
       ViewMultiple := (Sender = BitBtn27) or (Sender = BitBtn8);
@@ -3649,7 +3655,12 @@ begin
       for Cloud := 1 to MaxClouds do begin
          if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
            if (Sender = BitBtn8) then begin
-              ExportCloud(Cloud,LasFiles[Cloud].CloudName);
+               if MDdef.ls.ColorCoding = lasccElevation then TStr := 'Elevation'
+               else if MDdef.ls.ColorCoding = lasccClass then TStr := 'Lidar_classification'
+               else if MDdef.ls.ColorCoding = lasccIntensity then TStr := 'Lidar_intensity'
+               else if MDdef.ls.ColorCoding = lasccRGB then TStr := 'RGB'
+               else TStr := 'Other_lidar';
+               ExportCloud(Cloud,TStr);
            end
            else begin
                LASdestroy := false;
@@ -3683,7 +3694,7 @@ begin
          for Cloud := 1 to MaxClouds do begin
             if UsePC[Cloud] and (LasFiles[Cloud] <> Nil) then begin
                {$IfDef RecordPointCloudViewing} WriteLineToDebugFile('Export=' + IntToStr(Cloud) + '  ' + fName[Cloud]); {$EndIf}
-               ExportCloud(Cloud,LasFiles[Cloud].CloudName);
+               ExportCloud(Cloud,LasFieldName[MDdef.ls.ColorCoding]);  //    LasFiles[Cloud].CloudName);
                AlreadyLoaded := false;
             end;
          end;

@@ -527,7 +527,7 @@ begin
       Data.Free;
       CloseFile(rfile);
    end;
-   Result.RedrawDiagram11Click(Nil);
+   Result.RedrawDiagram;
 end;
 
       function tSatImage.GraphHistogram(Desired : integer; WhichBand : integer) : TThisBaseGraph;
@@ -605,7 +605,7 @@ end;
                ForceAxisFit(HorizAxisFunctionType,HorizCycleCuts,NumHorizCycles,MinHorizAxis,MaxHorizAxis,XWindowSize,50,GraphDraw.ForceHorizCycleSize,GraphDraw.ForceHorizTickIncr);
                ForceAxisFit(VertAxisFunctionType,VertCycleCuts,NumVertCycles,MinVertAxis,MaxVertAxis,YWindowSize,25,GraphDraw.ForceVertCycleSize,GraphDraw.ForceVertTickIncr);
                Result.SetUpGraphForm;
-               RedrawDiagram11Click(Nil);
+               RedrawDiagram;
             end {with};
          {$IfDef RecordHistogram} WriteLineToDebugFile('tSatImage.GraphHistogram out'); {$EndIf}
       end;
@@ -655,7 +655,7 @@ end;
             end;
             MaxHorizAxis := MaxRefCount;
             MaxVertAxis := 255;
-            RedrawDiagram11Click(Nil);
+            RedrawDiagram;
          end;
       end;
 
@@ -983,7 +983,7 @@ begin
    NewHeadRecs.DEMySpacing := BandYSpace[Band1];
    NewHeadRecs.UTMZone := ImageMapProjection.projUTMZone;
    NewHeadRecs.LatHemi := ImageMapProjection.LatHemi;
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,NewBandTitle,InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,NewBandTitle,InitDEMmissing);
 
    if (NewBand = nsbNDVI) then DEMGlb[Result].DEMheader.ElevUnits := euNDVI
    else if (NewBand = nsbNBRNormalizedburnindex) then DEMGlb[Result].DEMheader.ElevUnits := euNBR

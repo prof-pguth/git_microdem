@@ -168,7 +168,7 @@ begin
               NewHeadRecs := DEMGlb[TheMapOwner.MapDraw.DEMonMap].DEMheader;
               NewHeadRecs.DEMPrecision := SmallIntDEM;
               NewHeadRecs.ElevUnits := euIntCode;
-              if not OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'',true) then exit;
+              if not CreateOpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'',true) then exit;
 
               Index := tStringList.Create;
               Index.Add('VALUE,BASIN_ID,N');

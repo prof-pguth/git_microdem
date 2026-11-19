@@ -187,7 +187,7 @@ var
        begin
           RegVars.Registration := RegProjection;
           MapProjection.PName := PlateCaree;
-          MapProjection.GetProjectParameters;
+          MapProjection.GetProjParams;
        end;
 
        procedure DefineMercatorProjection;
@@ -195,7 +195,7 @@ var
           RegVars.Registration := RegProjection;
           MapProjection.Long0 := 0;
           MapProjection.PName := MercatorEllipsoid;
-          MapProjection.GetProjectParameters;
+          MapProjection.GetProjParams;
        end;
 
        procedure DefineSouthPolarStereographicProjection;
@@ -204,7 +204,7 @@ var
           MapProjection.Long0 := 0;
           MapProjection.Lat0 := -71 * DegToRad;
           MapProjection.PName := PolarStereographicEllipsoidal;
-          MapProjection.GetProjectParameters;
+          MapProjection.GetProjParams;
        end;
 
 

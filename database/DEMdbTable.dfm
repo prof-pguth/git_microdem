@@ -1353,9 +1353,6 @@ object dbtablef: Tdbtablef
         OnClick = Tidepredictions1Click
       end
     end
-    object Redistrict1: TMenuItem
-      Caption = 'Redistrict'
-    end
     object DEMIX1: TMenuItem
       Caption = 'DEMIX'
       OnClick = DEMIX1Click
@@ -2084,12 +2081,45 @@ object dbtablef: Tdbtablef
     object DTDSMcomparison1: TMenuItem
       Caption = 'DTM/DSM graph/map comparison this tile'
       object OpenHRDEMDSMDTMLandcover1: TMenuItem
-        Caption = 'Open HRDEM DSM+DTM+Landcover'
+        Caption = 'Open HRDEM grids'
         OnClick = OpenHRDEMDSMDTMLandcover1Click
+        object DSMDTMLandcover1: TMenuItem
+          Caption = 'DSM+DTM+Landcover'
+          OnClick = DSMDTMLandcover1Click
+        end
+        object DSMDTMLandcover2: TMenuItem
+          Caption = 'DSM'
+          OnClick = DSMDTMLandcover2Click
+        end
+        object DTM1: TMenuItem
+          Caption = 'DTM'
+          OnClick = DTM1Click
+        end
+      end
+      object HRDEMpointslopecomparisons1: TMenuItem
+        Caption = 'HRDEM point slope comparisons'
+        object DTM3: TMenuItem
+          Caption = 'DTM'
+          OnClick = DTM3Click
+        end
+        object DSM2: TMenuItem
+          Caption = 'DSM'
+          OnClick = DSM2Click
+        end
       end
       object HRDEMslopeandslopedifferencemaps1: TMenuItem
         Caption = 'HRDEM slope and slope difference maps'
-        OnClick = HRDEMslopeandslopedifferencemaps1Click
+      end
+      object GDEMpointslopecomputations1: TMenuItem
+        Caption = 'GDEM point slope computations'
+        object DTM2: TMenuItem
+          Caption = 'DTM'
+          OnClick = DTM2Click
+        end
+        object DSM1: TMenuItem
+          Caption = 'DSM'
+          OnClick = DSM1Click
+        end
       end
       object hinnedslopeandslopedifferencemaps1: TMenuItem
         Caption = 'Thinned slope and slope difference maps'
@@ -4067,6 +4097,10 @@ object dbtablef: Tdbtablef
       Caption = 'Download/extract DEMIX tiles from COG DEMs'
       OnClick = DownloadextractDEMIXtilesfromCOGDEMs1Click
     end
+    object DownloadGEM15DTM1: TMenuItem
+      Caption = 'Download GEM-15 DTM'
+      OnClick = DownloadGEM15DTM1Click
+    end
     object N51: TMenuItem
       Caption = '-'
     end
@@ -4281,7 +4315,7 @@ object dbtablef: Tdbtablef
     end
   end
   object DSMDTMpopup: TPopupMenu
-    Left = 832
+    Left = 848
     Top = 480
     object CompareDSMDTM1: TMenuItem
       Caption = 'Compare DSM/DTM graphs'

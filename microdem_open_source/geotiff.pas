@@ -21,7 +21,7 @@ unit GeoTiff;
 {$IfDef Recordproblems}  //normally only defined for debugging specific problems
 
    {$IFDEF DEBUG}
-      //{$Define RecordGeotiff}
+      //{$Define RecordGeotiff
       //{$Define RecordGeotiffRewrite}
       //{$Define GeotiffSave}
       //{$Define RecordJustMetadata}
@@ -67,10 +67,8 @@ unit GeoTiff;
       //{$Define RecordMinMax}
       //{$Define RecordNLCD}
       //{$Define TrackImageWidth}
-      //{$Define RecordGeoti
       //{$Define RecordGeotiffRow}    //potential major slowdown
       //{$Define FullDEMinit}         //potential major slowdown
-      //{$Define NoGeotiffProjection}  //Jan 2024 added to track down problem opening a Geotiff
    {$ELSE}
    {$ENDIF}
 {$EndIf}
@@ -207,6 +205,8 @@ function GetGeotiffTag42112(fName : PathStr; var Tag : shortstring; var Tag42112
 function Geotiff_UTMzone(fName : PathStr) : integer;
 
 function Geotiff_VerticalDatum(fName : PathStr) : integer;
+function NeedRewriteGeotiff(var TIFFFileName : PathStr) : boolean;
+
 
 
 {$IfDef VCL}
@@ -285,6 +285,18 @@ begin
    end;
 end;
 
+function NeedRewriteGeotiff(var TIFFFileName : PathStr) : boolean;
+var
+  TiffImage : tTiffImage;
+  Success : boolean;
+begin
+   {$IfDef RecordGeotiffRewrite} WriteLineToDebugFile('RewriteGeotiffIfRequired in for  ' + TIFFFileName); {$EndIf}
+   TiffImage := tTiffImage.CreateGeotiff(true,false,TIFFFileName,success);
+   {$IfDef RecordGeotiffRewrite} WriteLineToDebugFile('RewriteGeotiffIfRequired image created'); {$EndIf}
+   Result := TiffImage.TiffMustBeRewritten;
+   TiffImage.Destroy;
+end;
+
 
 procedure RewriteGeotiffIfRequired(var TIFFFileName : PathStr);
 var
@@ -319,6 +331,7 @@ end;
        WriteLineToDebugFile(Where + ', tiff image ' + IntToStr(TiffHeader.ImageWidth) + 'x' + IntToStr(TiffHeader.ImageLength));
     end;
 {$EndIf}
+
 
 function tTIFFImage.TiledImage : boolean;
 begin
@@ -1194,6 +1207,7 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
                   {$If Defined(RecordGeotiffProjection) or Defined(RecordUKOS)} WriteLineToDebugFile('DefineProjectionParameters out, DEM proj=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
                   {$IfDef RecordprojProgress} WantDEM.DEMMapProj.WriteProjectionSummaryToDebugFile('DefineProjectionParameters out: '); {$EndIf}
                   {$If Defined(TrackWKTstring)} WriteLineToDebugFile('DefineProjectionParameters out, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
+                  {$IfDef Track_MapProjScale} WantDEM.DEMMapProj.LogMapProjScale(WantDEM.AreaName + ' Geotiff DefineProjectionParameters'); {$EndIf}
               end {DefineProjectionParameters};
 
 
@@ -1266,11 +1280,12 @@ function tTIFFImage.CreateTiffDEM(WantDEM : tDEMDataSet) : boolean;
             end;
 
             {$IfDef TrackA} WriteLineToDebugFile('tTIFFImage.CreateTiffDEM out, a=' + RealToString(WantDEM.DEMMapProj.a,-18,-2)); {$EndIf}
-            {$If Defined(RecordInitDEM) or Defined(RecordDEMMapProj)} WantDEM.DEMMapProj.ShortProjInfo('tTIFFImage.InitializeDEM in'); {$EndIf}
+            {$If Defined(RecordInitDEM)} WantDEM.DEMMapProj.ShortProjInfo('tTIFFImage.InitializeDEM out'); {$EndIf}
             {$IfDef RecordNLCD} WriteLineToDebugFile('Initialize TIFF DEM out, ' + WantDEM.AreaName + '  data=' + ElevUnitsAre(WantDEM.DEMheader.ElevUnits)); {$EndIf}
             {$If Defined(RecordUKOS)} WriteLineToDebugFile('Initialize TIFF DEM out, pName=' + WantDEM.DEMMapProj.GetProjName); {$EndIf}
             {$IfDef RecordprojProgress} WantDEM.DEMMapProj.WriteProjectionSummaryToDebugFile('DefineProjectionParameters Initialize TIFF DEM out: '); {$EndIf}
             {$If Defined(TrackWKTstring)} WriteLineToDebugFile('Initialize TIFF DEM out, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
+            {$If Defined(RecordDEMMapProj)} WantDEM.DEMMapProj.ProjParamsToDebugFile('****** tTIFFImage.InitializeDEM out'); {$EndIf}
          end {InitializeTiffDEM};
 
 var
@@ -1449,7 +1464,7 @@ begin {tTIFFImage.CreateTiffDEM}
    {$If Defined(RecordInitDEMName)} WriteLineToDebugFile('Done Geotiff DEM read ' + WantDEM.AreaName); {$EndIf}
 
    {$If Defined(RecordDEMMapProj) or Defined(RecordInitDEM) or Defined(TrackProjection)}
-      WantDEM.DEMMapProj.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out');
+      WantDEM.DEMMapProj.ProjParamsToDebugFile('SetUpDefaultNewProjection out');
    {$EndIf}
    {$If Defined(TrackHorizontalDatum)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, ' + WantDEM.AreaName + '  DEM=' + WantDEM.DEMMapProj.h_DatumCode); {$EndIf}
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tTIFFImage.CreateDEM out, DEM wkt=' + IntToStr(Length(WantDEM.DEMMapProj.wktString))); {$EndIf}
@@ -1728,7 +1743,7 @@ var
                      end;
 
                      if MapProjection.PName in [AlbersEqAreaConicalEllipsoid,PolarStereographicEllipsoidal] then begin
-                        MapProjection.GetProjectParameters;
+                        MapProjection.GetProjParams;
                         ProjectionDefined := true;
                      end
                      else begin
@@ -1755,8 +1770,8 @@ var
                if ProjectionDefined then begin
                   {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('calling SetDatumConstants'); {$EndIf}
                   MapProjection.SetDatumConstants;
-                  {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('calling GetProjectParameters'); {$EndIf}
-                  MapProjection.GetProjectParameters;
+                  {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('calling GetProjParams'); {$EndIf}
+                  MapProjection.GetProjParams;
                end;
             {$If Defined(RecordDefineDatum) or Defined(LongCent)} MapProjection.ShortProjInfo('ProcessASCIIstringForProjection out'); {$EndIf}
             ASCIIStr := '';
@@ -2287,8 +2302,6 @@ var
       DatCode := -99;
    end;
 
-   {$IfDef NoGeotiffProjection}
-   {$Else}
 
       procedure ReadGeotiffTags;
       var
@@ -2372,17 +2385,17 @@ var
                   2058 : SetADouble(TiffOffset,6);
                   2059 : MapProjection.h_f := SetADouble(TiffOffset,6);
                   2061 : SetADouble(TiffOffset,6);  //Prime Meridian longitude
-                  3072,
-                  3074 : begin
+                  3072 : begin
                              TStr := MapProjection.OpenFromTiff3072(TiffOffset);
                              ProjectionDefined :=  TStr <> 'Undefined';
                              NeedWKTHailMary := not ProjectionDefined;
-                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('Key 3072'); {$EndIf}
+                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.ProjParamsToDebugFile('Key 3072'); {$EndIf}
                          end;
                   3073 : begin end;
+                  3074 : NeedWKTHailMary := true;
                   3075 : begin
                              TStr := MapProjection.ProcessTiff3075(TiffOffset);
-                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('Key 3075'); {$EndIf}
+                             {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.ProjParamsToDebugFile('Key 3075'); {$EndIf}
                          end;
                   3076 : begin
                             if (TiffOffset = 9001) or (TiffOffset = 9002) or (TiffOffset = 9003) then begin
@@ -2430,11 +2443,11 @@ var
                Aline := IntegerToString(tag,7) + '  ' + TIFFTypeName(FType) + IntegerToString(LengthIm,7) + IntegerToString(TiffOffset,8) + '  ' + GeoTiffTagName(Tag) + '   ' + TStr;
                {$IfDef RecordProcessingHeader} WriteLineToDebugFile(ALine); {$EndIf}
                HeaderLogList.Add(aLine);
-               {$If Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('After tag' + IntToStr(i) + '  key=' + IntToStr(tag)); {$EndIf}
+               {$If Defined(TrackProjection)} MapProjection.ProjParamsToDebugFile('After tag' + IntToStr(i) + '  key=' + IntToStr(tag)); {$EndIf}
             end {for i};
 
             if (MapProjection.PName = UTMEllipsoidal) then MapProjection.False_east := 500000;
-            {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.WriteProjParamsToDebugFile('Keys read'); {$EndIf}
+            {$If Defined(RecordFullGeotiff) or Defined(TrackProjection)} MapProjection.ProjParamsToDebugFile('Keys read'); {$EndIf}
 
             if (WeKnowItsUTMZone <> -99) then begin
                MapProjection.StartUTMProjection(WeKnowItsUTMZone);
@@ -2449,7 +2462,7 @@ var
 
             if (ASCIIstr <> '') and (Not ProjectionDefined) then ProcessASCIIstringForProjection(ASCIIStr);
 
-         {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
+         {$IfDef TrackProjection} MapProjection.ProjParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
          {$If Defined(RecordDefineDatum) or Defined(RecordPlateCaree) or Defined(RecordGeotiffProjection)} WriteLineToDebugFile(' ReadGeotiffTags out, Projection=' + MapProjection.GetProjName); {$EndIf}
          {$If Defined(Record3076) or Defined(RecordInitDEM)} WriteLineToDebugFile('Out geotiff tags ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
          {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('End ReadGeotiffTags: '); {$EndIf}
@@ -2461,7 +2474,7 @@ var
          if (GeoKeyDirectoryOffset = 0) then begin
             if TiffHeader.ModelType = -99 then begin
                if (TiffHeader.ScaleX < 0.01) and (TiffHeader.ScaleY < 0.01) and (abs(TiffHeader.ModelY) < 100) and (abs(TiffHeader.ModelX) < 200) then TiffHeader.ModelType := 2 else TiffHeader.ModelType := 1;
-               MapProjection.GetProjectParameters;
+               MapProjection.GetProjParams;
             end
             else TryWorldFile;
          end
@@ -2475,9 +2488,9 @@ var
                if (MapProjection.projUTMZone = -99) then begin
                   GetUTMZoneNotAlreadyDefined;
                end;
-               {$IfDef RecordFullGeotiff} WriteLineToDebugFile('Call GetProjectParameters '+ MapProjection.GetProjName); {$EndIf}
-               {$IfDef TrackA} MapProjection.ShortProjInfo('Geotiff Call MapProjection.GetProjectParameters'); {$EndIf}
-               MapProjection.GetProjectParameters;
+               {$IfDef RecordFullGeotiff} WriteLineToDebugFile('Call GetProjParams '+ MapProjection.GetProjName); {$EndIf}
+               {$IfDef TrackA} MapProjection.ShortProjInfo('Geotiff Call MapProjection.GetProjParams'); {$EndIf}
+               MapProjection.GetProjParams;
 
                if (MapProjection.PName in [SphericalStereographic,EquidistantCylindrical]) then begin
                end
@@ -2518,7 +2531,6 @@ var
          {$IfDef RecordprojProgress} MapProjection.WriteProjectionSummaryToDebugFile('end LoadGeotiffProjection: '); {$EndIf}
          {$If Defined(TrackWKTstring)} WriteLineToDebugFile('LoadGeotiffProjection out, map wkt=' + IntToStr(length(MapProjection.wktString))); {$EndIf}
       end;
-   {$EndIf}
 
    function ReadTiffFileHeader : boolean;
    var
@@ -2693,18 +2705,17 @@ begin {constructor tTIFFImage.CreateGeotiff}
 
       {$IfDef TrackModelType} WriteLineToDebugFile('Time for projection TiffHeader.ModelType=' + IntToStr(TiffHeader.ModelType) ); {$EndIf}
 
-   {$IfDef NoGeotiffProjection}
-   {$Else}
       if (not NoGeo) and NeedToLoadGeoTiffProjection then begin
          LoadGeotiffProjection;
       end;
-   {$EndIf}
 
    CloseTiffFile;
-   if ((not (MapProjection.PName in [PlateCaree,UTMellipsoidal])) and (MapProjection.wktString = '')) or NeedWKTHailMary then begin
-      // must be after CloseTiffFile;
-      MapProjection.wktString := CreateWKTstringForGeotiff(TIFFFileName);
-      MapProjection.InitProjFromWKTstring(MapProjection.wktString);
+   if not Geosuccess then begin
+      if ((not (MapProjection.PName in [PlateCaree,UTMellipsoidal])) and (MapProjection.wktString = '')) or NeedWKTHailMary then begin
+         // must be after CloseTiffFile;
+         MapProjection.wktString := CreateWKTstringForGeotiff(TIFFFileName);
+         if (MapProjection.wktString <> '') then MapProjection.InitProjFromWKTstring(MapProjection.wktString);
+      end;
    end;
 
    {$IfDef RecordInitDEM} WriteLineToDebugFile(' closed tiff file,  ModelX=' + RealToString(TiffHeader.ModelX,-18,-6) + ' ModelY=' + RealToString(TiffHeader.ModelY,-18,-6) ); {$EndIf}
@@ -2748,6 +2759,11 @@ begin {constructor tTIFFImage.CreateGeotiff}
       {$EndIf}
    end;
 
+   {$IfDef RecordDefineDatum}
+      MapProjection.ShortProjInfo('Point 2, utm=');
+      MapProjection.ProjParamsToDebugFile('Projection');
+   {$EndIf}
+
    TemporaryNewGeotiff := true;
    if (MapProjection.projUTMzone <= 0) then begin
       MapProjection.InverseProjectDegrees(TiffHeader.ModelX,TiffHeader.ModelY,Lat,Long);
@@ -2755,15 +2771,14 @@ begin {constructor tTIFFImage.CreateGeotiff}
    end;
 
    {$IfDef RecordDefineDatum}
-      MapProjection.ShortProjInfo('Point 2, utm=');
-      MapProjection.WriteProjParamsToDebugFile('Projection');
-      WriteLineToDebugFile('Geotiff done OK, datum=' + MapProjection.H_datumCode);
+      MapProjection.ShortProjInfo('Point 2.5, utm=');
+      MapProjection.ProjParamsToDebugFile('Projection');
    {$EndIf}
 
    {$IfDef RecordGeotiff} WriteStringListToDebugFile(HeaderLogList); {$EndIf}
    {$IfDef RecordBitPerPixel} WriteLineToDebugFile('leaving read Geotiff, BitsPerSample=' + IntToStr(TiffHeader.BitsPerSample) + ' bytes=' + IntToStr(TiffHeader.BytesPerSample) + 'can enhance=' + TrueOrFalse(CanEnhance)); {$EndIf}
    {$IfDef TrackA} WriteLineToDebugFile('read Geotiff out, a=' + RealToString(MapProjection.a,-18,-2) + '  f=' + RealToString(MapProjection.h_f,-18,-6) + '  datum=' + MapProjection.H_datumCode); {$EndIf}
-   {$IfDef TrackProjection} MapProjection.ProjectionParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
+   {$IfDef TrackProjection} MapProjection.ProjParamsToDebugFile('ReadGeotiffTags out'); {$EndIf}
    {$IfDef TrackHorizontalDatum} WriteLineToDebugFile('GeoSuccess and NeedToLoadGeotiffProjection out, datum=' + MapProjection.h_DatumCode); {$EndIf}
    {$IfDef TrackPixelIs} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, ' + RasterPixelIsString(TiffHeader.RasterPixelIs)); {$EndIf}
    {$IfDef RecordUTM} WriteLineToDebugFile('read Geotiff ' + ExtractFileName(InFileName) + ' out, UTM zone=' + IntToStr(MapProjection.projUTMzone)); {$EndIf}

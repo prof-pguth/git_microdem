@@ -4,7 +4,7 @@ unit veg_density;
 { Part of MICRODEM GIS Program           }
 { PETMAR Trilobite Breeding Ranch        }
 { Released under the MIT Licences        }
-{ Copyright (c) 1986-2025 Peter L. Guth  }
+{ Copyright (c) 1986-2026 Peter L. Guth  }
 {________________________________________}
 
 {$I nevadia_defines.inc}
@@ -107,7 +107,7 @@ var
 
 
 begin
-   VegGraph.RedrawDiagram11Click(Nil);
+   VegGraph.RedrawDiagram;
    TStr :=  LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
    VegGraph.Caption  := ' Veg profile ' + Tstr;
    VegGraph.Image1.Canvas.TextOut(VegGraph.GraphDraw.LeftMargin+3,5,TStr);
@@ -315,8 +315,8 @@ begin
        NewHeadRecs := DEMGlb[DEMonMap].DEMheader;
        NewHeadRecs.DEMPrecision := ByteDEM;
        NewHeadRecs.ElevUnits := euUndefined;
-       OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'Occupied_layers_above_clear_zone',InitDEMmissing);
-       OpenAndZeroNewDEM(true,NewHeadRecs,OccupiedLayersDEM,'Occupied_veg_layers',InitDEMmissing);
+       CreateOpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'Occupied_layers_above_clear_zone',InitDEMmissing);
+       CreateOpenAndZeroNewDEM(true,NewHeadRecs,OccupiedLayersDEM,'Occupied_veg_layers',InitDEMmissing);
 
        NumOccupiedVoxels := 0;
        NumOccupiedNeighbors := 0;

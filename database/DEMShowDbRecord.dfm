@@ -289,8 +289,6 @@ object showrecordform: Tshowrecordform
         DefaultRowHeight = 12
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing, goRowMoving, goColMoving]
         TabOrder = 0
-        ExplicitLeft = 3
-        ExplicitTop = -2
         ColWidths = (
           120
           120)

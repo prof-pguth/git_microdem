@@ -2,7 +2,7 @@ object MapForm: TMapForm
   Left = 2
   Top = 2
   BorderIcons = [biSystemMenu, biMinimize]
-  ClientHeight = 1121
+  ClientHeight = 1141
   ClientWidth = 2404
   Color = clBtnHighlight
   Font.Charset = DEFAULT_CHARSET
@@ -41,7 +41,7 @@ object MapForm: TMapForm
     Left = 0
     Top = 27
     Width = 2404
-    Height = 1094
+    Height = 1114
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
@@ -207,7 +207,7 @@ object MapForm: TMapForm
     end
     object BlendPanel: TPanel
       Left = 0
-      Top = 1049
+      Top = 1069
       Width = 2400
       Height = 41
       Align = alBottom
@@ -4368,9 +4368,6 @@ object MapForm: TMapForm
         object Averagetonewprojection1: TMenuItem
           Caption = 'Average to new projection'
           OnClick = Averagetonewprojection1Click
-        end
-        object DEMIX1secresamplebyaveraging1: TMenuItem
-          Caption = 'DEMIX 1 sec resample by averaging'
         end
         object N1secand30mresamplesbyaveraging1: TMenuItem
           Caption = 'Aggregate this HRDEM to 1 sec and 30 m'

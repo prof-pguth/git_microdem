@@ -236,18 +236,47 @@ procedure ReadDefault(Prompt : ShortString;  var WordVal : word); overload;
 
 //file routines, file name and path names
    function FileCanBeOpened(fName : PathStr) : boolean;
-      function GetExistingFileName(Mess,Filters : ANSIstring; var FName : PathStr) : boolean;
-      function GetFileNameDefaultExt(Mess,Filters : ANSIstring; var FName : PathStr; AppendOption : boolean = false) : boolean;
-      function GetFileNameDefaultExtSaveExt(Mess,Filters : ANSIstring; var FName : PathStr; var  df : Integer; AppendOption : boolean = false) : boolean;
-      function GetMultipleFiles(InMessage,Masks : ANSIstring; var FilesWanted : TStringList; var DefaultFilter : byte) : boolean;
-      function GetFileMultipleMask(InMessage,Masks : ANSIstring; var FileWanted : PathStr; var DefaultFilter : byte) : boolean;
-      function GetMultipleDirectories(TheMessage : AnsiString; var Paths : tStringList) : boolean;
-      function GetFileFromDirectory(InMessage : ANSIstring; Mask : ANSIstring;  var FileWanted : PathStr) : boolean;
-      function GetDOSPath(TheMessage : AnsiString; var Path : PathStr) : boolean;
-      procedure UnblockFile(fName : PathStr);
+   function GetExistingFileName(Mess,Filters : ANSIstring; var FName : PathStr) : boolean;
+   function GetFileNameDefaultExt(Mess,Filters : ANSIstring; var FName : PathStr; AppendOption : boolean = false) : boolean;
+   function GetFileNameDefaultExtSaveExt(Mess,Filters : ANSIstring; var FName : PathStr; var  df : Integer; AppendOption : boolean = false) : boolean;
+   function GetMultipleFiles(InMessage,Masks : ANSIstring; var FilesWanted : TStringList; var DefaultFilter : byte) : boolean;
+   function GetFileMultipleMask(InMessage,Masks : ANSIstring; var FileWanted : PathStr; var DefaultFilter : byte) : boolean;
+   function GetMultipleDirectories(TheMessage : AnsiString; var Paths : tStringList) : boolean;
+   function GetFileFromDirectory(InMessage : ANSIstring; Mask : ANSIstring;  var FileWanted : PathStr) : boolean;
+   function GetDOSPath(TheMessage : AnsiString; var Path : PathStr) : boolean;
+   procedure UnblockFile(fName : PathStr);
 
-      procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean);
+   procedure AddSuffixOrPrefixToFiles(PrefixWanted : boolean);
 
+//file routines, file name and path names
+
+      function GetSubDirsInDirectory(BaseDir : PathStr) : tStringList;
+      function GetFileSize(FileName : PathStr) : Int64;
+      function LastSubDir(Dir : AnsiString) : PathStr;
+
+       procedure FixFileNameBackslashes(var fName : PathStr);
+
+      function GetParentDirectory(path : Ansistring) : Ansistring;
+      procedure StripInvalidPathNameChars(var fName : PathStr; PathOK : boolean = false);
+      function CopyFile(SourceFile,DestinationFile : string):  boolean;
+      function MoveFile(SourceFile,DestinationFile : string):  boolean;
+      procedure CleanUpFileName(var fname : PathStr);
+
+      procedure FSplit(FName : PathStr; var Dir : DirStr; var Name : NameStr; var Ext : ExtStr);
+      function ExtractFileNameNoExt(fName : PathStr) : NameStr;
+      procedure FixForwardSlashes(var fName : PathStr);
+
+      function FileTimeFromFileName(fName : PathStr) : ShortString;
+      procedure InsureFileIsNotReadOnly(InputFileName: PathStr);
+      procedure DeleteMultipleFiles(Dir : PathStr; Mask : ANSIstring);
+      procedure CleanOutDirectory(BaseDir : PathStr);
+      procedure DeleteFileIfExists(fName : PathStr);
+      procedure FindMatchingFiles(Dir : PathStr; Mask : ANSIstring; var TheFiles : tStringList; DigLayers : integer = 0);  //;  StatusBar1 : tStatusBar = nil);
+      function NextFileNumber(Path,fName : PathStr; Ext : ExtStr) : PathStr;
+      function NextFilePath(Path : PathStr) : PathStr;
+
+      function ExtEquals(Ext,Wanted : ExtStr) : boolean;
+      function FileExtEquals(fName : PathStr; Wanted : ExtStr) : boolean;
 
 function BitmapSizeString(Bitmap : tMyBitmap) : shortstring;
 
@@ -274,7 +303,6 @@ function AvailPhysMemStr : shortstring;
 {$EndIf}
 
 
-{$IfDef MICRODEM}
 //ANSIstring routines with deg/min/sec and time
       procedure ConvertToDegMinSecString(Value : float64; OutPutMethod : tLatLongMethod;  var DegString,MinString,SecString : string10; HighAccuracy : boolean = true);
       function ConvertToDegreesString(Value : float64; OutPutMethod : tLatLongMethod; HighAccuracy : boolean = true) : shortstring;
@@ -291,7 +319,6 @@ function AvailPhysMemStr : shortstring;
       function SmartVolumeFormat(d : float64; DistanceUnits : tDistanceUnits = disMetric) : shortString;
       function SmartAreaFormat(d : float64) : shortString;
       function AngleFormat(Angle : float64; Units : tAngleMeasure; ShowUnits : boolean = true) : shortstring;
-{$EndIf}
 
 {$IfDef ColorRoutines}
       //color routines
@@ -390,37 +417,6 @@ function GetFloatFromRequest(InString : ANSIstring; WantField : shortstring) : f
 function GetIntegerFromRequest(InString : ANSIstring; WantField : shortstring) : integer;
 
 function ReadFilter(var Filter : FilterType; var FilterSize,FilterLap,Sum : integer; var FilterName : PathStr; DisplayFilter : boolean = true) : boolean;
-
-
-//file routines, file name and path names
-
-      function GetSubDirsInDirectory(BaseDir : PathStr) : tStringList;
-      function GetFileSize(FileName : String) : Int64;
-      function LastSubDir(Dir : AnsiString) : PathStr;
-
-       procedure FixFileNameBackslashes(var fName : PathStr);
-
-      function GetParentDirectory(path : Ansistring) : Ansistring;
-      procedure StripInvalidPathNameChars(var fName : PathStr; PathOK : boolean = false);
-      function CopyFile(SourceFile,DestinationFile : string):  boolean;
-      function MoveFile(SourceFile,DestinationFile : string):  boolean;
-      procedure CleanUpFileName(var fname : PathStr);
-
-      procedure FSplit(FName : PathStr; var Dir : DirStr; var Name : NameStr; var Ext : ExtStr);
-      function ExtractFileNameNoExt(fName : PathStr) : NameStr;
-      procedure FixForwardSlashes(var fName : PathStr);
-
-      function FileTimeFromFileName(fName : PathStr) : ShortString;
-      procedure InsureFileIsNotReadOnly(InputFileName: PathStr);
-      procedure DeleteMultipleFiles(Dir : PathStr; Mask : ANSIstring);
-      procedure CleanOutDirectory(BaseDir : PathStr);
-      procedure DeleteFileIfExists(fName : PathStr);
-      procedure FindMatchingFiles(Dir : PathStr; Mask : ANSIstring; var TheFiles : tStringList; DigLayers : integer = 0);  //;  StatusBar1 : tStatusBar = nil);
-      function NextFileNumber(Path,fName : PathStr; Ext : ExtStr) : PathStr;
-      function NextFilePath(Path : PathStr) : PathStr;
-
-      function ExtEquals(Ext,Wanted : ExtStr) : boolean;
-      function FileExtEquals(fName : PathStr; Wanted : ExtStr) : boolean;
 
 //values from strings
       function CheckEditString(Text : string; var OutValue : float64) : boolean; overload;
@@ -1011,7 +1007,7 @@ begin
 end;
 
 
-function GetFileSize(FileName : String): Int64;
+function GetFileSize(FileName : PathStr): Int64;
 //https://engineertips.wordpress.com/2018/07/12/filesize-function-for-delphi/
 var
   sr : TSearchRec;

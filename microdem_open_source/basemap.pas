@@ -33,8 +33,7 @@ unit basemap;
       //{$Define RecordTMParameters}
       //{$Define RecordFalse}
       //{$Define LongCent}
-      //{$Define RecordProjectionParameters}
-      //{$Define DetailedProjParams}
+      //{$Define RecordProjParams}
       //{$Define RecordMapProjCreateDestroy}
       //{$Define RecordDatumProblems}
       //{$Define RecordDefineDatum}
@@ -188,7 +187,7 @@ type
 
          function PreferLocationString(Lat,Long : float64) : ShortString;
 
-         procedure ShortProjInfo(Why : shortstring);
+         function ShortProjInfo(Why : shortstring) : shortstring;
 
          procedure ForwardProjectDegrees(Lat,Long : float64; var x,y : float64; Check : boolean = true);
          procedure ForwardProjectRadians(Lat,Long : float64; var x,y : float64; Check : boolean = true);
@@ -209,12 +208,13 @@ type
          function UTMLocationString(XUTM,YUTM : float64) : ShortString;
          function UTMZoneString : shortstring;
 
-         procedure GetProjectParameters;
+         procedure GetProjParams(Where : shortstring = '');
 
-         function ProjParamsList(Full : boolean = false) : tStringList;
-         procedure ProjectionParamsToDebugFile(Why : shortstring; Full : boolean = false);
+         function ProjParamsList(Why : shortstring = '') : tStringList;
+         procedure ProjParamsToDebugFile(Why : shortstring);
          function GetProjName : shortstring;
          function KeyDatumParams : shortstring;
+         function FalseSettingsString : shortstring;
          procedure WriteProjectionSummaryToDebugFile(why : shortstring);
 
          function ConformalProjection : boolean;
@@ -231,18 +231,11 @@ type
          function ConvertProjectedBoundBoxToGeoBoundBox(projBox : sfBoundbox) : sfBoundBox;
 
 
-         {$If Defined(RecordDefineDatum) or Defined(ProjectionInfoAllowed)}
-            procedure LogDatumInfo(Why : shortstring);
-         {$EndIf}
-
-         {$IfDef RecordProblems}
-            procedure WriteProjParamsToDebugFile(Title : shortString; Full : boolean = false);
-            function FalseSettingsString : shortstring;
-         {$EndIf}
-
-         {$IfDef RecordTMParameters}
-            procedure TMDetails(Why : shortstring);
-         {$EndIf}
+         {$IfDef RecordTMParameters} procedure TMDetails(Why : shortstring); {$EndIf}
+         {$IfDef Track_ProjUTMzone} procedure LogMapProjUTMzone(Where : shortstring); {$EndIf}
+         {$IfDef Track_BaseMap_WKT} procedure LogMapProjScale(Where : shortstring); {$EndIf}
+         {$IfDef Track_MapProjScale} procedure LogMapWKT(Where : shortstring); {$EndIf}
+         {$If Defined(RecordDefineDatum) or Defined(ProjectionInfoAllowed)} procedure LogDatumInfo(Why : shortstring); {$EndIf}
 
    end;
 
@@ -285,9 +278,9 @@ function DatumName(var DatumCode : ShortString) : ShortString;
 function EllipsoidName(EllipCode : ShortString) : ShortString;
 
 function GetEPSGforUTMZone(HDatum : shortstring; LatHemi : ANSIchar; UTMzone : integer) : integer;
-function GetEPSGforUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
-function GetEPSGforGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
-function GetEPSGforVerticalDatumCode(PrimaryMapDatum : tMapProjection) : word;
+function GetEPSGforUTMDatumCode(MapDatum : tMapProjection) : word;
+function GetEPSGforGeoDatumCode(MapDatum : tMapProjection) : word;
+function GetEPSGforVerticalDatumCode(MapDatum : tMapProjection) : word;
 
 function WGSEquivalentDatum(StartDatum : shortstring) : boolean;
 function HemiFromLat(Lat : float64) : ANSIchar;
@@ -351,6 +344,38 @@ const
 {$I basemap_vincenty.inc}
 
 
+{$IfDef Track_ProjUTMzone}
+   procedure tMapProjection.LogMapProjUTMzone(Where : shortstring);
+   begin
+      HighlightInDebugFile(Where + ' projUTMZone = ' + IntToStr(projUTMZone));
+   end;
+{$EndIf}
+
+
+{$IfDef Track_MapProjScale}
+   procedure tMapProjection.LogMapProjScale(Where : shortstring);
+   //added Nov 2026 to track down an annoying issues
+   begin
+      if IsNAN(ProjMapScale) then begin
+         HighlightInDebugFile(Where + ' ProjMapScale = NAN');
+      end;
+   end;
+{$EndIf}
+
+{$IfDef Track_BaseMap_WKT}
+   procedure tMapProjection.LogMapWKT(Where : shortstring);
+   //added Nov 2026 to track down an annoying issues
+   begin
+      if (WKTstring <> '') then begin
+         HighlightInDebugFile(Where + ' wktString =' + wktString);
+      end;
+   end;
+{$EndIf}
+
+
+
+
+
 procedure tMapProjection.WriteProjectionSummaryToDebugFile(why : shortstring);
 begin
    WriteLineToDebugFile(Why + ' Pname=' + GetProjName + ' ' + KeyDatumParams);
@@ -365,7 +390,7 @@ end;
 
 function tMapProjection.InitProjFomDEMHeader(var DEMHeader : tDEMHeader; DebugName : shortstring = '') : boolean;
 begin
-   {$IfDef RecordProjectionParameters} ProjectionParamsToDebugFile('tMapProjection.InitProjFromDEMHeader, after definition'); {$EndIf}
+   {$IfDef RecordProjParams} ProjParamsToDebugFile('tMapProjection.InitProjFromDEMHeader, after definition'); {$EndIf}
    {$IfDef RecordDEMprojection} WriteProjectionSummaryToDebugFile('tMapProjection.InitProjFomDEMHeader in, '); {$EndIf}
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
    {$If Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader, DEM wkt=' + IntToStr(Length(DEMHeader.wktString))); {$EndIf}
@@ -381,7 +406,8 @@ begin
    if (DEMheader.wktString <> '') then begin
       {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader DEM wkt=' + IntToStr(Length(DEMheader.wktString))); {$EndIf}
       DEMheader.DEMUsed := WKTDEM;
-      InitProjFromWKTstring(DEMheader.wktString);
+      wktString := DEMheader.wktString;
+      InitProjFromWKTstring(wktString);
       //Result := DecodeWKTProjectionFromString(DEMheader.wktString);
    end
    else if (DEMheader.DEMUsed = UTMbasedDEM) then begin
@@ -390,10 +416,11 @@ begin
       StartUTMProjection(DEMheader.UTMZone);
    end
    else begin
-      GetProjectParameters;
+      GetProjParams('From DEM header');
    end;
    ProjDebugName := DebugName;
    {$IfDef RecordDEMprojection} WriteLineToDebugFile('tMapProjection.InitProjFromDEMHeader, map ' + GetProjName); {$EndIf}
+   {$IfDef Track_MapProjScale} LogMapProjScale('tMapProjection.InitProjFomDEMHeader'); {$EndIf}
    {$If Defined(RecordDEMprojection) or Defined(TrackWKTstring)} WriteLineToDebugFile('tMapProjection.InitProjFomDEMHeader out, Map wkt=' + IntToStr(Length(wktString))); {$EndIf}
 end;
 
@@ -622,7 +649,7 @@ begin
       ForwardProjectDegrees(ProjectionGeoBox.ymax,ProjectionGeoBox.xmax,ProjBox.xmax,ProjBox.ymax);
       {$IfDef RecordProjectionDetails} PointConvertDebug := false; {$EndIf}
    end;
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('tMapProjection.InitialProjectedBoundingBox, projected=  ' + sfBoundBoxToString(ProjBox)); {$EndIf}
+   {$IfDef RecordProjParam} WriteLineToDebugFile('tMapProjection.InitialProjectedBoundingBox, projected=  ' + sfBoundBoxToString(ProjBox)); {$EndIf}
    {$IfDef RecordProjectionParameters} WriteLineToDebugFile('tMapProjection.InitialProjectedBoundingBox, geo=  ' + sfBoundBoxToString(ProjectionGeoBox)); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('tMapProjection.InitialProjectedBoundingBox Out, LongCent: ' + RadToDegString(Long0)); {$EndIf}
 end;
@@ -703,7 +730,7 @@ begin
       else if ((TiffOffset = 5070)) then begin
           PName := AlbersEqAreaConicalEllipsoid;
           H_datumCode := 'WGS84';
-          GetProjectParameters;
+          GetProjParams;
       end
       else if ((TiffOffset >= 3708) and (TiffOffset <= 3726))  then begin
           StartUTMProjection(TiffOffset - 3707);
@@ -820,7 +847,7 @@ function CreateUKOSprojection : tMapProjection;
 begin
    Result := tMapProjection.Create;
    Result.PName := UK_OS;
-   Result.GetProjectParameters;
+   Result.GetProjParams;
 end;
 
 
@@ -828,7 +855,7 @@ function CreateIrishProjection : tMapProjection;
 begin
    Result := tMapProjection.Create;
    Result.PName := IrishGrid;
-   Result.GetProjectParameters;
+   Result.GetProjParams;
 end;
 
 
@@ -841,8 +868,9 @@ begin
     if (LatHemi = 'S') then ProjectedCSTypeGeoKey3072 := 32700 + projUTMZone
     else ProjectedCSTypeGeoKey3072 := 26900 + projUTMZone;
     Long0 := DegToRad * (-183 + 6*projUTMZone);
-    GetProjectParameters;
+    GetProjParams;
     {$If Defined(RecordOpenFromTiff3072) or Defined(LongCent)} ShortProjInfo('StartUTMProjection'); {$EndIf}
+    {$IfDef Track_MapProjScale} LogMapProjScale('tMapProjection.StartUTMProjection'); {$EndIf}
 end;
 
 
@@ -856,7 +884,7 @@ begin
      {$IfDef RecordWKTFull} WriteLineToDebugFile('tMapProjection.InitializeProjectionFromWKT in, ' + fName); {$EndIf}
       ProjData := tStringList.Create;
       ProjData.LoadFromFile(fName);
-      {$IfDef RecordProjectionParameters} WriteLineToDebugFile('InitProjFromWKT, ' + ProjData.Strings[0]); {$EndIf}
+      {$IfDef RecordProjParams} WriteLineToDebugFile('InitProjFromWKT, ' + ProjData.Strings[0]); {$EndIf}
       wktString := ptTrim(ProjData.Strings[0]);
       if (ProjData.Count > 1) then begin
          wktString := '';
@@ -966,19 +994,6 @@ var
              Value := DegToRad * Value;
           end;
        end;
-
-
-(*
-WKTProjectionFromString: COMPD_CS["NAD83(2011) / Illinois East (ftUS) + NAVD88 height - Geoid12B (ftUS)",PROJCS["NAD83(2011) / Illinois East (ftUS)",GEOGCS["NAD83(2011)",DATUM["NAD83_National_Spatial_Reference_System_2011",
-   SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","1116"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","6318"]],
-
-
-PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",36.66666666666666],PARAMETER["central_meridian",-88.33333333333333],PARAMETER["scale_factor",0.999975],PARAMETER["false_easting",984250.0000000002],
-   PARAMETER["false_northing",0],UNIT["US survey foot",0.3048006096012192,AUTHORITY["EPSG","9003"]],AXIS["X",EAST],AXIS["Y",NORTH],AUTHORITY["EPSG","6455"]],
-
-
-VERT_CS["NAVD88 height - Geoid12B (ftUS)",VERT_DATUM["North American Vertical Datum 1988",2005,AUTHORITY["EPSG","5103"]],UNIT["US survey foot",0.3048006096012192,AUTHORITY["EPSG","9003"]],AXIS["Gravity-related height",UP],AUTHORITY["EPSG","6360"]]]
-*)
 
 var
    HorizWKT,VertWKT : ANSIstring;
@@ -1090,13 +1105,13 @@ begin {function tMapProjection.InitProjFromWKTstring}
       if ParameterInString('NZGD2000') then V_datumCode := 'WGS84';
 
       {$IfDef RecordWKTFull} ShortProjInfo('finished WKT read'); {$EndIf}
-      GetProjectParameters;
+      GetProjParams('WKT=' + WKTString);
       {$If Defined(RecordDEMprojection) or Defined(RecordWKT)} WriteProjectionSummaryToDebugFile('WKTProjectionFromString out, '); {$EndIf}
    end
    else begin
       {$IfDef RecordWKT} WriteLineToDebugFile('WKTProjectionFromString failure'); {$EndIf}
    end;
-end;
+end {function tMapProjection.InitProjFromWKTstring};
 
 
 function tMapProjection.SeriousWorkingProjection : boolean;
@@ -1108,7 +1123,7 @@ end;
 
 procedure SetUpDefaultNewProjection(var inMapProjection : tMapProjection; SetCenter : boolean = true);
 begin
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection in ' + inMapProjection.GetProjName); {$EndIf}
+   {$IfDef RecordProjParams} WriteLineToDebugFile('SetUpDefaultNewProjection in ' + inMapProjection.GetProjName); {$EndIf}
    if SetCenter then inMapProjection.lat0 := 0;
    if SetCenter then inMapProjection.Long0 := 0;
    inMapProjection.False_East := 0;
@@ -1139,9 +1154,8 @@ begin
    end
    else if inMapProjection.PName in [PlateCaree,EquiDistantCylindrical,MillerCylindrical,Mollweide,Cassini,HammerProj,EquiDistantCylindrical,WebMercator,Mercator,MercatorEllipsoid,MillerCylindrical] then begin
    end;
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile('SetUpDefaultNewProjection out '  + inMapProjection.GetProjName); {$EndIf}
    {$If Defined(LongCent)} WriteLineToDebugFile('SetUpDefaultNewProjection Out,  LongCent: ' + RadToDegString(inMapProjection.long0)); {$EndIf}
-   {$IfDef DetailedProjParams} inMapProjection.ProjectionParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
+   {$IfDef RecordProjParams} inMapProjection.ProjParamsToDebugFile('SetUpDefaultNewProjection out'); {$EndIf}
 end;
 
 
@@ -1222,7 +1236,7 @@ end;
 
 constructor tMapProjection.Create;
 begin
-   {$If Defined(RecordProjectionParameters) or Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Create in, ' + DebugName); {$EndIf}
+   {$If Defined(RecordProjParams) or Defined(RecordMapProjCreateDestroy)} WriteLineToDebugFile('tMapProjection.Create in, ' + DebugName); {$EndIf}
    ProjDebugName := DebugName;
    //ProjectionSharedWithDataset := false;
 
@@ -1254,35 +1268,28 @@ begin
    DefineWGS84;
 
    {$If Defined(LongCent) or Defined(track_f)} ShortProjInfo('tMapProjection.Create Out'); {$EndIf}
+   {$IfDef Track_BaseMap_WKT} LogMapWKT('tMapProjection.Create wkt='); {$EndIf}
 end;
 
 
-procedure tMapProjection.ProjectionParamsToDebugFile(Why : shortstring; Full : boolean = false);
+procedure tMapProjection.ProjParamsToDebugFile(Why : shortstring);
 var
    sl : tStringList;
    i : integer;
 begin
-    sl := ProjParamsList(Full);
-    if Full then begin
-       WriteLineToDebugFile('');
-       WriteLineToDebugFile(Why);
-       WriteStringListToDebugFile(sl);
-       WriteLineToDebugFile('');
-    end
-    else begin
-       for I := 0 to pred(sl.count) do Why := Why + ' ' + sl.Strings[i];
-       WriteLineToDebugFile(Why);
-    end;
+    sl := ProjParamsList('');
+    for I := 0 to pred(sl.count) do Why := Why + ' ' + sl.Strings[i];
+    WriteLineToDebugFile(Why);
     sl.Destroy;
 end;
 
 
-function tMapProjection.ProjParamsList(Full : boolean = false) : tStringList;
+function tMapProjection.ProjParamsList(Why : shortstring = '') : tStringList;
 begin
    Result := tStringList.Create;
    Result.Add('Map Projection parameters ' + GetProjName);
    if not (PName in [PlateCaree]) then begin
-      Result.Add(FalseSettingsString + ' a=' + RealToString(a,-18,-2) + ' f=' + RealToString(h_f,-18,-6));
+      Result.Add(ShortProjInfo(Why));
    end;
    if PName in [LambertConformalConicEllipse,AlbersEqAreaConicalEllipsoid] then begin
       if not(IsNAN(Phi1) and IsNAN(Phi2)) then Result.Add('Phi1: ' + RadToDegString(Phi1) + ' Phi2: ' + RadToDegString(Phi2));
@@ -1292,44 +1299,49 @@ begin
       Result.Add('Phi2: ' + RealToString(Phi2/Petmar_types.DegToRad,-12,-6));
    end;
 
-   if Full then begin
-      if pName = AlbersEqAreaConicalEllipsoid then begin
-          Result.Add('m1=' + RealToString(m1,-12,-6) + '   m2=' + RealToString(m2,-12,-6));
-          Result.Add('q1=' + RealToString(q1,-12,-6) + '   q2=' + RealToString(q2,-12,-6));
-          Result.Add('nalbers=' + RealToString(nalbers,-12,-6));
-          Result.Add('c=' + RealToString(c,-12,-6));
-          Result.Add('rho0=' + RealToString(rho0,-12,-6));
-      end;
-      if PName in [LambertConformalConicEllipse] then begin
-          if not(IsNAN(m1) and IsNAN(m2)) then Result.Add('m1=' + RealToString(m1,-12,-6) + '   m2=' + RealToString(m2,-12,-6));
-          if not IsNAN(rho0) then Result.Add('rho0=' + RealToString(rho0,-12,-6));
-          Result.Add('t0=' + RealToString(t0,-12,-6) + '   t1=' + RealToString(t1,-12,-6) + '   t2=' + RealToString(t2,-12,-6));
-          if not IsNAN(n_lcc) then Result.Add('n_lcc=' + RealToString(n_lcc,-12,-6));
-          if not IsNAN(Big_F) then Result.Add('Big_F=' + RealToString(Big_F,-12,-6));
-      end;
-      if PName in [LamAzEqAreaEllipsoidal] then begin
-          Result.Add('q1=' + RealToString(q1,-12,-8) + '   q2=' + RealToString(q2,-12,-8));
-          Result.Add('Beta1=' + RealToString(Beta1/DegToRad,-12,-8));
-          Result.Add('rq=' + RealToString(rq,-12,-8));
-          Result.Add('m1=' + RealToString(m1,-12,-8));
-          Result.Add('D=' + RealToString(D,-12,-8));
-      end;
+   if pName = AlbersEqAreaConicalEllipsoid then begin
+       Result.Add('m1=' + RealToString(m1,-12,-6) + '   m2=' + RealToString(m2,-12,-6));
+       Result.Add('q1=' + RealToString(q1,-12,-6) + '   q2=' + RealToString(q2,-12,-6));
+       Result.Add('nalbers=' + RealToString(nalbers,-12,-6));
+       Result.Add('c=' + RealToString(c,-12,-6));
+       Result.Add('rho0=' + RealToString(rho0,-12,-6));
+   end;
+   if PName in [LambertConformalConicEllipse] then begin
+       if not(IsNAN(m1) and IsNAN(m2)) then Result.Add('m1=' + RealToString(m1,-12,-6) + '   m2=' + RealToString(m2,-12,-6));
+       if not IsNAN(rho0) then Result.Add('rho0=' + RealToString(rho0,-12,-6));
+       Result.Add('t0=' + RealToString(t0,-12,-6) + '   t1=' + RealToString(t1,-12,-6) + '   t2=' + RealToString(t2,-12,-6));
+       if not IsNAN(n_lcc) then Result.Add('n_lcc=' + RealToString(n_lcc,-12,-6));
+       if not IsNAN(Big_F) then Result.Add('Big_F=' + RealToString(Big_F,-12,-6));
+   end;
+   if PName in [LamAzEqAreaEllipsoidal] then begin
+       Result.Add('q1=' + RealToString(q1,-12,-8) + '   q2=' + RealToString(q2,-12,-8));
+       Result.Add('Beta1=' + RealToString(Beta1/DegToRad,-12,-8));
+       Result.Add('rq=' + RealToString(rq,-12,-8));
+       Result.Add('m1=' + RealToString(m1,-12,-8));
+       Result.Add('D=' + RealToString(D,-12,-8));
    end;
 end;
 
 
-
-{$IfDef RecordProblems}
-   procedure tMapProjection.WriteProjParamsToDebugFile(Title : shortString; Full : boolean = false);
+   function tMapProjection.ShortProjInfo(Why : shortstring) : shortstring;
    var
-      TStr : tStringList;
+      TStr : shortstring;
    begin
-      TStr := ProjParamsList(Full);
-      WriteLineToDebugFile(Title);
-      WriteStringListToDebugFile(Tstr);
-      TStr.Free;
+       if (PName = UTMEllipsoidal) then TStr := ' UTM zone=' + IntToStr(projUTMZone) + LatHemi
+       else TStr := '';
+       Result := ProjDebugName +  ' ' + Why + ' ' +
+                       GetProjName + ' ' +
+                       ' ellipse=' + H_datumCode +
+                       ' h_f=' + RealToString(h_f,-12,-6) +
+                       ' a=' + RealToString(a,-18,-2) +
+                       ' long0=' + RadToDegString(Long0) +
+                       ' lat0=' + RadToDegString(Lat0) +
+                       ' false_east=' + RealToString(False_east,-12,-1) +
+                       ' false_north=' + RealToString(False_north,-12,-1) +
+                       ' ProjMapScale=' + RealToString(ProjMapScale,-12,-4) +
+                       TStr;
    end;
-{$EndIf}
+
 
 
 function tMapProjection.UTMZoneString : shortstring;
@@ -1338,20 +1350,20 @@ begin
 end;
 
 
-procedure tMapProjection.GetProjectParameters;
+procedure tMapProjection.GetProjParams(Where : shortstring = '');
 var
   q0 : float64;
 begin
-   {$IfDef RecordProjectionParameters} ShortProjInfo(' GetProjectParameters in'); {$EndIf}
+   {$IfDef RecordProjParams} ShortProjInfo(' GetProjParams in'); {$EndIf}
       if (a = NaN) then a := SphericalEarthAkm * 1000;
 
       if PName in [UTMEllipsoidal,UK_OS,Finn_GK,GeneralTransverseMercator,IrishGrid,AlbersEqAreaConicalEllipsoid] then begin
-        {$IfDef RecordProjectionParameters} WriteLineToDebugFile('Transerve Mercator'); {$EndIf}
+        {$IfDef RecordProjParams} WriteLineToDebugFile('Transerve Mercator'); {$EndIf}
          FullWorld := false;
          if (Lat0 = NaN) then Lat0 := 0;
          if (false_north = NaN) then false_north := 0;
          if (PName = UTMEllipsoidal) then begin
-            {$IfDef RecordProjectionParameters} WriteLineToDebugFile('UTMEllipsoidal'); {$EndIf}
+            {$IfDef RecordProjParams} WriteLineToDebugFile('UTMEllipsoidal'); {$EndIf}
             if (ProjMapScale = NaN) then ProjMapScale := 0.9996;
             false_east := 500000;
             if (LatHemi = 'S') then false_north := 10000000;
@@ -1363,7 +1375,7 @@ begin
             Phi2 := 45.5 * Petmar_types.DegToRad;
          end
          else if (PName = UK_OS) then begin
-            {$If Defined(RecordProjectionParameters) or Defined(RecordUKOS)} WriteLineToDebugFile('GetProjectParameters, UK_OS'); {$EndIf}
+            {$If Defined(RecordProjParams) or Defined(RecordUKOS)} WriteLineToDebugFile('GetProjParams, UK_OS'); {$EndIf}
             ProjMapScale := 0.9996012717;
             Lat0 := 49 * Petmar_types.DegToRad;
             Long0 := -2 * Petmar_types.DegToRad;
@@ -1410,7 +1422,7 @@ begin
          else n_lcc := (ln(m1/m2)) / (ln(t1/t2));
          Big_F := m1 / n_lcc / Math.Power(t1,n_lcc);
          rho0 := A * Big_F * Math.Power(t0,n_lcc);
-         {$IfDef DebugConformalConic} WriteLineToDebugFile('tMapProjection.GetProjectParameters  LCC LatCent=' + RealToString(Lat0/DegToRad,-12,-8) + '  LongCent=' + RealToString(Long0/DegToRad,-12,-8)); {$EndIf}
+         {$IfDef DebugConformalConic} WriteLineToDebugFile('tMapProjection.GetProjParams  LCC LatCent=' + RealToString(Lat0/DegToRad,-12,-8) + '  LongCent=' + RealToString(Long0/DegToRad,-12,-8)); {$EndIf}
       end
       else if PName in [PolarStereographicEllipsoidal] then begin
            if (Lat0 >= 0) then begin
@@ -1449,9 +1461,10 @@ begin
          c := sqr(M1) + Nalbers * q1;
          Rho0 := a * sqrt(C - nalbers * q0) / nalbers;
       end;
-     {$If Defined(track_f) or Defined(RecordProjectionParameters)} ShortProjInfo(' GetProjectParameters Out'); {$EndIf}
-     {$IfDef RecordFalse} WriteLineToDebugFile(ProjDebugName + ' GetProjectParameters Out, ' + FalseSettingsString); {$EndIf}
-end {proc GetProjectParameters};
+     {$If Defined(track_f) or Defined(RecordProjParams)} ShortProjInfo(' GetProjParams Out'); {$EndIf}
+     {$IfDef RecordFalse} WriteLineToDebugFile(ProjDebugName + ' GetProjParams Out, ' + FalseSettingsString); {$EndIf}
+     {$IfDef Track_MapProjScale} LogMapProjScale(Where + ' GetProjParams'); {$EndIf}
+end {proc GetProjParams};
 
 
 function tMapProjection.TissotEnabled : boolean;

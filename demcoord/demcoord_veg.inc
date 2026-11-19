@@ -34,7 +34,7 @@ begin
             NewHeadRecs := DEMheader;
             NewHeadRecs.DEMPrecision := FloatingPointDEM;
 
-            OpenAndZeroNewDEM(true,NewHeadRecs,VegGrid[1],'',InitDEMmissing);
+            CreateOpenAndZeroNewDEM(true,NewHeadRecs,VegGrid[1],'',InitDEMmissing);
             DEMGlb[VegGrid[1]].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[VegGrid[1]].FullDEMGridLimits,OldVeg,hfEverything);
             fName := ExtractFilePath(fName) + 'New_veg.dem';
             if GetFileNameDefaultExt('new vegetation grid','DEM|*.DEM',FName) then begin
@@ -63,7 +63,7 @@ begin
    if (VegGrid[1] <> 0) and (DSMGrid = 0) then begin
       NewHeadRecs := DEMheader;
       NewHeadRecs.DEMPrecision := FloatingPointDEM;
-      OpenAndZeroNewDEM(true,NewHeadRecs,DSMGrid,'DSM for ' + AreaName,InitDEMmissing);
+      CreateOpenAndZeroNewDEM(true,NewHeadRecs,DSMGrid,'DSM for ' + AreaName,InitDEMmissing);
       for x := 0 to pred(DEMheader.NumCol) do begin
          for y := 0 to pred(DEMheader.NumRow) do begin
             if GetElevMeters(x,y,z) and DEMGlb[VegGrid[1]].GetElevMeters(x,y,z2) then

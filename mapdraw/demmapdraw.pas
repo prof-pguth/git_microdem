@@ -581,6 +581,8 @@ type
 
       function UTMGridToTrueNorthAngle(Lat,Long : float64) : float64;
       function MapSizeString : shortstring;
+      function MapSizeKMString : shortstring;
+
       procedure CopyMapParams(var NewMapDraw : tMapDraw; CopyOverlays : boolean);
 
       procedure ShowMapGridLimits(Where : shortString);
@@ -1143,9 +1145,6 @@ function tMapDraw.BlowUpAtPoint(Lat,Long,Range : float64; Zoom : integer; CopyOv
          VincentyPointAtDistanceBearing(Lat,Long,Range+MDDef.BlowUpExtraMargin,270,uLat,uMinLong);
       end;
 
-
-//const
-  // ExtraMargin = 250;
 var
    uMinLat,uMinLong,uMaxLat,uMaxLong : float64;
    Bmp : tMyBitmap;
@@ -1315,7 +1314,7 @@ begin
             end;
 
             {$If Defined(RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('Basemap drawn, ' + MapSizeString); {$EndIf}
-            {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP basemap drawm, MapDraw.PrimaryMapDatum'); {$EndIf}
+            {$If Defined(RecordLong0)} PrimMapProj.ProjParamsToDebugFile('tMapDraw.DrawMapOnBMP basemap drawm, MapDraw.PrimaryMapDatum'); {$EndIf}
 
             {$IfDef ExWMS}
             {$Else}
@@ -1373,7 +1372,7 @@ begin
                {$EndIf}
 
                {$If Defined( RecordFullMapDraw) or Defined(RecordOverlays)} WriteLineToDebugFile('DrawMapOnBMP call DrawMapOverlays'); {$EndIf}
-               {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP call draw overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
+               {$If Defined(RecordLong0)} PrimMapProj.ProjParamsToDebugFile('tMapDraw.DrawMapOnBMP call draw overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
 
                {$IfDef ExIndexes}
                {$Else}
@@ -1384,7 +1383,7 @@ begin
                {$EndIf}
 
                DrawMapOverlays(Bitmap);
-               {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP done overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
+               {$If Defined(RecordLong0)} PrimMapProj.ProjParamsToDebugFile('tMapDraw.DrawMapOnBMP done overlays, MapDraw.PrimaryMapDatum'); {$EndIf}
 
                {$IfDef VCL}
                   if (RangeCirclesFName <> '') then begin
@@ -1421,7 +1420,7 @@ begin
    {$If Defined(RecordMapDraw) or Defined(RecordFullMapDraw) or Defined(RecordTiming) or Defined(RecordUTMZone) or Defined(RecordElevationScaling)}
       WriteLineToDebugFile('tMapDraw.DrawMapOnBMP out: ' + MapSizeString + MapZRangeString);
    {$EndIf}
-   {$If Defined(RecordLong0)} PrimMapProj.ProjectionParamsToDebugFile('tMapDraw.DrawMapOnBMP out, MapDraw.PrimaryMapDatum'); {$EndIf}
+   {$If Defined(RecordLong0)} PrimMapProj.ProjParamsToDebugFile('tMapDraw.DrawMapOnBMP out, MapDraw.PrimaryMapDatum'); {$EndIf}
 
    {$If Defined(RecordPlatCarree)}
       if (BasicProjection = bpLatLong) then begin
@@ -1498,7 +1497,7 @@ end;
 Procedure tMapDraw.AssignSecondDEM(DEM : integer; Min : float64 = 99; Max : float64 = -99);
 begin
    if (DEM = 0) then begin
-       if (NumDEMDataSetsOpen = 2) and (DEMGlb[1] <> Nil) and (DEMGlb[2] <> Nil) then begin
+       if (NumDEMsOpen = 2) and (DEMGlb[1] <> Nil) and (DEMGlb[2] <> Nil) then begin
          if (DEMonMap = 1) then DEM := 2 else DEM := 1;
       end
       else begin
@@ -1613,6 +1612,11 @@ end;
 function TMapDraw.MapSizeString : shortstring;
 begin
     Result := ' Map size=' + MapXSize.ToString + 'x' + MapYSize.ToString +  '  Pixel size=' + SmartDistanceMetersFormat(ScreenPixelSize);
+end;
+
+function TMapDraw.MapSizeKMString : shortstring;
+begin
+    Result := ' Map size=' + SmartDistanceMetersFormat(ScreenPixelSize*MapXSize) + ' x ' + SmartDistanceMetersFormat(ScreenPixelSize*MapYSize);
 end;
 
 
@@ -2704,6 +2708,7 @@ initialization
    NoDBplots := false;
 finalization
 end.
+
 
 
 

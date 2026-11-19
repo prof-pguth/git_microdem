@@ -864,7 +864,7 @@ begin {procedure MakeReferenceDEM}
                  NewHeader.NumCol := 2 * NewHeader.NumCol;
                  NewHeader.DEMxSpacing := 0.5 * NewHeader.DEMxSpacing;
                  RefName := TestDir + 'ref_dtm_' + SecondMode + '.tif';
-                 OpenAndZeroNewDEM(true,NewHeader,TestDEM,'ALOS_geometry_1sec',InitDEMmissing);
+                 CreateOpenAndZeroNewDEM(true,NewHeader,TestDEM,'ALOS_geometry_1sec',InitDEMmissing);
               end;
               MakeThisReferenceDEM;
           end
@@ -879,17 +879,138 @@ begin {procedure MakeReferenceDEM}
 end {procedure MakeReferenceDEM};
 
 
+procedure Create15mFiles(AreaName : ShortString);
+// Option = udCreate15m
+const
+   OpenMap = false;
+var
+   TheFiles : tStringList;
+   CopName,ALOSname,FathomName,Ref15mName,
+   Area15m,TileDir,subName,HRDEMname : PathStr;
+   i,SourceDEM,DEM15m,DEM : integer;
+   bb : sfBoundBox;
+   GridLimits : tGridLimits;
+
+
+   procedure GetOversampled(fName : PathStr; SeriesName : shortstring);
+   var
+      DEM,Over : integer;
+   begin
+      DEM := LoadMapLibraryBox(true,bb,SeriesName,OpenMap);
+      if ValidDEM(DEM) then begin
+         Over := DEMGlb[DEM15m].CloneAndOpenGridSetMissing(FloatingPointDEM,ExtractFileNameNoExt(fName),DEMGlb[DEM15m].DEMheader.ElevUnits);
+         {$IfDef RecordDEMIX15m} DEMGlb[DEM15m].DEMMapProj.ProjParamsToDebugFile('Over DEM projection'); {$EndIf}
+         if ValidDEM(Over) then begin
+            DEMGlb[Over].FillHolesSelectedBoxFromReferenceDEM(DEMGlb[Over].FullDEMGridLimits,DEM,hfEverything);
+            DEMglb[Over].SaveAsGeotiff(fName);
+            CloseSingleDEM(Over);
+         end;
+         CloseSingleDEM(DEM);
+         {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Oversampled ' + fName); {$EndIf}
+      end;
+   end;
+
+begin
+   WGS_EGMdir := MDDef.DEMIX_BaseDir + AreaName + '\wgs_egm\';
+   if ValidPath(WGS_EGMdir) then begin
+      SafeMakeDir(MDDef.DEMIX_BaseDir + 'aa_DEM15m\');
+      Area15m := MDDef.DEMIX_BaseDir + 'aa_DEM15m\' + AreaName + '\';
+      SafeMakeDir(Area15m);
+      TheFiles := Nil;
+      Petmar.FindMatchingFiles(WGS_EGMdir,'*.tif',TheFiles,1);
+
+      for i := pred(TheFiles.Count) downto 0 do begin
+         HRDEMname := TheFiles.Strings[i];
+         if (not IsDEMaDSMorDTM(HRDEMname) = DEMisDTM) then begin
+            TheFiles.Delete(i);
+         end;
+      end;
+
+      {$IfDef RecordDEMIX} WriteLineToDebugFile('Create15mFiles in for ' + AreaName + ' DTM tiles=' + IntToStr(TheFiles.Count)); {$EndIf}
+      for i := 0 to pred(TheFiles.Count) do begin
+         wmDEM.SetPanelText(0,TimeToStr(Now),true);
+         wmDEM.SetPanelText(2,'Tile ' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count),true);
+         HRDEMname := TheFiles.Strings[i];
+         //if (IsDEMaDSMorDTM(HRDEMname) = DEMisDTM) then begin
+            {$IfDef RecordDEMIX15m} WriteLineToDebugFile(IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count) + '  ' + HRDEMname + ' is DTM'); {$EndIf}
+            TileDir := Area15m + ExtractFileNameNoExt(HRDEMname) + RefTestStr + '\';
+            subName := TileDir + 'GEM15_DTM' + '.tif';
+            CopName := TileDir + 'cop.tif';
+            ALOSname := TileDir + 'alos.tif';
+            FathomName := TileDir + 'fathom.tif';
+            Ref15mName := TileDir + 'ref_dtm.tif';
+            SafeMakeDir(TileDir);
+
+            if FileExists(Ref15mName) and (Petmar.GetFileSize(Ref15mName) < 25000) then begin
+               DeleteFileIfExists(Ref15mName);
+            end;
+
+            if FileExists(subName) and FileExists(CopName) and FileExists(ALOSname) and FileExists(FathomName) and FileExists(Ref15mName) then begin
+              {$IfDef RecordDEMIX15m} WriteLineToDebugFile('All files present'); {$EndIf}
+            end
+            else begin
+               {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Processing required ' + ExtractFileNameNoExt(HRDEMname)); {$EndIf}
+               SourceDEM := OpenNewDEM(HRDEMname,OpenMap);
+               {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Source DEM: ' + DEMGlb[SourceDEM].DEM_size_km + ' ' + DEMglb[SourceDEM].DEMsizestringMB); {$EndIf}
+               bb := DEMglb[SourceDEM].DEMboundBoxGeo;
+               {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Tile bounding box: ' + sfBoundBoxToString(bb,4)); {$EndIf}
+
+               if FileExists(subName) then begin
+                  {$IfDef RecordDEMIX15m} WriteLineToDebugFile('DTM15m Exists, ' + subName); {$EndIf}
+                  DEM15m := OpenNewDEM(subName,OpenMap);
+                  {$IfDef RecordDEMIX15m} WriteLineToDebugFile('DTM15m Existing: ' + DEMGlb[DEM15m].DEM_size_km); {$EndIf}
+               end
+               else begin
+                  {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Getting DEM15m from map library'); {$EndIf}
+                  DEM15m := LoadMapLibraryBox(true,bb,'GEM15_DTM',OpenMap);
+                  if ValidDEM(DEM15m) then begin
+                     {$IfDef RecordDEMIX15m} WriteLineToDebugFile('DEM15m Loaded: ' + DEMGlb[DEM15m].DEM_size_km); {$EndIf}
+                      DEMGlb[DEM15m].LatLongDegreeToDEMGridInteger(bb.yMax,bb.xmin,GridLimits.XGridLow,GridLimits.YGridHigh);
+                      DEMGlb[DEM15m].LatLongDegreeToDEMGridInteger(bb.ymin,bb.xmax,GridLimits.XGridHigh,GridLimits.YGridLow);
+                      {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Call SaveRectangleSubsetDEM, gridlimits=' + GridLimitsToString(GridLimits)); {$EndIf}
+                      DEMGlb[DEM15m].SaveRectangleSubsetDEM(GridLimits,subName);
+                      //DEMGlb[DEM15m].RectangleSubsetDEM(GridLimits,subName);
+                      CloseSingleDEM(DEM15m);
+                      {$IfDef RecordDEMIX15m} WriteLineToDebugFile('Reopen DEM15m, ' + subName); {$EndIf}
+                      DEM15m := OpenNewDEM(subName,OpenMap);
+                      {$IfDef RecordDEMIX15m} WriteLineToDebugFile('DEM15m clipped: ' + DEMGlb[DEM15m].DEM_size_km + ' ' + DEMglb[DEM15m].DEMsizestringMB); {$EndIf}
+                  end
+                  else begin
+                     {$IfDef RecordDEMIX} HighLightInDebugFile('No valid DEM15, ' + subName + ' ' + sfBoundBoxToString(DEMGlb[SourceDEM].DEMBoundBoxGeo,3)); {$EndIf}
+                  end;
+               end;
+               if ValidDEM(DEM15m) then begin
+                  if (not FileExists(Ref15mName)) then begin
+                     DEM := MeanAggregateResampleDEM(false,SourceDEM,DEM15m,Ref15mName);
+                  end;
+                  if not FileExists(CopName) then GetOversampled(CopName,'COP30_HH');
+                  if not FileExists(ALOSName) then GetOversampled(ALOSName,'AW3D30-FEB2025');
+                  if not FileExists(FathomName) then GetOversampled(FathomName,'FATHOMDEM');
+               end;
+            end;
+         //end
+         //else begin
+            //{$IfDef RecordDEMIX15m} WriteLineToDebugFile('*****' + IntToStr(succ(i)) + '/' + IntToStr(TheFiles.Count) + '  ' + HRDEMname + ' NOT DTM'); {$EndIf}
+         //end;
+         CloseAllDEMs;
+      end {for i};
+      {$IfDef RecordDEMIX15m} HighLightInDebugFile('Create15mFiles done for ' + AreaName + ' open DEMs=' + IntToStr(NumDEMsOpen)); {$EndIf}
+   end
+   else begin
+      {$IfDef RecordDEMIX} HighLightinDebugFile('Create15mFiles WGS_GEM missing ' + WGS_EGMdir); {$EndIf}
+   end;
+end;
+
+
 procedure UTMbasedtilescreation(AreaName : shortstring; MissingLandCover : tStringList);
 // (Option = udCreateTiles
 var
    TestDir,SourceEGMName,fName,TestName,LCname,RefName : PathStr;
    UTM_Tile,aDEM,TStr,DEMProgress : shortstring;
    TheFiles,TheDEMs,TileSubDirs : tStringList;
-   //i,j,
    SourceDEM,TestDEM,RefDEM,lc,TilesInArea : integer;
    Lat,Long : float64;
    bb : sfBoundBox;
-
 
    procedure MoveDEMstoSourceDir;
    //to make it easier to download data, it does not have to be manually put into SourceDir, just into the AreaDir
@@ -1094,14 +1215,11 @@ var
                 end {procedure MergeTo10x10andPerformDatumShift};
 
 
-
-
         begin {MakeSourceHRDEM_WGS84_EGM2008}
            {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('MakeSourceHRDEM_WGS84_EGM2008 in: ' + AreaName + '  ' + AvailPhysMemStr); {$EndIf};
            HeavyDutyProcessing := true;
            if DEMIX_SpecialCaseRequiringMerge(AreaName) then begin
               {$IfDef RecordDEMIXMakeTestEveryDEM} WriteLineToDebugFile('Merge required'); {$EndIf};
-               //TileSubDirs := GetSubDirsInDirectory(MergesDirFName);   xxx
                TileSubDirs := DEMIX_GetListOfPossibleAreas(MergesDirFName);
                TilesInArea := TileSubDirs.Count;
                Result := MergeTo10x10andPerformDatumShift(AreaName,TilesInArea,TileSubDirs);
@@ -1157,7 +1275,7 @@ var
                    MakeReferenceDEM(aDEM,TestDEM,RefDEM,SourceDEM,TestName,RefName,TestDir,SourceEGMName,DEMProgress);
                    CloseSingleDEM(TestDEM);
                    CloseSingleDEM(RefDEM);
-                   {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Done ' + aDEM + '  open DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  open maps=' +  IntToStr(NumOpenMaps)); {$EndIf}
+                   {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Done ' + aDEM + '  open DEMs=' + IntToStr(NumDEMsOpen) + '  open maps=' +  IntToStr(NumOpenMaps)); {$EndIf}
                 end;
                {$IfDef RecordDEMIXFull} WriteLineToDebugFile('Finished DEMs ' + UTM_Tile); {$EndIf};
             end
@@ -1189,7 +1307,7 @@ begin {procedure UTMbasedtilescreation}
    MakeLandCoverGridForTile;
    CloseAllDEMs;
    wmDEM.ClearStatusBarPanelText;
-   {$If Defined(RecordDEMIX) or Defined(RecordDEMIXMemory)} WriteLineToDebugFile('UTMbasedtilescreation Done ' + UTM_Tile + '  open DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  open maps=' +  IntToStr(NumOpenMaps) + '  ' +  AvailPhysMemStr); {$EndIf};
+   {$If Defined(RecordDEMIX) or Defined(RecordDEMIXMemory)} WriteLineToDebugFile('UTMbasedtilescreation Done ' + UTM_Tile + '  open DEMs=' + IntToStr(NumDEMsOpen) + '  open maps=' +  IntToStr(NumOpenMaps) + '  ' +  AvailPhysMemStr); {$EndIf};
 end {procedure UTMbasedtilescreation};
 
 
@@ -2962,19 +3080,22 @@ begin {procedure DEMIX_UTM_based_processing}
             AreaName := theAreas.Strings[i];
             AreaProgress := IntToStr(succ(i)) + '/' + IntToStr(theAreas.Count) + '  ' + AreaName;
             AreaLock := MDDef.DEMIX_BaseDir + AreaName + '\aa_arealocked.txt';
+            wmDEM.SetPanelText(0,TimeToStr(Now),true);
             wmDEM.SetPanelText(1,AreaProgress,true);
             if (Option = udClearAreaLocks) then begin
                DeleteFileIfExists(AreaLock);
             end
             else if FileExists(AreaLock) then begin
-                {$IfDef RecordDEMIX} HighLightInDebugFile(theAreas.Strings[i] + ' Area locked for ' + IntToStr(theAreas.Count)); {$EndIf}
+                {$IfDef RecordDEMIX} WriteLineToDebugFile(theAreas.Strings[i] + ' Area locked for ' + IntToStr(i) + '/' + IntToStr(theAreas.Count)); {$EndIf}
             end
             else begin
+                {$IfDef RecordDEMIX} WriteLineToDebugFile(theAreas.Strings[i] + ' Area ' + IntToStr(i) + '/' + IntToStr(theAreas.Count) + ' started  ' + AvailPhysMemStr); {$EndIf}
                 theAreas.SaveToFile(AreaLock);
                 if (Option in [udCreateTiles]) then UTMbasedtilescreation(AreaName,MissingLandCover);
                 if (Option in [udFUVCalc,udFUVpartials,udFUVcurves,udDiffDistribStat,udInterpolatedFUVs]) then UTMbasedFUV(Option,AreaName);
                 if (Option in [udPixelGeometrySlope,udAverageTileElevations]) then UTMbasedFUV(Option,AreaName,Report,Report2);
                 if (Option in [udTileStats]) then DEMIX_tile_statistics(AreaName);
+                if (Option in [udCreate15m]) then Create15mFiles(AreaName);
                 DeleteFileIfExists(AreaLock);
              end;
           end;

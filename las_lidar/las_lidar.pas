@@ -1199,12 +1199,12 @@ begin {constructor tLAS_data.Create}
                LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
             end
             else begin
-               lasProj.GetProjectParameters;
+               lasProj.GetProjParams;
                LAS_Proj_Box := SetLasBoundBoxFromLasHeader;
                LAS_UTM_Box := lasProj.ConvertGeoBoundBoxToUTMBoundBox(LAS_LatLong_Box);
             end;
             {$IfDef RecordCreateEveryFile}
-               WriteLineToDebugFile('Got lasProjectionDefinition.LasProjection.GetProjectParameters');
+               WriteLineToDebugFile('Got lasProjectionDefinition.LasProjection.GetProjParams');
                WriteStringListToDebugFile(lasProjectionDefinition.LasProjection.ProjectionParametersList);
             {$EndIf}
             LAS_LatLong_Box := lasProj.ConvertProjectedBoundBoxToGeoBoundBox(LAS_Proj_Box);

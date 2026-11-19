@@ -21,7 +21,6 @@ unit demix_definitions;
    //{$Define TrackCriteriaList}
    {$Define RecordDSM_DTMpairs}
    {$Define RecordDEMIX}
-   {$Define RecordDTM_DSM}
    //{$Define RecordNeoDEMIX}
    //{$Define RecordDEMIXFilters}
    //{$Define RecordDEMIXRefDEM}
@@ -30,14 +29,12 @@ unit demix_definitions;
    //{$Define RecordComputeDEMIX_Diff_Dist}
    //{$Define RecordDEMIXLSgrids}
    //{$Define RecordDEMIXhillshades}
-   //{$Define RecordDiluviumFull}
    //{$Define RecordDEMIXStart}
    //{$Define RecordDEMIXsave}
 
    //{$Define RecordOpenExternalProgramGrids}
    //{$Define RecordDEMIXLoad}
    //{$Define RecordTestDEMstart}
-   //{$Define RecordDiluvium}
    //{$Define TrackAverageStats}
    //{$Define RecordDEMIX_CONIN}
    //{$Define RecordGridFromVector}
@@ -123,7 +120,6 @@ const
    udFUVcurves = 10;
    udDiffDistribStat = 11;
 
-
    udMergeDiffDist = 12;
    udFileFillReport = 31;
    udDeleteResultsCSVsForAreas = 32;
@@ -143,6 +139,8 @@ const
    udCompareAverageSlopesByAlgorithm = 46;
    udInterpolatedFUVs = 47;
    udMergeGDEMslopeResolution = 48;
+
+   udCreate15m = 51;
 
 
 const
@@ -253,7 +251,7 @@ var
    procedure DEMIX_SSIM_FUV_transpose_kmeans_new_db(DBonTable : integer);
    procedure ModeOfDifferenceDistributions;
    procedure AddTileCharacteristicsToDB(DBonTable : integer);
-   procedure ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true);
+   function ComputePowerFitForAllTiles(db : integer; PowerLaw : boolean = true) : integer;
 
    procedure EvalRangeAndBestEvalForCriterion(DBonTable : integer);
    procedure CreateFinalDiffDistDB;
@@ -359,6 +357,56 @@ function GetDSMandDTMFileNamesFromLatLong(DBonTable : integer; Lat,Long : float6
 function IdentifyDEMIXtileAsDTMorDSM(Tile : shortString) : shortstring;
 function GeneralizeReferenceName(Name : shortstring) : shortstring;
 
+procedure MakeCSVforHRDEMComparison(DB : integer);
+procedure MakeCSVforGDEMcompareDSMtoDTM(DBonTable : integer);
+
+function RemoveCountryFromTileName(Tile : shortString) : shortstring;
+function RemoveAreaFromTileName(Area,Tile : shortString) : shortstring;
+procedure RemoveInvalidCriterion(var sl : TStringList);
+
+procedure LoadTwoDEMIXfilters(var ComboBox6,ComboBox7 : tComboBox);
+function ExtractKeyFilterName(fName : shortstring) : shortstring;
+function ExpandFullFilterName(fName : shortstring) : PathStr;
+function AreaWithMergingFiles(AreaName : shortstring) : boolean;
+
+function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var HorizDatum,VertDatum,UTMzone : shortstring) : boolean;
+
+
+
+procedure MakeCSVforGDEMslopes(DB : integer);
+procedure MakeCSVforGDEM_average_tile_slope(DBonTable : integer);
+function TileNameGDEMorHRDEM(db : integer) : shortstring;
+
+function DEMIX_HRDEM_DB(db : integer) : boolean;
+function DEMIX_GDEM_DB(db : integer) : boolean;
+function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
+function TileCharacteristicsInDB(DB : integer) : boolean;
+function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
+
+function HRDEMresolutionFilter(db : integer) : shortstring;
+function HRDEMresolutionFilterRange(db : integer) : shortstring;
+
+
+function DEMIX_GetListOfPossibleAreas(AreaName : shortstring) : tStringList;
+function DEMIX_GetListOfTileSubDirsInArea(AreaName : shortstring) : tStringList; //these have '_ref_test_dem' plus the tile name
+function DEMIX_TileNameFromSubDir(Tile : shortstring) : shortstring;
+function DEMIX_GetListOfTileNamesInArea(AreaName : shortstring) : tStringList;
+procedure AreaDirectoryNames(AreaName : shortstring; var AreaDir,WGS_EGMdir,SourceDir,MergesDirFName : PathStr);
+function DSMandDTMtileNameMatch(DSMname,DTMname : shortString) : boolean;
+procedure AddCountryColorToDB(DBonTable : integer);
+function CountryColor(Country : shortstring) : tColor;
+
+function CommonTileStats(DBonTable : integer) : shortstring;
+function CommonTileStatsNames(DBonTable : integer) : shortstring;
+function CreatePowerLawList(db : integer) : tStringList;
+function ComputePowerBySlopeBins(db : integer) : integer;
+procedure AddPredictedDTMslope(DBonTable : integer);
+
+   {$IfDef IncludeCoastalDEMs}
+      DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms : PathStr;  //used for inventories, when mixing comparison modes
+      procedure CheckLowElevationAreas;
+   {$EndIf}
+
    {$IfDef ExternalProgramsSaveCriteria}
       MD_out_ref_dir,MD_out_test_dir,
       wbt_out_ref_dir,wbt_out_test_dir,
@@ -391,12 +439,6 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
 
    {$IfDef ExternalProgramFUV_SSIM} function SAGACreateDEMIX_LS_Grids(AreaName,aParam : shortstring; OpenMaps : boolean = false) : boolean; {$EndIf}
 
-   {$IfDef IncludeCoastalDEMs}
-      DEMIX_diluvium_dtms,DEMIX_delta_dtms,DEMIX_coastal_dtms : PathStr;  //used for inventories, when mixing comparison modes
-      procedure CheckLowElevationAreas;
-   {$EndIf}
-
-
 {$IfDef IncludeOldDEMIX_RefDEM_Create}
     //create reference DEMs
        procedure DEMIX_CreateReferenceDEMsFromSource(Overwrite : boolean; DataDirs : tStringList = Nil);
@@ -425,48 +467,6 @@ function GeneralizeReferenceName(Name : shortstring) : shortstring;
 {$EndIf}
 
 
-procedure MakeCSVforHRDEMComparison(DB : integer);
-procedure MakeCSVforGDEMcompareDSMtoDTM(DBonTable : integer);
-
-function RemoveCountryFromTileName(Tile : shortString) : shortstring;
-function RemoveAreaFromTileName(Area,Tile : shortString) : shortstring;
-procedure RemoveInvalidCriterion(var sl : TStringList);
-
-procedure LoadTwoDEMIXfilters(var ComboBox6,ComboBox7 : tComboBox);
-function ExtractKeyFilterName(fName : shortstring) : shortstring;
-function ExpandFullFilterName(fName : shortstring) : PathStr;
-function AreaWithMergingFiles(AreaName : shortstring) : boolean;
-
-function GetVertHorizDatums(AreaName : shortstring; MergefName : PathStr; var HorizDatum,VertDatum,UTMzone : shortstring) : boolean;
-
-
-
-procedure MakeCSVforGDEMslopes(DB : integer);
-procedure MakeCSVforGDEM_average_tile_slope(DBonTable : integer);
-function TileNameGDEMorHRDEM(db : integer) : shortstring;
-
-function DEMIX_HRDEM_DB(db : integer) : boolean;
-function DEMIX_GDEM_DB(db : integer) : boolean;
-function DEMIX_SpecialCaseRequiringMerge(AreaName : shortstring) : boolean;
-function TileCharacteristicsInDB(DB : integer) : boolean;
-function IsDEMIX_signedCriterion(Criterion : shortstring) : boolean;
-
-function HRDEMresolutionFilter(db : integer) : shortstring;
-
-function DEMIX_GetListOfPossibleAreas(AreaName : shortstring) : tStringList;
-function DEMIX_GetListOfTileSubDirsInArea(AreaName : shortstring) : tStringList; //these have '_ref_test_dem' plus the tile name
-function DEMIX_TileNameFromSubDir(Tile : shortstring) : shortstring;
-function DEMIX_GetListOfTileNamesInArea(AreaName : shortstring) : tStringList;
-procedure AreaDirectoryNames(AreaName : shortstring; var AreaDir,WGS_EGMdir,SourceDir,MergesDirFName : PathStr);
-function DSMandDTMtileNameMatch(DSMname,DTMname : shortString) : boolean;
-procedure AddCountryColorToDB(DBonTable : integer);
-function CountryColor(Country : shortstring) : tColor;
-
-function CommonTileStats(DBonTable : integer) : shortstring;
-function CommonTileStatsNames(DBonTable : integer) : shortstring;
-function CreatePowerLawList(db : integer) : tStringList;
-procedure ComputePowerBySlopeBins(db : integer);
-
 {$IfDef IncludeRetired}
    procedure FindBestReferenceDEM(db : integer; DEM : shortstring);
    procedure TiesByOpinions(DBonTable : integer);
@@ -493,18 +493,20 @@ const //Demix Database types
 
 function CheckDEMIXdbType(db : integer; var ItsType : byte; WantedTypes : tByteSet; WhatFor : shortString = '') : boolean;
 function ExpandDEMIXfieldName(Name : shortString) : shortstring;
+function DEMIX_DTMtestrefdir(db : integer) : PathStr;
+function DEMIX_DSMtestrefdir(db : integer) : PathStr;
 
 
 implementation
 
 uses
+   Math,
    Nevadia_Main,
    DEMstat,Make_grid,PetImage,PetImage_form,new_petmar_movie,DEMdatabase,PetDButils,
    Geotiff, BaseMap, GDAL_tools, DEMIX_filter, DEMstringgrid,DEM_NLCD,
    DEMCoord,DEMMapf,DEMDef_routines,DEM_Manager,DEM_indexes,PetMath,
    MD_use_tools,
    DEMIX_control,DEMIX_graphs;
-
 
 {$include demix_create_database.inc}
 
@@ -519,7 +521,6 @@ uses
 {$EndIf}
 
 {$IfDef IncludeOldDEMIX_RefDEM_Create}
-   {$include demix_create_ref_dems.inc}
    {$include demix_create_test_dems.inc}
 {$EndIf}
 
@@ -530,6 +531,17 @@ uses
 {$IfDef IncludeRetired}
    {$include demix_retired_crete_db.inc}
 {$EndIf}
+
+
+function DEMIX_DTMtestrefdir(db : integer) : PathStr;
+begin
+   Result := ExtractFilePath(GISdb[DB].DBFullName) + GISdb[DB].MyData.GetFieldByNameAsString('AREA')  + '\' + GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME')  + RefTestStr + '\';
+end;
+
+function DEMIX_DSMtestrefdir(db : integer) : PathStr;
+begin
+   Result := ExtractFilePath(GISdb[DB].DBFullName) + GISdb[DB].MyData.GetFieldByNameAsString('AREA')  + '\' + GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME')  + RefTestStr + '\';
+end;
 
 
 function ExpandDEMIXfieldName(Name : shortString) : shortstring;
@@ -717,10 +729,17 @@ begin
 end;
 
 
+
 function HRDEMresolutionFilter(db : integer) : shortstring;
 begin
    if GISdb[db].MyData.FieldExists('GRID_M') then Result := ' AND GRID_M >=' + RealToString(MDDef.HRDEMminRes,-5,-2) + ' AND GRID_M <=' + RealToString(MDDef.HRDEMmaxRes,-5,-2)
    else Result := ' AND GRID_SEC >=' + RealToString(MDDef.GDEMminRes,-5,-2) + ' AND GRID_SEC <=' + RealToString(MDDef.GDEMmaxRes,-5,-2);
+end;
+
+function HRDEMresolutionFilterRange(db : integer) : shortstring;
+begin
+   if GISdb[db].MyData.FieldExists('GRID_M') then Result := RealToString(MDDef.HRDEMminRes,-5,-2) + ' to ' + RealToString(MDDef.HRDEMmaxRes,-5,-2)
+   else Result := RealToString(MDDef.GDEMminRes,-5,-2) + '  to ' + RealToString(MDDef.GDEMmaxRes,-5,-2);
 end;
 
 
@@ -728,6 +747,7 @@ function DEMIX_HRDEM_DB(db : integer) : boolean;
 begin
    Result := GISdb[db].MyData.FieldExists('DTM_NAME') and GISdb[db].MyData.FieldExists('DSM_NAME') and GISdb[db].MyData.FieldExists('GRID_THIN') and GISdb[db].MyData.FieldExists('GRID_M');
 end;
+
 
 function DEMIX_GDEM_DB(db : integer) : boolean;
 begin

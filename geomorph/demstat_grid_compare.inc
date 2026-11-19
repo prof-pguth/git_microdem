@@ -621,7 +621,7 @@ begin
    {$IfDef RecordDEMCompare} WriteLineToDebugFile('GridMinimun in'); {$EndIf}
    GetTwoCompatibleGrids('Minimum of two grids',true,Map1,Map2,false);
    NewHeader := DEMGlb[Map1].DEMheader;
-   if OpenAndZeroNewDEM(true,NewHeader,DiffMap,'Minimum: ' + DEMGlb[Map2].AreaName + ' / ' + DEMGlb[Map1].AreaName,InitDEMmissing) then begin
+   if CreateOpenAndZeroNewDEM(true,NewHeader,DiffMap,'Minimum: ' + DEMGlb[Map2].AreaName + ' / ' + DEMGlb[Map1].AreaName,InitDEMmissing) then begin
       StartProgress('Minimum');
        for Col := 0 to pred(DEMGlb[Map1].DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMGlb[Map1].DEMheader.NumRow) do begin
@@ -650,7 +650,7 @@ begin
    NewHeader := DEMGlb[RefDEM].DEMheader;
    NewHeader.ElevUnits := euUndefined;
    NewHeader.DEMPrecision := FloatingPointDEM;
-   if OpenAndZeroNewDEM(true,NewHeader,Result,fName,InitDEMmissing) then begin
+   if CreateOpenAndZeroNewDEM(true,NewHeader,Result,fName,InitDEMmissing) then begin
       StartProgress('Percent difference');
        for Col := 0 to pred(DEMGlb[RefDEM].DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMGlb[RefDEM].DEMheader.NumRow) do begin
@@ -683,7 +683,7 @@ begin
    NewHeader := DEMGlb[Map2Den].DEMheader;
    NewHeader.ElevUnits := euUndefined;
    NewHeader.DEMPrecision := FloatingPointDEM;
-   if OpenAndZeroNewDEM(true,NewHeader,Result,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,InitDEMmissing) then begin
+   if CreateOpenAndZeroNewDEM(true,NewHeader,Result,'Ratio: ' + DEMGlb[Map1Num].AreaName + ' / ' + DEMGlb[Map2Den].AreaName,InitDEMmissing) then begin
       StartProgress('Ratio');
        for Col := 0 to pred(DEMGlb[Map2Den].DEMheader.NumCol) do begin
           for Row := 0 to pred(DEMGlb[Map2Den].DEMheader.NumRow) do begin
@@ -713,7 +713,7 @@ begin
    IdenticalGrids := DEMGlb[Map1].SecondGridIdentical(Map2);
 
    Result := 0;
-   OpenDEMDataStructures(Result);
+   CreateOpenDEMDataStructures(Result);
    DEMGlb[Result].AreaName := 'Change map: ' + DEMGlb[Map2].AreaName + ' to ' + DEMGlb[Map1].AreaName;
    DEMGlb[Result].DEMheader := DEMGlb[Map1].DEMheader;
    DEMGlb[Result].DEMheader.DEMPrecision := ByteDEM;
@@ -766,7 +766,7 @@ var
             function OpenOneResult(NewName : Shortstring; gt : tElevUnit) : integer;
             begin
                Result := 0;
-               OpenDEMDataStructures(Result);
+               CreateOpenDEMDataStructures(Result);
                DEMGlb[Result].AreaName := NewName;
                DEMGlb[Result].DEMheader := DEMGlb[DEM1].DEMheader;
                DEMGlb[Result].DEMMapProj := DEMGlb[DEM1].DEMMapProj;

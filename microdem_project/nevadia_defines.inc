@@ -31,8 +31,8 @@
 {$Define ExcludeDirtAirShots}
 {$Define ExIceSat}
 {$Define ExRVT}
-//{$Define ExVegDensity}
 
+//{$Define ExVegDensity}
 
 //{$Define ExStratcol}
 
@@ -44,15 +44,15 @@
 //{$Define TrackElevationPointers}
 //{$Define TrackPixelIs}
 
+//options added Nov 2026 to track down sporadic, resistant bug in loading dems
+//here becasue the DEM opening runs across multiple files
+   //{$Define Track_MapProjScale}
+   //{$Define Track_BaseMap_WKT}
+   //{$Define Track_ProjUTMzone}
 
 //options for slope/curvature algorithm, turned off by default
   //{$Define OptionSaveSlopeComputePoints}
   //{$Define SlopeWindowEdgeEffect}
-
-
-//{$Define AllowEDTM}
-
-
 
 
 {$Define MICRODEM}
@@ -80,14 +80,12 @@
 {$Define ExWMS}
 {$Define ExLandsatQA}
 {$Define ExWaveLengthHeight}
-
 {$Define ExHydrography}
 
  //deleted 4/19/2023 to track down problems with recent optimizations; they are not key options
    {$Define ExSidescan}
    {$Define ExDriftModel}
    {$Define ExSieve}
-   {$Define ExLabDownloads}
    //{$Define ExTIN}      //this will take some work to get out of core program
 
 

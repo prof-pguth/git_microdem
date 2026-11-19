@@ -92,6 +92,7 @@ end;
 
 procedure TMapForm.SubsetAndZoomMapFromGeographicBounds(GeoBox : sfBoundBox;  Redraw : boolean = true);
 begin
+    {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('SubsetAndZoomMapFromGeographicBounds in ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxProj,4) + '  '  + MapDraw.MapSizeString); {$EndIf}
     MapDraw.LatLongDegreeToProjectedCoords(GeoBox.YMax,GeoBox.xmin,MapDraw.MapCorners.BoundBoxProj.xMin, MapDraw.MapCorners.BoundBoxProj.YMax);
     MapDraw.LatLongDegreeToProjectedCoords(GeoBox.YMin,GeoBox.xmax,MapDraw.MapCorners.BoundBoxProj.xMax, MapDraw.MapCorners.BoundBoxProj.YMin);
     SubsetAndZoomMapFromProjectedBounds(Redraw);
@@ -102,28 +103,26 @@ procedure TMapForm.SubsetAndZoomMapFromProjectedBounds(Redraw : boolean = true);
 begin
     MapDraw.ZeroTickInt;
     if (MapDraw.VectorIndex <> 0) then begin
-       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('TMapForm.SubsetAndZoomMapFromProjectedBounds Resize vector map'); {$EndIf}
+       {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('TMapForm.SubsetAndZoomMapFromProjectedBounds Resize vector map'); {$EndIf}
        MapDraw.PrimMapProj.FullWorld := false;
-       {$If Defined(RecordMapDraw) or Defined(RecordMapResize)} WriteLineToDebugFile('new NW corner: ' + LatLongDegreeToString(MouseDownLat,MouseDownLong)+ ' SE corner: ' + LatLongDegreeToString(MouseUpLat,MouseUpLong)); {$EndIf}
+       {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('new NW corner: ' + LatLongDegreeToString(MouseDownLat,MouseDownLong)+ ' SE corner: ' + LatLongDegreeToString(MouseUpLat,MouseUpLong)); {$EndIf}
     end;
-    //else begin
-        MapDraw.BoundingBoxProjToDataGrid;
-        {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, desired DataGrid ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxDataGrid,4) + '  ' + sfBoundBoxSizeToString(MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
-        {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, after aspect check ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxProj,4) + '  '  + MapDraw.MapSizeString); {$EndIf}
-    //end;
+    MapDraw.BoundingBoxProjToDataGrid;
+    {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, desired DataGrid ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxDataGrid,4) + '  ' + sfBoundBoxSizeToString(MapDraw.MapCorners.BoundBoxDataGrid,2)); {$EndIf}
     MapDraw.MapXSize := MDDef.DefaultMapXSize;
     MapDraw.MapYSize := MDDef.DefaultMapYSize;
 
 //check if this is needed
 
     MapDraw.MapAspectCheck;
+    {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, after aspect check ' + sfBoundBoxToString(MapDraw.MapCorners.BoundBoxProj,4) + '  '  + MapDraw.MapSizeString); {$EndIf}
 
-    {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, call form resize'); {$EndIf}
-    //FormResize(Nil);
-    {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, call DoCompleteMapRedraw'); {$EndIf}
-    if Redraw then DoCompleteMapRedraw;
+    if Redraw then begin
+       {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, call DoCompleteMapRedraw'); {$EndIf}
+       DoCompleteMapRedraw;
+    end;
     FullMapSpeedButton.Enabled := true;
-    {$IfDef RecordMapResize} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, out'); {$EndIf}
+    {$If Defined(RecordSubsetZoom)} WriteLineToDebugFile('SubsetAndZoomMapFromProjectedBounds, out'); {$EndIf}
 end;
 
 

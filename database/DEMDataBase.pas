@@ -4128,7 +4128,7 @@ begin
    else begin
       {$IfDef VCL} MessageToContinue('Requires field NPTS'); {$EndIf}
    end;
-end;
+end {procedure TGISdataBaseModule.PointsForLineAreaDB};
 
 
 

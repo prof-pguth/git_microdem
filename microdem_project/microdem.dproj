@@ -168,9 +168,9 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_MajorVer>2026</VerInfo_MajorVer>
-        <VerInfo_Release>9</VerInfo_Release>
+        <VerInfo_Release>18</VerInfo_Release>
         <DCC_DcuOutput>C:\turbo\obj_files_64\</DCC_DcuOutput>
-        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.11.9.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petmar Trilobites;FileVersion=2026.11.18.1;InternalName=Debug version;LegalCopyright=Freeware debug version;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_OutputDRCFile>false</DCC_OutputDRCFile>
@@ -713,7 +713,6 @@
             <Form>TigerAddressForm</Form>
         </DCCReference>
         <DCCReference Include="..\common_code\DEM_NLCD.pas"/>
-        <DCCReference Include="..\demix\demix_definitions.pas"/>
         <DCCReference Include="..\demix\demix_control.pas"/>
         <DCCReference Include="..\demix\demix_graphs.pas"/>
         <DCCReference Include="..\demix\demix_evals_scores_graphs.pas">
@@ -934,6 +933,7 @@
             <Form>CompareDSM_DTMform</Form>
         </DCCReference>
         <DCCReference Include="..\microdem_open_source\equal_earth_projection.pas"/>
+        <DCCReference Include="..\demix\demix_definitions.pas"/>
         <None Include="nevadia_defines.inc"/>
         <None Include="..\common_code\petmar_types_vcl.inc"/>
         <None Include="..\common_code\demstat_grid_compare.inc"/>

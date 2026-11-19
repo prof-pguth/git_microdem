@@ -36,7 +36,6 @@ unit demix_control;
    //{$Define Record3DEPX}
    //{$Define RecordDiluvium}
    //{$Define RecordDEMIX_evaluations_graph}
-   //{$Define RecordDiluviumFull}
    //{$Define TrackPixelIs}
 
    //{$Define ShowOpenBothPixelIsDEMs}   //see how opening and masking for Diluvium DEM is going; don't use unless there is a a problem
@@ -211,6 +210,7 @@ function ClipTheDEMtoFullDEMIXTiles(DEM : integer; NewName : PathStr = '') : boo
    {$EndIf}
 
 procedure FindDSMslopeLessThanDEM(DBonTable : integer);
+procedure LoadGDEMTestAndRefDEMs(dbOnTable : integer);
 
 
 implementation
@@ -253,6 +253,42 @@ var
 
 const
    MICRODEMcurvature = true;  //if not, using Whitebox
+
+
+procedure  LoadGDEMTestAndRefDEMs(dbOnTable : integer);
+
+            procedure Process(theDir : PathStr; Mask : shortstring);
+            var
+               theDEMs : tStringList;
+               i : integer;
+               fName : PathStr;
+            begin
+               if ValidPath(theDir) then begin
+                  TheDEMs := Nil;
+                  FindMatchingFiles(theDir,'*.tif',TheDEMs);
+                  if (theDEMs.Count = 0) then begin
+                     MessageToContinue('Cannnot find grids in ' + theDir);
+                  end
+                  else begin
+                     for i := 0 to pred(theDEMs.Count) do begin
+                        fName := theDEMs.Strings[i];
+                        if (Mask = '') or AnsiContainsText(fname,Mask) then begin
+                           OpenNewDEM(fName);
+                        end;
+                     end;
+                  end;
+                  TheDEMs.Destroy;
+               end;
+            end;
+
+begin
+   Process(DEMIX_DTMtestrefdir(dbOnTable), '');
+   Process(DEMIX_DSMtestrefdir(dbOnTable), 'ref_DSM');
+end;
+
+
+
+
 
 
 procedure DEMIX_CriteriaToleranceFNameFromMode(Mode : integer);

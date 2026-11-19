@@ -247,7 +247,6 @@ uses
   monitor_change_form in '..\common_code\monitor_change_form.pas' {ChangeMapForm},
   tiger_address in '..\gis_ops\tiger_address.pas' {TigerAddressForm},
   DEM_NLCD in '..\common_code\DEM_NLCD.pas',
-  demix_definitions in '..\demix\demix_definitions.pas',
   demix_control in '..\demix\demix_control.pas',
   demix_graphs in '..\demix\demix_graphs.pas',
   demix_evals_scores_graphs in '..\demix\demix_evals_scores_graphs.pas' {eval_scores_graph_form},
@@ -330,7 +329,8 @@ uses
   dem_db_ops in '..\database\dem_db_ops.pas',
   diagonal_normalization in '..\ask_options\diagonal_normalization.pas' {PickDiagNormForm},
   dsm_dtm_compare in '..\demix\dsm_dtm_compare.pas' {CompareDSM_DTMform},
-  equal_earth_projection in '..\microdem_open_source\equal_earth_projection.pas';
+  equal_earth_projection in '..\microdem_open_source\equal_earth_projection.pas',
+  demix_definitions in '..\demix\demix_definitions.pas';
 
 {$R *.RES}
 

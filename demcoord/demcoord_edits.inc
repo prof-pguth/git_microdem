@@ -231,7 +231,7 @@ begin
        Projection.InitProjFromWKT(fName);
        NewHeader.WKTString := Projection.WKTString;
 
-       {$IfDef RecordNewWKT} WriteLineToDebugFile(''); Projection.ProjectionParamsToDebugFile('Projection initialized',true); {$EndIf}
+       {$IfDef RecordNewWKT} WriteLineToDebugFile(''); Projection.ProjParamsToDebugFile('Projection initialized'); {$EndIf}
 
        if (SpacingX < 0) then begin
           ReadDefault('Data spacing (projected meters) for new grid', MDDef.PreferWKTSpace);
@@ -276,7 +276,7 @@ begin
     end;
 
     {$IfDef RecordNewMaps} WriteLineToDebugFile('Variables set DEM size: ' + IntToStr(NewHeader.NumCol) + 'x' + IntToStr(NewHeader.NumRow) + '  ' + NewHeader.WKTString); {$EndIf}
-    OpenAndZeroNewDEM(false,NewHeader,Result,NewName, InitDEMmissing);
+    CreateOpenAndZeroNewDEM(false,NewHeader,Result,NewName, InitDEMmissing);
     {$IfDef RecordNewMaps} WriteLineToDebugFile('OpenAndZeroNewDEM done, DEM=' + IntToStr(Result) + '  Projection ' + DEMGlb[Result].DEMMapProjection.GetProjName); {$EndIf}
 
     if OpenMap then begin
@@ -563,7 +563,7 @@ begin
       end;
    end;
 
-   OpenAndZeroNewDEM(true,DEMHeader,Result,'Gaussian_filter_' + FilterSizeStr(FilterSize) + '_' + AreaName,InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,DEMHeader,Result,'Gaussian_filter_' + FilterSizeStr(FilterSize) + '_' + AreaName,InitDEMmissing);
    for Row := HalfSize to pred(DEMHeader.NumRow)-HalfSize do begin
       for Col := HalfSize to pred(DEMHeader.NumCol)-HalfSize do begin
          Sum := 0;
@@ -635,7 +635,7 @@ begin
 
    Title := Title + BoxsizeStr;
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM setup done'); {$EndIf}
-   OpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_filter_' + AreaName,InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,Title + '_filter_' + AreaName,InitDEMmissing);
    {$IfDef RecordDEMEdits} WriteLineToDebugFile('tDEMDataSet.FilterThisDEM OpenZero done'); {$EndIf}
    EndProgress;
    ShowHourglassCursor;

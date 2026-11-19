@@ -3561,6 +3561,28 @@ object wmdem: Twmdem
     object N44: TMenuItem
       Caption = '-'
     end
+    object N15mDTManalysis1: TMenuItem
+      Caption = '15m DTM analysis'
+      object N15mtestDEMs1: TMenuItem
+        Caption = '15m test DEMs'
+        OnClick = N15mtestDEMs1Click
+      end
+      object GED15filedimensions1: TMenuItem
+        Caption = 'GED-15 file dimensions'
+        OnClick = GED15filedimensions1Click
+      end
+      object ClipGEED15files1: TMenuItem
+        Caption = 'Clip GEED-15 files'
+        OnClick = ClipGEED15files1Click
+      end
+      object DeletecorruptedWGSEGMfiles1: TMenuItem
+        Caption = 'Delete corrupted WGS-EGM files'
+        OnClick = DeletecorruptedWGSEGMfiles1Click
+      end
+    end
+    object N19: TMenuItem
+      Caption = '-'
+    end
     object UTMbasedCVSfilesbyarea1: TMenuItem
       Caption = 'Inventory CSV files by area '
       OnClick = UTMbasedCVSfilesbyarea1Click

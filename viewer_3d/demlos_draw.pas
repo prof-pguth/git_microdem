@@ -909,7 +909,7 @@ begin
                   DEMonView := j;
                   OneProfile;
                end;
-               if LOSVariety in [losAllDEMDropDown] then MinAreaZ := MinAreaZ - pred(NumDEMDataSetsOpen) * MDDef.DropDownPerProfile;
+               if LOSVariety in [losAllDEMDropDown] then MinAreaZ := MinAreaZ - pred(NumDEMsOpen) * MDDef.DropDownPerProfile;
             end;
         end
         else begin
@@ -1684,7 +1684,7 @@ begin
       PtCldInUse := 1;
       for j := 1 to 2 do LOSMemoryPointCloud[j] := Nil;
    {$EndIf}
-   for j := 1 to NumDEMDataSetsOpen do begin
+   for j := 1 to NumDEMsOpen do begin
       if ValidDEM(j) then begin
          {$IfDef RecordLOS} WriteLineToDebugFile(DEMGlb[j].AreaName); {$EndIf}
          ProfileName[j] := RemoveUnderScores(DEMGlb[j].AreaName)

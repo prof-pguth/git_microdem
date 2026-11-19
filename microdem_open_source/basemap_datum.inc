@@ -38,46 +38,46 @@ end;
       end;
 
 
-     function GetEPSGforVerticalDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     function GetEPSGforVerticalDatumCode(MapDatum : tMapProjection) : word;
      begin
-        if PrimaryMapDatum.V_DatumCode = 'NAVD88' then Result := VertCSNAVD88
-        else if PrimaryMapDatum.V_DatumCode = 'EGM96' then Result := VertCSEGM96
-        else if PrimaryMapDatum.V_DatumCode = 'EGM2008' then Result := VertCSEGM2008
-        else if PrimaryMapDatum.V_DatumCode = 'WGS84 ellipsoid' then Result := VertCSWGS84
+        if MapDatum.V_DatumCode = 'NAVD88' then Result := VertCSNAVD88
+        else if MapDatum.V_DatumCode = 'EGM96' then Result := VertCSEGM96
+        else if MapDatum.V_DatumCode = 'EGM2008' then Result := VertCSEGM2008
+        else if MapDatum.V_DatumCode = 'WGS84 ellipsoid' then Result := VertCSWGS84
         else Result := 0;
      end;
 
 
-     function GetEPSGforUTMDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     function GetEPSGforUTMDatumCode(MapDatum : tMapProjection) : word;
      begin
        Result := 32600; {WGS84 default}
-       if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 32200
-       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 26900
-       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') or (PrimaryMapDatum.h_DatumCode = 'NAD27') then Result := 26700
-       else if (PrimaryMapDatum.h_DatumCode = 'ETRS89') or (PrimaryMapDatum.h_DatumCode = 'ETR89') then Result := 25800
-       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + PrimaryMapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
-       if (PrimaryMapDatum.LatHemi = 'S') then Result := Result + 100;
-       Result := Result + PrimaryMapDatum.projUTMZone;
+       if (MapDatum.h_DatumCode = 'WGS72') then Result := 32200
+       else if (MapDatum.h_DatumCode = 'NAS-C') or (MapDatum.h_DatumCode = 'NAD83') then Result := 26900
+       else if (MapDatum.h_DatumCode = 'NAR-C') or (MapDatum.h_DatumCode = 'NAD27') then Result := 26700
+       else if (MapDatum.h_DatumCode = 'ETRS89') or (MapDatum.h_DatumCode = 'ETR89') then Result := 25800
+       else if (MapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + MapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
+       if (MapDatum.LatHemi = 'S') then Result := Result + 100;
+       Result := Result + MapDatum.projUTMZone;
      end;
 
 
-     function GetEPSGforGeoDatumCode(PrimaryMapDatum : tMapProjection) : word;
+     function GetEPSGforGeoDatumCode(MapDatum : tMapProjection) : word;
      begin
        Result := 4326; {WGS84 default}
-       if (PrimaryMapDatum.h_DatumCode = 'WGS72') then Result := 4322
-       else if (PrimaryMapDatum.h_DatumCode = 'NAS-C') or (PrimaryMapDatum.h_DatumCode = 'NAD83') then Result := 4267
-       else if (PrimaryMapDatum.h_DatumCode = 'NAR-C') then Result := 4269
-       else if (PrimaryMapDatum.h_DatumCode = 'ETRS89')  or (PrimaryMapDatum.h_DatumCode = 'ETR89') then Result := 4258
-       else if (PrimaryMapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + PrimaryMapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
+       if (MapDatum.h_DatumCode = 'WGS72') then Result := 4322
+       else if (MapDatum.h_DatumCode = 'NAS-C') or (MapDatum.h_DatumCode = 'NAD83') then Result := 4267
+       else if (MapDatum.h_DatumCode = 'NAR-C') then Result := 4269
+       else if (MapDatum.h_DatumCode = 'ETRS89')  or (MapDatum.h_DatumCode = 'ETR89') then Result := 4258
+       else if (MapDatum.h_DatumCode <> 'WGS84') then MessageToContinue('This is ' + MapDatum.h_DatumCode + ' ' + GeotiffDatumDefaultString);
      end;
 
-     function GetCombinedEPSG(PrimaryMapDatum : tMapProjection) : shortstring;
+     function GetCombinedEPSG(MapDatum : tMapProjection) : shortstring;
      begin
         Result := '';
-        if PrimaryMapDatum.PName = UTMEllipsoidal then Result := IntToStr(GetEPSGforUTMDatumCode(PrimaryMapDatum) )
-        else if PrimaryMapDatum.PName = PlateCaree then Result := IntToStr(GetEPSGforGeoDatumCode(PrimaryMapDatum) )
+        if MapDatum.PName = UTMEllipsoidal then Result := IntToStr(GetEPSGforUTMDatumCode(MapDatum) )
+        else if MapDatum.PName = PlateCaree then Result := IntToStr(GetEPSGforGeoDatumCode(MapDatum) )
         else exit;
-        if PrimaryMapDatum.V_DatumCode <> '' then Result := Result + '+' + IntToStr(GetEPSGforVerticalDatumCode(PrimaryMapDatum));
+        if MapDatum.V_DatumCode <> '' then Result := Result + '+' + IntToStr(GetEPSGforVerticalDatumCode(MapDatum));
      end;
 
 
@@ -120,28 +120,6 @@ end;
     end;
     {$EndIf}
 
-
-
-   procedure tMapProjection.ShortProjInfo(Why : shortstring);
-   var
-      TStr : shortstring;
-   begin
-       if PName = UTMEllipsoidal then TStr := ' UTM zone=' + IntToStr(projUTMZone) + LatHemi
-       else TStr := '';
-       WriteLineToDebugFile(ProjDebugName +  ' ' + Why + ' ' +
-                       GetProjName + ' ' +
-                       ' ProjMapScale=' + RealToString(ProjMapScale,-12,-4) +
-                       ' ellipse=' + H_datumCode +
-                       ' h_f=' + RealToString(h_f,-12,-6) +
-                       ' a=' + RealToString(a,-18,-2) +
-                       //' s2=' + RealToString(s2,-18,-6) +
-                       //' TM_phi2=' + RealToString(TM_phi2,-18,-6) +
-                       ' long0=' + RadToDegString(Long0) +
-                       ' lat0=' + RadToDegString(Lat0) +
-                       ' false_east=' + RealToString(False_east,-12,-1) +
-                       ' false_north=' + RealToString(False_north,-12,-1) +
-                       TStr ) ;
-   end;
 
 
 
@@ -194,7 +172,7 @@ begin {procedure tMapProjection.InverseProjectRadians}
    {$IfDef RecordProjectionDetails}
       if PointConvertDebug then begin
          WriteLineToDebugFile('');
-         ProjectionParamsToDebugFile('InverseProjectRadians',true);
+         ProjParamsToDebugFile('InverseProjectRadians');
       end;
    {$EndIf}
    if (PName = PlateCaree) then begin
@@ -910,13 +888,13 @@ begin
 end;
 
 
-
 procedure tMapProjection.InverseProjectDegrees(x,y : float64; var Lat,Long : float64);
 begin
    InverseProjectRadians(x,y,Lat,Long);
    Lat := Lat / DegToRad;
    Long := Long / DegToRad;
 end;
+
 
 procedure tMapProjection.ForwardProjectDegrees(Lat,Long : float64; var x,y : float64; Check : boolean = true);
 begin
@@ -1085,7 +1063,7 @@ end;
 
 procedure tMapProjection.SetDatumConstants;
 begin
-   {$IfDef RecordProjectionParameters} WriteLineToDebugFile(ProjDebugName + ' tMapProjection.SetDatumConstants, datum=' + h_DatumCode); {$EndIf}
+   {$IfDef RecordProjParams} WriteLineToDebugFile(ProjDebugName + ' tMapProjection.SetDatumConstants, datum=' + h_DatumCode); {$EndIf}
    if (h_datumCode = '') then h_datumcode := 'WGS84';
 
    if IsNAN(a) and IsNAN(h_f) then begin
@@ -1125,7 +1103,7 @@ begin
   e2 := 2*h_f-sqr(h_f);
   e := sqrt(e2);
   // h_f := 1 / f;
-   {$If Defined(RecordProjectionParameters) or Defined(track_f)} ShortProjInfo('tMapProjection.SetDatumConstants Out'); {$EndIf}
+   {$If Defined(RecordProjParams) or Defined(track_f)} ShortProjInfo('tMapProjection.SetDatumConstants Out'); {$EndIf}
 end;
 
 
@@ -1142,7 +1120,7 @@ end;
 
 procedure tMapProjection.SetDatumAndTMConstants;
 begin
-    {$IfDef RecordProjectionParameters} ShortProjInfo('tMapProjection.SetDatumAndTMConstants in'); {$EndIf}
+    {$IfDef RecordProjParams} ShortProjInfo('tMapProjection.SetDatumAndTMConstants in'); {$EndIf}
     SetDatumConstants;
     UTM_S1 := A*(1.0 - E2 / 4 - 3.0*E2*E2/64.0 - 5.0*E2*E2*E2/256.0);
     S2 := A * (3.0/8.0*E2 + 3.0/32.0*E2*E2 + 45/1024.0*E2*E2*E2);
@@ -1155,11 +1133,11 @@ begin
     TM_Phi2 := 3.0*E1/2.0 - 27.0*Math.IntPower(E1,3) / 32;
     Phi4 := 21.0*Sqr(E1)/16.0 - 55.0*Sqr(Sqr(E1)) / 32;
     Phi6 := 151.0 * Math.IntPower(E1,3) / 96;
-    {$If Defined(RecordProjectionParameters) or Defined(track_f) or Defined(RecordTMParameters)} ShortProjInfo('tMapProjection.SetDatumAndTMConstants Out'); {$EndIf}
+    {$If Defined(RecordProjParams) or Defined(track_f) or Defined(RecordTMParameters)} ShortProjInfo('tMapProjection.SetDatumAndTMConstants Out'); {$EndIf}
 
 
 (*
-    {$IfDef RecordProjectionParameters} ShortProjInfo('tMapProjection.SetDatumAndTMConstants restart old'); {$EndIf}
+    {$IfDef RecordProjParams} ShortProjInfo('tMapProjection.SetDatumAndTMConstants restart old'); {$EndIf}
     SetDatumConstants;
     UTM_S1 := A*(1.0 - E2 / 4 - 3.0*E2*E2/64.0 - 5.0*E2*E2*E2/256.0);
     S2 := A * (3.0/8.0*E2 + 3.0/32.0*E2*E2 + 45/1024.0*E2*E2*E2);
@@ -1172,14 +1150,14 @@ begin
     TM_Phi2 := 3.0*E1/2.0 - 27.0*Math.IntPower(E1,3) / 32;
     Phi4 := 21.0*Sqr(E1)/16.0 - 55.0*Sqr(Sqr(E1)) / 32;
     Phi6 := 151.0 * Math.IntPower(E1,3) / 96;
-    {$If Defined(RecordProjectionParameters) or Defined(track_f) or Defined(RecordTMParameters)} ShortProjInfo('tMapProjection.SetDatumAndTMConstants Out after restart'); {$EndIf}
+    {$If Defined(RecordProjParams) or Defined(track_f) or Defined(RecordTMParameters)} ShortProjInfo('tMapProjection.SetDatumAndTMConstants Out after restart'); {$EndIf}
 *)
 end;
 
 
 
 procedure tMapProjection.TransverseMercatorInverseProjectionRadians(X,Y : float64; var Lat,Long : float64);
-//converted from Fortran-77 subroutine originally written by Dr. John Sharry of Sun Oil, using Snyder,  p.63-64, example p.270-271
+//converted from Fortran-77 subroutine originally written by Dr. John Sharry of Sun Oil, using Snyder, p.63-64, example p.270-271
 var
    mu,dd,NewC1,Phi2forY,tanPhi2,cosPhi2,sinPhi2,C1,T1,N1,R1 : float64;
 begin

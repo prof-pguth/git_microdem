@@ -1125,6 +1125,16 @@ type
     N65: TMenuItem;
     N66: TMenuItem;
     hinnedslopeandslopedifferencemaps1: TMenuItem;
+    DSMDTMLandcover1: TMenuItem;
+    DSMDTMLandcover2: TMenuItem;
+    DTM1: TMenuItem;
+    HRDEMpointslopecomparisons1: TMenuItem;
+    GDEMpointslopecomputations1: TMenuItem;
+    DTM2: TMenuItem;
+    DSM1: TMenuItem;
+    DTM3: TMenuItem;
+    DSM2: TMenuItem;
+    DownloadGEM15DTM1: TMenuItem;
     procedure N3Dslicer1Click(Sender: TObject);
     procedure Shiftpointrecords1Click(Sender: TObject);
     procedure Creategrid1Click(Sender: TObject);
@@ -1922,7 +1932,6 @@ type
     procedure PowerlawforHRDEMDSMDTM1Click(Sender: TObject);
     procedure Graphslopes1Click(Sender: TObject);
     procedure OpenHRDEMDSMDTMLandcover1Click(Sender: TObject);
-    procedure HRDEMslopeandslopedifferencemaps1Click(Sender: TObject);
     procedure LoadtestandreferenceDEMs2Click(Sender: TObject);
     procedure GDEMaveragetileslopebyresolution1Click(Sender: TObject);
     procedure DSMDTMpowerlawforalltiles2Click(Sender: TObject);
@@ -1953,6 +1962,14 @@ type
     procedure CreateDBwithpowerlawbyaverageslopebins1Click(Sender: TObject);
     procedure ComputepredictedDTMslopesv21Click(Sender: TObject);
     procedure hinnedslopeandslopedifferencemaps1Click(Sender: TObject);
+    procedure DSMDTMLandcover1Click(Sender: TObject);
+    procedure DSMDTMLandcover2Click(Sender: TObject);
+    procedure DTM1Click(Sender: TObject);
+    procedure DTM2Click(Sender: TObject);
+    procedure DSM1Click(Sender: TObject);
+    procedure DTM3Click(Sender: TObject);
+    procedure DSM2Click(Sender: TObject);
+    procedure DownloadGEM15DTM1Click(Sender: TObject);
   private
     procedure PlotSingleFile(fName : PathStr; xoff,yoff : float64);
     procedure SetUpLinkGraph;
@@ -2140,10 +2157,7 @@ uses
       Map_Masking,
    {$EndIf}
 
-   {$IfDef ExPers}
-   {$Else}
-      DEMPersw,
-   {$EndIf}
+   DEMPersw,
 
    {$IfDef ExGeostats}
    {$Else}
@@ -2153,22 +2167,15 @@ uses
    {$EndIf}
 
 
-    {$IfDef ExMilIcons}
-    {$Else}
-       dem_milicon,
-    {$EndIf}
-
-    {$IfDef ExDriftModel}
-    {$Else}
-       drift_model,
-    {$EndIf}
+    {$IfDef ExMilIcons} {$Else} dem_milicon, {$EndIf}
+    {$IfDef ExDriftModel} {$Else} drift_model, {$EndIf}
+    {$IfDef DEMIX_neo} demix_neo_test_area, {$EndIf}
 
     DEMIX_filter,
     demix_definitions,
     DEMIX_Control,
     DEMIX_graphs,
     DEMIX_evals_scores_graphs,
-    {$IfDef DEMIX_neo} demix_neo_test_area, {$EndIf}
    map_overlays,
    DEM_db_ops,
    db_display_options,
@@ -2178,20 +2185,17 @@ uses
    add_time_fields, db_field_concatenate, basemap, dem_gaz_opts, DEMShowDbRecord,
    DEMTigerOps,
    Tiger_address,
-
-{Main program MDI window for different programs that use this module}
    Nevadia_Main, make_grid;
-{End of the MDI parent declaration}
 
 var
    HighlightCycle : integer;
-   //BroadCastingFilterChanges : boolean;
 
 const
    sfaMult = 1;
    sfaAdd = 2;
    sfaDiv = 3;
    sfaAbsoluteValue = 4;
+
 
 procedure OpenHRDEMforCurrentRecord(db : integer; var DTM,DSM,LCgrid : integer);
 var
@@ -2203,10 +2207,9 @@ begin
    DTMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME') + '.tif';
    DSMName := ExtractFilePath(GISdb[DB].DBFullName) + AreaName + SubDir + GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME') + '.tif';
    {$IfDef RecordDTMDSM} WriteLineToDebugFile('OpenHRDEMforCurrentRecord ' + DTMName + '  ' + DSMName); {$EndIf}
-
-   DTM := OpenNewDEM(DTMName);
-   DSM := OpenNewDEM(DSMName);
-   LCgrid := LoadLC10LandCover('',DEMglb[DSM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
+   if DTM <> 0 then DTM := OpenNewDEM(DTMName);
+   if DSM <> 0 then DSM := OpenNewDEM(DSMName);
+   if LCGrid <> 0 then LCgrid := LoadLC10LandCover('',DEMglb[DSM].SelectionMap.MapDraw.MapCorners.BoundBoxGeo,true);
 end;
 
 
@@ -2750,6 +2753,9 @@ procedure Tdbtablef.OpenHRDEMDSMDTMLandcover1Click(Sender: TObject);
 var
    DTM,DSM,LCgrid : integer;
 begin
+   DTM := -1;
+   DSM := -1;
+   LCGrid := -1;
    OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
 end;
 
@@ -3077,12 +3083,12 @@ end;
 
 procedure Tdbtablef.hisDBall3groups1Click(Sender: TObject);
 begin
-{$IfDef ExcludeDirtAirShots}
-{$Else}
-   DirtAndAirShots(DBonTable,'Landcover');
-   DirtAndAirShots(DBonTable,'Canopy');
-   DirtAndAirShots(DBonTable,'Slope');
-{$EndIf}
+   {$IfDef ExcludeDirtAirShots}
+   {$Else}
+      DirtAndAirShots(DBonTable,'Landcover');
+      DirtAndAirShots(DBonTable,'Canopy');
+      DirtAndAirShots(DBonTable,'Slope');
+   {$EndIf}
 end;
 
 procedure Tdbtablef.hisDBbycanopyheight1Click(Sender: TObject);
@@ -3562,14 +3568,14 @@ begin
       Insertnewrecordatdistancebearing1.Visible := ItsaPointDB and CheckBox1.Checked;
 
       Outlinecameraview1.Visible := PhotoLocationsPresent;
-      DEMTerrainblowups1.Visible := NumDEMDataSetsOPen > 0;
+      DEMTerrainblowups1.Visible := NumDEMsOpen > 0;
       CreateDEM1.Visible := (LineOrAreaShapeFile(ShapeFileType));
       Markholes1.Visible := (AreaShapeFile(ShapeFileType));
       MaskDEMgrid1.Visible := CheckBox1.Checked and ((TheMapOwner <> Nil) and (TheMapOwner.MapDraw.DEMonMap <> 0));
       AddXYbox1.Visible := GISdb[DBonTable].MyData.FieldExists('X1') and GISdb[DBonTable].MyData.FieldExists('Y2') and GISdb[DBonTable].MyData.FieldExists('X3') and GISdb[DBonTable].MyData.FieldExists('Y4');
 
       DTMDSMcomparison1.Visible := DEMIX_HRDEM_DB(dbOnTable) or DEMIX_GDEM_DB(dbOnTable);
-      OpenHRDEMDSMDTMLandcover1.Visible := DEMIX_HRDEM_DB(dbOnTable);
+      //OpenHRDEMDSMDTMLandcover1.Visible := DEMIX_HRDEM_DB(dbOnTable);
       HRDEMslopeandslopedifferencemaps1.Visible := DEMIX_HRDEM_DB(dbOnTable);
       hinnedslopeandslopedifferencemaps1.Visible := DEMIX_HRDEM_DB(dbOnTable);
       DEMIX2.Visible := GISdb[DBonTable].IsThisDEMIXdatabase;
@@ -5851,7 +5857,7 @@ begin
       MercMap := tMapProjection.Create('dbtable, mercator');
       MercMap.PName := MercatorEllipsoid;
       SetUpDefaultNewProjection(MercMap);
-      MercMap.GetProjectParameters;
+      MercMap.GetProjParams;
       EmpSource.Enabled := false;
       GISdb[DBonTable].MyData.First;
       While not GISdb[DBonTable].MyData.Eof do begin
@@ -6983,18 +6989,37 @@ begin
 end;
 
 
-procedure Tdbtablef.HRDEMslopeandslopedifferencemaps1Click(Sender: TObject);
+procedure HRDEMpointslopecomparisons(dbOnTable : integer; doHRDEM : boolean; doDSM : boolean = false);
 var
-   DTM,DSM,LCgrid,DTMslope,DSMslope : integer;
+   DTM,DSM,LCgrid,Wanted: integer;
+   AggregatedArray : tDEMArray;
+   fName : PathStr;
 begin
-   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
-   if ValidDEM(DTM) and ValidDEM(DSM) then begin
-      DTMslope := Make_Grid.CreateEvansSlopeMapPercent(true,DTM);
-      DSMslope := Make_grid.CreateEvansSlopeMapPercent(true,DSM);
-      MakeDifferenceMap(DSMSlope,DTMSlope,DSMslope,DSM)
+   SetColorForProcessing;
+   if doHRDEM then begin
+      LCGrid := 0;
+      if doDSM then begin
+          DTM := 0;
+          Wanted := -1;
+          OpenHRDEMforCurrentRecord(dbOnTable,DTM,Wanted,LCgrid);
+      end
+      else begin
+          Wanted := -1;
+          DSM := 0;
+          OpenHRDEMforCurrentRecord(dbOnTable,Wanted,DSM,LCgrid);
+      end;
+   end
+   else begin
+      if doDSM then fName := DEMIX_DSMtestrefdir(dbOnTable) + 'ref_DSM_srtm.tif'
+      else fName := DEMIX_DTMtestrefdir(dbOnTable) + 'ref_DTM_srtm.tif';
+      Wanted := OpenNewDEM(fName);
    end;
+   if ValidDEM(Wanted) then begin
+      AggregatedDEMArray := CreateAggregatedResolutionDEMArray(Wanted,doHRDEM);
+      PointSlopesByDEMresolution(Wanted,AggregatedDEMArray);
+   end;
+   SetColorForWaiting;
 end;
-
 
 procedure Tdbtablef.GetReadyForGeologyGeometry;
 begin
@@ -7694,8 +7719,8 @@ begin
 
       ChangeFieldsUsed1.Visible := GISdb[DBonTable].MyData.FieldExists('USE');
       Distancefrompoint1.Visible := (TheMapOwner <> Nil);
-      DEM1.Visible := ((TheMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap)) or (NumDEMDataSetsOpen > 0);
-      MaskDEMfromshapefile1.Visible := (NumDEMDataSetsOpen > 0);
+      DEM1.Visible := ((TheMapOwner <> Nil) and ValidDEM(TheMapOwner.MapDraw.DEMonMap)) or (NumDEMsOpen > 0);
+      MaskDEMfromshapefile1.Visible := (NumDEMsOpen > 0);
       Satelliteaddreflectance1.Visible := (TheMapOwner <> Nil) and ValidSatImage(TheMapOwner.MapDraw.SatonMap);
       Editrecordsingrid1.Visible := MDDef.AllowEditDBInGrid;
       Maskdatabasewithgazetteer1.Visible := GazDB and ValidDEM(TheMapOwner.MapDraw.DEMonMap);
@@ -7965,38 +7990,8 @@ end;
 
 
 procedure Tdbtablef.ComputepredictedDTMslopesv21Click(Sender: TObject);
-var
-   PredictedSlope,SpaceMeters,SlopeDTM,SlopeOneSec,b,a : float32;
-   Table : tMyData;
-   aFilter : shortstring;
-   fName : PathStr;
 begin
-   SetColorForProcessing;
-   fName := 'F:\demix_db_4.3\HRDEM_power_law_by_slope_bins_DEMIX_DB_4.3_10_02_26.dbf';
-   Table := tMyData.Create(fName);
-
-   GISdb[DBonTable].EmpSource.Enabled := false;
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'PRED_DTM_2',6,2);
-   GISdb[DBonTable].MyData.InsureFieldPresentAndAdded(ftFloat,'PRED_DIFF2',6,2);
-
-   while not GISdb[DBonTable].MyData.eof do begin
-      SpaceMeters := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('GRID_M');
-      SlopeOneSec := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('AVG_SLOPE');
-      SlopeDTM := GISdb[DBonTable].MyData.GetFieldByNameAsFloat('DTM_SLOPE');
-      aFilter := 'MIN_SLOPE<' + RealToString(SlopeOneSec,-8,-1) + ' AND MAX_SLOPE>' + RealToString(SlopeOneSec,-8,-1);
-      Table.ApplyFilter(aFilter);
-      b := Table.GetFieldByNameAsFloat('DTM_B');
-      a := 2.874 + 1.156 * SlopeOneSec;
-      PredictedSlope := a * Math.Power(SpaceMeters,b);
-
-      GISdb[DBonTable].MyData.Edit;
-      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('PRED_DTM_2',PredictedSlope);
-      GISdb[DBonTable].MyData.SetFieldByNameAsFloat('PRED_DIFF2',PredictedSlope-SlopeDTM);
-      GISdb[DBonTable].MyData.Next;
-   end;
-   Table.Destroy;
-   GISdb[DBonTable].EmpSource.Enabled := true;
-   SetColorForWaiting;
+   AddPredictedDTMslope(DBonTable);
 end;
 
 procedure Tdbtablef.Concatenatestringfields1Click(Sender: TObject);
@@ -8219,11 +8214,11 @@ begin
        end;
        Bitmap.Canvas.Pen.Width := 4;
        Bitmap.Canvas.Brush.Color := Bitmap.Canvas.Pen.Color;
-       inc(HighLightCycle);
-       if (HighLightCycle = 3) then HighLightCycle := 1;
        GISdb[DBonTable].DisplayCurrentRecordOnMap(GISdb[DBonTable].TheMapOwner.MapDraw,Bitmap);
        GISdb[DBonTable].theMapOwner.Image1.Picture.Graphic := Bitmap;
        Bitmap.Destroy;
+       inc(HighLightCycle);
+       if (HighLightCycle = 3) then HighLightCycle := 1;
    end;
 end;
 
@@ -10666,7 +10661,7 @@ end;
 
 procedure Tdbtablef.Graphslopes1Click(Sender: TObject);
 begin
-    GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString(TileNameGDEMorHRDEM(DBonTable)));
+   GraphCompareDSMandDTMslopes(DBonTable,GISdb[DBonTable].MyData.GetFieldByNameAsString(TileNameGDEMorHRDEM(DBonTable)));
 end;
 
 
@@ -12136,6 +12131,36 @@ begin
 end;
 
 
+procedure Tdbtablef.DSM1Click(Sender: TObject);
+begin
+   HRDEMpointslopecomparisons(dbOnTable,false,true);
+end;
+
+procedure Tdbtablef.DSM2Click(Sender: TObject);
+begin
+   HRDEMpointslopecomparisons(dbOnTable,true,true);
+end;
+
+procedure Tdbtablef.DSMDTMLandcover1Click(Sender: TObject);
+var
+   DTM,DSM,LCgrid : integer;
+begin
+   DTM := -1;
+   DSM := -1;
+   LCGrid := -1;
+   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
+end;
+
+procedure Tdbtablef.DSMDTMLandcover2Click(Sender: TObject);
+var
+   DTM,DSM,LCgrid : integer;
+begin
+   DTM := 0;
+   DSM := -1;
+   LCGrid := 0;
+   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
+end;
+
 procedure Tdbtablef.DSMDTMpowerlawforalltiles2Click(Sender: TObject);
 begin
    ComputePowerFitForAllTiles(dbOnTable);
@@ -12155,6 +12180,26 @@ begin
    Result := copy(theName,4,al-3);
 end;
 
+
+procedure Tdbtablef.DTM1Click(Sender: TObject);
+var
+   DTM,DSM,LCgrid : integer;
+begin
+   DTM := -1;
+   DSM := 0;
+   LCGrid := 0;
+   OpenHRDEMforCurrentRecord(dbOnTable,DTM,DSM,LCgrid);
+end;
+
+procedure Tdbtablef.DTM2Click(Sender: TObject);
+begin
+    HRDEMpointslopecomparisons(dbOnTable,false);
+end;
+
+procedure Tdbtablef.DTM3Click(Sender: TObject);
+begin
+   HRDEMpointslopecomparisons(dbOnTable,true);
+end;
 
 procedure Tdbtablef.DTMDSMcomparison1Click(Sender: TObject);
 begin
@@ -12411,48 +12456,11 @@ begin
    LoadtestandreferenceDEMs2Click(Sender);
 end;
 
-function DEMIX_DTMtestrefdir(db : integer) : PathStr;
-begin
-   Result := ExtractFilePath(GISdb[DB].DBFullName) + GISdb[DB].MyData.GetFieldByNameAsString('AREA')  + '\' + GISdb[DB].MyData.GetFieldByNameAsString('DTM_NAME')  + RefTestStr + '\';
-end;
-
-function DEMIX_DSMtestrefdir(db : integer) : PathStr;
-begin
-   Result := ExtractFilePath(GISdb[DB].DBFullName) + GISdb[DB].MyData.GetFieldByNameAsString('AREA')  + '\' + GISdb[DB].MyData.GetFieldByNameAsString('DSM_NAME')  + RefTestStr + '\';
-end;
-
 
 procedure Tdbtablef.LoadtestandreferenceDEMs2Click(Sender: TObject);
-
-            procedure Process(theDir : PathStr; Mask : shortstring);
-            var
-               theDEMs : tStringList;
-               i : integer;
-               fName : PathStr;
-            begin
-               if ValidPath(theDir) then begin
-                  TheDEMs := Nil;
-                  FindMatchingFiles(theDir,'*.tif',TheDEMs);
-                  if (theDEMs.Count = 0) then begin
-                     MessageToContinue('Cannnot find grids in ' + theDir);
-                  end
-                  else begin
-                     for i := 0 to pred(theDEMs.Count) do begin
-                        fName := theDEMs.Strings[i];
-                        if (Mask = '') or AnsiContainsText(fname,Mask) then begin
-                           OpenNewDEM(fName);
-                        end;
-                     end;
-                  end;
-                  TheDEMs.Destroy;
-               end;
-            end;
-
 begin
-   Process(DEMIX_DTMtestrefdir(dbOnTable), '');
-   Process(DEMIX_DSMtestrefdir(dbOnTable), 'ref_DSM');
+   LoadGDEMTestAndRefDEMs(dbOnTable);
 end;
-
 
 procedure Tdbtablef.LoadthisDEM1Click(Sender: TObject);
 var
@@ -12533,6 +12541,27 @@ begin
    end;
 end;
 
+
+procedure Tdbtablef.DownloadGEM15DTM1Click(Sender: TObject);
+const
+   Extra = 0.1;
+var
+   Lat,Long : float64;
+   DownFName,LocalFile : PathStr;
+begin
+   while not GISdb[DBonTable].MyData.eof do begin
+      if GISdb[DBonTable].ValidLatLongFromTable(Lat,Long) then begin
+         gem_15_TileName(false,Lat,Long,DownFName,LocalFile);
+         gem_15_TileName(false,Lat+Extra,Long+Extra,DownFName,LocalFile);
+         gem_15_TileName(false,Lat-Extra,Long-Extra,DownFName,LocalFile);
+         gem_15_TileName(false,Lat+Extra,Long-Extra,DownFName,LocalFile);
+         gem_15_TileName(false,Lat-Extra,Long+Extra,DownFName,LocalFile);
+
+         //function GeotiffBoundingBoxGeo(fName : PathStr; var bb : sfBoundBox) : boolean;
+      end;
+      GISdb[DBonTable].MyData.Next;
+   end;
+end;
 
 procedure Tdbtablef.Cleanupdoublecountriesintilenames1Click(Sender: TObject);
 //some tile names have duplicate country codes, and I have been unable to find the problem
@@ -14402,7 +14431,7 @@ begin
 
           with DEMGlb[WantDEM],SelectionMap,MapDraw,Mapcorners do begin
              fName := Petmar.NextFileNumber(MDTempDir, 'temp_dem_','.dem');
-             RectangleSubsetDEM(SpecifyDEMGridLimits(BoundBoxDataGrid.xmin,BoundBoxDataGrid.ymin,BoundBoxDataGrid.xmax,BoundBoxDataGrid.ymax),fName);
+             SaveRectangleSubsetDEM(SpecifyDEMGridLimits(BoundBoxDataGrid.xmin,BoundBoxDataGrid.ymin,BoundBoxDataGrid.xmax,BoundBoxDataGrid.ymax),fName);
              CloseSingleDEM(WantDEM);
              WantDEM := 0;
              LoadNewDEM(WantDEM,fName);
@@ -14534,7 +14563,7 @@ begin
 
       for j := 0 to pred(FieldsUsed.Count) do begin
          WantedFieldName := FieldsUsed.Strings[j];
-         //if OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,FieldsUsed.Strings[j],InitDEMmissing) then begin
+         //if CreateOpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,FieldsUsed.Strings[j],InitDEMmissing) then begin
 
          NewDEM := GISdb[DBonTable].theMapOwner.MakeTempGrid(true,true);
          if NewDEM <> 0 then begin
@@ -14737,7 +14766,6 @@ var
    //one maps for the CHM disappears, but can still be accessed.  Despite a lot of effort the cause cannot be determined
    var
       fName : PathStr;
-      //DEMstoUse : tStringList;
       theDEMs : tByteSet;
    begin
       LoadTestandRefs(dbOnTable,DEM,Test,Ref_DTM,REF_DSM);
@@ -16252,7 +16280,6 @@ initialization
    {$IfDef MessageStartUpUnit} MessageToContinue('Startup demdbtable'); {$EndIf}
    HighlightCycle := 1;
    ClipBoard_Coords := false;
-   //BroadCastingFilterChanges := false;
 finalization
    {$IfDef RecordClosing} WriteLineToDebugFile('Closing demdbtable in'); {$EndIf}
 end.

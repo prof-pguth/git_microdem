@@ -222,9 +222,15 @@ var
                procedure ParseDataFile(FieldPlotting : shortString);
                var
                   i : integer;
-
-                        procedure Getv2;
-                        begin
+               begin
+                   GISdb[db].ApplyGISFilter(SeriesFilter,false);
+                   GISdb[db].EmpSource.Enabled := false;
+                   {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Recs=' + IntToStr((GISdb[db].MyData.FiltRecsInDB)) + ' for ' + SeriesFilter); {$EndIf}
+                   if (GISdb[db].MyData.FiltRecsInDB) > 0 then begin
+                       for I := 0 to pred(Resolutions.Count) do begin
+                          GISdb[db].ApplyGISFilter(SeriesFilter + ' AND ' + ResString + '=' + Resolutions.Strings[i],false);
+                          GISdb[db].EmpSource.Enabled := false;
+                          v[1] := StrToFloat(Resolutions.Strings[i]);
                             if (GISdb[db].MyData.FiltRecsInDB = 1) then begin
                                v[2] := GISdb[db].MyData.GetFieldByNameAsFloat(FieldPlotting);
                             end
@@ -233,34 +239,8 @@ var
                                else v[2] := GISdb[db].MyData.FieldAverage(Criterion);
                             end;
                             CompareValueToExtremes(v[2],Result.GraphDraw.MinVertAxis,Result.GraphDraw.MaxVertAxis);
-                        end;
-
-
-               begin
-                   GISdb[db].ApplyGISFilter(SeriesFilter,false);
-                   GISdb[db].EmpSource.Enabled := false;
-                   {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Recs=' + IntToStr((GISdb[db].MyData.FiltRecsInDB)) + ' for ' + SeriesFilter); {$EndIf}
-                   if (GISdb[db].MyData.FiltRecsInDB) > 0 then begin
-                      //GISdb[db].MyData.First;
-                      (*
-                      if (DEMs = nil) then begin
-                           repeat
-                                v[1] := GISdb[db].MyData.GetFieldByNameAsFloat(ResString);
-                                GetV2;
-                                BlockWrite(Rfile,v,1);
-                                GISdb[db].MyData.Next;
-                           until GISdb[db].MyData.eof;
-                      end
-                      else begin
-                      *)
-                          for I := 0 to pred(Resolutions.Count) do begin
-                             GISdb[db].ApplyGISFilter(SeriesFilter + ' AND ' + ResString + '=' + Resolutions.Strings[i],false);
-                             GISdb[db].EmpSource.Enabled := false;
-                             v[1] := StrToFloat(Resolutions.Strings[i]);
-                             GetV2;
-                             BlockWrite(Rfile,v,1);
-                          end;
-                      //end;
+                          BlockWrite(Rfile,v,1);
+                       end;
                    end;
                end {procedure ParseDataFile};
 
@@ -390,16 +370,13 @@ var
         end
         else if (Criteria.Count > 1) then  begin
            {$IfDef RecordDSM_DTM_Compare_full} WriteLineToDebugFile('Mulitple criteria mean/median on graph'); {$EndIf}
-
-            //if (Criteria.Count > 1) then begin
-                StartLegend;
-                for j := 0 to pred(Criteria.Count) do begin
-                   LegendEntries.Add(ExpandDEMIXfieldName(Criteria.Strings[j]));
-                   Colors.Add(IntToStr(WinGraphColors(j)));
-                   {$If Defined(LegendColors)} WriteLineToDebugFile('Legend:  ' + IntToStr(j) + '  ' + MultSeries.Strings[j] + '  ' + ColorToString(WinGraphColors(j))); {$EndIf}
-                end;
-                EndLegend;
-            //end;
+             StartLegend;
+             for j := 0 to pred(Criteria.Count) do begin
+                LegendEntries.Add(ExpandDEMIXfieldName(Criteria.Strings[j]));
+                Colors.Add(IntToStr(WinGraphColors(j)));
+                {$If Defined(LegendColors)} WriteLineToDebugFile('Legend:  ' + IntToStr(j) + '  ' + MultSeries.Strings[j] + '  ' + ColorToString(WinGraphColors(j))); {$EndIf}
+             end;
+             EndLegend;
 
              for j := 0 to pred(Criteria.Count) do begin
                  Symbol.DrawingSymbol := FilledBox;
@@ -454,9 +431,6 @@ begin {procedure GraphMultParamsByAvgSlope_DEMresolution}
                   gr[f1,f2].GraphDraw.URinsideSL := tStringList.Create;
                   sl := nil;
                   gr[f1,f2].CurveFitSingleFile(FitPower, gr[f1,f2].GraphDraw.DataFilesPlotted.Strings[0],2,sl);
-
-//CurveFitSingleFile(WhatFit : integer; Fname : PathStr; Nt : integer; var Results : tStringList);
-
                   gr[f1,f2].GraphDraw.URinsideSL.Add('DSM: ' + gr[f1,f2].GraphComputedEquation);
                   gr[f1,f2].CurveFitSingleFile(FitPower, gr[f1,f2].GraphDraw.DataFilesPlotted.Strings[1],2,sl);
                   gr[f1,f2].GraphDraw.URinsideSL.Add('DTM: ' + gr[f1,f2].GraphComputedEquation);

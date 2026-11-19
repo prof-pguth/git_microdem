@@ -345,62 +345,20 @@ uses
    DEMOptions,
    BaseMap,
    Sun_position,
-   map_overlays, //dem_browser,
+   map_overlays,
    DataBaseCreate, DEMTiger;
-
-
-
-(*
-function IERunningEx : Boolean;
-var
-   WinHandle : HWND;
-   Name: array[0..255] of Char;
-   EXEName : string;
-begin
-  Result := False; // assume no IE window is present
-  WinHandle := GetTopWindow(GetDesktopWindow);
-
-  while WinHandle <> 0 do begin// go thru the window list
-      GetClassName(WinHandle, @Name[0], 255);
-      ExeName := string(Name);
-      WritelineToDebugFile(ExeName);
-      if (CompareText(string(Name), 'IEFrame') = 0) then begin // IEFrame found
-          Result := True;
-          Exit;
-      end;
-      WinHandle := GetNextWindow(WinHandle, GW_HWNDNEXT);
-  end;
-end;
-
-
-procedure OpenADP(ItsName : shortstring);
-var
-  npadhandle: HWnd;
-begin
-   IERunningEx;
-   npadhandle := FindWindow(nil,pChar(ItsName));
-   if npadhandle <> 0 then begin
-      SetForegroundWindow(npadhandle);
-      SendMessage(npadhandle, WM_SYSCOMMAND, SC_RESTORE, 0)
-    end
-   else Showmessage(ItsName + ' not found.');
-end;
-*)
 
 
 procedure LoadSatelliteImage;
 begin
-   {$IfDef ExSats}
-   {$Else}
-      {$IfDef RecordDP} WriteLineToDebugFile('LoadSatelliteImage, file=' + DragonPlotDef.DefaultDRGName); {$EndIf}
-      OpenAndDisplaySatelliteScene(Nil,DragonPlotDef.DefaultDRGName,true,false,false);
-      DragonPlotDef.DefaultDRGName := LastScanMapName;
-      if (SatImage[1] <> Nil) then begin
-         SatImage[1].SelectionMap.WindowState := wsMinimized;
-         ShowDefaultCursor;
-      end;
-      {$IfDef RecordDP} WriteLineToDebugFile('LoadSatelliteImage OK ' + LastImageName); {$EndIf}
-   {$EndIf}
+   {$IfDef RecordDP} WriteLineToDebugFile('LoadSatelliteImage, file=' + DragonPlotDef.DefaultDRGName); {$EndIf}
+   OpenAndDisplaySatelliteScene(Nil,DragonPlotDef.DefaultDRGName,true,false,false);
+   DragonPlotDef.DefaultDRGName := LastScanMapName;
+   if (SatImage[1] <> Nil) then begin
+      SatImage[1].SelectionMap.WindowState := wsMinimized;
+      ShowDefaultCursor;
+   end;
+   {$IfDef RecordDP} WriteLineToDebugFile('LoadSatelliteImage OK ' + LastImageName); {$EndIf}
 end;
 
 
@@ -442,7 +400,7 @@ begin
 
       {$IfDef RecordOpenDEM} WriteLineToDebugFile('Regional DEM=' + LastDEMName); {$EndIf}
 
-      if (NumDEMDataSetsOpen = 0) then begin
+      if (NumDEMsOpen = 0) then begin
          {$IfDef RecordOpenDEM} WriteLineToDebugFile('Close because no DEM'); {$EndIf}
          exit;
       end
@@ -1354,7 +1312,7 @@ procedure TDragonPlotForm.BitBtn9Click(Sender: TObject);
 var
    i : integer;
 begin
-   for i := 1 to NumDEMDataSetsOpen do if ValidDEM(i) then DEMGlb[i].SelectionMap.DoCompleteMapRedraw;
+   for i := 1 to NumDEMsOpen do if ValidDEM(i) then DEMGlb[i].SelectionMap.DoCompleteMapRedraw;
 end;
 
 

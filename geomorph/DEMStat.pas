@@ -115,6 +115,17 @@ uses
    PETMAR,Petmar_types,Petmath,
    DEMStringGrid,DEMLosW,BaseGraf,DEMDefs,DEMMapf;
 
+const
+   ShortAggregateSet : tByteSet = [1,3,5,7,9,11,15,19,21,25,31];  //designed for 2 m  DEMs
+   AggregatedArray : boolean = false;
+   DecimatedArray : boolean = false;
+   MaxAggregated = 25;
+type
+   tDEMarray = array[0..MaxAggregated] of integer;
+var
+   AggregatedDEMArray,DecimatedDEMarray : tDEMarray;
+   AggregatedTile : shortstring;
+
 
 const
    MaxPlotGlb = 2500;
@@ -147,7 +158,7 @@ type
       procedure SlopeRegionSize(CurDEM : integer; DoRegionSize : boolean = true);
       procedure MakeElevSlopeAspectDifferenceMap;
       procedure PointSlopesByRegionSize(DEM : integer; RightClickLat,RightClickLong : float64);
-      procedure PointSlopesByDEMresolution(DEM : integer);
+      procedure PointSlopesByDEMresolution(DEM : integer; DEMarray : tDEMarray);
 
       procedure SingleDEMHistogram(WhichDEM : integer; Quick : boolean = false);
       procedure DoElevationHistograms;
@@ -267,6 +278,10 @@ var
    SlopeMeanCut,SlopeQuarterCut,SlopeEigthCut : float64;
    VariableWeightings : array[1..EdburgMaxVariables] of float64;
 
+
+function CreateAggregatedResolutionDEMArray(DEM : integer; HRDEM : boolean; DoItByAveraging : boolean = true) : tDEMarray;
+
+
 implementation
 
 uses
@@ -316,28 +331,66 @@ uses
 
 const
    InsuffDEMrelief = 'Insufficient DEM relief';
-type
-   PlotModeType = (Plain,Strahler,Cumulative,NormProb);
-var
-   Count : array[1..MaxDEMDataSets] of ^CountType;
-
 
 {$I demstat_global_dems.inc}
+{$I histograms.inc}
+{$I demstat_slope_algorithm_compare.inc}
+{$I demstat_grid_compare.inc}
+
 
 {$IfDef IncludeSSIM}
    {$I demstat_ssim.inc}
 {$EndIf}
 
-{$I histograms.inc}
-
-{$I demstat_slope_algorithm_compare.inc}
-
-{$IfDef ExWaveLengthHeight}
-{$Else}
+{$IfDef ExWaveLengthHeight} {$Else}
    {$I demstat_dune_crest.inc}
 {$EndIf}
 
-   {$I demstat_grid_compare.inc}
+
+function CreateAggregatedResolutionDEMArray(DEM : integer; HRDEM : boolean; DoItByAveraging : boolean = true) : tDEMarray;
+//designed for 2 m DEMIX HRDEMs
+const
+   OpenDEM = true;
+   HRDEMAggregateSet : tByteSet = [1,3,5,7,9,11,15,19,21,25,31];  //designed for 2 m  DEMs
+   GDEMAggregateSet : tByteSet = [1,3,5,7];  //designed for 2 m  DEMs
+var
+   i : integer;
+   Thin : byte;
+   ThinningArray : tByteSet;
+begin
+   SetColorForProcessing;
+   for i := 1 to MaxAggregated do Result[i] := 0;
+   AggregatedTile := DEMglb[DEM].AreaName;
+   DEMglb[DEM].AreaName := 'Original_DEM';
+   if DEMglb[DEM].AverageSpace < 0.6 then begin
+      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, thin 4 ' + AvailPhysMemStr); {$EndIf}
+      Result[0] := DEMglb[DEM].ThinThisDEM(OpenDEM,'',4,DoItByAveraging);
+   end
+   else if DEMglb[DEM].AverageSpace < 1.1 then begin
+      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, thin 2' + AvailPhysMemStr); {$EndIf}
+      Result[0] := DEMglb[DEM].ThinThisDEM(OpenDEM,'',2,DoItByAveraging);
+   end
+   else begin
+      {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling in, no thin' + AvailPhysMemStr); {$EndIf}
+      Result[0] := DEM;
+   end;
+   DEM := Result[0];
+   i := 0;
+   if HRDEM then ThinningArray := HRDEMAggregateSet else ThinningArray := GDEMAggregateSet;
+
+   for Thin in ThinningArray do begin
+      if (Thin > 1) then begin
+         Result[i] := DEMglb[DEM].ThinThisDEM(OpenDEM,'',Thin,DoItByAveraging);
+      end;
+      {$IfDef RecordGeomorphometry}
+         if DoItByAveraging then TStr := '  Mean aggregation=' else TStr := '  Decimation=';
+         WriteLineToDebugFile('i=' + IntToStr(i) +  TStr + IntToStr(Thin) + '  ' + RealToString(DEMglb[Result[i]].AverageSpace,-12,-1));
+      {$EndIf}
+      inc(i);
+   end;
+   SetColorForWaiting;
+   {$IfDef RecordGeomorphometry} WriteLineToDebugFile('SlopeWithAggregatedDownSampling out ' + AvailPhysMemStr); {$EndIf}
+end;
 
 
 procedure GetBins(MaxMax,MinMin : integer; var BinSize,StartIndex : integer);
@@ -594,7 +647,7 @@ begin {proc ElevationSlopePlot}
    StartIndex := MinMin div BinSize;
 
    if MDDef.ShowColorLegend then begin
-      CreateBitmap(LegendBMP,350,25*NumDEMDataSetsOpen+10);
+      CreateBitmap(LegendBMP,350,25*NumDEMsOpen+10);
       LegendBMP.Canvas.Font.Name := 'Verdana';
       LegendBMP.Canvas.Font.Size := 14;
       LegendBMP.Canvas.Font.Style := [fsbold];
@@ -1485,30 +1538,32 @@ begin
 
    DEMDef_routines.RestoreBackupDefaults;
    {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize out'); {$EndIf}
-end;
+end {procedure PointSlopesByRegionSize};
 
 
-procedure PointSlopesByDEMresolution(DEM : integer);
+procedure PointSlopesByDEMresolution(DEM : integer; DEMarray : tDEMarray);
 var
    xDEMg1,yDEMg1,AvgSlope,Lat,Long : float64;
    Findings : tStringList;
    xField,yField,aCapt,
-   TStr,location : shortString;
-   i,db,Col,Row,NumPts,DEM2,db2,Radius,LastDEM : integer;
+   TStr,location,GridSpace : shortString;
+   i,x,y,db,Col,Row,NumPts,DEM2,db2,Radius,LastDEM,Num : integer;
    ag : byte;
    graph : tThisBaseGraph;
    agName,MainName,DecName : PathStr;
    SlopeAsp : tSlopeAspectRec;
+   Color : tColor;
 
 
-         procedure DoDEMarray(DEMarray : tDEMarray; OutName : PathStr; Color : tColor);
+         procedure DoDEMarray(OutName : PathStr);
          var
             i : integer;
+            TStr : shortstring;
          begin
              StripInvalidPathNameChars(OutName,true);
              MDDef.SlopeCompute.WindowRadius := 1;
              Findings := tStringList.Create;
-             Findings.Add('GRID_M,Slope_pc');
+             Findings.Add(GridSpace + ',Slope_pc');
              for i := MaxAggregated downto 0 do begin
                 if ValidDEM(DEMArray[i]) then begin
                     DEM2 := DEMArray[i];
@@ -1516,7 +1571,9 @@ var
                     Col := round(xDEMg1);
                     Row := round(yDEMg1);
                     if DEMGlb[DEM2].GetSlopeAndAspect(MDDef.SlopeCompute,Col,Row,SlopeAsp) then begin
-                       Findings.Add(RealToString(DEMglb[DEM2].AverageSpace,-12,-2) + ',' + RealToString(SlopeAsp.SlopePercent,-12,-2));
+                       if (DEMglb[DEM].DEMheader.DEMUsed = ArcSecDEM) then TStr := RealToString(3600 * DEMglb[DEM2].DEMHeader.DEMySpacing,-12,-2)
+                       else TStr := RealToString(DEMglb[DEM2].AverageSpace,-12,-2);
+                       Findings.Add(TStr + ',' + RealToString(SlopeAsp.SlopePercent,-12,-2));
                        {$IfDef RecordRightClick} WriteLineToDebugFile(DEMGlb[DEMArray[i]].AreaName +  ' Aggregated='+ IntToStr(i) + '  ' + RealToString(SlopeAsp.SlopePercent,-12,-2) + '%' + '  ' +
                            DEMglb[DEM2].DEMLocationString(Col,Row)); {$EndIf}
                     end
@@ -1530,13 +1587,13 @@ var
              if (Findings.Count > 1) then begin
                  db2 := StringList2CSVtoDB(Findings,OutName);
                  if (Graph = Nil) then begin
-                    Graph := GISDB[db2].CreateScatterGram(OutName,'GRID_M',yField,clRed,true,aCapt);
+                    Graph := GISDB[db2].CreateScatterGram(OutName,GridSpace,yField,Color,true,aCapt);
                     Graph.GraphDraw.MinVertAxis := 0;
                     Graph.GraphDraw.LLCornerText := AggregatedTile;
                     Graph.RedrawDiagram;
                  end
                  else begin
-                    GISdb[db2].AddSeriesToScatterGram(ExtractFileNameNoExt(OutName),Graph,Color,'GRID_M',YField,true);
+                    GISdb[db2].AddSeriesToScatterGram(ExtractFileNameNoExt(OutName),Graph,Color,GridSpace,YField,true);
                  end;
                  CloseSingleDB(db2);
              end
@@ -1544,11 +1601,18 @@ var
            end;
 
 
-begin
+begin {PointSlopesByDEMresolution}
    {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize in'); {$EndIf}
-
    DEMDef_routines.SaveBackupDefaults;
-   xField := 'DIST_M';
+   if (DEMglb[DEM].DEMheader.DEMUsed = ArcSecDEM) then begin
+     xField := 'DIST_SEC';
+     GridSpace := 'GRID_SEC';
+   end
+   else begin
+     xField := 'DIST_M';
+     GridSpace := 'GRID_M';
+   end;
+
    yField := 'SLOPE_PC';
    aCapt := 'Slopes by region at ' + Location;
    Graph := nil;
@@ -1556,32 +1620,33 @@ begin
       LastDEM := AggregatedDEMarray[i];
       if ValidDEM(LastDEM) then break;
    end;
-
-
-      if AggregatedArray then begin
-          {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
-          //AgName := NextFileNumber(MDTempDir,'Aggregated_DEM_','.dbf');
-          for i := 1 to 25 do begin
-             Col := 10 + Random(DEMglb[LastDEM].DEMHeader.NumCol - 20);
-             Row := 10 + Random(DEMglb[LastDEM].DEMHeader.NumRow - 20);
-             DEMglb[LastDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
-             DEMglb[LastDEM].SelectionMap.MapDraw.MapSymbolAtLatLongDegree(DEMglb[LastDEM].SelectionMap.Image1.Canvas,Lat,Long,FilledBox,4,claRed);
-             Location := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
-             {$IfDef RecordRightClick} WriteLineToDebugFile('Loop i=' + IntToStr(i) + '  ' + Location); {$EndIf}
-             AgName := NextFileNumber(MDTempDir,Location,'.dbf');
-             DoDEMarray(AggregatedDEMarray,AgName,clLime);
+   Num := 0;
+    {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
+    for x := 1 to 5 do begin
+       for y := 1 to 5 do begin
+          if true then begin
+             Col := (DEMglb[LastDEM].DEMHeader.NumCol div 10) + pred(x) * (DEMglb[LastDEM].DEMHeader.NumCol div 5);
+             Row := (DEMglb[LastDEM].DEMHeader.NumRow div 10) + pred(y) * (DEMglb[LastDEM].DEMHeader.NumRow div 5);
+          end
+          else begin
+             repeat
+                Col := 1 + Random(DEMglb[LastDEM].DEMHeader.NumCol - 2);
+                Row := 1 + Random(DEMglb[LastDEM].DEMHeader.NumRow - 2);
+             until DEMglb[LastDEM].IsSurroundedPoint(Col,Row);
           end;
-      end;
 
-      if DecimatedArray then begin
-          {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize AggregatedArray'); {$EndIf}
-          DecName := NextFileNumber(MDTempDir,'Decimated_DEM_','.dbf');
-          DoDEMarray(DecimatedDEMarray,DecName,clRed);
-      end;
-
+          DEMglb[LastDEM].DEMGridToLatLongDegree(Col,Row,Lat,Long);
+          DEMglb[LastDEM].SelectionMap.MapDraw.MapSymbolAtLatLongDegree(DEMglb[LastDEM].SelectionMap.Image1.Canvas,Lat,Long,FilledBox,4,claRed);
+          Location := LatLongDegreeToString(Lat,Long,MDDef.OutPutLatLongMethod);
+          Color := WinGraphColors(Num);
+          AgName := NextFileNumber(MDTempDir,Location,'.dbf');
+          DoDEMarray(AgName);
+          inc(Num);
+       end;
+    end;
    DEMDef_routines.RestoreBackupDefaults;
    {$IfDef RecordRightClick} WriteLineToDebugFile('PointSlopesByRegionSize out'); {$EndIf}
-end;
+end {PointSlopesByDEMresolution};
 
 
 procedure SlopeRegionSize(CurDEM : integer; DoRegionSize : boolean = true);
@@ -2077,7 +2142,7 @@ var
    //IdenticalGrids : boolean;
 begin
    {$IfDef RecordMapAlgebra} WriteLineToDebugFile('SumDEMs in'); {$EndIf}
-   if OpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,InitDEMmissing) then begin
+   if CreateOpenAndZeroNewDEM(true,DEMGlb[FirstDEM].DEMheader,Result,NewName,InitDEMmissing) then begin
       StartProgress('Sum grids');
       for Col := 0 to pred(DEMGlb[Result].DEMheader.NumCol) do begin
          if (Col mod 100 = 0) then begin
@@ -2238,7 +2303,7 @@ begin
      NewHeadRecs := DEMGlb[StartingGrid].DEMheader;
      NewHeadRecs.DEMPrecision := ByteDEM;
 
-     if not OpenAndZeroNewDEM(true,NewHeadRecs,Result,'Clusters',InitDEMvalue,0) then exit;
+     if not CreateOpenAndZeroNewDEM(true,NewHeadRecs,Result,'Clusters',InitDEMvalue,0) then exit;
         with DEMGlb[Result],DEMheader do begin
            ShortName := 'Clusters';
            DEMheader.ElevUnits := euUndefined;
@@ -3536,7 +3601,7 @@ begin
    for i := 1 to NumDEM do begin
       if ValidDEM(DEMsOrdered[i]) then begin
          inc(n);
-         UpdateProgressBar(n/NumDEMDataSetsOpen);
+         UpdateProgressBar(n/NumDEMsOpen);
          for j := i to NumDEM do begin
             if ValidDEM(DEMsOrdered[j]) then begin
                //if the grids do not have points at the same locations, we will use each in turn to interpolate
@@ -3835,7 +3900,6 @@ procedure InitializeDEMStat;
 var
    i : integer;
 begin
-   for i := 1 to MaxDEMDataSets do Count[i] := Nil;
    for i := 1 to EdburgMaxVariables do VariableWeightings[i] := 1;
    IPColor[1] := RGB(127,70,50);
    IPColor[2] := RGB(255,0,255);

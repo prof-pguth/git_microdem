@@ -409,7 +409,7 @@ begin
                        else ClientHeight := round( (MaxVertAxis - MinVertAxis) / xs + BottomMargin);
                     end;
                     GraphDraw.GraphDrawn := true;
-                    RedrawDiagram11Click(nil);
+                    RedrawDiagram;
                end;
             end;
          {$EndIf}
@@ -590,7 +590,7 @@ begin
    {$IfDef RecordTINProblems} WriteLineToDebugFile('tTIN.InterpolateDEM'); {$EndIf}
 
    NewHeadRecs := DEMGlb[BaseMap.MapDraw.DEMonMap].DEMheader;
-   OpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'tin_dem',InitDEMmissing);
+   CreateOpenAndZeroNewDEM(true,NewHeadRecs,NewDEM,'tin_dem',InitDEMmissing);
    DEMGlb[NewDEM].AreaName := 'TIN interpolation';
    with DEMGlb[NewDEM],DEMheader do begin
       StartProgress('Interpolate');

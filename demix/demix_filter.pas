@@ -431,7 +431,7 @@ begin {procedure TDemixFilterForm.MakeDifferenceMaps}
 
    MakeBigDiffferenceMapImage(Param);
    RestoreBackupDefaults;
-   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn7Click out, DEMs=' + IntToStr(NumDEMDataSetsOpen) + '  Maps=' + IntToStr(NumOpenMaps)); {$EndIf}
+   {$IfDef RecordDEMIX} WriteLineToDebugFile('TDemixFilterForm.BitBtn7Click out, DEMs=' + IntToStr(NumDEMsOpen) + '  Maps=' + IntToStr(NumOpenMaps)); {$EndIf}
 end {procedure TDemixFilterForm.MakeDifferenceMaps};
 
 

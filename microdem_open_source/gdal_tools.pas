@@ -24,9 +24,9 @@ unit gdal_tools;
       //{$Define RecordCOGdownload}
       //{$Define RecordSubsetOpen}
       //{$Define RecordDatumShift}
-      //{$Define RecordWKT}
+      {$Define RecordWKT}
       //{$Define RecordProjectionStrings}
-      {$Define RecordDEMIXCompositeDatum}
+      //{$Define RecordDEMIXCompositeDatum}
       //{$Define RecordSubsetGDAL}
       //{$Define RecordGDALinfo}
       //{$Define RecordGDALOpen}
@@ -989,7 +989,7 @@ begin
    for i := 0 to pred(sl.Count) do Result := Result + sl.strings[i];
    StripBlanks(Result);
    sl.Destroy;
-   {$If Defined(RecordGDAL) or Defined(RecordWKT)} WriteLineToDebugFile('CreateWKTStringForGeotiff out'); {$EndIf}
+   {$If Defined(RecordGDAL) or Defined(RecordWKT)} WriteLineToDebugFile('CreateWKTStringForGeotiff out, ' + Result); {$EndIf}
 end;
 
 procedure GDALGeotiffToWKT(fName : PathStr);

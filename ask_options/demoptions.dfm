@@ -16,8 +16,6 @@ inherited OptionsForm: TOptionsForm
     Width = 830
     Height = 536
     Align = alClient
-    ExplicitWidth = 242
-    ExplicitHeight = 41
   end
   inherited OKBtn: TButton
     Left = 8
@@ -37,7 +35,7 @@ inherited OptionsForm: TOptionsForm
     Top = 0
     Width = 830
     Height = 536
-    ActivePage = TabSheet9
+    ActivePage = TabSheet3
     Align = alClient
     MultiLine = True
     TabOrder = 2
